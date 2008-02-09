@@ -50,12 +50,19 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
+import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.NestingKind;
 import javax.lang.model.element.PackageElement;
 import javax.lang.model.element.TypeElement;
+import javax.lang.model.type.DeclaredType;
+import javax.lang.model.type.ExecutableType;
+import javax.lang.model.type.TypeKind;
+import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementScanner6;
+import javax.lang.model.util.Types;
 import javax.swing.text.Document;
 import org.netbeans.api.java.source.ClassIndex;
 import org.netbeans.api.java.source.ClassIndex.NameKind;
@@ -74,6 +81,8 @@ import org.netbeans.modules.spring.api.beans.model.SpringBeans;
 import org.netbeans.modules.spring.api.beans.model.SpringConfigModel;
 import org.netbeans.modules.spring.beans.editor.ContextUtilities;
 import org.netbeans.modules.spring.beans.editor.SpringXMLConfigEditorUtils;
+import org.netbeans.modules.spring.beans.editor.SpringXMLConfigEditorUtils.Public;
+import org.netbeans.modules.spring.beans.editor.SpringXMLConfigEditorUtils.Static;
 import org.netbeans.modules.spring.beans.loader.SpringXMLConfigDataLoader;
 import org.netbeans.modules.spring.beans.utils.StringUtils;
 import org.netbeans.spi.editor.completion.CompletionResultSet;
@@ -81,6 +90,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
+import org.w3c.dom.Node;
 
 /**
  *
@@ -103,6 +113,7 @@ public final class CompletionManager {
     private static final String ENTRY_TAG = "entry"; // NOI18N
     private static final String PROPERTY_TAG = "property"; // NOI18N
     private static final String LOOKUP_METHOD_TAG = "lookup-method"; // NOI18N
+    private static final String REPLACED_METHOD_TAG = "replaced-method";  // NOI18N
     private static final String DEPENDS_ON_ATTRIB = "depends-on"; // NOI18N
     private static final String PARENT_ATTRIB = "parent"; // NOI18N
     private static final String FACTORY_BEAN_ATTRIB = "factory-bean"; // NOI18N
@@ -129,6 +140,8 @@ public final class CompletionManager {
     private static final String LOCAL_ATTRIB = "local"; // NOI18N
     private static final String KEY_REF_ATTRIB = "key-ref"; // NOI18N
     private static final String VALUE_REF_ATTRIB = "value-ref"; // NOI18N
+    private static final String REPLACER_ATTRIB = "replacer";  // NOI18N
+    private static final String FACTORY_METHOD_ATTRIB = "factory-method"; // NOI18N
     private static Map<String, Completor> completors = new HashMap<String, Completor>();
 
     private CompletionManager() {
@@ -221,10 +234,20 @@ public final class CompletionManager {
         registerCompletor(ENTRY_TAG, VALUE_REF_ATTRIB, beansRefCompletor);
         registerCompletor(PROPERTY_TAG, REF_ATTRIB, beansRefCompletor);
         registerCompletor(LOOKUP_METHOD_TAG, BEAN_ATTRIB, beansRefCompletor);
+        registerCompletor(REPLACED_METHOD_TAG, REPLACER_ATTRIB, beansRefCompletor);
         
         beansRefCompletor = new BeansRefCompletor(false);
         registerCompletor(REF_TAG, LOCAL_ATTRIB, beansRefCompletor);
         registerCompletor(IDREF_TAG, LOCAL_ATTRIB, beansRefCompletor);
+        
+        InitDestroyMethodCompletor javaMethodCompletor = new InitDestroyMethodCompletor();
+        registerCompletor(BEAN_TAG, INIT_METHOD_ATTRIB, javaMethodCompletor);
+        registerCompletor(BEAN_TAG, DESTROY_METHOD_ATTRIB, javaMethodCompletor);
+        registerCompletor(LOOKUP_METHOD_TAG, NAME_ATTRIB, javaMethodCompletor);
+        registerCompletor(REPLACED_METHOD_TAG, NAME_ATTRIB, javaMethodCompletor);
+        
+        FactoryMethodCompletor factoryMethodCompletor = new FactoryMethodCompletor();
+        registerCompletor(BEAN_TAG, FACTORY_METHOD_ATTRIB, factoryMethodCompletor);
     }
     private static CompletionManager INSTANCE = new CompletionManager();
 
@@ -542,6 +565,248 @@ public final class CompletionManager {
                 return super.visitType(typeElement, arg);
             }
             
+        }
+    }
+    
+    private static abstract class JavaMethodCompletor extends Completor {
+
+        @Override
+        public List<SpringXMLConfigCompletionItem> doCompletion(final CompletionContext context) {
+            final List<SpringXMLConfigCompletionItem> results = new  ArrayList<SpringXMLConfigCompletionItem>();
+            try {
+                final String classBinaryName = getTypeName(context);
+                final Public publicFlag = getPublicFlag(context);
+                final Static staticFlag = getStaticFlag(context);
+                final int argCount = getArgCount(context);
+                
+                if (classBinaryName == null || classBinaryName.equals("")) { // NOI18N
+                    return Collections.emptyList();
+                }
+                Document doc = context.getDocument();
+
+                final JavaSource javaSource = SpringXMLConfigEditorUtils.getJavaSource(doc);
+                if (javaSource == null) {
+                    return Collections.emptyList();
+                }
+
+                javaSource.runUserActionTask(new Task<CompilationController>() {
+
+                    public void run(CompilationController controller) throws Exception {
+                        controller.toPhase(Phase.ELEMENTS_RESOLVED);
+                        ElementHandle<TypeElement> eh = SpringXMLConfigEditorUtils.findClassElementByBinaryName(classBinaryName, javaSource);
+                        if(eh == null) {
+                            return;
+                        }
+                        
+                        TypeElement classElem = eh.resolve(controller);
+                        ElementUtilities eu = controller.getElementUtilities();
+                        ElementUtilities.ElementAcceptor acceptor = new ElementUtilities.ElementAcceptor() {
+
+                            public boolean accept(Element e, TypeMirror type) { 
+                                // XXX : display methods of java.lang.Object? 
+                                // Displaying them adds unnecessary clutter in the completion window
+                                if (e.getKind() == ElementKind.METHOD) {
+                                    TypeElement te = (TypeElement) e.getEnclosingElement();
+                                    if(te.getQualifiedName().contentEquals("java.lang.Object")) { // NOI18N
+                                        return false;
+                                    }
+
+                                    // match name
+                                    if(!e.getSimpleName().toString().startsWith(context.getTypedPrefix())) {
+                                        return false;
+                                    }
+                                    
+                                    ExecutableElement method = (ExecutableElement) e;
+                                    // match argument count
+                                    if(argCount != -1 && method.getParameters().size() != argCount) {
+                                        return false;
+                                    }
+                                
+                                    // match static
+                                    if (staticFlag != Static.DONT_CARE) {
+                                        boolean isStatic = method.getModifiers().contains(Modifier.STATIC);
+                                        if ((isStatic && staticFlag == Static.NO) || (!isStatic && staticFlag == Static.YES)) {
+                                            return false;
+                                        }
+                                    }
+                                    
+                                    // match public
+                                    if (publicFlag != Public.DONT_CARE) {
+                                        boolean isPublic = method.getModifiers().contains(Modifier.PUBLIC);
+                                        if ((isPublic && publicFlag == Public.NO) || (!isPublic && publicFlag == Public.YES)) {
+                                            return false;
+                                        }
+                                    }
+                                    
+                                    return true;
+                                }
+                                
+                                return false;
+                            }
+                        };
+
+                        int substitutionOffset = context.getCurrentToken().getOffset() + 1;
+                        Iterable<? extends Element> methods = eu.getMembers(classElem.asType(), acceptor);
+                        
+                        methods = filter(methods);
+                        
+                        for (Element e : methods) {
+                            ExecutableType et = (ExecutableType) asMemberOf(e, classElem.asType(), controller.getTypes());
+                            SpringXMLConfigCompletionItem item = SpringXMLConfigCompletionItem.createMethodItem(
+                                    substitutionOffset, (ExecutableElement) e, et, e.getEnclosingElement() != classElem,
+                                    controller.getElements().isDeprecated(e));
+                            results.add(item);
+                        }
+                        
+                        setAnchorOffset(substitutionOffset);
+
+                    }
+                }, false);
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+
+            return results;
+
+        }
+        
+        /**
+         * Should the method be public
+         */
+        protected abstract Public getPublicFlag(CompletionContext context);
+        
+        /**
+         * Should the method be static
+         */
+        protected abstract Static getStaticFlag(CompletionContext context);
+
+        /**
+         * Number of arguments of the method
+         */
+        protected abstract int getArgCount(CompletionContext context);
+
+        /**
+         * Binary name of the class which should be searched for methods
+         */
+        protected abstract String getTypeName(CompletionContext context);
+
+        /**
+         * Post process applicable methods, for eg. return only those
+         * methods which return do not return void
+         */
+        protected Iterable<? extends Element> filter(Iterable<? extends Element> methods) {
+            return methods;
+        }
+        
+        protected static TypeMirror asMemberOf(Element element, TypeMirror type, Types types) {
+            TypeMirror ret = element.asType();
+            TypeMirror enclType = element.getEnclosingElement().asType();
+            if (enclType.getKind() == TypeKind.DECLARED) {
+                enclType = types.erasure(enclType);
+            }
+            while (type != null && type.getKind() == TypeKind.DECLARED) {
+                if (types.isSubtype(type, enclType)) {
+                    ret = types.asMemberOf((DeclaredType) type, element);
+                    break;
+                }
+                type = ((DeclaredType) type).getEnclosingType();
+            }
+            return ret;
+        }
+    }
+    
+    private static class InitDestroyMethodCompletor extends JavaMethodCompletor {
+
+        public InitDestroyMethodCompletor() {
+        }
+
+        @Override
+        protected Public getPublicFlag(CompletionContext context) {
+            return Public.DONT_CARE;
+        }
+
+        @Override
+        protected Static getStaticFlag(CompletionContext context) {
+            return Static.NO;
+        }
+
+        @Override
+        protected int getArgCount(CompletionContext context) {
+            return 0;
+        }
+
+        @Override
+        protected String getTypeName(CompletionContext context) {
+            return SpringXMLConfigEditorUtils.getBeanClassName(context.getTag());
+        }
+    }
+    
+    private static class FactoryMethodCompletor extends JavaMethodCompletor {
+
+        private Static staticFlag = Static.YES;
+        
+        @Override
+        protected Public getPublicFlag(CompletionContext context) {
+            return Public.DONT_CARE;
+        }
+
+        @Override
+        protected Static getStaticFlag(CompletionContext context) {
+            return staticFlag;
+        }
+
+        @Override
+        protected int getArgCount(CompletionContext context) {
+            return -1;
+        }
+
+        @Override
+        protected String getTypeName(CompletionContext context) {
+            Node tag = context.getTag();
+            final String[] className = {SpringXMLConfigEditorUtils.getBeanClassName(tag)};
+
+            // if factory-bean has been defined, resolve it and get it's class name
+            if (SpringXMLConfigEditorUtils.hasAttribute(tag, FACTORY_BEAN_ATTRIB)) {
+                final String factoryBeanName = SpringXMLConfigEditorUtils.getAttribute(tag, FACTORY_BEAN_ATTRIB);
+                FileObject fo = NbEditorUtilities.getFileObject(context.getDocument());
+                if (fo == null) {
+                    return null;
+                }
+                SpringConfigModel model = SpringConfigModel.forFileObject(fo);
+                try {
+                    model.runReadAction(new Action<SpringBeans>() {
+
+                        public void run(SpringBeans beans) {
+                            SpringBean bean = beans.findBean(factoryBeanName);
+                            if (bean == null) {
+                                className[0] = null;
+                                return;
+                            }
+                            className[0] = bean.getClassName();
+                        }
+                    });
+                } catch (IOException ioe) {
+                    Exceptions.printStackTrace(ioe);
+                    className[0] = null;
+                }
+
+                staticFlag = Static.NO;
+            }
+            
+            return className[0];
+        }
+
+        @Override
+        protected Iterable<? extends Element> filter(Iterable<? extends Element> methods) {
+            List<ExecutableElement> ret = new ArrayList<ExecutableElement>();
+            for(Element e : methods) {
+                ExecutableElement method = (ExecutableElement) e;
+                if(method.getReturnType().getKind() != TypeKind.VOID) {
+                    ret.add(method);
+                }
+            }
+            
+            return ret;
         }
     }
 
