@@ -111,6 +111,7 @@
                 <include name="netbeans/soa2/**"/>
                 <include name="netbeans/xml2/**"/>
                 <exclude name="netbeans/soa2/**/*-etl-*"/>
+                <exclude name="netbeans/**/.lastModified"/>
             </zipfileset>
         </zip>
     </target>
@@ -120,6 +121,8 @@
             <zipfileset dir="${home}/nbbuild">
                 <include name="netbeans/**"/>
                 <exclude name="netbeans/soa2/**/*-xslt-*"/>
+                <exclude name="netbeans/testtools/**"/>
+                <exclude name="netbeans/**/.lastModified"/>
             </zipfileset>
         </zip>
 
@@ -130,6 +133,8 @@
         <zip destfile="${latest}/sierra_dev.zip">
             <zipfileset dir="${home}/nbbuild">
                 <include name="netbeans/**"/>
+                <exclude name="netbeans/testtools/**"/>
+                <exclude name="netbeans/**/.lastModified"/>
             </zipfileset>
         </zip>
 
@@ -378,6 +383,7 @@
     <target name="do-print">
         <subant target="${action}" inheritAll="false">
             <buildpath location="${home}/print"/>
+            <buildpath location="${home}/xml.xpath.ext"/> <!-- todo r -->
         </subant>
     </target>
 

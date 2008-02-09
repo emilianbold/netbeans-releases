@@ -11,11 +11,32 @@
         </folder>
     </folder>
     
+    
     <folder name="SaasServices">
         <folder name="Facebook">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.websvc.saas.services.facebook.Bundle"/>
             <file name="Facebook.xml" url="/org/netbeans/modules/websvc/saas/services/facebook/resources/Facebook.xml"/>
             <file name="FacebookSecure.xml" url="/org/netbeans/modules/websvc/saas/services/facebook/resources/FacebookSecure.xml"/>
+            <folder name="Desktop">
+                <file name="FacebookAuthenticator.java" 
+                      url="/org/netbeans/modules/websvc/saas/services/facebook/resources/desktop/FacebookAuthenticator.template">
+                    <attr name="position" intvalue="0"/>
+                </file>
+            </folder>
+            <folder name="Web">
+                <file name="FacebookAuthenticator.java" 
+                      url="/org/netbeans/modules/websvc/saas/services/facebook/resources/desktop/FacebookAuthenticator.template">
+                    <attr name="position" intvalue="0"/>
+                </file>
+                <file name="FacebookLogin.java" 
+                      url="/org/netbeans/modules/websvc/saas/services/facebook/resources/desktop/FacebookLogin.template">
+                    <attr name="position" intvalue="0"/>
+                </file>
+                <file name="FacebookCallback.java" 
+                      url="/org/netbeans/modules/websvc/saas/services/facebook/resources/desktop/FacebookCallback.template">
+                    <attr name="position" intvalue="0"/>
+                </file>
+            </folder>
         </folder>
     </folder>
     
