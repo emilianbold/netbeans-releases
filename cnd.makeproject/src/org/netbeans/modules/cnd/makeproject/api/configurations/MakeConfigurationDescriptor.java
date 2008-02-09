@@ -597,12 +597,18 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor impleme
         return subProjects;
     }
     
+    /*
+     * Add a root.
+     * Don't add if already inside project
+     */
     private void addSourceRoot(String path) {
         path = IpeUtils.toRelativePath(getBaseDir(), path);
-        synchronized (sourceRoots) {
-            sourceRoots.add(path);
+        if (IpeUtils.isPathAbsolute(path) || path.startsWith("..")) { // NOI18N
+            synchronized (sourceRoots) {
+                sourceRoots.add(path);
+            }
+            setModified();
         }
-        setModified();
     }
     
     /*

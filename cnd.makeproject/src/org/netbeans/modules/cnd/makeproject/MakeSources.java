@@ -121,22 +121,25 @@ public class MakeSources implements Sources, AntProjectListener {
                     set.add(name);
                 }
             }
-            // Add source roots to set
+            // Add source roots to set (>= V41)
             List<String> list = epd.getAbsoluteSourceRoots();
             for (String sr : list) {
                 set.add(sr);
             }
             
             // Add buildfolder from makefile projects to sources. See IZ 90190.
-//            Configuration[] confs = epd.getConfs().getConfs();
-//            for (int i = 0; i < confs.length; i++) {
-//                MakeConfiguration makeConfiguration = (MakeConfiguration) confs[i];
-//                if (makeConfiguration.isMakefileConfiguration()) {
-//                    MakefileConfiguration makefileConfiguration = makeConfiguration.getMakefileConfiguration();
-//                    String path = makefileConfiguration.getAbsBuildCommandWorkingDir();
-//                    set.add(path);
-//                }
-//            }
+            if (epd.getVersion() < 41) {
+                Configuration[] confs = epd.getConfs().getConfs();
+                for (int i = 0; i < confs.length; i++) {
+                    MakeConfiguration makeConfiguration = (MakeConfiguration) confs[i];
+                    if (makeConfiguration.isMakefileConfiguration()) {
+                        MakefileConfiguration makefileConfiguration = makeConfiguration.getMakefileConfiguration();
+                        String path = makefileConfiguration.getAbsBuildCommandWorkingDir();
+                        set.add(path);
+                        epd.getSourceRootsRaw().add(IpeUtils.toRelativePath(epd.getBaseDir(), path));
+                    }
+                }
+            }
             
             for (String name : set) {
                 String displayName = name;
