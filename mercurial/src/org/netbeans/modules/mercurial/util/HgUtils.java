@@ -50,6 +50,7 @@ import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.net.URL;
+import java.text.SimpleDateFormat;
 import java.util.List;
 import java.util.Arrays;
 import java.util.ArrayList;
@@ -80,6 +81,7 @@ import org.openide.windows.IOProvider;
 import org.openide.windows.InputOutput;
 import org.openide.windows.OutputWriter;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.logging.Level;
 import java.util.regex.Matcher;
@@ -123,6 +125,37 @@ public class HgUtils {
 
     private static HashMap<String, Set<Pattern>> ignorePatterns;
 
+    /**
+     * addDaysToDate - add days (+days) or subtract (-days) from the given date
+     *
+     * @param int days to add or substract
+     * @return Date new date that has been calculated
+     */
+    public static Date addDaysToDate(Date date, int days) {
+        Calendar c = Calendar.getInstance();
+        c.setTime(date);
+        c.add(Calendar.DATE, days);
+        return c.getTime();
+    }   
+    /**
+     * getTodaysDateStr - return todays date as a YYYY-MM-DD string
+     *
+     * @return String todays date YYYY-MM-DD string
+     */
+    public static String getTodaysDateStr() {
+        Date todaysDate = new Date();
+        return new SimpleDateFormat("yyyy-MM-dd").format(todaysDate); // NOI18N
+    }   
+    /**
+     * getLastWeeksDateStr - return last weeks date as a YYYY-MM-DD string
+     *
+     * @return String last weeks YYYY-MM-DD date string
+     */
+    public static String getLastWeeksDateStr() {
+        Date lastWeeksDate = HgUtils.addDaysToDate(new Date(), -7);
+        return new SimpleDateFormat("yyyy-MM-dd").format(lastWeeksDate); // NOI18N
+    }   
+    
     /**
      * isSolaris - check you are running onthe Solaris OS
      *
