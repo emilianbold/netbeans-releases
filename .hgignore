@@ -6,7 +6,6 @@
 \.DS_Store$
 \.orig$
 \.rej$
-derby\.log$
 manifest-subst\.mf$
 ^nbbuild/antsrc/org/netbeans/nbbuild/extlibs/external\.pyc$
 ^o.apache.tools.ant.module/external/lib$
