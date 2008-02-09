@@ -102,23 +102,26 @@ public class MakeSources implements Sources, AntProjectListener {
             Set<String> set = new HashSet<String>();
             
             // Add external folders to sources.
-            Item[] projectItems = epd.getProjectItems();
-            if (projectItems != null) {
-                for (int i = 0; i < projectItems.length; i++) {
-                    Item item = projectItems[i];
-                    String name = item.getPath();
-                    if (!IpeUtils.isPathAbsolute(name)) {
-                        continue;
+            if (epd.getVersion() < 41) {
+                Item[] projectItems = epd.getProjectItems();
+                if (projectItems != null) {
+                    for (int i = 0; i < projectItems.length; i++) {
+                        Item item = projectItems[i];
+                        String name = item.getPath();
+                        if (!IpeUtils.isPathAbsolute(name)) {
+                            continue;
+                        }
+                        File file = new File(name);
+                        if (!file.exists()) {
+                            continue;
+                        }
+                        if (!file.isDirectory()) {
+                            file = file.getParentFile();
+                        }
+                        name = file.getPath();
+                        set.add(name);
+                        epd.getSourceRootsRaw().add(IpeUtils.toRelativePath(epd.getBaseDir(), name));
                     }
-                    File file = new File(name);
-                    if (!file.exists()) {
-                        continue;
-                    }
-                    if (!file.isDirectory()) {
-                        file = file.getParentFile();
-                    }
-                    name = file.getPath();
-                    set.add(name);
                 }
             }
             // Add source roots to set (>= V41)
