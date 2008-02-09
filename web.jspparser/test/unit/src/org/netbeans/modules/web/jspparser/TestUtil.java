@@ -88,6 +88,9 @@ final class TestUtil {
 
         // module system
         Lookup.getDefault().lookup(ModuleInfo.class);
+
+        // unzip test project
+        TestUtil.getProject(test, "project3");
     }
 
     static FileObject getFileInWorkDir(String path, NbTestCase test) throws Exception {
@@ -119,7 +122,7 @@ final class TestUtil {
     static FileObject getProjectFile(NbTestCase test, String projectFolderName, String filePath) throws Exception {
         Project project = getProject(test, projectFolderName);
         FileObject fo = project.getProjectDirectory().getFileObject(filePath);
-            NbTestCase.assertNotNull("Project file should exist: " + filePath, fo);
+        NbTestCase.assertNotNull("Project file should exist: " + filePath, fo);
 
         return fo;
     }
