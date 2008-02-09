@@ -100,8 +100,9 @@ public class MakeSources implements Sources, AntProjectListener {
         if (pd != null) {
             MakeConfigurationDescriptor epd = (MakeConfigurationDescriptor) pd;
             Set<String> set = new HashSet<String>();
-            Item[] projectItems = epd.getProjectItems();
+            
             // Add external folders to sources.
+            Item[] projectItems = epd.getProjectItems();
             if (projectItems != null) {
                 for (int i = 0; i < projectItems.length; i++) {
                     Item item = projectItems[i];
@@ -120,16 +121,23 @@ public class MakeSources implements Sources, AntProjectListener {
                     set.add(name);
                 }
             }
-            // Add buildfolder from makefile projects to sources. See IZ 90190.
-            Configuration[] confs = epd.getConfs().getConfs();
-            for (int i = 0; i < confs.length; i++) {
-                MakeConfiguration makeConfiguration = (MakeConfiguration) confs[i];
-                if (makeConfiguration.isMakefileConfiguration()) {
-                    MakefileConfiguration makefileConfiguration = makeConfiguration.getMakefileConfiguration();
-                    String path = makefileConfiguration.getAbsBuildCommandWorkingDir();
-                    set.add(path);
-                }
+            // Add source roots to set
+            List<String> list = epd.getAbsoluteSourceRoots();
+            for (String sr : list) {
+                set.add(sr);
             }
+            
+            // Add buildfolder from makefile projects to sources. See IZ 90190.
+//            Configuration[] confs = epd.getConfs().getConfs();
+//            for (int i = 0; i < confs.length; i++) {
+//                MakeConfiguration makeConfiguration = (MakeConfiguration) confs[i];
+//                if (makeConfiguration.isMakefileConfiguration()) {
+//                    MakefileConfiguration makefileConfiguration = makeConfiguration.getMakefileConfiguration();
+//                    String path = makefileConfiguration.getAbsBuildCommandWorkingDir();
+//                    set.add(path);
+//                }
+//            }
+            
             for (String name : set) {
                 String displayName = name;
                 int index1 = displayName.lastIndexOf(File.separatorChar);
@@ -185,5 +193,9 @@ public class MakeSources implements Sources, AntProjectListener {
 
     public void propertiesChanged(AntProjectEvent ev) {
         // ignore
+    }
+    
+    public void sourceRootsChanged() {
+        fireChange();
     }
 }

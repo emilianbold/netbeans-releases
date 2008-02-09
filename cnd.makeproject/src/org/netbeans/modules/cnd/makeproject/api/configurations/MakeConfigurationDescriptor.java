@@ -68,6 +68,7 @@ import org.netbeans.modules.cnd.makeproject.configurations.ConfigurationXMLWrite
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
 import org.netbeans.modules.cnd.makeproject.MakeProject;
 import org.netbeans.modules.cnd.makeproject.MakeProjectType;
+import org.netbeans.modules.cnd.makeproject.MakeSources;
 import org.netbeans.modules.cnd.makeproject.NativeProjectProvider;
 import org.netbeans.modules.cnd.makeproject.api.remote.FilePathAdaptor;
 import org.netbeans.modules.cnd.makeproject.ui.MakeLogicalViewProvider;
@@ -105,6 +106,7 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor impleme
     private Folder externalFileItems = null;
     private Folder rootFolder = null;
     private HashMap projectItems = null;
+    private List<String> sourceRoots = null;
     private Set<ChangeListener> projectItemsChangeListeners = new HashSet<ChangeListener>();
     private NativeProject nativeProject = null;
     public static String DEFAULT_PROJECT_MAKFILE_NAME = "Makefile"; // NOI18N
@@ -115,6 +117,7 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor impleme
         this.baseDir = baseDir;
         rootFolder = new Folder(this, null, "root", "root", true); // NOI18N
         projectItems = new HashMap();
+        sourceRoots = new ArrayList<String>();
         setModified(true);
         ToolsPanel.addCompilerSetModifiedListener(this);
     }
@@ -190,7 +193,7 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor impleme
                 externalFileItems.addItem(new Item((String)importantItems.next()));
             }
         }
-        addSourceFilesFromFolders(sourceFileFolders, false);
+        addSourceFilesFromFolders(sourceFileFolders, false, false);
         setModified(true);
     }
     
@@ -594,6 +597,45 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor impleme
         return subProjects;
     }
     
+    private void addSourceRoot(String path) {
+        path = IpeUtils.toRelativePath(getBaseDir(), path);
+        synchronized (sourceRoots) {
+            sourceRoots.add(path);
+        }
+        setModified();
+    }
+    
+    /*
+     * Return real list
+     */
+    public List<String> getSourceRootsRaw() {
+        return sourceRoots;
+    }
+    
+    /*
+     * return copy
+     */
+    public List<String> getSourceRoots() {
+        List<String> copy;
+        synchronized(sourceRoots) {
+            copy = new ArrayList<String>(sourceRoots);
+        }
+        return copy;
+    }
+    
+    /*
+     * return copy and convert to absolute
+     */
+    public List<String> getAbsoluteSourceRoots() {
+        List<String> copy = new ArrayList<String>();
+        synchronized(sourceRoots) {
+            for (String sr : sourceRoots) {
+                copy.add(IpeUtils.toAbsolutePath(baseDir, sr));
+            }
+        }
+        return copy;
+    }
+    
     private NativeProjectProvider getNativeProject() {
         if (nativeProject == null) {
             FileObject fo = FileUtil.toFileObject(new File(baseDir));
@@ -631,15 +673,15 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor impleme
         }
     }
     
-    public void addSourceFilesFromFolders(Iterator sourceFileFolders, boolean acrynchron) {
-        addSourceFilesFromFolders(rootFolder, sourceFileFolders, acrynchron);
+    public void addSourceFilesFromFolders(Iterator sourceFileFolders, boolean acrynchron, boolean notify) {
+        addSourceFilesFromFolders(rootFolder, sourceFileFolders, acrynchron, notify);
     }
     
-    public void addSourceFilesFromFolders(Folder folder, Iterator sourceFileFoldersIterator, boolean acrynchron) {
+    public void addSourceFilesFromFolders(Folder folder, Iterator sourceFileFoldersIterator, boolean acrynchron, boolean notify) {
         if (sourceFileFoldersIterator == null)
             return;
         if (acrynchron)
-            new AddFilesThread(sourceFileFoldersIterator, folder).start();
+            new AddFilesThread(sourceFileFoldersIterator, folder, notify).start();
         else {
             while (sourceFileFoldersIterator.hasNext()) {
                 ArrayList filesAdded = new ArrayList();
@@ -648,6 +690,15 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor impleme
                 addFiles(top, folderEntry.getFile(), folderEntry.isAddSubfoldersSelected(), folderEntry.getFileFilter(), null, filesAdded);
                 folder.addFolder(top);
                 getNativeProject().fireFilesAdded(filesAdded);
+                
+                addSourceRoot(folderEntry.getFile().getPath());
+            }
+            if (notify) {
+                // Notify that list has changed
+                MakeSources makeSources = (MakeSources)project.getLookup().lookup(MakeSources.class);
+                if (makeSources != null) {
+                    makeSources.sourceRootsChanged();
+                }
             }
         }
     }
@@ -656,10 +707,12 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor impleme
         Iterator iterator;
         Folder folder;
         private ProgressHandle handle;
+        private boolean notify;
         
-        AddFilesThread(Iterator iterator, Folder folder) {
+        AddFilesThread(Iterator iterator, Folder folder, boolean notify) {
             this.iterator = iterator;
             this.folder = folder;
+            this.notify = notify;
             handle = ProgressHandleFactory.createHandle(getString("AddingFilesTxt"));
         }
         public void run() {
@@ -672,11 +725,19 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor impleme
                     Folder top = new Folder(folder.getConfigurationDescriptor(), folder, folderEntry.getFile().getName(), folderEntry.getFile().getName(), true);
                     addFiles(top, folderEntry.getFile(), folderEntry.isAddSubfoldersSelected(), folderEntry.getFileFilter(), handle, filesAdded);
                     folder.addFolder(top);
+                    addSourceRoot(folderEntry.getFile().getPath());
                 }
             } finally {
                 handle.finish();
             }
             getNativeProject().fireFilesAdded(filesAdded);
+            if (notify) {
+                // Notify that list has changed
+                MakeSources makeSources = (MakeSources)project.getLookup().lookup(MakeSources.class);
+                if (makeSources != null) {
+                    makeSources.sourceRootsChanged();
+                }
+            }
         }
     }
     
