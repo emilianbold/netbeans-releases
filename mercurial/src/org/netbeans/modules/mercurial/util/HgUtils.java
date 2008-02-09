@@ -50,6 +50,7 @@ import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.net.URL;
+import java.text.SimpleDateFormat;
 import java.util.List;
 import java.util.Arrays;
 import java.util.ArrayList;
@@ -80,6 +81,7 @@ import org.openide.windows.IOProvider;
 import org.openide.windows.InputOutput;
 import org.openide.windows.OutputWriter;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.logging.Level;
 import java.util.regex.Matcher;
@@ -95,7 +97,9 @@ import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.queries.SharabilityQuery;
+import org.netbeans.modules.mercurial.HgProgressSupport;
 import org.openide.awt.HtmlBrowser;
+import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
 import org.openide.windows.OutputListener;
 
@@ -121,6 +125,37 @@ public class HgUtils {
 
     private static HashMap<String, Set<Pattern>> ignorePatterns;
 
+    /**
+     * addDaysToDate - add days (+days) or subtract (-days) from the given date
+     *
+     * @param int days to add or substract
+     * @return Date new date that has been calculated
+     */
+    public static Date addDaysToDate(Date date, int days) {
+        Calendar c = Calendar.getInstance();
+        c.setTime(date);
+        c.add(Calendar.DATE, days);
+        return c.getTime();
+    }   
+    /**
+     * getTodaysDateStr - return todays date as a YYYY-MM-DD string
+     *
+     * @return String todays date YYYY-MM-DD string
+     */
+    public static String getTodaysDateStr() {
+        Date todaysDate = new Date();
+        return new SimpleDateFormat("yyyy-MM-dd").format(todaysDate); // NOI18N
+    }   
+    /**
+     * getLastWeeksDateStr - return last weeks date as a YYYY-MM-DD string
+     *
+     * @return String last weeks YYYY-MM-DD date string
+     */
+    public static String getLastWeeksDateStr() {
+        Date lastWeeksDate = HgUtils.addDaysToDate(new Date(), -7);
+        return new SimpleDateFormat("yyyy-MM-dd").format(lastWeeksDate); // NOI18N
+    }   
+    
     /**
      * isSolaris - check you are running onthe Solaris OS
      *
@@ -148,7 +183,7 @@ public class HgUtils {
     public static List<String> replaceHttpPassword(List<String> list){
         if(list == null) return null;
 
-        List<String> out = new ArrayList(list.size());
+        List<String> out = new ArrayList<String>(list.size());
         for(String s: list){
             out.add(replaceHttpPassword(s));
         } 
@@ -275,7 +310,8 @@ public class HgUtils {
 
     public static boolean isIgnored(File file, boolean checkSharability){
         if (file == null) return false;
-        String name = file.getPath();
+        String path = file.getPath();
+        String name = file.getName();
         File topFile = Mercurial.getInstance().getTopmostManagedParent(file);
         
         // We assume that the toplevel directory should not be ignored.
@@ -295,7 +331,7 @@ public class HgUtils {
 
         for (Iterator i = patterns.iterator(); i.hasNext();) {
             Pattern pattern = (Pattern) i.next();
-            if (pattern.matcher(name).find()) {
+            if (pattern.matcher(path).find()) {
                 return true;
             }
         }
@@ -304,7 +340,7 @@ public class HgUtils {
         if (checkSharability) {
             int sharability = SharabilityQuery.getSharability(file);
             if (sharability == SharabilityQuery.NOT_SHARABLE) return true;
-        }
+            }
         return false;
     }
 

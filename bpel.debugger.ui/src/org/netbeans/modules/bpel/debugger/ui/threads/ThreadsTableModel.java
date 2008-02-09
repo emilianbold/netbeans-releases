@@ -58,6 +58,10 @@ public class ThreadsTableModel implements TableModel, Constants {
             return "";
         }
         
+        if (object instanceof ThreadsTreeModel.Dummy) {
+            return "";
+        }
+        
         if (object instanceof JToolTip) {
             final Object realObject = ((JToolTip) object).
                     getClientProperty("getShortDescription"); // NOI18N

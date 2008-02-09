@@ -88,6 +88,11 @@ made subject to such option by the copyright holder.
         <!-- Add XTestIDEHandler to IDE which tracks internal errors. 
              If exception or error appear, the test is signed as error. -->
         <property name="xtest.ide.handler" value="true"/>
+        <!-- BlacklistedClassesHandler support -->
+        <property name="xtest.ide.blacklist.txt" location="${xtest.ide.blacklist}"/>
+        <condition property="xtest.ide.blacklist.args" value=" -J-Dorg.netbeans.ProxyClassLoader.level=ALL -J-Dxtest.ide.blacklist=${xtest.ide.blacklist.txt} " else="">
+            <isset property="xtest.ide.blacklist"/>
+        </condition>            
         <!-- Use prebuilt JDK mdr storage at specified location. It sets 
              IDE option -J-Dprebuilt.storage.dir -->
         <property name="xtest.ide.mdrstorage" location="${jdkhome}/mdrstorage"/>
@@ -262,6 +267,7 @@ made subject to such option by the copyright holder.
 -J-Dxtest.userdir=&quot;${xtest.userdir}&quot;
 -J-Dxtest.ide.use.classloader=${xtest.ide.use.classloader}
 -J-Dprebuilt.storage.dir=&quot;${xtest.ide.mdrstorage}&quot;
+${xtest.ide.blacklist.args}
 ${xtest.ide.branding}
 ${xtest.ide.commandline.jvmargs} ${xtest.ide.commandline.suffix}
 ${xtest.ide.coverage.args}"/>

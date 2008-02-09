@@ -37,8 +37,14 @@ public class ProcessExecutionNodeModel implements NodeModel {
             final Object object) throws UnknownTypeException {
         if (object == TreeModel.ROOT) {
             return NbBundle.getMessage(
-                ProcessExecutionNodeModel.class, 
-                "CTL_PEV_Column_Name"); // NOI18N
+                    ProcessExecutionNodeModel.class, 
+                    "CTL_PEV_Column_Name"); // NOI18N
+        }
+        
+        if (object instanceof ProcessExecutionTreeModel.Dummy) {
+            return NbBundle.getMessage(
+                    ProcessExecutionNodeModel.class, 
+                    "CTL_PEV_Empty_Model"); // NOI18N
         }
         
         return Helper.getDisplayName(object, true);
@@ -53,6 +59,10 @@ public class ProcessExecutionNodeModel implements NodeModel {
                 "CTL_PEV_Column_Name_Tooltip"); // NOI18N
         }
         
+        if (object instanceof ProcessExecutionTreeModel.Dummy) {
+            getDisplayName(object);
+        }
+        
         return Helper.getDisplayName(object, false);
     }
     
@@ -63,16 +73,22 @@ public class ProcessExecutionNodeModel implements NodeModel {
             return Constants.ROOT_ICON;
         } 
         
+        if (object instanceof ProcessExecutionTreeModel.Dummy) {
+            return null;
+        }
+        
         return Helper.getIconBase(object);
     }
     
     /**{@inheritDoc}*/
-    public void addModelListener(final ModelListener listener) {
+    public void addModelListener(
+            final ModelListener listener) {
         // does nothing
     }
     
     /**{@inheritDoc}*/
-    public void removeModelListener(final ModelListener listener) {
+    public void removeModelListener(
+            final ModelListener listener) {
         // does nothing
     }
 }

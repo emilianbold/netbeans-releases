@@ -1,8 +1,10 @@
-import os, re, urllib2, sha, inspect, platform
+import os, re, urllib2, sha, inspect
 from mercurial import util, httprepo
 
-if map(int, platform.python_version_tuple()) < [2, 4, 4]:
-    raise util.Abort('Requires Python 2.4.4+ (2.5.1 preferred)')
+# XXX platform module does not seem to be loadable on Windows:
+#import platform
+#if map(int, platform.python_version_tuple()) < [2, 4, 4]:
+#    raise util.Abort('Requires Python 2.4.4+ (2.5.1 preferred)')
 
 # Workaround for a Python bug (in linecache.py?):
 # http://bugs.python.org/issue1728
@@ -66,6 +68,7 @@ def _download_to_cache(url, ui, sha1, filename, cachefile):
     return data
 
 def download(s, cmd, ui=None, filename=None, **kwargs):
+    cmd = re.sub(r'^download: *', '', cmd)
     filename = _filename(filename)
     ui = _ui(ui)
     n = _trim(filename)
@@ -94,6 +97,7 @@ def download(s, cmd, ui=None, filename=None, **kwargs):
     return data
 
 def upload(s, cmd, ui=None, repo=None, filename=None, **kwargs):
+    cmd = re.sub(r'^upload: *', '', cmd)
     filename = _filename(filename)
     ui = _ui(ui)
     repo = _repo(repo)
