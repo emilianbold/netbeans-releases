@@ -46,20 +46,16 @@ import java.awt.datatransfer.UnsupportedFlavorException;
 import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
-import java.util.ArrayList;
 import java.util.List;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.Arrays;
 import javax.swing.Action;
 import org.netbeans.modules.websvc.core.WebServiceReference;
 import org.netbeans.modules.websvc.core.WebServiceTransferable;
 import org.netbeans.modules.websvc.manager.model.WebServiceListModel;
 import org.netbeans.modules.websvc.saas.model.WsdlSaas;
-import org.netbeans.modules.websvc.saas.spi.SaasNodeActionsProvider;
-import org.netbeans.modules.websvc.saas.ui.actions.DeleteServiceAction;
-import org.netbeans.modules.websvc.saas.ui.actions.RefreshServiceAction;
-import org.netbeans.modules.websvc.saas.ui.actions.ViewApiDocAction;
-import org.netbeans.modules.websvc.saas.util.SaasUtil;
-import org.openide.nodes.AbstractNode;
+import org.netbeans.modules.websvc.saas.ui.actions.ViewWSDLAction;
 import org.openide.nodes.Node;
 import org.openide.nodes.PropertySupport;
 import org.openide.nodes.Sheet;
@@ -74,25 +70,20 @@ import org.openide.util.lookup.InstanceContent;
  *
  * @author nam
  */
-public class WsdlSaasNode extends AbstractNode {
-    WsdlSaas saas;
+public class WsdlSaasNode extends SaasNode {
 
     public WsdlSaasNode(WsdlSaas saas) {
         this(saas, new InstanceContent());
     }
     
     protected WsdlSaasNode(WsdlSaas saas, InstanceContent content) {
-        super(new WsdlSaasNodeChildren(saas));
-        this.saas = saas;
+        super(new WsdlSaasNodeChildren(saas), saas);
         content.add(saas);
     }
-
-    public String getDisplayName() {
-        return saas.getDisplayName();
-    }
     
-    public String getShortDescription() {
-        return saas.getDescription();
+    @Override
+    public WsdlSaas getSaas() {
+        return (WsdlSaas) super.getSaas();
     }
     
     private static final java.awt.Image ICON =
@@ -110,22 +101,15 @@ public class WsdlSaasNode extends AbstractNode {
 
     @Override
     public Action[] getActions(boolean context) {
-        List<Action> actions = new ArrayList<Action>();
-        for (SaasNodeActionsProvider ext : SaasUtil.getSaasNodeActionsProviders()) {
-            for (Action a : ext.getSaasActions(this.getLookup())) {
-                actions.add(a);
-            }
-        }
-        actions.add(SystemAction.get(ViewApiDocAction.class));
-        actions.add(SystemAction.get(DeleteServiceAction.class));
-        actions.add(SystemAction.get(RefreshServiceAction.class));
+        List<Action> actions = new ArrayList<Action>(Arrays.asList(super.getActions(context)));
+        actions.add(SystemAction.get(ViewWSDLAction.class));
 
         return actions.toArray(new Action[actions.size()]);
     }
 
     @Override
     public void destroy() throws IOException{
-        WebServiceListModel.getInstance().removeWebService(saas.getWsdlData().getId());
+        WebServiceListModel.getInstance().removeWebService(getSaas().getWsdlData().getId());
         super.destroy();
     }
     
@@ -180,7 +164,7 @@ public class WsdlSaasNode extends AbstractNode {
     
     @Override
     public Transferable clipboardCopy() throws IOException {
-        if (!saas.getWsdlData().isResolved()) {
+        if (! getSaas().getWsdlData().isResolved()) {
             return super.clipboardCopy();
         }
         
@@ -191,7 +175,7 @@ public class WsdlSaasNode extends AbstractNode {
             final Transferable wsTransferable = super.clipboardCopy();
             final Transferable webserviceTransferable = ExTransferable.create(
                     new WebServiceTransferable(new WebServiceReference(
-                    getWsdlURL(), saas.getWsdlModel().getName(), "")));
+                    getWsdlURL(), getSaas().getWsdlModel().getName(), "")));
             
             DataFlavor[] portFlavors = portTransferable.getTransferDataFlavors();
             DataFlavor[] wsFlavors = wsTransferable.getTransferDataFlavors();

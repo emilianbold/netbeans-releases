@@ -149,17 +149,17 @@ public class WarIncludesUiSupport {
         }
     }
 
-    public static void addJarFiles(File files[], ClasspathTableModel tableModel) {
-        Object[][] newData = new Object[data.length + files.length][2];
+    public static void addJarFiles(String filePaths[], File base, ClasspathTableModel tableModel) {
+        Object[][] newData = new Object[data.length + filePaths.length][2];
         for (int i = 0; i < data.length; i++)
             newData[i] = data[i];
-        for (int i = 0; i < files.length; i++) {
-            newData[data.length + i][0] = ClassPathSupport.Item.create (files[i], null, ClassPathSupport.Item.PATH_IN_WAR_APPLET);
+        for (int i = 0; i < filePaths.length; i++) {
+            newData[data.length + i][0] = ClassPathSupport.Item.create (filePaths[i], base, null, ClassPathSupport.Item.PATH_IN_WAR_APPLET);
             newData[data.length + i][1] = ClassPathSupport.Item.PATH_IN_WAR_APPLET;
         }
         
         data = newData;
-        tableModel.fireTableRowsInserted(data.length, data.length + files.length - 1);
+        tableModel.fireTableRowsInserted(data.length, data.length + filePaths.length - 1);
     }
     
     public static void addArtifacts(AntArtifactChooser.ArtifactItem artifactItems[], ClasspathTableModel tableModel) {
