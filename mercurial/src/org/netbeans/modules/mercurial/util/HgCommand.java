@@ -2213,6 +2213,7 @@ public class HgCommand {
         List<String> list = exec(command);
         if (!list.isEmpty() &&
              isErrorAbort(list.get(list.size() -1))) {
+            HgUtils.outputMercurialTab(list); // need the failure info from import
             handleError(command, list, NbBundle.getMessage(HgCommand.class, "MSG_IMPORT_FAILED"));
         }
         return list;

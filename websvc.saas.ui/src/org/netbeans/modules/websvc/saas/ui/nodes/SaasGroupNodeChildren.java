@@ -45,6 +45,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.Collections;
+import org.netbeans.modules.websvc.saas.model.CustomSaas;
 import org.netbeans.modules.websvc.saas.model.SaasGroup;
 import org.netbeans.modules.websvc.saas.model.SaasServicesModel;
 import org.netbeans.modules.websvc.saas.model.WadlSaas;
@@ -101,7 +102,9 @@ public class SaasGroupNodeChildren extends Children.Keys<Object> implements Prop
         } else if (key instanceof WadlSaas) {
             return new Node[] { new WadlSaasNode((WadlSaas)key) };
         } else if (key instanceof WsdlSaas) {
-            //TODO
+            return new Node[] { new WsdlSaasNode((WsdlSaas) key) };
+        } else if (key instanceof CustomSaas) {
+            return new Node[] { new CustomSaasNode((CustomSaas) key) };
         }
         return new Node[0];
     }

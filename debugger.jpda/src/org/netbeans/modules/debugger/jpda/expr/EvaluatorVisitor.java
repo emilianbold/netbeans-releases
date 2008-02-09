@@ -1152,6 +1152,7 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
                     throw new IllegalStateException("No current instance available.");
                 }
             case LOCAL_VARIABLE:
+            case EXCEPTION_PARAMETER:
                 ve = (VariableElement) elm;
                 String varName = ve.getSimpleName().toString();
                 try {

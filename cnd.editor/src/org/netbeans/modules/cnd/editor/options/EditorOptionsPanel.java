@@ -100,6 +100,7 @@ public class EditorOptionsPanel extends javax.swing.JPanel implements ActionList
         categories.add(AlignmentBracesPanel.getController(language));
         categories.add(SpacesPanel.getController(language));
         categories.add(BlankLinesPanel.getController(language));
+        categories.add(OtherPanel.getController(language));
         for (Category category : categories) {
             category.addPropertyChangeListener(this);
         }
