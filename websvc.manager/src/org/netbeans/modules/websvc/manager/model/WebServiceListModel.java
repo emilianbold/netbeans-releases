@@ -311,6 +311,10 @@ public class WebServiceListModel {
     }
     
     public WebServiceData getWebServiceData(String wsdlUrl, String serviceName) {
+        return getWebServiceData(wsdlUrl, serviceName, true);
+    }
+    
+    public WebServiceData getWebServiceData(String wsdlUrl, String serviceName, boolean synchronous) {
         final WebServiceData target = findWebServiceData(wsdlUrl, serviceName, false);
         if (target != null && ! target.isReady()) {
             Runnable run = new Runnable() {
@@ -322,7 +326,9 @@ public class WebServiceListModel {
             }
             }};
             Task t = WebServiceManager.getInstance().getRequestProcessor().post(run);
-            t.waitFinished();
+            if (synchronous) {
+                t.waitFinished();
+            }
         }
         return target;
     }
