@@ -44,13 +44,14 @@ made subject to such option by the copyright holder.
 <filesystem>
     <folder name="Databases">
         <folder name="Runtimes">
-            <file name="DerbyRuntime.instance">
-                <attr name="instanceCreate" methodvalue="org.netbeans.modules.derby.RegisterDerby.getDefault"/>
-                <attr name="instanceOf" stringvalue="org.netbeans.spi.db.explorer.DatabaseRuntime"/>
+            <file name="DerbyServerProvider.instance">
+                <attr name="instanceCreate" methodvalue="org.netbeans.modules.derby.DerbyServerProvider.getDefault"/>
+                <attr name="instanceOf" stringvalue="org.netbeans.spi.db.explorer.ServerProvider"/>
             </file>
         </folder>
     </folder>
 
+    <!--
     <folder name="Menu">
         <folder name="Tools">
             <file name="DerbyDatabaseAction.instance">
@@ -59,4 +60,5 @@ made subject to such option by the copyright holder.
             </file>
             </folder>
     </folder>
+    -->
 </filesystem>

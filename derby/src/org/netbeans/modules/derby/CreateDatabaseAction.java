@@ -105,7 +105,7 @@ public class CreateDatabaseAction extends CallableSystemAction {
     }
     
     void makeDatabase(String dbname, String user, String password) throws Exception {
-        RegisterDerby.getDefault().postCreateNewDatabase(dbname, user, password);
+        DerbyServerProvider.getDefault().postCreateNewDatabase(dbname, user, password);
     }
 
     protected boolean asynchronous() {
