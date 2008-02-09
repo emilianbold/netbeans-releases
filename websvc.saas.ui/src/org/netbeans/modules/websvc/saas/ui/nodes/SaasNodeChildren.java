@@ -39,47 +39,67 @@
 
 package org.netbeans.modules.websvc.saas.ui.nodes;
 
-import java.util.ArrayList;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.util.Collections;
-import org.netbeans.modules.websvc.saas.model.CustomSaas;
-import org.netbeans.modules.websvc.saas.model.SaasMethod;
+import java.util.List;
+import org.netbeans.modules.websvc.saas.model.Saas;
+import org.netbeans.modules.websvc.saas.model.SaasServicesModel;
+import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
+import org.openide.util.NbBundle;
+import org.openide.util.WeakListeners;
 
 /**
  *
  * @author nam
  */
-public class SaasNodeChildren extends Children.Keys<SaasMethod> {
-    private CustomSaas saas;
+public abstract class SaasNodeChildren<T> extends Children.Keys<T> implements PropertyChangeListener {
+    protected Saas saas;
     
-    public SaasNodeChildren(CustomSaas saas) {
+    public SaasNodeChildren(Saas saas) {
         this.saas = saas;
+        SaasServicesModel model = SaasServicesModel.getInstance();
+        model.addPropertyChangeListener(WeakListeners.propertyChange(this, model));
     }
 
+    public void propertyChange(PropertyChangeEvent evt) {
+        if (evt.getSource() == saas && evt.getPropertyName().equals(Saas.PROP_STATE)) {
+            if (evt.getNewValue() == Saas.State.READY) {
+                updateKeys();
+            }
+        }
+    }
+    
+    public Saas getSaas() {
+        return saas;
+    }
+    
     @Override
     protected void addNotify() {
         super.addNotify();
+        saas.toStateReady();
         updateKeys();
     }
 
     @Override
     protected void removeNotify() {
-        java.util.List<SaasMethod> emptyList = Collections.emptyList();
+        List<T> emptyList = Collections.emptyList();
         setKeys(emptyList);
         super.removeNotify();
     }
+    
+    protected abstract void updateKeys();
 
-    private void updateKeys() {
-        ArrayList<SaasMethod> keys = new ArrayList<SaasMethod>();
-        keys.addAll(saas.getMethods());
-        setKeys(keys.toArray(new SaasMethod[saas.getMethods().size()]));
-    }
-    
-    
-    @Override
-    protected Node[] createNodes(SaasMethod key) {
-        return new Node[] { new SaasMethodNode(saas, key) };
+    protected static final Node[] EMPTY = new Node[0];
+    protected static final AbstractNode[] WAIT_NODES = { new AbstractNode(Children.LEAF) };
+    static {
+        WAIT_NODES[0].setName(NbBundle.getMessage(WsdlSaasNodeChildren.class, "NODE_LOAD_MSG"));
+        WAIT_NODES[0].setIconBaseWithExtension("org/netbeans/modules/websvc/saas/ui/resources/wait.gif"); // NOI18N
     }
 
+    public boolean needsWaiting() {
+        return saas.getState() != Saas.State.READY;
+    }
 }

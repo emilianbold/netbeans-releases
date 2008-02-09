@@ -39,26 +39,28 @@
 
 package org.netbeans.modules.websvc.saas.model;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlPort;
 import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlService;
 import org.netbeans.modules.websvc.manager.model.WebServiceData;
 import org.netbeans.modules.websvc.manager.model.WebServiceListModel;
+import org.netbeans.modules.websvc.saas.model.jaxb.Method;
 import org.netbeans.modules.websvc.saas.model.jaxb.SaasMetadata;
 import org.netbeans.modules.websvc.saas.model.jaxb.SaasMetadata.CodeGen;
 import org.netbeans.modules.websvc.saas.model.jaxb.SaasServices;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.util.RequestProcessor.Task;
+import org.openide.util.WeakListeners;
 
 /**
  *
  * @author nam
  */
-public class WsdlSaas extends Saas {
+public class WsdlSaas extends Saas implements PropertyChangeListener {
     //TODO consolidate and remove
     private WebServiceData wsData;
 
@@ -81,42 +83,59 @@ public class WsdlSaas extends Saas {
             m.setCodeGen(cg);
         }
         cg.setPackageName(packageName);
-        //wsData = WebServiceListModel.getInstance().findWebServiceData(services.getUrl(), getServiceName());
-    }
-    
-    private WebServiceData findWebServiceData() {
-        WebServiceData data = WebServiceListModel.getInstance().findWebServiceData(getUrl(), null , false);
-        if (data != null) {
-            data.setName(wsData.getWsdlService().getJavaName());
-        }
-        return data;
     }
     
     public WebServiceData getWsdlData() {
-        if (wsData == null) {
-            wsData = findWebServiceData();
-            if (wsData == null) {
-                Task t = WebServiceListModel.getInstance().addWebService(getUrl(), null, null);
-                try {
-                    t.waitFinished(30000);
-                } catch(InterruptedException ex) {
-                    //log down there
-                }
-                wsData = findWebServiceData();
-            }
-            if (wsData == null) {
-                Logger.getLogger(this.getClass().getName()).log(Level.INFO, "Failed to add service "+getUrl());
-            }
+        if (getState() != State.READY) {
+            throw new IllegalStateException("Current state: " + getState() + ", expect: " + State.READY);
         }
         return wsData;
     }
     
+    @Override
+    public void toStateReady() {
+        if (wsData == null) {
+            wsData = WebServiceListModel.getInstance().getWebServiceData(getUrl(), "", false); //NOI18N
+            if (wsData != null) {
+                wsData.addPropertyChangeListener(WeakListeners.propertyChange(this, wsData));
+            }
+        }
+    }
+    
+    private List<WsdlPort> filterNonSoapPorts(List<WsdlPort> ports) {
+        List<WsdlPort> filterPorts = new java.util.ArrayList<WsdlPort>(ports.size());
+        
+        for (WsdlPort port : ports) {
+            if (port.getAddress() != null) {
+                filterPorts.add(port);
+            }
+        }
+        
+        return filterPorts;
+    }
+
+    public void propertyChange(PropertyChangeEvent evt) {
+        if (evt.getPropertyName().equals("resolved")) { //NOI18N
+            Object newValue = evt.getNewValue();
+            if (newValue instanceof Boolean) {
+                boolean resolved = ((Boolean) newValue).booleanValue();
+                if (resolved) {
+                    setState(State.READY);
+                } else {
+                    setState(State.UNINITIALIZED);
+                }
+
+            }
+            
+        }
+    }
+
     public WsdlService getWsdlModel() {
-        return wsData.getWsdlService();
+        return getWsdlData().getWsdlService();
     }
 
     public FileObject getLocalWsdlFile() {
-        return FileUtil.toFileObject(new File(wsData.getWsdlFile()));
+        return FileUtil.toFileObject(new File(getWsdlData().getWsdlFile()));
     }
     
     public List<Object> getPortsOrMethods() {
@@ -124,6 +143,11 @@ public class WsdlSaas extends Saas {
         if (methods != null && methods.size() > 0) {
             return new ArrayList<Object>(methods);
         }
-        return new ArrayList<Object>(getWsdlModel().getPorts());
+        return new ArrayList<Object>(filterNonSoapPorts(getWsdlModel().getPorts()));
+    }
+
+    @Override
+    protected WsdlSaasMethod createSaasMethod(Method method) {
+        return new WsdlSaasMethod(this, method);
     }
 }
