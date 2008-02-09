@@ -22,17 +22,9 @@
         <localizing-bundle>org.netbeans.modules.websvc.components.google.Bundle</localizing-bundle>
         <icon16>org/netbeans/modules/websvc/components/google/resources/google16.png</icon16>
         <icon32>....</icon32>
-        <group name="Google">
-            <group name="..."/>
-        </group>
+        <group name="Google"/>
         <code-gen>
-            <artifacts targets="java,servlet">
-                <artifact id="GoogleLib" type="library" url="location_of_libarry_jar"/>
-                <artifact id="GoogleUtil" type="template" requires="GoogleLib"
-                    url="Templates/WebServices/GoogleUtil.java"/>
-                <artifact id="GoogleMapResource" type="template" requires="GoogleUtil,GoogleLib"
-                    url="Templates/WebServices/GoogleMapResource.java"/>
-            </artifacts>
+            <artifacts targets="java,servlet"/>
         </code-gen>
         <!-- http-basic, api-key, custom -->
         <authentication profile="Templates/WebServices/profile.properties">
@@ -43,6 +35,14 @@
     <!-- The method elements are used to specified a subset of important operations
          in cases where the wsdl contains a large number of operations. -->
     <!-- TODO -->     
-    <methods/>
+    <methods>
+        <method name="GoogleAdSenseForContent" serviceName="AdSenseForContentServiceService"
+                portName="AdSenseForContentService" operationName="generateAdCode">
+            <documentation>
+                Allows a developer to generate ad code snippets to include in a publisher's web pages to start serving and displaying contextual advertising. When an end-user clicks through an ad, Google credits a payment.
+            </documentation>
+        </method>
+    </methods>
+        
     
 </saas-services>
