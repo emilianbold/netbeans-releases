@@ -80,7 +80,7 @@ import org.netbeans.modules.db.explorer.infos.DatabaseNodeInfo;
 import org.netbeans.modules.db.explorer.nodes.DatabaseNode;
 import org.netbeans.modules.db.explorer.nodes.RootNode;
 
-import org.netbeans.modules.db.runtime.DatabaseRuntimeManager;
+import org.netbeans.modules.db.server.ServerProviderManager;
 import org.netbeans.spi.db.explorer.DatabaseRuntime;
 import org.openide.explorer.ExplorerManager;
 import org.openide.nodes.Node;
@@ -612,7 +612,7 @@ public class DatabaseConnection implements DBConnection {
     }
 
     private void startRuntimes() {
-        DatabaseRuntime[] runtimes = DatabaseRuntimeManager.getDefault().getRuntimes(drv);
+        DatabaseRuntime[] runtimes = ServerProviderManager.getDefault().getRuntimes(drv);
         
         for (int i = 0; i < runtimes.length; i++) {
             DatabaseRuntime runtime = runtimes[i];

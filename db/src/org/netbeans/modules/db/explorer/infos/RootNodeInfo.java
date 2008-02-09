@@ -52,6 +52,8 @@ import org.netbeans.modules.db.explorer.DatabaseConnection;
 import org.netbeans.modules.db.explorer.DatabaseNodeChildren;
 import org.netbeans.modules.db.explorer.ConnectionList;
 import org.netbeans.modules.db.explorer.nodes.*;
+import org.netbeans.modules.db.server.ServerProviderManager;
+import org.netbeans.spi.db.explorer.ServerProvider;
 
 public class RootNodeInfo extends DatabaseNodeInfo implements ConnectionOwnerOperations {
     static final long serialVersionUID =-8079386805046070315L;
@@ -63,15 +65,18 @@ public class RootNodeInfo extends DatabaseNodeInfo implements ConnectionOwnerOpe
         }
         return rootInfo;
     }
+    @Override
     public void initChildren(Vector children) throws DatabaseException {
         try {
+            addServerProviders(children);
+
             DatabaseConnection[] cinfos = ConnectionList.getDefault().getConnections();
             for (int i = 0; i < cinfos.length; i++) {
                 DatabaseConnection cinfo = cinfos[i];
                 ConnectionNodeInfo ninfo = createConnectionNodeInfo(cinfo);
                 children.add(ninfo);
             }
-
+            
             Repository r = Repository.getDefault();
             FileSystem rfs = r.getDefaultFileSystem();
             FileObject rootFolder = rfs.getRoot();
@@ -88,6 +93,18 @@ public class RootNodeInfo extends DatabaseNodeInfo implements ConnectionOwnerOpe
         }
     }
 
+    private void addServerProviders(Vector children) throws DatabaseException {
+        ServerProvider[] providers = 
+                ServerProviderManager.getDefault().getServerProviders();
+        
+        for ( ServerProvider provider : providers ) {
+            if ( provider.canRegister() ) {
+                ServerNodeInfo ninfo = createServerNodeInfo(provider);
+                children.add(ninfo);
+            }
+        }
+    }
+
     private ConnectionNodeInfo createConnectionNodeInfo(DatabaseConnection dbconn) throws DatabaseException {
         ConnectionNodeInfo ninfo = (ConnectionNodeInfo)createNodeInfo(this, DatabaseNode.CONNECTION);
         ninfo.setUser(dbconn.getUser());
@@ -98,6 +115,12 @@ public class RootNodeInfo extends DatabaseNodeInfo implements ConnectionOwnerOpe
         return ninfo;
     }
 
+    private ServerNodeInfo createServerNodeInfo(ServerProvider provider) throws DatabaseException {
+        ServerNodeInfo ninfo = (ServerNodeInfo)createNodeInfo(this, DatabaseNode.SERVER);
+        ninfo.setProvider(provider);
+        ninfo.setName(provider.getDisplayName());
+        return ninfo;
+    }
     public void refreshChildren() throws DatabaseException {
         // refresh action is empty
     }

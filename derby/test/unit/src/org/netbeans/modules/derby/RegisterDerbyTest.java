@@ -56,14 +56,14 @@ public class RegisterDerbyTest extends TestBase {
     }
 
     public void testAcceptsDatabaseURL() {
-        DatabaseRuntime runtime = RegisterDerby.getDefault();
+        DatabaseRuntime runtime = DerbyServerProvider.getDefault();
         assertTrue(runtime.acceptsDatabaseURL("jdbc:derby://localhost"));
         assertTrue("Leading spaces should be ignored", runtime.acceptsDatabaseURL("   jdbc:derby://localhost"));
         assertFalse(runtime.acceptsDatabaseURL("jdbc:derby://remote"));
     }
 
     public void testCanStart() throws Exception {
-        DatabaseRuntime runtime = RegisterDerby.getDefault();
+        DatabaseRuntime runtime = DerbyServerProvider.getDefault();
 
         assertTrue(DerbyOptions.getDefault().getLocation().length() == 0);
         assertFalse(runtime.canStart());
