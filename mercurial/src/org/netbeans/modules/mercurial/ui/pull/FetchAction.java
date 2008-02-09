@@ -116,10 +116,6 @@ public class FetchAction extends ContextAction {
     }
 
     public boolean isEnabled() {
-        File root = HgUtils.getRootFile(context);
-        if (root == null)
-            return false;
-        else
-            return true;
+        return HgUtils.getRootFile(context) != null;
     } 
 }

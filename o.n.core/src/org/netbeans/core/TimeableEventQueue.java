@@ -235,16 +235,20 @@ implements Runnable {
     
         @Override
         public String getMessage() {
-            return threadDump("AWT Event Queue Thread Blocked", stack);
+            return threadDump("AWT Event Queue Thread Blocked", stack); // NOI18N
         }
         
         private static void appendThread(StringBuilder sb, String indent, Thread t, Map<Thread,StackTraceElement[]> data) {
             sb.append(indent).append("Thread ").append(t.getName()).append('\n');
             indent = indent.concat("  ");
             StackTraceElement[] arr = data.get(t);
-            for (StackTraceElement e : arr) {
-                sb.append(indent).append(e.getClassName()).append('.').append(e.getMethodName())
-                        .append(':').append(e.getLineNumber()).append('\n');
+            if (arr != null) {
+                for (StackTraceElement e : arr) {
+                    sb.append(indent).append(e.getClassName()).append('.').append(e.getMethodName())
+                            .append(':').append(e.getLineNumber()).append('\n');
+                }
+            } else {
+                sb.append(indent).append("no stacktrace info"); // NOI18N
             }
         }
 
