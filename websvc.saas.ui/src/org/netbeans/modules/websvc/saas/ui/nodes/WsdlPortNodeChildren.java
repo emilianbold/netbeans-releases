@@ -34,16 +34,42 @@
  * 
  * Contributor(s):
  * 
- * Portions Copyrighted 2007 Sun Microsystems, Inc.
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.debugger.gdb.utils;
+package org.netbeans.modules.websvc.saas.ui.nodes;
+
+import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlOperation;
+import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlPort;
+import org.netbeans.modules.websvc.saas.model.WsdlSaas;
+import org.openide.nodes.Children;
+import org.openide.nodes.Node;
 
 /**
  *
- * @author gordonp
+ * @author nam
  */
-public interface CommandBufferCallbackProc {
+public class WsdlPortNodeChildren extends Children.Keys<WsdlOperation>{
+    private WsdlSaas saas;
+    private WsdlPort port;
 
-    public void callback(String info);
+    public WsdlPortNodeChildren(WsdlSaas saas, WsdlPort port) {
+        this.saas = saas;
+        this.port = port;
+    }
+
+    @Override
+    protected void addNotify() {
+        super.addNotify();
+    }
+
+    @Override
+    protected void removeNotify() {
+        super.removeNotify();
+    }
+
+    @Override
+    protected Node[] createNodes(WsdlOperation key) {
+        return new Node[] { new WsdlMethodNode(saas, port, key) };
+    }
 }

@@ -630,7 +630,7 @@ public abstract class ModelSet implements FileChangeListener {
         private final URL[] urls;
         
         // Memory leak probing
-        private static final Logger TIMERS = Logger.getLogger("TIMER.projectClassLoaders"); // NOI18N
+        private static final Logger TIMERS = Logger.getLogger("TIMER.visualweb"); // NOI18N
         
         public ProjectClassLoader(URL[] urls, ClassLoader parent) {
             super(urls, parent);

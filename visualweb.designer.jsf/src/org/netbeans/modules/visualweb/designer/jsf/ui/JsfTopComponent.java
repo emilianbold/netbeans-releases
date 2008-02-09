@@ -202,7 +202,7 @@ public class JsfTopComponent extends AbstractJsfTopComponent /*SelectionTopComp*
     private DataObject jspDataObject;
             
     // memory leak probing
-    private static final Logger TIMERS = Logger.getLogger("TIMER.jsfTopComponents"); // NOI18N
+    private static final Logger TIMERS = Logger.getLogger("TIMER.visualweb"); // NOI18N
     
     private final JPanel panel = new JPanel();
     

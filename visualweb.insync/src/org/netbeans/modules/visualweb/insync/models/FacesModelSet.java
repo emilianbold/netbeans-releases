@@ -396,7 +396,7 @@ public class FacesModelSet extends ModelSet implements FacesDesignProject {
     private FacesContainer facesContainer;
 
     // Memory leak probing
-    private static final Logger TIMERS = Logger.getLogger("TIMER.facesModelSets"); // NOI18N
+    private static final Logger TIMERS = Logger.getLogger("TIMER.visualweb"); // NOI18N
     
     /**
      * @param project
