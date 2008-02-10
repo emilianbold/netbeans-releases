@@ -176,6 +176,8 @@ public class EvaluationException2 extends RuntimeException {
             msgParams = new String [] { params[0].toString() };
         else if (reason.equals("notExpression"))
             msgParams = new String [] {  };
+        else if (reason.equals("methOnArray"))
+            msgParams = new String [] {  };
         else {
             msgParams = new String [] { reason };
             reason = "unknownInternalError";

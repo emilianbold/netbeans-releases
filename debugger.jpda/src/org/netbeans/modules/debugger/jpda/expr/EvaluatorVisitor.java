@@ -251,27 +251,27 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
             }
         }
         ObjectReference objectReference;
-        ClassType type;
+        ReferenceType type;
         if (isStatic == null) {
-            if (object instanceof ClassType) {
-                type = (ClassType) object;
+            if (object instanceof ClassType || object instanceof ArrayType) {
+                type = (ReferenceType) object;
                 objectReference = null;
                 isStatic = Boolean.TRUE;
             } else if (object instanceof ObjectReference) {
                 objectReference = (ObjectReference) object;
-                type = (ClassType) objectReference.type();
+                type = (ReferenceType) objectReference.type();
             } else {
                 objectReference = evaluationContext.getFrame().thisObject();
-                type = (ClassType) evaluationContext.getFrame().location().declaringType();
+                type = (ReferenceType) evaluationContext.getFrame().location().declaringType();
             }
         } else if (isStatic) {
             objectReference = null;
-            if (object instanceof ClassType) {
-                type = (ClassType) object;
+            if (object instanceof ClassType || object instanceof ArrayType) {
+                type = (ReferenceType) object;
             } else if (object instanceof ObjectReference) {
-                type = (ClassType) ((ObjectReference) object).type();
+                type = (ReferenceType) ((ObjectReference) object).type();
             } else {
-                type = (ClassType) evaluationContext.getFrame().location().declaringType();
+                type = evaluationContext.getFrame().location().declaringType();
             }
         } else {
             if (object != null) {
@@ -282,7 +282,14 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
             if (objectReference == null) {
                 Assert2.error(arg0, "methodCallOnNull", methodName);
             }
-            type = (ClassType) objectReference.referenceType();
+            type = objectReference.referenceType();
+        }
+        ClassType cType;
+        if (type instanceof ArrayType) {
+            Assert2.error(arg0, "methOnArray");
+            return null;
+        } else {
+            cType = (ClassType) type;
         }
         Method method;
         if (paramTypes != null) {
@@ -293,7 +300,7 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
         if (method == null) {
             Assert2.error(arg0, "noSuchMethod", methodName, type.name());
         }
-        return invokeMethod(arg0, method, isStatic, type, objectReference, argVals, evaluationContext);
+        return invokeMethod(arg0, method, isStatic, cType, objectReference, argVals, evaluationContext);
     }
     
     /*private Method getConcreteMethod(ReferenceType type, String methodName, List<? extends ExpressionTree> typeArguments) {
