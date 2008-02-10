@@ -162,13 +162,11 @@ final class TestUtil {
             String dirName = zipName.substring(0, ix);
             File d = new File(destination, dirName);
             if (!(d.exists() && d.isDirectory())) {
-                System.out.println("Creating Directory: " + dirName);
                 if (!d.mkdirs()) {
-                    System.err.println("Warning: unable to mkdir " + dirName);
+                    NbTestCase.fail("Warning: unable to mkdir " + dirName);
                 }
             }
         }
-        System.err.println("Creating " + zipName);
         FileOutputStream os = new FileOutputStream(destination.getAbsolutePath() + "/" + zipName);
         InputStream is = zipFile.getInputStream(e);
         int n = 0;
