@@ -68,6 +68,7 @@ def _download_to_cache(url, ui, sha1, filename, cachefile):
     return data
 
 def download(s, cmd, ui=None, filename=None, **kwargs):
+    # To support dev versions of Hg with f8ad3b76e923 but not f3a8b5360100:
     cmd = re.sub(r'^download: *', '', cmd)
     filename = _filename(filename)
     ui = _ui(ui)
