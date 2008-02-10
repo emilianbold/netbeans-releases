@@ -60,6 +60,7 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.Item;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakefileConfiguration;
+import org.netbeans.modules.cnd.makeproject.api.remote.FilePathAdaptor;
 import org.netbeans.spi.project.support.ant.AntProjectEvent;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.AntProjectListener;
@@ -153,6 +154,7 @@ public class MakeSources implements Sources, AntProjectListener {
                         displayName = "..." + displayName.substring(index2); // NOI18N
                     }
                 }
+                displayName = FilePathAdaptor.naturalize(displayName);
                 h.addPrincipalSourceRoot(name, displayName, null, null);
                 h.addTypedSourceRoot(name, "generic", displayName, null, null); // NOI18N
             }

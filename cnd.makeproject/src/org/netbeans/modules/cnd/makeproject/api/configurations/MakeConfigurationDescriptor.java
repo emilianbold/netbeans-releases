@@ -603,6 +603,7 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor impleme
      */
     private void addSourceRoot(String path) {
         path = IpeUtils.toRelativePath(getBaseDir(), path);
+        path = FilePathAdaptor.normalize(path);
         if (IpeUtils.isPathAbsolute(path) || path.startsWith("..")) { // NOI18N
             synchronized (sourceRoots) {
                 sourceRoots.add(path);
