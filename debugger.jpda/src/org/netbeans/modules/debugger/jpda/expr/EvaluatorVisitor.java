@@ -1705,6 +1705,8 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
                     Assert2.error(arg0, "unknownType", className);
                 }
                 return classes.get(0);
+            case PACKAGE:
+                return (Value) Assert2.error(arg0, "notExpression");
             default:
                 throw new UnsupportedOperationException("Not supported yet."+" Tree = '"+arg0+"', element kind = "+elm.getKind());
         }
