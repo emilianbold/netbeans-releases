@@ -87,9 +87,13 @@ public class Breakpoint extends ActionsProviderSupport
     public void propertyChange(
             final PropertyChangeEvent event) {
         
-        setEnabled(
-                ActionsManager.ACTION_TOGGLE_BREAKPOINT, 
-                EditorUtil.getCurrentLine() != null);
+        final String currentViewName = EditorUtil.getOpenedDocumentViewName();
+        
+        boolean enabled = (EditorUtil.getCurrentLine() != null) &&
+                ("orch-designer".equals(currentViewName) || 
+                "bpelsource".equals(currentViewName));
+        
+        setEnabled(ActionsManager.ACTION_TOGGLE_BREAKPOINT, enabled);
     }
     
     // Private /////////////////////////////////////////////////////////////////
