@@ -41,6 +41,7 @@
 
 package org.netbeans.modules.web.jspparser_ext;
 
+import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.IOException;
@@ -53,7 +54,6 @@ import java.security.PermissionCollection;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Hashtable;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
@@ -130,23 +130,23 @@ public class WebAppParseSupport implements WebAppParseProxy, PropertyChangeListe
     ServletContext diskContext;
     private JspRuntimeContext rctxt;
     private URLClassLoader waClassLoader;
-    private URLClassLoader waContextClassLoader;
-    /** Maps File -> Long, holds timestamps for files used during classloading,
-     * namely: all jar files containing classes, and directories+subdirectories containing unpackaged classes. */
-    private final HashMap<File, Long> clRootsTimeStamps;
+    URLClassLoader waContextClassLoader;
     
     /**
-     * The mappings are cashed here.
+     * The library mappings are cashed here.
      */
-    private Map<String, String[]> mappings;
+    Map<String, String[]> mappings;
     
-    /** This is flag, whether the execute and compilation classpath for the web  project is actual.
-     *  The flag is set to false, when there is event, which notifies about change in the classpath.
-     *  The value is obtained before constructing the cache and classloaders.
+    /**
+     * This is flag, whether the execute and compilation classpath for the web project is actual.
+     * The flag is set to false, when there is event, which notifies about change in the classpath.
+     * The value is obtained before constructing the cache and classloaders.
      */
-    private boolean isClassPathCurrent;
+    private boolean isClassPathCurrent = false;
     
-    /** This is hashcode of the execution classpath, which is used for building classloader.
+    // XXX still true?
+    /**
+     * This is hashcode of the execution classpath, which is used for building classloader.
      * In checkClassesAreCurrent is used for fast check, whether the classpath was not changed.
      * The main reason is the web freeform, because the web freeform doesn't fire the change property.
      */
@@ -157,15 +157,16 @@ public class WebAppParseSupport implements WebAppParseProxy, PropertyChangeListe
         this.wm = wm;
         this.wmRoot = wm.getDocumentBase();
         fileSystemListener = new FileSystemListener();
-        wm.addPropertyChangeListener(this);
-        clRootsTimeStamps = new HashMap<File, Long>();
-        reinitOptions();
-        // register listener (listen to changes of tld files, web.xml)
+        initOptions(true);
+        // register file listener (listen to changes of tld files, web.xml)
         try {
             wm.getDocumentBase().getFileSystem().addFileChangeListener(fileSystemListener);
         } catch (FileStateInvalidException ex) {
             Exceptions.printStackTrace(ex);
         }
+        // register class path listener
+        ClassPath.getClassPath(wmRoot, ClassPath.COMPILE).addPropertyChangeListener(this);
+        ClassPath.getClassPath(wmRoot, ClassPath.EXECUTE).addPropertyChangeListener(this);
     }
     
     public JspParserAPI.JspOpenInfo getJspOpenInfo(FileObject jspFile, boolean useEditor
@@ -185,9 +186,14 @@ public class WebAppParseSupport implements WebAppParseProxy, PropertyChangeListe
         return DEFAULT_JSP_OPEN_INFO;
     }
     
-    synchronized void reinitOptions() {
+    private void reinitOptions() {
+        assert Thread.holdsLock(this);
+        initOptions(false);
+    }
+
+    private synchronized void initOptions(boolean firstTime) {
         if (LOG.isLoggable(Level.FINE)) {
-            LOG.fine("JSP parser reinitialized for WM " + FileUtil.toFile(wmRoot));
+            LOG.fine("JSP parser " + (firstTime ? "" : "re") + "initialized for WM " + FileUtil.toFile(wmRoot));
         }
         editorContext = new ParserServletContext(wmRoot, wm, true);
         diskContext = new ParserServletContext(wmRoot, wm, false);
@@ -206,14 +212,9 @@ public class WebAppParseSupport implements WebAppParseProxy, PropertyChangeListe
     }
     
     private void createClassLoaders() {
-        clRootsTimeStamps.clear();
-        
-        // libraries
-        
-        // WEB-INF/lib
+        // libraries in WEB-INF/lib
         // Looking for jars in WEB-INF/lib is mainly for tests. Can a user create a lib dir in the document base
         // and put here a jar?
-        
         FileObject webInf = org.netbeans.modules.web.api.webmodule.WebModule.getWebModule(wmRoot).getWebInf();
         Hashtable<URL, URL> tomcatTable = new Hashtable<URL, URL>();
         Hashtable<URL, URL> loadingTable = new Hashtable<URL, URL>();
@@ -273,7 +274,6 @@ public class WebAppParseSupport implements WebAppParseProxy, PropertyChangeListe
         
         waClassLoader = new ParserClassLoader(loadingURLs, tomcatURLs, getClass().getClassLoader());
         waContextClassLoader = new ParserClassLoader(loadingURLs, tomcatURLs, getClass().getClassLoader());
-        
     }
     
     private URL findInternalURL(FileObject fo) {
@@ -351,105 +351,28 @@ public class WebAppParseSupport implements WebAppParseProxy, PropertyChangeListe
      */
     public synchronized Map<String, String[]> getTaglibMap(boolean useEditor) throws IOException {
         // useEditor not needed, both caches are the same
-        if (mappings == null) {
+        // we have to clear all the caches when the class path is not current or the taglibmap is not initialized yet
+        boolean reinit = !isClassPathCurrent;
+        if (reinit) {
+            reinitOptions();
+        }
+        if (reinit || mappings == null) {
             mappings = new  HashMap<String, String[]>();
             fileSystemListener.reinitCaches();
         }
         return new HashMap<String, String[]>(mappings);
     }
     
-    private Map<String, String[]> getMappingsByReflection(TldLocationsCache lc) throws IOException {
-        if (!isClassPathCurrent) {
-            // if the classpath was changed, create new classloaders
-            if (!isClassPathCurrent) {
-                if (LOG.isLoggable(Level.FINE)) {
-                    LOG.fine("class path has changed");
-                }
-                reinitOptions();
-            }
-        }
-        return mappings;
-    }
-    
-    
     /**
      * Returns the classloader to be used by the JSP parser.
      * This classloader loads the classes belonging to the application
      * from both expanded directory structures and jar files.
      */
-    public URLClassLoader getWAClassLoader() {
-        if (!checkClassesAreCurrent()) {
+    public synchronized URLClassLoader getWAClassLoader() {
+        if (!isClassPathCurrent) {
             reinitOptions();
         }
         return waClassLoader;
-    }
-    
-    /**
-     * Checks whether the classes used by this web module have not changed since
-     * the last time the classloader was initialized.
-     * @return true if the classes are still the same (have not changed).
-     */
-    private boolean checkClassesAreCurrent() {
-        if (!isClassPathCurrent) {
-            if (LOG.isLoggable(Level.FINE)) {
-                LOG.fine("checkClassesAreCurrent(): class path has changed");
-            }
-            return false;
-        }
-        long timeStamp = 0;
-        if (LOG.isLoggable(Level.FINE)) {
-            LOG.fine("checkClassesAreCurrent(): check started for WM " + FileUtil.toFile(wmRoot));
-            timeStamp = System.currentTimeMillis();
-        }
-        if (clRootsTimeStamps == null) {
-            return false;
-        }
-        Iterator it = clRootsTimeStamps.entrySet().iterator();
-        while (it.hasNext()) {
-            Map.Entry e = (Map.Entry)it.next();
-            File f = (File)e.getKey();
-            if (LOG.isLoggable(Level.FINER)) {
-                LOG.finer(" -> checking file " + f);
-            }
-            if (!f.exists()) {
-                return false;
-            }
-            if (f.lastModified() != ((Long)e.getValue()).longValue()) {
-                return false;
-            }
-        }
-        ClassPath cp = ClassPath.getClassPath(wmRoot, ClassPath.EXECUTE);
-        // check whether the execution classpath was not changed
-        if (lastCheckedClasspath != cp.hashCode()){
-            return false;
-        }
-        // check whether the files on the execution classpath were not changed.
-        FileObject[] roots = cp.getRoots();
-        FileObject fo;
-        File file;
-        for (int i = 0 ; i < roots.length; i++){
-            URL url = findInternalURL(roots[i]);
-            if (!isUnexpectedLibrary(url)) {
-                fo = roots[i]; 
-                file =  null;
-                try {
-                    if (roots[i].getURL().getProtocol().equals("jar"))
-                        fo = FileUtil.getArchiveFile(roots[i]);
-                } catch (FileStateInvalidException ex) {
-                    ErrorManager.getDefault().notify(ex);
-                }
-                if (fo != null)
-                    file = FileUtil.toFile(fo);
-                if (!clRootsTimeStamps.containsKey(file)){
-                    return false;
-                }
-            }
-        }
-        if (LOG.isLoggable(Level.FINE)) {
-            long timeStamp2 = System.currentTimeMillis();
-            LOG.fine("checkClassesAreCurrent(): completed with result 'true', time " + (timeStamp2 - timeStamp));
-        }
-        return true;
     }
     
     public class RRef {
@@ -480,7 +403,6 @@ public class WebAppParseSupport implements WebAppParseProxy, PropertyChangeListe
                     ErrorManager.getDefault().annotate(e, NbBundle.getMessage(WebAppParseSupport.class, "MSG_errorDuringJspParsing"));
                     if (LOG.isLoggable(Level.FINE)) {
                         LOG.fine(e.getMessage());
-                        Exceptions.printStackTrace(e);
                     }
                     JspParserAPI.ErrorDescriptor error = constructErrorDescriptor(e, wmRoot, jspFile);
                     resultRef.result = new JspParserAPI.ParseResult(nbPageInfo, nbNodes, new JspParserAPI.ErrorDescriptor[] {error});
@@ -611,21 +533,18 @@ System.out.println("--------ENDSTACK------");        */
         }
     }
     
-    // IMPLEMENTATION OF PropertyChangeListener
-    
-    /** Handes the event of property change of libraries used by the web module.
-     * Reinitializes the classloader and other stuff.
+    /**
+     * Handles the event of property change of class path (source, run).
      */
-    public void propertyChange(java.beans.PropertyChangeEvent evt) {
-        String propName = evt.getPropertyName();
-        if (JspParserAPI.WebModule.PROP_LIBRARIES.equals(propName) ||
-                JspParserAPI.WebModule.PROP_PACKAGE_ROOTS.equals(propName)) {
-            // the classpath was changed, need to be done reinitOptions()
-            isClassPathCurrent = false;
+    public synchronized void propertyChange(PropertyChangeEvent evt) {
+        // classpath has channged => invalidate cache
+        if (LOG.isLoggable(Level.FINE)) {
+            LOG.fine("class path has changed");
         }
+        isClassPathCurrent = false;
     }
     
-    public static class JasperSystemClassLoader extends URLClassLoader{
+    public static class JasperSystemClassLoader extends URLClassLoader {
         private static final java.security.AllPermission ALL_PERM = new java.security.AllPermission();
         
         public JasperSystemClassLoader(URL[] urls, ClassLoader parent) {
@@ -684,19 +603,19 @@ System.out.println("--------ENDSTACK------");        */
     
     private static class InitTldLocationCacheThread extends Thread{
         
-        private TldLocationsCache cache;
+        private final TldLocationsCache cache;
         
-        InitTldLocationCacheThread(TldLocationsCache lc){
+        InitTldLocationCacheThread(TldLocationsCache lc) {
             super("Init TldLocationCache"); // NOI18N
             cache = lc;
         }
         
         public void run() {
             try {
-                Field initialized= TldLocationsCache.class.getDeclaredField("initialized"); // NOI18N
+                Field initialized = TldLocationsCache.class.getDeclaredField("initialized"); // NOI18N
                 initialized.setAccessible(true);
                 initialized.setBoolean(cache, false);
-                cache.getLocation("");
+                cache.getLocation(""); // NOI18N
             } catch (JasperException e) {
                 ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
             } catch (NoSuchFieldException e) {
@@ -705,7 +624,6 @@ System.out.println("--------ENDSTACK------");        */
                 ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
             }
         }
-        
     }
     
     final class FileSystemListener extends FileChangeAdapter {
