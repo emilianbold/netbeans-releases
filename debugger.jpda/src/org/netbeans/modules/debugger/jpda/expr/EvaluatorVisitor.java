@@ -1674,8 +1674,16 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
                     }
                 }
                 if (expression instanceof InterfaceType) {
+                    InterfaceType intrfc = (InterfaceType) expression;
                     if (fieldName.equals("class")) {
-                        return ((InterfaceType) expression).classObject();
+                        return intrfc.classObject();
+                    }
+                    Field f = intrfc.fieldByName(fieldName);
+                    if (f != null) {
+                        return intrfc.getValue(f);
+                    } else {
+                        Assert2.error(arg0, "unknownField", fieldName);
+                        return null;
                     }
                 }
                 if (expression instanceof ObjectReference) {
