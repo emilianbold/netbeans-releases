@@ -163,10 +163,16 @@ public class CacheTest extends NbTestCase {
 
         Map<String, String[]> taglibMap1 = jspParser.getTaglibMap(webModule);
 
+        String[] url = taglibMap1.get("http://java.sun.com/jstl/xml");
+        assertNull("Url should not be found", url);
+        
         // add file
         addXmlTld();
 
         Map<String, String[]> taglibMap2 = jspParser.getTaglibMap(webModule);
+
+        url = taglibMap2.get("http://java.sun.com/jstl/xml");
+        assertNotNull("Url should be found", url);
 
         String url1 = taglibMap1.get("http://java.sun.com/jstl/core")[0];
         String url2 = taglibMap2.get("http://java.sun.com/jstl/core")[0];
@@ -176,6 +182,7 @@ public class CacheTest extends NbTestCase {
         assertEquals("TagLibMaps should be equal", url1, url2);
 
         // cleanup
+        jspParser = null;
         removeXmlTld();
     }
 
@@ -190,12 +197,15 @@ public class CacheTest extends NbTestCase {
 
         Map<String, String[]> taglibMap1 = jspParser.getTaglibMap(webModule);
 
+        String[] url = taglibMap1.get("http://java.sun.com/jstl/xml");
+        assertNotNull("Url should be found", url);
+
         // touch file
         removeXmlTld();
 
         Map<String, String[]> taglibMap2 = jspParser.getTaglibMap(webModule);
 
-        String[] url = taglibMap2.get("http://java.sun.com/jstl/xml");
+        url = taglibMap2.get("http://java.sun.com/jstl/xml");
         assertNull("Url should not be found", url);
 
         String url1 = taglibMap1.get("/TestTagLibrary")[0];

@@ -100,23 +100,21 @@ public class IdeEnvironmentTest extends NbTestCase {
 
     // test for issue #70426
     public void testGetTagLibMap70426() throws Exception {
-
-        File projectFile = new File(getDataDir(), "emptyWebProject");
-        Project project = ProjectManager.getDefault().findProject(FileUtil.toFileObject(projectFile));
-        FileObject jspFo = project.getProjectDirectory().getFileObject("web/index.jsp");
-
         // first make sure that the library is not present
         removeLibrary("emptyWebProject", "jstl11");
 
+        FileObject jspFo = TestUtil.getProjectFile(this, "emptyWebProject", "web/index.jsp");
         JspParserAPI.WebModule wm = TestUtil.getWebModule(jspFo);
         Map library = JspParserFactory.getJspParser().getTaglibMap(wm);
-        System.out.println("map->" + library);
+        assertNull("The JSTL library should not be present.", library.get("http://java.sun.com/jsp/jstl/fmt"));
 
         addLibrary("emptyWebProject", "jstl11");
 
         library = JspParserFactory.getJspParser().getTaglibMap(wm);
-        System.out.println("map->" + library);
-        assertNotNull("The JSTL/core library was not returned.", library.get("http://java.sun.com/jsp/jstl/core"));
+        assertNotNull("The JSTL library should be present.", library.get("http://java.sun.com/jsp/jstl/fmt"));
+
+        // cleanup
+        removeLibrary("emptyWebProject", "jstl11");
     }
 
     public void testAddedJarFile() throws Exception {
@@ -138,10 +136,16 @@ public class IdeEnvironmentTest extends NbTestCase {
         assertNotNull(url2);
         assertNotSame("TagLibMaps should not be exactly the same", url1, url2);
         assertEquals("TagLibMaps should be equal", url1, url2);
+
+        // cleanup
+        jspParser = null;
+        removeLibrary("emptyWebProject", "junit");
     }
 
-    // this test relies on the previous test (adding jar file)
     public void testRemovedJarFile() throws Exception {
+        // init
+        addLibrary("emptyWebProject", "junit");
+
         JspParserAPI jspParser = JspParserFactory.getJspParser();
 
         FileObject jspFo = TestUtil.getProjectFile(this, "emptyWebProject", "/web/index.jsp");
@@ -149,7 +153,7 @@ public class IdeEnvironmentTest extends NbTestCase {
 
         Map<String, String[]> taglibMap1 = jspParser.getTaglibMap(webModule);
 
-        // add library
+        // remove library
         removeLibrary("emptyWebProject", "junit");
 
         Map<String, String[]> taglibMap2 = jspParser.getTaglibMap(webModule);
