@@ -598,17 +598,66 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor impleme
     }
     
     /*
-     * Add a root.
-     * Don't add if already inside project
+     * Add a new root.
+     * Don't add if root inside project
+     * Don't add if root is subdir of existing root
      */
     private void addSourceRoot(String path) {
-        path = IpeUtils.toRelativePath(getBaseDir(), path);
-        path = FilePathAdaptor.normalize(path);
-        if (IpeUtils.isPathAbsolute(path) || path.startsWith("..")) { // NOI18N
+        String absPath = IpeUtils.toAbsolutePath(getBaseDir(), path);
+        String canonicalPath = null;
+        try {
+            canonicalPath = new File(absPath).getCanonicalPath();
+        }
+        catch (IOException ioe) {
+            canonicalPath = null;
+        }
+        String relPath = FilePathAdaptor.normalize(IpeUtils.toRelativePath(getBaseDir(), path));
+        boolean addPath = true;
+        ArrayList<String> toBeRemoved = new ArrayList<String>();
+        
+        if (IpeUtils.isPathAbsolute(relPath) || relPath.startsWith("..")) { // NOI18N
             synchronized (sourceRoots) {
-                sourceRoots.add(path);
+                if (canonicalPath != null) {
+                    int canonicalPathLength = canonicalPath.length();
+                    for (String sourceRoot : sourceRoots) {
+                        String absSourceRoot = IpeUtils.toAbsolutePath(getBaseDir(), sourceRoot);
+                        String canonicalSourceRoot = null;
+                        try {
+                            canonicalSourceRoot = new File(absSourceRoot).getCanonicalPath();
+                        }
+                        catch (IOException ioe) {
+                            canonicalSourceRoot = null;
+                        }
+                        if (canonicalSourceRoot != null) {
+                            int canonicalSourceRootLength = canonicalSourceRoot.length();
+                            if (canonicalSourceRoot.equals(canonicalPath)) {
+                                // Identical - don't add
+                                addPath = false;
+                                break;
+                            }
+                            if (canonicalSourceRoot.startsWith(canonicalPath) && canonicalSourceRoot.charAt(canonicalPathLength) == File.separatorChar) {
+                                // Existing root sub dir of new path - remove existing path
+                                toBeRemoved.add(sourceRoot);
+                                continue;
+                            }
+                            if (canonicalPath.startsWith(canonicalSourceRoot) && canonicalPath.charAt(canonicalSourceRootLength) == File.separatorChar) {
+                                // Sub dir of existing root - don't add
+                                addPath = false;
+                                break;
+                            }
+                        }
+                    }
+                }
+                if (toBeRemoved.size() > 0) {
+                    for (String toRemove : toBeRemoved) {
+                        sourceRoots.remove(toRemove);
+                    }
+                }
+                if (addPath) {
+                    sourceRoots.add(relPath);
+                    setModified();
+                }
             }
-            setModified();
         }
     }
     
@@ -702,7 +751,7 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor impleme
             }
             if (notify) {
                 // Notify that list has changed
-                MakeSources makeSources = (MakeSources)project.getLookup().lookup(MakeSources.class);
+                MakeSources makeSources = (MakeSources)getProject().getLookup().lookup(MakeSources.class);
                 if (makeSources != null) {
                     makeSources.sourceRootsChanged();
                 }
@@ -729,9 +778,12 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor impleme
                 handle.start();
                 while (iterator.hasNext()) {
                     FolderEntry folderEntry = (FolderEntry)iterator.next();
-                    Folder top = new Folder(folder.getConfigurationDescriptor(), folder, folderEntry.getFile().getName(), folderEntry.getFile().getName(), true);
-                    addFiles(top, folderEntry.getFile(), folderEntry.isAddSubfoldersSelected(), folderEntry.getFileFilter(), handle, filesAdded);
-                    folder.addFolder(top);
+                    Folder top = folder.findFolderByName(folderEntry.getFile().getName());
+                    if (top == null) {
+                        top = new Folder(folder.getConfigurationDescriptor(), folder, folderEntry.getFile().getName(), folderEntry.getFile().getName(), true);
+                        folder.addFolder(top);
+                    }
+                    addFiles(top, folderEntry.getFile(), folderEntry.isAddSubfoldersSelected(), FolderEntry.getFileFilter(), handle, filesAdded);
                     addSourceRoot(folderEntry.getFile().getPath());
                 }
             } finally {
@@ -740,7 +792,7 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor impleme
             getNativeProject().fireFilesAdded(filesAdded);
             if (notify) {
                 // Notify that list has changed
-                MakeSources makeSources = (MakeSources)project.getLookup().lookup(MakeSources.class);
+                MakeSources makeSources = (MakeSources)getProject().getLookup().lookup(MakeSources.class);
                 if (makeSources != null) {
                     makeSources.sourceRootsChanged();
                 }
@@ -769,7 +821,9 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor impleme
                     continue;
                 Folder dirfolder = folder;
                 if (addSubFolders) {
-                    dirfolder = folder.addNewFolder(files[i].getName(), files[i].getName(), true);
+                    dirfolder = folder.findFolderByName(files[i].getName());
+                    if (dirfolder == null)
+                        dirfolder = folder.addNewFolder(files[i].getName(), files[i].getName(), true);
                 }
                 addFiles(dirfolder, files[i], addSubFolders, filter, handle, filesAdded);
                 if (dirfolder.size() == 0)
