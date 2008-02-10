@@ -70,7 +70,7 @@
     </saas-metadata>
 
     <methods>
-        <method name="getComps" href="//resource[@path='xml']/method[@id='amazonecs.ItemSearch']"/>
+        <method name="getComps" href="#amazonecs.ItemSearch"/>
     </methods>
 
 </saas-services>
