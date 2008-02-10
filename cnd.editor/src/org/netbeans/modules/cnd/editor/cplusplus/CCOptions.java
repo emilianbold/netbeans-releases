@@ -51,7 +51,7 @@ import org.netbeans.modules.editor.options.OptionSupport;
 /** Options for the CC editor kit */
 public class CCOptions extends BaseOptions {
     
-    static final long serialVersionUID = 6972381723748170673L;
+    static final long serialVersionUID = 6972381723748170674L;
     
     private static final String CC = "CPLUSPLUS"; //NOI18N
     private static final String HELP_ID = "Welcome_opt_editor_cpp"; // !!! NOI18N

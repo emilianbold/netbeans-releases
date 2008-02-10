@@ -1,0 +1,51 @@
+/*
+ * To change this template, choose Tools | Templates
+ * and open the template in the editor.
+ */
+<#assign licenseFirst = "/*">
+<#assign licensePrefix = " * ">
+<#assign licenseLast = " */">
+<#include "../Licenses/license-${project.license}.txt">
+
+<#if package?? && package != "">
+package ${package};
+
+</#if>
+
+import java.io.IOException;
+import java.net.*;
+import java.util.Properties;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+
+/**
+ *
+ * @author ${user}
+ */
+public class ${name} extends Authenticator {
+    private String username;
+    
+    private String password;
+    
+    public ${name}(String username, String password) {
+        this.username = username;
+        this.password = password;
+    }
+    
+    public ${name}() {
+        try {
+            Properties props = new Properties();
+            props.load(${name}.class.getResourceAsStream(
+                    "${profile.properties}"));
+            username = props.getProperty("username");
+            password = props.getProperty("password");
+        } catch (IOException ex) {
+            Logger.getLogger(${name}.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+    
+    protected PasswordAuthentication getPasswordAuthentication() {
+        return new PasswordAuthentication(username, password.toCharArray());
+    }
+}

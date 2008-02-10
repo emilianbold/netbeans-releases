@@ -41,7 +41,9 @@
 
 package org.netbeans.modules.spring.api.beans.model;
 
+import java.io.File;
 import java.io.IOException;
+import javax.swing.text.Document;
 import org.netbeans.modules.spring.api.Action;
 import org.netbeans.modules.spring.api.beans.ConfigFileGroup;
 import org.netbeans.modules.spring.api.beans.SpringScope;
@@ -90,5 +92,34 @@ public final class SpringConfigModel {
      */
     public void runReadAction(final Action<SpringBeans> action) throws IOException {
         controller.runReadAction(action);
+    }
+
+    public void runWriteAction(Action<WriteContext> action) throws IOException {
+        controller.runWriteAction(action);
+    }
+
+    public static final class WriteContext {
+
+        private final SpringBeans springBeans;
+        private final Document document;
+        private final File file;
+
+        public WriteContext(SpringBeans springBeans, File file, Document document) {
+            this.springBeans = springBeans;
+            this.document = document;
+            this.file = file;
+        }
+
+        public SpringBeans getSpringBeans() {
+            return springBeans;
+        }
+
+        public Document getCurrentDocument() {
+            return document;
+        }
+
+        public File getCurrentFile() {
+            return file;
+        }
     }
 }
