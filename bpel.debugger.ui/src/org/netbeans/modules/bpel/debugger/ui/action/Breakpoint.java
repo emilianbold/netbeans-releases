@@ -130,6 +130,12 @@ public class Breakpoint extends ActionsProviderSupport
             
             bpelEntityId = bpelEntity.getUID();
             lineNumber = ModelUtil.getLineNumber(bpelEntityId);
+            
+            final int translatedLineNumber = EditorContextBridge.
+                    translateBreakpointLine(url, lineNumber);
+            if ((translatedLineNumber != -1)) {
+                lineNumber = translatedLineNumber;
+            }
         } else {
             lineNumber = EditorUtil.getLineNumber(node);
             
