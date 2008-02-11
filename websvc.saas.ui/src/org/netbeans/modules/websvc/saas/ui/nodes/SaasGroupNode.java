@@ -67,10 +67,10 @@ import org.openide.util.Utilities;
 import org.openide.util.datatransfer.PasteType;
 
 /**
- * A second level node representing Group of Web Services
- * @author Winston Prakash
+ * Node representing Group of Web Services
+ * @author nam
  */
-public class SaasGroupNode extends AbstractNode implements Node.Cookie {
+public class SaasGroupNode extends AbstractNode {
     private final SaasGroup group;
 
     public SaasGroupNode(SaasGroup group) {

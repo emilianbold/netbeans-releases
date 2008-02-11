@@ -43,16 +43,17 @@ import java.io.File;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.project.classpath.ProjectClassPathModifier;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.java.project.JavaAntLogger;
-import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.jsps.parserapi.JspParserAPI;
+import org.netbeans.modules.web.jsps.parserapi.JspParserAPI.WebModule;
 import org.netbeans.modules.web.jsps.parserapi.JspParserFactory;
-import org.netbeans.spi.java.project.classpath.ProjectClassPathExtender;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.modules.ModuleInfo;
@@ -99,18 +100,83 @@ public class IdeEnvironmentTest extends NbTestCase {
 
     // test for issue #70426
     public void testGetTagLibMap70426() throws Exception {
+
         File projectFile = new File(getDataDir(), "emptyWebProject");
         Project project = ProjectManager.getDefault().findProject(FileUtil.toFileObject(projectFile));
         FileObject jspFo = project.getProjectDirectory().getFileObject("web/index.jsp");
+
+        // first make sure that the library is not present
+        removeLibrary("emptyWebProject", "jstl11");
+
         JspParserAPI.WebModule wm = TestUtil.getWebModule(jspFo);
         Map library = JspParserFactory.getJspParser().getTaglibMap(wm);
         System.out.println("map->" + library);
-        Library jstlLibrary = LibraryManager.getDefault().getLibrary("jstl11");
-        assertNotNull("Library has to be found", jstlLibrary);
-        ProjectClassPathExtender cpExtender = project.getLookup().lookup(ProjectClassPathExtender.class);
-        cpExtender.addLibrary(jstlLibrary);
+
+        addLibrary("emptyWebProject", "jstl11");
+
         library = JspParserFactory.getJspParser().getTaglibMap(wm);
         System.out.println("map->" + library);
         assertNotNull("The JSTL/core library was not returned.", library.get("http://java.sun.com/jsp/jstl/core"));
+    }
+
+    public void testAddedJarFile() throws Exception {
+        JspParserAPI jspParser = JspParserFactory.getJspParser();
+
+        FileObject jspFo = TestUtil.getProjectFile(this, "emptyWebProject", "/web/index.jsp");
+        WebModule webModule = TestUtil.getWebModule(jspFo);
+
+        Map<String, String[]> taglibMap1 = jspParser.getTaglibMap(webModule);
+
+        // add library
+        addLibrary("emptyWebProject", "junit");
+
+        Map<String, String[]> taglibMap2 = jspParser.getTaglibMap(webModule);
+
+        String url1 = taglibMap1.get("http://java.sun.com/jstl/core")[0];
+        String url2 = taglibMap2.get("http://java.sun.com/jstl/core")[0];
+        assertNotNull(url1);
+        assertNotNull(url2);
+        assertNotSame("TagLibMaps should not be exactly the same", url1, url2);
+        assertEquals("TagLibMaps should be equal", url1, url2);
+    }
+
+    // this test relies on the previous test (adding jar file)
+    public void testRemovedJarFile() throws Exception {
+        JspParserAPI jspParser = JspParserFactory.getJspParser();
+
+        FileObject jspFo = TestUtil.getProjectFile(this, "emptyWebProject", "/web/index.jsp");
+        WebModule webModule = TestUtil.getWebModule(jspFo);
+
+        Map<String, String[]> taglibMap1 = jspParser.getTaglibMap(webModule);
+
+        // add library
+        removeLibrary("emptyWebProject", "junit");
+
+        Map<String, String[]> taglibMap2 = jspParser.getTaglibMap(webModule);
+
+        String url1 = taglibMap1.get("http://java.sun.com/jstl/core")[0];
+        String url2 = taglibMap2.get("http://java.sun.com/jstl/core")[0];
+        assertNotNull(url1);
+        assertNotNull(url2);
+        assertNotSame("TagLibMaps should not be exactly the same", url1, url2);
+        assertEquals("TagLibMaps should be equal", url1, url2);
+        removeLibrary("emptyWebProject", "jstl11");
+    }
+
+    private void removeLibrary(String projectFolderName, String libraryName) throws Exception {
+        Library library = LibraryManager.getDefault().getLibrary(libraryName);
+        assertNotNull("Library has to be found", library);
+        Project project = TestUtil.getProject(this, projectFolderName);
+        FileObject srcJava = project.getProjectDirectory().getFileObject("src/java");
+        ProjectClassPathModifier.removeLibraries(new Library[]{library}, srcJava, ClassPath.COMPILE);
+    }
+
+    private void addLibrary(String projectFolderName, String libraryName) throws Exception {
+        Library library = LibraryManager.getDefault().getLibrary(libraryName);
+        assertNotNull("Library has to be found", library);
+        Project project = TestUtil.getProject(this, projectFolderName);
+        FileObject srcJava = project.getProjectDirectory().getFileObject("src/java");
+        boolean added = ProjectClassPathModifier.addLibraries(new Library[]{library}, srcJava, ClassPath.COMPILE);
+        assertTrue("Library should be added to the class path", added);
     }
 }

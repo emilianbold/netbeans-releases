@@ -39,31 +39,50 @@
 
 package org.netbeans.modules.websvc.saas.ui.nodes;
 
-import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlOperation;
-import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlPort;
-import org.netbeans.modules.websvc.saas.model.WsdlSaas;
-import org.netbeans.modules.websvc.saas.model.WsdlSaasMethod;
-import org.openide.util.lookup.InstanceContent;
+import java.util.ArrayList;
+import java.util.Collections;
+import org.netbeans.modules.websvc.saas.model.CustomSaas;
+import org.netbeans.modules.websvc.saas.model.SaasMethod;
+import org.openide.nodes.Node;
 
 /**
  *
  * @author nam
  */
-public class WsdlSaasMethodNode extends WsdlMethodNode {
-    private WsdlSaasMethod saasMethod;
-    
-    public WsdlSaasMethodNode(WsdlSaasMethod saasMethod) {
-        this(saasMethod, new InstanceContent());
-    }
-
-    public WsdlSaasMethodNode(WsdlSaasMethod saasMethod, InstanceContent content) {
-        super(saasMethod.getSaas(), saasMethod.getPort(), saasMethod.getWsdlOperation(), content);
-        this.saasMethod = saasMethod;
-        content.add(saasMethod);
+public class CustomSaasNodeChildren extends SaasNodeChildren<SaasMethod> {
+    public CustomSaasNodeChildren(CustomSaas saas) {
+        super(saas);
     }
 
     @Override
-    public String getDisplayName() {
-        return saasMethod.getName();
+    public CustomSaas getSaas() {
+        return (CustomSaas) super.getSaas();
     }
+    
+    @Override
+    protected void updateKeys() {
+        setKeys(saas.getMethods());
+    }
+    
+    @Override
+    protected void addNotify() {
+        super.addNotify();
+        updateKeys();
+    }
+
+    @Override
+    protected void removeNotify() {
+        java.util.List<SaasMethod> emptyList = Collections.emptyList();
+        setKeys(emptyList);
+        super.removeNotify();
+    }
+
+    @Override
+    protected Node[] createNodes(SaasMethod key) {
+        if (needsWaiting()) {
+            return WAIT_NODES;
+        }
+        return new Node[] { new SaasMethodNode(getSaas(), key) };
+    }
+
 }

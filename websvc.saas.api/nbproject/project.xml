@@ -86,14 +86,6 @@
                     </run-dependency>
                 </dependency>
                 <dependency>
-                    <code-name-base>org.netbeans.modules.websvc.manager</code-name-base>
-                    <build-prerequisite/>
-                    <compile-dependency/>
-                    <run-dependency>
-                        <specification-version>1.1</specification-version>
-                    </run-dependency>
-                </dependency>
-                <dependency>
                     <code-name-base>org.netbeans.xml.libs.jxpath</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
@@ -108,6 +100,14 @@
                     <compile-dependency/>
                     <run-dependency>
                         <specification-version>7.6</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.openide.nodes</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <specification-version>7.3</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -141,12 +141,16 @@
                 </test-type>
             </test-dependencies>
             <friend-packages>
+                <friend>org.netbeans.modules.visualweb.websvcmgr</friend>
+                <friend>org.netbeans.modules.websvc.manager</friend>
                 <friend>org.netbeans.modules.websvc.saas.ui</friend>
-                <package>org.netbeans.modules.websvc.saas</package>
+                <friend>org.netbeans.modules.websvc.components.strikeiron</friend>
+                <friend>org.netbeans.modules.websvc.kit</friend>
                 <package>org.netbeans.modules.websvc.saas.model</package>
                 <package>org.netbeans.modules.websvc.saas.model.jaxb</package>
                 <package>org.netbeans.modules.websvc.saas.model.wadl</package>
                 <package>org.netbeans.modules.websvc.saas.spi</package>
+                <package>org.netbeans.modules.websvc.saas.spi.websvcmgr</package>
                 <package>org.netbeans.modules.websvc.saas.util</package>
             </friend-packages>
         </data>
