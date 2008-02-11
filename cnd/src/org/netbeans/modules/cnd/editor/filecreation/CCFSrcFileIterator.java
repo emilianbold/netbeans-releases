@@ -39,7 +39,7 @@
  * made subject to such option by the copyright holder.
  */
 
-package  org.netbeans.modules.cnd.editor;
+package  org.netbeans.modules.cnd.editor.filecreation;
 
 import java.io.IOException;
 import java.util.Collections;
@@ -50,6 +50,12 @@ import java.util.Set;
 import java.util.Vector;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.api.project.SourceGroup;
+import org.netbeans.api.project.Sources;
+import org.netbeans.modules.cnd.loaders.CndAbstractDataLoader;
+import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.WizardDescriptor;
 import org.openide.cookies.OpenCookie;
 import org.openide.loaders.DataFolder;
@@ -80,8 +86,18 @@ public class CCFSrcFileIterator implements TemplateWizard.Iterator {
     public synchronized void previousPanel() {
     }
 
+    public static final boolean NEW_EXTENSION = Boolean.getBoolean("cnd.editor.extensions"); // NOI18N
+
     public void initialize (TemplateWizard wiz) {
-	targetChooserDescriptorPanel = wiz.targetChooser();
+        if (NEW_EXTENSION) {
+            Project project = Templates.getProject( wiz );
+            Sources sources = ProjectUtils.getSources(project);
+            SourceGroup[] groups = sources.getSourceGroups(Sources.TYPE_GENERIC);
+            ExtensionsSettings es = ExtensionsSettings.getInstance((CndAbstractDataLoader)wiz.getTemplate().getLoader());
+            targetChooserDescriptorPanel = new NewCndFileChooserPanel(project, groups, null, es);
+        } else {
+            targetChooserDescriptorPanel = wiz.targetChooser();
+        }
     }
     
     public void uninitialize (TemplateWizard wiz) {
@@ -90,19 +106,21 @@ public class CCFSrcFileIterator implements TemplateWizard.Iterator {
     public Set instantiate (TemplateWizard wiz) throws IOException {
         DataFolder targetFolder = wiz.getTargetFolder ();
         DataObject template = wiz.getTemplate ();
-	String ext = template.getPrimaryFile().getExt();
 
 	String filename = wiz.getTargetName();
-	if (filename != null && ext != null) {
-	    if (filename.endsWith("." + ext)) { // NOI18N
-		// strip extension, it will be added later ...
-		filename = filename.substring(0, filename.length()-(ext.length()+1));
-	    }
-	}
 
-	DataObject result = template.createFromTemplate(targetFolder, filename);
+        if (!NEW_EXTENSION) {
+            String ext = template.getPrimaryFile().getExt();
+            if (filename != null && ext != null) {
+                if (filename.endsWith("." + ext)) { // NOI18N
+                    // strip extension, it will be added later ...
+                    filename = filename.substring(0, filename.length()-(ext.length()+1));
+                }
+            }
+        }
 
-
+        DataObject result = template.createFromTemplate(targetFolder, filename);
+        
 	if (result != null) {
 	    fireWizardEvent(new EventObject(result));
 	    OpenCookie open = (OpenCookie) result.getCookie (OpenCookie.class);
