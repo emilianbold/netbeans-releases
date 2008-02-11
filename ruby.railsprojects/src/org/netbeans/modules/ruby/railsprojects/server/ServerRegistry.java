@@ -52,6 +52,7 @@ import java.util.Map;
 import java.util.Set;
 import org.netbeans.api.ruby.platform.RubyPlatform;
 import org.netbeans.api.ruby.platform.RubyPlatformManager;
+import org.netbeans.modules.ruby.platform.gems.GemManager;
 import org.netbeans.modules.ruby.railsprojects.server.spi.RubyInstance;
 import org.netbeans.modules.ruby.railsprojects.server.spi.RubyInstanceProvider;
 import org.openide.util.lookup.Lookups;
@@ -165,7 +166,12 @@ public class ServerRegistry implements VetoableChangeListener {
         }
 
         private void initMongrel() {
-            String mongrelVersion = platform.getGemManager().getVersion(Mongrel.GEM_NAME);
+            GemManager gemManager = platform.getGemManager();
+            if (gemManager == null) {
+                return;
+            }
+            
+            String mongrelVersion = gemManager.getVersion(Mongrel.GEM_NAME);
             if (mongrelVersion == null) {
                 // remove all mongrels
                 for (Iterator<RubyServer> it = servers.iterator(); it.hasNext(); ) {
