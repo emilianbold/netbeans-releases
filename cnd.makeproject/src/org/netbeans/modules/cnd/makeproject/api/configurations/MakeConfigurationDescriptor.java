@@ -742,9 +742,12 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor impleme
             while (sourceFileFoldersIterator.hasNext()) {
                 ArrayList filesAdded = new ArrayList();
                 FolderEntry folderEntry = (FolderEntry)sourceFileFoldersIterator.next();
-                Folder top = new Folder(folder.getConfigurationDescriptor(), folder, folderEntry.getFile().getName(), folderEntry.getFile().getName(), true);
+                Folder top = folder.findFolderByName(folderEntry.getFile().getName());
+                if (top == null) {
+                    top = new Folder(folder.getConfigurationDescriptor(), folder, folderEntry.getFile().getName(), folderEntry.getFile().getName(), true);
+                    folder.addFolder(top);
+                }
                 addFiles(top, folderEntry.getFile(), folderEntry.isAddSubfoldersSelected(), folderEntry.getFileFilter(), null, filesAdded);
-                folder.addFolder(top);
                 getNativeProject().fireFilesAdded(filesAdded);
                 
                 addSourceRoot(folderEntry.getFile().getPath());
