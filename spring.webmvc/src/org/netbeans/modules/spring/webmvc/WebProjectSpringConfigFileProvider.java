@@ -39,59 +39,67 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.spring.beans;
+package org.netbeans.modules.spring.webmvc;
 
-import java.io.ByteArrayInputStream;
 import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import org.netbeans.editor.BaseDocument;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
+import org.netbeans.api.project.Project;
 import org.netbeans.modules.spring.api.beans.SpringConstants;
+import org.netbeans.modules.spring.spi.beans.SpringConfigFileProvider;
+import org.netbeans.modules.web.api.webmodule.WebModule;
+import org.netbeans.modules.web.spi.webmodule.WebModuleProvider;
+import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.text.CloneableEditorSupport;
 
 /**
  *
  * @author Andrei Badea
  */
-public class TestUtils {
+public class WebProjectSpringConfigFileProvider implements SpringConfigFileProvider {
 
-    private TestUtils() {}
+    private final Project project;
 
-    public static String createXMLConfigText(String snippet) {
-        return "<?xml version='1.0' encoding='UTF-8'?>" +
-                "<beans xmlns='http://www.springframework.org/schema/beans' " +
-                "       xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance' " +
-                "       xmlns:p='http://www.springframework.org/schema/p' " +
-                "       xsi:schemaLocation='http://www.springframework.org/schema/beans " +
-                "       http://www.springframework.org/schema/beans/spring-beans-2.5.xsd'>" +
-                snippet +
-                "</beans>";
-    }
-    
-    public static BaseDocument createSpringXMLConfigDocument(String content) throws Exception {
-        Class<?> kitClass = CloneableEditorSupport.getEditorKit(SpringConstants.CONFIG_MIME_TYPE).getClass();
-        BaseDocument doc = new BaseDocument(kitClass, false);
-        doc.insertString(0, content, null);
-        return doc;
+    public WebProjectSpringConfigFileProvider(Project project) {
+        this.project = project;
     }
 
-    public static void copyStringToFile(String string, File path) throws IOException {
-        InputStream inputStream = new ByteArrayInputStream(string.getBytes());
-        try {
-            copyStreamToFile(inputStream, path);
-        } finally {
-            inputStream.close();
+    public Set<File> getConfigFiles() {
+        WebModuleProvider provider = project.getLookup().lookup(WebModuleProvider.class);
+        if (provider == null) {
+            return Collections.emptySet();
+        }
+        WebModule webModule = provider.findWebModule(project.getProjectDirectory());
+        if (webModule == null) {
+            return Collections.emptySet();
+        }
+        Set<File> result = new HashSet<File>();
+        FileObject webInf = webModule.getWebInf();
+        if (webInf != null) {
+            addFilesInWebInf(webInf, result);
+        }
+        FileObject webXml = webModule.getDeploymentDescriptor();
+        if (webXml != null) {
+            addFilesInWebXml(webXml, result);
+        }
+        return Collections.unmodifiableSet(result);
+    }
+
+    private static void addFilesInWebInf(FileObject webInf, Set<File> result) {
+        for (FileObject fo : webInf.getChildren()) {
+            if (!SpringConstants.CONFIG_MIME_TYPE.equals(fo.getMIMEType())) {
+                continue;
+            }
+            File file = FileUtil.toFile(fo);
+            if (file == null) {
+                continue;
+            }
+            result.add(file);
         }
     }
 
-    private static void copyStreamToFile(InputStream inputStream, File path) throws IOException {
-        FileOutputStream outputStream = new FileOutputStream(path, false);
-        try {
-            FileUtil.copy(inputStream, outputStream);
-        } finally {
-            outputStream.close();
-        }
+    private static void addFilesInWebXml(FileObject webXml, Set<File> result) {
+        // XXX implement.
     }
 }
