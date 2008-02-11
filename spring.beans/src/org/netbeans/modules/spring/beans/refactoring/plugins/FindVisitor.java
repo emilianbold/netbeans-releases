@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -38,38 +38,33 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.spring.beans.refactoring;
 
+package org.netbeans.modules.spring.beans.refactoring.plugins;
 
-
-import org.netbeans.modules.refactoring.api.Problem;
-import org.netbeans.modules.refactoring.spi.RefactoringElementsBag;
-import org.netbeans.modules.refactoring.spi.RefactoringPlugin;
+import java.util.ArrayList;
+import java.util.Collection;
+import com.sun.source.util.TreePath;
+import org.netbeans.api.java.source.WorkingCopy;
+import org.netbeans.modules.spring.beans.refactoring.plugins.RefactoringVisitor;
 
 /**
+ *
  * @author John Baker
  */
-abstract class SpringBeansJavaRefactoringPlugin implements RefactoringPlugin {
+public class FindVisitor extends RefactoringVisitor {    
+    private Collection<TreePath> usages = new ArrayList<TreePath>();
 
-
-    public SpringBeansJavaRefactoringPlugin() {
-
+    public FindVisitor(WorkingCopy workingCopy) {
+        super(workingCopy);
     }
 
-    public Problem preCheck() {
-        return null;
+    
+    public Collection<TreePath> getUsages() {
+        return usages;
     }
-
-    public Problem prepare(final RefactoringElementsBag elements) {
-        return null;
+    
+    protected void addUsage(TreePath tp) {
+        assert tp != null;
+        usages.add(tp);
     }
-
-    public Problem fastCheckParameters() {
-        return null;
-    }
-
-    public Problem checkParameters() {
-        return null;
-    }
-
 }

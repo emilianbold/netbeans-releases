@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -38,20 +38,33 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.spring.beans.refactoring;
 
-import org.netbeans.modules.refactoring.spi.ui.TreeElement;
-import org.netbeans.modules.refactoring.spi.ui.TreeElementFactoryImplementation;
+package org.netbeans.modules.spring.beans.refactoring.plugins;
+
+import com.sun.source.tree.*;
+import com.sun.source.util.TreePathScanner;
+import javax.lang.model.element.*;
+import org.netbeans.api.java.source.TreeMaker;
+import org.netbeans.api.java.source.WorkingCopy;
 
 /**
+ *
  * @author John Baker
  */
-public final class SpringBeansRefactoringTreeImpl implements TreeElementFactoryImplementation {
-
-    public TreeElement getTreeElement(Object object) {        
-        return null;
-    }
-
-    public void cleanUp() {
-    }
+public class RefactoringVisitor extends TreePathScanner<Tree, Element> {
+    /**
+     * 
+     */
+    protected WorkingCopy workingCopy;
+    /**
+     * 
+     */
+    protected TreeMaker make;
+    
+    
+    public RefactoringVisitor(WorkingCopy workingCopy) {
+        super();
+        this.workingCopy = workingCopy;
+        this.make = workingCopy.getTreeMaker();
+    }                  
 }

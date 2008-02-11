@@ -62,6 +62,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
+import org.netbeans.api.options.OptionsDisplayer;
 import org.netbeans.modules.mercurial.ui.log.HgLogMessage;
 import org.openide.util.NbBundle;
 import org.netbeans.modules.mercurial.FileInformation;
@@ -239,6 +240,7 @@ public class HgCommand {
     private static final String HG_ABORT_NO_FILES_TO_COPY_ERR = "abort: no files to copy"; // NOI18N
     private static final String HG_ABORT_NO_DEFAULT_PUSH_ERR = "abort: repository default-push not found!"; // NOI18N
     private static final String HG_ABORT_NO_DEFAULT_ERR = "abort: repository default not found!"; // NOI18N
+    private static final String HG_ABORT_POSSIBLE_PROXY_ERR = "abort: error: node name or service name not known"; // NOI18N
     
     private static final String HG_NO_CHANGE_NEEDED_ERR = "no change needed"; // NOI18N
     private static final String HG_NO_ROLLBACK_ERR = "no rollback information available"; // NOI18N
@@ -2521,14 +2523,23 @@ public class HgCommand {
     }
 
     private static void handleError(List<String> command, List<String> list, String message) throws HgException{
-        Mercurial.LOG.log(Level.WARNING, "command: " + HgUtils.replaceHttpPassword(command)); // NOI18N
-        Mercurial.LOG.log(Level.WARNING, "output: " + HgUtils.replaceHttpPassword(list)); // NOI18N
+        if (command != null && list != null){
+            Mercurial.LOG.log(Level.WARNING, "command: " + HgUtils.replaceHttpPassword(command)); // NOI18N        
+            Mercurial.LOG.log(Level.WARNING, "output: " + HgUtils.replaceHttpPassword(list)); // NOI18N
+            HgUtils.outputMercurialTabInRed(NbBundle.getMessage(HgCommand.class, "MSG_COMMAND_ERR")); // NOI18N
+            HgUtils.outputMercurialTab(NbBundle.getMessage(HgCommand.class, "MSG_COMMAND_INFO_ERR",
+                    HgUtils.replaceHttpPassword(command), HgUtils.replaceHttpPassword(list))); // NOI18N
+        }
 
-        HgUtils.outputMercurialTabInRed(NbBundle.getMessage(HgCommand.class, "MSG_COMMAND_ERR")); // NOI18N
-        HgUtils.outputMercurialTab(NbBundle.getMessage(HgCommand.class, "MSG_COMMAND_INFO_ERR", 
-                HgUtils.replaceHttpPassword(command), HgUtils.replaceHttpPassword(list))); // NOI18N
-
-        throw new HgException(message);
+        if (list != null && (isErrorPossibleProxyIssue(list.get(0)) || isErrorPossibleProxyIssue(list.get(list.size() - 1)))) {
+            boolean bConfirmSetProxy;
+            bConfirmSetProxy = HgUtils.confirmDialog(HgCommand.class, "MSG_POSSIBLE_PROXY_ISSUE_TITLE", "MSG_POSSIBLE_PROXY_ISSUE_QUERY"); // NOI18N
+            if(bConfirmSetProxy){
+                OptionsDisplayer.getDefault().open("General");              // NOI18N
+            }
+        } else {
+            throw new HgException(message);
+        }
     }
 
     public static boolean isMergeNeededMsg(String msg) {
@@ -2565,6 +2576,10 @@ public class HgCommand {
     
     private static boolean isErrorNoDefaultPath(String msg) {
         return msg.indexOf(HG_ABORT_NO_DEFAULT_ERR) > -1; // NOI18N
+    }
+    
+    private static boolean isErrorPossibleProxyIssue(String msg) {
+        return msg.indexOf(HG_ABORT_POSSIBLE_PROXY_ERR) > -1; // NOI18N
     }
     
     private static boolean isErrorNoRepository(String msg) {
