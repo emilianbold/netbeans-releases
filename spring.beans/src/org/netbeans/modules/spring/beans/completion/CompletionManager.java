@@ -57,12 +57,9 @@ import javax.lang.model.element.Modifier;
 import javax.lang.model.element.NestingKind;
 import javax.lang.model.element.PackageElement;
 import javax.lang.model.element.TypeElement;
-import javax.lang.model.type.DeclaredType;
-import javax.lang.model.type.ExecutableType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementScanner6;
-import javax.lang.model.util.Types;
 import javax.swing.text.Document;
 import org.netbeans.api.java.source.ClassIndex;
 import org.netbeans.api.java.source.ClassIndex.NameKind;
@@ -651,9 +648,8 @@ public final class CompletionManager {
                         methods = filter(methods);
                         
                         for (Element e : methods) {
-                            ExecutableType et = (ExecutableType) asMemberOf(e, classElem.asType(), controller.getTypes());
                             SpringXMLConfigCompletionItem item = SpringXMLConfigCompletionItem.createMethodItem(
-                                    substitutionOffset, (ExecutableElement) e, et, e.getEnclosingElement() != classElem,
+                                    substitutionOffset, (ExecutableElement) e, e.getEnclosingElement() != classElem,
                                     controller.getElements().isDeprecated(e));
                             results.add(item);
                         }
@@ -696,22 +692,6 @@ public final class CompletionManager {
          */
         protected Iterable<? extends Element> filter(Iterable<? extends Element> methods) {
             return methods;
-        }
-        
-        protected static TypeMirror asMemberOf(Element element, TypeMirror type, Types types) {
-            TypeMirror ret = element.asType();
-            TypeMirror enclType = element.getEnclosingElement().asType();
-            if (enclType.getKind() == TypeKind.DECLARED) {
-                enclType = types.erasure(enclType);
-            }
-            while (type != null && type.getKind() == TypeKind.DECLARED) {
-                if (types.isSubtype(type, enclType)) {
-                    ret = types.asMemberOf((DeclaredType) type, element);
-                    break;
-                }
-                type = ((DeclaredType) type).getEnclosingType();
-            }
-            return ret;
         }
     }
     

@@ -130,8 +130,8 @@ public abstract class SpringXMLConfigCompletionItem implements CompletionItem {
     }
     
     public static SpringXMLConfigCompletionItem createMethodItem(int substitutionOffset, ExecutableElement element, 
-            ExecutableType type, boolean isInherited, boolean isDeprecated) {
-        return new MethodItem(substitutionOffset, element, type, isInherited, isDeprecated);
+            boolean isInherited, boolean isDeprecated) {
+        return new MethodItem(substitutionOffset, element, isInherited, isDeprecated);
     }
     
     public static SpringXMLConfigCompletionItem createAttribValueItem(int substitutionOffset, String displayText, String docText) {
@@ -508,7 +508,7 @@ public abstract class SpringXMLConfigCompletionItem implements CompletionItem {
         private boolean isInherited;
         private String rightText;
         
-        public MethodItem(int substitutionOffset, ExecutableElement element, ExecutableType type, boolean isInherited, boolean isDeprecated) {
+        public MethodItem(int substitutionOffset, ExecutableElement element, boolean isInherited, boolean isDeprecated) {
             super(substitutionOffset);
             this.elementHandle = ElementHandle.create(element);
             this.isDeprecated = isDeprecated;
@@ -517,12 +517,13 @@ public abstract class SpringXMLConfigCompletionItem implements CompletionItem {
             this.modifiers = element.getModifiers();
             this.params = new ArrayList<ParamDesc>();
             Iterator<? extends VariableElement> it = element.getParameters().iterator();
-            Iterator<? extends TypeMirror> tIt = type.getParameterTypes().iterator();
+            Iterator<? extends TypeMirror> tIt = ((ExecutableType) element.asType()).getParameterTypes().iterator();
             while(it.hasNext() && tIt.hasNext()) {
                 TypeMirror tm = tIt.next();
                 this.params.add(new ParamDesc(tm.toString(), getTypeName(tm, false, element.isVarArgs() && !tIt.hasNext()).toString(), it.next().getSimpleName().toString()));
             }
-            TypeMirror retType = type.getReturnType();
+            TypeMirror retType = element.getReturnType();
+            
             this.typeName = getTypeName(retType, false).toString();
             this.isPrimitive = retType.getKind().isPrimitive() || retType.getKind() == TypeKind.VOID;
         }
@@ -534,17 +535,17 @@ public abstract class SpringXMLConfigCompletionItem implements CompletionItem {
         public CharSequence getSortText() {
             if (sortText == null) {
                 StringBuilder sortParams = new StringBuilder();
-                sortParams.append('(');
+                sortParams.append('('); // NOI18N
                 int cnt = 0;
                 for(Iterator<ParamDesc> it = params.iterator(); it.hasNext();) {
                     ParamDesc param = it.next();
                     sortParams.append(param.typeName);
                     if (it.hasNext()) {
-                        sortParams.append(',');
+                        sortParams.append(','); // NOI18N
                     }
                     cnt++;
                 }
-                sortParams.append(')');
+                sortParams.append(')'); // NOI18N
                 sortText = simpleName + "#" + ((cnt < 10 ? "0" : "") + cnt) + "#" + sortParams.toString(); //NOI18N
             }
             return sortText;
@@ -569,7 +570,7 @@ public abstract class SpringXMLConfigCompletionItem implements CompletionItem {
                 if (!isInherited)
                     lText.append(BOLD_END);
                 lText.append(COLOR_END);
-                lText.append('(');
+                lText.append('('); // NOI18N
                 for (Iterator<ParamDesc> it = params.iterator(); it.hasNext();) {
                     ParamDesc paramDesc = it.next();
                     lText.append(escape(paramDesc.typeName));
@@ -581,7 +582,7 @@ public abstract class SpringXMLConfigCompletionItem implements CompletionItem {
                         lText.append(", "); //NOI18N
                     }
                 }
-                lText.append(')');
+                lText.append(')'); // NOI18N
                 return lText.toString();
             }
             return leftText;
@@ -737,7 +738,7 @@ public abstract class SpringXMLConfigCompletionItem implements CompletionItem {
         @Override
         public void processKeyEvent(KeyEvent evt) {
             if (evt.getID() == KeyEvent.KEY_TYPED) {
-                if(evt.getKeyChar() == '/') {
+                if(evt.getKeyChar() == '/') { // NOI18N
                     Completion.get().hideDocumentation();
                     JTextComponent component = (JTextComponent)evt.getSource();
                     int caretOffset = component.getSelectionEnd();
