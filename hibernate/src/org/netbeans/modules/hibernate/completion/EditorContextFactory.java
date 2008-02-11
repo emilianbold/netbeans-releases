@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
+ *
  * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,7 +20,13 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
+ * Contributor(s):
+ *
+ * The Original Software is NetBeans. The Initial Developer of the Original
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Microsystems, Inc. All Rights Reserved.
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -31,68 +37,31 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
- * Contributor(s):
- * 
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
+
 package org.netbeans.modules.hibernate.completion;
 
+import java.util.Map;
+import java.util.WeakHashMap;
 import javax.swing.text.Document;
-import javax.swing.text.JTextComponent;
-import org.netbeans.modules.hibernate.completion.CompletionContext.CompletionType;
-import org.netbeans.spi.editor.completion.CompletionResultSet;
-import org.netbeans.spi.editor.completion.support.AsyncCompletionQuery;
 
 /**
  *
- * @author Dongmei Cao
+ * @author Rohan Ranade
  */
-public class HibernateMappingCompletionQuery extends AsyncCompletionQuery {
+public final class EditorContextFactory {
+    private static Map<Document, DocumentContext> contextCache = 
+            new WeakHashMap<Document, DocumentContext>();
 
-    private int queryType;
-    private int caretOffset;
-    private JTextComponent component;
-
-    public HibernateMappingCompletionQuery(int queryType, int caretOffset) {
-        this.queryType = queryType;
-        this.caretOffset = caretOffset;
-    }
-
-    @Override
-    protected void preQueryUpdate(JTextComponent component) {
-        //XXX: look for invalidation conditions
-        this.component = component;
-    }
-
-    @Override
-    protected void prepareQuery(JTextComponent component) {
-        this.component = component;
-    }
-
-    @Override
-    protected void query(CompletionResultSet resultSet, Document doc, int caretOffset) {
-        
-        CompletionContext context = new CompletionContext(doc, caretOffset);
-        
-        if (context.getCompletionType() == CompletionType.NONE) {
-            resultSet.finish();
-            return;
+    public static DocumentContext getDocumentContext(Document document, int caretOffset) {
+        DocumentContext context = contextCache.get(document);
+        if(context == null) {
+            context = new DocumentContext(document);
+            contextCache.put(document, context);
         }
-
-        switch (context.getCompletionType()) {
-            case ATTRIBUTE_VALUE:
-                CompletionManager.getDefault().completeAttributeValues(resultSet, context);
-                break;
-            case ATTRIBUTE:
-                CompletionManager.getDefault().completeAttributes(resultSet, context);
-                break;
-            case TAG:
-                CompletionManager.getDefault().completeElements(resultSet, context);
-                break;
-            }
-
         
-        resultSet.finish();
+        context.reset(caretOffset);
+        
+        return context;
     }
 }

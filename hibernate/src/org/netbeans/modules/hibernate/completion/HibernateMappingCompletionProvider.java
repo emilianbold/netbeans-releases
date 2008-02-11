@@ -45,8 +45,9 @@ import org.netbeans.spi.editor.completion.CompletionTask;
 import org.netbeans.spi.editor.completion.support.AsyncCompletionTask;
 
 /**
- *
- * @author dc151887
+ * Provides the code completion for Hibernate mapping fie
+ * 
+ * @author Dongmei Cao
  */
 public class HibernateMappingCompletionProvider implements CompletionProvider {
 
@@ -54,11 +55,18 @@ public class HibernateMappingCompletionProvider implements CompletionProvider {
         if( queryType != CompletionProvider.COMPLETION_QUERY_TYPE ) 
             return null;
         
-            return new AsyncCompletionTask(new HibernateMappingCompletionQuery(), component);
+            return new AsyncCompletionTask(new HibernateMappingCompletionQuery(queryType,
+                    component.getSelectionStart()), component);
     }
 
     public int getAutoQueryTypes(JTextComponent component, String typedText) {
-        return 0; // XXX: Return something more specific
+         // return 0 here, meaning no query should be automatically invoked.
+        // If we want some query to be invoked automatically, then a combination of the 
+        // COMPLETION_QUERY_TYPE, 
+        // COMPLETION_ALL_QUERY_TYPE, 
+        // DOCUMENTATION_QUERY_TYPE, 
+        // and TOOLTIP_QUERY_TYPE  values should be returned
+        return 0;
     }
     
 }

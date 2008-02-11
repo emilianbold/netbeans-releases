@@ -82,6 +82,8 @@ public class HibernateMappingDataObject extends MultiDataObject {//XmlMultiViewD
     public static final int UPDATE_DELAY = 200;
     private static final String DESIGN_VIEW_ID = "hibernate_mapping_multiview_design"; // NOI18N
     private HibernateMapping mapping;
+    private DataEditorSupport editorSupport;
+    
     //TODO: not supported till I can figure out conflicts between the XmlMultiViewDataObject and completion provider
     //private ModelSynchronizer modelSynchronizer;
     public HibernateMappingDataObject(FileObject pf, HibernateMappingDataLoader loader) throws DataObjectExistsException, IOException {
@@ -92,14 +94,19 @@ public class HibernateMappingDataObject extends MultiDataObject {//XmlMultiViewD
         //modelSynchronizer = new ModelSynchronizer(this);
 
         CookieSet cookies = getCookieSet();
-        cookies.add((Node.Cookie) DataEditorSupport.create(this, getPrimaryEntry(), cookies));
+        editorSupport = (DataEditorSupport) DataEditorSupport.create(this, getPrimaryEntry(), cookies);
+        cookies.add((Node.Cookie) editorSupport);
         org.xml.sax.InputSource in = DataObjectAdapters.inputSource(this);
         CheckXMLCookie checkCookie = new CheckXMLSupport(in);
         cookies.add(checkCookie);
         ValidateXMLCookie validateCookie = new ValidateXMLSupport(in);
         cookies.add(validateCookie);
-    // TODO: not supported till I can figure out conflicts between the XmlMultiViewDataObject and completion provider
-    //parseDocument();
+        // TODO: not supported till I can figure out conflicts between the XmlMultiViewDataObject and completion provider
+        //parseDocument();
+    }
+    
+    public DataEditorSupport getEditorSupport() {
+        return this.editorSupport;
     }
 
     /**
