@@ -57,8 +57,7 @@ made subject to such option by the copyright holder.
     
     <testbag testattribs="stable" executor="ide" name="testbag_FormStable">      
         <testset dir="qa-functional/src">
-            <patternset>
-                <include name="org/netbeans/qa/form/beans/*.*"/>
+            <patternset>                
                 <include name="org/netbeans/qa/form/options/*.*"/>
                 <include name="org/netbeans/qa/form/OpenForm.class"/>
                 <include name="org/netbeans/qa/form/binding/SimpleBeansBinding.class"/>
