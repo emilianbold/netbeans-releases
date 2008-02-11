@@ -357,7 +357,6 @@ public class WebAppParseSupport implements WebAppParseProxy, PropertyChangeListe
             reinitOptions();
         }
         if (reinit || mappings == null) {
-            mappings = new  HashMap<String, String[]>();
             fileSystemListener.reinitCaches();
         }
         return new HashMap<String, String[]>(mappings);
@@ -696,7 +695,7 @@ System.out.println("--------ENDSTACK------");        */
                 // stored the old mappings.
                 Map<String, String[]> tmpMappings = (Map<String, String[]>) mappingsField.get(lc);
                 // the mapping doesn't have to be initialized yet
-                if(tmpMappings != null) {
+                if (tmpMappings != null) {
                     tmpMappings.clear();
                 }
 
@@ -715,7 +714,7 @@ System.out.println("--------ENDSTACK------");        */
                         long end = System.currentTimeMillis();
                         LOG.fine("InitTldLocationCacheThread finished in " + (end - start) + " ms");
                     }
-                } catch (java.lang.InterruptedException e){
+                } catch (InterruptedException e) {
                     ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
                 }
 
@@ -731,7 +730,11 @@ System.out.println("--------ENDSTACK------");        */
                 mappingsField.set(lc, tmpMappings);
                 
                 // update cache
-                mappings.clear();
+                if (mappings == null) {
+                    mappings = new HashMap<String, String[]>();
+                } else {
+                    mappings.clear();
+                }
                 mappings.putAll(tmpMappings);
                 // cache tld files under WEB-INF directory as well
                 mappings.putAll(getImplicitLocation());
