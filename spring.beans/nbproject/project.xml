@@ -305,6 +305,7 @@ made subject to such option by the copyright holder.
             <friend-packages>
                 <friend>org.netbeans.modules.spring.webmvc</friend>
                 <package>org.netbeans.modules.spring.api.beans</package>
+                <package>org.netbeans.modules.spring.spi.beans</package>
             </friend-packages>
         </data>
     </configuration>
