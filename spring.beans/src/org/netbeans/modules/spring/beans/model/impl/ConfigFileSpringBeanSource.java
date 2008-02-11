@@ -57,9 +57,9 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.editor.BaseDocument;
+import org.netbeans.modules.spring.api.beans.SpringConstants;
 import org.netbeans.modules.spring.api.beans.model.Location;
 import org.netbeans.modules.spring.api.beans.model.SpringBean;
-import org.netbeans.modules.spring.beans.loader.SpringXMLConfigDataLoader;
 import org.netbeans.modules.spring.beans.editor.SpringXMLConfigEditorUtils;
 import org.netbeans.modules.spring.beans.model.SpringBeanSource;
 import org.netbeans.modules.spring.beans.utils.StringUtils;
@@ -83,6 +83,7 @@ public class ConfigFileSpringBeanSource implements SpringBeanSource {
 
     private static final Logger LOGGER = Logger.getLogger(ConfigFileSpringBeanSource.class.getName());
 
+    private final Map<String, ConfigFileSpringBean> id2Bean = new HashMap<String, ConfigFileSpringBean>();
     private final Map<String, ConfigFileSpringBean> name2Bean = new HashMap<String, ConfigFileSpringBean>();
     private final List<ConfigFileSpringBean> beans = new ArrayList<ConfigFileSpringBean>();
 
@@ -142,7 +143,7 @@ public class ConfigFileSpringBeanSource implements SpringBeanSource {
         } finally {
             reader.close();
         }
-        Class<?> kitClass = CloneableEditorSupport.getEditorKit(SpringXMLConfigDataLoader.REQUIRED_MIME).getClass();
+        Class<?> kitClass = CloneableEditorSupport.getEditorKit(SpringConstants.CONFIG_MIME_TYPE).getClass();
         BaseDocument doc = new BaseDocument(kitClass, false);
         try {
             doc.insertString(0, builder.toString(), null);
@@ -161,8 +162,16 @@ public class ConfigFileSpringBeanSource implements SpringBeanSource {
         return Collections.<SpringBean>unmodifiableList(beans);
     }
 
-    public SpringBean findBean(String name) {
-        return name2Bean.get(name);
+    public SpringBean findBeanByID(String id) {
+        return id2Bean.get(id);
+    }
+
+    public SpringBean findBeanByIDOrName(String name) {
+        SpringBean bean = findBeanByID(name);
+        if (bean == null) {
+            bean = name2Bean.get(name);
+        }
+        return bean;
     }
 
     /**
@@ -179,6 +188,7 @@ public class ConfigFileSpringBeanSource implements SpringBeanSource {
         }
 
         public void run() {
+            id2Bean.clear();
             name2Bean.clear();
             beans.clear();
             Node rootNode = SpringXMLConfigEditorUtils.getDocumentRoot(document);
@@ -206,12 +216,18 @@ public class ConfigFileSpringBeanSource implements SpringBeanSource {
             Location location = new ConfigFileLocation(file, tag.getElementOffset());
             ConfigFileSpringBean bean = new ConfigFileSpringBean(id, names, clazz, location);
             if (id != null) {
-                addBeanName(id, bean);
+                addBeanID(id, bean);
             }
             for (String name : names) {
                 addBeanName(name, bean);
             }
             beans.add(bean);
+        }
+
+        private void addBeanID(String id, ConfigFileSpringBean bean) {
+            if (id2Bean.get(id) == null) {
+                id2Bean.put(id, bean);
+            }
         }
 
         private void addBeanName(String name, ConfigFileSpringBean bean) {

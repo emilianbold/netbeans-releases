@@ -209,10 +209,7 @@ public class PullAction extends ContextAction {
     }
 
     public boolean isEnabled() {
-        Set<File> ctxFiles = context != null? context.getRootFiles(): null;
-        if(HgUtils.getRootFile(context) == null || ctxFiles == null || ctxFiles.size() == 0) 
-            return false;
-        return true; // #121293: Speed up menu display, warn user if not set when Pull selected
+        return HgUtils.getRootFile(context) != null;
     }
 
     static void performPull(PullType type, VCSContext ctx, File root, String pullPath, String fromPrjName, String toPrjName) {

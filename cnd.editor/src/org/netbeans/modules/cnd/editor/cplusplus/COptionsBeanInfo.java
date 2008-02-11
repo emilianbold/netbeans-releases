@@ -44,31 +44,12 @@ package org.netbeans.modules.cnd.editor.cplusplus;
 /** BeanInfo for CC editor options */
 public class COptionsBeanInfo extends CCOptionsBeanInfo {
 
-    private static final String[] EXPERT_PROP_NAMES = new String[] {
-        CCOptions.COMPLETION_CASE_SENSITIVE_PROP,
-        CCOptions.COMPLETION_INSTANT_SUBSTITUTION_PROP,
-        CCOptions.JAVADOC_AUTO_POPUP_PROP,
-        CCOptions.JAVADOC_AUTO_POPUP_DELAY_PROP,
-        CCOptions.JAVADOC_PREFERRED_SIZE_PROP,
-        CCOptions.JAVADOC_BGCOLOR,
-        CCOptions.CODE_FOLDING_UPDATE_TIMEOUT_PROP
-    };
-    
     public COptionsBeanInfo() {
 	super();
     }   
     
+    @Override
     protected Class getBeanClass() {
 	return COptions.class;
     }
-    
-    protected String[] getPropNames() {
-        // already merged on initialization
-        return CCOptions.CC_PROP_NAMES;
-    }
-
-    protected void updatePropertyDescriptors() {
-        super.updatePropertyDescriptors();
-        setExpert(EXPERT_PROP_NAMES);
-    }    
 }

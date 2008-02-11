@@ -40,6 +40,11 @@
 package org.netbeans.modules.cnd.editor.api;
 
 import java.util.prefs.Preferences;
+import javax.swing.text.Document;
+import org.netbeans.editor.BaseDocument;
+import org.netbeans.editor.Formatter;
+import org.netbeans.editor.ext.ExtFormatter;
+import org.netbeans.modules.cnd.editor.cplusplus.CKit;
 import org.netbeans.modules.cnd.editor.options.EditorOptions;
 
 /**
@@ -47,7 +52,8 @@ import org.netbeans.modules.cnd.editor.options.EditorOptions;
  * @author Alexander Simon
  */
 public class CodeStyle {
-    private static CodeStyle INSTANCE;
+    private static CodeStyle INSTANCE_C;
+    private static CodeStyle INSTANCE_CPP;
     static {
         EditorOptions.codeStyleProducer = new Producer();
     }
@@ -59,10 +65,31 @@ public class CodeStyle {
     }
     
     public synchronized static CodeStyle getDefault(Language language) {
-        if (INSTANCE == null) {
-            INSTANCE = create(language);
+        switch(language) {
+            case C:
+                if (INSTANCE_C == null) {
+                    INSTANCE_C = create(language);
+                }
+                return INSTANCE_C;
+            case CPP:
+            default:
+                if (INSTANCE_CPP == null) {
+                    INSTANCE_CPP = create(language);
+                }
+                return INSTANCE_CPP;
         }
-        return INSTANCE;
+    }
+
+    public synchronized static CodeStyle getDefault(Document doc) {
+        if (doc instanceof BaseDocument) {
+            Formatter f = ((BaseDocument)doc).getFormatter();
+            if (f instanceof ExtFormatter) {
+                if (CKit.class.equals(f.getKitClass())) {
+                    return getDefault(Language.C);
+                }
+            }
+        }
+        return getDefault(Language.CPP);
     }
     
     static CodeStyle create(Language language) {
@@ -70,14 +97,38 @@ public class CodeStyle {
     }
     
     // General tabs and indents ------------------------------------------------
-    public boolean getFormatSpaceBeforeParenthesis() {
-        return getOption(EditorOptions.CC_FORMAT_SPACE_BEFORE_PARENTHESIS,
-                         EditorOptions.defaultCCFormatSpaceBeforeParenthesis);
+    public boolean spaceBeforeMethodDeclParen() {
+        return getOption(EditorOptions.spaceBeforeMethodDeclParen,
+                         EditorOptions.spaceBeforeMethodDeclParenDefault);
+    }
+    public boolean spaceBeforeMethodCallParen() {
+        return getOption(EditorOptions.spaceBeforeMethodCallParen,
+                         EditorOptions.spaceBeforeMethodCallParenDefault);
+    }
+    public boolean spaceBeforeIfParen() {
+        return getOption(EditorOptions.spaceBeforeIfParen,
+                         EditorOptions.spaceBeforeIfParenDefault);
+    }
+    public boolean spaceBeforeForParen() {
+        return getOption(EditorOptions.spaceBeforeForParen,
+                         EditorOptions.spaceBeforeForParenDefault);
+    }
+    public boolean spaceBeforeWhileParen() {
+        return getOption(EditorOptions.spaceBeforeWhileParen,
+                         EditorOptions.spaceBeforeWhileParenDefault);
+    }
+    public boolean spaceBeforeCatchParen() {
+        return getOption(EditorOptions.spaceBeforeCatchParen,
+                         EditorOptions.spaceBeforeCatchParenDefault);
+    }
+    public boolean spaceBeforeSwitchParen() {
+        return getOption(EditorOptions.spaceBeforeSwitchParen,
+                         EditorOptions.spaceBeforeSwitchParenDefault);
     }
 
-    public boolean getFormatSpaceAfterComma() {
-        return getOption(EditorOptions.CC_FORMAT_SPACE_AFTER_COMMA,
-                         EditorOptions.defaultCCFormatSpaceAfterComma);
+    public boolean spaceAfterComma() {
+        return getOption(EditorOptions.spaceAfterComma,
+                         EditorOptions.spaceAfterCommaDefault);
     }
 
     public BracePlacement getFormatNewlineBeforeBrace() {
@@ -100,11 +151,11 @@ public class CodeStyle {
                                       EditorOptions.defaultCCFormatNewlineBeforeBraceMethod));
     }
     
-    public boolean getFormatLeadingSpaceInComment() {
-        return getOption(EditorOptions.CC_FORMAT_LEADING_SPACE_IN_COMMENT,
-                         EditorOptions.defaultCCFormatLeadingSpaceInComment);
+    public boolean indentPreprocessorDirectives(){
+        return getOption(EditorOptions.indentPreprocessorDirectives,
+                         EditorOptions.indentPreprocessorDirectivesDefault);
     }
-
+            
     public boolean getFormatLeadingStarInComment() {
         return getOption(EditorOptions.CC_FORMAT_LEADING_STAR_IN_COMMENT,
                          EditorOptions.defaultCCFormatLeadingStarInComment);
@@ -142,6 +193,11 @@ public class CodeStyle {
         return preferences.get(key, defaultValue);
     }
 
+    // for tests only
+    public Preferences getPreferences(){
+        return this.preferences;
+    }
+    
     // Nested classes ----------------------------------------------------------
     public enum Language {
         C,

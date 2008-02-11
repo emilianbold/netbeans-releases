@@ -41,10 +41,14 @@
 
 package org.netbeans.modules.editor.settings.storage.keybindings;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
@@ -168,7 +172,11 @@ public final class KeyMapsStorage implements StorageDescription<Collection<KeySt
                         String actionName = attributes.getValue(A_ACTION_NAME);
                         if (actionName != null) {
                             MultiKeyBinding mkb = new MultiKeyBinding(shortcut, actionName);
-                            keyMap.put(Arrays.asList(shortcut), mkb);
+                            MultiKeyBinding duplicate = keyMap.put(mkb.getKeyStrokeList(), mkb);
+                            if (duplicate != null && !duplicate.getActionName().equals(mkb.getActionName())) {
+                                LOG.warning("Duplicate shortcut '" + key + "' definition; rebound from '" + duplicate.getActionName() //NOI18N
+                                        + "' to '" + mkb.getActionName() + "' in (" + getProcessedFile().getPath() + ")."); //NOI18N
+                            }
                         } else {
                             LOG.warning("Ignoring keybinding '" + key + "' with no action name."); //NOI18N
                         }
@@ -189,7 +197,9 @@ public final class KeyMapsStorage implements StorageDescription<Collection<KeySt
             Document doc = XMLUtil.createDocument(ROOT, null, PUBLIC_ID, SYSTEM_ID);
             Node root = doc.getElementsByTagName(ROOT).item(0);
 
-            for(MultiKeyBinding mkb : getAdded().values()) {
+            List<MultiKeyBinding> added = new ArrayList<MultiKeyBinding>(getAdded().values());
+            Collections.sort(added, ACTION_NAME_COMPARATOR);
+            for(MultiKeyBinding mkb : added) {
                 Element bind = doc.createElement(E_BIND);
                 root.appendChild(bind);
 
@@ -207,7 +217,15 @@ public final class KeyMapsStorage implements StorageDescription<Collection<KeySt
             }
             
             return doc;
-        }        
+        }
+
+        private static final Comparator<MultiKeyBinding> ACTION_NAME_COMPARATOR = new Comparator<MultiKeyBinding>() {
+            public int compare(MultiKeyBinding mkb1, MultiKeyBinding mkb2) {
+                String actionName1 = mkb1.getActionName();
+                String actionName2 = mkb2.getActionName();
+                return actionName1.compareToIgnoreCase(actionName2);
+            }
+        };
     } // End of KeyMapsWriter class
     
 }

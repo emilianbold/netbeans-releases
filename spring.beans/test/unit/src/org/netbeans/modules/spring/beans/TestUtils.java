@@ -47,7 +47,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import org.netbeans.editor.BaseDocument;
-import org.netbeans.modules.spring.beans.loader.SpringXMLConfigDataLoader;
+import org.netbeans.modules.spring.api.beans.SpringConstants;
 import org.openide.filesystems.FileUtil;
 import org.openide.text.CloneableEditorSupport;
 
@@ -71,8 +71,7 @@ public class TestUtils {
     }
     
     public static BaseDocument createSpringXMLConfigDocument(String content) throws Exception {
-        Class<?> kitClass = CloneableEditorSupport.getEditorKit(
-                SpringXMLConfigDataLoader.REQUIRED_MIME).getClass();
+        Class<?> kitClass = CloneableEditorSupport.getEditorKit(SpringConstants.CONFIG_MIME_TYPE).getClass();
         BaseDocument doc = new BaseDocument(kitClass, false);
         doc.insertString(0, content, null);
         return doc;

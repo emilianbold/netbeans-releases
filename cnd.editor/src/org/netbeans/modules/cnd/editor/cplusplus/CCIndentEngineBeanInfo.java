@@ -44,7 +44,6 @@ package org.netbeans.modules.cnd.editor.cplusplus;
 import java.beans.BeanDescriptor;
 import java.util.MissingResourceException;
 import org.netbeans.modules.editor.FormatterIndentEngineBeanInfo;
-import org.netbeans.modules.editor.NbEditorUtilities;
 import org.openide.util.NbBundle;
 
 /**
@@ -54,6 +53,7 @@ import org.openide.util.NbBundle;
  */
 public class CCIndentEngineBeanInfo extends FormatterIndentEngineBeanInfo {
 
+    @Override
     public BeanDescriptor getBeanDescriptor() {
 	BeanDescriptor beanDescriptor = new BeanDescriptor(getBeanClass());
 	beanDescriptor.setDisplayName(getString("LAB_CCIndentEngine")); // NOI18N
@@ -66,20 +66,7 @@ public class CCIndentEngineBeanInfo extends FormatterIndentEngineBeanInfo {
         return CCIndentEngine.class;
     }
 
-    protected String[] createPropertyNames() {
-        return NbEditorUtilities.mergeStringArrays(super.createPropertyNames(),
-            new String[] {
-                CCIndentEngine.CC_FORMAT_NEWLINE_BEFORE_BRACE_PROP,
-                CCIndentEngine.CC_FORMAT_NEWLINE_BEFORE_BRACE_DECLARATION_PROP,
-                CCIndentEngine.CC_FORMAT_SPACE_BEFORE_PARENTHESIS_PROP,
-                CCIndentEngine.CC_FORMAT_SPACE_AFTER_COMMA_PROP,
-                CCIndentEngine.CC_FORMAT_PREPROCESSOR_AT_LINE_START_PROP,
-                CCIndentEngine.CC_FORMAT_LEADING_STAR_IN_COMMENT_PROP,
-                CCIndentEngine.CC_FORMAT_STATEMENT_CONTINUATION_INDENT_PROP
-            }
-        );
-    }
-
+    @Override
     protected String getString(String key) {
         try {
             return NbBundle.getBundle(CCIndentEngineBeanInfo.class).getString(key);

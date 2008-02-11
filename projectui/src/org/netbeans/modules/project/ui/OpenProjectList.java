@@ -65,12 +65,11 @@ import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Queue;
 import java.util.Set;
 import java.util.StringTokenizer;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
-import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.locks.Condition;
@@ -116,7 +115,6 @@ import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
 import org.openide.util.WeakListeners;
-import org.openide.util.lookup.Lookups;
 import org.openide.windows.WindowManager;
 
 /**
@@ -154,7 +152,7 @@ public final class OpenProjectList {
     private final RecentProjectList recentProjects;
 
     /** LRU List of recently used templates */
-    private List<String> recentTemplates;
+    private final List<String> recentTemplates;
     
     /** Property change listeners */
     private final PropertyChangeSupport pchSupport;
@@ -178,6 +176,7 @@ public final class OpenProjectList {
         };
         pchSupport = new PropertyChangeSupport( this );
         recentProjects = new RecentProjectList(10); // #47134
+        recentTemplates = new CopyOnWriteArrayList<String>();
     }
     
            
@@ -228,7 +227,6 @@ public final class OpenProjectList {
             action = a;
             currentFiles = Utilities.actionsGlobalContext().lookupResult(FileObject.class);
             currentFiles.addLookupListener(WeakListeners.create(LookupListener.class, this, currentFiles));
-            resultChanged(null);
         }
 
         final void waitFinished() {
@@ -243,6 +241,7 @@ public final class OpenProjectList {
                 case 0: 
                     action = 1;
                     TASK.schedule(0);
+                    resultChanged(null);
                     return;
                 case 1:
                     action = 2;
@@ -273,7 +272,7 @@ public final class OpenProjectList {
             synchronized (INSTANCE) {
                 INSTANCE.openProjects = openedProjects;
                 INSTANCE.mainProject = mainProject;
-                INSTANCE.recentTemplates = recentTemplates;
+                INSTANCE.recentTemplates.addAll(recentTemplates);
             }
             
             INSTANCE.pchSupport.firePropertyChange(PROPERTY_OPEN_PROJECTS, new Project[0], openedProjects.toArray(new Project[0]));
@@ -456,7 +455,7 @@ public final class OpenProjectList {
 			    public void run() {
                                 //fix for #67114:
                                 try {
-                                    Thread.currentThread().sleep(50);
+                                    Thread.sleep(50);
                                 } catch (InterruptedException e) {
                                     // ignored
                                 }

@@ -371,7 +371,7 @@ public class FacesModel extends Model {
     
 
     //--------------------------------------------------------------------------------- Construction
-    private static final Logger TIMERS = Logger.getLogger("TIMER.facesModels"); // NOI18N
+    private static final Logger TIMERS = Logger.getLogger("TIMER.visualweb"); // NOI18N
     
     /**
      * Creates a new instance of FacesModel

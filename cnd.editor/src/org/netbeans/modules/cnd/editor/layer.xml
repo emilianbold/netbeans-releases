@@ -186,14 +186,16 @@
     </folder>
     
     <folder name="Services">
-            
         <folder name="IndentEngine">
             <file name="org-netbeans-modules-cnd-editor-cplusplus-CCIndentEngine.settings" url="resources/CCIndentEngine.settings">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.editor.cplusplus.Bundle"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/editor/resources/indentEngine.gif"/>
+                <attr name="hidden" boolvalue="true"/>
             </file>
-            
             <file name="org-netbeans-modules-cnd-editor-cplusplus-CIndentEngine.settings" url="resources/CIndentEngine.settings">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.editor.cplusplus.Bundle"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/editor/resources/indentEngine.gif"/>
+                <attr name="hidden" boolvalue="true"/>
             </file>
         </folder> <!-- IndentEngine -->
     </folder>	<!-- Services -->

@@ -65,22 +65,20 @@ import java.util.List;
 import java.util.ArrayList;
 import javax.swing.text.JTextComponent;
 import javax.swing.text.BadLocationException;
-import org.netbeans.editor.Formatter;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.SettingsUtil;
 import org.netbeans.editor.SyntaxSupport;
 import org.netbeans.editor.TokenID;
 import org.netbeans.editor.ext.CompletionQuery;
-import org.netbeans.editor.ext.ExtFormatter;
 import org.netbeans.editor.ext.ExtSettingsDefaults;
 import org.netbeans.editor.ext.ExtSettingsNames;
 import org.netbeans.modules.cnd.api.model.CsmNamespaceAlias;
 import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
-import org.netbeans.modules.cnd.editor.cplusplus.CCSettingsNames;
 import org.netbeans.modules.cnd.editor.cplusplus.CCTokenContext;
 import org.openide.util.NbBundle;
 
 import org.netbeans.modules.cnd.completion.csm.CompletionResolver;
+import org.netbeans.modules.cnd.editor.api.CodeStyle;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.netbeans.spi.editor.completion.CompletionItem;
 
@@ -1764,15 +1762,7 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
                             text = ")"; // NOI18N
                         } else { // one or more parameters
                             int ind = substituteExp.getParameterCount();
-                            boolean addSpace = false;
-                            Formatter f = doc.getFormatter();
-                            if (f instanceof ExtFormatter) {
-                                Object o = ((ExtFormatter)f).getSettingValue(CCSettingsNames.CC_FORMAT_SPACE_AFTER_COMMA);
-                                if ((o instanceof Boolean) && ((Boolean)o).booleanValue()) {
-                                    addSpace = true;
-                                }
-                            }
-
+                            boolean addSpace = CodeStyle.getDefault(doc).spaceAfterComma();
                             try {
                                 if (addSpace && (ind == 0 || (substituteOffset > 0
                                                               && Character.isWhitespace(doc.getText(substituteOffset - 1, 1).charAt(0))))
@@ -1793,15 +1783,7 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
 
                     default:
                         text = getMainText(csmRepl);
-                        boolean addSpace = false;
-                        Formatter f = doc.getFormatter();
-                        if (f instanceof ExtFormatter) {
-                            Object o = ((ExtFormatter)f).getSettingValue(CCSettingsNames.CC_FORMAT_SPACE_BEFORE_PARENTHESIS);
-                            if ((o instanceof Boolean) && ((Boolean)o).booleanValue()) {
-                                addSpace = true;
-                            }
-                        }
-
+                        boolean addSpace = CodeStyle.getDefault(doc).spaceBeforeMethodCallParen();//getFormatSpaceBeforeParenthesis();
                         if (addSpace) {
                             text += ' ';
                         }

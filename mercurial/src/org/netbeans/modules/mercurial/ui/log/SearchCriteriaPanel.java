@@ -45,8 +45,8 @@ import javax.swing.*;
 import java.io.File;
 import java.text.DateFormat;
 import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.Date;
+import org.netbeans.modules.mercurial.util.HgUtils;
 
 /**
  * Packages search criteria in Search History panel.
@@ -57,16 +57,15 @@ class SearchCriteriaPanel extends javax.swing.JPanel {
     
     private final File[] roots;
     private final String url;
-    
+
     /** Creates new form SearchCriteriaPanel */
     public SearchCriteriaPanel(File [] roots) {
         this.roots = roots;
         this.url = null;
         initComponents();
-
-        String todaysDate = new SimpleDateFormat("yyyy-MM-dd").format(new Date()); // NOI18N
-        tfFrom.setText(todaysDate);
-        tfTo.setText(todaysDate);
+        
+        tfFrom.setText(HgUtils.getLastWeeksDateStr());
+        tfTo.setText(HgUtils.getTodaysDateStr());
     }
 
     public SearchCriteriaPanel(String url) {
@@ -74,9 +73,8 @@ class SearchCriteriaPanel extends javax.swing.JPanel {
         this.roots = null;
         initComponents();
 
-        String todaysDate = new SimpleDateFormat("yyyy-MM-dd").format(new Date()); // NOI18N
-        tfFrom.setText(todaysDate);
-        tfTo.setText(todaysDate);
+        tfFrom.setText(HgUtils.getLastWeeksDateStr());
+        tfTo.setText(HgUtils.getTodaysDateStr());
     }
     
     public String getFrom() {

@@ -66,6 +66,10 @@ public final class XRefResultSet {
         scopeEntries.get(contextScope).add(entry);
     }
     
+    public final Collection<ContextEntry> getEntries(ContextScope contextScope) {
+        return scopeEntries.get(contextScope);
+    }
+    
     public final void incrementScopeCounter(ContextScope contextScope) {
         int val = scopes.get(contextScope);
         scopes.put(contextScope, ++val);
@@ -81,9 +85,9 @@ public final class XRefResultSet {
 
     public final int getNumberOfContexts(ContextScope contextScope, boolean relative) {
         int num = scopes.get(contextScope);
-        if (relative && num != 0) {
+        if (relative && (num != 0)) {
             assert num > 0;
-            num /= getNumberOfAllContexts();
+            num = (num * 100) / getNumberOfAllContexts();
         }
         return num;
     }
@@ -113,16 +117,19 @@ public final class XRefResultSet {
     
     public enum DeclarationScope {
         UNRESOLVED,
-        PROJECT,
-        LIBRARY,
+        PROJECT_GLOBAL,
+        LIBRARY_GLOBAL,
+        NAMESPACE_THIS,
         PROJECT_NAMESPACE,
         LIBRARY_NAMESPACE,
-        FILE,
-        FUNCTION,
-        NAMESPACE_THIS,
-        NAMESPACE,
+        FILE_THIS,
+        PROJECT_FILE,
+        LIBRARY_FILE,
+        FUNCTION_THIS,
         CLASSIFIER_THIS,
-        CLASSIFIER_PARENT
+        CLASSIFIER_PARENT,
+        PROJECT_CLASSIFIER,
+        LIBRARY_CLASSIFIER,
     }
     
     public enum IncludeLevel {
