@@ -194,7 +194,7 @@ public class BPELSourceMultiViewElement extends CloneableEditor
         editor.addUndoManagerToDocument();
 //        addUndoManager();
         
-        getValidationController().triggerValidation( true );
+        getValidationController().triggerValidation(true);
     }
     
     public void componentClosed() {

@@ -38,44 +38,20 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.spring.beans.refactoring;
+package org.netbeans.modules.spring.beans.refactoring.plugins;
 
-import java.io.IOException;
-import java.util.List;
-import org.netbeans.modules.refactoring.api.Problem;
-import org.netbeans.modules.refactoring.api.WhereUsedQuery;
-import org.netbeans.modules.refactoring.spi.RefactoringElementsBag;
-import org.netbeans.modules.refactoring.spi.RefactoringElementImplementation;
+import org.netbeans.modules.refactoring.spi.ui.TreeElement;
+import org.netbeans.modules.refactoring.spi.ui.TreeElementFactoryImplementation;
 
 /**
  * @author John Baker
  */
-final class SpringBeansRefactoringFindUsagesPlugin extends SpringBeansJavaRefactoringPlugin {
-    private WhereUsedQuery myQuery;
-    
-    SpringBeansRefactoringFindUsagesPlugin(WhereUsedQuery query) {
-        myQuery = query;
-    }
+public final class SpringBeansRefactoringTreeImpl implements TreeElementFactoryImplementation {
 
-    public Problem prepare(RefactoringElementsBag refactoringElements) {
-        
+    public TreeElement getTreeElement(Object object) {        
         return null;
     }
 
-    public Problem fastCheckParameters() {
-        return null;
-    }
-
-    public Problem checkParameters() {
-        return null;
-    }
-
-    public void doRefactoring(List<RefactoringElementImplementation> elements)
-            throws IOException {
-    }
-
-
-    public void cancelRequest() {
-        throw new UnsupportedOperationException("Not supported yet.");
+    public void cleanUp() {
     }
 }
