@@ -39,59 +39,24 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.spring.beans;
+package org.netbeans.modules.spring.webmvc;
 
-import java.io.ByteArrayInputStream;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import org.netbeans.editor.BaseDocument;
-import org.netbeans.modules.spring.api.beans.SpringConstants;
-import org.openide.filesystems.FileUtil;
-import org.openide.text.CloneableEditorSupport;
+import org.netbeans.api.project.Project;
+import org.netbeans.spi.project.LookupProvider;
+import org.openide.util.Lookup;
+import org.openide.util.lookup.Lookups;
 
 /**
  *
  * @author Andrei Badea
  */
-public class TestUtils {
+public class ProjectLookupProvider implements LookupProvider {
 
-    private TestUtils() {}
-
-    public static String createXMLConfigText(String snippet) {
-        return "<?xml version='1.0' encoding='UTF-8'?>" +
-                "<beans xmlns='http://www.springframework.org/schema/beans' " +
-                "       xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance' " +
-                "       xmlns:p='http://www.springframework.org/schema/p' " +
-                "       xsi:schemaLocation='http://www.springframework.org/schema/beans " +
-                "       http://www.springframework.org/schema/beans/spring-beans-2.5.xsd'>" +
-                snippet +
-                "</beans>";
-    }
-    
-    public static BaseDocument createSpringXMLConfigDocument(String content) throws Exception {
-        Class<?> kitClass = CloneableEditorSupport.getEditorKit(SpringConstants.CONFIG_MIME_TYPE).getClass();
-        BaseDocument doc = new BaseDocument(kitClass, false);
-        doc.insertString(0, content, null);
-        return doc;
-    }
-
-    public static void copyStringToFile(String string, File path) throws IOException {
-        InputStream inputStream = new ByteArrayInputStream(string.getBytes());
-        try {
-            copyStreamToFile(inputStream, path);
-        } finally {
-            inputStream.close();
+    public Lookup createAdditionalLookup(Lookup baseContext) {
+        Project project = baseContext.lookup(Project.class);
+        if (project == null) {
+            throw new IllegalStateException("Lookup " + baseContext + " does not contain a Project");
         }
-    }
-
-    private static void copyStreamToFile(InputStream inputStream, File path) throws IOException {
-        FileOutputStream outputStream = new FileOutputStream(path, false);
-        try {
-            FileUtil.copy(inputStream, outputStream);
-        } finally {
-            outputStream.close();
-        }
+        return Lookups.singleton(new WebProjectSpringConfigFileProvider(project));
     }
 }

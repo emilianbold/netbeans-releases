@@ -39,59 +39,16 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.spring.beans;
-
-import java.io.ByteArrayInputStream;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import org.netbeans.editor.BaseDocument;
-import org.netbeans.modules.spring.api.beans.SpringConstants;
-import org.openide.filesystems.FileUtil;
-import org.openide.text.CloneableEditorSupport;
+package org.netbeans.modules.spring.api.beans;
 
 /**
  *
  * @author Andrei Badea
  */
-public class TestUtils {
+public final class SpringConstants {
 
-    private TestUtils() {}
+    // XXX unify with SpringXMLConfigDataLoader.REQUIRED_MIME.
+    public static final String CONFIG_MIME_TYPE = "text/x-springconfig+xml"; // NOI18N
 
-    public static String createXMLConfigText(String snippet) {
-        return "<?xml version='1.0' encoding='UTF-8'?>" +
-                "<beans xmlns='http://www.springframework.org/schema/beans' " +
-                "       xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance' " +
-                "       xmlns:p='http://www.springframework.org/schema/p' " +
-                "       xsi:schemaLocation='http://www.springframework.org/schema/beans " +
-                "       http://www.springframework.org/schema/beans/spring-beans-2.5.xsd'>" +
-                snippet +
-                "</beans>";
-    }
-    
-    public static BaseDocument createSpringXMLConfigDocument(String content) throws Exception {
-        Class<?> kitClass = CloneableEditorSupport.getEditorKit(SpringConstants.CONFIG_MIME_TYPE).getClass();
-        BaseDocument doc = new BaseDocument(kitClass, false);
-        doc.insertString(0, content, null);
-        return doc;
-    }
-
-    public static void copyStringToFile(String string, File path) throws IOException {
-        InputStream inputStream = new ByteArrayInputStream(string.getBytes());
-        try {
-            copyStreamToFile(inputStream, path);
-        } finally {
-            inputStream.close();
-        }
-    }
-
-    private static void copyStreamToFile(InputStream inputStream, File path) throws IOException {
-        FileOutputStream outputStream = new FileOutputStream(path, false);
-        try {
-            FileUtil.copy(inputStream, outputStream);
-        } finally {
-            outputStream.close();
-        }
-    }
+    private SpringConstants() {}
 }
