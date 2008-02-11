@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -50,7 +50,6 @@ import org.netbeans.api.debugger.ActionsManager;
 import org.netbeans.modules.ruby.debugger.EditorUtil;
 import org.netbeans.modules.ruby.debugger.Util;
 import org.netbeans.spi.debugger.ActionsProviderSupport;
-import org.openide.text.Line;
 import org.openide.util.WeakListeners;
 import org.openide.windows.TopComponent;
 import org.rubyforge.debugcommons.RubyDebuggerException;
@@ -79,24 +78,12 @@ public final class RubyBreakpointActionProvider extends ActionsProviderSupport
     
     @Override
     public void doAction(Object action) {
-        Line line = EditorUtil.getCurrentLine();
-        if (line == null) {
-            return;
-        }
-        
-        boolean removed = false;
-        for (RubyBreakpoint breakpoint : RubyBreakpointManager.getBreakpoints()) {
-            if (breakpoint.getLine().equals(line)) {
-                // breakpoint is already there, remove it (toggle)
-                RubyBreakpointManager.removeBreakpoint(breakpoint);
-                removed = true;
-                break;
-            }
-        }
-        
-        if (!removed) { // new breakpoint
+        RubyBreakpoint breakpoint = RubyBreakpointManager.getCurrentLineBreakpoint();
+        if (breakpoint != null) {
+            RubyBreakpointManager.removeBreakpoint(breakpoint);
+        } else { // new breakpoint
             try {
-                RubyBreakpointManager.addBreakpoint(line);
+                RubyBreakpointManager.addBreakpoint(EditorUtil.getCurrentLine());
             } catch (RubyDebuggerException e) {
                 Util.LOGGER.log(Level.WARNING, "Unable to add breakpoint.", e);
             }

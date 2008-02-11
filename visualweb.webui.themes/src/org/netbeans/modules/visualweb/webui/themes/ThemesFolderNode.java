@@ -50,6 +50,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.IOException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -169,7 +170,7 @@ final class ThemesFolderNode extends AbstractNode {
 
         private List getKeys() {
             List themesList = new /*Library*/ ArrayList();
-            Library[] libraries = LibraryManager.getDefault().getLibraries();
+            Library[] libraries = JsfProjectUtils.getProjectLibraryManager(project).getLibraries();
             for (int i = 0; i < libraries.length; i++) {
                 Library lib = libraries[i];
                 // XXX if (ThemeLibraryDefinition.LIBRARY_NAME.equals(lib.getType())) {
@@ -295,7 +296,7 @@ final class ThemesFolderNode extends AbstractNode {
                 // TODO: Should scan all librefs for any theme libraries and remove them
                 oldTheme = "theme-default"; // NOI18N
             }
-            Library oldThemeLibrary = LibraryManager.getDefault().getLibrary(oldTheme);
+            Library oldThemeLibrary = JsfProjectUtils.getProjectLibraryManager(project).getLibrary(oldTheme);
             if (oldThemeLibrary != null) {
                 try {
                     JsfProjectUtils.removeLibraryReferences(project, new Library[]{oldThemeLibrary});
@@ -325,13 +326,12 @@ final class ThemesFolderNode extends AbstractNode {
 
     private static String getThemeLibraryVersion(Library library) {
         // XXX It is a question whether to look for "classpath" or "runtime" or one of those.
-        List contents = library.getContent("classpath"); // TEMP
-        for (java.util.Iterator it = contents.iterator(); it.hasNext();) {
-            Object content = it.next();
-            if (content instanceof java.net.URL) {
-                java.net.URL url = (java.net.URL) content;
+        for (URL url : library.getContent("classpath")) {
                 try {
-                    url = extractFileUrlFromJarContentUrl(url);
+                    if (!url.getProtocol().equals("jar")) {
+                        continue; // ignore folders
+                    }
+                    url = FileUtil.getArchiveFile(url);
 
                     FileObject fo = org.openide.filesystems.URLMapper.findFileObject(url);
                     if (fo != null) {
@@ -342,25 +342,11 @@ final class ThemesFolderNode extends AbstractNode {
                     } else {
                         ErrorManager.getDefault().log("Cannot find file object for " + url.toString());
                     }
-                } catch (java.net.MalformedURLException mue) {
-                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, mue);
                 } catch (IOException ioe) {
                     ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ioe);
                 }
-            }
         }
         return null;
-    }
-
-    // XXX This shouldn't be needed if the URL is kept in the file form.
-    private static java.net.URL extractFileUrlFromJarContentUrl(java.net.URL jarContentUrl) throws java.net.MalformedURLException {
-        // XXX Horrible way hot to extract the file protocol from inside the jar one, is there a nicer way?
-        // If there is none, isn't it better to keep it in the lib as file protocol, and wrap it to jar
-        // only when needed. Otherwise this is forced, and that is very ugly and error-prone.
-        String externalForm = jarContentUrl.toExternalForm();
-        String newExternalForm = externalForm.replaceFirst("jar:", ""); // NOI18N
-        newExternalForm = newExternalForm.replaceFirst("!/", ""); // NOI18N
-        return new java.net.URL(newExternalForm);
     }
 
     private static String getThemeJarFileVersion(java.util.jar.JarFile jarFile) {

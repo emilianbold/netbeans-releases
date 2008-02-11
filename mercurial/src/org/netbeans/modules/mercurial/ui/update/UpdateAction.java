@@ -126,11 +126,6 @@ public class UpdateAction extends ContextAction {
     }
     
     public boolean isEnabled() {
-        // If it's a mercurial managed repository enable Update action
-        File root = HgUtils.getRootFile(context);
-        if (root == null)
-            return false;
-        else
-            return true;
+        return HgUtils.getRootFile(context) != null;
     }     
 }

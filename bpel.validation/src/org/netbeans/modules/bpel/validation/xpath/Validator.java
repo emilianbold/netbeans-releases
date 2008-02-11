@@ -83,7 +83,7 @@ import static org.netbeans.modules.soa.ui.util.UI.*;
  * @author Vladimir Yaroslavskiy
  * @version 2008.02.08
  */
-public final class Validator extends org.netbeans.modules.bpel.validation.util.Validator {
+public final class Validator extends org.netbeans.modules.bpel.validation.core.Validator {
 
   @Override
   public void visit(BooleanExpr expr) {

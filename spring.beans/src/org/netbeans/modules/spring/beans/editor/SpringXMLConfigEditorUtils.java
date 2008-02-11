@@ -42,28 +42,27 @@ package org.netbeans.modules.spring.beans.editor;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.EnumSet;
 import java.util.List;
-import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
+import javax.lang.model.element.PackageElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
+import javax.lang.model.util.SimpleElementVisitor6;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.StyledDocument;
 import org.netbeans.api.java.project.JavaProjectConstants;
-import org.netbeans.api.java.source.ClassIndex.NameKind;
-import org.netbeans.api.java.source.ClassIndex.SearchScope;
 import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.ElementHandle;
+import org.netbeans.api.java.source.ElementUtilities;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.Task;
@@ -139,16 +138,82 @@ public final class SpringXMLConfigEditorUtils {
         return null;
     }
     
-    public static ElementHandle<TypeElement> findClassElementByBinaryName(String binaryName, JavaSource js) {
-        Set<ElementHandle<TypeElement>> handles = js.getClasspathInfo().getClassIndex().getDeclaredTypes("", 
-                NameKind.CASE_INSENSITIVE_PREFIX, EnumSet.allOf(SearchScope.class));
-        for (ElementHandle<TypeElement> eh : handles) {
-            if (eh.getBinaryName().equals(binaryName)) {
-                return eh;
+    public static ElementHandle<TypeElement> findClassElementByBinaryName(final String binaryName, JavaSource js) {
+        final ElementHandle<TypeElement>[] elem = new ElementHandle[1];
+        try {
+            js.runUserActionTask(new Task<CompilationController>() {
+
+                public void run(CompilationController cc) throws Exception {
+                    if (!binaryName.contains("$")) { // NOI18N
+                        // fast search based on fqn
+                        TypeElement te = cc.getElements().getTypeElement(binaryName);
+                        if (te != null) {
+                            elem[0] = ElementHandle.create(te);
+                        }
+                    } else {
+                        // get containing package
+                        String packageName = ""; // NOI18N
+                        int dotIndex = binaryName.lastIndexOf("."); // NOI18N
+                        if (dotIndex != -1) {
+                            packageName = binaryName.substring(0, dotIndex);
+                        }
+                        PackageElement packElem = cc.getElements().getPackageElement(packageName);
+                        if (packElem == null) {
+                            return;
+                        }
+
+                        // scan for element matching the binaryName
+                        TypeElement te = new TypeScanner().visit(packElem, binaryName);
+                        if (te != null) {
+                            elem[0] = ElementHandle.create(te);
+                        }
+                    }
+                }
+            }, true);
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+
+        return elem[0];
+    }
+    
+    private static class TypeScanner extends SimpleElementVisitor6<TypeElement, String> {
+
+        @Override
+        public TypeElement visitPackage(PackageElement packElem, String binaryName) {
+            for(Element e : packElem.getEnclosedElements()) {
+                if(e.getKind().isClass()) {
+                    TypeElement ret = e.accept(this, binaryName);
+                    if(ret != null) {
+                        return ret;
+                    }
+                }
             }
+            
+            return null;
+        }
+
+        @Override
+        public TypeElement visitType(TypeElement typeElement, String binaryName) {
+            String bName = ElementUtilities.getBinaryName(typeElement);
+            if(binaryName.equals(bName)) {
+                return typeElement;
+            } else if(binaryName.startsWith(bName)) {
+                for(Element child : typeElement.getEnclosedElements()) {
+                    if(!child.getKind().isClass()) {
+                        continue;
+                    }
+                    
+                    TypeElement retVal = child.accept(this, binaryName);
+                    if(retVal != null) {
+                        return retVal;
+                    }
+                }
+            }
+            
+            return null;
         }
         
-        return null;
     }
 
     public static Node getBean(Node tag) {

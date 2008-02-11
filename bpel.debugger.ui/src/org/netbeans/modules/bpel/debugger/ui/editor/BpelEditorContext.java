@@ -283,6 +283,23 @@ public class BpelEditorContext implements EditorContext {
                     
                     mvh.requestVisible(mvp);
                     mvh.requestActive(mvp);
+                } else {
+                    final String currentId = 
+                            mvh.getSelectedPerspective().preferredID();
+                    
+                    if (!currentId.equals("orch-designer") && 
+                            !currentId.equals("bpelsource")) {
+                        
+                        for (MultiViewPerspective temp: mvh.getPerspectives()) {
+                            if (temp.preferredID().equals("orch-designer")) {
+                                mvp = temp;
+                                break;
+                            }
+                        }
+                        
+                        mvh.requestVisible(mvp);
+                        mvh.requestActive(mvp);
+                    }
                 }
                 
                 if (mvp.preferredID().equals("orch-designer")) {

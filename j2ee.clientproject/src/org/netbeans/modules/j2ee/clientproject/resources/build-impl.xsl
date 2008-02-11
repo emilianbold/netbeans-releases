@@ -442,7 +442,9 @@ made subject to such option by the copyright holder.
                     </attribute>
                     <sequential>
                         <nbjpdareload>
-                            <fileset includes="${{fix.includes}}*.class" dir="@{{dir}}"/>
+                            <fileset includes="${{fix.classes}}" dir="@{{dir}}" >
+                                <include name="${{fix.includes}}*.class"/>
+                            </fileset>
                         </nbjpdareload>
                     </sequential>
                 </macrodef>
