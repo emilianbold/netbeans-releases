@@ -46,13 +46,10 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 import org.netbeans.modules.web.jsps.parserapi.JspParserAPI.WebModule;
-import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ProjectManager;
 
 import org.netbeans.modules.web.jsps.parserapi.JspParserAPI;
 import org.netbeans.modules.web.jsps.parserapi.JspParserFactory;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 
 import org.netbeans.junit.NbTestCase;
 

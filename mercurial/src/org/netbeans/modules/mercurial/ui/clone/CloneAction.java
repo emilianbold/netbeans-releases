@@ -82,19 +82,6 @@ public class CloneAction extends ContextAction {
     }
     
     public void performAction(ActionEvent ev){
-        if(!HgRepositoryContextCache.hasHistory(context)){
-            HgUtils.outputMercurialTabInRed(
-                    NbBundle.getMessage(CloneAction.class,
-                    "MSG_CLONE_TITLE")); // NOI18N
-            HgUtils.outputMercurialTabInRed(
-                    NbBundle.getMessage(CloneAction.class,
-                    "MSG_CLONE_TITLE_SEP")); // NOI18N
-            HgUtils.outputMercurialTab(NbBundle.getMessage(CloneAction.class, "MSG_CLONE_NOTHING")); // NOI18N
-            HgUtils.outputMercurialTabInRed(NbBundle.getMessage(CloneAction.class, "MSG_CLONE_DONE")); // NOI18N
-            HgUtils.outputMercurialTab(""); // NOI18N
-            return;
-        }
-
         final File root = HgUtils.getRootFile(context);
         if (root == null) return;
         
