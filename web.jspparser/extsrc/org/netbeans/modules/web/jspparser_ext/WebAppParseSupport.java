@@ -463,7 +463,7 @@ public class WebAppParseSupport implements WebAppParseProxy, PropertyChangeListe
             FileObject wmRoot, FileObject jspPage, Throwable ex) throws IOException {
         
         // PENDING: maybe we should check all nested exceptions
-        StringBuffer allStack = new StringBuffer();
+        StringBuilder allStack = new StringBuilder();
         Throwable last = ex;
         allStack.append(ContextUtil.getThrowableMessage(ex, true));
         while (ex instanceof JasperException) {
@@ -591,7 +591,7 @@ System.out.println("--------ENDSTACK------");        */
         }
         
         public String toString() {
-            StringBuffer sb = new StringBuffer();
+            StringBuilder sb = new StringBuilder();
             sb.append(super.toString());
             sb.append(", parent : "); // NOI18N
             sb.append(getParent().toString());
