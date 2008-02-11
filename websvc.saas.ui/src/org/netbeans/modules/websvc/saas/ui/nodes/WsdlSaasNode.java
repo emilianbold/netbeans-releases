@@ -40,9 +40,7 @@
 package org.netbeans.modules.websvc.saas.ui.nodes;
 
 import java.awt.Image;
-import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.Transferable;
-import java.awt.datatransfer.UnsupportedFlavorException;
 import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
@@ -51,12 +49,11 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import javax.swing.Action;
-import org.netbeans.modules.websvc.core.WebServiceReference;
-import org.netbeans.modules.websvc.core.WebServiceTransferable;
-import org.netbeans.modules.websvc.manager.model.WebServiceListModel;
+import org.netbeans.modules.websvc.saas.model.Saas;
 import org.netbeans.modules.websvc.saas.model.WsdlSaas;
 import org.netbeans.modules.websvc.saas.ui.actions.ViewWSDLAction;
-import org.openide.nodes.Node;
+import org.netbeans.modules.websvc.saas.util.SaasTransferable;
+import org.netbeans.modules.websvc.saas.util.WsdlUtil;
 import org.openide.nodes.PropertySupport;
 import org.openide.nodes.Sheet;
 import org.openide.nodes.Sheet.Set;
@@ -71,7 +68,8 @@ import org.openide.util.lookup.InstanceContent;
  * @author nam
  */
 public class WsdlSaasNode extends SaasNode {
-
+    Transferable transferable;
+    
     public WsdlSaasNode(WsdlSaas saas) {
         this(saas, new InstanceContent());
     }
@@ -79,6 +77,8 @@ public class WsdlSaasNode extends SaasNode {
     protected WsdlSaasNode(WsdlSaas saas, InstanceContent content) {
         super(new WsdlSaasNodeChildren(saas), saas);
         content.add(saas);
+        transferable = ExTransferable.create(
+            new SaasTransferable<WsdlSaas>(saas, SaasTransferable.WSDL_METHOD_FLAVORS));
     }
     
     @Override
@@ -109,7 +109,7 @@ public class WsdlSaasNode extends SaasNode {
 
     @Override
     public void destroy() throws IOException{
-        WebServiceListModel.getInstance().removeWebService(getSaas().getWsdlData().getId());
+        WsdlUtil.removeWsdlData(getSaas().getWsdlData());
         super.destroy();
     }
     
@@ -164,66 +164,11 @@ public class WsdlSaasNode extends SaasNode {
     
     @Override
     public Transferable clipboardCopy() throws IOException {
-        if (! getSaas().getWsdlData().isResolved()) {
+        if (getSaas().getState() != Saas.State.READY) {
+            getSaas().toStateReady();
             return super.clipboardCopy();
         }
-        
-        // enable drag-and-drop of a single port if only one is available
-        Node[] children = getChildren().getNodes();
-        if (children != null && children.length == 1) {
-            final Transferable portTransferable = children[0].clipboardCopy();
-            final Transferable wsTransferable = super.clipboardCopy();
-            final Transferable webserviceTransferable = ExTransferable.create(
-                    new WebServiceTransferable(new WebServiceReference(
-                    getWsdlURL(), getSaas().getWsdlModel().getName(), "")));
-            
-            DataFlavor[] portFlavors = portTransferable.getTransferDataFlavors();
-            DataFlavor[] wsFlavors = wsTransferable.getTransferDataFlavors();
-            DataFlavor[] webserviceFlavors = webserviceTransferable.getTransferDataFlavors();
-            
-            final DataFlavor[] flavors =
-                    new DataFlavor[portFlavors.length + wsFlavors.length + webserviceFlavors.length];
-            
-            int j = 0;
-            for(int i = 0; i <webserviceFlavors.length; i++){
-                flavors[j++] = webserviceFlavors[i];
-            }
-            for (int i = 0; i < portFlavors.length; i++) {
-                flavors[j++] = portFlavors[i];
-            }
-            for (int i = 0; i < wsFlavors.length; i++) {
-                flavors[j++] = wsFlavors[i];
-            }
-            
-            return new Transferable() {
-                public DataFlavor[] getTransferDataFlavors() {
-                    return flavors;
-                }
-                
-                public boolean isDataFlavorSupported(DataFlavor flavor) {
-                    for (int i = 0; i < flavors.length; i++) {
-                        if (flavors[i].equals(flavor)) {
-                            return true;
-                        }
-                    }
-                    return false;
-                }
-                
-                public Object getTransferData(DataFlavor flavor) throws UnsupportedFlavorException, IOException {
-                    if (webserviceTransferable.isDataFlavorSupported(flavor)){
-                        return webserviceTransferable.getTransferData(flavor);
-                    } else if (portTransferable.isDataFlavorSupported(flavor)) {
-                        return portTransferable.getTransferData(flavor);
-                    }else if (wsTransferable.isDataFlavorSupported(flavor)) {
-                        return wsTransferable.getTransferData(flavor);
-                    } else {
-                        throw new UnsupportedFlavorException(flavor);
-                    }
-                }
-            };
-        }else {
-            return super.clipboardCopy();
-        }
+        return SaasTransferable.addFlavors(transferable);
     }
     
     private URL getWsdlURL(){

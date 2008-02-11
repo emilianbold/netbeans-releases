@@ -37,33 +37,27 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.websvc.saas.ui.nodes;
+package org.netbeans.modules.websvc.manager.impl;
 
-import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlOperation;
-import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlPort;
-import org.netbeans.modules.websvc.saas.model.WsdlSaas;
-import org.netbeans.modules.websvc.saas.model.WsdlSaasMethod;
-import org.openide.util.lookup.InstanceContent;
+import org.netbeans.modules.websvc.manager.model.WebServiceListModel;
+import org.netbeans.modules.websvc.saas.spi.websvcmgr.WsdlData;
+import org.netbeans.modules.websvc.saas.spi.websvcmgr.WsdlDataManager;
 
 /**
  *
  * @author nam
  */
-public class WsdlSaasMethodNode extends WsdlMethodNode {
-    private WsdlSaasMethod saasMethod;
-    
-    public WsdlSaasMethodNode(WsdlSaasMethod saasMethod) {
-        this(saasMethod, new InstanceContent());
+public class WsdlDataManagerImpl implements WsdlDataManager {
+
+    public WsdlData getWsdlData(String wsdlUrl, String serviceName, boolean synchronuous) {
+        return WebServiceListModel.getInstance().getWebServiceData(wsdlUrl, serviceName, synchronuous);
     }
 
-    public WsdlSaasMethodNode(WsdlSaasMethod saasMethod, InstanceContent content) {
-        super(saasMethod.getSaas(), saasMethod.getPort(), saasMethod.getWsdlOperation(), content);
-        this.saasMethod = saasMethod;
-        content.add(saasMethod);
+    public void removeWsdlData(String wsdlUrl, String serviceName) {
+        WsdlData data = WebServiceListModel.getInstance().findWebServiceData(wsdlUrl, serviceName, true);
+        if (data != null) {
+            WebServiceListModel.getInstance().removeWebService(data.getId());
+        }
     }
 
-    @Override
-    public String getDisplayName() {
-        return saasMethod.getName();
-    }
 }
