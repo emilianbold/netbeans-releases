@@ -41,6 +41,7 @@ public class GrailsServerCommandAction extends AbstractAction implements Present
     public GrailsServerCommandAction (Project project){
         grailsCommandMenu.add(new RunGrailsServerCommandAction(project));
         grailsCommandMenu.add(new StopGrailsServerCommandAction(project));
+        grailsCommandMenu.add(new CreateWarFileAction(project));
         grailsCommandMenu.add(new ShellAction(project));
     }
     

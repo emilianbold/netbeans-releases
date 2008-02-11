@@ -134,7 +134,7 @@ public class ExternalGrailsServer implements GrailsServer{
             }
         else if(cmd.startsWith("create-domain-class") || 
                 cmd.startsWith("create-controller")   || 
-                cmd.startsWith("generate-views")   || 
+                cmd.startsWith("generate-views")      || 
                 cmd.startsWith("create-service")) {
 
             assert io ==  null;
@@ -171,6 +171,16 @@ public class ExternalGrailsServer implements GrailsServer{
             else {
                 LOG.log(Level.WARNING, "Could not get serverState through lookup");
                 }
+        }
+        else if(cmd.startsWith("war")) {
+
+            String tabName = "Grails Server for: " + prj.getProjectDirectory().getName();
+
+            gsr = new GrailsServerRunnable(outputReady, true, cwdName, prependOption() + cmd);
+            ExecutorTask exTask = engine.execute(tabName, gsr, io);
+
+            waitForOutput();
+
         }
         else if(cmd.startsWith("shell")) {
 

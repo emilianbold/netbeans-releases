@@ -42,6 +42,8 @@ public class Settings {
     private static final String GRAILS_HOME_KEY = "grailsHome";
     private static final String GRAILS_PORT_KEY = "grailsPrj-Port-";
     private static final String GRAILS_ENV_KEY = "grailsPrj-Env-";
+    private static final String GRAILS_DEPLOY_KEY = "grailsPrj-Deploy-";
+    private static final String GRAILS_AUTODEPLOY_KEY = "grailsPrj-Autodeploy-";
     
     protected Settings () {}
     
@@ -83,6 +85,18 @@ public class Settings {
         return GRAILS_ENV_KEY+getProjectName(prj);
     }
     
+    String getDeployKey(Project prj){
+        assert prj != null;
+        return GRAILS_DEPLOY_KEY+getProjectName(prj);
+    }
+    
+    String getAutodeployKey(Project prj){
+        assert prj != null;
+        return GRAILS_AUTODEPLOY_KEY+getProjectName(prj);
+    }
+    
+    // Which port should we run on
+    
     public String getPortForProject(Project prj){
         assert prj != null;
         return getPreferences().get(getPortKey(prj), null);
@@ -95,6 +109,8 @@ public class Settings {
         getPreferences().put(getPortKey(prj), port);
         
     }
+    
+    // which Environment should we use (Test, Production, Development, etc.)
     
     public String getEnvForProject(Project prj){
         assert prj != null;
@@ -109,7 +125,34 @@ public class Settings {
         
     }
     
+    // Should we Autodeploy right after a 'grails war' command?
     
+    public boolean getAutoDeployFlagForProject(Project prj){
+        assert prj != null;
+        return getPreferences().getBoolean(getAutodeployKey(prj), false);
+        }
+    
+    public void setAutoDeployFlagForProject(Project prj, boolean flag){
+        assert prj != null;
+        
+        getPreferences().putBoolean(getAutodeployKey(prj), flag);
+        
+    }    
+    
+    // Where should the WAR-File be deployed to?
+    
+    public String getDeployDirForProject(Project prj){
+        assert prj != null;
+        return getPreferences().get(getDeployKey(prj), null);
+        }
+    
+    public void setDeployDirForProject(Project prj, String dir){
+        assert prj != null;
+        assert dir != null;
+        
+        getPreferences().put(getDeployKey(prj), dir);
+        
+    }    
     
     
 }

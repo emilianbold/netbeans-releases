@@ -70,5 +70,19 @@ public class GrailsProjectConfig {
         assert env != null;
         settings.setEnvForProject(prj, env);
         }
+ 
+    public String getDeployDir() {
+        return settings.getDeployDirForProject(prj);
+        }
+    public void setDeployDir(String dir){
+        assert dir != null;
+        settings.setDeployDirForProject(prj, dir);
+        }
     
+    public boolean getAutoDeployFlag() {
+        return settings.getAutoDeployFlagForProject(prj);
+        }
+    public void setAutoDeployFlag(boolean flag){
+        settings.setAutoDeployFlagForProject(prj, flag);
+        }    
 }
