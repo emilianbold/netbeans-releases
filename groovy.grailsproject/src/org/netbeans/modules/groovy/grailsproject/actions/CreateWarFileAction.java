@@ -129,7 +129,7 @@ public class CreateWarFileAction extends AbstractAction implements OutputListene
 
                                     LOG.log(Level.FINEST, "Target dir from config: " + deployDir);
 
-                                    if (deployDir.length() > 0) {
+                                    if (deployDir != null && deployDir.length() > 0) {
 
                                         File targetFile = new File(deployDir);
                                         FileObject target = FileUtil.toFileObject(targetFile);
