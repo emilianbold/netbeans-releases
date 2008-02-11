@@ -33,6 +33,7 @@ import org.netbeans.modules.bpel.debugger.api.psm.PsmEntity;
 import org.netbeans.modules.bpel.debugger.bdiclient.impl.ProcessInstanceImpl;
 import org.netbeans.modules.bpel.debugger.eventlog.ActivityCompletedRecord;
 import org.netbeans.modules.bpel.debugger.eventlog.ActivityStartedRecord;
+import org.netbeans.modules.bpel.debugger.eventlog.ActivityTerminatedRecord;
 import org.netbeans.modules.bpel.debugger.eventlog.BranchCompletedRecord;
 import org.netbeans.modules.bpel.debugger.eventlog.BranchStartedRecord;
 import org.netbeans.modules.bpel.debugger.eventlog.EventLog;
@@ -178,6 +179,8 @@ public class ProcessExecutionModelImpl implements ProcessExecutionModel {
                     update((ActivityStartedRecord) record);
                 } else if (record instanceof ActivityCompletedRecord) {
                     update((ActivityCompletedRecord) record);
+                } else if (record instanceof ActivityTerminatedRecord) {
+                    update((ActivityTerminatedRecord) record);
                 } else if (record instanceof BranchStartedRecord) {
                     update((BranchStartedRecord) record);
                 } else if (record instanceof BranchCompletedRecord) {
@@ -225,6 +228,21 @@ public class ProcessExecutionModelImpl implements ProcessExecutionModel {
         }
         
         branch.activityCompleted(psmEntity);
+    }
+    
+    private void update(
+            final ActivityTerminatedRecord record) {
+        final PsmEntity psmEntity = myPsm.find(record.getActivityXpath());
+        if (psmEntity == null) {
+            return;
+        }
+        
+        final BranchImpl branch = myBranches.get(record.getBranchId());
+        if (branch == null) {
+            return;
+        }
+        
+        branch.activityTerminated(psmEntity);
     }
     
     private void update(
@@ -558,6 +576,21 @@ public class ProcessExecutionModelImpl implements ProcessExecutionModel {
                         
                         pemEntity.setState(PemEntity.State.COMPLETED);
                     }
+                }
+            }
+        }
+        
+        public void activityTerminated(final PsmEntity psmEntity) {
+            if (!myCallStack.isEmpty()) {
+                // If the call stack is not empty -- try to remove all entities,
+                // that are "below" it
+                PsmEntity tip = myCallStack.peek().getPsmEntity();
+                while (tip.getXpath().startsWith(psmEntity.getXpath())) {
+                    final PemEntityImpl pemEntity = myCallStack.pop();
+                    
+                    pemEntity.setState(PemEntity.State.COMPLETED);
+                    
+                    tip = myCallStack.peek().getPsmEntity();
                 }
             }
         }

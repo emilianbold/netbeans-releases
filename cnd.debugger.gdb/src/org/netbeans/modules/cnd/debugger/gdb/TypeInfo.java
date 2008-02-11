@@ -68,7 +68,6 @@ public class TypeInfo {
         
         TypeInfo tinfo = ticache.get(var.getType());
         if (tinfo != null) {
-//            log.fine("TI.getTypeInfo[t]: " + var.getType() + " ==> [" + tinfo.resolvedType + "]"); // NOI18N
             return tinfo;
         }
         
@@ -113,7 +112,7 @@ public class TypeInfo {
         this.rawInfo = rawInfo;
         map = null;
         
-        if (resolvedType != null && resolvedType.length() > 0) {
+        if (resolvedType != null && resolvedType.length() > 0 && !Boolean.getBoolean("gdb.disable.ti-cache")) {
             ticache = debugger.getTypeInfoCache();
             log.fine("TI.<Init>: " + vartype + " ==> [" + resolvedType + ", " + rawInfo + "]");
 

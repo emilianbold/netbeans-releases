@@ -60,6 +60,7 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.Item;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakefileConfiguration;
+import org.netbeans.modules.cnd.makeproject.api.remote.FilePathAdaptor;
 import org.netbeans.spi.project.support.ant.AntProjectEvent;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.AntProjectListener;
@@ -100,36 +101,50 @@ public class MakeSources implements Sources, AntProjectListener {
         if (pd != null) {
             MakeConfigurationDescriptor epd = (MakeConfigurationDescriptor) pd;
             Set<String> set = new HashSet<String>();
-            Item[] projectItems = epd.getProjectItems();
+            
             // Add external folders to sources.
-            if (projectItems != null) {
-                for (int i = 0; i < projectItems.length; i++) {
-                    Item item = projectItems[i];
-                    String name = item.getPath();
-                    if (!IpeUtils.isPathAbsolute(name)) {
-                        continue;
+            if (epd.getVersion() < 41) {
+                Item[] projectItems = epd.getProjectItems();
+                if (projectItems != null) {
+                    for (int i = 0; i < projectItems.length; i++) {
+                        Item item = projectItems[i];
+                        String name = item.getPath();
+                        if (!IpeUtils.isPathAbsolute(name)) {
+                            continue;
+                        }
+                        File file = new File(name);
+                        if (!file.exists()) {
+                            continue;
+                        }
+                        if (!file.isDirectory()) {
+                            file = file.getParentFile();
+                        }
+                        name = file.getPath();
+                        set.add(name);
+                        epd.getSourceRootsRaw().add(IpeUtils.toRelativePath(epd.getBaseDir(), name));
                     }
-                    File file = new File(name);
-                    if (!file.exists()) {
-                        continue;
-                    }
-                    if (!file.isDirectory()) {
-                        file = file.getParentFile();
-                    }
-                    name = file.getPath();
-                    set.add(name);
                 }
             }
+            // Add source roots to set (>= V41)
+            List<String> list = epd.getAbsoluteSourceRoots();
+            for (String sr : list) {
+                set.add(sr);
+            }
+            
             // Add buildfolder from makefile projects to sources. See IZ 90190.
-            Configuration[] confs = epd.getConfs().getConfs();
-            for (int i = 0; i < confs.length; i++) {
-                MakeConfiguration makeConfiguration = (MakeConfiguration) confs[i];
-                if (makeConfiguration.isMakefileConfiguration()) {
-                    MakefileConfiguration makefileConfiguration = makeConfiguration.getMakefileConfiguration();
-                    String path = makefileConfiguration.getAbsBuildCommandWorkingDir();
-                    set.add(path);
+            if (epd.getVersion() < 41) {
+                Configuration[] confs = epd.getConfs().getConfs();
+                for (int i = 0; i < confs.length; i++) {
+                    MakeConfiguration makeConfiguration = (MakeConfiguration) confs[i];
+                    if (makeConfiguration.isMakefileConfiguration()) {
+                        MakefileConfiguration makefileConfiguration = makeConfiguration.getMakefileConfiguration();
+                        String path = makefileConfiguration.getAbsBuildCommandWorkingDir();
+                        set.add(path);
+                        epd.getSourceRootsRaw().add(IpeUtils.toRelativePath(epd.getBaseDir(), path));
+                    }
                 }
             }
+            
             for (String name : set) {
                 String displayName = name;
                 int index1 = displayName.lastIndexOf(File.separatorChar);
@@ -139,6 +154,7 @@ public class MakeSources implements Sources, AntProjectListener {
                         displayName = "..." + displayName.substring(index2); // NOI18N
                     }
                 }
+                displayName = FilePathAdaptor.naturalize(displayName);
                 h.addPrincipalSourceRoot(name, displayName, null, null);
                 h.addTypedSourceRoot(name, "generic", displayName, null, null); // NOI18N
             }
@@ -185,5 +201,9 @@ public class MakeSources implements Sources, AntProjectListener {
 
     public void propertiesChanged(AntProjectEvent ev) {
         // ignore
+    }
+    
+    public void sourceRootsChanged() {
+        fireChange();
     }
 }

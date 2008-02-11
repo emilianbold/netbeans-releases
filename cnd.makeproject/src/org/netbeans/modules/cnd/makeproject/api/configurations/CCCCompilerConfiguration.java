@@ -289,9 +289,7 @@ public class CCCCompilerConfiguration extends BasicCompilerConfiguration {
             else
                 master = null;
 	}
-	String[] texts = new String[] {getString("PreprocessorDefinitionsTxt1"), getString("PreprocessorDefinitionsHint"), getString("PreprocessorDefinitionsTxt2"), getString("InheritedValuesTxt"), inheritedValues.toString()};
-	//set1.put(new OptionsNodeProp(getPreprocessorConfiguration(), getInheritPreprocessor(), new PreprocessorOptions(), null, null, texts)); // NOI18N
-        set1.put(new StringListNodeProp(getPreprocessorConfiguration(), getInheritPreprocessor(), new String[] {"PreprocessorDefinitionsHint", getString("PreprocessorDefinitionsTxt2"), getString("InheritedValuesTxt"), inheritedValues.toString()}, true, new HelpCtx("AddtlIncludeDirectories"))); // NOI18N
+        set1.put(new StringListNodeProp(getPreprocessorConfiguration(), getInheritPreprocessor(), new String[] {"PreprocessorDefinitions", getString("PreprocessorDefinitionsTxt"), getString("PreprocessorDefinitionsHint"), inheritedValues.toString()}, true, new HelpCtx("AddtlIncludeDirectories"))); // NOI18N
         
         return set1;
     }

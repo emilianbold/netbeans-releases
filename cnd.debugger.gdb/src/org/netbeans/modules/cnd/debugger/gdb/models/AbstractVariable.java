@@ -173,7 +173,7 @@ public class AbstractVariable implements LocalVariable, Customizer {
             msg = msg.substring(0, msg.length() - 1);
         }
         setType('>' + msg + '<');
-        log.fine("AV.setTypeToError[" + Thread.currentThread().getName() + "]: " + getName()); // NOI18N
+        log.fine("AV.setTypeToError[" + GdbUtils.threadId() + "]: " + getName()); // NOI18N
     }
     
     /**
@@ -260,7 +260,7 @@ public class AbstractVariable implements LocalVariable, Customizer {
                     }
                 }
                 ovalue = this.value;
-                getDebugger().updateVariable(this, fullname, value);
+                value = getDebugger().updateVariable(fullname, value);
             }
         }
         if (msg != null) {
@@ -421,6 +421,9 @@ public class AbstractVariable implements LocalVariable, Customizer {
         int pos1;
         long i;
         
+        if (value == null && this instanceof GdbWatchVariable) {
+            getValue(); // A watch might not have a value yet. This will initialize "value"
+        }
         if (value != null) { // value can be null for watches during initialization...
             if (value.length() > 0 && value.charAt(0) == '(') {
                 pos1 = value.indexOf("*) 0x"); // NOI18N
@@ -442,7 +445,7 @@ public class AbstractVariable implements LocalVariable, Customizer {
                 }
             } else if (value.startsWith("0x")) { // NOI18N
                 try {
-                    i = Integer.parseInt(value.substring(2), 16);
+                    i = Long.parseLong(value.substring(2), 16);
                 } catch (NumberFormatException ex) {
                     return false;
                 }
@@ -735,7 +738,7 @@ public class AbstractVariable implements LocalVariable, Customizer {
         int count;
         int idx = var.fields.length;
         int pos = value.indexOf(' ');
-        String val = value.substring(0, pos).replace("\\\\", "\\");
+        String val = value.substring(0, pos).replace("\\\\", "\\"); // NOI18N
         int pos1 = value.indexOf("<repeats "); // NOI18N
         int pos2 = value.indexOf(" times>"); // NOI18N
         

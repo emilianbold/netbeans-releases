@@ -130,8 +130,8 @@ public class CCFormatter extends ExtFormatter {
             addFormatLayer(new StripEndWhitespaceLayer(CodeStyle.Language.C));
             addFormatLayer(new CCLayer(CodeStyle.Language.C));
         } else {
-            addFormatLayer(new StripEndWhitespaceLayer(CodeStyle.Language.C));
-            addFormatLayer(new CCLayer(CodeStyle.Language.C));
+            addFormatLayer(new StripEndWhitespaceLayer(CodeStyle.Language.CPP));
+            addFormatLayer(new CCLayer(CodeStyle.Language.CPP));
         }
     }
 
@@ -341,7 +341,7 @@ public class CCFormatter extends ExtFormatter {
                             break;
 
                         case CCTokenContext.LPAREN_ID:
-                            if (ccfs.getFormatSpaceBeforeParenthesis()) {
+                            if (ccfs.getFormatSpaceBeforeMethodCallParenthesis()) {
                                 TokenItem prevToken = token.getPrevious();
                                 if (prevToken != null && prevToken.getTokenID() == CCTokenContext.IDENTIFIER) {
                                     if (ccfs.canInsertToken(token)) {

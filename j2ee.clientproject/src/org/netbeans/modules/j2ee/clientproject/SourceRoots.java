@@ -137,8 +137,8 @@ public final class SourceRoots {
                     if (sourceRootNames == null) {
                         readProjectMetadata();
                     }
+                    return sourceRootNames.toArray(new String[sourceRootNames.size()]);
                 }
-                return sourceRootNames.toArray(new String[sourceRootNames.size()]);
             }
         });
     }
@@ -154,8 +154,8 @@ public final class SourceRoots {
                     if (sourceRootProperties == null) {
                         readProjectMetadata();
                     }
+                    return sourceRootProperties.toArray(new String[sourceRootProperties.size()]);
                 }
-                return sourceRootProperties.toArray(new String[sourceRootProperties.size()]);
             }
         });
     }
@@ -187,8 +187,8 @@ public final class SourceRoots {
                             }
                             sourceRoots = Collections.unmodifiableList(result);
                         }
+                        return sourceRoots.toArray(new FileObject[sourceRoots.size()]);
                     }
-                    return sourceRoots.toArray(new FileObject[sourceRoots.size()]);
                 }
         });                
     }
@@ -222,8 +222,8 @@ public final class SourceRoots {
                         }
                         sourceRootURLs = Collections.unmodifiableList(result);
                     }
+                    return sourceRootURLs.toArray(new URL[sourceRootURLs.size()]);
                 }
-                return sourceRootURLs.toArray(new URL[sourceRootURLs.size()]);
             }
         });
     }

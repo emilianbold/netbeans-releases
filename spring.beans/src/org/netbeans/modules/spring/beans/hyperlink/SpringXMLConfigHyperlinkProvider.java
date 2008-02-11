@@ -117,13 +117,13 @@ public class SpringXMLConfigHyperlinkProvider implements HyperlinkProvider {
         registerAttribValueHyperlinkPoint(BEAN_TAG, CLASS_ATTRIB, classHyperlinkProcessor);
         
         JavaMethodHyperlinkProcessor methodHyperlinkProcessor 
-                = new JavaMethodHyperlinkProcessor(Public.YES, Static.NO, 0);
+                = new JavaMethodHyperlinkProcessor(Public.DONT_CARE, Static.NO, 0);
         registerAttribValueHyperlinkPoint(BEAN_TAG, INIT_METHOD_ATTRIB, methodHyperlinkProcessor);
         registerAttribValueHyperlinkPoint(BEAN_TAG, DESTROY_METHOD_ATTRIB, methodHyperlinkProcessor);
         
-        methodHyperlinkProcessor 
-                = new JavaMethodHyperlinkProcessor(Public.DONT_CARE, Static.YES, -1);
-        registerAttribValueHyperlinkPoint(BEAN_TAG, FACTORY_METHOD_ATTRIB, methodHyperlinkProcessor);
+        FactoryMethodHyperlinkProcessor factoryMethodHyperlinkProcessor 
+                = new FactoryMethodHyperlinkProcessor();
+        registerAttribValueHyperlinkPoint(BEAN_TAG, FACTORY_METHOD_ATTRIB, factoryMethodHyperlinkProcessor);
         
         methodHyperlinkProcessor 
                 = new JavaMethodHyperlinkProcessor(Public.DONT_CARE, Static.NO, 0);
@@ -153,6 +153,7 @@ public class SpringXMLConfigHyperlinkProvider implements HyperlinkProvider {
         
         beansRefHyperlinkProcessor = new BeansRefHyperlinkProcessor(false);
         registerAttribValueHyperlinkPoint(IDREF_TAG, LOCAL_ATTRIB, beansRefHyperlinkProcessor);
+        registerAttribValueHyperlinkPoint(REF_TAG, LOCAL_ATTRIB, beansRefHyperlinkProcessor);
     }
     
     private void registerAttribValueHyperlinkPoint(String tagName, String attribName, 

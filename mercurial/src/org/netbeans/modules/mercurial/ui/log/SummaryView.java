@@ -62,6 +62,7 @@ import java.io.IOException;
 import java.text.DateFormat;
 import java.util.List;
 import java.util.List;
+import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.modules.mercurial.ExceptionHandler;
 import org.netbeans.modules.mercurial.HgException;
 import org.netbeans.modules.mercurial.HgProgressSupport;
@@ -97,7 +98,7 @@ class SummaryView implements MouseListener, ComponentListener, MouseMotionListen
         this.master = master;
         this.results = results;
         this.dispResults = expandResults(results);
-        FontColorSettings fcs = (FontColorSettings) MimeLookup.getMimeLookup("text/x-java").lookup(FontColorSettings.class); // NOI18N
+        FontColorSettings fcs = (FontColorSettings) MimeLookup.getLookup(MimePath.get("text/x-java")).lookup(FontColorSettings.class); // NOI18N
         searchHiliteAttrs = fcs.getFontColors("highlight-search"); // NOI18N
         message = master.getCriteria().getCommitMessage();
         resultsList = new JList(new SummaryListModel());
@@ -136,6 +137,7 @@ class SummaryView implements MouseListener, ComponentListener, MouseMotionListen
         // not interested
     }
     
+    @SuppressWarnings("unchecked")
     private List expandResults(List<RepositoryRevision> results) {
         ArrayList newResults = new ArrayList(results.size());
         for (RepositoryRevision repositoryRevision : results) {
