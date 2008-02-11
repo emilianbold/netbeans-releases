@@ -196,7 +196,7 @@ public final class Validator extends org.netbeans.modules.bpel.validation.core.V
           }
 
           public Collection<SchemaModel> getVisibleModels() {
-              context.addResultItem(Validator.ResultType.ERROR, "ABSOLUTE_PATH_DISALLOWED"); // NOI18N
+              context.addResultItem(Validator.ResultType.ERROR, i18n(Validator.class, "ABSOLUTE_PATH_DISALLOWED")); // NOI18N
               return null;
           }
 
@@ -209,7 +209,7 @@ public final class Validator extends org.netbeans.modules.bpel.validation.core.V
       // If it does, then split it to parts and verifies them separately.
       if (exprText.contains(XPathModelFactory.XPATH_EXPR_DELIMITER)) {
           // Notify the user that the expression is not completed
-          context.addResultItem(exprText, Validator.ResultType.ERROR, "INCOMPLETE_XPATH"); // NOI18N
+          context.addResultItem(exprText, Validator.ResultType.ERROR, i18n(Validator.class, "INCOMPLETE_XPATH")); // NOI18N
 
           String[] partsArr = exprText.split(
                   XPathModelFactory.XPATH_EXPR_DELIMITER);
