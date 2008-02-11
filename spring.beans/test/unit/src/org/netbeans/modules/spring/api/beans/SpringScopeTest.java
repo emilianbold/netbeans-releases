@@ -43,10 +43,9 @@ package org.netbeans.modules.spring.api.beans;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 import org.netbeans.modules.spring.api.Action;
 import org.netbeans.modules.spring.api.beans.model.SpringBean;
@@ -103,10 +102,7 @@ public class SpringScopeTest extends ConfigFileTestCase {
         TestUtils.copyStringToFile(TestUtils.createXMLConfigText("<bean id='foo' class='org.example.Foo'/>"), configFile);
         final File configFile2 = createConfigFileName("anotherContext.xml");
         TestUtils.copyStringToFile(TestUtils.createXMLConfigText("<bean id='bar' class='org.example.Bar'/>"), configFile2);
-        List<File> list = new ArrayList<File>();
-        list.add(configFile);
-        list.add(configFile2);
-        ConfigFileGroup group = ConfigFileGroup.create(list);
+        ConfigFileGroup group = ConfigFileGroup.create(Arrays.asList(configFile, configFile2));
         final ConfigFileManager manager = ConfigFileManagerAccessor.DEFAULT.createConfigFileManager(new DefaultConfigFileManagerImpl(group));
         SpringScope scope = SpringScopeAccessor.DEFAULT.createSpringScope(manager);
 

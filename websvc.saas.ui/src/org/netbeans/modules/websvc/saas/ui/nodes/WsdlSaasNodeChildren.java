@@ -34,16 +34,51 @@
  * 
  * Contributor(s):
  * 
- * Portions Copyrighted 2007 Sun Microsystems, Inc.
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.websvc.saas.ui.nodes;
 
-package org.netbeans.modules.cnd.debugger.gdb.utils;
+import java.util.Collections;
+import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlPort;
+import org.netbeans.modules.websvc.saas.model.Saas;
+import org.netbeans.modules.websvc.saas.model.WsdlSaas;
+import org.netbeans.modules.websvc.saas.model.WsdlSaasMethod;
+import org.openide.nodes.Node;
 
 /**
  *
- * @author gordonp
+ * @author nam
  */
-public interface CommandBufferCallbackProc {
+public class WsdlSaasNodeChildren extends SaasNodeChildren<Object> {
 
-    public void callback(String info);
+    WsdlSaasNodeChildren(WsdlSaas saas) {
+        super(saas);
+    }
+
+    @Override
+    public WsdlSaas getSaas() {
+        return (WsdlSaas) super.getSaas();
+    }
+
+    protected void updateKeys() {
+        if (getSaas().getState() == Saas.State.READY) {
+            setKeys(getSaas().getPortsOrMethods());
+        } else {
+            setKeys(Collections.emptyList());
+        }
+    }
+
+    @Override
+    protected Node[] createNodes(Object key) {
+        if (needsWaiting()) {
+            return WAIT_NODES;
+        }
+
+        if (key instanceof WsdlPort) {
+            return new Node[]{ new WsdlPortNode(getSaas(), (WsdlPort) key) };
+        } else if (key instanceof WsdlSaasMethod) {
+            return new Node[]{ new WsdlSaasMethodNode((WsdlSaasMethod) key) };
+        }
+        return new Node[0];
+    }
 }

@@ -812,7 +812,7 @@ public abstract class CsmResultItem
                         return substed;
                     }
                     int ind = substituteExp.getParameterCount() - 1;
-                    boolean addSpace = CodeStyle.getDefault(doc).getFormatSpaceAfterComma();
+                    boolean addSpace = CodeStyle.getDefault(doc).spaceAfterComma();
                     try {
                         if (addSpace && (ind == 0 || (offset > 0 && Character.isWhitespace(DocumentUtilities.getText(doc, offset - 1, 1).charAt(0))))) {
                             addSpace = false;
@@ -829,7 +829,7 @@ public abstract class CsmResultItem
 
             default:
                 text = getItemText();
-                boolean addSpace = CodeStyle.getDefault(doc).getFormatSpaceBeforeParenthesis();
+                boolean addSpace = CodeStyle.getDefault(doc).spaceBeforeMethodCallParen();//getFormatSpaceBeforeParenthesis();
                 boolean addClosingParen = false;
                 Formatter f = doc.getFormatter();
                 if (f instanceof ExtFormatter) {
@@ -945,7 +945,7 @@ public abstract class CsmResultItem
                             text = ")"; // NOI18N
                     } else { // one or more parameters
                         int ind = substituteExp.getParameterCount() - 1;
-                        boolean addSpace = CodeStyle.getDefault(doc).getFormatSpaceAfterComma();
+                        boolean addSpace = CodeStyle.getDefault(doc).spaceAfterComma();
                         boolean addClosingParen = false;
                         Formatter f = doc.getFormatter();
                         if (f instanceof ExtFormatter) {
@@ -990,7 +990,7 @@ public abstract class CsmResultItem
                     
                 default:
                     text = getItemText();
-                    boolean addSpace = CodeStyle.getDefault(doc).getFormatSpaceBeforeParenthesis();
+                    boolean addSpace = CodeStyle.getDefault(doc).spaceBeforeMethodCallParen();//getFormatSpaceBeforeParenthesis();
                     boolean addClosingParen = false;
                     Formatter f = doc.getFormatter();
                     if (f instanceof ExtFormatter) {

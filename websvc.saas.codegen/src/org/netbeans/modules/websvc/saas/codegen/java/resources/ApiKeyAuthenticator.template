@@ -1,0 +1,37 @@
+<#assign licenseFirst = "/*">
+<#assign licensePrefix = " * ">
+<#assign licenseLast = " */">
+<#include "../Licenses/license-${project.license}.txt">
+
+<#if package?? && package != "">
+package ${package};
+
+</#if>
+import java.io.IOException;
+import java.util.Properties;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+/**
+ *
+ * @author ${user}
+ */
+public class ${name} {
+
+    private static String apiKey;
+    
+    static {
+        try {
+            Properties props = new Properties();
+            props.load(${name}.class.getResourceAsStream(
+                    "${profile.properties}"));
+            apiKey = props.getProperty("api_key");
+        } catch (IOException ex) {
+            Logger.getLogger(${name}.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+
+    public static String getApiKey() {
+        return apiKey;
+    }
+}

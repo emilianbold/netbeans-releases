@@ -1364,7 +1364,7 @@ public class CCFormatterUnitTestCase extends CCFormatterBaseUnitTestCase {
 
     public void testMacroDefineWithParen2() {
         CodeStyle.getDefault(CodeStyle.Language.CPP).getPreferences().
-                putBoolean(EditorOptions.CC_FORMAT_SPACE_BEFORE_PARENTHESIS, true);
+                putBoolean(EditorOptions.spaceBeforeMethodCallParen, true);
         CodeStyle.getDefault(CodeStyle.Language.CPP).getPreferences().
                 put(EditorOptions.CC_FORMAT_NEWLINE_BEFORE_BRACE_DECLARATION, 
                 CodeStyle.BracePlacement.SAME_LINE.name());
@@ -1386,7 +1386,7 @@ public class CCFormatterUnitTestCase extends CCFormatterBaseUnitTestCase {
                     "}\n");
         } finally {
             CodeStyle.getDefault(CodeStyle.Language.CPP).getPreferences().
-                    putBoolean(EditorOptions.CC_FORMAT_SPACE_BEFORE_PARENTHESIS, false);
+                    putBoolean(EditorOptions.spaceBeforeMethodCallParen, false);
             CodeStyle.getDefault(CodeStyle.Language.CPP).getPreferences().
                     put(EditorOptions.CC_FORMAT_NEWLINE_BEFORE_BRACE_DECLARATION, 
                     CodeStyle.BracePlacement.NEW_LINE.name());
@@ -1395,7 +1395,7 @@ public class CCFormatterUnitTestCase extends CCFormatterBaseUnitTestCase {
 
     public void testMacroDefineWithParen21() {
         CodeStyle.getDefault(CodeStyle.Language.CPP).getPreferences().
-                putBoolean(EditorOptions.CC_FORMAT_SPACE_BEFORE_PARENTHESIS, true);
+                putBoolean(EditorOptions.spaceBeforeMethodCallParen, true);
         try {
             setLoadDocumentText(
                     "#include <stdio.h>\n" +
@@ -1415,7 +1415,7 @@ public class CCFormatterUnitTestCase extends CCFormatterBaseUnitTestCase {
                     "}\n");
         } finally {
             CodeStyle.getDefault(CodeStyle.Language.CPP).getPreferences().
-                    putBoolean(EditorOptions.CC_FORMAT_SPACE_BEFORE_PARENTHESIS, true);
+                    putBoolean(EditorOptions.spaceBeforeMethodCallParen, false);
         }
     }
 

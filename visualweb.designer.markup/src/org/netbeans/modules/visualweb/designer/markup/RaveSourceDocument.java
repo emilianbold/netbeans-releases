@@ -55,7 +55,7 @@ import org.w3c.dom.Text;
 public class RaveSourceDocument extends AbstractRaveDocument {
 
     // memory leak probing
-    private static final Logger TIMERS = Logger.getLogger("TIMER.raveSourceDocuments"); // NOI18N
+    private static final Logger TIMERS = Logger.getLogger("TIMER.visualweb"); // NOI18N
 
     /** Creates a new instance of RaveSourceDocument */
     public RaveSourceDocument() {
