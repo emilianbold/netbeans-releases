@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- *
+ * 
  * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
- *
+ * 
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,13 +20,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
+ * 
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -37,27 +31,33 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ * 
+ * Contributor(s):
+ * 
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.websvc.manager.api;
 
+package org.netbeans.modules.websvc.manager.impl;
 
-import java.io.File;
-import java.net.URL;
-import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlService;
-import org.netbeans.modules.websvc.saas.spi.websvcmgr.WsdlServiceProxyDescriptor;
+import org.netbeans.modules.websvc.manager.model.WebServiceListModel;
+import org.netbeans.modules.websvc.saas.spi.websvcmgr.WsdlData;
+import org.netbeans.modules.websvc.saas.spi.websvcmgr.WsdlDataManager;
 
 /**
- * Metadata descriptor that contains the information for a single web service.
- * This metadata is associated (one-to-one) with a proxy jar.
- * 
- * @author quynguyen
+ *
+ * @author nam
  */
-public class WebServiceDescriptor extends WsdlServiceProxyDescriptor {
+public class WsdlDataManagerImpl implements WsdlDataManager {
 
-    public WebServiceDescriptor(String name, String packageName, int wsType, URL wsdl, File xmlDescriptor, WsdlService model) {
-        super(name, packageName, wsType, wsdl, xmlDescriptor, model);
+    public WsdlData getWsdlData(String wsdlUrl, String serviceName, boolean synchronuous) {
+        return WebServiceListModel.getInstance().getWebServiceData(wsdlUrl, serviceName, synchronuous);
     }
 
-    public WebServiceDescriptor() {
+    public void removeWsdlData(String wsdlUrl, String serviceName) {
+        WsdlData data = WebServiceListModel.getInstance().findWebServiceData(wsdlUrl, serviceName, true);
+        if (data != null) {
+            WebServiceListModel.getInstance().removeWebService(data.getId());
+        }
     }
+
 }
