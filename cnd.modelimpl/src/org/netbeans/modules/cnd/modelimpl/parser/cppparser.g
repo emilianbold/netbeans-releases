@@ -167,6 +167,9 @@ tokens {
 	CSM_USING_DIRECTIVE<AST=org.netbeans.modules.cnd.modelimpl.parser.NamedFakeAST>;
 	CSM_USING_DECLARATION<AST=org.netbeans.modules.cnd.modelimpl.parser.NamedFakeAST>;
 
+        CSM_CTOR_INITIALIZER<AST=org.netbeans.modules.cnd.modelimpl.parser.FakeAST>;
+        CSM_CTOR_INITIALIZER_LIST<AST=org.netbeans.modules.cnd.modelimpl.parser.FakeAST>;
+
 	CSM_QUALIFIED_ID<AST=org.netbeans.modules.cnd.modelimpl.parser.NamedFakeAST>;
 
 	////////// STATEMENTS //////////
@@ -2023,13 +2026,17 @@ ctor_body
 
 ctor_initializer
 	:
-	COLON superclass_init (COMMA superclass_init)*
+	COLON! superclass_init (COMMA! superclass_init)*
+
+        {#ctor_initializer = #(#[CSM_CTOR_INITIALIZER_LIST, "CSM_CTOR_INITIALIZER_LIST"], #ctor_initializer);}
 	;
 
 superclass_init
 	{String q;} 
 	: 
-	q = qualified_id LPAREN (expression_list)? RPAREN
+	q = qualified_id LPAREN! (expression_list)? RPAREN!
+
+        {#superclass_init = #(#[CSM_CTOR_INITIALIZER, "CSM_CTOR_INITIALIZER"], #superclass_init);}
 	;
 
 dtor_head[boolean definition]

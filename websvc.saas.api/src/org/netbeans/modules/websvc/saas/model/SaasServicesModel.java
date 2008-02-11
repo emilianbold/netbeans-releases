@@ -139,6 +139,9 @@ public class SaasServicesModel {
     
     private void loadGroupFromDefaultFileSystemFolder(FileObject folder) {
         for (FileObject fo : folder.getChildren()) {
+            if (fo.isFolder()) {
+                continue;
+            }
             try {
                 SaasServices ss = SaasUtil.loadSaasServices(fo);
                 Group g = ss.getSaasMetadata().getGroup();
@@ -159,7 +162,7 @@ public class SaasServicesModel {
                         } else if (Saas.NS_WSDL.equals(ss.getType())) {
                             service = new WsdlSaas(parent, ss);
                         } else {
-                            service = new Saas(parent, ss);
+                            service = new CustomSaas(parent, ss);
                         }
                         child.addService(service);
                         break;

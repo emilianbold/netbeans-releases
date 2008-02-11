@@ -230,21 +230,9 @@ public final class Preview extends Dialog implements Percent.Listener {
     InputMap inputMap = myGoto.getInputMap();
     ActionMap actionMap = myGoto.getActionMap();
 
-    inputMap.put(KeyStroke.getKeyStroke('+'), INCREASE);
-    inputMap.put(KeyStroke.getKeyStroke('='), INCREASE);
-    inputMap.put(KeyStroke.getKeyStroke('-'), DECREASE);
-    inputMap.put(KeyStroke.getKeyStroke('_'), DECREASE);
-    
-    actionMap.put(INCREASE, new AbstractAction() {
-      public void actionPerformed(ActionEvent event) {
-        next();
-      }
-    });
-    actionMap.put(DECREASE, new AbstractAction() {
-      public void actionPerformed(ActionEvent event) {
-        previous();
-      }
-    });
+    populateInputMap(inputMap);
+    populateActionMap(actionMap);
+
     myGoto.setHorizontalAlignment(JTextField.CENTER);
     myGoto.setToolTipText(i18n("TLT_Goto")); // NOI18N
     myGoto.addActionListener(new ActionListener() {
@@ -277,6 +265,46 @@ public final class Preview extends Dialog implements Percent.Listener {
     panel.add(myLast, c);
 
     return panel;
+  }
+
+  private void populateInputMap(InputMap inputMap) {
+    inputMap.put(KeyStroke.getKeyStroke('k'), INCREASE);
+    inputMap.put(KeyStroke.getKeyStroke('K'), INCREASE);
+    inputMap.put(KeyStroke.getKeyStroke('+'), INCREASE);
+    inputMap.put(KeyStroke.getKeyStroke('='), INCREASE);
+    inputMap.put(KeyStroke.getKeyStroke('g'), DECREASE);
+    inputMap.put(KeyStroke.getKeyStroke('G'), DECREASE);
+    inputMap.put(KeyStroke.getKeyStroke('-'), DECREASE);
+    inputMap.put(KeyStroke.getKeyStroke('_'), DECREASE);
+    inputMap.put(KeyStroke.getKeyStroke('l'), LAST);
+    inputMap.put(KeyStroke.getKeyStroke('L'), LAST);
+    inputMap.put(KeyStroke.getKeyStroke('*'), LAST);
+    inputMap.put(KeyStroke.getKeyStroke('f'), FIRST);
+    inputMap.put(KeyStroke.getKeyStroke('F'), FIRST);
+    inputMap.put(KeyStroke.getKeyStroke('/'), FIRST);
+  }
+
+  private void populateActionMap(ActionMap actionMap) {
+    actionMap.put(INCREASE, new AbstractAction() {
+      public void actionPerformed(ActionEvent event) {
+        next();
+      }
+    });
+    actionMap.put(DECREASE, new AbstractAction() {
+      public void actionPerformed(ActionEvent event) {
+        previous();
+      }
+    });
+    actionMap.put(LAST, new AbstractAction() {
+      public void actionPerformed(ActionEvent event) {
+        last();
+      }
+    });
+    actionMap.put(FIRST, new AbstractAction() {
+      public void actionPerformed(ActionEvent event) {
+        first();
+      }
+    });
   }
 
   private JComponent createScalePanel() {
@@ -871,6 +899,8 @@ public final class Preview extends Dialog implements Percent.Listener {
 
   private static final String INCREASE = "increase"; // NOI18N
   private static final String DECREASE = "decrease"; // NOI18N
+  private static final String LAST = "last"; // NOI18N
+  private static final String FIRST = "first"; // NOI18N
   
   private final String [] CUSTOMS = new String [] {
     i18n("LBL_Fit_to_Width"), // NOI18N
