@@ -78,12 +78,6 @@ import org.w3c.dom.NodeList;
  */
 public final class PlatformUiSupport {
 
-    /**
-     * Enum used for specifying minimal version of the source level. Currently, only JDK 5 is supported.
-     * @see PlatformUiSupport#createSourceLevelComboBoxModel(ComboBoxModel, String, String, String)
-     */
-    public enum JDK { VERSION_5 }
-
     private static final SpecificationVersion JDK_1_5 = new SpecificationVersion("1.5"); //NOI18N
     private static final SpecificationVersion JDK_1_6 = new SpecificationVersion("1.6"); //NOI18N
     private static final Logger LOGGER = Logger.getLogger(PlatformUiSupport.class.getName());
@@ -272,19 +266,19 @@ public final class PlatformUiSupport {
      * @param platformComboBoxModel the platform's model used for listenning.
      * @param initialSourceLevel initial source level value.
      * @param initialTargetLevel initial target level value.
-     * @param minimalJDKVersion minimal JDK version to be displayed. It can be <code>null</code> if all the JDK versions
+     * @param minimalSpecificationVersion minimal JDK version to be displayed. It can be <code>null</code> if all the JDK versions
      *                          should be displayed (typically for Java SE project).
      * @return {@link ComboBoxModel} of {@link SourceLevelKey}.
      * @see #createSourceLevelComboBoxModel(ComboBoxModel, String, String)
      */
     public static ComboBoxModel createSourceLevelComboBoxModel(ComboBoxModel platformComboBoxModel,
-            String initialSourceLevel, String initialTargetLevel, JDK minimalJDKVersion) {
+            String initialSourceLevel, String initialTargetLevel, SpecificationVersion minimalSpecificationVersion) {
         Parameters.notNull("platformComboBoxModel", platformComboBoxModel); // NOI18N
         Parameters.notNull("initialSourceLevel", initialSourceLevel); // NOI18N
         Parameters.notNull("initialTargetLevel", initialTargetLevel); // NOI18N
 
         return new SourceLevelComboBoxModel(platformComboBoxModel, initialSourceLevel, initialTargetLevel,
-                minimalJDKVersion);
+                minimalSpecificationVersion);
     }
 
     /**
@@ -568,18 +562,16 @@ public final class PlatformUiSupport {
 
         private static final String VERSION_PREFIX = "1."; // the version prefix // NOI18N
         private static final int INITIAL_VERSION_MINOR = 2; // 1.2
-        // if project is JAVA EE 5 show only 1.5 and higher
-        private static final int INITIAL_VERSION_MINOR_JAVA_EE_5 = 5; // 1.5
 
         private final ComboBoxModel platformComboBoxModel;
-        private final JDK minimalJDKVersion;
+        private final SpecificationVersion minimalSpecificationVersion;
         private SpecificationVersion selectedSourceLevel;
         private SpecificationVersion originalSourceLevel;
         private SourceLevelKey[] sourceLevelCache;
         private PlatformKey activePlatform;
 
         public SourceLevelComboBoxModel(ComboBoxModel platformComboBoxModel, String initialSourceLevel,
-                String initialTargetLevel, JDK minimalJDKVersion) {
+                String initialTargetLevel, SpecificationVersion minimalSpecificationVersion) {
             this.platformComboBoxModel = platformComboBoxModel;
             activePlatform = (PlatformKey) this.platformComboBoxModel.getSelectedItem();
             this.platformComboBoxModel.addListDataListener(this);
@@ -603,7 +595,7 @@ public final class PlatformUiSupport {
                 }
             }
             selectedSourceLevel = originalSourceLevel;
-            this.minimalJDKVersion = minimalJDKVersion;
+            this.minimalSpecificationVersion = minimalSpecificationVersion;
         }
 
         public int getSize() {
@@ -673,17 +665,7 @@ public final class PlatformUiSupport {
                 boolean selSourceLevelValid = false;
                 if (platform != null) {
                     SpecificationVersion version = platform.getSpecification().getVersion();
-                    int index = INITIAL_VERSION_MINOR;
-                    // #71619 - source level lower than 1.5 won't be shown for Java EE 5 project
-                    if (minimalJDKVersion != null) {
-                        switch (minimalJDKVersion) {
-                            case VERSION_5:
-                                index = INITIAL_VERSION_MINOR_JAVA_EE_5;
-                                break;
-                            default:
-                                break;
-                        }
-                    }
+                    int index = getMinimalIndex(version);
                     SpecificationVersion template =
                             new SpecificationVersion(VERSION_PREFIX + Integer.toString(index++));
                     boolean origSourceLevelValid = false;
@@ -712,6 +694,22 @@ public final class PlatformUiSupport {
                 }
             }
             return sourceLevelCache;
+        }
+
+        private int getMinimalIndex(SpecificationVersion platformVersion) {
+            int index = INITIAL_VERSION_MINOR;
+            if (minimalSpecificationVersion != null) {
+                SpecificationVersion min = new SpecificationVersion(
+                            VERSION_PREFIX + Integer.toString(index));
+                while (min.compareTo(platformVersion) <= 0) {
+                    if (min.equals(minimalSpecificationVersion)) {
+                        return index;
+                    }
+                    min = new SpecificationVersion(
+                            VERSION_PREFIX + Integer.toString(++index));
+                }
+            }
+            return index;
         }
 
         private boolean shouldChangePlatform(SpecificationVersion selectedSourceLevel,

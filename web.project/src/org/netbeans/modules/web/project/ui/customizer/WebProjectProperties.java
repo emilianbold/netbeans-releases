@@ -96,6 +96,7 @@ import org.netbeans.modules.web.project.classpath.ClassPathSupport.Item;
 import org.netbeans.modules.websvc.spi.webservices.WebServicesConstants;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.URLMapper;
+import org.openide.modules.SpecificationVersion;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
@@ -338,9 +339,9 @@ public class WebProjectProperties {
         RUN_TEST_CLASSPATH_MODEL = ClassPathUiSupport.createListModel( cs.itemsIterator( (String)projectProperties.get( RUN_TEST_CLASSPATH ), null ) );
         PLATFORM_MODEL = PlatformUiSupport.createPlatformComboBoxModel (evaluator.getProperty(JAVA_PLATFORM));
         PLATFORM_LIST_RENDERER = PlatformUiSupport.createPlatformListCellRenderer();
-        PlatformUiSupport.JDK minimalSourceLevel = null;
+        SpecificationVersion minimalSourceLevel = null;
         if (evaluator.getProperty(J2EE_PLATFORM).equals(J2eeModule.JAVA_EE_5)) {
-            minimalSourceLevel = PlatformUiSupport.JDK.VERSION_5;
+            minimalSourceLevel = new SpecificationVersion(J2eeModule.JAVA_EE_5);
         }
         JAVAC_SOURCE_MODEL = PlatformUiSupport.createSourceLevelComboBoxModel (PLATFORM_MODEL, evaluator.getProperty(JAVAC_SOURCE), evaluator.getProperty(JAVAC_TARGET), minimalSourceLevel);
         JAVAC_SOURCE_RENDERER = PlatformUiSupport.createSourceLevelListCellRenderer ();

@@ -96,6 +96,7 @@ import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
+import org.openide.modules.SpecificationVersion;
 import org.openide.util.Exceptions;
 import org.openide.util.Mutex;
 import org.openide.util.MutexException;
@@ -340,9 +341,9 @@ public class AppClientProjectProperties {
         RUN_TEST_CLASSPATH_MODEL = ClassPathUiSupport.createListModel( cs.itemsIterator(projectProperties.get( RUN_TEST_CLASSPATH ), null ) );
         PLATFORM_MODEL = PlatformUiSupport.createPlatformComboBoxModel (evaluator.getProperty(JAVA_PLATFORM));
         PLATFORM_LIST_RENDERER = PlatformUiSupport.createPlatformListCellRenderer();
-        PlatformUiSupport.JDK minimalSourceLevel = null;
+        SpecificationVersion minimalSourceLevel = null;
         if (evaluator.getProperty(J2EE_PLATFORM).equals(JAVA_EE_5)) {
-            minimalSourceLevel = PlatformUiSupport.JDK.VERSION_5;
+            minimalSourceLevel = new SpecificationVersion(JAVA_EE_5);
         }
         JAVAC_SOURCE_MODEL = PlatformUiSupport.createSourceLevelComboBoxModel(PLATFORM_MODEL, evaluator.getProperty(JAVAC_SOURCE), evaluator.getProperty(JAVAC_TARGET), minimalSourceLevel);
         JAVAC_SOURCE_RENDERER = PlatformUiSupport.createSourceLevelListCellRenderer ();
