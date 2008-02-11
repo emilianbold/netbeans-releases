@@ -25,9 +25,9 @@ public class AlignmentBracesPanel extends javax.swing.JPanel {
         if( "Windows".equals(UIManager.getLookAndFeel().getID()) ) {//NOI18N
             bracesPanel.setOpaque(false);
         }
+        namespaceComboBox.putClientProperty(CategorySupport.OPTION_ID, EditorOptions.CC_FORMAT_NEWLINE_BEFORE_BRACE_NAMESPACE);
         classComboBox.putClientProperty(CategorySupport.OPTION_ID, EditorOptions.CC_FORMAT_NEWLINE_BEFORE_BRACE_CLASS);
-        methodComboBox.putClientProperty(CategorySupport.OPTION_ID, EditorOptions.CC_FORMAT_NEWLINE_BEFORE_BRACE_METHOD);
-        functionComboBox.putClientProperty(CategorySupport.OPTION_ID, EditorOptions.CC_FORMAT_NEWLINE_BEFORE_BRACE_DECLARATION);
+        methodComboBox.putClientProperty(CategorySupport.OPTION_ID, EditorOptions.CC_FORMAT_NEWLINE_BEFORE_BRACE_DECLARATION);
         otherComboBox.putClientProperty(CategorySupport.OPTION_ID, EditorOptions.CC_FORMAT_NEWLINE_BEFORE_BRACE);
         
         alignArrayInitCheckBox.putClientProperty(CategorySupport.OPTION_ID, EditorOptions.alignMultilineArrayInit);
@@ -68,10 +68,10 @@ public class AlignmentBracesPanel extends javax.swing.JPanel {
         jLabel2 = new javax.swing.JLabel();
         methodComboBox = new javax.swing.JComboBox();
         jPanel1 = new javax.swing.JPanel();
-        jLabel3 = new javax.swing.JLabel();
-        functionComboBox = new javax.swing.JComboBox();
         jLabel4 = new javax.swing.JLabel();
         otherComboBox = new javax.swing.JComboBox();
+        jLabel3 = new javax.swing.JLabel();
+        namespaceComboBox = new javax.swing.JComboBox();
         multilinePanel = new javax.swing.JPanel();
         alignMethodParamsCheckBox = new javax.swing.JCheckBox();
         alignArrayInitCheckBox = new javax.swing.JCheckBox();
@@ -90,7 +90,7 @@ public class AlignmentBracesPanel extends javax.swing.JPanel {
         org.openide.awt.Mnemonics.setLocalizedText(jLabel1, org.openide.util.NbBundle.getMessage(AlignmentBracesPanel.class, "LBL_Class_Declaration")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 0;
+        gridBagConstraints.gridy = 1;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 4, 0);
         bracesPanel.add(jLabel1, gridBagConstraints);
@@ -98,7 +98,7 @@ public class AlignmentBracesPanel extends javax.swing.JPanel {
         classComboBox.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 0;
+        gridBagConstraints.gridy = 1;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 6, 4, 0);
         bracesPanel.add(classComboBox, gridBagConstraints);
@@ -107,7 +107,7 @@ public class AlignmentBracesPanel extends javax.swing.JPanel {
         org.openide.awt.Mnemonics.setLocalizedText(jLabel2, org.openide.util.NbBundle.getMessage(AlignmentBracesPanel.class, "LBL_MethodDeclaration")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 1;
+        gridBagConstraints.gridy = 2;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 4, 0);
         bracesPanel.add(jLabel2, gridBagConstraints);
@@ -115,7 +115,7 @@ public class AlignmentBracesPanel extends javax.swing.JPanel {
         methodComboBox.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 1;
+        gridBagConstraints.gridy = 2;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 6, 4, 0);
         bracesPanel.add(methodComboBox, gridBagConstraints);
@@ -141,28 +141,11 @@ public class AlignmentBracesPanel extends javax.swing.JPanel {
         gridBagConstraints.weighty = 1.0;
         bracesPanel.add(jPanel1, gridBagConstraints);
 
-        jLabel3.setLabelFor(functionComboBox);
-        org.openide.awt.Mnemonics.setLocalizedText(jLabel3, org.openide.util.NbBundle.getMessage(AlignmentBracesPanel.class, "LBL_FunctionDeclaration")); // NOI18N
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 2;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 4, 0);
-        bracesPanel.add(jLabel3, gridBagConstraints);
-
-        functionComboBox.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 2;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 6, 4, 0);
-        bracesPanel.add(functionComboBox, gridBagConstraints);
-
         jLabel4.setLabelFor(otherComboBox);
         org.openide.awt.Mnemonics.setLocalizedText(jLabel4, org.openide.util.NbBundle.getMessage(AlignmentBracesPanel.class, "LBL_OtherBlock")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 3;
+        gridBagConstraints.gridy = 4;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 4, 0);
         bracesPanel.add(jLabel4, gridBagConstraints);
@@ -170,10 +153,26 @@ public class AlignmentBracesPanel extends javax.swing.JPanel {
         otherComboBox.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 3;
+        gridBagConstraints.gridy = 4;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 6, 4, 0);
         bracesPanel.add(otherComboBox, gridBagConstraints);
+
+        jLabel3.setLabelFor(namespaceComboBox);
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel3, org.openide.util.NbBundle.getMessage(AlignmentBracesPanel.class, "LBL_NewLineBeforNamespace")); // NOI18N
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 4, 0);
+        bracesPanel.add(jLabel3, gridBagConstraints);
+
+        namespaceComboBox.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.insets = new java.awt.Insets(0, 6, 4, 0);
+        bracesPanel.add(namespaceComboBox, gridBagConstraints);
 
         jTabbedPane1.addTab(org.openide.util.NbBundle.getMessage(AlignmentBracesPanel.class, "TAB_Braces Placement"), bracesPanel); // NOI18N
 
@@ -265,7 +264,6 @@ public class AlignmentBracesPanel extends javax.swing.JPanel {
     private javax.swing.JCheckBox alignMethodParamsCheckBox;
     private javax.swing.JPanel bracesPanel;
     private javax.swing.JComboBox classComboBox;
-    private javax.swing.JComboBox functionComboBox;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
@@ -274,6 +272,7 @@ public class AlignmentBracesPanel extends javax.swing.JPanel {
     private javax.swing.JTabbedPane jTabbedPane1;
     private javax.swing.JComboBox methodComboBox;
     private javax.swing.JPanel multilinePanel;
+    private javax.swing.JComboBox namespaceComboBox;
     private javax.swing.JPanel newLinePanel;
     private javax.swing.JCheckBox nlCatchCheckBox;
     private javax.swing.JCheckBox nlElseCheckBox;
