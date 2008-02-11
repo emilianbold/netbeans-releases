@@ -40,11 +40,17 @@
  */
 package org.netbeans.spi.java.project.support.ui;
 
+import java.io.File;
 import javax.swing.JPanel;
+import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.openide.WizardDescriptor;
+import org.openide.filesystems.FileUtil;
+import org.openide.util.NbBundle;
+
 
 final class MakeSharableVisualPanel1 extends JPanel {
 
+    private AntProjectHelper helper;
     /** Creates new form MakeSharableVisualPanel1 */
     public MakeSharableVisualPanel1() {
         initComponents();
@@ -52,32 +58,43 @@ final class MakeSharableVisualPanel1 extends JPanel {
 
     @Override
     public String getName() {
-        return "Library Definitions Location";
+        return NbBundle.getMessage(MakeSharableVisualPanel1.class, "TIT_LibraryDefinitionSelection");
     }
 
     boolean isValidPanel() {
         //TODO
         return true;
     }
-    
+
     private String getLibraryLocation() {
         return txtDefinition.getText().trim();
     }
-    
+
     private void setLibraryLocation(String loc) {
         txtDefinition.setText(loc);
     }
 
     void readSettings(WizardDescriptor wiz) {
-        String loc = (String) wiz.getProperty(MakeSharableUtils.PROP_LOCATION);
+        String loc = (String) wiz.getProperty(SharableLibrariesUtils.PROP_LOCATION);
+        helper = (AntProjectHelper)wiz.getProperty(SharableLibrariesUtils.PROP_HELPER);
         if (loc == null) {
-            loc = "../libraries/libraries.properties";
+            loc = ".." + File.separator + "libraries";
+        } else {
+            loc.substring(loc.length() - SharableLibrariesUtils.DEFAULT_LIBRARIES_FILENAME.length(), loc.length());
         }
         setLibraryLocation(loc);
     }
 
     void storeSettings(WizardDescriptor wiz) {
-        wiz.putProperty(MakeSharableUtils.PROP_LOCATION, getLibraryLocation());
+        String librariesDefinition = getLibraryLocation();
+        if (librariesDefinition != null) {
+            if (!librariesDefinition.endsWith(File.separator)) {
+                librariesDefinition += File.separatorChar;
+            }
+            librariesDefinition += SharableLibrariesUtils.DEFAULT_LIBRARIES_FILENAME;
+        }
+
+        wiz.putProperty(SharableLibrariesUtils.PROP_LOCATION, librariesDefinition);
     }
 
     /** This method is called from within the constructor to
@@ -97,6 +114,11 @@ final class MakeSharableVisualPanel1 extends JPanel {
         org.openide.awt.Mnemonics.setLocalizedText(lblDefinition, org.openide.util.NbBundle.getMessage(MakeSharableVisualPanel1.class, "MakeSharableVisualPanel1.lblDefinition.text")); // NOI18N
 
         org.openide.awt.Mnemonics.setLocalizedText(btnDefinition, org.openide.util.NbBundle.getMessage(MakeSharableVisualPanel1.class, "MakeSharableVisualPanel1.btnDefinition.text")); // NOI18N
+        btnDefinition.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnDefinitionActionPerformed(evt);
+            }
+        });
 
         org.openide.awt.Mnemonics.setLocalizedText(lblNote, org.openide.util.NbBundle.getMessage(MakeSharableVisualPanel1.class, "MakeSharableVisualPanel1.lblNote.text")); // NOI18N
         lblNote.setVerticalAlignment(javax.swing.SwingConstants.TOP);
@@ -128,6 +150,16 @@ final class MakeSharableVisualPanel1 extends JPanel {
                 .addContainerGap(116, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
+
+private void btnDefinitionActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnDefinitionActionPerformed
+        File f = FileUtil.toFile(helper.getProjectDirectory()); // NOI18N
+        String curr = SharableLibrariesUtils.browseForLibraryLocation(getLibraryLocation(), this, f);
+        if (curr != null) {
+            setLibraryLocation(curr);
+        }
+
+}//GEN-LAST:event_btnDefinitionActionPerformed
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btnDefinition;
     private javax.swing.JLabel lblDefinition;
