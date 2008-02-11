@@ -37,58 +37,41 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.websvc.saas.ui.nodes;
+package org.netbeans.modules.cnd.editor.reformat;
 
-import java.util.Collections;
-import org.netbeans.modules.websvc.saas.model.Saas;
-import org.netbeans.modules.websvc.saas.model.WadlSaas;
-import org.netbeans.modules.websvc.saas.model.WadlSaasMethod;
-import org.netbeans.modules.websvc.saas.model.wadl.Resource;
-import org.openide.nodes.Node;
-import org.openide.util.Exceptions;
+import java.util.Stack;
 
 /**
  *
- * @author nam
+ * @author Alexander Simon
  */
-public class WadlSaasNodeChildren extends SaasNodeChildren<Object> {
-    
-    public WadlSaasNodeChildren(WadlSaas wadlSaas) {
-        super(wadlSaas);
-    }
-    
-    @Override
-    public WadlSaas getSaas() {
-        return (WadlSaas) super.getSaas();
-    }
-    
-    @Override
-    protected void updateKeys() {
-        if (getSaas().getState() == Saas.State.READY) {
-            setKeys(getSaas().getResourcesOrMethods());
-        } else {
-            setKeys(Collections.emptyList());
-        }
-    }
-    
-    @Override
-    protected Node[] createNodes(Object key) {
-        if (needsWaiting()) {
-            return WAIT_NODES;
-        }
-        try {
-            if (key instanceof WadlSaasMethod) {
-                WadlSaasMethod wsm = (WadlSaasMethod) key;
-                if (wsm.getWadlMethod() != null) {
-                    return new Node[] { new WadlSaasMethodNode(wsm) };
-                }
-            } else if (key instanceof Resource) {
-                return new Node[] { new ResourceNode(getSaas(), new Resource[] {(Resource) key} ) };
-            }
-        } catch(Exception ex) {
-            Exceptions.printStackTrace(ex);
-        }
-        return new Node[0];
+class BracesStack {
+
+    private Stack<StackEntry> stack = new Stack<StackEntry>();
+
+    BracesStack() {
+        super();
     }
 
+    public void push(StackEntry entry) {
+        stack.push(entry);
+    }
+
+    public StackEntry pop() {
+        if (stack.empty()) {
+            return null;
+        }
+        return stack.pop();
+    }
+
+    public StackEntry peek() {
+        if (stack.empty()) {
+            return null;
+        }
+        return stack.peek();
+    }
+
+    public int getLength() {
+        return stack.size();
+    }
 }

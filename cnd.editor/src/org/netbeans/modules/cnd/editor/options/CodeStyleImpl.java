@@ -37,58 +37,32 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.websvc.saas.ui.nodes;
+package org.netbeans.modules.cnd.editor.options;
 
-import java.util.Collections;
-import org.netbeans.modules.websvc.saas.model.Saas;
-import org.netbeans.modules.websvc.saas.model.WadlSaas;
-import org.netbeans.modules.websvc.saas.model.WadlSaasMethod;
-import org.netbeans.modules.websvc.saas.model.wadl.Resource;
-import org.openide.nodes.Node;
-import org.openide.util.Exceptions;
+import java.util.prefs.Preferences;
+import org.netbeans.modules.cnd.editor.api.CodeStyle;
 
 /**
- *
- * @author nam
+ * @author Alexander Simon
  */
-public class WadlSaasNodeChildren extends SaasNodeChildren<Object> {
-    
-    public WadlSaasNodeChildren(WadlSaas wadlSaas) {
-        super(wadlSaas);
+public class CodeStyleImpl extends CodeStyle {
+    Preferences preferences;
+    public CodeStyleImpl(Language language, Preferences preferences){
+        super(language);
+        this.preferences = preferences;
+        
     }
-    
-    @Override
-    public WadlSaas getSaas() {
-        return (WadlSaas) super.getSaas();
-    }
-    
-    @Override
-    protected void updateKeys() {
-        if (getSaas().getState() == Saas.State.READY) {
-            setKeys(getSaas().getResourcesOrMethods());
-        } else {
-            setKeys(Collections.emptyList());
-        }
-    }
-    
-    @Override
-    protected Node[] createNodes(Object key) {
-        if (needsWaiting()) {
-            return WAIT_NODES;
-        }
-        try {
-            if (key instanceof WadlSaasMethod) {
-                WadlSaasMethod wsm = (WadlSaasMethod) key;
-                if (wsm.getWadlMethod() != null) {
-                    return new Node[] { new WadlSaasMethodNode(wsm) };
-                }
-            } else if (key instanceof Resource) {
-                return new Node[] { new ResourceNode(getSaas(), new Resource[] {(Resource) key} ) };
-            }
-        } catch(Exception ex) {
-            Exceptions.printStackTrace(ex);
-        }
-        return new Node[0];
+    protected Preferences getPreferences(){
+        return preferences;
     }
 
+    // for tests only
+    public Preferences getPref(){
+        return preferences;
+    }
+
+    // for tests only
+    public void setPref(Preferences preferences){
+        this.preferences = preferences;
+    }
 }
