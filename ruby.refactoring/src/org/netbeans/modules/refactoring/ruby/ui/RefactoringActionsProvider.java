@@ -612,6 +612,11 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider{
                 if (dob!=null) {
                     fobs[i] = dob.getPrimaryFile();
                     Source source = RetoucheUtils.getSource(fobs[i]);
+                    if (source == null) {
+                        // http://www.netbeans.org/issues/show_bug.cgi?id=125181
+                        // TODO - log this? What's the problem?
+                        continue;
+                    }
                     assert source != null;
                     try {
                         source.runUserActionTask(this, false);

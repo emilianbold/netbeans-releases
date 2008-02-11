@@ -77,11 +77,11 @@ public class RubyValidation extends JellyTestCase {
 
     public static NbTestSuite suite() {
         NbTestSuite suite = new NbTestSuite();
-        suite.addTest(new RubyValidation("testIrbShell"));
         suite.addTest(new RubyValidation("testCreateRubyProject"));
         suite.addTest(new RubyValidation("testRunRubyFile"));
         suite.addTest(new RubyValidation("testCreateRailsProject"));
         suite.addTest(new RubyValidation("testRailsGenerate"));
+        suite.addTest(new RubyValidation("testIrbShell"));
         return suite;
     }
     

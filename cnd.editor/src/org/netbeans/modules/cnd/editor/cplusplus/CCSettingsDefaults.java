@@ -49,22 +49,10 @@ import org.netbeans.editor.ext.ExtSettingsDefaults;
 /** Default settings values for C and C++ */
 public class CCSettingsDefaults extends ExtSettingsDefaults {
 
-    public static final Boolean defaultCaretSimpleBracketMatching = Boolean.FALSE;
-    public static final Boolean defaultHighlightMatchingBracket = Boolean.TRUE;
     public static final Boolean defaultCCDocAutoPopup = Boolean.FALSE;
     public static final Boolean defaultPairCharactersCompletion = Boolean.TRUE;
     public static final Acceptor defaultCCIdentifierAcceptor = AcceptorFactory.JAVA_IDENTIFIER;
     
-    // Formatting
-    public static final Boolean defaultCCFormatSpaceBeforeParenthesis = Boolean.FALSE;
-    public static final Boolean defaultCCFormatSpaceAfterComma = Boolean.TRUE;
-    public static final Boolean defaultCCFormatNewlineBeforeBraceDeclaration = Boolean.TRUE;
-    public static final Boolean defaultCCFormatNewlineBeforeBrace = Boolean.FALSE;
-    public static final Boolean defaultCCFormatLeadingSpaceInComment = Boolean.FALSE;
-    public static final Boolean defaultCCFormatLeadingStarInComment = Boolean.TRUE;
-    public static final Integer defaultCCFormatStatementContinuationIndent = new Integer(8);
-    public static final Boolean defaulCCtFormatPreprocessorAtLineStart = Boolean.FALSE;
-
     // Code Folding
     public static final Boolean defaultCCCodeFoldingEnable = Boolean.TRUE;
 
@@ -86,6 +74,4 @@ public class CCSettingsDefaults extends ExtSettingsDefaults {
           + " ArrayIndexOutOfBoundsException ClassCastException ClassNotFoundException" //NOI18N
           + " CloneNotSupportedException NullPointerException NumberFormatException" //NOI18N
           + " SQLException IllegalAccessException IllegalArgumentException"; //NOI18N
-
-
 }

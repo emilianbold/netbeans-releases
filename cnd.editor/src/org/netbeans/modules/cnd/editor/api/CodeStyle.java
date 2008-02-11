@@ -40,54 +40,101 @@
 package org.netbeans.modules.cnd.editor.api;
 
 import java.util.prefs.Preferences;
+import javax.swing.text.Document;
+import org.netbeans.editor.BaseDocument;
+import org.netbeans.editor.Formatter;
+import org.netbeans.editor.ext.ExtFormatter;
+import org.netbeans.modules.cnd.editor.cplusplus.CKit;
+import org.netbeans.modules.cnd.editor.options.CodeStyleImpl;
 import org.netbeans.modules.cnd.editor.options.EditorOptions;
 
 /**
  *
  * @author Alexander Simon
  */
-public class CodeStyle {
-    private static CodeStyle INSTANCE;
+abstract public class CodeStyle {
+    private static CodeStyle INSTANCE_C;
+    private static CodeStyle INSTANCE_CPP;
+    private Language language;
     static {
         EditorOptions.codeStyleProducer = new Producer();
     }
 
-    private Preferences preferences;
-    
-    private CodeStyle(Preferences preferences) {
-        this.preferences = preferences;
+    protected CodeStyle(Language language) {
+        this.language = language;
     }
-    
+
     public synchronized static CodeStyle getDefault(Language language) {
-        if (INSTANCE == null) {
-            INSTANCE = create(language);
+        switch(language) {
+            case C:
+                if (INSTANCE_C == null) {
+                    INSTANCE_C = create(language);
+                }
+                return INSTANCE_C;
+            case CPP:
+            default:
+                if (INSTANCE_CPP == null) {
+                    INSTANCE_CPP = create(language);
+                }
+                return INSTANCE_CPP;
         }
-        return INSTANCE;
+    }
+
+    public synchronized static CodeStyle getDefault(Document doc) {
+        if (doc instanceof BaseDocument) {
+            Formatter f = ((BaseDocument)doc).getFormatter();
+            if (f instanceof ExtFormatter) {
+                if (CKit.class.equals(f.getKitClass())) {
+                    return getDefault(Language.C);
+                }
+            }
+        }
+        return getDefault(Language.CPP);
     }
     
-    static CodeStyle create(Language language) {
-        return new CodeStyle(EditorOptions.getPreferences(EditorOptions.getCurrentProfileId(language)));
+    private static CodeStyle create(Language language) {
+        return new CodeStyleImpl(language, EditorOptions.getPreferences(EditorOptions.getCurrentProfileId(language)));
     }
+    
+
+    public int getGlobalIndentSize() {
+        return EditorOptions.getGlobalIndentSize(language);
+    }
+
     
     // General tabs and indents ------------------------------------------------
-    public boolean getFormatSpaceBeforeParenthesis() {
-        return getOption(EditorOptions.CC_FORMAT_SPACE_BEFORE_PARENTHESIS,
-                         EditorOptions.defaultCCFormatSpaceBeforeParenthesis);
+    public boolean spaceBeforeMethodDeclParen() {
+        return getOption(EditorOptions.spaceBeforeMethodDeclParen,
+                         EditorOptions.spaceBeforeMethodDeclParenDefault);
+    }
+    public boolean spaceBeforeMethodCallParen() {
+        return getOption(EditorOptions.spaceBeforeMethodCallParen,
+                         EditorOptions.spaceBeforeMethodCallParenDefault);
+    }
+    public boolean spaceBeforeIfParen() {
+        return getOption(EditorOptions.spaceBeforeIfParen,
+                         EditorOptions.spaceBeforeIfParenDefault);
+    }
+    public boolean spaceBeforeForParen() {
+        return getOption(EditorOptions.spaceBeforeForParen,
+                         EditorOptions.spaceBeforeForParenDefault);
+    }
+    public boolean spaceBeforeWhileParen() {
+        return getOption(EditorOptions.spaceBeforeWhileParen,
+                         EditorOptions.spaceBeforeWhileParenDefault);
+    }
+    public boolean spaceBeforeCatchParen() {
+        return getOption(EditorOptions.spaceBeforeCatchParen,
+                         EditorOptions.spaceBeforeCatchParenDefault);
+    }
+    public boolean spaceBeforeSwitchParen() {
+        return getOption(EditorOptions.spaceBeforeSwitchParen,
+                         EditorOptions.spaceBeforeSwitchParenDefault);
     }
 
-    public boolean getFormatSpaceAfterComma() {
-        return getOption(EditorOptions.CC_FORMAT_SPACE_AFTER_COMMA,
-                         EditorOptions.defaultCCFormatSpaceAfterComma);
-    }
-
-    public BracePlacement getFormatNewlineBeforeBrace() {
-        return BracePlacement.valueOf(getOption(EditorOptions.CC_FORMAT_NEWLINE_BEFORE_BRACE,
-                                      EditorOptions.defaultCCFormatNewlineBeforeBrace));
-    }
-
-    public BracePlacement getFormatNewlineBeforeBraceDeclaration() {
-        return BracePlacement.valueOf(getOption(EditorOptions.CC_FORMAT_NEWLINE_BEFORE_BRACE_DECLARATION,
-                                      EditorOptions.defaultCCFormatNewlineBeforeBraceDeclaration));
+    public BracePlacement getFormatNewlineBeforeBraceNamespace() {
+        return BracePlacement.valueOf(getOption(EditorOptions.CC_FORMAT_NEWLINE_BEFORE_BRACE_NAMESPACE,
+                                      EditorOptions.defaultCCFormatNewlineBeforeBraceNamespace));
     }
 
     public BracePlacement getFormatNewlineBeforeBraceClass() {
@@ -95,16 +142,22 @@ public class CodeStyle {
                                       EditorOptions.defaultCCFormatNewlineBeforeBraceClass));
     }
 
-    public BracePlacement getFormatNewlineBeforeBraceMethod() {
-        return BracePlacement.valueOf(getOption(EditorOptions.CC_FORMAT_NEWLINE_BEFORE_BRACE_METHOD,
-                                      EditorOptions.defaultCCFormatNewlineBeforeBraceMethod));
-    }
-    
-    public boolean getFormatLeadingSpaceInComment() {
-        return getOption(EditorOptions.CC_FORMAT_LEADING_SPACE_IN_COMMENT,
-                         EditorOptions.defaultCCFormatLeadingSpaceInComment);
+    public BracePlacement getFormatNewlineBeforeBraceDeclaration() {
+        return BracePlacement.valueOf(getOption(EditorOptions.CC_FORMAT_NEWLINE_BEFORE_BRACE_DECLARATION,
+                                      EditorOptions.defaultCCFormatNewlineBeforeBraceDeclaration));
     }
 
+    public BracePlacement getFormatNewlineBeforeBrace() {
+        return BracePlacement.valueOf(getOption(EditorOptions.CC_FORMAT_NEWLINE_BEFORE_BRACE,
+                                      EditorOptions.defaultCCFormatNewlineBeforeBrace));
+    }
+
+
+    public PreprocessorIndent indentPreprocessorDirectives(){
+        return PreprocessorIndent.valueOf(getOption(EditorOptions.indentPreprocessorDirectives,
+                                      EditorOptions.indentPreprocessorDirectivesDefault));
+    }
+            
     public boolean getFormatLeadingStarInComment() {
         return getOption(EditorOptions.CC_FORMAT_LEADING_STAR_IN_COMMENT,
                          EditorOptions.defaultCCFormatLeadingStarInComment);
@@ -130,18 +183,70 @@ public class CodeStyle {
                          EditorOptions.spaceAroundAssignOpsDefault);
     }
     
+    public boolean spaceBeforeWhile() {
+        return getOption(EditorOptions.spaceBeforeWhile,
+                         EditorOptions.spaceBeforeWhileDefault);
+    }
+    
+    public boolean spaceBeforeElse() {
+        return getOption(EditorOptions.spaceBeforeElse,
+                         EditorOptions.spaceBeforeElseDefault);
+    }
+
+    public boolean spaceBeforeCatch() {
+        return getOption(EditorOptions.spaceBeforeCatch,
+                         EditorOptions.spaceBeforeCatchDefault);
+    }
+
+    public boolean spaceBeforeComma() {
+        return getOption(EditorOptions.spaceBeforeComma,
+                         EditorOptions.spaceBeforeCommaDefault);
+    }
+
+    public boolean spaceAfterComma() {
+        return getOption(EditorOptions.spaceAfterComma,
+                         EditorOptions.spaceAfterCommaDefault);
+    }
+    
+    public boolean spaceBeforeSemi() {
+        return getOption(EditorOptions.spaceBeforeSemi,
+                         EditorOptions.spaceBeforeSemiDefault);
+    }
+
+    public boolean spaceAfterSemi() {
+        return getOption(EditorOptions.spaceAfterSemi,
+                         EditorOptions.spaceAfterSemiDefault);
+    }
+
+    public boolean spaceBeforeColon() {
+        return getOption(EditorOptions.spaceBeforeColon,
+                         EditorOptions.spaceBeforeColonDefault);
+    }
+
+    public boolean spaceAfterColon() {
+        return getOption(EditorOptions.spaceAfterColon,
+                         EditorOptions.spaceAfterColonDefault);
+    }
+    
+    public boolean spaceAfterTypeCast() {
+        return getOption(EditorOptions.spaceAfterTypeCast,
+                         EditorOptions.spaceAfterTypeCastDefault);
+    }
+    
     private boolean getOption(String key, boolean defaultValue) {
-        return preferences.getBoolean(key, defaultValue);
+        return getPreferences().getBoolean(key, defaultValue);
     }
 
     private int getOption(String key, int defaultValue) {
-        return preferences.getInt(key, defaultValue);
+        return getPreferences().getInt(key, defaultValue);
     }
 
     private String getOption(String key, String defaultValue) {
-        return preferences.get(key, defaultValue);
+        return getPreferences().get(key, defaultValue);
     }
 
+    abstract protected Preferences getPreferences();
+    
     // Nested classes ----------------------------------------------------------
     public enum Language {
         C,
@@ -153,10 +258,16 @@ public class CodeStyle {
         NEW_LINE,
     }
 
+    public enum PreprocessorIndent {
+        START_LINE,
+        CODE_INDENT,
+        PREPROCESSOR_INDENT,
+    }
+
     // Communication with non public packages ----------------------------------
     private static class Producer implements EditorOptions.CodeStyleProducer {
-        public CodeStyle create(Preferences preferences) {
-            return new CodeStyle(preferences);
+        public CodeStyle create(Language language, Preferences preferences) {
+            return new CodeStyleImpl(language, preferences);
         }
     } 
 }

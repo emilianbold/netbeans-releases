@@ -361,7 +361,6 @@ public final class ModuleUpdater extends Thread {
                             if (! entry.isDirectory ()) {
                                 if (AUTOUPDATE_UPDATER_JAR_PATH.equals (entry.getName ())) {
                                     // skip updater.jar
-                                    System.out.println ("######## SKIP ENTRY " + entry);
                                     continue;
                                 }
                                 String pathTo = entry.getName ().substring (UPDATE_NETBEANS_DIR.length () + 1);

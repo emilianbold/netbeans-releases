@@ -2,7 +2,6 @@ org.netbeans.modules.bpel.model.impl.SetInTreeService
 org.netbeans.modules.bpel.model.impl.services.DefaultNameService
 org.netbeans.modules.bpel.model.impl.CookieCopierService
 org.netbeans.modules.bpel.model.impl.ImportChangeHandlingService
-#org.netbeans.modules.bpel.model.impl.services.ReferenceInitilizerService
 org.netbeans.modules.bpel.model.impl.UIDCreationService
 org.netbeans.modules.bpel.model.impl.services.CheckNameService
 org.netbeans.modules.bpel.model.impl.services.CheckQNameService

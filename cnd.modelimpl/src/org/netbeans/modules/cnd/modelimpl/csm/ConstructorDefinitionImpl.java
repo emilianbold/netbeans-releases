@@ -41,29 +41,53 @@
 
 package org.netbeans.modules.cnd.modelimpl.csm;
 
+import java.util.Collection;
 import org.netbeans.modules.cnd.api.model.*;
 import antlr.collections.AST;
 import java.io.DataInput;
 import java.io.IOException;
+import java.util.Collections;
+import java.util.List;
+import org.netbeans.modules.cnd.api.model.deep.CsmExpression;
+import org.netbeans.modules.cnd.modelimpl.csm.core.AstRenderer;
 
 /**
  * @author Vladimir Kvasihn
  */
 public final class ConstructorDefinitionImpl extends FunctionDefinitionImpl {
 
+    private List<CsmExpression> initializers;
+    
     public ConstructorDefinitionImpl(AST ast, CsmFile file, CsmScope scope) {
         super(ast, file, scope, true);
+        
+        initializers = AstRenderer.renderConstructorInitializersList(ast, this, this.getContainingFile());
     }
     
     @Override
     public CsmType getReturnType() {
         return NoType.instance();
     }
+
+    public List getInitializerList() {
+        if(initializers != null) {
+            return initializers;
+        } else {
+            return Collections.EMPTY_LIST;
+        }
+    }    
     
     ////////////////////////////////////////////////////////////////////////////
     // iml of SelfPersistent
     
     public ConstructorDefinitionImpl(DataInput input) throws IOException {
         super(input);
-    }     
+    }
+
+    @Override
+    public Collection getScopeElements() {
+        Collection c = super.getScopeElements();
+        c.addAll(initializers);
+        return c;
+    }
 }

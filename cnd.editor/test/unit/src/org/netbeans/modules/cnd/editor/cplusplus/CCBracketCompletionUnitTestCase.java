@@ -30,8 +30,10 @@ package org.netbeans.modules.cnd.editor.cplusplus;
 
 import javax.swing.text.BadLocationException;
 import org.netbeans.editor.Formatter;
-import org.netbeans.editor.Settings;
 import org.netbeans.editor.TokenID;
+import org.netbeans.modules.cnd.editor.api.CodeStyle;
+import org.netbeans.modules.cnd.editor.options.CodeStyleImpl;
+import org.netbeans.modules.cnd.editor.options.EditorOptions;
 
 /**
  * Class was taken from java
@@ -665,7 +667,9 @@ public class CCBracketCompletionUnitTestCase extends CCFormatterBaseUnitTestCase
     }
     
     public void testIZ102091() throws Exception {
-        Settings.setValue(CCKit.class, CCSettingsNames.CC_FORMAT_NEWLINE_BEFORE_BRACE, Boolean.TRUE);
+        ((CodeStyleImpl)CodeStyle.getDefault(CodeStyle.Language.CPP)).getPref().
+                put(EditorOptions.CC_FORMAT_NEWLINE_BEFORE_BRACE, 
+                CodeStyle.BracePlacement.NEW_LINE.name());
         try {
             setLoadDocumentText (
                 "if(i)\n"+
@@ -677,7 +681,9 @@ public class CCBracketCompletionUnitTestCase extends CCFormatterBaseUnitTestCase
                 "{|"
             );
         } finally {
-            Settings.setValue(CCKit.class, CCSettingsNames.CC_FORMAT_NEWLINE_BEFORE_BRACE, Boolean.FALSE);
+            ((CodeStyleImpl)CodeStyle.getDefault(CodeStyle.Language.CPP)).getPref().
+                    put(EditorOptions.CC_FORMAT_NEWLINE_BEFORE_BRACE, 
+                    CodeStyle.BracePlacement.SAME_LINE.name());
         }
     }
     

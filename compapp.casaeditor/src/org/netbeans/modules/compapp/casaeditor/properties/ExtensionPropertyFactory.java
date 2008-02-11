@@ -45,6 +45,7 @@ import javax.xml.namespace.QName;
 import org.netbeans.modules.compapp.casaeditor.model.casa.CasaComponent;
 import org.netbeans.modules.compapp.casaeditor.model.casa.CasaExtensibilityElement;
 import org.netbeans.modules.compapp.casaeditor.nodes.CasaNode;
+import org.netbeans.modules.compapp.projects.jbi.api.Endpoint;
 import org.openide.nodes.Node;
 
 /**
@@ -84,7 +85,21 @@ public class ExtensionPropertyFactory {
                     attributeName,
                     displayName,
                     discription);
-        } else { //if (valueType == String.class) {
+        } else if (valueType == Endpoint.class) {
+            return new EndpointExtensionProperty(
+                    node,
+                    extensionPointComponent,
+                    firstEE,
+                    lastEE,
+                    propertyType,
+                    attributeName,
+                    displayName,
+                    discription);
+        } else { 
+            if (valueType != String.class) {
+                System.err.println("Unsupported value type: " + valueType);
+            }
+            
             return new ExtensionProperty<String>(
                     node,
                     extensionPointComponent,
@@ -94,7 +109,7 @@ public class ExtensionPropertyFactory {
                     String.class,
                     attributeName,
                     displayName,
-                    discription);
+                    discription);            
         }
     }
 

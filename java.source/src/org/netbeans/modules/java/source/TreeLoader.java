@@ -98,7 +98,7 @@ public class TreeLoader extends LazyTreeLoader {
     
     @Override
     public boolean loadTreeFor(final ClassSymbol clazz) {
-        assert JavaSourceAccessor.INSTANCE.isJavaCompilerLocked();
+        assert JavaSourceAccessor.getINSTANCE().isJavaCompilerLocked();
         
         if (clazz != null) {
             try {

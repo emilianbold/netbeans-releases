@@ -53,6 +53,7 @@ import org.netbeans.editor.ext.FormatTokenPosition;
 import org.netbeans.editor.ext.FormatSupport;
 import org.netbeans.editor.ext.ExtFormatter;
 import org.netbeans.editor.ext.FormatWriter;
+import org.netbeans.modules.cnd.editor.api.CodeStyle;
 
 /**
  * CC indentation services are located here.
@@ -125,23 +126,34 @@ public class CCFormatter extends ExtFormatter {
 
     @Override
     protected void initFormatLayers() {
-        addFormatLayer(new StripEndWhitespaceLayer());
-        addFormatLayer(new CCLayer());
+        if (CKit.class.equals(getKitClass())){
+            addFormatLayer(new StripEndWhitespaceLayer(CodeStyle.Language.C));
+            addFormatLayer(new CCLayer(CodeStyle.Language.C));
+        } else {
+            addFormatLayer(new StripEndWhitespaceLayer(CodeStyle.Language.CPP));
+            addFormatLayer(new CCLayer(CodeStyle.Language.CPP));
+        }
     }
 
     public FormatSupport createFormatSupport(FormatWriter fw) {
-        return new CCFormatSupport(fw);
+        if (CKit.class.equals(getKitClass())){
+            return new CCFormatSupport(CodeStyle.Language.C, fw);
+        } else {
+            return new CCFormatSupport(CodeStyle.Language.CPP, fw);
+        }
     }
 
     public class StripEndWhitespaceLayer extends AbstractFormatLayer {
+        private CodeStyle.Language language;
 
-        public StripEndWhitespaceLayer() {
+        public StripEndWhitespaceLayer(CodeStyle.Language language) {
             super("cc-strip-whitespace-at-line-end"); // NOI18N
+            this.language = language;
         }
 
         @Override
         protected FormatSupport createFormatSupport(FormatWriter fw) {
-            return new CCFormatSupport(fw);
+            return new CCFormatSupport(language, fw);
         }
 
         public void format(FormatWriter fw) {
@@ -162,14 +174,16 @@ public class CCFormatter extends ExtFormatter {
     }
 
     public class CCLayer extends AbstractFormatLayer {
+        private CodeStyle.Language language;
 
-        public CCLayer() {
+        public CCLayer(CodeStyle.Language language) {
             super("cc-layer"); // NOI18N
+            this.language = language;
         }
 
         @Override
         protected FormatSupport createFormatSupport(FormatWriter fw) {
-            return new CCFormatSupport(fw);
+            return new CCFormatSupport(language, fw);
         }
 
         public void format(FormatWriter fw) {
@@ -327,7 +341,7 @@ public class CCFormatter extends ExtFormatter {
                             break;
 
                         case CCTokenContext.LPAREN_ID:
-                            if (ccfs.getFormatSpaceBeforeParenthesis()) {
+                            if (ccfs.getFormatSpaceBeforeMethodCallParenthesis()) {
                                 TokenItem prevToken = token.getPrevious();
                                 if (prevToken != null && prevToken.getTokenID() == CCTokenContext.IDENTIFIER) {
                                     if (ccfs.canInsertToken(token)) {

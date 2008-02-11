@@ -112,7 +112,8 @@ static char* processAUClustersList(char *userdir);
 static int removeAUClustersListFile(char *userdir);
 
 int checkForNewUpdater(const char *basePath);
-int createProcessNoVirt(const char *exePath, char *argv[]);
+int createProcessNoVirt(const char *exePath, char *argv[], DWORD *retCode = 0);
+double getPreciseTime();
 
 #define HELP_STRING \
 "Usage: launcher {options} arguments\n\
@@ -437,7 +438,34 @@ void runClass(char *mainclass, bool deleteAUClustersFile) {
     fflush(stdout);
 #endif
     //_spawnv(_P_WAIT, javapath, args);
-    createProcessNoVirt(javapath, args);
+    double start = getPreciseTime();
+    DWORD retCode = 0;
+    if (!createProcessNoVirt(javapath, args, &retCode) && retCode == 1 && (getPreciseTime() - start < 2))
+    {
+        // workaround for 64-bit java
+        int i = 0;
+        bool optionClient = false;
+        while (args[i])
+        {
+            if (strcmp(args[i], "-client") == 0 || strcmp(args[i], "\"-client\"") == 0)
+            {
+                optionClient = true;
+                int k = i;
+                while (args[k])
+                {
+                    args[k] = args[k+1];
+                    k++;
+                }
+            }
+            else
+                i++;
+        }
+        if (optionClient)
+        {
+            printf("Rerunnig without \"-client\" option...\n");
+            createProcessNoVirt(javapath, args);
+        }
+    }
 }
 
 //////////
@@ -1005,7 +1033,7 @@ int checkForNewUpdater(const char *basePath)
 }
 
 // creates process and disable virtualization (Win VISTA fix)
-int createProcessNoVirt(const char *exePath, char *argv[])
+int createProcessNoVirt(const char *exePath, char *argv[], DWORD *retCode)
 {
     const int maxCmdLineLen = 32*1024;
     int filled = 0;
@@ -1053,7 +1081,20 @@ int createProcessNoVirt(const char *exePath, char *argv[])
         MessageBox(NULL, "Failed to open process token.", "Warning", MB_OK | MB_ICONWARNING);
     ResumeThread(pi.hThread);
     WaitForSingleObject(pi.hProcess, INFINITE);
+    if (retCode)
+        GetExitCodeProcess(pi.hProcess, retCode);
     CloseHandle(pi.hProcess);
     CloseHandle(pi.hThread);
     return 0;
 }
+
+
+double getPreciseTime()
+{
+    static LARGE_INTEGER perfFrequency = {0};
+    LARGE_INTEGER currentCount;
+    if (perfFrequency.QuadPart == 0)
+        QueryPerformanceFrequency(&perfFrequency);
+    QueryPerformanceCounter(&currentCount);
+    return currentCount.QuadPart / (double) perfFrequency.QuadPart;
+} 

@@ -47,6 +47,7 @@ import org.netbeans.editor.TokenContextPath;
 import org.netbeans.editor.ext.FormatTokenPosition;
 import org.netbeans.editor.ext.ExtFormatSupport;
 import org.netbeans.editor.ext.FormatWriter;
+import org.netbeans.modules.cnd.editor.api.CodeStyle;
 import org.openide.util.NbBundle;
 
 /**
@@ -57,14 +58,16 @@ import org.openide.util.NbBundle;
 public class CCFormatSupport extends ExtFormatSupport {
 
     private TokenContextPath tokenContextPath;
+    private CodeStyle.Language language;
 
-    public CCFormatSupport(FormatWriter formatWriter) {
-        this(formatWriter, CCTokenContext.contextPath);
+    public CCFormatSupport(CodeStyle.Language language, FormatWriter formatWriter) {
+        this(language, formatWriter, CCTokenContext.contextPath);
     }
 
-    public CCFormatSupport(FormatWriter formatWriter, TokenContextPath tokenContextPath) {
+    private CCFormatSupport(CodeStyle.Language language, FormatWriter formatWriter, TokenContextPath tokenContextPath) {
         super(formatWriter);
         this.tokenContextPath = tokenContextPath;
+        this.language = language;
     }
 
     public TokenContextPath getTokenContextPath() {
@@ -78,11 +81,10 @@ public class CCFormatSupport extends ExtFormatSupport {
                 && (tokenID == CCTokenContext.LINE_COMMENT
                     || tokenID == CCTokenContext.BLOCK_COMMENT));
     }
-    
+
      /** Is given token a preprocessor **/
      public boolean isPreprocessorAtLineStart(TokenItem token){
-         if( getSettingBoolean(CCSettingsNames.CC_FORMAT_PREPROCESSOR_AT_LINE_START, 
-                    CCSettingsDefaults.defaulCCtFormatPreprocessorAtLineStart) ) 
+         if(getFormatSpaceBeforeMethodCallParenthesis()) 
              return false;
          if (token != null){
             FormatTokenPosition ft = findLineFirstNonWhitespace(getPosition(token, 0));
@@ -1321,42 +1323,35 @@ public class CCFormatSupport extends ExtFormatSupport {
         return false;
     }
 
-    public boolean getFormatSpaceBeforeParenthesis() {
-        return getSettingBoolean(CCSettingsNames.CC_FORMAT_SPACE_BEFORE_PARENTHESIS,
-                                 CCSettingsDefaults.defaultCCFormatSpaceBeforeParenthesis);
+    private CodeStyle getCodeStyle(){
+        return CodeStyle.getDefault(language);
+    }
+
+    public boolean getFormatSpaceBeforeMethodCallParenthesis() {
+        //return getCodeStyle().getFormatSpaceBeforeParenthesis();
+        return getCodeStyle().spaceBeforeMethodCallParen();
     }
 
     public boolean getFormatSpaceAfterComma() {
-        return getSettingBoolean(CCSettingsNames.CC_FORMAT_SPACE_AFTER_COMMA,
-                                 CCSettingsDefaults.defaultCCFormatSpaceAfterComma);
+        return getCodeStyle().spaceAfterComma();
     }
 
     public boolean getFormatNewlineBeforeBrace() {
-        return getSettingBoolean(CCSettingsNames.CC_FORMAT_NEWLINE_BEFORE_BRACE,
-                                 CCSettingsDefaults.defaultCCFormatNewlineBeforeBrace);
+        return getCodeStyle().getFormatNewlineBeforeBrace() == CodeStyle.BracePlacement.NEW_LINE;
     }
 
     public boolean getFormatNewlineBeforeBraceDeclaration() {
-        return getSettingBoolean(CCSettingsNames.CC_FORMAT_NEWLINE_BEFORE_BRACE_DECLARATION,
-                                 CCSettingsDefaults.defaultCCFormatNewlineBeforeBraceDeclaration);
+        return getCodeStyle().getFormatNewlineBeforeBraceDeclaration() == CodeStyle.BracePlacement.NEW_LINE;
     }
     
-    public boolean getFormatLeadingSpaceInComment() {
-        return getSettingBoolean(CCSettingsNames.CC_FORMAT_LEADING_SPACE_IN_COMMENT,
-                                 CCSettingsDefaults.defaultCCFormatLeadingSpaceInComment);
-    }
-
     public boolean getFormatLeadingStarInComment() {
-        return getSettingBoolean(CCSettingsNames.CC_FORMAT_LEADING_STAR_IN_COMMENT,
-                                 CCSettingsDefaults.defaultCCFormatLeadingStarInComment);
+        return getCodeStyle().getFormatLeadingStarInComment();
     }
 
     private int getFormatStatementContinuationIndent() {
-        return getSettingInteger(CCSettingsNames.CC_FORMAT_STATEMENT_CONTINUATION_INDENT,
-                                 CCSettingsDefaults.defaultCCFormatStatementContinuationIndent);
+        return getCodeStyle().getFormatStatementContinuationIndent();
     }
 
-    
     /*   this is fix for bugs: 7980 and 9111. if user enters
      *        {   foo();
      *   and press enter at the end of the line, she wants

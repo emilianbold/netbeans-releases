@@ -287,6 +287,8 @@ public final class OnAlarmEventNode extends BpelNode<OnAlarmEvent>
 //            ActionType.GO_TO_DIAGRAMM,
             ActionType.GO_TO,
             ActionType.SEPARATOR,
+            ActionType.TOGGLE_BREAKPOINT,
+            ActionType.SEPARATOR,
             ActionType.REMOVE,
             ActionType.SEPARATOR,
 //            ActionType.SHOW_BPEL_MAPPER,

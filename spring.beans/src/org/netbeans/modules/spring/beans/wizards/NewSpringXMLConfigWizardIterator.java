@@ -37,9 +37,9 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
-  *
+ *
  * Portions Copyrighted 2008 Craig MacKay.
-*/
+ */
 
 package org.netbeans.modules.spring.beans.wizards;
 
@@ -51,7 +51,6 @@ import java.util.Collections;
 import java.util.NoSuchElementException;
 import java.util.Set;
 import javax.swing.JComponent;
-import javax.swing.JEditorPane;
 import javax.swing.event.ChangeListener;
 import javax.swing.text.BadLocationException;
 import org.netbeans.api.project.Project;
@@ -60,15 +59,15 @@ import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Formatter;
-import org.netbeans.modules.spring.beans.loader.SpringXMLConfigDataLoader;
+import org.netbeans.modules.spring.api.beans.SpringConstants;
 import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.WizardDescriptor;
-import org.openide.cookies.OpenCookie;
 import org.openide.filesystems.FileAlreadyLockedException;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
-import org.openide.loaders.DataObject;
+import org.openide.filesystems.FileUtil;
+import org.openide.text.CloneableEditorSupport;
 import org.openide.util.Exceptions;
 
 public final class NewSpringXMLConfigWizardIterator implements WizardDescriptor.InstantiatingIterator {
@@ -120,41 +119,18 @@ public final class NewSpringXMLConfigWizardIterator implements WizardDescriptor.
 
     public Set instantiate() throws IOException {
         final FileObject targetFolder = Templates.getTargetFolder(wizard);
-        FileSystem fs = targetFolder.getFileSystem();
-        String targetName = Templates.getTargetName(wizard);
-
-        final String extension = "xml"; // NOI18N
-
-        if (targetName == null || "null".equals(targetName)) { // NOI18N
-            targetName = "XMLDocument"; // NOI18N
-        }
-
-        String uniqueTargetName = targetName;
-        int i = 2;
-
-        while (targetFolder.getFileObject(uniqueTargetName, extension) != null) {
-            uniqueTargetName = targetName + i;
-            i++;
-        }
-        final String name = uniqueTargetName;
+        final String targetName = Templates.getTargetName(wizard);
 
         final FileObject[] createdFile = { null };
-        final DataObject[] createdDataObj = { null };
 
-        fs.runAtomicAction(new FileSystem.AtomicAction() {
+        FileUtil.runAtomicAction(new FileSystem.AtomicAction() {
 
             public void run() throws IOException {
-                createdFile[0] = targetFolder.createData(name, extension);
+                createdFile[0] = targetFolder.createData(targetName, Templates.getTemplate(wizard).getExt());
                 String[] incNamespaces = (String[]) wizard.getProperty(BeansConfigNamespacesWizardPanel.INCLUDED_NAMESPACES);
                 generateFileContents(createdFile[0], incNamespaces);
-                createdDataObj[0] = DataObject.find(createdFile[0]);
             }
         });
-
-        OpenCookie open = (OpenCookie) createdDataObj[0].getCookie(OpenCookie.class);
-        if (open != null) {
-            open.open();
-        }
 
         return Collections.singleton(createdFile[0]);
     }
@@ -234,9 +210,9 @@ public final class NewSpringXMLConfigWizardIterator implements WizardDescriptor.
         StringBuilder sb = generateXML(incNamespaces);
 
         try {
-            JEditorPane ep = new JEditorPane(SpringXMLConfigDataLoader.REQUIRED_MIME, ""); // NOI18N
-            BaseDocument doc = new BaseDocument(ep.getEditorKit().getClass(), false);
-            Formatter f = Formatter.getFormatter(ep.getEditorKit().getClass());
+            Class<?> kitClass = CloneableEditorSupport.getEditorKit(SpringConstants.CONFIG_MIME_TYPE).getClass();
+            BaseDocument doc = new BaseDocument(kitClass, false);
+            Formatter f = Formatter.getFormatter(kitClass);
             
             doc.remove(0, doc.getLength());
             doc.insertString(0, sb.toString(), null);

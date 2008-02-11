@@ -54,11 +54,22 @@ public interface CasaEndpoint extends ReferenceableCasaComponent {
     public static final String INTERFACE_NAME_PROPERTY = "interface-name";  // NOI18N
     public static final String SERVICE_NAME_PROPERTY = "service-name";      // NOI18N
     
-    boolean isConsumes();
+//    boolean isConsumes();
     
+    /**
+     * Gets the endpoint name (which serves the ID purpose in the CASA document).
+     * For example: "endpoint1", "endpoint2", ...
+     * 
+     * @return endpoint ID
+     */
     String getName();    
     void setName(String name);
     
+    /**
+     * Gets the endpoint's endpoint-name. For example: "echoServicePort".
+     * 
+     * @return endpoint name
+     */
     String getEndpointName(); 
     void setEndpointName(String name);
     
