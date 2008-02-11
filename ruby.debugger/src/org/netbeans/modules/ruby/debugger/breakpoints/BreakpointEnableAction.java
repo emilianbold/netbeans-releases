@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -38,20 +38,40 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.spring.beans.refactoring;
+package org.netbeans.modules.ruby.debugger.breakpoints;
 
-import org.netbeans.modules.refactoring.spi.ui.TreeElement;
-import org.netbeans.modules.refactoring.spi.ui.TreeElementFactoryImplementation;
+import org.openide.util.HelpCtx;
+import org.openide.util.NbBundle;
+import org.openide.util.actions.BooleanStateAction;
 
-/**
- * @author John Baker
- */
-public final class SpringBeansRefactoringTreeImpl implements TreeElementFactoryImplementation {
+public final class BreakpointEnableAction extends BooleanStateAction {
 
-    public TreeElement getTreeElement(Object object) {        
-        return null;
+    @Override
+    public boolean isEnabled() {
+        RubyBreakpoint bp = RubyBreakpointManager.getCurrentLineBreakpoint();
+        if (bp != null) {
+            super.setBooleanState(bp.isEnabled());
+            return true;
+        }
+        return false;
     }
 
-    public void cleanUp() {
+    public String getName() {
+        return NbBundle.getMessage(BreakpointEnableAction.class, "CTL_enabled");
+    }
+
+    @Override
+    public void setBooleanState(boolean value) {
+        RubyBreakpoint bp = RubyBreakpointManager.getCurrentLineBreakpoint();
+        if (value) {
+            bp.enable();
+        } else {
+            bp.disable();
+        }
+        super.setBooleanState(value);
+    }
+
+    public HelpCtx getHelpCtx() {
+        return null;
     }
 }

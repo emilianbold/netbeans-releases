@@ -49,13 +49,27 @@ import java.awt.event.KeyEvent;
 import java.beans.BeanInfo;
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
+import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.Modifier;
 import javax.lang.model.element.PackageElement;
 import javax.lang.model.element.TypeElement;
+import javax.lang.model.element.VariableElement;
+import javax.lang.model.type.ArrayType;
+import javax.lang.model.type.DeclaredType;
+import javax.lang.model.type.ErrorType;
+import javax.lang.model.type.ExecutableType;
 import javax.lang.model.type.TypeKind;
+import javax.lang.model.type.TypeMirror;
+import javax.lang.model.type.TypeVariable;
+import javax.lang.model.type.WildcardType;
 import javax.lang.model.util.SimpleElementVisitor6;
+import javax.lang.model.util.SimpleTypeVisitor6;
 import javax.swing.Action;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
@@ -70,6 +84,7 @@ import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
+import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.api.java.source.Task;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.spring.api.beans.model.SpringBean;
@@ -89,6 +104,7 @@ import org.openide.loaders.DataFolder;
 import org.openide.nodes.Node;
 import org.openide.util.Exceptions;
 import org.openide.util.Utilities;
+import org.openide.xml.XMLUtil;
 
 /**
  * A completion item shown in a valid code completion request 
@@ -111,6 +127,11 @@ public abstract class SpringXMLConfigCompletionItem implements CompletionItem {
     public static SpringXMLConfigCompletionItem createTypeItem(int substitutionOffset, TypeElement elem, ElementHandle<TypeElement> elemHandle, 
                 boolean deprecated, boolean smartItem) {
         return new ClassItem(substitutionOffset, elem, elemHandle, deprecated, smartItem);
+    }
+    
+    public static SpringXMLConfigCompletionItem createMethodItem(int substitutionOffset, ExecutableElement element, 
+            boolean isInherited, boolean isDeprecated) {
+        return new MethodItem(substitutionOffset, element, isInherited, isDeprecated);
     }
     
     public static SpringXMLConfigCompletionItem createAttribValueItem(int substitutionOffset, String displayText, String docText) {
@@ -389,32 +410,7 @@ public abstract class SpringXMLConfigCompletionItem implements CompletionItem {
 
         @Override
         public CompletionTask createDocumentationTask() {
-            return new AsyncCompletionTask(new AsyncCompletionQuery() {
-                @Override
-                protected void query(final CompletionResultSet resultSet, Document doc, int caretOffset) {
-                    try {
-                        JavaSource js = SpringXMLConfigEditorUtils.getJavaSource(doc);
-                        if (js == null) {
-                            return;
-                        }
-
-                        js.runUserActionTask(new Task<CompilationController>() {
-                            public void run(CompilationController cc) throws Exception {
-                                cc.toPhase(Phase.RESOLVED);
-                                Element element = elemHandle.resolve(cc);
-                                if (element == null) {
-                                    return;
-                                }
-                                SpringXMLConfigCompletionDoc doc = SpringXMLConfigCompletionDoc.createJavaDoc(cc, element);
-                                resultSet.setDocumentation(doc);
-                            }
-                        }, false);
-                        resultSet.finish();
-                    } catch (IOException ex) {
-                        Exceptions.printStackTrace(ex);
-                    }
-                }
-            }, EditorRegistry.lastFocusedComponent());
+            return new AsyncCompletionTask(new JavaElementDocQuery(elemHandle), EditorRegistry.lastFocusedComponent());
         }
     }
     
@@ -486,6 +482,207 @@ public abstract class SpringXMLConfigCompletionItem implements CompletionItem {
         }
     }
     
+    private static class MethodItem extends SpringXMLConfigCompletionItem {
+        
+        private static final String METHOD_PUBLIC = "org/netbeans/modules/editor/resources/completion/method_16.png"; //NOI18N
+        private static final String METHOD_PROTECTED = "org/netbeans/modules/editor/resources/completion/method_protected_16.png"; //NOI18N
+        private static final String METHOD_PACKAGE = "org/netbeans/modules/editor/resources/completion/method_package_private_16.png"; //NOI18N
+        private static final String METHOD_PRIVATE = "org/netbeans/modules/editor/resources/completion/method_private_16.png"; //NOI18N        
+        private static final String METHOD_ST_PUBLIC = "org/netbeans/modules/editor/resources/completion/method_static_16.png"; //NOI18N
+        private static final String METHOD_ST_PROTECTED = "org/netbeans/modules/editor/resources/completion/method_static_protected_16.png"; //NOI18N
+        private static final String METHOD_ST_PRIVATE = "org/netbeans/modules/editor/resources/completion/method_static_private_16.png"; //NOI18N
+        private static final String METHOD_ST_PACKAGE = "org/netbeans/modules/editor/resources/completion/method_static_package_private_16.png"; //NOI18N
+        private static final String METHOD_COLOR = "<font color=#000000>"; //NOI18N
+        private static final String PARAMETER_NAME_COLOR = "<font color=#a06001>"; //NOI18N
+        private static ImageIcon icon[][] = new ImageIcon[2][4];
+        
+        private ElementHandle<ExecutableElement> elementHandle;
+        private boolean isDeprecated;
+        private String simpleName;
+        private Set<Modifier> modifiers;
+        private List<ParamDesc> params;
+        private boolean isPrimitive;
+        private String typeName;
+        private String sortText;
+        private String leftText;
+        private boolean isInherited;
+        private String rightText;
+        
+        public MethodItem(int substitutionOffset, ExecutableElement element, boolean isInherited, boolean isDeprecated) {
+            super(substitutionOffset);
+            this.elementHandle = ElementHandle.create(element);
+            this.isDeprecated = isDeprecated;
+            this.isInherited = isInherited;
+            this.simpleName = element.getSimpleName().toString();
+            this.modifiers = element.getModifiers();
+            this.params = new ArrayList<ParamDesc>();
+            Iterator<? extends VariableElement> it = element.getParameters().iterator();
+            Iterator<? extends TypeMirror> tIt = ((ExecutableType) element.asType()).getParameterTypes().iterator();
+            while(it.hasNext() && tIt.hasNext()) {
+                TypeMirror tm = tIt.next();
+                this.params.add(new ParamDesc(tm.toString(), getTypeName(tm, false, element.isVarArgs() && !tIt.hasNext()).toString(), it.next().getSimpleName().toString()));
+            }
+            TypeMirror retType = element.getReturnType();
+            
+            this.typeName = getTypeName(retType, false).toString();
+            this.isPrimitive = retType.getKind().isPrimitive() || retType.getKind() == TypeKind.VOID;
+        }
+
+        public int getSortPriority() {
+            return 100;
+        }
+
+        public CharSequence getSortText() {
+            if (sortText == null) {
+                StringBuilder sortParams = new StringBuilder();
+                sortParams.append('('); // NOI18N
+                int cnt = 0;
+                for(Iterator<ParamDesc> it = params.iterator(); it.hasNext();) {
+                    ParamDesc param = it.next();
+                    sortParams.append(param.typeName);
+                    if (it.hasNext()) {
+                        sortParams.append(','); // NOI18N
+                    }
+                    cnt++;
+                }
+                sortParams.append(')'); // NOI18N
+                sortText = simpleName + "#" + ((cnt < 10 ? "0" : "") + cnt) + "#" + sortParams.toString(); //NOI18N
+            }
+            return sortText;
+        }
+
+        public CharSequence getInsertPrefix() {
+            return simpleName;
+        }
+        
+        @Override
+        protected String getLeftHtmlText() {
+            if (leftText == null) {
+                StringBuilder lText = new StringBuilder();
+                lText.append(METHOD_COLOR);
+                if (!isInherited)
+                    lText.append(BOLD);
+                if (isDeprecated)
+                    lText.append(STRIKE);
+                lText.append(simpleName);
+                if (isDeprecated)
+                    lText.append(STRIKE_END);
+                if (!isInherited)
+                    lText.append(BOLD_END);
+                lText.append(COLOR_END);
+                lText.append('('); // NOI18N
+                for (Iterator<ParamDesc> it = params.iterator(); it.hasNext();) {
+                    ParamDesc paramDesc = it.next();
+                    lText.append(escape(paramDesc.typeName));
+                    lText.append(' ');
+                    lText.append(PARAMETER_NAME_COLOR);
+                    lText.append(paramDesc.name);
+                    lText.append(COLOR_END);
+                    if (it.hasNext()) {
+                        lText.append(", "); //NOI18N
+                    }
+                }
+                lText.append(')'); // NOI18N
+                return lText.toString();
+            }
+            return leftText;
+        }
+        
+        @Override
+        protected String getRightHtmlText() {
+            if (rightText == null)
+                rightText = escape(typeName);
+            return rightText;
+        }
+        
+        @Override
+        protected ImageIcon getIcon() {
+            int level = getProtectionLevel(modifiers);
+            boolean isStatic = modifiers.contains(Modifier.STATIC);
+            ImageIcon cachedIcon = icon[isStatic?1:0][level];
+            if (cachedIcon != null)
+                return cachedIcon;
+            
+            String iconPath = METHOD_PUBLIC;            
+            if (isStatic) {
+                switch (level) {
+                    case PRIVATE_LEVEL:
+                        iconPath = METHOD_ST_PRIVATE;
+                        break;
+
+                    case PACKAGE_LEVEL:
+                        iconPath = METHOD_ST_PACKAGE;
+                        break;
+
+                    case PROTECTED_LEVEL:
+                        iconPath = METHOD_ST_PROTECTED;
+                        break;
+
+                    case PUBLIC_LEVEL:
+                        iconPath = METHOD_ST_PUBLIC;
+                        break;
+                }
+            }else{
+                switch (level) {
+                    case PRIVATE_LEVEL:
+                        iconPath = METHOD_PRIVATE;
+                        break;
+
+                    case PACKAGE_LEVEL:
+                        iconPath = METHOD_PACKAGE;
+                        break;
+
+                    case PROTECTED_LEVEL:
+                        iconPath = METHOD_PROTECTED;
+                        break;
+
+                    case PUBLIC_LEVEL:
+                        iconPath = METHOD_PUBLIC;
+                        break;
+                }
+            }
+            ImageIcon newIcon = new ImageIcon(org.openide.util.Utilities.loadImage(iconPath));
+            icon[isStatic?1:0][level] = newIcon;
+            return newIcon;            
+        }
+
+        @Override
+        public CompletionTask createDocumentationTask() {
+            return new AsyncCompletionTask(new JavaElementDocQuery(elementHandle), EditorRegistry.lastFocusedComponent());
+        }
+        
+        private static final int PUBLIC_LEVEL = 3;
+        private static final int PROTECTED_LEVEL = 2;
+        private static final int PACKAGE_LEVEL = 1;
+        private static final int PRIVATE_LEVEL = 0;
+
+        private static int getProtectionLevel(Set<Modifier> modifiers) {
+            if (modifiers.contains(Modifier.PUBLIC)) {
+                return PUBLIC_LEVEL;
+            }
+            if (modifiers.contains(Modifier.PROTECTED)) {
+                return PROTECTED_LEVEL;
+            }
+            if (modifiers.contains(Modifier.PRIVATE)) {
+                return PRIVATE_LEVEL;
+            }
+            return PACKAGE_LEVEL;
+        }
+
+        static class ParamDesc {
+
+            private String fullTypeName;
+            private String typeName;
+            private String name;
+
+            public ParamDesc(String fullTypeName, String typeName, String name) {
+                this.fullTypeName = fullTypeName;
+                this.typeName = typeName;
+                this.name = name;
+            }
+        }
+    }
+    
     private static class AttribValueItem extends SpringXMLConfigCompletionItem {
 
         private String displayText;
@@ -541,7 +738,7 @@ public abstract class SpringXMLConfigCompletionItem implements CompletionItem {
         @Override
         public void processKeyEvent(KeyEvent evt) {
             if (evt.getID() == KeyEvent.KEY_TYPED) {
-                if(evt.getKeyChar() == '/') {
+                if(evt.getKeyChar() == '/') { // NOI18N
                     Completion.get().hideDocumentation();
                     JTextComponent component = (JTextComponent)evt.getSource();
                     int caretOffset = component.getSelectionEnd();
@@ -670,5 +867,167 @@ public abstract class SpringXMLConfigCompletionItem implements CompletionItem {
         else if (fqn.startsWith("sun") || fqn.startsWith("sunw") || fqn.startsWith("netscape")) // NOI18N
             weight += 30;
         return weight;
+    }
+    
+    public static CharSequence getTypeName(TypeMirror type, boolean fqn) {
+        return getTypeName(type, fqn, false);
+    }
+    
+    public static CharSequence getTypeName(TypeMirror type, boolean fqn, boolean varArg) {
+	if (type == null)
+            return ""; //NOI18N
+        return new TypeNameVisitor(varArg).visit(type, fqn);
+    }
+    
+    private static final String UNKNOWN = "<unknown>"; //NOI18N
+    private static final String CAPTURED_WILDCARD = "<captured wildcard>"; //NOI18N
+    
+    private static class TypeNameVisitor extends SimpleTypeVisitor6<StringBuilder,Boolean> {
+        
+        private boolean varArg;
+        
+        private TypeNameVisitor(boolean varArg) {
+            super(new StringBuilder());
+            this.varArg = varArg;
+        }
+        
+        @Override
+        public StringBuilder defaultAction(TypeMirror t, Boolean p) {
+            return DEFAULT_VALUE.append(t);
+        }
+        
+        @Override
+        public StringBuilder visitDeclared(DeclaredType t, Boolean p) {
+            Element e = t.asElement();
+            if (e instanceof TypeElement) {
+                TypeElement te = (TypeElement)e;
+                DEFAULT_VALUE.append((p ? te.getQualifiedName() : te.getSimpleName()).toString());
+                Iterator<? extends TypeMirror> it = t.getTypeArguments().iterator();
+                if (it.hasNext()) {
+                    DEFAULT_VALUE.append("<"); //NOI18N
+                    while(it.hasNext()) {
+                        visit(it.next(), p);
+                        if (it.hasNext())
+                            DEFAULT_VALUE.append(", "); //NOI18N
+                    }
+                    DEFAULT_VALUE.append(">"); //NOI18N
+                }
+                return DEFAULT_VALUE;                
+            } else {
+                return DEFAULT_VALUE.append(UNKNOWN); //NOI18N
+            }
+        }
+                        
+        @Override
+        public StringBuilder visitArray(ArrayType t, Boolean p) {
+            boolean isVarArg = varArg;
+            varArg = false;
+            visit(t.getComponentType(), p);
+            return DEFAULT_VALUE.append(isVarArg ? "..." : "[]"); //NOI18N
+        }
+
+        @Override
+        public StringBuilder visitTypeVariable(TypeVariable t, Boolean p) {
+            Element e = t.asElement();
+            if (e != null) {
+                String name = e.getSimpleName().toString();
+                if (!CAPTURED_WILDCARD.equals(name))
+                    return DEFAULT_VALUE.append(name);
+            }
+            DEFAULT_VALUE.append("?"); //NOI18N
+            TypeMirror bound = t.getLowerBound();
+            if (bound != null && bound.getKind() != TypeKind.NULL) {
+                DEFAULT_VALUE.append(" super "); //NOI18N
+                visit(bound, p);
+            } else {
+                bound = t.getUpperBound();
+                if (bound != null && bound.getKind() != TypeKind.NULL) {
+                    DEFAULT_VALUE.append(" extends "); //NOI18N
+                    if (bound.getKind() == TypeKind.TYPEVAR)
+                        bound = ((TypeVariable)bound).getLowerBound();
+                    visit(bound, p);
+                }
+            }
+            return DEFAULT_VALUE;
+        }
+
+        @Override
+        public StringBuilder visitWildcard(WildcardType t, Boolean p) {
+            DEFAULT_VALUE.append("?"); //NOI18N
+            TypeMirror bound = t.getSuperBound();
+            if (bound == null) {
+                bound = t.getExtendsBound();
+                if (bound != null) {
+                    DEFAULT_VALUE.append(" extends "); //NOI18N
+                    if (bound.getKind() == TypeKind.WILDCARD)
+                        bound = ((WildcardType)bound).getSuperBound();
+                    visit(bound, p);
+                } else {
+                    bound = SourceUtils.getBound(t);
+                    if (bound != null && (bound.getKind() != TypeKind.DECLARED || !((TypeElement)((DeclaredType)bound).asElement()).getQualifiedName().contentEquals("java.lang.Object"))) { //NOI18N
+                        DEFAULT_VALUE.append(" extends "); //NOI18N
+                        visit(bound, p);
+                    }
+                }
+            } else {
+                DEFAULT_VALUE.append(" super "); //NOI18N
+                visit(bound, p);
+            }
+            return DEFAULT_VALUE;
+        }
+
+        @Override
+        public StringBuilder visitError(ErrorType t, Boolean p) {
+            Element e = t.asElement();
+            if (e instanceof TypeElement) {
+                TypeElement te = (TypeElement)e;
+                return DEFAULT_VALUE.append((p ? te.getQualifiedName() : te.getSimpleName()).toString());
+            }
+            return DEFAULT_VALUE;
+        }
+    }
+    
+    private static String escape(String s) {
+        if (s != null) {
+            try {
+                return XMLUtil.toAttributeValue(s);
+            } catch (Exception ex) {}
+        }
+        return s;
+    }
+    
+    private static class JavaElementDocQuery extends AsyncCompletionQuery {
+
+        private ElementHandle<?> elemHandle;
+        
+        public JavaElementDocQuery(ElementHandle<?> elemHandle) {
+            this.elemHandle = elemHandle;
+        }
+        
+        @Override
+        protected void query(final CompletionResultSet resultSet, Document doc, int caretOffset) {
+            try {
+                JavaSource js = SpringXMLConfigEditorUtils.getJavaSource(doc);
+                if (js == null) {
+                    return;
+                }
+
+                js.runUserActionTask(new Task<CompilationController>() {
+
+                    public void run(CompilationController cc) throws Exception {
+                        cc.toPhase(Phase.RESOLVED);
+                        Element element = elemHandle.resolve(cc);
+                        if (element == null) {
+                            return;
+                        }
+                        SpringXMLConfigCompletionDoc doc = SpringXMLConfigCompletionDoc.createJavaDoc(cc, element);
+                        resultSet.setDocumentation(doc);
+                    }
+                }, false);
+                resultSet.finish();
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        }
     }
 }
