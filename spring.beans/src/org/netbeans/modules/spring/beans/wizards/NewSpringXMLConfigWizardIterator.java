@@ -51,7 +51,6 @@ import java.util.Collections;
 import java.util.NoSuchElementException;
 import java.util.Set;
 import javax.swing.JComponent;
-import javax.swing.JEditorPane;
 import javax.swing.event.ChangeListener;
 import javax.swing.text.BadLocationException;
 import org.netbeans.api.project.Project;
@@ -61,7 +60,6 @@ import org.netbeans.api.project.Sources;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Formatter;
 import org.netbeans.modules.spring.api.beans.SpringConstants;
-import org.netbeans.modules.spring.beans.loader.SpringXMLConfigDataLoader;
 import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileAlreadyLockedException;
@@ -69,6 +67,7 @@ import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
+import org.openide.text.CloneableEditorSupport;
 import org.openide.util.Exceptions;
 
 public final class NewSpringXMLConfigWizardIterator implements WizardDescriptor.InstantiatingIterator {
@@ -211,9 +210,9 @@ public final class NewSpringXMLConfigWizardIterator implements WizardDescriptor.
         StringBuilder sb = generateXML(incNamespaces);
 
         try {
-            JEditorPane ep = new JEditorPane(SpringConstants.CONFIG_MIME_TYPE, ""); // NOI18N
-            BaseDocument doc = new BaseDocument(ep.getEditorKit().getClass(), false);
-            Formatter f = Formatter.getFormatter(ep.getEditorKit().getClass());
+            Class<?> kitClass = CloneableEditorSupport.getEditorKit(SpringConstants.CONFIG_MIME_TYPE).getClass();
+            BaseDocument doc = new BaseDocument(kitClass, false);
+            Formatter f = Formatter.getFormatter(kitClass);
             
             doc.remove(0, doc.getLength());
             doc.insertString(0, sb.toString(), null);
