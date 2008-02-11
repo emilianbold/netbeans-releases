@@ -47,6 +47,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Logger;
 import javax.swing.Action;
 import javax.swing.DefaultCellEditor;
 import javax.swing.DefaultListCellRenderer;
@@ -326,7 +327,16 @@ final class MakeSharableVisualPanel2 extends JPanel {
                 } 
             }
             for (String jar : jars) {
-                model.addRow( new Object[] {jar, ACTION_COPY});
+                if (jar != null) {
+                    String value = helper.getStandardPropertyEvaluator().evaluate(jar);
+                    if (!value.startsWith("${")) {
+                        model.addRow( new Object[] {jar, ACTION_COPY});
+                    } else {
+                        Logger.getLogger(MakeSharableVisualPanel2.class.getName()).info("Cannot find jar reference:" + jar);
+                    }        
+                } else {
+                    Logger.getLogger(MakeSharableVisualPanel2.class.getName()).info("Cannot find jar reference:" + jar);
+                }
             }
         } catch (MalformedURLException ex) {
             Exceptions.printStackTrace(ex);
