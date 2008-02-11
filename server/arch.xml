@@ -48,21 +48,27 @@ Microsystems, Inc. All Rights Reserved.
  <answer id="arch-overall">
   <p>
    The Server module provides the
-   <api group="java" name="CommonServerSPI" type="export" category="devel" url="@TOP@index.html"/>
+   <api group="java" name="CommonServerSPI" type="export" category="devel" url="@TOP@org/netbeans/spi/server/package-summary.html"/>
    that contains SPIs needed for the UI presentation of servers (anykind). It covers
    the services tab, server manager and server add wizard.
   </p>
   <p>
    There is also API part of the module
-   <api group="java" name="CommonServerAPI" type="export" category="devel" url="@TOP@index.html"/>
+   <api group="java" name="CommonServerAPI" type="export" category="devel" url="@TOP@org/netbeans/api/server/package-summary.html"/>
    that provides API representation of the server instance. API access if
    required in future will be placed here.
   </p>  
   <p>
    Clients can provide its instances through the SPI. They can also provide
    wizards to define UI way for the server instance addition. It is done with
-   <api group="layer" name="CommonServerLayerSPI" type="export" category="devel" url="@TOP@index.html"/>
+   <api group="layer" name="CommonServerLayerSPI" type="export" category="devel" url="@TOP@overview-summary.html"/>
    where the SPIs implementation must be registered.
+  </p>
+  <p>
+   To provide easy way for clients to persist properties of its instances easily,
+   module provides support API
+   <api group="java" name="CommonServerPropertiesAPI" type="export" category="devel" url="@TOP@@TOP@org/netbeans/api/server/properties/package-summary.html"/>
+   to do that. This support API is not mandatory for clients to use in any way.
   </p>
  </answer>
 
@@ -163,7 +169,17 @@ Microsystems, Inc. All Rights Reserved.
     When this is done the module will offer this wizard in UI (at contexts where
     it makes sense).
    </p>
-     </usecase> 
+  </usecase>
+  <usecase id="persist-instance" name="Persisting instance properties">
+   <p>
+    The Commons Server SPI implemetor has to usually implement persistence
+    of its instances somehow. There are many ways how this can be done.
+    To make it easier
+    <a href="@TOP@org/netbeans/api/server/properties/InstancePropertiesManager.html">InstancePropertiesManager</a>
+    can be used. It provides a way how to store and retrieve properties of
+    the server instance.
+   </p>
+  </usecase>   
  </answer>
 
 

@@ -55,6 +55,7 @@ import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.modules.java.j2seproject.J2SEProjectGenerator;
 import org.netbeans.modules.java.j2seproject.ui.FoldersListSettings;
 import org.netbeans.modules.java.j2seproject.ui.customizer.J2SEProjectProperties;
+import org.netbeans.spi.java.project.support.ui.SharableLibrariesUtils;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.ui.support.ProjectChooser;
@@ -148,7 +149,7 @@ public class NewJ2SEProjectWizardIterator implements WizardDescriptor.ProgressIn
             if (!librariesDefinition.endsWith(File.separator)) {
                 librariesDefinition += File.separatorChar;
             }
-            librariesDefinition += J2SEProjectProperties.DEFAULT_LIBRARIES_FILENAME;
+            librariesDefinition += SharableLibrariesUtils.DEFAULT_LIBRARIES_FILENAME;
         }
         handle.progress (NbBundle.getMessage (NewJ2SEProjectWizardIterator.class, "LBL_NewJ2SEProjectWizardIterator_WizardProgress_CreatingProject"), 1);
         switch (type) {
