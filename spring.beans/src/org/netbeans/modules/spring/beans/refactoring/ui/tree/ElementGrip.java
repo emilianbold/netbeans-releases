@@ -38,42 +38,67 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.bpel.core.util;
 
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
+package org.netbeans.modules.spring.beans.refactoring.ui.tree;
 
-import org.openide.text.Annotatable;
-import org.openide.text.Annotation;
+import com.sun.source.tree.Tree;
+import com.sun.source.util.TreePath;
+import javax.lang.model.element.Element;
+import javax.swing.Icon;
+import org.netbeans.api.java.source.CompilationInfo;
+import org.netbeans.api.java.source.TreePathHandle;
+import org.netbeans.api.java.source.UiUtils;
+import org.openide.filesystems.FileObject;
 
 /**
- * @author Vladimir Yaroslavskiy
- * @version 2008.02.01
+ *
+ * @author Jan Becicka, Copied from o.n.m.refactoring.java
  */
-final class BPELValidationAnnotation extends Annotation implements PropertyChangeListener {
+public final class ElementGrip {
+    private TreePathHandle delegateElementHandle;
+    private String toString;
+    private FileObject fileObject;
+    private Icon icon;
     
-  public String getAnnotationType() {
-    return "bpel-validation-annotation"; // NOI18N
-  }
-  
-  public String getShortDescription() {
-    return myMessage;
-  }
-  
-  public void show(Annotatable annotatable, String message) {
-    myMessage = message;
-    attach(annotatable);
-    annotatable.addPropertyChangeListener(this);
-  }
-  
-  public void propertyChange( PropertyChangeEvent propertyChangeEvent ) {
-    Annotatable annotatable = (Annotatable) propertyChangeEvent.getSource();
-
-    if (annotatable != null) {
-      annotatable.removePropertyChangeListener(this);
-      detach();
+    /**
+     * Creates a new instance of ElementGrip
+     */
+    public ElementGrip(TreePath treePath, CompilationInfo info) {
+        this.delegateElementHandle = TreePathHandle.create(treePath, info);
+        this.toString = UiUtils.getHeader(treePath, info, UiUtils.PrintPart.NAME);
+        this.fileObject = info.getFileObject();
+        this.icon = UiUtils.getDeclarationIcon(info.getTrees().getElement(treePath));
     }
-  }
+    
+    public Icon getIcon() {
+        return icon;
+    }
+    public String toString() {
+        return toString;
+    }
 
-  private String myMessage;
+    public ElementGrip getParent() {
+        return ElementGripFactory.getDefault().getParent(this);
+    }
+
+    public TreePath resolve(CompilationInfo info) {
+        return delegateElementHandle.resolve(info);
+    } 
+
+    public Element resolveElement(CompilationInfo info) {
+        return delegateElementHandle.resolveElement(info);
+    } 
+
+    public Tree.Kind getKind() {
+        return delegateElementHandle.getKind();
+    }
+    
+    public FileObject getFileObject() {
+        return fileObject;
+    }
+    
+    public TreePathHandle getHandle() {
+        return delegateElementHandle;
+    }
+    
 }

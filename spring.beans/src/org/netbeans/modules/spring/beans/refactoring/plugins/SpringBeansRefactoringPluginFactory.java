@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -38,42 +38,39 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.bpel.core.util;
+package org.netbeans.modules.spring.beans.refactoring.plugins;
 
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
-
-import org.openide.text.Annotatable;
-import org.openide.text.Annotation;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.netbeans.api.fileinfo.NonRecursiveFolder;
+import org.netbeans.api.java.source.TreePathHandle;
+import org.netbeans.modules.refactoring.api.AbstractRefactoring;
+import org.netbeans.modules.refactoring.api.WhereUsedQuery;
+import org.netbeans.modules.refactoring.spi.RefactoringPlugin;
+import org.netbeans.modules.refactoring.spi.RefactoringPluginFactory;
+import org.openide.filesystems.FileObject;
+import org.openide.util.Lookup;
 
 /**
- * @author Vladimir Yaroslavskiy
- * @version 2008.02.01
+ * @author John Baker
  */
-final class BPELValidationAnnotation extends Annotation implements PropertyChangeListener {
-    
-  public String getAnnotationType() {
-    return "bpel-validation-annotation"; // NOI18N
-  }
-  
-  public String getShortDescription() {
-    return myMessage;
-  }
-  
-  public void show(Annotatable annotatable, String message) {
-    myMessage = message;
-    attach(annotatable);
-    annotatable.addPropertyChangeListener(this);
-  }
-  
-  public void propertyChange( PropertyChangeEvent propertyChangeEvent ) {
-    Annotatable annotatable = (Annotatable) propertyChangeEvent.getSource();
+public class SpringBeansRefactoringPluginFactory implements RefactoringPluginFactory {
+    private static final Logger LOGGER = Logger.getLogger(SpringBeansRefactoringPluginFactory.class.getName());
+    public RefactoringPlugin createInstance(AbstractRefactoring refactoring) {
+        Lookup look = refactoring.getRefactoringSource();
+        FileObject file = look.lookup(FileObject.class);
+        NonRecursiveFolder folder = look.lookup(NonRecursiveFolder.class);
+        TreePathHandle handle = look.lookup(TreePathHandle.class);
+        
+        if (refactoring instanceof WhereUsedQuery) {
+            if (handle != null) {
+                return new SpringBeansRefactoringFindUsagesPlugin((WhereUsedQuery) refactoring);
+            }
+        }
 
-    if (annotatable != null) {
-      annotatable.removePropertyChangeListener(this);
-      detach();
+        // TODO: RENAME
+        // TODO: MOVE
+        // TODO: DELETE
+        return null;
     }
-  }
-
-  private String myMessage;
 }
