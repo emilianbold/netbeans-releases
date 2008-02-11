@@ -208,7 +208,6 @@ public class RetoucheUtils {
     public static Collection<ExecutableElement> getOverridingMethods(ExecutableElement e, CompilationInfo info) {
         Collection<ExecutableElement> result = new ArrayList<ExecutableElement>();
         TypeElement parentType = (TypeElement) e.getEnclosingElement();
-        //XXX: Fixme IMPLEMENTORS_RECURSIVE were removed
         Set<ElementHandle<TypeElement>> subTypes = getImplementorsAsHandles(info.getClasspathInfo().getClassIndex(), info.getClasspathInfo(), parentType);
         for (ElementHandle<TypeElement> subTypeHandle: subTypes){
             TypeElement type = subTypeHandle.resolve(info);
@@ -578,7 +577,7 @@ public class RetoucheUtils {
     
     public static ClasspathInfo getClasspathInfoFor(boolean dependencies, boolean backSource, FileObject ... files ) {
         assert files.length >0;
-        Set<URL> dependentRoots = new HashSet();
+        Set<URL> dependentRoots = new HashSet<URL>();
         for (FileObject fo: files) {
             Project p = null;
             if (fo!=null)

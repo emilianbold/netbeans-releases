@@ -46,13 +46,18 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.EnumSet;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
+import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.source.CancellableTask;
 import org.netbeans.api.java.source.ClassIndex;
 import org.netbeans.api.java.source.ClasspathInfo;
@@ -67,106 +72,154 @@ import org.netbeans.modules.refactoring.api.ProgressEvent;
 import org.netbeans.modules.refactoring.api.WhereUsedQuery;
 import org.netbeans.modules.refactoring.spi.RefactoringElementsBag;
 import org.netbeans.modules.refactoring.spi.RefactoringElementImplementation;
+import org.netbeans.modules.spring.api.Action;
+import org.netbeans.modules.spring.api.beans.model.SpringBean;
+import org.netbeans.modules.spring.api.beans.model.SpringBeans;
+import org.netbeans.modules.spring.api.beans.model.SpringConfigModel;
 import org.netbeans.modules.spring.beans.refactoring.RetoucheUtils;
 import org.netbeans.modules.spring.beans.refactoring.WhereUsedElement;
-import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.text.CloneableEditorSupport;
+import org.openide.util.Exceptions;
 
 /**
  * @author John Baker
  */
 public class SpringBeansRefactoringFindUsagesPlugin extends SpringBeansJavaRefactoringPlugin {
+    private static final Logger LOGGER = Logger.getLogger(SpringBeansRefactoringFindUsagesPlugin.class.getName());
     private WhereUsedQuery springBeansWhereUsed;
-    
-  enum WhereUsedQueryConstants {
-    /**
-     * Find overriding methods
-     */
-    FIND_OVERRIDING_METHODS,
-    /**
-     * Find All Sublcasses recursively
-     */
-    FIND_SUBCLASSES,
-    /**
-     * Find only direct subclasses
-     */
-    FIND_DIRECT_SUBCLASSES,
-    /**
-     * Search from base class
-     */
-    SEARCH_FROM_BASECLASS;
-}
-    
+
+    enum WhereUsedQueryConstants {
+
+        /**
+         * Find overriding methods
+         */
+        FIND_OVERRIDING_METHODS,
+        /**
+         * Find All Sublcasses recursively
+         */
+        FIND_SUBCLASSES,
+        /**
+         * Find only direct subclasses
+         */
+        FIND_DIRECT_SUBCLASSES,
+        /**
+         * Search from base class
+         */
+        SEARCH_FROM_BASECLASS;
+    }
+
     SpringBeansRefactoringFindUsagesPlugin(WhereUsedQuery query) {
         springBeansWhereUsed = query;
     }
 
-     private Set<FileObject> getRelevantFiles(final TreePathHandle tph) {
+    private Set<FileObject> getRelevantFiles(final TreePathHandle tph) throws IOException {
         final ClasspathInfo cpInfo = getClasspathInfo(springBeansWhereUsed);
         final ClassIndex idx = cpInfo.getClassIndex();
         final Set<FileObject> set = new HashSet<FileObject>();
-                
-        final FileObject file = tph.getFileObject();
+        final FileObject fo = tph.getFileObject();        
+        ClassPath classPath = ClassPath.getClassPath(fo, ClassPath.SOURCE);
+        final String fqn = classPath.getResourceName(fo, '.', false);                    
+        SpringConfigModel model = SpringConfigModel.forFileObject(fo);
+        final boolean includeGlobal = false;
+        
+        // XXX support for searching config files not yet working
+        
+//        // See if any Spring configuration files contain the fqn matching the class to find usages for
+//        model.runReadAction(new Action<SpringBeans>() {
+//            
+//            public void run(SpringBeans sb) {
+//                List<SpringBean> beans = includeGlobal ? sb.getBeans() : sb.getBeans(FileUtil.toFile(fo));
+//                Map<String, SpringBean> name2Bean = getName2Beans(beans, includeGlobal); // if local beans, then add only bean ids;
+//                for (String beanName : name2Bean.keySet()) {
+//                    SpringBean bean = name2Bean.get(beanName);
+//                    
+//                    if (bean.getClassName().equals(fqn)) {
+//                        set.add(FileUtil.toFileObject(name2Bean.get(bean).getLocation().getFile()));
+//                    }
+//                }
+//            }
+//
+//            private Map<String, SpringBean> getName2Beans(List<SpringBean> beans, boolean addNames) {
+//                Map<String, SpringBean> name2Bean = new HashMap<String, SpringBean>();
+//                for (SpringBean bean : beans) {
+//                    String beanId = bean.getId();
+//                    if (beanId != null) {
+//                        name2Bean.put(beanId, bean);
+//                    }
+//                    if (addNames) {
+//                        List<String> beanNames = bean.getNames();
+//                        for (String beanName : beanNames) {
+//                            name2Bean.put(beanName, bean);
+//                        }
+//                    }
+//                }
+//
+//                return name2Bean;
+//            }
+//        });
+
         JavaSource source;
-        if (file!=null) {
-           set.add(file);
+        if (fo != null) {
+            set.add(fo);
             source = JavaSource.create(cpInfo, new FileObject[]{tph.getFileObject()});
         } else {
             source = JavaSource.create(cpInfo);
         }
         //XXX: This is slow!
         CancellableTask<CompilationController> task = new CancellableTask<CompilationController>() {
+
             public void cancel() {
             }
-            
+
             public void run(CompilationController info) throws Exception {
                 info.toPhase(JavaSource.Phase.RESOLVED);
                 final Element el = tph.resolveElement(info);
                 if (el.getKind().isField()) {
                     //get field references from index
-                    set.addAll(idx.getResources(ElementHandle.create((TypeElement)el.getEnclosingElement()), EnumSet.of(ClassIndex.SearchKind.FIELD_REFERENCES), EnumSet.of(ClassIndex.SearchScope.SOURCE)));
+                    set.addAll(idx.getResources(ElementHandle.create((TypeElement) el.getEnclosingElement()), EnumSet.of(ClassIndex.SearchKind.FIELD_REFERENCES), EnumSet.of(ClassIndex.SearchScope.SOURCE)));
                 } else if (el.getKind().isClass() || el.getKind().isInterface()) {
-                    if (isFindSubclasses()||isFindDirectSubclassesOnly()) {
+                    if (isFindSubclasses() || isFindDirectSubclassesOnly()) {
                         if (isFindDirectSubclassesOnly()) {
                             //get direct implementors from index
-                            EnumSet searchKind = EnumSet.of(ClassIndex.SearchKind.IMPLEMENTORS);
-                            set.addAll(idx.getResources(ElementHandle.create((TypeElement)el), searchKind,EnumSet.of(ClassIndex.SearchScope.SOURCE)));
+                            EnumSet<org.netbeans.api.java.source.ClassIndex.SearchKind> searchKind = EnumSet.of(ClassIndex.SearchKind.IMPLEMENTORS);
+                            set.addAll(idx.getResources(ElementHandle.create((TypeElement) el), searchKind, EnumSet.of(ClassIndex.SearchScope.SOURCE)));
                         } else {
                             //itererate implementors recursively
-                            set.addAll(getImplementorsRecursive(idx, cpInfo, (TypeElement)el));
+                            set.addAll(getImplementorsRecursive(idx, cpInfo, (TypeElement) el));
                         }
                     } else {
                         //get type references from index
-                        set.addAll(idx.getResources(ElementHandle.create((TypeElement) el), EnumSet.of(ClassIndex.SearchKind.TYPE_REFERENCES, ClassIndex.SearchKind.IMPLEMENTORS),EnumSet.of(ClassIndex.SearchScope.SOURCE)));
+                        set.addAll(idx.getResources(ElementHandle.create((TypeElement) el), EnumSet.of(ClassIndex.SearchKind.TYPE_REFERENCES, ClassIndex.SearchKind.IMPLEMENTORS), EnumSet.of(ClassIndex.SearchScope.SOURCE)));
                     }
                 } else if (el.getKind() == ElementKind.METHOD && isFindOverridingMethods()) {
                     //Find overriding methods
                     TypeElement type = (TypeElement) el.getEnclosingElement();
                     set.addAll(getImplementorsRecursive(idx, cpInfo, type));
-                } 
+                }
                 if (el.getKind() == ElementKind.METHOD && isFindUsages()) {
                     //get method references for method and for all it's overriders
-                    Set<ElementHandle<TypeElement>> s = RetoucheUtils.getImplementorsAsHandles(idx, cpInfo, (TypeElement)el.getEnclosingElement());
-                    for (ElementHandle<TypeElement> eh:s) {
+                    Set<ElementHandle<TypeElement>> s = RetoucheUtils.getImplementorsAsHandles(idx, cpInfo, (TypeElement) el.getEnclosingElement());
+                    for (ElementHandle<TypeElement> eh : s) {
                         TypeElement te = eh.resolve(info);
-                        if (te==null) {
+                        if (te == null) {
                             continue;
                         }
-                        for (Element e:te.getEnclosedElements()) {
+                        for (Element e : te.getEnclosedElements()) {
                             if (e instanceof ExecutableElement) {
-                                if (info.getElements().overrides((ExecutableElement)e, (ExecutableElement)el, te)) {
-                                    set.addAll(idx.getResources(ElementHandle.create(te), EnumSet.of(ClassIndex.SearchKind.METHOD_REFERENCES),EnumSet.of(ClassIndex.SearchScope.SOURCE)));
+                                if (info.getElements().overrides((ExecutableElement) e, (ExecutableElement) el, te)) {
+                                    set.addAll(idx.getResources(ElementHandle.create(te), EnumSet.of(ClassIndex.SearchKind.METHOD_REFERENCES), EnumSet.of(ClassIndex.SearchScope.SOURCE)));
                                 }
                             }
                         }
                     }
-                    set.addAll(idx.getResources(ElementHandle.create((TypeElement) el.getEnclosingElement()), EnumSet.of(ClassIndex.SearchKind.METHOD_REFERENCES),EnumSet.of(ClassIndex.SearchScope.SOURCE))); //?????
+                    set.addAll(idx.getResources(ElementHandle.create((TypeElement) el.getEnclosingElement()), EnumSet.of(ClassIndex.SearchKind.METHOD_REFERENCES), EnumSet.of(ClassIndex.SearchScope.SOURCE))); //?????
                 } else if (el.getKind() == ElementKind.CONSTRUCTOR) {
-                        set.addAll(idx.getResources(ElementHandle.create((TypeElement) el.getEnclosingElement()), EnumSet.of(ClassIndex.SearchKind.TYPE_REFERENCES, ClassIndex.SearchKind.IMPLEMENTORS),EnumSet.of(ClassIndex.SearchScope.SOURCE)));
+                    set.addAll(idx.getResources(ElementHandle.create((TypeElement) el.getEnclosingElement()), EnumSet.of(ClassIndex.SearchKind.TYPE_REFERENCES, ClassIndex.SearchKind.IMPLEMENTORS), EnumSet.of(ClassIndex.SearchScope.SOURCE)));
                 }
-                    
+
             }
         };
         try {
@@ -176,22 +229,27 @@ public class SpringBeansRefactoringFindUsagesPlugin extends SpringBeansJavaRefac
         }
         return set;
     }
-     
-      private Set<FileObject> getImplementorsRecursive(ClassIndex idx, ClasspathInfo cpInfo, TypeElement el) {
+
+    private Set<FileObject> getImplementorsRecursive(ClassIndex idx, ClasspathInfo cpInfo, TypeElement el) {
         Set<FileObject> set = new HashSet<FileObject>();
         for (ElementHandle<TypeElement> e : RetoucheUtils.getImplementorsAsHandles(idx, cpInfo, el)) {
             FileObject fo = SourceUtils.getFile(e, cpInfo);
-            assert fo != null : "issue 90196, Cannot find file for " + e + ". cpInfo=" + cpInfo;
+            assert fo != null;
             set.add(fo);
         }
         return set;
     }
-     
+
     @Override
-    public Problem prepare(RefactoringElementsBag refactoringElements) {        
-        Set<FileObject> a = getRelevantFiles(springBeansWhereUsed.getRefactoringSource().lookup(TreePathHandle.class));
-        fireProgressListenerStart(ProgressEvent.START, a.size());
-        processFiles(a, new FindTask(refactoringElements));
+    public Problem prepare(RefactoringElementsBag refactoringElements) {
+        Set<FileObject> relevantFiles = null;
+        try {
+            relevantFiles = getRelevantFiles(springBeansWhereUsed.getRefactoringSource().lookup(TreePathHandle.class));
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        fireProgressListenerStart(ProgressEvent.START, relevantFiles.size());
+        processFiles(relevantFiles, new FindTask(refactoringElements));
         fireProgressListenerStop();
         return null;
     }
@@ -209,42 +267,44 @@ public class SpringBeansRefactoringFindUsagesPlugin extends SpringBeansJavaRefac
     public static CloneableEditorSupport findCloneableEditorSupport(DataObject dob) {
         Object obj = dob.getCookie(org.openide.cookies.OpenCookie.class);
         if (obj instanceof CloneableEditorSupport) {
-            return (CloneableEditorSupport)obj;
+            return (CloneableEditorSupport) obj;
         }
         obj = dob.getCookie(org.openide.cookies.EditorCookie.class);
         if (obj instanceof CloneableEditorSupport) {
-            return (CloneableEditorSupport)obj;
+            return (CloneableEditorSupport) obj;
         }
         return null;
     }
-    
+
     public void doRefactoring(List<RefactoringElementImplementation> elements)
             throws IOException {
     }
-
 
     @Override
     public void cancelRequest() {
         throw new UnsupportedOperationException("Not supported yet.");
     }
-    
+
     private boolean isFindSubclasses() {
         return springBeansWhereUsed.getBooleanValue(WhereUsedQueryConstants.FIND_SUBCLASSES);
     }
+
     private boolean isFindUsages() {
         return springBeansWhereUsed.getBooleanValue(WhereUsedQuery.FIND_REFERENCES);
     }
+
     private boolean isFindDirectSubclassesOnly() {
         return springBeansWhereUsed.getBooleanValue(WhereUsedQueryConstants.FIND_DIRECT_SUBCLASSES);
     }
-    
+
     private boolean isFindOverridingMethods() {
         return springBeansWhereUsed.getBooleanValue(WhereUsedQueryConstants.FIND_OVERRIDING_METHODS);
     }
+
     private boolean isSearchFromBaseClass() {
         return false;
     }
-    
+
     private class FindTask implements CancellableTask<WorkingCopy> {
 
         private RefactoringElementsBag elements;
@@ -256,18 +316,19 @@ public class SpringBeansRefactoringFindUsagesPlugin extends SpringBeansJavaRefac
         }
 
         public void cancel() {
-            cancelled=true;
+            cancelled = true;
         }
 
         public void run(WorkingCopy compiler) throws IOException {
-            if (cancelled)
-                return ;
-            if (compiler.toPhase(JavaSource.Phase.RESOLVED)!=JavaSource.Phase.RESOLVED) {
+            if (cancelled) {
+                return;
+            }
+            if (compiler.toPhase(JavaSource.Phase.RESOLVED) != JavaSource.Phase.RESOLVED) {
                 return;
             }
             CompilationUnitTree cu = compiler.getCompilationUnit();
             if (cu == null) {
-                ErrorManager.getDefault().log(ErrorManager.ERROR, "compiler.getCompilationUnit() is null " + compiler); // NOI18N
+                LOGGER.log(Level.WARNING, "compiler.getCompilationUnit() is null " + compiler); // NOI18N
                 return;
             }
             Element element = springBeansWhereUsed.getRefactoringSource().lookup(TreePathHandle.class).resolveElement(compiler);
@@ -286,7 +347,7 @@ public class SpringBeansRefactoringFindUsagesPlugin extends SpringBeansJavaRefac
                 override.scan(compiler.getCompilationUnit(), element);
                 result.addAll(override.getUsages());
             } else if ((element.getKind().isClass() || element.getKind().isInterface()) &&
-                    (isFindSubclasses()||isFindDirectSubclassesOnly())) {
+                    (isFindSubclasses() || isFindDirectSubclassesOnly())) {
                 FindSubtypesVisitor subtypes = new FindSubtypesVisitor(!isFindDirectSubclassesOnly(), compiler);
                 subtypes.scan(compiler.getCompilationUnit(), element);
                 result.addAll(subtypes.getUsages());
@@ -297,5 +358,4 @@ public class SpringBeansRefactoringFindUsagesPlugin extends SpringBeansJavaRefac
             fireProgressListenerStep();
         }
     }
-
 }

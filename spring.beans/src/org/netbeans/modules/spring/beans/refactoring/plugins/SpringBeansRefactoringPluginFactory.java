@@ -61,9 +61,9 @@ public class SpringBeansRefactoringPluginFactory implements RefactoringPluginFac
         FileObject file = look.lookup(FileObject.class);
         NonRecursiveFolder folder = look.lookup(NonRecursiveFolder.class);
         TreePathHandle handle = look.lookup(TreePathHandle.class);
+        
         if (refactoring instanceof WhereUsedQuery) {
             if (handle != null) {
-                LOGGER.log(Level.INFO, "IN SPRING WHERE USED");
                 return new SpringBeansRefactoringFindUsagesPlugin((WhereUsedQuery) refactoring);
             }
         }

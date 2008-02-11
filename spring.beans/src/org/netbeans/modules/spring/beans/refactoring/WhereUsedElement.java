@@ -44,11 +44,12 @@ import com.sun.source.tree.*;
 import com.sun.source.util.SourcePositions;
 import com.sun.source.util.TreePath;
 import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.text.Position.Bias;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.TreeUtilities;
 import org.netbeans.modules.refactoring.spi.SimpleRefactoringElementImplementation;
-import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.text.PositionBounds;
 import org.openide.loaders.DataObject;
@@ -66,6 +67,7 @@ import org.netbeans.modules.spring.beans.refactoring.ui.tree.ElementGripFactory;
  */
 
 public class WhereUsedElement extends SimpleRefactoringElementImplementation {
+    private static final Logger LOGGER = Logger.getLogger(WhereUsedElement.class.getName());
     private PositionBounds bounds;
     private String displayText;
     private FileObject parentFile;
@@ -137,7 +139,6 @@ public class WhereUsedElement extends SimpleRefactoringElementImplementation {
             if (ident.getKind()== Tree.Kind.MEMBER_SELECT) {
                 int[] pos = treeUtils.findNameSpan((MemberSelectTree) ident);
                 if (pos == null) {
-                    //#121084 hotfix
                     start = end = (int) sp.getStartPosition(unit, ident);
                 } else {
                     start = pos[0];
@@ -159,7 +160,8 @@ public class WhereUsedElement extends SimpleRefactoringElementImplementation {
             start = (int) sp.getStartPosition(unit, t);
             end = (int) sp.getEndPosition(unit, t);
             if (end == -1) {
-                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, new RuntimeException("Cannot get end position for " + t.getClass().getName() + " " + t + " file:" + compiler.getFileObject().getPath())); // NOI18N
+                LOGGER.log(Level.INFO, "Cannot get end position for " + t.getClass().getName() + " " + t + " file:" + compiler.getFileObject().getPath());
+                new RuntimeException("Cannot get end position for " + t.getClass().getName() + " " + t + " file:" + compiler.getFileObject().getPath()); // NOI18N
                 end = start;
             }
         }
