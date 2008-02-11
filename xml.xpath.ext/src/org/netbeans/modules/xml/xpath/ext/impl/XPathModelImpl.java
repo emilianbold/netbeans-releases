@@ -901,8 +901,14 @@ public class XPathModelImpl implements XPathModel {
             // why stringToBytes, bytesToString, convert are not recognized?
             // TODO FIX IT.
             //
+            String name = XPathUtils.qNameObjectToString(funcQName);
+            boolean hotFix = 
+              name.equals("stringToBytes") ||
+              name.equals("bytesToString") ||
+              name.equals("convert");
+ 
             mValidationContext.addResultItem(mRootXPathExpression,
-                    ResultType.WARNING,
+                    hotFix ? ResultType.WARNING : ResultType.ERROR,
                     XPathProblem.UNKNOWN_EXTENSION_FUNCTION,
                     XPathUtils.qNameObjectToString(funcQName));
         } else {
@@ -916,7 +922,13 @@ public class XPathModelImpl implements XPathModel {
                 // why current-date, current-dateTime, current-time are not recognized?
                 // TODO FIX IT.
                 //
-                mValidationContext.addResultItem(mRootXPathExpression, ResultType.WARNING,
+                boolean hotFix = 
+                  funcName.equals("current-date") ||
+                  funcName.equals("current-dateTime") ||
+                  funcName.equals("current-time");
+
+                mValidationContext.addResultItem(mRootXPathExpression,
+                        hotFix ? ResultType.WARNING : ResultType.ERROR,
                         XPathProblem.PREFIX_REQUIRED_FOR_EXT_FUNCTION, 
                         funcName, nsList);
             } else {
