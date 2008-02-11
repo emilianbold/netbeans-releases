@@ -364,7 +364,9 @@ public class SelectionModel extends MapperPropertyAccess {
     private class ListenersImpl implements GraphListener, TreeModelListener, 
             PropertyChangeListener, TreeExpansionListener 
     {
-        public void graphBoundsChanged(Graph graph) {}
+        public void graphBoundsChanged(Graph graph) {
+            updateSelectedItems();
+        }
 
         public void graphLinksChanged(Graph graph) {
             updateSelectedItems();

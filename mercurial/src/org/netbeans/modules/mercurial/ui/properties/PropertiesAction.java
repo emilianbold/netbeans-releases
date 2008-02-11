@@ -107,6 +107,7 @@ public class PropertiesAction extends ContextAction {
         dialog.pack();
         dialog.setVisible(true);
         if (dd.getValue() == okButton) {
+            hgProperties.updateLastSelection();
             hgProperties.setProperties();
         }
     }
