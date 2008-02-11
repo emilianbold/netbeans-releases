@@ -55,11 +55,16 @@ import javax.swing.event.ListDataEvent;
 import javax.swing.event.ListDataListener;
 import javax.swing.table.AbstractTableModel;
 
+import org.netbeans.api.project.libraries.LibrariesCustomizer;
 import org.openide.util.NbBundle;
 
 import org.netbeans.api.project.libraries.Library;
 
 import org.netbeans.modules.web.project.classpath.ClassPathSupport;
+import org.netbeans.spi.java.project.support.ui.EditJarSupport;
+import org.netbeans.spi.project.support.ant.AntProjectHelper;
+import org.netbeans.spi.project.support.ant.PropertyUtils;
+import org.openide.util.NbCollections;
 
 /**
  *
@@ -84,15 +89,48 @@ public class ClassPathUiSupport {
         return new ClassPathTableModel( createListModel( it ) );
     }
     
-    public static Iterator getIterator( DefaultListModel model ) {        
+    public static Iterator<ClassPathSupport.Item> getIterator( DefaultListModel model ) {        
         // XXX Better performing impl. would be nice
         return getList( model ).iterator();        
     }
     
-    public static List getList( DefaultListModel model ) {
-        return Collections.list( model.elements() );
+    public static List<ClassPathSupport.Item> getList( DefaultListModel model ) {
+        return Collections.list(NbCollections.checkedEnumerationByFilter(model.elements(), ClassPathSupport.Item.class, true));
     }
         
+    
+    public static boolean canEdit( ListSelectionModel selectionModel, DefaultListModel listModel ) {        
+        boolean can =  selectionModel.getMinSelectionIndex() == selectionModel.getMaxSelectionIndex() 
+                          && selectionModel.getMinSelectionIndex() != -1;
+        if (can) {
+            ClassPathSupport.Item item = (ClassPathSupport.Item) listModel.get(selectionModel.getMinSelectionIndex());
+            can =  item.getType() == ClassPathSupport.Item.TYPE_JAR || item.getType() == ClassPathSupport.Item.TYPE_LIBRARY;
+            if (item.isBroken()) {
+                can = false;
+            }
+        }
+        return can;
+    }
+    
+    static void edit(DefaultListModel listModel, int[] selectedIndices, AntProjectHelper helper) {
+        ClassPathSupport.Item item = (ClassPathSupport.Item) listModel.getElementAt(selectedIndices[0]);
+        if (item.getType() == ClassPathSupport.Item.TYPE_JAR) {
+            EditJarSupport.Item eji = new EditJarSupport.Item();
+            eji.setJarFile(item.getFilePath());
+            eji.setSourceFile(item.getSourceFilePath());
+            eji.setJavadocFile(item.getJavadocFilePath());
+            eji = EditJarSupport.showEditDialog(helper, eji);
+            if (eji != null) {
+                item.setJavadocFilePath(eji.getJavadocFile());
+                item.setSourceFilePath(eji.getSourceFile());
+            }
+        }
+        if (item.getType() == ClassPathSupport.Item.TYPE_LIBRARY) {
+            if (item.getLibrary() != null) {
+                LibrariesCustomizer.showSingleLibraryCustomizer(item.getLibrary());
+            }
+        }
+    }
     
     /** Moves items up in the list. The indices array will contain 
      * indices to be selected after the change was done.
@@ -180,14 +218,14 @@ public class ClassPathUiSupport {
         
     }
     
-    public static int[] addLibraries( DefaultListModel listModel, int[] indices, Library[] libraries, Set/*<Library>*/ alreadyIncludedLibs) {
+    public static int[] addLibraries( DefaultListModel listModel, int[] indices, Library[] libraries, Set<Library> alreadyIncludedLibs) {
         int lastIndex = indices == null || indices.length == 0 ? listModel.getSize() - 1 : indices[indices.length - 1];
         for (int i = 0, j=1; i < libraries.length; i++) {
             if (!alreadyIncludedLibs.contains(libraries[i])) {
                 listModel.add( lastIndex + j++, ClassPathSupport.Item.create( libraries[i], null, ClassPathSupport.Item.PATH_IN_WAR_LIB) );
             }
         }
-        Set addedLibs = new HashSet (Arrays.asList(libraries));
+        Set<Library> addedLibs = new HashSet<Library>(Arrays.asList(libraries));
         int[] indexes = new int[libraries.length];
         for (int i=0, j=0; i<listModel.getSize(); i++) {
             ClassPathSupport.Item item = (ClassPathSupport.Item)listModel.get (i);
@@ -200,14 +238,14 @@ public class ClassPathUiSupport {
         return indexes;        
     }
 
-    public static int[] addJarFiles( DefaultListModel listModel, int[] indices, File files[]) {
+    public static int[] addJarFiles( DefaultListModel listModel, int[] indices, String filePaths[], File base) {
         int lastIndex = indices == null || indices.length == 0 ? listModel.getSize() - 1 : indices[indices.length - 1];
-        int[] indexes = new int[files.length];
-        for( int i = 0, delta = 0; i+delta < files.length; ) {            
+        int[] indexes = new int[filePaths.length];
+        for( int i = 0, delta = 0; i+delta < filePaths.length; ) {            
             int current = lastIndex + 1 + i;
-            File f = files[i+delta];
+            File f = PropertyUtils.resolveFile(base, filePaths[i]);
             String pathInWar = (f.isDirectory() ? ClassPathSupport.Item.PATH_IN_WAR_DIR : ClassPathSupport.Item.PATH_IN_WAR_LIB);
-            ClassPathSupport.Item item = ClassPathSupport.Item.create( f, null, pathInWar);
+            ClassPathSupport.Item item = ClassPathSupport.Item.create( filePaths[i], base, null, pathInWar);
             if ( !listModel.contains( item ) ) {
                 listModel.add( current, item );
                 indexes[delta + i] = current;
@@ -300,7 +338,7 @@ public class ClassPathUiSupport {
             
             if (value == Boolean.TRUE) {
                 ClassPathSupport.Item item = getItem(row);
-                String pathInWar = (item.getType() == ClassPathSupport.Item.TYPE_JAR && item.getFile().isDirectory()) ? ClassPathSupport.Item.PATH_IN_WAR_DIR : ClassPathSupport.Item.PATH_IN_WAR_LIB;
+                String pathInWar = (item.getType() == ClassPathSupport.Item.TYPE_JAR && item.getResolvedFile().isDirectory()) ? ClassPathSupport.Item.PATH_IN_WAR_DIR : ClassPathSupport.Item.PATH_IN_WAR_LIB;
                 item.setPathInWAR(pathInWar);
             } else
                 getItem(row).setPathInWAR(ClassPathSupport.Item.PATH_IN_WAR_NONE);

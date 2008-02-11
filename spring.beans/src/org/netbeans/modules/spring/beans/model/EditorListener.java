@@ -55,6 +55,7 @@ import javax.swing.text.JTextComponent;
 import org.netbeans.api.editor.EditorRegistry;
 import org.netbeans.modules.editor.NbEditorUtilities;
 import org.netbeans.modules.spring.api.beans.ConfigFileGroup;
+import org.netbeans.modules.spring.api.beans.SpringConstants;
 import org.netbeans.modules.spring.beans.loader.SpringXMLConfigDataLoader;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -193,7 +194,7 @@ public class EditorListener {
             if (fo == null){
                 return;
             }
-            if (!SpringXMLConfigDataLoader.REQUIRED_MIME.equals(fo.getMIMEType())) {
+            if (!SpringConstants.CONFIG_MIME_TYPE.equals(fo.getMIMEType())) {
                 return;
             }
             File file = FileUtil.toFile(fo);

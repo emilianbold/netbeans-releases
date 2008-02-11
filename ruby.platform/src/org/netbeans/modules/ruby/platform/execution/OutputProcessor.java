@@ -146,15 +146,21 @@ public class OutputProcessor implements OutputListener {
                         line = 1;
                     }
 
-                    Line.Set lines = lc.getLineSet();
-                    int nOfLines = lines.getLines().size();
-                    if (line > nOfLines) {
-                        line = nOfLines;
-                    }
-                    Line l = lines.getCurrent(line - 1);
-                    if (l != null) {
-                        l.show(Line.SHOW_GOTO);
-                        return true;
+                    // XXX .size() call is super-slow for large files, see issue
+                    // #126531. So we fallback to catching IOOBE
+//                    int nOfLines = lines.getLines().size();
+//                    if (line > nOfLines) {
+//                        line = nOfLines;
+//                    }
+                    try {
+                        Line.Set lines = lc.getLineSet();
+                        Line l = lines.getCurrent(line - 1);
+                        if (l != null) {
+                            l.show(Line.SHOW_GOTO);
+                            return true;
+                        }
+                    } catch (IndexOutOfBoundsException ioobe) {
+                        // OK, since .size() cannot be used, see above
                     }
                 }
             }

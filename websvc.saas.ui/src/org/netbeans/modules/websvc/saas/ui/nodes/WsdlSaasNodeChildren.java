@@ -36,55 +36,49 @@
  * 
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.websvc.saas.ui.nodes;
 
-import java.util.ArrayList;
 import java.util.Collections;
-import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlPort;
+import org.netbeans.modules.websvc.saas.model.Saas;
 import org.netbeans.modules.websvc.saas.model.WsdlSaas;
 import org.netbeans.modules.websvc.saas.model.WsdlSaasMethod;
-import org.openide.nodes.Children;
+import org.netbeans.modules.websvc.saas.model.WsdlSaasPort;
 import org.openide.nodes.Node;
 
 /**
  *
  * @author nam
  */
-public class WsdlSaasNodeChildren extends Children.Keys<Object> {
-    private WsdlSaas saas;
-    
+public class WsdlSaasNodeChildren extends SaasNodeChildren<Object> {
+
     WsdlSaasNodeChildren(WsdlSaas saas) {
-        this.saas = saas;
-    }
-    
-    @Override
-    protected void addNotify() {
-        super.addNotify();
-        updateKeys();
+        super(saas);
     }
 
     @Override
-    protected void removeNotify() {
-        java.util.List<String> emptyList = Collections.emptyList();
-        setKeys(emptyList);
-        super.removeNotify();
+    public WsdlSaas getSaas() {
+        return (WsdlSaas) super.getSaas();
     }
 
-    private void updateKeys() {
-        ArrayList<Object> keys = new ArrayList<Object>();
-        keys.addAll(saas.getPortsOrMethods());
-        setKeys(keys.toArray());
+    protected void updateKeys() {
+        if (getSaas().getState() == Saas.State.READY) {
+            setKeys(getSaas().getPortsOrMethods());
+        } else {
+            setKeys(Collections.emptyList());
+        }
     }
-    
+
     @Override
     protected Node[] createNodes(Object key) {
-        if (key instanceof WsdlPort) {
-            return new Node[] { new WsdlPortNode(saas, (WsdlPort) key) };
+        if (needsWaiting()) {
+            return WAIT_NODES;
+        }
+
+        if (key instanceof WsdlSaasPort) {
+            return new Node[]{ new WsdlPortNode((WsdlSaasPort) key) };
         } else if (key instanceof WsdlSaasMethod) {
-            return new Node[] { new WsdlSaasMethodNode((WsdlSaasMethod) key) };
+            return new Node[]{ new WsdlMethodNode((WsdlSaasMethod) key) };
         }
         return new Node[0];
     }
-
 }
