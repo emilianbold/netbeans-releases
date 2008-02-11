@@ -50,6 +50,7 @@ import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JEditorPane;
@@ -79,6 +80,7 @@ import org.openide.text.CloneableEditor;
 import org.openide.text.CloneableEditorSupport;
 import org.openide.util.Lookup;
 import org.openide.windows.TopComponent;
+import org.openide.windows.WindowManager;
 import org.openidex.search.SearchHistory;
 import org.openidex.search.SearchPattern;
 
@@ -290,6 +292,20 @@ public class EditorModule extends ModuleInstall {
             TopComponent.getRegistry().addPropertyChangeListener(topComponentRegistryListener);
          }
 
+         if (LOG.isLoggable(Level.INFO)) {
+             WindowManager.getDefault().invokeWhenUIReady(new Runnable() {
+                public void run() {
+                    try {
+                        Field kitsField = BaseKit.class.getDeclaredField("kits");
+                        kitsField.setAccessible(true);
+                        Map kitsMap = (Map) kitsField.get(null);
+                        LOG.info("Number of loaded editor kits: " + kitsMap.size());
+                    } catch (Exception e) {
+                        // ignore
+                    }
+                }
+            });
+         }
     }
 
     /** Called when module is uninstalled. Overrides superclass method. */
