@@ -46,16 +46,16 @@ import org.netbeans.editor.ext.ExtFormatter;
 import org.netbeans.modules.cnd.MIMENames;
 
 /** C indentation engine that delegates to java formatter */
-public class CIndentEngine extends CCIndentEngine {
+public class CIndentEngine extends BaseIndentEngine {
     
-    static final long serialVersionUID = -794367501912140447L;
-    
-    public CIndentEngine() {
+   public CIndentEngine() {
         setAcceptedMimeTypes(new String[] { MIMENames.C_MIME_TYPE });
     }
     
+    @Override
     protected ExtFormatter createFormatter() {
         return (CCFormatter) Formatter.getFormatter(CKit.class);
     }
+
 }
 

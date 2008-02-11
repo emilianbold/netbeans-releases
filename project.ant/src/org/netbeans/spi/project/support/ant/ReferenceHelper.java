@@ -43,9 +43,9 @@ package org.netbeans.spi.project.support.ant;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -1478,6 +1478,35 @@ public final class ReferenceHelper {
      */
     public LibraryManager getProjectLibraryManager() {
         return ProjectLibraryProvider.getProjectLibraryManager(h);
+    }
+
+    /**
+     * Gets a library manager of the given project.
+     * There is no guarantee that the manager is the same object from call to call
+     * even if the project is the same; in particular, it is <em>not</em> guaranteed that
+     * the manager match that returned from {@link Library#getManager} for libraries added
+     * from {@link #createLibraryReference}.
+     * @return a library manager associated with project's libraries or null if project is 
+     *  not shared (will not include {@link LibraryManager#getDefault})
+     *  {@link LibraryManager#getDefault})
+     * @since org.netbeans.modules.project.ant/1 1.19
+     */
+    public static LibraryManager getProjectLibraryManager(Project p) {
+        AuxiliaryConfiguration aux = p.getLookup().lookup(AuxiliaryConfiguration.class);
+        if (aux != null) {
+            File libFile = ProjectLibraryProvider.getLibrariesLocation(aux, 
+                    FileUtil.toFile(p.getProjectDirectory()));
+            if (libFile != null) {
+                try {
+                    return LibraryManager.forLocation(libFile.toURI().toURL());
+                } catch (MalformedURLException e) {
+                    // ok, no project manager
+                    Logger.getLogger(ReferenceHelper.class.getName()).info(
+                        "library manager cannot be found for "+libFile+". "+e.toString()); //NOI18N
+                }
+            }
+        }
+        return null;
     }
 
     /**

@@ -426,7 +426,7 @@ public abstract class ModelSet implements FileChangeListener {
             Set urls1Set = new LinkedHashSet();
 
 			// Add design time and run time jars from COMPLIBS
-            LibraryManager libraryManager = LibraryManager.getDefault();
+            LibraryManager libraryManager = JsfProjectUtils.getProjectLibraryManager(project);
             Library jaxrpc16Library = null;         
             Library[] libraries = libraryManager.getLibraries();
             for (int i = 0; i < libraries.length; i++) {
@@ -630,7 +630,7 @@ public abstract class ModelSet implements FileChangeListener {
         private final URL[] urls;
         
         // Memory leak probing
-        private static final Logger TIMERS = Logger.getLogger("TIMER.projectClassLoaders"); // NOI18N
+        private static final Logger TIMERS = Logger.getLogger("TIMER.visualweb"); // NOI18N
         
         public ProjectClassLoader(URL[] urls, ClassLoader parent) {
             super(urls, parent);

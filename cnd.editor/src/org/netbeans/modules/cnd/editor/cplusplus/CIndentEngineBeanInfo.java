@@ -42,10 +42,14 @@
 package org.netbeans.modules.cnd.editor.cplusplus;
 
 import java.beans.BeanDescriptor;
+import java.util.MissingResourceException;
+import org.netbeans.modules.editor.FormatterIndentEngineBeanInfo;
+import org.openide.util.NbBundle;
 
 /** Beaninfo for CIndentEngine */
-public class CIndentEngineBeanInfo extends CCIndentEngineBeanInfo {
+public class CIndentEngineBeanInfo extends FormatterIndentEngineBeanInfo {
 
+    @Override
     public BeanDescriptor getBeanDescriptor () {
 	BeanDescriptor beanDescriptor = new BeanDescriptor(getBeanClass());
 	beanDescriptor.setDisplayName(getString("LAB_CIndentEngine")); // NOI18N
@@ -54,8 +58,18 @@ public class CIndentEngineBeanInfo extends CCIndentEngineBeanInfo {
         return beanDescriptor;
     }
 
+    @Override
     protected Class getBeanClass() {
         return CIndentEngine.class;
+    }
+
+    @Override
+    protected String getString(String key) {
+        try {
+            return NbBundle.getBundle(CCIndentEngineBeanInfo.class).getString(key);
+        } catch (MissingResourceException e) {
+            return super.getString(key);
+        }
     }
 }
 

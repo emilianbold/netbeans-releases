@@ -77,6 +77,7 @@ import org.netbeans.modules.web.project.api.WebProjectUtilities;
 import org.netbeans.modules.web.project.WebProject;
 import org.netbeans.modules.web.project.api.WebProjectCreateData;
 import org.netbeans.modules.web.project.ui.FoldersListSettings;
+import org.netbeans.modules.web.project.ui.customizer.WebProjectProperties;
 
 /**
  * Wizard to create a new Web project for an existing web module.
@@ -182,6 +183,15 @@ public class ImportWebProjectWizardIterator implements WizardDescriptor.Progress
         createData.setJavaPlatformName((String) wiz.getProperty(WizardProperties.JAVA_PLATFORM));
         createData.setSourceLevel((String) wiz.getProperty(WizardProperties.SOURCE_LEVEL));       
         createData.setWebInfFolder(webInf);
+        
+        String librariesDefinition = (String)wiz.getProperty(WizardProperties.SHARED_LIBRARIES);
+        if (librariesDefinition != null) {
+            if (!librariesDefinition.endsWith(File.separator)) {
+                librariesDefinition += File.separatorChar;
+            }
+            librariesDefinition += WebProjectProperties.DEFAULT_LIBRARIES_FILENAME;
+            createData.setLibrariesDefinition(librariesDefinition);
+        }
         
         WebProjectUtilities.importProject(createData);       
         handle.progress(2);

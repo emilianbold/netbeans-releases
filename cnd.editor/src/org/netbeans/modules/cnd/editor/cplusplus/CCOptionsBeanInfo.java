@@ -50,13 +50,7 @@ import org.netbeans.modules.editor.options.BaseOptionsBeanInfo;
 public class CCOptionsBeanInfo extends BaseOptionsBeanInfo {
 
     private static final String[] EXPERT_PROP_NAMES = new String[] {
-        CCOptions.COMPLETION_CASE_SENSITIVE_PROP,
-        CCOptions.COMPLETION_INSTANT_SUBSTITUTION_PROP,
         CCOptions.JAVADOC_AUTO_POPUP_PROP,
-        CCOptions.JAVADOC_AUTO_POPUP_DELAY_PROP,
-        CCOptions.JAVADOC_PREFERRED_SIZE_PROP,
-        CCOptions.JAVADOC_BGCOLOR,
-        CCOptions.CODE_FOLDING_UPDATE_TIMEOUT_PROP
     };
     
     public CCOptionsBeanInfo() {
@@ -71,6 +65,12 @@ public class CCOptionsBeanInfo extends BaseOptionsBeanInfo {
     protected @Override void updatePropertyDescriptors() {
         super.updatePropertyDescriptors();
         setExpert(EXPERT_PROP_NAMES);
+        String hidden[] = new String[] {
+                CCOptions.LINE_HEIGHT_CORRECTION_PROP,
+                CCOptions.STATUS_BAR_CARET_DELAY_PROP,
+                CCOptions.STATUS_BAR_VISIBLE_PROP
+        };
+        setHidden(hidden);
     }    
     
     protected @Override Class getBeanClass() {

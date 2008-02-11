@@ -21,7 +21,6 @@ package org.netbeans.modules.bpel.debugger.pem;
 
 import java.util.ArrayList;
 import java.util.List;
-import org.netbeans.modules.bpel.debugger.api.pem.PemEntity;
 import org.netbeans.modules.bpel.debugger.api.psm.PsmEntity;
 
 /**

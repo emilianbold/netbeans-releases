@@ -46,7 +46,7 @@ public class COptions extends CCOptions {
 
     static final long serialVersionUID = 6972381723748170673L;
     
-    public static final String CC = "C"; //NOI18N
+    private static final String CC = "C"; //NOI18N
 
     public COptions() {
         super(CKit.class, CC);

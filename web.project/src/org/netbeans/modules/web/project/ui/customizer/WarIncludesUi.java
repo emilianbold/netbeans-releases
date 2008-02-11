@@ -42,11 +42,11 @@
 package org.netbeans.modules.web.project.ui.customizer;
 
 import java.awt.Component;
-import java.awt.Dialog;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.beans.BeanInfo;
 import java.io.File;
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -57,7 +57,6 @@ import javax.swing.ButtonModel;
 import javax.swing.DefaultListSelectionModel;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
-import javax.swing.JButton;
 import javax.swing.JFileChooser;
 import javax.swing.JTable;
 import javax.swing.ListSelectionModel;
@@ -68,7 +67,7 @@ import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
 import javax.swing.table.DefaultTableCellRenderer;
 
-import org.openide.DialogDescriptor;
+import javax.swing.text.Document;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
@@ -79,12 +78,15 @@ import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
 import org.netbeans.api.java.project.JavaProjectConstants;
-import org.netbeans.api.project.Project;
-import org.netbeans.modules.web.api.webmodule.WebModule;
 
+import org.netbeans.api.project.ant.FileChooser;
+import org.netbeans.api.project.libraries.Library;
+import org.netbeans.api.project.libraries.LibraryChooser;
+import org.netbeans.modules.web.project.WebProject;
 import org.netbeans.modules.web.project.classpath.ClassPathSupport;
 import org.netbeans.modules.web.project.ui.FoldersListSettings;
 import org.netbeans.modules.web.project.ui.customizer.WarIncludesUiSupport.ClasspathTableModel;
+import org.openide.util.Exceptions;
 
 /** Classes containing code speciic for handling UI of J2SE project classpath 
  *
@@ -98,7 +100,7 @@ public class WarIncludesUi {
 
     public static class EditMediator implements ActionListener, ListSelectionListener, TableModelListener {
                 
-        private final Project project;
+        private final WebProject project;
         private final JTable list;
         private final ClasspathTableModel listModel;
         private final ListSelectionModel selectionModel;
@@ -106,13 +108,15 @@ public class WarIncludesUi {
         private final ButtonModel addLibrary;
         private final ButtonModel addAntArtifact;
         private final ButtonModel remove;
+        private Document libraryPath;
                     
-        public EditMediator( Project project,
+        public EditMediator( WebProject project,
                              JTable list,
                              ButtonModel addJar,
                              ButtonModel addLibrary, 
                              ButtonModel addAntArtifact,
-                             ButtonModel remove) {
+                             ButtonModel remove,
+                             Document libPath) {
                              
             this.list = list;
             
@@ -127,18 +131,20 @@ public class WarIncludesUi {
             this.addLibrary = addLibrary;
             this.addAntArtifact = addAntArtifact;
             this.remove = remove;
+            this.libraryPath = libPath;
 
             this.project = project;
         }
 
-        public static void register(Project project,
+        public static void register(WebProject project,
                                     JTable list,
                                     ButtonModel addJar,
                                     ButtonModel addLibrary, 
                                     ButtonModel addAntArtifact,
-                                    ButtonModel remove) {
+                                    ButtonModel remove,
+                                    Document libPath) {
             
-            EditMediator em = new EditMediator(project, list, addJar, addLibrary, addAntArtifact, remove);
+            EditMediator em = new EditMediator(project, list, addJar, addLibrary, addAntArtifact, remove, libPath);
                         
             // Register the listener on all buttons
             addJar.addActionListener( em ); 
@@ -162,7 +168,7 @@ public class WarIncludesUi {
             
             if ( source == addJar ) { 
                 // Let user search for the Jar file
-                JFileChooser chooser = new JFileChooser();
+                FileChooser chooser = new FileChooser(project.getAntProjectHelper(), true);
                 FileUtil.preventFileChooserSymlinkTraversal(chooser, null);
                 chooser.setFileSelectionMode( JFileChooser.FILES_AND_DIRECTORIES );
                 chooser.setMultiSelectionEnabled( true );
@@ -174,8 +180,15 @@ public class WarIncludesUi {
                 
                 if ( option == JFileChooser.APPROVE_OPTION ) {
                     
-                    File files[] = chooser.getSelectedFiles();
-                    WarIncludesUiSupport.addJarFiles(files, listModel);
+                    String filePaths[];
+                    try {
+                        filePaths = chooser.getSelectedPaths();
+                    } catch (IOException ex) {
+                        // TODO: add localized message
+                        Exceptions.printStackTrace(ex);
+                        return;
+                    }
+                    WarIncludesUiSupport.addJarFiles(filePaths, FileUtil.toFile(project.getProjectDirectory()), listModel);
                     curDir = FileUtil.normalizeFile(chooser.getCurrentDirectory());
                     FoldersListSettings.getDefault().setLastUsedClassPathFolder(curDir);
                 }
@@ -189,24 +202,13 @@ public class WarIncludesUi {
                         includedLibraries.add( item.getLibrary() );
                     }
                 }
-                Object[] options = new Object[] {
-                    new JButton (NbBundle.getMessage (WarIncludesUi.class,"LBL_AddLibrary")),
-                    DialogDescriptor.CANCEL_OPTION
-                };
-                ((JButton)options[0]).setEnabled(false);
-                ((JButton)options[0]).getAccessibleContext().setAccessibleDescription (NbBundle.getMessage (WarIncludesUi.class,"AD_AddLibrary"));
-
-                WebModule wm = WebModule.getWebModule(project.getProjectDirectory());
-                String j2eeVersion = wm.getJ2eePlatformVersion();
-                LibrariesChooser panel = new LibrariesChooser ((JButton)options[0], j2eeVersion);
-                DialogDescriptor desc = new DialogDescriptor(panel,NbBundle.getMessage( WarIncludesUi.class, "LBL_CustomizeCompile_Classpath_AddLibrary" ),
-                    true, options, options[0], DialogDescriptor.DEFAULT_ALIGN,null,null);
-                Dialog dlg = DialogDisplayer.getDefault().createDialog(desc);
-                dlg.setVisible(true);
-                if (desc.getValue() == options[0]) {
-                   WarIncludesUiSupport.addLibraries(panel.getSelectedLibraries(), includedLibraries, list);
+                
+                Set<Library> added = LibraryChooser.showDialog(
+                    project.getReferenceHelper().getProjectLibraryManager(), null, 
+                    project.getReferenceHelper().getLibraryChooserImportHandler()); // XXX restrict to j2se libs only?
+                if (added != null) {
+                   WarIncludesUiSupport.addLibraries(added.toArray(new Library[added.size()]), includedLibraries, list);
                 }
-                dlg.dispose();
             }
             else if ( source == addAntArtifact ) { 
                 AntArtifactChooser.ArtifactItem artifactItems[] = AntArtifactChooser.showDialog(
@@ -334,7 +336,7 @@ public class WarIncludesUi {
                         return NbBundle.getMessage( WarIncludesUi.class, "LBL_MISSING_FILE", getFileRefName( item ) );
                     }
                     else {
-                        return item.getFile().getPath();
+                        return item.getFilePath();
                     }
             }
 
@@ -373,7 +375,7 @@ public class WarIncludesUi {
                         return ICON_BROKEN_JAR;
                     }
                     else {
-                        File file = item.getFile();
+                        File file = item.getResolvedFile();
                         return file.isDirectory() ? getFolderIcon() : ICON_JAR;
                     }
                 case ClassPathSupport.Item.TYPE_CLASSPATH:

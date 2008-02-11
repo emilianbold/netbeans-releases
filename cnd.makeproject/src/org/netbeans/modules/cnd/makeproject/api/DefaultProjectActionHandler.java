@@ -505,7 +505,6 @@ public class DefaultProjectActionHandler implements ActionListener {
 
         public RerunAction(HandleEvents handleEvents) {
             this.handleEvents = handleEvents;
-            System.out.println("handleEvents 1 " + handleEvents);
         }
 
         @Override

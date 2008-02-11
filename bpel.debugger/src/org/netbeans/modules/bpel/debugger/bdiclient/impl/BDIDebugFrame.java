@@ -99,7 +99,8 @@ public class BDIDebugFrame implements DebugFrame {
         System.out.println("- onTerminate(" + lineNumber + ", " + 
                 xpath + ")");
         
-        myProcessInstance.onTerminate(this);
+        myProcessInstance.onTerminate(
+                new BreakPosition(this, xpath, lineNumber));
     }
     
     public void onExit(

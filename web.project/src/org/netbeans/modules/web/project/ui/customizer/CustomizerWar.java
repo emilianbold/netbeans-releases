@@ -74,7 +74,8 @@ public class CustomizerWar extends JPanel implements HelpCtx.Provider {
                 jButtonAddJar.getModel(),
                 jButtonAddLib.getModel(),
                 jButtonAddProject.getModel(),
-                jButtonRemove.getModel());
+                jButtonRemove.getModel(),
+                uiProperties.SHARED_LIBRARIES_MODEL);
     }
     
     private void initTableVisualProperties(JTable table) {

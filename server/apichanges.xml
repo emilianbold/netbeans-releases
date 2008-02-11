@@ -99,12 +99,26 @@ is the proper place.
     <!-- First, a list of API names you may use: -->
     <apidefs>
         <apidef name="common_server_spi">Common Server SPI</apidef>
+        <apidef name="common_server_api">Common Server API</apidef>
+        <apidef name="common_server_properties_api">Common Server Properties API</apidef>
         <!-- etc. -->
     </apidefs>
 
     <!-- ACTUAL CHANGES BEGIN HERE: -->
 
     <changes>
+        <change>
+            <api name="common_server_properties_api"/>
+            <summary>Support API for server instance persistence</summary>
+            <version major="1" minor="1"/>
+            <date day="10" month="2" year="2008"/>
+            <author login="phejl"/>
+            <compatibility addition="yes"/>
+            <description>
+                Support API providing easy way for persistence of instance
+                properties. Not manadatory for clients to use.
+            </description>
+        </change>        
         <change>
             <api name="common_server_spi"/>
             <summary>Initial version released</summary>
