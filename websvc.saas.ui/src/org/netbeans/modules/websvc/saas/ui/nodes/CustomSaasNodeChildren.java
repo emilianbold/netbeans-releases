@@ -34,16 +34,55 @@
  * 
  * Contributor(s):
  * 
- * Portions Copyrighted 2007 Sun Microsystems, Inc.
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.debugger.gdb.utils;
+package org.netbeans.modules.websvc.saas.ui.nodes;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import org.netbeans.modules.websvc.saas.model.CustomSaas;
+import org.netbeans.modules.websvc.saas.model.SaasMethod;
+import org.openide.nodes.Node;
 
 /**
  *
- * @author gordonp
+ * @author nam
  */
-public interface CommandBufferCallbackProc {
+public class CustomSaasNodeChildren extends SaasNodeChildren<SaasMethod> {
+    public CustomSaasNodeChildren(CustomSaas saas) {
+        super(saas);
+    }
 
-    public void callback(String info);
+    @Override
+    public CustomSaas getSaas() {
+        return (CustomSaas) super.getSaas();
+    }
+    
+    @Override
+    protected void updateKeys() {
+        setKeys(saas.getMethods());
+    }
+    
+    @Override
+    protected void addNotify() {
+        super.addNotify();
+        updateKeys();
+    }
+
+    @Override
+    protected void removeNotify() {
+        java.util.List<SaasMethod> emptyList = Collections.emptyList();
+        setKeys(emptyList);
+        super.removeNotify();
+    }
+
+    @Override
+    protected Node[] createNodes(SaasMethod key) {
+        if (needsWaiting()) {
+            return WAIT_NODES;
+        }
+        return new Node[] { new SaasMethodNode(getSaas(), key) };
+    }
+
 }
