@@ -47,9 +47,11 @@ import java.util.Collections;
 import java.util.EnumSet;
 import java.util.Enumeration;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.StringTokenizer;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
@@ -78,7 +80,7 @@ import org.netbeans.modules.spring.api.beans.model.SpringBeans;
 import org.netbeans.modules.spring.api.beans.model.SpringConfigModel;
 import org.netbeans.modules.spring.beans.editor.ContextUtilities;
 import org.netbeans.modules.spring.beans.editor.SpringXMLConfigEditorUtils;
-import org.netbeans.modules.spring.beans.editor.SpringXMLConfigEditorUtils.PropertyFinder;
+import org.netbeans.modules.spring.beans.editor.SpringXMLConfigEditorUtils.PropertyAcceptor;
 import org.netbeans.modules.spring.beans.editor.SpringXMLConfigEditorUtils.Public;
 import org.netbeans.modules.spring.beans.editor.SpringXMLConfigEditorUtils.Static;
 import org.netbeans.modules.spring.beans.loader.SpringXMLConfigDataLoader;
@@ -802,36 +804,86 @@ public final class CompletionManager {
         @Override
         public List<SpringXMLConfigCompletionItem> doCompletion(final CompletionContext context) {
             final List<SpringXMLConfigCompletionItem> results = new ArrayList<SpringXMLConfigCompletionItem>();
-            Document doc = context.getDocument();
-            String propertyPrefix = context.getTypedPrefix();
+            final String propertyPrefix = context.getTypedPrefix();
+            final JavaSource js = SpringXMLConfigEditorUtils.getJavaSource(context.getDocument());
+            if (js == null) {
+                return Collections.emptyList();
+            }
             
-            if(propertyPrefix.contains(".")) { // NOI18N
-                // traverse the properties 
-            } else {
-                try {
-                    final String className = SpringXMLConfigEditorUtils.getBeanClassName(context.getTag());
-                    // what if the bean is created by a factory bean?
-                    if (className == null) {
-                        return Collections.emptyList();
-                    }
+            try {
+                // traverse the properties
+                final int dotIndex = propertyPrefix.lastIndexOf("."); // NOI18N
+                js.runUserActionTask(new Task<CompilationController>() {
 
-                    JavaSource js = SpringXMLConfigEditorUtils.getJavaSource(context.getDocument());
-                    js.runUserActionTask(new Task<CompilationController>() {
+                    public void run(CompilationController cc) throws Exception {
+                        String className = SpringXMLConfigEditorUtils.getBeanClassName(context.getTag());
+                        if (className == null) {
+                            return;
+                        }
+                        ElementHandle<TypeElement> eh = SpringXMLConfigEditorUtils.findClassElementByBinaryName(className, js);
+                        if (eh == null) {
+                            return;
+                        }
+                        TypeElement te = eh.resolve(cc);
+                        TypeMirror startType = te.asType();
+                        ElementUtilities eu = cc.getElementUtilities();
+                        
+                        // property chain
+                        if(dotIndex != -1) {
+                            String getterChain = propertyPrefix.substring(0, dotIndex);
+                            StringTokenizer tokenizer = new StringTokenizer(getterChain, "."); // NOI18N
+                            while (tokenizer.hasMoreTokens() && startType != null) {
+                                String propertyName = tokenizer.nextToken();
+                                PropertyAcceptor propertyAcceptor = new PropertyAcceptor(propertyName, true, false);
+                                Iterable<? extends Element> matchingProp = eu.getMembers(startType, propertyAcceptor);
+                                Iterator<? extends Element> it = matchingProp.iterator();
 
-                        public void run(CompilationController cc) throws Exception {
-                            PropertyFinder pf = new PropertyFinder(className);
-                            pf.run(cc);
-                            Iterable<? extends Element> setterMethods = pf.getPropertySetters();
-                            
-                            for (Element e : setterMethods) {
-                                ExecutableElement ee = (ExecutableElement) e;
-                                results.add(SpringXMLConfigCompletionItem.createPropertyItem(context.getCurrentToken().getOffset() + 1, ee));
+                                // no matching element found
+                                if(!it.hasNext()) {
+                                    startType = null;
+                                    break;
+                                }
+                                
+                                while(it.hasNext()) {
+                                    Element e = it.next();
+                                    ExecutableElement ee = (ExecutableElement) e;
+                                    TypeMirror retType = ee.getReturnType();
+                                    if (retType.getKind() == TypeKind.DECLARED) {
+                                        startType = retType;
+                                        break;
+                                    } else {
+                                        startType = null;
+                                    }
+                                }
                             }
                         }
-                    }, true);
-                } catch (IOException ex) {
-                    Exceptions.printStackTrace(ex);
-                }
+                        
+                        if(startType == null) {
+                            return;
+                        }
+                        
+                        String setterPrefix = "";
+                        if(dotIndex != propertyPrefix.length() - 1) {
+                            setterPrefix = propertyPrefix.substring(dotIndex + 1);
+                        }
+                        
+                        PropertyAcceptor pa = new PropertyAcceptor(setterPrefix, false, true);
+                        Iterable<? extends Element> setterMethods = eu.getMembers(startType, pa);
+
+                        int substitutionOffset = context.getCurrentToken().getOffset() + 1;
+                        if(dotIndex != -1) {
+                            substitutionOffset += dotIndex + 1;
+                        }
+                        
+                        for (Element e : setterMethods) {
+                            ExecutableElement ee = (ExecutableElement) e;
+                            results.add(SpringXMLConfigCompletionItem.createPropertyItem(
+                                    substitutionOffset, ee));
+                        }
+                    }
+                }, false);
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
             }
             
             return results;

@@ -42,8 +42,6 @@ package org.netbeans.modules.spring.beans.editor;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -519,61 +517,54 @@ public final class SpringXMLConfigEditorUtils {
             return this.methodHandle;
         }
     }
-    
-    public static List<ElementHandle<ExecutableElement>> findPropertySetters(final String typeName, JavaSource js) {
-        PropertyFinder propertyFinder = new PropertyFinder(typeName);
-        try {
-            js.runUserActionTask(propertyFinder, true);
-        } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
-        }
-        
-        List<ElementHandle<ExecutableElement>> retVals = new ArrayList<ElementHandle<ExecutableElement>>();
-        Iterable<? extends Element> setters = propertyFinder.getPropertySetters();
-        for(Element e : setters) {
-            ExecutableElement ee = (ExecutableElement) e;
-            retVals.add(ElementHandle.create(ee));
-        }
-        
-        return retVals;
-    }
-    
-    public static class PropertyFinder implements Task<CompilationController> {
+       
+    public static class PropertyAcceptor implements ElementUtilities.ElementAcceptor {
+        private boolean searchSetters;
+        private boolean searchGetters;
+        private String propPrefix;
 
-        private Iterable<? extends Element> setters = Collections.emptySet();
-        private String typeName;
-
-        public PropertyFinder(String typeName) {
-            this.typeName = typeName;
-        }
-
-        public void run(CompilationController cc) throws Exception {
-            ElementUtilities eu = cc.getElementUtilities();
-            ElementHandle<TypeElement> eh = findClassElementByBinaryName(typeName, cc.getJavaSource());
-            if(eh == null) {
-                return;
+        public PropertyAcceptor(String propPrefix, boolean searchGetters, boolean searchSetters) {
+            // captialize first character of the property prefix - for matching
+            if(propPrefix.length() > 0) {
+                char[] prop = propPrefix.toCharArray();
+                prop[0] = Character.toUpperCase(prop[0]);
+                this.propPrefix = String.valueOf(prop);
+            } else {
+                this.propPrefix = propPrefix;
             }
-            TypeElement te = eh.resolve(cc);
-            setters = eu.getMembers(te.asType(), new ElementUtilities.ElementAcceptor() {
-
-                public boolean accept(Element e, TypeMirror type) {
-                    if (e.getKind() != ElementKind.METHOD) {
-                        return false;
-                    }
-
-                    ExecutableElement ee = (ExecutableElement) e;
-                    String methodName = ee.getSimpleName().toString();
-                    if (methodName.startsWith("set") && ee.getParameters().size() == 1 && ee.getReturnType().getKind() == TypeKind.VOID) { // NOI18N
-                        return true;
-                    }
-
-                    return false;
-                }
-            });
+            this.searchGetters = searchGetters;
+            this.searchSetters = searchSetters;
         }
+        
+        public boolean accept(Element e, TypeMirror type) {
+            if (e.getKind() != ElementKind.METHOD) {
+                return false;
+            }
 
-        public Iterable<? extends Element> getPropertySetters() {
-            return setters;
+            ExecutableElement ee = (ExecutableElement) e;
+            String methodName = ee.getSimpleName().toString();
+            if(methodName.length() < 4) {
+                return false;
+            }
+            
+            if(ee.getModifiers().contains(Modifier.PRIVATE) || ee.getModifiers().contains(Modifier.STATIC)) {
+                return false;
+            }
+            
+            if(!methodName.startsWith(propPrefix, 3)) {
+                return false;
+            }
+            
+            if (searchSetters && methodName.startsWith("set") && ee.getParameters().size() == 1 
+                    && ee.getReturnType().getKind() == TypeKind.VOID) { // NOI18N
+                return true;
+            }
+            if(searchGetters && methodName.startsWith("get") && ee.getParameters().size() == 0
+                    && ee.getReturnType().getKind() != TypeKind.VOID) { // NOI18N
+                return true;
+            }
+
+            return false;
         }
     }
 }
