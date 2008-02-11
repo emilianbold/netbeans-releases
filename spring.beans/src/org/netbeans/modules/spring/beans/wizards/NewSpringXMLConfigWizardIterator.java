@@ -60,6 +60,7 @@ import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Formatter;
+import org.netbeans.modules.spring.api.beans.SpringConstants;
 import org.netbeans.modules.spring.beans.loader.SpringXMLConfigDataLoader;
 import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.WizardDescriptor;
@@ -210,7 +211,7 @@ public final class NewSpringXMLConfigWizardIterator implements WizardDescriptor.
         StringBuilder sb = generateXML(incNamespaces);
 
         try {
-            JEditorPane ep = new JEditorPane(SpringXMLConfigDataLoader.REQUIRED_MIME, ""); // NOI18N
+            JEditorPane ep = new JEditorPane(SpringConstants.CONFIG_MIME_TYPE, ""); // NOI18N
             BaseDocument doc = new BaseDocument(ep.getEditorKit().getClass(), false);
             Formatter f = Formatter.getFormatter(ep.getEditorKit().getClass());
             
