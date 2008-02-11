@@ -839,4 +839,9 @@ public class GdbUtils {
         }
         return -1;
     }
+    
+    public static String threadId() {
+        Thread cur = Thread.currentThread();
+        return cur.getName() + ':' + Long.toString(cur.getId());
+    }
 }

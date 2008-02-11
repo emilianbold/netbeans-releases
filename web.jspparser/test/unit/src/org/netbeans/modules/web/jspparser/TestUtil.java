@@ -108,7 +108,23 @@ final class TestUtil {
         return null;
     }
 
+    static Project getProject(NbTestCase test, String projectFolderName) throws Exception {
+        File f = getProjectAsFile(test, projectFolderName);
+        FileObject projectPath = FileUtil.toFileObject(f);
+        Project project = ProjectManager.getDefault().findProject(projectPath);
+        NbTestCase.assertNotNull("Project should exist", project);
+        return project;
+    }
+
     static FileObject getProjectFile(NbTestCase test, String projectFolderName, String filePath) throws Exception {
+        Project project = getProject(test, projectFolderName);
+        FileObject fo = project.getProjectDirectory().getFileObject(filePath);
+            NbTestCase.assertNotNull("Project file should exist: " + filePath, fo);
+
+        return fo;
+    }
+
+    private static File getProjectAsFile(NbTestCase test, String projectFolderName) throws Exception {
         File f = new File(test.getDataDir(), projectFolderName);
         if (!f.exists()) {
             // maybe it's zipped
@@ -116,14 +132,7 @@ final class TestUtil {
             unZip(archive, test.getDataDir());
         }
         NbTestCase.assertTrue("project directory has to exists: " + f, f.exists());
-        FileObject projectPath = FileUtil.toFileObject(f);
-        Project project = ProjectManager.getDefault().findProject(projectPath);
-        NbTestCase.assertNotNull("Project should exist", project);
-
-        FileObject fo = projectPath.getFileObject(filePath);
-        NbTestCase.assertNotNull("Project file should exist: " + filePath, fo);
-
-        return fo;
+        return f;
     }
 
     private static void unZip(File archive, File destination) throws Exception {

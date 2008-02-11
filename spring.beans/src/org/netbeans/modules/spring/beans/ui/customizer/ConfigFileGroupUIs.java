@@ -43,14 +43,22 @@ package org.netbeans.modules.spring.beans.ui.customizer;
 
 import java.awt.Component;
 import java.io.File;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.DefaultListModel;
+import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JList;
+import javax.swing.JTable;
 import javax.swing.ListModel;
 import javax.swing.ListSelectionModel;
 import javax.swing.event.ListDataListener;
+import javax.swing.event.TableModelListener;
+import javax.swing.table.DefaultTableCellRenderer;
+import javax.swing.table.TableCellRenderer;
+import javax.swing.table.TableModel;
 import org.netbeans.modules.spring.api.beans.ConfigFileGroup;
 import org.openide.util.NbBundle;
 
@@ -91,6 +99,19 @@ public class ConfigFileGroupUIs {
 
     public static void disconnect(JList list) {
         list.setModel(new DefaultListModel());
+    }
+
+    public static void setupConfigFileSelectionTable(JTable table, FileDisplayName displayName) {
+        table.setDefaultRenderer(File.class, new ConfigFileSelectionFileRenderer(displayName));
+        table.setDefaultRenderer(Boolean.class, new ConfigFileSelectionBooleanRenderer(table.getDefaultRenderer(Boolean.class)));
+    }
+
+    public static void connect(List<File> availableFiles, Set<File> alreadySelectedFiles, JTable table) {
+        table.setModel(new ConfigFileSelectionTableModel(availableFiles, alreadySelectedFiles));
+    }
+
+    public static List<File> getSelectedFiles(JTable table) {
+        return ((ConfigFileSelectionTableModel)table.getModel()).getSelectedFiles();
     }
 
     private static final class ConfigFileGroupListModel implements ListModel {
@@ -163,6 +184,122 @@ public class ConfigFileGroupUIs {
             JLabel component = (JLabel)super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
             File file = (File)value;
             component.setText(displayName.getDisplayName(file));
+            return component;
+        }
+    }
+
+    private static final class ConfigFileSelectionTableModel implements TableModel {
+
+        private final List<File> availableFiles;
+        private final Set<File> alreadySelectedFiles;
+        private boolean[] selected;
+
+        public ConfigFileSelectionTableModel(List<File> availableFiles, Set<File> alreadySelectedFiles) {
+            this.availableFiles = availableFiles;
+            this.alreadySelectedFiles = alreadySelectedFiles;
+            selected = new boolean[availableFiles.size()];
+        }
+
+        public void addTableModelListener(TableModelListener l) {
+        }
+
+        public Class<?> getColumnClass(int columnIndex) {
+            return (columnIndex == 0) ? Boolean.class : File.class;
+        }
+
+        public int getColumnCount() {
+            return 2;
+        }
+
+        public String getColumnName(int columnIndex) {
+            return (columnIndex == 0) ? "" : "File Name";
+        }
+
+        public int getRowCount() {
+            return availableFiles.size();
+        }
+
+        public Object getValueAt(int rowIndex, int columnIndex) {
+            return (columnIndex == 0) ? selected[rowIndex] : availableFiles.get(rowIndex);
+        }
+
+        public boolean isCellEditable(int rowIndex, int columnIndex) {
+            return columnIndex == 0;
+        }
+
+        public void removeTableModelListener(TableModelListener l) {
+        }
+
+        public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
+            if (isEnabled(rowIndex)) {
+                selected[rowIndex] = (Boolean)aValue;
+            }
+        }
+
+        public boolean isEnabled(int rowIndex) {
+            return !alreadySelectedFiles.contains(availableFiles.get(rowIndex));
+        }
+
+        public List<File> getSelectedFiles() {
+            List<File> result = new ArrayList<File>(availableFiles.size());
+            for (int i = 0; i < availableFiles.size(); i++) {
+                if (selected[i]) {
+                    result.add(availableFiles.get(i));
+                }
+            }
+            return result;
+        }
+    }
+
+    private static final class ConfigFileSelectionFileRenderer extends DefaultTableCellRenderer {
+
+        private final FileDisplayName displayName;
+
+        public ConfigFileSelectionFileRenderer(FileDisplayName displayName) {
+            this.displayName = displayName;
+        }
+
+        @Override
+        public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
+            JLabel component = (JLabel)super.getTableCellRendererComponent(table, value, isSelected, false, row, column);
+            File file = (File)value;
+            component.setText(displayName.getDisplayName(file));
+            if (!(table.getModel() instanceof ConfigFileSelectionTableModel)) {
+                return component;
+            }
+            ConfigFileSelectionTableModel model = (ConfigFileSelectionTableModel)table.getModel();
+            String toolTipText = null;
+            if (!model.isEnabled(row)) {
+                toolTipText = NbBundle.getMessage(ConfigFileGroupUIs.class, "LBL_FileAlreadyAdded");
+            }
+            component.setToolTipText(toolTipText);
+            component.setEnabled(model.isEnabled(row));
+            return component;
+        }
+    }
+
+    private static final class ConfigFileSelectionBooleanRenderer implements TableCellRenderer {
+
+        private final TableCellRenderer delegate;
+
+        public ConfigFileSelectionBooleanRenderer(TableCellRenderer delegate) {
+            this.delegate = delegate;
+        }
+
+        public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
+            Component component = delegate.getTableCellRendererComponent(table, value, isSelected, false, row, column);
+            if (!(table.getModel() instanceof ConfigFileSelectionTableModel)) {
+                return component;
+            }
+            ConfigFileSelectionTableModel model = (ConfigFileSelectionTableModel)table.getModel();
+            component.setEnabled(model.isEnabled(row));
+            String toolTipText = null;
+            if (!model.isEnabled(row)) {
+                toolTipText = NbBundle.getMessage(ConfigFileGroupUIs.class, "LBL_FileAlreadyAdded");
+            }
+            if (component instanceof JComponent) {
+                ((JComponent)component).setToolTipText(toolTipText);
+            }
             return component;
         }
     }

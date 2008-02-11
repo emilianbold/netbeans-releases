@@ -421,9 +421,6 @@ public class DesignView extends JPanel implements
         KeyStroke gotoMapperKey = GoToAction.getKeyStroke(ShowBpelMapperAction.class);
         KeyStroke gotoLoggingKey = GoToAction.getKeyStroke(org.netbeans.modules.bpel.nodes.actions.GoToLoggingAction.class);
 
-        System.out.println("design view gotosource: "+gotoSourceKey);
-        System.out.println("design view gotomapper: "+gotoMapperKey);
-        System.out.println("design view gotologging: "+gotoLoggingKey);
         if (gotoSourceKey != null) {
 //            im1.put(org.netbeans.modules.bpel.nodes.actions.GoToSourceAction.GOTOSOURCE_KEYSTROKE, "gotosource-something"); // NOI18N
             im1.put(gotoSourceKey, "gotosource-something"); // NOI18N

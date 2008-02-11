@@ -120,6 +120,10 @@ public class FileChooserAccessory extends javax.swing.JPanel
             copyTo.setText(sharedLibrariesFolder.getAbsolutePath());
         }
         enableAccessory(false);
+        if (!copyAllowed) {
+            rbCopy.setVisible(false);
+            copyTo.setVisible(false);
+        }
     }
 
     public String[] getFiles() {
