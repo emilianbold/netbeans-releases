@@ -53,6 +53,7 @@ public class GrailsServerRunnable implements Runnable {
     private Process process;
     CountDownLatch outputReady = null;
     boolean waitforme;
+    Exception lastException = null; 
     
     private  final Logger LOG = Logger.getLogger(GrailsServerRunnable.class.getName());
     
@@ -84,12 +85,14 @@ public class GrailsServerRunnable implements Runnable {
                         try {
                         process.waitFor();
                             } catch (InterruptedException ex) {
+                            lastException = ex;    
                             LOG.log(Level.WARNING, "InterruptedException while waiting: " + ex.getLocalizedMessage());
                             }
                 }
                     
                 } catch (IOException ex) {
                     LOG.log(Level.WARNING, "Problem creating Process: " + ex.getLocalizedMessage());
+                    lastException = ex;
                     outputReady.countDown();
                     }                
            
@@ -103,5 +106,7 @@ public class GrailsServerRunnable implements Runnable {
         return process;
     } 
     
-    
+    public Exception getLastError() {
+        return lastException;
+    }
 }

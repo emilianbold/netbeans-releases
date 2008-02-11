@@ -97,17 +97,24 @@ public class NewArtifactAction extends AbstractAction {
                 dlg.setVisible(true);
                 if (wiz.getValue() == WizardDescriptor.FINISH_OPTION) {
                     Set result = wiz.getInstantiatedObjects();
-                    for ( Object fo : result) {
-                        try {
-                            DataObject dObj = DataObject.find((FileObject)fo);
-                            OpenCookie ok = dObj.getLookup().lookup(OpenCookie.class);
-                            if (ok != null) {
-                                ok.open();
+                    
+                    if (result != null) {
+                        for (Object fo : result) {
+                            try {
+                                if(fo != null) {
+                                    DataObject dObj = DataObject.find((FileObject) fo);
+                                    OpenCookie ok = dObj.getLookup().lookup(OpenCookie.class);
+                                    if (ok != null) {
+                                        ok.open();
+                                    }
+                                }
+                            } catch (DataObjectNotFoundException ex) {
+                                LOG.log(Level.WARNING, "DataObjectNotFoundException: " + ex.getMessage());
                             }
-                        } catch (DataObjectNotFoundException ex) {
-                            LOG.log(Level.WARNING, "DataObjectNotFoundException: " +  ex.getMessage());
                         }
+
                     }
+
 
                 }
             } finally {

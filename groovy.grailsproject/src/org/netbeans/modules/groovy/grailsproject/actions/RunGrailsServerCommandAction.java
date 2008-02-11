@@ -43,7 +43,10 @@ import java.util.logging.Logger;
 import java.util.logging.Level;
 import java.io.InputStreamReader;
 import java.net.URL;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.awt.HtmlBrowser;
+import org.openide.util.NbBundle;
 import org.openide.windows.OutputListener;
 
 
@@ -94,6 +97,11 @@ public class RunGrailsServerCommandAction extends AbstractAction implements Outp
             GrailsServer server = GrailsServerFactory.getServer();    
             Process process = server.runCommand(prj, "run-app", io, null);
             
+            if (process == null){
+                displayGrailsProcessError(server.getLastError());
+                return;
+                }
+            
             procOutput = new BufferedReader(new InputStreamReader(process.getInputStream()));
             
             assert procOutput != null;
@@ -113,7 +121,15 @@ public class RunGrailsServerCommandAction extends AbstractAction implements Outp
         }
     }
 
-
+    
+    void displayGrailsProcessError(Exception reason) {
+        DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
+            NbBundle.getMessage(RunGrailsServerCommandAction.class, "LBL_process_problem") + 
+            " " + reason.getLocalizedMessage(),
+            NotifyDescriptor.Message.WARNING_MESSAGE
+            ));
+        }
+    
     public void startBrowserWithUrl(String lineString){
         String urlString = lineString.substring(lineString.indexOf("http://"));
      

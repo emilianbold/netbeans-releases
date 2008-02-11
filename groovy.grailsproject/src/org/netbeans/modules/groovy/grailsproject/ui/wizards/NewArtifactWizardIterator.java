@@ -34,10 +34,8 @@ import java.text.MessageFormat;
 import java.util.HashSet;
 import java.util.Set;
 import javax.swing.event.ChangeListener;
-import org.netbeans.api.progress.ProgressHandle;
 import org.openide.WizardDescriptor;
 import javax.swing.JComponent;
-import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import java.io.File;
 import org.openide.filesystems.FileUtil;
@@ -54,6 +52,9 @@ import java.util.concurrent.CountDownLatch;
 import java.io.InputStreamReader;
 import org.netbeans.modules.groovy.grailsproject.GrailsProject;
 import org.netbeans.modules.groovy.grailsproject.SourceCategory;
+import org.netbeans.modules.groovy.grailsproject.actions.RunGrailsServerCommandAction;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 
 
 /**
@@ -207,6 +208,14 @@ public class NewArtifactWizardIterator implements  WizardDescriptor.Instantiatin
 
     public void removeChangeListener(ChangeListener l) {}
     
+    void displayGrailsProcessError(Exception reason) {
+        DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
+            NbBundle.getMessage(NewArtifactWizardIterator.class, "LBL_process_problem") + 
+            " " + reason.getLocalizedMessage(),
+            NotifyDescriptor.Message.WARNING_MESSAGE
+            ));
+        }
+    
     public class PrivateSwingWorker extends Thread {
         JTextArea grailsServerOutputTextArea;
         
@@ -227,6 +236,7 @@ public class NewArtifactWizardIterator implements  WizardDescriptor.Instantiatin
             if(process == null){
                 serverRunning = false;
                 LOG.log(Level.WARNING, "Could not create Grails-Server, process == null ");
+                displayGrailsProcessError(server.getLastError());
                 serverFinished.countDown();
                 return;
                 }

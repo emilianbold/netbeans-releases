@@ -54,6 +54,7 @@ public class ExternalGrailsServer implements GrailsServer{
     String cwdName;
     ExecutionEngine engine = ExecutionEngine.getDefault();
     Project prj;
+    Exception lastException = null; // last problem in the runnable.
     
     private  final Logger LOG = Logger.getLogger(ExternalGrailsServer.class.getName());
     
@@ -155,9 +156,17 @@ public class ExternalGrailsServer implements GrailsServer{
             GrailsServerState serverState = prj.getLookup().lookup(GrailsServerState.class);
 
             if (serverState != null) {
-                serverState.setRunning(true);
-                serverState.setProcess(gsr.getProcess());
-                exTask.addTaskListener(serverState);
+                if (gsr.getProcess() != null) {
+                    serverState.setRunning(true);
+                    serverState.setProcess(gsr.getProcess());
+                    exTask.addTaskListener(serverState);
+                } else
+                    {
+                    LOG.log(Level.WARNING, "Could not startup process : " + gsr.getLastError().getLocalizedMessage());
+                    lastException = gsr.getLastError();
+                    return null;
+                    }
+
                 }
             else {
                 LOG.log(Level.WARNING, "Could not get serverState through lookup");
@@ -176,6 +185,7 @@ public class ExternalGrailsServer implements GrailsServer{
         
         }
         
+        lastException = gsr.getLastError();
         return gsr.getProcess();
     }
     
@@ -187,5 +197,9 @@ public class ExternalGrailsServer implements GrailsServer{
                     }
         
         }
+
+    public Exception getLastError() {
+        return lastException;
+    }
 
 }
