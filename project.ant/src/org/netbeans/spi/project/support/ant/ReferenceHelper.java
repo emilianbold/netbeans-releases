@@ -1487,7 +1487,8 @@ public final class ReferenceHelper {
      * even if the project is the same; in particular, it is <em>not</em> guaranteed that
      * the manager match that returned from {@link Library#getManager} for libraries added
      * from {@link #createLibraryReference}.
-     * @return a library manager associated with project's libraries or 
+     * @return a library manager associated with project's libraries or null if project is 
+     *  not shared (will not include {@link LibraryManager#getDefault})
      *  {@link LibraryManager#getDefault})
      * @since org.netbeans.modules.project.ant/1 1.19
      */
@@ -1500,13 +1501,13 @@ public final class ReferenceHelper {
                 try {
                     return LibraryManager.forLocation(libFile.toURI().toURL());
                 } catch (MalformedURLException e) {
-                    // ok, default library manager will be used
+                    // ok, no project manager
                     Logger.getLogger(ReferenceHelper.class.getName()).info(
-                        "cannot get url for "+libFile+". global library manager will be used instead"); //NOI18N
+                        "library manager cannot be found for "+libFile+". "+e.toString()); //NOI18N
                 }
             }
         }
-        return LibraryManager.getDefault();
+        return null;
     }
 
     /**
