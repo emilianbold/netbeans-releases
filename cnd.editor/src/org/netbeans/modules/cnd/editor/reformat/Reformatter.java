@@ -41,9 +41,9 @@ package org.netbeans.modules.cnd.editor.reformat;
 
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
+import org.netbeans.api.lexer.Language;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
-import org.netbeans.cnd.api.lexer.CndLexerUtilities;
 import org.netbeans.cnd.api.lexer.CppTokenId;
 import org.netbeans.modules.cnd.editor.api.CodeStyle;
 import org.netbeans.modules.editor.indent.spi.Context;
@@ -78,26 +78,48 @@ public class Reformatter implements ReformatTask {
                 reformatImpl(region);
             }
         } else {
-            int startOffset = doc.getLength();
-            TokenHierarchy th = TokenHierarchy.get(doc);
-            TokenSequence<CppTokenId> ts = th != null ? CndLexerUtilities.getCppTokenSequence(th, startOffset) : null;
-            if (ts != null) {
-                reformatImpl(ts, 0, startOffset);
+            int endOffset = doc.getLength();
+            TokenHierarchy hierarchy = TokenHierarchy.get(doc);
+            if (hierarchy == null) {
+                return;
             }
+            reformatImpl(hierarchy, 0, endOffset);
         }
     }
-    
-        
+
     private void reformatImpl(Context.Region region) throws BadLocationException {
         int startOffset = region.getStartOffset();
         int endOffset = region.getEndOffset();
-        if (!("text/x-c++".equals(context.mimePath())||
-              "text/x-c".equals(context.mimePath()))) { //NOI18N
-            TokenHierarchy th = TokenHierarchy.get(doc);
-            TokenSequence<CppTokenId> ts = th != null ? CndLexerUtilities.getCppTokenSequence(th, startOffset) : null;
-            if (ts != null) {
-                reformatImpl(ts, startOffset, endOffset);
+        if ("text/x-c++".equals(context.mimePath())) { //NOI18N
+            reformatLanguage(CppTokenId.languageCpp(), startOffset, endOffset);
+        } else if ("text/x-c".equals(context.mimePath())) { //NOI18N
+            reformatLanguage(CppTokenId.languageC(), startOffset, endOffset);
+        }
+    }
+
+    private void reformatLanguage(Language<CppTokenId> language, int startOffset, int endOffset) throws BadLocationException {
+        TokenHierarchy hierarchy = TokenHierarchy.create(doc.getText(0, doc.getLength()), language);
+        if (hierarchy == null) {
+            return;
+        }
+        reformatImpl(hierarchy, startOffset, endOffset);
+    }
+
+                
+    private void reformatImpl(TokenHierarchy hierarchy, int startOffset, int endOffset) throws BadLocationException {
+        TokenSequence<?> ts = hierarchy.tokenSequence();
+        while (ts != null && (startOffset == 0 || ts.moveNext())) {
+            ts.move(startOffset);
+            if (ts.language() == CppTokenId.languageC() ||
+                ts.language() == CppTokenId.languageCpp() ||
+                ts.language() == CppTokenId.languagePreproc()) {
+                reformatImpl((TokenSequence<CppTokenId>) ts, startOffset, endOffset);
+                return;
             }
+            if (!ts.moveNext() && !ts.movePrevious()) {
+                return;
+            }
+            ts = ts.embedded();
         }
     }
     
@@ -160,6 +182,10 @@ public class Reformatter implements ReformatTask {
 
         public String getText() {
             return text;
+        }
+
+        public void setText(String text) {
+            this.text = text;
         }
 
         @Override
