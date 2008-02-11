@@ -76,6 +76,8 @@ public class WebProjectCreateData {
     private FileObject webInfFolder;
     private boolean javaSourceBased = true;
     
+    private String librariesDefinition;
+    
     /**
      * Creates a new instance of WebProjectCreateData
      */
@@ -372,4 +374,12 @@ public class WebProjectCreateData {
         return this.javaSourceBased;
     }
 
+    public String getLibrariesDefinition() {
+        return librariesDefinition;
+    }
+
+    public void setLibrariesDefinition(String librariesDefinition) {
+        this.librariesDefinition = librariesDefinition;
+    }
+    
 }

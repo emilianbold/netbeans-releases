@@ -49,15 +49,11 @@ import java.net.URL;
 import java.net.MalformedURLException;
 import java.util.Collection;
 import java.util.Arrays;
-import java.awt.event.ActionListener;
-import java.awt.event.ActionEvent;
 import java.awt.*;
 import javax.swing.*;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.event.*;
 import org.openide.ErrorManager;
-import org.openide.DialogDescriptor;
-import org.openide.DialogDisplayer;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
 import org.openide.util.NbBundle;
@@ -67,6 +63,9 @@ import org.netbeans.spi.project.libraries.LibraryImplementation;
 
 
 import javax.swing.filechooser.FileFilter;
+import org.netbeans.spi.project.libraries.LibraryStorageArea;
+import org.netbeans.spi.project.libraries.support.LibrariesSupport;
+import org.openide.filesystems.FileObject;
 
 /**
  *
@@ -77,6 +76,7 @@ public class ComponentVolumeCustomizer extends javax.swing.JPanel implements Cus
     private String volumeType;
     private LibraryImplementation impl;
     private VolumeContentModel model;
+    private LibraryStorageArea area;
 
     /**
      * Creates new form ComponentVolumeCustomizer
@@ -430,9 +430,14 @@ public class ComponentVolumeCustomizer extends javax.swing.JPanel implements Cus
     }
 
     public void setObject(Object bean) {
+        if (bean instanceof LibraryStorageArea) {
+            this.area = (LibraryStorageArea)bean;
+        } else {
+            this.area = null;
+        }
         if (bean instanceof LibraryImplementation) {
             this.impl = (LibraryImplementation) bean;
-            this.model = new VolumeContentModel(this.impl,this.volumeType);
+            this.model = new VolumeContentModel(this.impl, area, this.volumeType);
             this.content.setModel(model);
             if (this.model.getSize()>0) {
                 this.content.setSelectedIndex(0);
@@ -499,7 +504,10 @@ public class ComponentVolumeCustomizer extends javax.swing.JPanel implements Cus
                 if ("jar".equals(url.getProtocol())) {   //NOI18N
                     url = FileUtil.getArchiveFile (url);
                 }
-                if (URLMapper.findFileObject (url) == null) {
+                VolumeContentModel model = (VolumeContentModel)list.getModel();
+                LibraryStorageArea area = model.getArea();
+                FileObject fo = LibrariesSupport.resolveLibraryEntryFileObject(area != null ? area.getLocation() : null, url);
+                if (fo == null) {
                     color = new Color (164,0,0);
                     toolTip = NbBundle.getMessage (ComponentVolumeCustomizer.class,"TXT_BrokenFile");
                 }

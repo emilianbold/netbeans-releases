@@ -84,7 +84,7 @@ public class CCFormatSupport extends ExtFormatSupport {
 
      /** Is given token a preprocessor **/
      public boolean isPreprocessorAtLineStart(TokenItem token){
-         if(getFormatSpaceBeforeParenthesis()) 
+         if(getFormatSpaceBeforeMethodCallParenthesis()) 
              return false;
          if (token != null){
             FormatTokenPosition ft = findLineFirstNonWhitespace(getPosition(token, 0));
@@ -1327,12 +1327,13 @@ public class CCFormatSupport extends ExtFormatSupport {
         return CodeStyle.getDefault(language);
     }
 
-    public boolean getFormatSpaceBeforeParenthesis() {
-        return getCodeStyle().getFormatSpaceBeforeParenthesis();
+    public boolean getFormatSpaceBeforeMethodCallParenthesis() {
+        //return getCodeStyle().getFormatSpaceBeforeParenthesis();
+        return getCodeStyle().spaceBeforeMethodCallParen();
     }
 
     public boolean getFormatSpaceAfterComma() {
-        return getCodeStyle().getFormatSpaceAfterComma();
+        return getCodeStyle().spaceAfterComma();
     }
 
     public boolean getFormatNewlineBeforeBrace() {
@@ -1343,10 +1344,6 @@ public class CCFormatSupport extends ExtFormatSupport {
         return getCodeStyle().getFormatNewlineBeforeBraceDeclaration() == CodeStyle.BracePlacement.NEW_LINE;
     }
     
-    public boolean getFormatLeadingSpaceInComment() {
-        return getCodeStyle().getFormatLeadingSpaceInComment();
-    }
-
     public boolean getFormatLeadingStarInComment() {
         return getCodeStyle().getFormatLeadingStarInComment();
     }

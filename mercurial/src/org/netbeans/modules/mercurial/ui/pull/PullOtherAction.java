@@ -133,10 +133,6 @@ public class PullOtherAction extends ContextAction implements PropertyChangeList
     }
     
     public boolean isEnabled() {
-        File root = HgUtils.getRootFile(context);
-        if(root == null)
-            return false;
-        else
-            return true;
+        return HgUtils.getRootFile(context) != null;
     }
 }
