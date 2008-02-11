@@ -134,6 +134,10 @@ public abstract class SpringXMLConfigCompletionItem implements CompletionItem {
         return new MethodItem(substitutionOffset, element, isInherited, isDeprecated);
     }
     
+    public static SpringXMLConfigCompletionItem createPropertyItem(int substitutionOffset, ExecutableElement setter) {
+        return new PropertyItem(substitutionOffset, setter);
+    }
+    
     public static SpringXMLConfigCompletionItem createAttribValueItem(int substitutionOffset, String displayText, String docText) {
         return new AttribValueItem(substitutionOffset, displayText, docText);
     }
@@ -797,6 +801,37 @@ public abstract class SpringXMLConfigCompletionItem implements CompletionItem {
             }
             assert base != null;
             return base;
+        }
+    }
+    
+    private static class PropertyItem extends SpringXMLConfigCompletionItem {
+
+        private ElementHandle<ExecutableElement> eh;
+        private String displayName;
+        
+        public PropertyItem(int substitutionOffset, ExecutableElement setter) {
+            super(substitutionOffset);
+            char[] propertyName = setter.getSimpleName().toString().substring(3).toCharArray();
+            propertyName[0] = Character.toLowerCase(propertyName[0]);
+            this.displayName = new String(propertyName);
+            this.eh = ElementHandle.create(setter);
+        }
+        
+        public int getSortPriority() {
+            return 100;
+        }
+
+        public CharSequence getSortText() {
+            return displayName;
+        }
+
+        public CharSequence getInsertPrefix() {
+            return displayName;
+        }
+
+        @Override
+        protected String getLeftHtmlText() {
+            return displayName;
         }
     }
     

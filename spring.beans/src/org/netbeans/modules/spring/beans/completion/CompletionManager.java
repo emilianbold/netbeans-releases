@@ -78,6 +78,7 @@ import org.netbeans.modules.spring.api.beans.model.SpringBeans;
 import org.netbeans.modules.spring.api.beans.model.SpringConfigModel;
 import org.netbeans.modules.spring.beans.editor.ContextUtilities;
 import org.netbeans.modules.spring.beans.editor.SpringXMLConfigEditorUtils;
+import org.netbeans.modules.spring.beans.editor.SpringXMLConfigEditorUtils.PropertyFinder;
 import org.netbeans.modules.spring.beans.editor.SpringXMLConfigEditorUtils.Public;
 import org.netbeans.modules.spring.beans.editor.SpringXMLConfigEditorUtils.Static;
 import org.netbeans.modules.spring.beans.loader.SpringXMLConfigDataLoader;
@@ -245,6 +246,9 @@ public final class CompletionManager {
         
         FactoryMethodCompletor factoryMethodCompletor = new FactoryMethodCompletor();
         registerCompletor(BEAN_TAG, FACTORY_METHOD_ATTRIB, factoryMethodCompletor);
+        
+        PropertyCompletor propertyCompletor = new PropertyCompletor();
+        registerCompletor(PROPERTY_TAG, NAME_ATTRIB, propertyCompletor);
     }
     private static CompletionManager INSTANCE = new CompletionManager();
 
@@ -787,6 +791,50 @@ public final class CompletionManager {
             }
             
             return ret;
+        }
+    }
+    
+    private static class PropertyCompletor extends Completor {
+
+        public PropertyCompletor() {
+        }
+
+        @Override
+        public List<SpringXMLConfigCompletionItem> doCompletion(final CompletionContext context) {
+            final List<SpringXMLConfigCompletionItem> results = new ArrayList<SpringXMLConfigCompletionItem>();
+            Document doc = context.getDocument();
+            String propertyPrefix = context.getTypedPrefix();
+            
+            if(propertyPrefix.contains(".")) { // NOI18N
+                // traverse the properties 
+            } else {
+                try {
+                    final String className = SpringXMLConfigEditorUtils.getBeanClassName(context.getTag());
+                    // what if the bean is created by a factory bean?
+                    if (className == null) {
+                        return Collections.emptyList();
+                    }
+
+                    JavaSource js = SpringXMLConfigEditorUtils.getJavaSource(context.getDocument());
+                    js.runUserActionTask(new Task<CompilationController>() {
+
+                        public void run(CompilationController cc) throws Exception {
+                            PropertyFinder pf = new PropertyFinder(className);
+                            pf.run(cc);
+                            Iterable<? extends Element> setterMethods = pf.getPropertySetters();
+                            
+                            for (Element e : setterMethods) {
+                                ExecutableElement ee = (ExecutableElement) e;
+                                results.add(SpringXMLConfigCompletionItem.createPropertyItem(context.getCurrentToken().getOffset() + 1, ee));
+                            }
+                        }
+                    }, true);
+                } catch (IOException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+            }
+            
+            return results;
         }
     }
 

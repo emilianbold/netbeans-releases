@@ -42,6 +42,8 @@ package org.netbeans.modules.spring.beans.editor;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -52,6 +54,7 @@ import javax.lang.model.element.Modifier;
 import javax.lang.model.element.PackageElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.DeclaredType;
+import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
 import javax.lang.model.util.SimpleElementVisitor6;
@@ -514,6 +517,63 @@ public final class SpringXMLConfigEditorUtils {
 
         public ElementHandle<ExecutableElement> getMethodHandle() {
             return this.methodHandle;
+        }
+    }
+    
+    public static List<ElementHandle<ExecutableElement>> findPropertySetters(final String typeName, JavaSource js) {
+        PropertyFinder propertyFinder = new PropertyFinder(typeName);
+        try {
+            js.runUserActionTask(propertyFinder, true);
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        
+        List<ElementHandle<ExecutableElement>> retVals = new ArrayList<ElementHandle<ExecutableElement>>();
+        Iterable<? extends Element> setters = propertyFinder.getPropertySetters();
+        for(Element e : setters) {
+            ExecutableElement ee = (ExecutableElement) e;
+            retVals.add(ElementHandle.create(ee));
+        }
+        
+        return retVals;
+    }
+    
+    public static class PropertyFinder implements Task<CompilationController> {
+
+        private Iterable<? extends Element> setters = Collections.emptySet();
+        private String typeName;
+
+        public PropertyFinder(String typeName) {
+            this.typeName = typeName;
+        }
+
+        public void run(CompilationController cc) throws Exception {
+            ElementUtilities eu = cc.getElementUtilities();
+            ElementHandle<TypeElement> eh = findClassElementByBinaryName(typeName, cc.getJavaSource());
+            if(eh == null) {
+                return;
+            }
+            TypeElement te = eh.resolve(cc);
+            setters = eu.getMembers(te.asType(), new ElementUtilities.ElementAcceptor() {
+
+                public boolean accept(Element e, TypeMirror type) {
+                    if (e.getKind() != ElementKind.METHOD) {
+                        return false;
+                    }
+
+                    ExecutableElement ee = (ExecutableElement) e;
+                    String methodName = ee.getSimpleName().toString();
+                    if (methodName.startsWith("set") && ee.getParameters().size() == 1 && ee.getReturnType().getKind() == TypeKind.VOID) { // NOI18N
+                        return true;
+                    }
+
+                    return false;
+                }
+            });
+        }
+
+        public Iterable<? extends Element> getPropertySetters() {
+            return setters;
         }
     }
 }
