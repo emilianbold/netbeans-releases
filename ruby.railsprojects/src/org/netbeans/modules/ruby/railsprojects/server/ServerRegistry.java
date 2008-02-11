@@ -69,6 +69,7 @@ import org.openide.util.lookup.Lookups;
 public class ServerRegistry implements VetoableChangeListener {
 
     private static ServerRegistry defaultRegistry; 
+
     private ServerRegistry() {
     }
 
