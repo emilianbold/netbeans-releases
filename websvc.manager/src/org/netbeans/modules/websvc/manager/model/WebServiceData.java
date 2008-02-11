@@ -44,11 +44,12 @@ package org.netbeans.modules.websvc.manager.model;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
-import org.netbeans.modules.websvc.manager.api.WebServiceDescriptor;
 import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlService;
+import org.netbeans.modules.websvc.manager.api.WebServiceDescriptor;
+import org.netbeans.modules.websvc.saas.spi.websvcmgr.WsdlData;
+import org.netbeans.modules.websvc.saas.spi.websvcmgr.WsdlServiceProxyDescriptor;
 
 /**
  * A webservice meta data. Holds the URL location, package name for code generation
@@ -56,7 +57,7 @@ import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlService;
  * the WebServiceListModel.
  * @author Winston Prakash, David Botterill, cao
  */
-public class WebServiceData {
+public class WebServiceData implements WsdlData {
     public static final String JAX_WS = "jaxws";
     public static final String JAX_RPC = "jaxrpc";
     

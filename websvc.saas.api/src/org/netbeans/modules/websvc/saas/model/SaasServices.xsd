@@ -196,7 +196,10 @@
                     'url' defines the url of the WSDL or WADL document
                 </xsd:documentation>
             </xsd:annotation>                                 
-        </xsd:attribute>                                       
+        </xsd:attribute>
+        <xsd:attribute name="serviceName" type="xsd:string"/>
+        <xsd:attribute name="portName" type="xsd:string"/>
+        <xsd:attribute name="operationName" type="xsd:string"/>
     </xsd:complexType>
     
     <xsd:complexType name="Params">

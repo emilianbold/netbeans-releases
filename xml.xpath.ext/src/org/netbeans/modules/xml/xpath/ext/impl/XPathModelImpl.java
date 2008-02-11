@@ -900,16 +900,16 @@ public class XPathModelImpl implements XPathModel {
             // vlv
             // why stringToBytes, bytesToString, convert are not recognized?
             // TODO FIX IT.
-            if (
-              funcQName.equals("convert") ||
-              funcQName.equals("bytesToString") ||
-              funcQName.equals("stringToBytes"))
-            {
-              return true;
-            }
+            //
+            String name = XPathUtils.qNameObjectToString(funcQName);
+            boolean hotFix = 
+              name.equals("stringToBytes") ||
+              name.equals("bytesToString") ||
+              name.equals("convert");
+ 
             mValidationContext.addResultItem(mRootXPathExpression,
-                    ResultType.ERROR, 
-                    XPathProblem.UNKNOWN_EXTENSION_FUNCTION, 
+                    hotFix ? ResultType.WARNING : ResultType.ERROR,
+                    XPathProblem.UNKNOWN_EXTENSION_FUNCTION,
                     XPathUtils.qNameObjectToString(funcQName));
         } else {
             // The function with the required name is found, but in other namespace
@@ -921,14 +921,14 @@ public class XPathModelImpl implements XPathModel {
                 // vlv
                 // why current-date, current-dateTime, current-time are not recognized?
                 // TODO FIX IT.
-                if (
-                  funcQName.equals("current-date") ||
-                  funcQName.equals("current-dateTime") ||
-                  funcQName.equals("current-time"))
-                {
-                  return true;
-                }
-                mValidationContext.addResultItem(mRootXPathExpression, ResultType.ERROR,
+                //
+                boolean hotFix = 
+                  funcName.equals("current-date") ||
+                  funcName.equals("current-dateTime") ||
+                  funcName.equals("current-time");
+
+                mValidationContext.addResultItem(mRootXPathExpression,
+                        hotFix ? ResultType.WARNING : ResultType.ERROR,
                         XPathProblem.PREFIX_REQUIRED_FOR_EXT_FUNCTION, 
                         funcName, nsList);
             } else {

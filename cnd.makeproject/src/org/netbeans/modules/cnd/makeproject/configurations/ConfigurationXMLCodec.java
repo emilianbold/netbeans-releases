@@ -189,6 +189,8 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
                 if (!projectFiles)
                     ((MakeConfigurationDescriptor)projectDescriptor).setExternalFileItems(currentFolder);
             }
+        } else if (element.equals(SOURCE_ROOT_LIST_ELEMENT)) {
+            currentList = ((MakeConfigurationDescriptor)projectDescriptor).getSourceRootsRaw();
         } else if (element.equals(ItemXMLCodec.ITEM_ELEMENT)) {
             String path = atts.getValue(0);
             path = getString(adjustOffset(path));
@@ -372,6 +374,8 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
             } else {
                 currentFolder = null;
             }
+        } else if (element.equals(PREPROCESSOR_LIST_ELEMENT)) {
+            currentList = null;
         } else if (element.equals(ITEM_PATH_ELEMENT)) {
             String path = currentText;
             path = getString(adjustOffset(path));

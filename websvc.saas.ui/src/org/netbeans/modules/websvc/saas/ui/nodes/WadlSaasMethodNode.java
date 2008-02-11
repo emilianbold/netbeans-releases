@@ -39,18 +39,22 @@
 
 package org.netbeans.modules.websvc.saas.ui.nodes;
 
-import org.netbeans.modules.websvc.saas.model.SaasMethod;
 import org.netbeans.modules.websvc.saas.model.WadlSaasMethod;
+import org.openide.util.lookup.InstanceContent;
 
 /**
  *
  * @author nam
  */
 public class WadlSaasMethodNode extends WadlMethodNode {
-    private SaasMethod saasMethod;
+    private WadlSaasMethod saasMethod;
     
     public WadlSaasMethodNode(WadlSaasMethod saasMethod) {
-        super(saasMethod.getSaas(), saasMethod.getResourcePath(), saasMethod.getWadlMethod());
+        this(saasMethod, new InstanceContent());
+    }
+
+    public WadlSaasMethodNode(WadlSaasMethod saasMethod, InstanceContent content) {
+        super(saasMethod.getSaas(), saasMethod.getResourcePath(), saasMethod.getWadlMethod(), content);
         this.saasMethod = saasMethod;
     }
 

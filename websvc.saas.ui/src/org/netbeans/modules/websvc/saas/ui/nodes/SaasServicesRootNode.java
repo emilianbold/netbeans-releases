@@ -40,33 +40,65 @@
 package org.netbeans.modules.websvc.saas.ui.nodes;
 
 import java.awt.Image;
+import org.netbeans.modules.websvc.saas.model.SaasGroup;
 import org.netbeans.modules.websvc.saas.model.SaasServicesModel;
+import org.netbeans.modules.websvc.saas.model.jaxb.Group;
+import org.openide.nodes.AbstractNode;
 import org.openide.util.NbBundle;
-import org.openide.util.Utilities;
 
 /**
  *
  * @author nam
  */
-public class SaasServicesRootNode extends SaasGroupNode {
+public class SaasServicesRootNode extends AbstractNode {
+    static final SaasGroup PLACE_HOLDER_GROUP = new SaasGroup(null, new Group());
+    private SaasGroup root;
+    
     public SaasServicesRootNode() {
-        super(SaasServicesModel.getInstance().getRootGroup());
-        setName("rootSaasGroup");
-        setDisplayName(NbBundle.getMessage(SaasServicesRootNode.class, "Web_Services"));
-        setShortDescription(NbBundle.getMessage(SaasServicesRootNode.class, "Web_Services_Desc"));
+        super(new RootNodeChildren(PLACE_HOLDER_GROUP));
+        root = PLACE_HOLDER_GROUP;
     }
 
-    static final java.awt.Image SERVICE_BADGE =
+    @Override
+    public String getName() {
+        return "rootSaasGroup";
+    }
+    
+    @Override
+    public String getDisplayName() {
+        return NbBundle.getMessage(SaasServicesRootNode.class, "Web_Services");
+    }
+    
+    @Override
+    public String getShortDescription() {
+        return NbBundle.getMessage(SaasServicesRootNode.class, "Web_Services_Desc");
+    }
+    
+    static final java.awt.Image ICON =
             org.openide.util.Utilities.loadImage( "org/netbeans/modules/websvc/saas/ui/resources/webservicegroup.png" ); //NOI18N
     
     @Override
     public Image getIcon(int type){
-        return SERVICE_BADGE;
+        return ICON;
     }
     
     @Override
     public Image getOpenedIcon(int type){
-        return SERVICE_BADGE;
+        return ICON;
     }
     
+    static class RootNodeChildren extends SaasGroupNodeChildren {
+
+        public RootNodeChildren(SaasGroup group) {
+            super(group);
+        }
+        
+        @Override
+        protected void addNotify() {
+            if (group == PLACE_HOLDER_GROUP) {
+                group = SaasServicesModel.getInstance().getRootGroup();
+            }
+            super.addNotify();
+        }
+    }
 }

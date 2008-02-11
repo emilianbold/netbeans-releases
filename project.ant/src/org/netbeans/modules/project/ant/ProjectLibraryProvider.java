@@ -586,7 +586,9 @@ public class ProjectLibraryProvider implements ArealLibraryProvider<ProjectLibra
                     jarFolder = getJarFolder(entry);
                     entry = FileUtil.getArchiveFile(entry);
                 } else if (!"file".equals(entry.getProtocol())) { // NOI18N
-                    throw new IllegalArgumentException(entry.toExternalForm());
+                    value.add(entry.toString());
+                    Logger.getLogger(ProjectLibraryProvider.class.getName()).fine("Setting url=" + entry + " as content for library volume type: " + volumeType);
+                    continue;
                 }
                 String p = LibrariesSupport.convertURLToFilePath(entry);
                 File f = new File(p);
@@ -923,7 +925,8 @@ public class ProjectLibraryProvider implements ArealLibraryProvider<ProjectLibra
                 if (libEntryFO == null) {
                     if (!"file".equals(libEntry.getProtocol()) && // NOI18N
                         !"nbinst".equals(libEntry.getProtocol())) { // NOI18N
-                        Logger.getLogger(ProjectLibraryProvider.class.getName()).warning("copyLibrary is ignoring entry "+libEntry);
+                        Logger.getLogger(ProjectLibraryProvider.class.getName()).info("copyLibrary is ignoring entry "+libEntry);
+                        //this is probably exclusively urls to maven poms.
                         continue;
                     } else {
                         Logger.getLogger(ProjectLibraryProvider.class.getName()).warning("Library '"+lib.getDisplayName()+ // NOI18N

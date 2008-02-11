@@ -97,14 +97,38 @@ public class CodeStyle {
     }
     
     // General tabs and indents ------------------------------------------------
-    public boolean getFormatSpaceBeforeParenthesis() {
-        return getOption(EditorOptions.CC_FORMAT_SPACE_BEFORE_PARENTHESIS,
-                         EditorOptions.defaultCCFormatSpaceBeforeParenthesis);
+    public boolean spaceBeforeMethodDeclParen() {
+        return getOption(EditorOptions.spaceBeforeMethodDeclParen,
+                         EditorOptions.spaceBeforeMethodDeclParenDefault);
+    }
+    public boolean spaceBeforeMethodCallParen() {
+        return getOption(EditorOptions.spaceBeforeMethodCallParen,
+                         EditorOptions.spaceBeforeMethodCallParenDefault);
+    }
+    public boolean spaceBeforeIfParen() {
+        return getOption(EditorOptions.spaceBeforeIfParen,
+                         EditorOptions.spaceBeforeIfParenDefault);
+    }
+    public boolean spaceBeforeForParen() {
+        return getOption(EditorOptions.spaceBeforeForParen,
+                         EditorOptions.spaceBeforeForParenDefault);
+    }
+    public boolean spaceBeforeWhileParen() {
+        return getOption(EditorOptions.spaceBeforeWhileParen,
+                         EditorOptions.spaceBeforeWhileParenDefault);
+    }
+    public boolean spaceBeforeCatchParen() {
+        return getOption(EditorOptions.spaceBeforeCatchParen,
+                         EditorOptions.spaceBeforeCatchParenDefault);
+    }
+    public boolean spaceBeforeSwitchParen() {
+        return getOption(EditorOptions.spaceBeforeSwitchParen,
+                         EditorOptions.spaceBeforeSwitchParenDefault);
     }
 
-    public boolean getFormatSpaceAfterComma() {
-        return getOption(EditorOptions.CC_FORMAT_SPACE_AFTER_COMMA,
-                         EditorOptions.defaultCCFormatSpaceAfterComma);
+    public boolean spaceAfterComma() {
+        return getOption(EditorOptions.spaceAfterComma,
+                         EditorOptions.spaceAfterCommaDefault);
     }
 
     public BracePlacement getFormatNewlineBeforeBrace() {
@@ -127,16 +151,11 @@ public class CodeStyle {
                                       EditorOptions.defaultCCFormatNewlineBeforeBraceMethod));
     }
     
-    public boolean getFormatPreprocessorAtLineStart(){
-        return getOption(EditorOptions.CC_FORMAT_PREPROCESSOR_AT_LINE_START,
-                         EditorOptions.defaulCCtFormatPreprocessorAtLineStart);
+    public boolean indentPreprocessorDirectives(){
+        return getOption(EditorOptions.indentPreprocessorDirectives,
+                         EditorOptions.indentPreprocessorDirectivesDefault);
     }
             
-    public boolean getFormatLeadingSpaceInComment() {
-        return getOption(EditorOptions.CC_FORMAT_LEADING_SPACE_IN_COMMENT,
-                         EditorOptions.defaultCCFormatLeadingSpaceInComment);
-    }
-
     public boolean getFormatLeadingStarInComment() {
         return getOption(EditorOptions.CC_FORMAT_LEADING_STAR_IN_COMMENT,
                          EditorOptions.defaultCCFormatLeadingStarInComment);

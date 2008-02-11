@@ -23,6 +23,7 @@ public class TabsIndentsPanel extends javax.swing.JPanel {
         initComponents();
         statementContinuationIndent.putClientProperty(CategorySupport.OPTION_ID, EditorOptions.CC_FORMAT_STATEMENT_CONTINUATION_INDENT);
         indentCasesFromSwitch.putClientProperty(CategorySupport.OPTION_ID, EditorOptions.indentCasesFromSwitch);
+        indentPreprocessorDirectives.putClientProperty(CategorySupport.OPTION_ID, EditorOptions.indentPreprocessorDirectives);
     }
 
     /** This method is called from within the constructor to
@@ -37,9 +38,10 @@ public class TabsIndentsPanel extends javax.swing.JPanel {
         jLabel1 = new javax.swing.JLabel();
         statementContinuationIndent = new javax.swing.JTextField();
         indentCasesFromSwitch = new javax.swing.JCheckBox();
+        indentPreprocessorDirectives = new javax.swing.JCheckBox();
 
         jLabel1.setLabelFor(statementContinuationIndent);
-        jLabel1.setText(org.openide.util.NbBundle.getMessage(TabsIndentsPanel.class, "PROP_indentEngine_CCFormatStatementContinuationIndent")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel1, org.openide.util.NbBundle.getMessage(TabsIndentsPanel.class, "PROP_indentEngine_CCFormatStatementContinuationIndent")); // NOI18N
 
         statementContinuationIndent.setText(org.openide.util.NbBundle.getMessage(TabsIndentsPanel.class, "TabsIndentsPanel.statementContinuationIndent.text")); // NOI18N
 
@@ -47,6 +49,10 @@ public class TabsIndentsPanel extends javax.swing.JPanel {
         indentCasesFromSwitch.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         indentCasesFromSwitch.setMargin(new java.awt.Insets(0, 0, 0, 0));
         indentCasesFromSwitch.setOpaque(false);
+
+        org.openide.awt.Mnemonics.setLocalizedText(indentPreprocessorDirectives, org.openide.util.NbBundle.getMessage(TabsIndentsPanel.class, "Indent_Preprocessor_Directives")); // NOI18N
+        indentPreprocessorDirectives.setBorder(javax.swing.BorderFactory.createEmptyBorder(1, 1, 1, 1));
+        indentPreprocessorDirectives.setOpaque(false);
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
@@ -58,8 +64,9 @@ public class TabsIndentsPanel extends javax.swing.JPanel {
                         .add(jLabel1)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
                         .add(statementContinuationIndent, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 53, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                    .add(indentCasesFromSwitch))
-                .addContainerGap(167, Short.MAX_VALUE))
+                    .add(indentCasesFromSwitch)
+                    .add(indentPreprocessorDirectives))
+                .addContainerGap(158, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -67,9 +74,11 @@ public class TabsIndentsPanel extends javax.swing.JPanel {
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(jLabel1)
                     .add(statementContinuationIndent, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(indentCasesFromSwitch)
-                .addContainerGap(252, Short.MAX_VALUE))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
+                .add(indentPreprocessorDirectives)
+                .addContainerGap(228, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
 
@@ -85,6 +94,7 @@ public class TabsIndentsPanel extends javax.swing.JPanel {
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JCheckBox indentCasesFromSwitch;
+    private javax.swing.JCheckBox indentPreprocessorDirectives;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JTextField statementContinuationIndent;
     // End of variables declaration//GEN-END:variables
