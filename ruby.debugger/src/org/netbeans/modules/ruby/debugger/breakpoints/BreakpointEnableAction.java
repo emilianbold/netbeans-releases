@@ -38,61 +38,40 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.ruby.debugger.breakpoints;
 
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
-import java.util.Collections;
-import java.util.Set;
-import java.util.logging.Level;
-import org.netbeans.api.debugger.ActionsManager;
-import org.netbeans.modules.ruby.debugger.EditorUtil;
-import org.netbeans.modules.ruby.debugger.Util;
-import org.netbeans.spi.debugger.ActionsProviderSupport;
-import org.openide.util.WeakListeners;
-import org.openide.windows.TopComponent;
-import org.rubyforge.debugcommons.RubyDebuggerException;
+import org.openide.util.HelpCtx;
+import org.openide.util.NbBundle;
+import org.openide.util.actions.BooleanStateAction;
 
-/**
- * Provides actions for adding and removing Ruby breakpoints.
- *
- * @author Martin Krauskopf
- */
-public final class RubyBreakpointActionProvider extends ActionsProviderSupport
-        implements PropertyChangeListener {
-    
-    private final static Set<Object> ACTIONS =
-            Collections.singleton(ActionsManager.ACTION_TOGGLE_BREAKPOINT);
-    
-    public RubyBreakpointActionProvider() {
-        setEnabled(ActionsManager.ACTION_TOGGLE_BREAKPOINT, true);
-        TopComponent.getRegistry().addPropertyChangeListener(
-                WeakListeners.propertyChange(this, TopComponent.getRegistry()));
-    }
-    
+public final class BreakpointEnableAction extends BooleanStateAction {
+
     @Override
-    public Set<Object> getActions() {
-        return ACTIONS;
-    }
-    
-    @Override
-    public void doAction(Object action) {
-        RubyBreakpoint breakpoint = RubyBreakpointManager.getCurrentLineBreakpoint();
-        if (breakpoint != null) {
-            RubyBreakpointManager.removeBreakpoint(breakpoint);
-        } else { // new breakpoint
-            try {
-                RubyBreakpointManager.addBreakpoint(EditorUtil.getCurrentLine());
-            } catch (RubyDebuggerException e) {
-                Util.LOGGER.log(Level.WARNING, "Unable to add breakpoint.", e);
-            }
+    public boolean isEnabled() {
+        RubyBreakpoint bp = RubyBreakpointManager.getCurrentLineBreakpoint();
+        if (bp != null) {
+            super.setBooleanState(bp.isEnabled());
+            return true;
         }
+        return false;
     }
-    
-    public void propertyChange(PropertyChangeEvent evt) {
-        boolean enabled = EditorUtil.getCurrentLine() != null;
-        setEnabled(ActionsManager.ACTION_TOGGLE_BREAKPOINT, enabled);
+
+    public String getName() {
+        return NbBundle.getMessage(BreakpointEnableAction.class, "CTL_enabled");
     }
-    
+
+    @Override
+    public void setBooleanState(boolean value) {
+        RubyBreakpoint bp = RubyBreakpointManager.getCurrentLineBreakpoint();
+        if (value) {
+            bp.enable();
+        } else {
+            bp.disable();
+        }
+        super.setBooleanState(value);
+    }
+
+    public HelpCtx getHelpCtx() {
+        return null;
+    }
 }
