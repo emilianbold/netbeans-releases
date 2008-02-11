@@ -45,6 +45,7 @@ import java.awt.datatransfer.DataFlavor;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import org.netbeans.modules.palette.Category;
+import org.netbeans.modules.palette.DefaultSettings;
 import org.netbeans.modules.palette.Item;
 import org.netbeans.modules.palette.Model;
 import org.netbeans.modules.palette.ModelListener;
@@ -166,9 +167,8 @@ public final class PaletteController {
     }
     
     /** Create new instance of PaletteController */
-    PaletteController( Model model, Settings settings ) {
+    PaletteController( Model model ) {
         this.model = model;
-        this.settings = settings;
 
         support = new PropertyChangeSupport( this );
         this.model.addModelListener( new ModelListener() {
@@ -250,7 +250,7 @@ public final class PaletteController {
      * contents, especially add/import new items to palette.
      */
     public void showCustomizer() {
-        model.showCustomizer( this, settings );
+        model.showCustomizer( this, getSettings() );
     }
     
     /**
@@ -272,6 +272,8 @@ public final class PaletteController {
     }
 
     Settings getSettings() {
+        if( null == settings )
+            settings = new DefaultSettings(getModel());
         return settings;
     }
 }
