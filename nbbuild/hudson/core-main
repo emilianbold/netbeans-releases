@@ -1,0 +1,41 @@
+#!/bin/sh
+
+[ "$action" = "build" ] || [ "$action" == "sync" ] || exit 101
+
+[ -n "$push_username" ] || exit 102
+[ -n "$push_password" ] || exit 103
+
+
+ANT_OPTS="-Xmx512m"
+export ANT_OPTS
+
+rm -rf real.workspace
+hg clone . real.workspace || exit 1
+cd real.workspace
+
+if [ "$action" = "build" ]; then
+    hg fetch http://hg.netbeans.org/main || exit 1
+    ant -f nbbuild/build.xml build || exit 2
+    ant -f nbbuild/build.xml commit-validation || exit 3
+    for i in 1 2 3; do
+      hg fetch http://hg.netbeans.org/main 
+      hg push https://"$push_username":"$push_password"@hg.netbeans.org/main && exit 0
+    done
+    exit 5
+fi
+
+if [ "$action" = "sync" ]; then
+    HEADS=`hg heads --template "{node}\n" | wc -l`
+    if [ $HEADS == 2 ]; then
+      hg merge
+      hg ci -m "Automated merge"
+      hg up -C
+    fi
+    hg fetch http://hg.netbeans.org/core-main
+    hg push https://"$push_username":"$push_password"@hg.netbeans.org/core-main
+    exit 0
+fi
+
+
+
+
