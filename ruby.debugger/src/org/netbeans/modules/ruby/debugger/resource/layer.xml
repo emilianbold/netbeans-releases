@@ -97,7 +97,7 @@ made subject to such option by the copyright holder.
         <folder name="AnnotationTypes">  <!-- Editor gutter popup menu -->
             <folder name="BreakpointActions">
                 <file name="org-netbeans-modules-ruby-debugger-breakpoints-BreakpointEnableAction.instance">
-                    <attr name="position" intvalue="100"/>
+                    <attr name="position" intvalue="101"/>
                 </file>
             </folder>
         </folder>
