@@ -99,9 +99,13 @@ public class DumpTokens {
             }
         }
         TokenHierarchy th = null;
+        TokenSequence ts = null;
         int roundCount = 0;
-        while (th == null){
+        while ((th == null) || (ts == null)){
             th = TokenHierarchy.get(doc);
+            if (th != null){
+                ts = th.tokenSequence();
+            }
             roundCount++;
             if (roundCount > 10){
                 throw new AssertionError("IMPOSSIBLE TO GET TOKEN HIERARCHY " +roundCount+ "times");
@@ -113,8 +117,6 @@ public class DumpTokens {
             }
             
         }
-        th = TokenHierarchy.get(doc);
-        TokenSequence ts = th.tokenSequence();
         try{
             List<Token> tok = dumpTokens(ts);
             return tok;
