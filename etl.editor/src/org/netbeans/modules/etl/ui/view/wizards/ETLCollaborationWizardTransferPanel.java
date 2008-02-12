@@ -566,29 +566,36 @@ public class ETLCollaborationWizardTransferPanel extends JPanel implements Actio
     /** Indicates addition of item(s). */
     public static final String LBL_ADD = ">";
     /** Label indicating that all elements should be moved. */
-    public static final String LBL_ALL = "ALL";
+    public static final String nbBundle1 = mLoc.t("PRSR001: ALL");
+    public static final String LBL_ALL = Localizer.parse(nbBundle1);
     /** Indicates addition of all source items. */
     public static final String LBL_ADD_ALL = LBL_ALL + " " + LBL_ADD;
     /** Describes destination list */
-    public static final String LBL_DEST_MSG = "Schemas:";
+    public static final String nbBundle8 = mLoc.t("PRSR001: Schemas:");
+    public static final String LBL_DEST_MSG =Localizer.parse(nbBundle8);
     /** Indicates removal of item(s). */
     public static final String LBL_REMOVE = "<";
     /** Indicates removal of all destination items. */
     public static final String LBL_REMOVE_ALL = LBL_REMOVE + " " + LBL_ALL;
     /** Describes source list and user task. */
-    public static final String LBL_SOURCE_MSG = "Available Connections:";
+    public static final String nbBundle2 = mLoc.t("PRSR001: Available Connections:");
+    public static final String LBL_SOURCE_MSG = Localizer.parse(nbBundle2);
     /** Maximum number of visible items in lists */
     public static final int MAXIMUM_VISIBLE = 10;
     /** Minimum number of visible items in lists */
     public static final int MINIMUM_VISIBLE = 5;
     /** Tooltip to describe addition of selected item(s). */
-    public static final String TIP_ADD = "Add to selected items";
+    public static final String nbBundle3 = mLoc.t("PRSR001: Add to selected items");
+    public static final String TIP_ADD =  Localizer.parse(nbBundle3);
     /** Tooltip to describe addition of all source items. */
-    public static final String TIP_ADD_ALL = "Add all items";
+    public static final String nbBundle4 = mLoc.t("PRSR001: Add all items");
+    public static final String TIP_ADD_ALL = Localizer.parse(nbBundle4);
     /** Tooltip to describe addition of selected item(s). */
-    public static final String TIP_REMOVE = "Remove from selected items";
+    public static final String nbBundle5 = mLoc.t("PRSR001: Remove from selected items");
+    public static final String TIP_REMOVE = Localizer.parse(nbBundle5);
     /** Tooltip to describe removal of all destination items. */
-    public static final String TIP_REMOVE_ALL = "Remove all items";
+    public static final String nbBundle6 = mLoc.t("PRSR001: Remove all items");
+    public static final String TIP_REMOVE_ALL = Localizer.parse(nbBundle6);
 
     /**
      * Indicates whether Databases in the given List have enough selected tables to allow for
@@ -693,8 +700,8 @@ public class ETLCollaborationWizardTransferPanel extends JPanel implements Actio
         });
 
         jScrollPane2.setViewportView(schemaTablesList);
-
-        jLabel3.setText("Selected Tables:");
+        String nbBundle9 = mLoc.t("PRSR001: Selected Tables:");
+        jLabel3.setText(Localizer.parse(nbBundle9));
         jLabel3.setName("selectedTablesLabel");
 
         jTable1.setModel(new javax.swing.table.DefaultTableModel(
