@@ -69,7 +69,6 @@ import org.netbeans.modules.cnd.debugger.gdb.breakpoints.BreakpointImpl;
 import org.netbeans.modules.cnd.debugger.gdb.breakpoints.GdbBreakpoint;
 import org.netbeans.modules.cnd.debugger.gdb.event.GdbBreakpointEvent;
 import org.netbeans.modules.cnd.debugger.gdb.expr.Expression;
-import org.netbeans.modules.cnd.debugger.gdb.models.AbstractVariable;
 import org.netbeans.modules.cnd.debugger.gdb.profiles.GdbProfile;
 import org.netbeans.modules.cnd.debugger.gdb.proxy.GdbMiDefinitions;
 import org.netbeans.modules.cnd.debugger.gdb.proxy.GdbProxy;
@@ -92,6 +91,7 @@ import org.openide.filesystems.FileUtil;
 import org.openide.modules.InstalledFileLocator;
 import org.openide.util.Utilities;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 import org.openide.windows.InputOutput;
 
 /**
@@ -165,11 +165,13 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
     private String firstBPline;
     private InputOutput iotab;
     private boolean firstOutput;
+    private boolean dlopenPending;
         
     public GdbDebugger(ContextProvider lookupProvider) {
         this.lookupProvider = lookupProvider;
         pcs = new PropertyChangeSupport(this);
         firstOutput = true;
+        dlopenPending = false;
         addPropertyChangeListener(this);
         List l = lookupProvider.lookup(null, DebuggerEngineProvider.class);
         int i, k = l.size();
@@ -438,6 +440,7 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
     public void propertyChange(PropertyChangeEvent evt) {
         if (evt.getPropertyName().equals(PROP_STATE)) {
             if (evt.getNewValue().equals(STATE_READY)) {
+                gdb.gdb_set("stop-on-solib-events", "1"); // NOI18N
                 if (continueAfterFirstStop) {
                     continueAfterFirstStop = false;
                     setRunning();
@@ -651,9 +654,55 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
         gdb.stack_list_frames();
     }
     
+    private void handleDlopen(List list) {
+        String fullname = null;
+        String line = null;
+        int lnum = -1;
+        boolean stop = false;
+        
+        for (Object o : list) {
+            if (o instanceof String) {
+                String frame = o.toString();
+                if (stop) {
+                    Map<String, String> map = GdbUtils.createMapFromString(frame.substring(6));
+                    if (!map.isEmpty()) {
+                        fullname = map.get("fullname"); // NOI18N
+                        line = map.get("line"); // NOI18N
+                        try {
+                            lnum = Integer.parseInt(line);
+                            line = String.valueOf(lnum + 1);
+                        } catch (NumberFormatException nfe) {
+                            log.warning("GD.handleDlopen: Failure to find line number");
+                            return;
+                        }
+                    }
+                } else if (frame.contains("func=\"dlopen\"")) {
+                    stop = true;
+                }
+            }
+        }
+        if (fullname != null && line != null) {
+            gdb.break_insert(GDB_TMP_BREAKPOINT, fullname + ':' + line);
+            gdb.exec_continue();
+        }
+    }
+    
+    private void setSharedLibraryBreakpoints() {
+        System.err.println("");
+        RequestProcessor.getDefault().post(new Runnable() {
+            public void run() {
+                CommandBuffer cb = new CommandBuffer();
+                gdb.info_share(cb);
+                String share = cb.waitForCompletion();
+                if (share.length() > 0) {
+                    System.err.println("");
+                }
+            }
+        });
+    }
+    
     /** Handle geb responses starting with '^' */
     public void resultRecord(int token, String msg) {
-        AbstractVariable avar;
         CommandBuffer cb;
         Integer itok = Integer.valueOf(token);
         
@@ -665,7 +714,9 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
                 setRunning();
             }
         } else if (msg.startsWith("^done,stack=")) { // NOI18N (-stack-list-frames)
-            if (state.equals(STATE_STOPPED)) { // Ignore data if we've resumed running
+            if (dlopenPending) {
+                handleDlopen(GdbUtils.createListFromString((msg.substring(13, msg.length() - 1))));
+            } else if (state.equals(STATE_STOPPED)) { // Ignore data if we've resumed running
                 stackUpdate(GdbUtils.createListFromString((msg.substring(13, msg.length() - 1))));
             }
         } else if (msg.startsWith("^done,locals=")) { // NOI18N (-stack-list-locals)
@@ -851,6 +902,10 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
                     }
                 }
             }
+        } else if (msg.startsWith("Stopped due to shared library event") && !dlopenPending) { // NOI18N
+            dlopenPending = true;
+        } else if (dlopenPending) { // FIXME - debug code, remove before commit...
+            log.fine("GD.consoleStreamOutput: Got another shared library event");
         }
     }
     
@@ -858,6 +913,8 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
     public void logStreamOutput(int token, String msg) {
         if (pendingBreakpointMap.get(Integer.valueOf(token)) != null) {
             breakpointValidation(token, msg.substring(2, msg.length() - 3));
+        } else if (msg.startsWith("&\"No source file named ")) {
+            System.err.println("");
         } else if (msg.startsWith("&\"info proc") || // NOI18N
                 msg.startsWith("&\"info threads") || // NOI18N
                 msg.startsWith("&\"directory ") || // NOI18N
@@ -1164,24 +1221,29 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
                 setExited();
                 finish(false);
             } else if (reason.equals("breakpoint-hit")) { // NOI18N
-                GdbBreakpoint breakpoint;
-                String tid = map.get("thread-id"); // NOI18N
-                if (tid != null && !tid.equals(currentThreadID)) {
-                    currentThreadID = tid;
-                }
-                updateCurrentCallStack();
-                BreakpointImpl impl = getBreakpointList().get(map.get("bkptno")); // NOI18N
-                if (impl != null && (breakpoint = impl.getBreakpoint()) != null) {
-                    fireBreakpointEvent(breakpoint, new GdbBreakpointEvent(
-                            breakpoint, this, GdbBreakpointEvent.CONDITION_NONE, null));
+                if (dlopenPending) {
+                    dlopenPending = false;
+                    setSharedLibraryBreakpoints();
                 } else {
-                    log.fine("No Breakpoints Found"); // NOI18N
+                    GdbBreakpoint breakpoint;
+                    String tid = map.get("thread-id"); // NOI18N
+                    if (tid != null && !tid.equals(currentThreadID)) {
+                        currentThreadID = tid;
+                    }
+                    updateCurrentCallStack();
+                    BreakpointImpl impl = getBreakpointList().get(map.get("bkptno")); // NOI18N
+                    if (impl != null && (breakpoint = impl.getBreakpoint()) != null) {
+                        fireBreakpointEvent(breakpoint, new GdbBreakpointEvent(
+                                breakpoint, this, GdbBreakpointEvent.CONDITION_NONE, null));
+                    } else {
+                        log.fine("No Breakpoints Found"); // NOI18N
+                    }
+                    setStopped();
+                    GdbTimer.getTimer("Startup").stop("Startup1"); // NOI18N
+                    GdbTimer.getTimer("Startup").report("Startup1"); // NOI18N
+                    GdbTimer.getTimer("Startup").free(); // NOI18N
+                    GdbTimer.getTimer("Stop").mark("Stop1");// NOI18N
                 }
-                setStopped();
-                GdbTimer.getTimer("Startup").stop("Startup1"); // NOI18N
-                GdbTimer.getTimer("Startup").report("Startup1"); // NOI18N
-                GdbTimer.getTimer("Startup").free(); // NOI18N
-                GdbTimer.getTimer("Stop").mark("Stop1");// NOI18N
             } else if (reason.equals("exited-signalled")) { // NOI18N
                 String signal = map.get("signal-name"); // NOI18N
                 if (signal != null) {
@@ -1216,6 +1278,13 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
                     // Disable debugging buttons
                     setExited();
                 }
+            }
+        } else if (dlopenPending) {
+            if (map.get("frame") != null) {
+                dlopenPending = false;
+                setSharedLibraryBreakpoints();
+            } else {
+                gdb.stack_list_frames();
             }
         } else {
             gdb.stack_list_frames();
