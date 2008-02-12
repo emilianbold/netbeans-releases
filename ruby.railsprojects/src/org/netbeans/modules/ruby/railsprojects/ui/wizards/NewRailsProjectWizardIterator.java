@@ -54,6 +54,7 @@ import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.ruby.platform.RubyPlatform;
 import org.netbeans.modules.ruby.railsprojects.RailsProjectCreateData;
 import org.netbeans.modules.ruby.railsprojects.RailsProjectGenerator;
+import org.netbeans.modules.ruby.railsprojects.database.RailsDatabaseConnection;
 import org.netbeans.modules.ruby.railsprojects.server.RubyServer;
 import org.netbeans.modules.ruby.spi.project.support.rake.RakeProjectHelper;
 import org.netbeans.spi.project.ui.support.ProjectChooser;
@@ -76,10 +77,15 @@ public class NewRailsProjectWizardIterator implements WizardDescriptor.ProgressI
     static final String JDBC_WN = "useJdbc"; // NOI18N
     /** Wizard descriptor name for the target Rails database */
     static final String RAILS_DB_WN = "railsDatabase"; // NOI18N
+    static final String RAILS_DEVELOPMENT_DB = "railsDatabase.development"; // NOI18N
+    static final String RAILS_PRODUCTION_DB = "railsDatabase.production"; // NOI18N
+    static final String RAILS_TEST_DB = "railsDatabase.test"; // NOI18N
     /** Wizard descriptor name for including Goldspike for WAR deployment */
     static final String GOLDSPIKE_WN = "goldspike"; // NOI18N
     /** Wizard descriptor name for the target Rails server */
     static final String SERVER_INSTANCE = "serverInstance"; //NOI18N
+    /** Wizard descriptor name for the Ruby platform */
+    static final String PLATFORM = "platform"; //NOI18N
     
     static final int TYPE_APP = 0;
     //static final int TYPE_LIB = 1;
@@ -107,6 +113,7 @@ public class NewRailsProjectWizardIterator implements WizardDescriptor.ProgressI
         if (type == TYPE_APP) {
             return new WizardDescriptor.Panel[] {
                     new PanelConfigureProject(this.type),
+                    new DatabaseConfigPanel(),
                     new RailsInstallationPanel.Panel()
                 };
         } else {
@@ -119,9 +126,10 @@ public class NewRailsProjectWizardIterator implements WizardDescriptor.ProgressI
     
     private String[] createSteps() {
         String config = NbBundle.getMessage(NewRailsProjectWizardIterator.class,"LAB_ConfigureProject");
+        String database = NbBundle.getMessage(NewRailsProjectWizardIterator.class,"LAB_ConfigureProject");
         String rails = NbBundle.getMessage(NewRailsProjectWizardIterator.class,"LAB_InstallRails");
         if (type == TYPE_APP) {
-            return new String[] { config, rails };
+            return new String[] { config, database, rails };
         } else {
             return new String[] { config };
         }
@@ -147,14 +155,15 @@ public class NewRailsProjectWizardIterator implements WizardDescriptor.ProgressI
 
         RakeProjectHelper h = null;
         
-        String database = (String) wiz.getProperty(RAILS_DB_WN); // NOI18N
+//        String database = (String) wiz.getProperty(RAILS_DB_WN); // NOI18N
         Boolean jdbc = (Boolean) wiz.getProperty(JDBC_WN); // NOI18N
         Boolean deploy = (Boolean) wiz.getProperty(GOLDSPIKE_WN); // NOI18N
         RubyServer server = (RubyServer) wiz.getProperty(SERVER_INSTANCE); // NOI18N
 
         RubyPlatform platform = (RubyPlatform) wiz.getProperty("platform"); // NOI18N
+        RailsDatabaseConnection database = (RailsDatabaseConnection) wiz.getProperty(RAILS_DEVELOPMENT_DB);
         RailsProjectCreateData data = new RailsProjectCreateData(platform, dirF, name, type == TYPE_APP,
-                database, jdbc, deploy, server.getServerUri());
+                database, false, deploy, server.getServerUri());
         h = RailsProjectGenerator.createProject(data);
         handle.progress(2);
 

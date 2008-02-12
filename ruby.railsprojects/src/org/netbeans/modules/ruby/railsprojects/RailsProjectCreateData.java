@@ -41,6 +41,7 @@ package org.netbeans.modules.ruby.railsprojects;
 
 import java.io.File;
 import org.netbeans.api.ruby.platform.RubyPlatform;
+import org.netbeans.modules.ruby.railsprojects.database.RailsDatabaseConnection;
 
 /**
  * Encapsulates data required for creating a new Rails project (empty 
@@ -69,7 +70,7 @@ public class RailsProjectCreateData {
     /**
      * The database to use.
      */
-    private final String database;
+    private final RailsDatabaseConnection database;
     /**
      * Specifies whether the database should be accessed using JDBC.
      */
@@ -96,7 +97,7 @@ public class RailsProjectCreateData {
      * the project as a .war file should be added.
      */
     public RailsProjectCreateData(RubyPlatform platform, File dir, String name, boolean create, 
-            String database, boolean jdbc, boolean deploy, String serverInstanceId) {
+            RailsDatabaseConnection database, boolean jdbc, boolean deploy, String serverInstanceId) {
         this.platform = platform;
         this.dir = dir;
         this.name = name;
@@ -117,7 +118,7 @@ public class RailsProjectCreateData {
     /**
      * @see #database
      */
-    public String getDatabase() {
+    public RailsDatabaseConnection getDatabase() {
         return database;
     }
 

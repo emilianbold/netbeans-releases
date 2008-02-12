@@ -60,6 +60,7 @@ import org.netbeans.modules.ruby.rubyproject.RakeTargetsAction;
 import org.netbeans.modules.ruby.platform.execution.DirectoryFileLocator;
 import org.netbeans.modules.ruby.platform.execution.ExecutionService;
 import org.netbeans.modules.ruby.platform.execution.RegexpOutputRecognizer;
+import org.netbeans.modules.ruby.railsprojects.database.RailsDatabaseConnection;
 import org.netbeans.modules.ruby.spi.project.support.rake.RakeProjectHelper;
 import org.netbeans.modules.ruby.spi.project.support.rake.EditableProperties;
 import org.netbeans.modules.ruby.spi.project.support.rake.ProjectGenerator;
@@ -100,8 +101,8 @@ public class RailsProjectGenerator {
      */
     public static RakeProjectHelper createProject(RailsProjectCreateData data) throws IOException {
         FileObject dirFO = FileUtil.createFolder(data.getDir());
-        boolean createJavaDb = false;
-        boolean createJdbc = false;
+//        boolean createJavaDb = false;
+//        boolean createJdbc = false;
         RubyPlatform platform = data.getPlatform();
         // Run Rails to generate the appliation skeleton
         if (data.isCreate()) {
@@ -113,16 +114,17 @@ public class RailsProjectGenerator {
             ExecutionDescriptor desc = null;
             String displayName = NbBundle.getMessage(RailsProjectGenerator.class, "GenerateRails");
 
-            String railsDbArg = null;
-            if (data.getDatabase() != null) {
-                if (data.getDatabase().equals(PanelOptionsVisual.JAVA_DB)) {
-                    createJavaDb = true;
-                } else if (data.getDatabase().equals(PanelOptionsVisual.JDBC)) {
-                    createJdbc = true;
-                } else {
-                    railsDbArg = "--database=" + data.getDatabase();
-                }
-            }
+            RailsDatabaseConnection railsDb = data.getDatabase();
+            String railsDbArg = railsDb.needExtraConfig() ? null : "--database=" + railsDb.getDatabase();
+//            if (data.getDatabase() != null) {
+////                if (data.getDatabase().equals(PanelOptionsVisual.JAVA_DB)) {
+////                    createJavaDb = true;
+////                } else if (data.getDatabase().equals(PanelOptionsVisual.JDBC)) {
+////                    createJdbc = true;
+////                } else {
+//                    railsDbArg = "--database=" + data.getDatabase();
+////                }
+//            }
             File pwd = data.getDir().getParentFile();
             if (runThroughRuby) {
                 desc = new ExecutionDescriptor(platform, displayName, pwd, rails);
@@ -163,15 +165,18 @@ public class RailsProjectGenerator {
             dirFO.getFileSystem().refresh(true);
 
             // TODO - only do this if not creating from existing app?
-            if (data.isJdbc()) {
-                insertActiveJdbcHook(dirFO);
+            if (railsDb.needExtraConfig()){
+                railsDb.editConfig(dirFO);
             }
-            
-            if (createJdbc || createJavaDb) {
-                editDatabaseYml(platform, dirFO, createJavaDb);
-            } else if (platform.isJRuby()) {
-                commentOutSocket(dirFO);
-            }
+//            if (data.isJdbc()) {
+//                insertActiveJdbcHook(dirFO);
+//            }
+//            
+//            if (createJdbc || createJavaDb) {
+//                editDatabaseYml(platform, dirFO, createJavaDb);
+//            } else if (platform.isJRuby()) {
+//                commentOutSocket(dirFO);
+//            }
         }
 
         RakeProjectHelper h = createProject(dirFO, platform, data); //NOI18N
