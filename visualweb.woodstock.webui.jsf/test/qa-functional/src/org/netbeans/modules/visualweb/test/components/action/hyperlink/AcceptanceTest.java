@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -192,13 +192,14 @@ public class AcceptanceTest extends RaveTestCase {
         
         log("Set text, toolTip, target properties");
         sheet = new SheetTableOperator();
-        ComponentUtils.setProperty(sheet, Bundle.getStringTrimmed(_bundle, "propertyText"), "Go to Google");
+        String GO_TO_GOOGLE = "Go to Google";
+        ComponentUtils.setProperty(sheet, Bundle.getStringTrimmed(_bundle, "propertyText"), GO_TO_GOOGLE);
         ComponentUtils.setProperty(sheet, Bundle.getStringTrimmed(_bundle, "propertyToolTip"), "Launch browser in a new window ");
         sheet.setComboBoxValue(Bundle.getStringTrimmed(_bundle, "propertyTarget"), Bundle.getStringTrimmed(_bundle, "propertyTargetNewWindow"));
         Util.wait(1000);
         
         log("Set style property");
-        setFontStyle("hyperlink1", Bundle.getStringTrimmed(_bundle, "basicHyperlink"), "serif", "36", "fuchsia");
+        setFontStyle("hyperlink1", GO_TO_GOOGLE, "serif", "36", "fuchsia");
         Util.wait(5000); //setFontStyle is not blocking so need to give time to finish.
         
         log("Add code to processValueChange");
@@ -354,7 +355,9 @@ public class AcceptanceTest extends RaveTestCase {
     public void setFontStyle(String componentID, String ComponentName, String style, String size, String color) {
         sheet = new SheetTableOperator();
         sheet.pushDotted(Bundle.getStringTrimmed(_bundle, "propertyStyle"));
-        JDialogOperator dialog = new JDialogOperator(componentID + ":" + ComponentName + " - " + Bundle.getStringTrimmed(_bundle, "propertyStyle"));
+        String title = componentID + ":" + ComponentName + " - "
+                + Bundle.getStringTrimmed(_bundle, "propertyStyle");
+        JDialogOperator dialog = new JDialogOperator(title);
         (new JListOperator(dialog, 0)).selectItem(Bundle.getStringTrimmed(_bundle, "style_font"));
         if (!style.equals("")) {
             (new JListOperator(dialog, 1)).selectItem(style);

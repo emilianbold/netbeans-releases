@@ -48,13 +48,13 @@ import java.util.HashMap;
 
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.project.SourceGroup;
+import org.netbeans.modules.java.api.common.SourceRoots;
 import org.netbeans.modules.web.project.ui.customizer.WebProjectProperties;
 import org.netbeans.spi.java.classpath.ClassPathFactory;
 import org.netbeans.spi.java.classpath.ClassPathProvider;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
-import org.netbeans.modules.web.project.SourceRoots;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.WeakListeners;

@@ -58,12 +58,12 @@ import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.project.ant.AntArtifact;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.java.api.common.ant.UpdateHelper;
 import org.netbeans.spi.java.project.classpath.ProjectClassPathExtender;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.ReferenceHelper;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.spi.project.support.ant.EditableProperties;
-import org.netbeans.modules.j2ee.ejbjarproject.UpdateHelper;
 import org.openide.util.Exceptions;
 import org.openide.util.RequestProcessor;
 
