@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -66,7 +66,7 @@ public final class RubyBreakpointNodeActions implements NodeActionsProviderFilte
             public boolean isEnabled(Object node) { return true; }
             public void perform(Object[] nodes) {
                 RubyBreakpoint bp = (RubyBreakpoint) nodes[0];
-                EditorUtil.showLine(EditorUtil.getLine(bp.getFilePath(), bp.getLineNumber() - 1));
+                EditorUtil.showLine(EditorUtil.getLineAnnotable(bp.getFilePath(), bp.getLineNumber() - 1));
             }
         };
         GO_TO_SOURCE_ACTION = Models.createAction(name, ap, Models.MULTISELECTION_TYPE_EXACTLY_ONE);
@@ -74,7 +74,7 @@ public final class RubyBreakpointNodeActions implements NodeActionsProviderFilte
     public void performDefaultAction(NodeActionsProvider original, Object node) throws UnknownTypeException {
         if (node instanceof RubyBreakpoint) {
             RubyBreakpoint bp = (RubyBreakpoint) node;
-            EditorUtil.showLine(EditorUtil.getLine(bp.getFilePath(), bp.getLineNumber() - 1));
+            EditorUtil.showLine(EditorUtil.getLineAnnotable(bp.getFilePath(), bp.getLineNumber() - 1));
         } else {
             original.performDefaultAction(node);
         }

@@ -217,7 +217,7 @@ public class MercurialAnnotator extends VCSAnnotator {
         boolean folderAnnotation = false;
         
         for (final File file : context.getRootFiles()) {
-            FileInformation info = cache.getCachedStatus(file);
+            FileInformation info = cache.getCachedStatus(file, true);
             if (info == null) {
                 File parentFile = file.getParentFile();
                 Mercurial.LOG.log(Level.FINE, "null cached status for: {0} {1} {2}", new Object[] {file, folderToScan, parentFile});
@@ -268,7 +268,7 @@ public class MercurialAnnotator extends VCSAnnotator {
             // There is an assumption here that annotateName was already 
             // called and FileStatusCache.getStatus was scheduled if
             // FileStatusCache.getCachedStatus returned null.
-            FileInformation info = cache.getCachedStatus(file);
+            FileInformation info = cache.getCachedStatus(file, true);
             if ((info != null && (info.getStatus() & STATUS_BADGEABLE) != 0)) {
                 isVersioned = true;
                 break;
@@ -382,8 +382,10 @@ public class MercurialAnnotator extends VCSAnnotator {
             actions.add(new RollbackAction(NbBundle.getMessage(MercurialAnnotator.class, "CTL_PopupMenuItem_Rollback"), ctx)); // NOI18N
             actions.add(new RevertModificationsAction(NbBundle.getMessage(MercurialAnnotator.class, "CTL_PopupMenuItem_Revert"), ctx)); // NOI18N
             actions.add(new ResolveConflictsAction(NbBundle.getMessage(MercurialAnnotator.class, "CTL_PopupMenuItem_Resolve"), ctx)); // NOI18N
-            IgnoreAction tempIA = new IgnoreAction(loc.getString("CTL_PopupMenuItem_Ignore"), ctx); // NOI18N
-            actions.add(tempIA);
+            if (!onlyProjects && !onlyFolders) {
+                IgnoreAction tempIA = new IgnoreAction(loc.getString("CTL_PopupMenuItem_Ignore"), ctx); // NOI18N
+                actions.add(tempIA);
+            }
             actions.add(null);
             actions.add(new PropertiesAction(loc.getString("CTL_PopupMenuItem_Properties"), ctx)); // NOI18N
         } else {
@@ -430,7 +432,7 @@ public class MercurialAnnotator extends VCSAnnotator {
                         "CTL_PopupMenuItem_Revert"), ctx)); // NOI18N
                 actions.add(new ResolveConflictsAction(NbBundle.getMessage(MercurialAnnotator.class,
                         "CTL_PopupMenuItem_Resolve"), ctx)); // NOI18N
-                if (!onlyProjects) {
+                if (!onlyProjects  && !onlyFolders) {
                     actions.add(new ConflictResolvedAction(NbBundle.getMessage(MercurialAnnotator.class,
                         "CTL_PopupMenuItem_MarkResolved"), ctx)); // NOI18N
                     

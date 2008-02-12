@@ -1151,7 +1151,7 @@ public class ClientStubsGenerator extends AbstractGenerator {
         
         private String createPostMethod(Method m, String object) {
             StringBuffer sb = new StringBuffer();
-            int length = m.getResponse().getRepresentation().size();
+            int length = m.getRequest().getRepresentation().size();
             for(Representation rep:m.getRequest().getRepresentation()) {
                 String mimeType = rep.getMime();
                 mimeType = mimeType.replaceAll("\"", "").trim();
@@ -1168,7 +1168,7 @@ public class ClientStubsGenerator extends AbstractGenerator {
         
         private String createPutMethod(Method m, String object) {
             StringBuffer sb = new StringBuffer();
-            int length = m.getResponse().getRepresentation().size();
+            int length = m.getRequest().getRepresentation().size();
             for(Representation rep:m.getRequest().getRepresentation()) {
                 String mimeType = rep.getMime();
                 mimeType = mimeType.replaceAll("\"", "").trim();
