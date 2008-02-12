@@ -57,6 +57,7 @@ import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
+import org.netbeans.modules.java.api.common.ant.UpdateHelper;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
@@ -145,7 +146,7 @@ public class MainClassUpdater extends FileChangeAdapter implements PropertyChang
                             ElementHandle<TypeElement> mainHandle = main.iterator().next();
                             newMainClass = mainHandle.getQualifiedName();
                         }                    
-                        if (newMainClass != null && !newMainClass.equals(oldMainClass) && helper.requestSave() &&
+                        if (newMainClass != null && !newMainClass.equals(oldMainClass) && helper.requestUpdate() &&
                                 // XXX ##84806: ideally should update nbproject/configs/*.properties in this case:
                             eval.getProperty(J2SEConfigurationProvider.PROP_CONFIG) == null) {
                             final String newMainClassFinal = newMainClass;

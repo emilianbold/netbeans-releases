@@ -146,7 +146,7 @@ public class J2SEProjectOperations implements DeleteOperationImplementation, Cop
     }
     
     public void notifyMoving() throws IOException {
-        if (!this.project.getUpdateHelper().requestSave()) {
+        if (!this.project.getUpdateHelper().requestUpdate()) {
             throw new IOException (NbBundle.getMessage(J2SEProjectOperations.class,
                 "MSG_OldProjectMetadata"));
         }

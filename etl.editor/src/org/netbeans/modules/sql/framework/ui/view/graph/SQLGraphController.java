@@ -281,8 +281,8 @@ public class SQLGraphController implements IGraphController {
                 String srcName = destObj.getDisplayName();
 
                 if (srcName != null && destParam1 != null) {
-                    String nbBundle2 = mLoc.t("PRSR001: Cannot connect {0} to {1} ''{2}'' at input ''{3}''.",new String[]{srcObjType,
-                        destObjType, destObj.getDisplayName(), destParam1});
+                    String nbBundle2 = mLoc.t("PRSR001: Cannot connect {0} to {1}-{2} at input {3}.",srcObjType,
+                        destObjType, destObj.getDisplayName(), destParam1);
                     msg =Localizer.parse(nbBundle2);
                 } else {
                     String nbBundle3 = mLoc.t("PRSR001: Cannot connect {0} to {1}",srcObjType, destObjType);
