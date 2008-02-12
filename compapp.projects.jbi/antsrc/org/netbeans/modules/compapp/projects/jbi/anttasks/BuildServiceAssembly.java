@@ -72,7 +72,8 @@ import org.netbeans.modules.xml.xam.spi.Validation;
 import org.netbeans.modules.xml.xam.spi.Validation.ValidationType;
 import org.netbeans.modules.xml.xam.spi.Validator;
 import org.netbeans.modules.xml.xam.spi.Validator.ResultItem;
-import org.openide.filesystems.FileStateInvalidException;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 import org.w3c.dom.Document;
@@ -204,8 +205,12 @@ public class BuildServiceAssembly extends Task {
 
         // create project wsdl repository...
         try {
-            FileUtil.toFileObject(p.getBaseDir()).getFileSystem().refresh(true);
-        } catch (FileStateInvalidException ex) {
+            FileObject baseDirFO = FileUtil.toFileObject(p.getBaseDir());
+            if (baseDirFO != null) {
+                FileSystem fs = baseDirFO.getFileSystem();
+                fs.refresh(true);
+            }
+        } catch (Exception ex) {
             Exceptions.printStackTrace(ex);
         }
         mRepo = new wsdlRepository(p, this);

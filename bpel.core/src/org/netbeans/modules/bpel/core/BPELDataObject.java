@@ -157,6 +157,8 @@ public class BPELDataObject extends MultiDataObject {
 ////                    new BPELValidationController(getEditorSupport().getBpelModel())
                     }));
 
+            list.add(getCookieSet().getLookup());// 125540
+            
             // add lazy initialization
             InstanceContent.Convertor<Class, Object> conv =
                     new InstanceContent.Convertor<Class, Object>() {
