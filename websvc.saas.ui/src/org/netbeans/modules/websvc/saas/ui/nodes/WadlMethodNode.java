@@ -41,12 +41,16 @@ package org.netbeans.modules.websvc.saas.ui.nodes;
 
 import java.awt.Image;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import javax.swing.Action;
+import javax.xml.bind.JAXBElement;
 import org.netbeans.modules.websvc.saas.model.WadlSaas;
 import org.netbeans.modules.websvc.saas.model.wadl.Method;
 import org.netbeans.modules.websvc.saas.model.wadl.Param;
 import org.netbeans.modules.websvc.saas.model.wadl.ParamStyle;
+import org.netbeans.modules.websvc.saas.model.wadl.RepresentationType;
 import org.netbeans.modules.websvc.saas.model.wadl.Resource;
 import org.netbeans.modules.websvc.saas.spi.SaasNodeActionsProvider;
 import org.netbeans.modules.websvc.saas.ui.actions.TestMethodAction;
@@ -62,6 +66,11 @@ import org.openide.util.lookup.InstanceContent;
  * @author nam
  */
 public class WadlMethodNode extends AbstractNode {
+    public static final String GET = "GET";
+    public static final String POST = "POST";
+    public static final String PUT = "PUT";
+    public static final String DELETE = "DELETE";
+    
     private Method method;
     private Resource[] path;
     private WadlSaas wadlSaas;
@@ -81,55 +90,36 @@ public class WadlMethodNode extends AbstractNode {
 
     @Override
     public String getDisplayName() {
-        return method.getName();
-    }
-    
-    static String getSignature(Method m) {
-        StringBuffer sb = new StringBuffer();
-        sb.append(m.getName());
-
-        Param[] params = m.getRequest().getParam().toArray(new Param[m.getRequest().getParam().size()]);
-        if (params.length > 0) {
-            sb.append(' ');
+        if (method.getId() != null) {
+            return method.getId();
         }
-        for (int i=0 ; i < params.length; i++) {
-            Param p = params[i];
-            if (i > 0) {
-                sb.append(",");
+        String name = method.getName();
+        String displayName = name;
+        if (GET.equals(name)) {
+            Set<String> medias = SaasUtil.getMediaTypesFromJAXBElement(method.getResponse().getRepresentationOrFault());
+            if (medias != null && medias.size() > 0) {
+                displayName += medias.toString();
             }
-            if (p.getStyle() == ParamStyle.TEMPLATE) {
-                sb.append('{');
-                sb.append(p.getName());
-                sb.append('}');
-            } else if (p.getStyle() == ParamStyle.QUERY) {
-                sb.append('?');
-                sb.append(p.getName());
-            } else if (p.getStyle() == ParamStyle.MATRIX) {
-                sb.append('[');
-                sb.append(p.getName());
-                sb.append(']');
-            } else if (p.getStyle() == ParamStyle.HEADER) {
-                sb.append('<');
-                sb.append(p.getName());
-                sb.append('>');
-            } else {
-                sb.append(p.getName());
+        } else if (PUT.equals(name) || POST.equals(name)) {
+            Set<String> medias = SaasUtil.getMediaTypes(method.getRequest().getRepresentation());
+            if (medias != null && medias.size() > 0) {
+                displayName += medias;
             }
         }
-        return sb.toString();
+        return displayName;
     }
     
     @Override
     public String getShortDescription() {
-        return getSignature(method);
+        return SaasUtil.getSignature(wadlSaas, path, method);
     }
     
-    private static final java.awt.Image SERVICE_BADGE =
+    private static final java.awt.Image ICON =
             org.openide.util.Utilities.loadImage( "org/netbeans/modules/websvc/saas/ui/resources/method.png" ); //NOI18N
     
     @Override
     public java.awt.Image getIcon(int type) {
-        return SERVICE_BADGE;
+        return ICON;
     }
     
     @Override

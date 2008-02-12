@@ -77,6 +77,7 @@ import org.netbeans.modules.xml.xpath.ext.schema.FindChildrenSchemaVisitor;
 import org.netbeans.modules.xml.xpath.ext.visitor.XPathModelTracerVisitor;
 import org.netbeans.modules.xml.schema.model.Attribute;
 import org.netbeans.modules.xml.schema.model.Element;
+import org.netbeans.modules.xml.schema.model.ElementReference;
 import org.netbeans.modules.xml.schema.model.GlobalElement;
 import org.netbeans.modules.xml.schema.model.LocalElement;
 import org.netbeans.modules.xml.schema.model.SchemaComponent;
@@ -335,6 +336,7 @@ public class XPathModelImpl implements XPathModel {
         //
         String nodeName = qName.getLocalPart();
         HashSet<SchemaCompPair> foundCompPairSet = new HashSet<SchemaCompPair>();
+        myLastSchemaComponent = null;
 
 //ENABLE = qName.toString().equals("ReservationItems");
 //out();
@@ -366,10 +368,11 @@ public class XPathModelImpl implements XPathModel {
                     for (SchemaComponent comp : found) {
                         assert comp instanceof GlobalElement ||
                                 comp instanceof LocalElement ||
+                                comp instanceof ElementReference ||
                                 comp instanceof Attribute;
                         //
                         SchemaCompPair newPair = new SchemaCompPair(comp, parentComponent);
-                        foundCompPairSet.add(newPair);
+                        addPair(foundCompPairSet, newPair);
                     }
                     //
                     //
@@ -404,7 +407,7 @@ public class XPathModelImpl implements XPathModel {
                     List<SchemaComponent> found = visitor.getFound();
                     for (SchemaComponent sComp : found) {
                         SchemaCompPair newPair = new SchemaCompPair(sComp, parentComp);
-                        foundCompPairSet.add(newPair);
+                        addPair(foundCompPairSet, newPair);
                     }
                 }
             }
@@ -438,9 +441,8 @@ public class XPathModelImpl implements XPathModel {
                         assert foundComp instanceof GlobalElement ||
                                 foundComp instanceof LocalElement ||
                                 foundComp instanceof Attribute;
-                        SchemaCompPair newPair = 
-                                new SchemaCompPair(foundComp, null);
-                        foundCompPairSet.add(newPair);
+                        SchemaCompPair newPair = new SchemaCompPair(foundComp, null);
+                        addPair(foundCompPairSet, newPair);
                     }
                 }
             }
@@ -450,7 +452,7 @@ public class XPathModelImpl implements XPathModel {
         if (mValidationContext != null) {
             if (foundCompPairSet.isEmpty()) {
                 String name = XPathUtils.qNameObjectToString(qName);
-                if (isAttribute) { // vlv
+                if (isAttribute) {
                     if (nsUri == null || nsUri.length() == 0) {
                         mValidationContext.addResultItem(getRootExpression(), 
                                 ResultType.ERROR, 
@@ -475,9 +477,21 @@ public class XPathModelImpl implements XPathModel {
                 }
             }
         }
-        //
         return foundCompPairSet;
     }
+
+    private void addPair(HashSet<SchemaCompPair> set, SchemaCompPair pair) {
+      set.add(pair);
+      myLastSchemaComponent = pair.getComp();
+//System.out.println("!!! set: " + set);
+//System.out.println("!!!    : " + myLastSchemaComponent);
+    }
+
+    public SchemaComponent getLastSchemaComponent() {
+      return myLastSchemaComponent;
+    }
+
+    private SchemaComponent myLastSchemaComponent;
     
     /**
      * Performs postvalidation of the resolved LocationStep.
@@ -893,9 +907,21 @@ public class XPathModelImpl implements XPathModel {
         }
         //
         if (sameNameOtherPrefix.isEmpty()) {
-            // The function with the required name isn't found // vlv
-            mValidationContext.addResultItem(mRootXPathExpression, ResultType.ERROR, 
-                    XPathProblem.UNKNOWN_EXTENSION_FUNCTION, 
+            // The function with the required name isn't found
+
+            // vlv
+            // why stringToBytes, bytesToString, convert are not recognized?
+            // TODO FIX IT.
+            //
+            String name = XPathUtils.qNameObjectToString(funcQName);
+            boolean hotFix = 
+              name.equals("stringToBytes") ||
+              name.equals("bytesToString") ||
+              name.equals("convert");
+ 
+            mValidationContext.addResultItem(mRootXPathExpression,
+                    hotFix ? ResultType.WARNING : ResultType.ERROR,
+                    XPathProblem.UNKNOWN_EXTENSION_FUNCTION,
                     XPathUtils.qNameObjectToString(funcQName));
         } else {
             // The function with the required name is found, but in other namespace
@@ -904,11 +930,21 @@ public class XPathModelImpl implements XPathModel {
             String nsList = prepareNamespaceList(sameNameOtherPrefix);
             //
             if (nsPrefix.length() == 0) {
-                mValidationContext.addResultItem(mRootXPathExpression, ResultType.ERROR, 
+                // vlv
+                // why current-date, current-dateTime, current-time are not recognized?
+                // TODO FIX IT.
+                //
+                boolean hotFix = 
+                  funcName.equals("current-date") ||
+                  funcName.equals("current-dateTime") ||
+                  funcName.equals("current-time");
+
+                mValidationContext.addResultItem(mRootXPathExpression,
+                        hotFix ? ResultType.WARNING : ResultType.ERROR,
                         XPathProblem.PREFIX_REQUIRED_FOR_EXT_FUNCTION, 
                         funcName, nsList);
             } else {
-                mValidationContext.addResultItem(mRootXPathExpression, ResultType.ERROR, 
+                mValidationContext.addResultItem(mRootXPathExpression, ResultType.ERROR,
                         XPathProblem.OTHER_PREFIX_REQUIRED_FOR_EXT_FUNCTION, 
                         funcName, nsUri, nsList);
             }

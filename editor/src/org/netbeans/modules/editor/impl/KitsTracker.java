@@ -1,10 +1,42 @@
 /*
- * KitsTracker.java
+ * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Created on February 21, 2007, 1:26 PM
+ * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
  *
- * To change this template, choose Tools | Template Manager
- * and open the template in the editor.
+ * The contents of this file are subject to the terms of either the GNU
+ * General Public License Version 2 only ("GPL") or the Common
+ * Development and Distribution License("CDDL") (collectively, the
+ * "License"). You may not use this file except in compliance with the
+ * License. You can obtain a copy of the License at
+ * http://www.netbeans.org/cddl-gplv2.html
+ * or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
+ * specific language governing permissions and limitations under the
+ * License.  When distributing the software, include this License Header
+ * Notice in each file and include the License file at
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * particular file as subject to the "Classpath" exception as provided
+ * by Sun in the GPL Version 2 section of the License file that
+ * accompanied this code. If applicable, add the following below the
+ * License Header, with the fields enclosed by brackets [] replaced by
+ * your own identifying information:
+ * "Portions Copyrighted [year] [name of copyright owner]"
+ *
+ * Contributor(s):
+ *
+ * The Original Software is NetBeans. The Initial Developer of the Original
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Microsystems, Inc. All Rights Reserved.
+ *
+ * If you wish your version of this file to be governed by only the CDDL
+ * or only the GPL Version 2, indicate your decision by adding
+ * "[Contributor] elects to include this software in this distribution
+ * under the [CDDL or GPL Version 2] license." If you do not indicate a
+ * single choice of license, a recipient has the option to distribute
+ * your version of this file under either the CDDL, the GPL Version 2 or
+ * to extend the choice of license to its licensees as provided above.
+ * However, if you add GPL Version 2 code and therefore, elected the GPL
+ * Version 2 license, then the option applies only if the new code is
+ * made subject to such option by the copyright holder.
  */
 
 package org.netbeans.modules.editor.impl;
@@ -12,6 +44,7 @@ package org.netbeans.modules.editor.impl;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -21,14 +54,15 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.text.EditorKit;
-import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.mimelookup.MimePath;
+import org.openide.cookies.InstanceCookie;
 import org.openide.filesystems.FileChangeAdapter;
 import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileRenameEvent;
 import org.openide.filesystems.Repository;
+import org.openide.loaders.DataObject;
 
 /**
  *
@@ -95,6 +129,11 @@ public final class KitsTracker {
      */
     public String findMimeType(Class kitClass) {
         if (kitClass != null) {
+            if (WELL_KNOWN_PARENTS.contains(kitClass.getName())) {
+                // these classes are not directly registered as a kit for any mime type
+                return null;
+            }
+            
             List mimeTypes = getMimeTypesForKitClass(kitClass);
             if (mimeTypes.size() == 0) {
                 if (LOG.isLoggable(Level.WARNING)) {
@@ -139,11 +178,20 @@ public final class KitsTracker {
     // ------------------------------------------------------------------
     
     // The map of mime type -> kit class
-    private final Map<String, Class> mimeType2kitClass = new HashMap<String, Class>();
+    private final Map<String, FileObject> mimeType2kitClass = new HashMap<String, FileObject>();
     private final Set<String> knownMimeTypes = new HashSet<String>();
     private List<FileObject> eventSources = null;
     private boolean needsReloading = true;
     private final PropertyChangeSupport PCS = new PropertyChangeSupport(this);
+
+    private static final Set<String> WELL_KNOWN_PARENTS = new HashSet<String>(Arrays.asList(new String [] {
+        "java.lang.Object", //NOI18N
+        "javax.swing.text.EditorKit", //NOI18N
+        "javax.swing.text.DefaultEditorKit", //NOI18N
+        "org.netbeans.editor.BaseKit", //NOI18N
+        "org.netbeans.editor.ext.ExtKit", //NOI18N
+        "org.netbeans.modules.editor.NbEditorKit", //NOI18N
+    }));
     
     private final FileChangeListener fcl = new FileChangeAdapter() {
         @Override
@@ -170,6 +218,12 @@ public final class KitsTracker {
 
     }
 
+    private static final ThreadLocal<Boolean> inReload = new  ThreadLocal<Boolean>() {
+        protected @Override Boolean initialValue() {
+            return false;
+        }
+    };
+    
     /**
      * Scans fonlders under 'Editors' and finds <code>EditorKit</code>s for
      * each mime type.
@@ -178,7 +232,18 @@ public final class KitsTracker {
      * @param eventSources The list of folders with registered <code>EditorKits</code>.
      *   Changes in these folders mean that the map may need to be recalculated.
      */
-    private static void reload(Map<String, Class> map, Set<String> set, List<FileObject> eventSources) {
+    private static void reload(Map<String, FileObject> map, Set<String> set, List<FileObject> eventSources) {
+        assert !inReload.get() : "Re-entering KitsTracker.reload() is prohibited. This situation usually indicates wrong initialization of some setting."; //NOI18N
+        
+        inReload.set(true);
+        try {
+            _reload(map, set, eventSources);
+        } finally {
+            inReload.set(false);
+        }
+    }
+    
+    private static void _reload(Map<String, FileObject> map, Set<String> set, List<FileObject> eventSources) {
         // Get the root of the MimeLookup registry
         FileObject fo = Repository.getDefault().getDefaultFileSystem().findResource("Editors"); //NOI18N
 
@@ -199,19 +264,10 @@ public final class KitsTracker {
                     }
 
                     String mimeType = types[i].getNameExt() + "/" + subTypes[j].getNameExt(); //NOI18N
-                    MimePath mimePath = MimePath.parse(mimeType);
-                    EditorKit kit = MimeLookup.getLookup(mimePath).lookup(EditorKit.class);
-
-                    if (kit != null) {
-                        String genericMimeType;
-                        if (!kit.getContentType().equals(mimeType) && 
-                            !(null != (genericMimeType = getGenericPartOfCompoundMimeType(mimeType)) && genericMimeType.equals(kit.getContentType())))
-                        {
-                            LOG.warning("Inconsistent mime type declaration for the kit: " + kit + //NOI18N
-                                "; mimeType from the kit is '" + kit.getContentType() + //NOI18N
-                                ", but the kit is registered for '" + mimeType + "'"); //NOI18N
-                        }
-                        map.put(mimeType, kit.getClass());
+                    FileObject kitInstanceFile = findKitRegistration(subTypes[j]);
+                    
+                    if (kitInstanceFile != null) {
+                        map.put(mimeType, kitInstanceFile);
                     } else {
                         if (LOG.isLoggable(Level.FINE)) {
                             LOG.fine("No kit for '" + mimeType + "'");
@@ -228,6 +284,46 @@ public final class KitsTracker {
         }
     }
 
+    private static FileObject findKitRegistration(FileObject folder) {
+        for(FileObject f : folder.getChildren()) {
+            if (isInstanceOf(f, EditorKit.class, false)) {
+                return f;
+            }
+        }
+        
+        return null;
+    }
+    
+    private static boolean isInstanceOf(FileObject f, Class clazz, boolean exactMatch) {
+        try {
+            DataObject d = DataObject.find(f);
+            InstanceCookie ic = d.getLookup().lookup(InstanceCookie.class);
+
+            if (ic != null) {
+                if (!exactMatch && (ic instanceof InstanceCookie.Of)) {
+                    if (((InstanceCookie.Of) ic).instanceOf(clazz)) {
+                        return true;
+                    }
+                } else {
+                    Class instanceClass = ic.instanceClass();
+                    if (!exactMatch) {
+                        if (clazz.isAssignableFrom(instanceClass)) {
+                            return true;
+                        }
+                    } else {
+                        if (clazz == instanceClass) {
+                            return true;
+                        }
+                    }
+                }
+            }
+        } catch (Exception e) {
+            // ignore
+        }
+        
+        return false;
+    }
+    
     private void invalidateCache() {
         synchronized (mimeType2kitClass) {
             needsReloading = true;
@@ -262,7 +358,7 @@ public final class KitsTracker {
 
     private Object updateAndGet(Class kitClass) {
         boolean reload;
-        Map<String, Class> reloadedMap = new HashMap<String, Class>();
+        Map<String, FileObject> reloadedMap = new HashMap<String, FileObject>();
         Set<String> reloadedSet = new HashSet<String>();
         List<FileObject> newEventSources = new ArrayList<FileObject>();
         
@@ -307,8 +403,8 @@ public final class KitsTracker {
             // Compute the list
             if (kitClass != null) {
                 for(String mimeType : mimeType2kitClass.keySet()) {
-                    Class clazz = mimeType2kitClass.get(mimeType);
-                    if (kitClass == clazz) {
+                    FileObject f = mimeType2kitClass.get(mimeType);
+                    if (isInstanceOf(f, kitClass, true)) {
                         list.add(mimeType);
                     }
                 }

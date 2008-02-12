@@ -83,7 +83,7 @@ made subject to such option by the copyright holder.
     <!-- This target executes tests inside IDE. It is defined in imported xtest-qa-functional.xml.
          If you need to customize it, you can uncomment the following and override it.
     <target name="runidetest" depends="init-cp">
-        <executeTests pluginName="ide">
+        <executeTests pluginName="ide">            
             <classpath>
                 <path refid="test.qa-functional.run.cp"/>
             </classpath>

@@ -1706,6 +1706,36 @@ public abstract class CSSEngine {
 // ===
     public List<WeakReference<CSSStyleSheetNode>> getStyleSheetNodes() {
 // </nb>
+        // XXX #126462 Checking style sheet nodes cache.
+        boolean discardOldCache = false;
+        if (styleSheetNodes != null) {
+            for (WeakReference<CSSStyleSheetNode> styleSheetNodeWRef : styleSheetNodes) {
+                CSSStyleSheetNode ssnode = styleSheetNodeWRef == null ? null : styleSheetNodeWRef.get();
+                if (ssnode == null) {
+                    // The node was garbaged, refresh.
+                    discardOldCache = true;
+                    break;
+                } else if (ssnode instanceof Element) {
+                    Element ssElement = (Element)ssnode;
+                    if (ssElement.getParentNode() == null) {
+                        // The node was probably removed from the document, refresh.
+                        discardOldCache = true;
+                        break;
+                    }
+                    // XXX TODO It seems there is always source document present,
+                    // even the rendered elements are computed here. (Investigate!).
+//                        else if (ssElement.getOwnerDocument() != document) {
+//                            // The node doesn't belong to this document, refresh.
+//                            discardOldCache = true;
+//                            break;
+//                        }
+                }
+            }
+        }
+        if (discardOldCache) {
+            styleSheetNodes = null;
+        }
+        
         if (styleSheetNodes == null) {
 // <nb>
 //            styleSheetNodes = new ArrayList();

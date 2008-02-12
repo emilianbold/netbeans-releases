@@ -313,16 +313,12 @@ public abstract class BaseFileObj extends FileObject {
             }
         } else if (attrName.equals("ExistsParentNoPublicAPI")) {
             return getExistingParent() != null;
-        }
+        } 
                 
         return BaseFileObj.attribs.readAttribute(getFileName().getFile().getAbsolutePath().replace('\\', '/'), attrName);//NOI18N
     }
 
     public final void setAttribute(final String attrName, final Object value) throws java.io.IOException {
-        if ("request_for_refreshing_files_be_aware_this_is_not_public_api".equals(attrName) && (value instanceof File)) {//NOI18N
-            getLocalFileSystem().refreshFor((File)value);
-            return;
-        }
         final Object oldValue = BaseFileObj.attribs.readAttribute(getFileName().getFile().getAbsolutePath().replace('\\', '/'), attrName);//NOI18N
         BaseFileObj.attribs.writeAttribute(getFileName().getFile().getAbsolutePath().replace('\\', '/'), attrName, value);//NOI18N
         fireFileAttributeChangedEvent(attrName, oldValue, value);
@@ -458,7 +454,6 @@ public abstract class BaseFileObj extends FileObject {
             parentFe = new FileEventImpl(parent, this, expected);
         }
         if (parentFe != null) {
-            assert parent.isValid() : parent.toString();
             final FileEventImpl fe = new FileEventImpl(this, parentFe);
             fireFileChangedEvent(getListeners(), fe);
             parent.fireFileChangedEvent(pListeners, parentFe);

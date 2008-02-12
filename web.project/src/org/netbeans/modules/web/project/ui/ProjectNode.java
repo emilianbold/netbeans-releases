@@ -72,12 +72,12 @@ import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ant.AntArtifact;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.api.java.queries.JavadocForBinaryQuery;
+import org.netbeans.modules.java.api.common.ant.UpdateHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.spi.project.support.ant.ReferenceHelper;
 import org.netbeans.modules.web.project.ui.customizer.WebProjectProperties;
-import org.netbeans.modules.web.project.UpdateHelper;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
@@ -298,10 +298,8 @@ class ProjectNode extends AbstractNode {
             this.entryId = entryId;
             this.webModuleElementName = webModuleElementName;
             
-            this.cs = new ClassPathSupport( eval, refHelper, helper.getAntProjectHelper(), 
+            this.cs = new ClassPathSupport( eval, refHelper, helper.getAntProjectHelper(), helper,
                                         WebProjectProperties.WELL_KNOWN_PATHS, 
-                                        WebProjectProperties.LIBRARY_PREFIX, 
-                                        WebProjectProperties.LIBRARY_SUFFIX, 
                                         WebProjectProperties.ANT_ARTIFACT_PREFIX );        
 
         }

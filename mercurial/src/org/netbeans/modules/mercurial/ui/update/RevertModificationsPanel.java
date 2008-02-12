@@ -83,9 +83,12 @@ public class RevertModificationsPanel extends javax.swing.JPanel {
     public String getSelectedRevision() {
         String revStr = (String) revisionsComboBox.getSelectedItem();
         if(revStr != null){
-            revStr = revStr.substring(0, revStr.indexOf(" ")); // NOI18N
+            if (revStr.equals(NbBundle.getMessage(RevertModificationsPanel.class, "MSG_Revision_Default"))) { // NOI18N
+                revStr = null;
+            } else {
+                revStr = revStr.substring(0, revStr.indexOf(" ")); // NOI18N
+            }
         }
-        
         return revStr;
     }
 
@@ -133,6 +136,10 @@ public class RevertModificationsPanel extends javax.swing.JPanel {
         // XXX attach Cancelable hook
         final ProgressHandle ph = ProgressHandleFactory.createHandle(NbBundle.getMessage(RevertModificationsPanel.class, "MSG_Refreshing_Revert_Versions")); // NOI18N
         try {
+            Set<String>  initialRevsSet = new LinkedHashSet<String>();
+            initialRevsSet.add(NbBundle.getMessage(RevertModificationsPanel.class, "MSG_Fetching_Revisions")); // NOI18N
+            ComboBoxModel targetsModel = new DefaultComboBoxModel(new Vector<String>(initialRevsSet));
+            revisionsComboBox.setModel(targetsModel);
             refreshViewThread = Thread.currentThread();
             Thread.interrupted();  // clear interupted status
             ph.start();

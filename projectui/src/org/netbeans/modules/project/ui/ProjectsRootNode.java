@@ -268,6 +268,7 @@ public class ProjectsRootNode extends AbstractNode {
                 }
                 else {
                     badgedNodes[i] = new BadgingNode(
+                        p,
                         origNodes[i],
                         type == LOGICAL_VIEW  && projectInLookup[0],
                         type == LOGICAL_VIEW
@@ -335,9 +336,13 @@ public class ProjectsRootNode extends AbstractNode {
             // Fix for 50259, callers sometimes hold locks
             SwingUtilities.invokeLater( new Runnable() {
                 public void run() {
-                    refreshKey( new Pair(project, project.getProjectDirectory()) );
+                    refresh(project);
                 }
             } );
+        }
+        
+        final void refresh(Project p) {
+            refreshKey( new Pair(p, p.getProjectDirectory()) );
         }
                                 
         // Own methods ---------------------------------------------------------
@@ -362,7 +367,7 @@ public class ProjectsRootNode extends AbstractNode {
          * the nodes.
          */
         private static final class Pair extends Object {
-            public final Project project;
+            public Project project;
             public final FileObject fo;
 
             public Pair(Project project, FileObject fo) {
@@ -404,9 +409,11 @@ public class ProjectsRootNode extends AbstractNode {
         private RequestProcessor.Task task;
         private volatile boolean nameChange;
         private final boolean logicalView;
+        private final ProjectChildren.Pair pair;
 
-        public BadgingNode(Node n, boolean addSearchInfo, boolean logicalView) {
+        public BadgingNode(ProjectChildren.Pair p, Node n, boolean addSearchInfo, boolean logicalView) {
             super(n, null, badgingLookup(n, addSearchInfo));
+            this.pair = p;
             this.logicalView = logicalView;
             OpenProjectList.getDefault().addPropertyChangeListener(WeakListeners.propertyChange(this, OpenProjectList.getDefault()));
             Project proj = getOriginal().getLookup().lookup(Project.class);
@@ -522,7 +529,13 @@ public class ProjectsRootNode extends AbstractNode {
                     if (logicalView) {
                         n = ch.logicalViewForProject(newProj, null);
                     } else {
-                        for (Node one : PhysicalView.createNodesForProject(newProj)) {
+                        Node[] arr = PhysicalView.createNodesForProject(newProj);
+                        if (arr.length > 1) {
+                            pair.project = newProj;
+                            ch.refresh(newProj);
+                            return;
+                        }
+                        for (Node one : arr) {
                             if (PhysicalView.isProjectDirNode(one)) {
                                 n = one;
                                 break;

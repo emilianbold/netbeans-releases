@@ -29,10 +29,10 @@
 package org.netbeans.modules.cnd.repository.impl;
 
 import java.io.File;
-import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import org.netbeans.junit.Manager;
 import org.netbeans.modules.cnd.modelimpl.trace.TraceModelTestBase;
 
 /**
@@ -46,33 +46,52 @@ public class RepositoryValidationBase extends TraceModelTestBase {
     }
 
     protected static final String nimi = "ModelBuiltFromRepository"; //NOI18N
+    protected static final String modelimplName = "cnd.modelimpl";
     protected static final String moduleName = "cnd.repository";
-    protected static String workingDirectory;
+    private static String goldenDirectory;
 
+    @Override
+    protected File getTestCaseDataDir() {
+	String dataPath = getDataDir().getAbsolutePath().replaceAll("repository", "modelimpl"); //NOI18N
+        String filePath = "common";
+        return Manager.normalizeFile(new File(dataPath, filePath));
+    }
+
+    protected static String getGoldenDirectory() {
+        return goldenDirectory;
+    }
+
+    protected static void setGoldenDirectory(String goldenDirectory) {
+        RepositoryValidationBase.goldenDirectory = goldenDirectory;
+    }
+    
     protected final List<String> find() throws IOException {
         List<String> list = new ArrayList<String>();
-        String path = getWorkDir().getAbsolutePath();
-        assert (path.indexOf(moduleName) > -1);
-        File root = new File(path.substring(0, path.indexOf(moduleName)));
-        for (File m : root.listFiles()) {
-            if (m.isDirectory()) {
-                String testDataPath = m.getAbsolutePath() + File.separator + "test" + File.separator + "unit" + File.separator + "data" + File.separator + "org";
-                if (
-                    // TODO: stackoverflow.cc failure
-                    testDataPath.indexOf("modelimpl")>0 ||
-                    // TODO: mixedPreprocDirectives.cc failure
-                    testDataPath.indexOf("folding")>0 ||
-                    // TODO: completion file.cc failure
-                    testDataPath.indexOf("completion")>0) 
-                {
-                    continue;
-                }
-                //
-                if (new File(testDataPath).exists()) {
-                    list.add(testDataPath);
-                }
-            }
-        }
+        String dataPath = getDataDir().getAbsolutePath().replaceAll("repository", "modelimpl"); //NOI18N
+        list.add(dataPath + "/common/quote_nosyshdr"); //NOI18N
+        list.add(dataPath + "/org"); //NOI18N
+//        String path = getWorkDir().getAbsolutePath();
+//        assert (path.indexOf(moduleName) > -1);
+//        File root = new File(path.substring(0, path.indexOf(moduleName)));
+//        for (File m : root.listFiles()) {
+//            if (m.isDirectory()) {
+//                String testDataPath = m.getAbsolutePath() + File.separator + "test" + File.separator + "unit" + File.separator + "data" + File.separator + "org";
+//                if (
+//                    // TODO: stackoverflow.cc failure
+//                    testDataPath.indexOf("modelimpl")>0 ||
+//                    // TODO: mixedPreprocDirectives.cc failure
+//                    testDataPath.indexOf("folding")>0 ||
+//                    // TODO: completion file.cc failure
+//                    testDataPath.indexOf("completion")>0) 
+//                {
+//                    continue;
+//                }
+//                //
+//                if (new File(testDataPath).exists()) {
+//                    list.add(testDataPath);
+//                }
+//            }
+//        }
         return list;
     }
 }

@@ -92,6 +92,7 @@ import org.openide.filesystems.FileUtil;
 import org.openide.modules.InstalledFileLocator;
 import org.openide.util.Utilities;
 import org.openide.util.NbBundle;
+import org.openide.windows.InputOutput;
 
 /**
  * Represents one GDB debugger session.
@@ -149,7 +150,6 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
     private boolean continueAfterFirstStop = true;
     private ArrayList<GdbVariable> localVariables = new ArrayList<GdbVariable>();
     private Map<Integer, BreakpointImpl> pendingBreakpointMap = new HashMap<Integer, BreakpointImpl>();
-    private Map<Integer, AbstractVariable> updateVariablesMap = new HashMap<Integer, AbstractVariable>();
     private Map<String, BreakpointImpl> breakpointList = Collections.synchronizedMap(new HashMap<String, BreakpointImpl>());
     private static Map<String, TypeInfo> ticache = new HashMap<String, TypeInfo>();
     private static Logger log = Logger.getLogger("gdb.logger"); // NOI18N
@@ -157,18 +157,19 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
     private String currentThreadID = "0"; // NOI18N
     private static final String[] emptyThreadsList = new String[0];
     private String[] threadsList = emptyThreadsList;
-    private int ttToken = 0;
-    private ToolTipAnnotation ttAnnotation = null;
     private Timer startupTimer = null;
     private boolean cygwin = false;
     private boolean cplusplus = false;
     private String firstBPfullname;
     private String firstBPfile;
     private String firstBPline;
+    private InputOutput iotab;
+    private boolean firstOutput;
         
     public GdbDebugger(ContextProvider lookupProvider) {
         this.lookupProvider = lookupProvider;
         pcs = new PropertyChangeSupport(this);
+        firstOutput = true;
         addPropertyChangeListener(this);
         List l = lookupProvider.lookup(null, DebuggerEngineProvider.class);
         int i, k = l.size();
@@ -198,6 +199,10 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
         setStarting();
         try {
             pae = (ProjectActionEvent) lookupProvider.lookupFirst(null, ProjectActionEvent.class);
+            iotab = (InputOutput) lookupProvider.lookupFirst(null, InputOutput.class);
+            if (iotab != null) {
+                iotab.setErrSeparated(false);
+            }
             runDirectory = pae.getProfile().getRunDirectory().replace("\\", "/") + "/";  // NOI18N
             profile = (GdbProfile) pae.getConfiguration().getAuxObject(GdbProfile.GDB_PROFILE_ID);
             int conType = pae.getProfile().getConsoleType().getValue();
@@ -229,10 +234,11 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
                     Integer.toString(CppSettings.getDefault().getArrayRepeatThreshold()));
             if (pae.getID() == DEBUG_ATTACH) {
                 programPID = (Long) lookupProvider.lookupFirst(null, Long.class);
-                CommandBuffer cb = new CommandBuffer(gdb.target_attach(Long.toString(programPID)));
-               cb.postAndWait();
+                CommandBuffer cb = new CommandBuffer();
+                gdb.target_attach(cb, Long.toString(programPID));
+                cb.waitForCompletion();
                 String err = cb.getError();
-                if (err != null || cb.attachTimedOut()) {
+                if (err != null || cb.timedOut()) {
                     final String msg;
                     if (err == null) {
                         msg = NbBundle.getMessage(GdbDebugger.class, "ERR_AttachTimeout"); // NOI18N
@@ -263,8 +269,9 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
                         } else {
                             // 3) send an "info files" command to gdb. Its response should say what symbols
                             // are read.
-                            cb = new CommandBuffer(gdb.info_files());
-                            cb.postAndWait();
+                            cb = new CommandBuffer();
+                            gdb.info_files(cb);
+                            cb.waitForCompletion();
                             if (symbolsReadFromInfoFiles(cb.toString(), path)) {
                                 setLoading();
                             } else {
@@ -346,8 +353,9 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
                     } catch (InterruptedException ex) {
                     }
                 }
-                CommandBuffer cb = new CommandBuffer(gdb.info_threads());
-                String results = cb.postAndWait();
+                CommandBuffer cb = new CommandBuffer();
+                gdb.info_threads(cb);
+                String results = cb.waitForCompletion();
                 if (results.length() > 0) {
                     List<String> list = new ArrayList<String>();
                     StringBuilder sb = new StringBuilder();
@@ -680,28 +688,21 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
                 log.finest("GD.resultRecord: Thread change, firing PROP_CURRENT_THREAD");
                 firePropertyChange(PROP_CURRENT_THREAD, otid, currentThreadID);
             }
-        } else if (msg.startsWith("^done,value=") && msg.contains("auto; currently c++")) { // NOI18N
-            cplusplus = true;
+        } else if (msg.startsWith("^done,value=") && msg.contains("auto; currently c")) { // NOI18N
+            if (msg.contains("auto; currently c++")) { // NOI18N
+                cplusplus = true;
+            }
         } else if (msg.startsWith("^done,value=")) { // NOI18N (-data-evaluate-expression)
             cb = CommandBuffer.getCommandBuffer(itok);
             if (cb != null) {
                 cb.append(msg.substring(13, msg.length() - 1));
                 cb.done();
-                cb.callback();
-                cb.dispose();
-            } else if (token == ttToken) {
-                ttAnnotation.postToolTip(msg.substring(13, msg.length() - 1));
-                ttToken = 0;
-            } else if ((avar = updateVariablesMap.remove(itok)) != null) {
-                avar.setModifiedValue(msg.substring(13, msg.length() - 1));
             }
         } else if (msg.startsWith("^done,thread-id=") && // NOI18N
                 Utilities.getOperatingSystem() == Utilities.OS_MAC) {
             cb = CommandBuffer.getCommandBuffer(itok);
             if (cb != null) {
                 cb.done();
-                cb.callback();
-                cb.dispose();
             }
         } else if (msg.equals("^done") && getState().equals(STATE_SILENT_STOP)) { // NOI18N
             setRunning();
@@ -709,8 +710,6 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
             cb = CommandBuffer.getCommandBuffer(itok);
             if (cb != null) {
                 cb.done();
-                cb.callback();
-                cb.dispose();
             } else if (pendingBreakpointMap.get(itok) != null) {
                 breakpointValidation(token, null);
             }
@@ -722,13 +721,6 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
             
             if (cb != null) {
                 cb.error(msg);
-                cb.callback();
-                cb.dispose();
-            } else if (token == ttToken) { // invalid tooltip request
-                ttAnnotation.postToolTip('>' + msg.substring(1, msg.length() - 1) + '<');
-                ttToken = 0;
-            } else if ((avar = updateVariablesMap.remove(itok)) != null) {
-                avar.restoreOldValue();
             } else if (msg.equals("\"Can't attach to process.\"")) { // NOI18N
                 DialogDisplayer.getDefault().notify(
                        new NotifyDescriptor.Message(NbBundle.getMessage(GdbDebugger.class,
@@ -894,9 +886,19 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
        log.finest("GD.targetStreamOutput: " + msg);  // NOI18N
     }
     
-    /** Handle gdb output */
+    /**
+     * Handle gdb output. The only tricking thing here is that most versions of gdb on
+     * Solaris output some proc flags to stdout. So for Solaris, I skip the 1st output
+     * if it starts with "PR_" (the proc flag header).
+     */
     public void output(String msg) {
-        // FIXME - Send to output window (see if it works right)
+        if (iotab != null) {
+            if (!(firstOutput && Utilities.getOperatingSystem() == Utilities.OS_SOLARIS &&
+                    msg.startsWith("PR_"))) { // NOI18N
+                firstOutput = false;
+                iotab.getOut().println(msg);
+            }
+        }
     }
         
     private void addArgsToLocalVariables(String info) {
@@ -932,14 +934,10 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
         }
     }
     
-    public void updateVariable(AbstractVariable var, String name, String value) {
-        int token = gdb.data_evaluate_expression(name + '=' + value);
-        updateVariablesMap.put(new Integer(token), var);
-    }
-    
-    public void completeToolTip(int token, ToolTipAnnotation tt) {
-        ttToken = token;
-        ttAnnotation = tt;
+    public String updateVariable(String name, String value) {
+        CommandBuffer cb = new CommandBuffer();
+        gdb.data_evaluate_expression(cb, name + '=' + value);
+        return cb.waitForCompletion();
     }
     
     // currently not called - should do more than set state (see JPDADebuggerImpl)
@@ -1045,7 +1043,7 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
      */
     public void stepOut() {
         int idx = getCurrentCallStackIndex();
-        if (isValidStackFrame(callstack.get(idx + 1))) {
+        if (callstack.size() == (idx + 1) || isValidStackFrame(callstack.get(idx + 1))) {
             setState(STATE_RUNNING);
             gdb.exec_finish();
         } else {
@@ -1158,7 +1156,7 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
             return;
         }
         
-        log.finest("GD.stopped[" + Thread.currentThread().getName() + "]:\n"); // NOI18N
+        log.finest("GD.stopped[" + GdbUtils.threadId() + "]:\n"); // NOI18N
         resetThreadInfo();
         if (reason != null) {
             setCurrentCallStackFrameNoFire(null);   // will be reset when stack updates
@@ -1439,16 +1437,29 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
         }
     }
     
-    public int evaluate(String expression) {
-        int token;
+    public String evaluateToolTip(String expression) {
+        CommandBuffer cb = new CommandBuffer();
+        
         if (expression.indexOf('(') != -1) {
             suspendBreakpointsAndSignals();
-            token = gdb.data_evaluate_expression('"' + expression + '"'); // NOI18N
+            gdb.data_evaluate_expression(cb, '"' + expression + '"'); // NOI18N
             restoreBreakpointsAndSignals();
         } else {
-            token = gdb.data_evaluate_expression('"' + expression + '"'); // NOI18N
+            gdb.data_evaluate_expression(cb, '"' + expression + '"'); // NOI18N
         }
-        return token;
+        String response = cb.waitForCompletion();
+        if (response.startsWith("@0x")) { // NOI18N
+            cb = new CommandBuffer();
+            gdb.print(cb, expression);
+            response = cb.waitForCompletion();
+            if (response.length() > 0 && response.charAt(0) == '$') {
+                int pos = response.indexOf('=');
+                if (pos != -1 && (pos + 2) < response.length()) {
+                    response = response.substring(pos + 2, response.length()).replace("\\n", "").trim(); // NOI18N
+                }
+            }
+        }
+        return response.length() > 0 ? response : null;
     }
     
     public Map<String, TypeInfo> getTypeInfoCache() {
@@ -1459,8 +1470,9 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
         assert !Thread.currentThread().getName().equals("GdbReaderRP"); // NOI18N
         
         if (state.equals(STATE_STOPPED)) {
-            CommandBuffer cb = new CommandBuffer(gdb.data_evaluate_expression(name));
-            String info = cb.postAndWait();
+            CommandBuffer cb = new CommandBuffer();
+            gdb.data_evaluate_expression(cb, name);
+            String info = cb.waitForCompletion();
             if (info.length() == 0 || cb.getState() != CommandBuffer.STATE_OK) {
                 if (cb.getState() == CommandBuffer.STATE_ERROR) {
                     log.fine("GD.requestValue[" + cb.getID() + "]: Error [" + cb.getError() + "]"); // NOI18N
@@ -1482,8 +1494,9 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
         assert !Thread.currentThread().getName().equals("GdbReaderRP"); // NOI18N
         
         if (state.equals(STATE_STOPPED) && name != null && name.length() > 0) {
-            CommandBuffer cb = new CommandBuffer(gdb.whatis(name));
-            String info = cb.postAndWait();
+            CommandBuffer cb = new CommandBuffer();
+            gdb.whatis(cb, name);
+            String info = cb.waitForCompletion();
             if (info.length() == 0 || cb.getState() != CommandBuffer.STATE_OK) {
                 if (cb.getState() == CommandBuffer.STATE_ERROR) {
                     log.fine("GD.requestWhatis[" + cb.getID() + "]: Error [" + cb.getError() + "]"); // NOI18N
@@ -1506,8 +1519,9 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
         assert !Thread.currentThread().getName().equals("GdbReaderRP"); // NOI18N
         
         if (state.equals(STATE_STOPPED) && type != null && type.length() > 0) {
-            CommandBuffer cb = new CommandBuffer(gdb.symbol_type(type));
-            String info = cb.postAndWait();
+            CommandBuffer cb = new CommandBuffer();
+            gdb.symbol_type(cb, type);
+            String info = cb.waitForCompletion();
             if (info.length() == 0 || cb.getState() != CommandBuffer.STATE_OK) {
                 if (cb.getState() == CommandBuffer.STATE_ERROR) {
                     log.fine("GD.requestSymbolType[" + cb.getID() + "]: Error [" + cb.getError() + "]"); // NOI18N

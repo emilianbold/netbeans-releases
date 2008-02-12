@@ -119,9 +119,10 @@ public class WSDLEndpointNode extends CasaNode {
     @Override
     protected void addCustomActions(List<Action> actions) {
         CasaPort cp = (CasaPort) this.getData();
-        if (((CasaWrapperModel) cp.getModel()).isEditable(cp)) {
+        CasaWrapperModel model = (CasaWrapperModel) cp.getModel();
+        if (model.isEditable(cp)) {
             // only add this for soap port...
-            if (cp.getBindingType().equalsIgnoreCase(SOAP_BINDING)) {
+            if (model.getBindingType(cp).equalsIgnoreCase(SOAP_BINDING)) {
                 actions.add(new WSDLEndpointAction());
             }
         }

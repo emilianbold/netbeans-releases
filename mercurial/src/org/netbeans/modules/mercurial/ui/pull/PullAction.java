@@ -209,10 +209,7 @@ public class PullAction extends ContextAction {
     }
 
     public boolean isEnabled() {
-        Set<File> ctxFiles = context != null? context.getRootFiles(): null;
-        if(HgUtils.getRootFile(context) == null || ctxFiles == null || ctxFiles.size() == 0) 
-            return false;
-        return true; // #121293: Speed up menu display, warn user if not set when Pull selected
+        return HgUtils.getRootFile(context) != null;
     }
 
     static void performPull(PullType type, VCSContext ctx, File root, String pullPath, String fromPrjName, String toPrjName) {
@@ -261,16 +258,16 @@ public class PullAction extends ContextAction {
             if (list != null && !list.isEmpty()) {
 
                 if (!bNoChanges) {
-                    annotateChangeSets(listIncoming, PullAction.class, "MSG_CHANGESETS_TO_PULL"); // NOI18N
+                    annotateChangeSets(HgUtils.replaceHttpPassword(listIncoming), PullAction.class, "MSG_CHANGESETS_TO_PULL"); // NOI18N
                 }
 
-                HgUtils.outputMercurialTab(list);
+                HgUtils.outputMercurialTab(HgUtils.replaceHttpPassword(list));
                 if (fromPrjName != null) {
                     HgUtils.outputMercurialTabInRed(NbBundle.getMessage(
-                            PullAction.class, "MSG_PULL_FROM", fromPrjName, HgUtils.stripDoubleSlash(pullPath))); // NOI18N
+                            PullAction.class, "MSG_PULL_FROM", fromPrjName, HgUtils.stripDoubleSlash(HgUtils.replaceHttpPassword(pullPath)))); // NOI18N
                 } else {
                     HgUtils.outputMercurialTabInRed(NbBundle.getMessage(
-                            PullAction.class, "MSG_PULL_FROM_NONAME", HgUtils.stripDoubleSlash(pullPath))); // NOI18N
+                            PullAction.class, "MSG_PULL_FROM_NONAME", HgUtils.stripDoubleSlash(HgUtils.replaceHttpPassword(pullPath)))); // NOI18N
                 }
                 if (toPrjName != null) {
                     HgUtils.outputMercurialTabInRed(NbBundle.getMessage(

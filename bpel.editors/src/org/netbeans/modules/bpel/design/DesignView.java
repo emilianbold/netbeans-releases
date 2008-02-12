@@ -90,6 +90,7 @@ import org.netbeans.modules.bpel.design.actions.GoToLoggingAction;
 import org.netbeans.modules.bpel.design.actions.GoToMapperAction;
 import org.netbeans.modules.bpel.design.actions.GoToSourceAction;
 import org.netbeans.modules.bpel.design.model.PartnerRole;
+import org.netbeans.modules.bpel.nodes.actions.GoToAction;
 import org.netbeans.modules.bpel.nodes.actions.ShowBpelMapperAction;
 import org.netbeans.modules.bpel.properties.NodeUtils;
 import org.netbeans.modules.soa.ui.form.CustomNodeEditor;
@@ -282,8 +283,7 @@ public class DesignView extends JPanel implements
     }
 
     public BPELValidationController getValidationController() {
-        return (BPELValidationController) getLookup()
-        .lookup(BPELValidationController.class);
+        return getLookup().lookup(BPELValidationController.class);
     }
 
     public EntitySelectionModel getSelectionModel() {
@@ -315,7 +315,7 @@ public class DesignView extends JPanel implements
     }
 
     public BpelModel getBPELModel(){
-        return (BpelModel)getLookup().lookup(BpelModel.class);
+        return getLookup().lookup(BpelModel.class);
     }
 
     /**
@@ -339,7 +339,7 @@ public class DesignView extends JPanel implements
     }
 
     public BusinessProcessHelper getProcessHelper() {
-        return (BusinessProcessHelper) lookup.lookup(BusinessProcessHelper.class);
+        return lookup.lookup(BusinessProcessHelper.class);
     }
 
     public Node getNodeForPattern(Pattern pattern){
@@ -416,9 +416,26 @@ public class DesignView extends JPanel implements
         im1.put(KeyStroke.getKeyStroke(KeyEvent.VK_F2, 0), "rename-something"); // NOI18N
         im1.put(KeyStroke.getKeyStroke(KeyEvent.VK_DELETE, 0), "delete-something"); // NOI18N
         im1.put(KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), "cancel-something"); // NOI18N
-        im1.put(org.netbeans.modules.bpel.nodes.actions.GoToSourceAction.GOTOSOURCE_KEYSTROKE, "gotosource-something"); // NOI18N
-        im1.put(ShowBpelMapperAction.GOTOMAPPER_KEYSTROKE, "gotomapper-something"); // NOI18N
-        im1.put(org.netbeans.modules.bpel.nodes.actions.GoToLoggingAction.GOTOLOGGING_KEYSTROKE, "gotologging-something"); // NOI18N
+
+        KeyStroke gotoSourceKey = GoToAction.getKeyStroke(org.netbeans.modules.bpel.nodes.actions.GoToSourceAction.class);
+        KeyStroke gotoMapperKey = GoToAction.getKeyStroke(ShowBpelMapperAction.class);
+        KeyStroke gotoLoggingKey = GoToAction.getKeyStroke(org.netbeans.modules.bpel.nodes.actions.GoToLoggingAction.class);
+
+        if (gotoSourceKey != null) {
+//            im1.put(org.netbeans.modules.bpel.nodes.actions.GoToSourceAction.GOTOSOURCE_KEYSTROKE, "gotosource-something"); // NOI18N
+            im1.put(gotoSourceKey, "gotosource-something"); // NOI18N
+            im2.put(gotoSourceKey, "gotosource-something"); // NOI18N
+        }
+        if (gotoMapperKey != null) {
+//            im1.put(ShowBpelMapperAction.GOTOMAPPER_KEYSTROKE, "gotomapper-something"); // NOI18N
+            im1.put(gotoMapperKey, "gotomapper-something"); // NOI18N
+            im2.put(gotoMapperKey, "gotomapper-something"); // NOI18N
+        }
+        if (gotoLoggingKey != null) {
+//            im1.put(org.netbeans.modules.bpel.nodes.actions.GoToLoggingAction.GOTOLOGGING_KEYSTROKE, "gotologging-something"); // NOI18N
+            im1.put(gotoLoggingKey, "gotologging-something"); // NOI18N
+            im2.put(gotoLoggingKey, "gotologging-something"); // NOI18N
+        }
 //        im1.put(KeyStroke.getKeyStroke(KeyEvent.VK_O, KeyEvent.ALT_DOWN_MASK), "gotosource-something"); // NOI18N
 //        im1.put(KeyStroke.getKeyStroke(KeyEvent.VK_O, KeyEvent.ALT_DOWN_MASK), "gotomapper-something"); // NOI18N
 //        im1.put(KeyStroke.getKeyStroke(KeyEvent.VK_O, KeyEvent.ALT_DOWN_MASK), "gotologging-something"); // NOI18N
@@ -439,9 +456,9 @@ public class DesignView extends JPanel implements
         im2.put(KeyStroke.getKeyStroke(KeyEvent.VK_F2, 0), "rename-something"); // NOI18N
         im2.put(KeyStroke.getKeyStroke(KeyEvent.VK_DELETE, 0), "delete-something"); // NOI18N
         im2.put(KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), "cancel-something"); // NOI18N
-        im2.put(org.netbeans.modules.bpel.nodes.actions.GoToSourceAction.GOTOSOURCE_KEYSTROKE, "gotosource-something"); // NOI18N
-        im2.put(ShowBpelMapperAction.GOTOMAPPER_KEYSTROKE, "gotomapper-something"); // NOI18N
-        im2.put(org.netbeans.modules.bpel.nodes.actions.GoToLoggingAction.GOTOLOGGING_KEYSTROKE, "gotologging-something"); // NOI18N
+//        im2.put(org.netbeans.modules.bpel.nodes.actions.GoToSourceAction.GOTOSOURCE_KEYSTROKE, "gotosource-something"); // NOI18N
+//        im2.put(ShowBpelMapperAction.GOTOMAPPER_KEYSTROKE, "gotomapper-something"); // NOI18N
+//        im2.put(org.netbeans.modules.bpel.nodes.actions.GoToLoggingAction.GOTOLOGGING_KEYSTROKE, "gotologging-something"); // NOI18N
 //        im2.put(KeyStroke.getKeyStroke(KeyEvent.VK_O, KeyEvent.ALT_DOWN_MASK), "gotosource-something"); // NOI18N
 //        im2.put(KeyStroke.getKeyStroke(KeyEvent.VK_F7, KeyEvent.ALT_DOWN_MASK), "findusages-something"); // NOI18N
         im2.put(KeyStroke.getKeyStroke(KeyEvent.VK_M, KeyEvent.CTRL_DOWN_MASK), "find_next_mex_peer"); // NOI18N
@@ -563,14 +580,16 @@ public class DesignView extends JPanel implements
 
             putClientProperty(Dimension.class, new Dimension(printWidth, printHeight));
 
-            getDecorationManager().repositionComponentsRecursive();
 
 
             processView.revalidate();
             consumersView.revalidate();
             providersView.revalidate();
+
             repaint();
+
             errorPanel.uninstall();
+
             rightStripe.repaint();
         } else {
             setToolBarEnabled(false);

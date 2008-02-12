@@ -280,7 +280,10 @@
                     </test-dependency>
                 </test-type>
             </test-dependencies>
-            <public-packages/>
+            <friend-packages>
+                <friend>org.netbeans.modules.glassfish.jruby</friend>
+                <package>org.netbeans.modules.ruby.railsprojects.server.spi</package>
+            </friend-packages>
         </data>
     </configuration>
 </project>

@@ -115,6 +115,7 @@ public class TopSecurityManager extends SecurityManager {
                     Lookup.Item<SecurityManager> item = it.next();
                     if (item != null && "org.netbeans.modules.masterfs.filebasedfs.utils.FileChangedManager".equals(item.getId())) {//NOI18N
                         fsSecManager = item.getInstance();
+                        break;
                     }
                 }
                 assert fsSecManager != null;
@@ -308,8 +309,6 @@ public class TopSecurityManager extends SecurityManager {
     public @Override void checkRead(FileDescriptor fd) {
     }
 
-    private static Map m = new HashMap();
-    private static PreferenceChangeListener pcl = null;
     
     public @Override void checkWrite(FileDescriptor fd) {
     }
@@ -317,7 +316,6 @@ public class TopSecurityManager extends SecurityManager {
     /** The method has awful performance in super class */
     public @Override void checkDelete(String file) {
         notifyDelete(file);
-        prepareForWarning(file);
         try {
             checkPermission(allPermission);
             return;
@@ -325,44 +323,10 @@ public class TopSecurityManager extends SecurityManager {
             super.checkDelete(file);
         }
     }
-    
-    static {
-        registerPrintingWarnings();
-    }
-    
-    private static void prepareForWarning(String file) {        
-        Exception exc = new Exception(file);
-        StackTraceElement[] elems = exc.getStackTrace();
-        for (int i = 0; i < elems.length; i++) {
-            StackTraceElement stackTraceElement = elems[i];
-            if (stackTraceElement.getClassName().contains("org.netbeans.modules.masterfs")) {
-                return;
-            }
-        }
-        m.put(file, exc);
-    }
-    
-    private static void registerPrintingWarnings() {
-        final Preferences retval = NbPreferences.forModule(TopSecurityManager.class);        
-        if (pcl == null) {
-            retval.addPreferenceChangeListener(pcl = new PreferenceChangeListener() {
-                public void preferenceChange(PreferenceChangeEvent evt) {
-                    if ("warning".equals(evt.getKey())) {
-                        Exception exc = (Exception) m.get(evt.getNewValue());
-                        if (exc != null) {
-                            exc.printStackTrace();
-                        }
-                        retval.put("warning", "null");
-                    }
-                }
-            });
-        }
-    }
-    
+           
     /** The method has awful performance in super class */
     public @Override void checkWrite(String file) {
         notifyWrite(file);
-        prepareForWarning(file);
         try {
             checkPermission(allPermission);
             return;

@@ -61,6 +61,7 @@ import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Formatter;
 import org.netbeans.modules.cnd.editor.api.CodeStyle;
 import org.netbeans.modules.cnd.editor.api.CodeStyle.BracePlacement;
+import org.netbeans.modules.cnd.editor.api.CodeStyle.PreprocessorIndent;
 import org.netbeans.modules.cnd.editor.reformat.Reformatter;
 import org.netbeans.spi.options.OptionsPanelController;
 import org.openide.util.Exceptions;
@@ -84,14 +85,23 @@ public class CategorySupport extends Category implements ActionListener, Documen
             new ComboItem( BracePlacement.NEW_LINE.name(), "LBL_bp_NEW_LINE" ), // NOI18N
         };
 
+    private static final ComboItem  preprocessorPlacement[] = new ComboItem[] {
+            new ComboItem( PreprocessorIndent.START_LINE.name(), "LBL_pi_START_LINE" ), // NOI18N
+            new ComboItem( PreprocessorIndent.CODE_INDENT.name(), "LBL_pi_CODE_INDENT" ), // NOI18N
+            new ComboItem( PreprocessorIndent.PREPROCESSOR_INDENT.name(), "LBL_pi_PREPROCESSOR_INDENT" ), // NOI18N
+        };
+
     private String previewText = NbBundle.getMessage(EditorOptions.class, "SAMPLE_Default");
     private Map<String, Object> forcedOptions;
     private boolean changed = false;
     private JPanel panel;
+    private CodeStyle.Language language;
     private final PropertyChangeSupport pcs = new PropertyChangeSupport(this);
 
-    public CategorySupport(String nameKey, JPanel panel, String previewText, Map<String, Object> forcedOptions) {
+    public CategorySupport(CodeStyle.Language language, 
+            String nameKey, JPanel panel, String previewText, Map<String, Object> forcedOptions) {
         super(nameKey);
+        this.language = language;
         this.panel = panel;
         this.previewText = previewText == null ? this.previewText : previewText;
         this.forcedOptions = forcedOptions;
@@ -126,24 +136,27 @@ public class CategorySupport extends Category implements ActionListener, Documen
             }
         }
         pane.setText(previewText);
-        CodeStyle codeStyle = EditorOptions.createCodeStyle(p);
+        CodeStyle codeStyle = EditorOptions.createCodeStyle(language, p);
         BaseDocument bd = (BaseDocument) pane.getDocument();
         try {
             new Reformatter(bd, codeStyle).reformat();
         } catch (BadLocationException ex) {
             Exceptions.printStackTrace(ex);
         }
-        Formatter f = bd.getFormatter();
-        try {
-	    f.reformatLock();
-            f.reformat(bd, 0, bd.getLength());
-            String x = bd.getText(0, bd.getLength());
-            pane.setText(x);
-        } catch (BadLocationException ex) {
-            Exceptions.printStackTrace(ex);
-        } finally {
-	    f.reformatUnlock();
-	}
+//        Preferences oldPreferences = ((CodeStyleImpl)CodeStyle.getDefault(language)).getPref();
+//        ((CodeStyleImpl)CodeStyle.getDefault(language)).setPref(p);
+//        Formatter f = bd.getFormatter();
+//        try {
+//	    f.reformatLock();
+//            f.reformat(bd, 0, bd.getLength());
+//            String x = bd.getText(0, bd.getLength());
+//            pane.setText(x);
+//        } catch (BadLocationException ex) {
+//            Exceptions.printStackTrace(ex);
+//        } finally {
+//            ((CodeStyleImpl)CodeStyle.getDefault(language)).setPref(oldPreferences);
+//	    f.reformatUnlock();
+//	}
     }
     public void cancel() {
         // Usually does not need to do anything
@@ -228,7 +241,7 @@ public class CategorySupport extends Category implements ActionListener, Documen
     /** Very smart method which tries to set the values in the components correctly
      */
     private void loadData(JComponent jc, String optionID) {
-        Preferences node = EditorOptions.getPreferences(EditorOptions.getCurrentProfileId());
+        Preferences node = EditorOptions.getPreferences(EditorOptions.getCurrentProfileId(language));
         if (jc instanceof JTextField) {
             JTextField field = (JTextField)jc;                
             field.setText(node.get(optionID, EditorOptions.getDefault(optionID).toString()));
@@ -246,14 +259,14 @@ public class CategorySupport extends Category implements ActionListener, Documen
     }
 
     private void storeData(JComponent jc, String optionID, Preferences p) {
-        Preferences node = p == null ? EditorOptions.getPreferences(EditorOptions.getCurrentProfileId()) : p;
+        Preferences node = p == null ? EditorOptions.getPreferences(EditorOptions.getCurrentProfileId(language)) : p;
         if (jc instanceof JTextField) {
             JTextField field = (JTextField)jc;
             try {
                 int i = Integer.parseInt(field.getText());
                 node.putInt(optionID,i);
             } catch (NumberFormatException e) {
-                node.put(optionID, EditorOptions.getLastValue(optionID).toString());
+                node.put(optionID, EditorOptions.getLastValue(language, optionID).toString());
             }
         } else if (jc instanceof JCheckBox) {
             JCheckBox checkBox = (JCheckBox)jc;
@@ -283,6 +296,11 @@ public class CategorySupport extends Category implements ActionListener, Documen
         for (ComboItem comboItem : bracePlacement) {
             if ( value.equals( comboItem.value) ) {
                 return new DefaultComboBoxModel( bracePlacement );
+            }
+        }
+        for (ComboItem comboItem : preprocessorPlacement) {
+            if ( value.equals( comboItem.value) ) {
+                return new DefaultComboBoxModel( preprocessorPlacement );
             }
         }
         return null;
