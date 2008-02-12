@@ -224,6 +224,10 @@ public class ErrorHintsProviderTest extends NbTestCase {
         performTest("TestShortErrorsMethodInvocation1");
     }
     
+    public void testTestShortErrorsMethodInvocation2() throws Exception {
+        performTest("TestShortErrorsMethodInvocation2");
+    }
+    
     public void testTestShortErrorsNewClass() throws Exception {
         performTest("TestShortErrorsNewClass");
     }

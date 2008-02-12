@@ -57,9 +57,9 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.editor.BaseDocument;
+import org.netbeans.modules.spring.api.beans.SpringConstants;
 import org.netbeans.modules.spring.api.beans.model.Location;
 import org.netbeans.modules.spring.api.beans.model.SpringBean;
-import org.netbeans.modules.spring.beans.loader.SpringXMLConfigDataLoader;
 import org.netbeans.modules.spring.beans.editor.SpringXMLConfigEditorUtils;
 import org.netbeans.modules.spring.beans.model.SpringBeanSource;
 import org.netbeans.modules.spring.beans.utils.StringUtils;
@@ -143,7 +143,7 @@ public class ConfigFileSpringBeanSource implements SpringBeanSource {
         } finally {
             reader.close();
         }
-        Class<?> kitClass = CloneableEditorSupport.getEditorKit(SpringXMLConfigDataLoader.REQUIRED_MIME).getClass();
+        Class<?> kitClass = CloneableEditorSupport.getEditorKit(SpringConstants.CONFIG_MIME_TYPE).getClass();
         BaseDocument doc = new BaseDocument(kitClass, false);
         try {
             doc.insertString(0, builder.toString(), null);

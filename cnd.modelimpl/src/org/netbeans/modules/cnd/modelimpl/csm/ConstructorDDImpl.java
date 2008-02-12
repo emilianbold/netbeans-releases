@@ -45,16 +45,23 @@ import org.netbeans.modules.cnd.api.model.*;
 import antlr.collections.AST;
 import java.io.DataInput;
 import java.io.IOException;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import org.netbeans.modules.cnd.api.model.deep.CsmExpression;
+import org.netbeans.modules.cnd.modelimpl.csm.core.AstRenderer;
 
 /**
  * @author Vladimir Voskresensky
  */
 public final class ConstructorDDImpl extends MethodDDImpl<CsmConstructor> implements CsmConstructor {
 
+    private List<CsmExpression> initializers;
+    
     public ConstructorDDImpl(AST ast, ClassImpl cls, CsmVisibility visibility) {
         super(ast, cls, visibility, true);
+        
+        initializers = AstRenderer.renderConstructorInitializersList(ast, this, this.getContainingFile());
     }
  
     @Override
@@ -63,12 +70,24 @@ public final class ConstructorDDImpl extends MethodDDImpl<CsmConstructor> implem
     }
     
     public List getInitializerList() {
-        return Collections.EMPTY_LIST;
+        if(initializers != null) {
+            return initializers;
+        } else {
+            return Collections.EMPTY_LIST;
+        }
     }    
+    
     ////////////////////////////////////////////////////////////////////////////
     // iml of SelfPersistent
     
     public ConstructorDDImpl(DataInput input) throws IOException {
         super(input);
-    }    
+    }
+    
+    @Override
+    public Collection getScopeElements() {
+        Collection c = super.getScopeElements();
+        c.addAll(initializers);
+        return c;
+    }
 }

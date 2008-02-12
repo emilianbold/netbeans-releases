@@ -31,6 +31,7 @@ import java.awt.RenderingHints;
 import java.awt.Stroke;
 import java.awt.dnd.Autoscroll;
 import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
 import java.awt.event.KeyEvent;
@@ -71,6 +72,7 @@ public class RightTree extends MapperPanel implements
     private CellRendererPane cellRendererPane;
     private JLabel childrenLabel;
     private RightTreeCellRenderer treeCellRenderer = new DefaultRightTreeCellRenderer();
+    private ActionListener actionEscape;
 
     RightTree(Mapper mapper) {
         super(mapper);
@@ -96,61 +98,48 @@ public class RightTree extends MapperPanel implements
         addFocusListener(this);
 
         eventHandler = new RightTreeEventHandler(this);
-        
-        ToolTipManager.sharedInstance().registerComponent(this);
-        
-        
+
         InputMap iMap = getInputMap();
         ActionMap aMap = getActionMap();
-        
-        iMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_DOWN, 0), 
-                "press-moveSelectionDown");
+       
+        iMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_DOWN, 0), "press-moveSelectionDown");
         aMap.put("press-moveSelectionDown", new MoveSelectionDown());
         
-        iMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_UP, 0),
-                "press-moveSelectionUp");
+        ToolTipManager.sharedInstance().registerComponent(this);
+        actionEscape = getActionForKeyStroke(KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0));
+        
+        iMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_UP, 0), "press-moveSelectionUp");
         aMap.put("press-moveSelectionUp", new MoveSelectionUp());
-        
-        iMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_DOWN, 
-                KeyEvent.CTRL_DOWN_MASK), "press-moveSelectionDown+Control");
+
+        iMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_DOWN, KeyEvent.CTRL_DOWN_MASK), "press-moveSelectionDown+Control");
         aMap.put("press-moveSelectionDown+Control", new MoveSelectionDown());
-        
-        iMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_UP, KeyEvent.CTRL_DOWN_MASK),
-                "press-moveSelectionUp+Control");
+
+        iMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_UP, KeyEvent.CTRL_DOWN_MASK), "press-moveSelectionUp+Control");
         aMap.put("press-moveSelectionUp+Control", new MoveSelectionUp());
-        
-        iMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_LEFT, 0),
-                "press-left-expand");
+
+        iMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_LEFT, 0), "press-left-expand");
         aMap.put("press-left-expand", new PressLeftExpand());
-        
-        iMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_RIGHT, 0),
-                "press-right-collapse");
+
+        iMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_RIGHT, 0), "press-right-collapse");
         aMap.put("press-right-collapse", new PressRightCollapse());
 
-        iMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_LEFT, 
-                KeyEvent.CTRL_DOWN_MASK), "press-left-expandGraph");
+        iMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_LEFT, KeyEvent.CTRL_DOWN_MASK), "press-left-expandGraph");
         aMap.put("press-left-expandGraph", new PressLeftExpandGraph());
-        
-        iMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_RIGHT, 
-                KeyEvent.CTRL_DOWN_MASK), "press-right-collapseGraph");
+
+        iMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_RIGHT, KeyEvent.CTRL_DOWN_MASK), "press-right-collapseGraph");
         aMap.put("press-right-collapseGraph", new PressRightCollapseGraph());
-        
-        iMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_DOWN, 
-                KeyEvent.SHIFT_DOWN_MASK), "auto-scroll-down"); 
+
+        iMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_DOWN, KeyEvent.SHIFT_DOWN_MASK), "auto-scroll-down");
         aMap.put("auto-scroll-down", new AutoScrollDown());
-        
-        iMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_UP, 
-                KeyEvent.SHIFT_DOWN_MASK), "auto-scroll-up"); 
+
+        iMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_UP, KeyEvent.SHIFT_DOWN_MASK), "auto-scroll-up");
         aMap.put("auto-scroll-up", new AutoScrollUp());
-        
-        iMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_LEFT, 
-                KeyEvent.SHIFT_DOWN_MASK), "auto-scroll-left"); 
+
+        iMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_LEFT, KeyEvent.SHIFT_DOWN_MASK), "auto-scroll-left");
         aMap.put("auto-scroll-left", new AutoScrollLeft());
-        
-        iMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_RIGHT, 
-                KeyEvent.SHIFT_DOWN_MASK), "auto-scroll-right"); 
+
+        iMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_RIGHT, KeyEvent.SHIFT_DOWN_MASK), "auto-scroll-right");
         aMap.put("auto-scroll-right", new AutoScrollRight());
-        
     }
     
     public void registrAction(MapperKeyboardAction action) {
@@ -166,6 +155,9 @@ public class RightTree extends MapperPanel implements
                 iMap.put(s, actionKey);
             }
         }
+    }
+    public ActionListener getActionEscape() {
+        return actionEscape;
     }
     
     @Override

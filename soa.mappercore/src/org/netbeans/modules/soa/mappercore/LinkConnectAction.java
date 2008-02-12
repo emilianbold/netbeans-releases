@@ -78,7 +78,7 @@ public class LinkConnectAction extends MapperKeyboardAction implements
     public LinkConnectAction(Canvas canvas) {
         this.canvas = canvas;
         treePath = null;
-        
+
         MapperKeyboardAction action = new LinkConnectDone(canvas);
         
         canvas.getMapper().addRightTreeExpansionListener(this);

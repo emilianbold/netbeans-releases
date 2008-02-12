@@ -49,6 +49,18 @@ made subject to such option by the copyright holder.
             </folder>
         </folder>
     </folder>
+    <folder name="Projects">
+        <folder name="org-codehaus-mevenide-netbeans">
+            <folder name="Lookup">
+                <file name="org-netbeans-modules-spring-webmvc-ProjectLookupProvider.instance"/>
+            </folder>
+        </folder>
+        <folder name="org-netbeans-modules-web-project">
+            <folder name="Lookup">
+                <file name="org-netbeans-modules-spring-webmvc-ProjectLookupProvider.instance"/>
+            </folder>
+        </folder>
+    </folder>
     <folder name="Templates">
         <folder name="SpringFramework">
             <file name="AbstractController.java" url="templates/AbstractController.template">

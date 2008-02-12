@@ -58,7 +58,6 @@ import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 import javax.xml.transform.sax.SAXSource;
-import org.apache.commons.jxpath.JXPathContext;
 import org.netbeans.modules.websvc.saas.model.Saas;
 import org.netbeans.modules.websvc.saas.model.SaasGroup;
 import org.netbeans.modules.websvc.saas.model.WadlSaas;
@@ -218,11 +217,11 @@ public class SaasUtil {
         return extensionsResult.allInstances();
     }
     
-    public static <T> T fromXPath(Object root, String xpath, Class<T> type) {
+    /*public static <T> T fromXPath(Object root, String xpath, Class<T> type) {
         JXPathContext context = JXPathContext.newContext(root);
         context.registerNamespace("", Saas.NS_WADL);
         return type.cast(context.getValue(xpath));
-    }
+    }*/
 
     public static Method wadlMethodFromIdRef(Application app, String methodIdRef) {
         String methodId = methodIdRef;
