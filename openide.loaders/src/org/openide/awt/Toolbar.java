@@ -854,6 +854,10 @@ public class Toolbar extends JToolBar /*implemented by patchsuperclass MouseInpu
     public void setDisplayName (String displayName) {
         this.displayName = displayName;
     }
+    
+    private static final void setToolTipText (JComponent comp, String text) {
+        comp.setToolTipText(Actions.cutAmpersand(text));
+    }
 
     /** Fire drag of Toolbar
      * @param dx distance of horizontal dragging
@@ -1149,7 +1153,7 @@ public class Toolbar extends JToolBar /*implemented by patchsuperclass MouseInpu
             int width = WIDTH;
             dim = new Dimension (width, width);
             max = new Dimension (width, Integer.MAX_VALUE);
-            this.setToolTipText (Toolbar.this.getDisplayName());
+            Toolbar.setToolTipText (this, Toolbar.this.getDisplayName());
         }
 
         /** Paint bumps to specific Graphics. */
@@ -1222,7 +1226,7 @@ public class Toolbar extends JToolBar /*implemented by patchsuperclass MouseInpu
             }
             dim = new Dimension (width, width);
             max = new Dimension (width, Integer.MAX_VALUE);
-            this.setToolTipText (Toolbar.this.getDisplayName());
+            Toolbar.setToolTipText (this, Toolbar.this.getDisplayName());
         }
         
         /** Paint bumps to specific Graphics. */
@@ -1332,7 +1336,7 @@ public class Toolbar extends JToolBar /*implemented by patchsuperclass MouseInpu
         public ToolbarAqua() {
             dim = new Dimension (WIDTH, WIDTH);
             max = new Dimension (WIDTH, Integer.MAX_VALUE);
-            this.setToolTipText (Toolbar.this.getDisplayName());
+            Toolbar.setToolTipText (this, Toolbar.this.getDisplayName());
         }
         
         @Override
@@ -1414,7 +1418,7 @@ public class Toolbar extends JToolBar /*implemented by patchsuperclass MouseInpu
         public ToolbarXP() {
             dim = new Dimension (WIDTH, WIDTH);
             max = new Dimension (WIDTH, Integer.MAX_VALUE);
-            this.setToolTipText (Toolbar.this.getDisplayName());
+            Toolbar.setToolTipText (this, Toolbar.this.getDisplayName());
         }
         
         @Override
@@ -1541,7 +1545,7 @@ public class Toolbar extends JToolBar /*implemented by patchsuperclass MouseInpu
             dim = new Dimension (width, width);
             max = new Dimension (width, Integer.MAX_VALUE);
             this.setBorder (new EmptyBorder (VGAP, HGAP, VGAP, HGAP));
-            this.setToolTipText (Toolbar.this.getDisplayName());
+            Toolbar.setToolTipText (this, Toolbar.this.getDisplayName());
         }
 
         /** Paint grip to specific Graphics. */
