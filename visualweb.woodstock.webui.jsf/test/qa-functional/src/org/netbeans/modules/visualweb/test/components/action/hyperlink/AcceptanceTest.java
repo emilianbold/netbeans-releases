@@ -39,22 +39,23 @@
  * made subject to such option by the copyright holder.
  */
 
-package   org.netbeans.modules.visualweb.test.components.action.Image;
+package org.netbeans.modules.visualweb.test.components.action.hyperlink;
 
 import junit.framework.Test;
 import junit.framework.TestSuite;
 
 import java.io.File;
 import java.awt.*;
+import java.awt.event.KeyEvent;
 import java.io.IOException;
 
 import org.netbeans.modules.visualweb.gravy.*;
 import org.netbeans.modules.visualweb.gravy.ProjectNavigatorOperator;
-import org.netbeans.modules.visualweb.gravy.dataconnectivity.ServerNavigatorOperator;
 import org.netbeans.modules.visualweb.gravy.toolbox.PaletteContainerOperator;
 import org.netbeans.modules.visualweb.gravy.designer.DesignerPaneOperator;
 import org.netbeans.modules.visualweb.gravy.properties.SheetTableOperator;
 import org.netbeans.modules.visualweb.gravy.dataconnectivity.ServerNavigatorOperator;
+import org.netbeans.jemmy.operators.*;
 import org.netbeans.modules.visualweb.test.components.util.ComponentUtils;
 import org.netbeans.jellytools.OutputOperator;
 import org.netbeans.jemmy.Waitable;
@@ -67,39 +68,44 @@ import org.netbeans.jemmy.operators.JTreeOperator;
  */
 public class AcceptanceTest extends RaveTestCase {
     
-    public String _bundle = "org.netbeans.modules.visualweb.test.components.Component";
+    public String _bundle = "org.netbeans.modules.visualweb.test.components.Component"; 
     public String _projectServer = Bundle.getStringTrimmed(_bundle,"projectServer");
     public String _logFileLocation = Bundle.getStringTrimmed(_bundle,"logFile");
     public String _logFile = System.getProperty("xtest.workdir") + File.separator + _logFileLocation;
     public String _exception = Bundle.getStringTrimmed(_bundle,"Exception");
     public String _close = Bundle.getStringTrimmed(_bundle,"close");    
-    
-    public String _projectName = "ImageAcceptanceTest";
-  
-    public String _run = Bundle.getStringTrimmed(_bundle,"Run");
-    public String _buildSuccess = Bundle.getStringTrimmed(_bundle,"buildSuccess");
-    public String _true = Bundle.getStringTrimmed(_bundle,"true");
    
-    public String imageDir= ComponentUtils.getDataDir() +"action" + File.separator  ;
-    public String image1 = imageDir + "orchid1.JPG";
-    public String image2 = imageDir + "orchid2.JPG";
-    public static int xImage=50;
-    public static int yImage1=50;
-    public static int yImage2=200;
-    public static int yImage3=400;
+    public String _projectName = "HyperlinkAcceptanceTest";
+ 
+    public String _page1 = "Page1";
+    public String _page2 = "Page2";
+    
+    //Menu variables
+    public String _separator = Bundle.getStringTrimmed(_bundle,"separator");
+    public String _propertySheet = Bundle.getStringTrimmed(_bundle,"propertySheet");
+	public String _reformatCode = Bundle.getStringTrimmed(_bundle,"reformatCode");
+    
+    public static int xHyperlink=50;
+    public static int yHyperlink1=50;
+    public static int yHyperlink2=125;
+    public static int yHyperlink3=200;
     
     //undeployment
     public String _undeploy = Bundle.getStringTrimmed(_bundle, "undeploy");
     public String _refresh = Bundle.getStringTrimmed(_bundle, "refresh");
     public String _serverPath = Bundle.getStringTrimmed(_bundle, "serverPath");
     public String _deploymentPath = Bundle.getStringTrimmed(_bundle, "deploymentPathGlassfish");
-    public String _separator = Bundle.getStringTrimmed(_bundle, "separator");
-    
     
     public static DesignerPaneOperator designer;
     public static SheetTableOperator sheet;
-    public static ServerNavigatorOperator explorer;    
+    public static ProjectNavigatorOperator prjNav =  ProjectNavigatorOperator.showProjectNavigator();
+    public static ServerNavigatorOperator explorer;
     
+    public String _run = Bundle.getStringTrimmed(_bundle,"Run");
+    public String _buildSuccess = Bundle.getStringTrimmed(_bundle,"buildSuccess");
+    public String _true = Bundle.getStringTrimmed(_bundle,"true");
+
+     
     public AcceptanceTest(String testName) {
         super(testName);
     }
@@ -107,9 +113,9 @@ public class AcceptanceTest extends RaveTestCase {
     public static Test suite() {
         TestSuite suite= new TestSuite();
         suite.addTest(new AcceptanceTest("testCreateProject"));
-        suite.addTest(new AcceptanceTest("testAddImage1"));
-        // Always have trouble to drop second iamge. Comment it for now
-       // suite.addTest(new AcceptanceTest("testAddImage2"));
+        suite.addTest(new AcceptanceTest("testAddHyperlink1"));
+        suite.addTest(new AcceptanceTest("testAddHyperlink2"));
+        suite.addTest(new AcceptanceTest("testAddHyperlink3"));
         suite.addTest(new AcceptanceTest("testDeploy"));
         suite.addTest(new AcceptanceTest("testCloseProject"));
         suite.addTest(new AcceptanceTest("testUndeploy"));
@@ -141,6 +147,7 @@ public class AcceptanceTest extends RaveTestCase {
             try {
                 se.startServer("J2EE");
             } catch (Exception e) {
+                fail(e);
             }
             // Delete pb travel resource if it exists
             se.deleteResource("jdbc/Travel");
@@ -155,8 +162,8 @@ public class AcceptanceTest extends RaveTestCase {
         startTest();
         log("**Creating Project");
         //Create Project
-        try { 
-            ComponentUtils.createNewProject(_projectName);
+        try {
+            ComponentUtils.createNewProject(_projectName);  
         } catch(Exception e) {
             log(">> Project Creation Failed");
             e.printStackTrace();
@@ -168,66 +175,78 @@ public class AcceptanceTest extends RaveTestCase {
     }
     
     /*
-     *   Add 1st image component.
-     *   Set its image from designer
-     *   Set its tooltip, width, heigth properties
+     *  . Add 1st hyperlink component. Change its text  property sheet as "Go to Google".
+     *  . Change its text color via style property.
+     *  . Set its tooltip property to " Launch in a new window", and set New Window for target property
+     *  . Double click the image hyperlink in designer, add code in hyperlink1_action() :
+     *   hyperlink1.setUrl("http://www.google.com");
      */
     
-    public void testAddImage1() {
+    public void testAddHyperlink1() {
         startTest();
         designer = new DesignerPaneOperator(RaveWindowOperator.getDefaultRave());
+        log("Add first hyperlink component");
         PaletteContainerOperator palette = new PaletteContainerOperator(Bundle.getStringTrimmed(_bundle, "basicPalette"));
         Util.wait(5000);
+        palette.dndPaletteComponent(Bundle.getStringTrimmed(_bundle, "basicHyperlink"), designer, new Point(xHyperlink, yHyperlink1));
         
-        log("**Add Image to designer");
-        String name=Bundle.getStringTrimmed(_bundle, "basicImage");
-        Point dropPoint = new Point(xImage, yImage1);
-        int index=1;  //Image = 1, Image Hyperlink = 0
-        palette.addComponent(name, index, designer, dropPoint);
-        Util.wait(2000);
-                
-        log("Set property values");
+        log("Set text, toolTip, target properties");
         sheet = new SheetTableOperator();
-        ComponentUtils.setProperty(sheet, Bundle.getStringTrimmed(_bundle, "propertyToolTip"), "Orchid");
-        ComponentUtils.setProperty(sheet, Bundle.getStringTrimmed(_bundle, "propertyWidth"), "50");
-        ComponentUtils.setProperty(sheet, Bundle.getStringTrimmed(_bundle, "propertyHeight"), "50");
-        ComponentUtils.setProperty(sheet, Bundle.getStringTrimmed(_bundle, "propertyBorder"), "2");
-        log("id= " + sheet.getSelectedComponentID());
-        //designer.setImage(sheet.getSelectedComponentID(), image1);
-        designer.setImage(xImage, yImage1, image1);
+        ComponentUtils.setProperty(sheet, Bundle.getStringTrimmed(_bundle, "propertyText"), "Go to Google");
+        ComponentUtils.setProperty(sheet, Bundle.getStringTrimmed(_bundle, "propertyToolTip"), "Launch browser in a new window ");
+        sheet.setComboBoxValue(Bundle.getStringTrimmed(_bundle, "propertyTarget"), Bundle.getStringTrimmed(_bundle, "propertyTargetNewWindow"));
         Util.wait(1000);
-       
-        Util.saveAllAPICall();
-        Util.wait(2000);
+        
+        log("Set style property");
+        setFontStyle("hyperlink1", Bundle.getStringTrimmed(_bundle, "basicHyperlink"), "serif", "36", "fuchsia");
+        Util.wait(5000); //setFontStyle is not blocking so need to give time to finish.
+        
+        log("Add code to processValueChange");
+        designer.clickMouse(xHyperlink, yHyperlink1, 2);
+        TestUtils.wait(3000);
+        JEditorPaneOperator editor = new JEditorPaneOperator(
+                RaveWindowOperator.getDefaultRave(), "public class " + _page1 );
+        
+        editor.setVerification(false);
+        TestUtils.wait(2000);
+        editor.requestFocus();
+        TestUtils.wait(2000);
+        editor.pushKey(KeyEvent.VK_ENTER);
+        editor.typeText("hyperlink1.setUrl(\"http://www.google.com\");");
+        editor.pushKey(KeyEvent.VK_ENTER);
+        
+        TestUtils.wait(200);
+        editor.clickForPopup();
+        new JPopupMenuOperator().pushMenu(_reformatCode);
+        TestUtils.wait(200);
+        // Switch to design panel
+        designer.makeComponentVisible();
+        TestUtils.wait(10000);
         endTest();
     }
     
     /*
-     *  Add 2nd image  component.
-     *  Set image via  url property
+     *  Add 2nd Hyperlink component.
+     *  Set its text, url properties
      */
-    public void testAddImage2() {
+    public void testAddHyperlink2() {
         startTest();
         designer = new DesignerPaneOperator(RaveWindowOperator.getDefaultRave());
-        PaletteContainerOperator palette = new PaletteContainerOperator(Bundle.getStringTrimmed(_bundle,"basicPalette"));        
-        Util.wait(5000);
         
-        log("**Add Image to designer");
-        String name=Bundle.getStringTrimmed(_bundle, "basicImage");
-        Point dropPoint = new Point(xImage, yImage2);
-        int index=1;  //Image = 1, Image Hyperlink = 0
-        palette.addComponent(name, index, designer,  dropPoint);
-        Util.wait(2000);
-                
-//        String image2ID="image2";
-//        designer.clickMouse(image2ID, 1);
-//        Util.wait(500);
-        log("Set properties");
+        log("Add second hyperlink component");
+        PaletteContainerOperator palette = new PaletteContainerOperator(Bundle.getStringTrimmed(_bundle, "basicPalette"));
+        Util.wait(1000);
+        palette.dndPaletteComponent(Bundle.getStringTrimmed(_bundle, "basicHyperlink"), designer, new Point(xHyperlink, yHyperlink2));
+        
+        log("make sure property sheet is visible"); //or it will set previous component values.
+        Util.getMainMenu().pushMenu(_propertySheet,_separator);
+        try { Thread.sleep(2000); } catch(Exception e) {}
+
+        log("Set its text and url property");
         sheet = new SheetTableOperator();
-        Util.wait(1500);
-        ComponentUtils.setProperty(sheet, Bundle.getStringTrimmed(_bundle, "propertyWidth"), "80");
-        ComponentUtils.setProperty(sheet,Bundle.getStringTrimmed(_bundle, "propertyHeight"), "70");
-        sheet.setImage("image1", Bundle.getStringTrimmed(_bundle, "propertyUrl"), image2);
+        ComponentUtils.setProperty(sheet,Bundle.getStringTrimmed(_bundle, "propertyText"), "Sun Java Studio Creator");
+        // sheet.setButtonValue(Bundle.getStringTrimmed(_bundle, "propertyText"), "Sun Java Studio Creator");
+        ComponentUtils.setProperty(sheet,Bundle.getStringTrimmed(_bundle, "propertyUrl"), "http://developers.sun.com/prodtech/javatools/jscreator/");
         Util.wait(2000);
         
         Util.saveAllAPICall();
@@ -235,7 +254,58 @@ public class AcceptanceTest extends RaveTestCase {
         endTest();
     }
     
-  /*
+     /*
+      *  . Add 3rd hyperlink component.
+      *  . Change its  text to Page2.
+      *  . Create  Page2.jsp.
+      *  . Link this Hyperlink to Page2.jsp
+      */
+    public void testAddHyperlink3() {
+        startTest();
+        designer = new DesignerPaneOperator(RaveWindowOperator.getDefaultRave());
+        
+        log("Add 3rd hyperlink component");
+        PaletteContainerOperator palette = new PaletteContainerOperator(Bundle.getStringTrimmed(_bundle, "basicPalette"));
+        Util.wait(2000);
+        palette.dndPaletteComponent(Bundle.getStringTrimmed(_bundle, "basicHyperlink"), designer, new Point(xHyperlink, yHyperlink3));
+        
+        log("make sure property sheet is visible"); //or it will set previous component values.
+        Util.getMainMenu().pushMenu(_propertySheet,_separator);
+        try { Thread.sleep(2000); } catch(Exception e) {}
+
+        log("Set its text property");
+        sheet = new SheetTableOperator();
+        ComponentUtils.setProperty(sheet, Bundle.getStringTrimmed(_bundle, "propertyText"), "Page 2");
+        Util.wait(2000); 
+        
+        log("Create second page Page2.jsp"); 
+        Util.saveAllAPICall();//adding page fails - takes too long, so save first.
+        Util.wait(5000); 
+        prjNav.addWebPage(_projectName, _page2);  
+        Util.wait(8000); 
+        Util.wait(8000); 
+        Util.wait(8000); 
+/*        
+        log("add label to page");
+        palette = new PaletteContainerOperator(Bundle.getStringTrimmed(_bundle, "basicPalette"));
+        palette.dndPaletteComponent(Bundle.getStringTrimmed(_bundle, "basicLabel"), designer, new Point(50, 50));
+
+        log("Set its text property");
+        sheet = new SheetTableOperator();
+        ComponentUtils.setProperty(sheet, Bundle.getStringTrimmed(_bundle, "propertyText"), "Page 2");
+        Util.wait(2000); 
+*/
+        log("Go back to first page");
+        prjNav.openWebPage(_projectName, _page1);
+        ComponentUtils.linkWebPages(designer, _page1, _page2, "next");
+        
+        Util.saveAllAPICall();
+        Util.wait(2000);
+        endTest();
+    }
+    
+   
+    /*
      * Deploy application
      */
     public void testDeploy() {
@@ -247,7 +317,7 @@ public class AcceptanceTest extends RaveTestCase {
                 if (text.indexOf(_buildSuccess)!=-1)
                     return _true;
                 return null;
-               
+                
             }
             public String getDescription() {
                 return("Waiting Project Deployed");
@@ -270,7 +340,6 @@ public class AcceptanceTest extends RaveTestCase {
         endTest();
     }
     
-    
     public void testCloseProject() {
         startTest();
         Util.saveAllAPICall();
@@ -280,7 +349,26 @@ public class AcceptanceTest extends RaveTestCase {
         TestUtils.wait(5000);
         endTest();
     }
-
+    
+    
+    public void setFontStyle(String componentID, String ComponentName, String style, String size, String color) {
+        sheet = new SheetTableOperator();
+        sheet.pushDotted(Bundle.getStringTrimmed(_bundle, "propertyStyle"));
+        JDialogOperator dialog = new JDialogOperator(componentID + ":" + ComponentName + " - " + Bundle.getStringTrimmed(_bundle, "propertyStyle"));
+        (new JListOperator(dialog, 0)).selectItem(Bundle.getStringTrimmed(_bundle, "style_font"));
+        if (!style.equals("")) {
+            (new JListOperator(dialog, 1)).selectItem(style);
+        }
+        if(!size.equals("")) {
+            (new JListOperator(dialog, 2)).selectItem(size);
+        }
+        if(!color.equals("")) {
+            (new JComboBoxOperator(dialog, 4)).selectItem(color);
+        }
+        TestUtils.wait(1000);
+        (new JButtonOperator(dialog, "OK")).pushNoBlock();
+    }
+    
     /* Need to undeploy project to finish tests correctly */
     public void testUndeploy() {
         startTest();

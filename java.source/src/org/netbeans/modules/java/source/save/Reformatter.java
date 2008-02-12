@@ -65,6 +65,8 @@ import org.netbeans.modules.editor.indent.spi.ReformatTask;
  */
 public class Reformatter implements ReformatTask {
     
+    private static final Object EDITING_TEMPLATE_DOC_PROPERTY = "processing-code-template"; // NOI18N
+
     private JavaSource javaSource;
     private Context context;
     private CompilationController controller;
@@ -123,6 +125,7 @@ public class Reformatter implements ReformatTask {
     }
     
     private void reformatImpl(Context.Region region) throws BadLocationException {
+        boolean templateEdit = Boolean.TRUE.equals(doc.getProperty(EDITING_TEMPLATE_DOC_PROPERTY));
         int startOffset = region.getStartOffset() - shift;
         int endOffset = region.getEndOffset() - shift;
         int originalEndOffset = endOffset;
@@ -167,7 +170,7 @@ public class Reformatter implements ReformatTask {
         TreePath path = getCommonPath(startOffset, endOffset);
         if (path == null)
             return;
-        for (Diff diff : Pretty.reformat(controller, path, CodeStyle.getDefault(null))) {
+        for (Diff diff : Pretty.reformat(controller, path, CodeStyle.getDefault(null), templateEdit)) {
             int start = diff.getStartOffset();
             int end = diff.getEndOffset();
             String text = diff.getText();
@@ -177,8 +180,8 @@ public class Reformatter implements ReformatTask {
                 if (text != null && text.length() > 0) {
                     TokenSequence<JavaTokenId> ts = controller.getTokenHierarchy().tokenSequence(JavaTokenId.language());
                     if (ts != null) {
-                        ts.move(startOffset);
-                        if (ts.moveNext()) {
+                        int d = ts.move(startOffset);
+                        if ((d == 0 && ts.movePrevious()) || ts.moveNext()) {
                             if (ts.token().id() == WHITESPACE) {
                                 String t = ts.token().text().toString();
                                 t = t.substring(0, startOffset - ts.offset());
@@ -290,15 +293,17 @@ public class Reformatter implements ReformatTask {
         private boolean afterAnnotation;
         private boolean fieldGroup;
         private boolean afterNewline;
+        private boolean templateEdit;
         private LinkedList<Diff> diffs = new LinkedList<Diff>();
         private DanglingElseChecker danglingElseChecker = new DanglingElseChecker();
 
-        private Pretty(CompilationInfo info, TreePath path, CodeStyle cs) {
+        private Pretty(CompilationInfo info, TreePath path, CodeStyle cs, boolean templateEdit) {
             this(info, info.getText(), info.getTrees().getSourcePositions(),
                     path.getLeaf().getKind() == Tree.Kind.COMPILATION_UNIT
                     ? info.getTokenHierarchy().tokenSequence(JavaTokenId.language())
                     : info.getTreeUtilities().tokensFor(path.getLeaf()),
                     path, cs);
+            this.templateEdit = templateEdit;
         }
         
         private Pretty(CompilationInfo info, String text, SourcePositions sp, TokenSequence<JavaTokenId> tokens, TreePath path, CodeStyle cs) {
@@ -327,8 +332,8 @@ public class Reformatter implements ReformatTask {
             tokens.moveNext();
         }
 
-        public static LinkedList<Diff> reformat(CompilationInfo info, TreePath path, CodeStyle cs) {
-            Pretty pretty = new Pretty(info, path, cs);
+        public static LinkedList<Diff> reformat(CompilationInfo info, TreePath path, CodeStyle cs, boolean templateEdit) {
+            Pretty pretty = new Pretty(info, path, cs, templateEdit);
             if (pretty.indent >= 0)
                 pretty.scan(path, null);
             if (path.getLeaf().getKind() == Tree.Kind.COMPILATION_UNIT) {
@@ -1059,7 +1064,7 @@ public class Reformatter implements ReformatTask {
                     scan(stat, p);
                 }
             }
-            if (isEmpty)
+            if (isEmpty || templateEdit)
                 newline();
             indent = halfIndent;
             if (node instanceof FakeBlock) {
@@ -2300,6 +2305,8 @@ public class Reformatter implements ReformatTask {
 
         private void blankLines(int count) {
             afterNewline = true;
+            if (templateEdit)
+                count = ANY_COUNT;
             if (count >= 0) {
                 if (lastBlankLinesTokenIndex < 0) {
                     lastBlankLines = count;
@@ -2439,7 +2446,7 @@ public class Reformatter implements ReformatTask {
                             int lastIdx = 0;
                             while(count != 0 && (idx = text.indexOf('\n', lastIdx)) >= 0) { //NOI18N
                                 if (idx > lastIdx)
-                                    diffs.addFirst(new Diff(offset + lastIdx, offset + idx, null));
+                                    diffs.addFirst(new Diff(offset + lastIdx, offset + idx, templateEdit ? getIndent() : null));
                                 lastIdx = idx + 1;
                                 count--;
                             }
