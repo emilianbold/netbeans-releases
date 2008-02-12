@@ -53,7 +53,6 @@ import javax.swing.JEditorPane;
 import org.netbeans.modules.cnd.api.model.CsmClass;
 import org.netbeans.modules.cnd.api.model.CsmDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmEnumerator;
-import org.netbeans.modules.cnd.api.model.CsmField;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmFunction;
 import org.netbeans.modules.cnd.api.model.CsmFunctionDefinition;
@@ -69,7 +68,6 @@ import org.netbeans.modules.cnd.api.model.CsmProgressListener;
 import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.api.model.CsmScope;
 import org.netbeans.modules.cnd.api.model.CsmScopeElement;
-import org.netbeans.modules.cnd.api.model.CsmVariable;
 import org.netbeans.modules.cnd.api.model.services.CsmFileReferences;
 import org.netbeans.modules.cnd.api.model.services.CsmInheritanceUtilities;
 import org.netbeans.modules.cnd.api.model.util.CsmBaseUtilities;
@@ -158,7 +156,7 @@ public class TraceXRef extends TraceModel {
                 }
                 
                 ReferenceRepositoryImpl xRefRepository = new ReferenceRepositoryImpl();
-                CsmObject[] decDef = getDefinitionDeclaration(object);
+                CsmObject[] decDef = CsmBaseUtilities.getDefinitionDeclaration(object);
                 CsmObject decl = decDef[0];
                 CsmObject def = decDef[1];                
                 Collection<CsmReference> refs = xRefRepository.getReferences(decl, getProject(), true);
@@ -169,7 +167,6 @@ public class TraceXRef extends TraceModel {
                 if (super.isShowTime()) {
                     System.out.println("search took " + time + "ms"); // NOI18N
                 }       
-                ReferenceRepositoryImpl.getDefinitionDeclaration(object);
             }
         }
         finally {
@@ -181,17 +178,7 @@ public class TraceXRef extends TraceModel {
             }            
         }        
     }
-
-    /**
-     * 
-     * @param target
-     * @return new CsmObject[] { declaration, definion }
-     */    
-    public static CsmObject[] getDefinitionDeclaration(CsmObject target) {
-        CsmObject[] decDef = ReferenceRepositoryImpl.getDefinitionDeclaration(target);
-        return decDef;
-    }
-    
+   
     @SuppressWarnings("deprecation")
     private static void setUp() {
         // this is the only way to init extension-based recognizer
@@ -261,7 +248,7 @@ public class TraceXRef extends TraceModel {
     
     public static void traceRefs(Collection<CsmReference> out, CsmObject target, PrintStream streamOut) {
         assert target != null;
-        CsmObject[] decDef = ReferenceRepositoryImpl.getDefinitionDeclaration(target);
+        CsmObject[] decDef = CsmBaseUtilities.getDefinitionDeclaration(target);
         CsmObject decl = decDef[0];
         CsmObject def = decDef[1];        
         assert decl != null;
@@ -282,14 +269,16 @@ public class TraceXRef extends TraceModel {
     
     public static String toString(CsmReference ref, CsmObject targetDecl, CsmObject targetDef) {
         String out = CsmTracer.getOffsetString(ref, true);
-        ReferenceRepositoryImpl.ReferenceKind kind = ReferenceRepositoryImpl.getReferenceKind(ref, targetDecl, targetDef);
+        CsmReferenceResolver.ReferenceKind kind = CsmReferenceResolver.getDefault().getReferenceKind(ref, targetDecl, targetDef);
         String postfix;
-        if (kind == ReferenceRepositoryImpl.ReferenceKind.DECLARATION) {
+        if (kind == CsmReferenceResolver.ReferenceKind.DECLARATION) {
             postfix = " (DECLARATION)"; // NOI18N
-        } else if (kind == ReferenceRepositoryImpl.ReferenceKind.DEFINITION) {
+        } else if (kind == CsmReferenceResolver.ReferenceKind.DEFINITION) {
             postfix = " (DEFINITION)"; // NOI18N
+        } else if (CsmReferenceResolver.ReferenceKind.ANY_USAGE.contains(kind)) {
+            postfix = "";
         } else {
-            assert kind == ReferenceRepositoryImpl.ReferenceKind.USAGE : "unknown reference kind" + kind;
+            System.err.println("unknown reference kind " + kind + " for " + ref);           
             postfix = "";
         }
         return out + postfix;
@@ -376,7 +365,8 @@ public class TraceXRef extends TraceModel {
         if (target == null) {
             entry = XRefResultSet.ContextEntry.UNRESOLVED;
         } else {
-            if (ReferenceRepositoryImpl.getReferenceKind(ref) == ReferenceRepositoryImpl.ReferenceKind.USAGE) { 
+            CsmReferenceResolver.ReferenceKind kind = CsmReferenceResolver.getDefault().getReferenceKind(ref);
+            if (CsmReferenceResolver.ReferenceKind.ANY_USAGE.contains(kind)) {
                 XRefResultSet.DeclarationKind declaration = classifyDeclaration(target, printOut);
                 XRefResultSet.DeclarationScope declarationScope = classifyDeclarationScopeForFunction(declaration, target, fun, printOut);
                 XRefResultSet.IncludeLevel declarationIncludeLevel = classifyIncludeLevel(target, fun.objFile, printOut);

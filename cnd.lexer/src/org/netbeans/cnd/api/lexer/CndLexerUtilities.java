@@ -56,6 +56,10 @@ public final class CndLexerUtilities {
 
     public static TokenSequence<CppTokenId> getCppTokenSequence(final JTextComponent component, final int offset) {
         Document doc = component.getDocument();
+        return getCppTokenSequence(doc, offset);
+    }
+    
+    public static TokenSequence<CppTokenId> getCppTokenSequence(final Document doc, final int offset) {
         TokenHierarchy th = doc != null ? TokenHierarchy.get(doc) : null;
         TokenSequence<CppTokenId> ts = th != null ? getCppTokenSequence(th, offset) : null;
         return ts;

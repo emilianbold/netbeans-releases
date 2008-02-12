@@ -41,8 +41,11 @@
 
 package org.netbeans.modules.cnd.api.model.xref;
 
+import java.util.EnumSet;
 import javax.swing.JEditorPane;
 import org.netbeans.modules.cnd.api.model.CsmFile;
+import org.netbeans.modules.cnd.api.model.CsmObject;
+import org.netbeans.modules.cnd.api.model.util.CsmBaseUtilities;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.openide.cookies.EditorCookie;
 import org.openide.nodes.Node;
@@ -104,6 +107,56 @@ public abstract class CsmReferenceResolver {
     }
     
     /**
+     * returns reference kind
+     * @param ref reference to analyze
+     * @return reference kind
+     */
+    public ReferenceKind getReferenceKind(CsmReference ref) {
+        // default implementation
+        CsmObject target = ref.getReferencedObject();
+        assert target != null;
+        CsmObject[] decDef = CsmBaseUtilities.getDefinitionDeclaration(target);
+        CsmObject targetDecl = decDef[0];
+        CsmObject targetDef = decDef[1];        
+        return getReferenceKind(ref, targetDecl, targetDef);
+    }
+
+    /**
+     * returns reference kind with known definition and declaration of target
+     * @param ref reference to analyze
+     * @param targetDecl declaration of target object
+     * @param targetDef definition of target object
+     * @return reference kind 
+     */
+    public ReferenceKind getReferenceKind(CsmReference ref, CsmObject targetDecl, CsmObject targetDef) {
+        // default implementation
+        assert targetDecl != null;
+        CsmObject owner = ref.getOwner();
+        ReferenceKind kind = ReferenceKind.USAGE;
+        if (owner != null) {
+            if (owner.equals(targetDecl)) {
+                kind = ReferenceKind.DECLARATION;
+            } else if (owner.equals(targetDef)) {
+                kind = ReferenceKind.DEFINITION;
+            }
+        }
+        return kind;
+    }
+    
+    public static enum ReferenceKind {
+        DEFINITION,
+        DECLARATION,        
+        USAGE,
+        AFTER_DEREFERENCE_USAGE,
+        UNKNOWN;
+        
+        public static final EnumSet ANY_USAGE;
+        static {
+            ANY_USAGE = EnumSet.range(USAGE, AFTER_DEREFERENCE_USAGE);
+        }
+    }
+    
+    /**
      * fast checks reference scope if possible
      * @param ref
      * @return scope kind if detected or UNKNOWN
@@ -154,6 +207,28 @@ public abstract class CsmReferenceResolver {
                 }
             }
             return Scope.UNKNOWN;
+        }
+
+        @Override
+        public ReferenceKind getReferenceKind(CsmReference ref) {
+            for (CsmReferenceResolver resolver : res.allInstances()) {
+                ReferenceKind kind = resolver.getReferenceKind(ref);
+                if (kind != ReferenceKind.UNKNOWN) {
+                    return kind;
+                }
+            }            
+            return ReferenceKind.UNKNOWN;
+        }
+        
+        @Override
+        public ReferenceKind getReferenceKind(CsmReference ref, CsmObject targetDecl, CsmObject targetDef) {
+            for (CsmReferenceResolver resolver : res.allInstances()) {
+                ReferenceKind kind = resolver.getReferenceKind(ref, targetDecl, targetDef);
+                if (kind != ReferenceKind.UNKNOWN) {
+                    return kind;
+                }
+            }            
+            return ReferenceKind.UNKNOWN;
         }        
     }    
 }

@@ -55,6 +55,7 @@ public class JbiExtensionAttribute implements Serializable {
         STRING("String"),
         INTEGER("Integer"),
         QNAME("QName"),
+//        OPERATION("Operation"),
         ENDPOINT("Endpoint");
         
         private String type;
