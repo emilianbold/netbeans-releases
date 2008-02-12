@@ -172,16 +172,6 @@ public class ExternalGrailsServer implements GrailsServer{
                 LOG.log(Level.WARNING, "Could not get serverState through lookup");
                 }
         }
-        else if(cmd.startsWith("war")) {
-
-            String tabName = "Grails Server for: " + prj.getProjectDirectory().getName();
-
-            gsr = new GrailsServerRunnable(outputReady, true, cwdName, prependOption() + cmd);
-            ExecutorTask exTask = engine.execute(tabName, gsr, io);
-
-            waitForOutput();
-
-        }
         else if(cmd.startsWith("shell")) {
 
             gsr = new GrailsServerRunnable(outputReady, false, cwdName, prependOption() + cmd);
@@ -190,9 +180,14 @@ public class ExternalGrailsServer implements GrailsServer{
             waitForOutput();
         }
         else {
-            LOG.log(Level.WARNING, "unknown server command: " + cmd);
-            return null;
-        
+
+            String tabName = "Grails Server for: " + prj.getProjectDirectory().getName();
+
+            gsr = new GrailsServerRunnable(outputReady, true, cwdName, prependOption() + cmd);
+            ExecutorTask exTask = engine.execute(tabName, gsr, io);
+
+            waitForOutput();
+
         }
         
         lastException = gsr.getLastError();
