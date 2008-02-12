@@ -336,6 +336,7 @@ public class XPathModelImpl implements XPathModel {
         //
         String nodeName = qName.getLocalPart();
         HashSet<SchemaCompPair> foundCompPairSet = new HashSet<SchemaCompPair>();
+        myLastSchemaComponent = null;
 
 //ENABLE = qName.toString().equals("ReservationItems");
 //out();
@@ -371,7 +372,7 @@ public class XPathModelImpl implements XPathModel {
                                 comp instanceof Attribute;
                         //
                         SchemaCompPair newPair = new SchemaCompPair(comp, parentComponent);
-                        foundCompPairSet.add(newPair);
+                        addPair(foundCompPairSet, newPair);
                     }
                     //
                     //
@@ -406,7 +407,7 @@ public class XPathModelImpl implements XPathModel {
                     List<SchemaComponent> found = visitor.getFound();
                     for (SchemaComponent sComp : found) {
                         SchemaCompPair newPair = new SchemaCompPair(sComp, parentComp);
-                        foundCompPairSet.add(newPair);
+                        addPair(foundCompPairSet, newPair);
                     }
                 }
             }
@@ -440,9 +441,8 @@ public class XPathModelImpl implements XPathModel {
                         assert foundComp instanceof GlobalElement ||
                                 foundComp instanceof LocalElement ||
                                 foundComp instanceof Attribute;
-                        SchemaCompPair newPair = 
-                                new SchemaCompPair(foundComp, null);
-                        foundCompPairSet.add(newPair);
+                        SchemaCompPair newPair = new SchemaCompPair(foundComp, null);
+                        addPair(foundCompPairSet, newPair);
                     }
                 }
             }
@@ -477,9 +477,21 @@ public class XPathModelImpl implements XPathModel {
                 }
             }
         }
-        //
         return foundCompPairSet;
     }
+
+    private void addPair(HashSet<SchemaCompPair> set, SchemaCompPair pair) {
+      set.add(pair);
+      myLastSchemaComponent = pair.getComp();
+//System.out.println("!!! set: " + set);
+//System.out.println("!!!    : " + myLastSchemaComponent);
+    }
+
+    public SchemaComponent getLastSchemaComponent() {
+      return myLastSchemaComponent;
+    }
+
+    private SchemaComponent myLastSchemaComponent;
     
     /**
      * Performs postvalidation of the resolved LocationStep.
