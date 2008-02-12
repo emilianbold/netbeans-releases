@@ -124,7 +124,7 @@ public class CCBasicCompletionTestCase extends CompletionBaseTestCase {
     }
 
     public void testGlobalCompletionInGlobal() throws Exception {
-        super.performTest("file.cc", 5, 1, "::");
+        super.performTest("file.cc", 47, 1, "::");
     } 
     
     public void testGlobalCompletionInClassFunction() throws Exception {
