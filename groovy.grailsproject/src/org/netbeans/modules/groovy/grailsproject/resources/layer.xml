@@ -4,6 +4,7 @@
     <folder name="Actions">
         <folder name="Build">
             <file name="org-netbeans-modules-groovy-grailsproject-actions-CreateViewAction.instance"/>
+            <file name="org-netbeans-modules-groovy-grailsproject-actions-GenerateAllAction.instance"/>
         </folder>
     </folder>
     <folder name="Loaders">
@@ -13,6 +14,10 @@
                     <file name="org-netbeans-modules-groovy-grailsproject-actions-CreateViewAction.shadow">
                         <attr name="originalFile" stringvalue="Actions/Build/org-netbeans-modules-groovy-grailsproject-actions-CreateViewAction.instance"/>
                         <attr name="position" intvalue="0"/>
+                    </file>
+                    <file name="org-netbeans-modules-groovy-grailsproject-actions-GenerateAllAction.shadow">
+                        <attr name="originalFile" stringvalue="Actions/Build/org-netbeans-modules-groovy-grailsproject-actions-GenerateAllAction.instance"/>
+                        <attr name="position" intvalue="20"/>
                     </file>
                     <file name="org-netbeans-modules-groovy-grailsproject-actions-separatorAfter.instance">
                         <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
