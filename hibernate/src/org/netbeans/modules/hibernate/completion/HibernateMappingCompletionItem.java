@@ -100,11 +100,18 @@ public abstract class HibernateMappingCompletionItem implements CompletionItem {
             boolean deprecated, boolean smartItem) {
         return new ClassItem(substitutionOffset, elem, elemHandle, deprecated, smartItem);
     }
-    
-    static HibernateMappingCompletionItem createClassPropertyItem(int substitutionOffset, VariableElement variableElem, ElementHandle<VariableElement> elemHandle, boolean deprecated) {
+
+    public static HibernateMappingCompletionItem createClassPropertyItem(int substitutionOffset, VariableElement variableElem, ElementHandle<VariableElement> elemHandle, boolean deprecated) {
         return new ClassPropertyItem(substitutionOffset, variableElem, elemHandle, deprecated);
     }
-    
+
+    public static HibernateMappingCompletionItem createDatabaseTableItem(int substitutionOffset, String name) {
+        return new DatabaseTableItem(substitutionOffset, name);
+    }
+
+    public static HibernateMappingCompletionItem createDatabaseColumnItem(int substitutionOffset, String name, boolean pk) {
+        return new DatabaseColumnItem(substitutionOffset, name, pk);
+    }
     protected int substitutionOffset;
 
     protected HibernateMappingCompletionItem(int substitutionOffset) {
@@ -183,8 +190,7 @@ public abstract class HibernateMappingCompletionItem implements CompletionItem {
     protected ImageIcon getIcon() {
         return null;
     }
-    
-    
+
     /**
      * Represents a class in the completion popup. 
      * 
@@ -206,8 +212,8 @@ public abstract class HibernateMappingCompletionItem implements CompletionItem {
             this.displayName = elem.getSimpleName().toString();
         }
 
-       public int getSortPriority() {
-            return 50;
+        public int getSortPriority() {
+            return 100;
         }
 
         public CharSequence getSortText() {
@@ -222,10 +228,10 @@ public abstract class HibernateMappingCompletionItem implements CompletionItem {
         protected String getLeftHtmlText() {
             return displayName;
         }
-        
+
         @Override
         protected ImageIcon getIcon() {
-            
+
             return new ImageIcon(Utilities.loadImage(FIELD_ICON));
         }
 
@@ -261,8 +267,6 @@ public abstract class HibernateMappingCompletionItem implements CompletionItem {
             }, EditorRegistry.lastFocusedComponent());
         }
     }
-    
-    
     public static final String COLOR_END = "</font>"; //NOI18N
     public static final String STRIKE = "<s>"; //NOI18N
     public static final String STRIKE_END = "</s>"; //NOI18N
@@ -312,7 +316,7 @@ public abstract class HibernateMappingCompletionItem implements CompletionItem {
         }
 
         public int getSortPriority() {
-            return 200;
+            return 100;
         }
 
         public CharSequence getSortText() {
@@ -419,7 +423,7 @@ public abstract class HibernateMappingCompletionItem implements CompletionItem {
         }
 
         public int getSortPriority() {
-            return 50;
+            return 100;
         }
 
         public CharSequence getSortText() {
@@ -447,7 +451,7 @@ public abstract class HibernateMappingCompletionItem implements CompletionItem {
         @Override
         protected ImageIcon getIcon() {
             if (icon == null) {
-                icon = new ImageIcon(org.openide.util.Utilities.loadImage(PACKAGE));
+                icon = new ImageIcon(Utilities.loadImage(PACKAGE));
             }
             return icon;
         }
@@ -483,7 +487,7 @@ public abstract class HibernateMappingCompletionItem implements CompletionItem {
         }
 
         public int getSortPriority() {
-            return 50;
+            return 100;
         }
 
         public CharSequence getSortText() {
@@ -512,6 +516,81 @@ public abstract class HibernateMappingCompletionItem implements CompletionItem {
                     resultSet.finish();
                 }
             });
+        }
+    }
+
+    private static class DatabaseTableItem extends HibernateMappingCompletionItem {
+
+        private static final String TABLE_ICON = "org/netbeans/modules/hibernate/resources/completion/table.gif"; //NOI18N
+        private String displayText;
+
+        public DatabaseTableItem(int substitutionOffset, String name) {
+            super(substitutionOffset);
+            this.displayText = name;
+        }
+
+        public int getSortPriority() {
+            return 100;
+        }
+
+        public CharSequence getSortText() {
+            return displayText;
+        }
+
+        public CharSequence getInsertPrefix() {
+            return displayText;
+        }
+
+        @Override
+        protected String getLeftHtmlText() {
+            return displayText;
+        }
+
+        @Override
+        protected ImageIcon getIcon() {
+            return new ImageIcon(Utilities.loadImage(TABLE_ICON));
+        }
+    }
+    
+    private static class DatabaseColumnItem extends HibernateMappingCompletionItem {
+
+        private static final String COLUMN_ICON = "org/netbeans/modules/hibernate/resources/completion/column.gif"; //NOI18N
+        private static final String PK_COLUMN_ICON = "org/netbeans/modules/hibernate/resources/completion/columnPrimary.gif"; //NOI18N
+        private String displayText;
+        private boolean pk;
+
+        public DatabaseColumnItem(int substitutionOffset, String columnName, boolean pk) {
+            super(substitutionOffset);
+            this.displayText = columnName;
+            this.pk = pk;
+        }
+
+        public int getSortPriority() {
+            if( pk )
+                return 1;
+            else
+                return 5;
+        }
+
+        public CharSequence getSortText() {
+            return displayText;
+        }
+
+        public CharSequence getInsertPrefix() {
+            return displayText;
+        }
+
+        @Override
+        protected String getLeftHtmlText() {
+            return displayText;
+        }
+
+        @Override
+        protected ImageIcon getIcon() {
+            if( pk )
+                return new ImageIcon(Utilities.loadImage(PK_COLUMN_ICON));
+            else
+                return new ImageIcon(Utilities.loadImage(COLUMN_ICON));
         }
     }
 

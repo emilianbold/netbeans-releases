@@ -115,19 +115,33 @@ public final class CompletionManager {
             "sequence-identity", NbBundle.getMessage(CompletionManager.class, "SEQUENCE_IDENTITY_GENERATOR_DESC") // NOI18N
         };
 
-        // Id generator classes
-        AttributeValueCompletor completor = new AttributeValueCompletor(generatorClasses);
-        registerCompletor(GENERATOR_TAG, CLASS_ATTRIB, completor);
-
-        JavaClassCompletor javaClassCompletor = new JavaClassCompletor(false);
-        registerCompletor(CLASS_TAG, NAME_ATTRIB, javaClassCompletor);
-
+        // Items for package attribute in the root element
         JavaClassCompletor javaPackageCompletor = new JavaClassCompletor(true);
         registerCompletor(MAPPING_TAG, PACKAGE_ATTRIB, javaPackageCompletor);
 
+        // Items for Id generator classes
+        AttributeValueCompletor completor = new AttributeValueCompletor(generatorClasses);
+        registerCompletor(GENERATOR_TAG, CLASS_ATTRIB, completor);
+
+        // Items for classes to be mapped
+        JavaClassCompletor javaClassCompletor = new JavaClassCompletor(false);
+        registerCompletor(CLASS_TAG, NAME_ATTRIB, javaClassCompletor);
+
+        // Items for properties to be mapped
         PropertyCompletor propertyCompletor = new PropertyCompletor();
         registerCompletor(PROPERTY_TAG, NAME_ATTRIB, propertyCompletor);
+        registerCompletor(ID_TAG, NAME_ATTRIB, propertyCompletor);
+
+        // Items for database tables to be mapped to
+        DatabaseTableCompletor databaseTableCompletor = new DatabaseTableCompletor();
+        registerCompletor(CLASS_TAG, TABLE_ATTRIB, databaseTableCompletor);
+
+        // Items for database columns to be mapped to
+        DatabaseTableColumnCompletor databaseColumnCompletor = new DatabaseTableColumnCompletor();
+        registerCompletor(PROPERTY_TAG, COLUMN_ATTRIB, databaseColumnCompletor);
+        registerCompletor(ID_TAG, COLUMN_ATTRIB, databaseColumnCompletor);
     }
+    
     private static CompletionManager INSTANCE = new CompletionManager();
 
     public static CompletionManager getDefault() {
@@ -370,28 +384,28 @@ public final class CompletionManager {
             final String typedChars = context.getTypedPrefix();
 
             Document doc = context.getDocument();
-            HibernateMappingDataObject mappingDataObject = (HibernateMappingDataObject)NbEditorUtilities.getDataObject(doc);
-                    
+            HibernateMappingDataObject mappingDataObject = (HibernateMappingDataObject) NbEditorUtilities.getDataObject(doc);
+
             if (mappingDataObject == null) {
                 return Collections.emptyList();
             }
-            
+
             java.io.InputStream is = null;
             try {
                 // Get the class name
 
                 is = mappingDataObject.getEditorSupport().getInputStream();
                 HibernateMapping mapping = HibernateMapping.createGraph(is);
-                
+
                 // Find out which class element we are working on
                 List<String> elements = context.getAllElmentsToRoot();
                 int numClassElem = 0;
-                for( String elem : elements ) {
-                    if( elem.equalsIgnoreCase("class")) { // NOI18N
-                        numClassElem ++;
+                for (String elem : elements) {
+                    if (elem.equalsIgnoreCase("class")) { // NOI18N
+                        numClassElem++;
                     }
                 }
-                
+
                 MyClass myClass = mapping.getMyClass(numClassElem);
                 final String className = myClass.getAttributeValue("Name"); // NOI18N
 
@@ -429,7 +443,140 @@ public final class CompletionManager {
                     Exceptions.printStackTrace(ex);
                 }
             }
-            
+
+            setAnchorOffset(context.getCurrentToken().getOffset() + 1);
+
+            return results;
+        }
+    }
+
+    private static class DatabaseTableCompletor extends Completor {
+
+        public DatabaseTableCompletor() {
+
+        }
+
+        @Override
+        public List<HibernateMappingCompletionItem> doCompletion(CompletionContext context) {
+            List<HibernateMappingCompletionItem> results = new ArrayList<HibernateMappingCompletionItem>();
+            int caretOffset = context.getCaretOffset();
+            String typedChars = context.getTypedPrefix();
+
+            Document doc = context.getDocument();
+            HibernateMappingDataObject mappingDataObject = (HibernateMappingDataObject) NbEditorUtilities.getDataObject(doc);
+
+            if (mappingDataObject == null) {
+                return Collections.emptyList();
+            }
+
+            java.io.InputStream is = null;
+            try {
+                is = mappingDataObject.getEditorSupport().getInputStream();
+                HibernateMapping mapping = HibernateMapping.createGraph(is);
+
+                // TODO: call Vadiraj's API to get the database tables
+                // For now: hard code them so that I can test my completor
+                List<String> tableNames = new ArrayList<String>();
+                tableNames.add( "PERSON");
+                tableNames.add( "TRIP");
+                tableNames.add( "TRIPTYPE");
+                tableNames.add( "FLIGHT");
+                tableNames.add( "HOTEL");
+                tableNames.add( "CARRENTAL");
+                tableNames.add( "VALIDATION_TABLE");
+                
+                for( String tableName : tableNames ) {
+                    HibernateMappingCompletionItem item = HibernateMappingCompletionItem.createDatabaseTableItem(
+                            caretOffset - typedChars.length(), tableName);
+                    results.add(item);
+                }
+
+
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
+            } finally {
+                try {
+                    is.close();
+                } catch (IOException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+            }
+
+            setAnchorOffset(context.getCurrentToken().getOffset() + 1);
+
+            return results;
+        }
+    }
+    
+    private static class DatabaseTableColumnCompletor extends Completor {
+
+        public DatabaseTableColumnCompletor() {
+
+        }
+
+        @Override
+        public List<HibernateMappingCompletionItem> doCompletion(CompletionContext context) {
+            List<HibernateMappingCompletionItem> results = new ArrayList<HibernateMappingCompletionItem>();
+            int caretOffset = context.getCaretOffset();
+            String typedChars = context.getTypedPrefix();
+
+            Document doc = context.getDocument();
+            HibernateMappingDataObject mappingDataObject = (HibernateMappingDataObject) NbEditorUtilities.getDataObject(doc);
+
+            if (mappingDataObject == null) {
+                return Collections.emptyList();
+            }
+
+            java.io.InputStream is = null;
+            try {
+                // Found out which class element we are working on so that 
+                // we can the table name
+
+                is = mappingDataObject.getEditorSupport().getInputStream();
+                HibernateMapping mapping = HibernateMapping.createGraph(is);
+                
+                // Find out which class element we are working on
+                List<String> elements = context.getAllElmentsToRoot();
+                int numClassElem = 0;
+                for (String elem : elements) {
+                    if (elem.equalsIgnoreCase("class")) { // NOI18N
+                        numClassElem++;
+                    }
+                }
+
+                MyClass myClass = mapping.getMyClass(numClassElem);
+                final String tableName = myClass.getAttributeValue("Table"); // NOI18N
+                
+
+                // TODO: call Vadiraj's API to get the columns in the specified database table
+                // For now: hard code them for the PERSON table so that I can test my completor
+                List<String> columnNames = new ArrayList<String>();
+                columnNames.add("PERSONID");
+                columnNames.add("NAME");
+                columnNames.add("JOBTITLE");
+                columnNames.add("FREQUENTFLYER");
+                columnNames.add("LASTUPDATED");
+                
+                for( String columnName : columnNames ) {
+                    boolean pk = false;
+                    if( columnName.equals( "PERSONID") ) 
+                        pk = true;
+                    
+                    HibernateMappingCompletionItem item = HibernateMappingCompletionItem.createDatabaseColumnItem(
+                            caretOffset - typedChars.length(), columnName, pk);
+                    results.add(item);
+                }
+
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
+            } finally {
+                try {
+                    is.close();
+                } catch (IOException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+            }
+
             setAnchorOffset(context.getCurrentToken().getOffset() + 1);
 
             return results;
