@@ -39,66 +39,23 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.spring.beans.refactoring.ui.tree;
+package org.netbeans.modules.db.api.explorer;
 
-import com.sun.source.tree.Tree;
-import com.sun.source.util.TreePath;
-import javax.lang.model.element.Element;
-import javax.swing.Icon;
-import org.netbeans.api.java.source.CompilationInfo;
-import org.netbeans.api.java.source.TreePathHandle;
-import org.netbeans.api.java.source.UiUtils;
-import org.openide.filesystems.FileObject;
+import java.util.List;
+import javax.swing.event.ChangeListener;
+import org.openide.nodes.Node;
 
 /**
- *
- * @author Jan Becicka, Copied from o.n.m.refactoring.java
+ * Interface allowing modules to add nodes to the Database Explorer
+ * under the Databases node in the Services tab.  
+ * <p>
+ * Register a NodeProvider under "Databases/NodeProviders" in the layer file.
+ * </p>
+ * @author David Van Couvering
  */
-public final class ElementGrip {
-    private TreePathHandle delegateElementHandle;
-    private String toString;
-    private FileObject fileObject;
-    private Icon icon;
-    
+public interface NodeProvider {
     /**
-     * Creates a new instance of ElementGrip
+     * @return the list of nodes that this node provider is providing
      */
-    public ElementGrip(TreePath treePath, CompilationInfo info) {
-        this.delegateElementHandle = TreePathHandle.create(treePath, info);
-        this.toString = UiUtils.getHeader(treePath, info, UiUtils.PrintPart.NAME);
-        this.fileObject = info.getFileObject();
-        this.icon = UiUtils.getDeclarationIcon(info.getTrees().getElement(treePath));
-    }
-    
-    public Icon getIcon() {
-        return icon;
-    }
-    public String toString() {
-        return toString;
-    }
-
-    public ElementGrip getParent() {
-        return ElementGripFactory.getDefault().getParent(this);
-    }
-
-    public TreePath resolve(CompilationInfo info) {
-        return delegateElementHandle.resolve(info);
-    } 
-
-    public Element resolveElement(CompilationInfo info) {
-        return delegateElementHandle.resolveElement(info);
-    } 
-
-    public Tree.Kind getKind() {
-        return delegateElementHandle.getKind();
-    }
-    
-    public FileObject getFileObject() {
-        return fileObject;
-    }
-    
-    public TreePathHandle getHandle() {
-        return delegateElementHandle;
-    }
-    
+    public List<Node> getNodes();    
 }

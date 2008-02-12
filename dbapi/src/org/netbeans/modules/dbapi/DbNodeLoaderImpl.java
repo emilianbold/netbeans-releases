@@ -39,66 +39,47 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.spring.beans.refactoring.plugins;
+package org.netbeans.modules.dbapi;
 
-import com.sun.source.tree.*;
-import com.sun.source.util.TreePath;
-import com.sun.source.util.Trees;
+import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
-import javax.lang.model.element.*;
-import javax.lang.model.type.TypeMirror;
-import javax.lang.model.util.Types;
-import org.netbeans.api.java.source.WorkingCopy;
+import org.netbeans.modules.db.api.explorer.NodeProvider;
+import org.netbeans.modules.db.explorer.DbNodeLoader;
+import org.openide.nodes.Node;
+import org.openide.util.Lookup;
+import org.openide.util.lookup.Lookups;
 
 /**
- *
- * @author Jan Becicka, Copied from o.n.m.refactoring.java
+ * Loads nodes from all registered node providers and delivers them to
+ * the caller of getAllNodes().
+ *  
+ * @author David Van Couvering
  */
-public class FindSubtypesVisitor extends FindVisitor {
-
-    private boolean recursive;
-    public FindSubtypesVisitor(boolean recursive, WorkingCopy workingCopy) {
-        super(workingCopy);
-        this.recursive = recursive;
-    }
-
-    @Override
-    public Tree visitClass(ClassTree node, Element elementToFind) {
-        if (workingCopy.getTreeUtilities().isSynthetic(getCurrentPath())) {
-            return super.visitClass(node, elementToFind);
-        }
-        if (recursive) {
-            if (isSubtype(getCurrentPath(), elementToFind)) {
-                addUsage(getCurrentPath());
-            }
-        } else {
-            TypeElement el = (TypeElement) workingCopy.getTrees().getElement(getCurrentPath());
-            Types types = workingCopy.getTypes();
-            if (el.getSuperclass()!=null && types.isSameType(types.erasure(el.getSuperclass()), types.erasure(elementToFind.asType())) || containsType(el.getInterfaces(), elementToFind.asType())) {
-                addUsage(getCurrentPath());
-            } 
-        }
-        return super.visitClass(node, elementToFind);
-    }
+public class DbNodeLoaderImpl implements DbNodeLoader {
     
-    private boolean containsType(List<? extends TypeMirror> list, TypeMirror t) {
-        Types types = workingCopy.getTypes();
-        t = types.erasure(t);
-        for (TypeMirror m:list) {
-            if (types.isSameType(t, types.erasure(m))) {
-                return true;
-            };
+    /** 
+     * Not private because used in the tests.
+     */
+    /** 
+     * Not private because used in the tests.
+     */
+    static final String NODE_PROVIDER_PATH = "Databases/NodeProviders"; // NOI18N
+
+    private final Lookup.Result providers = getNodeProviders();
+
+    public List<Node> getAllNodes() {
+        List<Node> nodes = new ArrayList<Node>();
+        
+        for (Iterator i = providers.allInstances().iterator(); i.hasNext();) {
+            NodeProvider provider = (NodeProvider)i.next();
+            nodes.addAll(provider.getNodes());
         }
-        return false;
-    }
-    
-    protected boolean isSubtype(TreePath t1, Element t2) {
-        Types types = workingCopy.getTypes();
-        Trees trees = workingCopy.getTrees();
-        TypeMirror tm1 = types.erasure(trees.getTypeMirror(t1));
-        TypeMirror tm2 = types.erasure(t2.asType());
-
-        return types.isSubtype(tm1, tm2) && !types.isSameType(tm1, tm2);
+        
+        return nodes;
     }
 
+    private static Lookup.Result getNodeProviders() {
+        return Lookups.forPath(NODE_PROVIDER_PATH).lookupResult(NodeProvider.class);
+    }
 }

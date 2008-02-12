@@ -39,35 +39,21 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.spring.beans.refactoring.plugins;
+package org.netbeans.modules.db.explorer;
 
-import com.sun.source.tree.MethodTree;
-import com.sun.source.tree.Tree;
-import javax.lang.model.element.Element;
-import javax.lang.model.element.ExecutableElement;
-import javax.lang.model.element.TypeElement;
-import org.netbeans.api.java.source.WorkingCopy;
+import java.util.List;
+import org.openide.nodes.Node;
 
 /**
- *
- * @author Jan Becicka,  Copied from o.n.m.refactoring.java
+ * Loads nodes registered into the dbapi module.  This provides a new
+ * non-public API that allows other modules add nodes to the Databases
+ * node (such as a node to manage a local database server).
  * 
+ * @author David Van Couvering
  */
-public class FindOverridingVisitor extends FindVisitor {
-
-    public FindOverridingVisitor(WorkingCopy workingCopy) {
-        super(workingCopy);
-    }
-
-    @Override
-    public Tree visitMethod(MethodTree node, Element elementToFind) {
-        if (!workingCopy.getTreeUtilities().isSynthetic(getCurrentPath())) {
-            ExecutableElement el = (ExecutableElement) workingCopy.getTrees().getElement(getCurrentPath());
-            
-            if (workingCopy.getElements().overrides(el, (ExecutableElement) elementToFind, (TypeElement) el.getEnclosingElement())) {
-                addUsage(getCurrentPath());
-            }
-        }
-        return super.visitMethod(node, elementToFind);
-    }
+public interface DbNodeLoader {
+    /**
+     * Get all the registered nodes
+     */
+    public List<Node> getAllNodes();
 }
