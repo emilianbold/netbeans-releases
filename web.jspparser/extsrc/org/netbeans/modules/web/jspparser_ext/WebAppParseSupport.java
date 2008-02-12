@@ -62,6 +62,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.servlet.ServletContext;
 import javax.servlet.jsp.tagext.TagLibraryInfo;
+import javax.swing.SwingUtilities;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.FileStateInvalidException;
@@ -89,6 +90,7 @@ import org.openide.filesystems.FileRenameEvent;
 import org.openide.filesystems.URLMapper;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 
 /**
  * Class that provides JSP parsing support for one web application. It caches
@@ -116,7 +118,7 @@ import org.openide.util.NbBundle;
  */
 public class WebAppParseSupport implements WebAppParseProxy, PropertyChangeListener {
     
-    private static final Logger LOG = Logger.getLogger(WebAppParseSupport.class.getName());
+    static final Logger LOG = Logger.getLogger(WebAppParseSupport.class.getName());
     private static final JspParserAPI.JspOpenInfo DEFAULT_JSP_OPEN_INFO = new JspParserAPI.JspOpenInfo(false, "8859_1");
     private static final Pattern RE_PATTERN_COMMONS_LOGGING = Pattern.compile(".*commons-logging.*\\.jar.*"); // NOI18N
     
@@ -142,7 +144,7 @@ public class WebAppParseSupport implements WebAppParseProxy, PropertyChangeListe
      * The flag is set to false, when there is event, which notifies about change in the classpath.
      * The value is obtained before constructing the cache and classloaders.
      */
-    private boolean isClassPathCurrent = false;
+    private volatile boolean isClassPathCurrent = false;
     
     // XXX still true?
     /**
@@ -151,7 +153,14 @@ public class WebAppParseSupport implements WebAppParseProxy, PropertyChangeListe
      * The main reason is the web freeform, because the web freeform doesn't fire the change property.
      */
     private int lastCheckedClasspath;
-    
+
+    // request processor for cleaning mappings cache and reiniting options
+    private static final int REINIT_OPTIONS_DELAY = 1000; // ms
+    private static final int REINIT_CACHES_DELAY = 500; // ms
+    private static final int INITIAL_CACHES_DELAY = 2000; // ms
+    private final RequestProcessor.Task reinitOptionsTask;
+    private final RequestProcessor.Task reinitCachesTask;
+
     /** Creates a new instance of WebAppParseSupport */
     public WebAppParseSupport(JspParserAPI.WebModule wm) {
         this.wm = wm;
@@ -167,6 +176,15 @@ public class WebAppParseSupport implements WebAppParseProxy, PropertyChangeListe
         // register class path listener
         ClassPath.getClassPath(wmRoot, ClassPath.COMPILE).addPropertyChangeListener(this);
         ClassPath.getClassPath(wmRoot, ClassPath.EXECUTE).addPropertyChangeListener(this);
+
+        // request procesor tasks
+        RequestProcessor requestProcessor = new RequestProcessor("JSP parser :: Reinit options");
+        reinitOptionsTask = requestProcessor.create(new ReinitOptions());
+        requestProcessor = new RequestProcessor("JSP parser :: Reinit caches");
+        reinitCachesTask = requestProcessor.create(new ReinitCaches());
+
+        // init tag library cache
+        reinitCachesTask.schedule(INITIAL_CACHES_DELAY);
     }
     
     public JspParserAPI.JspOpenInfo getJspOpenInfo(FileObject jspFile, boolean useEditor
@@ -186,7 +204,11 @@ public class WebAppParseSupport implements WebAppParseProxy, PropertyChangeListe
         return DEFAULT_JSP_OPEN_INFO;
     }
     
-    private void reinitOptions() {
+    /**
+     * Reinit options related to class path.
+     * Method is always called in the current thread.
+     */
+    void reinitOptions() {
         assert Thread.holdsLock(this);
         initOptions(false);
     }
@@ -352,12 +374,14 @@ public class WebAppParseSupport implements WebAppParseProxy, PropertyChangeListe
     public synchronized Map<String, String[]> getTaglibMap(boolean useEditor) throws IOException {
         // useEditor not needed, both caches are the same
         // we have to clear all the caches when the class path is not current or the taglibmap is not initialized yet
-        boolean reinit = !isClassPathCurrent;
-        if (reinit) {
+        // and stop all scheduled tasks
+        reinitOptionsTask.cancel();
+        reinitCachesTask.cancel();
+        if (!isClassPathCurrent) {
             reinitOptions();
-        }
-        if (reinit || mappings == null) {
-            fileSystemListener.reinitCaches();
+            reinitCaches();
+        } else if (mappings == null) {
+            reinitCaches();
         }
         return new HashMap<String, String[]>(mappings);
     }
@@ -535,14 +559,160 @@ System.out.println("--------ENDSTACK------");        */
     /**
      * Handles the event of property change of class path (source, run).
      */
-    public synchronized void propertyChange(PropertyChangeEvent evt) {
+    public void propertyChange(PropertyChangeEvent evt) {
         // classpath has channged => invalidate cache
         if (LOG.isLoggable(Level.FINE)) {
             LOG.fine("class path has changed");
         }
         isClassPathCurrent = false;
+        reinitOptionsTask.schedule(REINIT_OPTIONS_DELAY);
     }
-    
+
+    /**
+     * Reinit tag library cache after the default delay.
+     * Method decides whether to run in the current thread or not.
+     */
+    void reinitCaches() {
+        LOG.fine("Caches are going to reinitialize...");
+        assert Thread.holdsLock(WebAppParseSupport.this);
+        if (SwingUtilities.isEventDispatchThread()) {
+            LOG.fine("\t...in the request processor because we are now in EDT");
+            reinitCachesTask.schedule(REINIT_CACHES_DELAY);
+        } else {
+            if (LOG.isLoggable(Level.FINE)) {
+                LOG.fine("\t...in the current thread: " + Thread.currentThread().getName());
+            }
+            clearTagLibraryInfoCache();
+            reinitTagLibMappings();
+        }
+    }
+
+    private void clearTagLibraryInfoCache() {
+        assert Thread.holdsLock(WebAppParseSupport.this);
+        // clear the cache of tagLibrary map
+        Map<String, TagLibraryInfo> map = (ConcurrentHashMap<String, TagLibraryInfo>) editorContext
+                .getAttribute("com.sun.jsp.taglibraryCache"); // NOI18N
+        if (map != null) {
+            map.clear();
+        }
+        map = (ConcurrentHashMap<String, TagLibraryInfo>) diskContext.getAttribute("com.sun.jsp.taglibraryCache"); // NOI18N
+        if (map != null) {
+            map.clear();
+        }
+    }
+
+    private void reinitTagLibMappings() {
+        assert Thread.holdsLock(WebAppParseSupport.this);
+        try {
+            // editor options
+            TldLocationsCache lc = editorOptions.getTldLocationsCache();
+
+            Field mappingsField = TldLocationsCache.class.getDeclaredField("mappings"); //NOI18N
+            mappingsField.setAccessible(true);
+            // Before new parsing, the old mappings in the TldLocationCache has to be cleared. Else there are
+            // stored the old mappings.
+            Map<String, String[]> tmpMappings = (Map<String, String[]>) mappingsField.get(lc);
+            // the mapping doesn't have to be initialized yet
+            if (tmpMappings != null) {
+                tmpMappings.clear();
+            }
+
+            Thread compThread = new WebAppParseSupport.InitTldLocationCacheThread(lc);
+            compThread.setContextClassLoader(waContextClassLoader);
+            long start = 0;
+            if (LOG.isLoggable(Level.FINE)) {
+                start = System.currentTimeMillis();
+                LOG.fine("InitTldLocationCacheThread start");
+            }
+            compThread.start();
+
+            try {
+                compThread.join();
+                if (LOG.isLoggable(Level.FINE)) {
+                    long end = System.currentTimeMillis();
+                    LOG.fine("InitTldLocationCacheThread finished in " + (end - start) + " ms");
+                }
+            } catch (InterruptedException e) {
+                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+            }
+
+            // obtain the current mappings after parsing
+            tmpMappings = (Map<String, String[]>) mappingsField.get(lc);
+
+            // disk options
+            lc = diskOptions.getTldLocationsCache();
+
+            mappingsField = TldLocationsCache.class.getDeclaredField("mappings"); //NOI18N
+            mappingsField.setAccessible(true);
+            // store the same tld cache into disk options as well
+            mappingsField.set(lc, tmpMappings);
+
+            // update cache
+            if (mappings == null) {
+                mappings = new HashMap<String, String[]>();
+            } else {
+                mappings.clear();
+            }
+            mappings.putAll(tmpMappings);
+            // cache tld files under WEB-INF directory as well
+            mappings.putAll(getImplicitLocation());
+        } catch (NoSuchFieldException e) {
+            Exceptions.printStackTrace(e);
+        } catch (IllegalAccessException e) {
+            Exceptions.printStackTrace(e);
+        }
+    }
+
+    /**
+     * Returns map with tlds, which doesn't have defined <uri>.
+     */
+    private Map<String, String[]> getImplicitLocation() {
+        assert Thread.holdsLock(WebAppParseSupport.this);
+        Map<String, String[]> returnMap = new HashMap<String, String[]>();
+        // Obtain all tld files under WEB-INF folder
+        FileObject webInf = wm.getWebInf();
+        FileObject fo;
+        if (webInf != null && webInf.isFolder()) {
+            Enumeration<? extends FileObject> en = webInf.getChildren(true);
+            while (en.hasMoreElements()) {
+                fo = en.nextElement();
+                if (fo.getExt().equals("tld")) { // NOI18N
+                    String path;
+                    if (ContextUtil.isInSubTree(wmRoot, fo)) {
+                        path = "/" + ContextUtil.findRelativePath(wmRoot, fo); // NOI18N
+                    } else {
+                        // the web-inf folder is mapped somewhere else
+                        path = "/WEB-INF/" + ContextUtil.findRelativePath(webInf, fo); //NOI18N
+                    }
+                    returnMap.put(path, new String[] {path, null});
+                }
+            }
+        }
+        return returnMap;
+    }
+
+    final class ReinitCaches implements Runnable {
+        public void run() {
+            synchronized (WebAppParseSupport.this) {
+                LOG.fine("ReinitCaches task started");
+                clearTagLibraryInfoCache();
+                reinitTagLibMappings();
+                LOG.fine("ReinitCaches task finished");
+            }
+        }
+    }
+
+    final class ReinitOptions implements Runnable {
+        public void run() {
+            synchronized (WebAppParseSupport.this) {
+                LOG.fine("ReinitOptions task started");
+                reinitOptions();
+                reinitCaches();
+                LOG.fine("ReinitOptions task finished");
+            }
+        }
+    }
+
     public static class JasperSystemClassLoader extends URLClassLoader {
         private static final java.security.AllPermission ALL_PERM = new java.security.AllPermission();
         
@@ -655,122 +825,15 @@ System.out.println("--------ENDSTACK------");        */
             if (ext.equals("tld") || name.equals("web.xml")) { // NOI18N
                 FileObject fo = fe.getFile();
                 if (FileUtil.isParentOf(wmRoot, fo)) {
+                    if (LOG.isLoggable(Level.FINE)) {
+                        LOG.fine("File " + fo + " has changed, reinitCaches() called");
+                    }
                     // our file => process caches
                     synchronized (WebAppParseSupport.this) {
                         reinitCaches();
                     }
                 }
             }
-        }
-        
-        void reinitCaches() {
-            assert Thread.holdsLock(WebAppParseSupport.this);
-            clearTagLibraryInfoCache();
-            reinitTagLibMappings();
-        }
-        
-        private void clearTagLibraryInfoCache() {
-            assert Thread.holdsLock(WebAppParseSupport.this);
-            // clear the cache of tagLibrary map
-            Map<String, TagLibraryInfo> map = (ConcurrentHashMap<String, TagLibraryInfo>) editorContext
-                    .getAttribute("com.sun.jsp.taglibraryCache"); // NOI18N
-            if (map != null) {
-                map.clear();
-            }
-            map = (ConcurrentHashMap<String, TagLibraryInfo>) diskContext.getAttribute("com.sun.jsp.taglibraryCache"); // NOI18N
-            if (map != null) {
-                map.clear();
-            }
-        }
-        
-        private void reinitTagLibMappings() {
-            assert Thread.holdsLock(WebAppParseSupport.this);
-            try {
-                // editor options
-                TldLocationsCache lc = editorOptions.getTldLocationsCache();
-                
-                Field mappingsField = TldLocationsCache.class.getDeclaredField("mappings"); //NOI18N
-                mappingsField.setAccessible(true);
-                // Before new parsing, the old mappings in the TldLocationCache has to be cleared. Else there are
-                // stored the old mappings.
-                Map<String, String[]> tmpMappings = (Map<String, String[]>) mappingsField.get(lc);
-                // the mapping doesn't have to be initialized yet
-                if (tmpMappings != null) {
-                    tmpMappings.clear();
-                }
-
-                Thread compThread = new WebAppParseSupport.InitTldLocationCacheThread(lc);
-                compThread.setContextClassLoader(waContextClassLoader);
-                long start = 0;
-                if (LOG.isLoggable(Level.FINE)) {
-                    start = System.currentTimeMillis();
-                    LOG.fine("InitTldLocationCacheThread start");
-                }
-                compThread.start();
-
-                try {
-                    compThread.join();
-                    if (LOG.isLoggable(Level.FINE)) {
-                        long end = System.currentTimeMillis();
-                        LOG.fine("InitTldLocationCacheThread finished in " + (end - start) + " ms");
-                    }
-                } catch (InterruptedException e) {
-                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
-                }
-
-                // obtain the current mappings after parsing
-                tmpMappings = (Map<String, String[]>) mappingsField.get(lc);
-                
-                // disk options
-                lc = diskOptions.getTldLocationsCache();
-                
-                mappingsField = TldLocationsCache.class.getDeclaredField("mappings"); //NOI18N
-                mappingsField.setAccessible(true);
-                // store the same tld cache into disk options as well
-                mappingsField.set(lc, tmpMappings);
-                
-                // update cache
-                if (mappings == null) {
-                    mappings = new HashMap<String, String[]>();
-                } else {
-                    mappings.clear();
-                }
-                mappings.putAll(tmpMappings);
-                // cache tld files under WEB-INF directory as well
-                mappings.putAll(getImplicitLocation());
-            } catch (NoSuchFieldException e) {
-                Exceptions.printStackTrace(e);
-            } catch (IllegalAccessException e) {
-                Exceptions.printStackTrace(e);
-            }
-        }
-        
-        /**
-         * Returns map with tlds, which doesn't have defined <uri>.
-         */
-        private Map<String, String[]> getImplicitLocation() {
-            assert Thread.holdsLock(WebAppParseSupport.this);
-            Map<String, String[]> returnMap = new HashMap<String, String[]>();
-            // Obtain all tld files under WEB-INF folder
-            FileObject webInf = wm.getWebInf();
-            FileObject fo;
-            if (webInf != null && webInf.isFolder()) {
-                Enumeration<? extends FileObject> en = webInf.getChildren(true);
-                while (en.hasMoreElements()) {
-                    fo = en.nextElement();
-                    if (fo.getExt().equals("tld")) { // NOI18N
-                        String path;
-                        if (ContextUtil.isInSubTree(wmRoot, fo)) {
-                            path = "/" + ContextUtil.findRelativePath(wmRoot, fo); // NOI18N
-                        } else {
-                            // the web-inf folder is mapped somewhere else
-                            path = "/WEB-INF/" + ContextUtil.findRelativePath(webInf, fo); //NOI18N
-                        }
-                        returnMap.put(path, new String[] {path, null});
-                    }
-                }
-            }
-            return returnMap;
         }
     }
 }
