@@ -272,7 +272,8 @@ final class HintsPanel extends javax.swing.JPanel implements TreeCellRenderer  {
         if ( data instanceof FileObject ) {
             FileObject fo = ((FileObject)data);            
             renderer.setText( getFileObjectLocalizedName(fo) );
-            renderer.setSelected( logic.isSelected((DefaultMutableTreeNode)value));
+            if (logic!=null)
+                renderer.setSelected( logic.isSelected((DefaultMutableTreeNode)value));
         }
         else if ( data instanceof AbstractHint ) {
             AbstractHint treeRule = (AbstractHint)data;
