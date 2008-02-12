@@ -45,6 +45,7 @@ import java.util.Set;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeEvent;
 
+import org.netbeans.spi.queries.CollocationQueryImplementation;
 import org.netbeans.modules.versioning.spi.VCSAnnotator;
 import org.netbeans.modules.versioning.spi.VCSInterceptor;
 import org.netbeans.modules.versioning.spi.VersioningSystem;
@@ -54,7 +55,7 @@ import org.netbeans.modules.versioning.spi.VersioningSystem;
  * 
  * @author Maros Sandor
  */
-public class MercurialVCS extends VersioningSystem implements PropertyChangeListener {
+public class MercurialVCS extends VersioningSystem implements PropertyChangeListener, CollocationQueryImplementation {
 
     public MercurialVCS() {
         putProperty(PROP_DISPLAY_NAME, org.openide.util.NbBundle.getMessage(MercurialVCS.class, "CTL_Mercurial_DisplayName")); // NOI18N
@@ -62,6 +63,19 @@ public class MercurialVCS extends VersioningSystem implements PropertyChangeList
 
         Mercurial.getInstance().addPropertyChangeListener(this);
         Mercurial.getInstance().getFileStatusCache().addPropertyChangeListener(this);
+    }
+
+    public boolean areCollocated(File a, File b) {
+        File fra = getTopmostManagedAncestor(a);
+        File frb = getTopmostManagedAncestor(b);
+
+        if (fra == null || !fra.equals(frb)) return false;
+
+        return true;
+    }
+
+    public File findRoot(File file) {
+        return getTopmostManagedAncestor(file);
     }
 
     /**
