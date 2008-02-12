@@ -512,30 +512,7 @@ final class Classpaths implements ClassPathProvider, AntProjectListener, Propert
             // Nope; so look for some platform of reasonable source level instead.
             JavaPlatformManager jpm = JavaPlatformManager.getDefault();
             platform = jpm.getDefaultPlatform(); // fallback
-            for (Element e : Util.findSubElements(compilationUnitEl)) {
-                if (e.getLocalName().equals("source-level")) { // NOI18N
-                    String level = Util.findText(e);
-                    Specification spec = new Specification("j2se", new SpecificationVersion(level)); // NOI18N
-                    JavaPlatform[] matchingPlatforms = jpm.getPlatforms(null, spec);
-                    if (matchingPlatforms.length > 0) {
-                        // Pick one. Prefer one with sources if there is a choice, else with Javadoc.
-                        platform = matchingPlatforms[0];
-                        for (JavaPlatform matchingPlatform : matchingPlatforms) {
-                            if (!matchingPlatform.getJavadocFolders().isEmpty()) {
-                                platform = matchingPlatform;
-                                break;
-                            }
-                        }
-                        for (JavaPlatform matchingPlatform : matchingPlatforms) {
-                            if (matchingPlatform.getSourceFolders().getRoots().length > 0) {
-                                platform = matchingPlatform;
-                                break;
-                            }
-                        }
-                    }
-                    break;
-                }
-            }
+            // #126216: source level guessing logic removed
         }
         if (platform != null) {
             // XXX this is not ideal; should try to reuse the ClassPath as is?
