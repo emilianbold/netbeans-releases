@@ -138,6 +138,8 @@ import org.netbeans.modules.websvc.api.webservices.WebServicesSupport;
 import org.netbeans.modules.websvc.api.client.WebServicesClientSupport;
 import org.netbeans.modules.websvc.api.jaxws.project.WSUtils;
 import org.netbeans.modules.websvc.spi.webservices.WebServicesSupportFactory;
+import org.netbeans.spi.java.project.support.ExtraSourceJavadocSupport;
+import org.netbeans.spi.java.project.support.LookupMergerSupport;
 import org.openide.filesystems.FileSystem.AtomicAction;
 import org.openide.util.Exceptions;
 import org.openide.util.RequestProcessor;
@@ -413,6 +415,10 @@ public final class WebProject implements Project, AntProjectListener, PropertyCh
             libMod,
             QuerySupport.createFileEncodingQuery(evaluator(), WebProjectProperties.SOURCE_ENCODING),
             new WebTemplateAttributesProvider(this.helper),
+            ExtraSourceJavadocSupport.createExtraSourceQueryImplementation(this, helper, eval),
+            LookupMergerSupport.createSFBLookupMerger(),
+            ExtraSourceJavadocSupport.createExtraJavadocQueryImplementation(this, helper, eval),
+            LookupMergerSupport.createJFBLookupMerger(),
         });
         return LookupProviderSupport.createCompositeLookup(base, "Projects/org-netbeans-modules-web-project/Lookup"); //NOI18N
     }
@@ -827,7 +833,7 @@ public final class WebProject implements Project, AntProjectListener, PropertyCh
             ArrayList l = new ArrayList();
             l.addAll(cpMod.getClassPathSupport().itemsList(props.getProperty(WebProjectProperties.JAVAC_CLASSPATH),  WebProjectProperties.TAG_WEB_MODULE_LIBRARIES));
             l.addAll(cpMod.getClassPathSupport().itemsList(props.getProperty(WebProjectProperties.WAR_CONTENT_ADDITIONAL),  WebProjectProperties.TAG_WEB_MODULE__ADDITIONAL_LIBRARIES));
-            WebProjectProperties.storeLibrariesLocations(l.iterator(), ep);
+            WebProjectProperties.storeLibrariesLocations(l.iterator(), props, getProjectDirectory());
 
             //add webinf.dir required by 6.0 projects
             if (props.getProperty(WebProjectProperties.WEBINF_DIR) == null) {
@@ -895,11 +901,7 @@ public final class WebProject implements Project, AntProjectListener, PropertyCh
                 if (!item.isBroken() || item.getType() != ClassPathSupport.Item.TYPE_LIBRARY) {
                     continue;
                 }
-                String libraryName = item.getReference();
-                if (libraryName.startsWith(WebProjectProperties.LIBRARY_PREFIX)) {
-                    // remove the "${libs." prefix and ".classpath}" suffix
-                    libraryName = libraryName.substring(WebProjectProperties.LIBRARY_PREFIX.length(), libraryName.lastIndexOf('.'));
-                }
+                String libraryName = ClassPathSupport.getLibraryNameFromReference(item.getReference());
                 LOGGER.log(Level.FINE, "Broken reference to library: " + libraryName);
                 if (filters == null) {
                     // initializing the filters lazily because usually they will not be needed anyway
@@ -1349,13 +1351,11 @@ public final class WebProject implements Project, AntProjectListener, PropertyCh
                 public void run() {
 		    if (ProjectManager.getDefault().isValid(((ProjectInformation) getLookup().lookup(ProjectInformation.class)).getProject())) {
 			EditableProperties props = helper.getProperties (AntProjectHelper.PROJECT_PROPERTIES_PATH);    //Reread the properties, PathParser changes them
-			//update lib references in private properties
-			EditableProperties privateProps = helper.getProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH);
 			ArrayList l = new ArrayList ();
 			l.addAll(cpMod.getClassPathSupport().itemsList(props.getProperty(WebProjectProperties.JAVAC_CLASSPATH),  WebProjectProperties.TAG_WEB_MODULE_LIBRARIES));
 			l.addAll(cpMod.getClassPathSupport().itemsList(props.getProperty(WebProjectProperties.WAR_CONTENT_ADDITIONAL),  WebProjectProperties.TAG_WEB_MODULE__ADDITIONAL_LIBRARIES));
-			WebProjectProperties.storeLibrariesLocations(l.iterator(), privateProps);
-			helper.putProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH, privateProps);
+			WebProjectProperties.storeLibrariesLocations(l.iterator(), props, getProjectDirectory());
+			helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, props);
 		    }
                 }
             });

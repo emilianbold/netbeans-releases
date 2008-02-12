@@ -41,7 +41,6 @@
 
 package org.netbeans.modules.web.project.ui;
 
-import java.awt.Dialog;
 import java.awt.Image;
 import java.awt.event.ActionEvent;
 import java.beans.BeanInfo;
@@ -64,13 +63,10 @@ import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
-import javax.swing.JButton;
 import javax.swing.JFileChooser;
 import javax.swing.filechooser.FileFilter;
 import org.netbeans.modules.web.project.ui.customizer.AntArtifactChooser.ArtifactItem;
 import org.netbeans.modules.web.project.ui.customizer.WebClassPathUi;
-import org.openide.DialogDescriptor;
-import org.openide.DialogDisplayer;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.Repository;
@@ -93,6 +89,7 @@ import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.java.project.classpath.ProjectClassPathModifier;
 import org.netbeans.modules.java.api.common.ant.UpdateHelper;
+import org.netbeans.api.project.libraries.LibraryChooser;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
@@ -104,7 +101,6 @@ import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.project.WebProject;
 import org.netbeans.modules.web.project.ui.customizer.AntArtifactChooser;
 import org.netbeans.modules.web.project.ui.customizer.WebProjectProperties;
-import org.netbeans.modules.web.project.ui.customizer.LibrariesChooser;
 import org.netbeans.spi.project.libraries.support.LibrariesSupport;
 import org.openide.util.Exceptions;
 import org.openide.util.lookup.Lookups;
@@ -172,6 +168,9 @@ final class LibrariesNode extends AbstractNode {
 
     //Static Action Factory Methods
     public static Action createAddProjectAction (WebProject p, boolean sources) {
+        if (p.getSourceRoots().getRoots().length == 0) {
+            return null;
+        }
         if (sources) {
             return new AddProjectAction(p, p.getSourceRoots().getRoots()[0]);
         } else {
@@ -180,6 +179,9 @@ final class LibrariesNode extends AbstractNode {
     }
 
     public static Action createAddLibraryAction (WebProject p, boolean sources) {
+        if (p.getSourceRoots().getRoots().length == 0) {
+            return null;
+        }
         if (sources) {
             return new AddLibraryAction(p, p.getSourceRoots().getRoots()[0]);
         } else {
@@ -188,6 +190,9 @@ final class LibrariesNode extends AbstractNode {
     }
 
     public static Action createAddFolderAction (WebProject p, boolean sources) {
+        if (p.getSourceRoots().getRoots().length == 0) {
+            return null;
+        }
         if (sources) {
             return new AddFolderAction(p, p.getSourceRoots().getRoots()[0]);
         } else {
@@ -291,11 +296,21 @@ final class LibrariesNode extends AbstractNode {
 
         protected void addNotify() {
             this.eval.addPropertyChangeListener (this);
+            if (refHelper.getProjectLibraryManager() != null) {
+                refHelper.getProjectLibraryManager().addPropertyChangeListener(this);
+            } else {
+                LibraryManager.getDefault().addPropertyChangeListener(this);
+            }
             this.setKeys(getKeys ());
         }
 
         protected void removeNotify() {
             this.eval.removePropertyChangeListener(this);
+            if (refHelper.getProjectLibraryManager() != null) {
+                refHelper.getProjectLibraryManager().removePropertyChangeListener(this);
+            } else {
+                LibraryManager.getDefault().removePropertyChangeListener(this);
+            }
             synchronized (this) {
                 if (fsListener!=null) {
                     fsListener.removePropertyChangeListener (this);
@@ -380,12 +395,13 @@ final class LibrariesNode extends AbstractNode {
                 else if (prop.startsWith( LIBRARY_PREFIX )) {
                     //Library reference
                     String eval = prop.substring( LIBRARY_PREFIX.length(), prop.lastIndexOf('.') ); //NOI18N
-                    Library lib = LibraryManager.getDefault().getLibrary (eval);
+                    Library lib = refHelper.findLibrary(eval);
                     if (lib != null) {
                         List/*<URL>*/ roots = lib.getContent("classpath");  //NOI18N
                         Icon libIcon = new ImageIcon (Utilities.loadImage(LIBRARIES_ICON));
                         for (Iterator it = roots.iterator(); it.hasNext();) {
                             URL rootUrl = (URL) it.next();
+                            rootUrl = LibrariesSupport.resolveLibraryEntryURL(lib.getManager().getLocation(), rootUrl);
                             rootsList.add (rootUrl);
                             FileObject root = URLMapper.findFileObject (rootUrl);
                             if (root != null) {
@@ -622,24 +638,20 @@ final class LibrariesNode extends AbstractNode {
         }
 
         public void actionPerformed(ActionEvent e) {
-            Object[] options = new Object[] {
-                new JButton (NbBundle.getMessage (LibrariesNode.class,"LBL_AddLibrary")),
-                DialogDescriptor.CANCEL_OPTION
-            };
-            ((JButton)options[0]).setEnabled(false);
-            ((JButton)options[0]).getAccessibleContext().setAccessibleDescription (NbBundle.getMessage (WebClassPathUi.class,"AD_AddLibrary"));
-                        
-            WebModule wm = WebModule.getWebModule(project.getProjectDirectory());
-            String j2eeVersion = wm.getJ2eePlatformVersion();
-            LibrariesChooser panel = new LibrariesChooser ((JButton)options[0], j2eeVersion);
-            DialogDescriptor desc = new DialogDescriptor(panel,NbBundle.getMessage( LibrariesNode.class, "LBL_CustomizeCompile_Classpath_AddLibrary" ),
-                    true, options, options[0], DialogDescriptor.DEFAULT_ALIGN,null,null);
-            Dialog dlg = DialogDisplayer.getDefault().createDialog(desc);
-            dlg.setVisible(true);
-            if (desc.getValue() == options[0]) {
-                addLibraries (panel.getSelectedLibraries());
+            LibraryChooser.Filter filter = null;
+            if (WebModule.getWebModule(project.getProjectDirectory()).getJ2eePlatformVersion().equals("1.3")) { // NOI18N
+                filter = new LibraryChooser.Filter() {
+                    public boolean accept(Library library) {
+                        return !library.getName().matches("jstl11|jaxrpc16|toplink|Spring|jaxws20|jaxb20|struts|jsf"); // NOI18N
+                    }
+                };
             }
-            dlg.dispose();
+            Set<Library> added = LibraryChooser.showDialog(
+                    project.getReferenceHelper().getProjectLibraryManager(), filter,
+                    project.getReferenceHelper().getLibraryChooserImportHandler());
+            if (added != null) {
+                addLibraries(added.toArray(new Library[added.size()]));
+            }
         }
 
         private void addLibraries (Library[] libraries) {
@@ -667,7 +679,8 @@ final class LibrariesNode extends AbstractNode {
         }
 
         public void actionPerformed(ActionEvent e) {
-            JFileChooser chooser = new JFileChooser();
+            org.netbeans.api.project.ant.FileChooser chooser = 
+                    new org.netbeans.api.project.ant.FileChooser(project.getAntProjectHelper(), true);
             FileUtil.preventFileChooserSymlinkTraversal(chooser, null);
             chooser.setFileSelectionMode( JFileChooser.FILES_AND_DIRECTORIES );
             chooser.setMultiSelectionEnabled( true );
@@ -681,20 +694,27 @@ final class LibrariesNode extends AbstractNode {
             chooser.setCurrentDirectory (curDir);
             int option = chooser.showOpenDialog( WindowManager.getDefault().getMainWindow() );
             if ( option == JFileChooser.APPROVE_OPTION ) {
-                File files[] = chooser.getSelectedFiles();
-                addJarFiles( files, fileFilter );
+                String filePaths[];
+                try {
+                    filePaths = chooser.getSelectedPaths();
+                } catch (IOException ex) {
+                    Exceptions.printStackTrace(ex);
+                    return;
+                }
+                addJarFiles( filePaths, fileFilter, FileUtil.toFile(project.getProjectDirectory()));
                 curDir = FileUtil.normalizeFile(chooser.getCurrentDirectory());
                 FoldersListSettings.getDefault().setLastUsedClassPathFolder(curDir);
             }
         }
 
-        private void addJarFiles (File[] files, FileFilter fileFilter) {
-            for (int i=0; i<files.length;i++) {
+        private void addJarFiles (String[] filePaths, FileFilter fileFilter, File base) {
+            for (int i=0; i<filePaths.length;i++) {
                 try {
                     //Check if the file is acceted by the FileFilter,
                     //user may enter the name of non displayed file into JFileChooser
-                    if (fileFilter.accept(files[i])) {
-                        URL u = LibrariesSupport.convertFilePathToURL(files[i].getPath());
+                    File fl = PropertyUtils.resolveFile(base, filePaths[i]);
+                    if (fileFilter.accept(fl)) {
+                        URL u = LibrariesSupport.convertFilePathToURL(filePaths[i]);
                         u = FileUtil.getArchiveRoot(u);
                         ProjectClassPathModifier.addRoots(new URL[]{u}, projectSourcesArtifact, ClassPath.COMPILE);
                     }

@@ -92,9 +92,9 @@ import org.netbeans.modules.xml.wsdl.model.extensions.bpel.CorrelationProperty;
 import org.netbeans.modules.xml.xam.Component;
 import org.netbeans.modules.xml.xam.Model;
 import org.netbeans.modules.xml.xam.dom.NamedComponentReference;
-import org.netbeans.modules.bpel.validation.util.ValidationItem;
+import org.netbeans.modules.bpel.validation.core.Outcome;
 
-public final class Validator extends org.netbeans.modules.bpel.validation.util.Validator {
+public final class Validator extends org.netbeans.modules.bpel.validation.core.Validator {
     
     @Override 
     public void visit(PartnerLink p) {
@@ -600,21 +600,18 @@ public final class Validator extends org.netbeans.modules.bpel.validation.util.V
         String faultVariable = catc.getFaultVariable();
         SchemaReference<GlobalElement> element = catc.getFaultElement();
         WSDLReference<Message> message = catc.getFaultMessageType();
-        ValidationItem item = null;
+        Outcome item = null;
 
-        if ( faultVariable!= null && element == null && message== null ) {
-            getHelper().addError( FIX_FAULT_VARIABLE_TYPE , catc );
+        if (faultVariable != null && element == null && message == null) {
+            getHelper().addError(FIX_FAULT_VARIABLE_TYPE, catc);
         }
-        if ( element != null && message != null && item == null ) {
-            getHelper().addError( FIX_FAULT_VARIABLE_TYPE , catc );
+        if (element != null && message != null && item == null) {
+            getHelper().addError(FIX_FAULT_VARIABLE_TYPE, catc);
         }
-        if ( faultVariable == null && ( element != null || message != null) ) {
-            getHelper().addError( FIX_ODD_FAULT_TYPE , catc );
+        if (faultVariable == null && ( element != null || message != null)) {
+            getHelper().addError(FIX_ODD_FAULT_TYPE, catc);
         }
-        
-        /*
-         * Check fault variable name
-         */
+        // Check fault variable name
         checkVariableName( catc);
     }
     

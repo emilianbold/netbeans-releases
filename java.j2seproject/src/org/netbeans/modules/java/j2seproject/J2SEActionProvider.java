@@ -59,6 +59,8 @@ import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.TreeSet;
 import java.util.regex.Pattern;
+import javax.lang.model.element.TypeElement;
+import javax.lang.model.util.Elements;
 import javax.swing.JButton;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -67,6 +69,8 @@ import org.netbeans.api.fileinfo.NonRecursiveFolder;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.java.queries.UnitTestForSourceQuery;
+import org.netbeans.api.java.source.CompilationController;
+import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.ui.ScanDialog;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectManager;
@@ -385,9 +389,37 @@ class J2SEActionProvider implements ActionProvider {
         else if ( command.equals( JavaProjectConstants.COMMAND_DEBUG_FIX ) ) {
             FileObject[] files = findSources( context );
             String path = null;
+            final String[] classes = { "" };
             if (files != null) {
                 path = FileUtil.getRelativePath(getRoot(project.getSourceRoots().getRoots(),files[0]), files[0]);
                 targetNames = new String[] {"debug-fix"}; // NOI18N
+                JavaSource js = JavaSource.forFileObject(files[0]);
+                if (js != null) {
+                    try {
+                        js.runUserActionTask(new org.netbeans.api.java.source.Task<CompilationController>() {
+                            public void run(CompilationController ci) throws Exception {
+                                if (ci.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED).compareTo(JavaSource.Phase.ELEMENTS_RESOLVED) < 0) {
+                                    ErrorManager.getDefault().log(ErrorManager.WARNING,
+                                            "Unable to resolve "+ci.getFileObject()+" to phase "+JavaSource.Phase.RESOLVED+", current phase = "+ci.getPhase()+
+                                            "\nDiagnostics = "+ci.getDiagnostics()+
+                                            "\nFree memory = "+Runtime.getRuntime().freeMemory());
+                                    return;
+                                }
+                                List<? extends TypeElement> types = ci.getTopLevelElements();
+                                if (types.size() > 0) {
+                                    for (TypeElement type : types) {
+                                        if (classes[0].length() > 0) {
+                                            classes[0] = classes[0] + " ";            // NOI18N
+                                        }
+                                        classes[0] = classes[0] + type.getQualifiedName().toString().replace('.', '/') + "*.class";  // NOI18N
+                                    }
+                                }
+                            }
+                        }, true);
+                    } catch (java.io.IOException ioex) {
+                        Exceptions.printStackTrace(ioex);
+                    }
+                }
             } else {
                 files = findTestSources(context, false);
                 path = FileUtil.getRelativePath(getRoot(project.getTestSourceRoots().getRoots(),files[0]), files[0]);
@@ -398,6 +430,7 @@ class J2SEActionProvider implements ActionProvider {
                 path = path.substring(0, path.length() - 5);
             }
             p.setProperty("fix.includes", path); // NOI18N
+            p.setProperty("fix.classes", classes[0]); // NOI18N
         }
         else if (command.equals (COMMAND_RUN) || command.equals(COMMAND_DEBUG) || command.equals(COMMAND_DEBUG_STEP_INTO)) {
             String config = project.evaluator().getProperty(J2SEConfigurationProvider.PROP_CONFIG);

@@ -167,7 +167,6 @@ public class J2SEProjectProperties {
     public static final String APPLICATION_ARGS = "application.args"; // NOI18N
     public static final String JAVADOC_PREVIEW="javadoc.preview"; // NOI18N
 
-    public static final String DEFAULT_LIBRARIES_FILENAME = "nblibraries.properties";
     
     // Well known paths
     public static final String[] WELL_KNOWN_PATHS = new String[] {            

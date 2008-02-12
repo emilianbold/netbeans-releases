@@ -74,7 +74,12 @@ import org.openide.util.Lookup;
 public class ProxyClassLoader extends ClassLoader implements Util.PackageAccessibleClassLoader {
 
     private static final Logger LOGGER = Logger.getLogger(ProxyClassLoader.class.getName());
-    private static final boolean LOG_LOADING = LOGGER.isLoggable(Level.FINE);
+    private static final boolean LOG_LOADING;
+
+    static {
+        boolean prop1 = System.getProperty("org.netbeans.ProxyClassLoader.level") != null;
+        LOG_LOADING = prop1 || LOGGER.isLoggable(Level.FINE);
+    }
 
     /** All known packages */
     private final Map<String, Package> packages = new HashMap<String, Package>();
@@ -150,6 +155,7 @@ public class ProxyClassLoader extends ClassLoader implements Util.PackageAccessi
         if (moduleFactory != null && moduleFactory.removeBaseClassLoader()) {
             // this hack is here to prevent having the application classloader
             // as parent to all module classloaders.
+            systemCL = ClassLoader.getSystemClassLoader();
             resParents = coalesceAppend(new ProxyClassLoader[0], nueparents);
         } else {
             resParents = coalesceAppend(parents, nueparents);
@@ -181,8 +187,10 @@ public class ProxyClassLoader extends ClassLoader implements Util.PackageAccessi
     @Override
     protected synchronized Class loadClass(String name, boolean resolve)
                                             throws ClassNotFoundException {
-        if (LOG_LOADING) LOGGER.log(Level.FINEST, "{0} initiated loading of {1}",
+        if (LOG_LOADING && !name.startsWith("java.util.logging.")) {
+            LOGGER.log(Level.FINEST, "{0} initiated loading of {1}",
                     new Object[] {this, name});
+        }
         
         Class cls = null;
 
@@ -243,7 +251,7 @@ public class ProxyClassLoader extends ClassLoader implements Util.PackageAccessi
         Class cls = findLoadedClass(name); 
         if (cls == null) {
             cls = doLoadClass(pkg, name);
-            if (LOG_LOADING) LOGGER.log(Level.FINEST, "{0} loaded {1}",
+            if (LOG_LOADING && !name.startsWith("java.util.logging.")) LOGGER.log(Level.FINEST, "{0} loaded {1}",
                         new Object[] {this, name});
         }
         return cls; 

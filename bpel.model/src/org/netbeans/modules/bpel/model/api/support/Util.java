@@ -106,7 +106,7 @@ public class Util {
     return NbDocument.findLineNumber(document, entity.findPosition());
   }
 
-  private static FileObject getFileObjectByModel(Model model){
+  private static FileObject getFileObjectByModel(Model model) {
     if (model == null) {
       return null;
     }

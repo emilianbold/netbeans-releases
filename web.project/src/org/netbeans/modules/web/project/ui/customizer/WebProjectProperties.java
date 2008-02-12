@@ -94,6 +94,7 @@ import org.netbeans.modules.web.project.WebProject;
 import org.netbeans.modules.web.project.WebProjectType;
 import org.netbeans.modules.web.project.classpath.ClassPathSupport.Item;
 import org.netbeans.modules.websvc.spi.webservices.WebServicesConstants;
+import org.netbeans.spi.project.libraries.support.LibrariesSupport;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.URLMapper;
 import org.openide.modules.SpecificationVersion;
@@ -203,9 +204,9 @@ public class WebProjectProperties {
     };
     
     // Prefixes and suffixes of classpath
-    public static final String LIBRARY_PREFIX = "${libs."; // NOI18N
-    public static final String LIBRARY_SUFFIX = ".classpath}"; // NOI18N
     public static final String ANT_ARTIFACT_PREFIX = "${reference."; // NOI18N
+    
+    public static final String DEFAULT_LIBRARIES_FILENAME = "nblibraries.properties";
 
     public ClassPathSupport cs;
 
@@ -230,6 +231,7 @@ public class WebProjectProperties {
     ListCellRenderer PLATFORM_LIST_RENDERER;
     ListCellRenderer JAVAC_SOURCE_RENDERER;
     WebClassPathUi.ClassPathTableCellItemRenderer CLASS_PATH_TABLE_ITEM_RENDERER;
+    Document SHARED_LIBRARIES_MODEL;
 
     // CustomizerCompile
     ButtonModel JAVAC_DEPRECATION_MODEL; 
@@ -303,7 +305,8 @@ public class WebProjectProperties {
         this.evaluator = evaluator;
         this.refHelper = refHelper;
         
-        this.cs = new ClassPathSupport( evaluator, refHelper, updateHelper.getAntProjectHelper(), WELL_KNOWN_PATHS, LIBRARY_PREFIX, LIBRARY_SUFFIX, ANT_ARTIFACT_PREFIX);
+        this.cs = new ClassPathSupport( evaluator, refHelper, 
+                updateHelper.getAntProjectHelper(), updateHelper, WELL_KNOWN_PATHS, ANT_ARTIFACT_PREFIX);
                 
         privateGroup = new StoreGroup();
         projectGroup = new StoreGroup();
@@ -321,8 +324,8 @@ public class WebProjectProperties {
      */
     private void init() {
         
-        CLASS_PATH_LIST_RENDERER = new WebClassPathUi.ClassPathListCellRenderer( evaluator );
-        CLASS_PATH_TABLE_ITEM_RENDERER = new WebClassPathUi.ClassPathTableCellItemRenderer( evaluator );
+        CLASS_PATH_LIST_RENDERER = new WebClassPathUi.ClassPathListCellRenderer(evaluator, project.getProjectDirectory());
+        CLASS_PATH_TABLE_ITEM_RENDERER = new WebClassPathUi.ClassPathTableCellItemRenderer(evaluator, project.getProjectDirectory());
         
         // CustomizerSources
         SOURCE_ROOTS_MODEL = WebSourceRootsUi.createModel( project.getSourceRoots() );
@@ -345,6 +348,12 @@ public class WebProjectProperties {
         }
         JAVAC_SOURCE_MODEL = PlatformUiSupport.createSourceLevelComboBoxModel (PLATFORM_MODEL, evaluator.getProperty(JAVAC_SOURCE), evaluator.getProperty(JAVAC_TARGET), minimalSourceLevel);
         JAVAC_SOURCE_RENDERER = PlatformUiSupport.createSourceLevelListCellRenderer ();
+        SHARED_LIBRARIES_MODEL = new PlainDocument(); 
+        try {
+            SHARED_LIBRARIES_MODEL.insertString(0, project.getAntProjectHelper().getLibrariesLocation(), null);
+        } catch (BadLocationException ex) {
+            Exceptions.printStackTrace(ex);
+        }
         
         // CustomizerCompile
         JAVAC_DEPRECATION_MODEL = projectGroup.createToggleButtonModel( evaluator, JAVAC_DEPRECATION );
@@ -392,6 +401,7 @@ public class WebProjectProperties {
 
     public void save() {
         try {
+            saveLibrariesLocation();
             // Store properties 
             ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction() {
                 public Object run() throws IOException {
@@ -446,6 +456,24 @@ public class WebProjectProperties {
         
     }
 
+    private void saveLibrariesLocation() throws IOException, IllegalArgumentException {
+        try {
+            String str = SHARED_LIBRARIES_MODEL.getText(0, SHARED_LIBRARIES_MODEL.getLength()).trim();
+            if (str.length() == 0) {
+                str = null;
+            }
+            String old = project.getAntProjectHelper().getLibrariesLocation();
+            if ((old == null && str == null) || (old != null && old.equals(str))) {
+                //ignore, nothing changed..
+            } else {
+                project.getAntProjectHelper().setLibrariesLocation(str);
+                ProjectManager.getDefault().saveProject(project);
+            }
+        } catch (BadLocationException x) {
+            Exceptions.printStackTrace(x);
+        }
+    }
+    
     private void storeProperties() throws IOException {
         // Store special properties
         
@@ -570,7 +598,7 @@ public class WebProjectProperties {
         libs.addAll(ClassPathUiSupport.getList(JAVAC_CLASSPATH_MODEL.getDefaultListModel()));
         libs.addAll(WarIncludesUiSupport.getList(WAR_CONTENT_ADDITIONAL_MODEL));
         
-        storeLibrariesLocations (libs.iterator(), privateProperties);
+        storeLibrariesLocations (libs.iterator(), projectProperties, project.getProjectDirectory());
         
         // Store the property changes into the project
         updateHelper.putProperties( AntProjectHelper.PROJECT_PROPERTIES_PATH, projectProperties );
@@ -655,6 +683,17 @@ public class WebProjectProperties {
             if ( item.getType() == ClassPathSupport.Item.TYPE_ARTIFACT ||
                     item.getType() == ClassPathSupport.Item.TYPE_JAR ) {
                 refHelper.destroyReference(item.getReference());
+                if (item.getType() == ClassPathSupport.Item.TYPE_JAR) {
+                    //oh well, how do I do this otherwise??
+                    EditableProperties ep = updateHelper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
+                    if (item.getJavadocProperty() != null) {
+                        ep.remove(item.getJavadocProperty());
+                    }
+                    if (item.getSourceProperty() != null) {
+                        ep.remove(item.getSourceProperty());
+                    }
+                    updateHelper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, ep);
+                }
             }
         }
         
@@ -670,25 +709,6 @@ public class WebProjectProperties {
                 prop = prop.substring(2, prop.length()-1);
                 ep.remove(prop);
                 changed = true;
-            }
-        }
-        File projDir = FileUtil.toFile(updateHelper.getAntProjectHelper().getProjectDirectory());
-        for( Iterator it = added.iterator(); it.hasNext(); ) {
-            ClassPathSupport.Item item = (ClassPathSupport.Item)it.next();
-            if (item.getType() == ClassPathSupport.Item.TYPE_LIBRARY) {
-                // add property to project.properties pointing to relativized 
-                // library jar(s) if possible
-                String prop = cs.getLibraryReference( item );
-                prop = prop.substring(2, prop.length()-1); // XXX make a PropertyUtils method for this!
-                String value = relativizeLibraryClasspath(prop, projDir);
-                if (value != null) {
-                    ep.setProperty(prop, value);
-                    ep.setComment(prop, new String[]{
-                        // XXX this should be I18N! Not least because the English is wrong...
-                        "# Property "+prop+" is set here just to make sharing of project simpler.", //NOI18N
-                        "# The library definition has always preference over this property."}, false); //NOI18N
-                    changed = true;
-                }
             }
         }
         if (changed) {
@@ -929,7 +949,7 @@ public class WebProjectProperties {
      * It removes all properties that match this format that were in the {@link #properties}
      * but are not in the {@link #classpath}.
      */
-    public static void storeLibrariesLocations (Iterator /*<Item>*/ classpath, EditableProperties privateProps) {
+    public static void storeLibrariesLocations (Iterator<Item> classpath, EditableProperties privateProps, FileObject projectFolder) {
         ArrayList exLibs = new ArrayList ();
         Iterator propKeys = privateProps.keySet().iterator();
         while (propKeys.hasNext()) {
@@ -941,25 +961,25 @@ public class WebProjectProperties {
         }
         while (classpath.hasNext()) {
             ClassPathSupport.Item item = (Item)classpath.next();
-            ArrayList /*File*/ files = new ArrayList ();
-            ArrayList /*File*/ dirs = new ArrayList ();
-            getFilesForItem (item, files, dirs);
+            ArrayList<String> files = new ArrayList<String>();
+            ArrayList<String> dirs = new ArrayList<String>();
+            getFilesForItem (item, files, dirs, projectFolder);
             String key;
             if (files.size() > 1 || (files.size()>0 && dirs.size()>0)) {
                 String ref = item.getType() == ClassPathSupport.Item.TYPE_LIBRARY ? item.getRaw() : item.getReference();
                 for (int i = 0; i < files.size(); i++) {
-                    File f = (File) files.get(i);
+                    String path = files.get(i);
                     key = getAntPropertyName(ref)+".libfile." + (i+1); //NOI18N
-                    privateProps.setProperty (key, "" + f.getAbsolutePath()); //NOI18N
+                    privateProps.setProperty (key, "" + path); //NOI18N
                     exLibs.remove(key);
                 }
             }
             if (dirs.size() > 1 || (files.size()>0 && dirs.size()>0)) {
                 String ref = item.getType() == ClassPathSupport.Item.TYPE_LIBRARY ? item.getRaw() : item.getReference();
                 for (int i = 0; i < dirs.size(); i++) {
-                    File f = (File) dirs.get(i);
+                    String path = dirs.get(i);
                     key = getAntPropertyName(ref)+".libdir." + (i+1); //NOI18N
-                    privateProps.setProperty (key, "" + f.getAbsolutePath()); //NOI18N
+                    privateProps.setProperty (key, "" + path); //NOI18N
                     exLibs.remove(key);
                 }
             }
@@ -970,15 +990,14 @@ public class WebProjectProperties {
         }
     }
     
-    public static final void getFilesForItem (ClassPathSupport.Item item, List/*File*/ files, List/*File*/ dirs) {
+    public static final void getFilesForItem (ClassPathSupport.Item item, List<String> files, List<String> dirs, FileObject projectFolder) {
         if (item.isBroken()) {
             return ;
         }
         if (item.getType() == ClassPathSupport.Item.TYPE_LIBRARY) {
-            List/*<URL>*/ roots = item.getLibrary().getContent("classpath");  //NOI18N
-            for (Iterator it = roots.iterator(); it.hasNext();) {
-                URL rootUrl = (URL) it.next();
-                FileObject root = URLMapper.findFileObject (rootUrl);
+            List<URL> roots = item.getLibrary().getContent("classpath");  //NOI18N
+            for (URL rootUrl : roots) {
+                FileObject root = LibrariesSupport.resolveLibraryEntryFileObject(item.getLibrary().getManager().getLocation(), rootUrl);
                 
                 //file inside library is broken
                 if (root == null)
@@ -988,22 +1007,29 @@ public class WebProjectProperties {
                     root = FileUtil.getArchiveFile (root);
                 }
                 File f = FileUtil.toFile(root);
+                String path;
+                // if global library use absolute path otherwise relative
+                if (item.getLibrary().getManager().getLocation() == null) {
+                    path = f.getPath();
+                } else {
+                    path = PropertyUtils.relativizeFile(FileUtil.toFile(projectFolder), FileUtil.toFile(root));
+                }
                 if (f != null) {
                     if (f.isFile()) {
-                        files.add(f); 
+                        files.add(path); 
                     } else {
-                        dirs.add(f);
+                        dirs.add(path);
                     }
                 }
             }
         }
         if (item.getType() == ClassPathSupport.Item.TYPE_JAR) {
-            File root = item.getFile();
+            File root = item.getResolvedFile();
             if (root != null) {
                 if (root.isFile()) {
-                    files.add(root); 
+                    files.add(item.getFilePath()); 
                 } else {
-                    dirs.add(root);
+                    dirs.add(item.getFilePath());
                 }
             }
         }
@@ -1013,9 +1039,9 @@ public class WebProjectProperties {
             for (int i = 0; i < roots.length; i++) {
                 String root = artifactFolder + File.separator + roots [i];
                 if (root.endsWith(File.separator)) {
-                    dirs.add(new File (root));
+                    dirs.add(root);
                 } else {
-                    files.add(new File (root));
+                    files.add(root);
                 }
             }
         }

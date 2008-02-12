@@ -207,6 +207,7 @@ public class ClassPathSupport {
                         String file = item.getFilePath();
                         // pass null as expected artifact type to always get file reference
                         reference = referenceHelper.createForeignFileReferenceAsIs(file, null);
+                        item.property = reference;
                     }
                     if (item.hasChangedSource()) {
                         if (item.getSourceFilePath() != null) {
@@ -277,6 +278,27 @@ public class ClassPathSupport {
         }
         
         return items;
+    }
+    
+    public void updateJarReference(Item item) {
+        String eval = evaluator.evaluate( item.getReference() );
+
+        item.object = eval;
+
+        //TODO these should be encapsulated in the Item class 
+        // but that means we need to pass evaluator and antProjectHelper there.
+        String ref = item.getSourceReference();
+        eval = evaluator.evaluate( ref );
+        if (eval != null && !eval.contains(Item.SOURCE_START)) {
+            item.setSourceFilePath(eval);
+        }
+        ref = item.getJavadocReference();
+        eval = evaluator.evaluate( ref );
+        File f2 = null;
+        if (eval != null && !eval.contains(Item.JAVADOC_START)) {
+            item.setJavadocFilePath(eval);
+        }
+        
     }
     
     public String getLibraryReference( Item item ) {
@@ -369,11 +391,11 @@ public class ClassPathSupport {
             return new Item( TYPE_ARTIFACT, artifact, artifactURI, property );
         }
         
-        public static Item create( String file, String property ) {
-            if ( file == null ) {
-                throw new IllegalArgumentException( "file must not be null" ); // NOI18N
+        public static Item create( String path, String property ) {
+            if ( path == null ) {
+                throw new IllegalArgumentException( "path must not be null" ); // NOI18N
             }
-            return new Item( TYPE_JAR, file, property );
+            return new Item( TYPE_JAR, path, property );
         }
         
         public static Item create( String property ) {

@@ -63,6 +63,7 @@
                 <friend>org.netbeans.modules.bpel.editors</friend>
                 <friend>org.netbeans.modules.bpel.mapper</friend>
                 <friend>org.netbeans.modules.bpel.model</friend>
+                <friend>org.netbeans.modules.bpel.validation</friend>
                 <friend>org.netbeans.modules.xml.wsdl.extensions</friend>
                 <package>org.netbeans.modules.xml.xpath.ext</package>
                 <package>org.netbeans.modules.xml.xpath.ext.metadata</package>

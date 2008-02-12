@@ -51,6 +51,7 @@ import org.netbeans.api.db.explorer.DatabaseException;
 import org.netbeans.modules.db.explorer.DatabaseConnection;
 import org.netbeans.modules.db.explorer.DatabaseNodeChildren;
 import org.netbeans.modules.db.explorer.ConnectionList;
+import org.netbeans.modules.db.explorer.DbNodeLoaderSupport;
 import org.netbeans.modules.db.explorer.nodes.*;
 
 public class RootNodeInfo extends DatabaseNodeInfo implements ConnectionOwnerOperations {
@@ -65,6 +66,8 @@ public class RootNodeInfo extends DatabaseNodeInfo implements ConnectionOwnerOpe
     }
     public void initChildren(Vector children) throws DatabaseException {
         try {
+            children.addAll(DbNodeLoaderSupport.getAllNodes());
+            
             DatabaseConnection[] cinfos = ConnectionList.getDefault().getConnections();
             for (int i = 0; i < cinfos.length; i++) {
                 DatabaseConnection cinfo = cinfos[i];
@@ -141,4 +144,5 @@ public class RootNodeInfo extends DatabaseNodeInfo implements ConnectionOwnerOpe
         else
             ((ConnectionNodeInfo) cnode.getInfo()).connect(dbconn);
     }
+
 }
