@@ -235,7 +235,9 @@ is divided into following sections:
             <attribute default="${build.classes.dir}" name="dir"/>
             <sequential>
                 <nbjpdareload>
-                    <fileset dir="@{dir}" includes="${fix.includes}*.class"/>
+                    <fileset dir="@{dir}" includes="${fix.classes}">
+                        <include name="${fix.includes}*.class"/>
+                    </fileset>
                 </nbjpdareload>
             </sequential>
         </macrodef>

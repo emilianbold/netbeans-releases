@@ -155,10 +155,6 @@ public class AcceptanceTest extends RaveTestCase {
         suite.addTest(new AcceptanceTest("testAddButton"));
         suite.addTest(new AcceptanceTest("testAddCalendar"));
         suite.addTest(new AcceptanceTest("testAddLinks"));
-
-//Work in progress
-        suite.addTest(new AcceptanceTest("testAddBeanProperties"));
-
 //        suite.addTest(new AcceptanceTest("testSetCalendarProperties"));
 //        suite.addTest(new AcceptanceTest("testAddPageSource"));
         suite.addTest(new AcceptanceTest("testDeploy"));
@@ -350,52 +346,6 @@ public class AcceptanceTest extends RaveTestCase {
         endTest();
     }
 
-
-    /*
-     * Go to the Outline pane. Right click SessionBean1 and select Add > Property
-     * Set the Name = maxDate and the type to java.util.Date, press OK
-     *
-     * Go to the Outline pane. Right click SessionBean1 and select Add > Property
-     * Set the Name = minDate and the type to java.util.Date, press OK
-     *
-     * Go to the Outline pane. Right click SessionBean1 and select Add > Property
-     * Set the Name = selectedDate and the type to java.util.Date, press OK
-     */
-    public void testAddBeanProperties() {
-        startTest();
-	TestUtils.wait(2000);
-               
-	log("Right-click SessionBean1.java and choose Add > Property.");
-	Util.getMainMenu().pushMenu("Window|Projects");
-        ProjectNavigatorOperator projectNav = new ProjectNavigatorOperator();
-        
-	String beanPattern = _projectName + _beanPatternPath;
-	log("searching for path = " + beanPattern);
-        projectNav.selectPath(beanPattern);
-        projectNav.pressPopupItemOnNode(beanPattern, _addPropertyPath);
-	TestUtils.wait(2000);
-
-        log("Get new pattern dialog");
-	JDialogOperator property = new JDialogOperator("New Property Pattern");
-
-        log("enter name");
-	// 11. Enter options in the Name field.
-	JTextFieldOperator nameField = new JTextFieldOperator(property);
-	nameField.setText("maxDate");
-	TestUtils.wait(1000);
-
-        log("Enter type");
-	new JComboBoxOperator(property).clearText();
-	new JComboBoxOperator(property).typeText("java.util.Date");
-	TestUtils.wait(1000);
-
-        log("OK");
-	new JButtonOperator(property, "OK").push();
-	TestUtils.wait(2000);
-        
-        log("**Done.");
-        endTest();
-    }
 
 
 //        suite.addTest(new AcceptanceTest("testSetCalendarProperties"));
