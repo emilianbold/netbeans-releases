@@ -109,21 +109,12 @@ public final class Entry {
     private static final String REMOVE_USER_FILE = "-"; //NOI18N
 
     /**
-     * The date formatter to be used for noting the Last Modified date in a
-     * file.
-     */
-    private static SimpleDateFormat lastModifiedDateFormatter;
-
-    /**
      * Returns the instance of the Last-Modified-Date-Formatter.
      */
     public static SimpleDateFormat getLastModifiedDateFormatter() {
-        if (lastModifiedDateFormatter == null) {
-            lastModifiedDateFormatter =
-                    new SimpleDateFormat("EEE MMM dd HH:mm:ss yyyy", Locale.US); //NOI18N
-            lastModifiedDateFormatter.setTimeZone(getTimeZone());
-        }
-        return lastModifiedDateFormatter;
+        SimpleDateFormat df = new SimpleDateFormat("EEE MMM dd HH:mm:ss yyyy", Locale.US); //NOI18N
+        df.setTimeZone(getTimeZone());
+        return df;
     }
 
     /**
