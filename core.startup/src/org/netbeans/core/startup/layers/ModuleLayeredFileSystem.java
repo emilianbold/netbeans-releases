@@ -232,7 +232,7 @@ implements LookupListener {
                 try {
                     err.log(Level.FINEST, "cache is ready");
                     cacheLayer = loadCache(manager);
-                    err.log(Level.FINEST, "update delegates");
+                    err.log(Level.FINEST, "update delegates for userdir:" + addLookup + " manager: " + manager);
                     setDelegates(appendLayers(writableLayer, addLookup, otherLayers, cacheLayer));
                     err.log(Level.FINEST, "delegates updated");
                 } catch (IOException ex) {
@@ -247,7 +247,7 @@ implements LookupListener {
                         manager.store(cacheLayer, urls, os);
                         data = os.toByteArray();
                         ByteBuffer bb = ByteBuffer.wrap(data);
-                        err.log(Level.FINEST, "reading from memory");
+                        err.log(Level.FINEST, "reading from memory, size {0}", bb.limit());
                         cacheLayer = manager.load(cacheLayer, bb.order(ByteOrder.LITTLE_ENDIAN));
                     } catch (IOException ioe) {
                         err.log(Level.WARNING, null, ioe);

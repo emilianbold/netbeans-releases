@@ -91,6 +91,7 @@ import org.netbeans.api.java.project.classpath.ProjectClassPathModifier;
 import org.netbeans.api.project.ant.FileChooser;
 import org.netbeans.api.project.libraries.LibraryChooser;
 import org.netbeans.api.project.libraries.LibraryManager;
+import org.netbeans.modules.java.api.common.ant.UpdateHelper;
 import org.netbeans.modules.java.j2seproject.J2SEProject;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
@@ -99,7 +100,6 @@ import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.netbeans.spi.project.support.ant.ReferenceHelper;
 import org.netbeans.spi.java.project.support.ui.PackageView;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
-import org.netbeans.modules.java.j2seproject.UpdateHelper;
 import org.netbeans.modules.java.j2seproject.ui.customizer.AntArtifactChooser;
 import org.netbeans.spi.project.libraries.support.LibrariesSupport;
 import org.openide.util.Exceptions;
@@ -397,7 +397,6 @@ final class LibrariesNode extends AbstractNode {
                         Icon libIcon = new ImageIcon (Utilities.loadImage(LIBRARIES_ICON));
                         for (Iterator it = roots.iterator(); it.hasNext();) {
                             URL rootUrl = (URL) it.next();
-                            rootUrl = LibrariesSupport.resolveLibraryEntryURL(lib.getManager().getLocation(), rootUrl);
                             rootsList.add (rootUrl);
                             FileObject root = URLMapper.findFileObject (rootUrl);
                             if (root != null) {

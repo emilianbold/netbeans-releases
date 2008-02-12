@@ -43,22 +43,18 @@ import java.awt.Image;
 import java.awt.datatransfer.Transferable;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 import javax.swing.Action;
-import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlPort;
-import org.netbeans.modules.websvc.manager.api.WebServiceMetaDataTransfer;
-import org.netbeans.modules.websvc.manager.api.WebServiceMetaDataTransfer.PortTransferable;
-import org.netbeans.modules.websvc.manager.spi.WebServiceManagerExt;
-import org.netbeans.modules.websvc.manager.spi.WebServiceTransferManager;
-import org.netbeans.modules.websvc.manager.util.ManagerUtil;
-import org.netbeans.modules.websvc.saas.model.WsdlSaas;
+import org.netbeans.modules.websvc.saas.model.Saas;
+import org.netbeans.modules.websvc.saas.model.WsdlSaasPort;
+import org.netbeans.modules.websvc.saas.spi.SaasNodeActionsProvider;
 import org.netbeans.modules.websvc.saas.ui.actions.ViewWSDLAction;
+import org.netbeans.modules.websvc.saas.util.SaasTransferable;
+import org.netbeans.modules.websvc.saas.util.SaasUtil;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.PropertySupport;
 import org.openide.nodes.Sheet;
 import org.openide.nodes.Sheet.Set;
-import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 import org.openide.util.actions.SystemAction;
@@ -71,29 +67,27 @@ import org.openide.util.lookup.InstanceContent;
  * @author nam
  */
 public class WsdlPortNode extends AbstractNode {
-    private WsdlSaas saas;
-    private WsdlPort port;
+    private WsdlSaasPort port;
     private Transferable transferable;
 
-    public WsdlPortNode(WsdlSaas saas, WsdlPort port) {
-        this(saas, port, new InstanceContent());
+    public WsdlPortNode(WsdlSaasPort port) {
+        this(port, new InstanceContent());
     }
     
-    private WsdlPortNode(WsdlSaas saas, WsdlPort port, InstanceContent content) {
-        super(new WsdlPortNodeChildren(saas, port), new AbstractLookup(content));
+    private WsdlPortNode(WsdlSaasPort port, InstanceContent content) {
+        super(new WsdlPortNodeChildren(port), new AbstractLookup(content));
         this.port = port;
-        this.saas = saas;
-        content.add(saas);
         content.add(port);
-        transferable = ExTransferable.create(new PortTransferable(new WebServiceMetaDataTransfer.Port(saas.getWsdlData(), port.getName())));
+        transferable = ExTransferable.create(
+                new SaasTransferable(port,SaasTransferable.WSDL_PORT_FLAVORS));
     }    
     
     // Create the popup menu:
     @Override
     public Action[] getActions(boolean context) {
         List<Action> actions = new ArrayList<Action>();
-        for (WebServiceManagerExt ext : ManagerUtil.getExtensions()) {
-            for (Action a : ext.getPortActions(this)) {
+        for (SaasNodeActionsProvider ext : SaasUtil.getSaasNodeActionsProviders()) {
+            for (Action a : ext.getSaasActions(this.getLookup())) {
                 actions.add(a);
             }
         }
@@ -160,17 +154,13 @@ public class WsdlPortNode extends AbstractNode {
                 NbBundle.getMessage(WsdlPortNode.class, "WS_URL"),
                 NbBundle.getMessage(WsdlPortNode.class, "WS_URL") ) {
             public Object getValue() {
-                return saas.getUrl();
+                return port.getParentSaas().getUrl();
             }
         });
         
         return sheet;
     }
     
-    public WsdlPort getPort() {
-        return port;
-    }
-      
     // Handle copying and cutting specially:    
     @Override
     public boolean canCopy() {
@@ -183,13 +173,10 @@ public class WsdlPortNode extends AbstractNode {
     
     @Override
     public Transferable clipboardCopy() throws IOException {
-        Collection<? extends WebServiceTransferManager> managers = Lookup.getDefault().lookupAll(WebServiceTransferManager.class);
-        Transferable result = transferable;
-        
-        for (WebServiceTransferManager m : managers) {
-            result = m.addDataFlavors(result);
+        if (port.getParentSaas().getState() != Saas.State.READY) {
+            port.getParentSaas().toStateReady();
+            return super.clipboardCopy();
         }
-        
-        return result;
+        return SaasTransferable.addFlavors(transferable);
     }
 }

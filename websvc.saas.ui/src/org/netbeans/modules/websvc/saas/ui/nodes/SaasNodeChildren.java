@@ -78,9 +78,9 @@ public abstract class SaasNodeChildren<T> extends Children.Keys<T> implements Pr
     
     @Override
     protected void addNotify() {
-        super.addNotify();
         saas.toStateReady();
         updateKeys();
+        super.addNotify();
     }
 
     @Override

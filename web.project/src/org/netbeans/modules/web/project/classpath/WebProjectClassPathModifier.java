@@ -61,7 +61,7 @@ import org.netbeans.api.project.Sources;
 import org.netbeans.api.project.ant.AntArtifact;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.project.libraries.LibraryManager;
-import org.netbeans.modules.web.project.UpdateHelper;
+import org.netbeans.modules.java.api.common.ant.UpdateHelper;
 import org.netbeans.modules.web.project.WebProject;
 import org.netbeans.modules.web.project.ui.customizer.WebProjectProperties;
 import org.netbeans.spi.java.project.classpath.ProjectClassPathModifierImplementation;
@@ -298,7 +298,7 @@ public class WebProjectClassPathModifier extends ProjectClassPathModifierImpleme
     static Library checkLibrarySharability(WebProject project, ReferenceHelper refHelper, Library lib) throws IOException {
         if (project.getAntProjectHelper().isSharableProject()) {
             if (lib.getManager().getLocation() == null) {
-                LOG.log(Level.INFO, "Client is adding global library ["+lib+
+                LOG.log(Level.FINE, "Client is adding global library ["+lib+
                         "] to sharable project.", new Exception());
                 // For backward compatibility just copy the library to shared one.
                 Library l = refHelper.getProjectLibraryManager().getLibrary(lib.getName());
