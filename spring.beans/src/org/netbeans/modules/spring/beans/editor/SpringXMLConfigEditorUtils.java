@@ -138,46 +138,28 @@ public final class SpringXMLConfigEditorUtils {
         return null;
     }
     
-    public static ElementHandle<TypeElement> findClassElementByBinaryName(final String binaryName, JavaSource js) {
-        final ElementHandle<TypeElement>[] elem = new ElementHandle[1];
-        try {
-            js.runUserActionTask(new Task<CompilationController>() {
+    public static TypeElement findClassElementByBinaryName(final String binaryName, CompilationController cc) {
+        if (!binaryName.contains("$")) { // NOI18N
+            // fast search based on fqn
+            return cc.getElements().getTypeElement(binaryName);
+        } else {
+            // get containing package
+            String packageName = ""; // NOI18N
+            int dotIndex = binaryName.lastIndexOf("."); // NOI18N
+            if (dotIndex != -1) {
+                packageName = binaryName.substring(0, dotIndex);
+            }
+            PackageElement packElem = cc.getElements().getPackageElement(packageName);
+            if (packElem == null) {
+                return null;
+            }
 
-                public void run(CompilationController cc) throws Exception {
-                    if (!binaryName.contains("$")) { // NOI18N
-                        // fast search based on fqn
-                        TypeElement te = cc.getElements().getTypeElement(binaryName);
-                        if (te != null) {
-                            elem[0] = ElementHandle.create(te);
-                        }
-                    } else {
-                        // get containing package
-                        String packageName = ""; // NOI18N
-                        int dotIndex = binaryName.lastIndexOf("."); // NOI18N
-                        if (dotIndex != -1) {
-                            packageName = binaryName.substring(0, dotIndex);
-                        }
-                        PackageElement packElem = cc.getElements().getPackageElement(packageName);
-                        if (packElem == null) {
-                            return;
-                        }
-
-                        // scan for element matching the binaryName
-                        TypeElement te = new TypeScanner().visit(packElem, binaryName);
-                        if (te != null) {
-                            elem[0] = ElementHandle.create(te);
-                        }
-                    }
-                }
-            }, true);
-        } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
+            // scan for element matching the binaryName
+            return new BinaryNameTypeScanner().visit(packElem, binaryName);
         }
-
-        return elem[0];
     }
     
-    private static class TypeScanner extends SimpleElementVisitor6<TypeElement, String> {
+    private static class BinaryNameTypeScanner extends SimpleElementVisitor6<TypeElement, String> {
 
         @Override
         public TypeElement visitPackage(PackageElement packElem, String binaryName) {
@@ -275,11 +257,7 @@ public final class SpringXMLConfigEditorUtils {
                 js.runUserActionTask(new Task<CompilationController>() {
                     public void run(CompilationController cc) throws Exception {
                         boolean opened = false;
-                        ElementHandle<TypeElement> eh = findClassElementByBinaryName(classBinaryName, js);
-                        TypeElement element = null;
-                        if(eh != null) {
-                            element = eh.resolve(cc);
-                        }
+                        TypeElement element = findClassElementByBinaryName(classBinaryName, cc);
                         if (element != null) {
                             opened = ElementOpen.open(js.getClasspathInfo(), element);
                         }
@@ -456,11 +434,7 @@ public final class SpringXMLConfigEditorUtils {
 
         public void run(CompilationController cc) throws Exception {
             cc.toPhase(Phase.ELEMENTS_RESOLVED);
-            ElementHandle<TypeElement> eh = findClassElementByBinaryName(classBinName, cc.getJavaSource());
-            if(eh == null) {
-                return;
-            }
-            TypeElement element = eh.resolve(cc);
+            TypeElement element = findClassElementByBinaryName(classBinName, cc);
             while (element != null) {
                 List<ExecutableElement> methods = ElementFilter.methodsIn(element.getEnclosedElements());
                 for (ExecutableElement method : methods) {

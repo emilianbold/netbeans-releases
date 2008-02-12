@@ -591,12 +591,11 @@ public final class CompletionManager {
 
                     public void run(CompilationController controller) throws Exception {
                         controller.toPhase(Phase.ELEMENTS_RESOLVED);
-                        ElementHandle<TypeElement> eh = SpringXMLConfigEditorUtils.findClassElementByBinaryName(classBinaryName, javaSource);
-                        if(eh == null) {
+                        TypeElement classElem = SpringXMLConfigEditorUtils.findClassElementByBinaryName(classBinaryName, controller);
+                        if (classElem == null) {
                             return;
                         }
                         
-                        TypeElement classElem = eh.resolve(controller);
                         ElementUtilities eu = controller.getElementUtilities();
                         ElementUtilities.ElementAcceptor acceptor = new ElementUtilities.ElementAcceptor() {
 
