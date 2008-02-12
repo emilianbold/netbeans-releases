@@ -5,7 +5,6 @@
 package org.netbeans.modules.groovy.grailsproject.actions;
 
 import java.io.BufferedReader;
-import java.io.InputStreamReader;
 import java.util.logging.Level;
 import javax.swing.JComponent;
 import org.openide.loaders.DataObject;
@@ -18,11 +17,12 @@ import javax.swing.Action;
 import org.openide.awt.DynamicMenuContent;
 import javax.swing.JMenuItem;
 import org.netbeans.api.project.FileOwnerQuery;
-import org.netbeans.modules.groovy.grails.api.GrailsProjectConfig;
 import org.netbeans.modules.groovy.grails.api.GrailsServer;
 import org.netbeans.modules.groovy.grails.api.GrailsServerFactory;
 import org.openide.awt.Actions;
 import org.netbeans.modules.groovy.grailsproject.GrailsProject;
+import org.netbeans.modules.groovy.grailsproject.StreamInputThread;
+import org.netbeans.modules.groovy.grailsproject.StreamRedirectThread;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.windows.IOProvider;
@@ -32,17 +32,15 @@ import org.openide.windows.OutputWriter;
 public final class GenerateAllAction extends NodeAction {
     
     private final Logger LOG = Logger.getLogger(GenerateAllAction.class.getName());
-    GrailsProject prj = null;
-    String command = null;
     
     protected void performAction(Node[] activatedNodes) {
         DataObject dataObject = activatedNodes[0].getLookup().lookup(DataObject.class);
         
-        prj = (GrailsProject)FileOwnerQuery.getOwner(dataObject.getFolder().getPrimaryFile());
-        command = "generate-all " + dataObject.getPrimaryFile().getName();
+        GrailsProject prj = (GrailsProject)FileOwnerQuery.getOwner(dataObject.getFolder().getPrimaryFile());
+        String command = "generate-all " + dataObject.getPrimaryFile().getName();
 
         assert prj != null;
-        new PrivateSwingWorker(this).start();
+        new PrivateSwingWorker(prj, command).start();
 
     }
 
@@ -104,18 +102,18 @@ public final class GenerateAllAction extends NodeAction {
     public class PrivateSwingWorker extends Thread {
 
         BufferedReader procOutput;
-        OutputWriter writer =  null;
-        GenerateAllAction parent;
+        OutputWriter writer = null;
+        String command = null;
+        GrailsProject prj = null;
 
-        public PrivateSwingWorker(GenerateAllAction parent) {
-            this.parent = parent;
+        public PrivateSwingWorker(GrailsProject prj, String command) {
+            this.prj = prj;
+            this.command = command;
         }
         
         public void run() {
 
         try {
-            String lineString = null;
-
             String tabName = "Grails Server : " + prj.getProjectDirectory().getName() 
                                                 + " (" + command +")";
             
@@ -132,17 +130,14 @@ public final class GenerateAllAction extends NodeAction {
                 return;
             }
 
-            procOutput = new BufferedReader(new InputStreamReader(process.getInputStream()));
+            assert process != null;
 
-            assert procOutput != null;
-            assert writer != null;
+            (new StreamInputThread   (process.getOutputStream(), io.getIn())).start();
+            (new StreamRedirectThread(process.getInputStream(),  io.getOut())).start();
+            (new StreamRedirectThread(process.getErrorStream(),  io.getErr())).start();
 
-            GrailsProjectConfig prjConfig = new GrailsProjectConfig(prj);
-            
-            while ((lineString = procOutput.readLine()) != null) {
-                writer.println(lineString);
-   
-            }
+            process.waitFor();
+
             } catch (Exception e) {
                 LOG.log(Level.WARNING, "problem with process: " + e);
                 LOG.log(Level.WARNING, "message " + e.getLocalizedMessage());
