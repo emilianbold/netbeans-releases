@@ -380,7 +380,7 @@ public class J2SEProjectGenerator {
             JavaPlatform defaultPlatform = JavaPlatformManager.getDefault().getDefaultPlatform();
             SpecificationVersion v = defaultPlatform.getSpecification().getVersion();
             if (v.equals(new SpecificationVersion("1.6")) || v.equals(new SpecificationVersion("1.7"))) {
-                // #89131: these levels are not actually distinct from 1.5.
+                // #89131: these levels are not actually distinct from 1.5. - xxx not true, but may be acceptable to have 1.5 as default
                 return new SpecificationVersion("1.5");
             } else {
                 return v;
