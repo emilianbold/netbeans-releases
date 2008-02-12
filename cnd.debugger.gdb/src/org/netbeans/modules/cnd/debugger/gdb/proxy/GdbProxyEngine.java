@@ -350,8 +350,8 @@ public class GdbProxyEngine {
                 break;
             }
         }
-        char ch = msg.charAt(i);
-        if (ch == '^' || ch == '*' || ch == '+' || ch == '=') {
+        char ch = i < msg.length() ? msg.charAt(i) : 0;
+        if ((ch == '^' || ch == '*' || ch == '+' || ch == '=') && ch != 0) {
             return msg.substring(i);
         } else {
             return msg;
