@@ -42,6 +42,9 @@ package org.netbeans.modules.spring.beans.editor;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -52,6 +55,7 @@ import javax.lang.model.element.Modifier;
 import javax.lang.model.element.PackageElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.DeclaredType;
+import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
 import javax.lang.model.util.SimpleElementVisitor6;
@@ -437,6 +441,15 @@ public final class SpringXMLConfigEditorUtils {
         return false;
     }
     
+    public static String getPropertyNameFromMethodName(String methodName) {
+        if(methodName.length() < 4) {
+            return null;
+        }
+        char[] propertyName = methodName.substring(3).toCharArray();
+        propertyName[0] = Character.toLowerCase(propertyName[0]);
+        return String.valueOf(propertyName);
+    }
+    
     private static final class MethodFinder implements Task<CompilationController> {
 
         private String classBinName;
@@ -514,6 +527,74 @@ public final class SpringXMLConfigEditorUtils {
 
         public ElementHandle<ExecutableElement> getMethodHandle() {
             return this.methodHandle;
+        }
+    }
+    
+    public static List<ExecutableElement> findPropertiesOnType(ElementUtilities eu, TypeMirror type,
+            String propertyName, boolean searchGetters, boolean searchSetters) {
+        PropertyAcceptor propertyAcceptor = new PropertyAcceptor(propertyName, searchGetters, searchSetters);
+        Iterable<? extends Element> matchingProp = eu.getMembers(type, propertyAcceptor);
+        Iterator<? extends Element> it = matchingProp.iterator();
+        // no matching element found
+        if (!it.hasNext()) {
+            return Collections.emptyList();
+        }
+        
+        List<ExecutableElement> retList = new ArrayList<ExecutableElement>();
+        for(Element e : matchingProp) {
+            retList.add((ExecutableElement) e);
+        }
+        
+        return retList;
+    }
+       
+    private static class PropertyAcceptor implements ElementUtilities.ElementAcceptor {
+        private boolean searchSetters;
+        private boolean searchGetters;
+        private String propPrefix;
+
+        public PropertyAcceptor(String propPrefix, boolean searchGetters, boolean searchSetters) {
+            // captialize first character of the property prefix - for matching
+            if(propPrefix.length() > 0) {
+                char[] prop = propPrefix.toCharArray();
+                prop[0] = Character.toUpperCase(prop[0]);
+                this.propPrefix = String.valueOf(prop);
+            } else {
+                this.propPrefix = propPrefix;
+            }
+            this.searchGetters = searchGetters;
+            this.searchSetters = searchSetters;
+        }
+        
+        public boolean accept(Element e, TypeMirror type) {
+            if (e.getKind() != ElementKind.METHOD) {
+                return false;
+            }
+
+            ExecutableElement ee = (ExecutableElement) e;
+            String methodName = ee.getSimpleName().toString();
+            if(methodName.length() < 4) {
+                return false;
+            }
+            
+            if(ee.getModifiers().contains(Modifier.PRIVATE) || ee.getModifiers().contains(Modifier.STATIC)) {
+                return false;
+            }
+            
+            if(!methodName.startsWith(propPrefix, 3)) {
+                return false;
+            }
+            
+            if (searchSetters && methodName.startsWith("set") && ee.getParameters().size() == 1 
+                    && ee.getReturnType().getKind() == TypeKind.VOID) { // NOI18N
+                return true;
+            }
+            if(searchGetters && methodName.startsWith("get") && ee.getParameters().size() == 0
+                    && ee.getReturnType().getKind() != TypeKind.VOID) { // NOI18N
+                return true;
+            }
+
+            return false;
         }
     }
 }
