@@ -73,7 +73,7 @@ public final class ConstructorDDImpl extends MethodDDImpl<CsmConstructor> implem
         if(initializers != null) {
             return initializers;
         } else {
-            return Collections.EMPTY_LIST;
+            return Collections.<CsmExpression>emptyList();
         }
     }    
     
