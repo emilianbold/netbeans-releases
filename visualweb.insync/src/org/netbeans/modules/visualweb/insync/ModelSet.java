@@ -423,7 +423,7 @@ public abstract class ModelSet implements FileChangeListener {
      */
     public URLClassLoader getProjectClassLoader() {
         if (classLoader == null) {
-            Set urls1Set = new LinkedHashSet();
+            Set<URL> urls1Set = new LinkedHashSet<URL>();
 
 			// Add design time and run time jars from COMPLIBS
             LibraryManager libraryManager = JsfProjectUtils.getProjectLibraryManager(project);
@@ -440,13 +440,13 @@ public abstract class ModelSet implements FileChangeListener {
                     }
                 }
             
-                if (JsfProjectUtils.hasLibraryReference(project, library, ClassPath.COMPILE)) {
-                    // TODO The following hardcoded constants are defined in
-                    // org.netbeans.modules.visualweb.project.jsf.libraries.provider.ComponentLibraryTypeProvider
-                    // org.netbeans.modules.visualweb.project.jsf.libraries.provider.ThemeLibraryTypeProvider
-                    // However this class is not part of a public package.
-                    if (library.getType().equals("complib") || 
-                            library.getType().equals("theme")) { // NOI18N
+                // TODO The following hardcoded constants are defined in
+                // org.netbeans.modules.visualweb.project.jsf.libraries.provider.ComponentLibraryTypeProvider
+                // org.netbeans.modules.visualweb.project.jsf.libraries.provider.ThemeLibraryTypeProvider
+                // However this class is not part of a public package.
+                if (library.getType().equals("complib") || 
+                        library.getType().equals("theme")) { // NOI18N
+                    if (JsfProjectUtils.hasLibraryReference(project, library, ClassPath.COMPILE)) {
                         for (String volumeType : volumeTypes) {
                             if (library.getType().equals("theme") && // NOI18N
                                     (!volumeType.equals("classpath"))) { // NOI18N
@@ -564,41 +564,8 @@ public abstract class ModelSet implements FileChangeListener {
         return Collections.emptyList();
     }
     
-    private static void addEntriesInLibraryVolume(Library library, String volumeType, Set urlsSet) {
-        List urls = library.getContent(volumeType);
-        List normalizedUrls = new ArrayList();
-        
-        for (Iterator it = urls.iterator(); it.hasNext();) {
-            URL url = (URL) it.next();
-            FileObject fileObject = URLMapper.findFileObject (url);
-            
-            //file inside library is broken
-            if (fileObject == null)
-                continue;
-            
-            if ("jar".equals(url.getProtocol())) {  //NOI18N
-                fileObject = FileUtil.getArchiveFile (fileObject);
-            }
-            File f = FileUtil.toFile(fileObject);                            
-            if (f != null) {
-                try {
-                    URL entry = f.toURI().toURL();
-                    if (FileUtil.isArchiveFile(entry)) {
-                        entry = FileUtil.getArchiveRoot(entry);
-                    } else if (!f.exists()) {
-                        // if file does not exist (e.g. build/classes folder
-                        // was not created yet) then corresponding File will
-                        // not be ended with slash. Fix that.
-                        assert !entry.toExternalForm().endsWith("/") : f; // NOI18N
-                        entry = new URL(entry.toExternalForm() + "/"); // NOI18N
-                    }
-                    normalizedUrls.add(entry);
-                } catch (MalformedURLException mue) {
-                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, mue);
-                }
-            }
-        }
-        urlsSet.addAll(normalizedUrls); // NOI18N
+    private static void addEntriesInLibraryVolume(Library library, String volumeType, Set<URL> urlsSet) {
+        urlsSet.addAll(library.getContent(volumeType));
     }
     
     private static boolean addJarsInFolder(FileObject folder, Set urlsSet) {

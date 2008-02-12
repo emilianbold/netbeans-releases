@@ -1609,7 +1609,7 @@ public class RADComponent {
         
         @Override
         public BeanDescriptor getBeanDescriptor() {
-            return (beanInfo == this) ? null : beanInfo.getBeanDescriptor();            
+            return (beanInfo == this) ? new BeanDescriptor(beanClass) : beanInfo.getBeanDescriptor();            
         }
 
         @Override

@@ -409,13 +409,12 @@ class ChoiceExtensionProperty extends ExtensionProperty<String> {
  * Extension poperty of Endpoint type..
  */
 class EndpointExtensionProperty extends ExtensionProperty<Endpoint> {
-    
+
     private static final String ENDPOINT_NAME = "endpoint-name";
     private static final String SERVICE_NAME = "service-name";
-
     private static final QName ENDPOINT_NAME_QNAME = new QName(ENDPOINT_NAME);
     private static final QName SERVICE_NAME_QNAME = new QName(SERVICE_NAME);
-    
+
     EndpointExtensionProperty(
             CasaNode node,
             CasaComponent extensionPointComponent,
@@ -425,18 +424,14 @@ class EndpointExtensionProperty extends ExtensionProperty<Endpoint> {
             String propertyName,
             String displayName,
             String description) {
-        super(node, extensionPointComponent, firstEE, lastEE, propertyType, 
+        super(node, extensionPointComponent, firstEE, lastEE, propertyType,
                 String.class, //?
                 propertyName, displayName, description);
     }
 
-//    public boolean canWrite() {
-//        return true;
-//    }
-
     @Override
     public PropertyEditor getPropertyEditor() {
-        EndpointEditor endpointEditor = new EndpointEditor();
+        PropertyEditor endpointEditor = new EndpointEditor();
         try {
             endpointEditor.setValue(getValue());
         } catch (Exception ex) {
@@ -490,10 +485,10 @@ class EndpointExtensionProperty extends ExtensionProperty<Endpoint> {
             CasaWrapperModel model = getModel();
             List<CasaEndpoint> casaEndpoints =
                     model.getRootComponent().getEndpoints().getEndpoints();
-            
+
             for (CasaEndpoint casaEndpoint : casaEndpoints) {
                 Endpoint endpoint = new Endpoint(
-                        casaEndpoint.getServiceQName(), 
+                        casaEndpoint.getServiceQName(),
                         casaEndpoint.getEndpointName());
                 values.add(endpoint);
             }
@@ -508,7 +503,7 @@ class EndpointExtensionProperty extends ExtensionProperty<Endpoint> {
         @Override
         public void setAsText(String value) {
             Endpoint endpoint = Endpoint.valueOf(value);
-            
+
             Endpoint[] endpoints = getValues();
             for (Endpoint ep : endpoints) {
                 if (ep.equals(endpoint)) {
@@ -519,7 +514,6 @@ class EndpointExtensionProperty extends ExtensionProperty<Endpoint> {
         }
     }
 }
-
 
 class XmlUtil {
 
