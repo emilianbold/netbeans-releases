@@ -156,7 +156,7 @@ public class PathController implements ActionListener, ListSelectionListener, Li
             Object path = pluginsPath.nextElement();
             buffer.append(path.toString());
             if(pluginsPath.hasMoreElements())
-                buffer.append(",");// NOI18N
+                buffer.append(System.getProperty( "path.separator" ));// NOI18N
         }
         return buffer.toString();
     }

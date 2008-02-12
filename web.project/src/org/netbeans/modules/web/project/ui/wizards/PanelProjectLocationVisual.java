@@ -63,6 +63,7 @@ import org.openide.util.NbBundle;
 public class PanelProjectLocationVisual extends SettingsPanel implements DocumentListener {
     
     public static final String PROP_PROJECT_NAME = "projectName"; //NOI18N
+    public static final String PROP_PROJECT_LOCATION = "projectLocation"; //NOI18N
     private static final String PROJECT_NAME_FORMATER = NbBundle.getMessage(PanelProjectLocationVisual.class,"LBL_NPW1_DefaultProjectName"); //NOI18N
     
     private String generatedProjectName = "";
@@ -87,6 +88,11 @@ public class PanelProjectLocationVisual extends SettingsPanel implements Documen
     public String getProjectName () {
         return this.projectNameTextField.getText ();
     }
+
+    public String getProjectLocation() {
+        return projectLocationTextField.getText();
+    }
+    
     
     /** This method is called from within the constructor to
      * initialize the form.
@@ -325,6 +331,9 @@ public class PanelProjectLocationVisual extends SettingsPanel implements Documen
         if (this.projectNameTextField.getDocument() == e.getDocument()) {
             firePropertyChange (PROP_PROJECT_NAME,null,this.projectNameTextField.getText());
         }
+        if (this.projectLocationTextField.getDocument() == e.getDocument()) {
+            firePropertyChange (PROP_PROJECT_LOCATION,null,this.projectLocationTextField.getText());
+        }
     }
     
     public void insertUpdate( DocumentEvent e ) {
@@ -332,12 +341,18 @@ public class PanelProjectLocationVisual extends SettingsPanel implements Documen
         if (this.projectNameTextField.getDocument() == e.getDocument()) {
             firePropertyChange (PROP_PROJECT_NAME,null,this.projectNameTextField.getText());
         }
+        if (this.projectLocationTextField.getDocument() == e.getDocument()) {
+            firePropertyChange (PROP_PROJECT_LOCATION,null,this.projectLocationTextField.getText());
+        }
     }
     
     public void removeUpdate( DocumentEvent e ) {
         updateTexts( e );
         if (this.projectNameTextField.getDocument() == e.getDocument()) {
             firePropertyChange (PROP_PROJECT_NAME,null,this.projectNameTextField.getText());
+        }
+        if (this.projectLocationTextField.getDocument() == e.getDocument()) {
+            firePropertyChange (PROP_PROJECT_LOCATION,null,this.projectLocationTextField.getText());
         }
     }
     

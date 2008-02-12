@@ -138,14 +138,6 @@
                         <specification-version>6.19</specification-version>
                     </run-dependency>
                 </dependency>
-                <dependency>
-                    <code-name-base>org.netbeans.modules.websvc.core</code-name-base>
-                    <build-prerequisite/>
-                    <compile-dependency/>
-                    <run-dependency>
-                        <specification-version>1.7</specification-version>
-                    </run-dependency>
-                </dependency>
             </module-dependencies>
             <public-packages/>
         </data>

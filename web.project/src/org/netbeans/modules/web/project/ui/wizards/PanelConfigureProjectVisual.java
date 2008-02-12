@@ -42,6 +42,8 @@
 package org.netbeans.modules.web.project.ui.wizards;
 
 import java.awt.Dimension;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import javax.swing.JPanel;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
@@ -94,6 +96,14 @@ public class PanelConfigureProjectVisual extends JPanel implements HelpCtx.Provi
             }
         };
         projectLocationPanel.projectNameTextField.getDocument().addDocumentListener(dl);
+        projectLocationPanel.addPropertyChangeListener(new PropertyChangeListener() {
+
+            public void propertyChange(PropertyChangeEvent evt) {
+                if (PanelProjectLocationVisual.PROP_PROJECT_LOCATION.equals(evt.getPropertyName())) {
+                    optionsPanel.setProjectLocation(projectLocationPanel.getProjectLocation());
+                }
+            }
+        });
 
 
         // Provide a name in the title bar.

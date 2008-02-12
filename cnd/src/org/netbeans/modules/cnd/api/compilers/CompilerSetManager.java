@@ -107,7 +107,7 @@ public class CompilerSetManager {
 	return getDefault(true);
     }
     
-    public static CompilerSetManager getDefault(boolean doCreate) {
+    public static synchronized CompilerSetManager getDefault(boolean doCreate) {
         if (instance == null && doCreate) {
             instance = new CompilerSetManager();
         }
@@ -117,7 +117,7 @@ public class CompilerSetManager {
     /**
      * Replace the default CompilerSetManager. Let registered listeners know its been updated.
      */
-    public static void setDefault(CompilerSetManager csm) {
+    public static synchronized void setDefault(CompilerSetManager csm) {
         instance = csm;
         fireCompilerSetChangeNotification(csm);
     }

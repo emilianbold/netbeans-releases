@@ -55,7 +55,7 @@ import org.netbeans.api.project.ant.AntArtifact;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.api.queries.CollocationQuery;
-import org.netbeans.modules.java.j2seproject.UpdateHelper;
+import org.netbeans.modules.java.api.common.ant.UpdateHelper;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
@@ -163,17 +163,22 @@ public class ClassPathSupport {
 
                 //TODO these should be encapsulated in the Item class 
                 // but that means we need to pass evaluator and antProjectHelper there.
-                String ref = item.getSourceReference();
-                eval = evaluator.evaluate( ref );
                 f = null;
-                if (eval != null && !eval.contains(Item.SOURCE_START)) {
-                    f = new File(eval); //antProjectHelper.resolveFile( eval );
+                String ref = item.getSourceReference();                
+                if (ref != null) {
+                    eval = evaluator.evaluate( ref );                    
+                    if (eval != null && !eval.contains(Item.SOURCE_START)) {
+                        f = new File(eval); //antProjectHelper.resolveFile( eval );
+                    }
                 }
-                ref = item.getJavadocReference();
-                eval = evaluator.evaluate( ref );
                 File f2 = null;
-                if (eval != null && !eval.contains(Item.JAVADOC_START)) {
-                    f2 = new File(eval); //antProjectHelper.resolveFile( eval );
+                ref = item.getJavadocReference();
+                if (ref != null) {
+                    eval = evaluator.evaluate( ref );
+                    f2 = null;
+                    if (eval != null && !eval.contains(Item.JAVADOC_START)) {
+                        f2 = new File(eval); //antProjectHelper.resolveFile( eval );
+                    }
                 }
                 item.setInitialSourceAndJavadoc(f, f2);
             }
@@ -209,6 +214,7 @@ public class ClassPathSupport {
                         String file = item.getFilePath();
                         // pass null as expected artifact type to always get file reference
                         reference = referenceHelper.createForeignFileReferenceAsIs(file, null);
+                        item.property = reference;
                     }
                     if (item.hasChangedSource()) {
                         if (item.getSourceFilePath() != null) {
@@ -279,6 +285,27 @@ public class ClassPathSupport {
         }
         
         return items;
+    }
+    
+    public void updateJarReference(Item item) {
+        String eval = evaluator.evaluate( item.getReference() );
+
+        item.object = eval;
+
+        //TODO these should be encapsulated in the Item class 
+        // but that means we need to pass evaluator and antProjectHelper there.
+        String ref = item.getSourceReference();
+        eval = evaluator.evaluate( ref );
+        if (eval != null && !eval.contains(Item.SOURCE_START)) {
+            item.setSourceFilePath(eval);
+        }
+        ref = item.getJavadocReference();
+        eval = evaluator.evaluate( ref );
+        File f2 = null;
+        if (eval != null && !eval.contains(Item.JAVADOC_START)) {
+            item.setJavadocFilePath(eval);
+        }
+        
     }
     
     public String getLibraryReference( Item item ) {
@@ -371,11 +398,11 @@ public class ClassPathSupport {
             return new Item( TYPE_ARTIFACT, artifact, artifactURI, property );
         }
         
-        public static Item create( String file, String property ) {
-            if ( file == null ) {
-                throw new IllegalArgumentException( "file must not be null" ); // NOI18N
+        public static Item create( String path, String property ) {
+            if ( path == null ) {
+                throw new IllegalArgumentException( "path must not be null" ); // NOI18N
             }
-            return new Item( TYPE_JAR, file, property );
+            return new Item( TYPE_JAR, path, property );
         }
         
         public static Item create( String property ) {
@@ -472,11 +499,21 @@ public class ClassPathSupport {
          * @return
          */
         public String getSourceReference() {
-            return property != null ? (SOURCE_START + property.substring(REF_START_INDEX)) : property;
+            if (property == null || !property.startsWith(REF_START)) {
+                return null;
+            }            
+            return SOURCE_START + property.substring(REF_START_INDEX);
         }
         
         public String getSourceProperty() {
-            return property != null ? (getSourceReference().substring(2, getSourceReference().length() - 1)) : null;
+            if (property == null || !property.startsWith(REF_START)) {
+                return null;
+            }
+            final String sourceRef = getSourceReference();
+            if (sourceRef == null) {
+                return null;
+            }
+            return sourceRef.substring(2, sourceRef.length() - 1);
         }
         
         /**
@@ -485,11 +522,42 @@ public class ClassPathSupport {
          * @return
          */
         public String getJavadocReference() {
-            return property != null ? (JAVADOC_START + property.substring(REF_START_INDEX)) : property;
+            if (property == null || !property.startsWith(REF_START)) {
+                return null;
+            }            
+            return JAVADOC_START + property.substring(REF_START_INDEX);
         }
         
         public String getJavadocProperty() {
-            return property != null ? (getJavadocReference().substring(2, getJavadocReference().length() - 1)) : null;
+            if (property == null || !property.startsWith(REF_START)) {
+                return null;
+            }
+            final String javadocRef = getJavadocReference();
+            if (javadocRef == null) {
+                return null;
+            }
+            return javadocRef.substring(2, javadocRef.length() - 1);
+        }
+        
+        public boolean canEdit () {            
+            if (isBroken()) {
+                //Broken item cannot be edited
+                return false;
+            }
+            if (getType() == TYPE_JAR) {
+                //Jar can be edited only for ide created reference
+                if (property == null) {
+                    //Just added item, allow editing
+                    return true;
+                }                
+                return getSourceReference() != null && getJavadocReference() != null;
+            }
+            else if (getType() == TYPE_LIBRARY) {
+                //Library can be edited
+                return true;
+            }
+            //Otherwise: project, classpath - cannot be edited 
+            return false;
         }
         
         /**

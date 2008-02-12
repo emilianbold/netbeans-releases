@@ -51,28 +51,40 @@ import org.netbeans.spi.server.ServerInstanceImplementation;
 import org.openide.nodes.Node;
 import org.openide.util.ChangeSupport;
 import org.openide.util.NbBundle;
+import org.openide.util.Parameters;
 
 /**
- * TODO:doc
+ * This class represents a Mongrel (gem) installation.
  * 
  * @author Erno Mononen
  */
 class Mongrel implements RubyServer, ServerInstanceImplementation {
 
     static final String GEM_NAME = "mongrel";
+    /**
+     * The pattern for recognizing when an instance of Mongrel has started.
+     */
     private static final Pattern PATTERN = Pattern.compile("\\bMongrel.+available at.+", Pattern.DOTALL);
-    private final List<RailsApplication> applications;
+    private final List<RailsApplication> applications = new ArrayList<RailsApplication>();
     private final RubyPlatform platform;
-    private Node node;
     private final String version;
     private final ChangeSupport changeSupport = new ChangeSupport(this);
+    
+    private Node node;
 
     Mongrel(RubyPlatform platform, String version) {
+        Parameters.notNull("platform", platform); //NOI18N
         this.platform = platform;
         this.version = version;
-        this.applications = new ArrayList<RailsApplication>();
     }
 
+    private Node getNode() {
+        if (this.node == null) {
+            this.node = new RubyServerNode(this);
+        }
+        return node;
+    }
+    
     // RubyServer  methods
     public String getNodeName() {
         return NbBundle.getMessage(Mongrel.class, "LBL_ServerNodeName", getDisplayName(), platform.getLabel());
@@ -127,17 +139,11 @@ class Mongrel implements RubyServer, ServerInstanceImplementation {
     }
 
     public Node getFullNode() {
-        if (this.node == null) {
-            this.node = new RubyServerNode(this);
-        }
-        return node;
+        return getNode();
     }
 
     public Node getBasicNode() {
-        if (this.node == null) {
-            this.node = new RubyServerNode(this);
-        }
-        return node;
+        return getNode();
     }
 
     public JComponent getCustomizer() {

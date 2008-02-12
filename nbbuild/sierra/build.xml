@@ -177,14 +177,14 @@
         <!-- samples -->
         <subant target="default" inheritAll="false">
             <property name="caps.netbeans.home" location="${home}/nbbuild/netbeans"/>
-            <buildpath location="${samples}/BluePrint1/BluePrint1/build.xml"/>
-            <buildpath location="${samples}/BluePrint2/BluePrint2/build.xml"/>
-            <buildpath location="${samples}/BluePrint3/BluePrint3/build.xml"/>
-            <buildpath location="${samples}/BluePrint4/BluePrint4/build.xml"/>
-            <buildpath location="${samples}/BluePrint5/BluePrint5/build.xml"/>
-            <buildpath location="${samples}/AsynchronousSample/AsynchronousSample/build.xml"/>
-            <buildpath location="${samples}/SynchronousSample/SynchronousSample/build.xml"/>
-            <buildpath location="${samples}/TravelReservationService/TravelReservationService/build.xml"/>
+            <buildpath location="${samples}/BluePrint1/BluePrint1Application/build.xml"/>
+            <buildpath location="${samples}/BluePrint2/BluePrint2Application/build.xml"/>
+            <buildpath location="${samples}/BluePrint3/BluePrint3Application/build.xml"/>
+            <buildpath location="${samples}/BluePrint4/BluePrint4Application/build.xml"/>
+            <buildpath location="${samples}/BluePrint5/BluePrint5Application/build.xml"/>
+            <buildpath location="${samples}/AsynchronousSample/AsynchronousSampleApplication/build.xml"/>
+            <buildpath location="${samples}/SynchronousSample/SynchronousSampleApplication/build.xml"/>
+            <buildpath location="${samples}/TravelReservationService/TravelReservationServiceApplication/build.xml"/>
         </subant>
     </target>
 
