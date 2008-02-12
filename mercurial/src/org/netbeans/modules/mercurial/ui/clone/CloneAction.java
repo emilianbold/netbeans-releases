@@ -257,7 +257,7 @@ public class CloneAction extends ContextAction {
             String defaultPushWinStr = HgConfigFiles.HG_DEFAULT_PUSH_VALUE + " = " + defaultPush.replace("\\", "\\\\") + "\n"; // NOI18N
 
             tempFile = new File(hgrcFile.getAbsolutePath() + ".tmp"); // NOI18N
-            if (!tempFile.isFile() || !tempFile.canWrite()) return;
+            if (tempFile == null) return;
             
             br = new BufferedReader(new FileReader(hgrcFile));
             pw = new PrintWriter(new FileWriter(tempFile));
