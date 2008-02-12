@@ -553,6 +553,7 @@ public class NewFileWizardsTest extends JellyTestCase {
      */
     public void testOpenEjbMultiRootProject() {
         assertNotNull(J2eeProjectSupport.openProject(getMultiEjbPath()));
+        Utils.checkMissingServer("MultiSrcRootEjb");
         new ProjectsTabOperator().getProjectRootNode("MultiSrcRootEjb").expand();
     }
     
@@ -561,6 +562,7 @@ public class NewFileWizardsTest extends JellyTestCase {
      */
     public void testOpenWebMultiRootProject() {
         assertNotNull(J2eeProjectSupport.openProject(getMultiWebPath()));
+        Utils.checkMissingServer("MultiSrcRootWar");
         new ProjectsTabOperator().getProjectRootNode("MultiSrcRootWar").expand();
     }
     
