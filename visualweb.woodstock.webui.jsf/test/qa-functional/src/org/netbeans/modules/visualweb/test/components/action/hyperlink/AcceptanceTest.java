@@ -39,7 +39,7 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.visualweb.test.components.action.Hyperlink;
+package org.netbeans.modules.visualweb.test.components.action.hyperlink;
 
 import junit.framework.Test;
 import junit.framework.TestSuite;
@@ -51,7 +51,6 @@ import java.io.IOException;
 
 import org.netbeans.modules.visualweb.gravy.*;
 import org.netbeans.modules.visualweb.gravy.ProjectNavigatorOperator;
-import org.netbeans.modules.visualweb.gravy.dataconnectivity.ServerNavigatorOperator;
 import org.netbeans.modules.visualweb.gravy.toolbox.PaletteContainerOperator;
 import org.netbeans.modules.visualweb.gravy.designer.DesignerPaneOperator;
 import org.netbeans.modules.visualweb.gravy.properties.SheetTableOperator;
@@ -148,6 +147,7 @@ public class AcceptanceTest extends RaveTestCase {
             try {
                 se.startServer("J2EE");
             } catch (Exception e) {
+                fail(e);
             }
             // Delete pb travel resource if it exists
             se.deleteResource("jdbc/Travel");
