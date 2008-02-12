@@ -147,7 +147,7 @@ public class OutputFileManager extends CachingFileManager {
                 throw new IOException ();
             }
         }
-        File file = new File (folder,relativeName);
+        File file = FileUtil.normalizeFile(new File (folder,relativeName));
         return OutputFileObject.create (activeRoot,file);
     }
         

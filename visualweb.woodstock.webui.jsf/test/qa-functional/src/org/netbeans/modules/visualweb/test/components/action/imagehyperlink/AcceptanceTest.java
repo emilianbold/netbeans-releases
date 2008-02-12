@@ -39,7 +39,7 @@
  * made subject to such option by the copyright holder.
  */
 
-package   org.netbeans.modules.visualweb.test.components.action.ImageHyperlink;
+package   org.netbeans.modules.visualweb.test.components.action.imagehyperlink;
 
 import junit.framework.Test;
 import junit.framework.TestSuite;

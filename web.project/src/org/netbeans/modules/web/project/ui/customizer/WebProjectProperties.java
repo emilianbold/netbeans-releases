@@ -75,7 +75,6 @@ import org.openide.util.MutexException;
 import org.openide.util.Mutex;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
-import org.netbeans.api.queries.CollocationQuery;
 import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
@@ -96,7 +95,6 @@ import org.netbeans.modules.web.project.classpath.ClassPathSupport.Item;
 import org.netbeans.modules.websvc.spi.webservices.WebServicesConstants;
 import org.netbeans.spi.project.libraries.support.LibrariesSupport;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.URLMapper;
 import org.openide.modules.SpecificationVersion;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
@@ -715,39 +713,7 @@ public class WebProjectProperties {
             updateHelper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, ep);
         }
     }
-        
-    /**
-     * Tokenize library classpath and try to relativize all the jars.
-     * @param property library property name ala "libs.someLib.classpath"
-     * @param projectDir project dir for relativization
-     * @return relativized library classpath or null if some jar is not collocated
-     */
-    private String relativizeLibraryClasspath(String property, File projectDir) {
-        String value = PropertyUtils.getGlobalProperties().getProperty(property);
-        // bugfix #42852, check if the classpath property is set, otherwise return null
-        if (value == null) {
-            return null;
-        }
-        String[] paths = PropertyUtils.tokenizePath(value);
-        StringBuffer sb = new StringBuffer();
-        for (int i=0; i<paths.length; i++) {
-            File f = updateHelper.getAntProjectHelper().resolveFile(paths[i]);
-            if (CollocationQuery.areCollocated(f, projectDir)) {
-                sb.append(PropertyUtils.relativizeFile(projectDir, f));
-            } else {
-                return null;
-            }
-            if (i+1<paths.length) {
-                sb.append(File.pathSeparatorChar);
-            }
-        }
-        if (sb.length() == 0) {
-            return null;
-        } else {
-            return sb.toString();
-        }
-    }
-    
+            
     private void storeRoots( SourceRoots roots, DefaultTableModel tableModel ) throws MalformedURLException {
         Vector data = tableModel.getDataVector();
         URL[] rootURLs = new URL[data.size()];
