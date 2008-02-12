@@ -47,7 +47,6 @@ import java.util.Collections;
 import java.util.EnumSet;
 import java.util.Enumeration;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -80,7 +79,6 @@ import org.netbeans.modules.spring.api.beans.model.SpringBeans;
 import org.netbeans.modules.spring.api.beans.model.SpringConfigModel;
 import org.netbeans.modules.spring.beans.editor.ContextUtilities;
 import org.netbeans.modules.spring.beans.editor.SpringXMLConfigEditorUtils;
-import org.netbeans.modules.spring.beans.editor.SpringXMLConfigEditorUtils.PropertyAcceptor;
 import org.netbeans.modules.spring.beans.editor.SpringXMLConfigEditorUtils.Public;
 import org.netbeans.modules.spring.beans.editor.SpringXMLConfigEditorUtils.Static;
 import org.netbeans.modules.spring.beans.loader.SpringXMLConfigDataLoader;
@@ -286,6 +284,7 @@ public final class CompletionManager {
 
                 final String typedPrefix = context.getTypedPrefix();
                 final String pNamespacePrefix = context.getDocumentContext().getNamespacePrefix(ContextUtilities.P_NAMESPACE);
+                final int substitutionOffset = context.getCaretOffset() - typedPrefix.length();
                 js.runUserActionTask(new Task<CompilationController>() {
 
                     public void run(CompilationController cc) throws Exception {
@@ -298,30 +297,30 @@ public final class CompletionManager {
                             return;
                         }
                         TypeElement te = eh.resolve(cc);
-                        PropertyAcceptor pa = new PropertyAcceptor("", false, true); // NOI18N
                         ElementUtilities eu = cc.getElementUtilities();
-                        Iterable<? extends Element> matchingProps = eu.getMembers(te.asType(), pa);
+                        List<ExecutableElement> matchingProps 
+                                = SpringXMLConfigEditorUtils.findPropertiesOnType(eu, te.asType(), 
+                                "", false, true); // NOI18N
 
-                        for (Element e : matchingProps) {
-                            ExecutableElement ee = (ExecutableElement) e;
+                        for (ExecutableElement ee : matchingProps) {
                             String propName = SpringXMLConfigEditorUtils.getPropertyNameFromMethodName(ee.getSimpleName().toString());
                             String attribName = pNamespacePrefix + ":" + propName; // NOI18N
-                            if (!SpringXMLConfigEditorUtils.hasAttribute(context.getTag(), attribName)
-                                    && attribName.startsWith(typedPrefix)) {
-                                SpringXMLConfigCompletionItem item = SpringXMLConfigCompletionItem.createPropertyAttribItem(context.getCaretOffset(),
+                            if (!context.getExistingAttributes().contains(attribName) && attribName.startsWith(typedPrefix)) {
+                                SpringXMLConfigCompletionItem item = SpringXMLConfigCompletionItem.createPropertyAttribItem(substitutionOffset,
                                         attribName, ee);
                                 resultSet.addItem(item);
                             }
                             attribName += "-ref"; // NOI18N
-                            if (!SpringXMLConfigEditorUtils.hasAttribute(context.getTag(), attribName)
-                                    && attribName.startsWith(typedPrefix)) {
-                                SpringXMLConfigCompletionItem refItem = SpringXMLConfigCompletionItem.createPropertyAttribItem(context.getCaretOffset(),
+                            if (!context.getExistingAttributes().contains(attribName) && attribName.startsWith(typedPrefix)) {
+                                SpringXMLConfigCompletionItem refItem = SpringXMLConfigCompletionItem.createPropertyAttribItem(substitutionOffset,
                                         attribName, ee); // NOI18N
                                 resultSet.addItem(refItem);
                             }
                         }
                     }
                 }, true);
+                
+                resultSet.setAnchorOffset(substitutionOffset);
             } catch (IOException ex) {
                 Exceptions.printStackTrace(ex);
             }
@@ -891,26 +890,22 @@ public final class CompletionManager {
                             StringTokenizer tokenizer = new StringTokenizer(getterChain, "."); // NOI18N
                             while (tokenizer.hasMoreTokens() && startType != null) {
                                 String propertyName = tokenizer.nextToken();
-                                PropertyAcceptor propertyAcceptor = new PropertyAcceptor(propertyName, true, false);
-                                Iterable<? extends Element> matchingProp = eu.getMembers(startType, propertyAcceptor);
-                                Iterator<? extends Element> it = matchingProp.iterator();
-
+                                List<ExecutableElement> elements 
+                                        = SpringXMLConfigEditorUtils.findPropertiesOnType(eu, startType, 
+                                        propertyName, true, false);
+                                
                                 // no matching element found
-                                if(!it.hasNext()) {
+                                if (elements.size() == 0) {
                                     startType = null;
                                     break;
                                 }
-                                
-                                while(it.hasNext()) {
-                                    Element e = it.next();
-                                    ExecutableElement ee = (ExecutableElement) e;
-                                    TypeMirror retType = ee.getReturnType();
-                                    if (retType.getKind() == TypeKind.DECLARED) {
-                                        startType = retType;
-                                        break;
-                                    } else {
-                                        startType = null;
-                                    }
+
+                                TypeMirror retType = elements.get(0).getReturnType();
+                                if (retType.getKind() == TypeKind.DECLARED) {
+                                    startType = retType;
+                                    break;
+                                } else {
+                                    startType = null;
                                 }
                             }
                         }
@@ -924,16 +919,15 @@ public final class CompletionManager {
                             setterPrefix = propertyPrefix.substring(dotIndex + 1);
                         }
                         
-                        PropertyAcceptor pa = new PropertyAcceptor(setterPrefix, false, true);
-                        Iterable<? extends Element> setterMethods = eu.getMembers(startType, pa);
-
+                        List<ExecutableElement> setterMethods 
+                                = SpringXMLConfigEditorUtils.findPropertiesOnType(eu, startType, 
+                                setterPrefix, false, true);
                         int substitutionOffset = context.getCurrentToken().getOffset() + 1;
                         if(dotIndex != -1) {
                             substitutionOffset += dotIndex + 1;
                         }
                         
-                        for (Element e : setterMethods) {
-                            ExecutableElement ee = (ExecutableElement) e;
+                        for (ExecutableElement ee : setterMethods) {
                             results.add(SpringXMLConfigCompletionItem.createPropertyItem(
                                     substitutionOffset, ee));
                         }

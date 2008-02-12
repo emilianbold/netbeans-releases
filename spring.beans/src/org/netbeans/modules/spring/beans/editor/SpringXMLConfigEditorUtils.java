@@ -42,6 +42,9 @@ package org.netbeans.modules.spring.beans.editor;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -526,8 +529,26 @@ public final class SpringXMLConfigEditorUtils {
             return this.methodHandle;
         }
     }
+    
+    public static List<ExecutableElement> findPropertiesOnType(ElementUtilities eu, TypeMirror type,
+            String propertyName, boolean searchGetters, boolean searchSetters) {
+        PropertyAcceptor propertyAcceptor = new PropertyAcceptor(propertyName, searchGetters, searchSetters);
+        Iterable<? extends Element> matchingProp = eu.getMembers(type, propertyAcceptor);
+        Iterator<? extends Element> it = matchingProp.iterator();
+        // no matching element found
+        if (!it.hasNext()) {
+            return Collections.emptyList();
+        }
+        
+        List<ExecutableElement> retList = new ArrayList<ExecutableElement>();
+        for(Element e : matchingProp) {
+            retList.add((ExecutableElement) e);
+        }
+        
+        return retList;
+    }
        
-    public static class PropertyAcceptor implements ElementUtilities.ElementAcceptor {
+    private static class PropertyAcceptor implements ElementUtilities.ElementAcceptor {
         private boolean searchSetters;
         private boolean searchGetters;
         private String propPrefix;
