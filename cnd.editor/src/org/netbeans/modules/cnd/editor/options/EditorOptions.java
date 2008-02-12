@@ -42,8 +42,14 @@ package org.netbeans.modules.cnd.editor.options;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.prefs.Preferences;
+import javax.swing.text.EditorKit;
+import org.netbeans.api.editor.mimelookup.MimeLookup;
+import org.netbeans.api.editor.mimelookup.MimePath;
+import org.netbeans.editor.Formatter;
+import org.netbeans.editor.Settings;
 import org.netbeans.modules.cnd.editor.api.CodeStyle;
 import org.netbeans.modules.cnd.editor.api.CodeStyle.BracePlacement;
+import org.netbeans.modules.cnd.editor.api.CodeStyle.PreprocessorIndent;
 import org.openide.util.NbPreferences;
 
 /**
@@ -175,20 +181,11 @@ public class EditorOptions {
     public static final String blankLinesAfterMethods = "blankLinesAfterMethods"; //NOI18N
     public static final int blankLinesAfterMethodsDefault = 0;    
 
-    /**
-     * Whether insert extra new-line before the compound bracket or not.
-     * Values: java.lang.Boolean instances
-     * Effect: if (test) {
-     *           function();
-     *         }
-     *           becomes (when set to true)
-     *         if (test)
-     *         {
-     *           function();
-     *         }
-     */
-    public static final String CC_FORMAT_NEWLINE_BEFORE_BRACE = "cc-add-newline-before-brace"; //NOI18N
-    public static final String defaultCCFormatNewlineBeforeBrace = BracePlacement.SAME_LINE.name();
+    public static final String CC_FORMAT_NEWLINE_BEFORE_BRACE_NAMESPACE = "cc-add-newline-before-brace-namespace"; //NOI18N
+    public static final String defaultCCFormatNewlineBeforeBraceNamespace = BracePlacement.NEW_LINE.name();
+
+    public static final String CC_FORMAT_NEWLINE_BEFORE_BRACE_CLASS = "cc-add-newline-before-brace-class"; //NOI18N
+    public static final String defaultCCFormatNewlineBeforeBraceClass = BracePlacement.NEW_LINE.name();
     
     /**
      * Whether insert extra new-line before the declaration or not.
@@ -205,12 +202,22 @@ public class EditorOptions {
     public static final String CC_FORMAT_NEWLINE_BEFORE_BRACE_DECLARATION = "cc-add-newline-before-brace-declaratin"; //NOI18N
     public static final String defaultCCFormatNewlineBeforeBraceDeclaration = BracePlacement.NEW_LINE.name();
 
-    public static final String CC_FORMAT_NEWLINE_BEFORE_BRACE_CLASS = "cc-add-newline-before-brace-class"; //NOI18N
-    public static final String defaultCCFormatNewlineBeforeBraceClass = BracePlacement.NEW_LINE.name();
-
-    public static final String CC_FORMAT_NEWLINE_BEFORE_BRACE_METHOD = "cc-add-newline-before-brace-method"; //NOI18N
-    public static final String defaultCCFormatNewlineBeforeBraceMethod = BracePlacement.NEW_LINE.name();
-
+    /**
+     * Whether insert extra new-line before the compound bracket or not.
+     * Values: java.lang.Boolean instances
+     * Effect: if (test) {
+     *           function();
+     *         }
+     *           becomes (when set to true)
+     *         if (test)
+     *         {
+     *           function();
+     *         }
+     */
+    public static final String CC_FORMAT_NEWLINE_BEFORE_BRACE = "cc-add-newline-before-brace"; //NOI18N
+    public static final String defaultCCFormatNewlineBeforeBrace = BracePlacement.SAME_LINE.name();
+    
+    
     /**
      * Whether to indent preprocessors positioned at start of line.
      * Those not starting at column 0 of the line will automatically be indented.
@@ -219,7 +226,7 @@ public class EditorOptions {
      * <B>Note:</B>This will not convert formatted preprocessors back to column 0.
      */
     public static final String indentPreprocessorDirectives = "indentPreprocessorDirectives"; //NOI18N
-    public static final boolean indentPreprocessorDirectivesDefault = false;
+    public static final String indentPreprocessorDirectivesDefault = PreprocessorIndent.START_LINE.name();
 
     /** Whether the '*' should be added at the new line * in comment */
     public static final String CC_FORMAT_LEADING_STAR_IN_COMMENT = "cc-format-leading-star-in-comment"; // NOI18N
@@ -249,10 +256,11 @@ public class EditorOptions {
     
     private static void createDefaults() {
         defaults = new HashMap<String,Object>();
-        defaults.put(CC_FORMAT_NEWLINE_BEFORE_BRACE,defaultCCFormatNewlineBeforeBrace);
-        defaults.put(CC_FORMAT_NEWLINE_BEFORE_BRACE_DECLARATION,defaultCCFormatNewlineBeforeBraceDeclaration);
+        defaults.put(CC_FORMAT_NEWLINE_BEFORE_BRACE_NAMESPACE,defaultCCFormatNewlineBeforeBraceNamespace);
         defaults.put(CC_FORMAT_NEWLINE_BEFORE_BRACE_CLASS,defaultCCFormatNewlineBeforeBraceClass);
-        defaults.put(CC_FORMAT_NEWLINE_BEFORE_BRACE_METHOD,defaultCCFormatNewlineBeforeBraceMethod);
+        defaults.put(CC_FORMAT_NEWLINE_BEFORE_BRACE_DECLARATION,defaultCCFormatNewlineBeforeBraceDeclaration);
+        defaults.put(CC_FORMAT_NEWLINE_BEFORE_BRACE,defaultCCFormatNewlineBeforeBrace);
+
         defaults.put(indentPreprocessorDirectives,indentPreprocessorDirectivesDefault);
         defaults.put(CC_FORMAT_LEADING_STAR_IN_COMMENT,defaultCCFormatLeadingStarInComment);
         defaults.put(CC_FORMAT_STATEMENT_CONTINUATION_INDENT,defaultCCFormatStatementContinuationIndent);
@@ -350,16 +358,43 @@ public class EditorOptions {
         return p.get(optionID, def.toString());
     }
 
+    public static int getGlobalIndentSize(CodeStyle.Language language) {
+        Formatter f = (Formatter)Settings.getValue(getKitClass(language), "formatter");
+        if (f != null) {
+            return f.getShiftWidth();
+        }
+        return 4;
+    }
+    
+    private static Class<? extends EditorKit> cKitClass;
+    private static Class<? extends EditorKit> cppKitClass;
+    private static Class<? extends EditorKit> getKitClass(CodeStyle.Language language) {
+        if (language == CodeStyle.Language.C) {
+            if (cKitClass == null) {
+                EditorKit kit = MimeLookup.getLookup(MimePath.get("text/x-c")).lookup(EditorKit.class); //NOI18N
+                cKitClass = kit != null ? kit.getClass() : EditorKit.class;
+            }
+            return cKitClass;
+        } else {
+            if (cppKitClass == null) {
+                EditorKit kit = MimeLookup.getLookup(MimePath.get("text/x-c++")).lookup(EditorKit.class); //NOI18N
+                cppKitClass = kit != null ? kit.getClass() : EditorKit.class;
+            }
+            return cppKitClass;
+        }
+    }
+    
+
     public static Preferences getPreferences(String profileId) {
         return NbPreferences.forModule(CodeStyle.class).node("CodeStyle").node(profileId);
     }
 
     public static CodeStyle createCodeStyle(CodeStyle.Language language, Preferences p) {
         CodeStyle.getDefault(language);
-        return codeStyleProducer.create(p);
+        return codeStyleProducer.create(language, p);
     }
 
     public static interface CodeStyleProducer {
-        public CodeStyle create( Preferences preferences );
+        public CodeStyle create(CodeStyle.Language language, Preferences preferences);
     }
 }

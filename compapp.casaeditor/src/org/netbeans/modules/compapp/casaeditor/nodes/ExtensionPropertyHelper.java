@@ -287,7 +287,7 @@ public class ExtensionPropertyHelper {
                         PropertyUtils.installExtensionProperty(
                             extSheetSet, node, casaExtPoint, 
                             firstEE, lastEE,
-                            CasaNode.ALWAYS_WRITABLE_PROPERTY, classMap.get(attrType), 
+                            CasaNode.ALWAYS_WRITABLE_PROPERTY, attrType, 
                             attrName, attrName, attrDescription);
                     }
                 }
@@ -374,7 +374,7 @@ public class ExtensionPropertyHelper {
                     extSheetSet, node, casaExtPoint, 
                     firstEE, lastEE,
                     CasaNode.ALWAYS_WRITABLE_PROPERTY, 
-                    classMap.get(attrType), 
+                    attrType, 
                     attrName, attrName, attrDescription);
             }
         } 
