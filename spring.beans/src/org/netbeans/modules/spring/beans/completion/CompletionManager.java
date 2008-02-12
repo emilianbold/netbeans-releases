@@ -74,6 +74,7 @@ import org.netbeans.api.java.source.Task;
 import org.netbeans.editor.TokenItem;
 import org.netbeans.modules.editor.NbEditorUtilities;
 import org.netbeans.modules.spring.api.Action;
+import org.netbeans.modules.spring.api.beans.SpringConstants;
 import org.netbeans.modules.spring.api.beans.model.SpringBean;
 import org.netbeans.modules.spring.api.beans.model.SpringBeans;
 import org.netbeans.modules.spring.api.beans.model.SpringConfigModel;
@@ -1018,7 +1019,7 @@ public final class CompletionManager {
             Enumeration<? extends FileObject> files = fileObject.getData(false);
             while (files.hasMoreElements()) {
                 FileObject fo = files.nextElement();
-                if (fo.getName().startsWith(prefix) && fo.getMIMEType().equals(SpringXMLConfigDataLoader.REQUIRED_MIME)) {
+                if (fo.getName().startsWith(prefix) && SpringConstants.CONFIG_MIME_TYPE.equals(fo.getMIMEType())) {
                     results.add(SpringXMLConfigCompletionItem.createSpringXMLFileItem(context.getCaretOffset() - prefix.length(), fo));
                 }
             }

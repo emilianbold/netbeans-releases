@@ -41,20 +41,28 @@
 
 package org.netbeans.modules.cnd.modelimpl.csm;
 
+import java.io.DataOutput;
 import org.netbeans.modules.cnd.api.model.*;
 import antlr.collections.AST;
 import java.io.DataInput;
 import java.io.IOException;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import org.netbeans.modules.cnd.api.model.deep.CsmExpression;
+import org.netbeans.modules.cnd.modelimpl.csm.core.AstRenderer;
 
 /**
  * @author Vladimir Voskresensky
  */
 public final class ConstructorDDImpl extends MethodDDImpl<CsmConstructor> implements CsmConstructor {
 
+    private List<CsmExpression> initializers;
+    
     public ConstructorDDImpl(AST ast, ClassImpl cls, CsmVisibility visibility) {
         super(ast, cls, visibility, true);
+        
+        initializers = AstRenderer.renderConstructorInitializersList(ast, this, this.getContainingFile());
     }
  
     @Override
@@ -63,12 +71,31 @@ public final class ConstructorDDImpl extends MethodDDImpl<CsmConstructor> implem
     }
     
     public List getInitializerList() {
-        return Collections.EMPTY_LIST;
+        if(initializers != null) {
+            return initializers;
+        } else {
+            return Collections.<CsmExpression>emptyList();
+        }
     }    
+    
     ////////////////////////////////////////////////////////////////////////////
     // iml of SelfPersistent
     
     public ConstructorDDImpl(DataInput input) throws IOException {
         super(input);
-    }    
+        // TODO: serialize initializer
+    }
+
+    @Override
+    public void write(DataOutput output) throws IOException {
+        super.write(output);
+        // TODO: serialize initializer
+    }
+        
+    @Override
+    public Collection getScopeElements() {
+        Collection c = super.getScopeElements();
+        c.addAll(getInitializerList());
+        return c;
+    }
 }

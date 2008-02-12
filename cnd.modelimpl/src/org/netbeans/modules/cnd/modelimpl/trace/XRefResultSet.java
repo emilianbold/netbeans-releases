@@ -42,6 +42,7 @@ package org.netbeans.modules.cnd.modelimpl.trace;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -49,6 +50,38 @@ import java.util.Map;
  * @author Vladimir Voskresenky
  */
 public final class XRefResultSet {
+
+    public static Collection<ContextScope> sortedContextScopes(XRefResultSet bag, boolean byEntries) {
+        List<ContextScope> out = new ArrayList(ContextScope.values().length);
+        for (ContextScope scope : ContextScope.values()) {
+            boolean added = false;
+            int scopeNum;
+            if (byEntries) {
+                scopeNum = bag.getEntries(scope).size();
+            } else {
+                scopeNum = bag.getNumberOfContexts(scope, false);
+            }
+            for (int i = 0; i < out.size(); i++) {
+                int curScopeNum;
+                ContextScope curScope = out.get(i);
+                if (byEntries) {
+                    curScopeNum = bag.getEntries(curScope).size();
+                } else {
+                    curScopeNum = bag.getNumberOfContexts(curScope, false);
+                }                
+                if (curScopeNum <= scopeNum) {
+                    out.add(i, scope);
+                    added = true;
+                    break;
+                }
+            }
+            if (!added) {
+                out.add(scope);
+            }
+        }
+
+        return out;
+    }
 
     private final Map<ContextScope, Collection<ContextEntry>> scopeEntries;
     private final Map<ContextScope, Integer> scopes;
@@ -93,7 +126,6 @@ public final class XRefResultSet {
     }
     
     public enum ContextScope {
-        UNRESOLVED,
         GLOBAL_FUNCTION,
         NAMESPACE_FUNCTION,
         FILE_LOCAL_FUNCTION,
@@ -101,10 +133,10 @@ public final class XRefResultSet {
         CONSTRUCTOR,
         INLINED_METHOD,
         INLINED_CONSTRUCTOR,
+        UNRESOLVED,
     };
     
     public enum DeclarationKind {
-        UNRESOLVED,
         CLASSIFIER,
         ENUMERATOR,
         VARIABLE,
@@ -113,32 +145,34 @@ public final class XRefResultSet {
         NAMESPACE,
         CLASS_FORWARD,
         MACRO,
+        UNRESOLVED,
     }
     
     public enum DeclarationScope {
-        UNRESOLVED,
-        PROJECT_GLOBAL,
-        LIBRARY_GLOBAL,
-        NAMESPACE_THIS,
-        PROJECT_NAMESPACE,
-        LIBRARY_NAMESPACE,
-        FILE_THIS,
-        PROJECT_FILE,
-        LIBRARY_FILE,
         FUNCTION_THIS,
         CLASSIFIER_THIS,
         CLASSIFIER_PARENT,
         PROJECT_CLASSIFIER,
         LIBRARY_CLASSIFIER,
+        NAMESPACE_THIS,
+        NAMESPACE_PARENT,
+        PROJECT_NAMESPACE,
+        LIBRARY_NAMESPACE,
+        FILE_THIS,
+        PROJECT_FILE,
+        LIBRARY_FILE,
+        PROJECT_GLOBAL,
+        LIBRARY_GLOBAL,
+        UNRESOLVED,
     }
     
     public enum IncludeLevel {
-        UNRESOLVED,
         THIS_FILE,
         PROJECT_DIRECT,
-        PROJECT_DEEP,
         LIBRARY_DIRECT,
-        LIBRARY_DEEP
+        PROJECT_DEEP,
+        LIBRARY_DEEP,
+        UNRESOLVED,
     }
     
     public static final class ContextEntry {

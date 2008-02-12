@@ -45,12 +45,15 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import javax.swing.JFileChooser;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
+import org.netbeans.api.project.Project;
 import org.netbeans.modules.spring.api.beans.ConfigFileGroup;
 import org.netbeans.modules.spring.beans.ui.customizer.ConfigFileGroupUIs.FileDisplayName;
 import org.netbeans.modules.spring.util.ConfigFiles;
@@ -66,17 +69,27 @@ import org.openide.util.NbBundle;
  */
 public class ConfigFileGroupsPanel extends javax.swing.JPanel {
 
+    private final Project project;
     private final List<ConfigFileGroup> groups;
     private final File basedir;
+    private final FileDisplayName fileDisplayName;
+
     private ConfigFileGroup currentGroup;
     private int currentGroupIndex;
 
-    public ConfigFileGroupsPanel(List<ConfigFileGroup> groups, File basedir) {
-        initComponents();
+    private List<File> availableFiles;
+
+    public ConfigFileGroupsPanel(Project project, List<ConfigFileGroup> groups) {
+        this.project = project;
         this.groups = groups;
-        this.basedir = basedir;
+        basedir = FileUtil.toFile(project.getProjectDirectory());
+        if (basedir == null) {
+            throw new IllegalStateException("The directory of project " + project + " is null");
+        }
+        fileDisplayName = new RelativeDisplayName();
+        initComponents();
         ConfigFileGroupUIs.setupGroupsList(groupsList);
-        ConfigFileGroupUIs.setupGroupFilesList(groupFilesList, new RelativeDisplayName());
+        ConfigFileGroupUIs.setupGroupFilesList(groupFilesList, fileDisplayName);
         ConfigFileGroupUIs.connect(groups, groupsList);
         groupsList.getSelectionModel().addListSelectionListener(new ListSelectionListener() {
             public void valueChanged(ListSelectionEvent e) {
@@ -103,6 +116,7 @@ public class ConfigFileGroupsPanel extends javax.swing.JPanel {
             ConfigFileGroupUIs.connect(currentGroup, groupFilesList);
             removeGroupButton.setEnabled(true);
             addFileButton.setEnabled(true);
+            detectButton.setEnabled(true);
             String currentGroupName = ConfigFileGroupUIs.getGroupName(currentGroup);
             groupFilesLabel.setText(NbBundle.getMessage(ConfigFileGroupsPanel.class, "LBL_ConfigFilesInGroup", currentGroupName));
             groupFilesList.setSelectedIndices(new int[0]);
@@ -111,6 +125,7 @@ public class ConfigFileGroupsPanel extends javax.swing.JPanel {
             ConfigFileGroupUIs.disconnect(groupFilesList);
             removeGroupButton.setEnabled(false);
             addFileButton.setEnabled(false);
+            detectButton.setEnabled(false);
             groupFilesLabel.setText(NbBundle.getMessage(ConfigFileGroupsPanel.class, "LBL_ConfigFiles"));
         }
     }
@@ -125,6 +140,14 @@ public class ConfigFileGroupsPanel extends javax.swing.JPanel {
         int oldGroupIndex = currentGroupIndex;
         ConfigFileGroupUIs.connect(groups, groupsList);
         groupsList.setSelectedIndex(oldGroupIndex);
+    }
+
+    private void addFiles(List<File> newFiles) {
+        List<File> files = currentGroup.getFiles();
+        files.addAll(newFiles);
+        ConfigFileGroup newGroup = ConfigFileGroup.create(currentGroup.getName(), files);
+        replaceCurrentGroup(newGroup);
+        groupFilesList.setSelectedIndex(groupFilesList.getModel().getSize() - 1);
     }
 
     /** This method is called from within the constructor to
@@ -147,6 +170,7 @@ public class ConfigFileGroupsPanel extends javax.swing.JPanel {
         groupFilesList = new javax.swing.JList();
         addFileButton = new javax.swing.JButton();
         removeFileButton = new javax.swing.JButton();
+        detectButton = new javax.swing.JButton();
 
         org.openide.awt.Mnemonics.setLocalizedText(groupsLabel, org.openide.util.NbBundle.getMessage(ConfigFileGroupsPanel.class, "LBL_ConfigFileGroups")); // NOI18N
         groupsLabel.setFocusable(false);
@@ -196,6 +220,14 @@ public class ConfigFileGroupsPanel extends javax.swing.JPanel {
             }
         });
 
+        org.openide.awt.Mnemonics.setLocalizedText(detectButton, org.openide.util.NbBundle.getMessage(ConfigFileGroupsPanel.class, "LBL_Autodetect")); // NOI18N
+        detectButton.setEnabled(false);
+        detectButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                detectButtonActionPerformed(evt);
+            }
+        });
+
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -210,6 +242,7 @@ public class ConfigFileGroupsPanel extends javax.swing.JPanel {
                     .add(org.jdesktop.layout.GroupLayout.TRAILING, groupsScrollPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 390, Short.MAX_VALUE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING, false)
+                    .add(detectButton, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .add(removeGroupButton, 0, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .add(editGroupButton, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .add(org.jdesktop.layout.GroupLayout.TRAILING, addFileButton, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
@@ -237,7 +270,9 @@ public class ConfigFileGroupsPanel extends javax.swing.JPanel {
                         .add(addFileButton)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(removeFileButton)
-                        .add(146, 146, 146))
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(detectButton)
+                        .addContainerGap())
                     .add(groupFilesScrollPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 202, Short.MAX_VALUE)))
         );
     }// </editor-fold>//GEN-END:initComponents
@@ -263,11 +298,7 @@ private void addFileButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN
         chooser.setCurrentDirectory(basedir);
         int option = chooser.showOpenDialog(SwingUtilities.getWindowAncestor(groupFilesList));
         if (option == JFileChooser.APPROVE_OPTION) {
-            List<File> files = currentGroup.getFiles();
-            files.add(chooser.getSelectedFile());
-            ConfigFileGroup newGroup = ConfigFileGroup.create(currentGroup.getName(), files);
-            replaceCurrentGroup(newGroup);
-            groupFilesList.setSelectedIndex(groupFilesList.getModel().getSize() - 1);
+            addFiles(Collections.singletonList(chooser.getSelectedFile()));
         }
 }//GEN-LAST:event_addFileButtonActionPerformed
 
@@ -308,10 +339,29 @@ private void editGroupButtonActionPerformed(java.awt.event.ActionEvent evt) {//G
         }
 }//GEN-LAST:event_editGroupButtonActionPerformed
 
+private void detectButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_detectButtonActionPerformed
+        Set<File> alreadySelectedFiles = new HashSet<File>(currentGroup.getFiles().size());
+        alreadySelectedFiles.addAll(currentGroup.getFiles());
+        ConfigFileDetectPanel panel;
+        if (availableFiles != null) {
+            panel = ConfigFileDetectPanel.create(availableFiles, alreadySelectedFiles, fileDisplayName);
+        } else {
+            panel = ConfigFileDetectPanel.create(project, alreadySelectedFiles, fileDisplayName);
+        }
+        if (panel.open()) {
+            List<File> files = panel.getAvailableFiles();
+            if (files != null) {
+                this.availableFiles = files;
+            }
+            addFiles(panel.getSelectedFiles());
+        }
+}//GEN-LAST:event_detectButtonActionPerformed
+
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton addFileButton;
     private javax.swing.JButton addGroupButton;
+    private javax.swing.JButton detectButton;
     private javax.swing.JButton editGroupButton;
     private javax.swing.JLabel groupFilesLabel;
     private javax.swing.JList groupFilesList;

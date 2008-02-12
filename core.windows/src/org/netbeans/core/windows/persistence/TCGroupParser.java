@@ -257,7 +257,9 @@ class TCGroupParser {
         throws SAXException {
             if ("tc-group".equals(qname)) { // NOI18N
                 handleTCGroup(attrs);
-            } else if (internalConfig.specVersion.compareTo(new SpecificationVersion("2.0")) == 0) { // NOI18N
+                // #125235: null check added
+            } else if (internalConfig.specVersion != null && 
+                    internalConfig.specVersion.compareTo(new SpecificationVersion("2.0")) == 0) { // NOI18N
                 //Parse version 2.0
                 if ("module".equals(qname)) { // NOI18N
                     handleModule(attrs);
