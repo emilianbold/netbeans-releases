@@ -1043,7 +1043,7 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
      */
     public void stepOut() {
         int idx = getCurrentCallStackIndex();
-        if (isValidStackFrame(callstack.get(idx + 1))) {
+        if (callstack.size() == (idx + 1) || isValidStackFrame(callstack.get(idx + 1))) {
             setState(STATE_RUNNING);
             gdb.exec_finish();
         } else {

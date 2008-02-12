@@ -298,7 +298,7 @@ public class WebProjectClassPathModifier extends ProjectClassPathModifierImpleme
     static Library checkLibrarySharability(WebProject project, ReferenceHelper refHelper, Library lib) throws IOException {
         if (project.getAntProjectHelper().isSharableProject()) {
             if (lib.getManager().getLocation() == null) {
-                LOG.log(Level.INFO, "Client is adding global library ["+lib+
+                LOG.log(Level.FINE, "Client is adding global library ["+lib+
                         "] to sharable project.", new Exception());
                 // For backward compatibility just copy the library to shared one.
                 Library l = refHelper.getProjectLibraryManager().getLibrary(lib.getName());

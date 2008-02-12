@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -48,6 +48,7 @@ import java.util.List;
 import java.util.Map;
 import org.netbeans.api.debugger.Breakpoint;
 import org.netbeans.api.debugger.DebuggerManager;
+import org.netbeans.modules.ruby.debugger.EditorUtil;
 import org.openide.filesystems.FileObject;
 import org.openide.text.Line;
 import org.openide.util.Exceptions;
@@ -132,5 +133,19 @@ public final class RubyBreakpointManager {
             }
         }
         return false;
+    }
+
+    static RubyBreakpoint getCurrentLineBreakpoint() {
+        Line line = EditorUtil.getCurrentLine();
+        if (line == null) {
+            return null;
+        }
+        
+        for (RubyBreakpoint breakpoint : RubyBreakpointManager.getBreakpoints()) {
+            if (breakpoint.getLine().equals(line)) {
+                return breakpoint;
+            }
+        }
+        return null;
     }
 }

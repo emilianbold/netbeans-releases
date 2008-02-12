@@ -60,7 +60,6 @@ made subject to such option by the copyright holder.
             <classpath>
                 <path refid="jemmy.and.jelly.path"/>
                 <path location="${test.qa-functional.cp.extra}"/>
-                <pathelement location="${xtest.home}/plugins/ide/lib/xtest-ide-main.jar"/>
             </classpath>
         </buildTests>
     </target>

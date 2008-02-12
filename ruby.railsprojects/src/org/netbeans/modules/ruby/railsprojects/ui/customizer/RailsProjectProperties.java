@@ -268,7 +268,9 @@ public class RailsProjectProperties extends SharedRubyProjectProperties {
 
         RailsProjectProperties.storePlatform(privateProperties, getPlatform());
         RailsProjectProperties.storeServer(privateProperties, getServer());
-        privateProperties.setProperty(RAILS_ENV, getRailsEnvironment()); // NOI18N
+        if (getRailsEnvironment() != null) {
+            privateProperties.setProperty(RAILS_ENV, getRailsEnvironment()); // NOI18N
+        }
 
         // Standard store of the properties
         projectGroup.store( projectProperties );        

@@ -79,10 +79,6 @@ public class ProxyClassLoader extends ClassLoader implements Util.PackageAccessi
     static {
         boolean prop1 = System.getProperty("org.netbeans.ProxyClassLoader.level") != null;
         LOG_LOADING = prop1 || LOGGER.isLoggable(Level.FINE);
-        // TODO: Remove this debug output
-        if (LOG_LOADING) {
-            System.out.println("ProxyClassLoader logging ENABLED");
-        }
     }
 
     /** All known packages */
