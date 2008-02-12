@@ -218,6 +218,10 @@ public class CompletionContext {
         return this.doc;
     }
     
+    public DocumentContext getDocumentContext() {
+        return this.documentContext;
+    }
+    
     public int getCaretOffset() {
         return caretOffset;
     }

@@ -251,6 +251,9 @@ public final class CompletionManager {
         
         PropertyCompletor propertyCompletor = new PropertyCompletor();
         registerCompletor(PROPERTY_TAG, NAME_ATTRIB, propertyCompletor);
+        
+        PNamespaceBeanRefCompletor pNamespaceBeanRefCompletor = new PNamespaceBeanRefCompletor();
+        registerCompletor(BEAN_TAG, null, pNamespaceBeanRefCompletor);
     }
     private static CompletionManager INSTANCE = new CompletionManager();
 
@@ -272,8 +275,57 @@ public final class CompletionManager {
         }
     }
 
-    public void completeAttributes(CompletionResultSet resultSet, CompletionContext context) {
-        // TBD
+    public void completeAttributes(final CompletionResultSet resultSet, final CompletionContext context) {
+        String tagName = context.getTag().getNodeName();
+        if(tagName.equals(BEAN_TAG) && ContextUtilities.isPNamespaceAdded(context.getDocumentContext())) {
+            try {
+                final JavaSource js = SpringXMLConfigEditorUtils.getJavaSource(context.getDocument());
+                if (js == null) {
+                    return;
+                }
+
+                final String typedPrefix = context.getTypedPrefix();
+                final String pNamespacePrefix = context.getDocumentContext().getNamespacePrefix(ContextUtilities.P_NAMESPACE);
+                js.runUserActionTask(new Task<CompilationController>() {
+
+                    public void run(CompilationController cc) throws Exception {
+                        String className = SpringXMLConfigEditorUtils.getBeanClassName(context.getTag());
+                        if (className == null) {
+                            return;
+                        }
+                        ElementHandle<TypeElement> eh = SpringXMLConfigEditorUtils.findClassElementByBinaryName(className, js);
+                        if (eh == null) {
+                            return;
+                        }
+                        TypeElement te = eh.resolve(cc);
+                        PropertyAcceptor pa = new PropertyAcceptor("", false, true); // NOI18N
+                        ElementUtilities eu = cc.getElementUtilities();
+                        Iterable<? extends Element> matchingProps = eu.getMembers(te.asType(), pa);
+
+                        for (Element e : matchingProps) {
+                            ExecutableElement ee = (ExecutableElement) e;
+                            String propName = SpringXMLConfigEditorUtils.getPropertyNameFromMethodName(ee.getSimpleName().toString());
+                            String attribName = pNamespacePrefix + ":" + propName; // NOI18N
+                            if (!SpringXMLConfigEditorUtils.hasAttribute(context.getTag(), attribName)
+                                    && attribName.startsWith(typedPrefix)) {
+                                SpringXMLConfigCompletionItem item = SpringXMLConfigCompletionItem.createPropertyAttribItem(context.getCaretOffset(),
+                                        attribName, ee);
+                                resultSet.addItem(item);
+                            }
+                            attribName += "-ref"; // NOI18N
+                            if (!SpringXMLConfigEditorUtils.hasAttribute(context.getTag(), attribName)
+                                    && attribName.startsWith(typedPrefix)) {
+                                SpringXMLConfigCompletionItem refItem = SpringXMLConfigCompletionItem.createPropertyAttribItem(context.getCaretOffset(),
+                                        attribName, ee); // NOI18N
+                                resultSet.addItem(refItem);
+                            }
+                        }
+                    }
+                }, true);
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        }
     }
 
     public void completeElements(CompletionResultSet resultSet, CompletionContext context) {
@@ -321,6 +373,11 @@ public final class CompletionManager {
     private Completor locateCompletor(String nodeName, String attributeName) {
         String key = createRegisteredName(nodeName, attributeName);
         if (completors.containsKey(key)) {
+            return completors.get(key);
+        }
+        
+        key = createRegisteredName(nodeName, null);
+        if(completors.containsKey(key)) {
             return completors.get(key);
         }
 
@@ -888,6 +945,36 @@ public final class CompletionManager {
             
             return results;
         }
+    }
+    
+    private static class PNamespaceBeanRefCompletor extends Completor {
+
+        public PNamespaceBeanRefCompletor() {
+        }
+        
+        @Override
+        public List<SpringXMLConfigCompletionItem> doCompletion(CompletionContext context) {
+            TokenItem attribToken = ContextUtilities.getAttributeToken(context.getCurrentToken());
+            if (attribToken == null) {
+                return Collections.emptyList();
+            }
+
+            String attribName = attribToken.getImage();
+            if (!ContextUtilities.isPNamespaceName(context.getDocumentContext(), attribName)) {
+                return Collections.emptyList();
+            }
+
+            if (!attribName.endsWith("-ref")) { // NOI18N
+                return Collections.emptyList();
+
+            }
+
+            // XXX: Ideally find out the property name and it's expected type
+            // to list bean proposals intelligently
+            BeansRefCompletor beansRefCompletor = new BeansRefCompletor(true);
+            return beansRefCompletor.doCompletion(context);
+        }
+        
     }
 
     private static class ResourceCompletor extends Completor {

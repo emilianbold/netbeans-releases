@@ -438,6 +438,15 @@ public final class SpringXMLConfigEditorUtils {
         return false;
     }
     
+    public static String getPropertyNameFromMethodName(String methodName) {
+        if(methodName.length() < 4) {
+            return null;
+        }
+        char[] propertyName = methodName.substring(3).toCharArray();
+        propertyName[0] = Character.toLowerCase(propertyName[0]);
+        return String.valueOf(propertyName);
+    }
+    
     private static final class MethodFinder implements Task<CompilationController> {
 
         private String classBinName;

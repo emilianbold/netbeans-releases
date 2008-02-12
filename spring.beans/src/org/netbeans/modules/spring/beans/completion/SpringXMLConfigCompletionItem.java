@@ -149,6 +149,10 @@ public abstract class SpringXMLConfigCompletionItem implements CompletionItem {
     public static SpringXMLConfigCompletionItem createSpringXMLFileItem(int substitutionOffset, FileObject file) {
         return new FileItem(substitutionOffset, file);
     }
+
+    public static SpringXMLConfigCompletionItem createPropertyAttribItem(int substitutionOffset, String text, ExecutableElement ee) {
+        return new PropertyAttribItem(substitutionOffset, text, ee);
+    }
     
     protected int substitutionOffset;
     
@@ -832,6 +836,47 @@ public abstract class SpringXMLConfigCompletionItem implements CompletionItem {
         @Override
         protected String getLeftHtmlText() {
             return displayName;
+        }
+    }
+    
+    private static class PropertyAttribItem extends SpringXMLConfigCompletionItem {
+
+        private ElementHandle<ExecutableElement> eh;
+        private String text;
+        
+        public PropertyAttribItem(int substitutionOffset, String text, ExecutableElement ee) {
+            super(substitutionOffset);
+            this.eh = ElementHandle.create(ee);
+            this.text = text;
+        }
+
+        public int getSortPriority() {
+            return 200;
+        }
+
+        public CharSequence getSortText() {
+            return text;
+        }
+
+        public CharSequence getInsertPrefix() {
+            return text;
+        }
+
+        @Override
+        protected CharSequence getSubstitutionText() {
+            return text + "=\"\""; // NOI18N
+        }
+
+        @Override
+        protected String getLeftHtmlText() {
+            return text;
+        }
+
+        @Override
+        protected void substituteText(JTextComponent c, int offset, int len, String toAdd) {
+            super.substituteText(c, offset, len, toAdd);
+            int newCaretPos = c.getCaretPosition() - 1; // for achieving p:something-ref="|" on completion
+            c.setCaretPosition(newCaretPos);
         }
     }
     
