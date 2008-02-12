@@ -39,6 +39,8 @@
 
 package org.netbeans.modules.websvc.saas.ui.nodes;
 
+import java.util.Collections;
+import org.netbeans.modules.websvc.saas.model.Saas;
 import org.netbeans.modules.websvc.saas.model.WadlSaas;
 import org.netbeans.modules.websvc.saas.model.WadlSaasMethod;
 import org.netbeans.modules.websvc.saas.model.wadl.Resource;
@@ -62,7 +64,11 @@ public class WadlSaasNodeChildren extends SaasNodeChildren<Object> {
     
     @Override
     protected void updateKeys() {
-        setKeys(getSaas().getResourcesOrMethods());
+        if (getSaas().getState() == Saas.State.READY) {
+            setKeys(getSaas().getResourcesOrMethods());
+        } else {
+            setKeys(Collections.emptyList());
+        }
     }
     
     @Override

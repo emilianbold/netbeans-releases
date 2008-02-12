@@ -46,12 +46,12 @@ import java.util.ArrayList;
 import java.util.List;
 import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlPort;
 import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlService;
-import org.netbeans.modules.websvc.manager.model.WebServiceData;
-import org.netbeans.modules.websvc.manager.model.WebServiceListModel;
 import org.netbeans.modules.websvc.saas.model.jaxb.Method;
 import org.netbeans.modules.websvc.saas.model.jaxb.SaasMetadata;
 import org.netbeans.modules.websvc.saas.model.jaxb.SaasMetadata.CodeGen;
 import org.netbeans.modules.websvc.saas.model.jaxb.SaasServices;
+import org.netbeans.modules.websvc.saas.spi.websvcmgr.WsdlData;
+import org.netbeans.modules.websvc.saas.util.WsdlUtil;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.WeakListeners;
@@ -62,7 +62,9 @@ import org.openide.util.WeakListeners;
  */
 public class WsdlSaas extends Saas implements PropertyChangeListener {
     //TODO consolidate and remove
-    private WebServiceData wsData;
+    private WsdlData wsData;
+    
+    private List<WsdlSaasPort> ports;
 
     public WsdlSaas(SaasGroup parentGroup, SaasServices services) {
         super(parentGroup, services);
@@ -85,7 +87,7 @@ public class WsdlSaas extends Saas implements PropertyChangeListener {
         cg.setPackageName(packageName);
     }
     
-    public WebServiceData getWsdlData() {
+    public WsdlData getWsdlData() {
         if (getState() != State.READY) {
             throw new IllegalStateException("Current state: " + getState() + ", expect: " + State.READY);
         }
@@ -95,7 +97,7 @@ public class WsdlSaas extends Saas implements PropertyChangeListener {
     @Override
     public void toStateReady() {
         if (wsData == null) {
-            wsData = WebServiceListModel.getInstance().getWebServiceData(getUrl(), "", false); //NOI18N
+            wsData = WsdlUtil.getWsdlDataAsynchronously(getUrl()); //NOI18N
             if (wsData != null) {
                 wsData.addPropertyChangeListener(WeakListeners.propertyChange(this, wsData));
             }
@@ -138,16 +140,35 @@ public class WsdlSaas extends Saas implements PropertyChangeListener {
         return FileUtil.toFileObject(new File(getWsdlData().getWsdlFile()));
     }
     
+    /**
+     * Either return methods, if filtering methods exists, or return ports.
+     * 
+     * @return list of either all filtered methods or all ports.
+     */
     public List<Object> getPortsOrMethods() {
+        List<Object> result = new ArrayList<Object>();
         List<SaasMethod> methods = getMethods();
         if (methods != null && methods.size() > 0) {
-            return new ArrayList<Object>(methods);
+            result.addAll(methods);
+        } else {
+            result.addAll(getPorts());
         }
-        return new ArrayList<Object>(filterNonSoapPorts(getWsdlModel().getPorts()));
+        return result;
     }
 
+    public List<WsdlSaasPort> getPorts() {
+        if (ports == null) {
+            ports = new ArrayList<WsdlSaasPort>();
+            for (WsdlPort p : filterNonSoapPorts(getWsdlModel().getPorts())) {
+                ports.add(new WsdlSaasPort(this, p));
+            }
+        }
+        return ports;
+    }
+    
     @Override
     protected WsdlSaasMethod createSaasMethod(Method method) {
         return new WsdlSaasMethod(this, method);
     }
+    
 }
