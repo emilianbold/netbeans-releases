@@ -271,6 +271,7 @@ public class CompositeComponentsTest extends RaveTestCase {
         // XXX Add UndeploAndDeploy action into Jellytools
         Node prjNode = new ProjectsTabOperator().getProjectRootNode(projectName);
         new Action(null, UNDEPLOY_AND_DEPLOY).perform(prjNode);
+        Util.wait(15000);
         waitBuildSuccessful(projectName);
         projectDeployed = true;
     }
