@@ -37,29 +37,55 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.websvc.saas.ui.nodes;
+package org.netbeans.modules.websvc.saas.model;
 
-import org.netbeans.modules.websvc.saas.model.WadlSaasMethod;
-import org.openide.util.lookup.InstanceContent;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import org.netbeans.modules.websvc.saas.model.wadl.Method;
+import org.netbeans.modules.websvc.saas.model.wadl.Resource;
 
 /**
  *
  * @author nam
  */
-public class WadlSaasMethodNode extends WadlMethodNode {
-    private WadlSaasMethod saasMethod;
+public class WadlSaasResource {
+    private final WadlSaas saas;
+    private final WadlSaasResource parent;
+    private final Resource resource;
+    private List<WadlSaasMethod> methods;
+    private List<WadlSaasResource> childResources;
+
+    public WadlSaasResource(WadlSaas saas, WadlSaasResource parent, Resource resource) {
+        this.saas = saas;
+        this.parent = parent;
+        this.resource = resource;
+    }
+
+    public WadlSaasResource getParent() {
+        return parent;
+    }
+
+    public Resource getResource() {
+        return resource;
+    }
+
+    public WadlSaas getSaas() {
+        return saas;
+    }
+
+    public List<WadlSaasMethod> getMethods() {
+        if (methods == null) {
+            methods = new ArrayList<WadlSaasMethod>();
+            for (Object o : resource.getMethodOrResource()) {
+                if (o instanceof Method) {
+                    Method m = (Method) o;
+                    methods.add(new WadlSaasMethod(this, m));
+                }
+            }
+        }
+        return Collections.unmodifiableList(methods);
+    }
     
-    public WadlSaasMethodNode(WadlSaasMethod saasMethod) {
-        this(saasMethod, new InstanceContent());
-    }
-
-    public WadlSaasMethodNode(WadlSaasMethod saasMethod, InstanceContent content) {
-        super(saasMethod.getSaas(), saasMethod.getResourcePath(), saasMethod.getWadlMethod(), content);
-        this.saasMethod = saasMethod;
-    }
-
-    @Override
-    public String getDisplayName() {
-        return saasMethod.getName();
-    }
+    
 }
