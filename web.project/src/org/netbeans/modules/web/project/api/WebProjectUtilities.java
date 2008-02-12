@@ -93,6 +93,7 @@ import org.openide.filesystems.URLMapper;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.modules.SpecificationVersion;
+import org.openide.util.Exceptions;
 import org.w3c.dom.NodeList;
 
 
