@@ -514,7 +514,7 @@ public class HgCommand {
 
         List<String> list;
         String defaultPull = new HgConfigFiles(repository).getDefaultPull(false);
-        String proxy = getGlobalProxyIfNeeded(defaultPull, true);
+        String proxy = getGlobalProxyIfNeeded(defaultPull, false);
         if(proxy != null){
             List<String> env = new ArrayList<String>(); 
             env.add(HG_PROXY_ENV + proxy);
@@ -550,7 +550,16 @@ public class HgCommand {
         command.add(repository.getAbsolutePath());
         command.add(to);
 
-        List<String> list = exec(command);
+        List<String> list;
+        String defaultPush = new HgConfigFiles(repository).getDefaultPush(false);
+        String proxy = getGlobalProxyIfNeeded(defaultPush, false);
+        if(proxy != null){
+            List<String> env = new ArrayList<String>(); 
+            env.add(HG_PROXY_ENV + proxy);
+            list = execEnv(command, env);
+        }else{
+            list = exec(command);
+        }
         if (!list.isEmpty() && 
              isErrorAbort(list.get(list.size() -1))) {
             handleError(command, list, NbBundle.getMessage(HgCommand.class, "MSG_COMMAND_ABORTED"));
@@ -641,14 +650,15 @@ public class HgCommand {
                 (defaultPath.startsWith("http:") || defaultPath.startsWith("https:"))){ // NOI18N
             HgProxySettings ps = new HgProxySettings();
             if (ps.isManualSetProxy()) {
-                if (defaultPath.startsWith("http:") && ps.getHttpHost() != null) { // NOI18N
+                if ((defaultPath.startsWith("http:") && !ps.getHttpHost().equals(""))||
+                    (defaultPath.startsWith("https:") && !ps.getHttpHost().equals("") && ps.getHttpsHost().equals(""))) { // NOI18N
                     proxy = ps.getHttpHost();
                     if (proxy != null && !proxy.equals("")) {
                         proxy += ps.getHttpPort() > -1 ? ":" + Integer.toString(ps.getHttpPort()) : ""; // NOI18N
                     } else {
                         proxy = null;
                     }                    
-                } else if (defaultPath.startsWith("https:") && ps.getHttpsHost() != null) { // NOI18N
+                } else if (defaultPath.startsWith("https:") && !ps.getHttpsHost().equals("")) { // NOI18N
                     proxy = ps.getHttpsHost();
                     if (proxy != null && !proxy.equals("")) {
                         proxy += ps.getHttpsPort() > -1 ? ":" + Integer.toString(ps.getHttpsPort()) : ""; // NOI18N
@@ -1100,7 +1110,16 @@ public class HgCommand {
         
         command.add(HG_LOG_TEMPLATE_HISTORY_CMD);
 
-        List<String> list = exec(command);
+        List<String> list;
+        String defaultPush = new HgConfigFiles(repository).getDefaultPush(false);
+        String proxy = getGlobalProxyIfNeeded(defaultPush, false);
+        if(proxy != null){
+            List<String> env = new ArrayList<String>(); 
+            env.add(HG_PROXY_ENV + proxy);
+            list = execEnv(command, env);
+        }else{
+            list = exec(command);
+        }
         if (!list.isEmpty()) {
             if(isErrorNoDefaultPush(list.get(0))){
                 // Ignore

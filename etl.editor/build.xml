@@ -22,5 +22,5 @@
     <target name="netbeans-extra" depends="init">
 	<taskdef name="i18n" classname="net.java.hulp.i18n.buildtools.I18NTask" classpath="external/net.java.hulp.i18ntask.jar"/>
         <i18n dir="build/classes" file="src/org/netbeans/modules/etl/logger/msgs.properties" prefix="DM-DI-" strict="false" pattern="([A-Z][A-Z][A-Z]\d\d\d)(: )(.*)"/>
-    </target>
+		</target>
 </project>

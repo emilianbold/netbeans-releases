@@ -114,8 +114,7 @@ public class CompositeComponentsTest extends RaveTestCase {
     @Override
     protected void tearDown() {
         // Close and Undeploy the project
-        // XXX 'Close' string should come from a Bundle
-        String CLOSE = "Close";
+        new SaveAllAction().perform(); // Prevents from Save Modified Files dialog.
         Node prjNode = new ProjectsTabOperator().getProjectRootNode(projectName);
         new Action(null, CLOSE).perform(prjNode);
         if (projectDeployed) {
@@ -186,7 +185,7 @@ public class CompositeComponentsTest extends RaveTestCase {
             {"text", "Bubble Help Text"},
             {"toolTip", "Bubble Help Text Tooltip"}
         };
-        addComponent(BASIC, STATIC_TEXT, 125, 125, properties);
+        addComponent(BASIC, STATIC_TEXT, 50+36, 50+59, properties);
         new SaveAllAction().perform();
         // Verify JSP source
         switchToJSPSource();
@@ -298,4 +297,7 @@ public class CompositeComponentsTest extends RaveTestCase {
     private static final String UNDEPLOY_AND_DEPLOY = Bundle.getStringTrimmed(
             "org.netbeans.modules.web.project.ui.Bundle",
             "LBL_RedeployAction_Name");
+    private static final String CLOSE = Bundle.getStringTrimmed(
+            "org.netbeans.modules.web.project.ui.customizer.Bundle",
+            "CTL_WebSourceRootsUi_Close");
 }
