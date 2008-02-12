@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -38,36 +38,53 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
+package org.netbeans.modules.websvc.saas.codegen.java;
 
-package org.netbeans.modules.spring.beans.refactoring.plugins;
-
-import com.sun.source.tree.MethodTree;
-import com.sun.source.tree.Tree;
-import javax.lang.model.element.Element;
-import javax.lang.model.element.ExecutableElement;
-import javax.lang.model.element.TypeElement;
-import org.netbeans.api.java.source.WorkingCopy;
+import java.awt.datatransfer.Transferable;
+import org.netbeans.modules.websvc.saas.model.WsdlSaasMethod;
+import org.netbeans.modules.websvc.saas.spi.ConsumerFlavorProvider;
+import org.openide.util.Exceptions;
+import org.openide.util.datatransfer.ExTransferable;
 
 /**
  *
- * @author Jan Becicka,  Copied from o.n.m.refactoring.java
- * 
+ * @author Ayub Khan
  */
-public class FindOverridingVisitor extends FindVisitor {
+public class JaxWsFlavorProvider implements ConsumerFlavorProvider {
 
-    public FindOverridingVisitor(WorkingCopy workingCopy) {
-        super(workingCopy);
+    public JaxWsFlavorProvider() {
     }
 
-    @Override
-    public Tree visitMethod(MethodTree node, Element elementToFind) {
-        if (!workingCopy.getTreeUtilities().isSynthetic(getCurrentPath())) {
-            ExecutableElement el = (ExecutableElement) workingCopy.getTrees().getElement(getCurrentPath());
-            
-            if (workingCopy.getElements().overrides(el, (ExecutableElement) elementToFind, (TypeElement) el.getEnclosingElement())) {
-                addUsage(getCurrentPath());
+    public Transferable addDataFlavors(Transferable transferable) {
+        try {
+            Object data = transferable.getTransferData(ConsumerFlavorProvider.METHOD_FLAVOR);
+            if (data instanceof WsdlSaasMethod) {
+                WsdlSaasMethod method = (WsdlSaasMethod) data;
+                ExTransferable t = ExTransferable.create(transferable);
+                JaxWsEditorDrop editorDrop = new JaxWsEditorDrop(method);
+                ActiveEditorDropTransferable s = new ActiveEditorDropTransferable(editorDrop);
+                t.put(s);
+                return t;
             }
+        } catch (Exception ex) {
+            Exceptions.printStackTrace(ex);
         }
-        return super.visitMethod(node, elementToFind);
+
+        return transferable;
+    }
+
+    private static class ActiveEditorDropTransferable extends ExTransferable.Single {
+
+        private JaxWsEditorDrop drop;
+
+        ActiveEditorDropTransferable(JaxWsEditorDrop drop) {
+            super(JaxWsEditorDrop.FLAVOR);
+
+            this.drop = drop;
+        }
+
+        public Object getData() {
+            return drop;
+        }
     }
 }

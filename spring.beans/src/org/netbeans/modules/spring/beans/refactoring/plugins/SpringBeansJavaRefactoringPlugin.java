@@ -42,7 +42,6 @@ package org.netbeans.modules.spring.beans.refactoring.plugins;
 
 
 
-import java.io.IOException;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -53,16 +52,12 @@ import java.util.Set;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.source.CancellableTask;
 import org.netbeans.api.java.source.ClasspathInfo;
-import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.ModificationResult;
-import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.api.java.source.WorkingCopy;
-import org.netbeans.modules.refactoring.api.AbstractRefactoring;
 import org.netbeans.modules.refactoring.api.Problem;
 import org.netbeans.modules.refactoring.spi.ProgressProviderAdapter;
 import org.netbeans.modules.refactoring.spi.RefactoringElementsBag;
 import org.netbeans.modules.refactoring.spi.RefactoringPlugin;
-import org.netbeans.modules.spring.beans.refactoring.RetoucheUtils;
 import org.openide.filesystems.FileObject;
 
 /**
@@ -104,13 +99,7 @@ public abstract class SpringBeansJavaRefactoringPlugin extends ProgressProviderA
             for (List<FileObject> fos : work) {
                 if (cancelRequest) {
                     return Collections.<ModificationResult>emptyList();
-                }
-                final JavaSource javaSource = JavaSource.create(info==null?ClasspathInfo.create(fos.get(0)):info, fos);
-                try {
-                    results.add(javaSource.runModificationTask(task));
-                } catch (IOException ex) {
-                    throw (RuntimeException) new RuntimeException().initCause(ex);
-                }
+                }              
             }
         } finally {
             currentTask = null;
@@ -145,21 +134,9 @@ public abstract class SpringBeansJavaRefactoringPlugin extends ProgressProviderA
         if (currentTask!=null) {
             currentTask.cancel();
         }
-        RetoucheUtils.cancel = true;
+//        RetoucheUtils.cancel = true;
     }
     
-    protected ClasspathInfo getClasspathInfo(AbstractRefactoring refactoring) {
-        ClasspathInfo cpInfo = refactoring.getContext().lookup(ClasspathInfo.class);
-        if (cpInfo==null) {
-            Collection<? extends TreePathHandle> handles = refactoring.getRefactoringSource().lookupAll(TreePathHandle.class);
-            if (!handles.isEmpty()) {
-                cpInfo = RetoucheUtils.getClasspathInfoFor(handles.toArray(new TreePathHandle[handles.size()]));
-            } else {
-                cpInfo = RetoucheUtils.getClasspathInfoFor((FileObject)null);
-            }
-            refactoring.getContext().add(cpInfo);
-        }
-        return cpInfo;
-    }
+   
 
 }
