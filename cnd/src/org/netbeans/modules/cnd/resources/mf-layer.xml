@@ -313,7 +313,7 @@ made subject to such option by the copyright holder.
                 <attr name="position" intvalue="100"/>
                 <attr name="template" boolvalue="true"/>
                 <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/cnd/resources/empty-c.html"/>
-                <attr name="templateWizardIterator" newvalue="org.netbeans.modules.cnd.editor.CCFSrcFileIterator"/>
+                <attr name="templateWizardIterator" newvalue="org.netbeans.modules.cnd.editor.filecreation.CCFSrcFileIterator"/>
                 <attr name="templateCategory" stringvalue="c-types"/>
             </file>
             
@@ -323,7 +323,7 @@ made subject to such option by the copyright holder.
                 <attr name="position" intvalue="200"/>
                 <attr name="template" boolvalue="true"/>
                 <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/cnd/resources/simple-c.html"/>
-                <attr name="templateWizardIterator" newvalue="org.netbeans.modules.cnd.editor.CCFSrcFileIterator"/>
+                <attr name="templateWizardIterator" newvalue="org.netbeans.modules.cnd.editor.filecreation.CCFSrcFileIterator"/>
                 <attr name="templateCategory" stringvalue="c-types"/>
             </file>
             
@@ -333,7 +333,7 @@ made subject to such option by the copyright holder.
                 <attr name="position" intvalue="300"/>
                 <attr name="template" boolvalue="true"/>
                 <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/cnd/resources/simple-c-h.html"/>
-                <attr name="templateWizardIterator" newvalue="org.netbeans.modules.cnd.editor.CCFSrcFileIterator"/>
+                <attr name="templateWizardIterator" newvalue="org.netbeans.modules.cnd.editor.filecreation.CCFSrcFileIterator"/>
                 <attr name="templateCategory" stringvalue="c-types"/>
             </file>
         </folder> <!-- End cFiles folder -->
@@ -349,7 +349,7 @@ made subject to such option by the copyright holder.
                 <attr name="position" intvalue="100"/>
                 <attr name="template" boolvalue="true"/>
                 <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/cnd/resources/empty-cc.html"/>
-                <attr name="templateWizardIterator" newvalue="org.netbeans.modules.cnd.editor.CCFSrcFileIterator"/>
+                <attr name="templateWizardIterator" newvalue="org.netbeans.modules.cnd.editor.filecreation.CCFSrcFileIterator"/>
                 <attr name="templateCategory" stringvalue="cpp-types"/>
             </file>
             
@@ -359,7 +359,7 @@ made subject to such option by the copyright holder.
                 <attr name="position" intvalue="200"/>
                 <attr name="template" boolvalue="true"/>
                 <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/cnd/resources/simple-cc.html"/>
-                <attr name="templateWizardIterator" newvalue="org.netbeans.modules.cnd.editor.CCFSrcFileIterator"/>
+                <attr name="templateWizardIterator" newvalue="org.netbeans.modules.cnd.editor.filecreation.CCFSrcFileIterator"/>
                 <attr name="templateCategory" stringvalue="cpp-types"/>
             </file>
             
@@ -369,7 +369,7 @@ made subject to such option by the copyright holder.
                 <attr name="position" intvalue="300"/>
                 <attr name="template" boolvalue="true"/>
                 <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/cnd/resources/simple-cc-h.html"/>
-                <attr name="templateWizardIterator" newvalue="org.netbeans.modules.cnd.editor.CCFSrcFileIterator"/>
+                <attr name="templateWizardIterator" newvalue="org.netbeans.modules.cnd.editor.filecreation.CCFSrcFileIterator"/>
                 <attr name="templateCategory" stringvalue="cpp-types"/>
             </file>
             
@@ -384,28 +384,28 @@ made subject to such option by the copyright holder.
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.resources.Bundle"/>
                 <attr name="template" boolvalue="true"/>
                 <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/cnd/resources/empty-f90.html"/>
-                <attr name="templateWizardIterator" newvalue="org.netbeans.modules.cnd.editor.CCFSrcFileIterator"/>
+                <attr name="templateWizardIterator" newvalue="org.netbeans.modules.cnd.editor.filecreation.CCFSrcFileIterator"/>
                 <attr name="templateCategory" stringvalue="fortran-types"/>
             </file>
             <file name="fortranFixedFormatFile.f" url="templates/fortran/fixed-fortran-f.template">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.resources.Bundle"/>
                 <attr name="template" boolvalue="true"/>
                 <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/cnd/resources/fixed-fortran-f.html"/>
-                <attr name="templateWizardIterator" newvalue="org.netbeans.modules.cnd.editor.CCFSrcFileIterator"/>
+                <attr name="templateWizardIterator" newvalue="org.netbeans.modules.cnd.editor.filecreation.CCFSrcFileIterator"/>
                 <attr name="templateCategory" stringvalue="fortran-types"/>
             </file>
             <file name="fortranFreeFormatFile.f90" url="templates/fortran/free-fortran-f90.template">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.resources.Bundle"/>
                 <attr name="template" boolvalue="true"/>
                 <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/cnd/resources/free-fortran-f90.html"/>
-                <attr name="templateWizardIterator" newvalue="org.netbeans.modules.cnd.editor.CCFSrcFileIterator"/>
+                <attr name="templateWizardIterator" newvalue="org.netbeans.modules.cnd.editor.filecreation.CCFSrcFileIterator"/>
                 <attr name="templateCategory" stringvalue="fortran-types"/>
             </file>
             <file name="fortranModuleFile.f90" url="templates/fortran/module-f90.template">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.resources.Bundle"/>
                 <attr name="template" boolvalue="true"/>
                 <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/cnd/resources/module-f90.html"/>
-                <attr name="templateWizardIterator" newvalue="org.netbeans.modules.cnd.editor.CCFSrcFileIterator"/>
+                <attr name="templateWizardIterator" newvalue="org.netbeans.modules.cnd.editor.filecreation.CCFSrcFileIterator"/>
                 <attr name="templateCategory" stringvalue="fortran-types"/>
             </file>
         </folder> <!-- End fortranFiles folder -->
@@ -419,35 +419,35 @@ made subject to such option by the copyright holder.
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.resources.Bundle"/>
                 <attr name="template" boolvalue="true"/>
                 <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/cnd/resources/bashShell.html"/>
-                <attr name="templateWizardIterator" newvalue="org.netbeans.modules.cnd.editor.CCFSrcFileIterator"/>
+                <attr name="templateWizardIterator" newvalue="org.netbeans.modules.cnd.editor.filecreation.CCFSrcFileIterator"/>
                 <attr name="templateCategory" stringvalue="shell-types"/>
             </file>
             <file name="shell.csh" url="templates/shell/simple-shell.template">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.resources.Bundle"/>
                 <attr name="template" boolvalue="true"/>
                 <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/cnd/resources/cshShell.html"/>
-                <attr name="templateWizardIterator" newvalue="org.netbeans.modules.cnd.editor.CCFSrcFileIterator"/>
+                <attr name="templateWizardIterator" newvalue="org.netbeans.modules.cnd.editor.filecreation.CCFSrcFileIterator"/>
                 <attr name="templateCategory" stringvalue="shell-types"/>
             </file>
             <file name="shell.ksh" url="templates/shell/simple-shell.template">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.resources.Bundle"/>
                 <attr name="template" boolvalue="true"/>
                 <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/cnd/resources/kshShell.html"/>
-                <attr name="templateWizardIterator" newvalue="org.netbeans.modules.cnd.editor.CCFSrcFileIterator"/>
+                <attr name="templateWizardIterator" newvalue="org.netbeans.modules.cnd.editor.filecreation.CCFSrcFileIterator"/>
                 <attr name="templateCategory" stringvalue="shell-types"/>
             </file>
             <file name="shell.sh" url="templates/shell/simple-shell.template">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.resources.Bundle"/>
                 <attr name="template" boolvalue="true"/>
                 <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/cnd/resources/shShell.html"/>
-                <attr name="templateWizardIterator" newvalue="org.netbeans.modules.cnd.editor.CCFSrcFileIterator"/>
+                <attr name="templateWizardIterator" newvalue="org.netbeans.modules.cnd.editor.filecreation.CCFSrcFileIterator"/>
                 <attr name="templateCategory" stringvalue="shell-types"/>
             </file>
             <file name="shell.zsh" url="templates/shell/simple-shell.template">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.resources.Bundle"/>
                 <attr name="template" boolvalue="true"/>
                 <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/cnd/resources/zshShell.html"/>
-                <attr name="templateWizardIterator" newvalue="org.netbeans.modules.cnd.editor.CCFSrcFileIterator"/>
+                <attr name="templateWizardIterator" newvalue="org.netbeans.modules.cnd.editor.filecreation.CCFSrcFileIterator"/>
                 <attr name="templateCategory" stringvalue="shell-types"/>
             </file>
         </folder> <!-- End cFiles folder -->

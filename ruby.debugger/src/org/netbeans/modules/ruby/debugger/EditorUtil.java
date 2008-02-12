@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -103,7 +103,7 @@ public final class EditorUtil {
      * @see unmarkCurrent()
      */
     static void markCurrent(final String filePath, final int lineNumber) {
-        markCurrent(getLine(filePath, lineNumber));
+        markCurrent(getLineAnnotable(filePath, lineNumber));
     }
     
     private static void markCurrent(final Object line) {
@@ -149,27 +149,31 @@ public final class EditorUtil {
         }
     }
     
-    public static Object getLine(final String filePath, final int lineNumber) {
+    public static Object getLineAnnotable(final String filePath, final int lineNumber) {
         Annotatable[] annotables = null;
-        
+
+        Line line = getLine(filePath, lineNumber);
+        annotables = new Annotatable[] { line };
+        return annotables;
+    }
+
+    public static Line getLine(final String filePath, final int lineNumber) {
         if (filePath == null || lineNumber < 0) {
             return null;
         }
-        
+
         File file = new File(filePath);
         FileObject fileObject = FileUtil.toFileObject(FileUtil.normalizeFile(file));
         if (fileObject == null) {
             Util.info("Cannot resolve \"" + filePath + '"');
             return null;
         }
-        
+
         LineCookie lineCookie = getLineCookie(fileObject);
         assert lineCookie != null;
-        Line line = lineCookie.getLineSet().getCurrent(lineNumber);
-        annotables = new Annotatable[] { line };
-        return annotables;
+        return lineCookie.getLineSet().getCurrent(lineNumber);
     }
-    
+
     public static LineCookie getLineCookie(final FileObject fo) {
         LineCookie result = null;
         try {

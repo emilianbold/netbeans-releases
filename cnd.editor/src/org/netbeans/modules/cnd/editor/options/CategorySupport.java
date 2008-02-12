@@ -61,6 +61,7 @@ import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Formatter;
 import org.netbeans.modules.cnd.editor.api.CodeStyle;
 import org.netbeans.modules.cnd.editor.api.CodeStyle.BracePlacement;
+import org.netbeans.modules.cnd.editor.api.CodeStyle.PreprocessorIndent;
 import org.netbeans.modules.cnd.editor.reformat.Reformatter;
 import org.netbeans.spi.options.OptionsPanelController;
 import org.openide.util.Exceptions;
@@ -82,6 +83,12 @@ public class CategorySupport extends Category implements ActionListener, Documen
     private static final ComboItem  bracePlacement[] = new ComboItem[] {
             new ComboItem( BracePlacement.SAME_LINE.name(), "LBL_bp_SAME_LINE" ), // NOI18N
             new ComboItem( BracePlacement.NEW_LINE.name(), "LBL_bp_NEW_LINE" ), // NOI18N
+        };
+
+    private static final ComboItem  preprocessorPlacement[] = new ComboItem[] {
+            new ComboItem( PreprocessorIndent.START_LINE.name(), "LBL_pi_START_LINE" ), // NOI18N
+            new ComboItem( PreprocessorIndent.CODE_INDENT.name(), "LBL_pi_CODE_INDENT" ), // NOI18N
+            new ComboItem( PreprocessorIndent.PREPROCESSOR_INDENT.name(), "LBL_pi_PREPROCESSOR_INDENT" ), // NOI18N
         };
 
     private String previewText = NbBundle.getMessage(EditorOptions.class, "SAMPLE_Default");
@@ -136,17 +143,20 @@ public class CategorySupport extends Category implements ActionListener, Documen
         } catch (BadLocationException ex) {
             Exceptions.printStackTrace(ex);
         }
-        Formatter f = bd.getFormatter();
-        try {
-	    f.reformatLock();
-            f.reformat(bd, 0, bd.getLength());
-            String x = bd.getText(0, bd.getLength());
-            pane.setText(x);
-        } catch (BadLocationException ex) {
-            Exceptions.printStackTrace(ex);
-        } finally {
-	    f.reformatUnlock();
-	}
+//        Preferences oldPreferences = ((CodeStyleImpl)CodeStyle.getDefault(language)).getPref();
+//        ((CodeStyleImpl)CodeStyle.getDefault(language)).setPref(p);
+//        Formatter f = bd.getFormatter();
+//        try {
+//	    f.reformatLock();
+//            f.reformat(bd, 0, bd.getLength());
+//            String x = bd.getText(0, bd.getLength());
+//            pane.setText(x);
+//        } catch (BadLocationException ex) {
+//            Exceptions.printStackTrace(ex);
+//        } finally {
+//            ((CodeStyleImpl)CodeStyle.getDefault(language)).setPref(oldPreferences);
+//	    f.reformatUnlock();
+//	}
     }
     public void cancel() {
         // Usually does not need to do anything
@@ -286,6 +296,11 @@ public class CategorySupport extends Category implements ActionListener, Documen
         for (ComboItem comboItem : bracePlacement) {
             if ( value.equals( comboItem.value) ) {
                 return new DefaultComboBoxModel( bracePlacement );
+            }
+        }
+        for (ComboItem comboItem : preprocessorPlacement) {
+            if ( value.equals( comboItem.value) ) {
+                return new DefaultComboBoxModel( preprocessorPlacement );
             }
         }
         return null;

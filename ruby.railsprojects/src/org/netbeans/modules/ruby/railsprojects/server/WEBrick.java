@@ -51,24 +51,37 @@ import org.netbeans.spi.server.ServerInstanceImplementation;
 import org.openide.nodes.Node;
 import org.openide.util.ChangeSupport;
 import org.openide.util.NbBundle;
+import org.openide.util.Parameters;
 
 /**
- * TODO: doc
+ * This class represents a WEBrick installation.
  *
  * @author Erno Mononen
  */
 class WEBrick implements RubyServer, ServerInstanceImplementation {
 
+    /**
+     * The pattern for recognizing when an instance of WEBrick has started.
+     */
     private static final Pattern PATTERN = Pattern.compile("\\bRails application started on.+", Pattern.DOTALL);
+    
     private final RubyPlatform platform;
     private final List<RailsApplication> applications = new ArrayList<RailsApplication>();
-    private Node node;
     private final ChangeSupport changeSupport = new ChangeSupport(this);
+    private Node node;
 
     WEBrick(RubyPlatform platform) {
+        Parameters.notNull("platform", platform); //NOI18N
         this.platform = platform;
     }
 
+    private Node getNode() {
+        if (this.node == null) {
+            this.node = new RubyServerNode(this);
+        }
+        return node;
+    }
+    
     public String getNodeName() {
         return NbBundle.getMessage(WEBrick.class, "LBL_ServerNodeName", getDisplayName(), platform.getLabel());
     }
@@ -121,24 +134,17 @@ class WEBrick implements RubyServer, ServerInstanceImplementation {
         changeSupport.removeChangeListener(listener);
     }
 
-
     // ServerInstanceImplementation methods
     public String getServerDisplayName() {
         return getNodeName();
     }
 
     public Node getFullNode() {
-        if (this.node == null) {
-            this.node = new RubyServerNode(this);
-        }
-        return node;
+        return getNode();
     }
 
     public Node getBasicNode() {
-        if (this.node == null) {
-            this.node = new RubyServerNode(this);
-        }
-        return node;
+        return getNode();
     }
 
     public JComponent getCustomizer() {
