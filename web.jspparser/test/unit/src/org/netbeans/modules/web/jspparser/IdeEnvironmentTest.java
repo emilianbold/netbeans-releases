@@ -55,7 +55,6 @@ import org.netbeans.modules.web.jsps.parserapi.JspParserAPI;
 import org.netbeans.modules.web.jsps.parserapi.JspParserAPI.WebModule;
 import org.netbeans.modules.web.jsps.parserapi.JspParserFactory;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 import org.openide.modules.ModuleInfo;
 import org.openide.util.Lookup;
 
