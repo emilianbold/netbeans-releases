@@ -49,8 +49,14 @@ made subject to such option by the copyright holder.
                 <attr name="instanceOf" stringvalue="org.netbeans.spi.db.explorer.DatabaseRuntime"/>
             </file>
         </folder>
+        <folder name="NodeProviders">
+            <file name="DerbyNodeProvider.instance">
+                <attr name="instanceCreate" methodvalue="org.netbeans.modules.derby.DerbyNodeProvider.getDefault"/>
+                <attr name="instanceOf" stringvalue="org.netbeans.modules.db.api.explorer.NodeProvider"/>
+            </file>
+        </folder>
     </folder>
-
+<!--
     <folder name="Menu">
         <folder name="Tools">
             <file name="DerbyDatabaseAction.instance">
@@ -59,4 +65,5 @@ made subject to such option by the copyright holder.
             </file>
             </folder>
     </folder>
+-->
 </filesystem>

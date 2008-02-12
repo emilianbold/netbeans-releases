@@ -99,6 +99,9 @@ made subject to such option by the copyright holder.
                 <file name="org-netbeans-modules-ruby-debugger-breakpoints-BreakpointEnableAction.instance">
                     <attr name="position" intvalue="101"/>
                 </file>
+                <file name="org-netbeans-modules-ruby-debugger-breakpoints-BreakpointCustomizeAction.instance">
+                    <attr name="position" intvalue="201"/>
+                </file>
             </folder>
         </folder>
         

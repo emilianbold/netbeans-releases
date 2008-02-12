@@ -55,6 +55,7 @@ import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.PlatformsCustomizer;
 import org.netbeans.modules.j2ee.clientproject.classpath.ClassPathSupport;
 import org.netbeans.modules.j2ee.clientproject.ui.AppClientLogicalViewProvider;
+import org.netbeans.modules.java.api.common.ui.PlatformUiSupport;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 

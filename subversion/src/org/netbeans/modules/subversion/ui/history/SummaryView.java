@@ -69,6 +69,8 @@ import java.io.File;
 import java.io.IOException;
 import java.text.DateFormat;
 import java.util.logging.Level;
+import org.netbeans.modules.subversion.FileStatusCache;
+import org.netbeans.modules.subversion.client.SvnClient;
 import org.netbeans.modules.subversion.client.SvnClientExceptionHandler;
 import org.tigris.subversion.svnclientadapter.SVNClientException;
 
@@ -257,6 +259,7 @@ class SummaryView implements MouseListener, ComponentListener, MouseMotionListen
         boolean revisionSelected;
         boolean missingFile = false;        
         boolean oneRevisionMultiselected = true;
+        boolean deleted = false;
         
         if (revCon instanceof RepositoryRevision) {
             revisionSelected = true;
@@ -270,7 +273,11 @@ class SummaryView implements MouseListener, ComponentListener, MouseMotionListen
 
             for(int i = 0; i < selection.length; i++) {
                 drev[i] = (RepositoryRevision.Event) dispResults.get(selection[i]);
+                File file = drev[i].getFile();
                 
+                if(!deleted && file != null && !file.exists() && drev[i].getChangedPath().getAction() == 'D') {
+                    deleted = true;
+                }
                 if(!missingFile && drev[i].getFile() == null) {
                     missingFile = true;
                 }
@@ -279,7 +286,7 @@ class SummaryView implements MouseListener, ComponentListener, MouseMotionListen
                 {
                     oneRevisionMultiselected = false;
                 }                
-                if(drev[i].getFile() != null && drev[i].getFile().exists() && drev[i].getChangedPath().getAction() == 'D') {
+                if(file != null && file.exists() && drev[i].getChangedPath().getAction() == 'D') {
                     noExDeletedExistingFiles = false;
                 }                        
             }                
@@ -287,7 +294,7 @@ class SummaryView implements MouseListener, ComponentListener, MouseMotionListen
         }
         long revision = container.getLog().getRevision().getNumber();
 
-        final boolean rollbackToEnabled = !missingFile && !revisionSelected && oneRevisionMultiselected;
+        final boolean rollbackToEnabled = !deleted && !missingFile && !revisionSelected && oneRevisionMultiselected;
         final boolean rollbackChangeEnabled = !missingFile && oneRevisionMultiselected && (drev.length == 0 || noExDeletedExistingFiles); // drev.length == 0 => the whole revision was selected
         final boolean viewEnabled = selection.length == 1 && !revisionSelected && drev[0].getFile() != null && drev[0].getFile().exists() &&  !drev[0].getFile().isDirectory();
         final boolean diffToPrevEnabled = selection.length == 1;
@@ -370,14 +377,27 @@ class SummaryView implements MouseListener, ComponentListener, MouseMotionListen
         support.start(rp, repository, NbBundle.getMessage(SummaryView.class, "MSG_Rollback_Progress")); // NOI18N
     }
 
-    private static void rollback(RepositoryRevision.Event event, SvnProgressSupport progress) {
-        File file = event.getFile();
+    private static void rollback(RepositoryRevision.Event event, SvnProgressSupport progress) {        
+        File file = event.getFile();                
+        if(event.getChangedPath().getAction() == 'D') {
+            // it was deleted, lets delete it again
+            if(file.exists()) {
+                try {
+                    SvnClient client = Subversion.getInstance().getClient(false);                    
+                    client.remove(new File[]{file}, true);
+                } catch (SVNClientException ex) {
+                    Subversion.LOG.log(Level.SEVERE, null, ex);
+                }
+                Subversion.getInstance().getStatusCache().refresh(file, FileStatusCache.REPOSITORY_STATUS_UNKNOWN);
+            }
+            return;
+        }
         File parent = file.getParentFile();
-        parent.mkdirs();
-        try {
+        parent.mkdirs();                
+        try {         
             File oldFile = VersionsCache.getInstance().getFileRevision(event.getFile(), Long.toString(event.getLogInfoHeader().getLog().getRevision().getNumber()));
             file.delete();
-            FileUtil.copyFile(FileUtil.toFileObject(oldFile), FileUtil.toFileObject(parent), file.getName(), "");
+            FileUtil.copyFile(FileUtil.toFileObject(oldFile), FileUtil.toFileObject(parent), file.getName(), "");                
         } catch (IOException e) {
             Subversion.LOG.log(Level.SEVERE, null, e);
         }

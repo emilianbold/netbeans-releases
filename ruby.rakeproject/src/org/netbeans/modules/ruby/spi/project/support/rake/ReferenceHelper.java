@@ -348,6 +348,10 @@ public final class ReferenceHelper {
             };
         } else {                        
             // use an absolute path.
+            // mkleint: when the AlwaysRelativeCollocationQueryImplementation gets removed
+            // this code gets called more frequently
+            // to get the previous behaviour replace CollocationQuery.areCollocated(base, path)
+            // with PropertyUtils.relativizeFile(base, path) != null
             propertiesFiles = new String[] {
                 RakeProjectHelper.PRIVATE_PROPERTIES_PATH
             };

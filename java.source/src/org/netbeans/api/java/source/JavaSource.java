@@ -2636,9 +2636,10 @@ out:            for (Iterator<Collection<Request>> it = finishedRequests.values(
     }
     
     private static boolean reparseMethod (final CompilationInfoImpl ci, final MethodTree orig, final String newBody) throws IOException {        
-        assert ci != null; 
+        assert ci != null;         
+        final FileObject fo = ci.getFileObject();
         if (LOGGER.isLoggable(Level.FINER)) {
-            LOGGER.finer("Reparse method in: " + ci.javaSource.files);          //NOI18N
+            LOGGER.finer("Reparse method in: " + fo);          //NOI18N
         }
         if (!ci.getJavaSource().supportsReparse) {
             return false;
@@ -2669,7 +2670,7 @@ out:            for (Iterator<Collection<Request>> it = finishedRequests.values(
             fav.scan(orig.getBody(), null);
             if (fav.hasLocalClass) {
                 if (LOGGER.isLoggable(Level.FINER)) {
-                    LOGGER.finer("Skeep reparse method (old local classes): " + ci.javaSource.files);   //NOI18N
+                    LOGGER.finer("Skeep reparse method (old local classes): " + fo);   //NOI18N
                 }
                 return false;
             }
@@ -2684,9 +2685,10 @@ out:            for (Iterator<Collection<Request>> it = finishedRequests.values(
                 DiagnosticListener dl = ctx.get(DiagnosticListener.class);
                 assert dl instanceof CompilationInfoImpl.DiagnosticListenerImpl;
                 ((CompilationInfoImpl.DiagnosticListenerImpl)dl).startPartialReparse(origStartPos, origEndPos);
-                block = task.reparseMethodBody(cu, orig, newBody, firstInner);
+                long start = System.currentTimeMillis();
+                block = task.reparseMethodBody(cu, orig, newBody, firstInner);                
                 if (LOGGER.isLoggable(Level.FINER)) {
-                    LOGGER.finer("Reparsed method in: " + ci.javaSource.files);     //NOI18N
+                    LOGGER.finer("Reparsed method in: " + fo);     //NOI18N
                 }
                 assert block != null;
                 fav.reset();
@@ -2694,9 +2696,13 @@ out:            for (Iterator<Collection<Request>> it = finishedRequests.values(
                 final int newNoInner = fav.noInner;
                 if (fav.hasLocalClass || noInner != newNoInner) {
                     if (LOGGER.isLoggable(Level.FINER)) {
-                        LOGGER.finer("Skeep reparse method (new local classes): " + ci.javaSource.files);   //NOI18N
+                        LOGGER.finer("Skeep reparse method (new local classes): " + fo);   //NOI18N
                     }
                     return false;
+                }
+                long end = System.currentTimeMillis();                
+                if (fo != null) {
+                    logTime (fo,Phase.PARSED,(end-start));
                 }
                 final int newEndPos = (int) jt.getSourcePositions().getEndPosition(cu, block);
                 final int delta = newEndPos - origEndPos;
@@ -2705,9 +2711,10 @@ out:            for (Iterator<Collection<Request>> it = finishedRequests.values(
                 tpv.scan(cu, null);
                 ((JCMethodDecl)orig).body = block;
                 if (Phase.RESOLVED.compareTo(currentPhase)<=0) {
+                    start = System.currentTimeMillis();
                     task.reattrMethodBody(orig, block);
                     if (LOGGER.isLoggable(Level.FINER)) {
-                        LOGGER.finer("Resolved method in: " + ci.javaSource.files);     //NOI18N
+                        LOGGER.finer("Resolved method in: " + fo);     //NOI18N
                     }
                     if (!((CompilationInfoImpl.DiagnosticListenerImpl)dl).hasPartialReparseErrors()) {
                         final JSFlowListener fl = JSFlowListener.instance(ctx);
@@ -2715,16 +2722,21 @@ out:            for (Iterator<Collection<Request>> it = finishedRequests.values(
                             if (LOGGER.isLoggable(Level.FINER)) {
                                 final List<? extends Diagnostic> diag = ci.getDiagnostics();
                                 if (!diag.isEmpty()) {
-                                    LOGGER.finer("Reflow with errors: " + ci.javaSource.files + " " + diag);     //NOI18N
+                                    LOGGER.finer("Reflow with errors: " + fo + " " + diag);     //NOI18N
                                 }                            
                             }
                             TreePath tp = TreePath.getPath(cu, orig);       //todo: store treepath in changed method => improve speed
                             Tree t = tp.getParentPath().getLeaf();
                             task.reflowMethodBody(cu, (ClassTree) t, orig);
                             if (LOGGER.isLoggable(Level.FINER)) {
-                                LOGGER.finer("Reflowed method in: " + ci.javaSource.files); //NOI18N
+                                LOGGER.finer("Reflowed method in: " + fo); //NOI18N
                             }
                         }
+                    }
+                    end = System.currentTimeMillis();
+                    if (fo != null) {
+                        logTime (fo, Phase.ELEMENTS_RESOLVED,0L);
+                        logTime (fo,Phase.RESOLVED,(end-start));
                     }
                 }
                 ((CompilationInfoImpl.DiagnosticListenerImpl)dl).endPartialReparse (delta);

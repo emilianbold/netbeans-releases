@@ -29,7 +29,8 @@
             <folder name="redelivery">
                 <folder name="on-failure">
                     <attr name="choice" stringvalue="true"/>
-                    <folder name="error-endpoint">
+                    <folder name="error"/>  
+                    <folder name="redirect">
                         <!--<file name="endpoint-name">
                             <attr name="type" stringvalue="String"/>
                             <attr name="description" stringvalue="Error endpoint name"/>
@@ -42,6 +43,10 @@
                             <attr name="type" stringvalue="Endpoint"/>
                             <attr name="description" stringvalue="Error endpoint"/>
                             <attr name="codegen" stringvalue="false"/>
+                        </file>
+                        <file name="operation">
+                            <attr name="type" stringvalue="String"/>
+                            <attr name="description" stringvalue="Error endpoint operation name"/>
                         </file>
                     </folder>
                     <folder name="delete"/>
