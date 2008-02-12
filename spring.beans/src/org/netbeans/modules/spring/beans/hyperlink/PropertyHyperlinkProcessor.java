@@ -53,8 +53,8 @@ public class PropertyHyperlinkProcessor implements HyperlinkProcessor {
 
     public void process(HyperlinkEnv env) {
         String methodName = SpringXMLConfigEditorUtils.getBeanPropertySetterName(env.getValueString());
-        String classFqn = SpringXMLConfigEditorUtils.getBeanClassName(env.getCurrentTag());
-        SpringXMLConfigEditorUtils.openMethodInEditor(env.getDocument(), classFqn, methodName, 1,
-                SpringXMLConfigEditorUtils.Public.YES, SpringXMLConfigEditorUtils.Static.NO);
+        String className = SpringXMLConfigEditorUtils.getBeanClassName(env.getCurrentTag());
+        SpringXMLConfigEditorUtils.openMethodInEditor(env.getDocument(), className, methodName, 1,
+                SpringXMLConfigEditorUtils.Public.DONT_CARE, SpringXMLConfigEditorUtils.Static.NO);
     }
 }

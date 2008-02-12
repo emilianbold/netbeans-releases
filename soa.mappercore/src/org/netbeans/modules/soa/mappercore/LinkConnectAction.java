@@ -78,7 +78,7 @@ public class LinkConnectAction extends MapperKeyboardAction implements
     public LinkConnectAction(Canvas canvas) {
         this.canvas = canvas;
         treePath = null;
-        
+
         MapperKeyboardAction action = new LinkConnectDone(canvas);
         
         canvas.getMapper().addRightTreeExpansionListener(this);
@@ -224,8 +224,13 @@ public class LinkConnectAction extends MapperKeyboardAction implements
     public void treeCollapsed(TreeExpansionEvent event) {
         LinkTool linkTool = canvas.getLinkTool();
         if (linkTool == null || !linkTool.isActive()) { return; }
-        
+        if (treePath == null) {
+            linkTool.done();
+            return;
+        }
         MapperNode node = linkTool.getMapper().getNode(treePath, true);
+        if (node == null) { return; } 
+                
         if (!node.isVisibleGraph()) {
             this.treePath = null;
             linkTool.done();
@@ -241,6 +246,8 @@ public class LinkConnectAction extends MapperKeyboardAction implements
             if (linkTool.isOutgoing()) {
                 SelectionModel selectionModel = linkTool.getSelectionModel();
                 TreePath treePath = selectionModel.getSelectedPath();
+                if (treePath == null) { return; }
+                
                 Graph graph = linkTool.getMapper().getNode(treePath, true).getGraph();
                 setTarget(graph, linkTool.getRightTree());  
             }
@@ -272,7 +279,7 @@ public class LinkConnectAction extends MapperKeyboardAction implements
         Vertex vertex = sVertexes.get(0); 
          
         JComponent component = (JComponent) e.getComponent();
-        if (component == linkTool.getRightTree()) {
+        if (component == canvas.getRightTree()) {
             if (linkTool.isIngoing()) {
                 setSource(vertex, canvas);
                 return;
@@ -295,7 +302,7 @@ public class LinkConnectAction extends MapperKeyboardAction implements
     private void setSource(SourcePin source, JComponent c) {
         LinkTool linkTool = canvas.getLinkTool();
         TargetPin target = linkTool.getTargetPin();
-        MapperModel mapperModel = linkTool.getMapperModel();
+        MapperModel mapperModel = canvas.getMapperModel();
         
         if (source != null && mapperModel.canConnect(treePath, source, target, 
                 null, null)) 
@@ -314,7 +321,7 @@ public class LinkConnectAction extends MapperKeyboardAction implements
     private void setTarget(TargetPin target, JComponent c) {
         LinkTool linkTool = canvas.getLinkTool();
         SourcePin source = linkTool.getSourcePin();
-        MapperModel mapperModel = linkTool.getMapperModel();
+        MapperModel mapperModel = canvas.getMapperModel();
         TreePath treePath = canvas.getSelectionModel().getSelectedPath();
         
         if (target != null && mapperModel.canConnect(treePath, source, target, 
@@ -337,8 +344,8 @@ public class LinkConnectAction extends MapperKeyboardAction implements
         if (linkTool.isIngoing() ) { 
             TreePath leftPath = e.getNewLeadSelectionPath();
             SourcePin source = new TreeSourcePin(leftPath);
-            setSource(source, linkTool.getLeftTree());
-            linkTool.getLeftTree().repaint();
+            setSource(source, canvas.getLeftTree());
+            canvas.getLeftTree().repaint();
             canvas.repaint();
         } 
         

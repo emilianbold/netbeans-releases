@@ -178,6 +178,14 @@ public class HgProperties implements ListSelectionListener {
     }
 
     private int lastIndex = -1;
+    
+    
+    public void updateLastSelection () {
+        HgPropertiesNode[] hgPropertiesNodes = propTable.getNodes();
+        if (lastIndex >= 0) {
+            hgPropertiesNodes[lastIndex].setValue(getPropertyValue());
+        }
+    }
 
     public void valueChanged (ListSelectionEvent e) {
         int index = propTable.getTable().getSelectedRow();

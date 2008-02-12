@@ -42,8 +42,14 @@ package org.netbeans.modules.cnd.editor.options;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.prefs.Preferences;
+import javax.swing.text.EditorKit;
+import org.netbeans.api.editor.mimelookup.MimeLookup;
+import org.netbeans.api.editor.mimelookup.MimePath;
+import org.netbeans.editor.Formatter;
+import org.netbeans.editor.Settings;
 import org.netbeans.modules.cnd.editor.api.CodeStyle;
 import org.netbeans.modules.cnd.editor.api.CodeStyle.BracePlacement;
+import org.netbeans.modules.cnd.editor.api.CodeStyle.PreprocessorIndent;
 import org.openide.util.NbPreferences;
 
 /**
@@ -51,32 +57,13 @@ import org.openide.util.NbPreferences;
  * @author Alexander Simon
  */
 public class EditorOptions {
-    /**
-     * Whether insert extra space before the parenthesis or not.
-     * Values: java.lang.Boolean instances
-     * Effect: function(a)
-     *           becomes (when set to true)
-     *         function (a)
-     */
-    public static final String CC_FORMAT_SPACE_BEFORE_PARENTHESIS = "cc-add-space-before-parenthesis"; //NOI18N
-    public static final boolean defaultCCFormatSpaceBeforeParenthesis = false;
-
-    /**
-     * Whether insert space after the comma inside the parameter list.
-     * Values: java.lang.Boolean instances
-     * Effect: function(a,b)
-     *           becomes (when set to true)
-     *         function(a, b)
-     */
-    public static final String CC_FORMAT_SPACE_AFTER_COMMA = "cc-add-space-after-comma"; //NOI18N
-    public static final boolean defaultCCFormatSpaceAfterComma = true;
-
     public static final String spaceBeforeWhile = "spaceBeforeWhile"; //NOI18N
     public static final boolean spaceBeforeWhileDefault = true;
     public static final String spaceBeforeElse = "spaceBeforeElse"; //NOI18N
     public static final boolean spaceBeforeElseDefault = true;
     public static final String spaceBeforeCatch = "spaceBeforeCatch"; //NOI18N
     public static final boolean spaceBeforeCatchDefault = true;
+
     public static final String spaceBeforeMethodDeclParen = "spaceBeforeMethodDeclParen"; //NOI18N
     public static final boolean spaceBeforeMethodDeclParenDefault = false;
     public static final String spaceBeforeMethodCallParen = "spaceBeforeMethodCallParen"; //NOI18N
@@ -91,6 +78,7 @@ public class EditorOptions {
     public static final boolean spaceBeforeCatchParenDefault = true;
     public static final String spaceBeforeSwitchParen = "spaceBeforeSwitchParen"; //NOI18N
     public static final boolean spaceBeforeSwitchParenDefault = true;
+    
     public static final String spaceAroundUnaryOps = "spaceAroundUnaryOps"; //NOI18N
     public static final boolean spaceAroundUnaryOpsDefault = false;
     public static final String spaceAroundBinaryOps = "spaceAroundBinaryOps"; //NOI18N
@@ -99,6 +87,7 @@ public class EditorOptions {
     public static final boolean spaceAroundTernaryOpsDefault = true;
     public static final String spaceAroundAssignOps = "spaceAroundAssignOps"; //NOI18N
     public static final boolean spaceAroundAssignOpsDefault = true;
+    
     public static final String spaceBeforeClassDeclLeftBrace = "spaceBeforeClassDeclLeftBrace"; //NOI18N
     public static final boolean spaceBeforeClassDeclLeftBraceDefault = true;
     public static final String spaceBeforeMethodDeclLeftBrace = "spaceBeforeMethodDeclLeftBrace"; //NOI18N
@@ -121,6 +110,7 @@ public class EditorOptions {
     public static final boolean spaceBeforeCatchLeftBraceDefault = true;
     public static final String spaceBeforeArrayInitLeftBrace = "spaceBeforeArrayInitLeftBrace"; //NOI18N
     public static final boolean spaceBeforeArrayInitLeftBraceDefault = false;
+    
     public static final String spaceWithinParens = "spaceWithinParens"; //NOI18N
     public static final boolean spaceWithinParensDefault = false;
     public static final String spaceWithinMethodDeclParens = "spaceWithinMethodDeclParens"; //NOI18N
@@ -143,6 +133,7 @@ public class EditorOptions {
     public static final boolean spaceWithinBracesDefault = false;
     public static final String spaceWithinArrayInitBrackets = "spaceWithinArrayInitBrackets"; //NOI18N
     public static final boolean spaceWithinArrayInitBracketsDefault = false;
+    
     public static final String spaceBeforeComma = "spaceBeforeComma"; //NOI18N
     public static final boolean spaceBeforeCommaDefault = false;
     public static final String spaceAfterComma = "spaceAfterComma"; //NOI18N
@@ -190,20 +181,11 @@ public class EditorOptions {
     public static final String blankLinesAfterMethods = "blankLinesAfterMethods"; //NOI18N
     public static final int blankLinesAfterMethodsDefault = 0;    
 
-    /**
-     * Whether insert extra new-line before the compound bracket or not.
-     * Values: java.lang.Boolean instances
-     * Effect: if (test) {
-     *           function();
-     *         }
-     *           becomes (when set to true)
-     *         if (test)
-     *         {
-     *           function();
-     *         }
-     */
-    public static final String CC_FORMAT_NEWLINE_BEFORE_BRACE = "cc-add-newline-before-brace"; //NOI18N
-    public static final String defaultCCFormatNewlineBeforeBrace = BracePlacement.SAME_LINE.name();
+    public static final String CC_FORMAT_NEWLINE_BEFORE_BRACE_NAMESPACE = "cc-add-newline-before-brace-namespace"; //NOI18N
+    public static final String defaultCCFormatNewlineBeforeBraceNamespace = BracePlacement.NEW_LINE.name();
+
+    public static final String CC_FORMAT_NEWLINE_BEFORE_BRACE_CLASS = "cc-add-newline-before-brace-class"; //NOI18N
+    public static final String defaultCCFormatNewlineBeforeBraceClass = BracePlacement.NEW_LINE.name();
     
     /**
      * Whether insert extra new-line before the declaration or not.
@@ -220,12 +202,22 @@ public class EditorOptions {
     public static final String CC_FORMAT_NEWLINE_BEFORE_BRACE_DECLARATION = "cc-add-newline-before-brace-declaratin"; //NOI18N
     public static final String defaultCCFormatNewlineBeforeBraceDeclaration = BracePlacement.NEW_LINE.name();
 
-    public static final String CC_FORMAT_NEWLINE_BEFORE_BRACE_CLASS = "cc-add-newline-before-brace-class"; //NOI18N
-    public static final String defaultCCFormatNewlineBeforeBraceClass = BracePlacement.NEW_LINE.name();
-
-    public static final String CC_FORMAT_NEWLINE_BEFORE_BRACE_METHOD = "cc-add-newline-before-brace-method"; //NOI18N
-    public static final String defaultCCFormatNewlineBeforeBraceMethod = BracePlacement.NEW_LINE.name();
-
+    /**
+     * Whether insert extra new-line before the compound bracket or not.
+     * Values: java.lang.Boolean instances
+     * Effect: if (test) {
+     *           function();
+     *         }
+     *           becomes (when set to true)
+     *         if (test)
+     *         {
+     *           function();
+     *         }
+     */
+    public static final String CC_FORMAT_NEWLINE_BEFORE_BRACE = "cc-add-newline-before-brace"; //NOI18N
+    public static final String defaultCCFormatNewlineBeforeBrace = BracePlacement.SAME_LINE.name();
+    
+    
     /**
      * Whether to indent preprocessors positioned at start of line.
      * Those not starting at column 0 of the line will automatically be indented.
@@ -233,27 +225,8 @@ public class EditorOptions {
      * require the processors to have '#' in column 0.
      * <B>Note:</B>This will not convert formatted preprocessors back to column 0.
      */
-    public static final String CC_FORMAT_PREPROCESSOR_AT_LINE_START = "cc-keep-preprocessor-at-line-start"; //NOI18N
-    public static final boolean defaulCCtFormatPreprocessorAtLineStart = false;
-
-    /**
-     * Add one more space to the begining of each line
-     * in the multi-line comment if it's not already there.
-     * Values: java.lang.Boolean
-     * Effect: For example in java:
-     *
-     *        /* this is
-     *        *  multiline comment
-     *        *\/
-     *
-     *            becomes (when set to true)
-     *
-     *         /* this is
-     *          * multiline comment
-     *          *\/
-     */
-    public static final String CC_FORMAT_LEADING_SPACE_IN_COMMENT = "cc-format-leading-space-in-comment"; // NOI18N
-    public static final Boolean defaultCCFormatLeadingSpaceInComment = false;
+    public static final String indentPreprocessorDirectives = "indentPreprocessorDirectives"; //NOI18N
+    public static final String indentPreprocessorDirectivesDefault = PreprocessorIndent.START_LINE.name();
 
     /** Whether the '*' should be added at the new line * in comment */
     public static final String CC_FORMAT_LEADING_STAR_IN_COMMENT = "cc-format-leading-star-in-comment"; // NOI18N
@@ -283,14 +256,12 @@ public class EditorOptions {
     
     private static void createDefaults() {
         defaults = new HashMap<String,Object>();
-        defaults.put(CC_FORMAT_SPACE_BEFORE_PARENTHESIS,defaultCCFormatSpaceBeforeParenthesis);
-        defaults.put(CC_FORMAT_SPACE_AFTER_COMMA,defaultCCFormatSpaceAfterComma);
-        defaults.put(CC_FORMAT_NEWLINE_BEFORE_BRACE,defaultCCFormatNewlineBeforeBrace);
-        defaults.put(CC_FORMAT_NEWLINE_BEFORE_BRACE_DECLARATION,defaultCCFormatNewlineBeforeBraceDeclaration);
+        defaults.put(CC_FORMAT_NEWLINE_BEFORE_BRACE_NAMESPACE,defaultCCFormatNewlineBeforeBraceNamespace);
         defaults.put(CC_FORMAT_NEWLINE_BEFORE_BRACE_CLASS,defaultCCFormatNewlineBeforeBraceClass);
-        defaults.put(CC_FORMAT_NEWLINE_BEFORE_BRACE_METHOD,defaultCCFormatNewlineBeforeBraceMethod);
-        defaults.put(CC_FORMAT_PREPROCESSOR_AT_LINE_START,defaulCCtFormatPreprocessorAtLineStart);
-        defaults.put(CC_FORMAT_LEADING_SPACE_IN_COMMENT,defaultCCFormatLeadingSpaceInComment);
+        defaults.put(CC_FORMAT_NEWLINE_BEFORE_BRACE_DECLARATION,defaultCCFormatNewlineBeforeBraceDeclaration);
+        defaults.put(CC_FORMAT_NEWLINE_BEFORE_BRACE,defaultCCFormatNewlineBeforeBrace);
+
+        defaults.put(indentPreprocessorDirectives,indentPreprocessorDirectivesDefault);
         defaults.put(CC_FORMAT_LEADING_STAR_IN_COMMENT,defaultCCFormatLeadingStarInComment);
         defaults.put(CC_FORMAT_STATEMENT_CONTINUATION_INDENT,defaultCCFormatStatementContinuationIndent);
 
@@ -303,6 +274,7 @@ public class EditorOptions {
         defaults.put(spaceBeforeWhile,spaceBeforeWhileDefault);
         defaults.put(spaceBeforeElse,spaceBeforeElseDefault);
         defaults.put(spaceBeforeCatch,spaceBeforeCatchDefault);
+
         defaults.put(spaceBeforeMethodDeclParen,spaceBeforeMethodDeclParenDefault);
         defaults.put(spaceBeforeMethodCallParen,spaceBeforeMethodCallParenDefault);
         defaults.put(spaceBeforeIfParen,spaceBeforeIfParenDefault);
@@ -310,10 +282,12 @@ public class EditorOptions {
         defaults.put(spaceBeforeWhileParen,spaceBeforeWhileParenDefault);
         defaults.put(spaceBeforeCatchParen,spaceBeforeCatchParenDefault);
         defaults.put(spaceBeforeSwitchParen,spaceBeforeSwitchParenDefault);
+
         defaults.put(spaceAroundUnaryOps,spaceAroundUnaryOpsDefault);
         defaults.put(spaceAroundBinaryOps,spaceAroundBinaryOpsDefault);
         defaults.put(spaceAroundTernaryOps,spaceAroundTernaryOpsDefault);
         defaults.put(spaceAroundAssignOps,spaceAroundAssignOpsDefault);
+
         defaults.put(spaceBeforeClassDeclLeftBrace,spaceBeforeClassDeclLeftBraceDefault);
         defaults.put(spaceBeforeMethodDeclLeftBrace,spaceBeforeMethodDeclLeftBraceDefault);
         defaults.put(spaceBeforeIfLeftBrace,spaceBeforeIfLeftBraceDefault);
@@ -325,6 +299,7 @@ public class EditorOptions {
         defaults.put(spaceBeforeTryLeftBrace,spaceBeforeTryLeftBraceDefault);
         defaults.put(spaceBeforeCatchLeftBrace,spaceBeforeCatchLeftBraceDefault);
         defaults.put(spaceBeforeArrayInitLeftBrace,spaceBeforeArrayInitLeftBraceDefault);
+
         defaults.put(spaceWithinParens,spaceWithinParensDefault);
         defaults.put(spaceWithinMethodDeclParens,spaceWithinMethodDeclParensDefault);
         defaults.put(spaceWithinMethodCallParens,spaceWithinMethodCallParensDefault);
@@ -336,6 +311,7 @@ public class EditorOptions {
         defaults.put(spaceWithinTypeCastParens,spaceWithinTypeCastParensDefault);
         defaults.put(spaceWithinBraces,spaceWithinBracesDefault);
         defaults.put(spaceWithinArrayInitBrackets,spaceWithinArrayInitBracketsDefault);
+
         defaults.put(spaceBeforeComma,spaceBeforeCommaDefault);
         defaults.put(spaceAfterComma,spaceAfterCommaDefault);
         defaults.put(spaceBeforeSemi,spaceBeforeSemiDefault);
@@ -382,16 +358,43 @@ public class EditorOptions {
         return p.get(optionID, def.toString());
     }
 
+    public static int getGlobalIndentSize(CodeStyle.Language language) {
+        Formatter f = (Formatter)Settings.getValue(getKitClass(language), "formatter");
+        if (f != null) {
+            return f.getShiftWidth();
+        }
+        return 4;
+    }
+    
+    private static Class<? extends EditorKit> cKitClass;
+    private static Class<? extends EditorKit> cppKitClass;
+    private static Class<? extends EditorKit> getKitClass(CodeStyle.Language language) {
+        if (language == CodeStyle.Language.C) {
+            if (cKitClass == null) {
+                EditorKit kit = MimeLookup.getLookup(MimePath.get("text/x-c")).lookup(EditorKit.class); //NOI18N
+                cKitClass = kit != null ? kit.getClass() : EditorKit.class;
+            }
+            return cKitClass;
+        } else {
+            if (cppKitClass == null) {
+                EditorKit kit = MimeLookup.getLookup(MimePath.get("text/x-c++")).lookup(EditorKit.class); //NOI18N
+                cppKitClass = kit != null ? kit.getClass() : EditorKit.class;
+            }
+            return cppKitClass;
+        }
+    }
+    
+
     public static Preferences getPreferences(String profileId) {
         return NbPreferences.forModule(CodeStyle.class).node("CodeStyle").node(profileId);
     }
 
     public static CodeStyle createCodeStyle(CodeStyle.Language language, Preferences p) {
         CodeStyle.getDefault(language);
-        return codeStyleProducer.create(p);
+        return codeStyleProducer.create(language, p);
     }
 
     public static interface CodeStyleProducer {
-        public CodeStyle create( Preferences preferences );
+        public CodeStyle create(CodeStyle.Language language, Preferences preferences);
     }
 }

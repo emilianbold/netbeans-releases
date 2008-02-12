@@ -44,8 +44,8 @@ import java.awt.Color;
 import java.awt.Dialog;
 import java.awt.EventQueue;
 import java.io.File;
-import java.util.List;
 import java.util.Locale;
+import java.util.Set;
 import java.util.prefs.Preferences;
 import javax.swing.AbstractListModel;
 import javax.swing.JButton;
@@ -233,18 +233,18 @@ public class RubyPlatformCustomizer extends JPanel {
             return getPaths().size();
         }
 
-        void addPath(String path) {
-            platform.getGemManager().addRepository(path);
+        void addPath(File repo) {
+            platform.getGemManager().addGemPath(repo);
             super.fireIntervalAdded(this, 0, getSize());
         }
 
-        void removePath(String path) {
-            platform.getGemManager().removeRepository(path);
+        void removePath(File path) {
+            platform.getGemManager().removeGemPath(path);
             super.fireIntervalRemoved(this, 0, getSize());
         }
 
-        private List<String> getPaths() {
-            return platform.getGemManager().getRepositories();
+        private Set<File> getPaths() {
+            return platform.getGemManager().getGemPath();
         }
     }
 
@@ -627,7 +627,7 @@ public class RubyPlatformCustomizer extends JPanel {
         if (repo != null) {
             String absPath = repo.getAbsolutePath();
             if (!getGemPathListModel().getPaths().contains(absPath)) {
-                getGemPathListModel().addPath(absPath);
+                getGemPathListModel().addPath(repo);
                 refreshPlatform();
                 gemPathList.requestFocus();
                 gemPathList.setSelectedValue(absPath, true);
@@ -636,7 +636,7 @@ public class RubyPlatformCustomizer extends JPanel {
 }//GEN-LAST:event_addGemPathActionPerformed
 
     private void removeGemPathActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_removeGemPathActionPerformed
-        getGemPathListModel().removePath((String) gemPathList.getSelectedValue());
+        getGemPathListModel().removePath((File) gemPathList.getSelectedValue());
         refreshPlatform();
         if (getGemPathListModel().getSize() > 0) {
             gemPathList.setSelectedIndex(0);

@@ -153,7 +153,6 @@ public class GdbWatchVariable extends AbstractVariable implements PropertyChange
         if (value == null || value.length() == 0) {
             value = getDebugger().requestValue("\"" + watch.getExpression() + "\""); // NOI18N
         }
-        log.fine("GWV.getValue: [" + (value == null ? "<Null>" : value) + "]");
         return value;
     }
     
@@ -172,7 +171,7 @@ public class GdbWatchVariable extends AbstractVariable implements PropertyChange
             msg = msg.substring(0, msg.length() - 1);
         }
         setValue('>' + msg + '<');
-        log.fine("GWV.setValueToError[" + Thread.currentThread().getName() + "]: " + getName()); // NOI18N
+        log.fine("GWV.setValueToError[" + GdbUtils.threadId() + "]: " + getName()); // NOI18N
         fields = new Field[0];
         derefValue = null;
     }

@@ -90,15 +90,18 @@ public class WadlMethodNode extends AbstractNode {
 
     @Override
     public String getDisplayName() {
+        if (method.getId() != null) {
+            return method.getId();
+        }
         String name = method.getName();
         String displayName = name;
         if (GET.equals(name)) {
-            Set<String> medias = getMediaTypes(method.getResponse().getRepresentationOrFault());
+            Set<String> medias = SaasUtil.getMediaTypesFromJAXBElement(method.getResponse().getRepresentationOrFault());
             if (medias != null && medias.size() > 0) {
                 displayName += medias.toString();
             }
         } else if (PUT.equals(name) || POST.equals(name)) {
-            Set<String> medias = getMediaTypes(method.getRequest().getRepresentation());
+            Set<String> medias = SaasUtil.getMediaTypes(method.getRequest().getRepresentation());
             if (medias != null && medias.size() > 0) {
                 displayName += medias;
             }
@@ -106,68 +109,17 @@ public class WadlMethodNode extends AbstractNode {
         return displayName;
     }
     
-    private Set<String> getMediaTypes(List<JAXBElement<RepresentationType>> repElements) {
-        Set<String> result = new HashSet<String>();
-        for (JAXBElement<RepresentationType> repElement : repElements) {
-            result.add(repElement.getValue().getMediaType());
-        }
-        return result;
-    }
-    
-    private Set<String> getMediaTypes(List<RepresentationType> repTypes) {
-        Set<String> result = new HashSet<String>();
-        for (RepresentationType repType : repTypes) {
-            result.add(repType.getMediaType());
-        }
-        return result;
-    }
-    
-    static String getSignature(Method m) {
-        StringBuffer sb = new StringBuffer();
-        sb.append(m.getName());
-
-        Param[] params = m.getRequest().getParam().toArray(new Param[m.getRequest().getParam().size()]);
-        if (params.length > 0) {
-            sb.append(' ');
-        }
-        for (int i=0 ; i < params.length; i++) {
-            Param p = params[i];
-            if (i > 0) {
-                sb.append(",");
-            }
-            if (p.getStyle() == ParamStyle.TEMPLATE) {
-                sb.append('{');
-                sb.append(p.getName());
-                sb.append('}');
-            } else if (p.getStyle() == ParamStyle.QUERY) {
-                sb.append('?');
-                sb.append(p.getName());
-            } else if (p.getStyle() == ParamStyle.MATRIX) {
-                sb.append('[');
-                sb.append(p.getName());
-                sb.append(']');
-            } else if (p.getStyle() == ParamStyle.HEADER) {
-                sb.append('<');
-                sb.append(p.getName());
-                sb.append('>');
-            } else {
-                sb.append(p.getName());
-            }
-        }
-        return sb.toString();
-    }
-    
     @Override
     public String getShortDescription() {
-        return getSignature(method);
+        return SaasUtil.getSignature(wadlSaas, path, method);
     }
     
-    private static final java.awt.Image SERVICE_BADGE =
+    private static final java.awt.Image ICON =
             org.openide.util.Utilities.loadImage( "org/netbeans/modules/websvc/saas/ui/resources/method.png" ); //NOI18N
     
     @Override
     public java.awt.Image getIcon(int type) {
-        return SERVICE_BADGE;
+        return ICON;
     }
     
     @Override

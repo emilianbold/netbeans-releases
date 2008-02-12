@@ -68,7 +68,6 @@ public class TypeInfo {
         
         TypeInfo tinfo = ticache.get(var.getType());
         if (tinfo != null) {
-//            log.fine("TI.getTypeInfo[t]: " + var.getType() + " ==> [" + tinfo.resolvedType + "]"); // NOI18N
             return tinfo;
         }
         
