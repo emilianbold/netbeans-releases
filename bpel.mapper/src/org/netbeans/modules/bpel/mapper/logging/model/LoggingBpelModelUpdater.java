@@ -26,6 +26,7 @@ import org.netbeans.modules.bpel.mapper.model.BpelModelUpdater;
 import org.netbeans.modules.bpel.mapper.model.GraphInfoCollector;
 import org.netbeans.modules.bpel.mapper.tree.MapperSwingTreeModel;
 import org.netbeans.modules.bpel.mapper.tree.spi.MapperTcContext;
+import org.netbeans.modules.bpel.model.api.BpelContainer;
 import org.netbeans.modules.bpel.model.api.BpelEntity;
 import org.netbeans.modules.bpel.model.api.BpelModel;
 import org.netbeans.modules.bpel.model.api.Expression;
@@ -107,11 +108,12 @@ public class LoggingBpelModelUpdater extends BpelModelUpdater {
     private void updateExtensileElements(TreePath rightTreePath,
             ExtensibleElements extensibleElement) 
     {
+        assert extensibleElement != null;
 
         //
         // Do common preparations
         //
-        Graph graph = getMapperModel().graphRequired(rightTreePath);
+        Graph graph = getMapperModel().graphRequired(rightTreePath);        
         //
         GraphInfoCollector graphInfo = new GraphInfoCollector(graph);
         BpelModel bpelModel = extensibleElement.getBpelModel();
@@ -128,7 +130,17 @@ public class LoggingBpelModelUpdater extends BpelModelUpdater {
         if (trace == null) {
             return;
         }
-        
+        // 125695
+        // remove trace if there is not content
+        if (graph.isEmpty()) {
+            BpelContainer parent = trace.getParent();
+            if (parent != null) {
+                parent.remove(trace);
+            }
+            getMapperModel().deleteGraph(rightTreePath); // Remove empty graph !!!
+            return; // NOTHING TO DO FURTHER
+        }
+                
         if (rightTreeDO instanceof LogItem) {
             LogLevel level = ((LogItem)rightTreeDO).getLevel();
             Location location = ((LogItem)rightTreeDO).getLocation();

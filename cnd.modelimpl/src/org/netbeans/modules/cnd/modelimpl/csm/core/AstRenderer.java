@@ -1290,6 +1290,28 @@ public class AstRenderer {
         return null;
     }
     
+    public static List<CsmExpression> renderConstructorInitializersList(AST ast, CsmScope scope, CsmFile file) {
+        List<CsmExpression> initializers = null;
+        for (AST token = ast.getFirstChild(); token != null; token = token.getNextSibling()) {
+            if (token.getType() == CPPTokenTypes.CSM_CTOR_INITIALIZER_LIST) {
+                for (AST initializerToken = token.getFirstChild(); initializerToken != null; initializerToken = initializerToken.getNextSibling()) {
+                    if (initializerToken.getType() == CPPTokenTypes.CSM_CTOR_INITIALIZER) {
+                        ExpressionBase initializer = new ExpressionBase(initializerToken, file, null, scope);
+                        if (initializers == null) {
+                            initializers = new ArrayList<CsmExpression>();
+                        }
+                        initializers.add(initializer);
+                    }
+                }
+            }
+        }
+        if (initializers != null) {
+            return initializers;
+        } else {
+            return Collections.EMPTY_LIST;
+        }
+    }
+    
     public static boolean isExpression(AST ast) {
         return ast != null && isExpression(ast.getType());
     }

@@ -79,7 +79,7 @@ public class BPELValidationController extends ChangeEventListenerAdapter {
     }
 
     public void detach() {
-        if(myBpelModel != null) {
+        if (myBpelModel != null) {
             myBpelModel.removeEntityChangeListener(this);
             myBpelModel.removeEntityChangeListener(getTrigger());
             getTrigger().clearTrigger();
@@ -109,11 +109,11 @@ public class BPELValidationController extends ChangeEventListenerAdapter {
     }
     
     public void triggerValidation() {
-        triggerValidation( false );
+        triggerValidation(false);
     }
     
-    public void triggerValidation( boolean checkExternallyTriggered ) {
-        if ( checkExternallyTriggered && getTrigger().isTriggerDirty()) {
+    public void triggerValidation(boolean checkExternallyTriggered) {
+        if (checkExternallyTriggered && getTrigger().isTriggerDirty()) {
             startValidation();
         }
         else if ( !checkExternallyTriggered) {
@@ -143,7 +143,15 @@ public class BPELValidationController extends ChangeEventListenerAdapter {
 //System.out.println();
                     Validation validation = new Validation();
                     validation.validate(myBpelModel, ValidationType.PARTIAL);
-                    notifyListeners(validation.getValidationResult());
+                    List<ResultItem> items = validation.getValidationResult();
+                    List<ResultItem> result = new ArrayList<ResultItem>();
+
+                    synchronized(items) {
+                      for (ResultItem item : items) {
+                        result.add(item);
+                      }
+                    }
+                    notifyListeners(result);
                 }
             };
             myTimer.cancel();
@@ -154,7 +162,7 @@ public class BPELValidationController extends ChangeEventListenerAdapter {
 
     private void notifyListeners(List<ResultItem> result) {
         synchronized (myWeaklisteners) {
-            for (BPELValidationListener listener: myWeaklisteners.keySet()) {
+            for (BPELValidationListener listener : myWeaklisteners.keySet()) {
                 if (listener != null) {
                     listener.validationUpdated(result);
                 }
@@ -191,13 +199,13 @@ public class BPELValidationController extends ChangeEventListenerAdapter {
       return myTrigger;
     }
     
+    private BpelModel myBpelModel;
     private Object lock = new Object();
     private Timer myTimer = new Timer();
-    private BpelModel myBpelModel;
-    private ExternalModelsValidationTrigger myTrigger;
-    private Map<BPELValidationListener, Object> myWeaklisteners;
     private List<ResultItem> myValidationResult;
+    private ExternalModelsValidationTrigger myTrigger;
     private List<BPELValidationAnnotation> myAnnotations;
+    private Map<BPELValidationListener, Object> myWeaklisteners;
 
     private static final int DELAY = 3456;
 }
