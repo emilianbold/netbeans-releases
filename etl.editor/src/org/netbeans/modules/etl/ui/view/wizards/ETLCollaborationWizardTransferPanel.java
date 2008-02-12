@@ -107,6 +107,7 @@ public class ETLCollaborationWizardTransferPanel extends JPanel implements Actio
         TableModelListener, PropertyChangeListener {
 
     /* Log4J category string */
+    
     private static final String LOG_CATEGORY = ETLCollaborationWizardTransferPanel.class.getName();
     private static transient final Logger mLogger = LogUtil.getLogger(ETLCollaborationWizardTransferPanel.class.getName());
     private static transient final Localizer mLoc = Localizer.get();
