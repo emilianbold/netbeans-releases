@@ -45,15 +45,13 @@ import java.beans.PropertyChangeSupport;
 import java.io.File;
 import java.util.Enumeration;
 import java.util.List;
-import java.net.URL;
-import org.netbeans.modules.websvc.manager.api.WebServiceDescriptor;
 import org.netbeans.modules.websvc.saas.model.jaxb.SaasServices;
+import org.netbeans.modules.websvc.saas.spi.websvcmgr.WsdlServiceProxyDescriptor;
 import org.netbeans.modules.websvc.saas.util.SaasUtil;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.Repository;
-import org.openide.filesystems.URLMapper;
 import org.openide.util.Exceptions;
 
 /**
@@ -65,7 +63,7 @@ public class SaasServicesModel {
     public static final String PROP_GROUPS = "groups";
     public static final String PROP_SERVICES = "services";
     public static final String ROOT_GROUP = "root";
-    public static final String WEBSVC_HOME = WebServiceDescriptor.WEBSVC_HOME;
+    public static final String WEBSVC_HOME = WsdlServiceProxyDescriptor.WEBSVC_HOME;
     public static final String SERVICE_GROUP_XML = "service-groups.xml";
     
     private SaasGroup rootGroup;
@@ -141,6 +139,9 @@ public class SaasServicesModel {
     
     private void loadGroupFromDefaultFileSystemFolder(FileObject folder) {
         for (FileObject fo : folder.getChildren()) {
+            if (fo.isFolder()) {
+                continue;
+            }
             try {
                 SaasServices ss = SaasUtil.loadSaasServices(fo);
                 Group g = ss.getSaasMetadata().getGroup();
@@ -161,7 +162,7 @@ public class SaasServicesModel {
                         } else if (Saas.NS_WSDL.equals(ss.getType())) {
                             service = new WsdlSaas(parent, ss);
                         } else {
-                            service = new Saas(parent, ss);
+                            service = new CustomSaas(parent, ss);
                         }
                         child.addService(service);
                         break;

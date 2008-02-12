@@ -56,7 +56,7 @@ import org.openide.util.WeakListeners;
 
 public class SaasGroupNodeChildren extends Children.Keys<Object> implements PropertyChangeListener {
     
-    private SaasGroup group;
+    protected SaasGroup group;
     
     public SaasGroupNodeChildren(SaasGroup group) {
         this.group = group;

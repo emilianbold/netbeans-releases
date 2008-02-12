@@ -42,24 +42,19 @@
 
 package org.netbeans.modules.java.j2seproject.ui.wizards;
 
-import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
-import java.io.IOException;
 import java.text.MessageFormat;
 import java.util.StringTokenizer;
-import javax.swing.JFileChooser;
 import javax.swing.event.DocumentListener;
 import javax.swing.event.DocumentEvent;
-import org.netbeans.api.project.ant.FileChooser;
-import org.netbeans.spi.project.support.ant.PropertyUtils;
+import org.netbeans.spi.java.project.support.ui.SharableLibrariesUtils;
 import org.openide.WizardDescriptor;
 import org.openide.WizardValidationException;
 import org.openide.filesystems.FileUtil;
-import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
@@ -251,7 +246,7 @@ public class PanelOptionsVisual extends SettingsPanel implements ActionListener,
         // below folder is used just for relativization:
         File f = FileUtil.normalizeFile(new File(projectLocation + 
                 File.separatorChar + "project_folder")); // NOI18N
-        String curr = browseForLibraryLication(librariesLocation.getText().trim(), this, f);
+        String curr = SharableLibrariesUtils.browseForLibraryLocation(librariesLocation.getText().trim(), this, f);
         if (curr != null) {
             currentLibrariesLocation = curr;
             if (sharableProject.isSelected()) {
@@ -260,33 +255,7 @@ public class PanelOptionsVisual extends SettingsPanel implements ActionListener,
         }
     }//GEN-LAST:event_browseLibrariesActionPerformed
     
-    
-    //TODO move to some api patkage to make reusable by all project types..
-    public static String browseForLibraryLication(String current, Component comp, File projectLocation) {
-        File lib = PropertyUtils.resolveFile(projectLocation, current);
-        if (!lib.exists()) {
-            lib = lib.getParentFile();
-        }
-        lib = FileUtil.normalizeFile(lib);
-        FileChooser chooser = new FileChooser(projectLocation, null);
-        chooser.setCurrentDirectory(lib);
-        chooser.setFileSelectionMode( JFileChooser.DIRECTORIES_ONLY );
-        chooser.setDialogTitle(NbBundle.getMessage(PanelOptionsVisual.class,"LBL_Browse_Libraries_Title"));
-        if (JFileChooser.APPROVE_OPTION == chooser.showOpenDialog(comp)) {
-            String[] files;
-            try {
-                files = chooser.getSelectedPaths();
-            } catch (IOException ex) {
-                Exceptions.printStackTrace(ex);
-                return null;
-            }
-            if (files.length == 1) {
-                String currentLibrariesLocation = files[0];
-                return currentLibrariesLocation;
-            }
-        }
-        return null;
-    }
+
     
     boolean valid(WizardDescriptor settings) {
         

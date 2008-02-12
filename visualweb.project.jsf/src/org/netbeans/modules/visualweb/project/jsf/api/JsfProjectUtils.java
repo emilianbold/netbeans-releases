@@ -128,6 +128,8 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import org.netbeans.api.project.ProjectManager;
+import org.netbeans.api.project.libraries.LibraryManager;
+import org.netbeans.spi.project.support.ant.ReferenceHelper;
 import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
 
@@ -1926,4 +1928,13 @@ public class JsfProjectUtils {
             }
         });
     }
+    
+    public static LibraryManager getProjectLibraryManager(Project project) {
+        LibraryManager lm = ReferenceHelper.getProjectLibraryManager(project);
+        if (lm != null) {
+            return lm;
+        }
+        return LibraryManager.getDefault();
+    }
+    
 }

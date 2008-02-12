@@ -688,6 +688,7 @@ class MapperNode implements GraphListener {
     
 
     public void graphLinksChanged(Graph graph) {
+        getRightTree().getLeftTree().repaint();
         repaint();
     }
 

@@ -39,10 +39,10 @@
 package org.netbeans.modules.websvc.saas.ui.nodes;
 
 import java.util.Collections;
-import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlPort;
 import org.netbeans.modules.websvc.saas.model.Saas;
 import org.netbeans.modules.websvc.saas.model.WsdlSaas;
 import org.netbeans.modules.websvc.saas.model.WsdlSaasMethod;
+import org.netbeans.modules.websvc.saas.model.WsdlSaasPort;
 import org.openide.nodes.Node;
 
 /**
@@ -74,10 +74,10 @@ public class WsdlSaasNodeChildren extends SaasNodeChildren<Object> {
             return WAIT_NODES;
         }
 
-        if (key instanceof WsdlPort) {
-            return new Node[]{ new WsdlPortNode(getSaas(), (WsdlPort) key) };
+        if (key instanceof WsdlSaasPort) {
+            return new Node[]{ new WsdlPortNode((WsdlSaasPort) key) };
         } else if (key instanceof WsdlSaasMethod) {
-            return new Node[]{ new WsdlSaasMethodNode((WsdlSaasMethod) key) };
+            return new Node[]{ new WsdlMethodNode((WsdlSaasMethod) key) };
         }
         return new Node[0];
     }
