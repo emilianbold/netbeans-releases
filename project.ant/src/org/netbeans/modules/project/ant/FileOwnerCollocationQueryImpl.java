@@ -52,6 +52,9 @@ import org.netbeans.spi.queries.CollocationQueryImplementation;
  * projects they are in.
  * @author Milos Kleint
  * @since org.netbeans.modules.project.ant/1 1.18
+ * 
+ * TODO should this class move to project.api module? Som that the behaviour stays
+ * even if ant based projects are disabled or missing
  */
 public class FileOwnerCollocationQueryImpl implements CollocationQueryImplementation {
 

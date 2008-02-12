@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -48,7 +48,6 @@ import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -58,7 +57,6 @@ import org.netbeans.spi.project.ProjectFactory;
 import org.netbeans.spi.project.ProjectState;
 import org.netbeans.modules.ruby.spi.project.support.rake.RakeBasedProjectType;
 import org.netbeans.modules.ruby.spi.project.support.rake.RakeProjectHelper;
-import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
@@ -193,7 +191,9 @@ public final class RakeBasedProjectFactorySingleton implements ProjectFactory {
         RakeProjectHelper helper = HELPER_CALLBACK.createHelper(projectDirectory, projectXml, state, provider);
         Project project = provider.createProject(helper);
         project2Helper.put(project, new WeakReference<RakeProjectHelper>(helper));
-        helper2Project.put(helper, new WeakReference<Project>(project));
+        synchronized (helper2Project) {
+            helper2Project.put(helper, new WeakReference<Project>(project));
+        }
         List<Reference<RakeProjectHelper>> l = type2Projects.get(provider);
         
         if (l == null) {
@@ -222,10 +222,13 @@ public final class RakeBasedProjectFactorySingleton implements ProjectFactory {
      * @return the corresponding project
      */
     public static Project getProjectFor(RakeProjectHelper helper) {
-        Reference<Project> projectRef = helper2Project.get(helper);
-        assert projectRef != null : "Found a Project reference for " + helper;
+        Reference<Project> projectRef;
+        synchronized (helper2Project) {
+            projectRef = helper2Project.get(helper);
+        }
+        assert projectRef != null : "Expecting a Project reference for " + helper;
         Project p = projectRef.get();
-        assert p != null : "Found a non-null Project for " + helper;
+        assert p != null : "Expecting a non-null Project for " + helper;
         return p;
     }
     
