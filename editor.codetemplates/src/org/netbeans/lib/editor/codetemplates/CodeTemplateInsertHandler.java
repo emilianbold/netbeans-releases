@@ -293,6 +293,8 @@ implements DocumentListener, KeyListener {
         nestedTemplateExpanding = (Boolean.TRUE.equals(doc.getProperty(
                 EDITING_TEMPLATE_DOC_PROPERTY)));
         
+        doc.putProperty(EDITING_TEMPLATE_DOC_PROPERTY, Boolean.TRUE);
+        
         String completeInsertString = getInsertText();
 
         BaseDocument bdoc = (doc instanceof BaseDocument)
@@ -371,8 +373,6 @@ implements DocumentListener, KeyListener {
     
     public void installActions() {
         if (!nestedTemplateExpanding && editableMasters.size() > 0) {
-            doc.putProperty(EDITING_TEMPLATE_DOC_PROPERTY, Boolean.TRUE);
-
             // Install the post modification document listener to sync regions
             if (doc instanceof BaseDocument) {
                 ((BaseDocument)doc).setPostModificationDocumentListener(this);
@@ -649,7 +649,6 @@ implements DocumentListener, KeyListener {
             if (doc instanceof BaseDocument) {
                 ((BaseDocument)doc).setPostModificationDocumentListener(null);
             }
-            doc.putProperty(EDITING_TEMPLATE_DOC_PROPERTY, Boolean.FALSE);
 
             component.removeKeyListener(this);
 
@@ -669,6 +668,7 @@ implements DocumentListener, KeyListener {
 
             requestRepaint();
         }
+        doc.putProperty(EDITING_TEMPLATE_DOC_PROPERTY, Boolean.FALSE);
 
         // Notify processors
         for (CodeTemplateProcessor processor : processors) {
