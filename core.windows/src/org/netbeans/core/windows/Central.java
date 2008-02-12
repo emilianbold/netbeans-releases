@@ -1623,8 +1623,8 @@ final class Central implements ControllerHandler {
                         || prevMode.getKind() == Constants.MODE_KIND_SLIDING ) {
                     prevMode = model.getModeTopComponentPreviousMode(prevMode, tcID);
                 }
-                prevIndex = prevMode.getOpenedTopComponentsIDs().indexOf( tcID );
                 if (prevMode != null) {
+                    prevIndex = prevMode.getOpenedTopComponentsIDs().indexOf( tcID );
                     model.setModeTopComponentPreviousMode(newMode, tcID, prevMode, prevIndex);
                     model.setModeTopComponentPreviousConstraints(newMode, wmi.findTopComponentID(tcs[i]), prevMode.getConstraints());
                 }
