@@ -76,6 +76,7 @@ import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeApplication;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
 import org.netbeans.modules.web.project.ui.*;
+import org.netbeans.spi.java.project.support.ui.SharableLibrariesUtils;
 import org.netbeans.spi.project.ui.templates.support.Templates;
 
 /**
@@ -806,7 +807,7 @@ public class ImportLocationVisual extends SettingsPanel implements HelpCtx.Provi
         // below folder is used just for relativization:
         File f = FileUtil.normalizeFile(new File(projectLocationTextField.getText() +
                 File.separatorChar + "project_folder")); // NOI18N
-        String curr = PanelOptionsVisual.browseForLibraryLication(librariesLocation.getText().trim(), this, f);
+        String curr = SharableLibrariesUtils.browseForLibraryLocation(librariesLocation.getText().trim(), this, f);
         if (curr != null) {
             currentLibrariesLocation = curr;
             if (sharableProject.isSelected()) {

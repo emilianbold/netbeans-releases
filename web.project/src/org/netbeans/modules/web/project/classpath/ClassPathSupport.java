@@ -550,7 +550,10 @@ public class ClassPathSupport {
             }
                         
             String libraryName = library.getName();
-            return new Item( TYPE_LIBRARY, library, "${libs."+libraryName+".classpath}", libraryName, property, pathInWar); //NOI18N
+            Item itm = new Item( TYPE_LIBRARY, library, "${libs."+libraryName+".classpath}", libraryName, property, pathInWar); //NOI18N
+            itm.libraryName = libraryName;
+            itm.reassignLibraryManager( library.getManager() );
+            return itm;
         }
         
         public static Item create( AntArtifact artifact, URI artifactURI, String property, String pathInWar) {

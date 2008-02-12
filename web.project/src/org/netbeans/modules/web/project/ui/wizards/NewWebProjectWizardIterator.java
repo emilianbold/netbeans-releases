@@ -77,6 +77,7 @@ import org.netbeans.modules.web.project.api.WebProjectCreateData;
 import org.netbeans.modules.web.project.api.WebProjectUtilities;
 import org.netbeans.modules.web.project.ui.FoldersListSettings;
 import org.netbeans.modules.web.project.ui.customizer.WebProjectProperties;
+import org.netbeans.spi.java.project.support.ui.SharableLibrariesUtils;
 
 /**
  * Wizard to create a new Web project.
@@ -143,7 +144,7 @@ public class NewWebProjectWizardIterator implements WizardDescriptor.ProgressIns
             if (!librariesDefinition.endsWith(File.separator)) {
                 librariesDefinition += File.separatorChar;
             }
-            librariesDefinition += WebProjectProperties.DEFAULT_LIBRARIES_FILENAME;
+            librariesDefinition += SharableLibrariesUtils.DEFAULT_LIBRARIES_FILENAME;
             createData.setLibrariesDefinition(librariesDefinition);
         }
         

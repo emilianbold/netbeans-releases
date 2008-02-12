@@ -202,8 +202,6 @@ public class WebProjectProperties {
     // Prefixes and suffixes of classpath
     public static final String ANT_ARTIFACT_PREFIX = "${reference."; // NOI18N
     
-    public static final String DEFAULT_LIBRARIES_FILENAME = "nblibraries.properties";
-
     public ClassPathSupport cs;
 
     //list of frameworks to add to the application

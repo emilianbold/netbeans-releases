@@ -41,19 +41,15 @@
 
 package org.netbeans.modules.web.project.ui.wizards;
 
-import java.awt.Component;
 import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
 import javax.swing.DefaultComboBoxModel;
-import javax.swing.JFileChooser;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectUtils;
-import org.netbeans.api.project.ant.FileChooser;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
@@ -62,10 +58,9 @@ import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.ServerManager;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeApplicationProvider;
 import org.netbeans.modules.web.project.ui.FoldersListSettings;
-import org.netbeans.spi.project.support.ant.PropertyUtils;
+import org.netbeans.spi.java.project.support.ui.SharableLibrariesUtils;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileUtil;
-import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 public class PanelOptionsVisual extends javax.swing.JPanel {
@@ -378,7 +373,7 @@ public class PanelOptionsVisual extends javax.swing.JPanel {
         // below folder is used just for relativization:
         File f = FileUtil.normalizeFile(new File(projectLocation +
                 File.separatorChar + "project_folder")); // NOI18N
-        String curr = browseForLibraryLication(librariesLocation.getText().trim(), this, f);
+        String curr = SharableLibrariesUtils.browseForLibraryLocation(librariesLocation.getText().trim(), this, f);
         if (curr != null) {
             currentLibrariesLocation = curr;
             if (sharableProject.isSelected()) {
@@ -386,32 +381,6 @@ public class PanelOptionsVisual extends javax.swing.JPanel {
             }
         }
     }//GEN-LAST:event_browseLibrariesActionPerformed
-    
-    //TODO move to some api patkage to make reusable by all project types..
-    public static String browseForLibraryLication(String current, Component comp, File projectLocation) {
-        File lib = PropertyUtils.resolveFile(projectLocation, current);
-        if (!lib.exists()) {
-            lib = lib.getParentFile();
-        }
-        lib = FileUtil.normalizeFile(lib);
-        FileChooser chooser = new FileChooser(projectLocation, null);
-        chooser.setCurrentDirectory(lib);
-        chooser.setFileSelectionMode( JFileChooser.DIRECTORIES_ONLY );
-        chooser.setDialogTitle(NbBundle.getMessage(PanelOptionsVisual.class,"LBL_Browse_Libraries_Title"));
-        if (JFileChooser.APPROVE_OPTION == chooser.showOpenDialog(comp)) {
-            String[] filePaths;
-            try {
-                filePaths = chooser.getSelectedPaths();
-            } catch (IOException ex) {
-                Exceptions.printStackTrace(ex);
-                return null;
-            }
-            if (filePaths.length == 1) {
-                return filePaths[0];
-            }
-        }
-        return null;
-    }
     
     boolean valid(WizardDescriptor wizardDescriptor) {
         if (getSelectedServer() == null) {
