@@ -39,9 +39,9 @@
 
 package org.netbeans.modules.websvc.saas.ui.nodes;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import org.netbeans.modules.websvc.saas.model.CustomSaas;
+import org.netbeans.modules.websvc.saas.model.Saas;
 import org.netbeans.modules.websvc.saas.model.SaasMethod;
 import org.openide.nodes.Node;
 
@@ -61,7 +61,12 @@ public class CustomSaasNodeChildren extends SaasNodeChildren<SaasMethod> {
     
     @Override
     protected void updateKeys() {
-        setKeys(saas.getMethods());
+        if (getSaas().getState() == Saas.State.READY) {
+            setKeys(getSaas().getMethods());
+        } else {
+            java.util.List<SaasMethod> emptyList = Collections.emptyList();
+            setKeys(emptyList);
+        }
     }
     
     @Override

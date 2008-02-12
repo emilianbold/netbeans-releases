@@ -114,12 +114,12 @@ public class WadlMethodNode extends AbstractNode {
         return SaasUtil.getSignature(wadlSaas, path, method);
     }
     
-    private static final java.awt.Image SERVICE_BADGE =
+    private static final java.awt.Image ICON =
             org.openide.util.Utilities.loadImage( "org/netbeans/modules/websvc/saas/ui/resources/method.png" ); //NOI18N
     
     @Override
     public java.awt.Image getIcon(int type) {
-        return SERVICE_BADGE;
+        return ICON;
     }
     
     @Override

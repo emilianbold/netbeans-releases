@@ -1415,8 +1415,16 @@ public class TableCustomizer extends JPanel implements Customizer, FormAwareEdit
                         FormProperty title = info.getColumn().getTitle();
                         if (!title.isChanged()) {
                             String columnName = subBinding.getParameter(MetaBinding.NAME_PARAMETER);
-                            if ((columnName == null) && (model != null) && (model.getColumnCount() > index)) {
-                                columnName = model.getColumnName(index);
+                            if (columnName == null) {
+                                if ((model != null) && (model.getColumnCount() > index)) {
+                                    columnName = model.getColumnName(index);
+                                } else {
+                                    String name = subBinding.getSourcePath();
+                                    if (BindingDesignSupport.isSimpleExpression(name)) {
+                                        columnName = BindingDesignSupport.unwrapSimpleExpression(name);
+                                        columnName = BindingDesignSupport.capitalize(columnName);
+                                    }
+                                }
                             }
                             if (columnName != null) {
                                 try {

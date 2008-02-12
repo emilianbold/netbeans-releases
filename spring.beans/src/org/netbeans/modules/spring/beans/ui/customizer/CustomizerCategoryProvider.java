@@ -95,11 +95,7 @@ public class CustomizerCategoryProvider implements ProjectCustomizer.CompositeCa
     public JComponent createComponent(Category category, Lookup context) {
         Project project = getProject(context);
         ConfigFileManager manager = getConfigFileManager(project);
-        File projectDir = FileUtil.toFile(project.getProjectDirectory());
-        if (projectDir == null) {
-            throw new IllegalStateException("The directory of project " + project + " is null");
-        }
-        ConfigFileGroupsPanel panel = new ConfigFileGroupsPanel(manager.getConfigFileGroups(), projectDir);
+        ConfigFileGroupsPanel panel = new ConfigFileGroupsPanel(project, manager.getConfigFileGroups());
         CategoryListener listener = new CategoryListener(manager, panel);
         category.setOkButtonListener(listener);
         category.setStoreListener(listener);
