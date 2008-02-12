@@ -426,7 +426,7 @@ public abstract class ModelSet implements FileChangeListener {
             Set urls1Set = new LinkedHashSet();
 
 			// Add design time and run time jars from COMPLIBS
-            LibraryManager libraryManager = LibraryManager.getDefault();
+            LibraryManager libraryManager = JsfProjectUtils.getProjectLibraryManager(project);
             Library jaxrpc16Library = null;         
             Library[] libraries = libraryManager.getLibraries();
             for (int i = 0; i < libraries.length; i++) {

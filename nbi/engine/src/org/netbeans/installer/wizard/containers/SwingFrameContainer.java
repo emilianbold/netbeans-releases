@@ -58,6 +58,7 @@ import org.netbeans.installer.utils.ErrorManager;
 import org.netbeans.installer.utils.FileProxy;
 import org.netbeans.installer.utils.ResourceUtils;
 import org.netbeans.installer.utils.StringUtils;
+import org.netbeans.installer.utils.SystemUtils;
 import org.netbeans.installer.utils.UiUtils;
 import org.netbeans.installer.utils.exceptions.DownloadException;
 import org.netbeans.installer.utils.helper.swing.NbiButton;
@@ -603,7 +604,16 @@ public class SwingFrameContainer extends NbiFrame implements SwingContainer {
             
             // topSeparator /////////////////////////////////////////////////////////
             topSeparator = new NbiSeparator();
-            
+            if (SystemUtils.isMacOS()) {
+                // JSeparator`s height on Aqua L&F equals to 12px which is too much in SwingFrameContainer
+                // thus we descrease it to 7px
+                // TODO: possibly move this code to NbiSeparator later
+                Dimension d = topSeparator.getPreferredSize();
+                if (d != null && d.getHeight() == 12) {
+                    d.setSize(d.getWidth(), 7);
+                    topSeparator.setPreferredSize(d);
+                }
+            }
             titlePanel.add(titleLabel, new GridBagConstraints(
                     titlePanelDx , 0,                             // x, y
                     1, 1,                             // width, height
@@ -631,7 +641,16 @@ public class SwingFrameContainer extends NbiFrame implements SwingContainer {
             
             // bottomSeparator //////////////////////////////////////////////////////
             bottomSeparator = new NbiSeparator();
-            
+            if (SystemUtils.isMacOS()) {
+                // JSeparator`s height on Aqua L&F equals to 12px which is too much in SwingFrameContainer
+                // thus we descrease it to 7px
+                // TODO: possibly move this code to NbiSeparator later
+                Dimension d = topSeparator.getPreferredSize();
+                if (d != null && d.getHeight() == 12) {
+                    d.setSize(d.getWidth(), 7);
+                    topSeparator.setPreferredSize(d);
+                }
+            }
             // helpButton ///////////////////////////////////////////////////////////
             helpButton = new NbiButton();
             
