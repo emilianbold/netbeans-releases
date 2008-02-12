@@ -41,56 +41,40 @@
 
 package org.netbeans.modules.ruby.debugger.breakpoints;
 
-import javax.swing.Action;
-import org.netbeans.modules.ruby.debugger.EditorUtil;
-import org.netbeans.spi.viewmodel.Models;
-import org.netbeans.spi.viewmodel.Models.ActionPerformer;
-import org.netbeans.spi.viewmodel.NodeActionsProvider;
-import org.netbeans.spi.viewmodel.NodeActionsProviderFilter;
-import org.netbeans.spi.viewmodel.UnknownTypeException;
+import org.netbeans.modules.ruby.debugger.breakpoints.ui.BreakpointCustomizer;
+import org.openide.nodes.Node;
+import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
+import org.openide.util.actions.NodeAction;
 
 /**
- * Provides actions for nodes representing {@link RubyBreakpoint} in the
- * Breapoint view.
- *
- * @author Martin Krauskopf
+ * Customize action for Ruby breakpoint, which is available from the gutter
+ * popup.
  */
-public final class RubyBreakpointNodeActions implements NodeActionsProviderFilter {
+public class BreakpointCustomizeAction extends NodeAction {
     
-    private static final Action GO_TO_SOURCE_ACTION;
-    
-    static {
-        String name = NbBundle.getMessage(RubyBreakpointNodeActions.class, "CTL_GoToSource");
-        ActionPerformer ap = new ActionPerformer() {
-            public boolean isEnabled(Object node) { return true; }
-            public void perform(Object[] nodes) {
-                RubyBreakpoint bp = (RubyBreakpoint) nodes[0];
-                EditorUtil.showLine(EditorUtil.getLineAnnotable(bp.getFilePath(), bp.getLineNumber() - 1));
-            }
-        };
-        GO_TO_SOURCE_ACTION = Models.createAction(name, ap, Models.MULTISELECTION_TYPE_EXACTLY_ONE);
+    protected boolean enable(Node[] activatedNodes) {
+        return RubyBreakpointManager.getCurrentLineBreakpoint() != null;
     }
-    public void performDefaultAction(NodeActionsProvider original, Object node) throws UnknownTypeException {
-        if (node instanceof RubyBreakpoint) {
-            RubyBreakpoint bp = (RubyBreakpoint) node;
-            EditorUtil.showLine(EditorUtil.getLineAnnotable(bp.getFilePath(), bp.getLineNumber() - 1));
-        } else {
-            original.performDefaultAction(node);
+
+    public String getName() {
+        return NbBundle.getMessage(BreakpointCustomizeAction.class, "CTL_customize");
+    }
+
+    protected void performAction(org.openide.nodes.Node[] activatedNodes) {
+        RubyBreakpoint bp = RubyBreakpointManager.getCurrentLineBreakpoint();
+        if (bp != null) {
+            BreakpointCustomizer.customize(bp);
         }
     }
     
-    public Action[] getActions(NodeActionsProvider original, Object node) throws UnknownTypeException {
-        Action[] origActions = original.getActions(node);
-        if (node instanceof RubyBreakpoint) {
-            Action[] actions = new Action[origActions.length + 2];
-            actions[0] = GO_TO_SOURCE_ACTION;
-            actions[1] = null;
-            System.arraycopy(origActions, 0, actions, 2, origActions.length);
-            return actions;
-        } else {
-            return origActions;
-        }
+    @Override
+    protected boolean asynchronous() {
+        return false; // This action should run in AWT.
+    }
+    
+    public HelpCtx getHelpCtx() {
+        return null;
     }
     
 }
