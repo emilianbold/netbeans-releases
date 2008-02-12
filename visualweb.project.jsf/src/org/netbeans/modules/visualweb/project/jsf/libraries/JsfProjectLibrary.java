@@ -206,7 +206,8 @@ public class JsfProjectLibrary {
                 url = FileUtil.getArchiveFile(url);
                 String name = url.getPath();
                 int index = name.lastIndexOf("/");
-                name = name.substring(0, index) + "/locale" + name.substring(index); // NOI18N
+                // exclude first slash:
+                name = name.substring(1, index) + "/locale" + name.substring(index); // NOI18N
                 File f = InstalledFileLocator.getDefault().locate(name, null, true);
                 if (f != null) {
                     list.add(FileUtil.getArchiveRoot(FileUtil.toFileObject(f)).getURL());
