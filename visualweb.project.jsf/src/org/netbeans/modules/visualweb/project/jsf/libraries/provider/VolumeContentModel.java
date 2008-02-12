@@ -48,18 +48,21 @@ import java.net.URL;
 import java.net.MalformedURLException;
 
 import org.netbeans.spi.project.libraries.LibraryImplementation;
+import org.netbeans.spi.project.libraries.LibraryStorageArea;
 import org.openide.filesystems.FileUtil;
 import org.openide.ErrorManager;
 
 class VolumeContentModel extends AbstractListModel/*<String>*/ {
 
     private LibraryImplementation impl;
+    private LibraryStorageArea area;
     private String volumeType;
     private List/*<URL>*/ content;
 
-    public VolumeContentModel (LibraryImplementation impl, String volumeType) {
+    public VolumeContentModel (LibraryImplementation impl, LibraryStorageArea area, String volumeType) {
         //TODO: Should listen on the impl
         this.impl = impl;
+        this.area = area;
         this.volumeType = volumeType;
         List l = this.impl.getContent (volumeType);
         if (l != null) {
@@ -70,6 +73,10 @@ class VolumeContentModel extends AbstractListModel/*<String>*/ {
         }
     }
 
+    public LibraryStorageArea getArea() {
+        return area;
+    }
+    
     public int getSize() {
         return this.content.size();
     }
