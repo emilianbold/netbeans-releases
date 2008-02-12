@@ -38,65 +38,57 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
+package org.netbeans.modules.websvc.saas.codegen.java;
 
-package org.netbeans.modules.project.ant;
-
-import java.io.File;
-import java.net.URI;
+import java.awt.datatransfer.Transferable;
+import javax.swing.text.Document;
+import javax.swing.text.JTextComponent;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
-import org.netbeans.spi.queries.CollocationQueryImplementation;
+import org.netbeans.modules.editor.NbEditorUtilities;
+import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlOperation;
+import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlPort;
+import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlService;
+import org.netbeans.modules.websvc.core.jaxws.actions.JaxWsCodeGenerator;
+import org.netbeans.modules.websvc.saas.model.WsdlSaasMethod;
+import org.netbeans.modules.websvc.saas.spi.ConsumerFlavorProvider;
+import org.netbeans.modules.websvc.saas.util.LibrariesHelper;
+import org.openide.filesystems.FileObject;
+import org.openide.text.ActiveEditorDrop;
+import org.openide.util.Exceptions;
 
-/**
- * A CollocationQueryImplementation implementation that collocates files based on
- * projects they are in.
- * @author Milos Kleint
- * @since org.netbeans.modules.project.ant/1 1.18
- * 
- * TODO should this class move to project.api module? Som that the behaviour stays
- * even if ant based projects are disabled or missing
+/** JaxWsEditorDrop
+ *
+ * @author Ayub Khan, Nam Nguyen
  */
-public class FileOwnerCollocationQueryImpl implements CollocationQueryImplementation {
+public class JaxWsEditorDrop implements ActiveEditorDrop {
 
+    private WsdlSaasMethod method;
 
-    /** Creates a new instance of FileOwnerCollocationQueryImpl */
-    public FileOwnerCollocationQueryImpl() {
+    public JaxWsEditorDrop(WsdlSaasMethod method) {
+        this.method = method;
     }
 
-    public File findRoot(File file) {
-        File f = file;
-        URI uri = f.toURI();
-        Project prj = FileOwnerQuery.getOwner(uri);
-        if (prj == null) {
-            return null;
-        }
-        while (prj != null && f != null) {
-            f = f.getParentFile();
-            if (f != null) {
-                prj = FileOwnerQuery.getOwner(f.toURI());
-            } else {
-                prj = null;
-            }
-        }
-        return f;
-        
-    }
+    public boolean handleTransfer(JTextComponent targetComponent) {
+        Object mimeType = targetComponent.getDocument().getProperty("mimeType"); //NOI18N
+        if (mimeType != null && ("text/x-java".equals(mimeType) || "text/x-jsp".equals(mimeType))) { //NOI18N
 
-    public boolean areCollocated(File file1, File file2) {
-        File root = findRoot (file1);
-        boolean first = true;
-        if (root == null) {
-            root = findRoot (file2);
-            first = false;
-        }
-        if (root != null) {
-            String rootpath = root.getAbsolutePath() + File.separator;
-            String check = (first ? file2.getAbsolutePath() : file1.getAbsolutePath()) + File.separator;
-            return check.startsWith(rootpath);
+            FileObject targetSource = NbEditorUtilities.getFileObject(targetComponent.getDocument());
+            Project targetProject = FileOwnerQuery.getOwner(targetSource);
+
+            //copy client jars
+            LibrariesHelper.addDefaultJaxWsClientJars(targetProject, targetSource, method.getSaas());
+
+            WsdlService service = method.getSaas().getWsdlModel();
+            WsdlPort port = method.getWsdlPort();
+            WsdlOperation operation = method.getWsdlOperation();
+            String wsdlUrl = method.getSaas().getWsdlData().getWsdlFile();
+            Document document = targetComponent.getDocument();
+            int pos = targetComponent.getCaret().getDot();
+
+            JaxWsCodeGenerator.insertMethod(document, pos, service, port, operation, wsdlUrl);
+
         }
         return false;
     }
-
-
-
 }

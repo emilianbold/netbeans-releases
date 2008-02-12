@@ -1,2 +1,3 @@
 org.netbeans.modules.queries.ParentChildCollocationQuery
-org.netbeans.modules.queries.AlwaysRelativeCollocationQuery
+#position=100
+#org.netbeans.modules.queries.AlwaysRelativeCollocationQuery
