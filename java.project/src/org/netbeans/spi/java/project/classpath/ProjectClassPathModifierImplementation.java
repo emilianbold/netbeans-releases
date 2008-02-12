@@ -48,7 +48,6 @@ import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.ant.AntArtifact;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.modules.java.project.classpath.ProjectClassPathModifierAccessor;
-import org.openide.filesystems.FileObject;
 
 /**
  * An SPI for project's classpaths modification.
