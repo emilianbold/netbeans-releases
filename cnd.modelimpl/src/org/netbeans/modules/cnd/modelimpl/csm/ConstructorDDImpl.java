@@ -41,6 +41,7 @@
 
 package org.netbeans.modules.cnd.modelimpl.csm;
 
+import java.io.DataOutput;
 import org.netbeans.modules.cnd.api.model.*;
 import antlr.collections.AST;
 import java.io.DataInput;
@@ -82,12 +83,19 @@ public final class ConstructorDDImpl extends MethodDDImpl<CsmConstructor> implem
     
     public ConstructorDDImpl(DataInput input) throws IOException {
         super(input);
+        // TODO: serialize initializer
     }
-    
+
+    @Override
+    public void write(DataOutput output) throws IOException {
+        super.write(output);
+        // TODO: serialize initializer
+    }
+        
     @Override
     public Collection getScopeElements() {
         Collection c = super.getScopeElements();
-        c.addAll(initializers);
+        c.addAll(getInitializerList());
         return c;
     }
 }
