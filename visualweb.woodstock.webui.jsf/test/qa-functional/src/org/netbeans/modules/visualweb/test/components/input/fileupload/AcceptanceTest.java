@@ -60,6 +60,7 @@ import org.netbeans.modules.visualweb.test.components.util.ComponentUtils;
 import org.netbeans.modules.visualweb.gravy.dataconnectivity.ServerNavigatorOperator;
 
 import java.awt.Point;
+import java.awt.event.KeyEvent;
 import java.io.File;
 import java.io.IOException;
 import org.netbeans.jellytools.WizardOperator;
@@ -344,86 +345,25 @@ public class AcceptanceTest extends RaveTestCase {
     }
     
     /*
-     *    Add button action1 with the following source:
-     *      UploadedFile uploadedFile = (UploadedFile) fileUpload1.getUploadedFile();
-     *      info("Uploaded file originally named '" +
-     *      uploadedFile.getOriginalName() +
-     *      "' of size '" +
-     *      uploadedFile.getSize() +
-     *      " ' " );
-     *      textArea1.setText(uploadedFile.getAsString());
-     *    Right click and do Fix Imports
-     *
+     * Add button action1 with the following source:
+     * log(\"Upload action performed\");
      */
     public void testAddButtonAction() {
         startTest();
-        
         log("**double click button to get to action method()");
         designer = new DesignerPaneOperator(RaveWindowOperator.getDefaultRave());
         designer.clickMouse(_x, _button1y, 2);
-        
-        String code1, code2, code3, code4, code5, code6, code7, code;
-        code1 = "UploadedFile uploadedFile = (UploadedFile) fileUpload1.getUploadedFile();\n";
-        code2 = "info(\"Uploaded file originally named '\" + \n";
-        code3 = "uploadedFile.getOriginalName() +\n ";
-        code4 = "\"' of size '\" + \n";
-        code5 = "uploadedFile.getSize() +\n";
-        code6 = "\" ' \");\n";
-        code7 = "textArea1.setText(uploadedFile.getAsString());";
-        code = code1 + code2 + code3 + code4 + code5 + code6 + code7;
-        
         EditorOperator editor = new EditorOperator(Util.getMainWindow(), _page1);
         //For some reason, doing all of them at once doesn't work
-        editor.txtEditorPane().typeText(code1);
-        editor.txtEditorPane().typeText(code2);
-        editor.txtEditorPane().typeText(code3);
-        editor.txtEditorPane().typeText(code4);
-        editor.txtEditorPane().typeText(code5);
-        editor.txtEditorPane().typeText(code6);
-        editor.txtEditorPane().typeText(code7);
-        
-        //Tests can be run on J2EE 1.4 projects or JavaEE5 projects.
-        //Each component version has diffeent import statements.
-        String code8;
-        String marker;
-        int loc;
-        
-        /*
-         * Just take a shot at one, and if its not right
-         * use the other one
-         */        
-        log("**add source code to button1_action()");
-        marker = "import com.sun.rave.web.ui.component.Upload;"; //this should always be there.
-        code8 = "import com.sun.rave.web.ui.model.UploadedFile;\n";
-        log("* look for marker: " + marker);
-        loc = editor.txtEditorPane().getPositionByText(marker);
-        if (loc < 0) {
-            marker = "import com.sun.webui.jsf.component.Upload;"; //this should always be there.
-            code8 = "import com.sun.webui.jsf.model.UploadedFile;\n";
-            log("* look for marker: " + marker);
-            loc = editor.txtEditorPane().getPositionByText(marker);
-            log("* reposition to marker at position: " + loc);
-            editor.txtEditorPane().setCaretPosition(loc);
-            log("* add source");
-            editor.txtEditorPane().typeText(code8);            
-        } else {
-            log("* reposition to marker at position: " + loc);
-            editor.txtEditorPane().setCaretPosition(loc);
-            log("* add source");
-            editor.txtEditorPane().typeText(code8);
-        }
-                
-//        try { Thread.sleep(5000); } catch(Exception e) {}
-//        ActionNoBlock fix = new ActionNoBlock("Source|Fix Imports","","");
-//        fix.performMenu();
-        
+        editor.pushKey(KeyEvent.VK_END);
+        editor.txtEditorPane().typeText("\nlog(\"Upload action performed\");\n");
+        log("Editor Dump:");
+        log(editor.getText());
         log("**Go back to designer");
         try { Thread.sleep(3000); } catch(Exception e) {}
         designer.switchToDesignerPane();
-        
         log("**Done.");
         endTest();
-        
     }
     
     /*
