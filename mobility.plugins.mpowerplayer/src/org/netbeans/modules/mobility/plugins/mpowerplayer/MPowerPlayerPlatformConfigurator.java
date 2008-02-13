@@ -175,6 +175,8 @@ public final class MPowerPlayerPlatformConfigurator implements CustomCLDCPlatfor
     }
 
     public CLDCPlatformDescriptor getPlatform(File file) {
+        if (!isPossiblePlatform(file))
+            return null;
         String home = file.getAbsolutePath();
         String javadocFolder = apiSettings.getProperty(JAVADOCS_FOLDER);
         if (javadocFolder == null)

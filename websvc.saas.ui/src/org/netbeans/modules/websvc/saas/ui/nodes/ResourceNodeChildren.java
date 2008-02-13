@@ -40,10 +40,10 @@
 package org.netbeans.modules.websvc.saas.ui.nodes;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import org.netbeans.modules.websvc.saas.model.WadlSaas;
+import org.netbeans.modules.websvc.saas.model.WadlSaasMethod;
+import org.netbeans.modules.websvc.saas.model.WadlSaasResource;
 import org.netbeans.modules.websvc.saas.model.wadl.Method;
 import org.netbeans.modules.websvc.saas.model.wadl.Resource;
 import org.openide.nodes.Children;
@@ -54,17 +54,10 @@ import org.openide.nodes.Node;
  * @author nam
  */
 public class ResourceNodeChildren extends Children.Keys<Object> {
-    private WadlSaas wadlSaas;
-    private List<Resource> pathToResource;
+    private final WadlSaasResource resource;
     
-    public ResourceNodeChildren(WadlSaas wadlSaas, Resource[] pathToResource) {
-        this.wadlSaas = wadlSaas;
-        assert pathToResource != null && pathToResource.length > 0 : "path should have at least one resource";
-        this.pathToResource = Arrays.asList(pathToResource);
-    }
-    
-    public Resource getResource() {
-        return pathToResource.get(pathToResource.size()-1);
+    public ResourceNodeChildren(WadlSaasResource resource) {
+        this.resource = resource;
     }
     
     @Override
@@ -82,18 +75,16 @@ public class ResourceNodeChildren extends Children.Keys<Object> {
 
     private void updateKeys() {
         ArrayList<Object> keys = new ArrayList<Object>();
-        keys.addAll(getResource().getMethodOrResource());
+        keys.addAll(resource.getResourcesAndMethods());
         setKeys(keys.toArray());
     }
     
     @Override
     protected Node[] createNodes(Object key) {
-        if (key instanceof Resource) {
-            List<Resource> path = new ArrayList<Resource>(pathToResource);
-            path.add((Resource) key);
-            return new Node[] { new ResourceNode(wadlSaas, path.toArray(new Resource[path.size()])) };
-        } else if (key instanceof Method) {
-            return new Node[] { new WadlMethodNode(wadlSaas, pathToResource.toArray(new Resource[pathToResource.size()]), (Method)key) };
+        if (key instanceof WadlSaasResource) {
+            return new Node[] { new ResourceNode(((WadlSaasResource)key)) };
+        } else if (key instanceof WadlSaasMethod) {
+            return new Node[] { new WadlMethodNode((WadlSaasMethod)key) };
         }
         
         return new Node[0];

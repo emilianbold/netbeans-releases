@@ -57,8 +57,14 @@ public class SaasTransferable<T> implements Transferable {
 
     public static final Set<DataFlavor> WSDL_METHOD_FLAVORS = new HashSet<DataFlavor>(
             Arrays.asList(new DataFlavor[] {
-        ConsumerFlavorProvider.METHOD_FLAVOR,
-        ConsumerFlavorProvider.METHOD_NODE_FLAVOR
+        ConsumerFlavorProvider.WSDL_METHOD_FLAVOR,
+        ConsumerFlavorProvider.WSDL_METHOD_NODE_FLAVOR
+    }));
+    
+    public static final Set<DataFlavor> WADL_METHOD_FLAVORS = new HashSet<DataFlavor>(
+            Arrays.asList(new DataFlavor[] {
+        ConsumerFlavorProvider.WADL_METHOD_FLAVOR,
+        ConsumerFlavorProvider.WADL_METHOD_NODE_FLAVOR
     }));
     
     public static final Set<DataFlavor> WSDL_PORT_FLAVORS = new HashSet<DataFlavor>(

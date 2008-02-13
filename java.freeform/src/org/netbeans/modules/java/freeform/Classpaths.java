@@ -505,11 +505,11 @@ final class Classpaths implements ClassPathProvider, AntProjectListener, Propert
                 return createClasspath(e);
             }
         }
-        // None specified; try to find a matching Java platform.
+        // None specified;
         // First check whether user has configured a specific JDK.
         JavaPlatform platform = new JdkConfiguration(null, helper, evaluator).getSelectedPlatform();
         if (platform == null) {
-            // Nope; so look for some platform of reasonable source level instead.
+            // Nope; Use default one
             JavaPlatformManager jpm = JavaPlatformManager.getDefault();
             platform = jpm.getDefaultPlatform(); // fallback
             // #126216: source level guessing logic removed
