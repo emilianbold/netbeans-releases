@@ -38,14 +38,17 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.compapp.casaeditor.properties;
+package org.netbeans.modules.compapp.casaeditor.properties.extension;
 
+import java.lang.reflect.Constructor;
 import java.util.Map;
 import org.netbeans.modules.compapp.casaeditor.model.casa.CasaComponent;
 import org.netbeans.modules.compapp.casaeditor.model.casa.CasaExtensibilityElement;
 import org.netbeans.modules.compapp.casaeditor.nodes.CasaNode;
-import org.netbeans.modules.compapp.projects.jbi.api.JbiExtensionAttribute;
+import org.netbeans.modules.compapp.casaeditor.properties.spi.ExtensionProperty;
+import org.netbeans.modules.compapp.casaeditor.properties.spi.ExtensionPropertyClassProvider;
 import org.openide.nodes.Node;
+import org.openide.util.Lookup;
 
 /**
  *
@@ -58,70 +61,54 @@ public class ExtensionPropertyFactory {
             CasaComponent extensionPointComponent,
             CasaExtensibilityElement firstEE,
             CasaExtensibilityElement lastEE,
-            String propertyType,
-            JbiExtensionAttribute.Type attributeType,
+            String propertyType, //[WRITABLE]
+            String attrType,
             String attributeName,
             String displayName,
-            String discription) {
+            String description) {
 
-        if (JbiExtensionAttribute.Type.INTEGER.equals(attributeType)) {
-            return new IntegerExtensionProperty(
-                    node,
-                    extensionPointComponent,
-                    firstEE,
-                    lastEE,
-                    propertyType,
-                    attributeName,
-                    displayName,
-                    discription);
-        } else if (JbiExtensionAttribute.Type.QNAME.equals(attributeType)) {
-            return new QNameExtensionProperty(
-                    node,
-                    extensionPointComponent,
-                    firstEE,
-                    lastEE,
-                    propertyType,
-                    attributeName,
-                    displayName,
-                    discription);
-        } else if (JbiExtensionAttribute.Type.ENDPOINT.equals(attributeType)) {
-            return new EndpointExtensionProperty(
-                    node,
-                    extensionPointComponent,
-                    firstEE,
-                    lastEE,
-                    propertyType,
-                    attributeName,
-                    displayName,
-                    discription);
-            /*
-        } else if (JbiExtensionAttribute.Type.OPERATION.equals(attributeType)) {
-            return new OperationExtensionProperty(
-                    node,
-                    extensionPointComponent,
-                    firstEE,
-                    lastEE,
-                    propertyType,
-                    attributeName,
-                    displayName,
-                    discription);
-             */
-        } else { 
-            if (!JbiExtensionAttribute.Type.STRING.equals(attributeType)) {
-                System.err.println("Unsupported value type: " + attributeType);
+        Class propertyClass = null;
+
+        try {
+            if (attrType.equalsIgnoreCase("integer")) {
+                propertyClass = IntegerExtensionProperty.class;
+            } else if (attrType.equalsIgnoreCase("qname")) {
+                propertyClass = QNameExtensionProperty.class;
+            } else if (attrType.equalsIgnoreCase("string")) {
+                propertyClass = ExtensionProperty.class;
+            } else {
+                Lookup.Result result = Lookup.getDefault().lookup(
+                        new Lookup.Template(ExtensionPropertyClassProvider.class));
+                
+                for (Object obj : result.allInstances()) {
+                    ExtensionPropertyClassProvider provider = (ExtensionPropertyClassProvider) obj;
+                    propertyClass = provider.getExtensionPropertyClass(attrType);
+                    if (propertyClass != null) {
+                        break;
+                    }
+                }
             }
-            
-            return new ExtensionProperty<String>(
-                    node,
-                    extensionPointComponent,
-                    firstEE,
-                    lastEE,
-                    propertyType,
-                    String.class,
-                    attributeName,
-                    displayName,
-                    discription);            
+
+            if (propertyClass != null) {
+                Constructor constructor = propertyClass.getConstructor(
+                        CasaNode.class, CasaComponent.class,
+                        CasaExtensibilityElement.class,
+                        CasaExtensibilityElement.class,
+                        String.class,
+                        String.class,
+                        String.class,
+                        String.class);
+
+                return (Node.Property) constructor.newInstance(node, 
+                        extensionPointComponent,
+                        firstEE, lastEE, propertyType, 
+                        attributeName, displayName, description);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
         }
+        
+        return null;
     }
 
     public static ChoiceExtensionProperty getProperty(
@@ -130,7 +117,6 @@ public class ExtensionPropertyFactory {
             CasaExtensibilityElement firstEE,
             CasaExtensibilityElement lastEE,
             String propertyType,
-//            Class valueType,
             String attributeName,
             String displayName,
             String discription,

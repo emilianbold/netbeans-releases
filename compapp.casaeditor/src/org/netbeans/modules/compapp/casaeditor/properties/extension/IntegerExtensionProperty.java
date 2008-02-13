@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- *
+ * 
  * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
- *
+ * 
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,13 +20,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
+ * 
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -37,60 +31,45 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ * 
+ * Contributor(s):
+ * 
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.compapp.casaeditor.properties;
+package org.netbeans.modules.compapp.casaeditor.properties.extension;
 
-import org.netbeans.modules.compapp.casaeditor.properties.spi.BaseCasaProperty;
 import java.beans.PropertyEditor;
-import java.lang.reflect.InvocationTargetException;
 import org.netbeans.modules.compapp.casaeditor.model.casa.CasaComponent;
-import org.netbeans.modules.compapp.casaeditor.model.casa.CasaEndpointRef;
-import org.netbeans.modules.compapp.casaeditor.model.casa.CasaPort;
+import org.netbeans.modules.compapp.casaeditor.model.casa.CasaExtensibilityElement;
 import org.netbeans.modules.compapp.casaeditor.nodes.CasaNode;
+import org.netbeans.modules.compapp.casaeditor.properties.spi.ExtensionProperty;
+import org.netbeans.modules.compapp.casaeditor.properties.IntegerEditor;
 
 /**
+ * Extension poperty of Integer type (empty value allowed).
  *
- * @author Josh Sandusky
+ * @author jqian
  */
-public class PropertyEndpointName extends BaseCasaProperty<String> {
-    
-    
-    public PropertyEndpointName(
+public class IntegerExtensionProperty extends ExtensionProperty<Integer> {
+
+    public IntegerExtensionProperty(
             CasaNode node,
-            CasaComponent component, 
-            String propertyType, 
-            String property,
-            String propDispName, 
-            String propDesc)
-    {
-        super(node, component, propertyType, String.class, property, propDispName, propDesc);
+            CasaComponent extensionPointComponent,
+            CasaExtensibilityElement firstEE,
+            CasaExtensibilityElement lastEE,
+            String propertyType,
+            String propertyName,
+            String displayName,
+            String description) {
+        super(node, extensionPointComponent, firstEE, lastEE, propertyType,
+                Integer.class, propertyName, displayName, description);
     }
 
-    
-    public String getValue()
-    throws IllegalAccessException, InvocationTargetException {
-        CasaComponent component = getComponent();
-        if        (component instanceof CasaEndpointRef) {
-            return ((CasaEndpointRef) component).getEndpointName();
-        } else if (component instanceof CasaPort) {
-            return ((CasaPort) component).getEndpointName();
-        }
-        return null;
-    }
-
-    public void setValue(String value)
-    throws IllegalAccessException, IllegalArgumentException, InvocationTargetException {
-        CasaComponent component = getComponent();
-        if        (component instanceof CasaEndpointRef) {
-            getModel().setEndpointName((CasaEndpointRef) getComponent(), value);
-        } else if (component instanceof CasaPort) {
-            getModel().setEndpointName((CasaPort) getComponent(), value);
-        }
-    }
-    
     @Override
     public PropertyEditor getPropertyEditor() {
-        return new StringEditor();
+        // compared to the built-in IntEditor, this one allows empty value
+        return new IntegerEditor();
     }
 }
+

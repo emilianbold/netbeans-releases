@@ -231,7 +231,7 @@ public class JbiInstalledExtensionInfo {
                 String extCodeGen = (String) childFO.getAttribute(ITEM_CODEGEN);
                 JbiExtensionAttribute attr = new JbiExtensionAttribute(
                         childName, 
-                        JbiExtensionAttribute.Type.getType(extType), 
+                        extType, 
                         extDesc,
                         !("false".equalsIgnoreCase(extCodeGen)));
                 attrs.add(attr);

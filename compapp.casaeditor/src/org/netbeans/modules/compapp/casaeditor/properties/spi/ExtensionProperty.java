@@ -38,59 +38,70 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
+package org.netbeans.modules.compapp.casaeditor.properties.spi;
 
-package org.netbeans.modules.compapp.casaeditor.properties;
-
-import org.netbeans.modules.compapp.casaeditor.properties.spi.BaseCasaProperty;
-import java.beans.PropertyEditor;
 import java.lang.reflect.InvocationTargetException;
 import org.netbeans.modules.compapp.casaeditor.model.casa.CasaComponent;
-import org.netbeans.modules.compapp.casaeditor.model.casa.CasaEndpointRef;
-import org.netbeans.modules.compapp.casaeditor.model.casa.CasaPort;
+import org.netbeans.modules.compapp.casaeditor.model.casa.CasaExtensibilityElement;
 import org.netbeans.modules.compapp.casaeditor.nodes.CasaNode;
 
 /**
- *
- * @author Josh Sandusky
+ * <code>Node.Property</code> for CASA configuration extension.
+ * 
+ * @author jqian
  */
-public class PropertyEndpointName extends BaseCasaProperty<String> {
-    
-    
-    public PropertyEndpointName(
+public class ExtensionProperty<T> extends BaseCasaProperty<T> {
+
+    /**
+     * A CASA extension point element, that is, a non-extensibility element 
+     * that is the parent of extensibility elements, 
+     * e.x., casa:connection
+     */
+    protected CasaComponent extensionPointComponent;
+    /**
+     * The top-level extensiblity elements under a CASA extension point element,
+     * e.x., redelivery:redelivery
+     */
+    protected CasaExtensibilityElement firstEE;
+
+    public ExtensionProperty(
             CasaNode node,
-            CasaComponent component, 
-            String propertyType, 
-            String property,
-            String propDispName, 
-            String propDesc)
-    {
-        super(node, component, propertyType, String.class, property, propDispName, propDesc);
+            CasaComponent extensionPointComponent,
+            CasaExtensibilityElement firstEE,
+            CasaExtensibilityElement lastEE,
+            String propertyType,
+            Class valueType,
+            String propertyName,
+            String displayName,
+            String description) {
+        super(node, lastEE, propertyType, valueType,
+                propertyName, displayName, description);
+
+        this.extensionPointComponent = extensionPointComponent;
+        this.firstEE = firstEE;
     }
 
-    
-    public String getValue()
-    throws IllegalAccessException, InvocationTargetException {
-        CasaComponent component = getComponent();
-        if        (component instanceof CasaEndpointRef) {
-            return ((CasaEndpointRef) component).getEndpointName();
-        } else if (component instanceof CasaPort) {
-            return ((CasaPort) component).getEndpointName();
-        }
-        return null;
+    @SuppressWarnings("unchecked")
+    public T getValue()
+            throws IllegalAccessException, InvocationTargetException {
+        CasaExtensibilityElement casaEE = (CasaExtensibilityElement) getComponent();
+        return (T) casaEE.getAttribute(getName());
     }
 
-    public void setValue(String value)
-    throws IllegalAccessException, IllegalArgumentException, InvocationTargetException {
-        CasaComponent component = getComponent();
-        if        (component instanceof CasaEndpointRef) {
-            getModel().setEndpointName((CasaEndpointRef) getComponent(), value);
-        } else if (component instanceof CasaPort) {
-            getModel().setEndpointName((CasaPort) getComponent(), value);
+    public void setValue(T value)
+            throws IllegalAccessException, IllegalArgumentException, InvocationTargetException {
+        CasaExtensibilityElement lastEE = (CasaExtensibilityElement) getComponent();
+        if (firstEE.getParent() == null) {
+            // The extensibility element does not exist in the CASA model yet.
+
+            // 1. Set the attribute value out of a transaction context.
+            lastEE.setAttribute(getName(), value.toString());
+
+            // 2. Add the first extensibility element with the new attribute  
+            // value into the CASA model.
+            getModel().addExtensibilityElement(extensionPointComponent, firstEE);
+        } else {
+            getModel().setExtensibilityElementAttribute(lastEE, getName(), value.toString());
         }
-    }
-    
-    @Override
-    public PropertyEditor getPropertyEditor() {
-        return new StringEditor();
     }
 }
