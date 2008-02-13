@@ -146,14 +146,6 @@ public class WebAppParseSupport implements WebAppParseProxy, PropertyChangeListe
      */
     private volatile boolean isClassPathCurrent = false;
     
-    // XXX still true?
-    /**
-     * This is hashcode of the execution classpath, which is used for building classloader.
-     * In checkClassesAreCurrent is used for fast check, whether the classpath was not changed.
-     * The main reason is the web freeform, because the web freeform doesn't fire the change property.
-     */
-    private int lastCheckedClasspath;
-
     // request processor for cleaning mappings cache and reiniting options
     private static final int REINIT_OPTIONS_DELAY = 1000; // ms
     private static final int REINIT_CACHES_DELAY = 500; // ms
@@ -272,8 +264,6 @@ public class WebAppParseSupport implements WebAppParseProxy, PropertyChangeListe
         }
         // libraries and built classes are on the execution classpath
         cp = ClassPath.getClassPath(wmRoot, ClassPath.EXECUTE);
-        // remember the hashCode of this classpath
-        lastCheckedClasspath = cp.hashCode();
         
         if (cp != null) {
             FileObject [] roots = cp.getRoots();
