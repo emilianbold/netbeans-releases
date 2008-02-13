@@ -58,7 +58,21 @@ class StackEntry {
         super();
         index = ts.index();
         kind = ts.token().id();
-        initImportant(ts);
+        switch (kind) {
+            case IF: //("if", "keyword-directive"),
+            case ELSE: //("else", "keyword-directive"),
+            case TRY: //("try", "keyword-directive"), // C++
+            case CATCH: //("catch", "keyword-directive"), //C++
+            case WHILE: //("while", "keyword-directive"),
+            case FOR: //("for", "keyword-directive"),
+            case DO: //("do", "keyword-directive"),
+            case ASM: //("asm", "keyword-directive"), // gcc and C++
+            case SWITCH: //("switch", "keyword-directive"),
+                importantKind = kind;
+                break;
+            default:
+                initImportant(ts);
+        }
     }
 
     private void initImportant(TokenSequence<CppTokenId> ts) {
@@ -182,5 +196,15 @@ class StackEntry {
 
     public boolean isLikeToFunction() {
         return likeToFunction;
+    }
+
+    public String toString(){
+        StringBuilder buf = new StringBuilder(kind.name());
+        if (importantKind != null && kind != importantKind){
+            buf.append("("+importantKind.name()+")");
+        } else if (likeToFunction) {
+            buf.append("(FUNCTION)");
+        }
+        return buf.toString();
     }
 }
