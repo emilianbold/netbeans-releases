@@ -261,6 +261,7 @@ public class HgCommand {
     private static final char HG_STATUS_CODE_ABORT = 'a' + 'b';    // NOI18N
     public static final String HG_STR_CONFLICT_EXT = ".conflict~"; // NOI18N
 
+    private static final String HG_EPOCH_PLUS_ONE_YEAR = "1971-01-01"; // NOI18N    
     /**
      * Merge working directory with the head revision
      * Merge the contents of the current working directory and the
@@ -1062,7 +1063,7 @@ public class HgCommand {
         command.add(repository.getAbsolutePath());
         command.add(HG_LOG_DEBUG_CMD);
         
-        String dateStr = handleRevDates(from, to, headRev);
+        String dateStr = handleRevDates(from, to);
         if(dateStr != null){
             command.add(HG_FLAG_DATE_CMD);
             command.add(dateStr);
@@ -1174,41 +1175,67 @@ public class HgCommand {
         return list;
     }
 
-    private static String handleRevDates(String from, String to, String headRev){
+    private static String handleRevDates(String from, String to){
         // Check for Date range:
         Date fromDate = null;
         Date toDate = null;
+        Date currentDate = new Date(); // Current Date            
+        Date epochPlusOneDate = null;
+        
+        try {
+            epochPlusOneDate = new SimpleDateFormat("yyyy-MM-dd").parse(HG_EPOCH_PLUS_ONE_YEAR); // NOI18N
+        } catch (ParseException ex) {
+            // Ignore invalid dates
+        }
+
+        // Set From date
         try {
             if(from != null) 
                 fromDate = new SimpleDateFormat("yyyy-MM-dd").parse(from); // NOI18N
         } catch (ParseException ex) {
             // Ignore invalid dates
         }
+
+        // Set To date
         try {
             if(to != null) 
                 toDate = new SimpleDateFormat("yyyy-MM-dd").parse(to); // NOI18N
         } catch (ParseException ex) {
             // Ignore invalid dates
         }
+
+        // If From date is set, but To date is not - default To date to current date
         if( fromDate != null && toDate == null && to == null){
-            toDate = new Date(); // Current Date            
+            toDate = currentDate;           
             to = new SimpleDateFormat("yyyy-MM-dd").format(toDate);
         }
+        // If To date is set, but From date is not - default From date to 1971-01-01
         if (fromDate == null && from == null  && toDate != null) {
-            try {
-                fromDate = new SimpleDateFormat("yyyy-MM-dd").parse("1970-01-01"); // NOI18N
-            } catch (ParseException ex) {
-                // Ignore invalid dates
-            }
-            from = "1970-01-01"; // NOI18N
+            fromDate = epochPlusOneDate; 
+            from = HG_EPOCH_PLUS_ONE_YEAR; // NOI18N
         }
+        
+        // If using dates make sure both From and To are set to dates
         if( (fromDate != null && toDate == null && to != null) || 
                 (fromDate == null && from != null && toDate != null)){
             HgUtils.warningDialog(HgCommand.class,"MSG_SEARCH_HISTORY_TITLE",// NOI18N
                     "MSG_SEARCH_HISTORY_WARN_BOTHDATES_NEEDED_TEXT");   // NOI18N
+            return null;
         }
 
-        if(fromDate != null && toDate != null){
+        if(fromDate != null && toDate != null){            
+            // Check From date - default to 1971-01-01 if From date is earlier than this
+            if(epochPlusOneDate != null && fromDate.before(epochPlusOneDate)){
+                fromDate = epochPlusOneDate;
+                from = HG_EPOCH_PLUS_ONE_YEAR; // NOI18N
+            }
+            // Set To date - default to current date if To date is later than this
+            if(currentDate != null && toDate.after(currentDate)){
+                toDate = currentDate;
+                to = new SimpleDateFormat("yyyy-MM-dd").format(toDate);
+            }
+        
+            // Make sure the From date is before the To date
             if( fromDate.after(toDate)){
                 HgUtils.warningDialog(HgCommand.class,"MSG_SEARCH_HISTORY_TITLE",// NOI18N
                         "MSG_SEARCH_HISTORY_WARN_FROM_BEFORE_TODATE_NEEDED_TEXT");   // NOI18N
