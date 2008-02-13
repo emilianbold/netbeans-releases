@@ -42,9 +42,11 @@
 package org.netbeans.modules.hibernate.completion;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map.Entry;
 import java.util.Stack;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
@@ -140,15 +142,7 @@ public class DocumentContext {
         return this.element;
     }
     
-    public List<String> getAllElementToRoot() {
-        return elementsToRoot(false);
-    }
-    
     public List<String> getPathFromRoot() {
-        return elementsToRoot(true);
-    }
-    
-    private List<String> elementsToRoot( boolean pathOnly ) {
         if (isValid()) {
             SyntaxElement elementRef = this.element;
             Stack<SyntaxElement> stack = new Stack<SyntaxElement>();
@@ -165,10 +159,8 @@ public class DocumentContext {
                     StartTag start = (StartTag) elementRef;
                     if (stack.peek() instanceof EndTag) {
                         EndTag end = (EndTag) stack.peek();
-                        if( pathOnly ) {
-                            if (end.getTagName().equals(start.getTagName())) {
-                                stack.pop();
-                            }
+                        if (end.getTagName().equals(start.getTagName())) {
+                            stack.pop();
                         }
                     } else {
                         SyntaxElement e = (SyntaxElement) stack.peek();
@@ -189,7 +181,7 @@ public class DocumentContext {
         ArrayList<String> pathList = new ArrayList<String>();
         while (!stack.isEmpty()) {
             SyntaxElement top = stack.pop();
-            String tagName = (top instanceof StartTag) ? ((StartTag) top).getTagName() : ((Tag) top).getTagName();
+            String tagName = (top instanceof StartTag) ? ((StartTag) top).getTagName() : ((EmptyTag) top).getTagName();
             if (tagName != null) {
                 pathList.add(tagName);
             }
@@ -204,6 +196,20 @@ public class DocumentContext {
 
     public String lookupNamespacePrefix(String prefix) {
         return declaredNamespaces.get(prefix);
+    }
+    
+    public String getNamespacePrefix(String namespace) {
+        for(Entry<String, String> entry : declaredNamespaces.entrySet()) {
+            if(entry.getValue().equals(namespace)) {
+                return entry.getKey();
+            }
+        }
+        
+        return null;
+    }
+    
+    public Collection<String> getDeclaredNamespaces() {
+        return declaredNamespaces.values();
     }
 
     public StartTag getDocRoot() {
