@@ -58,10 +58,10 @@ import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 import javax.xml.transform.sax.SAXSource;
-import org.apache.commons.jxpath.JXPathContext;
 import org.netbeans.modules.websvc.saas.model.Saas;
 import org.netbeans.modules.websvc.saas.model.SaasGroup;
 import org.netbeans.modules.websvc.saas.model.WadlSaas;
+import org.netbeans.modules.websvc.saas.model.WadlSaasMethod;
 import org.netbeans.modules.websvc.saas.model.jaxb.Group;
 import org.netbeans.modules.websvc.saas.model.jaxb.SaasServices;
 import org.netbeans.modules.websvc.saas.model.wadl.Application;
@@ -218,11 +218,11 @@ public class SaasUtil {
         return extensionsResult.allInstances();
     }
     
-    public static <T> T fromXPath(Object root, String xpath, Class<T> type) {
+    /*public static <T> T fromXPath(Object root, String xpath, Class<T> type) {
         JXPathContext context = JXPathContext.newContext(root);
         context.registerNamespace("", Saas.NS_WADL);
         return type.cast(context.getValue(xpath));
-    }
+    }*/
 
     public static Method wadlMethodFromIdRef(Application app, String methodIdRef) {
         String methodId = methodIdRef;
@@ -351,7 +351,11 @@ public class SaasUtil {
         return result;
     }
     
-    public static String getSignature(WadlSaas saas, Resource[] paths, Method m) {
+    public static String getSignature(WadlSaasMethod method) {
+        WadlSaas saas = method.getSaas();
+        Resource[] paths = method.getResourcePath();
+        Method m = method.getWadlMethod();
+        
         StringBuffer sb = new StringBuffer();
         sb.append(m.getName());
         sb.append(" : ");

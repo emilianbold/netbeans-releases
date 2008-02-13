@@ -454,7 +454,6 @@ public abstract class BaseFileObj extends FileObject {
             parentFe = new FileEventImpl(parent, this, expected);
         }
         if (parentFe != null) {
-            assert parent.isValid() : parent.toString();
             final FileEventImpl fe = new FileEventImpl(this, parentFe);
             fireFileChangedEvent(getListeners(), fe);
             parent.fireFileChangedEvent(pListeners, parentFe);

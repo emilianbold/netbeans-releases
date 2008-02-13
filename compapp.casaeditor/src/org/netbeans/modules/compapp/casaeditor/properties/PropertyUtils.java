@@ -48,6 +48,7 @@ import org.netbeans.modules.compapp.casaeditor.model.casa.CasaEndpointRef;
 import org.netbeans.modules.compapp.casaeditor.model.casa.CasaExtensibilityElement;
 import org.netbeans.modules.compapp.casaeditor.model.casa.CasaServiceUnit;
 import org.netbeans.modules.compapp.casaeditor.nodes.CasaNode;
+import org.netbeans.modules.compapp.projects.jbi.api.JbiExtensionAttribute;
 import org.openide.ErrorManager;
 import org.openide.nodes.Node;
 import org.openide.nodes.PropertySupport;
@@ -211,14 +212,14 @@ public abstract class PropertyUtils {
             CasaExtensibilityElement firstEE,
             CasaExtensibilityElement lastEE,
             String propertyType, 
-            Class valueType,
+            JbiExtensionAttribute.Type attrType,
             String attributeName,
             String displayName,
             String description) {
         
-        if (valueType == null) {
+        if (attrType == null) {
             System.err.println("Unsupported property type for " + attributeName);
-            valueType = String.class;
+            attrType = JbiExtensionAttribute.Type.STRING;
         }
         
         try {
@@ -228,7 +229,7 @@ public abstract class PropertyUtils {
                 firstEE,
                 lastEE,
                 propertyType,
-                valueType,
+                attrType,
                 attributeName,
                 displayName,
                 description);
@@ -280,7 +281,7 @@ public abstract class PropertyUtils {
                 firstEE,
                 lastEE,
                 propertyType,
-                valueType,
+//                valueType,
                 attributeName,
                 displayName,
                 description,

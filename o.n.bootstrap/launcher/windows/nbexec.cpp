@@ -911,34 +911,17 @@ void parseArgs(int argc, char *argv[]) {
     }
 }
 
-void normalizePath(char *userdir) {
-    char buf[MAX_PATH], *pc;
-
-    // absolutize userdir
-    if (NULL == _fullpath(buf, userdir, MAX_PATH))
-        return;
-    
-    userdir[0] = '\0';
-
-    if (buf[0] == '\\' && buf[1] == '\\') { // UNC share
-        userdir[0] = '\\';
-        userdir[1] = '\\';
-        userdir[2] = '\0';
-        pc = strtok(buf + 2, "/\\");
-    } else {
-        pc = strtok(buf, "/\\");
+void normalizePath(char *userdir)
+{
+    char tmp[MAX_PATH] = "";
+    int i = 0;
+    while (userdir[i] && i < MAX_PATH - 1)
+    {
+        tmp[i] = userdir[i] == '/' ? '\\' : userdir[i];
+        i++;
     }
-  
-    while (pc != NULL) {
-        if (*pc != '\0') {
-            if (userdir[0] != '\0' && userdir[strlen(userdir) - 1] != '\\')
-                strcat(userdir, "\\");
-            strcat(userdir, pc);
-        }
-        pc = strtok(NULL,  "/\\");
-    }
-    if (userdir[1] == ':' && userdir[2] == '\0')
-        strcat(userdir, "\\");
+    tmp[i] = '\0';
+    _fullpath(userdir, tmp, MAX_PATH);
 }
 
 int fileExists(const char* path) {

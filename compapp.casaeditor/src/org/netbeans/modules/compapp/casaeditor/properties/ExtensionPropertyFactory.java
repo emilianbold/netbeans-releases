@@ -41,11 +41,10 @@
 package org.netbeans.modules.compapp.casaeditor.properties;
 
 import java.util.Map;
-import javax.xml.namespace.QName;
 import org.netbeans.modules.compapp.casaeditor.model.casa.CasaComponent;
 import org.netbeans.modules.compapp.casaeditor.model.casa.CasaExtensibilityElement;
 import org.netbeans.modules.compapp.casaeditor.nodes.CasaNode;
-import org.netbeans.modules.compapp.projects.jbi.api.Endpoint;
+import org.netbeans.modules.compapp.projects.jbi.api.JbiExtensionAttribute;
 import org.openide.nodes.Node;
 
 /**
@@ -60,12 +59,12 @@ public class ExtensionPropertyFactory {
             CasaExtensibilityElement firstEE,
             CasaExtensibilityElement lastEE,
             String propertyType,
-            Class valueType,
+            JbiExtensionAttribute.Type attributeType,
             String attributeName,
             String displayName,
             String discription) {
 
-        if (valueType == Integer.class) {
+        if (JbiExtensionAttribute.Type.INTEGER.equals(attributeType)) {
             return new IntegerExtensionProperty(
                     node,
                     extensionPointComponent,
@@ -75,7 +74,7 @@ public class ExtensionPropertyFactory {
                     attributeName,
                     displayName,
                     discription);
-        } else if (valueType == QName.class) {
+        } else if (JbiExtensionAttribute.Type.QNAME.equals(attributeType)) {
             return new QNameExtensionProperty(
                     node,
                     extensionPointComponent,
@@ -85,7 +84,7 @@ public class ExtensionPropertyFactory {
                     attributeName,
                     displayName,
                     discription);
-        } else if (valueType == Endpoint.class) {
+        } else if (JbiExtensionAttribute.Type.ENDPOINT.equals(attributeType)) {
             return new EndpointExtensionProperty(
                     node,
                     extensionPointComponent,
@@ -95,9 +94,21 @@ public class ExtensionPropertyFactory {
                     attributeName,
                     displayName,
                     discription);
+            /*
+        } else if (JbiExtensionAttribute.Type.OPERATION.equals(attributeType)) {
+            return new OperationExtensionProperty(
+                    node,
+                    extensionPointComponent,
+                    firstEE,
+                    lastEE,
+                    propertyType,
+                    attributeName,
+                    displayName,
+                    discription);
+             */
         } else { 
-            if (valueType != String.class) {
-                System.err.println("Unsupported value type: " + valueType);
+            if (!JbiExtensionAttribute.Type.STRING.equals(attributeType)) {
+                System.err.println("Unsupported value type: " + attributeType);
             }
             
             return new ExtensionProperty<String>(
@@ -119,7 +130,7 @@ public class ExtensionPropertyFactory {
             CasaExtensibilityElement firstEE,
             CasaExtensibilityElement lastEE,
             String propertyType,
-            Class valueType,
+//            Class valueType,
             String attributeName,
             String displayName,
             String discription,
