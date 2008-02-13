@@ -2740,7 +2740,7 @@ remainder_expression
 
 conditional_expression
 	:	
-		logical_or_expression
+		general_logical_expression
 		(QUESTIONMARK expression COLON conditional_expression)?
 	;
 
@@ -2750,6 +2750,15 @@ constant_expression
 		{#constant_expression = #(#[CSM_EXPRESSION, "CSM_EXPRESSION"], #constant_expression);}
 	;
 
+/* Due to problems with stack overflow on expressions like ((((....(((1+1)+1)+...)+1)
+   RepositoryValidationTest started to fail, so we intentionally loose operator precedence here 
+   greatly reducing peak stack size */
+general_logical_expression
+        :
+                relational_expression ((OR | AND | BITWISEOR | BITWISEXOR | AMPERSAND | NOTEQUAL | EQUAL) relational_expression)*
+        ;
+
+/*
 logical_or_expression
 	:	
 		logical_and_expression (OR logical_and_expression)* 
@@ -2779,7 +2788,7 @@ equality_expression
 	:	
 		relational_expression ((NOTEQUAL | EQUAL) relational_expression)*
 	;
-
+*/
 relational_expression
 	:	shift_expression
 		(options {warnWhenFollowAmbig = false;}:
