@@ -4,8 +4,6 @@
  */
 package org.netbeans.modules.groovy.grailsproject.actions;
 
-import java.io.BufferedReader;
-import java.util.logging.Level;
 import javax.swing.JComponent;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
@@ -17,17 +15,8 @@ import javax.swing.Action;
 import org.openide.awt.DynamicMenuContent;
 import javax.swing.JMenuItem;
 import org.netbeans.api.project.FileOwnerQuery;
-import org.netbeans.modules.groovy.grails.api.GrailsServer;
-import org.netbeans.modules.groovy.grails.api.GrailsServerFactory;
 import org.openide.awt.Actions;
 import org.netbeans.modules.groovy.grailsproject.GrailsProject;
-import org.netbeans.modules.groovy.grailsproject.StreamInputThread;
-import org.netbeans.modules.groovy.grailsproject.StreamRedirectThread;
-import org.openide.DialogDisplayer;
-import org.openide.NotifyDescriptor;
-import org.openide.windows.IOProvider;
-import org.openide.windows.InputOutput;
-import org.openide.windows.OutputWriter;
 
 public final class GenerateAllAction extends NodeAction {
     
@@ -40,7 +29,7 @@ public final class GenerateAllAction extends NodeAction {
         String command = "generate-all " + dataObject.getPrimaryFile().getName();
 
         assert prj != null;
-        new PrivateSwingWorker(prj, command).start();
+        new PublicSwingWorker(prj, command).start();
 
     }
 
@@ -98,61 +87,5 @@ public final class GenerateAllAction extends NodeAction {
         Actions.connect(menuItem, (Action)this);
         return menuItem;
     }
-
-    public class PrivateSwingWorker extends Thread {
-
-        BufferedReader procOutput;
-        OutputWriter writer = null;
-        String command = null;
-        GrailsProject prj = null;
-
-        public PrivateSwingWorker(GrailsProject prj, String command) {
-            this.prj = prj;
-            this.command = command;
-        }
-        
-        public void run() {
-
-        try {
-            String tabName = "Grails Server : " + prj.getProjectDirectory().getName() 
-                                                + " (" + command +")";
-            
-            InputOutput io = IOProvider.getDefault().getIO(tabName, true);
-
-            io.select();
-            writer = io.getOut();
-
-            GrailsServer server = GrailsServerFactory.getServer();
-            Process process = server.runCommand(prj, command, io, null);
-
-            if (process == null) {
-                displayGrailsProcessError(server.getLastError());
-                return;
-            }
-
-            assert process != null;
-
-            (new StreamInputThread   (process.getOutputStream(), io.getIn())).start();
-            (new StreamRedirectThread(process.getInputStream(),  io.getOut())).start();
-            (new StreamRedirectThread(process.getErrorStream(),  io.getErr())).start();
-
-            process.waitFor();
-
-            } catch (Exception e) {
-                LOG.log(Level.WARNING, "problem with process: " + e);
-                LOG.log(Level.WARNING, "message " + e.getLocalizedMessage());
-                e.printStackTrace();
-            }
-        }
-        
-    void displayGrailsProcessError(Exception reason) {
-        DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
-            "Problem creating Process: " + reason.getLocalizedMessage(),
-            NotifyDescriptor.Message.WARNING_MESSAGE
-            ));
-        }        
-        
-    }
-    
 }
 
