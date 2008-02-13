@@ -60,10 +60,13 @@ public final class JavadocCompletionProvider implements CompletionProvider {
     }
 
     public int getAutoQueryTypes(JTextComponent component, String typedText) {
-        if (JavadocCompletionUtils.isJavadocContext(component.getDocument(), component.getCaretPosition())) {
-            return COMPLETION_QUERY_TYPE + COMPLETION_ALL_QUERY_TYPE;
+        char c;
+        if (typedText != null && typedText.length() == 1
+                && ((c = typedText.charAt(0)) == '.' || c == '#' || c == '@')
+                && JavadocCompletionUtils.isJavadocContext(component.getDocument(), component.getCaretPosition())) {
+            return COMPLETION_QUERY_TYPE;
         }
-        return -1;
+        return 0;
     }
 
 }

@@ -137,7 +137,7 @@ public final class SharableLibrariesUtils {
      * @param ref
      * @param libraryNames
      * @param jarReferences
-     * @return
+     * @return true is migration was performed, false when aborted.
      */
     public static boolean showMakeSharableWizard(final AntProjectHelper helper, ReferenceHelper ref, List<String> libraryNames, List<String> jarReferences) {
 

@@ -129,7 +129,7 @@ public class ReferenceResolverImpl extends CsmReferenceResolver {
         // default implementation
         assert targetDecl != null;
         ReferenceKind kind = super.getReferenceKind(ref, targetDecl, targetDef);
-        if (kind == ReferenceKind.USAGE) {
+        if (kind == ReferenceKind.DIRECT_USAGE) {
             kind = ReferencesSupport.getReferenceUsageKind(ref);
         }
         return kind;

@@ -628,6 +628,7 @@ public final class OpenProjectList {
         boolean someClosed = false;
         List<Project> oldprjs = new ArrayList<Project>();
         List<Project> newprjs = new ArrayList<Project>();
+        List<Project> notifyList = new ArrayList<Project>();
         synchronized ( this ) {
             oldprjs.addAll(openProjects);
             for( int i = 0; i < projects.length; i++ ) {
@@ -643,6 +644,8 @@ public final class OpenProjectList {
                 projects[i].getProjectDirectory().removeFileChangeListener(deleteListener);
                 
                 recentProjects.add( projects[i] );
+                notifyList.add(projects[i]);
+                
                 someClosed = true;
             }
             if ( someClosed ) {
@@ -658,10 +661,7 @@ public final class OpenProjectList {
             }
         }
         //#125750 not necessary to call notifyClosed() under synchronized lock.
-        List<Project> lst = new ArrayList<Project>();
-        lst.addAll(oldprjs);
-        lst.removeAll(newprjs);
-        for (Project closed : lst) {
+        for (Project closed : notifyList) {
             notifyClosed( closed );
         }
         logProjects("close(): openProjects == ", openProjects.toArray(new Project[0])); // NOI18N
