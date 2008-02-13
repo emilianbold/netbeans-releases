@@ -134,7 +134,7 @@ public enum CppTokenId implements TokenId {
     USING("using", "keyword"), //C++
     VIRTUAL("virtual", "keyword"), //C++
     VOID("void", "keyword"),
-    VOLATILE("volatile", "keywrod"),
+    VOLATILE("volatile", "keyword"),
     WCHAR_T("wchar_t", "keyword"), // C++
     WHILE("while", "keyword-directive"),
     _BOOL("_Bool", "keyword"), // C 

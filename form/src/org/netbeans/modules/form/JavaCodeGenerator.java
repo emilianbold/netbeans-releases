@@ -41,8 +41,6 @@
 
 package org.netbeans.modules.form;
 
-import javax.swing.JEditorPane;
-
 import org.openide.*;
 import org.openide.filesystems.*;
 import org.openide.nodes.*;
@@ -2740,9 +2738,9 @@ class JavaCodeGenerator extends CodeGenerator {
         listenersInMainClass = mainclass ? listenersToImplement : null;
 
         if (innerclass) {
-            String listenerClassName = getListenerClassName();
+            String lClassName = getListenerClassName();
             codeWriter.write("private class "); // NOI18N
-            codeWriter.write(listenerClassName);
+            codeWriter.write(lClassName);
             codeWriter.write(" implements "); // NOI18N
             for (int i=0; i < listenersToImplement.length; i++) {
                 codeWriter.write(getSourceClassName(listenersToImplement[i]));
@@ -2750,7 +2748,7 @@ class JavaCodeGenerator extends CodeGenerator {
                     codeWriter.write(", "); // NOI18N
             }
             codeWriter.write(" {\n"); // NOI18N
-            codeWriter.write(listenerClassName + "() {}\n"); // NOI18N Issue 72346 resp. 15242
+            codeWriter.write(lClassName + "() {}\n"); // NOI18N Issue 72346 resp. 15242
         }
 
         for (int i=0; i < listenersToImplement.length; i++) {
