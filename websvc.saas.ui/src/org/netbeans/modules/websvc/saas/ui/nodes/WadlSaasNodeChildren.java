@@ -43,7 +43,7 @@ import java.util.Collections;
 import org.netbeans.modules.websvc.saas.model.Saas;
 import org.netbeans.modules.websvc.saas.model.WadlSaas;
 import org.netbeans.modules.websvc.saas.model.WadlSaasMethod;
-import org.netbeans.modules.websvc.saas.model.wadl.Resource;
+import org.netbeans.modules.websvc.saas.model.WadlSaasResource;
 import org.openide.nodes.Node;
 import org.openide.util.Exceptions;
 
@@ -79,11 +79,9 @@ public class WadlSaasNodeChildren extends SaasNodeChildren<Object> {
         try {
             if (key instanceof WadlSaasMethod) {
                 WadlSaasMethod wsm = (WadlSaasMethod) key;
-                if (wsm.getWadlMethod() != null) {
-                    return new Node[] { new WadlSaasMethodNode(wsm) };
-                }
-            } else if (key instanceof Resource) {
-                return new Node[] { new ResourceNode(getSaas(), new Resource[] {(Resource) key} ) };
+                return new Node[] { new WadlMethodNode(wsm) };
+            } else if (key instanceof WadlSaasResource) {
+                return new Node[] { new ResourceNode((WadlSaasResource)key) };
             }
         } catch(Exception ex) {
             Exceptions.printStackTrace(ex);

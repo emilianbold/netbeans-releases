@@ -408,7 +408,7 @@ public class EditorContextImpl extends EditorContext {
             } catch (InvocationTargetException ex) {
                 ErrorManager.getDefault().notify(ex.getTargetException());
             } catch (InterruptedException ex) {
-                ErrorManager.getDefault().notify(ex);
+                // interrupted, ignored.
             }
             return ln[0];
         }
@@ -449,7 +449,7 @@ public class EditorContextImpl extends EditorContext {
             } catch (InvocationTargetException ex) {
                 ErrorManager.getDefault().notify(ex.getTargetException());
             } catch (InterruptedException ex) {
-                ErrorManager.getDefault().notify(ex);
+                // interrupted, ignored.
             }
             return ln[0];
         }
@@ -574,7 +574,7 @@ public class EditorContextImpl extends EditorContext {
             } catch (InvocationTargetException ex) {
                 ErrorManager.getDefault().notify(ex.getTargetException());
             } catch (InterruptedException ex) {
-                ErrorManager.getDefault().notify(ex);
+                // interrupted, ignored.
             }
             return si[0];
         }
@@ -608,7 +608,7 @@ public class EditorContextImpl extends EditorContext {
             } catch (InvocationTargetException ex) {
                 ErrorManager.getDefault().notify(ex.getTargetException());
             } catch (InterruptedException ex) {
-                ErrorManager.getDefault().notify(ex);
+                // interrupted, ignored.
             }
             return mn[0];
         }

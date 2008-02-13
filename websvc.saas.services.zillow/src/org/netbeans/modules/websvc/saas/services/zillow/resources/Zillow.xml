@@ -48,7 +48,7 @@
                     ../../../../../../../../../../websvc.saas.api/src/org/netbeans/modules/websvc/saas/model/SaasServices.xsd' 
                type="http://research.sun.com/wadl/2006/10"
                api-doc="http://zillow.com/dev_api_ref"
-               url="/org/netbeans/modules/websvc/saas/services/zillow/resources/ZillowWadl.xml">
+               url="org/netbeans/modules/websvc/saas/services/zillow/resources/ZillowWadl.xml">
 
     <description>Zillow Service</description>
     

@@ -142,6 +142,9 @@ public class RollbackAction extends ContextAction {
                                     if (list != null && !list.isEmpty()){
                                         HgUtils.outputMercurialTab(list);
                                     }
+                                } else {
+                                    HgUtils.forceStatusRefreshProject(ctx);
+                                    Mercurial.getInstance().changesetChanged(root);
                                 }
                             } else {
                                 JOptionPane.showMessageDialog(null,

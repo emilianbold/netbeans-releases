@@ -223,13 +223,15 @@ public class SQLOperatorGraphNode extends OperatorGraphNode implements ItemListe
         if( popUpMenu == null ) {
             popUpMenu = new JPopupMenu();
         }
-        showSqlItem = new JMenuItem("Show SQL...", new ImageIcon(showSqlUrl));
+        String nbBundle1 = mLoc.t("PRSR001: Show SQL...");
+        showSqlItem = new JMenuItem(Localizer.parse(nbBundle1), new ImageIcon(showSqlUrl));
         showSqlItem.addActionListener(aListener);
         popUpMenu.add(showSqlItem);
 
         //remove menu
         popUpMenu.addSeparator();
-        removeItem = new JMenuItem("Remove", new ImageIcon(removeUrl));
+        String nbBundle2 = mLoc.t("PRSR001: Remove");
+        removeItem = new JMenuItem(Localizer.parse(nbBundle2), new ImageIcon(removeUrl));
         removeItem.addActionListener(aListener);
         popUpMenu.add(removeItem);
     }

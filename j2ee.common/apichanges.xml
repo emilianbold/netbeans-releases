@@ -102,7 +102,6 @@ is the proper place.
 
     <!-- ACTUAL CHANGES BEGIN HERE: -->
 
-    <changes>
         <change id="J2eeProjectsConstants">
             <api name="j2ee-utilities"/>
             <summary>Removed J2eeProjectsConstants class.</summary>

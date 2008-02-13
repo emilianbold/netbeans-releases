@@ -42,6 +42,9 @@ package org.netbeans.modules.spring.beans.editor;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -52,6 +55,7 @@ import javax.lang.model.element.Modifier;
 import javax.lang.model.element.PackageElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.DeclaredType;
+import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
 import javax.lang.model.util.SimpleElementVisitor6;
@@ -138,46 +142,28 @@ public final class SpringXMLConfigEditorUtils {
         return null;
     }
     
-    public static ElementHandle<TypeElement> findClassElementByBinaryName(final String binaryName, JavaSource js) {
-        final ElementHandle<TypeElement>[] elem = new ElementHandle[1];
-        try {
-            js.runUserActionTask(new Task<CompilationController>() {
+    public static TypeElement findClassElementByBinaryName(final String binaryName, CompilationController cc) {
+        if (!binaryName.contains("$")) { // NOI18N
+            // fast search based on fqn
+            return cc.getElements().getTypeElement(binaryName);
+        } else {
+            // get containing package
+            String packageName = ""; // NOI18N
+            int dotIndex = binaryName.lastIndexOf("."); // NOI18N
+            if (dotIndex != -1) {
+                packageName = binaryName.substring(0, dotIndex);
+            }
+            PackageElement packElem = cc.getElements().getPackageElement(packageName);
+            if (packElem == null) {
+                return null;
+            }
 
-                public void run(CompilationController cc) throws Exception {
-                    if (!binaryName.contains("$")) { // NOI18N
-                        // fast search based on fqn
-                        TypeElement te = cc.getElements().getTypeElement(binaryName);
-                        if (te != null) {
-                            elem[0] = ElementHandle.create(te);
-                        }
-                    } else {
-                        // get containing package
-                        String packageName = ""; // NOI18N
-                        int dotIndex = binaryName.lastIndexOf("."); // NOI18N
-                        if (dotIndex != -1) {
-                            packageName = binaryName.substring(0, dotIndex);
-                        }
-                        PackageElement packElem = cc.getElements().getPackageElement(packageName);
-                        if (packElem == null) {
-                            return;
-                        }
-
-                        // scan for element matching the binaryName
-                        TypeElement te = new TypeScanner().visit(packElem, binaryName);
-                        if (te != null) {
-                            elem[0] = ElementHandle.create(te);
-                        }
-                    }
-                }
-            }, true);
-        } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
+            // scan for element matching the binaryName
+            return new BinaryNameTypeScanner().visit(packElem, binaryName);
         }
-
-        return elem[0];
     }
     
-    private static class TypeScanner extends SimpleElementVisitor6<TypeElement, String> {
+    private static class BinaryNameTypeScanner extends SimpleElementVisitor6<TypeElement, String> {
 
         @Override
         public TypeElement visitPackage(PackageElement packElem, String binaryName) {
@@ -275,11 +261,7 @@ public final class SpringXMLConfigEditorUtils {
                 js.runUserActionTask(new Task<CompilationController>() {
                     public void run(CompilationController cc) throws Exception {
                         boolean opened = false;
-                        ElementHandle<TypeElement> eh = findClassElementByBinaryName(classBinaryName, js);
-                        TypeElement element = null;
-                        if(eh != null) {
-                            element = eh.resolve(cc);
-                        }
+                        TypeElement element = findClassElementByBinaryName(classBinaryName, cc);
                         if (element != null) {
                             opened = ElementOpen.open(js.getClasspathInfo(), element);
                         }
@@ -437,6 +419,15 @@ public final class SpringXMLConfigEditorUtils {
         return false;
     }
     
+    public static String getPropertyNameFromMethodName(String methodName) {
+        if(methodName.length() < 4) {
+            return null;
+        }
+        char[] propertyName = methodName.substring(3).toCharArray();
+        propertyName[0] = Character.toLowerCase(propertyName[0]);
+        return String.valueOf(propertyName);
+    }
+    
     private static final class MethodFinder implements Task<CompilationController> {
 
         private String classBinName;
@@ -456,11 +447,7 @@ public final class SpringXMLConfigEditorUtils {
 
         public void run(CompilationController cc) throws Exception {
             cc.toPhase(Phase.ELEMENTS_RESOLVED);
-            ElementHandle<TypeElement> eh = findClassElementByBinaryName(classBinName, cc.getJavaSource());
-            if(eh == null) {
-                return;
-            }
-            TypeElement element = eh.resolve(cc);
+            TypeElement element = findClassElementByBinaryName(classBinName, cc);
             while (element != null) {
                 List<ExecutableElement> methods = ElementFilter.methodsIn(element.getEnclosedElements());
                 for (ExecutableElement method : methods) {
@@ -514,6 +501,74 @@ public final class SpringXMLConfigEditorUtils {
 
         public ElementHandle<ExecutableElement> getMethodHandle() {
             return this.methodHandle;
+        }
+    }
+    
+    public static List<ExecutableElement> findPropertiesOnType(ElementUtilities eu, TypeMirror type,
+            String propertyName, boolean searchGetters, boolean searchSetters) {
+        PropertyAcceptor propertyAcceptor = new PropertyAcceptor(propertyName, searchGetters, searchSetters);
+        Iterable<? extends Element> matchingProp = eu.getMembers(type, propertyAcceptor);
+        Iterator<? extends Element> it = matchingProp.iterator();
+        // no matching element found
+        if (!it.hasNext()) {
+            return Collections.emptyList();
+        }
+        
+        List<ExecutableElement> retList = new ArrayList<ExecutableElement>();
+        for(Element e : matchingProp) {
+            retList.add((ExecutableElement) e);
+        }
+        
+        return retList;
+    }
+       
+    private static class PropertyAcceptor implements ElementUtilities.ElementAcceptor {
+        private boolean searchSetters;
+        private boolean searchGetters;
+        private String propPrefix;
+
+        public PropertyAcceptor(String propPrefix, boolean searchGetters, boolean searchSetters) {
+            // captialize first character of the property prefix - for matching
+            if(propPrefix.length() > 0) {
+                char[] prop = propPrefix.toCharArray();
+                prop[0] = Character.toUpperCase(prop[0]);
+                this.propPrefix = String.valueOf(prop);
+            } else {
+                this.propPrefix = propPrefix;
+            }
+            this.searchGetters = searchGetters;
+            this.searchSetters = searchSetters;
+        }
+        
+        public boolean accept(Element e, TypeMirror type) {
+            if (e.getKind() != ElementKind.METHOD) {
+                return false;
+            }
+
+            ExecutableElement ee = (ExecutableElement) e;
+            String methodName = ee.getSimpleName().toString();
+            if(methodName.length() < 4) {
+                return false;
+            }
+            
+            if(ee.getModifiers().contains(Modifier.PRIVATE) || ee.getModifiers().contains(Modifier.STATIC)) {
+                return false;
+            }
+            
+            if(!methodName.startsWith(propPrefix, 3)) {
+                return false;
+            }
+            
+            if (searchSetters && methodName.startsWith("set") && ee.getParameters().size() == 1 
+                    && ee.getReturnType().getKind() == TypeKind.VOID) { // NOI18N
+                return true;
+            }
+            if(searchGetters && methodName.startsWith("get") && ee.getParameters().size() == 0
+                    && ee.getReturnType().getKind() != TypeKind.VOID) { // NOI18N
+                return true;
+            }
+
+            return false;
         }
     }
 }

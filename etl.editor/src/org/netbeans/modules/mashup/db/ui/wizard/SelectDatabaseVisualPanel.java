@@ -48,8 +48,11 @@ import java.util.List;
 import java.util.Set;
 import javax.swing.JComboBox;
 
+import net.java.hulp.i18n.Logger;
 import org.netbeans.api.db.explorer.ConnectionManager;
 import org.netbeans.api.db.explorer.DatabaseConnection;
+import org.netbeans.modules.etl.logger.Localizer;
+import org.netbeans.modules.etl.logger.LogUtil;
 import org.netbeans.modules.etl.ui.ETLEditorSupport;
 import org.netbeans.modules.mashup.tables.wizard.MashupTableWizardIterator;
 import org.netbeans.modules.sql.framework.common.utils.DBExplorerUtil;
@@ -62,7 +65,8 @@ import org.netbeans.modules.sql.framework.common.utils.DBURL;
  * @author Ahimanikya Satapathy
  */
 public class SelectDatabaseVisualPanel extends javax.swing.JPanel {
-
+    private static transient final Logger mLogger = LogUtil.getLogger(SelectDatabaseVisualPanel.class.getName());
+    private static transient final Localizer mLoc = Localizer.get();
     private boolean populated;
     private SelectDatabasePanel owner;
     private String selectedDB;
@@ -95,9 +99,10 @@ public class SelectDatabaseVisualPanel extends javax.swing.JPanel {
         }
     }
 
+    String nbBundle1 = mLoc.t("PRSR001: Choose Mashup Database");
     @Override
     public String getName() {
-        return "Choose Mashup Database";
+        return Localizer.parse(nbBundle1);
     }
 
     public String getSelectedDatabase() {

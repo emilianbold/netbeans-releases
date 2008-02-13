@@ -70,7 +70,7 @@ public class OffsetableBase implements CsmOffsetable, Disposable {
         CsmAST startAST = getStartAst(ast);
         startPosition = (startAST == null) ? 0 : startAST.getOffset();
         CsmAST endAST = getEndAst(ast);
-        endPosition = (endAST == null) ? 0 : endAST.getEndOffset();
+        endPosition = (endAST == null) ? startPosition : endAST.getEndOffset();
     }
     
     protected OffsetableBase(CsmFile containingFile, CsmOffsetable pos) {
