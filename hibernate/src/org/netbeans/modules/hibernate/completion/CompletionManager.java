@@ -82,6 +82,9 @@ public final class CompletionManager {
     private static final String SET_TAG = "set";
     private static final String KEY_TAG = "key";
     private static final String ONE_TO_MANY_TAG = "one-to-many";
+    private static final String DISCRIMINATOR_TAG = "discriminator";
+    
+    
     private static final String SCHEMA_ATTRIB = "schema";
     private static final String CATALOG_ATTRIB = "catalog";
     private static final String TABLE_ATTRIB = "table"; // table name
@@ -113,14 +116,58 @@ public final class CompletionManager {
             "foreign", NbBundle.getMessage(CompletionManager.class, "FOREIGN_GENERATOR_DESC"), // NOI18N
             "sequence-identity", NbBundle.getMessage(CompletionManager.class, "SEQUENCE_IDENTITY_GENERATOR_DESC") // NOI18N
         };
+        
+        // Completion items for Hibernate type
+        String[] hibernateTypes = new String[] {
+            "big_decimal", NbBundle.getMessage(CompletionManager.class, "BIG_DECIMAL_DESC"), // NOI18N
+            "big_integer", NbBundle.getMessage(CompletionManager.class, "BIG_INTEGER_DESC"), // NOI18N
+            "binary", NbBundle.getMessage(CompletionManager.class, "BINARY_DESC"), // NOI18N
+            "blob", NbBundle.getMessage(CompletionManager.class, "BLOB_DESC"), // NOI18N
+            "boolean", NbBundle.getMessage(CompletionManager.class, "BOOLEAN_DESC"), // NOI18N
+            "byte", NbBundle.getMessage(CompletionManager.class, "BYTE_DESC"), // NOI18N
+            "calendar", NbBundle.getMessage(CompletionManager.class, "CALENDAR_DESC"), // NOI18N
+            "calendar_date", NbBundle.getMessage(CompletionManager.class, "CALENDAR_DATE_DESC"), // NOI18N
+            "character", NbBundle.getMessage(CompletionManager.class, "CHARACTER_DESC"), // NOI18N
+            "class", NbBundle.getMessage(CompletionManager.class, "CLASS_DESC"), // NOI18N
+            "clob", NbBundle.getMessage(CompletionManager.class, "CLOB_DESC"), // NOI18N
+            "currency", NbBundle.getMessage(CompletionManager.class, "CURRENCY_DESC"), // NOI18N
+            "date", NbBundle.getMessage(CompletionManager.class, "DATE_DESC"), // NOI18N
+            "double", NbBundle.getMessage(CompletionManager.class, "DOUBLE_DESC"), // NOI18N
+            "float", NbBundle.getMessage(CompletionManager.class, "FLOAT_DESC"), // NOI18N
+            "imm_binary", NbBundle.getMessage(CompletionManager.class, "IMM_BINARY_DESC"), // NOI18N
+            "imm_calendar", NbBundle.getMessage(CompletionManager.class, "IMM_CALENDAR_DESC"), // NOI18N
+            "imm_calendar_date", NbBundle.getMessage(CompletionManager.class, "IMM_CALENDAR_DATE_DESC"), // NOI18N
+            "imm_date", NbBundle.getMessage(CompletionManager.class, "IMM_DATE_DESC"), // NOI18N
+            "imm_serializable", NbBundle.getMessage(CompletionManager.class, "IMM_SERIALIZABLE_DESC"), // NOI18N
+            "imm_time", NbBundle.getMessage(CompletionManager.class, "IMM_TIME_DESC"), // NOI18N
+            "imm_timestamp", NbBundle.getMessage(CompletionManager.class, "IMM_TIMESTAMP_DESC"), // NOI18N
+            "integer", NbBundle.getMessage(CompletionManager.class, "INTEGER_DESC"), // NOI18N
+            "locale", NbBundle.getMessage(CompletionManager.class, "LOCALE_DESC"), // NOI18N
+            "long", NbBundle.getMessage(CompletionManager.class, "LONG_DESC"), // NOI18N
+            "serializable", NbBundle.getMessage(CompletionManager.class, "SERIALIZABLE_DESC"), // NOI18N
+            "short", NbBundle.getMessage(CompletionManager.class, "SHORT_DESC"), // NOI18N
+            "string", NbBundle.getMessage(CompletionManager.class, "STRING_DESC"), // NOI18N
+            "text", NbBundle.getMessage(CompletionManager.class, "TEXT_DESC"), // NOI18N
+            "time", NbBundle.getMessage(CompletionManager.class, "TIME_DESC"), // NOI18N
+            "timestamp", NbBundle.getMessage(CompletionManager.class, "TIMESTAMP_DESC"), // NOI18N
+            "timezone", NbBundle.getMessage(CompletionManager.class, "TIMEZONE_DESC"), // NOI18N,
+            "true_false", NbBundle.getMessage(CompletionManager.class, "TRUE_FALSE_DESC"), // NOI18N
+            "yes_no", NbBundle.getMessage(CompletionManager.class, "YES_NO_DESC") // NOI18N
+        };
 
         // Items for package attribute in the root element
         JavaClassCompletor javaPackageCompletor = new JavaClassCompletor(true);
         registerCompletor(MAPPING_TAG, PACKAGE_ATTRIB, javaPackageCompletor);
 
         // Items for Id generator classes
-        AttributeValueCompletor completor = new AttributeValueCompletor(generatorClasses);
-        registerCompletor(GENERATOR_TAG, CLASS_ATTRIB, completor);
+        AttributeValueCompletor generatorCompletor = new AttributeValueCompletor(generatorClasses);
+        registerCompletor(GENERATOR_TAG, CLASS_ATTRIB, generatorCompletor);
+        
+        // Items for Hibernate type 
+        AttributeValueCompletor typeCompletor = new AttributeValueCompletor(hibernateTypes);
+        registerCompletor(PROPERTY_TAG, TYPE_ATTRIB, typeCompletor);
+        registerCompletor(ID_TAG, TYPE_ATTRIB, typeCompletor);
+        registerCompletor(DISCRIMINATOR_TAG, TYPE_ATTRIB, typeCompletor);
 
         // Items for classes to be mapped
         JavaClassCompletor javaClassCompletor = new JavaClassCompletor(false);
@@ -144,7 +191,9 @@ public final class CompletionManager {
         registerCompletor(PROPERTY_TAG, COLUMN_ATTRIB, databaseColumnCompletor);
         registerCompletor(ID_TAG, COLUMN_ATTRIB, databaseColumnCompletor);
         registerCompletor(KEY_TAG, COLUMN_ATTRIB, databaseColumnCompletor);
+        registerCompletor(DISCRIMINATOR_TAG, COLUMN_ATTRIB, databaseColumnCompletor);
     }
+    
     private static CompletionManager INSTANCE = new CompletionManager();
 
     public static CompletionManager getDefault() {
@@ -166,7 +215,9 @@ public final class CompletionManager {
     }
 
     public void completeAttributes(CompletionResultSet resultSet, CompletionContext context) {
-    // TBD
+        if( context.getTag().getNodeName().equalsIgnoreCase( "comment" ) ) {
+            System.err.println( "..........completing comment" );
+        }
     }
 
     public void completeElements(CompletionResultSet resultSet, CompletionContext context) {
