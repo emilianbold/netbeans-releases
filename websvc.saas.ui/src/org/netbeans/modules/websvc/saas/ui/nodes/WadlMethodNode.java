@@ -41,23 +41,14 @@ package org.netbeans.modules.websvc.saas.ui.nodes;
 
 import java.awt.Image;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import javax.swing.Action;
-import javax.xml.bind.JAXBElement;
-import org.netbeans.modules.websvc.saas.model.WadlSaas;
-import org.netbeans.modules.websvc.saas.model.wadl.Method;
-import org.netbeans.modules.websvc.saas.model.wadl.Param;
-import org.netbeans.modules.websvc.saas.model.wadl.ParamStyle;
-import org.netbeans.modules.websvc.saas.model.wadl.RepresentationType;
-import org.netbeans.modules.websvc.saas.model.wadl.Resource;
+import org.netbeans.modules.websvc.saas.model.WadlSaasMethod;
 import org.netbeans.modules.websvc.saas.spi.SaasNodeActionsProvider;
-import org.netbeans.modules.websvc.saas.ui.actions.TestMethodAction;
 import org.netbeans.modules.websvc.saas.util.SaasUtil;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
-import org.openide.util.actions.SystemAction;
 import org.openide.util.lookup.AbstractLookup;
 import org.openide.util.lookup.InstanceContent;
 
@@ -71,37 +62,38 @@ public class WadlMethodNode extends AbstractNode {
     public static final String PUT = "PUT";
     public static final String DELETE = "DELETE";
     
-    private Method method;
-    private Resource[] path;
-    private WadlSaas wadlSaas;
+    private WadlSaasMethod method;
     
-    public WadlMethodNode(WadlSaas wadlSaas, Resource[] path, Method method) {
-        this(wadlSaas, path, method, new InstanceContent());
+    public WadlMethodNode(WadlSaasMethod method) {
+        this(method, new InstanceContent());
     }
 
-    public WadlMethodNode(WadlSaas wadlSaas, Resource[] path, Method method, InstanceContent content) {
+    public WadlMethodNode(WadlSaasMethod method, InstanceContent content) {
         super(Children.LEAF, new AbstractLookup(content));
-        this.wadlSaas = wadlSaas;
-        this.path = path;
         this.method = method;
         content.add(method);
-        content.add(wadlSaas);
     }
 
     @Override
     public String getDisplayName() {
-        if (method.getId() != null) {
-            return method.getId();
+        if (method.getMethod() != null) {
+            return method.getMethod().getName();
+        }
+    
+        if (method.getWadlMethod().getId() != null) {
+            return method.getWadlMethod().getId();
         }
         String name = method.getName();
         String displayName = name;
         if (GET.equals(name)) {
-            Set<String> medias = SaasUtil.getMediaTypesFromJAXBElement(method.getResponse().getRepresentationOrFault());
+            Set<String> medias = SaasUtil.getMediaTypesFromJAXBElement(
+                    method.getWadlMethod().getResponse().getRepresentationOrFault());
             if (medias != null && medias.size() > 0) {
                 displayName += medias.toString();
             }
         } else if (PUT.equals(name) || POST.equals(name)) {
-            Set<String> medias = SaasUtil.getMediaTypes(method.getRequest().getRepresentation());
+            Set<String> medias = SaasUtil.getMediaTypes(
+                    method.getWadlMethod().getRequest().getRepresentation());
             if (medias != null && medias.size() > 0) {
                 displayName += medias;
             }
@@ -111,7 +103,11 @@ public class WadlMethodNode extends AbstractNode {
     
     @Override
     public String getShortDescription() {
-        return SaasUtil.getSignature(wadlSaas, path, method);
+        if (method.getMethod() != null) {
+            return method.getMethod().getDocumentation();
+        }
+        
+        return SaasUtil.getSignature(method);
     }
     
     private static final java.awt.Image ICON =
@@ -136,7 +132,7 @@ public class WadlMethodNode extends AbstractNode {
             }
         }
         //TODO maybe ???
-        actions.add(SystemAction.get(TestMethodAction.class));
+        //actions.add(SystemAction.get(TestMethodAction.class));
         return actions.toArray(new Action[actions.size()]);
     }
     

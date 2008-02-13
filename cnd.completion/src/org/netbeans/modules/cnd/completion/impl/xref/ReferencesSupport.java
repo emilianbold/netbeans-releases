@@ -352,34 +352,46 @@ public final class ReferencesSupport {
     }
     
     static ReferenceKind getReferenceKind(CsmReference ref) {
-        CsmObject target = ref.getReferencedObject();
-        assert target != null;
-        CsmObject[] decDef = CsmBaseUtilities.getDefinitionDeclaration(target);
-        CsmObject targetDecl = decDef[0];
-        CsmObject targetDef = decDef[1];        
-        return CsmReferenceResolver.getDefault().getReferenceKind(ref, targetDecl, targetDef);
+        ReferenceKind kind = ReferenceKind.UNKNOWN;
+        CsmObject owner = ref.getOwner();
+        if (CsmKindUtilities.isType(owner)) {
+            kind = getReferenceUsageKind(ref);
+        }
+        return kind;
     }
     
     static ReferenceKind getReferenceUsageKind(CsmReference ref) {
-        ReferenceKind kind = ReferenceKind.USAGE;
+        ReferenceKind kind = ReferenceKind.DIRECT_USAGE;
         if (ref instanceof ReferenceImpl) {
             Document doc = getRefDocument(ref);
-            int offset = getRefOffset(ref);
+            int offset = ref.getStartOffset();
+            // check previous token
             TokenSequence<CppTokenId> ts = CndLexerUtilities.getCppTokenSequence(doc, offset);
             if (ts != null && ts.isValid()) {
                 ts.move(offset);
-                org.netbeans.api.lexer.Token<CppTokenId> token = ts.offsetToken();
-                boolean prev = false;
-                if (ts.moveNext()) {
+                org.netbeans.api.lexer.Token<CppTokenId> token = null;
+                if (ts.movePrevious()) {
                     token = ts.offsetToken();
-                } else if (ts.movePrevious()) {
-                    token = ts.offsetToken();
-                    prev = true;
                 }
-//                org.netbeans.api.lexer.Token<CppTokenId> token = ts.offsetToken();
+                while (token != null && CppTokenId.WHITESPACE_CATEGORY.equals(token.id().primaryCategory())) {
+                    if (ts.movePrevious()) {
+                        token = ts.offsetToken();
+                    } else {
+                        token = null;
+                    }
+                }
+                if (token != null) {
+                    switch (token.id()) {
+                        case DOT:
+                        case DOTMBR:
+                        case ARROW:
+                        case ARROWMBR:
+                        case SCOPE:
+                            kind = ReferenceKind.AFTER_DEREFERENCE_USAGE;
+                    }
+                }
             }
         }
         return kind;
     }
-
 }
