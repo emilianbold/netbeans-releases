@@ -258,6 +258,7 @@ public abstract class PropertyUtils {
      * @param description   description of the attribute
      * @param choiceMap     a map mapping choice element names to pre-built 
      *                      extensibility elements
+     * @param defaultChoice default choice
      */
     public static void installChoiceExtensionProperty(
             Sheet.Set propertySet, 
@@ -270,7 +271,8 @@ public abstract class PropertyUtils {
             String attributeName,
             String displayName,
             String description,
-            Map<String, CasaExtensibilityElement> choiceMap) {
+            Map<String, CasaExtensibilityElement> choiceMap,
+            String defaultChoice) {
         
         assert valueType == String.class;
         
@@ -281,11 +283,11 @@ public abstract class PropertyUtils {
                 firstEE,
                 lastEE,
                 propertyType,
-//                valueType,
                 attributeName,
                 displayName,
                 description,
-                choiceMap);
+                choiceMap,
+                defaultChoice);
             
             propertySet.put(property);
         } catch (Exception e) {

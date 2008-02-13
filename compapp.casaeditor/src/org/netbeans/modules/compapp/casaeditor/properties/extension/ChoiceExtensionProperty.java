@@ -59,6 +59,7 @@ import org.netbeans.modules.compapp.casaeditor.properties.spi.ExtensionProperty;
 public class ChoiceExtensionProperty extends ExtensionProperty<String> {
 
     private List<String> choices;
+    private String defaultChoice;
     // a map of possible child extensibility elements keyed by the element names
     private Map<String, CasaExtensibilityElement> choiceMap;
     private CasaNode node;
@@ -72,13 +73,15 @@ public class ChoiceExtensionProperty extends ExtensionProperty<String> {
             String propertyName,
             String displayName,
             String description,
-            Map<String, CasaExtensibilityElement> choiceMap) {
+            Map<String, CasaExtensibilityElement> choiceMap,
+            String defaultChoice) {
 
         super(node, extensionPointComponent, firstEE, lastEE, propertyType,
                 String.class, propertyName, displayName, description);
 
         this.node = node;
         this.choiceMap = choiceMap;
+        this.defaultChoice = defaultChoice;
 
         choices = new ArrayList<String>();
         choices.addAll(choiceMap.keySet());
@@ -87,7 +90,9 @@ public class ChoiceExtensionProperty extends ExtensionProperty<String> {
 
     @Override
     public PropertyEditor getPropertyEditor() {
-        return new ComboBoxEditor(choices.toArray(new String[]{}));
+        ComboBoxEditor ret = new ComboBoxEditor(choices.toArray(new String[]{}));
+//        ret.setValue(defaultChoice);
+        return ret;
     }
 
     @SuppressWarnings("unchecked")

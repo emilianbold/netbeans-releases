@@ -112,6 +112,8 @@ public class JbiInstalledExtensionInfo {
     public static final String JBI_EXTENSIONS = "JbiExtensions"; // NOI18N
     
     private static final String CHOICE = "choice";
+    private static final String DEFAULT_CHOICE = "default-choice";
+    private static final String DESCRIPTION = "description";
     
     private static JbiInstalledExtensionInfo singleton = null;
 
@@ -214,15 +216,18 @@ public class JbiInstalledExtensionInfo {
             if (childFO.isFolder()) {
                 JbiExtensionElement element;
                 String choice = (String) childFO.getAttribute(CHOICE); 
+                String description = (String) childFO.getAttribute(DESCRIPTION); 
                 List[] grandChildren = processElement((DataFolder)child);  
                 List<JbiExtensionElement> subElements = grandChildren[0];
                 List<JbiExtensionAttribute> attributes = grandChildren[1];
                 if (choice != null && choice.equalsIgnoreCase("true")) { // NOI18N
+                    String defaultChoice = (String) childFO.getAttribute(DEFAULT_CHOICE); 
                     element = new JbiChoiceExtensionElement(
-                            childName, subElements, attributes);
+                            childName, subElements, attributes, description, 
+                            defaultChoice);
                 } else {
                     element = new JbiExtensionElement(
-                            childName, subElements, attributes);
+                            childName, subElements, attributes, description);
                 }
                 elements.add(element);                
             } else {

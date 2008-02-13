@@ -120,7 +120,8 @@ public class ExtensionPropertyFactory {
             String attributeName,
             String displayName,
             String discription,
-            Map<String, CasaExtensibilityElement> choiceMap) {
+            Map<String, CasaExtensibilityElement> choiceMap,
+            String defaultChoice) {
 
         return new ChoiceExtensionProperty(
                 node,
@@ -131,6 +132,7 @@ public class ExtensionPropertyFactory {
                 attributeName,
                 displayName,
                 discription,
-                choiceMap);
+                choiceMap, 
+                defaultChoice);
     }
 }

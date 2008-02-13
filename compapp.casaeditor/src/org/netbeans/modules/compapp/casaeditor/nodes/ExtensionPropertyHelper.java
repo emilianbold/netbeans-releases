@@ -220,6 +220,7 @@ public class ExtensionPropertyHelper {
         CasaComponentFactory casaFactory = casaModel.getFactory();
 
         String extElementName = extElement.getName();
+        String extElementDescription = extElement.getDescription();
         Element domElement = document.createElementNS(namespace, extElementName);
         
         CasaExtensibilityElement newEE = (CasaExtensibilityElement) 
@@ -235,7 +236,11 @@ public class ExtensionPropertyHelper {
         lastEE = newEE;
                 
         if (extElement instanceof JbiChoiceExtensionElement) {
-            // Note that multi-level choice  element is not supported for now.
+            // Note that multi-level choice element is not supported for now.
+            
+            JbiChoiceExtensionElement choiceExtElement = 
+                    (JbiChoiceExtensionElement) extElement;
+            String defaultChoice = choiceExtElement.getDefaultChoice();
                     
             // Build choice map.
             Map<String, CasaExtensibilityElement> choiceMap = 
@@ -255,8 +260,9 @@ public class ExtensionPropertyHelper {
                     CasaNode.ALWAYS_WRITABLE_PROPERTY, 
                     String.class, 
                     extElementName, extElementName, 
-                    "", // FIXME: description
-                    choiceMap); 
+                    extElementDescription,
+                    choiceMap,
+                    defaultChoice); 
             
         } else {        
             // Add properties for attributes of the current extenstion element.
@@ -308,7 +314,13 @@ public class ExtensionPropertyHelper {
                   
         // Add a property for choice extension element.
         if (extElement instanceof JbiChoiceExtensionElement) {
+            
+            JbiChoiceExtensionElement choiceExtElement = 
+                    (JbiChoiceExtensionElement) extElement;
+            String defaultChoice = choiceExtElement.getDefaultChoice();
+            
             String elementName = extElement.getName();
+            String elementDescription = extElement.getDescription();
             
             List<CasaExtensibilityElement> currentChildren = 
                     lastEE.getExtensibilityElements();
@@ -347,8 +359,9 @@ public class ExtensionPropertyHelper {
                         CasaNode.ALWAYS_WRITABLE_PROPERTY, 
                         String.class, 
                         elementName, elementName, 
-                        "", // FIXME: description
-                        choiceMap); 
+                        elementDescription,
+                        choiceMap,
+                        defaultChoice); 
             }
         } 
         

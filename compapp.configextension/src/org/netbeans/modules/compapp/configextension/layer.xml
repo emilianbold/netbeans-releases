@@ -29,8 +29,8 @@
             <folder name="redelivery">
                 <folder name="on-failure">
                     <attr name="choice" stringvalue="true"/>
-                    <!--attr name="default-choice" stringvalue="error"/>
-                    <attr name="descrption" stringvalue="What to do when redelivery attempts are exhausted."/-->
+                    <attr name="default-choice" stringvalue="error"/>
+                    <attr name="description" stringvalue="What to do when redelivery attempts are exhausted."/>
                     <folder name="error"/>  
                     <folder name="redirect">
                         <!--<file name="endpoint-name">
