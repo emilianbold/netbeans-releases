@@ -388,7 +388,7 @@ public class GetParseData {
         }
         
         public String toString() {
-            StringBuffer sb = new StringBuffer();
+            StringBuilder sb = new StringBuilder();
             sb.append(super.toString());
             sb.append(" ------- XML View (constructed from the original data structure) -----\n");
             if (xmlView == null) {

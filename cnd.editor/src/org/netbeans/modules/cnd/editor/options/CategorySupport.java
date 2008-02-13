@@ -61,6 +61,7 @@ import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Formatter;
 import org.netbeans.modules.cnd.editor.api.CodeStyle;
 import org.netbeans.modules.cnd.editor.api.CodeStyle.BracePlacement;
+import org.netbeans.modules.cnd.editor.api.CodeStyle.Language;
 import org.netbeans.modules.cnd.editor.api.CodeStyle.PreprocessorIndent;
 import org.netbeans.modules.cnd.editor.reformat.Reformatter;
 import org.netbeans.spi.options.OptionsPanelController;
@@ -106,6 +107,10 @@ public class CategorySupport extends Category implements ActionListener, Documen
         this.previewText = previewText == null ? this.previewText : previewText;
         this.forcedOptions = forcedOptions;
         addListeners();
+    }
+
+    public Language getLanguage() {
+        return language;
     }
 
     protected void addListeners() {

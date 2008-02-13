@@ -41,6 +41,7 @@ package org.netbeans.modules.cnd.editor.options;
 
 import java.util.prefs.Preferences;
 import javax.swing.JEditorPane;
+import org.netbeans.modules.cnd.editor.api.CodeStyle;
 import org.netbeans.spi.options.OptionsPanelController;
 import org.openide.util.NbBundle;
 
@@ -56,6 +57,8 @@ public abstract class Category extends OptionsPanelController {
         super();
         this.displayName = NbBundle.getMessage(EditorOptions.class, displayNameKey);
     }
+
+    public abstract CodeStyle.Language getLanguage();
 
     public abstract void storeTo(Preferences preferences);
 

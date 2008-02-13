@@ -57,7 +57,6 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
-import org.netbeans.modules.cnd.loaders.TemplateExtensionUtils;
 import org.netbeans.modules.cnd.makeproject.api.MakeArtifact;
 import org.netbeans.modules.cnd.makeproject.api.MakeArtifactProvider;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Configuration;
@@ -208,17 +207,10 @@ public final class MakeProject implements Project, AntProjectListener {
 
         public String[] getPrivilegedTemplates() {
             if (CppSettings.getDefault().isFortranEnabled()) {
-                return checkNames(PRIVILEGED_NAMES_FORTRAN);
+                return PRIVILEGED_NAMES_FORTRAN;
             } else {
-                return checkNames(PRIVILEGED_NAMES);
+                return PRIVILEGED_NAMES;
             }
-        }
-
-        private String[] checkNames(String[] templates){
-            for(int i = 0; i < templates.length; i++){
-                templates[i] = TemplateExtensionUtils.checkTemplate(templates[i]);
-            }
-            return templates;
         }
     }
 

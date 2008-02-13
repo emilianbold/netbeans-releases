@@ -219,7 +219,7 @@ public class GoToPanel extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 4, 0);
         add(jLabelText, gridBagConstraints);
 
-        nameField.setFont(new java.awt.Font("Monospaced", 0, 12));
+        nameField.setFont(new java.awt.Font("Monospaced", 0, getFontSize()));
         nameField.setBorder(javax.swing.BorderFactory.createEtchedBorder());
         nameField.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -227,14 +227,14 @@ public class GoToPanel extends javax.swing.JPanel {
             }
         });
         nameField.addKeyListener(new java.awt.event.KeyAdapter() {
-            public void keyTyped(java.awt.event.KeyEvent evt) {
-                nameFieldKeyTyped(evt);
-            }
             public void keyPressed(java.awt.event.KeyEvent evt) {
                 nameFieldKeyPressed(evt);
             }
             public void keyReleased(java.awt.event.KeyEvent evt) {
                 nameFieldKeyReleased(evt);
+            }
+            public void keyTyped(java.awt.event.KeyEvent evt) {
+                nameFieldKeyTyped(evt);
             }
         });
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -258,7 +258,7 @@ public class GoToPanel extends javax.swing.JPanel {
         matchesScrollPane1.setBorder(null);
         matchesScrollPane1.setFocusable(false);
 
-        matchesList.setFont(new java.awt.Font("Monospaced", 0, 12));
+        matchesList.setFont(new java.awt.Font("Monospaced", 0, getFontSize()));
         matchesList.setVisibleRowCount(15);
         matchesList.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseReleased(java.awt.event.MouseEvent evt) {
@@ -269,7 +269,6 @@ public class GoToPanel extends javax.swing.JPanel {
 
         listPanel.add(matchesScrollPane1, java.awt.BorderLayout.CENTER);
 
-        jLabelWarning.setBorder(null);
         jLabelWarning.setFocusable(false);
         listPanel.add(jLabelWarning, java.awt.BorderLayout.PAGE_END);
 
@@ -359,6 +358,10 @@ public class GoToPanel extends javax.swing.JPanel {
         catch( BadLocationException ex ) {
             return null;
         }
+    }
+    
+    private int getFontSize () {
+        return this.jLabelList.getFont().getSize();
     }
     
     public boolean isCaseSensitive () {
