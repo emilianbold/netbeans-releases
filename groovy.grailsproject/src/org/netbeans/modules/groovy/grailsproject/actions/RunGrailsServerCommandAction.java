@@ -31,108 +31,56 @@ import java.net.MalformedURLException;
 import org.netbeans.modules.groovy.grails.api.GrailsServerState;
 import java.awt.event.ActionEvent;
 import javax.swing.AbstractAction;
-import java.io.BufferedReader;
+import java.io.IOException;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.groovy.grails.api.GrailsServer;
-import org.netbeans.modules.groovy.grails.api.GrailsServerFactory;
-import org.openide.windows.IOProvider;
-import org.openide.windows.InputOutput;
 import org.openide.windows.OutputEvent;
 import org.openide.windows.OutputWriter;
 import java.util.logging.Logger;
 import java.util.logging.Level;
-import java.io.InputStreamReader;
 import java.net.URL;
-import org.openide.DialogDisplayer;
-import org.openide.NotifyDescriptor;
 import org.openide.awt.HtmlBrowser;
-import org.openide.util.NbBundle;
 import org.openide.windows.OutputListener;
 
-
-public class RunGrailsServerCommandAction extends AbstractAction implements OutputListener {
+public class RunGrailsServerCommandAction extends AbstractAction implements OutputListener, LineSnooper {
 
     Project prj;
     GrailsServerState serverState = null;
     Logger LOG = Logger.getLogger(RunGrailsServerCommandAction.class.getName());
-            
-    public RunGrailsServerCommandAction (Project prj){
-        super ("Run Application");
+    OutputWriter writer = null;
+    PublicSwingWorker psw;
+
+    public RunGrailsServerCommandAction(Project prj) {
+        super("Run Application");
         this.prj = prj;
-        
     }
 
-    public boolean isEnabled(){
-            serverState = prj.getLookup().lookup(GrailsServerState.class);
-            return ! serverState.isRunning();
-        }
-            
+    @Override
+    public boolean isEnabled() {
+        serverState = prj.getLookup().lookup(GrailsServerState.class);
+        return !serverState.isRunning();
+    }
+
     public void actionPerformed(ActionEvent e) {
-        new PrivateSwingWorker(this).start();
-
+        psw = new PublicSwingWorker(prj, "run-app", this);
+        psw.start();
     }
-    
-    
-    public class PrivateSwingWorker extends Thread {
 
-        BufferedReader procOutput;
-        OutputWriter writer =  null;
-        RunGrailsServerCommandAction parent;
-
-        public PrivateSwingWorker(RunGrailsServerCommandAction parent) {
-            this.parent = parent;
+    public void lineFilter(String line) throws IOException {
+        if (writer == null) {
+            writer = psw.getWriter();
         }
-        
-        public void run() {
 
-        try {
-            String lineString = null;
-            
-            String tabName = "Grails Server for: " + prj.getProjectDirectory().getName();
-            InputOutput io = IOProvider.getDefault().getIO(tabName, true);
-            
-            io.select();
-            writer = io.getOut();
-          
-            GrailsServer server = GrailsServerFactory.getServer();    
-            Process process = server.runCommand(prj, "run-app", io, null);
-            
-            if (process == null){
-                displayGrailsProcessError(server.getLastError());
-                return;
-                }
-            
-            procOutput = new BufferedReader(new InputStreamReader(process.getInputStream()));
-            
-            assert procOutput != null;
-            assert writer != null;
-            
-                while ((lineString = procOutput.readLine()) != null) {
-                    if (lineString.contains("Browse to http:/")) {
-                        writer.println(lineString, parent);
-                        startBrowserWithUrl(lineString);
-                    } else {
-                        writer.println(lineString);
-                    }
-                }
-            } catch (Exception e) {
-                LOG.log(Level.WARNING, "Could not read Process output " + e);
-            }
+        if (line.contains("Browse to http:/")) {
+            writer.println(line, this);
+            startBrowserWithUrl(line);
+        } else {
+            writer.println(line);
         }
     }
 
-    
-    void displayGrailsProcessError(Exception reason) {
-        DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
-            NbBundle.getMessage(RunGrailsServerCommandAction.class, "LBL_process_problem") + 
-            " " + reason.getLocalizedMessage(),
-            NotifyDescriptor.Message.WARNING_MESSAGE
-            ));
-        }
-    
-    public void startBrowserWithUrl(String lineString){
+    public void startBrowserWithUrl(String lineString) {
         String urlString = lineString.substring(lineString.indexOf("http://"));
-     
+
         try {
             HtmlBrowser.URLDisplayer.getDefault().showURL(new URL(urlString));
 
@@ -142,18 +90,14 @@ public class RunGrailsServerCommandAction extends AbstractAction implements Outp
         }
     }
 
-
     public void outputLineAction(OutputEvent ev) {
         String lineString = ev.getLine();
         startBrowserWithUrl(lineString);
     }
 
     public void outputLineSelected(OutputEvent ev) {
-        
-    }
-    
-    public void outputLineCleared(OutputEvent ev) {
-        
     }
 
+    public void outputLineCleared(OutputEvent ev) {
     }
+}

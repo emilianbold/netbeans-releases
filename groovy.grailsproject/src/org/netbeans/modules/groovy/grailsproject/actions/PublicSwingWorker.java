@@ -40,11 +40,11 @@
 package org.netbeans.modules.groovy.grailsproject.actions;
 
 import java.io.BufferedReader;
+import java.io.InputStreamReader;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.groovy.grails.api.GrailsServer;
 import org.netbeans.modules.groovy.grails.api.GrailsServerFactory;
-import org.netbeans.modules.groovy.grailsproject.GrailsProject;
 import org.netbeans.modules.groovy.grailsproject.StreamInputThread;
 import org.netbeans.modules.groovy.grailsproject.StreamRedirectThread;
 import org.openide.DialogDisplayer;
@@ -66,11 +66,23 @@ import org.netbeans.api.project.Project;
         OutputWriter writer = null;
         String command = null;
         Project prj = null;
+        LineSnooper snooper = null;
+        
 
         public PublicSwingWorker(Project prj, String command) {
             this.prj = prj;
             this.command = command;
         }
+
+        public PublicSwingWorker(Project prj, String command, LineSnooper snooper) {
+            this(prj, command);
+            this.snooper = snooper;
+        }        
+        
+        OutputWriter getWriter() {
+            return writer;
+        }
+                
         
         public void run() {
 
@@ -92,12 +104,28 @@ import org.netbeans.api.project.Project;
             }
 
             assert process != null;
+            
+            // we've basically two modes here: a) with line-by-line forwarding to 
+            // a snooper or b) a bunch of threads taking care for I/O.
+            
+            if(snooper != null ) {
+                procOutput = new BufferedReader(new InputStreamReader(process.getInputStream()));
+                assert procOutput != null;
+                
+                String lineString;
+                
+                while ((lineString = procOutput.readLine()) != null) {
+                    snooper.lineFilter(lineString);
+                }
+            
+            } else {
 
-            (new StreamInputThread   (process.getOutputStream(), io.getIn())).start();
-            (new StreamRedirectThread(process.getInputStream(),  io.getOut())).start();
-            (new StreamRedirectThread(process.getErrorStream(),  io.getErr())).start();
+                (new StreamInputThread   (process.getOutputStream(), io.getIn())).start();
+                (new StreamRedirectThread(process.getInputStream(),  io.getOut())).start();
+                (new StreamRedirectThread(process.getErrorStream(),  io.getErr())).start();
 
-            process.waitFor();
+                process.waitFor();
+            }
 
             } catch (Exception e) {
                 LOG.log(Level.WARNING, "problem with process: " + e);
