@@ -60,6 +60,7 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
+import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.swing.text.Position;
 import org.netbeans.api.editor.guards.SimpleSection;
@@ -143,16 +144,45 @@ public class FormJavaSource {
         }
         return null;
     }
-    
+
+    private static TypeKind primitiveClassToTypeKind(Class clazz) {
+        TypeKind kind = null;
+        if (clazz == char.class) {
+            kind = TypeKind.CHAR;
+        } else if (clazz == boolean.class) {
+            kind = TypeKind.BOOLEAN;
+        } else if (clazz == int.class) {
+            kind = TypeKind.INT;
+        } else if (clazz == long.class) {
+            kind = TypeKind.LONG;
+        } else if (clazz == byte.class) {
+            kind = TypeKind.BYTE;
+        } else if (clazz == short.class) {
+            kind = TypeKind.SHORT;
+        } else if (clazz == float.class) {
+            kind = TypeKind.FLOAT;
+        } else if (clazz == double.class) {
+            kind = TypeKind.DOUBLE;
+        }
+        return kind;
+    }
+
     private List<String> findMethodsByReturnType(CompilationController controller, TypeElement celem, Class returnType) {
         List<String> methods = new ArrayList<String>();
-        String returnTypeName = returnType.getCanonicalName();
-        TypeElement returnTypeElm = controller.getElements().getTypeElement(returnTypeName);
+        TypeMirror type;
+        if (returnType.isPrimitive()) {
+            TypeKind kind = primitiveClassToTypeKind(returnType);
+            type = controller.getTypes().getPrimitiveType(kind);
+        } else {
+            String returnTypeName = returnType.getCanonicalName();
+            TypeElement returnTypeElm = controller.getElements().getTypeElement(returnTypeName);
+            type = returnTypeElm.asType();
+        }
         for (Element el: celem.getEnclosedElements()) {
             if (el.getKind() == ElementKind.METHOD) {
                 ExecutableElement method = (ExecutableElement) el;
                 TypeMirror methodRT = method.getReturnType();
-                if (controller.getTypes().isAssignable(returnTypeElm.asType(), methodRT)) {
+                if (controller.getTypes().isAssignable(type, methodRT)) {
                     methods.add(method.getSimpleName().toString());
                 }
             }

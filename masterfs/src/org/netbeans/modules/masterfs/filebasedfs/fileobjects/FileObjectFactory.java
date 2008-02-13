@@ -66,7 +66,7 @@ import org.openide.util.Utilities;
  * 
  */
 public final class FileObjectFactory {
-    private final Map allInstances = Collections.synchronizedMap(new WeakHashMap());
+    final Map allInstances = Collections.synchronizedMap(new WeakHashMap());
     private RootObj root;
 
     public static FileObjectFactory getInstance(final FileInfo fInfo) {

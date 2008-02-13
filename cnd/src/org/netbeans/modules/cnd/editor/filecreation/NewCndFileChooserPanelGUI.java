@@ -45,14 +45,18 @@ import java.awt.Component;
 import java.awt.event.ActionListener;
 import java.io.File;
 import java.text.MessageFormat;
-import java.util.List;
+import java.util.Enumeration;
 import java.util.Vector;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JLabel;
 import javax.swing.JList;
+import javax.swing.JTextField;
 import javax.swing.ListCellRenderer;
 import javax.swing.event.ChangeListener;
+import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.Document;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
@@ -62,10 +66,11 @@ import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.ChangeSupport;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 /**
- * SimpleTargetChooserPanelGUI extended with extension selector and logic
+ * NewCndFileChooserPanelGUI is SimpleTargetChooserPanelGUI extended with extension selector and logic
  * 
  */
 class NewCndFileChooserPanelGUI extends javax.swing.JPanel implements ActionListener, DocumentListener {
@@ -101,7 +106,7 @@ class NewCndFileChooserPanelGUI extends javax.swing.JPanel implements ActionList
         browseButton.addActionListener( this );
         locationComboBox.addActionListener( this );
         documentNameTextField.getDocument().addDocumentListener( this );
-        folderTextField.getDocument().addDocumentListener( this );
+        //folderTextField.getDocument().addDocumentListener( this );
         
         setName (NbBundle.getMessage(NewCndFileChooserPanelGUI.class, "LBL_SimpleTargetChooserPanel_Name")); // NOI18N
     }
@@ -136,7 +141,35 @@ class NewCndFileChooserPanelGUI extends javax.swing.JPanel implements ActionList
         
         String ext = es.getDefaultExtension();
         cbExtension.setSelectedItem(ext);
-        expectedExtension = ext.length() == 0 ? "" : ext; // NOI18N
+        cbExtension.enableInputMethods(true);
+        expectedExtension = ext;
+
+        Object editorComp = cbExtension.getEditor().getEditorComponent();
+        if(editorComp instanceof JTextField)
+        {
+           ((JTextField)editorComp).getDocument().addDocumentListener(new DocumentListener() {
+                private void update(Document doc) {
+                    try {
+                        expectedExtension = doc.getText(0, doc.getLength() );
+                        updateCreatedFile();
+                    } catch (BadLocationException ex) {
+                        Exceptions.printStackTrace(ex);
+                    }
+                }
+               
+                public void insertUpdate(DocumentEvent e) {
+                    update(e.getDocument());
+                }
+
+                public void removeUpdate(DocumentEvent e) {
+                    update(e.getDocument());
+                }
+
+                public void changedUpdate(DocumentEvent e) {
+                    update(e.getDocument());
+                }
+            });
+        }
         
         String displayName = null;
         try {
@@ -180,7 +213,7 @@ class NewCndFileChooserPanelGUI extends javax.swing.JPanel implements ActionList
         String folderName = folderTextField.getText().trim();
         
         if ( folderName.length() == 0 ) {
-            return null;
+            return "";
         }
         else {           
             return folderName.replace( File.separatorChar, '/' ); // NOI18N
@@ -188,14 +221,19 @@ class NewCndFileChooserPanelGUI extends javax.swing.JPanel implements ActionList
     }
     
     public String getTargetName() {
+        String documentName = documentNameTextField.getText().trim();
         
-        String text = documentNameTextField.getText().trim();
-        
-        if ( text.length() == 0 ) {
+        if ( documentName.length() == 0 || documentName.charAt(documentName.length() - 1) == '.') {
             return null;
         }
         else {
-            return text + '.' + cbExtension.getSelectedItem();
+            String docExt = FileUtil.getExtension( documentName );
+            if (docExt.length() == 0 && expectedExtension.length() > 0) {
+                documentName += '.' + expectedExtension;
+            } else {
+                assert docExt.equals(expectedExtension);
+            }
+            return documentName;
         }
     }
         
@@ -203,6 +241,54 @@ class NewCndFileChooserPanelGUI extends javax.swing.JPanel implements ActionList
         return expectedExtension;
     }
         
+    
+    private void updateCreatedFile() {
+        
+        FileObject root = ((SourceGroup)locationComboBox.getSelectedItem()).getRootFolder();
+            
+        String folderName = folderTextField.getText().trim();
+        String documentName = documentNameTextField.getText().trim();
+        String docExt = FileUtil.getExtension( documentName );
+        
+        String createdFileName = FileUtil.getFileDisplayName( root ) + 
+            ( folderName.startsWith("/") || folderName.startsWith( File.separator ) ? "" : "/" ) + // NOI18N
+            folderName + 
+            ( folderName.endsWith("/") || folderName.endsWith( File.separator ) || folderName.length() == 0 ? "" : "/" ) + // NOI18N
+            documentName ; // NOI18N
+        
+//      Use Cases:        
+//        1) User wants to use different (but known) extension then the default one (for example "cpp")
+//        1.1 He chooses this extension from the list in the combo box.
+//           This extension becomes a new default.
+//
+//        1.2 He types the full file name with the extension.
+//           The extension becomes a new default.
+//           No extension is added to the file name.
+//
+//        2) User wants to use different (but unknown) extension then the default one (for example "abc")
+//        2.1) He types the extension into the combo box (which is editable)
+//           The notification is displayed at the bottom part of the panel.
+//
+//        2.2) He types the full name with the extension.
+//           The "Extension" combo box gets disabled and no extension is added to the file name.
+//           The notification is displayed at the bottom part of the panel.           
+        
+        if (docExt.length() == 0) {
+            cbExtension.setEnabled(true);
+            createdFileName += "." + expectedExtension;
+        } else {
+            cbExtension.setEnabled(false);
+            cbExtension.setSelectedItem(docExt);
+            expectedExtension = docExt;
+        }
+            
+        createdFileName = createdFileName.replace( '/', File.separatorChar );
+        if (!createdFileName.equals(fileTextField.getText())) {
+            fileTextField.setText( createdFileName );
+            changeSupport.fireChange();
+        }
+    }
+
     @Override
     public java.awt.Dimension getPreferredSize() {
         return PREF_DIM;
@@ -217,14 +303,12 @@ class NewCndFileChooserPanelGUI extends javax.swing.JPanel implements ActionList
     }
     
     private DefaultComboBoxModel getExtensionsCBModel() {
-        List<String> list = es.getExtensionList();
-//        CndAbstractDataLoader loader = (CndAbstractDataLoader)dobj.getLoader();
-//        Enumeration<String> enExt = loader.getExtensions().extensions();
-//        Vector<String> vExt = new Vector<String>();
-//        while (enExt.hasMoreElements()) {
-//            vExt.add(enExt.nextElement());
-//        }
-        return new javax.swing.DefaultComboBoxModel(new  Vector<String>(list));
+        Enumeration<String> enExt = es.getExtensionList().extensions();
+        Vector<String> vExt = new Vector<String>();
+        while (enExt.hasMoreElements()) {
+            vExt.add(enExt.nextElement());
+        }
+        return new javax.swing.DefaultComboBoxModel(vExt);
     }
     /** This method is called from within the constructor to
      * initialize the form.
@@ -273,6 +357,7 @@ class NewCndFileChooserPanelGUI extends javax.swing.JPanel implements ActionList
         org.openide.awt.Mnemonics.setLocalizedText(jLabel5, org.openide.util.NbBundle.getMessage(NewCndFileChooserPanelGUI.class, "LBL_TargetChooser_Extension_Label")); // NOI18N
         jPanel1.add(jLabel5, new java.awt.GridBagConstraints());
 
+        cbExtension.setEditable(true);
         cbExtension.setModel(getExtensionsCBModel());
         cbExtension.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -384,8 +469,6 @@ class NewCndFileChooserPanelGUI extends javax.swing.JPanel implements ActionList
         expectedExtension = (String)cbExtension.getSelectedItem();
         updateCreatedFile();
     }//GEN-LAST:event_cbExtensionActionPerformed
-
-    
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JPanel bottomPanelContainer;
@@ -432,36 +515,6 @@ class NewCndFileChooserPanelGUI extends javax.swing.JPanel implements ActionList
         
         return path == null ? "" : path.replace( '/', File.separatorChar ); // NOI18N
     }
-    
-    private void updateCreatedFile() {
-        
-        FileObject root = ((SourceGroup)locationComboBox.getSelectedItem()).getRootFolder();
-            
-        String folderName = folderTextField.getText().trim();
-        String documentName = documentNameTextField.getText().trim();
-        String docExt = FileUtil.getExtension( documentName );
-        
-        String createdFileName = FileUtil.getFileDisplayName( root ) + 
-            ( folderName.startsWith("/") || folderName.startsWith( File.separator ) ? "" : "/" ) + // NOI18N
-            folderName + 
-            ( folderName.endsWith("/") || folderName.endsWith( File.separator ) || folderName.length() == 0 ? "" : "/" ) + // NOI18N
-            documentName ; // NOI18N
-           
-        if (docExt.length() == 0) {
-            documentName += "." + expectedExtension;
-        } else {
-            cbExtension.setSelectedItem(docExt);
-            if (!docExt.equals(cbExtension.getSelectedItem())) {
-                documentName += "." + expectedExtension;
-            }
-        }
-            
-        fileTextField.setText( createdFileName.replace( '/', File.separatorChar ) ); // NOI18N    
-            
-        changeSupport.fireChange();
-    }
-    
-   
     // ActionListener implementation -------------------------------------------
     
     public void actionPerformed(java.awt.event.ActionEvent e) {
@@ -481,6 +534,9 @@ class NewCndFileChooserPanelGUI extends javax.swing.JPanel implements ActionList
             }                        
         }
         else if ( locationComboBox == e.getSource() )  {
+            updateCreatedFile();
+        } else if ( cbExtension.getEditor() == e.getSource() ) {
+            expectedExtension = (String)cbExtension.getEditor().getItem();
             updateCreatedFile();
         }
     }    

@@ -158,7 +158,7 @@ public class SaasServicesModel {
                         if (Saas.NS_WADL.equals(ss.getType())) {
                             service = new WadlSaas(parent, ss);
                             //why contextclassloader only work here not later
-                            ((WadlSaas)service).getWadlModel();
+                            //((WadlSaas)service).getWadlModel();
                         } else if (Saas.NS_WSDL.equals(ss.getType())) {
                             service = new WsdlSaas(parent, ss);
                         } else {

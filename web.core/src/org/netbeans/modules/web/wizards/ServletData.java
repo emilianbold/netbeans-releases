@@ -258,7 +258,7 @@ class ServletData extends DeployData {
     
     void createDDServletMapping(String servletName) {
         if (webApp==null) return;
-        String result = "/"+servletName;
+        String result = getRFC2396URI("/" + servletName);
         ServletMapping mapping = (ServletMapping) webApp.findBeanByName("ServletMapping","UrlPattern",result); //NOI18N
         while (mapping!=null) {
             result = findNextId(result);

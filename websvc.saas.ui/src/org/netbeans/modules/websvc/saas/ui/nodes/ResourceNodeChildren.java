@@ -55,14 +55,9 @@ import org.openide.nodes.Node;
  */
 public class ResourceNodeChildren extends Children.Keys<Object> {
     private final WadlSaasResource resource;
-    private List<Resource> pathToResource;
     
     public ResourceNodeChildren(WadlSaasResource resource) {
         this.resource = resource;
-    }
-    
-    public Resource getResource() {
-        return pathToResource.get(pathToResource.size()-1);
     }
     
     @Override
@@ -80,7 +75,7 @@ public class ResourceNodeChildren extends Children.Keys<Object> {
 
     private void updateKeys() {
         ArrayList<Object> keys = new ArrayList<Object>();
-        keys.addAll(getResource().getMethodOrResource());
+        keys.addAll(resource.getResourcesAndMethods());
         setKeys(keys.toArray());
     }
     
