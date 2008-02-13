@@ -19,7 +19,7 @@ if [ "$action" = "build" ]; then
     ant -f nbbuild/build.xml commit-validation # || exit 3
     (
         ant -f openide.util/build.xml test &&
-        ant -f openide.modules/ build.xml test &&
+        ant -f openide.modules/build.xml test &&
         echo OK
     ) || exit 4
     for i in 1 2 3; do
