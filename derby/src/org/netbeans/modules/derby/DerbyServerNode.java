@@ -52,6 +52,13 @@ import org.openide.util.actions.SystemAction;
 public class DerbyServerNode extends AbstractNode {
     private static final DerbyServerNode DEFAULT = new DerbyServerNode();
     
+    private SystemAction[] actions = new SystemAction[] {
+            new StartAction(),
+            new StopAction(),
+            new CreateDatabaseAction(),
+            new DerbySettingsAction()
+        };
+    
     // I'd like a less generic icon, but this is what we have for now...
     private static final String ICON_BASE = "org/netbeans/modules/derby/resources/database.gif";
     
@@ -73,12 +80,7 @@ public class DerbyServerNode extends AbstractNode {
    
     @Override
     public SystemAction[] getActions() {
-        return new SystemAction[] {
-            new StartAction(),
-            new StopAction(),
-            new CreateDatabaseAction(),
-            new DerbySettingsAction()
-        };
+        return actions;
     }
     
     @Override
