@@ -69,7 +69,7 @@ public class NewSchemaBasedConfigPropertySupportFactory {
             final Attribute attr,
             final JBIComponentConfigurationMBeanAttributeInfo info) {
 
-        JBIComponentConfigurationDescriptor descriptor = info.getDescriptor();
+        JBIComponentConfigurationDescriptor descriptor = info.getConfigurationDescriptor();
         QName typeQName = descriptor.getTypeQName();
 
         List<JBIComponentConfigurationConstraint> constraints =
