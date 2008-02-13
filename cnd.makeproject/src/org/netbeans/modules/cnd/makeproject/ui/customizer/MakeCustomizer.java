@@ -41,6 +41,7 @@
 
 package org.netbeans.modules.cnd.makeproject.ui.customizer;
 
+import org.netbeans.modules.cnd.makeproject.configurations.ui.ProjectPropPanel;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
@@ -96,7 +97,7 @@ import org.openide.util.NbBundle;
 public class MakeCustomizer extends javax.swing.JPanel implements HelpCtx.Provider {
     
     private Component currentCustomizer;
-    private ConfigurationNode currentConfigurationNode = null;
+    private PropertyNode currentConfigurationNode = null;
     private Node previousNode;
     
     private GridBagConstraints fillConstraints;
@@ -466,14 +467,14 @@ public class MakeCustomizer extends javax.swing.JPanel implements HelpCtx.Provid
                     }
                     JPanel panel = new JPanel();
                     panel.setLayout(new java.awt.GridBagLayout());
-                    currentConfigurationNode = (ConfigurationNode)node;
-                    if (currentConfigurationNode.getPanel(project, projectDescriptor) != null) {
+                    currentConfigurationNode = (PropertyNode)node;
+                    if (currentConfigurationNode.custumizerStyle() == CustomizerNode.CustomizerStyle.PANEL) {
                         panel.add(currentConfigurationNode.getPanel(project, projectDescriptor), fillConstraints);
                         configurationLabel.setEnabled(false);
                         configurationComboBox.setEnabled(false);
                         configurationsButton.setEnabled(false);
                     }
-                    else {
+                    else if (currentConfigurationNode.custumizerStyle() == CustomizerNode.CustomizerStyle.SHEET) {
                         panel.setBorder(new javax.swing.border.EtchedBorder());
                         PropertySheet propertySheet = new PropertySheet(); // See IZ 105525 for details.
                         DummyNode[] dummyNodes = new DummyNode[selectedConfigurations.length];
@@ -485,6 +486,11 @@ public class MakeCustomizer extends javax.swing.JPanel implements HelpCtx.Provid
                         configurationLabel.setEnabled(true);
                         configurationComboBox.setEnabled(true);
                         configurationsButton.setEnabled(true);
+                    }
+                    else {
+                        configurationLabel.setEnabled(false);
+                        configurationComboBox.setEnabled(false);
+                        configurationsButton.setEnabled(false);
                     }
                     customizerPanel.add(panel, fillConstraints );
                     customizerPanel.validate();
@@ -618,7 +624,7 @@ public class MakeCustomizer extends javax.swing.JPanel implements HelpCtx.Provid
         CustomizerNode rootDescription = new CustomizerNode(
                 "Configuration Properties", getString("CONFIGURATION_PROPERTIES"), (CustomizerNode[])descriptions.toArray(new CustomizerNode[descriptions.size()]));  // NOI18N
         
-        return new ConfigurationNode(rootDescription);
+        return new PropertyNode(rootDescription);
     }
     
     CustomizerNode getAdvancedCutomizerNode(Vector descriptions) {
@@ -699,7 +705,7 @@ public class MakeCustomizer extends javax.swing.JPanel implements HelpCtx.Provid
         CustomizerNode rootDescription = new CustomizerNode(
                 "Configuration Properties", getString("CONFIGURATION_PROPERTIES"), descriptions );  // NOI18N
         
-        return new ConfigurationNode(rootDescription);
+        return new PropertyNode(rootDescription);
     }
     
     private Node createRootNodeFolder(Project project, Folder folder) {
@@ -732,7 +738,7 @@ public class MakeCustomizer extends javax.swing.JPanel implements HelpCtx.Provid
         CustomizerNode rootDescription = new CustomizerNode(
                 "Configuration Properties", getString("CONFIGURATION_PROPERTIES"), (CustomizerNode[])descriptions.toArray(new CustomizerNode[descriptions.size()]));  // NOI18N
         
-        return new ConfigurationNode(rootDescription);
+        return new PropertyNode(rootDescription);
     }
     
     private CustomizerNode createGeneralDescription(Project project) {
@@ -757,7 +763,13 @@ public class MakeCustomizer extends javax.swing.JPanel implements HelpCtx.Provid
             }
             return projectPropPanel;
         }
-        
+
+        @Override
+        public CustomizerStyle customizerStyle() {
+            return CustomizerStyle.PANEL;
+        }
+    
+        @Override
         public HelpCtx getHelpCtx() {
             return new HelpCtx("ProjectProperties"); // NOI18N
         }
@@ -1275,16 +1287,20 @@ public class MakeCustomizer extends javax.swing.JPanel implements HelpCtx.Provid
     
     /** Node to be used for configuration
      */
-    private class ConfigurationNode extends AbstractNode  implements HelpCtx.Provider {
+    private class PropertyNode extends AbstractNode  implements HelpCtx.Provider {
         
         private CustomizerNode description;
         
-        public ConfigurationNode( CustomizerNode description ) {
-            super( description.children == null ? Children.LEAF : new ConfigurationChildren( description.children ) );
+        public PropertyNode( CustomizerNode description ) {
+            super( description.children == null ? Children.LEAF : new PropertyNodeChildren( description.children ) );
             setName( description.name );
             setDisplayName( description.displayName );
             setIconBaseWithExtension(description.icon);
             this.description = description;
+        }
+        
+        public CustomizerNode.CustomizerStyle custumizerStyle() {
+            return description.customizerStyle();
         }
         
         public Sheet getSheet(Project project, ConfigurationDescriptor configurationDescriptor, Configuration configuration) {
@@ -1302,11 +1318,11 @@ public class MakeCustomizer extends javax.swing.JPanel implements HelpCtx.Provid
     
     /** Children used for configuration
      */
-    private class ConfigurationChildren extends Children.Keys {
+    private class PropertyNodeChildren extends Children.Keys {
         
         private Collection descriptions;
         
-        public ConfigurationChildren( CustomizerNode[] descriptions ) {
+        public PropertyNodeChildren( CustomizerNode[] descriptions ) {
             this.descriptions = Arrays.asList( descriptions );
         }
         
@@ -1321,7 +1337,7 @@ public class MakeCustomizer extends javax.swing.JPanel implements HelpCtx.Provid
         }
         
         protected Node[] createNodes( Object key ) {
-            return new Node[] { new ConfigurationNode( (CustomizerNode)key ) };
+            return new Node[] { new PropertyNode( (CustomizerNode)key ) };
         }
     }
     

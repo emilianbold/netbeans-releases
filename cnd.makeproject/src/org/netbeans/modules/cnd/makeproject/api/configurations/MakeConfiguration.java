@@ -57,7 +57,7 @@ import org.netbeans.modules.cnd.makeproject.api.remote.FilePathAdaptor;
 import org.netbeans.modules.cnd.makeproject.configurations.ui.IntNodeProp;
 import org.netbeans.modules.cnd.makeproject.api.platforms.Platforms;
 import org.netbeans.modules.cnd.makeproject.configurations.ui.BooleanNodeProp;
-import org.netbeans.modules.cnd.makeproject.configurations.ui.ProjectsNodeProp;
+import org.netbeans.modules.cnd.makeproject.configurations.ui.RequiredProjectsNodeProp;
 import org.netbeans.modules.cnd.settings.CppSettings;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -406,7 +406,7 @@ public class MakeConfiguration extends Configuration {
 	set2.setName("Projects"); // NOI18N
 	set2.setDisplayName(getString("ProjectsTxt1"));
 	set2.setShortDescription(getString("ProjectsHint"));
-	set2.put(new ProjectsNodeProp(getRequiredProjectsConfiguration(), project, conf, getBaseDir(), texts));
+	set2.put(new RequiredProjectsNodeProp(getRequiredProjectsConfiguration(), project, conf, getBaseDir(), texts));
 	sheet.put(set2);
 
 	return sheet;

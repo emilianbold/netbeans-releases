@@ -38,7 +38,7 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.cnd.makeproject.ui.customizer;
+package org.netbeans.modules.cnd.makeproject.configurations.ui;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
