@@ -172,27 +172,30 @@ public class BPELValidationController extends ChangeEventListenerAdapter {
     }
     
     private void showAnnotationsInEditor(List<ResultItem> result) {
-      for (BPELValidationAnnotation annotation : myAnnotations) {
-        annotation.detach();
-      }
-      myAnnotations.clear();
+        synchronized (myAnnotations) {
+            for (BPELValidationAnnotation annotation : myAnnotations) {
+                annotation.detach();
+            }
+            myAnnotations.clear();
 //System.out.println();
 //System.out.println("SHOW ANNOTATION IN EDITOR");
 
-      for (ResultItem item : result) {
-        if (item.getType() != ResultType.ERROR) {
-          continue;
-        }
-        Line line = Util.getLine(item);
+            for (ResultItem item : result) {
+                if (item.getType() != ResultType.ERROR) {
+                    continue;
+                }
+                Line line = Util.getLine(item);
 //System.out.println("  see line: " + line);
 
-        if (line == null) {
-          continue;
+                if (line == null) {
+                    continue;
+                }
+                BPELValidationAnnotation annotation =
+                        new BPELValidationAnnotation();
+                myAnnotations.add(annotation);
+                annotation.show(line, item.getDescription());
+            }
         }
-        BPELValidationAnnotation annotation = new BPELValidationAnnotation();
-        myAnnotations.add(annotation);
-        annotation.show(line, item.getDescription());
-      }
     }
 
     private ExternalModelsValidationTrigger getTrigger() {

@@ -45,23 +45,25 @@ import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Formatter;
 import org.netbeans.editor.ext.ExtFormatter;
 import org.netbeans.modules.cnd.editor.cplusplus.CKit;
-import org.netbeans.modules.cnd.editor.options.CodeStyleImpl;
 import org.netbeans.modules.cnd.editor.options.EditorOptions;
 
 /**
  *
  * @author Alexander Simon
  */
-abstract public class CodeStyle {
+public final class CodeStyle {
+    static {
+        EditorOptions.codeStyleFactory = new FactoryImpl();
+    }
+
     private static CodeStyle INSTANCE_C;
     private static CodeStyle INSTANCE_CPP;
     private Language language;
-    static {
-        EditorOptions.codeStyleProducer = new Producer();
-    }
+    private Preferences preferences;
 
-    protected CodeStyle(Language language) {
+    private CodeStyle(Language language, Preferences preferences) {
         this.language = language;
+        this.preferences = preferences;
     }
 
     public synchronized static CodeStyle getDefault(Language language) {
@@ -93,7 +95,7 @@ abstract public class CodeStyle {
     }
     
     private static CodeStyle create(Language language) {
-        return new CodeStyleImpl(language, EditorOptions.getPreferences(EditorOptions.getCurrentProfileId(language)));
+        return new CodeStyle(language, EditorOptions.getPreferences(EditorOptions.getCurrentProfileId(language)));
     }
     
 
@@ -156,6 +158,11 @@ abstract public class CodeStyle {
     public PreprocessorIndent indentPreprocessorDirectives(){
         return PreprocessorIndent.valueOf(getOption(EditorOptions.indentPreprocessorDirectives,
                                       EditorOptions.indentPreprocessorDirectivesDefault));
+    }
+
+    public boolean sharpAtStartLine(){
+        return getOption(EditorOptions.sharpAtStartLine,
+                         EditorOptions.sharpAtStartLineDefault);
     }
             
     public boolean getFormatLeadingStarInComment() {
@@ -245,8 +252,14 @@ abstract public class CodeStyle {
         return getPreferences().get(key, defaultValue);
     }
 
-    abstract protected Preferences getPreferences();
-    
+    private Preferences getPreferences(){
+        return preferences;
+    }
+
+    private void setPreferences(Preferences preferences){
+        this.preferences = preferences;
+    }
+
     // Nested classes ----------------------------------------------------------
     public enum Language {
         C,
@@ -265,9 +278,15 @@ abstract public class CodeStyle {
     }
 
     // Communication with non public packages ----------------------------------
-    private static class Producer implements EditorOptions.CodeStyleProducer {
+    private static class FactoryImpl implements EditorOptions.CodeStyleFactory {
         public CodeStyle create(Language language, Preferences preferences) {
-            return new CodeStyleImpl(language, preferences);
+            return new CodeStyle(language, preferences);
+        }
+        public Preferences getPreferences(CodeStyle codeStyle) {
+            return codeStyle.getPreferences();
+        }
+        public void setPreferences(CodeStyle codeStyle, Preferences preferences) {
+            codeStyle.setPreferences(preferences);
         }
     } 
 }
