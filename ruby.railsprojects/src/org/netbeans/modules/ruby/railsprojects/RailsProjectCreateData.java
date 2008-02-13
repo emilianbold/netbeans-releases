@@ -41,7 +41,7 @@ package org.netbeans.modules.ruby.railsprojects;
 
 import java.io.File;
 import org.netbeans.api.ruby.platform.RubyPlatform;
-import org.netbeans.modules.ruby.railsprojects.database.RailsDatabaseConnection;
+import org.netbeans.modules.ruby.railsprojects.database.RailsDatabaseConfiguration;
 
 /**
  * Encapsulates data required for creating a new Rails project (empty 
@@ -68,13 +68,9 @@ public class RailsProjectCreateData {
      */
     private final boolean create;
     /**
-     * The database to use.
+     * The database configuration to use.
      */
-    private final RailsDatabaseConnection database;
-    /**
-     * Specifies whether the database should be accessed using JDBC.
-     */
-    private final boolean jdbc;
+    private final RailsDatabaseConfiguration database;
     /**
      * Specifies whether the project might be deployed as a .war file.
      */
@@ -97,13 +93,12 @@ public class RailsProjectCreateData {
      * the project as a .war file should be added.
      */
     public RailsProjectCreateData(RubyPlatform platform, File dir, String name, boolean create, 
-            RailsDatabaseConnection database, boolean jdbc, boolean deploy, String serverInstanceId) {
+            RailsDatabaseConfiguration database, boolean deploy, String serverInstanceId) {
         this.platform = platform;
         this.dir = dir;
         this.name = name;
         this.create = create;
         this.database = database;
-        this.jdbc = jdbc;
         this.deploy = deploy;
         this.serverInstanceId = serverInstanceId;
     }
@@ -118,7 +113,7 @@ public class RailsProjectCreateData {
     /**
      * @see #database
      */
-    public RailsDatabaseConnection getDatabase() {
+    public RailsDatabaseConfiguration getDatabase() {
         return database;
     }
 
@@ -134,13 +129,6 @@ public class RailsProjectCreateData {
      */
     public File getDir() {
         return dir;
-    }
-
-    /**
-     * @see #jdbc
-     */
-    public boolean isJdbc() {
-        return jdbc;
     }
 
     /**

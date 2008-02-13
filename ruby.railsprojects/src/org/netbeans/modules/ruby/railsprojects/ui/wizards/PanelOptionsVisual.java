@@ -41,8 +41,6 @@
 
 package org.netbeans.modules.ruby.railsprojects.ui.wizards;
 
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import org.netbeans.api.ruby.platform.RubyPlatform;
@@ -50,29 +48,18 @@ import org.netbeans.modules.ruby.platform.RubyPlatformCustomizer;
 import org.netbeans.modules.ruby.railsprojects.server.RailsServerManager;
 import org.openide.WizardDescriptor;
 import org.openide.WizardValidationException;
-import org.openide.util.NbBundle;
 
-public class PanelOptionsVisual extends SettingsPanel implements ActionListener, PropertyChangeListener {
+public class PanelOptionsVisual extends SettingsPanel implements PropertyChangeListener {
     
 //    private static boolean lastMainClassCheck = true; // XXX Store somewhere
     
     private PanelConfigureProject panel;
 //    private boolean valid;
-    private String javaDb;
-    private String otherJdbc;
-    public static final String JAVA_DB = "javadb"; // NOI18N
-    public static final String JDBC = "jdbc"; // NOI18N
     
     /** Creates new form PanelOptionsVisual */
     public PanelOptionsVisual( PanelConfigureProject panel, int type ) {
         initComponents();
 
-        javaDb = NbBundle.getMessage(PanelOptionsVisual.class, "JavaDB");
-        otherJdbc = NbBundle.getMessage(PanelOptionsVisual.class, "OtherJDBC");
-
-//        dbCombo.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "mysql", javaDb, "oracle", "postgresql", "sqlite2", "sqlite3",
-//            otherJdbc}));
-//        dbCombo.addActionListener(this);
         this.panel = panel;
 
         interpreterChanged();
@@ -94,8 +81,7 @@ public class PanelOptionsVisual extends SettingsPanel implements ActionListener,
                 break;
         }
         
-//        jdbcCheckBox.addActionListener(this);
-        warCheckBox.addActionListener(this);
+        initWarCheckBox();
         
         //this.mainClassTextField.getDocument().addDocumentListener( new DocumentListener () {
         //   
@@ -114,23 +100,8 @@ public class PanelOptionsVisual extends SettingsPanel implements ActionListener,
         //});
     }
 
-    public void actionPerformed( ActionEvent e ) {  
-//        if (e.getSource() == jdbcCheckBox) {
-//            this.panel.fireChangeEvent();
-//        } else if (e.getSource() == warCheckBox) {
-//            this.panel.fireChangeEvent();
-//        } else if (e.getSource() == dbCombo) {
-//            String db = (String)dbCombo.getSelectedItem();
-//            if (db.equals(javaDb) || db.equals(otherJdbc)) {
-//                jdbcCheckBox.setSelected(true);
-//            }
-//            this.panel.fireChangeEvent();
-//        }
-        //if ( e.getSource() == createMainCheckBox ) {
-        //    lastMainClassCheck = createMainCheckBox.isSelected();
-        //    mainClassTextField.setEnabled( lastMainClassCheck );        
-        //    this.panel.fireChangeEvent();
-        //}                
+    private void initWarCheckBox() {
+        warCheckBox.setEnabled(getPlatform().isJRuby());
     }
     
     public void propertyChange(PropertyChangeEvent event) {
@@ -275,12 +246,6 @@ public class PanelOptionsVisual extends SettingsPanel implements ActionListener,
 //                    NbBundle.getMessage(PanelOptionsVisual.class, "JRubyRequired") ); //NOI18N
 //            return false;
 //        }
-//        String db = (String)dbCombo.getSelectedItem();
-//        if ((!jdbcCheckBox.isSelected()) && (db.equals(javaDb) || db.equals(otherJdbc))) {
-//            settings.putProperty( "WizardPanel_errorMessage", 
-//                    NbBundle.getMessage(PanelOptionsVisual.class, "JdbcRequired", db) ); //NOI18N
-//            return false;
-//        }
         //if (mainClassTextField.isVisible () && mainClassTextField.isEnabled ()) {
         //    if (!valid) {
         //        settings.putProperty( "WizardPanel_errorMessage", // NOI18N
@@ -304,14 +269,6 @@ public class PanelOptionsVisual extends SettingsPanel implements ActionListener,
 
     void store(WizardDescriptor d) {
         d.putProperty( /*XXX Define somewhere */ "setAsMain", setAsMainCheckBox.isSelected() && setAsMainCheckBox.isVisible() ? Boolean.TRUE : Boolean.FALSE ); // NOI18N
-//        String db = (String) dbCombo.getSelectedItem();
-//        if (db.equals(javaDb)) {
-//            db = JAVA_DB;
-//        } else if (db.equals(otherJdbc)) {
-//            db = JDBC;
-//        }
-//        d.putProperty(NewRailsProjectWizardIterator.RAILS_DB_WN, db);
-//        d.putProperty(NewRailsProjectWizardIterator.JDBC_WN, jdbcCheckBox.isSelected() && jdbcCheckBox.isVisible() ? Boolean.TRUE : Boolean.FALSE ); // NOI18N
         d.putProperty(NewRailsProjectWizardIterator.GOLDSPIKE_WN, warCheckBox.isSelected() && warCheckBox.isVisible() ? Boolean.TRUE : Boolean.FALSE ); // NOI18N
         d.putProperty(NewRailsProjectWizardIterator.PLATFORM, platforms.getModel().getSelectedItem());
         d.putProperty(NewRailsProjectWizardIterator.SERVER_INSTANCE, serverComboBox.getModel().getSelectedItem());

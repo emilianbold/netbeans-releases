@@ -60,7 +60,7 @@ import org.netbeans.modules.ruby.rubyproject.RakeTargetsAction;
 import org.netbeans.modules.ruby.platform.execution.DirectoryFileLocator;
 import org.netbeans.modules.ruby.platform.execution.ExecutionService;
 import org.netbeans.modules.ruby.platform.execution.RegexpOutputRecognizer;
-import org.netbeans.modules.ruby.railsprojects.database.RailsDatabaseConnection;
+import org.netbeans.modules.ruby.railsprojects.database.RailsDatabaseConfiguration;
 import org.netbeans.modules.ruby.spi.project.support.rake.RakeProjectHelper;
 import org.netbeans.modules.ruby.spi.project.support.rake.EditableProperties;
 import org.netbeans.modules.ruby.spi.project.support.rake.ProjectGenerator;
@@ -104,6 +104,7 @@ public class RailsProjectGenerator {
 //        boolean createJavaDb = false;
 //        boolean createJdbc = false;
         RubyPlatform platform = data.getPlatform();
+        RailsDatabaseConfiguration railsDb = data.getDatabase();
         // Run Rails to generate the appliation skeleton
         if (data.isCreate()) {
             final String rails = platform.getGemManager().getRails();
@@ -114,17 +115,7 @@ public class RailsProjectGenerator {
             ExecutionDescriptor desc = null;
             String displayName = NbBundle.getMessage(RailsProjectGenerator.class, "GenerateRails");
 
-            RailsDatabaseConnection railsDb = data.getDatabase();
             String railsDbArg = railsDb.needExtraConfig() ? null : "--database=" + railsDb.getDatabase();
-//            if (data.getDatabase() != null) {
-////                if (data.getDatabase().equals(PanelOptionsVisual.JAVA_DB)) {
-////                    createJavaDb = true;
-////                } else if (data.getDatabase().equals(PanelOptionsVisual.JDBC)) {
-////                    createJdbc = true;
-////                } else {
-//                    railsDbArg = "--database=" + data.getDatabase();
-////                }
-//            }
             File pwd = data.getDir().getParentFile();
             if (runThroughRuby) {
                 desc = new ExecutionDescriptor(platform, displayName, pwd, rails);
@@ -165,23 +156,17 @@ public class RailsProjectGenerator {
             dirFO.getFileSystem().refresh(true);
 
             // TODO - only do this if not creating from existing app?
-            if (railsDb.needExtraConfig()){
-                railsDb.editConfig(dirFO);
-            }
-//            if (data.isJdbc()) {
-//                insertActiveJdbcHook(dirFO);
-//            }
-//            
-//            if (createJdbc || createJavaDb) {
-//                editDatabaseYml(platform, dirFO, createJavaDb);
-//            } else if (platform.isJRuby()) {
-//                commentOutSocket(dirFO);
-//            }
         }
 
         RakeProjectHelper h = createProject(dirFO, platform, data); //NOI18N
         
         Project p = ProjectManager.getDefault().findProject(dirFO);
+        if (railsDb.needExtraConfig()) {
+            railsDb.editConfig((RailsProject) p);
+        } else {
+            commentOutSocket(dirFO);
+        }
+
         ProjectManager.getDefault().saveProject(p);
         
         // Start the server? No, disabled for now; this clobbers the generate-project
@@ -211,140 +196,6 @@ public class RailsProjectGenerator {
         return h;
     }
     
-    private static void insertActiveJdbcHook(FileObject dir) {
-        FileObject fo = dir.getFileObject("config/environment.rb"); // NOI18N
-        if (fo != null) {
-            try {
-                DataObject dobj = DataObject.find(fo);
-                EditorCookie ec = dobj.getCookie(EditorCookie.class);
-                if (ec != null) {
-                    javax.swing.text.Document doc = ec.openDocument();
-                    String text = doc.getText(0, doc.getLength());
-                    int offset = text.indexOf("jdbc"); // NOI18N
-                    if (offset != -1) {
-                        // This rails version already handles JDBC somehow
-                        return;
-                    }
-                    offset = text.indexOf("Rails::Initializer.run do |config|"); // NOI18N
-                    if (offset != -1) {
-                        String insert =
-                            "# Inserted by NetBeans Ruby support to support JRuby\n" +
-                            "if defined?(JRUBY_VERSION)\n" + // NOI18N
-                            "  require 'rubygems'\n" + // NOI18N
-                            "  gem 'activerecord-jdbc-adapter'\n" + // NOI18N
-                            "  require 'jdbc_adapter'\n" + // NOI18N
-                            "end\n\n"; // NOI18N
-                        doc.insertString(offset, insert, null);
-                        SaveCookie sc = dobj.getCookie(SaveCookie.class);
-                        if (sc != null) {
-                            sc.save();
-                        } else {
-                            LifecycleManager.getDefault().saveAll();
-                        }
-                    }
-                }
-            } catch (BadLocationException ble) {
-                Exceptions.printStackTrace(ble);
-            } catch (DataObjectNotFoundException dnfe) {
-                Exceptions.printStackTrace(dnfe);
-            } catch (IOException ioe) {
-                Exceptions.printStackTrace(ioe);
-            }
-        }
-    }
-
-    private static void editDatabaseYml(final RubyPlatform platform, FileObject dir, boolean javaDb) {
-        FileObject fo = dir.getFileObject("config/database.yml"); // NOI18N
-        if (fo != null) {
-            BaseDocument bdoc = null;
-            try {
-                DataObject dobj = DataObject.find(fo);
-                EditorCookie ec = dobj.getCookie(EditorCookie.class);
-                if (ec != null) {
-                    javax.swing.text.Document doc = ec.openDocument();
-                    // Replace contents wholesale
-                    if (doc instanceof BaseDocument) {
-                        bdoc = (BaseDocument)doc;
-                        bdoc.atomicLock();
-                    }
-                    
-                    doc.remove(0, doc.getLength());
-                    String insert = null;
-                    if (javaDb) {
-                        insert =
-                            "# JavaDB Setup\n" + 
-                            "#\n" + 
-                            "# You may need to copy derby.jar into\n" + 
-                            "#  " + platform.getLib() + "\n" + 
-                            "# With Java SE 6 and later this is not necessary.\n" + 
-                            "development:\n" + // NOI18N
-                            "  adapter: derby\n" +  // NOI18N
-                            "  database: db/development.db\n" + // NOI18N
-                            "\n" + // NOI18N
-                            "# Warning: The database defined as 'test' will be erased and\n" + 
-                            "# re-generated from your development database when you run 'rake'.\n" + 
-                            "# Do not set this db to the same as development or production.\n" + 
-                            "test:\n" +  // NOI18N
-                            "  adapter: derby\n" +  // NOI18N
-                            "  database: db/test.db\n" +  // NOI18N
-                            "\n" + // NOI18N
-                            "production:\n" +  // NOI18N
-                            "  adapter: derby\n" +  // NOI18N
-                            "  database: db/production.db\n"; // NOI18N
-                    } else {
-                        String projectName = dir.getName();
-                        insert = 
-                            "# JDBC Setup\n" + 
-                            "# Adjust JDBC driver URLs as necessary.\n" + 
-                            "development:\n" + // NOI18N
-                            "      host: localhost\n" + // NOI18N
-                            "      adapter: jdbc\n" + // NOI18N
-                            "      driver: com.mysql.jdbc.Driver\n" + // NOI18N
-                            "      url: jdbc:mysql://localhost/" + projectName + "_development\n" + // NOI18N
-                            "      username:\n" + // NOI18N
-                            "      password:\n" + // NOI18N
-                            "\n" + // NOI18N
-                            "# Warning: The database defined as 'test' will be erased and\n" + 
-                            "# re-generated from your development database when you run 'rake'.\n" + 
-                            "# Do not set this db to the same as development or production.\n" + 
-                            "test:\n" +  // NOI18N
-                            "      host: localhost\n" + // NOI18N
-                            "      adapter: jdbc\n" + // NOI18N
-                            "      driver: com.mysql.jdbc.Driver\n" + // NOI18N
-                            "      url: jdbc:mysql://localhost/" + projectName + "_test\n" + // NOI18N
-                            "      username:\n" + // NOI18N
-                            "      password:\n" + // NOI18N
-                            "\n" + // NOI18N
-                            "production:\n" +  // NOI18N
-                            "      host: localhost\n" + // NOI18N
-                            "      adapter: jdbc\n" + // NOI18N
-                            "      driver: com.mysql.jdbc.Driver\n" + // NOI18N
-                            "      url: jdbc:mysql://localhost/" + projectName + "_production\n" + // NOI18N
-                            "      username:\n" + // NOI18N
-                            "      password:\n"; // NOI18N
-                    }
-                    doc.insertString(0, insert, null);
-                    SaveCookie sc = dobj.getCookie(SaveCookie.class);
-                    if (sc != null) {
-                        sc.save();
-                    } else {
-                        LifecycleManager.getDefault().saveAll();
-                    }
-                }
-            } catch (BadLocationException ble) {
-                Exceptions.printStackTrace(ble);
-            } catch (DataObjectNotFoundException dnfe) {
-                Exceptions.printStackTrace(dnfe);
-            } catch (IOException ioe) {
-                Exceptions.printStackTrace(ioe);
-            } finally {
-                if (bdoc != null) {
-                    bdoc.atomicUnlock();
-                }
-            }
-        }
-    }
-
     // JRuby doesn't support the socket syntax in database.yml, so try to edit it
     // out
     private static void commentOutSocket(FileObject dir) {
