@@ -58,7 +58,6 @@ import java.util.Timer;
 import java.util.TimerTask;
 import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
-import org.netbeans.api.debugger.Breakpoint;
 import org.netbeans.api.debugger.DebuggerEngine;
 import org.netbeans.api.debugger.DebuggerInfo;
 import org.netbeans.api.debugger.DebuggerManager;
@@ -92,7 +91,6 @@ import org.openide.filesystems.FileUtil;
 import org.openide.modules.InstalledFileLocator;
 import org.openide.util.Utilities;
 import org.openide.util.NbBundle;
-import org.openide.util.RequestProcessor;
 import org.openide.windows.InputOutput;
 
 /**
@@ -680,6 +678,8 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
                     }
                 } else if (frame.contains("func=\"dlopen\"")) {
                     stop = true;
+                } else if (frame.contains("func=\"dlclose\"")) {
+                    gdb.exec_continue();
                 }
             }
         }
@@ -698,7 +698,7 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
         if (msg.startsWith("^done,bkpt=")) { // NOI18N (-break-insert)
             msg = msg.substring(12, msg.length() - 1);
             breakpointValidation(token, GdbUtils.createMapFromString(msg));
-            if (getState().equals(STATE_SILENT_STOP)) { // FIXME - should i check pending breakpoints?
+            if (getState().equals(STATE_SILENT_STOP) && pendingBreakpointMap.isEmpty()) {
                 setRunning();
             }
         } else if (msg.startsWith("^done,stack=")) { // NOI18N (-stack-list-frames)
@@ -744,7 +744,8 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
                 cb.done();
             }
         } else if (msg.equals("^done") && getState().equals(STATE_SILENT_STOP)) { // NOI18N
-            setRunning(); // FIXME - should I check pendingBreakointsMap?
+            log.fine("GD.resultRecord[" + token + "]: Got \"^done\" in silent stop");
+            setRunning();
         } else if (msg.equals("^done")) { // NOI18N
             cb = CommandBuffer.getCommandBuffer(itok);
             if (cb != null) {
@@ -847,8 +848,8 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
             Map<String, String> map = new HashMap<String, String>();
             map.put("number", num); // NOI18N
             breakpointValidation(token, map);
-            if (getState().equals(STATE_SILENT_STOP)) {
-                setRunning(); // FIXME - should I check pendingBreakointsMap?
+            if (getState().equals(STATE_SILENT_STOP) && pendingBreakpointMap.isEmpty()) {
+                setRunning();
             }
         } else if (msg.startsWith("Copyright ") || // NOI18N
                 msg.startsWith("GDB is free software,") || // NOI18N
@@ -892,8 +893,6 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
             }
         } else if (msg.startsWith("Stopped due to shared library event") && !dlopenPending) { // NOI18N
             dlopenPending = true;
-        } else if (dlopenPending) { // FIXME - debug code, remove before commit...
-            log.fine("GD.consoleStreamOutput: Got another shared library event");
         }
     }
     
@@ -1208,30 +1207,28 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
                 setExited();
                 finish(false);
             } else if (reason.equals("breakpoint-hit")) { // NOI18N
+                GdbBreakpoint breakpoint;
+                String tid = map.get("thread-id"); // NOI18N
+                if (tid != null && !tid.equals(currentThreadID)) {
+                    currentThreadID = tid;
+                }
+                updateCurrentCallStack();
+                BreakpointImpl impl = getBreakpointList().get(map.get("bkptno")); // NOI18N
+                if (impl != null && (breakpoint = impl.getBreakpoint()) != null) {
+                    fireBreakpointEvent(breakpoint, new GdbBreakpointEvent(
+                            breakpoint, this, GdbBreakpointEvent.CONDITION_NONE, null));
+                } else {
+                    log.fine("No Breakpoints Found"); // NOI18N
+                }
+                setStopped();
                 if (dlopenPending) {
                     dlopenPending = false;
-                    setStateNoFire(STATE_SILENT_STOP);
                     firePropertyChange(PROP_SHARED_LIB_LOADED, null, null);
-                } else {
-                    GdbBreakpoint breakpoint;
-                    String tid = map.get("thread-id"); // NOI18N
-                    if (tid != null && !tid.equals(currentThreadID)) {
-                        currentThreadID = tid;
-                    }
-                    updateCurrentCallStack();
-                    BreakpointImpl impl = getBreakpointList().get(map.get("bkptno")); // NOI18N
-                    if (impl != null && (breakpoint = impl.getBreakpoint()) != null) {
-                        fireBreakpointEvent(breakpoint, new GdbBreakpointEvent(
-                                breakpoint, this, GdbBreakpointEvent.CONDITION_NONE, null));
-                    } else {
-                        log.fine("No Breakpoints Found"); // NOI18N
-                    }
-                    setStopped();
-                    GdbTimer.getTimer("Startup").stop("Startup1"); // NOI18N
-                    GdbTimer.getTimer("Startup").report("Startup1"); // NOI18N
-                    GdbTimer.getTimer("Startup").free(); // NOI18N
-                    GdbTimer.getTimer("Stop").mark("Stop1");// NOI18N
                 }
+                GdbTimer.getTimer("Startup").stop("Startup1"); // NOI18N
+                GdbTimer.getTimer("Startup").report("Startup1"); // NOI18N
+                GdbTimer.getTimer("Startup").free(); // NOI18N
+                GdbTimer.getTimer("Stop").mark("Stop1");// NOI18N
             } else if (reason.equals("exited-signalled")) { // NOI18N
                 String signal = map.get("signal-name"); // NOI18N
                 if (signal != null) {
