@@ -60,4 +60,7 @@ public class WsdlDataManagerImpl implements WsdlDataManager {
         }
     }
 
+    public WsdlData findWsdlData(String wsdlUrl, String serviceName) {
+        return WebServiceListModel.getInstance().findWebServiceData(wsdlUrl, serviceName, true);
+    }
 }
