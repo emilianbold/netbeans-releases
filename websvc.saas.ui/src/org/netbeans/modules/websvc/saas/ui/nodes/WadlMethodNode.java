@@ -40,15 +40,20 @@
 package org.netbeans.modules.websvc.saas.ui.nodes;
 
 import java.awt.Image;
+import java.awt.datatransfer.Transferable;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import javax.swing.Action;
+import org.netbeans.modules.websvc.saas.model.Saas;
 import org.netbeans.modules.websvc.saas.model.WadlSaasMethod;
 import org.netbeans.modules.websvc.saas.spi.SaasNodeActionsProvider;
+import org.netbeans.modules.websvc.saas.util.SaasTransferable;
 import org.netbeans.modules.websvc.saas.util.SaasUtil;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
+import org.openide.util.datatransfer.ExTransferable;
 import org.openide.util.lookup.AbstractLookup;
 import org.openide.util.lookup.InstanceContent;
 
@@ -63,6 +68,7 @@ public class WadlMethodNode extends AbstractNode {
     public static final String DELETE = "DELETE";
     
     private WadlSaasMethod method;
+    private Transferable transferable;
     
     public WadlMethodNode(WadlSaasMethod method) {
         this(method, new InstanceContent());
@@ -72,6 +78,8 @@ public class WadlMethodNode extends AbstractNode {
         super(Children.LEAF, new AbstractLookup(content));
         this.method = method;
         content.add(method);
+        transferable = ExTransferable.create(
+            new SaasTransferable<WadlSaasMethod>(method, SaasTransferable.WADL_METHOD_FLAVORS));
     }
 
     @Override
@@ -134,6 +142,15 @@ public class WadlMethodNode extends AbstractNode {
         //TODO maybe ???
         //actions.add(SystemAction.get(TestMethodAction.class));
         return actions.toArray(new Action[actions.size()]);
+    }
+
+    @Override
+    public Transferable clipboardCopy() throws IOException {
+        if (method.getSaas().getState() != Saas.State.READY) {
+            method.getSaas().toStateReady();
+            return super.clipboardCopy();
+        }
+        return SaasTransferable.addFlavors(transferable);
     }
     
 }

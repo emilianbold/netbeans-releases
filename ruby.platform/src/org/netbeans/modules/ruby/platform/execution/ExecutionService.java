@@ -343,8 +343,11 @@ public class ExecutionService {
                             ProcessBuilder pb = new ProcessBuilder(command);
                             pb.directory(descriptor.pwd);
                             
+                            
+                            Map<String, String> env = pb.environment();
+                            // set up custom environment configuration
+                            env.putAll(descriptor.getAdditionalEnvironment());
                             if (descriptor.addBinPath) {
-                                Map<String, String> env = pb.environment();
                                 setupProcessEnvironment(env);
                             }
                             Util.adjustProxy(pb);

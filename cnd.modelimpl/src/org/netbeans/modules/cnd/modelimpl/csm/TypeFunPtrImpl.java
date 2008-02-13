@@ -76,19 +76,19 @@ public class TypeFunPtrImpl extends TypeImpl {
     }
     
     @Override
-    protected StringBuilder getText(boolean canonical, CharSequence variableNameToInsert) {
+    public StringBuilder decorateText(CharSequence classifierText, CsmType decorator, boolean canonical, CharSequence variableNameToInsert) {
 	StringBuilder sb = new StringBuilder();
-	if( isConst() ) {
+	if( decorator.isConst() ) {
 	    sb.append("const "); // NOI18N
 	}
-	sb.append(getClassifierText());
-	for( int i = 0; i < getPointerDepth(); i++ ) {
+	sb.append(classifierText);
+	for( int i = 0; i < decorator.getPointerDepth(); i++ ) {
 	    sb.append('*');
 	}
-	if( isReference() ) {
+	if( decorator.isReference() ) {
 	    sb.append('&');
 	}
-	for( int i = 0; i < getArrayDepth(); i++ ) {
+	for( int i = 0; i < decorator.getArrayDepth(); i++ ) {
 	    sb.append(canonical ? "*" : "[]"); // NOI18N
 	}
 	

@@ -41,17 +41,27 @@
 
 package org.netbeans.modules.spring.beans.model;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.util.logging.Logger;
 import org.netbeans.modules.spring.beans.model.ExclusiveAccess.AsyncTask;
 import org.netbeans.modules.spring.beans.model.impl.ConfigFileSpringBeanSource;
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.nio.charset.Charset;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
+import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
+import org.netbeans.api.queries.FileEncodingQuery;
+import org.netbeans.editor.BaseDocument;
+import org.netbeans.modules.spring.api.beans.SpringConstants;
+import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.loaders.DataObject;
+import org.openide.text.CloneableEditorSupport;
 import org.openide.util.Exceptions;
-import org.openide.util.Parameters;
 
 /**
  * Handles the lifecycle of a single config file. Can be notified of external changes
@@ -65,28 +75,36 @@ public class SpringConfigFileModelController {
     private static final Logger LOGGER = Logger.getLogger(SpringConfigFileModelController.class.getName());
     private static final int DELAY = 500;
 
-    private final ConfigFileSpringBeanSource beanSource = new ConfigFileSpringBeanSource();
+    private final ConfigFileSpringBeanSource beanSource;
     private final File file;
 
-    private volatile boolean parsedAtLeastOnce = false;
-
+    // @GuardedBy("this")
+    private boolean parsedAtLeastOnce;
+    // @GuardedBy("this")
     private AsyncTask currentUpdateTask;
+    // @GuardedBy("this")
     private FileObject currentFile;
 
-    public SpringConfigFileModelController(File file) {
+    public SpringConfigFileModelController(File file, ConfigFileSpringBeanSource beanSource) {
         this.file = file;
+        this.beanSource = beanSource;
     }
 
-    /**
-     * Returns the {@link BeanSource} for this config file. This method needs to be
-     * called under exclusive access and the client should have already
-     * called makeUpToDate().
-     *
-     * @return the bean source for this config file.
-     */
-    public SpringBeanSource getBeanSource() {
+    public DocumentRead getDocumentRead() throws IOException {
         assert ExclusiveAccess.getInstance().isCurrentThreadAccess();
-        return beanSource;
+        return new DocumentRead(getFileToMakeUpToDate(), false);
+    }
+
+    public DocumentWrite getDocumentWrite() throws IOException {
+        assert ExclusiveAccess.getInstance().isCurrentThreadAccess();
+        FileObject fo = getFileToMakeUpToDate();
+        if (fo == null) {
+            fo = FileUtil.toFileObject(file);
+        }
+        if (fo != null) {
+            return new DocumentWrite(fo);
+        }
+        return null;
     }
 
     /**
@@ -95,42 +113,39 @@ public class SpringConfigFileModelController {
      * it is parsed now. This method needs to be called under exclusive
      * access.
      */
-    public void makeUpToDate() throws IOException {
-        makeUpToDateImpl(false);
-    }
-
-    public Document makeUpToDateForWrite() throws IOException {
-        return makeUpToDateImpl(true);
-    }
-
-    private Document makeUpToDateImpl(boolean force) throws IOException {
+    private FileObject getFileToMakeUpToDate() throws IOException {
         assert ExclusiveAccess.getInstance().isCurrentThreadAccess();
         FileObject fileToParse = null;
         synchronized (this) {
             if (currentUpdateTask == null || currentUpdateTask.isFinished()) {
                 // No update scheduled.
-                if (parsedAtLeastOnce) {
-                    // The file is already parsed. We don't need to parse again...
-                    if (force) {
-                        // ... unless we are forced to.
-                        fileToParse = currentFile;
-                    }
-                } else {
-                    // Not parsed yet, so parse now.
+                if (!parsedAtLeastOnce) {
+                    // Moreover, not parsed yet, so will parse now.
                     fileToParse = FileUtil.toFileObject(file);
                 }
             } else {
-                // An update is scheduled, so perform it now.
+                // An update is scheduled, so will perform it now.
                 fileToParse = currentFile;
-                // Ensure the updater will not run again.
+            }
+        }
+        return fileToParse;
+    }
+
+    private void doParse(FileObject fo, BaseDocument document, boolean updateTask) throws IOException {
+        assert ExclusiveAccess.getInstance().isCurrentThreadAccess();
+        beanSource.parse(document);
+        synchronized (this) {
+            if (!parsedAtLeastOnce) {
+                parsedAtLeastOnce = true;
+            }
+            if (!updateTask && fo.equals(currentFile)) {
+                // We were not invoked from an update task. By parsing the file,
+                // we have just processed the scheduled update, so
+                // it can be cancelled now.
                 LOGGER.log(Level.FINE, "Canceling update task for " + currentFile);
                 currentUpdateTask.cancel();
             }
         }
-        if (fileToParse != null) {
-            return parse(fileToParse, force);
-        }
-        return null;
     }
 
     public void notifyChange(FileObject configFO) {
@@ -150,13 +165,106 @@ public class SpringConfigFileModelController {
         }
     }
 
-    private Document parse(FileObject configFO, boolean keepDocument) throws IOException {
-        assert ExclusiveAccess.getInstance().isCurrentThreadAccess();
-        if (!parsedAtLeastOnce) {
-            parsedAtLeastOnce = true;
+    private static BaseDocument getAsDocument(FileObject fo) throws IOException {
+        LOGGER.log(Level.FINE, "Creating an ad-hoc document for {0}", fo);
+        StringBuilder builder = new StringBuilder();
+        Charset charset = FileEncodingQuery.getEncoding(fo);
+        BufferedReader reader = new BufferedReader(new InputStreamReader(fo.getInputStream(), charset));
+        try {
+            for (;;) {
+                String line = reader.readLine();
+                if (line != null) {
+                    builder.append(line).append('\n');
+                } else {
+                    break;
+                }
+            }
+        } finally {
+            reader.close();
         }
-        beanSource.parse(configFO);
-        return null;
+        Class<?> kitClass = CloneableEditorSupport.getEditorKit(SpringConstants.CONFIG_MIME_TYPE).getClass();
+        BaseDocument doc = new BaseDocument(kitClass, false);
+        try {
+            doc.insertString(0, builder.toString(), null);
+        } catch (BadLocationException e) {
+            // Unlikely to happen.
+            LOGGER.log(Level.FINE, null, e);
+        }
+        doc.putProperty(Document.StreamDescriptionProperty, fo);
+        return doc;
+    }
+
+    private static BaseDocument getOrOpenDocument(FileObject fo) throws IOException {
+        DataObject dataObject = DataObject.find(fo);
+        EditorCookie ec = dataObject.getCookie(EditorCookie.class);
+        if (ec == null) {
+            throw new IOException("File " + fo + " does not have an EditorCookie.");
+        }
+        BaseDocument doc = (BaseDocument)ec.getDocument();
+        if (doc == null) {
+            doc = getAsDocument(fo);
+        }
+        return doc;
+    }
+
+    public final class DocumentRead {
+
+        public DocumentRead(FileObject fo, boolean updateTask) throws IOException {
+            if (fo != null) {
+                BaseDocument document = getOrOpenDocument(fo);
+                doParse(fo, document, updateTask);
+            }
+        }
+
+        public SpringBeanSource getBeanSource() throws IOException {
+            return beanSource;
+        }
+    }
+
+    public final class DocumentWrite {
+
+        private final FileObject fo;
+        private final BaseDocument document;
+        // Although this class is single-threaded, better to have these thread-safe,
+        // since they are guarding the document locking, and that needs to be right
+        // even if when this class is misused.
+        private final AtomicBoolean open = new AtomicBoolean();
+        private final AtomicBoolean closed = new AtomicBoolean();
+        private boolean parsed;
+
+        public DocumentWrite(FileObject fo) throws IOException {
+            this.fo = fo;
+            document = getOrOpenDocument(fo);
+        }
+
+        public void open() throws IOException {
+            if (!open.getAndSet(true)) {
+                document.atomicLock();
+            }
+        }
+
+        public void close() {
+            if (open.get() && !closed.getAndSet(true)) {
+                document.atomicUnlock();
+            }
+            // XXX save the document.
+        }
+
+        public BaseDocument getDocument() {
+            return document;
+        }
+
+        public SpringBeanSource getBeanSource() throws IOException {
+            assert open.get();
+            // We could have parsed in open(), but that would have made
+            // it harder to handle exceptions. For example, any IOException thrown
+            // during parsing could have caused the document to remain locked.
+            if (!parsed) {
+                parsed = true;
+                doParse(fo, document, false);
+            }
+            return beanSource;
+        }
     }
 
     private final class Updater implements Runnable {
@@ -168,9 +276,11 @@ public class SpringConfigFileModelController {
         }
 
         public void run() {
+            LOGGER.log(Level.FINE, "Running scheduled update for file {0}", configFile);
             assert ExclusiveAccess.getInstance().isCurrentThreadAccess();
             try {
-                parse(configFile, false);
+                DocumentRead docRead = new DocumentRead(configFile, true);
+                docRead.getBeanSource();
             } catch (IOException e) {
                 Exceptions.printStackTrace(e);
             }

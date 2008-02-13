@@ -41,10 +41,12 @@
 
 package org.netbeans.modules.cnd.completion.cplusplus.ext;
 
+import java.util.List;
 import org.netbeans.modules.cnd.api.model.CsmDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmParameter;
 import org.netbeans.modules.cnd.api.model.CsmScope;
 import java.lang.reflect.Modifier;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.HashMap;
 import org.netbeans.editor.ext.Completion;
@@ -839,6 +841,18 @@ abstract public class CsmCompletion extends Completion {
             } else {
                 return clazz;
             }
+        }
+
+        public List<CsmType> getInstantiationParams() {
+            return Collections.emptyList();
+        }
+
+        public boolean isInstantiation() {
+            return false;
+        }
+
+        public CharSequence getClassifierText() {
+            return clazz.getName();
         }
 
         public boolean isPointer() {
