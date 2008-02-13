@@ -55,6 +55,7 @@ import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
 import org.netbeans.modules.cnd.loaders.CndAbstractDataLoader;
+import org.netbeans.modules.cnd.loaders.CndAbstractDataLoaderExt;
 import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.WizardDescriptor;
 import org.openide.cookies.OpenCookie;
@@ -86,14 +87,12 @@ public class CCFSrcFileIterator implements TemplateWizard.Iterator {
     public synchronized void previousPanel() {
     }
 
-    public static final boolean NEW_EXTENSION = Boolean.getBoolean("cnd.editor.extensions"); // NOI18N
-
     public void initialize (TemplateWizard wiz) {
-        if (NEW_EXTENSION) {
+        if (wiz.getTemplate().getLoader() instanceof CndAbstractDataLoaderExt) {
             Project project = Templates.getProject( wiz );
             Sources sources = ProjectUtils.getSources(project);
             SourceGroup[] groups = sources.getSourceGroups(Sources.TYPE_GENERIC);
-            ExtensionsSettings es = ExtensionsSettings.getInstance((CndAbstractDataLoader)wiz.getTemplate().getLoader());
+            ExtensionsSettings es = ExtensionsSettings.getInstance((CndAbstractDataLoaderExt)wiz.getTemplate().getLoader());
             targetChooserDescriptorPanel = new NewCndFileChooserPanel(project, groups, null, es);
         } else {
             targetChooserDescriptorPanel = wiz.targetChooser();
@@ -108,16 +107,6 @@ public class CCFSrcFileIterator implements TemplateWizard.Iterator {
         DataObject template = wiz.getTemplate ();
 
 	String filename = wiz.getTargetName();
-
-        if (!NEW_EXTENSION) {
-            String ext = template.getPrimaryFile().getExt();
-            if (filename != null && ext != null) {
-                if (filename.endsWith("." + ext)) { // NOI18N
-                    // strip extension, it will be added later ...
-                    filename = filename.substring(0, filename.length()-(ext.length()+1));
-                }
-            }
-        }
 
         DataObject result = template.createFromTemplate(targetFolder, filename);
         

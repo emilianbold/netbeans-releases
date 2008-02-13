@@ -44,6 +44,8 @@ package org.netbeans.modules.cnd.editor.filecreation;
 import java.awt.Component;
 import java.io.File;
 import java.io.IOException;
+import java.lang.String;
+import java.util.Enumeration;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.Project;
@@ -53,7 +55,6 @@ import org.openide.ErrorManager;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.loaders.DataObject;
 import org.openide.util.ChangeSupport;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
@@ -109,8 +110,14 @@ final class NewCndFileChooserPanel implements WizardDescriptor.Panel<WizardDescr
                ( bottomPanel == null || bottomPanel.isValid() ) );
         
         if (!ok) {
-            setErrorMessage(null);
+            wizard.putProperty ("WizardPanel_errorMessage", ""); // NOI18N
             return false;
+        }
+        
+        if (!es.isKnownExtension(gui.getTargetExtension())) {
+            //MSG_new_extension_introduced
+            String msg = NbBundle.getMessage (NewCndFileChooserPanel.class, "MSG_new_extension_introduced", gui.getTargetExtension()); // NOI18N
+            wizard.putProperty ("WizardPanel_errorMessage", msg); // NOI18N
         }
         
         // check if the file name can be created
@@ -263,18 +270,5 @@ final class NewCndFileChooserPanel implements WizardDescriptor.Panel<WizardDescr
         }
         
         return result;
-    }
-
-    private void setErrorMessage( String key ) {
-        if ( key == null ) {
-            setLocalizedErrorMessage ( "" ); // NOI18N
-        }
-        else {
-            setLocalizedErrorMessage ( NbBundle.getMessage( NewCndFileChooserPanel.class, key) );
-        }
-    }
-    
-    private void setLocalizedErrorMessage (String message) {
-        wizard.putProperty ("WizardPanel_errorMessage", message); // NOI18N
     }
 }
