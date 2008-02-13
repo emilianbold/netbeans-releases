@@ -53,7 +53,6 @@ import org.netbeans.editor.TokenID;
 import org.netbeans.editor.TokenProcessor;
 import org.netbeans.modules.cnd.completion.cplusplus.NbCsmSyntaxSupport;
 import org.netbeans.modules.cnd.editor.cplusplus.CCTokenContext;
-import org.openide.ErrorManager;
 
 /**
  *
