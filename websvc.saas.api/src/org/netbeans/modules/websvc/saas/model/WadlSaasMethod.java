@@ -70,14 +70,17 @@ public class WadlSaasMethod extends SaasMethod {
         return (WadlSaas) super.getSaas();
     }
     
+    public WadlSaasResource getParentResource() {
+        return parent;
+    }
+    
     public Resource[] getResourcePath() {
         if (path == null) {
             ArrayList<Resource> result = new ArrayList<Resource>();
-            for (Resource base : getSaas().getResources()) {
-                findPathToMethod(base, result);
-                if (result.size() > 0) {
-                    break;
-                }
+            WadlSaasResource current = getParentResource();
+            while (current != null) {
+                result.add(0, current.getResource());
+                current = current.getParent();
             }
             path = result.toArray(new Resource[result.size()]);
         }
