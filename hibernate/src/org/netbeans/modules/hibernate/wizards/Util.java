@@ -77,7 +77,7 @@ public class Util {
         "org.hibernate.dialect.DB2Dialect",
         "org.hibernate.dialect.DB2390Dialect",
         "org.hibernate.dialect.DB2400Dialect",
-        "org.hibernate.dialect.derbyDialect",
+        "org.hibernate.dialect.DerbyDialect",
         "org.hibernate.dialect.FirebirdDialect",
         "org.hibernate.dialect.FrontbaseDialect",
         "org.hibernate.dialect.HSQLDialect",
