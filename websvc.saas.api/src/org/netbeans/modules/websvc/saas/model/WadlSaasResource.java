@@ -36,7 +36,6 @@
  * 
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.websvc.saas.model;
 
 import java.util.ArrayList;
@@ -50,6 +49,7 @@ import org.netbeans.modules.websvc.saas.model.wadl.Resource;
  * @author nam
  */
 public class WadlSaasResource {
+
     private final WadlSaas saas;
     private final WadlSaasResource parent;
     private final Resource resource;
@@ -74,18 +74,38 @@ public class WadlSaasResource {
         return saas;
     }
 
+    private void initChildren() {
+        methods = new ArrayList<WadlSaasMethod>();
+        childResources = new ArrayList<WadlSaasResource>();
+        for (Object o : resource.getMethodOrResource()) {
+            if (o instanceof Method) {
+                Method m = (Method) o;
+                methods.add(new WadlSaasMethod(this, m));
+            } else if (o instanceof Resource) {
+                Resource r = (Resource) o;
+                childResources.add(new WadlSaasResource(saas, this, r));
+            }
+        }
+    }
+
     public List<WadlSaasMethod> getMethods() {
         if (methods == null) {
-            methods = new ArrayList<WadlSaasMethod>();
-            for (Object o : resource.getMethodOrResource()) {
-                if (o instanceof Method) {
-                    Method m = (Method) o;
-                    methods.add(new WadlSaasMethod(this, m));
-                }
-            }
+            initChildren();
         }
         return Collections.unmodifiableList(methods);
     }
+
+    public List<WadlSaasResource> getChildResources() {
+        if (childResources == null) {
+            initChildren();
+        }
+        return Collections.unmodifiableList(childResources);
+    }
     
-    
+    public List<Object> getResourcesAndMethods() {
+        List<Object> result = new ArrayList<Object>();
+        result.addAll(getChildResources());
+        result.addAll(getMethods());
+        return result; 
+    }
 }
