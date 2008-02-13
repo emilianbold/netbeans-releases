@@ -699,6 +699,7 @@ public class JarClassLoader extends ProxyClassLoader {
             String jar = url.substring(0, bang);
             String _name = url.substring(bang+2);
             Source _src = Source.sources.get(jar);
+            assert _src != null : dumpSources(Source.sources, jar);
             return new ResURLConnection (u, _src, _name);
         }
 
@@ -739,6 +740,16 @@ public class JarClassLoader extends ProxyClassLoader {
                 file = toBangSlash + afterBangSlash;
             }
             setURLOK(url, file, ref);	
+        }
+
+        private static String dumpSources(Map<String, Source> sources, String jar) {
+            StringBuilder sb = new StringBuilder();
+            sb.append("Searching for ").append(jar).append("\nwhile available:\n");
+            for (Map.Entry<String, Source> entry : sources.entrySet()) {
+                sb.append(entry.getKey()).append('\n');
+            }
+            
+            return sb.toString();
         }
         
         @SuppressWarnings("deprecation")
