@@ -49,7 +49,7 @@ import java.util.List;
 import javax.swing.JButton;
 import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.modules.web.project.api.WebProjectUtilities;
-import org.netbeans.modules.web.project.classpath.ClassPathSupport;
+import org.netbeans.modules.j2ee.common.project.classpath.ClassPathSupport;
 import org.netbeans.modules.web.project.ui.customizer.WebProjectProperties;
 import org.netbeans.spi.project.support.ant.ReferenceHelper;
 import org.openide.filesystems.FileObject;
@@ -68,6 +68,7 @@ import org.openide.util.NbBundle;
 import org.openide.util.Mutex;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
+import org.netbeans.modules.web.project.classpath.ClassPathSupportCallbackImpl;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
@@ -316,10 +317,11 @@ public class UpdateHelper {
         if(props != null) {
             //remove jsp20 and servlet24 libraries
             ReferenceHelper refHelper = new ReferenceHelper(helper, cfg, helper.getStandardPropertyEvaluator());
-            ClassPathSupport cs = new ClassPathSupport( helper.getStandardPropertyEvaluator(), refHelper, helper, this,
+            ClassPathSupport cs = new ClassPathSupport( helper.getStandardPropertyEvaluator(), refHelper, helper, 
                                         WebProjectProperties.WELL_KNOWN_PATHS, 
-                                        WebProjectProperties.ANT_ARTIFACT_PREFIX );        
-            Iterator items = cs.itemsIterator((String)props.get( WebProjectProperties.JAVAC_CLASSPATH ), ClassPathSupport.TAG_WEB_MODULE_LIBRARIES);
+                                        WebProjectProperties.ANT_ARTIFACT_PREFIX,
+                                        new ClassPathSupportCallbackImpl(this));        
+            Iterator items = cs.itemsIterator((String)props.get( WebProjectProperties.JAVAC_CLASSPATH ), ClassPathSupportCallbackImpl.TAG_WEB_MODULE_LIBRARIES);
             ArrayList cpItems = new ArrayList();
             while(items.hasNext()) {
                 ClassPathSupport.Item cpti = (ClassPathSupport.Item)items.next();
@@ -333,7 +335,7 @@ public class UpdateHelper {
                     }
                 }
             }
-            String[] javac_cp = cs.encodeToStrings(cpItems.iterator(), ClassPathSupport.TAG_WEB_MODULE_LIBRARIES );
+            String[] javac_cp = cs.encodeToStrings(cpItems, ClassPathSupportCallbackImpl.TAG_WEB_MODULE_LIBRARIES );
             props.setProperty( WebProjectProperties.JAVAC_CLASSPATH, javac_cp );
         }
         

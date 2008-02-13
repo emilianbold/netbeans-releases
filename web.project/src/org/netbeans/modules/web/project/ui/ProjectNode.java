@@ -56,7 +56,7 @@ import javax.swing.Action;
 import javax.swing.Icon;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.ProjectUtils;
-import org.netbeans.modules.web.project.classpath.ClassPathSupport;
+import org.netbeans.modules.j2ee.common.project.classpath.ClassPathSupport;
 import org.openide.filesystems.FileUtil;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
@@ -78,6 +78,7 @@ import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.spi.project.support.ant.ReferenceHelper;
 import org.netbeans.modules.web.project.ui.customizer.WebProjectProperties;
 import org.netbeans.modules.web.project.UpdateHelper;
+import org.netbeans.modules.web.project.classpath.ClassPathSupportCallbackImpl;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
@@ -298,9 +299,10 @@ class ProjectNode extends AbstractNode {
             this.entryId = entryId;
             this.webModuleElementName = webModuleElementName;
             
-            this.cs = new ClassPathSupport( eval, refHelper, helper.getAntProjectHelper(), helper,
+            this.cs = new ClassPathSupport( eval, refHelper, helper.getAntProjectHelper(),
                                         WebProjectProperties.WELL_KNOWN_PATHS, 
-                                        WebProjectProperties.ANT_ARTIFACT_PREFIX );        
+                                        WebProjectProperties.ANT_ARTIFACT_PREFIX,
+                                        new ClassPathSupportCallbackImpl(helper));        
 
         }
 
@@ -326,7 +328,7 @@ class ProjectNode extends AbstractNode {
                 }
             }
             if (removed) {
-                String[] itemRefs = cs.encodeToStrings(resources.iterator(), webModuleElementName);
+                String[] itemRefs = cs.encodeToStrings(resources, webModuleElementName);
                 props = helper.getProperties (AntProjectHelper.PROJECT_PROPERTIES_PATH);    //Reread the properties, PathParser changes them
                 props.setProperty (classPathId, itemRefs);
                 helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, props);

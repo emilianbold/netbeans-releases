@@ -93,8 +93,7 @@ import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.modules.web.project.WebProject;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 
-import org.netbeans.modules.web.project.classpath.ClassPathSupport;
-import org.netbeans.modules.web.project.classpath.ClassPathSupport.Item;
+import org.netbeans.modules.j2ee.common.project.classpath.ClassPathSupport;
 import org.netbeans.modules.web.project.ui.FoldersListSettings;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.util.Exceptions;
@@ -515,7 +514,7 @@ public class WebClassPathUi {
                 }
             }
             else if ( source == edit ) { 
-                ClassPathSupport.Item item = (Item) listModel.get(list.getSelectedIndices()[0]);
+                ClassPathSupport.Item item = (ClassPathSupport.Item) listModel.get(list.getSelectedIndices()[0]);
                 ClassPathUiSupport.edit( listModel, list.getSelectedIndices(),  project.getAntProjectHelper());
                 if (list instanceof JListListComponent) {
                     ((JListListComponent)list).list.repaint();

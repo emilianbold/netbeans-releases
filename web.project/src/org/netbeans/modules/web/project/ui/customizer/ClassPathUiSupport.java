@@ -60,7 +60,8 @@ import org.openide.util.NbBundle;
 
 import org.netbeans.api.project.libraries.Library;
 
-import org.netbeans.modules.web.project.classpath.ClassPathSupport;
+import org.netbeans.modules.j2ee.common.project.classpath.ClassPathSupport;
+import org.netbeans.modules.web.project.classpath.ClassPathSupportCallbackImpl;
 import org.netbeans.spi.java.project.support.ui.EditJarSupport;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
@@ -222,7 +223,9 @@ public class ClassPathUiSupport {
         int lastIndex = indices == null || indices.length == 0 ? listModel.getSize() - 1 : indices[indices.length - 1];
         for (int i = 0, j=1; i < libraries.length; i++) {
             if (!alreadyIncludedLibs.contains(libraries[i])) {
-                listModel.add( lastIndex + j++, ClassPathSupport.Item.create( libraries[i], null, ClassPathSupport.Item.PATH_IN_WAR_LIB) );
+                ClassPathSupport.Item item = ClassPathSupport.Item.create( libraries[i], null);
+                item.setPathInDeployment(ClassPathSupportCallbackImpl.PATH_IN_WAR_LIB);
+                listModel.add( lastIndex + j++, item);
             }
         }
         Set<Library> addedLibs = new HashSet<Library>(Arrays.asList(libraries));
@@ -244,8 +247,9 @@ public class ClassPathUiSupport {
         for( int i = 0, delta = 0; i+delta < filePaths.length; ) {            
             int current = lastIndex + 1 + i;
             File f = PropertyUtils.resolveFile(base, filePaths[i]);
-            String pathInWar = (f.isDirectory() ? ClassPathSupport.Item.PATH_IN_WAR_DIR : ClassPathSupport.Item.PATH_IN_WAR_LIB);
-            ClassPathSupport.Item item = ClassPathSupport.Item.create( filePaths[i], base, null, pathInWar);
+            String pathInWar = (f.isDirectory() ? ClassPathSupportCallbackImpl.PATH_IN_WAR_DIR : ClassPathSupportCallbackImpl.PATH_IN_WAR_LIB);
+            ClassPathSupport.Item item = ClassPathSupport.Item.create( filePaths[i], base, null);
+            item.setPathInDeployment(pathInWar);
             if ( !listModel.contains( item ) ) {
                 listModel.add( current, item );
                 indexes[delta + i] = current;
@@ -265,7 +269,8 @@ public class ClassPathUiSupport {
         int[] indexes = new int[artifactItems.length];
         for( int i = 0; i < artifactItems.length; i++ ) {
             int current = lastIndex + 1 + i;
-            ClassPathSupport.Item item = ClassPathSupport.Item.create( artifactItems[i].getArtifact(), artifactItems[i].getArtifactURI(), null, ClassPathSupport.Item.PATH_IN_WAR_LIB) ;
+            ClassPathSupport.Item item = ClassPathSupport.Item.create( artifactItems[i].getArtifact(), artifactItems[i].getArtifactURI(), null) ;
+            item.setPathInDeployment(ClassPathSupportCallbackImpl.PATH_IN_WAR_LIB);
             if ( !listModel.contains( item ) ) {
                 listModel.add( current, item );
                 indexes[i] = current;
@@ -327,8 +332,8 @@ public class ClassPathUiSupport {
             if (column == 0)
                 return getItem(row);
             else {
-                String pathInWar = getItem(row).getPathInWAR();
-                return (ClassPathSupport.Item.PATH_IN_WAR_LIB.equals(pathInWar) || ClassPathSupport.Item.PATH_IN_WAR_DIR.equals(pathInWar)) ? Boolean.TRUE : Boolean.FALSE;
+                String pathInWar = getItem(row).getPathInDeployment();
+                return (ClassPathSupportCallbackImpl.PATH_IN_WAR_LIB.equals(pathInWar) || ClassPathSupportCallbackImpl.PATH_IN_WAR_DIR.equals(pathInWar)) ? Boolean.TRUE : Boolean.FALSE;
             }
         }
         
@@ -338,10 +343,10 @@ public class ClassPathUiSupport {
             
             if (value == Boolean.TRUE) {
                 ClassPathSupport.Item item = getItem(row);
-                String pathInWar = (item.getType() == ClassPathSupport.Item.TYPE_JAR && item.getResolvedFile().isDirectory()) ? ClassPathSupport.Item.PATH_IN_WAR_DIR : ClassPathSupport.Item.PATH_IN_WAR_LIB;
-                item.setPathInWAR(pathInWar);
+                String pathInWar = (item.getType() == ClassPathSupport.Item.TYPE_JAR && item.getResolvedFile().isDirectory()) ? ClassPathSupportCallbackImpl.PATH_IN_WAR_DIR : ClassPathSupportCallbackImpl.PATH_IN_WAR_LIB;
+                item.setPathInDeployment(pathInWar);
             } else
-                getItem(row).setPathInWAR(ClassPathSupport.Item.PATH_IN_WAR_NONE);
+                getItem(row).setPathInDeployment(ClassPathSupportCallbackImpl.PATH_IN_WAR_NONE);
             fireTableCellUpdated(row, column);
         }
         

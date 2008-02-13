@@ -58,7 +58,7 @@ import org.netbeans.modules.web.project.ui.customizer.AntArtifactChooser;
 public class WebProjectClassPathExtender implements org.netbeans.spi.java.project.classpath.ProjectClassPathExtender {
     
     private static final String CP_CLASS_PATH = "javac.classpath"; //NOI18N
-    private static final String DEFAULT_WEB_MODULE_ELEMENT_NAME = ClassPathSupport.TAG_WEB_MODULE_LIBRARIES;
+    private static final String DEFAULT_WEB_MODULE_ELEMENT_NAME = ClassPathSupportCallbackImpl.TAG_WEB_MODULE_LIBRARIES;
 
     private final WebProjectClassPathModifier delegate;
 

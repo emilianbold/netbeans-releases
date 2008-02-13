@@ -83,7 +83,7 @@ import org.netbeans.api.project.ant.FileChooser;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.project.libraries.LibraryChooser;
 import org.netbeans.modules.web.project.WebProject;
-import org.netbeans.modules.web.project.classpath.ClassPathSupport;
+import org.netbeans.modules.j2ee.common.project.classpath.ClassPathSupport;
 import org.netbeans.modules.web.project.ui.FoldersListSettings;
 import org.netbeans.modules.web.project.ui.customizer.WarIncludesUiSupport.ClasspathTableModel;
 import org.openide.util.Exceptions;
@@ -266,7 +266,7 @@ public class WarIncludesUi {
                 if (message != null) {
                     DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message (message, NotifyDescriptor.WARNING_MESSAGE));
                 }
-                cpItem.setPathInWAR((String) listModel.getValueAt(e.getFirstRow(), 1));
+                cpItem.setPathInDeployment((String) listModel.getValueAt(e.getFirstRow(), 1));
             }
         }
     }

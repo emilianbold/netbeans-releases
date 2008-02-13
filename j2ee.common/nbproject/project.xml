@@ -185,6 +185,15 @@ made subject to such option by the copyright holder.
                     </run-dependency>
                 </dependency>
                 <dependency>
+                    <code-name-base>org.netbeans.modules.project.ant</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <release-version>1</release-version>
+                        <specification-version>1.8</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
                     <code-name-base>org.netbeans.modules.project.libraries</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
@@ -347,6 +356,8 @@ made subject to such option by the copyright holder.
                 <friend>org.netbeans.modules.websvc.jaxrpc</friend>
                 <package>org.netbeans.modules.j2ee.common</package>
                 <package>org.netbeans.modules.j2ee.common.method</package>
+                <package>org.netbeans.modules.j2ee.common.project.classpath</package>
+                <package>org.netbeans.modules.j2ee.common.project.ui</package>
                 <package>org.netbeans.modules.j2ee.common.queries.api</package>
                 <package>org.netbeans.modules.j2ee.common.queries.spi</package>
                 <package>org.netbeans.modules.j2ee.common.source</package>

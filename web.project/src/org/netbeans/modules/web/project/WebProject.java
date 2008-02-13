@@ -122,7 +122,7 @@ import org.netbeans.spi.project.support.ant.ReferenceHelper;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.spi.project.ui.ProjectOpenedHook;
 import org.netbeans.modules.web.api.webmodule.WebProjectConstants;
-import org.netbeans.modules.web.project.classpath.ClassPathSupport;
+import org.netbeans.modules.j2ee.common.project.classpath.ClassPathSupport;
 import org.netbeans.modules.web.project.classpath.WebProjectClassPathModifier;
 import org.netbeans.modules.web.project.classpath.WebProjectLibrariesModifierImpl;
 import org.netbeans.modules.web.project.jaxws.WebProjectJAXWSVersionProvider;
