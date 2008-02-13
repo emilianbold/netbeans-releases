@@ -53,6 +53,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import javax.swing.JFileChooser;
+import org.netbeans.api.queries.CollocationQuery;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -88,6 +89,17 @@ public class FileChooserAccessory extends javax.swing.JPanel
         usetThisFileInsteadOfOneFromChooser = selectedFile;
         enableAccessory(true);
         update(Collections.singletonList(usetThisFileInsteadOfOneFromChooser));
+        
+        //when deciding on predefined file, we can assume certain options to be preferable.
+        if (CollocationQuery.areCollocated(baseFolder, selectedFile)) {
+            rbRelative.setSelected(true);
+        } else {
+            if (copyAllowed) {
+                rbCopy.setSelected(true);
+            } else {
+                rbAbsolute.setSelected(true);
+            }
+        }
     }
     
     /**
