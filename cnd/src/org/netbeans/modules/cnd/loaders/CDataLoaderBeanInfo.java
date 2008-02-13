@@ -42,9 +42,12 @@
 package org.netbeans.modules.cnd.loaders;
 
 import java.awt.Image;
+import java.beans.BeanInfo;
 import java.beans.IntrospectionException;
+import java.beans.Introspector;
 import java.beans.PropertyDescriptor;
-import org.openide.util.NbBundle;
+import org.openide.ErrorManager;
+import org.openide.loaders.MultiFileLoader;
 import org.openide.util.Utilities;
 
 /**
@@ -56,6 +59,16 @@ public class CDataLoaderBeanInfo extends CndAbstractDataLoaderBeanInfo {
     @Override
     public PropertyDescriptor[] getPropertyDescriptors() {
         return new PropertyDescriptor[0];
+    }
+
+    @Override
+    public BeanInfo[] getAdditionalBeanInfo () {
+        try {
+            return new BeanInfo[] { Introspector.getBeanInfo (MultiFileLoader.class) };
+        } catch (IntrospectionException ie) {
+            ErrorManager.getDefault().notify(ie);
+            return null;
+        }
     }
 
     @Override

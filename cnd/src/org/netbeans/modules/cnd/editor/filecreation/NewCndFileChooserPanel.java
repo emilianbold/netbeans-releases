@@ -45,7 +45,6 @@ import java.awt.Component;
 import java.io.File;
 import java.io.IOException;
 import java.lang.String;
-import java.util.Enumeration;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.Project;
@@ -107,12 +106,17 @@ final class NewCndFileChooserPanel implements WizardDescriptor.Panel<WizardDescr
 
     public boolean isValid() {
         boolean ok = ( gui != null && gui.getTargetName() != null &&
-               ( bottomPanel == null || bottomPanel.isValid() ) );
+               ( bottomPanel == null || bottomPanel.isValid() ) && 
+               gui.getTargetExtension().length() > 0 );
         
         if (!ok) {
             wizard.putProperty ("WizardPanel_errorMessage", ""); // NOI18N
             return false;
         }
+        
+        // check if the file name can be created
+        String errorMessage = canUseFileName(gui.getTargetGroup().getRootFolder(), gui.getTargetFolder(), gui.getTargetName());
+        wizard.putProperty ("WizardPanel_errorMessage", errorMessage); // NOI18N
         
         if (!es.isKnownExtension(gui.getTargetExtension())) {
             //MSG_new_extension_introduced
@@ -120,10 +124,6 @@ final class NewCndFileChooserPanel implements WizardDescriptor.Panel<WizardDescr
             wizard.putProperty ("WizardPanel_errorMessage", msg); // NOI18N
         }
         
-        // check if the file name can be created
-        String errorMessage = canUseFileName(gui.getTargetGroup().getRootFolder(), gui.getTargetFolder(), gui.getTargetName());
-        wizard.putProperty ("WizardPanel_errorMessage", errorMessage); // NOI18N
-
         return errorMessage == null;
     }
 
