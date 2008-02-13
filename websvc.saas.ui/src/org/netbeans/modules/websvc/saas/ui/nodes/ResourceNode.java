@@ -41,8 +41,8 @@ package org.netbeans.modules.websvc.saas.ui.nodes;
 
 import java.awt.Image;
 import java.util.Arrays;
-import java.util.List;
 import org.netbeans.modules.websvc.saas.model.WadlSaas;
+import org.netbeans.modules.websvc.saas.model.WadlSaasResource;
 import org.netbeans.modules.websvc.saas.model.wadl.Resource;
 import org.openide.nodes.AbstractNode;
 import org.openide.util.lookup.AbstractLookup;
@@ -53,23 +53,20 @@ import org.openide.util.lookup.InstanceContent;
  * @author nam
  */
 public class ResourceNode extends AbstractNode {
-    private WadlSaas wadlSaas;
-    private List<Resource> pathToResource;
+    private final WadlSaasResource resource;
     
-    public ResourceNode(WadlSaas wadlSaas, Resource[] pathToResource) {
-        this(wadlSaas, pathToResource, new InstanceContent());
+    public ResourceNode(WadlSaasResource resource) {
+        this(resource, new InstanceContent());
     }
 
-    public ResourceNode(WadlSaas wadlSaas, Resource[] pathToResource, InstanceContent content) {
-        super(new ResourceNodeChildren(wadlSaas, pathToResource), new AbstractLookup(content));
-        this.wadlSaas = wadlSaas;
-        this.pathToResource = Arrays.asList(pathToResource);
-        content.add(wadlSaas);
-        content.add(pathToResource);
+    public ResourceNode(WadlSaasResource resource, InstanceContent content) {
+        super(new ResourceNodeChildren(resource), new AbstractLookup(content));
+        this.resource = resource;
+        content.add(resource);
     }
 
     public Resource getResource() {
-        return pathToResource.get(pathToResource.size()-1);
+        return resource.getResource();
     }
     
     @Override
@@ -80,11 +77,13 @@ public class ResourceNode extends AbstractNode {
     @Override
     public String getShortDescription() {
         StringBuffer sb = new StringBuffer();
-        sb.append(wadlSaas.getBaseURL());
+        sb.append(resource.getSaas().getBaseURL());
         sb.append('/');
-        for (Resource r : pathToResource) {
-            sb.append(r.getPath());
-            sb.append('/');
+        WadlSaasResource r = resource;
+        while (r != null) {
+            sb.insert(0, '/');
+            sb.insert(0, r.getResource().getPath());
+            r = r.getParent();
         }
         return sb.toString();
     }

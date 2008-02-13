@@ -210,6 +210,14 @@ abstract class AbstractFolder extends FileObject {
         return validFlag && isValidRoot;
     }
 
+    @Override
+    public String toString() {
+      if (!isValid()) {
+        return super.toString() + " parent: " + parent + " validFlag: " + validFlag + " validRoot: " + validRoot + " isValidRoot: " + (getFileSystem().getRoot() == validRoot);
+      }
+      return super.toString();
+    }
+
     //
     // List
     //

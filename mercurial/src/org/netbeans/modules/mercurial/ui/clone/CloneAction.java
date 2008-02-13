@@ -107,16 +107,16 @@ public class CloneAction extends ContextAction {
         if (!clone.showDialog()) {
             return;
         }
-
-        performClone(root.getAbsolutePath(), clone.getOutputFileName(), projIsRepos, projFile, true);
+        performClone(root.getAbsolutePath(), clone.getOutputFileName(), projIsRepos, projFile, true, null, null);
     }
 
-    public static void performClone(final String source, final String target, boolean projIsRepos, File projFile) {
-        performClone(source, target, projIsRepos, projFile, false);
+    public static void performClone(final String source, final String target, boolean projIsRepos, 
+            File projFile, final String pullPath, final String pushPath) {
+        performClone(source, target, projIsRepos, projFile, false, pullPath, pushPath);
     }
 
     private static void performClone(final String source, final String target, 
-            boolean projIsRepos, File projFile, final boolean isLocalClone) {
+            boolean projIsRepos, File projFile, final boolean isLocalClone, final String pullPath, final String pushPath) {
         final Mercurial hg = Mercurial.getInstance();
         final ProjectManager projectManager = ProjectManager.getDefault();
         final File prjFile = projFile;
@@ -219,6 +219,8 @@ public class CloneAction extends ContextAction {
                     HgConfigFiles hg = new HgConfigFiles(cloneFolder);
                     String defaultPull = hg.getDefaultPull(false);
                     String defaultPush = hg.getDefaultPush(false);
+                    if(pullPath != null && !pullPath.equals("")) defaultPull = pullPath;
+                    if(pushPath != null && !pushPath.equals("")) defaultPush = pushPath;
                     hg.setProperty(HgProperties.HGPROPNAME_DEFAULT_PULL, defaultPull);
                     hg.setProperty(HgProperties.HGPROPNAME_DEFAULT_PUSH, defaultPush);
                         
@@ -257,7 +259,7 @@ public class CloneAction extends ContextAction {
             String defaultPushWinStr = HgConfigFiles.HG_DEFAULT_PUSH_VALUE + " = " + defaultPush.replace("\\", "\\\\") + "\n"; // NOI18N
 
             tempFile = new File(hgrcFile.getAbsolutePath() + ".tmp"); // NOI18N
-            if (!tempFile.isFile() || !tempFile.canWrite()) return;
+            if (tempFile == null) return;
             
             br = new BufferedReader(new FileReader(hgrcFile));
             pw = new PrintWriter(new FileWriter(tempFile));

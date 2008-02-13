@@ -56,7 +56,17 @@ import org.openide.util.NbPreferences;
  *
  * @author Alexander Simon
  */
-public class EditorOptions {
+public class EditorOptions {   
+    public static CodeStyleFactory codeStyleFactory;
+    static {
+        Class c = CodeStyle.class;
+        try {
+            Class.forName(c.getName(), true, c.getClassLoader());
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+    }
+
     public static final String spaceBeforeWhile = "spaceBeforeWhile"; //NOI18N
     public static final boolean spaceBeforeWhileDefault = true;
     public static final String spaceBeforeElse = "spaceBeforeElse"; //NOI18N
@@ -158,6 +168,8 @@ public class EditorOptions {
 
     public static final String indentCasesFromSwitch = "indentCasesFromSwitch"; //NOI18N
     public static final boolean indentCasesFromSwitchDefault = false;
+    public static final String sharpAtStartLine = "sharpAtStartLine"; //NOI18N
+    public static final boolean sharpAtStartLineDefault = true;
     
     public static final String newLineCatch = "newLineCatch"; //NOI18N
     public static final boolean newLineCatchDefault = false;
@@ -244,8 +256,6 @@ public class EditorOptions {
     private static final String C_DEFAULT_PROFILE = "c_default"; // NOI18N
     private static final String CPP_DEFAULT_PROFILE = "cpp_default"; // NOI18N
 
-    public static CodeStyleProducer codeStyleProducer;
-
     private static Map<String,Object> defaults;
     
     static Preferences lastValues;
@@ -266,6 +276,8 @@ public class EditorOptions {
         defaults.put(CC_FORMAT_STATEMENT_CONTINUATION_INDENT,defaultCCFormatStatementContinuationIndent);
 
         defaults.put(indentCasesFromSwitch, indentCasesFromSwitchDefault);
+        defaults.put(sharpAtStartLine, sharpAtStartLineDefault);
+
     
         defaults.put(newLineCatch,newLineCatchDefault);
         defaults.put(newLineElse,newLineElseDefault);
@@ -391,10 +403,20 @@ public class EditorOptions {
 
     public static CodeStyle createCodeStyle(CodeStyle.Language language, Preferences p) {
         CodeStyle.getDefault(language);
-        return codeStyleProducer.create(language, p);
+        return codeStyleFactory.create(language, p);
     }
 
-    public static interface CodeStyleProducer {
-        public CodeStyle create(CodeStyle.Language language, Preferences preferences);
+    public static Preferences getPreferences(CodeStyle codeStyle){
+        return codeStyleFactory.getPreferences(codeStyle);
+    }
+
+    public static void setPreferences(CodeStyle codeStyle, Preferences preferences){
+        codeStyleFactory.setPreferences(codeStyle, preferences);
+    }
+    
+    public static interface CodeStyleFactory {
+        CodeStyle create(CodeStyle.Language language, Preferences preferences);
+        Preferences getPreferences(CodeStyle codeStyle);
+        void setPreferences(CodeStyle codeStyle, Preferences preferences);
     }
 }
