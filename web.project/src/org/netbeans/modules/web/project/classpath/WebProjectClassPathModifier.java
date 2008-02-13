@@ -162,17 +162,8 @@ public class WebProjectClassPathModifier extends ProjectClassPathModifierImpleme
                             boolean changed = false;
                             File projectFolderFile = FileUtil.toFile(project.getProjectDirectory());
                             for (int i=0; i< classPathRoots.length; i++) {
-                                assert classPathRoots[i] != null;
-                                assert classPathRoots[i].toExternalForm().endsWith("/");    //NOI18N
-                                URL toAdd = FileUtil.getArchiveFile(classPathRoots[i]);
-                                if (toAdd == null) {
-                                    toAdd = classPathRoots[i];
-                                }
-                                String filePath = LibrariesSupport.convertURLToFilePath(toAdd);
-                                final File f = PropertyUtils.resolveFile(projectFolderFile, filePath);
-                                if (f == null ) {
-                                    throw new IllegalArgumentException ("The file must exist on disk");     //NOI18N
-                                }
+                                String filePath = WebProjectClassPathModifier.this.performSharabilityHeuristics(classPathRoots[i], project.getAntProjectHelper());
+                                File f = project.getAntProjectHelper().resolveFile(filePath);
                                 ClassPathSupport.Item item = ClassPathSupport.Item.create( filePath, projectFolderFile, null, f.isDirectory() ? ClassPathSupport.Item.PATH_IN_WAR_DIR : ClassPathSupport.Item.PATH_IN_WAR_LIB);
                                 if (operation == ADD && !resources.contains(item)) {
                                     resources.add (item);

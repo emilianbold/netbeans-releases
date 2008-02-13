@@ -132,7 +132,7 @@ public abstract class CsmReferenceResolver {
         // default implementation
         assert targetDecl != null;
         CsmObject owner = ref.getOwner();
-        ReferenceKind kind = ReferenceKind.USAGE;
+        ReferenceKind kind = ReferenceKind.DIRECT_USAGE;
         if (owner != null) {
             if (owner.equals(targetDecl)) {
                 kind = ReferenceKind.DECLARATION;
@@ -146,13 +146,13 @@ public abstract class CsmReferenceResolver {
     public static enum ReferenceKind {
         DEFINITION,
         DECLARATION,        
-        USAGE,
+        DIRECT_USAGE,
         AFTER_DEREFERENCE_USAGE,
         UNKNOWN;
         
         public static final EnumSet ANY_USAGE;
         static {
-            ANY_USAGE = EnumSet.range(USAGE, AFTER_DEREFERENCE_USAGE);
+            ANY_USAGE = EnumSet.range(DIRECT_USAGE, AFTER_DEREFERENCE_USAGE);
         }
     }
     

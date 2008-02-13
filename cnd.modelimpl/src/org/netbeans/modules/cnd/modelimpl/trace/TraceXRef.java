@@ -48,7 +48,10 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.EnumSet;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import javax.swing.JEditorPane;
 import org.netbeans.modules.cnd.api.model.CsmClass;
 import org.netbeans.modules.cnd.api.model.CsmDeclaration;
@@ -82,6 +85,9 @@ import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
 import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 import org.netbeans.modules.cnd.modelimpl.impl.services.ReferenceRepositoryImpl;
+import org.netbeans.modules.cnd.modelimpl.trace.XRefResultSet.ContextEntry;
+import org.netbeans.modules.cnd.modelimpl.trace.XRefResultSet.DeclarationScope;
+import org.netbeans.modules.cnd.modelimpl.trace.XRefResultSet.IncludeLevel;
 import org.netbeans.modules.cnd.utils.cache.CharSequenceKey;
 import org.openide.filesystems.FileUtil;
 
@@ -343,12 +349,13 @@ public class TraceXRef extends TraceModel {
         if (scope != null) {
             final XRefResultSet.ContextScope funScope = classifyFunctionScope(fun, printOut);
             final ObjectContext<CsmFunctionDefinition> funContext = createContextObject(fun, printOut);
+            final Set<CsmObject> objectsUsedInScope = new HashSet<CsmObject>();
             bag.incrementScopeCounter(funScope);
             CsmFileReferences.getDefault().accept(
                     scope, 
                     new CsmFileReferences.Visitor() {
                         public void visit(CsmReference ref) {
-                            XRefResultSet.ContextEntry entry = createEntry(ref, funContext, printOut);
+                            XRefResultSet.ContextEntry entry = createEntry(objectsUsedInScope, ref, funContext, printOut);
                             if (entry != null) {
                                 bag.addEntry(funScope, entry);
                             }
@@ -359,18 +366,24 @@ public class TraceXRef extends TraceModel {
         }
     }
     
-    private static XRefResultSet.ContextEntry createEntry(CsmReference ref, ObjectContext<CsmFunctionDefinition> fun, PrintWriter printOut) {
+    private static XRefResultSet.ContextEntry createEntry(Set<CsmObject> objectsUsedInScope, CsmReference ref, ObjectContext<CsmFunctionDefinition> fun, PrintWriter printOut) {
         XRefResultSet.ContextEntry entry;
         CsmObject target = ref.getReferencedObject();
         if (target == null) {
             entry = XRefResultSet.ContextEntry.UNRESOLVED;
         } else {
             CsmReferenceResolver.ReferenceKind kind = CsmReferenceResolver.getDefault().getReferenceKind(ref);
-            if (CsmReferenceResolver.ReferenceKind.ANY_USAGE.contains(kind)) {
+            if (kind == CsmReferenceResolver.ReferenceKind.DIRECT_USAGE) {
                 XRefResultSet.DeclarationKind declaration = classifyDeclaration(target, printOut);
                 XRefResultSet.DeclarationScope declarationScope = classifyDeclarationScopeForFunction(declaration, target, fun, printOut);
                 XRefResultSet.IncludeLevel declarationIncludeLevel = classifyIncludeLevel(target, fun.objFile, printOut);
-                entry = new XRefResultSet.ContextEntry(declaration, declarationScope, declarationIncludeLevel);
+                XRefResultSet.UsageStatistics usageStat = XRefResultSet.UsageStatistics.FIRST_USAGE;
+                if (objectsUsedInScope.contains(target)) {
+                    usageStat = XRefResultSet.UsageStatistics.NEXT_USAGE;
+                } else {
+                    objectsUsedInScope.add(target);
+                }
+                entry = new XRefResultSet.ContextEntry(declaration, declarationScope, declarationIncludeLevel, usageStat);
             } else {
                 entry = null;
             }
@@ -670,6 +683,13 @@ public class TraceXRef extends TraceModel {
             traceEntriesStatistics(scope, entries, printTitle, printOut);
             printTitle = false;
         }
+        printOut.println("\nNumbers for \"first\" items approach");
+        printTitle = true;
+        for (XRefResultSet.ContextScope scope : sortedContextScopes) {
+            Collection<XRefResultSet.ContextEntry> entries = bag.getEntries(scope);
+            traceFirstItemsStatistics(scope, entries, printTitle, printOut);
+            printTitle = false;
+        }         
         printOut.println("\nDetails about file inclusion level");
         printTitle = true;
         for (XRefResultSet.ContextScope scope : sortedContextScopes) {
@@ -683,13 +703,51 @@ public class TraceXRef extends TraceModel {
             Collection<XRefResultSet.ContextEntry> entries = bag.getEntries(scope);
             traceUsedDeclarationScopeEntriesStatistics(scope, entries, printTitle, printOut);
             printTitle = false;
-        }        
+        }     
+    }
+    
+    private static void traceFirstItemsStatistics(XRefResultSet.ContextScope scope, 
+                                                    Collection<XRefResultSet.ContextEntry> entries, 
+                                                    boolean printTitle, PrintWriter printOut) {
+        String entryFmtFileInfo = "%20s\t|%10s\t|%20s\t|%20s\t|%20s\t|%20s\t|%20s\n";
+        if (printTitle) {
+            String title = String.format(entryFmtFileInfo, "scope name", "All", "local+cls+ns", "file+#incl-1", "local+cls+ns+#incl-1",
+                    "was usages", "context+used");
+            printOut.print(title);
+        }
+        if (scope == XRefResultSet.ContextScope.UNRESOLVED) {
+            if (entries.isEmpty()) {
+                return;
+            }
+        }
+
+        EnumSet<IncludeLevel> nearestIncludes = EnumSet.of(XRefResultSet.IncludeLevel.THIS_FILE, XRefResultSet.IncludeLevel.PROJECT_DIRECT, XRefResultSet.IncludeLevel.LIBRARY_DIRECT);
+        EnumSet<DeclarationScope> nearestScopes = EnumSet.of(
+                XRefResultSet.DeclarationScope.FUNCTION_THIS, 
+                XRefResultSet.DeclarationScope.CLASSIFIER_THIS, 
+                XRefResultSet.DeclarationScope.CLASSIFIER_PARENT, 
+                XRefResultSet.DeclarationScope.FILE_THIS, 
+                XRefResultSet.DeclarationScope.NAMESPACE_THIS, 
+                XRefResultSet.DeclarationScope.NAMESPACE_PARENT);
+        EnumSet<DeclarationScope> nonScopes = EnumSet.noneOf(XRefResultSet.DeclarationScope.class);
+        EnumSet<IncludeLevel> nonIncludes = EnumSet.noneOf(XRefResultSet.IncludeLevel.class);
+        EnumSet<XRefResultSet.UsageStatistics> nonUsages = EnumSet.noneOf(XRefResultSet.UsageStatistics.class);
+        EnumSet<XRefResultSet.UsageStatistics> wasUsages = EnumSet.of(XRefResultSet.UsageStatistics.SECOND_USAGE, XRefResultSet.UsageStatistics.NEXT_USAGE);
+        String msg = String.format(entryFmtFileInfo, scope,
+                entries.size(),
+                getDeclScopeAndIncludeLevelInfo(entries, nearestScopes, nonIncludes, nonUsages),
+                getDeclScopeAndIncludeLevelInfo(entries, nonScopes, nearestIncludes, nonUsages),
+                getDeclScopeAndIncludeLevelInfo(entries, nearestScopes, nearestIncludes, nonUsages),
+                getDeclScopeAndIncludeLevelInfo(entries, nonScopes, nonIncludes, wasUsages),
+                getDeclScopeAndIncludeLevelInfo(entries, nearestScopes, nearestIncludes, wasUsages)
+                );
+        printOut.print(msg);        
     }
     
     private static void traceFileBasedEntriesStatistics(XRefResultSet.ContextScope scope, 
                                                     Collection<XRefResultSet.ContextEntry> entries, 
                                                     boolean printTitle, PrintWriter printOut) {
-        String entryFmtFileInfo = "%20s\t|%10s\t|%10s\t|%10s\t|%10s|%10s|%10s|%10s\n";
+        String entryFmtFileInfo = "%20s\t|%10s\t|%10s\t|%10s\t|%10s\t|%10s\t|%10s\t|%10s\n";
         if (printTitle) {
             String title = String.format(entryFmtFileInfo, "scope name", "this file", "direct \"\"", "direct <>", "project", "library", "unresolved", "All");
             printOut.print(title);
@@ -713,10 +771,12 @@ public class TraceXRef extends TraceModel {
     private static void traceUsedDeclarationScopeEntriesStatistics(XRefResultSet.ContextScope scope, 
                                                     Collection<XRefResultSet.ContextEntry> entries, 
                                                     boolean printTitle, PrintWriter printOut) {
-        String entryDeclScopeInfo = "%20s\t|%10s\t|%10s\t|%10s\t|%10s|%10s|%10s\t|%10s\t|%10s\t|%10s|%10s|%10s\t|%10s\t|%10s\t|%10s|%10s|%10s|\n";
+        String entryDeclScopeInfo = "%20s\t|%10s\t|%10s\t|%10s\t|%10s\t|%10s\t|%10s\t|%10s\t|%10s\t|%10s\t|%10s\t|%10s\t|%10s\t|%10s\t|%10s\t|%10s\t|%10s|\n";
         if (printTitle) {
             String title = String.format(entryDeclScopeInfo, 
-                    "scope name", "this fun", 
+                    "scope name", 
+//                    "All this", "All parent", "This+Parent",
+                    "this fun", 
                     "this class", "parent class", "prj class", "lib class",
                     "this ns", "parent ns", "prj ns", "lib ns", 
                     "this file", "prj file", "lib file",
@@ -748,7 +808,23 @@ public class TraceXRef extends TraceModel {
                 entries.size());
         printOut.print(msg);
     }    
-
+    
+    
+    private static String getDeclScopeAndIncludeLevelInfo(Collection<ContextEntry> entries,
+            EnumSet<XRefResultSet.DeclarationScope> declScopes,
+            EnumSet<XRefResultSet.IncludeLevel> levels,EnumSet<XRefResultSet.UsageStatistics> usages) {
+        int num = 0;
+        
+        for (XRefResultSet.ContextEntry contextEntry : entries) {
+            if (declScopes.contains(contextEntry.declarationScope) ||
+                levels.contains(contextEntry.declarationIncludeLevel) ||
+                usages.contains(contextEntry.usageStatistics)) {
+                num++;
+            }
+        }
+        return toRelString(num, entries.size());        
+    }
+    
     private static String getIncludeLevelInfo(Collection<XRefResultSet.ContextEntry> entries, XRefResultSet.IncludeLevel level) {
         int num = 0;
         for (XRefResultSet.ContextEntry contextEntry : entries) {

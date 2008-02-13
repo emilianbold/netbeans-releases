@@ -45,6 +45,7 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import org.netbeans.modules.spring.api.beans.model.SpringBean;
 import org.netbeans.modules.spring.api.beans.model.SpringBeans;
 
@@ -55,15 +56,15 @@ import org.netbeans.modules.spring.api.beans.model.SpringBeans;
  */
 public class ConfigModelSpringBeans implements SpringBeans {
 
-    private final SpringConfigModelController.Access modelAccess;
+    private final Map<File, SpringBeanSource> file2BeanSource;
 
-    public ConfigModelSpringBeans(SpringConfigModelController.Access modelAccess) {
-        this.modelAccess = modelAccess;
+    public ConfigModelSpringBeans(Map<File, SpringBeanSource> file2BeanSource) {
+        this.file2BeanSource = file2BeanSource;
     }
 
     public SpringBean findBean(String name) {
-        assert modelAccess.isValid() : "The SpringBeans instance has escaped the Action.run() method";
-        for (SpringBeanSource beanSource : modelAccess.getBeanSources()) {
+        assert ExclusiveAccess.getInstance().isCurrentThreadAccess() : "The SpringBeans instance has escaped the Action.run() method";
+        for (SpringBeanSource beanSource : file2BeanSource.values()) {
             SpringBean bean = beanSource.findBeanByIDOrName(name);
             if (bean != null) {
                 return bean;
@@ -73,8 +74,8 @@ public class ConfigModelSpringBeans implements SpringBeans {
     }
 
     public SpringBean findBean(File file, String id) {
-        assert modelAccess.isValid() : "The SpringBeans instance has escaped the Action.run() method";
-        SpringBeanSource beanSource = modelAccess.getBeanSource(file);
+        assert ExclusiveAccess.getInstance().isCurrentThreadAccess() : "The SpringBeans instance has escaped the Action.run() method";
+        SpringBeanSource beanSource = file2BeanSource.get(file);
         if (beanSource != null) {
             return beanSource.findBeanByID(id);
         }
@@ -82,8 +83,8 @@ public class ConfigModelSpringBeans implements SpringBeans {
     }
 
     public List<SpringBean> getBeans(File file) {
-        assert modelAccess.isValid() : "The SpringBeans instance has escaped the Action.run() method";
-        SpringBeanSource beanSource = modelAccess.getBeanSource(file);
+        assert ExclusiveAccess.getInstance().isCurrentThreadAccess() : "The SpringBeans instance has escaped the Action.run() method";
+        SpringBeanSource beanSource = file2BeanSource.get(file);
         if (beanSource != null) {
             return beanSource.getBeans();
         }
@@ -91,10 +92,9 @@ public class ConfigModelSpringBeans implements SpringBeans {
     }
 
     public List<SpringBean> getBeans() {
-        assert modelAccess.isValid() : "The SpringBeans instance has escaped the Action.run() method";
-        List<SpringBeanSource> beanSources = modelAccess.getBeanSources();
-        List<SpringBean> result = new ArrayList<SpringBean>(beanSources.size() * 20);
-        for (SpringBeanSource beanSource : beanSources) {
+        assert ExclusiveAccess.getInstance().isCurrentThreadAccess() : "The SpringBeans instance has escaped the Action.run() method";
+        List<SpringBean> result = new ArrayList<SpringBean>(file2BeanSource.size() * 20);
+        for (SpringBeanSource beanSource : file2BeanSource.values()) {
             result.addAll(beanSource.getBeans());
         }
         return Collections.unmodifiableList(result);

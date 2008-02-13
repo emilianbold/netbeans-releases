@@ -57,7 +57,7 @@ public class JaxWsFlavorProvider implements ConsumerFlavorProvider {
 
     public Transferable addDataFlavors(Transferable transferable) {
         try {
-            Object data = transferable.getTransferData(ConsumerFlavorProvider.METHOD_FLAVOR);
+            Object data = transferable.getTransferData(ConsumerFlavorProvider.WSDL_METHOD_FLAVOR);
             if (data instanceof WsdlSaasMethod) {
                 WsdlSaasMethod method = (WsdlSaasMethod) data;
                 ExTransferable t = ExTransferable.create(transferable);
