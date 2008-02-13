@@ -36,33 +36,14 @@
  * 
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.compapp.configextension.redelivery;
 
-package org.netbeans.modules.cnd.editor.options;
-
-import java.util.prefs.Preferences;
-import org.netbeans.modules.cnd.editor.api.CodeStyle;
+import org.netbeans.modules.compapp.casaeditor.properties.spi.ExtensionPropertyClassProvider;
 
 /**
- * @author Alexander Simon
+ *
+ * @author jqian
  */
-public class CodeStyleImpl extends CodeStyle {
-    Preferences preferences;
-    public CodeStyleImpl(Language language, Preferences preferences){
-        super(language);
-        this.preferences = preferences;
-        
-    }
-    protected Preferences getPreferences(){
-        return preferences;
-    }
-
-    // for tests only
-    public Preferences getPref(){
-        return preferences;
-    }
-
-    // for tests only
-    public void setPref(Preferences preferences){
-        this.preferences = preferences;
-    }
+public class RedirectTargetExtenionPropertyClassProvider
+        extends ExtensionPropertyClassProvider {
 }

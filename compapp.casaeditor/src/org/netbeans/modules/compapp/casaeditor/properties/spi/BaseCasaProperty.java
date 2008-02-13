@@ -39,7 +39,7 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.compapp.casaeditor.properties;
+package org.netbeans.modules.compapp.casaeditor.properties.spi;
 
 import java.lang.reflect.InvocationTargetException;
 import org.netbeans.modules.compapp.casaeditor.CasaDataEditorSupport;
