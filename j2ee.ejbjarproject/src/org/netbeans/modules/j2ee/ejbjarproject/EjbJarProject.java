@@ -138,6 +138,8 @@ import org.w3c.dom.Text;
 import org.netbeans.modules.websvc.api.webservices.WebServicesSupport;
 import org.netbeans.modules.websvc.api.client.WebServicesClientSupport;
 import org.netbeans.modules.websvc.spi.webservices.WebServicesSupportFactory;
+import org.netbeans.spi.java.project.support.ExtraSourceJavadocSupport;
+import org.netbeans.spi.java.project.support.LookupMergerSupport;
 import org.netbeans.spi.project.support.LookupProviderSupport;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.netbeans.spi.project.ui.support.UILookupMergerSupport;
@@ -372,6 +374,10 @@ public class EjbJarProject implements Project, AntProjectListener, FileChangeLis
                 UILookupMergerSupport.createRecommendedTemplatesMerger(),
                 LookupProviderSupport.createSourcesMerger(),
                 new EjbJarTemplateAttributesProvider(helper),
+                ExtraSourceJavadocSupport.createExtraSourceQueryImplementation(this, helper, eval),
+                LookupMergerSupport.createSFBLookupMerger(),
+                ExtraSourceJavadocSupport.createExtraJavadocQueryImplementation(this, helper, eval),
+                LookupMergerSupport.createJFBLookupMerger(),
                 // TODO: AB: maybe add "this" to the lookup. You should not cast a Project to EjbJarProject, but use the lookup instead.
             });
             return LookupProviderSupport.createCompositeLookup(base, "Projects/org-netbeans-modules-j2ee-ejbjarproject/Lookup"); //NOI18N
