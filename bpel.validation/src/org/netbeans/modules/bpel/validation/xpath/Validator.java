@@ -68,11 +68,14 @@ import org.netbeans.modules.bpel.model.api.To;
 import org.netbeans.modules.bpel.model.api.VariableDeclaration;
 import org.netbeans.modules.bpel.model.api.VariableReference;
 import org.netbeans.modules.bpel.model.api.references.BpelReference;
+import org.netbeans.modules.xml.schema.model.Import;
 import org.netbeans.modules.bpel.model.api.support.ExNamespaceContext;
 import org.netbeans.modules.bpel.model.api.support.XPathModelFactory;
 import org.netbeans.modules.bpel.model.impl.references.SchemaReferenceBuilder;
 import org.netbeans.modules.xml.xam.Component;
+import org.netbeans.modules.xml.xam.Named;
 import org.netbeans.modules.xml.schema.model.SchemaModel;
+import org.netbeans.modules.xml.schema.model.SchemaComponent;
 import org.netbeans.modules.xml.xpath.ext.XPathModelHelper;
 import org.netbeans.modules.xml.xpath.ext.XPathException;
 import org.netbeans.modules.xml.xpath.ext.XPathExpression;
@@ -86,10 +89,19 @@ import org.netbeans.modules.bpel.model.api.support.BpelXpathExtFunctionResolver;
 import org.netbeans.modules.bpel.model.api.references.SchemaReference;
 import org.netbeans.modules.bpel.model.api.references.WSDLReference;
 import org.netbeans.modules.xml.xam.dom.NamedComponentReference;
+import org.netbeans.modules.xml.schema.model.Schema;
 import org.netbeans.modules.xml.schema.model.GlobalElement;
 import org.netbeans.modules.xml.schema.model.GlobalType;
+import org.netbeans.modules.xml.schema.model.SimpleType;
+import org.netbeans.modules.xml.schema.model.TypeContainer;
 import org.netbeans.modules.xml.wsdl.model.Message;
 import org.netbeans.modules.xml.wsdl.model.Part;
+import org.netbeans.modules.xml.schema.model.GlobalComplexType;
+import org.netbeans.modules.xml.schema.model.GlobalSimpleType;
+import org.netbeans.modules.xml.schema.model.LocalSimpleType;
+import org.netbeans.modules.xml.schema.model.LocalComplexType;
+import org.netbeans.modules.xml.schema.model.visitor.DeepSchemaVisitor;
+import org.netbeans.modules.xml.xam.dom.DocumentComponent;
 import static org.netbeans.modules.soa.ui.util.UI.*;
 
 /**
@@ -101,43 +113,47 @@ public final class Validator extends org.netbeans.modules.bpel.validation.core.V
   @Override
   public void visit(Copy copy) {
 //out();
-//out("COPY");
-    From from = copy.getFrom();
-//out("from: " + from);
-    if (from == null) {
-      return;
-    }
-    checkXPathExpression(from);
-
-    To to = copy.getTo();
-//out("to: " + to);
-    if (to == null) {
-      return;
-    }
-    checkXPathExpression(to);
-
-    
-    Component fromType = getType(from);
-out();
-out("FROM: " + fromType);
-
-//    if (fromType == null) {
-//      return;
-//    }
-    Component toType = getType(to);
+    Component fromType = getTypeOfElement(getType(copy.getFrom()));
+//out("Assign: " + ((Named) copy.getParent()).getName());
+//out("FROM: " + fromType);
+    Component toType = getTypeOfElement(getType(copy.getTo()));
 //out();
-out("TO: " + toType);
+//out("  TO: " + toType);
 
-//    if (toType == null) {
-//      return;
-//    }
-out("The same: " + (fromType == toType));
+    if (fromType == null || toType == null) {
+      return;
+    }
+    String fromName = ((Named) fromType).getName();
+    String toName = ((Named) toType).getName();
+
+    if (fromName != null && fromName.equals(toName)) {
+      return;
+    }
+    if (fromName.equals("anyURI") || toName.equals("anyURI")) {
+      return;
+    }
+    if (fromType instanceof GlobalSimpleType && toType instanceof GlobalSimpleType) {
+      return;
+    }
     if (fromType != toType) {
-      // error
+      addError("FIX_TYPE_IN_COPY", copy, getTypeString(fromType), getTypeString(toType));
     }
   }
 
+  private String getTypeString(Component component) {
+    if (component == null) {
+      return "n/a";
+    }
+    if (component instanceof Named) {
+      return ((Named) component).getName();
+    }
+    return component.toString();
+  }
+
   private Component getType(From from) {
+    if (from == null) {
+      return null;
+    }
     Component variableType = getVariableType(from);
 
     if (variableType != null) {
@@ -150,10 +166,13 @@ out("The same: " + (fromType == toType));
         return partType;
       }
     }
-    return getXPathType(from);
+    return checkXPathExpression(from);
   }
 
   private Component getType(To to) {
+    if (to == null) {
+      return null;
+    }
     Component variableType = getVariableType(to);
 
     if (variableType != null) {
@@ -166,21 +185,7 @@ out("The same: " + (fromType == toType));
         return partType;
       }
     }
-    return getXPathType(to);
-  }
-
-  private Component getXPathType(ContentElement element) {
-    String content = element.getContent();
-    
-    if (content == null) {
-      return null;
-    }
-    content = content.trim();
-
-    if (content.length() == 0) {
-      return null;
-    }
-    return null;
+    return checkXPathExpression(to);
   }
 
   private Component getVariableType(VariableReference reference) {
@@ -201,6 +206,14 @@ out("The same: " + (fromType == toType));
       Message message = wsdlRef.get();
 
       if (message != null) {
+        Collection<Part> parts = message.getParts();
+
+        if (parts == null || parts.size() == 0) {
+          return null;
+        }
+        if (parts.size() == 1) {
+          return getPartType(parts.iterator().next());
+        }
         return message;
       }
     }
@@ -227,15 +240,17 @@ out("The same: " + (fromType == toType));
     return null;
   }
 
-  private Component getPartType(PartReference reference) {
+  private SchemaComponent getPartType(PartReference reference) {
 //out("get part type");
     WSDLReference<Part> ref = reference.getPart();
 
     if (ref == null) {
       return null;
     }
-    Part part = ref.get();
+    return getPartType(ref.get());
+  }
 
+  private SchemaComponent getPartType(Part part) {
     if (part == null) {
       return null;
     }
@@ -317,7 +332,7 @@ out("The same: " + (fromType == toType));
       myValidatedActivity = activity;
   }
   
-  private Component checkXPathExpression(ContentElement element) {
+  private SchemaComponent checkXPathExpression(ContentElement element) {
       String content = element.getContent();
       
       if (content == null) {
@@ -337,7 +352,7 @@ out("The same: " + (fromType == toType));
       return checkExpression(expressionLang, content, element);
   }
   
-  public Component checkExpression(String exprLang, String exprText, final ContentElement element) {
+  public SchemaComponent checkExpression(String exprLang, String exprText, final ContentElement element) {
       boolean isXPathExpr = exprLang == null || XPathModelFactory.DEFAULT_EXPR_LANGUAGE.equals(exprLang);
 
       if ( !isXPathExpr) {
@@ -394,12 +409,11 @@ out("The same: " + (fromType == toType));
       }
   }
 
-  private Component checkSingleExpr(XPathModel model, String exprText) {
+  private SchemaComponent checkSingleExpr(XPathModel model, String exprText) {
       try {
           XPathExpression xpath = model.parseExpression(exprText);
-          // Common validation will be made here!
           model.resolveExtReferences(true);
-          return null;
+          return model.getLastSchemaComponent();
       } 
       catch (XPathException e) {
           // Nothing to do here because of the validation context 
@@ -409,5 +423,104 @@ out("The same: " + (fromType == toType));
       }
   }
 
+  private Component getTypeOfElement(Component component) {
+//out();
+//out("GET TYPE: " + component);
+    GlobalType type = null;
+
+    if (component instanceof TypeContainer) {
+//out("1");
+      NamedComponentReference<? extends GlobalType> ref = ((TypeContainer) component).getType();
+
+      if (ref != null) { 
+        type = ref.get();
+
+        if (type != null) {
+//out("2");
+          return type;
+        }
+      }
+    }
+//out("3");
+    if (component instanceof DocumentComponent && component instanceof SchemaComponent) {
+      DocumentComponent document = (DocumentComponent) component;
+      String typeName = document.getPeer().getAttribute("type");
+      typeName = removePrefix(typeName);
+      type = findType(typeName, (SchemaComponent) component);
+    }
+    if (type != null) {
+      return type;
+    }
+//out("4");
+    return component;
+  }
+
+  private GlobalType findType(String typeName, SchemaComponent component) {
+//out("= findType: " + typeName);
+    if (typeName == null || typeName.equals("")) {
+      return null;
+    }
+    SchemaModel model = component.getModel();
+    Collection<Schema> schemas = model.findSchemas("http://www.w3.org/2001/XMLSchema");
+    GlobalType type = null;
+
+    for (Schema schema : schemas) {
+      type = findType(typeName, schema);
+
+      if (type != null) {
+        return type;
+      }
+    }
+    return findType(typeName, model.getSchema());
+  }
+
+  private GlobalType findType(final String typeName, Schema schema) {
+//out();
+//out("= in schema: " + schema.getTargetNamespace());
+    myGlobalType = null;
+
+    schema.accept(new DeepSchemaVisitor() {
+
+      @Override
+      public void visit(GlobalSimpleType type) {
+//out("  see GLOBAL Simple TYPE : " + type.getName());
+        if (typeName.equals(type.getName())) {
+//out("!!!=== FOUND GLOBAL Simple TYPE ==== : " + type.getName());
+          myGlobalType = type;
+        }
+      }
+      @Override
+      public void visit(GlobalComplexType type) {
+//out(" see GLOBAL Complex TYPE : " + type.getName());
+        if (typeName.equals(type.getName())) {
+//out("!!!=== FOUND GLOBAL Complex TYPE ==== : " + type.getName());
+          myGlobalType = type;
+        }
+      }
+    });
+    return myGlobalType;
+  }
+
+  private String removePrefix(String value) {
+    if (value == null) {
+      return null;
+    }
+    int k = value.indexOf(":");
+
+    if (k == -1) {
+      return value;
+    }
+    return value.substring(k + 1);
+  }
+
+  private static void out() {
+    System.out.println();
+  }
+
+  private void out(Object object) {
+    System.out.println("*** " + object); // NOI18N
+  }
+
+  private GlobalType myGlobalType;
   private BpelEntity myValidatedActivity; 
 }
