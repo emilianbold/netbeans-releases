@@ -41,6 +41,7 @@
 
 package org.netbeans.modules.cnd.makeproject.api.configurations.ui;
 
+import javax.swing.JPanel;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Configuration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptor;
@@ -69,6 +70,10 @@ public class CustomizerNode {
 
     public Sheet getSheet(Project project, ConfigurationDescriptor configurationDescriptor, Configuration configuration) {
 	return null;
+    }
+    
+    public JPanel getPanel(Project project, ConfigurationDescriptor configurationDescriptor) {
+        return null;
     }
     
     public HelpCtx getHelpCtx() {

@@ -363,10 +363,9 @@ public class MakeConfiguration extends Configuration {
         Sheet sheet = new Sheet();
         
         Sheet.Set set = new Sheet.Set();
-        set.setName("Project Defaults"); // NOI18N
+        set.setName("ProjectDefaults"); // NOI18N
         set.setDisplayName(getString("ProjectDefaultsTxt"));
         set.setShortDescription(getString("ProjectDefaultsHint"));
-        set.put(new ProjectLocationNodeProp(project));
         set.put(new IntNodeProp(getCompilerSet(), true, "CompilerSCollection", getString("CompilerCollectionTxt"), getString("CompilerCollectionHint"))); // NOI18N
         set.put(new BooleanNodeProp(getCRequired(), true, "cRequired", getString("CRequiredTxt"), getString("CRequiredHint"))); // NOI18N
         set.put(new BooleanNodeProp(getCppRequired(), true, "cppRequired", getString("CppRequiredTxt"), getString("CppRequiredHint"))); // NOI18N
@@ -411,37 +410,6 @@ public class MakeConfiguration extends Configuration {
 	sheet.put(set2);
 
 	return sheet;
-    }
-    
-    private class ProjectLocationNodeProp extends Node.Property {
-        String projectLocation;
-        
-        public ProjectLocationNodeProp(Project project) {
-            super(String.class);
-            FileObject projectFolder = project.getProjectDirectory();
-            File pf = FileUtil.toFile( projectFolder );
-            projectLocation = pf.getPath();
-        }
-        
-        public String getName() {
-            return getString("ProjectLocationTxt");
-        }
-        
-        public Object getValue() {
-            return projectLocation;
-        }
-        
-        public void setValue(Object v) {
-            ;//
-        }
-        
-        public boolean canWrite() {
-            return false;
-        }
-        
-        public boolean canRead() {
-            return true;
-        }
     }
     
     public boolean hasCPPFiles(MakeConfigurationDescriptor configurationDescriptor) {
