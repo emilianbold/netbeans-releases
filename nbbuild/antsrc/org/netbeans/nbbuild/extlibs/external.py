@@ -1,10 +1,14 @@
 import os, re, urllib2, sha, inspect
 from mercurial import util, httprepo
 
-# XXX platform module does not seem to be loadable on Windows:
-#import platform
-#if map(int, platform.python_version_tuple()) < [2, 4, 4]:
-#    raise util.Abort('Requires Python 2.4.4+ (2.5.1 preferred)')
+try:
+    import platform
+    if map(int, platform.python_version_tuple()) < [2, 4, 4]:
+        raise util.Abort('Requires Python 2.4.4+ (2.5.1 preferred)')
+except ImportError:
+    # platform module does not seem to be included in the Python installation
+    # bundled with common Windows distros of Hg
+    pass
 
 # Workaround for a Python bug (in linecache.py?):
 # http://bugs.python.org/issue1728

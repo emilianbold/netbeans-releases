@@ -212,17 +212,15 @@ public class AcceptanceTest extends RaveTestCase {
         JEditorPaneOperator editor = new JEditorPaneOperator(
                                         RaveWindowOperator.getDefaultRave(), "public class " + _page1);
         editor.requestFocus();
-        editor.pushKey(KeyEvent.VK_ENTER);
-        String url="http://bsqe-giant.sfbay.sun.com/RaveHWScheduler/index.cgi";
-        editor.typeText("imageHyperlink1.setUrl(\"http://bsqe-giant.sfbay.sun.com/RaveHWScheduler/index.cgi\");");
-        editor.pushKey(KeyEvent.VK_ENTER);
+        editor.typeText("log(\"Button action performed\");\n");
         
         // Open context menuitem, Reformat code
         Util.wait(1000);
         editor.clickForPopup(300,300);
         new JPopupMenuOperator().pushMenu(_reformatCode);
-        
         TestUtils.wait(1000);
+        log("Java Editor Dump:");
+        log(editor.getText());
         // Switch to design panel
         designer.makeComponentVisible();
       
