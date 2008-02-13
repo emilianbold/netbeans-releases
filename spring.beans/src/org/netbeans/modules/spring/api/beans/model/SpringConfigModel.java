@@ -114,11 +114,11 @@ public final class SpringConfigModel {
             return springBeans;
         }
 
-        public Document getCurrentDocument() {
+        public Document getDocument() {
             return document;
         }
 
-        public File getCurrentFile() {
+        public File getFile() {
             return file;
         }
     }

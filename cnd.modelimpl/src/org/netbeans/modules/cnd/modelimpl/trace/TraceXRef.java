@@ -49,7 +49,9 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.EnumSet;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import javax.swing.JEditorPane;
 import org.netbeans.modules.cnd.api.model.CsmClass;
 import org.netbeans.modules.cnd.api.model.CsmDeclaration;
@@ -347,12 +349,13 @@ public class TraceXRef extends TraceModel {
         if (scope != null) {
             final XRefResultSet.ContextScope funScope = classifyFunctionScope(fun, printOut);
             final ObjectContext<CsmFunctionDefinition> funContext = createContextObject(fun, printOut);
+            final Set<CsmObject> objectsUsedInScope = new HashSet<CsmObject>();
             bag.incrementScopeCounter(funScope);
             CsmFileReferences.getDefault().accept(
                     scope, 
                     new CsmFileReferences.Visitor() {
                         public void visit(CsmReference ref) {
-                            XRefResultSet.ContextEntry entry = createEntry(ref, funContext, printOut);
+                            XRefResultSet.ContextEntry entry = createEntry(objectsUsedInScope, ref, funContext, printOut);
                             if (entry != null) {
                                 bag.addEntry(funScope, entry);
                             }
@@ -363,7 +366,7 @@ public class TraceXRef extends TraceModel {
         }
     }
     
-    private static XRefResultSet.ContextEntry createEntry(CsmReference ref, ObjectContext<CsmFunctionDefinition> fun, PrintWriter printOut) {
+    private static XRefResultSet.ContextEntry createEntry(Set<CsmObject> objectsUsedInScope, CsmReference ref, ObjectContext<CsmFunctionDefinition> fun, PrintWriter printOut) {
         XRefResultSet.ContextEntry entry;
         CsmObject target = ref.getReferencedObject();
         if (target == null) {
@@ -374,7 +377,13 @@ public class TraceXRef extends TraceModel {
                 XRefResultSet.DeclarationKind declaration = classifyDeclaration(target, printOut);
                 XRefResultSet.DeclarationScope declarationScope = classifyDeclarationScopeForFunction(declaration, target, fun, printOut);
                 XRefResultSet.IncludeLevel declarationIncludeLevel = classifyIncludeLevel(target, fun.objFile, printOut);
-                entry = new XRefResultSet.ContextEntry(declaration, declarationScope, declarationIncludeLevel);
+                XRefResultSet.UsageStatistics usageStat = XRefResultSet.UsageStatistics.FIRST_USAGE;
+                if (objectsUsedInScope.contains(target)) {
+                    usageStat = XRefResultSet.UsageStatistics.NEXT_USAGE;
+                } else {
+                    objectsUsedInScope.add(target);
+                }
+                entry = new XRefResultSet.ContextEntry(declaration, declarationScope, declarationIncludeLevel, usageStat);
             } else {
                 entry = null;
             }
@@ -700,9 +709,10 @@ public class TraceXRef extends TraceModel {
     private static void traceFirstItemsStatistics(XRefResultSet.ContextScope scope, 
                                                     Collection<XRefResultSet.ContextEntry> entries, 
                                                     boolean printTitle, PrintWriter printOut) {
-        String entryFmtFileInfo = "%20s\t|%10s\t|%20s\t|%20s\t|%20s\n";
+        String entryFmtFileInfo = "%20s\t|%10s\t|%20s\t|%20s\t|%20s\t|%20s\t|%20s\n";
         if (printTitle) {
-            String title = String.format(entryFmtFileInfo, "scope name", "All", "local+cls+ns", "file+#incl-1", "local+cls+ns+#incl-1");
+            String title = String.format(entryFmtFileInfo, "scope name", "All", "local+cls+ns", "file+#incl-1", "local+cls+ns+#incl-1",
+                    "was usages", "context+used");
             printOut.print(title);
         }
         if (scope == XRefResultSet.ContextScope.UNRESOLVED) {
@@ -719,11 +729,18 @@ public class TraceXRef extends TraceModel {
                 XRefResultSet.DeclarationScope.FILE_THIS, 
                 XRefResultSet.DeclarationScope.NAMESPACE_THIS, 
                 XRefResultSet.DeclarationScope.NAMESPACE_PARENT);
+        EnumSet<DeclarationScope> nonScopes = EnumSet.noneOf(XRefResultSet.DeclarationScope.class);
+        EnumSet<IncludeLevel> nonIncludes = EnumSet.noneOf(XRefResultSet.IncludeLevel.class);
+        EnumSet<XRefResultSet.UsageStatistics> nonUsages = EnumSet.noneOf(XRefResultSet.UsageStatistics.class);
+        EnumSet<XRefResultSet.UsageStatistics> wasUsages = EnumSet.of(XRefResultSet.UsageStatistics.SECOND_USAGE, XRefResultSet.UsageStatistics.NEXT_USAGE);
         String msg = String.format(entryFmtFileInfo, scope,
                 entries.size(),
-                getDeclScopeAndIncludeLevelInfo(entries, nearestScopes, EnumSet.noneOf(XRefResultSet.IncludeLevel.class)),
-                getDeclScopeAndIncludeLevelInfo(entries, EnumSet.noneOf(XRefResultSet.DeclarationScope.class), nearestIncludes),
-                getDeclScopeAndIncludeLevelInfo(entries, nearestScopes, nearestIncludes));
+                getDeclScopeAndIncludeLevelInfo(entries, nearestScopes, nonIncludes, nonUsages),
+                getDeclScopeAndIncludeLevelInfo(entries, nonScopes, nearestIncludes, nonUsages),
+                getDeclScopeAndIncludeLevelInfo(entries, nearestScopes, nearestIncludes, nonUsages),
+                getDeclScopeAndIncludeLevelInfo(entries, nonScopes, nonIncludes, wasUsages),
+                getDeclScopeAndIncludeLevelInfo(entries, nearestScopes, nearestIncludes, wasUsages)
+                );
         printOut.print(msg);        
     }
     
@@ -795,12 +812,13 @@ public class TraceXRef extends TraceModel {
     
     private static String getDeclScopeAndIncludeLevelInfo(Collection<ContextEntry> entries,
             EnumSet<XRefResultSet.DeclarationScope> declScopes,
-            EnumSet<XRefResultSet.IncludeLevel> levels) {
+            EnumSet<XRefResultSet.IncludeLevel> levels,EnumSet<XRefResultSet.UsageStatistics> usages) {
         int num = 0;
         
         for (XRefResultSet.ContextEntry contextEntry : entries) {
             if (declScopes.contains(contextEntry.declarationScope) ||
-                levels.contains(contextEntry.declarationIncludeLevel)) {
+                levels.contains(contextEntry.declarationIncludeLevel) ||
+                usages.contains(contextEntry.usageStatistics)) {
                 num++;
             }
         }
