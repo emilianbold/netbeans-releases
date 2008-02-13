@@ -34,28 +34,21 @@ import java.text.MessageFormat;
 import java.util.HashSet;
 import java.util.Set;
 import javax.swing.event.ChangeListener;
-import org.netbeans.api.progress.ProgressHandle;
 import org.openide.WizardDescriptor;
 import org.openide.WizardDescriptor.Panel;
 import java.util.NoSuchElementException;
 import javax.swing.JComponent;
-import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import java.io.File;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.FileObject;
-import javax.swing.JTextArea;
 import org.openide.util.Exceptions;
 import java.util.logging.Logger;
-import java.util.logging.Level;
 import org.netbeans.modules.groovy.grails.api.GrailsServer;
 import org.netbeans.modules.groovy.grails.api.GrailsServerFactory;
 import org.netbeans.api.progress.ProgressHandle;
 import java.io.BufferedReader;
 import java.util.concurrent.CountDownLatch;
-import java.io.InputStreamReader;
-import org.openide.DialogDisplayer;
-import org.openide.NotifyDescriptor;
 
 
 
@@ -100,7 +93,14 @@ public class NewGrailsProjectWizardIterator implements  WizardDescriptor.Instant
 
             Set<FileObject> resultSet = new HashSet<FileObject>();
 
-            new PrivateSwingWorker(pls.getGrailsServerOutputTextArea()).start();
+            new WizardSwingWorker(  null,
+                                    "create-app",
+                                    pls,
+                                    handle,
+                                    serverFinished,
+                                    serverRunning,
+                                    (String) wiz.getProperty("projectFolder")
+                                    ).start();
             
             try {
                 serverFinished.await();
@@ -201,44 +201,6 @@ public class NewGrailsProjectWizardIterator implements  WizardDescriptor.Instant
 
     public void removeChangeListener(ChangeListener l) {}
     
-    public class PrivateSwingWorker extends Thread {
-        JTextArea grailsServerOutputTextArea;
-        private  final Logger LOG = Logger.getLogger(NewGrailsProjectWizardIterator.class.getName());
-        int progressMeter = 0;
-        
-        public PrivateSwingWorker (JTextArea grailsServerOutputTextArea) {
-            this.grailsServerOutputTextArea = grailsServerOutputTextArea;
-            }
-        
-        public void run() {
-            serverRunning = true;
-            
-            pls.fireChangeEvent();
-            handle.start(100);
-              
-            
-            Process process = server.runCommand(null, "create-app", null, (String) wiz.getProperty("projectFolder"));
-            procOutput = new BufferedReader(new InputStreamReader(process.getInputStream()));
-            
-            
-            String errString;
-            assert procOutput != null;
 
-            try {
-                while ((errString = procOutput.readLine()) != null) {
-                    grailsServerOutputTextArea.append(errString + "\n");
-                    progressMeter = progressMeter + 2;
-                    handle.progress(progressMeter);
-                    }
-                } catch (Exception e) {
-                    Exceptions.printStackTrace(e);
-                    LOG.log(Level.WARNING, "Could not read Process output " +e);
-                    }
-
-            handle.progress(100);
-            handle.finish();
-            serverFinished.countDown();
-        }       
-    }
     
 }

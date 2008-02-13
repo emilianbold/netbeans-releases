@@ -47,7 +47,8 @@ import org.netbeans.modules.groovy.grailsproject.SourceCategory;
  */
 public class GetArtifactNameStep implements  WizardDescriptor.Panel<WizardDescriptor>, 
                                                 WizardDescriptor.ValidatingPanel<WizardDescriptor>,
-                                                WizardDescriptor.FinishablePanel<WizardDescriptor>
+                                                WizardDescriptor.FinishablePanel<WizardDescriptor>,
+                                                GrailsServerOutputReceiver
                                                 {
 
     private GetArtifactNamePanel component;
@@ -111,7 +112,7 @@ public class GetArtifactNameStep implements  WizardDescriptor.Panel<WizardDescri
         }
     }
 
-    protected final void fireChangeEvent() {
+    public void fireChangeEvent() {
         Iterator it;
         synchronized (listeners) {
             it = new HashSet<ChangeListener>(listeners).iterator();

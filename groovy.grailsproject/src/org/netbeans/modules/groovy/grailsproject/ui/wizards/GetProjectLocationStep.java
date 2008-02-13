@@ -45,7 +45,8 @@ import org.openide.util.NbBundle;
  */
 public class GetProjectLocationStep implements  WizardDescriptor.Panel, 
                                                 WizardDescriptor.ValidatingPanel,
-                                                WizardDescriptor.FinishablePanel
+                                                WizardDescriptor.FinishablePanel,
+                                                GrailsServerOutputReceiver
                                                 {
 
     private GetProjectLocationPanel component;
@@ -106,7 +107,7 @@ public class GetProjectLocationStep implements  WizardDescriptor.Panel,
         }
     }
 
-    protected final void fireChangeEvent() {
+    public void fireChangeEvent() {
         Iterator it;
         synchronized (listeners) {
             it = new HashSet<ChangeListener>(listeners).iterator();

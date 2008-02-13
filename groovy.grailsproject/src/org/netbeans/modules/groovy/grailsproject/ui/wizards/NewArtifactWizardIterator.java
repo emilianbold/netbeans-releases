@@ -40,7 +40,6 @@ import org.openide.util.NbBundle;
 import java.io.File;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.FileObject;
-import javax.swing.JTextArea;
 import org.openide.util.Exceptions;
 import java.util.logging.Logger;
 import java.util.logging.Level;
@@ -49,12 +48,8 @@ import org.netbeans.modules.groovy.grails.api.GrailsServerFactory;
 import org.netbeans.api.progress.ProgressHandle;
 import java.io.BufferedReader;
 import java.util.concurrent.CountDownLatch;
-import java.io.InputStreamReader;
 import org.netbeans.modules.groovy.grailsproject.GrailsProject;
 import org.netbeans.modules.groovy.grailsproject.SourceCategory;
-import org.netbeans.modules.groovy.grailsproject.actions.RunGrailsServerCommandAction;
-import org.openide.DialogDisplayer;
-import org.openide.NotifyDescriptor;
 
 
 /**
@@ -116,7 +111,14 @@ public class NewArtifactWizardIterator implements  WizardDescriptor.Instantiatin
 
             Set<FileObject> resultSet = new HashSet<FileObject>();
 
-            new PrivateSwingWorker(pls.getGrailsServerOutputTextArea()).start();
+            new WizardSwingWorker(  project,
+                                    serverCommand  + " " + pls.getDomainClassName(),
+                                    pls,
+                                    handle,
+                                    serverFinished,
+                                    serverRunning,
+                                    null
+                                    ).start();
             
             try {
                 serverFinished.await();
@@ -207,60 +209,5 @@ public class NewArtifactWizardIterator implements  WizardDescriptor.Instantiatin
     public void addChangeListener(ChangeListener l) {}
 
     public void removeChangeListener(ChangeListener l) {}
-    
-    void displayGrailsProcessError(Exception reason) {
-        DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
-            NbBundle.getMessage(NewArtifactWizardIterator.class, "LBL_process_problem") + 
-            " " + reason.getLocalizedMessage(),
-            NotifyDescriptor.Message.WARNING_MESSAGE
-            ));
-        }
-    
-    public class PrivateSwingWorker extends Thread {
-        JTextArea grailsServerOutputTextArea;
-        
-        int progressMeter = 0;
-        
-        public PrivateSwingWorker (JTextArea grailsServerOutputTextArea) {
-            this.grailsServerOutputTextArea = grailsServerOutputTextArea;
-            }
-        
-        public void run() {
-            serverRunning = true;
-            
-            pls.fireChangeEvent();
-            handle.start(100);
-            
-            Process process = server.runCommand(project, serverCommand + " " + pls.getDomainClassName(), null, null);
-            
-            if(process == null){
-                serverRunning = false;
-                LOG.log(Level.WARNING, "Could not create Grails-Server, process == null ");
-                displayGrailsProcessError(server.getLastError());
-                serverFinished.countDown();
-                return;
-                }
-            
-            procOutput = new BufferedReader(new InputStreamReader(process.getInputStream()));
-            
-            String errString;
-            assert procOutput != null;
-
-            try {
-                while ((errString = procOutput.readLine()) != null) {
-                    grailsServerOutputTextArea.append(errString + "\n");
-                    progressMeter = progressMeter + 2;
-                    handle.progress(progressMeter);
-                    }
-                } catch (Exception e) {
-                    Exceptions.printStackTrace(e);
-                    LOG.log(Level.WARNING, "Could not read Process output " +e);
-                    }
-
-            handle.progress(100);
-            handle.finish();
-            serverFinished.countDown();
-        }       
-    }
     
 }
