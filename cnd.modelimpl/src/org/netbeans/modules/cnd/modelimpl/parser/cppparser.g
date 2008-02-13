@@ -2198,7 +2198,7 @@ exception_specification
 	{String so;}
 	:	LITERAL_throw 
 		LPAREN 
-		(exception_type_id (COMMA exception_type_id)? )? 
+		(exception_type_id (COMMA exception_type_id)* )? 
 		RPAREN
 	;
 
