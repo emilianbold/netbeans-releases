@@ -151,6 +151,8 @@ public final class OpenProjectList {
     /** List of recently closed projects */
     private final RecentProjectList recentProjects;
 
+    /** lock to prevent modifications of the recentTemplates variable from multiple threads */
+    private static Object RECENT_TEMPLATES_LOCK = new Object();
     /** LRU List of recently used templates */
     private final List<String> recentTemplates;
     
@@ -176,7 +178,7 @@ public final class OpenProjectList {
         };
         pchSupport = new PropertyChangeSupport( this );
         recentProjects = new RecentProjectList(10); // #47134
-        recentTemplates = new CopyOnWriteArrayList<String>();
+        recentTemplates = new ArrayList<String>();
     }
     
            
@@ -208,6 +210,15 @@ public final class OpenProjectList {
     
     Future<Project[]> openProjectsAPI() {
         return LOAD;
+    }
+
+    /** Modifications to the recentTemplates variables shall be done only 
+     * when hodling a lock.
+     * @return the list
+     */
+    private List<String> getRecentTemplates() {
+        assert Thread.holdsLock(this);
+        return recentTemplates;
     }
     
     private final class LoadOpenProjects implements Runnable, LookupListener, Future<Project[]> {
@@ -272,7 +283,7 @@ public final class OpenProjectList {
             synchronized (INSTANCE) {
                 INSTANCE.openProjects = openedProjects;
                 INSTANCE.mainProject = mainProject;
-                INSTANCE.recentTemplates.addAll(recentTemplates);
+                INSTANCE.getRecentTemplates().addAll(recentTemplates);
             }
             
             INSTANCE.pchSupport.firePropertyChange(PROPERTY_OPEN_PROJECTS, new Project[0], openedProjects.toArray(new Project[0]));
@@ -790,20 +801,20 @@ public final class OpenProjectList {
         
     
     // Used from NewFile action    
-    public void updateTemplatesLRU( FileObject template ) {
+    public synchronized void updateTemplatesLRU( FileObject template ) {
         
         String templateName = template.getPath();
         
-        if ( recentTemplates.contains( templateName ) ) {
-            recentTemplates.remove( templateName );
+        if ( getRecentTemplates().contains( templateName ) ) {
+            getRecentTemplates().remove( templateName );
         }
-        recentTemplates.add( 0, templateName );
+        getRecentTemplates().add( 0, templateName );
         
-        if ( recentTemplates.size() > 100 ) {
-            recentTemplates.remove( 100 );
+        if ( getRecentTemplates().size() > 100 ) {
+            getRecentTemplates().remove( 100 );
         }
         
-        OpenProjectListSettings.getInstance().setRecentTemplates( new ArrayList<String>( recentTemplates ) );
+        OpenProjectListSettings.getInstance().setRecentTemplates( new ArrayList<String>( getRecentTemplates() )  );
     }
     
     
@@ -1015,24 +1026,26 @@ public final class OpenProjectList {
         ArrayList<String> privilegedTemplates = new ArrayList<String>( Arrays.asList( pt == null ? new String[0]: ptNames ) );
         FileSystem sfs = Repository.getDefault().getDefaultFileSystem();            
                 
-        Iterator<String> it = recentTemplates.iterator();
-        for( int i = 0; i < NUM_TEMPLATES && it.hasNext(); i++ ) {
-            String templateName = it.next();
-            FileObject fo = sfs.findResource( templateName );
-            if ( fo == null ) {
-                it.remove(); // Does not exists remove
-            }
-            else if ( isRecommended( project, fo ) ) {
-                result.add( fo );
-                privilegedTemplates.remove( templateName ); // Not to have it twice
-            }
-            else {
-                continue;
+        synchronized (this) {
+            Iterator<String> it = getRecentTemplates().iterator();
+            for( int i = 0; i < NUM_TEMPLATES && it.hasNext(); i++ ) {
+                String templateName = it.next();
+                FileObject fo = sfs.findResource( templateName );
+                if ( fo == null ) {
+                    it.remove(); // Does not exists remove
+                }
+                else if ( isRecommended( project, fo ) ) {
+                    result.add( fo );
+                    privilegedTemplates.remove( templateName ); // Not to have it twice
+                }
+                else {
+                    continue;
+                }
             }
         }
         
         // If necessary fill the list with the rest of privileged templates
-        it = privilegedTemplates.iterator();
+        Iterator<String> it = privilegedTemplates.iterator();
         for( int i = result.size(); i < NUM_TEMPLATES && it.hasNext(); i++ ) {
             String path = it.next();
             FileObject fo = sfs.findResource( path );
