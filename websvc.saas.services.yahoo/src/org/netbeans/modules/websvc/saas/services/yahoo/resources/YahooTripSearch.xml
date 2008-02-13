@@ -48,7 +48,7 @@
                     ../../../../../../../../../../websvc.saas.api/src/org/netbeans/modules/websvc/saas/model/SaasServices.xsd' 
                type="http://research.sun.com/wadl/2006/10"
                api-doc="http://developer.yahoo.com/travel/tripservice/V1/tripSearch.html"
-               url="/org/netbeans/modules/websvc/saas/services/yahoo/resources/YahooTripSearchWadl.xml">
+               url="org/netbeans/modules/websvc/saas/services/yahoo/resources/YahooTripSearchWadl.xml">
 
     <description>Yahoo Trip Service</description>
     

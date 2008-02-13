@@ -78,8 +78,7 @@ import org.w3c.dom.NodeList;
  */
 public final class PlatformUiSupport {
 
-    private static final SpecificationVersion JDK_1_5 = new SpecificationVersion("1.5"); //NOI18N
-    private static final SpecificationVersion JDK_1_6 = new SpecificationVersion("1.6"); //NOI18N
+    private static final SpecificationVersion JDK_1_5 = new SpecificationVersion("1.5"); //NOI18N   
     private static final Logger LOGGER = Logger.getLogger(PlatformUiSupport.class.getName());
 
     private PlatformUiSupport() {
@@ -220,12 +219,10 @@ public final class PlatformUiSupport {
         // JDK 1.3            1.3        1.1
         // JDK 1.4            1.4        1.4
         // JDK 5              1.5        1.5
-        // JDK 6              1.5        1.6
+        // JDK 6              1.6        1.6  - java 1.6 brings JLS changes - @Override, encoding
         // JDK 7              1.7        1.7  - should bring a new language features
         if (jdk13.compareTo(sourceLevel) >= 0) {
             javacTarget = "1.1"; //NOI18N
-        } else if (JDK_1_6.equals(sourceLevel)) {
-            javacSource = JDK_1_5.toString();
         }
 
         if (!javacSource.equals(props.getProperty(javacSourceKey))) {
