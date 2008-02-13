@@ -383,8 +383,8 @@ public class FacesModel extends Model {
         super(owner, file);
         assert Trace.trace("insync.models", "LFM.FacesModel: file:" + file);  //NOI18N
 
-        if (TIMERS.isLoggable(Level.FINE)) {
-            LogRecord rec = new LogRecord(Level.FINE, "FacesModel"); // NOI18N
+        if (TIMERS.isLoggable(Level.FINER)) {
+            LogRecord rec = new LogRecord(Level.FINER, "FacesModel"); // NOI18N
             rec.setParameters(new Object[]{this });
             TIMERS.log(rec);
         }
