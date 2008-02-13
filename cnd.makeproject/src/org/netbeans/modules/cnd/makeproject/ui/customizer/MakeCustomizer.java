@@ -384,7 +384,7 @@ public class MakeCustomizer extends javax.swing.JPanel implements HelpCtx.Provid
             manager.addPropertyChangeListener(managerChangeListener);
             selectNode( preselectedNodeName );
             //btv.expandAll();
-            //expandCollapseTree(rootNode, btv);
+            expandCollapseTree(rootNode, btv);
             
             // Add been tree view to controls so it can be enabled/disabled correctly
             controls.add(btv);
@@ -394,11 +394,14 @@ public class MakeCustomizer extends javax.swing.JPanel implements HelpCtx.Provid
             Children children = rootNode.getChildren();
             Node[] nodes1 = children.getNodes();
             for (int i = 0; i < nodes1.length; i++) {
-                btv.expandNode(nodes1[i]);
-                Node[] nodes2 = nodes1[i].getChildren().getNodes();
-                for (int j = 0; j < nodes2.length; j++) {
-                    btv.collapseNode(nodes2[j]);
-                }
+                if (nodes1[i].getName().equals("Build")) // NOI18N
+                    btv.expandNode(nodes1[i]);
+                else 
+                    btv.collapseNode(nodes1[i]);
+//                Node[] nodes2 = nodes1[i].getChildren().getNodes();
+//                for (int j = 0; j < nodes2.length; j++) {
+//                    btv.collapseNode(nodes2[j]);
+//                }
             }
         }
         
@@ -603,23 +606,24 @@ public class MakeCustomizer extends javax.swing.JPanel implements HelpCtx.Provid
                 descriptions.add(advanced);
         }
         if (includeMakefileDescription) {
-            descriptions.add(createMakefileDescription(project));
+            //descriptions.add(createMakefileDescription(project));
             descriptions.add(createRequiredProjectsDescription(project));
-        }
-        if (includeNewDescription) {
-            //IZ#110443:Adding "Dependencies" node for makefile projects property is premature
-            //if (!includeLinkerDescription) {
-            //    CustomizerNode librariesNode = new LibrariesGeneralCustomizerNode("Libraries", getString("LBL_DEPENDENCIES"), null); // NOI18N
-            //   descriptions.add(createNewDescription(project, compilerSet, -1, null, null, isCompileConfiguration, librariesNode));
-            //} else {
-            //    descriptions.add(createNewDescription(project, compilerSet, -1, null, null, isCompileConfiguration, null));
-            //}
             descriptions.add(createNewDescription(project, compilerSet, -1, null, null, isCompileConfiguration, null));
         }
-        if (includeLinkerDescription)
-            descriptions.add(createLinkerDescription());
-        if (includeArchiveDescription)
-            descriptions.add(createArchiverDescription());
+//        if (includeNewDescription) {
+//            //IZ#110443:Adding "Dependencies" node for makefile projects property is premature
+//            //if (!includeLinkerDescription) {
+//            //    CustomizerNode librariesNode = new LibrariesGeneralCustomizerNode("Libraries", getString("LBL_DEPENDENCIES"), null); // NOI18N
+//            //   descriptions.add(createNewDescription(project, compilerSet, -1, null, null, isCompileConfiguration, librariesNode));
+//            //} else {
+//            //    descriptions.add(createNewDescription(project, compilerSet, -1, null, null, isCompileConfiguration, null));
+//            //}
+//            descriptions.add(createNewDescription(project, compilerSet, -1, null, null, isCompileConfiguration, null));
+//        }
+//        if (includeLinkerDescription)
+//            descriptions.add(createLinkerDescription());
+//        if (includeArchiveDescription)
+//            descriptions.add(createArchiverDescription());
         
         CustomizerNode rootDescription = new CustomizerNode(
                 "Configuration Properties", getString("CONFIGURATION_PROPERTIES"), (CustomizerNode[])descriptions.toArray(new CustomizerNode[descriptions.size()]));  // NOI18N
@@ -776,12 +780,63 @@ public class MakeCustomizer extends javax.swing.JPanel implements HelpCtx.Provid
     }
     
     private CustomizerNode createBuildDescription(Project project) {
+        
+        boolean includeMakefileDescription = true;
+        boolean includeNewDescription = true;
+        int compilerSet = -1;
+        boolean isCompileConfiguration = ((MakeConfiguration)selectedConfigurations[0]).isCompileConfiguration();
+        boolean includeLinkerDescription = true;
+        boolean includeArchiveDescription = true;
+        boolean includeRunDebugDescriptions = true;
+        
+        for (int i = 0; i < selectedConfigurations.length; i++) {
+            MakeConfiguration makeConfiguration = (MakeConfiguration)selectedConfigurations[i];
+            
+            if (compilerSet >= 0 && makeConfiguration.getCompilerSet().getValue() != compilerSet)
+                includeNewDescription = false;
+            compilerSet = makeConfiguration.getCompilerSet().getValue();
+            
+            if ((isCompileConfiguration && !makeConfiguration.isCompileConfiguration()) || (!isCompileConfiguration && makeConfiguration.isCompileConfiguration()))
+                includeNewDescription = false;
+            
+            if (makeConfiguration.isMakefileConfiguration()) {
+                includeNewDescription = false;
+                includeLinkerDescription = false;
+                includeArchiveDescription = false;
+            }
+            if (makeConfiguration.isLinkerConfiguration()) {
+                includeMakefileDescription = false;
+                includeArchiveDescription = false;
+            }
+            if (makeConfiguration.isArchiverConfiguration()) {
+                includeMakefileDescription = false;
+                includeLinkerDescription = false;
+            }
+            if (makeConfiguration.isLibraryConfiguration()) {
+                includeRunDebugDescriptions = false;
+            }
+        }
+        
+        Vector descriptions = new Vector();
+        if (includeMakefileDescription) {
+            descriptions.add(createMakefileDescription(project));
+            //descriptions.add(createRequiredProjectsDescription(project));
+        }
+        if (includeNewDescription) {
+            descriptions.addAll(createCompilerNodes(project, compilerSet, -1, null, null, isCompileConfiguration, null));
+        }
+        if (includeLinkerDescription)
+            descriptions.add(createLinkerDescription());
+        if (includeArchiveDescription)
+            descriptions.add(createArchiverDescription());
+        
+        
         ResourceBundle bundle = NbBundle.getBundle( MakeCustomizer.class );
         
         return new BuildCustomizerNode(
                 "Build", // NOI18N
                 bundle.getString( "LBL_Config_Build" ), // NOI18N
-                null );
+                (CustomizerNode[])descriptions.toArray(new CustomizerNode[descriptions.size()]) );
     }
     
     class BuildCustomizerNode extends CustomizerNode {
@@ -946,6 +1001,22 @@ public class MakeCustomizer extends javax.swing.JPanel implements HelpCtx.Provid
         return rootDescription;
     }
     
+    // C/C++/Fortran Node
+    private ArrayList createCompilerNodes(Project project, int compilerSetIdx, int tool, Item item, Folder folder, boolean isCompilerConfiguration, CustomizerNode linkerNode ) {
+        ArrayList descriptions = new ArrayList();
+        if (tool < 0 || tool == Tool.CCompiler)
+            descriptions.add(createCCompilerDescription(project, compilerSetIdx, item, folder, isCompilerConfiguration));
+        if (tool < 0 || tool == Tool.CCCompiler)
+            descriptions.add(createCCCompilerDescription(project, compilerSetIdx, item, folder, isCompilerConfiguration));
+        if (((tool < 0 && CppSettings.getDefault().isFortranEnabled() && folder == null) || tool == Tool.FortranCompiler) && isCompilerConfiguration)
+            descriptions.add(createFortranCompilerDescription(project, compilerSetIdx, item, isCompilerConfiguration));
+        
+        if (linkerNode != null) {
+            descriptions.add(linkerNode);
+        }
+        
+        return descriptions;
+    }
     
     // Linker
     private CustomizerNode createLinkerDescription() {
