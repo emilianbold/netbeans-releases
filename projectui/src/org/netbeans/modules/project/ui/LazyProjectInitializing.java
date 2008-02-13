@@ -34,35 +34,38 @@
  * 
  * Contributor(s):
  * 
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2007 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.project.ui;
 
-package org.netbeans.modules.cnd.editor.options;
+import org.openide.util.HelpCtx;
+import org.openide.util.NbBundle;
+import org.openide.util.actions.CallableSystemAction;
 
-import java.util.prefs.Preferences;
-import org.netbeans.modules.cnd.editor.api.CodeStyle;
+final class LazyProjectInitializing extends CallableSystemAction {
 
-/**
- * @author Alexander Simon
- */
-public class CodeStyleImpl extends CodeStyle {
-    Preferences preferences;
-    public CodeStyleImpl(Language language, Preferences preferences){
-        super(language);
-        this.preferences = preferences;
-        
-    }
-    protected Preferences getPreferences(){
-        return preferences;
+    public void performAction() {
+        assert false;
     }
 
-    // for tests only
-    public Preferences getPref(){
-        return preferences;
+    public String getName() {
+        return NbBundle.getMessage(LazyProjectInitializing.class, "CTL_LazyProjectInitializing");
     }
 
-    // for tests only
-    public void setPref(Preferences preferences){
-        this.preferences = preferences;
+    @Override
+    protected void initialize() {
+        super.initialize();
+        // see org.openide.util.actions.SystemAction.iconResource() Javadoc for more details
+        putValue("noIconInMenu", Boolean.TRUE);
+        setEnabled(false);
+    }
+
+    public HelpCtx getHelpCtx() {
+        return HelpCtx.DEFAULT_HELP;
+    }
+
+    @Override
+    protected boolean asynchronous() {
+        return false;
     }
 }

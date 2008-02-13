@@ -73,6 +73,8 @@ public class TypeImpl extends OffsetableBase implements CsmType {
     private final boolean _const;
     private final CharSequence classifierText;
     
+    private final List<CsmType> instantiationParams = new ArrayList();
+    
     // FIX for lazy resolver calls
     private CharSequence[] qname = null;
     private int firstOffset;
@@ -145,6 +147,14 @@ public class TypeImpl extends OffsetableBase implements CsmType {
     public boolean isPointer() {
         return pointerDepth > 0;
     }
+
+    public List<CsmType> getInstantiationParams() {
+        return instantiationParams;
+    }
+
+    public boolean isInstantiation() {
+        return !instantiationParams.isEmpty();
+    }
     
     private static boolean initIsConst(AST node) {
         if( node != null ) {
@@ -167,28 +177,32 @@ public class TypeImpl extends OffsetableBase implements CsmType {
     }
 
     public String getCanonicalText() {
-	return getText(true, null).toString();
+	return decorateText(classifierText, this, true, null).toString();
     }
     
     @Override
     public CharSequence getText() {
 	// TODO: resolve typedefs
-	return getText(false, null).toString();
+	return decorateText(classifierText, this, false, null).toString();
     }
     
     protected StringBuilder getText(boolean canonical, CharSequence variableNameToInsert) {
+        return decorateText(classifierText, this, canonical, variableNameToInsert);
+    }
+    
+    public StringBuilder decorateText(CharSequence classifierText, CsmType decorator, boolean canonical, CharSequence variableNameToInsert) {
 	StringBuilder sb = new StringBuilder();
-	if( isConst() ) {
+	if( decorator.isConst() ) {
 	    sb.append("const "); // NOI18N
 	}
 	sb.append(classifierText);
-	for( int i = 0; i < getPointerDepth(); i++ ) {
+	for( int i = 0; i < decorator.getPointerDepth(); i++ ) {
 	    sb.append('*');
 	}
-	if( isReference() ) {
+	if( decorator.isReference() ) {
 	    sb.append('&');
 	}
-	for( int i = 0; i < getArrayDepth(); i++ ) {
+	for( int i = 0; i < decorator.getArrayDepth(); i++ ) {
 	    sb.append(canonical ? "*" : "[]"); // NOI18N
 	}
 	if( variableNameToInsert != null ) {
@@ -224,10 +238,14 @@ public class TypeImpl extends OffsetableBase implements CsmType {
     }
 
     public CsmClassifier getClassifier() {
-        return getClassifier(null);
+        CsmClassifier res = getClassifier(null);
+        if (isInstantiation() && CsmKindUtilities.isTemplate(res) && !((CsmTemplate)res).getTemplateParameters().isEmpty()) {
+            res = (CsmClassifier)Instantiation.create((CsmTemplate)res, this);
+        }
+        return res;
     }
 
-    protected CharSequence getClassifierText() {
+    public CharSequence getClassifierText() {
 	return classifierText;
     }
     
@@ -301,16 +319,24 @@ public class TypeImpl extends OffsetableBase implements CsmType {
 		    }
                     else {
                         //assert namePart.getType() == CPPTokenTypes.SCOPE;
-                        if( templateDepth == 0 && namePart.getType() != CPPTokenTypes.SCOPE ) {
-                            if (TraceFlags.DEBUG) {
-                                StringBuilder tokenText = new StringBuilder();
-                                tokenText.append('[').append(namePart.getText());
-                                if (namePart.getNumberOfChildren() == 0) {
-                                    tokenText.append(", line=").append(namePart.getLine()); // NOI18N
-                                    tokenText.append(", column=").append(namePart.getColumn()); // NOI18N
+                        if( templateDepth == 0) {
+                            if (namePart.getType() != CPPTokenTypes.SCOPE) {
+                                if (TraceFlags.DEBUG) {
+                                    StringBuilder tokenText = new StringBuilder();
+                                    tokenText.append('[').append(namePart.getText());
+                                    if (namePart.getNumberOfChildren() == 0) {
+                                        tokenText.append(", line=").append(namePart.getLine()); // NOI18N
+                                        tokenText.append(", column=").append(namePart.getColumn()); // NOI18N
+                                    }
+                                    tokenText.append(']');
+                                    System.err.println("Incorect token: expected '::', found " + tokenText.toString());
                                 }
-                                tokenText.append(']');
-                                System.err.println("Incorect token: expected '::', found " + tokenText.toString());
+                            }
+                        } else {
+                            // TODO: maybe we need to filter out some more tokens
+                            if (namePart.getType() == CPPTokenTypes.CSM_TYPE_BUILTIN
+                                    || namePart.getType() == CPPTokenTypes.CSM_TYPE_COMPOUND) {
+                                instantiationParams.add(AstRenderer.renderType(namePart, getContainingFile()));
                             }
                         }
                     }
@@ -382,7 +408,7 @@ public class TypeImpl extends OffsetableBase implements CsmType {
      * (we actually need this for function pointers, where simple typeName+' '+variableName does not work.
      */
     String getVariableDisplayName(String variableName) {
-	return getText(false, variableName).toString();
+	return decorateText(classifierText, this, false, variableName).toString();
     }
     
     ////////////////////////////////////////////////////////////////////////////

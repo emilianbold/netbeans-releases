@@ -891,7 +891,7 @@ public class AbstractVariable implements LocalVariable, Customizer {
     
     @Override
     public String toString() {
-        return "AbstractVariable "; // NOI18N
+        return getFullName(false);
     }
         
     private boolean isNumber(String value) {
