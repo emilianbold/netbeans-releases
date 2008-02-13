@@ -3,7 +3,7 @@
 <filesystem>
     <folder name="org-netbeans-api-project-libraries">
         <folder name="Libraries">
-            <file name="hibernate-3.2.5.xml" url="hibernate-3.2.5.xml"/>
+            <file name="hibernate.xml" url="hibernate.xml"/>
         </folder>
     </folder>
 </filesystem>

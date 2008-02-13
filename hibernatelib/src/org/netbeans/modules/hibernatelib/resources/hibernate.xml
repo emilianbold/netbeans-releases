@@ -43,7 +43,7 @@ made subject to such option by the copyright holder.
 -->
 <!DOCTYPE library PUBLIC "-//NetBeans//DTD Library Declaration 1.0//EN" "http://www.netbeans.org/dtds/library-declaration-1_0.dtd">
 <library version="1.0">
-    <name>hibernate-3.2.5-support</name>
+    <name>hibernate-support</name>
     <type>j2se</type>
     <localizing-bundle>org/netbeans/modules/hibernatelib/resources/Bundle</localizing-bundle>
     <volume>
