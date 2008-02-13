@@ -39,6 +39,8 @@
 
 package org.netbeans.modules.websvc.saas.util;
 
+import org.netbeans.api.project.libraries.Library;
+import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.modules.websvc.saas.spi.websvcmgr.WsdlData;
 import org.netbeans.modules.websvc.saas.spi.websvcmgr.WsdlDataManager;
 import org.openide.util.Lookup;
@@ -49,13 +51,40 @@ import org.openide.util.Lookup;
  */
 public class WsdlUtil {
 
+    public static WsdlData findWsdlData(String url, String serviceName) {
+        WsdlDataManager manager = Lookup.getDefault().lookup(WsdlDataManager.class);
+        if (manager != null) {
+            return manager.findWsdlData(url, serviceName);
+        }
+        return null;
+    }
+    
     public static WsdlData getWsdlDataAsynchronously(String url) {
         WsdlDataManager manager = Lookup.getDefault().lookup(WsdlDataManager.class);
-        return manager.getWsdlData(url, "", false);
+        if (manager != null) {
+            return manager.getWsdlData(url, "", false);
+        } 
+        return null;
     }
     
     public static void removeWsdlData(WsdlData data) {
         WsdlDataManager manager = Lookup.getDefault().lookup(WsdlDataManager.class);
-        manager.removeWsdlData(data.getOriginalWsdlUrl(), data.getName());
+        if (manager != null) {
+            manager.removeWsdlData(data.getOriginalWsdlUrl(), data.getName());
+        }
     }    
+
+    public static boolean isJAXRPCAvailable() {
+        return getWebServiceSupportLibDef(false) != null;
+    }
+
+    /**
+     * @return The library definition containing the web service support jar files, null if it does not exist
+     */
+    public static Library getWebServiceSupportLibDef(boolean isJ2EE_15) {
+        String libraryName = (isJ2EE_15) ? "jaxws21" : "jaxrpc16";
+        Library libDef = LibraryManager.getDefault().getLibrary(libraryName);
+        return libDef;
+    }
+
 }
