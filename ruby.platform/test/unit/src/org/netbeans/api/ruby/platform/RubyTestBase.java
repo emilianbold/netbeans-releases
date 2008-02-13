@@ -38,8 +38,11 @@
  */
 package org.netbeans.api.ruby.platform;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.Properties;
 import org.netbeans.api.ruby.platform.RubyPlatform.Info;
 import org.netbeans.junit.MockServices;
@@ -203,4 +206,16 @@ public abstract class RubyTestBase extends NbTestCase {
         return binaryF;
     }
 
+    /** Copy-pasted from APISupport. */
+    protected static String slurp(File file) throws IOException {
+        InputStream is = new FileInputStream(file);
+        try {
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            FileUtil.copy(is, baos);
+            return baos.toString("UTF-8");
+        } finally {
+            is.close();
+        }
+    }
+    
 }
