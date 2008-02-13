@@ -56,11 +56,12 @@ import org.openide.util.Lookup;
  */
 public class SpringBeansRefactoringPluginFactory implements RefactoringPluginFactory {
     private static final Logger LOGGER = Logger.getLogger(SpringBeansRefactoringPluginFactory.class.getName());
+    
     public RefactoringPlugin createInstance(AbstractRefactoring refactoring) {
-        Lookup look = refactoring.getRefactoringSource();
-        FileObject file = look.lookup(FileObject.class);
-        NonRecursiveFolder folder = look.lookup(NonRecursiveFolder.class);
-        TreePathHandle handle = look.lookup(TreePathHandle.class);
+        Lookup sourceObj = refactoring.getRefactoringSource();
+        FileObject file = sourceObj.lookup(FileObject.class);
+        NonRecursiveFolder folder = sourceObj.lookup(NonRecursiveFolder.class);
+        TreePathHandle handle = sourceObj.lookup(TreePathHandle.class);
         
         if (refactoring instanceof WhereUsedQuery) {
             if (handle != null) {

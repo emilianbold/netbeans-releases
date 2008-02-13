@@ -223,6 +223,10 @@ public class GdbProxy implements GdbMiDefinitions {
     public int info_proc() {
         return engine.sendCommand("info proc"); // NOI18N
     }
+    
+    public int info_share(CommandBuffer cb) {
+        return engine.sendCommand(cb, "info share"); // NOI18N
+    }
 
     /**
      *  Use this to call _CndSigInit() to initialize signals in Cygwin processes.

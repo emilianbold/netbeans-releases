@@ -62,7 +62,7 @@ import org.netbeans.api.project.ant.AntArtifact;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.modules.j2ee.common.project.classpath.ClassPathSupport;
-import org.netbeans.modules.web.project.UpdateHelper;
+import org.netbeans.modules.java.api.common.ant.UpdateHelper;
 import org.netbeans.modules.web.project.WebProject;
 import org.netbeans.modules.web.project.ui.customizer.WebProjectProperties;
 import org.netbeans.spi.java.project.classpath.ProjectClassPathModifierImplementation;
@@ -164,17 +164,8 @@ public class WebProjectClassPathModifier extends ProjectClassPathModifierImpleme
                             boolean changed = false;
                             File projectFolderFile = FileUtil.toFile(project.getProjectDirectory());
                             for (int i=0; i< classPathRoots.length; i++) {
-                                assert classPathRoots[i] != null;
-                                assert classPathRoots[i].toExternalForm().endsWith("/");    //NOI18N
-                                URL toAdd = FileUtil.getArchiveFile(classPathRoots[i]);
-                                if (toAdd == null) {
-                                    toAdd = classPathRoots[i];
-                                }
-                                String filePath = LibrariesSupport.convertURLToFilePath(toAdd);
-                                final File f = PropertyUtils.resolveFile(projectFolderFile, filePath);
-                                if (f == null ) {
-                                    throw new IllegalArgumentException ("The file must exist on disk");     //NOI18N
-                                }
+                                String filePath = WebProjectClassPathModifier.this.performSharabilityHeuristics(classPathRoots[i], project.getAntProjectHelper());
+                                File f = project.getAntProjectHelper().resolveFile(filePath);
                                 ClassPathSupport.Item item = ClassPathSupport.Item.create( filePath, projectFolderFile, null);
                                 item.setPathInDeployment(f.isDirectory() ? ClassPathSupportCallbackImpl.PATH_IN_WAR_DIR : ClassPathSupportCallbackImpl.PATH_IN_WAR_LIB);
                                 if (operation == ADD && !resources.contains(item)) {

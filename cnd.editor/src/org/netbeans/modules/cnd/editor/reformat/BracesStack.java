@@ -40,6 +40,10 @@
 package org.netbeans.modules.cnd.editor.reformat;
 
 import java.util.Stack;
+import org.netbeans.api.lexer.Token;
+import org.netbeans.api.lexer.TokenSequence;
+import org.netbeans.cnd.api.lexer.CppTokenId;
+import static org.netbeans.cnd.api.lexer.CppTokenId.*;
 
 /**
  *
@@ -54,16 +58,82 @@ class BracesStack {
     }
 
     public void push(StackEntry entry) {
+        if (entry.getKind() == ELSE){
+            if (stack.size() > 0 && stack.peek().getKind() == IF) {
+                stack.pop();
+            }
+        }
         stack.push(entry);
+        System.out.println("push: "+toString());
     }
 
-    public StackEntry pop() {
+    private StackEntry safePop() {
         if (stack.empty()) {
             return null;
         }
         return stack.pop();
     }
 
+    public StackEntry pop(TokenSequence<CppTokenId> ts) {
+        StackEntry res = popImpl(ts);
+        System.out.println("pop "+ts.token().id().name()+": "+toString());
+        return res;
+    }
+    
+    public StackEntry popImpl(TokenSequence<CppTokenId> ts) {
+        if (stack.empty()) {
+            return null;
+        }
+        CppTokenId id = ts.token().id();
+        int brace;
+        if (id == RBRACE) {
+            brace = 0;
+            for (int i = stack.size()-1; i >= 0; i--){
+                StackEntry top = stack.get(i);
+                if (top.getKind() == LBRACE){
+                    brace = i-1;
+                    break;
+                }
+            }
+            if (brace < 0){
+                StackEntry top = stack.get(0);
+                stack.setSize(0);
+                return top;
+            }
+        } else {
+            brace = stack.size() - 1;
+        }
+        Token<CppTokenId> next = getNextImportant(ts);
+        for (int i = brace; i >= 0; i--) {
+            StackEntry top = stack.get(i);
+            switch (top.getKind()) {
+                case LBRACE: {
+                    stack.setSize(i + 1);
+                    return top;
+                }
+                case IF: //("if", "keyword-directive"),
+                {
+                    if (next != null && next.id() == ELSE) {
+                        stack.setSize(i + 1);
+                        return top;
+                    }
+                }
+                case ELSE: //("else", "keyword-directive"),
+                    break;
+                case TRY: //("try", "keyword-directive"), // C++
+                case CATCH: //("catch", "keyword-directive"), //C++
+                case SWITCH: //("switch", "keyword-directive"),
+                case FOR: //("for", "keyword-directive"),
+                case ASM: //("asm", "keyword-directive"), // gcc and C++
+                case DO: //("do", "keyword-directive"),
+                case WHILE: //("while", "keyword-directive"),
+                    break;
+            }
+        }
+        return null;
+    }
+
+    
     public StackEntry peek() {
         if (stack.empty()) {
             return null;
@@ -72,6 +142,69 @@ class BracesStack {
     }
 
     public int getLength() {
-        return stack.size();
+        StackEntry prev = null;
+        int res = 0;
+        for(int i = 0; i < stack.size(); i++){
+            StackEntry entry = stack.get(i);
+            if (entry.getKind() == LBRACE) {
+                if (prev == null || prev.getKind()==LBRACE) {
+                    res++;
+                }
+            } else {
+                res++;
+            }
+            prev = entry;
+        }
+        return res;
+    }
+    
+
+    private Token<CppTokenId> getNextImportant(TokenSequence<CppTokenId> ts) {
+        int i = ts.index();
+        try {
+            while (true) {
+                if (!ts.moveNext()) {
+                    return null;
+                }
+                Token<CppTokenId> current = ts.token();
+                switch (current.id()) {
+                    case WHITESPACE:
+                    case NEW_LINE:
+                    case BLOCK_COMMENT:
+                    case LINE_COMMENT:
+                    case PREPROCESSOR_DIRECTIVE:
+                        break;
+                    case IF: //("if", "keyword-directive"),
+                    case ELSE: //("else", "keyword-directive"),
+                    case SWITCH: //("switch", "keyword-directive"),
+                    case ASM: //("asm", "keyword-directive"), // gcc and C++
+                    case WHILE: //("while", "keyword-directive"),
+                    case DO: //("do", "keyword-directive"),
+                    case FOR: //("for", "keyword-directive"),
+                    case TRY: //("try", "keyword-directive"), // C++
+                    case CATCH: //("catch", "keyword-directive"), //C++
+                        return current;
+                    default:
+                        return null;
+                }
+            }
+        } finally {
+            ts.moveIndex(i);
+            ts.moveNext();
+        }
+    }
+    
+    @Override
+    public String toString(){
+        StringBuilder buf = new StringBuilder();
+        for(int i = 0; i < stack.size(); i++){
+            StackEntry entry = stack.get(i);
+            if (i > 0) {
+                buf.append(", ");
+            }
+            buf.append(entry.toString());
+        }
+        buf.append("+"+getLength());
+        return buf.toString();
     }
 }

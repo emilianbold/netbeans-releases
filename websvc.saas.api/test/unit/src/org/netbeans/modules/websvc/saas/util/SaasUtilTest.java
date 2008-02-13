@@ -78,7 +78,7 @@ public class SaasUtilTest extends NbTestCase {
         }
     }
 
-    public void NOtestLoadSaasGroup() throws Exception {
+    public void testLoadSaasGroup() throws Exception {
         InputStream in = this.getClass().getResourceAsStream("rootGroup.xml");
         verifyRootGroup(in);
     }
@@ -101,7 +101,7 @@ public class SaasUtilTest extends NbTestCase {
         assertEquals("test3", result.getChildrenGroups().get(2).getName());
     }
 
-    public void NOtestXpath() throws Exception {
+    public void testXpath() throws Exception {
         InputStream in = this.getClass().getResourceAsStream("testwadl.xml");
         Application app = SaasUtil.loadJaxbObject(in, Application.class);
         assertNotNull(SaasUtil.wadlMethodFromXPath(app, "//resource[1]/method[1]"));
@@ -120,7 +120,7 @@ public class SaasUtilTest extends NbTestCase {
         //assertEquals(1, SaasUtil.getMediaTypesFromJAXBElement(elements).size());
     }
     
-    public void NOtestSaveSaasGroup() throws Exception {
+    public void testSaveSaasGroup() throws Exception {
         output = new File(getWorkDir(), "testSaveSaasGroup");
         InputStream in = this.getClass().getResourceAsStream("rootGroup.xml");
         SaasGroup rootGroup = SaasUtil.loadSaasGroup(in);
@@ -132,7 +132,7 @@ public class SaasUtilTest extends NbTestCase {
         verifyRootGroup(new FileInputStream(output));
     }
 
-    public void NOtestSaasMetaData() throws Exception {
+    public void testSaasMetaData() throws Exception {
         SetupUtil.commonSetUp(super.getWorkDir());
 
         InputStream in = this.getClass().getResourceAsStream("/org/netbeans/modules/websvc/saas/services/youtube/resources/YouTubeVideosMetaData.xml");
@@ -146,7 +146,7 @@ public class SaasUtilTest extends NbTestCase {
         SetupUtil.commonTearDown();
     }
 
-    public void NOtestSaasServices() throws Exception {
+    public void testSaasServices() throws Exception {
         SetupUtil.commonSetUp(super.getWorkDir());
 
         InputStream in = this.getClass().getResourceAsStream("/org/netbeans/modules/websvc/saas/services/youtube/resources/YouTubeVideos.xml");

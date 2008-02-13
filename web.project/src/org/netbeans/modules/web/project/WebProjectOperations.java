@@ -49,6 +49,7 @@ import java.util.Properties;
 import org.apache.tools.ant.module.api.support.ActionUtils;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
+import org.netbeans.modules.java.api.common.SourceRoots;
 import org.netbeans.modules.web.project.classpath.WebProjectClassPathModifier;
 import org.netbeans.modules.web.project.ui.customizer.WebProjectProperties;
 import org.netbeans.spi.project.ActionProvider;
