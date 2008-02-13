@@ -134,6 +134,10 @@ public abstract class SpringXMLConfigCompletionItem implements CompletionItem {
         return new MethodItem(substitutionOffset, element, isInherited, isDeprecated);
     }
     
+    public static SpringXMLConfigCompletionItem createPropertyItem(int substitutionOffset, ExecutableElement setter) {
+        return new PropertyItem(substitutionOffset, setter);
+    }
+    
     public static SpringXMLConfigCompletionItem createAttribValueItem(int substitutionOffset, String displayText, String docText) {
         return new AttribValueItem(substitutionOffset, displayText, docText);
     }
@@ -144,6 +148,10 @@ public abstract class SpringXMLConfigCompletionItem implements CompletionItem {
     
     public static SpringXMLConfigCompletionItem createSpringXMLFileItem(int substitutionOffset, FileObject file) {
         return new FileItem(substitutionOffset, file);
+    }
+
+    public static SpringXMLConfigCompletionItem createPropertyAttribItem(int substitutionOffset, String text, ExecutableElement ee) {
+        return new PropertyAttribItem(substitutionOffset, text, ee);
     }
     
     protected int substitutionOffset;
@@ -797,6 +805,78 @@ public abstract class SpringXMLConfigCompletionItem implements CompletionItem {
             }
             assert base != null;
             return base;
+        }
+    }
+    
+    private static class PropertyItem extends SpringXMLConfigCompletionItem {
+
+        private ElementHandle<ExecutableElement> eh;
+        private String displayName;
+        
+        public PropertyItem(int substitutionOffset, ExecutableElement setter) {
+            super(substitutionOffset);
+            char[] propertyName = setter.getSimpleName().toString().substring(3).toCharArray();
+            propertyName[0] = Character.toLowerCase(propertyName[0]);
+            this.displayName = new String(propertyName);
+            this.eh = ElementHandle.create(setter);
+        }
+        
+        public int getSortPriority() {
+            return 100;
+        }
+
+        public CharSequence getSortText() {
+            return displayName;
+        }
+
+        public CharSequence getInsertPrefix() {
+            return displayName;
+        }
+
+        @Override
+        protected String getLeftHtmlText() {
+            return displayName;
+        }
+    }
+    
+    private static class PropertyAttribItem extends SpringXMLConfigCompletionItem {
+
+        private ElementHandle<ExecutableElement> eh;
+        private String text;
+        
+        public PropertyAttribItem(int substitutionOffset, String text, ExecutableElement ee) {
+            super(substitutionOffset);
+            this.eh = ElementHandle.create(ee);
+            this.text = text;
+        }
+
+        public int getSortPriority() {
+            return 200;
+        }
+
+        public CharSequence getSortText() {
+            return text;
+        }
+
+        public CharSequence getInsertPrefix() {
+            return text;
+        }
+
+        @Override
+        protected CharSequence getSubstitutionText() {
+            return text + "=\"\""; // NOI18N
+        }
+
+        @Override
+        protected String getLeftHtmlText() {
+            return text;
+        }
+
+        @Override
+        protected void substituteText(JTextComponent c, int offset, int len, String toAdd) {
+            super.substituteText(c, offset, len, toAdd);
+            int newCaretPos = c.getCaretPosition() - 1; // for achieving p:something-ref="|" on completion
+            c.setCaretPosition(newCaretPos);
         }
     }
     

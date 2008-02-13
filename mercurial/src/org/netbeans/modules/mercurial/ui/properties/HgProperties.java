@@ -85,9 +85,9 @@ import org.openide.NotifyDescriptor;
  */
 public class HgProperties implements ListSelectionListener {
     
-    private static final String HGPROPNAME_USERNAME = "username"; // NOI18N
-    private static final String HGPROPNAME_DEFAULT_PULL = "default-pull"; // NOI18N
-    private static final String HGPROPNAME_DEFAULT_PUSH = "default-push"; // NOI18N
+    public static final String HGPROPNAME_USERNAME = "username"; // NOI18N
+    public static final String HGPROPNAME_DEFAULT_PULL = "default-pull"; // NOI18N
+    public static final String HGPROPNAME_DEFAULT_PUSH = "default-push"; // NOI18N
 
     private PropertiesPanel panel;
     private File root;
