@@ -363,11 +363,6 @@ public class HgUtils {
         File root = hg.getTopmostManagedParent(path);
         if( root == null) return;
         File ignore = new File(root, FILENAME_HGIGNORE);
-        if (ignore.exists()) {
-            if (!confirmDialog(HgUtils.class, "MSG_IGNORE_FILES_TITLE", "MSG_IGNORE_FILES")) { // NOI18N 
-                return;
-            }
-        }
         
         try     {
             if (!ignore.exists()) {
@@ -392,7 +387,8 @@ public class HgUtils {
             }
         }
     }
-
+    
+    private static int HG_NUM_PATTERNS_TO_CHECK = 4;
     private static void addToExistingIgnoredFile(File hgignoreFile) {
         if(hgignoreFile == null || !hgignoreFile.exists() || !hgignoreFile.canWrite()) return;
         File tempFile = null;
@@ -402,7 +398,11 @@ public class HgUtils {
         boolean bOrigPresent = false;
         boolean bChgAnyPresent = false;
         boolean bRejAnyPresent = false;
-       
+        
+        // If new patterns are added to HG_IGNORE_FILES, following code needs to
+        // check for these new patterns
+        assert( HG_IGNORE_FILES.length == HG_NUM_PATTERNS_TO_CHECK);
+        
         try {
             tempFile = new File(hgignoreFile.getAbsolutePath() + ".tmp"); // NOI18N
             if (tempFile == null) return;
@@ -451,6 +451,10 @@ public class HgUtils {
 
                 boolean bAnyAdditions = !bOrigAnyPresent || !bOrigPresent  || !bChgAnyPresent || !bRejAnyPresent;               
                 if(bAnyAdditions){
+                    if (!confirmDialog(HgUtils.class, "MSG_IGNORE_FILES_TITLE", "MSG_IGNORE_FILES")) { // NOI18N 
+                        tempFile.delete();
+                        return;
+                    }
                     if(tempFile != null && tempFile.isFile() && tempFile.canWrite() && hgignoreFile != null){ 
                         hgignoreFile.delete();
                         tempFile.renameTo(hgignoreFile);

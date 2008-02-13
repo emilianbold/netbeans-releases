@@ -47,19 +47,25 @@
  */
 package org.netbeans.modules.uml.core.reverseengineering.parsingfacilities.translation.statehandlers;
 
+import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileWriter;
 import java.io.IOException;
-
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.dom4j.*;
 
 import org.netbeans.modules.uml.core.support.umlsupport.XMLManip;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 
 /**
  * @author Aztec
  */
 public class TopLevelStateHandler extends StateHandler
 {
+    private static final Logger logger = Logger.getLogger("org.netbeans.modules.uml.core");
     String m_Language = null;
 
     public TopLevelStateHandler(String language)
@@ -102,24 +108,38 @@ public class TopLevelStateHandler extends StateHandler
      */
     public void writeDocument(String filename)
     {
+        BufferedWriter buffWriter = null;
         try
         {
             String xml = getDOMNode().getDocument().asXML();
             File f = new File(filename);
-            f.createNewFile();
-            if(f.exists())
+            FileObject fo = FileUtil.createData(f);
+            if(fo != null)
             {
-                FileWriter fw = new FileWriter(f);
-                fw.write(xml);
+                OutputStream fos = fo.getOutputStream();
+                buffWriter = new BufferedWriter(new OutputStreamWriter(fos));
+                buffWriter.write(xml);
+                buffWriter.flush();
             }
         }
         catch (IOException e)
         {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
+            String mesg = e.getMessage();
+            logger.log(Level.WARNING, mesg != null ? mesg : "", e);
         }
-
+        finally 
+        {
+            if (buffWriter != null) 
+            { 
+                try {
+                    buffWriter.close();
+                } catch (IOException ex) {
+                    logger.log(Level.INFO, ex.getMessage());
+                }
+            }
+        }
     }
+    
 
     /* (non-Javadoc)
      * @see org.netbeans.modules.uml.core.reverseengineering.parsingfacilities.translation.statehandlers.ITopLevelStateHandler#getLanguage()

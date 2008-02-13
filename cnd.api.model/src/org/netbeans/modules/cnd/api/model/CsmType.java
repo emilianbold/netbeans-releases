@@ -41,6 +41,8 @@
 
 package org.netbeans.modules.cnd.api.model;
 
+import java.util.List;
+
 /**
  * Represents type
  *
@@ -63,6 +65,11 @@ public interface CsmType extends CsmOffsetable {
     
     /** gets classifier this type references to */
     CsmClassifier getClassifier();
+    
+    CharSequence getClassifierText();
+    
+    boolean isInstantiation();
+    List<CsmType> getInstantiationParams();
     
     /** array depth, i.e. 2 for "int[][]", 1 for "int[]", 0 for "int" */
     int getArrayDepth();

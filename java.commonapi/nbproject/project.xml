@@ -142,6 +142,7 @@
                 <friend>org.netbeans.modules.j2ee.ejbjarproject</friend>
                 <friend>org.netbeans.modules.java.j2seproject</friend>
                 <friend>org.netbeans.modules.projectimport</friend>
+                <friend>org.netbeans.modules.projectimport.jbuilder</friend>
                 <friend>org.netbeans.modules.scala.project</friend>
                 <friend>org.netbeans.modules.web.project</friend>
                 <friend>org.netbeans.modules.xtest</friend>

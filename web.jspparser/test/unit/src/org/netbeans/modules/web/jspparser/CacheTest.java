@@ -47,8 +47,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import javax.servlet.jsp.tagext.TagLibraryInfo;
-import org.netbeans.api.project.libraries.Library;
-import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.web.jsps.parserapi.JspParserAPI;
 import org.netbeans.modules.web.jsps.parserapi.JspParserAPI.ParseResult;
@@ -73,12 +71,12 @@ public class CacheTest extends NbTestCase {
         TestUtil.setup(this);
     }
 
-    public void xtestJspParserImpl() throws Exception {
+    public void testJspParserImpl() throws Exception {
         JspParserAPI jspParser = JspParserFactory.getJspParser();
         assertTrue(jspParser instanceof JspParserImpl);
     }
 
-    public void xtestCachedWebModules() throws Exception {
+    public void testCachedWebModules() throws Exception {
         JspParserImpl jspParser = getJspParser();
 
         FileObject jspFo1 = TestUtil.getProjectFile(this, "project2", "/web/basic.jspx");
@@ -92,7 +90,7 @@ public class CacheTest extends NbTestCase {
         assertTrue("Only 1 web module should be cached", jspParser.parseSupports.size() == 1);
     }
 
-    public void xtestCachedTagLibMaps() throws Exception {
+    public void testCachedTagLibMaps() throws Exception {
         JspParserImpl jspParser = getJspParser();
 
         FileObject jspFo = TestUtil.getProjectFile(this, "emptyWebProject", "/web/index.jsp");
@@ -108,16 +106,17 @@ public class CacheTest extends NbTestCase {
         assertSame("TagLibMaps should be exactly the same", url1, url2);
     }
 
-    public void testCachedTagLibInfos() throws Exception {
+    // disabled because this functionality is not implemented
+    public void xxxtestCachedTagLibInfos() throws Exception {
         JspParserImpl jspParser = getJspParser();
 
-        FileObject jspFo = TestUtil.getProjectFile(this, "emptyWebProject", "/web/basic1.jspx");
+        FileObject jspFo = TestUtil.getProjectFile(this, "project2", "/web/basic.jspx");
         WebModule webModule = TestUtil.getWebModule(jspFo);
 
         ParseResult result = jspParser.analyzePage(jspFo, webModule, JspParserAPI.ERROR_IGNORE);
         Collection<TagLibraryInfo> tagLibs1 = result.getPageInfo().getTaglibs();
 
-        jspFo = TestUtil.getProjectFile(this, "emptyWebProject", "/web/basic2.jspx");
+        jspFo = TestUtil.getProjectFile(this, "project2", "/web/basic.jspx");
         result = jspParser.analyzePage(jspFo, webModule, JspParserAPI.ERROR_IGNORE);
         Collection<TagLibraryInfo> tagLibs2 = result.getPageInfo().getTaglibs();
 
@@ -136,7 +135,7 @@ public class CacheTest extends NbTestCase {
         }
     }
 
-    public void xtestChangedTldFile() throws Exception {
+    public void testChangedTldFile() throws Exception {
         JspParserImpl jspParser = getJspParser();
 
         FileObject jspFo = TestUtil.getProjectFile(this, "emptyWebProject", "/web/index.jsp");
@@ -157,7 +156,7 @@ public class CacheTest extends NbTestCase {
         assertEquals("TagLibMaps should be equal", url1, url2);
     }
 
-    public void xtestAddedTldFile() throws Exception {
+    public void testAddedTldFile() throws Exception {
         JspParserImpl jspParser = getJspParser();
 
         FileObject jspFo = TestUtil.getProjectFile(this, "emptyWebProject", "/web/index.jsp");
@@ -165,13 +164,16 @@ public class CacheTest extends NbTestCase {
 
         Map<String, String[]> taglibMap1 = jspParser.getTaglibMap(webModule);
 
+        String[] url = taglibMap1.get("http://java.sun.com/jstl/xml");
+        assertNull("Url should not be found", url);
+        
         // add file
-        FileObject xml = TestUtil.getProjectFile(this, "project2", "/web/WEB-INF/META-INF/x.tld");
-        FileObject destDir = TestUtil.getProjectFile(this, "emptyWebProject", "/web/WEB-INF/");
-        xml.copy(destDir, xml.getName(), xml.getExt());
-        xml = TestUtil.getProjectFile(this, "emptyWebProject", "/web/WEB-INF/x.tld");
+        addXmlTld();
 
         Map<String, String[]> taglibMap2 = jspParser.getTaglibMap(webModule);
+
+        url = taglibMap2.get("http://java.sun.com/jstl/xml");
+        assertNotNull("Url should be found", url);
 
         String url1 = taglibMap1.get("http://java.sun.com/jstl/core")[0];
         String url2 = taglibMap2.get("http://java.sun.com/jstl/core")[0];
@@ -179,10 +181,16 @@ public class CacheTest extends NbTestCase {
         assertNotNull(url2);
         assertNotSame("TagLibMaps should not be exactly the same", url1, url2);
         assertEquals("TagLibMaps should be equal", url1, url2);
+
+        // cleanup
+        jspParser = null;
+        removeXmlTld();
     }
 
-    // this test relies on the previous test (adding tld file)
-    public void xtestRemovedTldFile() throws Exception {
+    public void testRemovedTldFile() throws Exception {
+        // add file to have possibility to remove it
+        addXmlTld();
+
         JspParserImpl jspParser = getJspParser();
 
         FileObject jspFo = TestUtil.getProjectFile(this, "emptyWebProject", "/web/index.jsp");
@@ -190,12 +198,15 @@ public class CacheTest extends NbTestCase {
 
         Map<String, String[]> taglibMap1 = jspParser.getTaglibMap(webModule);
 
+        String[] url = taglibMap1.get("http://java.sun.com/jstl/xml");
+        assertNotNull("Url should be found", url);
+
         // touch file
-        removeFile("emptyWebProject", "/web/WEB-INF/x.tld");
+        removeXmlTld();
 
         Map<String, String[]> taglibMap2 = jspParser.getTaglibMap(webModule);
 
-        String[] url = taglibMap2.get("http://java.sun.com/jstl/xml");
+        url = taglibMap2.get("http://java.sun.com/jstl/xml");
         assertNull("Url should not be found", url);
 
         String url1 = taglibMap1.get("/TestTagLibrary")[0];
@@ -206,7 +217,7 @@ public class CacheTest extends NbTestCase {
         assertEquals("TagLibMaps should be equal", url1, url2);
     }
 
-    public void xtestChangedWebXml() throws Exception {
+    public void testChangedWebXml() throws Exception {
         JspParserImpl jspParser = getJspParser();
 
         FileObject jspFo = TestUtil.getProjectFile(this, "emptyWebProject", "/web/index.jsp");
@@ -229,6 +240,17 @@ public class CacheTest extends NbTestCase {
 
     private static JspParserImpl getJspParser() {
         return (JspParserImpl) JspParserFactory.getJspParser();
+    }
+
+    private void addXmlTld() throws Exception {
+        FileObject xml = TestUtil.getProjectFile(this, "project2", "/web/WEB-INF/META-INF/x.tld");
+        FileObject destDir = TestUtil.getProjectFile(this, "emptyWebProject", "/web/WEB-INF/");
+        xml.copy(destDir, xml.getName(), xml.getExt());
+        xml = TestUtil.getProjectFile(this, "emptyWebProject", "/web/WEB-INF/x.tld");
+    }
+
+    private void removeXmlTld() throws Exception {
+        removeFile("emptyWebProject", "/web/WEB-INF/x.tld");
     }
 
     private void touchFile(String projectName, String projectFile) throws Exception {

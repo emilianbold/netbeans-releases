@@ -87,7 +87,6 @@ public class FunctionBreakpoint extends GdbBreakpoint {
      * @param function the function to stop on
      */
     public void setFunctionName(String function) {
-        String old;
         synchronized (this) {
             if (function == null) {
                 function = ""; // NOI18N
@@ -107,10 +106,8 @@ public class FunctionBreakpoint extends GdbBreakpoint {
             if (function.equals(this.function)) {
                 return;
             }
-            old = function;
             this.function = function;
         }
-//        firePropertyChange(PROP_FUNCTION_NAME, old, function);
     }
     
     /**
