@@ -57,8 +57,8 @@ public class EditorOptionsPanelController extends OptionsPanelController {
     private boolean changed;
 
     
-    public EditorOptionsPanelController(CodeStyle.Language language){
-         panel = new EditorOptionsPanel(language, this);
+    public EditorOptionsPanelController(){
+         panel = new EditorOptionsPanel(this);
     }
     
     public void update() {
@@ -104,17 +104,5 @@ public class EditorOptionsPanelController extends OptionsPanelController {
 	    pcs.firePropertyChange(OptionsPanelController.PROP_CHANGED, false, true);
 	}
 	pcs.firePropertyChange(OptionsPanelController.PROP_VALID, null, null);
-    }
-
-    public static class CEditorOptionsPanelController extends EditorOptionsPanelController {
-        public CEditorOptionsPanelController(){
-            super(CodeStyle.Language.C);
-        }
-    }
-
-    public static class CppEditorOptionsPanelController extends EditorOptionsPanelController {
-        public CppEditorOptionsPanelController(){
-            super(CodeStyle.Language.CPP);
-        }
     }
 }

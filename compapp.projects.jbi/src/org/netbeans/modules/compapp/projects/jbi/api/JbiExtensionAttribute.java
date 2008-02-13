@@ -49,31 +49,6 @@ import java.io.Serializable;
  * @author jqian
  */
 public class JbiExtensionAttribute implements Serializable {
-
-    public enum Type {
-
-        STRING("String"),
-        INTEGER("Integer"),
-        QNAME("QName"),
-//        OPERATION("Operation"),
-        ENDPOINT("Endpoint");
-        
-        private String type;
-
-        /** @param protocolString */
-        private Type(String type) {
-            this.type = type;
-        }
-
-        public static Type getType(String typeString) {
-            for (Type type : Type.values()) {
-                if (typeString.equalsIgnoreCase(type.toString())) {
-                    return type;
-                }
-            }
-            return null;
-        }
-    }
     
     /**
      * Name of the extension attribute.
@@ -82,7 +57,7 @@ public class JbiExtensionAttribute implements Serializable {
     /**
      * Type of the extension attribute. 
      */
-    private Type type;
+    private String type;
     /**
      * Description of the extension attribute.
      */
@@ -99,7 +74,7 @@ public class JbiExtensionAttribute implements Serializable {
      * @param type  attribute type
      * @param description   attribute description
      */
-    public JbiExtensionAttribute(String name, Type type, String description) {
+    public JbiExtensionAttribute(String name, String type, String description) {
         this(name, type, description, true);
     }
 
@@ -111,7 +86,7 @@ public class JbiExtensionAttribute implements Serializable {
      * @param description   attribute description
      * @param codeGen       whether to generate this attribute in codegen
      */
-    public JbiExtensionAttribute(String name, Type type, String description,
+    public JbiExtensionAttribute(String name, String type, String description,
             boolean codeGen) {
         this.name = name;
         this.type = type;
@@ -133,7 +108,7 @@ public class JbiExtensionAttribute implements Serializable {
      *
      * @return the type.
      */
-    public Type getType() {
+    public String getType() {
         return this.type;
     }
 

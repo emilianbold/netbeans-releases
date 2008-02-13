@@ -36,7 +36,7 @@
  * 
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.compapp.projects.jbi.api;
+package org.netbeans.modules.compapp.configextension.redelivery.properties;
 
 import javax.xml.namespace.QName;
 
@@ -45,9 +45,8 @@ import javax.xml.namespace.QName;
  * @author jqian
  */
 public class Endpoint {
-    
-    private static final String COLON = ":"; // NOI18N
 
+    private static final String COLON = ":"; // NOI18N
     private QName serviceQName;
     private String endpointName;
 
@@ -70,9 +69,12 @@ public class Endpoint {
      * @return service QName in prefixed form, e.x., "ns1:serviceName"
      */
     public String getPrefixedServiceName() {
+        if (serviceQName == null) {
+            return "";
+        }
         return serviceQName.getPrefix() + COLON + serviceQName.getLocalPart();
-    }    
-    
+    }
+
     /**
      * Parses the string representation of an endpoint in the form of
      * {namespaceURI}serviceName:endpointName
@@ -94,7 +96,9 @@ public class Endpoint {
 
     @Override
     public String toString() {
-        return serviceQName.toString() + COLON + endpointName;
+        String ret = (serviceQName == null) ? "null" : serviceQName.toString(); // NOI18N
+        ret = ret + COLON + endpointName;
+        return ret;
     }
 
     @Override

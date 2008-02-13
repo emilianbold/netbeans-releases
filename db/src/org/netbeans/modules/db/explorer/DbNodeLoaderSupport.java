@@ -42,6 +42,7 @@
 package org.netbeans.modules.db.explorer;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import org.openide.nodes.Node;
@@ -54,15 +55,13 @@ import org.openide.util.Lookup;
  */
 public class DbNodeLoaderSupport {
 
-    private static final Lookup.Result loaders = Lookup.getDefault().lookup(
-            new Lookup.Template(DbNodeLoader.class));
-
     private DbNodeLoaderSupport() {
     }
 
     public static List<Node> getAllNodes() {
         List<Node> nodes = new ArrayList<Node>();
-        for (Iterator i = loaders.allInstances().iterator(); i.hasNext();) {
+        Collection loaders = Lookup.getDefault().lookupAll(DbNodeLoader.class);
+        for (Iterator i = loaders.iterator(); i.hasNext();) {
             nodes.addAll(((DbNodeLoader)i.next()).getAllNodes());
         }
         
