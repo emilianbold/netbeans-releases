@@ -57,7 +57,6 @@ import org.netbeans.api.project.Sources;
 import org.netbeans.api.project.ant.AntArtifact;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.modules.java.j2seproject.J2SEProject;
-import org.netbeans.modules.java.j2seproject.UpdateHelper;
 import org.netbeans.modules.java.j2seproject.ui.customizer.J2SEProjectProperties;
 import org.netbeans.spi.java.project.classpath.ProjectClassPathModifierImplementation;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;

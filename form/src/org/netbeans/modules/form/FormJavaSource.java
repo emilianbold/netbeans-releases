@@ -40,7 +40,10 @@
  */
 package org.netbeans.modules.form;
 
+import com.sun.source.tree.AnnotationTree;
 import com.sun.source.tree.ClassTree;
+import com.sun.source.tree.MethodTree;
+import com.sun.source.tree.ModifiersTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.util.SourcePositions;
@@ -58,11 +61,14 @@ import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.TypeMirror;
+import javax.swing.text.Position;
 import org.netbeans.api.editor.guards.SimpleSection;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.source.CancellableTask;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.JavaSource;
+import org.netbeans.api.java.source.TreeMaker;
+import org.netbeans.api.java.source.WorkingCopy;
 import org.openide.filesystems.FileObject;
 
 /**
@@ -101,6 +107,18 @@ public class FormJavaSource {
         if (js != null) {
             try {
                 js.runUserActionTask(task, true);
+            } catch (IOException ex) {
+                Logger.getLogger(this.getClass().getName()).log(Level.SEVERE, null, ex);
+            }
+        }
+    }
+
+    private void runModificationTask(CancellableTask<WorkingCopy> task) {
+        FileObject javaFileObject = formDataObject.getPrimaryFile();		
+        JavaSource js = JavaSource.forFileObject(javaFileObject);
+        if (js != null) {
+            try {
+                js.runModificationTask(task).commit();
             } catch (IOException ex) {
                 Logger.getLogger(this.getClass().getName()).log(Level.SEVERE, null, ex);
             }
@@ -168,6 +186,44 @@ public class FormJavaSource {
         });
         
         return result[0] == null? new String[0]: (String[]) result[0];
+    }
+
+    public String getAnnotationCode(final String methodName, final Position startPosition, final Position endPosition, final boolean removeAnnotations) {
+        final StringBuilder sb = new StringBuilder();
+        runModificationTask(new CancellableTask<WorkingCopy>() {
+            public void cancel() {
+            }
+            public void run(WorkingCopy wc) throws Exception {
+                wc.toPhase(JavaSource.Phase.RESOLVED);
+                ClassTree ct = findClassTree(wc);
+                int start = startPosition.getOffset();
+                int end = endPosition.getOffset();
+                if (ct != null) {
+                    SourcePositions sp = wc.getTrees().getSourcePositions();
+                    for (Tree member : ct.getMembers()) {
+                        if (Tree.Kind.METHOD == member.getKind()) {
+                            MethodTree method = (MethodTree)member;
+                            if (methodName.equals(method.getName().toString())) {
+                                long methodStart = sp.getStartPosition(wc.getCompilationUnit(), method);
+                                long methodEnd = sp.getEndPosition(wc.getCompilationUnit(), method);
+                                if ((methodStart <= end) && (start <= methodEnd)) {
+                                    for (AnnotationTree annotation : method.getModifiers().getAnnotations()) {
+                                        sb.append(annotation.toString()).append('\n');
+                                    }
+                                }
+                                if (removeAnnotations) {
+                                    ModifiersTree oldModifiers = method.getModifiers();
+                                    TreeMaker make = wc.getTreeMaker();
+                                    ModifiersTree newModifiers = make.Modifiers(oldModifiers.getFlags());
+                                    wc.rewrite(oldModifiers, newModifiers);
+                                }
+                            }
+                        }
+                    }
+                }                
+            }
+        });
+        return (sb.length() == 0) ? null : sb.toString();
     }
 
     /**

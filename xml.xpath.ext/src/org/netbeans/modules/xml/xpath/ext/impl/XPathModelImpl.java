@@ -146,9 +146,13 @@ public class XPathModelImpl implements XPathModel {
      * @return an instance of XPathExpression
      * @throws XPathException for any parsing errors
      */
-    public XPathExpression parseExpression(String expression) 
-            throws XPathException {
-        //
+    public XPathExpression parseExpression(String expression) throws XPathException {
+//System.out.println();
+//System.out.println();
+//System.out.println("---------------------------");
+//System.out.println("EXPression: " + expression);
+        myWasFunctionOrOperation = false; // vlv
+
         try {
             Object expr = Parser.parseExpression(expression, mCompiler);
             if (expr instanceof XPathExpression) {
@@ -336,6 +340,7 @@ public class XPathModelImpl implements XPathModel {
         //
         String nodeName = qName.getLocalPart();
         HashSet<SchemaCompPair> foundCompPairSet = new HashSet<SchemaCompPair>();
+        myLastSchemaComponent = null;
 
 //ENABLE = qName.toString().equals("ReservationItems");
 //out();
@@ -371,7 +376,7 @@ public class XPathModelImpl implements XPathModel {
                                 comp instanceof Attribute;
                         //
                         SchemaCompPair newPair = new SchemaCompPair(comp, parentComponent);
-                        foundCompPairSet.add(newPair);
+                        addPair(foundCompPairSet, newPair);
                     }
                     //
                     //
@@ -406,7 +411,7 @@ public class XPathModelImpl implements XPathModel {
                     List<SchemaComponent> found = visitor.getFound();
                     for (SchemaComponent sComp : found) {
                         SchemaCompPair newPair = new SchemaCompPair(sComp, parentComp);
-                        foundCompPairSet.add(newPair);
+                        addPair(foundCompPairSet, newPair);
                     }
                 }
             }
@@ -440,9 +445,8 @@ public class XPathModelImpl implements XPathModel {
                         assert foundComp instanceof GlobalElement ||
                                 foundComp instanceof LocalElement ||
                                 foundComp instanceof Attribute;
-                        SchemaCompPair newPair = 
-                                new SchemaCompPair(foundComp, null);
-                        foundCompPairSet.add(newPair);
+                        SchemaCompPair newPair = new SchemaCompPair(foundComp, null);
+                        addPair(foundCompPairSet, newPair);
                     }
                 }
             }
@@ -477,9 +481,26 @@ public class XPathModelImpl implements XPathModel {
                 }
             }
         }
-        //
         return foundCompPairSet;
     }
+
+    // vlv
+    private void addPair(HashSet<SchemaCompPair> set, SchemaCompPair pair) {
+      set.add(pair);
+      myLastSchemaComponent = pair.getComp();
+    }
+
+    public SchemaComponent getLastSchemaComponent() {
+      if (myWasFunctionOrOperation) {
+//System.out.println("!!! WAS myWasFunctionOrOperation");
+        return null;
+      }
+//System.out.println("myLastSchemaComponent: " + myLastSchemaComponent);
+      return myLastSchemaComponent;
+    }
+
+    private boolean myWasFunctionOrOperation;
+    private SchemaComponent myLastSchemaComponent;
     
     /**
      * Performs postvalidation of the resolved LocationStep.
@@ -1239,6 +1260,14 @@ public class XPathModelImpl implements XPathModel {
         
         @Override
         public void visit(XPathExpressionPath expressionPath) {
+//System.out.println("expressionPath: " + expressionPath);
+            if (expressionPath != null) {
+              String path = expressionPath.toString();
+
+              if (path != null && path.endsWith("]")) {
+                myWasFunctionOrOperation = true; // vlv
+              }
+            }
             XPathSchemaContext lpInitialContext = parentSchemaContext;
             try {
                 XPathExpression rootExpr = expressionPath.getRootExpression();
@@ -1261,6 +1290,8 @@ public class XPathModelImpl implements XPathModel {
         @Override
         public void visit(XPathVariableReference vReference) {
             SchemaComponent varType = vReference.getType();
+            myLastSchemaComponent = varType; // vlv
+
             if (varType == null) {
                 throw new StopResolutionException(
                         "It didn't manage to resolve a type of the variable: " + 
@@ -1273,16 +1304,26 @@ public class XPathModelImpl implements XPathModel {
 
         @Override
         public void visit(XPathCoreOperation coreOperation) {
+//System.out.println();
+//System.out.println("VISIT coreOperation: " + coreOperation);
+            myWasFunctionOrOperation = true; // vlv
             visitChildren(coreOperation);
         }
 
         @Override
         public void visit(XPathCoreFunction coreFunction) {
+//System.out.println();
+//System.out.println("VISIT coreFunction: " + coreFunction);
+            myWasFunctionOrOperation = true; // vlv
             visitChildren(coreFunction);
         }
 
         @Override
         public void visit(XPathExtensionFunction extensionFunction) {
+//System.out.println();
+//System.out.println("VISIT extensionFunction: " + extensionFunction);
+            myWasFunctionOrOperation = true; // vlv
+
             if (StubExtFunction.STUB_FUNC_NAME.equals(
                     extensionFunction.getName())) {
                 mStubCounter++;

@@ -613,7 +613,7 @@ public class BasicSQLGraphController implements IGraphController {
                 String srcName = destObj.getDisplayName();
 
                 if (srcName != null && destParam1 != null) {
-                    String nbBundle7 = mLoc.t("PRSR001: Cannot connect {0} to {1} ''{2}'' at input ''{3}''.", new String[]{srcObjType, destObjType, destObj.getDisplayName(), destParam1});
+                    String nbBundle7 = mLoc.t("PRSR001: Cannot connect {0} to {1}-{2} at input {3}.", srcObjType, destObjType, destObj.getDisplayName(), destParam1);
                     msg = Localizer.parse(nbBundle7);
                 } else {
                     String nbBundle8 = mLoc.t("PRSR001: Cannot connect {0} to {1}", srcObjType, destObjType);

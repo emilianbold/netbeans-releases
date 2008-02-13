@@ -127,7 +127,8 @@ public class AxionDBConfiguration {
             Properties prop = new Properties();
             prop.setProperty(PROP_DRIVER_LOC, driver);
             prop.setProperty(PROP_DB_LOC, dbLoc);
-            prop.store(out, "MashupDB Configurations");
+            String nbBundle3 = mLoc.t("PRSR001: MashupDB Configurations");
+            prop.store(out, Localizer.parse(nbBundle3));
             out.close();
         } catch (FileNotFoundException ex) {
             //ignore
@@ -183,7 +184,8 @@ public class AxionDBConfiguration {
             Properties prop = new Properties();
             prop.setProperty(PROP_DB_LOC, location);
             prop.setProperty(PROP_DRIVER_LOC, drv);
-            prop.store(out, "MashupDB Configurations");
+            String nbBundle3 = mLoc.t("PRSR001: MashupDB Configurations");
+            prop.store(out,Localizer.parse(nbBundle3));
             out.close();
             File db = new File(location);
             if (!db.exists()) {
@@ -232,7 +234,8 @@ public class AxionDBConfiguration {
                 FileOutputStream out = null;
                 try {
                     out = new FileOutputStream(conf);
-                    prop.store(out, "Mashup Database Location");
+                    String nbBundle2 = mLoc.t("PRSR001: Mashup Database Location");
+                    prop.store(out, Localizer.parse(nbBundle2));
                     out.close();
                 } catch (FileNotFoundException ex) {
                     //ignore
@@ -248,7 +251,8 @@ public class AxionDBConfiguration {
 
     protected static BeanNode createViewNode() throws java.beans.IntrospectionException {
         BeanNode nd = new BeanNode(AxionDBConfiguration.getDefault());
-        nd.setName("Mashup Database");
+        String nbBundle1 = mLoc.t("PRSR001: Mashup Database");
+        nd.setName(Localizer.parse(nbBundle1));
         return nd;
     }
 }

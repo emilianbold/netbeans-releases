@@ -41,8 +41,7 @@ import java.util.List;
 import java.util.Properties;
 import java.util.jar.Manifest;
 import org.netbeans.junit.MockServices;
-import org.netbeans.modules.websvc.manager.WebServiceManager;
-import org.netbeans.modules.websvc.manager.api.WebServiceDescriptor;
+import org.netbeans.modules.websvc.saas.spi.websvcmgr.WsdlServiceProxyDescriptor;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.LocalFileSystem;
@@ -79,10 +78,7 @@ public class SetupUtil {
         File websvcHome = new File(workingDir, workDirByOS);
         data.setWebsvcHome(websvcHome);
         
-        WebServiceDescriptor.WEBSVC_HOME = websvcHome.getAbsolutePath();
-        WebServiceManager.WEBSVC_HOME = websvcHome.getAbsolutePath();
-        
-        File websvcUserDir = new File(WebServiceManager.WEBSVC_HOME);
+        File websvcUserDir = new File(WsdlServiceProxyDescriptor.WEBSVC_HOME);
         websvcUserDir.mkdirs();
         
         File wsdlFile = new File(websvcUserDir, WSDL_FILE);

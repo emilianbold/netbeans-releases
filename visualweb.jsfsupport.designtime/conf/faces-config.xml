@@ -59,9 +59,11 @@ made subject to such option by the copyright holder.
         <variable-resolver>
             org.netbeans.modules.visualweb.jsfsupport.designtime.DesignTimeVariableResolver
         </variable-resolver>
+        <!--
         <variable-resolver>
             org.netbeans.modules.visualweb.jsfsupport.designtime.LoadBundleVariableResolver
         </variable-resolver>
+        -->
     </application>
     
     <render-kit>

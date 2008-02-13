@@ -47,6 +47,8 @@ import javax.swing.text.Caret;
 import javax.swing.text.StyledDocument;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.cnd.api.model.CsmFile;
+import org.netbeans.modules.cnd.api.model.CsmObject;
+import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.api.model.xref.CsmReference;
 import org.netbeans.modules.cnd.api.model.xref.CsmReferenceResolver;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
@@ -113,4 +115,23 @@ public class ReferenceResolverImpl extends CsmReferenceResolver {
         return ReferencesSupport.fastCheckScope(ref);
     }
     
+    @Override
+    public ReferenceKind getReferenceKind(CsmReference ref) {
+        ReferenceKind kind = ReferencesSupport.getReferenceKind(ref);
+        if (kind == ReferenceKind.UNKNOWN) {
+            kind = super.getReferenceKind(ref);
+        }
+        return kind;
+    }
+
+    @Override
+    public ReferenceKind getReferenceKind(CsmReference ref, CsmObject targetDecl, CsmObject targetDef) {
+        // default implementation
+        assert targetDecl != null;
+        ReferenceKind kind = super.getReferenceKind(ref, targetDecl, targetDef);
+        if (kind == ReferenceKind.DIRECT_USAGE) {
+            kind = ReferencesSupport.getReferenceUsageKind(ref);
+        }
+        return kind;
+    }    
 }
