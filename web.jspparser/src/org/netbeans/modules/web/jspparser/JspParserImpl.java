@@ -179,7 +179,7 @@ public class JspParserImpl implements JspParserAPI {
             throw new IOException();
         }
         WebAppParseProxy pp = getParseProxy(wm);
-                return pp.getTaglibMap(true);
+        return pp.getTaglibMap(true);
     }
     
     private synchronized WebAppParseProxy getParseProxy(WebModule wm) {

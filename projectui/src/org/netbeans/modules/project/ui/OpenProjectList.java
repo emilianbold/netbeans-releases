@@ -597,8 +597,25 @@ public final class OpenProjectList {
     }
     }
        
-    public void close( Project projects[], boolean notifyUI ) {
+    public void close( Project someProjects[], boolean notifyUI ) {
         LOAD.waitFinished();
+        
+        Project[] projects = new Project[someProjects.length];
+        Project[] now = getOpenProjects();
+        for (int i = 0; i < someProjects.length; i++) {
+            projects[i] = someProjects[i];
+            if (someProjects[i] instanceof LazyProject) {
+                LazyProject lp = (LazyProject)someProjects[i];
+                for (Project p : now) {
+                    if (lp.getProjectDirectory().equals(p.getProjectDirectory())) {
+                        projects[i] = p;
+                        break;
+                    }
+                }
+            }
+        }
+        
+        
         if (!ProjectUtilities.closeAllDocuments (projects, notifyUI )) {
             return;
         }
@@ -611,6 +628,7 @@ public final class OpenProjectList {
         boolean someClosed = false;
         List<Project> oldprjs = new ArrayList<Project>();
         List<Project> newprjs = new ArrayList<Project>();
+        List<Project> notifyList = new ArrayList<Project>();
         synchronized ( this ) {
             oldprjs.addAll(openProjects);
             for( int i = 0; i < projects.length; i++ ) {
@@ -626,6 +644,8 @@ public final class OpenProjectList {
                 projects[i].getProjectDirectory().removeFileChangeListener(deleteListener);
                 
                 recentProjects.add( projects[i] );
+                notifyList.add(projects[i]);
+                
                 someClosed = true;
             }
             if ( someClosed ) {
@@ -641,10 +661,7 @@ public final class OpenProjectList {
             }
         }
         //#125750 not necessary to call notifyClosed() under synchronized lock.
-        List<Project> lst = new ArrayList<Project>();
-        lst.addAll(oldprjs);
-        lst.removeAll(newprjs);
-        for (Project closed : lst) {
+        for (Project closed : notifyList) {
             notifyClosed( closed );
         }
         logProjects("close(): openProjects == ", openProjects.toArray(new Project[0])); // NOI18N

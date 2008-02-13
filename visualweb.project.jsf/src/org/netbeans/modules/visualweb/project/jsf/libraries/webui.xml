@@ -58,7 +58,5 @@ made subject to such option by the copyright holder.
     <volume>
         <type>javadoc</type>
         <resource>jar:nbinst:///docs/webui-doc.zip!/</resource>
-        <resource>jar:nbinst:///docs/webui-tld.zip!/</resource>
-        <resource>jar:nbinst:///docs/portlet-doc.zip!/</resource>
     </volume>
 </library>
