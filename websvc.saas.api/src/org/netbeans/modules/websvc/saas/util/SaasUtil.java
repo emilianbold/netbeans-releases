@@ -61,6 +61,7 @@ import javax.xml.transform.sax.SAXSource;
 import org.netbeans.modules.websvc.saas.model.Saas;
 import org.netbeans.modules.websvc.saas.model.SaasGroup;
 import org.netbeans.modules.websvc.saas.model.WadlSaas;
+import org.netbeans.modules.websvc.saas.model.WadlSaasMethod;
 import org.netbeans.modules.websvc.saas.model.jaxb.Group;
 import org.netbeans.modules.websvc.saas.model.jaxb.SaasServices;
 import org.netbeans.modules.websvc.saas.model.wadl.Application;
@@ -350,7 +351,11 @@ public class SaasUtil {
         return result;
     }
     
-    public static String getSignature(WadlSaas saas, Resource[] paths, Method m) {
+    public static String getSignature(WadlSaasMethod method) {
+        WadlSaas saas = method.getSaas();
+        Resource[] paths = method.getResourcePath();
+        Method m = method.getWadlMethod();
+        
         StringBuffer sb = new StringBuffer();
         sb.append(m.getName());
         sb.append(" : ");

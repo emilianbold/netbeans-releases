@@ -71,7 +71,7 @@ public class XMLSyntaxParserTest extends TestCase {
     }
     
     public static Test suite() {
-        TestSuite suite = new TestSuite(XMLSyntaxParserTest.class);
+        TestSuite suite = new TestSuite();
         suite.addTest(new XMLSyntaxParserTest("testParse"));
         suite.addTest(new XMLSyntaxParserTest("testParseDoctype"));
         suite.addTest(new XMLSyntaxParserTest("testParseInvalid"));
@@ -258,7 +258,7 @@ public class XMLSyntaxParserTest extends TestCase {
         XMLSyntaxParser parser = new XMLSyntaxParser();
         Document doc = parser.parse(basedoc);
         long end = System.currentTimeMillis();
-        System.out.println("Time taken to parse hl7 schema: " + (end-start));
+        System.out.println("Time taken to parse healthcare schema: " + (end-start) + "ms.");
         assertNotNull("Document can not be null", doc);
         //FlushVisitor fv = new FlushVisitor();
         //String docBuf = fv.flushModel(doc);
