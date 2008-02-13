@@ -56,13 +56,14 @@ import com.sun.source.tree.TryTree;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
 import com.sun.source.util.TreePathScanner;
-import com.sun.source.util.TreeScanner;
+import com.sun.source.util.Trees;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
@@ -72,6 +73,7 @@ import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.TypeMirror;
+import org.netbeans.api.java.source.ElementUtilities;
 import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.ElementHandle;
@@ -84,7 +86,6 @@ import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.modules.java.editor.codegen.GeneratorUtils;
 import org.netbeans.spi.editor.hints.ChangeInfo;
 import org.netbeans.spi.editor.hints.Fix;
-import org.openide.ErrorManager;
 import org.openide.util.NbBundle;
 
 
@@ -228,7 +229,7 @@ final class MagicSurroundWithTryCatchFix implements Fix {
                 StatementTree assignment = make.ExpressionStatement(make.Assignment(make.Identifier(originalDeclaration.getName()), originalDeclaration.getInitializer()));
                 List<StatementTree> finallyStatements = new ArrayList<StatementTree>(tt.getFinallyBlock() != null ? tt.getFinallyBlock().getStatements() : Collections.<StatementTree>emptyList());
                 
-                finallyStatements.add(createFinallyCloseBlockStatement(originalDeclaration.getName()));
+                finallyStatements.add(createFinallyCloseBlockStatement(originalDeclaration));
                 
                 BlockTree finallyTree = make.Block(finallyStatements, false);
                 
@@ -261,11 +262,38 @@ final class MagicSurroundWithTryCatchFix implements Fix {
             return null;
         }
         
-        private StatementTree createFinallyCloseBlockStatement(CharSequence name) {
-            StatementTree close = make.ExpressionStatement(make.MethodInvocation(Collections.<ExpressionTree>emptyList(), make.MemberSelect(make.Identifier(name), "close"), Collections.<ExpressionTree>emptyList()));
-            StatementTree tryStatement = make.Try(make.Block(Collections.singletonList(close), false), Collections.singletonList(createCatch(info, make, statement, inferName(info, statement), info.getElements().getTypeElement("java.io.IOException").asType())), null);
+        private StatementTree createFinallyCloseBlockStatement(VariableTree origDeclaration) {
+            Trees trees = info.getTrees();
+            TypeMirror tm = trees.getTypeMirror(statement);
+            ElementUtilities elUtils = info.getElementUtilities();
+            Iterable iterable = elUtils.getMembers(tm, new ElementAcceptor() {
+                public boolean accept(Element e, TypeMirror type) {
+                    return e.getKind() == ElementKind.METHOD && "close".equals(e.getSimpleName().toString()); // NOI18N
+                }
+            });
+            boolean throwsIO = false;
+            for (Iterator iter = iterable.iterator(); iter.hasNext(); ) {
+                ExecutableElement elem = (ExecutableElement) iter.next();
+                if (!elem.getParameters().isEmpty()) {
+                    continue;
+                } else {
+                     for (TypeMirror typeMirror : elem.getThrownTypes()) {
+                         if ("java.io.IOException".equals(typeMirror.toString())) { // NOI18N
+                             throwsIO = true;
+                             break;
+                         }
+                     }
+                }
+            }
             
-            return tryStatement;
+            CharSequence name = origDeclaration.getName();
+            StatementTree close = make.ExpressionStatement(make.MethodInvocation(Collections.<ExpressionTree>emptyList(), make.MemberSelect(make.Identifier(name), "close"), Collections.<ExpressionTree>emptyList()));
+            StatementTree result = close;
+            if (throwsIO) {
+                result = make.Try(make.Block(Collections.singletonList(close), false), Collections.singletonList(createCatch(info, make, statement, inferName(info, statement), info.getElements().getTypeElement("java.io.IOException").asType())), null);
+            }
+            
+            return result;
         }
         
         private BlockTree createBlock(StatementTree... trees) {
@@ -305,7 +333,7 @@ final class MagicSurroundWithTryCatchFix implements Fix {
                 VariableTree originalDeclaration = (VariableTree) statement.getLeaf();
                 VariableTree declaration = make.Variable(make.Modifiers(EnumSet.noneOf(Modifier.class)), originalDeclaration.getName(), originalDeclaration.getType(), make.Identifier("null"));
                 StatementTree assignment = make.ExpressionStatement(make.Assignment(make.Identifier(originalDeclaration.getName()), originalDeclaration.getInitializer()));
-                BlockTree finallyTree = make.Block(Collections.singletonList(createFinallyCloseBlockStatement(originalDeclaration.getName())), false);
+                BlockTree finallyTree = make.Block(Collections.singletonList(createFinallyCloseBlockStatement(originalDeclaration)), false);
                 
                 info.rewrite(originalDeclaration, assignment);
                 info.rewrite(bt, createBlock(toKeep, declaration, make.Try(toUse, catches, finallyTree)));

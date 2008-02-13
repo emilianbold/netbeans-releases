@@ -418,7 +418,7 @@
                 <!--
                 <validate-project buildDirectory="${{basedir}}/${{build.dir}}" sourceDirectory="${{basedir}}/${{src.dir}}" projectClassPath="${{javac.classpath}}" buildDependentProjectDir="${{basedir}}/${{build.dir}}/dependentProjectFiles" />
                 -->
-                <BpelProjectValidate buildDirectory="${{basedir}}/${{build.dir}}" sourceDirectory="${{basedir}}/${{src.dir}}" projectClassPath="${{javac.classpath}}" buildDependentProjectDir="${{basedir}}/${{build.dir}}/dependentProjectFiles" classpathRef="ant.task.classpath.validation" allowBuildWithError="${{allow.build.with.error}}"/>    
+                <BpelProjectValidate buildDirectory="${{basedir}}/${{build.dir}}" sourceDirectory="${{basedir}}/${{src.dir}}" projectClassPath="${{javac.classpath}}" buildDependentProjectDir="${{basedir}}/${{build.dir}}/dependentProjectFiles" classpathRef="ant.task.classpath.validation" allowBuildWithError="${{allow.build.with.error}}"/>
                 
                 <xsl:comment> copy all files from project source directory to build directory. </xsl:comment>
                 <copy todir="${{build.dir}}" preservelastmodified="true" >

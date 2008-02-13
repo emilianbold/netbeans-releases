@@ -44,7 +44,6 @@ package org.netbeans.modules.cnd.api.model.util;
 import org.netbeans.modules.cnd.api.model.CsmClass;
 import org.netbeans.modules.cnd.api.model.CsmClassifier;
 import org.netbeans.modules.cnd.api.model.CsmCompoundClassifier;
-import org.netbeans.modules.cnd.api.model.CsmConstructor;
 import org.netbeans.modules.cnd.api.model.CsmDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmEnumerator;
 import org.netbeans.modules.cnd.api.model.CsmFile;
@@ -55,6 +54,7 @@ import org.netbeans.modules.cnd.api.model.CsmFunction;
 import org.netbeans.modules.cnd.api.model.CsmIdentifiable;
 import org.netbeans.modules.cnd.api.model.CsmInclude;
 import org.netbeans.modules.cnd.api.model.CsmInheritance;
+import org.netbeans.modules.cnd.api.model.CsmInitializerListContainer;
 import org.netbeans.modules.cnd.api.model.CsmMacro;
 import org.netbeans.modules.cnd.api.model.CsmMember;
 import org.netbeans.modules.cnd.api.model.CsmNamedElement;
@@ -67,6 +67,8 @@ import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.api.model.CsmQualifiedNamedElement;
 import org.netbeans.modules.cnd.api.model.CsmScope;
 import org.netbeans.modules.cnd.api.model.CsmScopeElement;
+import org.netbeans.modules.cnd.api.model.CsmTemplate;
+import org.netbeans.modules.cnd.api.model.CsmTemplateParameterType;
 import org.netbeans.modules.cnd.api.model.CsmType;
 import org.netbeans.modules.cnd.api.model.CsmUsingDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmUsingDirective;
@@ -132,6 +134,14 @@ public class CsmKindUtilities {
         } else {
             return false;
         }
+    }
+    
+    public static boolean isTemplateParameterType(CsmObject obj) {
+        return (obj instanceof CsmTemplateParameterType);
+    }
+    
+    public static boolean isTemplate(CsmObject obj) {
+        return (obj instanceof CsmTemplate);
     }
     
     public static boolean isType(CsmObject obj) {
@@ -499,14 +509,10 @@ public class CsmKindUtilities {
 
     /**
      * checks if passed object is constructor definition or declaration;
-     * after this check it is safe to cast to CsmFunction
+     * after this check it is safe to cast to CsmFunction or CsmInitializerListContainer
      */    
     public static boolean isConstructor(CsmObject obj) {
-        if (isMethod(obj)) {
-            return CsmBaseUtilities.getFunctionDeclaration((CsmFunction)obj) instanceof CsmConstructor;
-        } else {
-            return false;
-        }
+        return obj instanceof CsmInitializerListContainer;
     }   
     
     public static boolean isDestructor(CsmObject obj) {

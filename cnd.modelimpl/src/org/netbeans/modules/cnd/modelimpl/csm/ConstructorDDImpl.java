@@ -41,15 +41,18 @@
 
 package org.netbeans.modules.cnd.modelimpl.csm;
 
+import java.io.DataOutput;
 import org.netbeans.modules.cnd.api.model.*;
 import antlr.collections.AST;
 import java.io.DataInput;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import org.netbeans.modules.cnd.api.model.deep.CsmExpression;
 import org.netbeans.modules.cnd.modelimpl.csm.core.AstRenderer;
+import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
 
 /**
  * @author Vladimir Voskresensky
@@ -73,7 +76,7 @@ public final class ConstructorDDImpl extends MethodDDImpl<CsmConstructor> implem
         if(initializers != null) {
             return initializers;
         } else {
-            return Collections.EMPTY_LIST;
+            return Collections.<CsmExpression>emptyList();
         }
     }    
     
@@ -82,12 +85,19 @@ public final class ConstructorDDImpl extends MethodDDImpl<CsmConstructor> implem
     
     public ConstructorDDImpl(DataInput input) throws IOException {
         super(input);
+        initializers = PersistentUtils.readExpressions(new ArrayList<CsmExpression>(), input);
     }
-    
+        
+    @Override
+    public void write(DataOutput output) throws IOException {
+        super.write(output);
+        PersistentUtils.writeExpressions(initializers, output);
+    }
+        
     @Override
     public Collection getScopeElements() {
         Collection c = super.getScopeElements();
-        c.addAll(initializers);
+        c.addAll(getInitializerList());
         return c;
     }
 }

@@ -41,12 +41,14 @@
 
 package org.netbeans.modules.autoupdate.ui.wizards;
 
+import java.awt.Dialog;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
@@ -434,7 +436,20 @@ public class InstallStep implements WizardDescriptor.FinishablePanel<WizardDescr
             if (! untrusted.isEmpty () && certs.length () > 0) {
                 dd.setAdditionalOptions (new JButton [] {showCertificate});
             }
-            DialogDisplayer.getDefault ().createDialog (dd).setVisible (true);
+            final Dialog dlg = DialogDisplayer.getDefault ().createDialog (dd);
+            try {
+                SwingUtilities.invokeAndWait (new Runnable () {
+                    public void run () {
+                        dlg.setVisible (true);
+                    }
+                });
+            } catch (InterruptedException ex) {
+                log.log (Level.INFO, ex.getLocalizedMessage (), ex);
+                return null;
+            } catch (InvocationTargetException ex) {
+                log.log (Level.INFO, ex.getLocalizedMessage (), ex);
+                return null;
+            }
             if (! canContinue.equals (dd.getValue ())) {
                 if (! cancel.equals (dd.getValue ())) cancel.doClick ();
                 return null;
