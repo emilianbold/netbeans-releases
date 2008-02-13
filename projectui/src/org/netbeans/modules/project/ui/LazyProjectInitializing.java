@@ -34,32 +34,38 @@
  * 
  * Contributor(s):
  * 
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2007 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.project.ui;
 
-package org.netbeans.modules.websvc.saas.ui.nodes;
+import org.openide.util.HelpCtx;
+import org.openide.util.NbBundle;
+import org.openide.util.actions.CallableSystemAction;
 
-import org.netbeans.modules.websvc.saas.model.WadlSaasMethod;
-import org.openide.util.lookup.InstanceContent;
+final class LazyProjectInitializing extends CallableSystemAction {
 
-/**
- *
- * @author nam
- */
-public class WadlSaasMethodNode extends WadlMethodNode {
-    private WadlSaasMethod saasMethod;
-    
-    public WadlSaasMethodNode(WadlSaasMethod saasMethod) {
-        this(saasMethod, new InstanceContent());
+    public void performAction() {
+        assert false;
     }
 
-    public WadlSaasMethodNode(WadlSaasMethod saasMethod, InstanceContent content) {
-        super(saasMethod.getSaas(), saasMethod.getResourcePath(), saasMethod.getWadlMethod(), content);
-        this.saasMethod = saasMethod;
+    public String getName() {
+        return NbBundle.getMessage(LazyProjectInitializing.class, "CTL_LazyProjectInitializing");
     }
 
     @Override
-    public String getDisplayName() {
-        return saasMethod.getName();
+    protected void initialize() {
+        super.initialize();
+        // see org.openide.util.actions.SystemAction.iconResource() Javadoc for more details
+        putValue("noIconInMenu", Boolean.TRUE);
+        setEnabled(false);
+    }
+
+    public HelpCtx getHelpCtx() {
+        return HelpCtx.DEFAULT_HELP;
+    }
+
+    @Override
+    protected boolean asynchronous() {
+        return false;
     }
 }

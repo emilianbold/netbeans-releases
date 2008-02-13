@@ -378,20 +378,28 @@ public class FileStatusCache {
     }
 
     private FileInformation createFileInformation(File file, Boolean callStatus) {        
-        Mercurial.LOG.log(Level.FINE, "createFileInformation(): {0}", file); // NOI18N
+        Mercurial.LOG.log(Level.FINE, "createFileInformation(): {0} {1}", new Object[] {file, callStatus}); // NOI18N
         if (file == null)
             return FILE_INFORMATION_UNKNOWN;
-        if (hg.isAdministrative(file) || HgUtils.isIgnored(file))
-            return file.isDirectory() ? FILE_INFORMATION_EXCLUDED_DIRECTORY : FILE_INFORMATION_EXCLUDED; // Excluded
+        if (hg.isAdministrative(file))
+            return FILE_INFORMATION_EXCLUDED_DIRECTORY; // Excluded
 
         File rootManagedFolder = hg.getTopmostManagedParent(file);        
         if (rootManagedFolder == null)
             return FILE_INFORMATION_UNKNOWN; // Avoiding returning NOT_MANAGED dir or file
         
-        if (file.isDirectory())
-            return FILE_INFORMATION_UPTODATE_DIRECTORY; // Managed dir
+        if (file.isDirectory()) {
+            if (HgUtils.isIgnored(file)) {
+                return FILE_INFORMATION_EXCLUDED_DIRECTORY; // Excluded
+            } else {
+                return FILE_INFORMATION_UPTODATE_DIRECTORY; // Managed dir
+            }
+        }
         
         if (callStatus == false) {
+            if (HgUtils.isIgnored(file)) {
+                return FILE_INFORMATION_EXCLUDED; // Excluded
+            } 
             return null;
         }
 

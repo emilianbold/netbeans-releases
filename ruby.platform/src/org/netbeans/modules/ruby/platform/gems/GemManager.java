@@ -1094,10 +1094,12 @@ public final class GemManager {
     }
 
     public static void adjustEnvironment(final RubyPlatform platform, final Map<String, String> env) {
-        String gemHome = adjustGemPath(platform.getGemManager().getGemHome());
-        String gemPath = adjustGemPath(platform.getInfo().getGemPath());
-        env.put("GEM_HOME", gemHome); // NOI18N
-        env.put("GEM_PATH", gemPath); // NOI18N
+        if (platform.hasRubyGemsInstalled()) {
+            String gemHome = adjustGemPath(platform.getGemManager().getGemHome());
+            String gemPath = adjustGemPath(platform.getInfo().getGemPath());
+            env.put("GEM_HOME", gemHome); // NOI18N
+            env.put("GEM_PATH", gemPath); // NOI18N
+        }
     }
 
     private static String adjustGemPath(final String origPath) {
