@@ -39,38 +39,21 @@
 
 package org.netbeans.modules.websvc.saas.spi.websvcmgr;
 
-import org.netbeans.modules.websvc.saas.*;
+import org.netbeans.modules.websvc.saas.spi.ServiceData;
+import org.netbeans.modules.websvc.saas.util.WsdlUtil;
 
 /**
- * Hook to reuse websvc.manager retrieval, compiling and persistence facilityes.
- * Only to be implemented by websvc.manager.
- * 
+ *
  * @author nam
  */
-public interface WsdlDataManager {
-    /**
-     * Find the WSDL data for the given WSDL URL and service name.
-     * 
-     * @param wsdlUrl
-     * @param serviceName  optional service name; if null return default service
-     * @return WsdlData object or null if does not exist in repository.
-     */
-    WsdlData findWsdlData(String wsdlUrl, String serviceName);
+public abstract class WsdlServiceData extends ServiceData {
     
-    /**
-     * Find or create the WSDL data for the given WSDL URL.
-     * 
-     * @param wsdlUrl
-     * @param serviceName  optional service name; if null return default service
-     * @param synchronuous whether the call is synchronous.
-     * @return WsdlData object, in ready state for consumer editor, if synchronous.
-     */
-    WsdlData getWsdlData(String wsdlUrl, String serviceName, boolean synchronuous);
-    
-    /**
-     * Remove the WSDL data for given WSDL URL from persistence.
-     * @param wsdlUrl
-     */
-  
-    void removeWsdlData(String wsdlUrl, String serviceName);
+    public boolean isInRepository() {
+        return isInRepository(getUrl(), getServiceName());
+    }
+
+    public static boolean isInRepository(String url, String serviceName) {
+        return WsdlUtil.findWsdlData(url, serviceName) != null;
+    }
+
 }

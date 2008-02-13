@@ -21,6 +21,12 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  * 
+ * Contributor(s):
+ * 
+ * The Original Software is NetBeans. The Initial Developer of the Original
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Microsystems, Inc. All Rights Reserved.
+ * 
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -31,46 +37,25 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
- * Contributor(s):
- * 
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.websvc.saas.spi.websvcmgr;
-
-import org.netbeans.modules.websvc.saas.*;
+package org.netbeans.modules.websvc.saas.spi;
 
 /**
- * Hook to reuse websvc.manager retrieval, compiling and persistence facilityes.
- * Only to be implemented by websvc.manager.
+ * Web service search data.
  * 
  * @author nam
  */
-public interface WsdlDataManager {
-    /**
-     * Find the WSDL data for the given WSDL URL and service name.
-     * 
-     * @param wsdlUrl
-     * @param serviceName  optional service name; if null return default service
-     * @return WsdlData object or null if does not exist in repository.
-     */
-    WsdlData findWsdlData(String wsdlUrl, String serviceName);
+public abstract class ServiceData {
+    public abstract String getVersion();
+    public abstract String getUrl();
+    public abstract Object getRawService();
+    public abstract String getServiceName();
+    public abstract String getProviderName();
+    public abstract String getDescription();
+    public abstract String getInfoPage();
+    public abstract String getPurchaseLink();
+    public abstract String getPackageName();
+    public abstract void setPackageName(String value);
     
-    /**
-     * Find or create the WSDL data for the given WSDL URL.
-     * 
-     * @param wsdlUrl
-     * @param serviceName  optional service name; if null return default service
-     * @param synchronuous whether the call is synchronous.
-     * @return WsdlData object, in ready state for consumer editor, if synchronous.
-     */
-    WsdlData getWsdlData(String wsdlUrl, String serviceName, boolean synchronuous);
-    
-    /**
-     * Remove the WSDL data for given WSDL URL from persistence.
-     * @param wsdlUrl
-     */
-  
-    void removeWsdlData(String wsdlUrl, String serviceName);
 }
