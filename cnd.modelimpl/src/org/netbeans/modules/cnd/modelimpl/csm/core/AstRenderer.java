@@ -1305,11 +1305,7 @@ public class AstRenderer {
                 }
             }
         }
-        if (initializers != null) {
-            return initializers;
-        } else {
-            return Collections.EMPTY_LIST;
-        }
+        return initializers;
     }
     
     public static boolean isExpression(AST ast) {
