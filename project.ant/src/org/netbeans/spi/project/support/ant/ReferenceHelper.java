@@ -339,7 +339,11 @@ public final class ReferenceHelper {
                 relativePath
             };
         }        
-        else if (CollocationQuery.areCollocated(base, path)) {
+        else if (PropertyUtils.relativizeFile(base, path) != null) {
+        //mkleint: removed CollocationQuery.areCollocated() reference
+        // when AlwaysRelativeCQI gets removed the condition resolves to false more frequently.
+        // that might not be desirable.
+            
             // Fine, using a relative path to subproject.
             relativePath = PropertyUtils.relativizeFile(base, path);
             assert relativePath != null : "These dirs are not really collocated: " + base + " & " + path;
@@ -1385,7 +1389,12 @@ public final class ReferenceHelper {
             File absolutePath = FileUtil.normalizeFile(PropertyUtils.resolveFile(originalPath, value));
             
             //TODO: extra base dir relativization:
-            if (!CollocationQuery.areCollocated(absolutePath, projectDir)) {
+            
+        //mkleint: removed CollocationQuery.areCollocated() reference
+        // when AlwaysRelativeCQI gets removed the condition resolves to false more frequently.
+        // that might not be desirable.
+            String rel = PropertyUtils.relativizeFile(projectDir, absolutePath);
+            if (rel == null) {
                 pubRemove.add(key);
                 privAdd.put(key, absolutePath.getAbsolutePath());
             }
@@ -1419,8 +1428,13 @@ public final class ReferenceHelper {
 	    }
 	    
             //TODO: extra base dir relativization:
-            if (CollocationQuery.areCollocated(absolutePath, projectDir)) {
-                pubAdd.put(key, PropertyUtils.relativizeFile(projectDir, absolutePath));
+            
+        //mkleint: removed CollocationQuery.areCollocated() reference
+        // when AlwaysRelativeCQI gets removed the condition resolves to false more frequently.
+        // that might not be desirable.            
+            String rel = PropertyUtils.relativizeFile(projectDir, absolutePath);
+            if (rel != null) {
+                pubAdd.put(key, rel);
             }
         }
         
