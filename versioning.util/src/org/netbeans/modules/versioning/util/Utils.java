@@ -213,7 +213,7 @@ public final class Utils {
      * Checks if the file is to be considered as textuall.
      *
      * @param file file to check
-     * @return true if the file cannot be edited in NetBeans text editor, false otherwise
+     * @return true if the file can be edited in NetBeans text editor, false otherwise
      */
     public static boolean isFileContentText(File file) {
         FileObject fo = FileUtil.toFileObject(file);
