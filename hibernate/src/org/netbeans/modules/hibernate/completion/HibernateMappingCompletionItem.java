@@ -242,7 +242,7 @@ public abstract class HibernateMappingCompletionItem implements CompletionItem {
                 @Override
                 protected void query(final CompletionResultSet resultSet, Document doc, int caretOffset) {
                     try {
-                        JavaSource js = getJavaSource(doc);
+                        JavaSource js = HibernateCompletionEditorUtil.getJavaSource(doc);
                         if (js == null) {
                             return;
                         }
@@ -378,7 +378,7 @@ public abstract class HibernateMappingCompletionItem implements CompletionItem {
                 @Override
                 protected void query(final CompletionResultSet resultSet, Document doc, int caretOffset) {
                     try {
-                        JavaSource js = getJavaSource(doc);
+                        JavaSource js = HibernateCompletionEditorUtil.getJavaSource(doc);
                         if (js == null) {
                             return;
                         }
@@ -634,23 +634,5 @@ public abstract class HibernateMappingCompletionItem implements CompletionItem {
         public StringBuilder visitType(TypeElement e, Boolean p) {
             return DEFAULT_VALUE.append((p ? e.getQualifiedName() : e.getSimpleName()).toString());
         }
-    }
-
-    public static JavaSource getJavaSource(Document doc) {
-        FileObject fileObject = NbEditorUtilities.getFileObject(doc);
-        if (fileObject == null) {
-            return null;
-        }
-        Project project = FileOwnerQuery.getOwner(fileObject);
-        if (project == null) {
-            return null;
-        }
-        // XXX this only works correctly with projects with a single sourcepath,
-        // but we don't plan to support another kind of projects anyway (what about Maven?).
-        SourceGroup[] sourceGroups = ProjectUtils.getSources(project).getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
-        for (SourceGroup sourceGroup : sourceGroups) {
-            return JavaSource.create(ClasspathInfo.create(sourceGroup.getRootFolder()));
-        }
-        return null;
     }
 }
