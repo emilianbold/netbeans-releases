@@ -47,6 +47,8 @@ import java.io.File;
 import java.io.IOException;
 import java.text.MessageFormat;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Iterator;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.ImageIcon;
@@ -71,15 +73,14 @@ import org.openide.NotifyDescriptor;
 import org.openide.execution.ExecutorTask;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Cancellable;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 import org.openide.windows.IOProvider;
 import org.openide.windows.InputOutput;
 
 public class DefaultProjectActionHandler implements ActionListener {
-    private static CustomProjectActionHandlerProvider customBuildActionHandlerProvider = null;
-    private static CustomProjectActionHandlerProvider customRunActionHandlerProvider = null;
-    private static CustomProjectActionHandlerProvider customDebugActionHandlerProvider = null;
+    private CustomProjectActionHandlerProvider customActionHandlerProvider = null;
     private CustomProjectActionHandler customActionHandler = null;
     
     private static DefaultProjectActionHandler instance = null;
@@ -90,20 +91,34 @@ public class DefaultProjectActionHandler implements ActionListener {
         return instance;
     }
     
-    public void setCustomBuildActionHandlerProvider(CustomProjectActionHandlerProvider customBuildActionHandlerProvider) {
-        DefaultProjectActionHandler.customBuildActionHandlerProvider = customBuildActionHandlerProvider;
-    }
-    
-    public void setCustomRunActionHandlerProvider(CustomProjectActionHandlerProvider customRunActionHandlerProvider) {
-        DefaultProjectActionHandler.customRunActionHandlerProvider = customRunActionHandlerProvider;
-    }
-    
+    /*
+     * @deprecated. Register via services using org.netbeans.modules.cnd.makeproject.api.CustomProjectActionHandlerProvider
+     */ 
     public void setCustomDebugActionHandlerProvider(CustomProjectActionHandlerProvider customDebugActionHandlerProvider) {
-        DefaultProjectActionHandler.customDebugActionHandlerProvider = customDebugActionHandlerProvider;
+        customActionHandlerProvider = customDebugActionHandlerProvider;
     }
     
     public CustomProjectActionHandlerProvider getCustomDebugActionHandlerProvider() {
-        return customDebugActionHandlerProvider;
+        // First try old-style registration (deprecated)
+        if (customActionHandlerProvider != null) {
+            return customActionHandlerProvider;
+        }
+        // Then try services
+        Lookup.Template template = new Lookup.Template(CustomProjectActionHandlerProvider.class);
+        Lookup.Result result = Lookup.getDefault().lookup(template);
+        Collection collection = result.allInstances();
+        Iterator iterator = collection.iterator();
+        while (iterator.hasNext()) {
+            Object caop = iterator.next();
+            if (caop instanceof CustomProjectActionHandlerProvider) {
+                customActionHandlerProvider = (CustomProjectActionHandlerProvider)caop;
+                if (customActionHandlerProvider.getClass().getName().contains("dbx")) { // NOI18N
+                    // prefer dbx over gdb ....
+                    break;
+                }
+            }
+        }
+        return customActionHandlerProvider;
     }
     
     public void setCustomActionHandlerProvider(CustomProjectActionHandler customActionHandlerProvider) {
@@ -263,22 +278,11 @@ public class DefaultProjectActionHandler implements ActionListener {
                     return;
             }
             
-            if ((pae.getID() == ProjectActionEvent.BUILD ||
-                    pae.getID() == ProjectActionEvent.CLEAN) &&
-                    customBuildActionHandlerProvider != null) {
-                CustomProjectActionHandler ah = customBuildActionHandlerProvider.factoryCreate();
-                ah.addExecutionListener(this);
-                ah.execute(pae, getTab());
-            } else if (pae.getID() == ProjectActionEvent.RUN &&
-                    customRunActionHandlerProvider != null) {
-                CustomProjectActionHandler ah = customRunActionHandlerProvider.factoryCreate();
-                ah.addExecutionListener(this);
-                ah.execute(pae, getTab());
-            } else if ((pae.getID() == ProjectActionEvent.DEBUG ||
+            if ((pae.getID() == ProjectActionEvent.DEBUG ||
                     pae.getID() == ProjectActionEvent.DEBUG_LOAD_ONLY ||
                     pae.getID() == ProjectActionEvent.DEBUG_STEPINTO) &&
-                    customDebugActionHandlerProvider != null) {
-                CustomProjectActionHandler ah = customDebugActionHandlerProvider.factoryCreate();
+                    getCustomDebugActionHandlerProvider() != null) {
+                CustomProjectActionHandler ah = getCustomDebugActionHandlerProvider().factoryCreate();
                 ah.addExecutionListener(this);
                 ah.execute(pae, getTab());
             } else if (pae.getID() == ProjectActionEvent.RUN ||
