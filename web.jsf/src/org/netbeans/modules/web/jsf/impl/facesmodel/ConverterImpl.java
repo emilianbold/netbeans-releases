@@ -61,27 +61,27 @@ public class ConverterImpl extends DescriptionGroupImpl implements Converter{
     }
     
     public String getConverterClass() {
-        return getChildElementText(JSFConfigQNames.CONVERTER_CLASS.getQName(getModel().getVersion()));
+        return getChildElementText(JSFConfigQNames.CONVERTER_CLASS.getQName(getNamespaceURI()));
     }
     
     public void setConverterClass(String value) {
-        setChildElementText(CONVERTER_CLASS, value, JSFConfigQNames.CONVERTER_CLASS.getQName(getModel().getVersion()));
+        setChildElementText(CONVERTER_CLASS, value, JSFConfigQNames.CONVERTER_CLASS.getQName(getNamespaceURI()));
     }
     
     public String getConverterForClass() {
-        return getChildElementText(JSFConfigQNames.CONVERTER_FOR_CLASS.getQName(getModel().getVersion()));
+        return getChildElementText(JSFConfigQNames.CONVERTER_FOR_CLASS.getQName(getNamespaceURI()));
     }
     
     public void setConverterForClass(String value) {
-        setChildElementText(CONVERTER_FOR_CLASS, value, JSFConfigQNames.CONVERTER_FOR_CLASS.getQName(getModel().getVersion()));
+        setChildElementText(CONVERTER_FOR_CLASS, value, JSFConfigQNames.CONVERTER_FOR_CLASS.getQName(getNamespaceURI()));
     }
     
     public String getConverterId() {
-        return getChildElementText(JSFConfigQNames.CONVERTER_ID.getQName(getModel().getVersion()));
+        return getChildElementText(JSFConfigQNames.CONVERTER_ID.getQName(getNamespaceURI()));
     }
     
     public void setConverterId(String value) {
-        setChildElementText(CONVERTER_ID, value, JSFConfigQNames.CONVERTER_ID.getQName(getModel().getVersion()));
+        setChildElementText(CONVERTER_ID, value, JSFConfigQNames.CONVERTER_ID.getQName(getNamespaceURI()));
     }
         
     public void accept(JSFConfigVisitor visitor) {

@@ -266,30 +266,33 @@ public abstract class BaseFileObj extends FileObject {
         final String originalExt = getExt();
         
         //TODO: no lock used
-            FileNaming[] allRenamed = NamingFactory.rename(getFileName(),file2Rename.getName(),handler);
-            if (allRenamed == null) {
-                FileObject parentFo = getExistingParent();
-                String parentPath = (parentFo != null) ? parentFo.getPath() : file.getParentFile().getAbsolutePath();
-                FSException.io("EXC_CannotRename", file.getName(), parentPath, file2Rename.getName());// NOI18N            
-            }
-            FileBasedFileSystem fs = getLocalFileSystem();
-            fs.getFactory().rename(); 
-            BaseFileObj.attribs.renameAttributes(file.getAbsolutePath().replace('\\', '/'), file2Rename.getAbsolutePath().replace('\\', '/'));//NOI18N
-            for (int i = 0; i < allRenamed.length; i++) {
-                FolderObj par = (allRenamed[i].getParent() != null) ? 
-                    (FolderObj)fs.getFactory().get(allRenamed[i].getParent().getFile()) : null;
-                if (par != null) {
-                    ChildrenCache childrenCache = par.getChildrenCache();
-                    final Mutex.Privileged mutexPrivileged = (childrenCache != null) ? childrenCache.getMutexPrivileged() : null;
-                    if (mutexPrivileged != null) mutexPrivileged.enterWriteAccess();
-                    try {
-                        childrenCache.removeChild(allRenamed[i]);
-                        childrenCache.getChild(allRenamed[i].getName(), true);
-                    } finally {
-                        if (mutexPrivileged != null) mutexPrivileged.exitWriteAccess();
-                    }                
+        FileBasedFileSystem fs = getLocalFileSystem();
+
+        synchronized(fs.getFactory().allInstances) { 
+                FileNaming[] allRenamed = NamingFactory.rename(getFileName(),file2Rename.getName(),handler);
+                if (allRenamed == null) {
+                    FileObject parentFo = getExistingParent();
+                    String parentPath = (parentFo != null) ? parentFo.getPath() : file.getParentFile().getAbsolutePath();
+                    FSException.io("EXC_CannotRename", file.getName(), parentPath, file2Rename.getName());// NOI18N            
                 }
-            }
+                fs.getFactory().rename(); 
+                BaseFileObj.attribs.renameAttributes(file.getAbsolutePath().replace('\\', '/'), file2Rename.getAbsolutePath().replace('\\', '/'));//NOI18N
+                for (int i = 0; i < allRenamed.length; i++) {
+                    FolderObj par = (allRenamed[i].getParent() != null) ? 
+                        (FolderObj)fs.getFactory().get(allRenamed[i].getParent().getFile()) : null;
+                    if (par != null) {
+                        ChildrenCache childrenCache = par.getChildrenCache();
+                        final Mutex.Privileged mutexPrivileged = (childrenCache != null) ? childrenCache.getMutexPrivileged() : null;
+                        if (mutexPrivileged != null) mutexPrivileged.enterWriteAccess();
+                        try {
+                            childrenCache.removeChild(allRenamed[i]);
+                            childrenCache.getChild(allRenamed[i].getName(), true);
+                        } finally {
+                            if (mutexPrivileged != null) mutexPrivileged.exitWriteAccess();
+                        }                
+                    }
+                }
+        }
         //TODO: RELOCK
         LockForFile.relock(file,file2Rename);
             
@@ -301,8 +304,8 @@ public abstract class BaseFileObj extends FileObject {
         ProvidedExtensions extensions =  getProvidedExtensions();        
         rename(lock, name, ext, extensions.getRenameHandler(getFileName().getFile(), FileInfo.composeName(name, ext)));
     }
-
-
+    
+      
     public Object getAttribute(final String attrName) {
         if (attrName.equals("FileSystem.rootPath")) {
             return "";//NOI18N
