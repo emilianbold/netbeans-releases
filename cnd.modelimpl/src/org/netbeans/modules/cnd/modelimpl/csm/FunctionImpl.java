@@ -86,6 +86,8 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
     private final boolean _const;
 
     private boolean template;
+    private List<CsmTemplateParameter> templateParams = Collections.emptyList();
+    
     private CharSequence templateSuffix;
     protected CharSequence classTemplateSuffix;
     
@@ -135,7 +137,7 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
         RepositoryUtils.hang(this); // "hang" now and then "put" in "register()"
 	
         _const = initConst(ast);
-        returnType = initReturnType(ast);
+        returnType = initReturnType(ast, scope);
         initTemplate(ast);
         
         // set parameters, do it in constructor to have final fields
@@ -271,6 +273,9 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
             }
         }
         this.template = _template;
+        if (_template) {
+            this.templateParams = TemplateUtils.getTemplateParameters(node.getFirstChild(), this);
+        }
     }
     
     protected CharSequence getScopeSuffix() {
@@ -286,7 +291,7 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
     }
     
     public List<CsmTemplateParameter> getTemplateParameters() {
-        return Collections.EMPTY_LIST;
+        return templateParams;
     }    
     
     public boolean isVoidParameterList(){
@@ -498,7 +503,7 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
 //        return false;
 //    }
     
-    private CsmType initReturnType(AST node) {
+    private CsmType initReturnType(AST node, CsmScope scope) {
         CsmType ret = null;
         AST token = getTypeToken(node);
         if( token != null ) {
@@ -507,7 +512,7 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
         if( ret == null ) {
             ret = TypeFactory.createBuiltinType("int", (AST) null, 0,  null/*getAst().getFirstChild()*/, getContainingFile()); // NOI18N
         }
-        return ret;
+        return TemplateUtils.checkTemplateType(ret, scope);
     }
     
     public CsmType getReturnType() {
@@ -675,6 +680,7 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
         if (this.template) {
             output.writeUTF(this.templateSuffix.toString());
         }
+        PersistentUtils.writeTemplateParameters(templateParams, output);
     }
 
     public Collection<CsmScopeElement> getScopeElements() {
@@ -708,5 +714,6 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
         if (this.template) {
             this.templateSuffix = NameCache.getManager().getString(input.readUTF());
         }
+        this.templateParams = PersistentUtils.readTemplateParameters(input);
     }
 }

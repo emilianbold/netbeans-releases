@@ -38,6 +38,8 @@
  */
 package org.netbeans.modules.websvc.saas.util;
 
+import java.awt.Image;
+import java.beans.BeanInfo;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -75,6 +77,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
+import org.openide.util.Utilities;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.XMLReader;
@@ -402,4 +405,15 @@ public class SaasUtil {
         return sb.toString();
     }
     
+    public static Image loadIcon(Saas saas, int type) {
+        String path = saas.getSaasMetadata().getIcon16();
+        if (type == BeanInfo.ICON_COLOR_32x32 || type == BeanInfo.ICON_MONO_32x32) {
+            path =  saas.getSaasMetadata().getIcon32();
+        }
+        if (path != null) {
+            return Utilities.loadImage(path);
+        }
+        return null;
+    }
 }
+

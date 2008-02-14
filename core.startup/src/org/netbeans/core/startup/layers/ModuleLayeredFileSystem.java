@@ -145,11 +145,17 @@ implements LookupListener {
 
             ByteBuffer bb = Stamps.getModulesJARs().asMappedByteBuffer(location);
             if (bb != null) {
-                StartLog.logStart("Loading layers"); // NOI18N
-                fs = mgr.load(mgr.createEmptyFileSystem(), bb);
-                setStatusText(
-                    NbBundle.getMessage(ModuleLayeredFileSystem.class, "MSG_end_load_cache"));
-                StartLog.logEnd("Loading layers"); // NOI18N
+                try {
+                    StartLog.logStart("Loading layers"); // NOI18N
+                    fs = mgr.load(mgr.createEmptyFileSystem(), bb);
+                    setStatusText(NbBundle.getMessage(ModuleLayeredFileSystem.class, "MSG_end_load_cache"));
+                    StartLog.logEnd("Loading layers"); // NOI18N
+                } catch (IOException ex) {
+                    LayerCacheManager.err.log(Level.WARNING, "Ignoring cache of layers");
+                    if (LayerCacheManager.err.isLoggable(Level.FINE)) {
+                        LayerCacheManager.err.log(Level.WARNING, "Ignoring cache of layers", ex);
+                    }
+                }
             }
         }
         return fs != null ? fs : mgr.createEmptyFileSystem();

@@ -39,36 +39,33 @@
 
 package org.netbeans.modules.cnd.editor.filecreation;
 
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.prefs.Preferences;
-import org.netbeans.modules.cnd.loaders.CndAbstractDataLoader;
+import org.netbeans.modules.cnd.loaders.CndAbstractDataLoaderExt;
+import org.openide.loaders.ExtensionList;
 import org.openide.util.NbPreferences;
 
 /**
  *
  * @author Sergey Grinev
  */
-class ExtensionsSettings {
+public class ExtensionsSettings {
     private final String name;
     private final String defaultExtension;
-    private final List<String> defaultExtensionsList = new ArrayList<String>();
+    private final ExtensionList defaultExtensionsList;
+    private ExtensionList savedExtensionsList;
     
-    private ExtensionsSettings(String name, CndAbstractDataLoader dataLoader) {
-        Enumeration<String> def = dataLoader.getExtensions().extensions();
-        while (def.hasMoreElements()) {
-            defaultExtensionsList.add(def.nextElement());
-        }
-        assert defaultExtensionsList.size() > 0;
-        this.defaultExtension = defaultExtensionsList.get(0);
+    private ExtensionsSettings(String name, CndAbstractDataLoaderExt dataLoader) {
+        defaultExtensionsList = dataLoader.getDefaultExtensionList();
+        assert defaultExtensionsList.extensions().hasMoreElements();
+        this.defaultExtension = defaultExtensionsList.extensions().nextElement();
         this.name = name;
     }
     
-    public static synchronized ExtensionsSettings getInstance(CndAbstractDataLoader dataLoader) {
+    public static synchronized ExtensionsSettings getInstance(CndAbstractDataLoaderExt dataLoader) {
         String current = dataLoader.getRepresentationClassName();
         ExtensionsSettings es = settingsAccessors.get(current);
         if (es == null) {
@@ -87,28 +84,57 @@ class ExtensionsSettings {
         return preferences.get(DEFAULT_EXTENSION_PREFIX + name, defaultExtension);
     }
 
-    public void setDefaultExtension(String value) {
+    public synchronized void setDefaultExtension(String value) {
+        if (!isKnownExtension(value)) {
+            ExtensionList current = getExtensionList();
+            current.addExtension(value);
+            setExtensionList(current);
+        }
         preferences.put(DEFAULT_EXTENSION_PREFIX + name, value);
     }
 
-    public List<String> getExtensionList() {
-        String extensions = preferences.get(EXTENSIONS_LIST_PREFIX + name, null); //NOI18N
-        if (extensions == null) {
-            return defaultExtensionsList;
-        } else {
-            return Arrays.asList(extensions.split(","));
+    public synchronized ExtensionList getExtensionList() {
+        if (savedExtensionsList == null) {
+            String extensions = preferences.get(EXTENSIONS_LIST_PREFIX + name, null); //NOI18N
+            if (extensions == null) {
+                savedExtensionsList = defaultExtensionsList;
+                return defaultExtensionsList;
+            } else {
+                ExtensionList l = new ExtensionList();
+                String[] e = extensions.split(",");
+                for (int i = 0; i < e.length; i++) {
+                    l.addExtension(e[i]);
+                }
+                savedExtensionsList = l;
+            }
         }
+        return savedExtensionsList;
     }
 
-    public void setExtensionList(List<String> value) {
+    public synchronized void setExtensionList(ExtensionList value) {
         String st = "";
-        for (String string : value) {
+        Enumeration<String> list = value.extensions();
+        while(list.hasMoreElements()) {
             if (st.length() > 0) {
                 st += ",";
             }
-            st += string;
+            st += list.nextElement();
         }
-
+        savedExtensionsList = value;
         preferences.put(EXTENSIONS_LIST_PREFIX + name, st);
     }
+
+    public boolean isKnownExtension(String ext) {
+        if (ext == null) {
+            return false;
+        }
+        Enumeration<String> list = getExtensionList().extensions();
+        while(list.hasMoreElements()) {
+            if (ext.equals(list.nextElement())) {
+                return true;
+            }
+        }
+        return false;
+    }
+    
 }

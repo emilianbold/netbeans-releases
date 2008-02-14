@@ -809,12 +809,17 @@ private void fireChangeEvent(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_
         if (currDir != null){
             setLastBrowsedDir(type, currDir.getAbsolutePath());
         }
-
+        
         if (file != null){
-            //ret = file.getAbsolutePath();
+            String absPath = file.getAbsolutePath();
             ret = FileSysUtil.Absolute2RelativePathStr(projDir, 
                     file.getAbsoluteFile());
-        }
+            if (ret == null){
+                //This can happen in Windows where Project and Files are in 
+                // different drives.
+                ret = absPath;
+            }
+        }        
 
         return ret;
     }

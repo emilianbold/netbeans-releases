@@ -85,7 +85,6 @@ import org.netbeans.modules.sun.manager.jbi.actions.StopAction;
 import org.netbeans.modules.sun.manager.jbi.actions.UndeployAction;
 import org.netbeans.modules.sun.manager.jbi.actions.UninstallAction;
 import org.netbeans.modules.sun.manager.jbi.actions.UpgradeAction;
-import org.netbeans.modules.sun.manager.jbi.nodes.property.OldSchemaBasedConfigPropertySupportFactory;
 import org.netbeans.modules.sun.manager.jbi.management.AppserverJBIMgmtController;
 import org.netbeans.modules.sun.manager.jbi.management.model.JBIComponentActionDescriptor;
 import org.netbeans.modules.sun.manager.jbi.management.JBIComponentType;
@@ -95,7 +94,6 @@ import org.netbeans.modules.sun.manager.jbi.management.model.JBIComponentConfigu
 import org.netbeans.modules.sun.manager.jbi.management.model.JBIComponentStatus;
 import org.netbeans.modules.sun.manager.jbi.management.wrapper.api.PerformanceMeasurementServiceWrapper;
 import org.netbeans.modules.sun.manager.jbi.management.wrapper.api.RuntimeManagementServiceWrapper;
-import org.netbeans.modules.sun.manager.jbi.nodes.property.JBIPropertySupportFactory;
 import org.netbeans.modules.sun.manager.jbi.nodes.property.NewSchemaBasedConfigPropertySupportFactory;
 import org.netbeans.modules.sun.manager.jbi.util.ComparableAttribute;
 import org.netbeans.modules.sun.manager.jbi.util.DoNotShowAgainConfirmation;
@@ -139,19 +137,15 @@ public abstract class JBIComponentNode extends AppserverJBIMgmtLeafNode
     private static final String ACTIONABLE_MBEAN_GET_ACTIONS_OPERATION_NAME = "getActions";
     private boolean busy;
     private JBIComponentType compType;
-    // Cached component configuration schema
-    private String configSchema; // REMOVE ME
     private JBIComponentConfigurationDescriptor rootConfigDescriptor;
-    // Whether the component's configuration schema has been checked or not. 
-    private boolean hasConfigSchemaBeenChecked;
+    // Whether the component's jbi.xml has been checked or not. 
+    private boolean hasJbiXmlBeenChecked;
     // This is not persistent across sessions.
     private static boolean confirmComponentUninstallation = true;
     // This is not persistent across sessions.
     private static boolean confirmComponentShutdownDuringUpgrade = true;
     // This is not persistent across sessions.
     private static boolean confirmForServiceAssembliesUndeployment = true;
-    // This is not persistent across sessions.
-    private static boolean confirmForComponentAutoStartForServiceAssembliesUndeployment = true;
     private static Logger logger = Logger.getLogger("org.netbeans.modules.sun.manager.jbi.nodes.JBIComponentNode"); // NOI18N
 
     public JBIComponentNode(final AppserverJBIMgmtController controller,
@@ -210,17 +204,12 @@ public abstract class JBIComponentNode extends AppserverJBIMgmtLeafNode
                     }
                 }
             }
-            if (isStarted) {
-                if (!hasConfigSchemaBeenChecked) {
-                    String compName = getName();
-//                    ConfigurationService configService = getConfigurationService();
-//                    configSchema = configService.retrieveConfigurationDisplaySchema(
-//                            compName, SERVER_TARGET);
-                    AdministrationService adminService = getAdministrationService();
-                    String jbiXml = adminService.getComponentInstallationDescriptor(compName);
-                    rootConfigDescriptor = JBIComponentConfigurationParser.parse(jbiXml);
-                    hasConfigSchemaBeenChecked = true;
-                }
+            if (isStarted && !hasJbiXmlBeenChecked) {
+                String compName = getName();
+                AdministrationService adminService = getAdministrationService();
+                String jbiXml = adminService.getComponentInstallationDescriptor(compName);
+                rootConfigDescriptor = JBIComponentConfigurationParser.parse(jbiXml);
+                hasJbiXmlBeenChecked = true;
             }
 
             Map<Attribute, ? extends MBeanAttributeInfo> configPropertyMap =
