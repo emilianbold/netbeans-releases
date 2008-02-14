@@ -46,8 +46,6 @@ import java.awt.Dialog;
 import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.ItemEvent;
-import java.awt.event.ItemListener;
 import java.awt.event.MouseEvent;
 import java.io.File;
 import java.text.Collator;
@@ -69,6 +67,7 @@ import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import org.netbeans.api.ruby.platform.RubyPlatform;
+import org.netbeans.modules.ruby.platform.PlatformComponentFactory;
 import org.netbeans.modules.ruby.platform.RubyPlatformCustomizer;
 import org.netbeans.modules.ruby.rubyproject.RubyProject;
 import org.netbeans.modules.ruby.rubyproject.SourceRoots;
@@ -90,7 +89,7 @@ public class CustomizerRun extends JPanel implements HelpCtx.Provider {
     private String[] keys;
     private Map<String/*|null*/,Map<String,String/*|null*/>/*|null*/> configs;
     RubyProjectProperties uiProperties;
-    private ItemListener platformListener;
+    private PlatformComponentFactory.PlatformChangeListener platformListener;
 
     public CustomizerRun(RubyProjectProperties uiProperties) {
         this.uiProperties = uiProperties;
@@ -193,18 +192,16 @@ public class CustomizerRun extends JPanel implements HelpCtx.Provider {
 
     public @Override void addNotify() {
         super.addNotify();
-        platformListener = new ItemListener() {
-            public void itemStateChanged(ItemEvent e) {
-                if (e.getStateChange() == ItemEvent.SELECTED) {
-                    uiProperties.setPlatform(((RubyPlatform) platforms.getSelectedItem()));
-                }
+        platformListener = new PlatformComponentFactory.PlatformChangeListener() {
+            public void platformChanged() {
+                uiProperties.setPlatform(((RubyPlatform) platforms.getSelectedItem()));
             }
         };
-        platforms.addItemListener(platformListener);
+        PlatformComponentFactory.addPlatformChangeListener(platforms, platformListener);
     }
     
     public @Override void removeNotify() {
-        platforms.removeItemListener(platformListener);
+        PlatformComponentFactory.removePlatformChangeListener(platforms, platformListener);
         super.removeNotify();
     }
     
