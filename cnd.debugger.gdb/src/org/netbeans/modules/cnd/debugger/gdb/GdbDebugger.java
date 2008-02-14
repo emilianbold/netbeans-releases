@@ -91,6 +91,7 @@ import org.openide.filesystems.FileUtil;
 import org.openide.modules.InstalledFileLocator;
 import org.openide.util.Utilities;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 import org.openide.windows.InputOutput;
 
 /**
@@ -166,6 +167,8 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
     private InputOutput iotab;
     private boolean firstOutput;
     private boolean dlopenPending;
+    private String lastShare;
+    private int shareToken;
         
     public GdbDebugger(ContextProvider lookupProvider) {
         this.lookupProvider = lookupProvider;
@@ -439,7 +442,11 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
     
     public void propertyChange(PropertyChangeEvent evt) {
         if (evt.getPropertyName().equals(PROP_STATE)) {
-            if (evt.getNewValue().equals(STATE_READY)) {
+            if (evt.getNewValue().equals(STATE_LOADING)) {
+                CommandBuffer cb = new CommandBuffer();
+                shareToken = gdb.info_share();
+                cb.setID(shareToken);
+            } else if (evt.getNewValue().equals(STATE_READY)) {
                 gdb.gdb_set("stop-on-solib-events", "1"); // NOI18N
                 if (continueAfterFirstStop) {
                     continueAfterFirstStop = false;
@@ -654,41 +661,6 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
         gdb.stack_list_frames();
     }
     
-    private void handleDlopen(List list) {
-        String fullname = null;
-        String line = null;
-        int lnum = -1;
-        boolean stop = false;
-        
-        for (Object o : list) {
-            if (o instanceof String) {
-                String frame = o.toString();
-                if (stop) {
-                    Map<String, String> map = GdbUtils.createMapFromString(frame.substring(6));
-                    if (!map.isEmpty()) {
-                        fullname = map.get("fullname"); // NOI18N
-                        line = map.get("line"); // NOI18N
-                        try {
-                            lnum = Integer.parseInt(line);
-                            line = String.valueOf(lnum + 1);
-                        } catch (NumberFormatException nfe) {
-                            log.warning("GD.handleDlopen: Failure to find line number");
-                            return;
-                        }
-                    }
-                } else if (frame.contains("func=\"dlopen\"")) {
-                    stop = true;
-                } else if (frame.contains("func=\"dlclose\"")) {
-                    gdb.exec_continue();
-                }
-            }
-        }
-        if (fullname != null && line != null) {
-            gdb.break_insert(GDB_TMP_BREAKPOINT, fullname + ':' + line);
-            gdb.exec_continue();
-        }
-    }
-    
     /** Handle geb responses starting with '^' */
     public void resultRecord(int token, String msg) {
         CommandBuffer cb;
@@ -702,9 +674,7 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
                 setRunning();
             }
         } else if (msg.startsWith("^done,stack=")) { // NOI18N (-stack-list-frames)
-            if (dlopenPending) {
-                handleDlopen(GdbUtils.createListFromString((msg.substring(13, msg.length() - 1))));
-            } else if (state.equals(STATE_STOPPED)) { // Ignore data if we've resumed running
+            if (state.equals(STATE_STOPPED)) { // Ignore data if we've resumed running
                 stackUpdate(GdbUtils.createListFromString((msg.substring(13, msg.length() - 1))));
             }
         } else if (msg.startsWith("^done,locals=")) { // NOI18N (-stack-list-locals)
@@ -750,6 +720,9 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
             cb = CommandBuffer.getCommandBuffer(itok);
             if (cb != null) {
                 cb.done();
+                if (token == shareToken) {
+                    lastShare = cb.toString();
+                }
             } else if (pendingBreakpointMap.get(itok) != null) {
                 breakpointValidation(token, null);
             }
@@ -891,7 +864,7 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
                     }
                 }
             }
-        } else if (msg.startsWith("Stopped due to shared library event") && !dlopenPending) { // NOI18N
+        } else if (msg.startsWith("Stopped due to shared library event")) { // NOI18N
             dlopenPending = true;
         }
     }
@@ -1223,7 +1196,7 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
                 setStopped();
                 if (dlopenPending) {
                     dlopenPending = false;
-                    firePropertyChange(PROP_SHARED_LIB_LOADED, null, null);
+                    checkSharedLibs(false);
                 }
                 GdbTimer.getTimer("Startup").stop("Startup1"); // NOI18N
                 GdbTimer.getTimer("Startup").report("Startup1"); // NOI18N
@@ -1265,17 +1238,42 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
                 }
             }
         } else if (dlopenPending) {
-            if (map.get("frame") != null) {
                 dlopenPending = false;
-                setStateNoFire(STATE_SILENT_STOP);
-                firePropertyChange(PROP_SHARED_LIB_LOADED, null, null);
-            } else {
-                gdb.stack_list_frames();
-            }
+                checkSharedLibs(true);
         } else {
             gdb.stack_list_frames();
             setStopped();
         }
+    }
+    
+    /**
+     * Compare the current set of shared libraries with the previous set. Run in a
+     * different thread because we're probably being called from the GdbReaderRP
+     * thread and CommandBuffer.waitForCompletion() doesn't work on that thread.
+     */
+    private void checkSharedLibs(final boolean continueRunning) {
+        final String last = lastShare;
+        RequestProcessor.getDefault().post(new Runnable() {
+            public void run() {
+                CommandBuffer cb = new CommandBuffer();
+                gdb.info_share(cb);
+                String share = cb.waitForCompletion();
+                if (share.length() > 0 && !share.equals(last)) {
+                    if (share.length() > last.length()) {
+                        // dlopened a shared library
+                        log.fine("GD.checkSharedLibs: Added a shared library");
+                        firePropertyChange(PROP_SHARED_LIB_LOADED, lastShare, share);
+                        lastShare = share;
+                    } else {
+                        // dlclosed a shared library
+                        log.fine("GD.checkSharedLibs: Closed a shared library");
+                    }
+                }
+                if (continueRunning) {
+                    gdb.exec_continue();
+                }
+            }
+        });
     }
     
     private void threadsViewInit() {

@@ -165,12 +165,18 @@ public class BreakpointsEngineListener extends LazyActionsManagerListener
 	}
     }
     
+    /**
+     * A breakpoint in a shared library would have failed at startup and would have an
+     * invalid validity. Go through all invalid breakpoints and update them. Any that are
+     * in the newly loaded shared library will correctly get set. Others will continue
+     * as invalid.
+     */
     private void sharedLibLoaded() {
         for (Breakpoint bp : DebuggerManager.getDebuggerManager().getBreakpoints()) {
             if (bp.getValidity() == Breakpoint.VALIDITY.INVALID) {
                 BreakpointImpl impl = breakpointToImpl.get(bp);
                 if (impl != null) {
-                    impl.setState(BreakpointImpl.BPSTATE_UNVALIDATED);
+                    impl.setState(BreakpointImpl.BPSTATE_REVALIDATE);
                     impl.update();
                 }
             }
