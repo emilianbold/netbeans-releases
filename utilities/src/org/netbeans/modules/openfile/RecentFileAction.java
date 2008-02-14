@@ -44,26 +44,20 @@ import java.awt.Component;
 import java.awt.Image;
 import java.awt.MouseInfo;
 import java.awt.Point;
-import java.awt.Robot;
 import java.awt.event.ActionEvent;
-import java.awt.peer.MenuPeer;
 import java.beans.BeanInfo;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.AbstractAction;
-import javax.swing.AbstractButton;
 import javax.swing.Action;
-import javax.swing.DefaultSingleSelectionModel;
 import javax.swing.ImageIcon;
 import javax.swing.ImageIcon;
 import javax.swing.JComponent;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
-import javax.swing.JPopupMenu;
 import javax.swing.MenuElement;
 import javax.swing.MenuSelectionManager;
-import javax.swing.SingleSelectionModel;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -71,7 +65,6 @@ import javax.swing.event.PopupMenuEvent;
 import javax.swing.event.PopupMenuListener;
 import org.netbeans.modules.openfile.RecentFiles.HistoryItem;
 import org.openide.awt.DynamicMenuContent;
-import org.openide.awt.MouseUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
@@ -236,15 +229,6 @@ public class RecentFileAction extends AbstractAction implements Presenter.Menu, 
         
         public UpdatingMenu (Action action) {
             super(action);
-            getPopupMenu().getSelectionModel().addChangeListener(new ChangeListener() {
-
-                public void stateChanged(ChangeEvent e) {
-                    System.out.println("selecting index to: " + e.toString());
-                    Thread.dumpStack();
-                    System.out.println("*******************************");
-                }
-            });
-
         }
     
         public JComponent[] getMenuPresenters() {
