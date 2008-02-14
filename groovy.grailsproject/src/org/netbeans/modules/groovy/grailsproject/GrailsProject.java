@@ -94,7 +94,7 @@ public final class GrailsProject implements Project {
                 projectState, //allow outside code to mark the project as needing saving
                 new Info(), //Project information implementation
                 new GrailsSources(projectDir),
-                new GrailsServerState(getProjectDirectory().getName()),
+                new GrailsServerState(this, getProjectDirectory().getName()),
                 new GrailsProjectCustomizerProvider(this),
                 new GrailsProjectDeleteImplementation(this),
                 new GrailsProjectEncodingQueryImpl(),

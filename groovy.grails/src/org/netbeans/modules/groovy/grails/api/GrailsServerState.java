@@ -32,6 +32,7 @@ import org.openide.util.Task;
 import org.openide.util.TaskListener;
 import java.util.logging.Logger;
 import java.util.logging.Level;
+import org.netbeans.api.project.Project;
 
 /**
  *
@@ -41,10 +42,12 @@ public class GrailsServerState implements TaskListener{
     private String name;
     private boolean running = false;
     Process process;
+    Project prj;
     private  final Logger LOG = Logger.getLogger(GrailsServerState.class.getName());
     
-    public GrailsServerState (String name){
+    public GrailsServerState (Project prj, String name){
         this.name = name;
+        this.prj = prj;
         }
 
     public boolean isRunning() {

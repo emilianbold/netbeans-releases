@@ -92,14 +92,20 @@ import org.openide.util.lookup.Lookups;
 public class GrailsLogicalViewProvider implements LogicalViewProvider {
     
     private final GrailsProject project;
+    GrailsLogicalViewRootNode rootNode = null;
        
     public GrailsLogicalViewProvider(GrailsProject project) {
         this.project = project;
         }
     
     public Node createLogicalView() {
-        return new GrailsLogicalViewRootNode();
+        if (rootNode == null){
+            rootNode = new GrailsLogicalViewRootNode();
+        }
+        
+        return rootNode;
     }
+    
     
     //==========================================================================
     
