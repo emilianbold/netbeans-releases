@@ -303,6 +303,7 @@ public final class JbiProject implements Project, AntProjectListener, ProjectPro
         };
         
         return Lookups.fixed(new Object[] {
+            this,
             new Info(),
             aux,
             helper.createCacheDirectoryProvider(),

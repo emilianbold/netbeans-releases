@@ -323,6 +323,31 @@ public final class ClassPathProviderImpl implements ClassPathProvider, PropertyC
         dirCache.remove(evt.getPropertyName());
     }
     
+    public String getPropertyName (final SourceRoots roots, final String type) {
+        if (roots.isTest()) {
+            if (ClassPath.COMPILE.equals(type)) {
+                return JAVAC_TEST_CLASSPATH;
+            }
+            else if (ClassPath.EXECUTE.equals(type)) {
+                return RUN_TEST_CLASSPATH;
+            }
+            else {
+                return null;
+            }
+        }
+        else {
+            if (ClassPath.COMPILE.equals(type)) {
+                return JAVAC_CLASSPATH;
+            }
+            else if (ClassPath.EXECUTE.equals(type)) {
+                return RUN_CLASSPATH;
+            }
+            else {
+                return null;
+            }
+        }
+    }
+    
     public String getPropertyName (SourceGroup sg, String type) {
         FileObject root = sg.getRootFolder();
         FileObject[] path = getPrimarySrcPath();
