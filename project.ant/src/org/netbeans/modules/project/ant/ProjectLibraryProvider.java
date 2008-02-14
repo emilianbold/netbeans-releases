@@ -96,6 +96,10 @@ public class ProjectLibraryProvider implements ArealLibraryProvider<ProjectLibra
     private AntProjectListener apl;
 
     public static ProjectLibraryProvider INSTANCE;
+    
+    private boolean listening = true;
+    private final Map<ProjectLibraryArea,Reference<LP>> providers = new HashMap<ProjectLibraryArea,Reference<LP>>();
+    
     /**
      * Default constructor for lookup.
      */
@@ -198,8 +202,6 @@ public class ProjectLibraryProvider implements ArealLibraryProvider<ProjectLibra
 
     // ---- management of libraries ----
 
-    private boolean listening = true;
-    private final Map<ProjectLibraryArea,Reference<LP>> providers = new HashMap<ProjectLibraryArea,Reference<LP>>();
 
     private final class LP implements LibraryProvider<ProjectLibraryImplementation>, FileChangeSupportListener {
 
@@ -463,7 +465,7 @@ public class ProjectLibraryProvider implements ArealLibraryProvider<ProjectLibra
         return libs;
     }
 
-    private synchronized boolean delta(Map<String,ProjectLibraryImplementation> libraries, Map<String,ProjectLibraryImplementation> newLibraries) {
+    private boolean delta(Map<String,ProjectLibraryImplementation> libraries, Map<String,ProjectLibraryImplementation> newLibraries) {
         if (!listening) {
             return false;
         }

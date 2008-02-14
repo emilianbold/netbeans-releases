@@ -38,7 +38,7 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.bpel.project.anttasks;
+package org.netbeans.modules.bpel.project.anttasks.cli;
 
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.Task;
@@ -51,19 +51,22 @@ import java.lang.reflect.Method;
  * Ant task wrapper which invokes the JBI Generation task
  * @author Sreenivasan Genipudi
  */
-public class GenerateJBIDescriptorTask extends org.apache.tools.ant.Task{
+public class CliGenerateCatalogTask extends Task {
+
     private String mSourceDirectory = null;
-    private String mBuildDirectory = null;    
-    private String mProjectClassPath= null;
+    private String mBuildDirectory = null;
+    private String mProjectClassPath = null;
     private AntClassLoader m_myClassLoader = null;
     private Reference m_ref = null;
 
-    public GenerateJBIDescriptorTask() {}
-    
+    public CliGenerateCatalogTask() {
+        // Does nothing
+    }
+
     public void setClasspathRef(Reference ref) {
         this.m_ref = ref;
     }
-    
+
     public void setBuildDirectory(String buildDir) {
         mBuildDirectory = buildDir;
     }
@@ -71,55 +74,49 @@ public class GenerateJBIDescriptorTask extends org.apache.tools.ant.Task{
     public void setSourceDirectory(String srcDir) {
         this.mSourceDirectory = srcDir;
     }
-    
+
     public String getSourceDirectory() {
         return this.mSourceDirectory;
     }
-    
+
     public void setProjectClassPath(String projectClassPath) {
         this.mProjectClassPath = projectClassPath;
     }
-        
-    public void execute() throws BuildException { 
+
+    @Override
+    public void execute() throws BuildException {
         try {
-            m_myClassLoader = new AntClassLoader(); 
+            m_myClassLoader = new AntClassLoader();
             initClassLoader();
-            Class antTaskClass =  Class.forName("org.netbeans.modules.bpel.project.anttasks.GenerateJBIDescriptor", true,m_myClassLoader );
+            Class antTaskClass = Class.forName("org.netbeans.modules.bpel.project.anttasks.cli.CliGenerateCatalogDelegate", true, m_myClassLoader);
             Thread.currentThread().setContextClassLoader(m_myClassLoader);
             Object genJBIInstObj = antTaskClass.newInstance();
-
-            Method driver = antTaskClass.getMethod("setBuildDirectory", new Class[] { java.lang.String.class });
-            Object[] param = new Object[] { this.mBuildDirectory};
-            driver.invoke(genJBIInstObj, param);
-                       
-            driver = antTaskClass.getMethod("setSourceDirectory", new Class[] { java.lang.String.class });
-            param = new Object[] { this.mSourceDirectory };
-            driver.invoke(genJBIInstObj, param);   
-                      
-            driver = antTaskClass.getMethod("setProjectClassPath", new Class[] { java.lang.String.class });
-            param = new Object[] { this.mProjectClassPath};
-            driver.invoke(genJBIInstObj, param);                          
-                    
-            driver = antTaskClass.getMethod("execute", null);
-            driver.invoke(genJBIInstObj, null);
-        }
-        catch (Exception e) {
-            throw new BuildException("Errors found");
+            
+            Method driver = antTaskClass.getMethod("setBuildDirectory", new Class[] {String.class});
+            driver.invoke(genJBIInstObj, new Object[] {this.mBuildDirectory});
+            
+            driver = antTaskClass.getMethod("setSourceDirectory", new Class[] {String.class});
+            driver.invoke(genJBIInstObj, new Object[] {this.mSourceDirectory});
+            
+            driver = antTaskClass.getMethod("execute", (Class[]) null);
+            driver.invoke(genJBIInstObj, (Object[]) null);
+        } catch (Exception e) {
+            throw new BuildException("Errors found.", e);
         }
     }
-    
+
     private void initClassLoader() {
         Path path = new Path(getProject());
         path.setRefid(m_ref);
-        
+
         Path parentPath = new Path(getProject());
         ClassLoader cl = this.getClass().getClassLoader();
         if (cl instanceof AntClassLoader) {
-            parentPath.setPath(((AntClassLoader)cl).getClasspath());
-            ((AntClassLoader)cl).setParent(null);
+            parentPath.setPath(((AntClassLoader) cl).getClasspath());
+            ((AntClassLoader) cl).setParent(null);
             parentPath.add(path);
             path = parentPath;
-        }        
+        }
         m_myClassLoader.setClassPath(path);
         m_myClassLoader.setParent(null);
         m_myClassLoader.setParentFirst(false);
