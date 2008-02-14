@@ -82,7 +82,6 @@ import org.netbeans.modules.spring.beans.editor.ContextUtilities;
 import org.netbeans.modules.spring.beans.editor.SpringXMLConfigEditorUtils;
 import org.netbeans.modules.spring.beans.editor.SpringXMLConfigEditorUtils.Public;
 import org.netbeans.modules.spring.beans.editor.SpringXMLConfigEditorUtils.Static;
-import org.netbeans.modules.spring.beans.loader.SpringXMLConfigDataLoader;
 import org.netbeans.modules.spring.beans.utils.StringUtils;
 import org.netbeans.spi.editor.completion.CompletionResultSet;
 import org.openide.filesystems.FileObject;
@@ -565,7 +564,7 @@ public final class CompletionManager {
             }, true);
         }
         
-        private void doSmartJavaCompletion(JavaSource js, final List<SpringXMLConfigCompletionItem> results, 
+        private void doSmartJavaCompletion(final JavaSource js, final List<SpringXMLConfigCompletionItem> results, 
                 final String typedPrefix, final int substitutionOffset) throws IOException {
             js.runUserActionTask(new Task<CompilationController>() {
 
@@ -580,12 +579,8 @@ public final class CompletionManager {
                             NameKind.CASE_INSENSITIVE_PREFIX, EnumSet.allOf(SearchScope.class));
                     for (ElementHandle<TypeElement> eh : matchingTypes) {
                         if (eh.getKind() == ElementKind.CLASS) {
-                            TypeElement typeElement = eh.resolve(cc);
-                            if (typeElement != null && isAccessibleClass(typeElement)) {
-                                SpringXMLConfigCompletionItem item = SpringXMLConfigCompletionItem.createTypeItem(substitutionOffset,
-                                        typeElement, eh, cc.getElements().isDeprecated(typeElement), true);
-                                results.add(item);
-                            }
+                            LazyTypeCompletionItem item = LazyTypeCompletionItem.create(substitutionOffset, eh, js);
+                            results.add(item);
                         }
                     }
                 }
