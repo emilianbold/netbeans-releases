@@ -38,6 +38,8 @@
  */
 package org.netbeans.modules.websvc.saas.util;
 
+import java.awt.Image;
+import java.beans.BeanInfo;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -402,4 +404,12 @@ public class SaasUtil {
         return sb.toString();
     }
     
+    public static String loadIcon(Saas saas, int type) {
+        String path = saas.getSaasMetadata().getIcon16();
+        if (type == BeanInfo.ICON_COLOR_32x32 || type == BeanInfo.ICON_MONO_32x32) {
+            path =  saas.getSaasMetadata().getIcon32();
+        }
+        return path;
+    }
 }
+

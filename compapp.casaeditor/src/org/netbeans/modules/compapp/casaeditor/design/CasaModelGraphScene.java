@@ -418,9 +418,11 @@ implements PropertyChangeListener, CasaValidationListener {
             } else if (regionWidget == mExternalRegion) {
                 layout = mExternalAutoLayout;
             }
-            layout.setIsAdjustingForOverlapOnly(isProgressive);
-            layout.setIsAnimating(isAnimating);
-            layout.invokeLayout();
+            if (layout != null) {
+                layout.setIsAdjustingForOverlapOnly(isProgressive);
+                layout.setIsAnimating(isAnimating);
+                layout.invokeLayout();
+            }
         }
         // trigger the layout to actually occur
         validate();
