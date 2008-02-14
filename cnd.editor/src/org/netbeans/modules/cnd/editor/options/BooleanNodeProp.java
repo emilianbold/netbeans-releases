@@ -40,32 +40,71 @@
 package org.netbeans.modules.cnd.editor.options;
 
 import java.util.prefs.Preferences;
-import javax.swing.JEditorPane;
 import org.netbeans.modules.cnd.editor.api.CodeStyle;
-import org.netbeans.spi.options.OptionsPanelController;
+import org.openide.nodes.PropertySupport;
 import org.openide.util.NbBundle;
 
-/**
- * 
- * @author Alexander Simon
- */
-public abstract class Category extends OptionsPanelController {
+public class BooleanNodeProp extends PropertySupport.ReadWrite<Boolean> {
 
-    private String displayName;
+    private final CodeStyle.Language language;
+    private final String optionID;
+    private Preferences preferences;
+    private boolean state;
 
-    public Category(String displayNameKey) {
-        super();
-        this.displayName = NbBundle.getMessage(EditorOptions.class, displayNameKey);
+    public BooleanNodeProp(CodeStyle.Language language, Preferences preferences, String optionID) {
+        super(optionID, Boolean.class, getString("LBL_" + optionID), getString("HINT_" + optionID));
+        this.language = language;
+        this.optionID = optionID;
+        this.preferences = preferences;
+        init();
     }
 
-    public abstract CodeStyle.Language getLanguage();
+    private static String getString(String key) {
+        return NbBundle.getMessage(BooleanNodeProp.class, key);
+    }
 
-    public abstract void storeTo(Preferences preferences);
+    private void init() {
+        state = getPreferences().getBoolean(optionID, (Boolean) EditorOptions.getDefault(optionID));
+    }
 
-    public abstract void refreshPreview(JEditorPane pane, Preferences p);
+    private Preferences getPreferences() {
+        Preferences node = preferences;
+        if (node == null) {
+            node = EditorOptions.getPreferences(language, EditorOptions.getCurrentProfileId(language));
+        }
+        return node;
+    }
 
     @Override
-    public String toString() {
-        return displayName;
+    public String getHtmlDisplayName() {
+        if (isDefaultValue()) {
+            return "<b>" + getDisplayName();
+        }
+        return null;
+    }
+
+    @Override
+    public Boolean getValue() {
+        return new Boolean(state);
+    }
+
+    public void setValue(Boolean v) {
+        state = v;
+        getPreferences().putBoolean(optionID, state);
+    }
+
+    @Override
+    public void restoreDefaultValue() {
+        state = (Boolean) EditorOptions.getDefault(optionID);
+    }
+
+    @Override
+    public boolean supportsDefaultValue() {
+        return true;
+    }
+
+    @Override
+    public boolean isDefaultValue() {
+        return !EditorOptions.getDefault(optionID).equals(getValue());
     }
 }
