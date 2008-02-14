@@ -82,7 +82,14 @@ public class CommandBuffer {
         lock = new Object();
     }
     
+    /**
+     * Block waiting for the command to complete. Can't be called on the GdbReaderRP
+     * thread because thats where the command input gets read.
+     * 
+     * @return The response from a gdb command
+     */
     public String waitForCompletion() {
+        assert !Thread.currentThread().getName().equals("GdbReaderRP");
         synchronized (lock) {
             if (state == STATE_NONE) {
                 state = STATE_WAITING; // this will change unless we timeout

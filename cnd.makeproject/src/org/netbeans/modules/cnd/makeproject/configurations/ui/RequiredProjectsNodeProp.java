@@ -52,14 +52,14 @@ import org.openide.explorer.propertysheet.ExPropertyEditor;
 import org.openide.explorer.propertysheet.PropertyEnv;
 import org.openide.nodes.PropertySupport;
 
-public class ProjectsNodeProp extends PropertySupport {
+public class RequiredProjectsNodeProp extends PropertySupport {
     private VectorConfiguration vectorConfiguration;
     Project project;
     MakeConfiguration conf;
     String baseDir;
     String[] texts;
     
-    public ProjectsNodeProp(VectorConfiguration vectorConfiguration, Project project, MakeConfiguration conf, String baseDir, String[] texts) {
+    public RequiredProjectsNodeProp(VectorConfiguration vectorConfiguration, Project project, MakeConfiguration conf, String baseDir, String[] texts) {
         super(texts[0], List.class, texts[1], texts[2], true, true);
         this.vectorConfiguration = vectorConfiguration;
 	this.project = project;
@@ -138,7 +138,7 @@ public class ProjectsNodeProp extends PropertySupport {
         
         @Override
         public java.awt.Component getCustomEditor() {
-            return new ProjectsPanel(project, conf, baseDir, value.toArray(), this, env);
+            return new RequiredProjectsPanel(project, conf, baseDir, value.toArray(), this, env);
         }
         
         @Override
