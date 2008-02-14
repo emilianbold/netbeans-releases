@@ -699,6 +699,20 @@ public class JarClassLoader extends ProxyClassLoader {
             String jar = url.substring(0, bang);
             String _name = url.substring(bang+2);
             Source _src = Source.sources.get(jar);
+            if (_src == null) {
+                String replace = u.toExternalForm().replaceAll("nbjcl", "jar");
+                
+                if (archive.isActive()) {
+                    LOGGER.log(Level.WARNING, "Cannot find {0} in current sources", jar);
+                    if (LOGGER.isLoggable(Level.FINER)) {
+                        LOGGER.log(Level.FINER, dumpSources(Source.sources, jar));
+                    }
+                    LOGGER.log(Level.WARNING, "Trying {0} instead", replace);
+                    LOGGER.log(Level.WARNING, "Disabling class cache");
+                    archive.stopServing();
+                }
+                return new URL(replace).openConnection();
+            }
             return new ResURLConnection (u, _src, _name);
         }
 
@@ -739,6 +753,16 @@ public class JarClassLoader extends ProxyClassLoader {
                 file = toBangSlash + afterBangSlash;
             }
             setURLOK(url, file, ref);	
+        }
+
+        private static String dumpSources(Map<String, Source> sources, String jar) {
+            StringBuilder sb = new StringBuilder();
+            sb.append("Searching for ").append(jar).append("\nwhile available:\n");
+            for (Map.Entry<String, Source> entry : sources.entrySet()) {
+                sb.append(entry.getKey()).append('\n');
+            }
+            
+            return sb.toString();
         }
         
         @SuppressWarnings("deprecation")

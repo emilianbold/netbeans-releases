@@ -62,8 +62,8 @@ import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.ReferenceHelper;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.spi.project.support.ant.EditableProperties;
-import org.netbeans.modules.j2ee.clientproject.UpdateHelper;
 import org.netbeans.modules.j2ee.clientproject.ui.customizer.AntArtifactChooser;
+import org.netbeans.modules.java.api.common.ant.UpdateHelper;
 import org.openide.util.Exceptions;
 import org.openide.util.RequestProcessor;
 

@@ -137,7 +137,7 @@ public final class SharableLibrariesUtils {
      * @param ref
      * @param libraryNames
      * @param jarReferences
-     * @return
+     * @return true is migration was performed, false when aborted.
      */
     public static boolean showMakeSharableWizard(final AntProjectHelper helper, ReferenceHelper ref, List<String> libraryNames, List<String> jarReferences) {
 
@@ -295,8 +295,12 @@ public final class SharableLibrariesUtils {
                 newVal = absFile.getAbsolutePath();
             }
             if (main) {
+                // mkleint: why isn't there a way to set the reference, but one always have to create it
+                // creating will create a unique key..
+                refhelper.destroyReference(key);
                 refhelper.createForeignFileReferenceAsIs(newVal, key);
             } else {
+                refhelper.destroyReference(key);
                 refhelper.createExtraForeignFileReferenceAsIs(newVal, key);
             }
         }

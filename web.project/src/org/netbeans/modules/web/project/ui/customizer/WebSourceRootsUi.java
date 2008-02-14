@@ -64,7 +64,7 @@ import org.netbeans.modules.web.project.WebProject;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
-import org.netbeans.modules.web.project.SourceRoots;
+import org.netbeans.modules.java.api.common.SourceRoots;
 import org.openide.DialogDisplayer;
 import org.openide.DialogDescriptor;
 import org.openide.filesystems.FileUtil;

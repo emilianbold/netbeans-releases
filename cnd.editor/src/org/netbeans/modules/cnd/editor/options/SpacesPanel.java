@@ -37,7 +37,7 @@ import org.openide.util.NbBundle;
  */
 public class SpacesPanel extends JPanel implements TreeCellRenderer, MouseListener, KeyListener {
 
-    private static MyCategorySupport controller;
+    private MyCategorySupport controller;
     private DefaultTreeModel model;
     private CodeStyle.Language language;
     private DefaultTreeCellRenderer dr = new DefaultTreeCellRenderer();    
@@ -48,6 +48,9 @@ public class SpacesPanel extends JPanel implements TreeCellRenderer, MouseListen
     public SpacesPanel(CodeStyle.Language language) {
         initComponents();
         this.language = language;
+    }
+
+    private void initModel(){
         model = createModel();
         spaceTree.setModel(model);
         spaceTree.setRootVisible(false);
@@ -66,7 +69,7 @@ public class SpacesPanel extends JPanel implements TreeCellRenderer, MouseListen
             spaceTree.expandRow(i);
         }
     }
-
+    
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
@@ -240,15 +243,17 @@ public class SpacesPanel extends JPanel implements TreeCellRenderer, MouseListen
     }
 
     public static Category getController(CodeStyle.Language language) {
-        if (controller == null ) {
-            Map<String,Object> force = new HashMap<String,Object>();
-            controller =  new MyCategorySupport(
+        Map<String, Object> force = new HashMap<String, Object>();
+        SpacesPanel panel = new SpacesPanel(language);
+        MyCategorySupport controller = new MyCategorySupport(
                 language,
                 "LBL_Spaces", // NOI18N
-                new SpacesPanel(language), // NOI18N
+                panel, // NOI18N
                 NbBundle.getMessage(SpacesPanel.class, "SAMPLE_Spaces"),
                 force);
-        }
+        panel.controller = controller;
+        panel.initModel();
+        controller.update();
         return controller;
     }
 
@@ -274,7 +279,6 @@ public class SpacesPanel extends JPanel implements TreeCellRenderer, MouseListen
                 String nameKey, JPanel panel, String previewText, Map<String, Object> forcedOptions) {
             super(language, nameKey, panel, previewText,forcedOptions );
             this.panel = (SpacesPanel) getComponent(null); 
-            update();
         }
         @Override
         protected void addListeners() {

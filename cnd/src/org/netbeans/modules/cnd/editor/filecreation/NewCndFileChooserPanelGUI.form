@@ -72,6 +72,7 @@
         </Component>
         <Component class="javax.swing.JComboBox" name="cbExtension">
           <Properties>
+            <Property name="editable" type="boolean" value="true"/>
             <Property name="model" type="javax.swing.ComboBoxModel" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
               <Connection code="getExtensionsCBModel()" type="code"/>
             </Property>

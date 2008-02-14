@@ -46,6 +46,7 @@ import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
@@ -116,6 +117,10 @@ public class HgUtils {
     // IGNORE SUPPORT HG: following file patterns are added to {Hg repos}/.hgignore and Hg will ignore any files
     // that match these patterns, reporting "I"status for them // NOI18N
     private static final String [] HG_IGNORE_FILES = { "\\.orig$", "\\.orig\\..*$", "\\.chg\\..*$", "\\.rej$"}; // NOI18N
+    private static final String HG_IGNORE_ORIG_FILES = "\\.orig$"; // NOI18N
+    private static final String HG_IGNORE_ORIG_ANY_FILES = "\\.orig\\..*$"; // NOI18N
+    private static final String HG_IGNORE_CHG_ANY_FILES = "\\.chg\\..*$"; // NOI18N
+    private static final String HG_IGNORE_REJ_ANY_FILES = "\\.rej$"; // NOI18N
     
     private static final String FILENAME_HGIGNORE = ".hgignore"; // NOI18N
 
@@ -358,28 +363,107 @@ public class HgUtils {
         File root = hg.getTopmostManagedParent(path);
         if( root == null) return;
         File ignore = new File(root, FILENAME_HGIGNORE);
-        if (ignore.exists()) {
-            if (!confirmDialog(HgUtils.class, "MSG_IGNORE_FILES_TITLE", "MSG_IGNORE_FILES")) { // NOI18N 
-                return;
-            }
-        }
-           
+        
         try     {
-            fileWriter = new BufferedWriter(
-                    new OutputStreamWriter(new FileOutputStream(ignore, true)));
-            for (String name : HG_IGNORE_FILES) {
-                fileWriter.write(name + "\n"); // NOI18N
+            if (!ignore.exists()) {
+                fileWriter = new BufferedWriter(
+                        new OutputStreamWriter(new FileOutputStream(ignore)));
+                for (String name : HG_IGNORE_FILES) {
+                    fileWriter.write(name + "\n"); // NOI18N
+                }
+            }else{
+                addToExistingIgnoredFile(ignore);
             }
         } catch (IOException ex) {
             Mercurial.LOG.log(Level.FINE, "createIgnored(): File {0} - {1}",  // NOI18N
                     new Object[] {ignore.getAbsolutePath(), ex.toString()});
         }finally {
             try {
-                fileWriter.close();
+                if(fileWriter != null) fileWriter.close();
                 hg.getFileStatusCache().refresh(ignore, FileStatusCache.REPOSITORY_STATUS_UNKNOWN);
             } catch (IOException ex) {
                 Mercurial.LOG.log(Level.FINE, "createIgnored(): File {0} - {1}",  // NOI18N
                         new Object[] {ignore.getAbsolutePath(), ex.toString()});
+            }
+        }
+    }
+    
+    private static int HG_NUM_PATTERNS_TO_CHECK = 4;
+    private static void addToExistingIgnoredFile(File hgignoreFile) {
+        if(hgignoreFile == null || !hgignoreFile.exists() || !hgignoreFile.canWrite()) return;
+        File tempFile = null;
+        BufferedReader br = null;
+        PrintWriter pw = null;
+        boolean bOrigAnyPresent = false;
+        boolean bOrigPresent = false;
+        boolean bChgAnyPresent = false;
+        boolean bRejAnyPresent = false;
+        
+        // If new patterns are added to HG_IGNORE_FILES, following code needs to
+        // check for these new patterns
+        assert( HG_IGNORE_FILES.length == HG_NUM_PATTERNS_TO_CHECK);
+        
+        try {
+            tempFile = new File(hgignoreFile.getAbsolutePath() + ".tmp"); // NOI18N
+            if (tempFile == null) return;
+            
+            br = new BufferedReader(new FileReader(hgignoreFile));
+            pw = new PrintWriter(new FileWriter(tempFile));
+
+            String line = null;            
+            while ((line = br.readLine()) != null) {
+                if(!bOrigAnyPresent && line.equals(HG_IGNORE_ORIG_ANY_FILES)){
+                    bOrigAnyPresent = true;
+                }else if (!bOrigPresent && line.equals(HG_IGNORE_ORIG_FILES)){
+                    bOrigPresent = true;
+                }else if (!bChgAnyPresent && line.equals(HG_IGNORE_CHG_ANY_FILES)){
+                    bChgAnyPresent = true;
+                }else if (!bRejAnyPresent && line.equals(HG_IGNORE_REJ_ANY_FILES)){
+                    bRejAnyPresent = true;
+                }
+                pw.println(line);
+                pw.flush();
+            }
+            // If not found add as required
+            if (!bOrigAnyPresent) {
+                pw.println(HG_IGNORE_ORIG_ANY_FILES );
+                pw.flush();
+            }
+            if (!bOrigPresent) {
+                pw.println(HG_IGNORE_ORIG_FILES );
+                pw.flush();
+            }
+            if (!bChgAnyPresent) {
+                pw.println(HG_IGNORE_CHG_ANY_FILES );
+                pw.flush();
+            }
+            if (!bRejAnyPresent) {
+                pw.println(HG_IGNORE_REJ_ANY_FILES );
+                pw.flush();
+            }     
+            
+        } catch (IOException ex) {
+            // Ignore
+        } finally {
+            try {
+                if(pw != null) pw.close();
+                if(br != null) br.close();
+
+                boolean bAnyAdditions = !bOrigAnyPresent || !bOrigPresent  || !bChgAnyPresent || !bRejAnyPresent;               
+                if(bAnyAdditions){
+                    if (!confirmDialog(HgUtils.class, "MSG_IGNORE_FILES_TITLE", "MSG_IGNORE_FILES")) { // NOI18N 
+                        tempFile.delete();
+                        return;
+                    }
+                    if(tempFile != null && tempFile.isFile() && tempFile.canWrite() && hgignoreFile != null){ 
+                        hgignoreFile.delete();
+                        tempFile.renameTo(hgignoreFile);
+                    }
+                }else{
+                    tempFile.delete();
+                }
+            } catch (IOException ex) {
+            // Ignore
             }
         }
     }

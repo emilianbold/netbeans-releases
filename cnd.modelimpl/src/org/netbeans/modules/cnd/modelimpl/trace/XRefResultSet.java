@@ -107,7 +107,7 @@ public final class XRefResultSet {
         int val = scopes.get(contextScope);
         scopes.put(contextScope, ++val);
     }
-
+    
     public final int getNumberOfAllContexts() {
         int out = 0;
         for (int val : scopes.values()) {
@@ -175,17 +175,28 @@ public final class XRefResultSet {
         UNRESOLVED,
     }
     
+    public enum UsageStatistics {
+        FIRST_USAGE,
+        SECOND_USAGE,
+        NEXT_USAGE,
+        UNKNOWN,
+    }
+    
     public static final class ContextEntry {
         public final DeclarationKind declaration;
         public final DeclarationScope declarationScope;
         public final IncludeLevel declarationIncludeLevel;
-
-        public final static ContextEntry UNRESOLVED = new ContextEntry(DeclarationKind.UNRESOLVED, DeclarationScope.UNRESOLVED, IncludeLevel.UNRESOLVED);
+        public final UsageStatistics usageStatistics;
         
-        public ContextEntry(DeclarationKind declaration, DeclarationScope declarationScope, IncludeLevel declarationIncludeLevel) {
+        public final static ContextEntry UNRESOLVED = new ContextEntry(DeclarationKind.UNRESOLVED, DeclarationScope.UNRESOLVED, 
+                IncludeLevel.UNRESOLVED, UsageStatistics.UNKNOWN);
+        
+        public ContextEntry(DeclarationKind declaration, DeclarationScope declarationScope, 
+                IncludeLevel declarationIncludeLevel, UsageStatistics usageStatistics) {
             this.declaration = declaration;
             this.declarationScope = declarationScope;
             this.declarationIncludeLevel = declarationIncludeLevel;
+            this.usageStatistics = usageStatistics;
         }
     }
     
