@@ -38,6 +38,7 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.StringTokenizer;
 import java.util.TreeMap;
+import java.util.regex.Matcher;
 import java.util.zip.CRC32;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
@@ -101,6 +102,31 @@ public class ProjectLibraryProviderTest extends NbTestCase {
         base = getWorkDir().toURI().toURL();
         ProjectLibraryProvider.FIRE_CHANGES_SYNCH = true;
         registerTestLibraryTypeProvider();
+    }
+    
+    
+    public void testPatternMatching() throws Exception {
+        Matcher matcher = ProjectLibraryProvider.LIBS_LINE.matcher("libs.grapht.classpath");
+        assertTrue(matcher.matches());
+        assertEquals(matcher.group(2), "classpath");
+        matcher = ProjectLibraryProvider.LIBS_LINE.matcher("libs.grapht_1_0.classpath");
+        assertTrue(matcher.matches());
+        assertEquals(matcher.group(2), "classpath");
+        matcher = ProjectLibraryProvider.LIBS_LINE.matcher("libs.grapht_1_0.classpath2");
+        assertTrue(matcher.matches());
+        assertEquals(matcher.group(2), "classpath2");
+        matcher = ProjectLibraryProvider.LIBS_LINE.matcher("libs.grapht_1_0.classpath_1");
+        assertTrue(matcher.matches());
+        assertEquals(matcher.group(2), "classpath_1");
+        matcher = ProjectLibraryProvider.LIBS_LINE.matcher("libs.grapht-1.0.classpath");
+        assertTrue(matcher.matches());
+        assertEquals(matcher.group(2), "classpath");
+        matcher = ProjectLibraryProvider.LIBS_LINE.matcher("libs.grapht-1.0.classpath_1");
+        assertTrue(matcher.matches());
+        assertEquals(matcher.group(2), "classpath_1");
+        matcher = ProjectLibraryProvider.LIBS_LINE.matcher("libs.grapht-1.0.1-classpath");
+        assertTrue(matcher.matches());
+        assertEquals(matcher.group(2), "1-classpath");
     }
 
     // XXX test name/type/description
