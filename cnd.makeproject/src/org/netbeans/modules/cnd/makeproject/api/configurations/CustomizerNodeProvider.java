@@ -39,61 +39,13 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.cnd.makeproject.runprofiles;
+package org.netbeans.modules.cnd.makeproject.api.configurations;
 
-import java.util.ResourceBundle;
-import org.netbeans.api.project.Project;
-import org.netbeans.modules.cnd.makeproject.api.configurations.Configuration;
-import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptor;
-import org.netbeans.modules.cnd.makeproject.api.configurations.CustomizerNodeProvider;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ui.CustomizerNode;
-import org.netbeans.modules.cnd.makeproject.api.runprofiles.RunProfile;
-import org.openide.nodes.Sheet;
-import org.openide.util.HelpCtx;
-import org.openide.util.NbBundle;
 
-public class RunProfileNodeProvider implements CustomizerNodeProvider {
-    
+public interface CustomizerNodeProvider {
     /**
-     * Creates an instance of a customizer node
+     * Creates an instance of CustomizerNode node
      */
-    private CustomizerNode customizerNode = null;
-    
-    public CustomizerNode factoryCreate() {
-        if (customizerNode == null)
-            customizerNode = createProfileNode();
-	return customizerNode;
-    }
-    
-    public CustomizerNode createProfileNode() {
-            return new RunProfileCustomizerNode(
-                "Run", // NOI18N
-                getString("RUNNING"),
-                null);
-    }
-
-    class RunProfileCustomizerNode extends CustomizerNode {
-	public RunProfileCustomizerNode(String name, String displayName, CustomizerNode[] children) {
-	    super(name, displayName, children);
-	}
-
-	public Sheet getSheet(Project project, ConfigurationDescriptor configurationDescriptor, Configuration configuration) {
-	    RunProfile runProfile = (RunProfile) configuration.getAuxObject(RunProfile.PROFILE_ID);
-	    return runProfile != null ? runProfile.getSheet() : null;
-	    //return configurationDescriptor.getSheet(project, configuration);
-	}
-        
-        public HelpCtx getHelpCtx() {
-            return new HelpCtx("ProjectPropsRunning"); // NOI18N
-        }
-    }
-    
-    /** Look up i18n strings here */
-    private ResourceBundle bundle;
-    protected String getString(String s) {
-	if (bundle == null) {
-	    bundle = NbBundle.getBundle(RunProfileNodeProvider.class);
-	}
-	return bundle.getString(s);
-    }
+    public CustomizerNode factoryCreate();
 }
