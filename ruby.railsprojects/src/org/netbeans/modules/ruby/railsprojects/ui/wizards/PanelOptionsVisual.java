@@ -70,6 +70,7 @@ public class PanelOptionsVisual extends SettingsPanel implements ActionListener,
         PlatformComponentFactory.addPlatformChangeListener(platforms, new PlatformComponentFactory.PlatformChangeListener() {
             public void platformChanged() {
                 fireChangeEvent();
+                initServerComboBox();
             }
         });
 
