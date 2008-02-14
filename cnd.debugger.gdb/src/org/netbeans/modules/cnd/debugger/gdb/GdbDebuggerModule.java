@@ -57,26 +57,24 @@ import org.netbeans.api.debugger.DebuggerManager;
  */
 public class GdbDebuggerModule extends ModuleInstall {
     
-    private CustomizerNode debugCustomizerNode;
-    
     @Override
     public void restored() {
-//        // Profiles
-//        // Moved to services
+        // Moved to services...
+        // Profiles
 //        debugCustomizerNode = new ProfileNodeProvider().createDebugNode();
 //        CustomizerRootNodeProvider.getInstance().addCustomizerNode(debugCustomizerNode);
 
         // Set project action handler
-        DefaultProjectActionHandler.getInstance().setCustomDebugActionHandlerProvider(
-                    new GdbActionHandlerProvider());  
+//        DefaultProjectActionHandler.getInstance().setCustomDebugActionHandlerProvider(
+//                    new GdbActionHandlerProvider());  
     }
 
     @Override
     public void uninstalled() {
+        // Moved to services...
         // Profiles
-        // Moved to services
 //        CustomizerRootNodeProvider.getInstance().removeCustomizerNode(debugCustomizerNode);
-        DefaultProjectActionHandler.getInstance().setCustomDebugActionHandlerProvider(null);
+//        DefaultProjectActionHandler.getInstance().setCustomDebugActionHandlerProvider(null);
     }
     
     @Override
