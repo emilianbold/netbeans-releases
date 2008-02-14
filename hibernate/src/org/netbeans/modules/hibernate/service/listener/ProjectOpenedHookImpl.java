@@ -39,13 +39,8 @@
 
 package org.netbeans.modules.hibernate.service.listener;
 
-import java.util.ArrayList;
-import java.util.Enumeration;
-import java.util.List;
 import org.netbeans.api.project.Project;
-import org.netbeans.spi.project.support.ProjectOperations;
 import org.netbeans.spi.project.ui.ProjectOpenedHook;
-import org.openide.filesystems.FileObject;
 
 /**
  * Class that listens for (global) project open/close operations and 

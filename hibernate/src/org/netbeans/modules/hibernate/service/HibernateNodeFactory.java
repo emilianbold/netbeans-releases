@@ -36,7 +36,6 @@
  * 
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.hibernate.service;
 
 import java.awt.Image;
@@ -63,50 +62,47 @@ import org.openide.util.HelpCtx;
  * 
  * @author Vadiraj Deshpande (Vadiraj.Deshpande@Sun.COM)
  */
-public class HibernateNodeFactory implements NodeFactory{
+public class HibernateNodeFactory implements NodeFactory {
 
     public NodeList<?> createNodes(Project project) {
-        System.out.println(" creating nodes ...");
-     //   return NodeFactorySupport.fixedNodeList(new AbstractNode(Children.LEAF));
-                 ArrayList<FileObject> files = new ArrayList<FileObject>();        
-        System.out.println("start2 : " + java.util.Calendar.getInstance().getTimeInMillis());
+        ArrayList<FileObject> files = new ArrayList<FileObject>();
         List<FileObject> cLists = ProjectOperations.getDataFiles(project);
-        for(FileObject c : cLists) {
-            if(c.isFolder() && c.getName().equals("src")) {
+        for (FileObject c : cLists) {
+            if (c.isFolder() && c.getName().equals("src")) {
 
                 FileObject[] foc = c.getChildren();
-                for(FileObject foc2 : foc) {
-                    if(foc2.isFolder() && foc2.getName().equals("java")) {
+                for (FileObject foc2 : foc) {
+                    if (foc2.isFolder() && foc2.getName().equals("java")) {
                         FileObject[] foc3 = foc2.getChildren();
-                        for(FileObject foc4 : foc3) {
-                            if(!foc4.isFolder() && foc4.getNameExt().endsWith("cfg.xml")) {
+                        for (FileObject foc4 : foc3) {
+                            if (!foc4.isFolder() && foc4.getNameExt().endsWith("cfg.xml")) {
                                 files.add(foc4);
                             }
                         }
                     }
-                    if(!foc2.isFolder() && foc2.getNameExt().endsWith("cfg.xml")) {
+                    if (!foc2.isFolder() && foc2.getNameExt().endsWith("cfg.xml")) {
                         files.add(foc2);
                     }
                 }
             }
-            System.out.println("c " + c);
+
         }
-        System.out.println("end2 : " + java.util.Calendar.getInstance().getTimeInMillis());
-        System.out.println(" Files " + files);
+
         ArrayList<Node> nodes = new ArrayList<Node>();
-        for(FileObject fo : files) {
+        for (FileObject fo : files) {
             try {
                 DataObject dataObject = DataObject.find(fo);
                 nodes.add(dataObject.getNodeDelegate());
             } catch (DataObjectNotFoundException ex) {
                 Exceptions.printStackTrace(ex);
             }
-            
+
         }
         final Children children = new Children.Array();
         children.add(nodes.toArray(new Node[]{}));
-        class HibernateRootNode extends AbstractNode{
-            public HibernateRootNode(){
+        class HibernateRootNode extends AbstractNode {
+
+            public HibernateRootNode() {
                 super(children);
             }
 
@@ -124,11 +120,8 @@ public class HibernateNodeFactory implements NodeFactory{
             public String getHtmlDisplayName() {
                 return "Hibernate";
             }
-            
-            
         }
         AbstractNode hibernateNode = new HibernateRootNode();
         return NodeFactorySupport.fixedNodeList(new Node[]{hibernateNode});
     }
-
 }
