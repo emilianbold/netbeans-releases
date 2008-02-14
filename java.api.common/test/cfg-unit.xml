@@ -39,6 +39,17 @@ Contributor(s):
 Portions Copyrighted 2007 Sun Microsystems, Inc.
 -->
 
-<project name="java/commonapi/test-unit" basedir="." default="all">
-    <import file="../../../nbbuild/templates/xtest-unit.xml"/>
-</project>
+<mconfig name="java/api/common">
+
+    <testbag testattribs="stable" executor="unit-executor" name="java/api/common">
+        <testset dir="unit/src">
+            <patternset>
+                <include name="**/*Test.class"/>
+            </patternset>
+        </testset>
+    </testbag>
+
+    <compiler name="default-compiler" antfile="build-unit.xml" target="default-compiler" default="true"/>
+    <executor name="unit-executor" antfile="build-unit.xml" target="run-unit-test"/>
+
+</mconfig>
