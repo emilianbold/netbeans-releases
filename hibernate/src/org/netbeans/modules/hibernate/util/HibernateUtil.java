@@ -42,9 +42,16 @@ package org.netbeans.modules.hibernate.util;
 
 import java.util.ArrayList;
 
+import java.util.Enumeration;
 import org.hibernate.cfg.Configuration;
+import org.netbeans.api.java.project.JavaProjectConstants;
+import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.api.project.SourceGroup;
+import org.netbeans.api.project.Sources;
 import org.netbeans.modules.hibernate.cfg.model.HibernateConfiguration;
 import org.netbeans.modules.hibernate.cfg.model.SessionFactory;
+import org.openide.filesystems.FileObject;
 
 /**
  * This class provides utility methods using Hibernate API to query database
@@ -79,6 +86,23 @@ public class HibernateUtil {
             }
         }
         return allTables;
+    }
+    
+    public static ArrayList<FileObject> getAllHibernateConfigurations(Project project) {
+        ArrayList<FileObject> configFiles = new ArrayList<FileObject>();
+        Sources projectSources = ProjectUtils.getSources(project);
+        SourceGroup[] javaSourceGroup = projectSources.getSourceGroups(
+                JavaProjectConstants.SOURCES_TYPE_JAVA
+                );
+        for(SourceGroup sourceGroup : javaSourceGroup) {
+            FileObject root = sourceGroup.getRootFolder();
+            Enumeration<? extends FileObject> enumeration = root.getChildren(true);
+            while(enumeration.hasMoreElements()) {
+                FileObject fo = enumeration.nextElement();
+                System.out.println("File object name " + fo.getNameExt());
+            }
+        }
+        return configFiles;
     }
 
     private static Configuration getHibConfiguration(HibernateConfiguration configuration) {

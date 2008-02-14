@@ -46,8 +46,19 @@ import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
+import java.util.Enumeration;
 import java.util.Properties;
+import org.netbeans.api.java.project.JavaProjectConstants;
+import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectManager;
+import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.api.project.SourceGroup;
+import org.netbeans.api.project.Sources;
+import org.netbeans.modules.project.uiapi.ProjectOpenedTrampoline;
+import org.netbeans.spi.project.ui.ProjectOpenedHook;
 import org.openide.execution.NbProcessDescriptor;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 
 /**
@@ -212,5 +223,45 @@ public class Util {
             Exceptions.printStackTrace(ex);
         }
         return false;
+    }
+    
+    public static void getFiles(File projFolder) {
+        try {
+            FileObject pfo = FileUtil.toFileObject(projFolder);
+
+//            for(FileObject fc1 : pfo.getChildren()) {
+//                if(fc1 != null && fc1.isFolder() && fc1.getName().equals("src")) {
+//                    Enumeration<? extends FileObject> enumeration = fc1.getData(true);
+//                    while(enumeration.hasMoreElements()) {
+//                        FileObject fo = enumeration.nextElement();
+//                        System.out.println(" File object " + fo.getNameExt());
+//                    }
+//                }
+//            }
+            Project project = ProjectManager.getDefault().findProject(pfo);
+             //open the project here !!
+              openProject(project);       
+            Sources projectSources = ProjectUtils.getSources(project);
+            SourceGroup[] javaSourceGroup = projectSources.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
+            for (SourceGroup sourceGroup : javaSourceGroup) {
+                FileObject root = sourceGroup.getRootFolder();
+                Enumeration<? extends FileObject> enumeration = root.getChildren(true);
+                while (enumeration.hasMoreElements()) {
+                    FileObject fo = enumeration.nextElement();
+                    System.out.println("File object name " + fo.getNameExt());
+                }
+            }
+        
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        } catch (IllegalArgumentException ex) {
+            Exceptions.printStackTrace(ex);
+        } 
+    }
+    
+    private static void openProject(Project project) {
+        ProjectOpenedHook hook = project.getLookup().lookup(ProjectOpenedHook.class);
+        if(hook == null) { System.out.println(" project open hook is null "); }
+        ProjectOpenedTrampoline.DEFAULT.projectOpened(hook);
     }
 }

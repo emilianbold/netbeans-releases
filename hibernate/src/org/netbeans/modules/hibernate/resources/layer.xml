@@ -221,5 +221,15 @@ made subject to such option by the copyright holder.
                </folder>
            </folder>
        </folder>
-   </folder> 
+   </folder>
+   <folder name="Projects">
+        <folder name="org-netbeans-modules-web-project">
+            <folder name="Lookup">
+                <file name="org.netbeans.modules.hibernate.service.HibernateProjectLookupExtender.instance"/>
+            </folder>
+            <folder name="Nodes">
+                <file name="org.netbeans.modules.hibernate.service.HibernateNodeFactory.instance"/>
+            </folder>
+        </folder>
+    </folder>
 </filesystem>

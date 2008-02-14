@@ -70,6 +70,7 @@ public class HibernateEnvironment {
         this.project = project;
     }
 
+
     /**
      * Empty constructor used to create Hibernate Environments without NB projects.
      */

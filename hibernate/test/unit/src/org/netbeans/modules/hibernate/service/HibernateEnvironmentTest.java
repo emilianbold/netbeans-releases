@@ -45,7 +45,6 @@ import org.junit.Test;
 import org.netbeans.junit.NbTestCase;
 import static org.junit.Assert.*;
 import org.netbeans.modules.hibernate.cfg.model.HibernateConfiguration;
-import org.netbeans.modules.hibernate.mapping.model.HibernateMapping;
 import org.openide.execution.ExecutorTask;
 import org.openide.util.Exceptions;
 
@@ -142,6 +141,13 @@ public class HibernateEnvironmentTest extends NbTestCase {
         expResult.add(hibernateConfiguration);
         instance.addConfiguration(hibernateConfiguration);
 
+        /////
+        Util.getFiles( new java.io.File(
+                getDataDir().getAbsolutePath() +
+               java.io.File.separator + 
+               "WebApplication1"
+                ));
+        /////
         ArrayList<HibernateConfiguration> result = instance.getAllHibernateConfigurations();
         assertEquals(expResult, result);
     }
