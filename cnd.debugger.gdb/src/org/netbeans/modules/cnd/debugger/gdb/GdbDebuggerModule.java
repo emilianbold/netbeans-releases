@@ -48,7 +48,6 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.ui.CustomizerRoot
 import org.netbeans.modules.cnd.makeproject.api.configurations.ui.CustomizerNode;
 import org.netbeans.modules.cnd.makeproject.api.DefaultProjectActionHandler;
 
-import org.netbeans.modules.cnd.debugger.gdb.profiles.ui.ProfileNodeProvider;
 import org.netbeans.api.debugger.DebuggerManager;
 
 /**
@@ -62,25 +61,22 @@ public class GdbDebuggerModule extends ModuleInstall {
     
     @Override
     public void restored() {
-        
-        // Profiles
-        if (!isDbxGuiLoaded()) {
-            debugCustomizerNode = new ProfileNodeProvider().createDebugNode();
-            CustomizerRootNodeProvider.getInstance().addCustomizerNode(debugCustomizerNode);
+//        // Profiles
+//        // Moved to services
+//        debugCustomizerNode = new ProfileNodeProvider().createDebugNode();
+//        CustomizerRootNodeProvider.getInstance().addCustomizerNode(debugCustomizerNode);
 
-            // Set project action handler
-            DefaultProjectActionHandler.getInstance().setCustomDebugActionHandlerProvider(
-                        new GdbActionHandlerProvider());  
-        }
+        // Set project action handler
+        DefaultProjectActionHandler.getInstance().setCustomDebugActionHandlerProvider(
+                    new GdbActionHandlerProvider());  
     }
 
     @Override
     public void uninstalled() {
         // Profiles
-        if (!isDbxGuiLoaded()) {
-            CustomizerRootNodeProvider.getInstance().removeCustomizerNode(debugCustomizerNode);
-            DefaultProjectActionHandler.getInstance().setCustomDebugActionHandlerProvider(null);
-        }
+        // Moved to services
+//        CustomizerRootNodeProvider.getInstance().removeCustomizerNode(debugCustomizerNode);
+        DefaultProjectActionHandler.getInstance().setCustomDebugActionHandlerProvider(null);
     }
     
     @Override
@@ -88,9 +84,5 @@ public class GdbDebuggerModule extends ModuleInstall {
         // Kill all debug sessions
         DebuggerManager.getDebuggerManager().finishAllSessions();
         super.close();
-    }
-    
-    private boolean isDbxGuiLoaded() {
-        return false;
     }
 }
