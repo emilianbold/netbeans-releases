@@ -39,7 +39,7 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.spring.webmvc;
+package org.netbeans.modules.spring.webmvc.utils;
 
 import java.util.regex.Pattern;
 
@@ -47,8 +47,9 @@ import java.util.regex.Pattern;
  *
  * @author John Baker
  */
-public class SpringWebFrameworkValidator {
-    
+public class SpringWebFrameworkUtils {
+    private static final String DISPATCHER_MAPPING = ".htm"; // NOI18N
+        
     public static boolean isDispatcherNameValid(String name) {
         return Pattern.matches("\\w+", name);
     }
@@ -71,5 +72,25 @@ public class SpringWebFrameworkValidator {
         }
                
         return false;
+    }
+    
+    /**
+     * Replace the default extension used in the Spring bean configuration file template based on the the mapping entered by the user.
+     * For the extension to be replaced, this mapping must be an extension, such as *.html
+     * @param line, a line of text in the Spring bean configuration template file.
+     * @param dispatcherMapping, Dispatcher mapping entered by the user
+     * @return line, contains the .htm extension
+     */
+    public static String replaceExtensionInTemplates(String lineInTemplate, String dispatcherMapping) {            
+        if (lineInTemplate.contains(DISPATCHER_MAPPING) && dispatcherMapping.contains("*.")) { // NOI18N
+            int indexOfExtensionInTemplate = lineInTemplate.indexOf(DISPATCHER_MAPPING);
+            int lastIndexOfExtensionInTemplate = indexOfExtensionInTemplate + DISPATCHER_MAPPING.length();
+            int wildCardLocation = dispatcherMapping.indexOf("*") + 1; // NOI18N
+            assert (indexOfExtensionInTemplate != -1);
+            assert (lastIndexOfExtensionInTemplate != -1);
+            assert (wildCardLocation != -1);
+            lineInTemplate = lineInTemplate.substring(0, indexOfExtensionInTemplate) + dispatcherMapping.substring(wildCardLocation) + lineInTemplate.substring(lastIndexOfExtensionInTemplate);  
+        }        
+        return lineInTemplate;
     }
 }
