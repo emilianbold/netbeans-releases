@@ -45,7 +45,6 @@ import java.util.Map;
 import org.netbeans.modules.compapp.casaeditor.model.casa.CasaComponent;
 import org.netbeans.modules.compapp.casaeditor.model.casa.CasaExtensibilityElement;
 import org.netbeans.modules.compapp.casaeditor.nodes.CasaNode;
-import org.netbeans.modules.compapp.casaeditor.properties.spi.ExtensionProperty;
 import org.netbeans.modules.compapp.casaeditor.properties.spi.ExtensionPropertyClassProvider;
 import org.openide.nodes.Node;
 import org.openide.util.Lookup;
@@ -70,15 +69,17 @@ public class ExtensionPropertyFactory {
         Class propertyClass = null;
 
         try {
-            if (attrType.equalsIgnoreCase("integer")) {
+            if (attrType.equalsIgnoreCase("integer")) { // NOI18N
                 propertyClass = IntegerExtensionProperty.class;
-            } else if (attrType.equalsIgnoreCase("qname")) {
+            } else if (attrType.equalsIgnoreCase("qname")) { // NOI18N
                 propertyClass = QNameExtensionProperty.class;
-            } else if (attrType.equalsIgnoreCase("string")) {
-                propertyClass = ExtensionProperty.class;
+            } else if (attrType.equalsIgnoreCase("string")) { // NOI18N
+                propertyClass = StringExtensionProperty.class;
+            } else if (attrType.equalsIgnoreCase("boolean")) { // NOI18N
+                propertyClass = BooleanExtensionProperty.class;
             } else {
                 Lookup.Result result = Lookup.getDefault().lookup(
-                        new Lookup.Template(ExtensionPropertyClassProvider.class));
+                        new Lookup.Template<ExtensionPropertyClassProvider>(ExtensionPropertyClassProvider.class));
                 
                 for (Object obj : result.allInstances()) {
                     ExtensionPropertyClassProvider provider = (ExtensionPropertyClassProvider) obj;

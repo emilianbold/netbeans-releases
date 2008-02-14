@@ -65,7 +65,7 @@ public class StartAction extends CallableSystemAction {
         // return new HelpCtx(RefreshAction.class);
     }
     public boolean isEnabled() {
-        return (Util.hasInstallLocation() && !RegisterDerby.getDefault().isRunning());
+        return (Util.hasInstallLocation() && !DerbyServerProvider.getDefault().isRunning());
     }
     
     public void performAction()  {
@@ -73,7 +73,7 @@ public class StartAction extends CallableSystemAction {
             return;
         }
         if (Util.ensureSystemHome()) {
-            RegisterDerby.getDefault().ensureStarted(false);
+            DerbyServerProvider.getDefault().ensureStarted(false);
         }
     }
     

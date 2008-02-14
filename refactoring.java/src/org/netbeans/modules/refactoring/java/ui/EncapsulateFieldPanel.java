@@ -448,12 +448,22 @@ public final class EncapsulateFieldPanel extends JPanel implements CustomRefacto
     
     public Set<Modifier> getFieldModifiers() {
         FIELD_ACCESS_INDEX = jComboField.getSelectedIndex();
-        return Collections.singleton(getModifier(FIELD_ACCESS_INDEX));
+        Modifier mod = getModifier(FIELD_ACCESS_INDEX);
+        if (mod == null) {
+            return Collections.EMPTY_SET;
+        } else {
+            return Collections.singleton(mod);
+        }
     }
     
     public Set<Modifier> getMethodModifiers() {
         METHOD_ACCESS_INDEX = jComboAccess.getSelectedIndex();
-        return Collections.singleton(getModifier(METHOD_ACCESS_INDEX));
+        Modifier mod = getModifier(METHOD_ACCESS_INDEX); 
+        if (mod == null) {
+            return Collections.EMPTY_SET;
+        } else {
+            return Collections.singleton(mod);
+        }
     }
 
     private Modifier getModifier(int index) {
