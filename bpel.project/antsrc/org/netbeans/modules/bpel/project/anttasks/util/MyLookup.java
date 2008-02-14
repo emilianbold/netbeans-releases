@@ -38,55 +38,39 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
+package org.netbeans.modules.bpel.project.anttasks.util;
 
-package org.netbeans.modules.bpel.project.anttasks;
+import org.openide.util.Lookup;
+import org.openide.util.lookup.AbstractLookup;
+import org.openide.util.lookup.Lookups;
 
-import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
-import java.io.File;
-import java.io.FileFilter;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.FileReader;
-import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.Enumeration;
-import java.util.Iterator;
-import java.util.List;
-import java.util.StringTokenizer;
-import java.util.jar.JarFile;
-import java.util.zip.ZipEntry;
 
-import org.apache.tools.ant.BuildException;
-import org.apache.tools.ant.Task;
+public class MyLookup extends Lookup {
+    static Lookup mylookup = null;
+    static MyLookup m_instance = null;
 
-/**
- * @author radval
- * Ant task to extract wsdl/xsd from dependent projects.
- */
-public class ExternalProjectsFileExtractor extends Task {
-    
-    private String mBuildDirectory;
-    private String mProjectDirectory;
-    private String mProjectClassPath;
-    private String mSourceDirectory;
-    private File mBuildDir;
-    
-    public void setBuildDirectory(String buildDirectory) {
-        this.mBuildDirectory = buildDirectory;
+    public MyLookup() {
+        
+    }
+    private static Lookup   getInstance(){
+        if (m_instance == null ) {
+            m_instance = new MyLookup();
+        }
+        if (mylookup == null) {
+            mylookup = Lookups.metaInfServices(m_instance.getClass().getClassLoader());
+        }
+        return mylookup;
     }
     
-    public void setSourceDirectory(String srcDir) {
-        this.mSourceDirectory = srcDir;
+    public Object lookup(Class clazz) {
+        return getInstance().lookup(clazz);
+    }
+              
+    public  Lookup.Result lookup(Lookup.Template template) {
+        return getInstance().lookup(template);
     }
     
-    public void setProjectClassPath(String projectClassPath) {
-        this.mProjectClassPath = projectClassPath;
+    public Lookup.Item  lookupItem(Lookup.Template template) {
+        return getInstance().lookupItem(template);
     }
-    
-    public void setProjectDirectory(String srcDir) {
-        this.mProjectDirectory = srcDir;
-    }
-    
-    public void execute() throws BuildException {}
 }

@@ -38,68 +38,47 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.bpel.project.anttasks;
+package org.netbeans.modules.bpel.project.anttasks.cli;
 
 import java.io.File;
-import java.io.FileFilter;
-import java.io.FileReader;
-import java.io.FileWriter;
 import java.io.PrintWriter;
-import java.io.StringWriter;
-import java.net.URI;
-import java.net.URL;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
-import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ProjectUtils;
-import org.netbeans.api.project.SourceGroup;
-import org.netbeans.api.project.Sources;
-import org.netbeans.modules.xml.wsdl.model.PortType;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
-import org.xml.sax.InputSource;
-import org.xml.sax.helpers.XMLReaderFactory;
-
-import javax.xml.namespace.QName;
-
-import org.apache.tools.ant.BuildException;
-import org.apache.tools.ant.types.Path;
-import org.apache.tools.ant.types.Reference;
-
-import org.netbeans.modules.xml.xam.dom.NamedComponentReference;
-import org.netbeans.modules.xml.wsdl.model.extensions.bpel.Role;
-import org.netbeans.modules.xml.wsdl.model.extensions.bpel.PartnerLinkType;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.transform.OutputKeys;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.stream.StreamResult;
 import org.netbeans.modules.bpel.model.api.BpelModel;
 import org.netbeans.modules.bpel.model.api.PartnerLink;
 import org.netbeans.modules.bpel.model.api.references.WSDLReference;
-import org.apache.tools.ant.BuildException;
-
+import org.netbeans.modules.bpel.project.anttasks.util.Consumer;
+import org.netbeans.modules.bpel.project.anttasks.util.Provider;
+import org.netbeans.modules.bpel.project.anttasks.util.Util;
+import org.netbeans.modules.xml.wsdl.model.PortType;
+import org.netbeans.modules.xml.wsdl.model.extensions.bpel.PartnerLinkType;
+import org.netbeans.modules.xml.wsdl.model.extensions.bpel.Role;
+import org.netbeans.modules.xml.xam.dom.NamedComponentReference;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
-import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.transform.*;
-import javax.xml.transform.stream.StreamResult;
-import javax.xml.transform.dom.DOMSource;
-
-import org.netbeans.modules.bpel.project.CommandlineBpelProjectXmlCatalogProvider;
-import org.netbeans.modules.bpel.project.portmap.DataWriter;
-
-import org.netbeans.modules.bpel.project.anttasks.jbi.Consumer;
-import org.netbeans.modules.bpel.project.anttasks.jbi.Provider;
 
 /**
  * Generates JBI.xml
  * @author Sreenivasan Genipudi
  */
-public class JBIGenerator {
-    private Logger logger = Logger.getLogger(JBIGenerator.class.getName());
+public class CliJbiGenerator {
+    private Logger logger = Logger.getLogger(CliJbiGenerator.class.getName());
     private static final String PARTNER_ROLE = "partnerRole";
     private static final String MY_ROLE = "myRole";
-    private List mDepedentProjectDirs;
     private List mSourceDirs;
     
     private File mBuildDir = null;
@@ -125,12 +104,16 @@ public class JBIGenerator {
     public static final String XSI_ATTR_NAME = "xsi:schemaLocation"; // NOI18N
     public static final String XSI_ATTR_VALUE ="http://java.sun.com/xml/ns/jbi jbi.xsd"; // NOI18N
     
+    public static final String JBI_EXT_NS = "http://enterprise.netbeans.org/bpel/jbi-extensions"; // NOI18N
+    
+    public static final String JBI_EXT_PROC_NAME_ATTR = "process-name";
+    public static final String JBI_EXT_FILE_PATH_ATTR = "file-path";
+    
     public static final String NAMESPACE_PREFIX = "ns"; // NOI18N
     
-    public JBIGenerator() {}
+    public CliJbiGenerator() {}
 
-    public JBIGenerator(List depedentProjectDirs , List sourceDirs) {
-        this.mDepedentProjectDirs = depedentProjectDirs;
+    public CliJbiGenerator(List sourceDirs) {
         this.mSourceDirs = sourceDirs;
     }
 
@@ -152,10 +135,142 @@ public class JBIGenerator {
             }
             File jbiFile = new File(cnfFile, "jbi.xml");
             
+            populateNamespace(JBI_EXT_NS);
             generateJbiXml(jbiFile);
         } catch (Exception ex) {
             logger.log(Level.SEVERE, "Failed to create jbi.xml", ex);
         }
+    }
+
+    protected void populateProviderConsumer(BpelModel bpelModel, File file, File sourceDir) {
+        // vlv # 109292
+        if (bpelModel == null) {
+          return;
+        }
+        if (bpelModel.getProcess() == null) {
+          return;
+        }
+        if (bpelModel.getProcess().getPartnerLinkContainer() == null) {
+          return;
+        }
+        if (bpelModel.getProcess().getPartnerLinkContainer().getPartnerLinks() == null) {
+          return;
+        }
+        
+        PartnerLink[] pLinks = bpelModel.getProcess().getPartnerLinkContainer().getPartnerLinks();
+        Provider provider = null;
+        Consumer consumer = null;
+        
+        String processName = bpelModel.getProcess().getName();
+        String filePath = Util.getRelativePath(sourceDir, file);
+        
+        for (int index =0; index < pLinks.length; index++) {
+            PartnerLink pLink = pLinks[index];
+            String partnerLinkName = pLink.getName();
+            WSDLReference partnerLinkTypeWSDLRef = pLinks[index].getPartnerLinkType();
+            
+            String partnerLinkNameSpaceURI = pLinks[index].getBpelModel().getProcess().getTargetNamespace();
+            String partnerLinkNSPrefix = populateNamespace(partnerLinkNameSpaceURI);
+            
+            PartnerLinkType pLTypeForPLinkType = (PartnerLinkType)partnerLinkTypeWSDLRef.get();
+            String portName = null;
+            String portNameNS = null;
+            String portNameNSPrefix = null;
+            
+            WSDLReference<Role> myRoleWSDLRef = pLinks[index].getMyRole();
+
+            if (pLTypeForPLinkType == null) {
+                logger.log(Level.SEVERE, "Problem encountered while processing partnerLinkType of \""+partnerLinkName+"\"");
+                throw new RuntimeException("PartnerLink Type is Null!");
+            }     
+
+            if ( myRoleWSDLRef != null) {
+                String myRoleName = null;
+                
+                Role myRole = myRoleWSDLRef.get();
+                if (myRole != null) {
+                    myRoleName = myRole.getName();
+                    NamedComponentReference<PortType> portTypeRef = myRole.getPortType();
+                 
+                    if (portTypeRef != null ) {
+                        PortType pt = portTypeRef.get();
+                        if (pt != null) {
+                            portName = pt.getName();
+                            portNameNS = pt.getModel().getDefinitions().getTargetNamespace();
+                            portNameNSPrefix = populateNamespace(portNameNS);
+                        }
+                    }
+                }
+                if (portName == null) {
+                    logger.log(Level.SEVERE, "Problem encountered while processing portType   PartnerLink =  \""+partnerLinkName+"\"");
+                    throw new RuntimeException("Problem encountered while processing portType !");
+                }
+                
+                provider = new Provider(
+                        partnerLinkName, 
+                        portName, 
+                        partnerLinkNameSpaceURI, 
+                        portNameNS, 
+                        myRoleName, 
+                        partnerLinkNSPrefix, 
+                        portNameNSPrefix,
+                        processName,
+                        filePath);
+                if (!mProviderList.contains(provider)) {
+                    mProviderList.add(provider);
+                }
+            }
+            WSDLReference<Role> myPartnerRoleRef = pLinks[index].getPartnerRole();
+            
+            if ( myPartnerRoleRef != null) {
+                String partnerRoleName = null;
+                Role  partnerRole= myPartnerRoleRef.get();
+                
+                if (partnerRole != null) {
+                    partnerRoleName = partnerRole.getName();
+                    
+                    NamedComponentReference<PortType> portTypeRef = partnerRole.getPortType();
+                    
+                    if (portTypeRef != null ) {
+                        PortType pt = portTypeRef.get();
+                        
+                        if (pt != null) {
+                            portName = pt.getName();
+                            
+                            portNameNS = pt.getModel().getDefinitions().getTargetNamespace();
+                            portNameNSPrefix = populateNamespace(portNameNS);
+                        }
+                    }
+                }
+                if (portName == null) {
+                    logger.log(Level.SEVERE, "Problem encountered while processing portType   PartnerLink =  \""+partnerLinkName+"\"");
+                    throw new RuntimeException("Problem encountered while processing portType !");
+                }
+                consumer = new Consumer(
+                        partnerLinkName, 
+                        portName, 
+                        partnerLinkNameSpaceURI, 
+                        portNameNS, 
+                        partnerRoleName,
+                        partnerLinkNSPrefix,
+                        portNameNSPrefix,
+                        processName,
+                        filePath);
+                if (! mConsumerList.contains(consumer)) {
+                    this.mConsumerList.add(consumer);
+                }
+            }
+        }
+    }
+    
+    private String populateNamespace(String namespaceURI) {
+        String namespacePrefix = null;
+        namespacePrefix =(String) mNameSpacePrefix.get(namespaceURI);
+        if (namespacePrefix == null){
+            namespacePrefix = NAMESPACE_PREFIX+mNameSpacePrefix.size();
+            mNameSpacePrefix.put(namespaceURI,namespacePrefix);
+        }
+        return namespacePrefix;
     }
 
     private void addNamespaceToRoot(Element root) {
@@ -163,7 +278,9 @@ public class JBIGenerator {
         Iterator itr = nameSpaceSet.iterator();
         while(itr.hasNext()) {
             Map.Entry entry = (Map.Entry)  itr.next();
-            root.setAttribute(NS_ATTR_NAME+":"+(String)entry.getValue(),(String)entry.getKey() );
+            root.setAttribute(
+                    NS_ATTR_NAME + ":" + (String) entry.getValue(), 
+                    (String) entry.getKey());
         }
     }
 
@@ -209,6 +326,20 @@ public class JBIGenerator {
                             ENDPOINT_ATTR_NAME, provider.getMyRoleName() + "_" + MY_ROLE
                             );
                     
+                    Element extensionElement = (Element) document.createElementNS(JBI_EXT_NS, populateNamespace(JBI_EXT_NS) + ":" + JBI_EXT_PROC_NAME_ATTR);
+                    extensionElement.setTextContent(provider.getProcessName());
+                    portMapNode.appendChild(extensionElement);
+                    
+                    extensionElement = (Element) document.createElementNS(JBI_EXT_NS, populateNamespace(JBI_EXT_NS) + ":" + JBI_EXT_FILE_PATH_ATTR);
+                    extensionElement.setTextContent(provider.getFilePath());
+                    portMapNode.appendChild(extensionElement);
+//                    portMapNode.setAttribute(
+//                            populateNamespace(JBI_EXT_NS) + ":" + JBI_EXT_PROC_NAME_ATTR, 
+//                            provider.getProcessName());
+//                    portMapNode.setAttribute(
+//                            populateNamespace(JBI_EXT_NS) + ":" + JBI_EXT_FILE_PATH_ATTR, 
+//                            provider.getFilePath());
+                    
                     services.appendChild(portMapNode);
                 }
             }
@@ -234,6 +365,20 @@ public class JBIGenerator {
                     portMapNode.setAttribute(
                             ENDPOINT_ATTR_NAME, consumer.getPartnerRoleName() + "_" + PARTNER_ROLE
                             );
+                    
+                    Element extensionElement = (Element) document.createElementNS(JBI_EXT_NS, populateNamespace(JBI_EXT_NS) + ":" + JBI_EXT_PROC_NAME_ATTR);
+                    extensionElement.setTextContent(consumer.getProcessName());
+                    portMapNode.appendChild(extensionElement);
+                    
+                    extensionElement = (Element) document.createElementNS(JBI_EXT_NS, populateNamespace(JBI_EXT_NS) + ":" + JBI_EXT_FILE_PATH_ATTR);
+                    extensionElement.setTextContent(consumer.getFilePath());
+                    portMapNode.appendChild(extensionElement);
+//                    portMapNode.setAttribute(
+//                            populateNamespace(JBI_EXT_NS) + ":" + JBI_EXT_PROC_NAME_ATTR, 
+//                            consumer.getProcessName());
+//                    portMapNode.setAttribute(
+//                            populateNamespace(JBI_EXT_NS) + ":" + JBI_EXT_FILE_PATH_ATTR, 
+//                            consumer.getFilePath());
                     
                     services.appendChild(portMapNode);
                 }
@@ -290,23 +435,23 @@ public class JBIGenerator {
         }
     }
     
-    private void processFileObject(File file) {
+    private void processFileObject(File file, File sourceDir) {
         if (file.isDirectory()) {
-            processFolder(file);
+            processFolder(file, sourceDir);
         } else {
-            processFile(file);
+            processFile(file, sourceDir);
         }
     }
 
-    private void processFolder(File fileDir) {
+    private void processFolder(File fileDir, File sourceDir) {
         File[] children = fileDir.listFiles();
         
         for (int i = 0; i < children.length; i++) {
-            processFileObject(children[i]);
+            processFileObject(children[i], sourceDir);
         }
     }
     
-    protected void processFile(File file) {
+    protected void processFile(File file, File sourceDir) {
         String fileName = file.getName();
         String fileExtension = null;
         int dotIndex = fileName.lastIndexOf('.');
@@ -319,14 +464,14 @@ public class JBIGenerator {
             BpelModel bpelModel = null;
 
             try {
-                bpelModel = BPELCatalogModel.getDefault().getBPELModel(file.toURI());
+                bpelModel = CliBpelCatalogModel.getDefault().getBPELModel(file.toURI());
             }
             catch (Exception ex) {
                 this.logger.log(java.util.logging.Level.SEVERE, "Error while creating BPEL Model ", ex);
                 throw new RuntimeException("Error while creating BPEL Model ",ex);
             }
             try {
-                populateProviderConsumer(bpelModel);
+                populateProviderConsumer(bpelModel, file, sourceDir);
             }
             catch (Exception ex) {
                 logger.log(Level.SEVERE, "Error encountered while processing BPEL file - "+file.getAbsolutePath());
@@ -335,147 +480,16 @@ public class JBIGenerator {
         }
     }
     
-    private String populateNamespace(String namespaceURI) {
-        String namespacePrefix = null;
-        namespacePrefix =(String) mNameSpacePrefix.get(namespaceURI);
-        if (namespacePrefix == null){
-            namespacePrefix = NAMESPACE_PREFIX+mNameSpacePrefix.size();
-            mNameSpacePrefix.put(namespaceURI,namespacePrefix);
-        }
-        return namespacePrefix;
-    }
-
-    void populateProviderConsumer(BpelModel bpelModel) {
-        // vlv # 109292
-        if (bpelModel == null) {
-          return;
-        }
-        if (bpelModel.getProcess() == null) {
-          return;
-        }
-        if (bpelModel.getProcess().getPartnerLinkContainer() == null) {
-          return;
-        }
-        if (bpelModel.getProcess().getPartnerLinkContainer().getPartnerLinks() == null) {
-          return;
-        }
-        PartnerLink[] pLinks = bpelModel.getProcess().getPartnerLinkContainer().getPartnerLinks();
-        Provider provider = null;
-        Consumer consumer = null;
-
-        for (int index =0; index < pLinks.length; index++) {
-            PartnerLink pLink = pLinks[index];
-            String partnerLinkName = pLink.getName();
-            WSDLReference partnerLinkTypeWSDLRef = pLinks[index].getPartnerLinkType();
-            
-            String partnerLinkQNameLocalPart = partnerLinkName;
-            String partnerLinkNameSpaceURI = pLinks[index].getBpelModel().getProcess().getTargetNamespace();
-            String partnerLinkNSPrefix = populateNamespace(partnerLinkNameSpaceURI);
-            
-            PartnerLinkType pLTypeForPLinkType = (PartnerLinkType)partnerLinkTypeWSDLRef.get();
-            String portName = null;
-            String portNameNS = null;
-            String portNameNSPrefix = null;
-            
-            WSDLReference<Role> myRoleWSDLRef = pLinks[index].getMyRole();
-
-            if (pLTypeForPLinkType == null) {
-                logger.log(Level.SEVERE, "Problem encountered while processing partnerLinkType of \""+partnerLinkName+"\"");
-                throw new RuntimeException("PartnerLink Type is Null!");
-            }     
-
-            if ( myRoleWSDLRef != null) {
-                String myRoleName = null;
-                
-                Role myRole = myRoleWSDLRef.get();
-                if (myRole != null) {
-                    myRoleName = myRole.getName();
-                    NamedComponentReference<PortType> portTypeRef = myRole.getPortType();
-                 
-                    if (portTypeRef != null ) {
-                        PortType pt = portTypeRef.get();
-                        if (pt != null) {
-                            portName = pt.getName();
-                            portNameNS = pt.getModel().getDefinitions().getTargetNamespace();
-                            portNameNSPrefix = populateNamespace(portNameNS);
-                        }
-                    }
-                }
-                if (portName == null) {
-                    logger.log(Level.SEVERE, "Problem encountered while processing portType   PartnerLink =  \""+partnerLinkName+"\"");
-                    throw new RuntimeException("Problem encountered while processing portType !");
-                }
-                
-                provider = new Provider(partnerLinkName, portName, partnerLinkNameSpaceURI, portNameNS,myRoleName,partnerLinkNSPrefix, portNameNSPrefix  );
-                if (!mProviderList.contains(provider)) {
-                    mProviderList.add(provider);
-                }
-            }
-            WSDLReference<Role> myPartnerRoleRef = pLinks[index].getPartnerRole();
-
-            if ( myPartnerRoleRef != null) {
-                String partnerRoleName = null;
-                Role  partnerRole= myPartnerRoleRef.get();
-
-                if (partnerRole != null) {
-                    partnerRoleName = partnerRole.getName();
-                    
-                    NamedComponentReference<PortType> portTypeRef = partnerRole.getPortType();
-                    if (portTypeRef != null ) {
-                        PortType pt = portTypeRef.get();
-                        if (pt != null) {
-                            portName = pt.getName();
-                            portNameNS = pt.getModel().getDefinitions().getTargetNamespace();
-                            portNameNSPrefix = populateNamespace(portNameNS);
-                        }
-                    }
-                }
-                if (portName == null) {
-                    logger.log(Level.SEVERE, "Problem encountered while processing portType   PartnerLink =  \""+partnerLinkName+"\"");
-                    throw new RuntimeException("Problem encountered while processing portType !");
-                }
-                consumer = new Consumer(partnerLinkName, portName, partnerLinkNameSpaceURI, portNameNS, partnerRoleName,partnerLinkNSPrefix, portNameNSPrefix   );
-                if (! mConsumerList.contains(consumer)) {
-                    this.mConsumerList.add(consumer);
-                }
-            }
-        }
-    }
-    
-    private void formatXml(File portMapFile) {
-        try {
-            DataWriter w = new DataWriter(XMLReaderFactory.createXMLReader());
-            w.setIndentStep(1);
-            StringWriter sWriter = new StringWriter();
-            w.setOutput(sWriter);
-            w.parse(new InputSource(new FileReader(portMapFile)));
-            FileWriter writer = new FileWriter(portMapFile);
-            writer.write(sWriter.getBuffer().toString());
-            writer.flush();
-        } catch(Exception ex) {
-            logger.log(Level.SEVERE, "Failed to format xml  "+ portMapFile.getPath(), ex);
-            throw new BuildException("Failed to format xml  "+ portMapFile.getPath() + " \n" +  ex.getMessage());
-        }
-    }
-    
     private void processSourceDirs(List sourceDirs) {
         Iterator it = sourceDirs.iterator();
-
+        
         while(it.hasNext()) {
             File sourceDir = (File) it.next();
             processSourceDir(sourceDir);
-            readAndPackageFromProjectCatalog(sourceDir);
         }
     }
     
     private void processSourceDir(File sourceDir) {
-        processFileObject(sourceDir);
-    }
-    
-    private void readAndPackageFromProjectCatalog(File sourceDir) {
-        String projectCatalogLocation = new File(CommandlineBpelProjectXmlCatalogProvider.getInstance().getProjectWideCatalogForWizard()).getAbsolutePath();
-        PackageCatalogArtifacts pa = new PackageCatalogArtifacts();
-        pa.doCopy(projectCatalogLocation, this.mBuildDir );
-        
+        processFileObject(sourceDir, sourceDir);
     }
 }

@@ -39,50 +39,39 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.bpel.project.anttasks;
+package gui.action;
 
-import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
-import java.io.File;
-import java.io.FileFilter;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.FileReader;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.StringTokenizer;
-
-import org.apache.tools.ant.BuildException;
-import org.apache.tools.ant.Task;
+import org.netbeans.jemmy.operators.ComponentOperator;
 
 /**
- * @author radval
- * Ant task to extract wsdl/xsd from dependent projects.
+ *
+ * @author mkhramov@netbeans.org
  */
-public class DependentProjectsFileExtractor extends Task {
+public class PageSwitchTest extends org.netbeans.performance.test.utilities.PerformanceTestCase {
 
-    private String mBuildDirectory;
-    private String mProjectDirectory;
-    private String mProjectClassPath;
-    private String mSourceDirectory;
-    private File mBuildDir;
-    
-    public void setBuildDirectory(String buildDirectory) {
-        this.mBuildDirectory = buildDirectory;
+    public PageSwitchTest(String testName) {
+        super(testName);
+        expectedTime = WINDOW_OPEN;
+        WAIT_AFTER_OPEN=4000;          
+    }
+    public PageSwitchTest(String testName, String performanceDataName) {
+        super(testName,performanceDataName);
+        expectedTime = WINDOW_OPEN;
+        WAIT_AFTER_OPEN=4000;          
     }
     
-    public void setSourceDirectory(String srcDir) {
-        this.mSourceDirectory = srcDir;
-    }
     
-    public void setProjectClassPath(String projectClassPath) {
-        this.mProjectClassPath = projectClassPath;
+    @Override
+    public void initialize() {
+        super.initialize(); 
     }
-    
-    public void setProjectDirectory(String srcDir) {
-        this.mProjectDirectory = srcDir;
+    public void prepare() {
+        throw new UnsupportedOperationException("Not supported yet.");
     }
 
-    public void execute() throws BuildException {}
+    
+    public ComponentOperator open() {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
 }
