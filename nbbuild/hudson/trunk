@@ -11,9 +11,8 @@ then
     fi
     dir=`dirname $0`/../..
     cd $dir
-elif [ builds/`ls -1 ../builds | tail -2 | head -1` '!=' `readlink ../lastSuccessful` ] || fgrep -q StackTrace ../lastSuccessful/junitResult.xml
-then
-    echo "Previous build failed, running clean build this time..."
+else
+#    echo "Previous build failed, running clean build this time..."
     ant -f nbbuild/build.xml hg-clean || exit
 fi
 

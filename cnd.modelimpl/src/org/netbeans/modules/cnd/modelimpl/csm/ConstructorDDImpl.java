@@ -46,11 +46,13 @@ import org.netbeans.modules.cnd.api.model.*;
 import antlr.collections.AST;
 import java.io.DataInput;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import org.netbeans.modules.cnd.api.model.deep.CsmExpression;
 import org.netbeans.modules.cnd.modelimpl.csm.core.AstRenderer;
+import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
 
 /**
  * @author Vladimir Voskresensky
@@ -83,13 +85,13 @@ public final class ConstructorDDImpl extends MethodDDImpl<CsmConstructor> implem
     
     public ConstructorDDImpl(DataInput input) throws IOException {
         super(input);
-        // TODO: serialize initializer
+        initializers = PersistentUtils.readExpressions(new ArrayList<CsmExpression>(), input);
     }
-
+        
     @Override
     public void write(DataOutput output) throws IOException {
         super.write(output);
-        // TODO: serialize initializer
+        PersistentUtils.writeExpressions(initializers, output);
     }
         
     @Override

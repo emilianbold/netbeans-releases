@@ -603,8 +603,8 @@ public abstract class ModelSet implements FileChangeListener {
             super(urls, parent);
             this.urls = urls;
             
-            if (TIMERS.isLoggable(Level.FINE)) {
-                LogRecord rec = new LogRecord(Level.FINE, "ModelSet$ProjectClassLoader"); // NOI18N
+            if (TIMERS.isLoggable(Level.FINER)) {
+                LogRecord rec = new LogRecord(Level.FINER, "ModelSet$ProjectClassLoader"); // NOI18N
                 rec.setParameters(new Object[]{ this });
                 TIMERS.log(rec);
             }
