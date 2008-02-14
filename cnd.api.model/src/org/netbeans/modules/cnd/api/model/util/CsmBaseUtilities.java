@@ -46,9 +46,7 @@ import java.util.Set;
 import org.netbeans.modules.cnd.api.model.CsmClass;
 import org.netbeans.modules.cnd.api.model.CsmClassifier;
 import org.netbeans.modules.cnd.api.model.CsmDeclaration;
-import org.netbeans.modules.cnd.api.model.CsmEnum;
 import org.netbeans.modules.cnd.api.model.CsmEnumerator;
-import org.netbeans.modules.cnd.api.model.CsmField;
 import org.netbeans.modules.cnd.api.model.CsmFunction;
 import org.netbeans.modules.cnd.api.model.CsmFunctionDefinition;
 import org.netbeans.modules.cnd.api.model.CsmMember;
@@ -61,6 +59,7 @@ import org.netbeans.modules.cnd.api.model.CsmScopeElement;
 import org.netbeans.modules.cnd.api.model.CsmTypedef;
 import org.netbeans.modules.cnd.api.model.CsmUID;
 import org.netbeans.modules.cnd.api.model.CsmVariable;
+import org.netbeans.modules.cnd.api.model.CsmVariableDefinition;
 
 /**
  *
@@ -108,6 +107,48 @@ public class CsmBaseUtilities {
             }
         }
         return false;
+    }
+    
+    private static boolean TRACE_XREF_REPOSITORY = Boolean.getBoolean("cnd.modelimpl.trace.xref.repository");
+    
+    /**
+     * 
+     * @param target
+     * @return new CsmObject[] { declaration, definion }
+     */
+    public static CsmObject[] getDefinitionDeclaration(CsmObject target) {
+        CsmObject decl;
+        CsmObject def; 
+        if (CsmKindUtilities.isVariableDefinition(target)) {
+            decl = ((CsmVariableDefinition)target).getDeclaration();
+            if (decl == null) {
+                decl = target;
+                if (TRACE_XREF_REPOSITORY) {
+                    System.err.println("not found declaration for variable definition " + target);
+                }
+            }
+            def = target;
+        } else if (CsmKindUtilities.isVariableDeclaration(target)) {
+            decl = target;
+            def = ((CsmVariable)target).getDefinition();
+        } else if (CsmKindUtilities.isFunctionDefinition(target)) {
+            decl = ((CsmFunctionDefinition)target).getDeclaration();
+            if (decl == null) {
+                decl = target;
+                if (TRACE_XREF_REPOSITORY) {
+                    System.err.println("not found declaration for function definition " + target);
+                }
+            }
+            def = target;
+        } else if (CsmKindUtilities.isFunctionDeclaration(target)) {
+            decl = target;
+            def = ((CsmFunction)target).getDefinition();
+        } else {
+            decl = target;
+            def = null;
+        }
+        assert decl != null;
+        return new CsmObject[] { decl, def };
     }
     
     public static CsmClass getFunctionClass(CsmFunction fun) {

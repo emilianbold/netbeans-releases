@@ -42,6 +42,7 @@
 package org.netbeans.modules.dbapi;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import org.netbeans.modules.db.api.explorer.NodeProvider;
@@ -58,28 +59,20 @@ import org.openide.util.lookup.Lookups;
  */
 public class DbNodeLoaderImpl implements DbNodeLoader {
     
-    /** 
-     * Not private because used in the tests.
-     */
-    /** 
+            /** 
      * Not private because used in the tests.
      */
     static final String NODE_PROVIDER_PATH = "Databases/NodeProviders"; // NOI18N
 
-    private final Lookup.Result providers = getNodeProviders();
-
     public List<Node> getAllNodes() {
         List<Node> nodes = new ArrayList<Node>();
+        Collection providers = Lookups.forPath(NODE_PROVIDER_PATH).lookupAll(NodeProvider.class);
         
-        for (Iterator i = providers.allInstances().iterator(); i.hasNext();) {
+        for (Iterator i = providers.iterator(); i.hasNext();) {
             NodeProvider provider = (NodeProvider)i.next();
             nodes.addAll(provider.getNodes());
         }
         
         return nodes;
-    }
-
-    private static Lookup.Result getNodeProviders() {
-        return Lookups.forPath(NODE_PROVIDER_PATH).lookupResult(NodeProvider.class);
     }
 }

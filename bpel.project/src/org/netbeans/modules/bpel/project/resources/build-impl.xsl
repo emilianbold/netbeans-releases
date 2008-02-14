@@ -181,6 +181,7 @@
         <jar compress="${{jar.compress}}" jarfile="${{build.dir}}/SEDeployment.jar">
             <fileset includes="**/*.bpel,**/*.wsdl,**/*.xsd, **/*.xsl, **/*.xslt" dir="${{basedir}}/${{build.dir}}"/>
             
+<<<<<<< /Users/ksorokin/Work/sun.com/netbeans/hg-trunk/bpel.project/src/org/netbeans/modules/bpel/project/resources/build-impl.xsl
             <fileset dir="${{basedir}}/${{build.dir}}">
                 <include name="**/jbi.xml" />
                 <include name="**/catalog.xml"/>

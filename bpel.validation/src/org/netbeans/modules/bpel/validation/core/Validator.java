@@ -83,32 +83,27 @@ public abstract class Validator extends SimpleBpelModelVisitorAdaptor implements
   }
 
   protected final void addWarning(String key, Component component) {
-    addMessage(key, ResultType.WARNING, component, null);
+    addMessage(i18n(getClass(), key), ResultType.WARNING, component);
   }
 
   protected final void addError(String key, Component component) {
-    addMessage(key, ResultType.ERROR, component, null);
+    addMessage(i18n(getClass(), key), ResultType.ERROR, component);
   }
 
   protected final void addError(String key, Component component, String param) {
-    addMessage(key, ResultType.ERROR, component, param);
+    addMessage(i18n(getClass(), key, param), ResultType.ERROR, component);
+  }
+
+  protected final void addError(String key, Component component, String param1, String param2) {
+    addMessage(i18n(getClass(), key, param1, param2), ResultType.ERROR, component);
+  }
+
+  private void addMessage(String message, ResultType type, Component component) {
+    getResultItems().add(new ResultItem(this, type, component, message));
   }
 
   protected final void validate(Model model) {
     myValidation.validate(model, myType);
-  }
-
-  private void addMessage(String key, ResultType type, Component component, String param) {
-    String message;
-    
-    if (param == null) {
-      message = i18n(getClass(), key);
-    }
-    else {
-      message = i18n(getClass(), key, param);
-    }
-    ResultItem item = new ResultItem(this, type, component, message);
-    getResultItems().add(item);
   }
 
   private ValidationType myType;

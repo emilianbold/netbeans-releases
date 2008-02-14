@@ -829,7 +829,7 @@ LauncherProperties * createLauncherProperties() {
         props->extractOnly = 1;
     }
     props->userDefinedOutput      = getArgumentValue(props, outputFileArg, 1, 1);
-    props->checkForFreeSpace      = !argumentExists(props, nospaceCheckArg, 1);
+    props->checkForFreeSpace      = !argumentExists(props, nospaceCheckArg, 0);
     props->silentMode             = argumentExists(props, silentArg, 0);
     props->launcherSize = getFileSize(props->exePath);
     props->isOnlyStub = (compare(props->launcherSize, STUB_FILL_SIZE) < 0);

@@ -61,7 +61,7 @@ import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlService;
 public class WsdlServiceProxyDescriptor {
     public static final int JAX_RPC_TYPE = 0;
     public static final int JAX_WS_TYPE = 1;
-    public static String WEBSVC_HOME = System.getProperty("netbeans.user") + 
+    public static final String WEBSVC_HOME = System.getProperty("netbeans.user") + 
             File.separator + "config" + File.separator + "WebServices"; // NOI18N
     
     
