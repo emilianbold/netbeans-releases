@@ -50,6 +50,7 @@ public class EditPredicateAction extends XsltNodeAction {
         // putValue(DeleteAction.ACCELERATOR_KEY, KeyStroke.getKeyStroke(KeyEvent.VK_INSERT, 0));
     }
     
+    @Override
     public String getDisplayName() {
         return NbBundle.getMessage(ActionConst.class, "EDIT_PREDICATE"); // NOI18N
     }
@@ -62,8 +63,8 @@ public class EditPredicateAction extends XsltNodeAction {
         //
         XPathPredicateExpression[] predicateArr = ((PredicatedSchemaNode)myTreeNode).
                 getPredicatedAxiComp().getPredicates();
+        String firstPredicateText = predicateArr[0].getExpressionString();
         if (predicateArr != null && predicateArr.length > 0) {
-            String firstPredicateText = predicateArr[0].getExpressionString();
             exprEditor.setSelectedValue(firstPredicateText);
         }
         //
@@ -83,35 +84,41 @@ public class EditPredicateAction extends XsltNodeAction {
         if (null == literal) {
             literal = "";
         }
+        boolean isPredicateExpressionDeleted = (firstPredicateText != null) && 
+            (literal.length() == 0) && (! firstPredicateText.equals(literal));
         //
         XPathModel xpImpl = AbstractXPathModelHelper.getInstance().newXPathModel();
         try {
-            XPathExpression expression = xpImpl.parseExpression(literal);
-            XPathPredicateExpression predicate =
-                    AbstractXPathModelHelper.getInstance().
-                    newXPathPredicateExpression(expression);
-            //
-            if (predicateArr != null && predicateArr.length > 0) {
-                // If there was previous prediates, then modify first element only
-                XPathPredicateExpression[] newPredicateArr = 
-                        new XPathPredicateExpression[predicateArr.length];
-                newPredicateArr[0] = predicate;
-                // copy remaining elements as is
-                for (int index = 1; index < predicateArr.length; index++) {
-                    newPredicateArr[index] = predicateArr[index];
+            if (! isPredicateExpressionDeleted) {
+                XPathExpression expression = xpImpl.parseExpression(literal);
+                XPathPredicateExpression predicate =
+                        AbstractXPathModelHelper.getInstance().
+                        newXPathPredicateExpression(expression);
+
+                if (predicateArr != null && predicateArr.length > 0) {
+                    // If there was previous prediates, then modify first element only
+                    XPathPredicateExpression[] newPredicateArr = 
+                            new XPathPredicateExpression[predicateArr.length];
+                    newPredicateArr[0] = predicate;
+                    // copy remaining elements as is
+                    for (int index = 1; index < predicateArr.length; index++) {
+                        newPredicateArr[index] = predicateArr[index];
+                    }
+                    predicateArr = newPredicateArr;
+                } else {
+                    // If there was not - create a new one
+                    predicateArr = new XPathPredicateExpression[]{predicate};
                 }
-                predicateArr = newPredicateArr;
-            } else {
-                // If there was not - create a new one
-                predicateArr = new XPathPredicateExpression[]{predicate};
             }
             //
             PredicateManager pm = myXsltMapper.getPredicateManager();
-            pm.modifyPredicate((PredicatedSchemaNode)myTreeNode, predicateArr);
+            if (! isPredicateExpressionDeleted) {
+                pm.modifyPredicate((PredicatedSchemaNode)myTreeNode, predicateArr);
+            } else {
+                pm.deletePredicate((PredicatedSchemaNode)myTreeNode);
+            }
         } catch (XPathException ex) {
             // Error.Incorrect expression
-        };
-        
+        }
     }
-    
 }

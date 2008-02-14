@@ -69,19 +69,19 @@ public class ResourceBundleImpl extends DescriptionGroupImpl implements Resource
     }
 
     public String getBaseName() {
-        return getChildElementText(JSFConfigQNames.BASE_NAME.getQName(getModel().getVersion()));
+        return getChildElementText(JSFConfigQNames.BASE_NAME.getQName(getNamespaceURI()));
     }
 
     public void setBaseName(String baseName) {
-        setChildElementText(BASE_NAME, baseName, JSFConfigQNames.BASE_NAME.getQName(getModel().getVersion()));
+        setChildElementText(BASE_NAME, baseName, JSFConfigQNames.BASE_NAME.getQName(getNamespaceURI()));
     }
 
     public String getVar() {
-        return getChildElementText(JSFConfigQNames.VAR.getQName(getModel().getVersion()));
+        return getChildElementText(JSFConfigQNames.VAR.getQName(getNamespaceURI()));
     }
 
     public void setVar(String var) {
-        setChildElementText(VAR, var, JSFConfigQNames.VAR.getQName(getModel().getVersion()));
+        setChildElementText(VAR, var, JSFConfigQNames.VAR.getQName(getNamespaceURI()));
     }
 
     @Override
