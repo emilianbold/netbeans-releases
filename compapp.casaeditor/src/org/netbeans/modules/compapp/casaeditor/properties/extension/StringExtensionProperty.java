@@ -39,22 +39,19 @@
 
 package org.netbeans.modules.compapp.casaeditor.properties.extension;
 
-import java.beans.PropertyEditor;
-import java.lang.reflect.InvocationTargetException;
 import org.netbeans.modules.compapp.casaeditor.model.casa.CasaComponent;
 import org.netbeans.modules.compapp.casaeditor.model.casa.CasaExtensibilityElement;
 import org.netbeans.modules.compapp.casaeditor.nodes.CasaNode;
 import org.netbeans.modules.compapp.casaeditor.properties.spi.ExtensionProperty;
-import org.netbeans.modules.compapp.casaeditor.properties.IntegerEditor;
 
 /**
- * Extension poperty of Integer type (empty value allowed).
+ * Extension poperty of String type.
  *
  * @author jqian
  */
-public class IntegerExtensionProperty extends ExtensionProperty<Integer> {
+public class StringExtensionProperty extends ExtensionProperty<String> {
 
-    public IntegerExtensionProperty(
+    public StringExtensionProperty(
             CasaNode node,
             CasaComponent extensionPointComponent,
             CasaExtensibilityElement firstEE,
@@ -64,13 +61,7 @@ public class IntegerExtensionProperty extends ExtensionProperty<Integer> {
             String displayName,
             String description) {
         super(node, extensionPointComponent, firstEE, lastEE, propertyType,
-                Integer.class, propertyName, displayName, description);
-    }
-
-    @Override
-    public PropertyEditor getPropertyEditor() {
-        // compared to the built-in IntEditor, this one allows empty value
-        return new IntegerEditor();
+                String.class, propertyName, displayName, description);
     }
 }
 
