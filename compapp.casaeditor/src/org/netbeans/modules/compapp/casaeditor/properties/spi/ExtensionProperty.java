@@ -70,7 +70,7 @@ public class ExtensionProperty<T> extends BaseCasaProperty<T> {
             CasaExtensibilityElement firstEE,
             CasaExtensibilityElement lastEE,
             String propertyType,
-            Class valueType,
+            Class<T> valueType,
             String propertyName,
             String displayName,
             String description) {
@@ -82,10 +82,13 @@ public class ExtensionProperty<T> extends BaseCasaProperty<T> {
     }
 
     @SuppressWarnings("unchecked")
-    public T getValue()
-            throws IllegalAccessException, InvocationTargetException {
+    public T getValue() throws IllegalAccessException, InvocationTargetException {
+        return (T) getStringValue();
+    }
+    
+    protected String getStringValue() {
         CasaExtensibilityElement casaEE = (CasaExtensibilityElement) getComponent();
-        return (T) casaEE.getAttribute(getName());
+        return casaEE.getAttribute(getName());
     }
 
     public void setValue(T value)

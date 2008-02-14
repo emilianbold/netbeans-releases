@@ -37,40 +37,73 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.compapp.casaeditor.properties.extension;
+package org.netbeans.modules.cnd.editor.options;
 
-import java.beans.PropertyEditor;
-import java.lang.reflect.InvocationTargetException;
-import org.netbeans.modules.compapp.casaeditor.model.casa.CasaComponent;
-import org.netbeans.modules.compapp.casaeditor.model.casa.CasaExtensibilityElement;
-import org.netbeans.modules.compapp.casaeditor.nodes.CasaNode;
-import org.netbeans.modules.compapp.casaeditor.properties.spi.ExtensionProperty;
-import org.netbeans.modules.compapp.casaeditor.properties.IntegerEditor;
+import java.util.prefs.Preferences;
+import org.netbeans.modules.cnd.editor.api.CodeStyle;
+import org.openide.nodes.PropertySupport;
+import org.openide.util.NbBundle;
 
-/**
- * Extension poperty of Integer type (empty value allowed).
- *
- * @author jqian
- */
-public class IntegerExtensionProperty extends ExtensionProperty<Integer> {
+public class IntNodeProp extends PropertySupport.ReadWrite<Integer> {
 
-    public IntegerExtensionProperty(
-            CasaNode node,
-            CasaComponent extensionPointComponent,
-            CasaExtensibilityElement firstEE,
-            CasaExtensibilityElement lastEE,
-            String propertyType,
-            String propertyName,
-            String displayName,
-            String description) {
-        super(node, extensionPointComponent, firstEE, lastEE, propertyType,
-                Integer.class, propertyName, displayName, description);
+    private final CodeStyle.Language language;
+    private final String optionID;
+    private Preferences preferences;
+    private int state;
+
+    public IntNodeProp(CodeStyle.Language language, Preferences preferences, String optionID) {
+        super(optionID, Integer.class, getString("LBL_" + optionID), getString("HINT_" + optionID));
+        this.language = language;
+        this.optionID = optionID;
+        this.preferences = preferences;
+        init();
+    }
+
+    private static String getString(String key) {
+        return NbBundle.getMessage(IntNodeProp.class, key);
+    }
+
+    private void init() {
+        state = getPreferences().getInt(optionID, (Integer) EditorOptions.getDefault(optionID));
+    }
+
+    private Preferences getPreferences() {
+        Preferences node = preferences;
+        if (node == null) {
+            node = EditorOptions.getPreferences(language, EditorOptions.getCurrentProfileId(language));
+        }
+        return node;
     }
 
     @Override
-    public PropertyEditor getPropertyEditor() {
-        // compared to the built-in IntEditor, this one allows empty value
-        return new IntegerEditor();
+    public String getHtmlDisplayName() {
+        if (isDefaultValue()) {
+            return "<b>" + getDisplayName();
+        }
+        return null;
+    }
+
+    public Integer getValue() {
+        return new Integer(state);
+    }
+
+    public void setValue(Integer v) {
+        state = v;
+        getPreferences().putInt(optionID, state);
+    }
+
+    @Override
+    public void restoreDefaultValue() {
+        state = (Integer) EditorOptions.getDefault(optionID);
+    }
+
+    @Override
+    public boolean supportsDefaultValue() {
+        return true;
+    }
+
+    @Override
+    public boolean isDefaultValue() {
+        return !EditorOptions.getDefault(optionID).equals(getValue());
     }
 }
-
