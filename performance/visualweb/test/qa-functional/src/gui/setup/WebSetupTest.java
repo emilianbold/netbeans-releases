@@ -76,6 +76,9 @@ public class WebSetupTest extends IDESetupTest {
         
         VWPUtilities.waitProjectOpenedScanFinished(System.getProperty("xtest.tmpdir")+ java.io.File.separator +"VisualWebProject");
         VWPUtilities.waitForPendingBackgroundTasks();
+        
+        VWPUtilities.waitProjectOpenedScanFinished(System.getProperty("xtest.tmpdir")+ java.io.File.separator +"UltraLargeWA");
+        VWPUtilities.waitForPendingBackgroundTasks();        
     }
     
     public void setupAppServer() {

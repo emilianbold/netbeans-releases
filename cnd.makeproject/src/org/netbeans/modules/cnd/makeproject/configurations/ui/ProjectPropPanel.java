@@ -49,6 +49,7 @@ import org.netbeans.modules.cnd.makeproject.api.MakeCustomizerProvider;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptor;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
 import org.netbeans.modules.cnd.makeproject.ui.utils.DirectoryChooserInnerPanel;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 
 public class ProjectPropPanel extends javax.swing.JPanel implements ActionListener {
@@ -61,7 +62,7 @@ public class ProjectPropPanel extends javax.swing.JPanel implements ActionListen
         this.project = project;
         makeConfigurationDescriptor = (MakeConfigurationDescriptor)configurationDescriptor;
         initComponents();
-        projectTextField.setText(project.getProjectDirectory().getPath());
+        projectTextField.setText(FileUtil.toFile(project.getProjectDirectory()).getPath());
         sourceRootPanel.add(sourceRootChooser = new SourceRootChooser(configurationDescriptor.getBaseDir(), makeConfigurationDescriptor.getSourceRootsAsArray()));
         
         MakeCustomizerProvider makeCustomizerProvider = (MakeCustomizerProvider)project.getLookup().lookup(MakeCustomizerProvider.class);

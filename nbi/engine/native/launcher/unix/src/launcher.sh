@@ -162,7 +162,9 @@ parseCommandLineArguments() {
 		$ARG_VERBOSE)
                         USE_DEBUG_OUTPUT=1;;
 		$ARG_NOSPACECHECK)
-                        PERFORM_FREE_SPACE_CHECK=0;;
+                        PERFORM_FREE_SPACE_CHECK=0
+                        parseJvmAppArgument "$1"
+                        ;;
                 $ARG_OUTPUT)
 			if [ -n "$2" ] ; then
                         	OUTPUT_FILE="$2"
