@@ -688,7 +688,11 @@ public class DatabaseNodeInfo extends Hashtable implements Node.Cookie {
     throws DatabaseException
     {
         Vector children = (Vector)get(CHILDREN);
-        if (children.size() > 0 && children.elementAt(0) instanceof DatabaseNodeInfo) return children;
+        if (children.size() > 0 && 
+                (children.elementAt(0) instanceof DatabaseNodeInfo ||
+                 children.elementAt(0) instanceof Node) ) {
+            return children;
+        }
 
         Vector chalt = new Vector();
         initChildren(chalt);

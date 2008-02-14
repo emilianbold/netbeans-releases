@@ -61,7 +61,9 @@ public class ConfigFileSpringBeanSourceTest extends ConfigFileTestCase {
         super(testName);
     }
     public void testParse() throws Exception {
-        String contents = TestUtils.createXMLConfigText("<bean id='foo' name='bar baz' class='org.example.Foo'/>");
+        String contents = TestUtils.createXMLConfigText("<bean id='foo' name='bar baz' " +
+                "parent='father' factory-bean='factory' factory-method='createMe' " +
+                "class='org.example.Foo'/>");
         TestUtils.copyStringToFile(contents, configFile);
         DataObject dataObject = DataObject.find(FileUtil.toFileObject(configFile));
         BaseDocument doc = (BaseDocument)dataObject.getCookie(EditorCookie.class).openDocument();
@@ -76,6 +78,9 @@ public class ConfigFileSpringBeanSourceTest extends ConfigFileTestCase {
         assertSame(bean, source.findBeanByID("foo"));
         assertNull(source.findBeanByID("bar"));
         assertNull(source.findBeanByID("baz"));
+        assertEquals("father", bean.getParent());
+        assertEquals("factory", bean.getFactoryBean());
+        assertEquals("createMe", bean.getFactoryMethod());
         int offset = contents.indexOf("<bean ");
         Location location = bean.getLocation();
         assertEquals(offset, location.getOffset());
