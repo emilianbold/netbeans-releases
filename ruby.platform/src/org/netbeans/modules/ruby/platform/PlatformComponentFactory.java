@@ -43,6 +43,10 @@ package org.netbeans.modules.ruby.platform;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.EventQueue;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.IOException;
 import java.text.Collator;
@@ -140,6 +144,33 @@ public final class PlatformComponentFactory {
      */
     public static ComboBoxModel createComboWaitModel() {
         return new DefaultComboBoxModel(new Object[]{ DETECTING_VALUE });
+    }
+
+    public static void addPlatformChangeListener(final JComboBox platforms, final PlatformChangeListener pcl) {
+        platforms.addItemListener(pcl);
+        platforms.addPropertyChangeListener(pcl);
+    }
+
+    public static void removePlatformChangeListener(final JComboBox platforms, final PlatformChangeListener pcl) {
+        platforms.removeItemListener(pcl);
+        platforms.removePropertyChangeListener(pcl);
+    }
+
+    public static abstract class PlatformChangeListener implements ItemListener, PropertyChangeListener {
+        
+        public abstract void platformChanged();
+
+        public void itemStateChanged(ItemEvent e) {
+            platformChanged();
+        }
+
+        public void propertyChange(PropertyChangeEvent evt) {
+            // when the model has changed from "Detectin platform" to valid
+            // platform model itemStateChanged is not fired(??)
+            if (evt.getPropertyName().equals("model")) { // NOI18N
+                platformChanged();
+            }
+        }
     }
 
     /**

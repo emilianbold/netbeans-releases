@@ -43,10 +43,6 @@ package org.netbeans.modules.ruby.platform.gems;
 
 import java.awt.Component;
 import java.awt.EventQueue;
-import java.awt.event.ItemEvent;
-import java.awt.event.ItemListener;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -141,22 +137,10 @@ public final class GemPanel extends JPanel implements Runnable {
             gemsTab.setSelectedIndex(TabIndex.NEW.ordinal());
         }
 
-        platforms.addPropertyChangeListener(new PropertyChangeListener() {
-            public void propertyChange(PropertyChangeEvent evt) {
-                // when the model has changed from "Detectin platform" to valid
-                // platform model itemStateChanged is not fired(??)
-                if (evt.getPropertyName().equals("model")) { // NOI18N
-                    GemPanel.this.gemManager = getSelectedPlatform().getGemManager();
-                    updateAsynchronously();
-                }
-            }
-        });
-        platforms.addItemListener(new ItemListener() {
-            public void itemStateChanged(ItemEvent e) {
-                if (e.getStateChange() == ItemEvent.SELECTED) {
-                    GemPanel.this.gemManager = getSelectedPlatform().getGemManager();
-                    updateAsynchronously();
-                }
+        PlatformComponentFactory.addPlatformChangeListener(platforms, new PlatformComponentFactory.PlatformChangeListener() {
+            public void platformChanged() {
+                GemPanel.this.gemManager = getSelectedPlatform().getGemManager();
+                updateAsynchronously();
             }
         });
         updateAsynchronously();
