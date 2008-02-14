@@ -138,9 +138,11 @@ final class ThemesFolderNode extends AbstractNode {
     private static class ThemesChildren extends Children.Keys implements PropertyChangeListener {
 
         private final Project project;
+        private final LibraryManager lm;
 
         ThemesChildren(Project project) {
             this.project = project;
+            lm = JsfProjectUtils.getProjectLibraryManager(project);
         }
 
         public void propertyChange(PropertyChangeEvent evt) {
@@ -148,12 +150,12 @@ final class ThemesFolderNode extends AbstractNode {
         }
 
         protected void addNotify() {
-            LibraryManager.getDefault().addPropertyChangeListener(this);
+            lm.addPropertyChangeListener(this);
             this.setKeys(getKeys());
         }
 
         protected void removeNotify() {
-            LibraryManager.getDefault().removePropertyChangeListener(this);
+            lm.removePropertyChangeListener(this);
             this.setKeys(Collections.EMPTY_SET);
         }
 
@@ -170,7 +172,7 @@ final class ThemesFolderNode extends AbstractNode {
 
         private List getKeys() {
             List themesList = new /*Library*/ ArrayList();
-            Library[] libraries = JsfProjectUtils.getProjectLibraryManager(project).getLibraries();
+            Library[] libraries = lm.getLibraries();
             for (int i = 0; i < libraries.length; i++) {
                 Library lib = libraries[i];
                 // XXX if (ThemeLibraryDefinition.LIBRARY_NAME.equals(lib.getType())) {

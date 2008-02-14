@@ -172,7 +172,7 @@ public class AcceptanceTest extends RaveTestCase {
             log(">> Project Creation Failed");
             e.printStackTrace();
             log(e.toString());
-            fail();
+            fail(e);
         }
         log("**Done");
         endTest();

@@ -41,7 +41,6 @@
 
 package org.netbeans.modules.uml.core.typemanagement;
 
-import org.netbeans.modules.uml.core.IQueryUpdater;
 import org.netbeans.modules.uml.core.QueryManager;
 import java.io.BufferedReader;
 import java.io.File;
@@ -59,8 +58,7 @@ import org.dom4j.Element;
 import org.dom4j.IDResolver;
 import org.dom4j.Node;
 
-import sun.security.action.GetLongAction;
-
+import org.openide.util.Exceptions;
 import org.netbeans.modules.uml.common.generics.ETPairT;
 import org.netbeans.modules.uml.core.IApplication;
 import org.netbeans.modules.uml.core.coreapplication.ICoreProduct;
@@ -80,11 +78,9 @@ import org.netbeans.modules.uml.core.metamodel.core.foundation.INamespace;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.INamespaceModifiedEventsSink;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IPresentationElement;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IVersionableElement;
-import org.netbeans.modules.uml.core.metamodel.core.foundation.PreventReEntranceByValue;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.TypedFactoryRetriever;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.UMLXMLManip;
 import org.netbeans.modules.uml.core.metamodel.infrastructure.IPart;
-import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.StructureConstants;
 import org.netbeans.modules.uml.core.metamodel.structure.IProject;
 import org.netbeans.modules.uml.core.support.umlsupport.FileManip;
 import org.netbeans.modules.uml.core.support.umlsupport.IResultCell;
@@ -1560,16 +1556,19 @@ public class TypeManager implements ITypeManager, IElementLifeTimeEventsSink,
 
 	private void connectToTypeFile()
     {
-        File typeFile = retrieveTypeFile(m_Project);
-        
-        IDResolver resolver = new IDResolver();
-        resolver.addNodeTypeId("Location", "locID");
-        resolver.addNodeTypeId("Type", "id");
-        resolver.addNodeTypeId("TypeManagement", "projectID");
-        m_Doc = XMLManip.getDOMDocument(typeFile.toString(), resolver);
-        if (m_Doc == null)
-        {
-            // TODO: Complain loudly.
+        try {
+            File typeFile = retrieveTypeFile(m_Project);
+
+            IDResolver resolver = new IDResolver();
+            resolver.addNodeTypeId("Location", "locID");
+            resolver.addNodeTypeId("Type", "id");
+            resolver.addNodeTypeId("TypeManagement", "projectID");
+            m_Doc = XMLManip.getDOMDocument(typeFile.getCanonicalPath(), resolver);
+            if (m_Doc == null) {
+                // TODO: Complain loudly.
+            }
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
         }
     }
     
@@ -2611,17 +2610,10 @@ public class TypeManager implements ITypeManager, IElementLifeTimeEventsSink,
 	 */
     public void save(String location)
     {
-		try
-		{
-			if (m_Doc != null)
-			{
-				XMLManip.save(m_Doc,location);
-			}
-		}
-		catch(IOException e)
-		{
-			e.printStackTrace();
-		}
+        if (m_Doc != null)
+        {
+                XMLManip.save(m_Doc,location);
+        }
     }
 
 	/**

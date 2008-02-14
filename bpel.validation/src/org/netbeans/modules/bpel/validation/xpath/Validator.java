@@ -54,6 +54,7 @@ import org.netbeans.modules.bpel.model.api.BpelModel;
 import org.netbeans.modules.bpel.model.api.Branches;
 import org.netbeans.modules.bpel.model.api.Condition;
 import org.netbeans.modules.bpel.model.api.ContentElement;
+import org.netbeans.modules.bpel.model.api.Copy;
 import org.netbeans.modules.bpel.model.api.DeadlineExpression;
 import org.netbeans.modules.bpel.model.api.ExpressionLanguageSpec;
 import org.netbeans.modules.bpel.model.api.FinalCounterValue;
@@ -64,19 +65,43 @@ import org.netbeans.modules.bpel.model.api.Query;
 import org.netbeans.modules.bpel.model.api.RepeatEvery;
 import org.netbeans.modules.bpel.model.api.StartCounterValue;
 import org.netbeans.modules.bpel.model.api.To;
+import org.netbeans.modules.bpel.model.api.VariableDeclaration;
+import org.netbeans.modules.bpel.model.api.VariableReference;
+import org.netbeans.modules.bpel.model.api.references.BpelReference;
+import org.netbeans.modules.xml.schema.model.Import;
 import org.netbeans.modules.bpel.model.api.support.ExNamespaceContext;
 import org.netbeans.modules.bpel.model.api.support.XPathModelFactory;
 import org.netbeans.modules.bpel.model.impl.references.SchemaReferenceBuilder;
+import org.netbeans.modules.xml.xam.Component;
+import org.netbeans.modules.xml.xam.Named;
 import org.netbeans.modules.xml.schema.model.SchemaModel;
+import org.netbeans.modules.xml.schema.model.SchemaComponent;
 import org.netbeans.modules.xml.xpath.ext.XPathModelHelper;
 import org.netbeans.modules.xml.xpath.ext.XPathException;
 import org.netbeans.modules.xml.xpath.ext.XPathExpression;
 import org.netbeans.modules.xml.xpath.ext.XPathModel;
 import org.netbeans.modules.xml.xpath.ext.spi.ExternalModelResolver;
+import org.netbeans.modules.bpel.model.api.PartReference;
 import org.netbeans.modules.bpel.model.api.support.PathValidationContext;
 import org.netbeans.modules.bpel.model.api.support.BpelXPathNamespaceContext;
 import org.netbeans.modules.bpel.model.api.support.BpelVariableResolver;
 import org.netbeans.modules.bpel.model.api.support.BpelXpathExtFunctionResolver;
+import org.netbeans.modules.bpel.model.api.references.SchemaReference;
+import org.netbeans.modules.bpel.model.api.references.WSDLReference;
+import org.netbeans.modules.xml.xam.dom.NamedComponentReference;
+import org.netbeans.modules.xml.schema.model.Schema;
+import org.netbeans.modules.xml.schema.model.GlobalElement;
+import org.netbeans.modules.xml.schema.model.GlobalType;
+import org.netbeans.modules.xml.schema.model.SimpleType;
+import org.netbeans.modules.xml.schema.model.TypeContainer;
+import org.netbeans.modules.xml.wsdl.model.Message;
+import org.netbeans.modules.xml.wsdl.model.Part;
+import org.netbeans.modules.xml.schema.model.GlobalComplexType;
+import org.netbeans.modules.xml.schema.model.GlobalSimpleType;
+import org.netbeans.modules.xml.schema.model.LocalSimpleType;
+import org.netbeans.modules.xml.schema.model.LocalComplexType;
+import org.netbeans.modules.xml.schema.model.visitor.DeepSchemaVisitor;
+import org.netbeans.modules.xml.xam.dom.DocumentComponent;
 import static org.netbeans.modules.soa.ui.util.UI.*;
 
 /**
@@ -86,10 +111,177 @@ import static org.netbeans.modules.soa.ui.util.UI.*;
 public final class Validator extends org.netbeans.modules.bpel.validation.core.Validator {
 
   @Override
+  public void visit(Copy copy) {
+//out();
+    Component fromType = getTypeOfElement(getType(copy.getFrom()));
+//out("Assign: " + ((Named) copy.getParent()).getName());
+//out("FROM: " + fromType);
+    Component toType = getTypeOfElement(getType(copy.getTo()));
+//out();
+//out("  TO: " + toType);
+
+    if (fromType == null || toType == null) {
+      return;
+    }
+    String fromName = ((Named) fromType).getName();
+    String toName = ((Named) toType).getName();
+
+    if (fromName != null && fromName.equals(toName)) {
+      return;
+    }
+    if (fromName.equals("anyURI") || toName.equals("anyURI")) {
+      return;
+    }
+    if (fromType instanceof GlobalSimpleType && toType instanceof GlobalSimpleType) {
+      return;
+    }
+    if (fromType != toType) {
+      addError("FIX_TYPE_IN_COPY", copy, getTypeString(fromType), getTypeString(toType));
+    }
+  }
+
+  private String getTypeString(Component component) {
+    if (component == null) {
+      return "n/a";
+    }
+    if (component instanceof Named) {
+      return ((Named) component).getName();
+    }
+    return component.toString();
+  }
+
+  private Component getType(From from) {
+    if (from == null) {
+      return null;
+    }
+    Component variableType = getVariableType(from);
+
+    if (variableType != null) {
+      Component partType = getPartType(from);
+
+      if (partType == null) {
+        return variableType;
+      }
+      else {
+        return partType;
+      }
+    }
+    return checkXPathExpression(from);
+  }
+
+  private Component getType(To to) {
+    if (to == null) {
+      return null;
+    }
+    Component variableType = getVariableType(to);
+
+    if (variableType != null) {
+      Component partType = getPartType(to);
+
+      if (partType == null) {
+        return variableType;
+      }
+      else {
+        return partType;
+      }
+    }
+    return checkXPathExpression(to);
+  }
+
+  private Component getVariableType(VariableReference reference) {
+    BpelReference<VariableDeclaration> ref = reference.getVariable();
+
+    if (ref == null) {
+      return null;
+    }
+    VariableDeclaration declaration = ref.get();
+
+    if (declaration == null) {
+      return null;
+    }
+    // message type
+    WSDLReference<Message> wsdlRef = declaration.getMessageType();
+
+    if (wsdlRef != null) {
+      Message message = wsdlRef.get();
+
+      if (message != null) {
+        Collection<Part> parts = message.getParts();
+
+        if (parts == null || parts.size() == 0) {
+          return null;
+        }
+        if (parts.size() == 1) {
+          return getPartType(parts.iterator().next());
+        }
+        return message;
+      }
+    }
+    // element
+    SchemaReference<GlobalElement> elementRef = declaration.getElement();
+
+    if (elementRef != null) {
+      GlobalElement element = elementRef.get();
+
+      if (element != null) {
+        return element;
+      }
+    }
+    // type
+    SchemaReference<GlobalType> typeRef = declaration.getType();
+
+    if (typeRef != null) {
+      GlobalType type = typeRef.get();
+
+      if (type != null) {
+        return type;
+      }
+    }
+    return null;
+  }
+
+  private SchemaComponent getPartType(PartReference reference) {
+//out("get part type");
+    WSDLReference<Part> ref = reference.getPart();
+
+    if (ref == null) {
+      return null;
+    }
+    return getPartType(ref.get());
+  }
+
+  private SchemaComponent getPartType(Part part) {
+    if (part == null) {
+      return null;
+    }
+    // element
+    NamedComponentReference<GlobalElement> elementRef = part.getElement();
+
+    if (elementRef != null) {
+      GlobalElement element = elementRef.get();
+
+      if (element != null) {
+        return element;
+      }
+    }
+    // type
+    NamedComponentReference<GlobalType> typeRef = part.getType();
+
+    if (typeRef != null) {
+      GlobalType type = typeRef.get();
+
+      if (type != null) {
+        return type;
+      }
+    }
+    return null;
+  }
+  
+  @Override
   public void visit(BooleanExpr expr) {
       checkXPathExpression(expr);
   }
-  
+
   @Override
   public void visit(Branches branches) {
       checkXPathExpression(branches);
@@ -116,11 +308,6 @@ public final class Validator extends org.netbeans.modules.bpel.validation.core.V
   }
   
   @Override
-  public void visit(From from) {
-      checkXPathExpression(from);
-  }
-  
-  @Override
   public void visit(Query query) {
       checkXPathExpression(query);
   }
@@ -136,11 +323,6 @@ public final class Validator extends org.netbeans.modules.bpel.validation.core.V
   }
   
   @Override
-  public void visit(To to) {
-      checkXPathExpression(to);
-  }
-  
-  @Override
   public void visit(OnAlarmEvent event) {
       myValidatedActivity = event;
   }
@@ -150,16 +332,16 @@ public final class Validator extends org.netbeans.modules.bpel.validation.core.V
       myValidatedActivity = activity;
   }
   
-  private void checkXPathExpression(ContentElement element) {
+  private SchemaComponent checkXPathExpression(ContentElement element) {
       String content = element.getContent();
       
       if (content == null) {
-          return;
+          return null;
       }
       content = content.trim();
 
       if (content.length() == 0) {
-          return;
+          return null;
       }
       String expressionLang = null;
       
@@ -167,14 +349,14 @@ public final class Validator extends org.netbeans.modules.bpel.validation.core.V
           expressionLang = ((ExpressionLanguageSpec) element).
                   getExpressionLanguage();
       }
-      checkExpression(expressionLang, content, element);
+      return checkExpression(expressionLang, content, element);
   }
   
-  public void checkExpression(String exprLang, String exprText, final ContentElement element) {
+  public SchemaComponent checkExpression(String exprLang, String exprText, final ContentElement element) {
       boolean isXPathExpr = exprLang == null || XPathModelFactory.DEFAULT_EXPR_LANGUAGE.equals(exprLang);
 
       if ( !isXPathExpr) {
-          return;
+          return null;
       }
       XPathModelHelper helper= XPathModelHelper.getInstance();
       XPathModel model = helper.newXPathModel();
@@ -207,36 +389,138 @@ public final class Validator extends org.netbeans.modules.bpel.validation.core.V
       //
       // Checks if the expression contains ";". 
       // If it does, then split it to parts and verifies them separately.
-      if (exprText.contains(XPathModelFactory.XPATH_EXPR_DELIMITER)) {
+      if (XPathModelFactory.isSplitable(exprText)) {
           // Notify the user that the expression is not completed
           context.addResultItem(exprText, Validator.ResultType.ERROR, i18n(Validator.class, "INCOMPLETE_XPATH")); // NOI18N
 
-          String[] partsArr = exprText.split(
-                  XPathModelFactory.XPATH_EXPR_DELIMITER);
+          String[] partsArr = XPathModelFactory.split(exprText);
           for (String anExprText : partsArr) {
-              if (anExprText != null && anExprText.length() != 0) {
-                  // Only the first expression graph has to be connected 
-                  // to the right tree! The isFirst flag is used for it. 
-                  checkSingleExpr(model, anExprText);
-              }
+              checkSingleExpr(model, anExprText);
+//              if (anExprText != null && anExprText.length() != 0) {
+//                  // Only the first expression graph has to be connected 
+//                  // to the right tree! The isFirst flag is used for it. 
+//                 checkSingleExpr(model, anExprText);
+//              }
           }
-      } else {
-          checkSingleExpr(model, exprText);
+          return null;
+      } 
+      else {
+          return checkSingleExpr(model, exprText);
       }
   }
 
-  private void checkSingleExpr(XPathModel model, String exprText) {
+  private SchemaComponent checkSingleExpr(XPathModel model, String exprText) {
       try {
           XPathExpression xpath = model.parseExpression(exprText);
-          // Common validation will be made here!
           model.resolveExtReferences(true);
+          return model.getLastSchemaComponent();
       } 
       catch (XPathException e) {
           // Nothing to do here because of the validation context 
           // was specified before and it has to be populated 
           // with a set of problems.
+          return null;
       }
   }
 
+  private Component getTypeOfElement(Component component) {
+//out();
+//out("GET TYPE: " + component);
+    GlobalType type = null;
+
+    if (component instanceof TypeContainer) {
+//out("1");
+      NamedComponentReference<? extends GlobalType> ref = ((TypeContainer) component).getType();
+
+      if (ref != null) { 
+        type = ref.get();
+
+        if (type != null) {
+//out("2");
+          return type;
+        }
+      }
+    }
+//out("3");
+    if (component instanceof DocumentComponent && component instanceof SchemaComponent) {
+      DocumentComponent document = (DocumentComponent) component;
+      String typeName = document.getPeer().getAttribute("type");
+      typeName = removePrefix(typeName);
+      type = findType(typeName, (SchemaComponent) component);
+    }
+    if (type != null) {
+      return type;
+    }
+//out("4");
+    return component;
+  }
+
+  private GlobalType findType(String typeName, SchemaComponent component) {
+//out("= findType: " + typeName);
+    if (typeName == null || typeName.equals("")) {
+      return null;
+    }
+    SchemaModel model = component.getModel();
+    Collection<Schema> schemas = model.findSchemas("http://www.w3.org/2001/XMLSchema");
+    GlobalType type = null;
+
+    for (Schema schema : schemas) {
+      type = findType(typeName, schema);
+
+      if (type != null) {
+        return type;
+      }
+    }
+    return findType(typeName, model.getSchema());
+  }
+
+  private GlobalType findType(final String typeName, Schema schema) {
+//out();
+//out("= in schema: " + schema.getTargetNamespace());
+    myGlobalType = null;
+
+    schema.accept(new DeepSchemaVisitor() {
+
+      @Override
+      public void visit(GlobalSimpleType type) {
+//out("  see GLOBAL Simple TYPE : " + type.getName());
+        if (typeName.equals(type.getName())) {
+//out("!!!=== FOUND GLOBAL Simple TYPE ==== : " + type.getName());
+          myGlobalType = type;
+        }
+      }
+      @Override
+      public void visit(GlobalComplexType type) {
+//out(" see GLOBAL Complex TYPE : " + type.getName());
+        if (typeName.equals(type.getName())) {
+//out("!!!=== FOUND GLOBAL Complex TYPE ==== : " + type.getName());
+          myGlobalType = type;
+        }
+      }
+    });
+    return myGlobalType;
+  }
+
+  private String removePrefix(String value) {
+    if (value == null) {
+      return null;
+    }
+    int k = value.indexOf(":");
+
+    if (k == -1) {
+      return value;
+    }
+    return value.substring(k + 1);
+  }
+
+  private static void out() {
+    System.out.println();
+  }
+
+  private void out(Object object) {
+    System.out.println("*** " + object); // NOI18N
+  }
+
+  private GlobalType myGlobalType;
   private BpelEntity myValidatedActivity; 
 }

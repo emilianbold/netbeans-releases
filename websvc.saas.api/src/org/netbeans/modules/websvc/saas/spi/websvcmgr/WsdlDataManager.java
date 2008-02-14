@@ -48,6 +48,14 @@ import org.netbeans.modules.websvc.saas.*;
  * @author nam
  */
 public interface WsdlDataManager {
+    /**
+     * Find the WSDL data for the given WSDL URL and service name.
+     * 
+     * @param wsdlUrl
+     * @param serviceName  optional service name; if null return default service
+     * @return WsdlData object or null if does not exist in repository.
+     */
+    WsdlData findWsdlData(String wsdlUrl, String serviceName);
     
     /**
      * Find or create the WSDL data for the given WSDL URL.

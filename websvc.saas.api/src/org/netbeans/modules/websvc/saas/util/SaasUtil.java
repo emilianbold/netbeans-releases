@@ -38,6 +38,8 @@
  */
 package org.netbeans.modules.websvc.saas.util;
 
+import java.awt.Image;
+import java.beans.BeanInfo;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -61,6 +63,7 @@ import javax.xml.transform.sax.SAXSource;
 import org.netbeans.modules.websvc.saas.model.Saas;
 import org.netbeans.modules.websvc.saas.model.SaasGroup;
 import org.netbeans.modules.websvc.saas.model.WadlSaas;
+import org.netbeans.modules.websvc.saas.model.WadlSaasMethod;
 import org.netbeans.modules.websvc.saas.model.jaxb.Group;
 import org.netbeans.modules.websvc.saas.model.jaxb.SaasServices;
 import org.netbeans.modules.websvc.saas.model.wadl.Application;
@@ -350,7 +353,11 @@ public class SaasUtil {
         return result;
     }
     
-    public static String getSignature(WadlSaas saas, Resource[] paths, Method m) {
+    public static String getSignature(WadlSaasMethod method) {
+        WadlSaas saas = method.getSaas();
+        Resource[] paths = method.getResourcePath();
+        Method m = method.getWadlMethod();
+        
         StringBuffer sb = new StringBuffer();
         sb.append(m.getName());
         sb.append(" : ");
@@ -397,4 +404,12 @@ public class SaasUtil {
         return sb.toString();
     }
     
+    public static String loadIcon(Saas saas, int type) {
+        String path = saas.getSaasMetadata().getIcon16();
+        if (type == BeanInfo.ICON_COLOR_32x32 || type == BeanInfo.ICON_MONO_32x32) {
+            path =  saas.getSaasMetadata().getIcon32();
+        }
+        return path;
+    }
 }
+
