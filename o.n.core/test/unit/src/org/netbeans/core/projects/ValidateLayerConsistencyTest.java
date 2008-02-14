@@ -119,6 +119,11 @@ public class ValidateLayerConsistencyTest extends NbTestCase {
         return true;
     }
     
+    @Override
+    protected Level logLevel() {
+        return Level.FINER;
+    }
+    
     public void testAreAttributesFine () {
         List<String> errors = new ArrayList<String>();
         
