@@ -19,7 +19,9 @@
 
 package org.netbeans.modules.bpel.model.api.support;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 import org.netbeans.modules.bpel.model.api.BpelEntity;
 import org.netbeans.modules.bpel.model.api.BpelModel;
 import org.netbeans.modules.bpel.model.impl.references.SchemaReferenceBuilder;
@@ -42,6 +44,7 @@ public final class XPathModelFactory {
      * It is intended to be used temporary to save unlinked content of a graph. 
      */
     public static final String XPATH_EXPR_DELIMITER = ";";
+    public static final char XPATH_EXPR_DELIMITER_CHAR = ';';
     
     public static final String DEFAULT_EXPR_LANGUAGE =
             "urn:oasis:names:tc:wsbpel:2.0:sublang:xpath1.0"; // NOI18N
@@ -84,4 +87,82 @@ public final class XPathModelFactory {
         return model;
     }
     
+    public static String[] split(String str) {
+        if (str == null || str.length() == 0) {
+            return EMPTY_STRING_ARRAY;
+        }
+        
+        boolean quotOpen = false;
+        boolean aposOpen = false;
+        
+        int beginIndex = 0;
+        
+        List<String> result = new ArrayList<String>();
+        
+        int stringLength = str.length();
+        
+        for (int i = 0; i < stringLength; i++) {
+            char c = str.charAt(i);
+            if (c == '\'') {
+                if (aposOpen) {
+                    aposOpen = false;
+                } else if (!quotOpen) {
+                    aposOpen = true;
+                }
+            } else if (c == '\"') {
+                if (quotOpen) {
+                    quotOpen = false;
+                } else if (!aposOpen) {
+                    quotOpen = true;
+                }
+            } else if (c == XPATH_EXPR_DELIMITER_CHAR) {
+                if (!quotOpen && !aposOpen) {
+                    // substring found
+                    if (beginIndex < i) {
+                        result.add(new String(str.substring(beginIndex, i)));
+                    }
+                    beginIndex = i + 1;
+                }
+            }
+        }
+        
+        if (beginIndex < stringLength) {
+            result.add(new String(str.substring(beginIndex)));
+        }
+        
+        return (result.isEmpty()) ? EMPTY_STRING_ARRAY
+                : result.toArray(new String[result.size()]);
+    }
+    
+    public static boolean isSplitable(String str) {
+        boolean quotOpen = false;
+        boolean aposOpen = false;
+
+        int stringLength = str.length();
+        
+        for (int i = 0; i < stringLength; i++) {
+            char c = str.charAt(i);
+            if (c == '\'') {
+                if (aposOpen) {
+                    aposOpen = false;
+                } else if (!quotOpen) {
+                    aposOpen = true;
+                }
+            } else if (c == '\"') {
+                if (quotOpen) {
+                    quotOpen = false;
+                } else if (!aposOpen) {
+                    quotOpen = true;
+                }
+            } else if (c == XPATH_EXPR_DELIMITER_CHAR) {
+                if (!quotOpen && !aposOpen) {
+                    return true;
+                }
+            }
+        }
+        
+        return false;
+    }
+    
+    private static final String[] EMPTY_STRING_ARRAY = new String[0];
 }

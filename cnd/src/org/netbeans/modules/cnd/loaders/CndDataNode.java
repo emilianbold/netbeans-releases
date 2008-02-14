@@ -73,13 +73,11 @@ public class CndDataNode extends DataNode {
     public CndDataNode(DataObject obj, Children ch) {
 	super(obj, ch);
 	primary = getDataObject().getPrimaryFile();
-        initDisplayName(obj);
     }
 
     public CndDataNode(DataObject obj, Children ch, String icon) {
 	super(obj, ch);
 	setIconBaseWithExtension(icon);
-        initDisplayName(obj);
     }
 
     /**
@@ -103,12 +101,4 @@ public class CndDataNode extends DataNode {
 	return new HelpCtx("Welcome_cpp_home"); // NOI18N
     }
     
-    private void initDisplayName(DataObject obj){
-        if (obj.isTemplate()) {
-            Object name = obj.getPrimaryFile().getAttribute(TemplateExtensionUtils.NAME_ATTRIBUTE);
-            if (name instanceof String){
-                setDisplayName((String)name);
-            }
-        }
-    }
 }

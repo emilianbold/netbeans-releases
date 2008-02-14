@@ -41,27 +41,27 @@
 
 package org.netbeans.modules.uml.core.support.umlsupport;
 
+import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileWriter;
 import java.io.IOException;
-import java.io.PrintWriter;
+import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
 import java.io.StringReader;
-import java.io.StringWriter;
 import java.lang.ref.WeakReference;
 import java.text.MessageFormat;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Vector;
 
+import java.util.logging.Level;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 
+import javax.xml.parsers.ParserConfigurationException;
 import org.dom4j.Attribute;
 import org.dom4j.Branch;
 import org.dom4j.Document;
 import org.dom4j.DocumentFactory;
-//import org.dom4j.DocumentHelper;
 import org.dom4j.Element;
 import org.dom4j.IDResolver;
 import org.dom4j.InvalidXPathException;
@@ -75,10 +75,12 @@ import org.dom4j.io.SAXReader;
 import org.dom4j.io.XMLWriter;
 import org.dom4j.tree.DefaultDocument;
 import org.w3c.dom.DOMException;
-import org.xml.sax.EntityResolver;
 
 import org.netbeans.modules.uml.common.ETSystem;
 import org.netbeans.modules.uml.core.metamodel.structure.Project;
+import org.netbeans.modules.uml.core.support.UMLLogger;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 
 /**
  * <p>Title: </p>
@@ -91,6 +93,7 @@ import org.netbeans.modules.uml.core.metamodel.structure.Project;
 
 public class XMLManip
 {
+    private static final String loggerName = "uml.core.support.umlsupport.XMLManip";
     private static HashMap<String, Namespace> m_Namespaces = 
         new HashMap<String, Namespace>();
     private static Document m_XMIFragment;
@@ -119,15 +122,15 @@ public class XMLManip
 
    private XMLManip()
    {
-      try
-      {
-         dbf = DocumentBuilderFactory.newInstance();
-         dbf.setNamespaceAware(true);
-         db = dbf.newDocumentBuilder();
-      }
-      catch (Exception E)
-      {
-      }
+        try {
+            dbf = DocumentBuilderFactory.newInstance();
+            dbf.setNamespaceAware(true);
+            db = dbf.newDocumentBuilder();
+        } catch (ParserConfigurationException ex) {
+            UMLLogger.logException(loggerName, ex, Level.WARNING);
+        }
+      
+      
    }
 
    /**
@@ -157,43 +160,41 @@ public class XMLManip
       return getDOMDocument(fileName, new IDResolver("xmi.id"));
    }
    
-   public static Document getDOMDocument(String fileName, IDResolver resolver)
-   {
-      Document doc = null;
-
-      try
-      {
-         if (fileName != null && fileName.length() > 0)
-         {
-//            doc = m_LoadedDocs.get(fileName);
-//            if (doc == null)
-//            {
-               Log.out("Loading doc for " + fileName); //$NON-NLS-1$
-               SAXReader reader = new SAXReader(DOMDocumentFactory.getInstance(), false);
-               reader.setIDResolver(resolver);
-               
-               File file = new File(fileName);
-               if (file.exists())
-               {
-					doc = reader.read(new File(fileName));
-					//m_LoadedDocs.put(fileName, doc);
-               }
-               else
-               {
-               		//its a new file, we might be creating a new diagram
-               }
-               //doc = db.parse(new File(fileName));
+    public static Document getDOMDocument(String fileName, IDResolver resolver) 
+    {
+        Document doc = null;
+        if (fileName != null && fileName.length() > 0) 
+        {
+            File file = new File(fileName);
+            if (!file.exists()) 
+            {
+                return doc;
             }
-//         }
-      }
-      catch (Exception e)
-      {
-          Log.err("Error loading " + fileName);
-          Log.stackTrace(e);
-         doc = null;
-      }
-      return doc;
-   }
+            InputStreamReader ins = null;
+            FileObject fo = FileUtil.toFileObject(file);  
+            if (fo != null && fo.getSize() > 0 ) 
+            {
+                try {
+                    SAXReader reader = new SAXReader(DOMDocumentFactory.getInstance(), false);
+                    reader.setIDResolver(resolver);
+                    ins = new InputStreamReader(fo.getInputStream());
+                    doc = reader.read(ins);
+
+                } catch (Exception ex) {
+                    UMLLogger.logException(loggerName, ex, Level.WARNING);
+                } finally {
+                    if (ins != null) {
+                        try {
+                            ins.close();
+                        } catch (IOException ex) {
+                            UMLLogger.logMessage(loggerName, ex.getMessage(), Level.WARNING);
+                        }
+                    }
+                }
+            }
+        }
+        return doc;
+    }
    
 
    public static Document getDOMDocumentUseWeakCache(String fileName)
@@ -253,9 +254,9 @@ public class XMLManip
          }
          //doc = db.newDocument();
       }
-      catch (Exception e)
+      catch (Exception ex)
       {
-      	e.printStackTrace();
+      	UMLLogger.logException(loggerName, ex, Level.WARNING);
       }
       return doc;
    }
@@ -268,13 +269,14 @@ public class XMLManip
          if (str != null && str.length() > 0)
          {
             //SAXReader reader = new SAXReader();
-			SAXReader reader = new SAXReader(DOMDocumentFactory.getInstance(), false);
+            SAXReader reader = new SAXReader(DOMDocumentFactory.getInstance(), false);
             doc = reader.read(str);
             //doc = db.parse(str);
          }
       }
-      catch (Exception e)
+      catch (Exception ex)
       {
+          UMLLogger.logException(loggerName, ex, Level.WARNING);
       }
       return doc;
    }
@@ -715,7 +717,9 @@ public class XMLManip
       	{
          list = pNode.selectNodes(pattern);
       	}
-      	catch(InvalidXPathException e){
+      	catch(InvalidXPathException ex)
+        {
+            UMLLogger.logException(loggerName, ex, Level.WARNING);
       	}
       }
       return list;
@@ -799,9 +803,9 @@ public class XMLManip
            SAXReader reader = new SAXReader(DOMDocumentFactory.getInstance(), validate, resolver);
            return reader.read(new StringReader(text));
        }
-       catch (Exception e)
+       catch (Exception ex)
        {
-           e.printStackTrace();
+           UMLLogger.logException(loggerName, ex, Level.WARNING);
        }
        return null;
    }
@@ -1082,9 +1086,9 @@ public class XMLManip
             }
          }
       }
-      catch (Exception e)
+      catch (Exception ex)
       {
-      	e.printStackTrace();
+          UMLLogger.logException(loggerName, ex, Level.WARNING);
       }
       return retNode;
    }
@@ -1361,85 +1365,141 @@ public class XMLManip
 		return newNode;                               	
    }
    
-   public static void saveNodePretty(Node node, String filename)
-   	throws IOException
+   public static void saveNodePretty(Node node, String filename) 
    {
-      FileWriter writer = new FileWriter(filename);
-      XMLWriter xmlWriter = new XMLWriter(writer, OutputFormat.createPrettyPrint());
-      xmlWriter.write(node);
-      xmlWriter.flush();
-      xmlWriter.close();
+       if (filename != null && filename.trim().length() > 0 )
+       {
+           FileObject fo = FileUtil.toFileObject(new File(filename));
+           if (fo != null) 
+           {
+               OutputStreamWriter out = null;
+               XMLWriter xmlWriter = null;
+               try {
+                   out = new OutputStreamWriter(fo.getOutputStream());
+                   xmlWriter = new XMLWriter(out,
+                           OutputFormat.createPrettyPrint());
+                   xmlWriter.write(node);
+                   xmlWriter.flush();
+               } catch (Exception ex) {
+                   UMLLogger.logException(loggerName, ex, Level.WARNING);
+               } finally {
+                   try {
+                       if (out != null) {
+                           out.close();
+                       }
+                       if (xmlWriter != null) {
+                           xmlWriter.close();
+                       }
+                   } catch (IOException ex) {
+                       UMLLogger.logMessage(loggerName, ex.getMessage(), Level.WARNING);
+                   }
+               }
+           }
+       }
    }
 
    public static void saveNode(Node node, String filename)
-   	throws IOException
    {
-      FileWriter writer = new FileWriter(filename);
-      //XMLWriter xmlWriter = new XMLWriter(writer, OutputFormat.createPrettyPrint());
-      OutputFormat format = new OutputFormat();
-      format.setNewlines(true);
-      XMLWriter xmlWriter = new XMLWriter(writer, format);
-      xmlWriter.write(node);
-      xmlWriter.flush();
-      xmlWriter.close();
+       if (filename != null && filename.trim().length() > 0 )
+       {
+           FileObject fo = FileUtil.toFileObject(new File(filename));
+           if (fo != null) 
+           {
+               OutputStreamWriter out = null;
+               XMLWriter xmlWriter = null;
+               try {
+                   out = new OutputStreamWriter(fo.getOutputStream());
+                   OutputFormat format = new OutputFormat();
+                   format.setNewlines(true);
+                   xmlWriter = new XMLWriter(out, format);
+                   xmlWriter.write(node);
+                   xmlWriter.flush();
+               } catch (Exception ex) {
+                   UMLLogger.logException(loggerName, ex, Level.WARNING);
+               }
+               finally {
+                    try {
+                       if (out != null) {
+                           out.close();
+                       }
+                       if (xmlWriter != null) {
+                           xmlWriter.close();
+                       }
+                   } catch (IOException ex) {
+                       UMLLogger.logMessage(loggerName, ex.getMessage(), Level.WARNING);
+                   }
+                }
+           }
+       }
    }
 
    /**
     * @param document
     * @param fileName
     */
-   public static void save(Document document, String filename)
-		throws IOException
+   public static boolean save(Document document, String filename)
    {
-	   	if (filename != null)
-	   	{
-//   			FileWriter writer = new FileWriter(filename);
-//   			//XMLWriter xmlWriter = new XMLWriter(writer, OutputFormat.createPrettyPrint());
-//            OutputFormat format = new OutputFormat();
-//            format.setNewlines(true);
-//            //XMLWriter xmlWriter = new XMLWriter(writer, format);
-//				XMLWriter xmlWriter = new XMLWriter(writer);
-//   			xmlWriter.write(document);
-//   			
-//   			writer.flush();
-//   			writer.close();
-
-				FileWriter writer = new FileWriter(filename);
-				java.io.BufferedWriter xmlWriter = new java.io.BufferedWriter(writer);
-				xmlWriter.write(document.asXML(), 0, document.asXML().length());
-				xmlWriter.flush();
-				//System.out.println(document.asXML().length());
-   			
-				writer.flush();
-				writer.close();
-	   	}
+       boolean successful = false;
+       if (filename != null && filename.trim().length() > 0 )
+       {
+           OutputStreamWriter out = null;
+           BufferedWriter xmlWriter = null;
+           try {
+               FileObject fo = FileUtil.createData(new File(filename));
+               out = new OutputStreamWriter(fo.getOutputStream());
+               xmlWriter = new BufferedWriter(out);
+               xmlWriter.write(document.asXML(), 0, document.asXML().length());
+               xmlWriter.flush();
+               successful = true;
+           } catch (Exception ex) {
+               UMLLogger.logException(loggerName, ex, Level.WARNING);
+           } finally {
+               try {
+                   if (out != null) {
+                       out.close();
+                   }
+                   if (xmlWriter != null) {
+                       xmlWriter.close();
+                   }
+               } catch (IOException ex) {
+                   UMLLogger.logMessage(loggerName, ex.getMessage(), Level.WARNING);
+               }
+           }
+       }
+       return successful;
    }
 
-   public static void savePretty(Document document, String filename)
-		throws IOException
+   public static boolean savePretty(Document document, String filename)
    {
-	   	if (filename != null)
-	   	{
-   			FileWriter writer = new FileWriter(filename);
-   			XMLWriter xmlWriter = new XMLWriter(writer, OutputFormat.createPrettyPrint());
-//            OutputFormat format = new OutputFormat();
-//            format.setNewlines(true);
-//            //XMLWriter xmlWriter = new XMLWriter(writer, format);
-//				XMLWriter xmlWriter = new XMLWriter(writer);
-   			xmlWriter.write(document);
-   			
-   			writer.flush();
-   			writer.close();
+       boolean successful = false;
+       if (filename != null && filename.trim().length() > 0 )
+       {
+           OutputStreamWriter out = null;
+           XMLWriter xmlWriter = null;
+           try {
+               FileObject fo = FileUtil.createData(new File(filename));
 
-//				FileWriter writer = new FileWriter(filename);
-//				java.io.BufferedWriter xmlWriter = new java.io.BufferedWriter(writer);
-//				xmlWriter.write(document.asXML(), 0, document.asXML().length());
-//				xmlWriter.flush();
-//				//System.out.println(document.asXML().length());
-//   			
-//				writer.flush();
-//				writer.close();
-	   	}
+               out = new OutputStreamWriter(fo.getOutputStream());
+               xmlWriter = new XMLWriter(out, OutputFormat.createPrettyPrint());
+               xmlWriter.write(document);
+               xmlWriter.flush();
+               successful = true;
+           } catch (Exception ex) {
+               UMLLogger.logException(loggerName, ex, Level.WARNING);
+           } finally {
+               try {
+                   if (out != null) {
+                       out.close();
+                   }
+                   if (xmlWriter != null) {
+                       xmlWriter.close();
+                   }
+               } catch (IOException ex) {
+                   UMLLogger.logMessage(loggerName, ex.getMessage(), Level.WARNING);
+               }
+           }
+       }
+       return successful;
    }
    
    /**
@@ -1554,6 +1614,4 @@ public class XMLManip
     public static void clearCachedXPaths() {
 	cachedXPaths = null;
     }
-
-
 }

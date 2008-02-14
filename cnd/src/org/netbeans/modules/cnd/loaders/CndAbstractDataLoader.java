@@ -41,16 +41,10 @@
 
 package org.netbeans.modules.cnd.loaders;
 
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
 import java.io.File;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.OutputStreamWriter;
 import java.util.Date;
 import java.util.Map;
 import java.text.DateFormat;
-import org.netbeans.modules.cnd.editor.filecreation.CCFSrcFileIterator;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.ExtensionList;
 import org.openide.loaders.MultiDataObject;
@@ -58,9 +52,6 @@ import org.openide.loaders.FileEntry;
 import org.openide.loaders.UniFileLoader;
 import org.openide.modules.InstalledFileLocator;
 import org.netbeans.modules.cnd.settings.CppSettings;
-import org.openide.filesystems.FileLock;
-import org.openide.filesystems.FileUtil;
-import org.openide.loaders.DataObject;
 
 /**
  * DataLoader for recognising C/C++/Fortran (C-C-F) source files.
@@ -113,77 +104,6 @@ public abstract class CndAbstractDataLoader extends UniFileLoader {
             super(obj, primaryFile);
         }
 
-        @Override
-        public FileObject createFromTemplate(FileObject f, String name) throws IOException {
-            FileObject fo;
-            if (CCFSrcFileIterator.NEW_EXTENSION) {
-                fo = createFromTemplate2(f, name);
-            } else {
-                fo = super.createFromTemplate(f, name);
-            }
-                  
-            if (fo.getAttribute(TemplateExtensionUtils.NAME_ATTRIBUTE) != null) {
-                fo.setAttribute(TemplateExtensionUtils.NAME_ATTRIBUTE, null);
-            }
-            return fo;
-        }
-
-        public FileObject createFromTemplate2 (FileObject f, String name) throws IOException {
-            // we don't want extension to be taken from template filename
-            String ext = FileUtil.getExtension(name);
-            assert ext.length() > 0;
-            name = name.substring(0, name.length() - ext.length() - 1);
-
-            FileObject fo = f.createData (name, ext);
-
-            java.text.Format frm = createFormat (f, name, ext);
-
-            BufferedReader r = new BufferedReader (new InputStreamReader (getFile ().getInputStream ()));
-            try {
-                FileLock lock = fo.lock ();
-                try {
-                    BufferedWriter w = new BufferedWriter (new OutputStreamWriter (fo.getOutputStream (lock)));
-
-                    try {
-                        String current;
-                        while ((current = r.readLine ()) != null) {
-                            w.write (frm.format (current));
-                            // Cf. #7061.
-                            w.newLine ();
-                        }
-                    } finally {
-                        w.close ();
-                    }
-                } finally {
-                    lock.releaseLock ();
-                }
-            } finally {
-                r.close ();
-            }
-
-            // copy attributes
-            FileUtil.copyAttributes (getFile (), fo);
-
-            // unmark template state
-            setTemplate (fo, false);
-
-            return fo;
-        }
-        
-        private static boolean setTemplate (FileObject fo, boolean newTempl) throws IOException {
-            boolean oldTempl = false;
-
-            Object o = fo.getAttribute(DataObject.PROP_TEMPLATE);
-            if ((o instanceof Boolean) && ((Boolean)o).booleanValue())
-                oldTempl = true;
-            if (oldTempl == newTempl)
-                return false;
-
-            fo.setAttribute(DataObject.PROP_TEMPLATE, (newTempl ? Boolean.TRUE : null));
-
-            return true;
-        }
-
         protected java.text.Format createFormat(FileObject target, String name, String ext) {
 
             Map map = (CppSettings.findObject(CppSettings.class, true)).getReplaceableStringsProps();
@@ -196,7 +116,7 @@ public abstract class CndAbstractDataLoader extends UniFileLoader {
             map.put("PACKAGE_AND_NAME", packageName + name); // NOI18N
             map.put("NAME", name); // NOI18N
             map.put("EXTENSION", ext); // NOI18N
-            String guardName = name.replace('-', '_').replace('.', '_'); // NOI18N
+            String guardName = (name + "_" + ext).replace('-', '_').replace('.', '_'); // NOI18N
             map.put("GUARD_NAME", guardName.toUpperCase()); // NOI18N
             /*
             This is a ugly hack but I don't have a choice. That's because
