@@ -741,7 +741,11 @@ public class MutexTest extends NbTestCase {
         final Ticker tick = new Ticker();
         final AtomicBoolean inWrite = new AtomicBoolean();
         
-        Thread t = new Thread("testReadEnterAfterPostWriteWasContended87932-reader") {
+        class T extends Thread {
+            public T() {
+                super("testReadEnterAfterPostWriteWasContended87932-reader");
+            }
+            @Override
             public void run() {
                 pr.enterReadAccess();
                 tick.tick();
@@ -762,7 +766,9 @@ public class MutexTest extends NbTestCase {
                 
                 
             }
-        };
+        }
+        
+        Thread t = new T();
         String str = "THREAD:testReadEnterAfterPostWriteWasContended87932-reader MSG:wait for exploitable place in Mutex" + 
                 "THREAD:main MSG:.*Processing posted requests: 2" +
                 "THREAD:testReadEnterAfterPostWriteWasContended87932-reader MSG:Let the other thread continue";
@@ -772,14 +778,18 @@ public class MutexTest extends NbTestCase {
         t.start();
         
         tick.waitOn();
-        mutex.postWriteRequest(new Runnable() {
+        
+        class WR implements Runnable {
             public void run() {
                 inWrite.set(true);
                 // just keep the write lock for a while
                 sleep(1000);
                 inWrite.set(false);
             }            
-        });
+        }
+        WR wr = new WR();
+        
+        mutex.postWriteRequest(wr);
         pr.exitReadAccess();
         
         t.join(10000);
