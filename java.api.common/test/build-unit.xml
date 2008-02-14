@@ -39,6 +39,6 @@ Contributor(s):
 Portions Copyrighted 2007 Sun Microsystems, Inc.
 -->
 
-<project name="java/commonapi/test-unit" basedir="." default="all">
-    <import file="../../../nbbuild/templates/xtest-unit.xml"/>
+<project name="java/api/common/test-unit" basedir="." default="all">
+    <import file="../../nbbuild/templates/xtest-unit.xml"/>
 </project>
