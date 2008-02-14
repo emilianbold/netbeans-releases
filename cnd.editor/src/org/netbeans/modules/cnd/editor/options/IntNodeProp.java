@@ -39,70 +39,71 @@
 
 package org.netbeans.modules.cnd.editor.options;
 
-import java.beans.PropertyChangeListener;
-import java.beans.PropertyChangeSupport;
-import javax.swing.JComponent;
-import org.netbeans.spi.options.OptionsPanelController;
-import org.openide.util.HelpCtx;
-import org.openide.util.Lookup;
+import java.util.prefs.Preferences;
+import org.netbeans.modules.cnd.editor.api.CodeStyle;
+import org.openide.nodes.PropertySupport;
+import org.openide.util.NbBundle;
 
-/**
- *
- * @author Alexander Simon
- */
-public class EditorOptionsPanelController extends OptionsPanelController {
-    private EditorPropertySheet panel;
-    
-    private final PropertyChangeSupport pcs = new PropertyChangeSupport(this);
-    private boolean changed;
+public class IntNodeProp extends PropertySupport.ReadWrite<Integer> {
 
-    
-    public EditorOptionsPanelController(){
-         panel = new EditorPropertySheet(this);
+    private final CodeStyle.Language language;
+    private final String optionID;
+    private Preferences preferences;
+    private int state;
+
+    public IntNodeProp(CodeStyle.Language language, Preferences preferences, String optionID) {
+        super(optionID, Integer.class, getString("LBL_" + optionID), getString("HINT_" + optionID));
+        this.language = language;
+        this.optionID = optionID;
+        this.preferences = preferences;
+        init();
     }
-    
-    public void update() {
-        changed = false;
-	panel.load();
+
+    private static String getString(String key) {
+        return NbBundle.getMessage(IntNodeProp.class, key);
     }
-    
-    public void applyChanges() {
-	panel.store();
+
+    private void init() {
+        state = getPreferences().getInt(optionID, (Integer) EditorOptions.getDefault(optionID));
     }
-    
-    public void cancel() {
-	panel.cancel();
+
+    private Preferences getPreferences() {
+        Preferences node = preferences;
+        if (node == null) {
+            node = EditorOptions.getPreferences(language, EditorOptions.getCurrentProfileId(language));
+        }
+        return node;
     }
-    
-    public boolean isValid() {
+
+    @Override
+    public String getHtmlDisplayName() {
+        if (isDefaultValue()) {
+            return "<b>" + getDisplayName();
+        }
+        return null;
+    }
+
+    public Integer getValue() {
+        return new Integer(state);
+    }
+
+    public void setValue(Integer v) {
+        state = v;
+        getPreferences().putInt(optionID, state);
+    }
+
+    @Override
+    public void restoreDefaultValue() {
+        state = (Integer) EditorOptions.getDefault(optionID);
+    }
+
+    @Override
+    public boolean supportsDefaultValue() {
         return true;
     }
-    
-    public boolean isChanged() {
-	return changed;
-    }
 
-    public HelpCtx getHelpCtx() {
-        return new HelpCtx("netbeans.optionsDialog.advanced.formEditor"); // NOI18N
-    }
-    
-    public JComponent getComponent(Lookup masterLookup) {
-        return panel;
-    }
-
-    public void addPropertyChangeListener(PropertyChangeListener l) {
-	pcs.addPropertyChangeListener(l);
-    }
-    
-    public void removePropertyChangeListener(PropertyChangeListener l) {
-	pcs.removePropertyChangeListener(l);
-    }
-        
-    void changed() {
-	if (!changed) {
-	    changed = true;
-	    pcs.firePropertyChange(OptionsPanelController.PROP_CHANGED, false, true);
-	}
-	pcs.firePropertyChange(OptionsPanelController.PROP_VALID, null, null);
+    @Override
+    public boolean isDefaultValue() {
+        return !EditorOptions.getDefault(optionID).equals(getValue());
     }
 }
