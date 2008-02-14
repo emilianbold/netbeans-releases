@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- *
+ * 
  * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
- *
+ * 
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,13 +20,13 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- *
+ * 
  * Contributor(s):
- *
+ * 
  * The Original Software is NetBeans. The Initial Developer of the Original
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
- *
+ * 
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -38,47 +38,35 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.sun.manager.jbi.management;
 
-import org.netbeans.modules.sun.manager.jbi.management.model.OldJBIComponentConfigurationDescriptor;
-import javax.management.MBeanAttributeInfo;
+package com.strikeiron.search;
+
+import javax.xml.bind.annotation.XmlAccessType;
+import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.XmlType;
+
 
 /**
- * @deprecated to be removed
- * @author jqian
+ * <p>Java class for anonymous complex type.
+ * 
+ * <p>The following schema fragment specifies the expected content contained within this class.
+ * 
+ * <pre>
+ * &lt;complexType>
+ *   &lt;complexContent>
+ *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
+ *     &lt;/restriction>
+ *   &lt;/complexContent>
+ * &lt;/complexType>
+ * </pre>
+ * 
+ * 
  */
-public class OldConfigurationMBeanAttributeInfo extends MBeanAttributeInfo {
-    
-    private OldJBIComponentConfigurationDescriptor descriptor;
-    
-    public OldConfigurationMBeanAttributeInfo(OldJBIComponentConfigurationDescriptor descriptor,
-            String type,
-            boolean isReadable,
-            boolean isWritable,
-            boolean isIs) {
-        super(descriptor.getDisplayName(), type, descriptor.getDescription(),
-                isReadable, isWritable, isIs);
+@XmlAccessorType(XmlAccessType.FIELD)
+@XmlType(name = "")
+@XmlRootElement(name = "GetRemainingHits", namespace = "http://ws.strikeiron.com")
+public class GetRemainingHits {
 
-        this.descriptor = descriptor;
-    }
 
-    public OldJBIComponentConfigurationDescriptor getDescriptor() {
-        return descriptor;
-    }
-    
-    public boolean isPassword() {
-        return descriptor.isPassword();
-    }
-    
-    public boolean isApplicationRestartRequired() {
-        return descriptor.needsApplicationRestart();
-    }
-    
-    public boolean isComponentRestartRequired() {
-        return descriptor.needsComponentRestart();
-    }
-    
-    public boolean isServerRestartRequired() {
-        return descriptor.needsServerRestart();
-    }
 }

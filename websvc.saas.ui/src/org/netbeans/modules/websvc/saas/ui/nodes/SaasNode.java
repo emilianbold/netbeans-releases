@@ -42,7 +42,6 @@ package org.netbeans.modules.websvc.saas.ui.nodes;
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.Action;
-import org.netbeans.modules.websvc.saas.model.CustomSaas;
 import org.netbeans.modules.websvc.saas.model.Saas;
 import org.netbeans.modules.websvc.saas.spi.SaasNodeActionsProvider;
 import org.netbeans.modules.websvc.saas.ui.actions.DeleteServiceAction;
