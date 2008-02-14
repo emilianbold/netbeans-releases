@@ -156,6 +156,7 @@ final class CodeTemplatesModel {
             }
             
             // Get the code templates from the model
+            String mimeType = languageToMimeType.get(language);
             Map<String, CodeTemplateDescription> newMap = new HashMap<String, CodeTemplateDescription>();
             for (int idx = 0; idx < tableModel.getRowCount(); idx++) {
                 String abbreviation = tableModel.getAbbreviation(idx);
@@ -164,14 +165,14 @@ final class CodeTemplatesModel {
                     tableModel.getDescription(idx),
                     tableModel.getText(idx),
                     tableModel.getContexts(idx),
-                    tableModel.getUniqueId(idx)
+                    tableModel.getUniqueId(idx),
+                    mimeType
                 );
                 
                 newMap.put(abbreviation, ctd);
             }
             
             // Save the code templates
-            String mimeType = languageToMimeType.get(language);
             MimePath mimePath = MimePath.parse(mimeType);
             CodeTemplateSettingsImpl.get(mimePath).setCodeTemplates(newMap);
         }

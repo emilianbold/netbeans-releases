@@ -60,8 +60,29 @@ public abstract class StorageReader<K extends Object, V extends Object> extends 
     
     private static final Logger LOG = Logger.getLogger(StorageReader.class.getName());
 
-    protected StorageReader() {
+    /**
+     * @since 1.17
+     */
+    protected StorageReader(FileObject processedFile, String mimePath) {
+        assert processedFile != null : "The processedFile parameter must not be null"; //NOI18N
+        assert mimePath != null : "The mimePath parameter must not be null"; //NOI18N
         
+        this.file = processedFile;
+        this.mimePath = mimePath;
+        
+        boolean moduleFile = false;
+        boolean defaultProfile = false;
+
+        FileObject parent = this.file.getParent();
+        if (parent != null) {
+            moduleFile = parent.getNameExt().contains("Default"); //NOI18N
+            parent = parent.getParent();
+            if (parent != null) {
+                defaultProfile = parent.getNameExt().contains(EditorSettingsImpl.DEFAULT_PROFILE);
+            }
+        }
+        this.isModuleFile = moduleFile;
+        this.isDefaultProfile = defaultProfile;
     }
     
     // DefaultHandler implementation
@@ -129,12 +150,20 @@ public abstract class StorageReader<K extends Object, V extends Object> extends 
         return isDefaultProfile;
     }
 
+    /**
+     * @since 1.17
+     */
+    protected final String getMimePath() {
+        return mimePath;
+    }
+    
     // Private implementation
 
-    private FileObject file;
-    private boolean isModuleFile;
-    private boolean isDefaultProfile;
-
+    private final FileObject file;
+    private final boolean isModuleFile;
+    private final boolean isDefaultProfile;
+    private final String mimePath;
+    
     private void log(String errorType, SAXParseException e) {
         if (file == null) {
             LOG.log(Level.FINE, "XML parser " + errorType, e); //NOI18N
@@ -150,23 +179,6 @@ public abstract class StorageReader<K extends Object, V extends Object> extends 
         }
     }
 
-    private void setProcessedFile(FileObject f) {
-        this.file = f;
-        this.isModuleFile = false;
-        this.isDefaultProfile = false;
-
-        if (this.file != null) {
-            FileObject parent = this.file.getParent();
-            if (parent != null) {
-                this.isModuleFile = parent.getNameExt().contains("Default"); //NOI18N
-                parent = parent.getParent();
-                if (parent != null) {
-                    this.isDefaultProfile = parent.getNameExt().contains(EditorSettingsImpl.DEFAULT_PROFILE);
-                }
-            }
-        }
-    }
-
     // package accessor trick
     
     static {
@@ -174,10 +186,5 @@ public abstract class StorageReader<K extends Object, V extends Object> extends 
     }
 
     private static final class SpiPackageAccessorImpl extends SpiPackageAccessor {
-
-        public @Override void storageReaderSetProcessedFile(StorageReader r, FileObject f) {
-            r.setProcessedFile(f);
-        }
-
     } // End of SpiPackageAccessorImpl class
 }

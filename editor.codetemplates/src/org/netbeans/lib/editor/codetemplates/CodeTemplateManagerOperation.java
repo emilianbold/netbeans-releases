@@ -97,29 +97,25 @@ public final class CodeTemplateManagerOperation
     }
 
     public static synchronized CodeTemplateManagerOperation get(Document document, int offset) {
-        MimePath mimeType = getInnerMostMimeType(document, offset);
-        
-        if (mimeType != null) {
-            return CodeTemplateManagerOperation.get(mimeType);
+        MimePath mimePath = getFullMimePath(document, offset);
+        if (mimePath != null) {
+            return CodeTemplateManagerOperation.get(mimePath);
         } else {
             return null;
         }
     }
     
-    public static synchronized CodeTemplateManagerOperation get(MimePath mimeType) {
-        assert mimeType.size() <= 1 : "Expecting just mime-type"; //NOI18N
-        
-        CodeTemplateManagerOperation operation = mime2operation.get(mimeType);
+    public static synchronized CodeTemplateManagerOperation get(MimePath mimePath) {
+        CodeTemplateManagerOperation operation = mime2operation.get(mimePath);
         if (operation == null) {
-            operation = new CodeTemplateManagerOperation(mimeType);
-            mime2operation.put(mimeType, operation);
+            operation = new CodeTemplateManagerOperation(mimePath);
+            mime2operation.put(mimePath, operation);
         }
-        
         return operation;
     }
     
     private final CodeTemplateManager manager;
-    private final String mimeType;
+    private final String mimePath;
     private final Lookup.Result<CodeTemplateSettings> ctslr;
     private final EventListenerList listenerList = new EventListenerList();
 
@@ -132,16 +128,20 @@ public final class CodeTemplateManagerOperation
     private String expansionKeyText = getExpandKeyStrokeText(expansionKey);
 
     // Do not store mimePath in a private field, it would break the WeakHashMap cache
-    private CodeTemplateManagerOperation(MimePath mimeType) {
-        this.mimeType = mimeType.getPath();
+    private CodeTemplateManagerOperation(MimePath mimePath) {
+        this.mimePath = mimePath.getPath();
         this.manager = CodeTemplateApiPackageAccessor.get().createCodeTemplateManager(this);
         assert manager != null : "Can't creat CodeTemplateManager"; //NOI18N
         
-        this.ctslr = MimeLookup.getLookup(mimeType).lookupResult(CodeTemplateSettings.class);
+        this.ctslr = MimeLookup.getLookup(mimePath).lookupResult(CodeTemplateSettings.class);
         this.ctslr.addLookupListener(WeakListeners.create(LookupListener.class, this, this.ctslr));
         
         // Compute descriptions asynchronously
         RequestProcessor.getDefault().post(this);
+    }
+    
+    public String getMimePath() {
+        return mimePath;
     }
     
     public CodeTemplateManager getManager() {
@@ -217,7 +217,7 @@ public final class CodeTemplateManagerOperation
     }
     
     public static Collection<? extends CodeTemplateFilter> getTemplateFilters(JTextComponent component, int offset) {
-        MimePath mimeType = getInnerMostMimeType(component.getDocument(), offset);
+        MimePath mimeType = getFullMimePath(component.getDocument(), offset);
         Collection<? extends CodeTemplateFilter.Factory> filterFactories = 
             MimeLookup.getLookup(mimeType).lookupAll(CodeTemplateFilter.Factory.class);
         
@@ -229,9 +229,9 @@ public final class CodeTemplateManagerOperation
     }
 
     public static void insert(CodeTemplate codeTemplate, JTextComponent component) {
-        MimePath mimeType = getInnerMostMimeType(component.getDocument(), component.getCaretPosition());
+        String mimePath = CodeTemplateApiPackageAccessor.get().getCodeTemplateMimePath(codeTemplate);
         Collection<? extends CodeTemplateProcessorFactory> processorFactories = 
-            MimeLookup.getLookup(mimeType).lookupAll(CodeTemplateProcessorFactory.class);
+            MimeLookup.getLookup(mimePath).lookupAll(CodeTemplateProcessorFactory.class);
         
         CodeTemplateInsertHandler handler = new CodeTemplateInsertHandler(
                 codeTemplate, component, processorFactories);
@@ -344,7 +344,8 @@ public final class CodeTemplateManagerOperation
                 ctd.getAbbreviation(),
                 ctd.getDescription(), 
                 ctd.getParametrizedText(),
-                ctd.getContexts()
+                ctd.getContexts(),
+                ctd.getMimePath()
             );
             
             codeTemplatesMap.put(ct.getAbbreviation(), ct);
@@ -357,7 +358,7 @@ public final class CodeTemplateManagerOperation
     private void rebuildCodeTemplates() {
         Collection<? extends CodeTemplateSettings> allCts = ctslr.allInstances();
         CodeTemplateSettings cts = allCts.isEmpty() ? null : allCts.iterator().next();
-
+        
         Map<String, CodeTemplate> map = new HashMap<String, CodeTemplate>();
         List<CodeTemplate> templatesWithSelection = new ArrayList<CodeTemplate>();
         KeyStroke keyStroke = DEFAULT_EXPANSION_KEY;
@@ -371,7 +372,7 @@ public final class CodeTemplateManagerOperation
             keyStroke = patchExpansionKey(cts.getExpandKey());
         } else {
             if (LOG.isLoggable(Level.WARNING)) {
-                LOG.warning("Can't find CodeTemplateSettings for '" + mimeType + "'"); //NOI18N
+                LOG.warning("Can't find CodeTemplateSettings for '" + mimePath + "'"); //NOI18N
             }
         }
 
@@ -442,7 +443,7 @@ public final class CodeTemplateManagerOperation
         rebuildCodeTemplates();
     }
     
-    private static MimePath getInnerMostMimeType(Document document, int offset) {
+    private static MimePath getFullMimePath(Document document, int offset) {
         String langPath = null;
 
         if (document instanceof AbstractDocument) {
@@ -463,19 +464,9 @@ public final class CodeTemplateManagerOperation
         }
 
         if (langPath != null) {
-            MimePath mimePath = MimePath.parse(langPath);
-            // use the innermost language
-            if (mimePath.size() > 1) {
-                mimePath = MimePath.parse(mimePath.getMimeType(mimePath.size() - 1));
-            }
-            System.out.println("~~~ InnerMostMimeType for " + s2s(document) + " at " + offset + " -> '" + mimePath.getPath() + "'");
-            return mimePath;
+            return MimePath.parse(langPath);
         } else {
             return null;
         }
-    }
-    
-    private static String s2s(Object o) {
-        return o == null ? "null" : o.getClass().getName() + "@" + Integer.toHexString(System.identityHashCode(o));
     }
 }
