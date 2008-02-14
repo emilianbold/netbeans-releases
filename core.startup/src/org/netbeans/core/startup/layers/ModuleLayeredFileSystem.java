@@ -235,6 +235,7 @@ implements LookupListener {
                 err.log(Level.FINEST, "layers flushed");
             }
             public void cacheReady() {
+                /*
                 try {
                     err.log(Level.FINEST, "cache is ready");
                     cacheLayer = loadCache(manager);
@@ -244,6 +245,7 @@ implements LookupListener {
                 } catch (IOException ex) {
                     err.log(Level.INFO, "Cannot re-read cache", ex); // NOI18N
                 }
+                 */
             }
             public void run() throws IOException {
                 ByteArrayOutputStream os = new ByteArrayOutputStream();
