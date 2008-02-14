@@ -85,7 +85,7 @@ public class CustomSaasNodeChildren extends SaasNodeChildren<SaasMethod> {
     @Override
     protected Node[] createNodes(SaasMethod key) {
         if (needsWaiting()) {
-            return WAIT_NODES;
+            return getWaitNode();
         }
         return new Node[] { new SaasMethodNode(getSaas(), key) };
     }

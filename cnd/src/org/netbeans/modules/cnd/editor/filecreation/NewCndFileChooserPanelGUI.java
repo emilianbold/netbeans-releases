@@ -186,10 +186,11 @@ class NewCndFileChooserPanelGUI extends javax.swing.JPanel implements ActionList
             if (documentName == null) {
                 final String baseName = NEW_FILE_PREFIX + template.getName ();
                 documentName = baseName;
-                if (preselectedFolder != null) {
+                FileObject currentFolder = preselectedFolder != null ? preselectedFolder : ((SourceGroup)locationComboBox.getSelectedItem()).getRootFolder();
+                if (currentFolder != null) {
                     int index = 0;
                     while (true) {
-                        FileObject _tmp = preselectedFolder.getFileObject(documentName, ext);
+                        FileObject _tmp = currentFolder.getFileObject(documentName, ext);
                         if (_tmp == null) {
                             break;
                         }

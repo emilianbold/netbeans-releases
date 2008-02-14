@@ -140,7 +140,7 @@ public class WsdlMethodNode extends AbstractNode {
     
     private Image getMethodIcon() {
         JavaMethod javaMethod = method.getJavaMethod();
-        if(!"void".equals(javaMethod.getReturnType().getRealName())) {
+        if (javaMethod != null && !"void".equals(javaMethod.getReturnType().getRealName())) {
             Image image1 = Utilities.loadImage("org/netbeans/modules/websvc/manager/resources/methodicon.png");
             Image image2 = Utilities.loadImage("org/netbeans/modules/websvc/manager/resources/table_dp_badge.png");
             int x = image1.getWidth(null) - image2.getWidth(null);
@@ -165,6 +165,10 @@ public class WsdlMethodNode extends AbstractNode {
             ss.setDisplayName(NbBundle.getMessage(WsdlMethodNode.class, "METHOD_INFO"));
             ss.setShortDescription(NbBundle.getMessage(WsdlMethodNode.class, "METHOD_INFO"));
             sheet.put(ss);
+        }
+        
+        if (javaMethod == null) {
+            return sheet;
         }
         
         try {
@@ -282,6 +286,7 @@ public class WsdlMethodNode extends AbstractNode {
         return false;
     }
     
+    @Override
     public Transferable clipboardCopy() throws IOException {
         if (method.getSaas().getState() != Saas.State.READY) {
             method.getSaas().toStateReady();

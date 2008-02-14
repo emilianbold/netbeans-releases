@@ -282,7 +282,7 @@ public class FindServiceUI extends javax.swing.JPanel {
 
         tpTabs.addTab(org.openide.util.NbBundle.getMessage(FindServiceUI.class, "FindServiceUI.settingsPanel.TabConstraints.tabTitle"), settingsPanel); // NOI18N
 
-        statusMessage.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/websvc/components/strikeiron/resources/warning.png"))); // NOI18N
+        statusMessage.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/websvc/saas/services/strikeiron/resources/warning.png"))); // NOI18N
         statusMessage.setText("");
 
         cancelButton.setText(org.openide.util.NbBundle.getMessage(FindServiceUI.class, "FindServiceUI.cancelButton.text")); // NOI18N
@@ -387,7 +387,7 @@ public class FindServiceUI extends javax.swing.JPanel {
     private void showMessage(String message, boolean warnOrError) {
         if (warnOrError) {
             statusMessage.setIcon(new javax.swing.ImageIcon(getClass().getResource(
-                "/org/netbeans/modules/websvc/components/strikeiron/resources/warning.png"))); // NOI18N        
+                "/org/netbeans/modules/websvc/saas/services/strikeiron/resources/warning.png"))); // NOI18N        
         } else {
             statusMessage.setIcon(null);
         }

@@ -48,6 +48,7 @@ import java.util.List;
 import org.netbeans.modules.websvc.saas.model.jaxb.SaasServices;
 import org.netbeans.modules.websvc.saas.spi.websvcmgr.WsdlServiceProxyDescriptor;
 import org.netbeans.modules.websvc.saas.util.SaasUtil;
+import org.netbeans.modules.websvc.saas.util.WsdlUtil;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
@@ -254,9 +255,9 @@ public class SaasServicesModel {
      */
     public void addWsdlService(SaasGroup parent, String displayName, String url, String packageName) {
         init();
+        WsdlUtil.addWsdlData(url, packageName);
         WsdlSaas service = new WsdlSaas(parent, displayName, url, packageName);
         parent.addService(service);
-    //TODO save
     }
 
     /**
