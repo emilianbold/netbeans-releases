@@ -38,7 +38,7 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.bpel.project.anttasks;
+package org.netbeans.modules.bpel.project.anttasks.cli;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -80,16 +80,16 @@ import org.openide.util.Lookup;
  * BPEL File URI
  * @author Sreenivasan Genipudi
  */
-public class BPELCatalogModel implements CatalogModel {
+public class CliBpelCatalogModel implements CatalogModel {
     
-    static BPELCatalogModel singletonCatMod = null;
+    static CliBpelCatalogModel singletonCatMod = null;
     static File projectCatalogFileLocation = null;
     
         
     /**
      * Constructor
      */
-    public BPELCatalogModel() {
+    public CliBpelCatalogModel() {
       URI catalogFileLocPath= CommandlineBpelProjectXmlCatalogProvider.getInstance().getProjectWideCatalogForWizard();
       if (catalogFileLocPath != null) {
           projectCatalogFileLocation = new File(catalogFileLocPath);
@@ -100,9 +100,9 @@ public class BPELCatalogModel implements CatalogModel {
      * Gets the instance of this class internal API
      * @return current class instance
      */
-    public static BPELCatalogModel getDefault(){
+    public static CliBpelCatalogModel getDefault(){
         if (singletonCatMod == null){
-            singletonCatMod = new BPELCatalogModel();
+            singletonCatMod = new CliBpelCatalogModel();
         }
         return singletonCatMod;
     }
