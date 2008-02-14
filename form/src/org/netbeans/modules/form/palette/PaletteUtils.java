@@ -46,8 +46,6 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.lang.ref.WeakReference;
 import java.util.*;
-import java.text.MessageFormat;
-import java.io.File;
 import java.io.IOException;
 
 import org.netbeans.spi.palette.*;
@@ -60,8 +58,6 @@ import org.openide.util.*;
 import org.openide.util.lookup.*;
 
 import org.netbeans.api.java.classpath.ClassPath;
-import org.netbeans.api.project.libraries.Library;
-import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.FileOwnerQuery;
 
