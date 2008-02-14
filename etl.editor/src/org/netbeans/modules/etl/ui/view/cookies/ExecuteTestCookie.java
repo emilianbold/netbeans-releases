@@ -192,12 +192,12 @@ public class ExecuteTestCookie implements Node.Cookie {
                 try {
                     endTime = System.currentTimeMillis();
                     StringBuilder msgBuf = new StringBuilder(100);
-                    String nbBundle5 = mLoc.t("PRSR001: Execution completed successfully.");
+                    String nbBundle5 = mLoc.t("PRSR001: Execution completed successfully.{0}",NL);
                     String msg = (event.getStatus() == ETLEngine.STATUS_COLLAB_COMPLETED) ? Localizer.parse(nbBundle5) : "MSG_executed_errors"; // No I18N
                     String nbBundle11 = mLoc.t("PRSR001: Execution completed with {0,choice,0#unknown error|1#error|1<errors}:{1}");
-                    String nbBundle20 = mLoc.t("PRSR001: ExecuteTestCookie.class.getName(){0}",msg);
+                    String nbBundle20 = mLoc.t("PRSR001: {0}",msg);
                     msgBuf.append(Localizer.parse(nbBundle20));
-                    String nbBundle6 = mLoc.t("PRSR001: Execution time: {0}.{1} seconds.",new Long((endTime - startTime) / 1000),new Long((endTime - startTime) % 1000));
+                    String nbBundle6 = mLoc.t("PRSR001: Execution time: {0}.{1} seconds.{2}",new Long((endTime - startTime) / 1000),new Long((endTime - startTime) % 1000),NL);
                     msgBuf.append(Localizer.parse(nbBundle6));
                     logView.appendToView(msgBuf.toString());
                     if (event.getStatus() == ETLEngine.STATUS_COLLAB_COMPLETED) {

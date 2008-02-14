@@ -95,7 +95,7 @@ public class WsdlSaasNode extends SaasNode {
     
     @Override
     public Image getIcon(int type) {
-        Image icon = Utilities.loadImage(SaasUtil.loadIcon(saas, type));
+        Image icon = SaasUtil.loadIcon(saas, type);
         if (icon != null) {
             return icon;
         }

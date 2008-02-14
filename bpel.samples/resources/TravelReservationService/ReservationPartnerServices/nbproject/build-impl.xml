@@ -15,7 +15,7 @@ is divided into following sections:
   - cleanup
 
         -->
-<project xmlns:ejbjarproject1="http://www.netbeans.org/ns/j2ee-ejbjarproject/1" xmlns:ejbjarproject2="http://www.netbeans.org/ns/j2ee-ejbjarproject/2" xmlns:ejbjarproject3="http://www.netbeans.org/ns/j2ee-ejbjarproject/3" basedir=".." default="build" name="ReservationPartnerServices-impl">
+<project xmlns:ejbjarproject1="http://www.netbeans.org/ns/j2ee-ejbjarproject/1" xmlns:ejbjarproject2="http://www.netbeans.org/ns/j2ee-ejbjarproject/2" xmlns:ejbjarproject3="http://www.netbeans.org/ns/j2ee-ejbjarproject/3" basedir=".." default="default" name="ReservationPartnerServices-impl">
     <import file="ant-deploy.xml"/>
     <target depends="dist,javadoc" description="Build whole project." name="default"/>
     <!-- 
@@ -89,6 +89,12 @@ is divided into following sections:
             </and>
         </condition>
         <property name="javadoc.encoding.used" value="${source.encoding}"/>
+        <condition else="" property="javac.compilerargs.jaxws" value="-Djava.endorsed.dirs='${jaxws.endorsed.dir}'">
+            <and>
+                <isset property="jaxws.endorsed.dir"/>
+                <available file="nbproject/jaxws-build.xml"/>
+            </and>
+        </condition>
     </target>
     <target name="-post-init">
         <!-- Empty placeholder for easier customization. -->
@@ -120,7 +126,6 @@ is divided into following sections:
             <attribute default="${build.classes.dir}" name="destdir"/>
             <attribute default="${javac.classpath}:${j2ee.platform.classpath}" name="classpath"/>
             <attribute default="${javac.debug}" name="debug"/>
-            <attribute default="" name="javac.compilerargs.jaxws"/>
             <element name="customize" optional="true"/>
             <sequential>
                 <property name="javac.compilerargs" value=""/>
@@ -128,7 +133,7 @@ is divided into following sections:
                     <classpath>
                         <path path="@{classpath}"/>
                     </classpath>
-                    <compilerarg line="${javac.compilerargs} @{javac.compilerargs.jaxws}"/>
+                    <compilerarg line="${javac.compilerargs} ${javac.compilerargs.jaxws}"/>
                     <customize/>
                 </javac>
             </sequential>
@@ -191,8 +196,15 @@ is divided into following sections:
             <attribute default="${build.classes.dir}" name="dir"/>
             <sequential>
                 <nbjpdareload>
-                    <fileset dir="@{dir}" includes="${fix.includes}*.class"/>
+                    <fileset dir="@{dir}" includes="${fix.classes}">
+                        <include name="${fix.includes}*.class"/>
+                    </fileset>
                 </nbjpdareload>
+            </sequential>
+        </macrodef>
+        <macrodef name="nbjpdaappreloaded" uri="http://www.netbeans.org/ns/web-project/1">
+            <sequential>
+                <nbjpdaappreloaded/>
             </sequential>
         </macrodef>
     </target>
@@ -215,6 +227,7 @@ is divided into following sections:
             <attribute default="${main.class}" name="classname"/>
             <attribute default="${debug.classpath}" name="classpath"/>
             <attribute default="${application.args}" name="args"/>
+            <element name="customize" optional="true"/>
             <sequential>
                 <java classname="@{classname}" fork="true">
                     <jvmarg line="${debug-args-line}"/>
@@ -223,6 +236,7 @@ is divided into following sections:
                         <path path="@{classpath}"/>
                     </classpath>
                     <arg line="@{args}"/>
+                    <customize/>
                 </java>
             </sequential>
         </macrodef>
@@ -343,7 +357,9 @@ is divided into following sections:
     <target name="-run-deploy-am">
         <!-- Task to deploy to the Access Manager runtime. -->
     </target>
-    <target depends="init,-init-deploy,compile,library-inclusion-in-archive,dist,pre-run-deploy,-pre-nbmodule-run-deploy,-run-deploy-nb,-init-deploy-ant,-deploy-ant,-run-deploy-am,-post-nbmodule-run-deploy,post-run-deploy" name="run-deploy"/>
+    <target depends="init,-init-deploy,compile,library-inclusion-in-archive,dist,pre-run-deploy,-pre-nbmodule-run-deploy,-run-deploy-nb,-init-deploy-ant,-deploy-ant,-run-deploy-am,-post-nbmodule-run-deploy,post-run-deploy" name="run-deploy">
+        <nbjpdaappreloaded/>
+    </target>
     <target if="netbeans.home" name="-run-deploy-nb">
         <nbdeploy debugmode="false" forceRedeploy="${forceRedeploy}"/>
     </target>
@@ -401,7 +417,7 @@ is divided into following sections:
             -->
     <target depends="init" name="javadoc-build">
         <mkdir dir="${dist.javadoc.dir}"/>
-        <javadoc additionalparam="${javadoc.additionalparam}" author="${javadoc.author}" destdir="${dist.javadoc.dir}" encoding="${javadoc.encoding.used}" failonerror="true" noindex="${javadoc.noindex}" nonavbar="${javadoc.nonavbar}" notree="${javadoc.notree}" private="${javadoc.private}" source="${javac.source}" splitindex="${javadoc.splitindex}" use="${javadoc.use}" useexternalfile="true" version="${javadoc.version}" windowtitle="${javadoc.windowtitle}">
+        <javadoc additionalparam="${javadoc.additionalparam}" author="${javadoc.author}" charset="UTF-8" destdir="${dist.javadoc.dir}" docencoding="UTF-8" encoding="${javadoc.encoding.used}" failonerror="true" noindex="${javadoc.noindex}" nonavbar="${javadoc.nonavbar}" notree="${javadoc.notree}" private="${javadoc.private}" source="${javac.source}" splitindex="${javadoc.splitindex}" use="${javadoc.use}" useexternalfile="true" version="${javadoc.version}" windowtitle="${javadoc.windowtitle}">
             <classpath>
                 <path path="${javac.classpath}:${j2ee.platform.classpath}"/>
             </classpath>
@@ -485,7 +501,17 @@ is divided into following sections:
             -->
     <target depends="init,compile-test" if="have.tests" name="-debug-start-debuggee-test">
         <fail unless="test.class">Must select one file in the IDE or set test.class</fail>
-        <ejbjarproject1:debug args="${test.class}" classname="junit.textui.TestRunner" classpath="${debug.test.classpath}"/>
+        <property location="${build.test.results.dir}/TEST-${test.class}.xml" name="test.report.file"/>
+        <delete file="${test.report.file}"/>
+        <!-- the directory must exist, otherwise the XML formatter would fail -->
+        <mkdir dir="${build.test.results.dir}"/>
+        <ejbjarproject1:debug args="${test.class}" classname="org.apache.tools.ant.taskdefs.optional.junit.JUnitTestRunner" classpath="${ant.home}/lib/ant.jar:${ant.home}/lib/ant-junit.jar:${debug.test.classpath}">
+            <customize>
+                <arg value="showoutput=true"/>
+                <arg value="formatter=org.apache.tools.ant.taskdefs.optional.junit.BriefJUnitResultFormatter"/>
+                <arg value="formatter=org.apache.tools.ant.taskdefs.optional.junit.XMLJUnitResultFormatter,${test.report.file}"/>
+            </customize>
+        </ejbjarproject1:debug>
     </target>
     <target depends="init,compile-test" if="netbeans.home+have.tests" name="-debug-start-debugger-test">
         <ejbjarproject1:nbjpdastart classpath="${debug.test.classpath}" name="${test.class}"/>

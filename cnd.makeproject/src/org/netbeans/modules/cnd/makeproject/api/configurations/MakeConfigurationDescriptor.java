@@ -400,6 +400,7 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor impleme
         setLogicalFolders(copyExtProjectDescriptor.getLogicalFolders());
         setProjectItemsMap(((MakeConfigurationDescriptor)copyProjectDescriptor).getProjectItemsMap());
         setProjectItemsChangeListeners(((MakeConfigurationDescriptor)copyProjectDescriptor).getProjectItemsChangeListeners());
+        setSourceRoots(((MakeConfigurationDescriptor)copyProjectDescriptor).getSourceRootsRaw());
     }
     
     public void assign(ConfigurationDescriptor clonedConfigurationDescriptor) {
@@ -421,6 +422,7 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor impleme
         setLogicalFolders(((MakeConfigurationDescriptor)clonedConfigurationDescriptor).getLogicalFolders());
         setProjectItemsMap(((MakeConfigurationDescriptor)clonedConfigurationDescriptor).getProjectItemsMap());
         setProjectItemsChangeListeners(((MakeConfigurationDescriptor)clonedConfigurationDescriptor).getProjectItemsChangeListeners());
+        setSourceRoots(((MakeConfigurationDescriptor)clonedConfigurationDescriptor).getSourceRootsRaw());
     }
     
     public ConfigurationDescriptor cloneProjectDescriptor() {
@@ -431,6 +433,7 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor impleme
         clone.setLogicalFolders(getLogicalFolders());
         clone.setProjectItemsMap(getProjectItemsMap());
         clone.setProjectItemsChangeListeners(getProjectItemsChangeListeners());
+        clone.setSourceRoots(getSourceRootsRaw());
         return clone;
     }
     
@@ -668,6 +671,25 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor impleme
         return sourceRoots;
     }
     
+    public void setSourceRoots(List list) {
+        synchronized (sourceRoots) {
+            sourceRoots = list;
+        }
+    }
+    
+    public void setSourceRootsList(List<String> list) {
+        synchronized (sourceRoots) {
+            sourceRoots.clear();
+            for (String l : list) {
+                addSourceRoot(l);
+            }
+        }
+        MakeSources makeSources = (MakeSources)getProject().getLookup().lookup(MakeSources.class);
+        if (makeSources != null) {
+            makeSources.sourceRootsChanged();
+        }
+    }
+    
     /*
      * return copy
      */
@@ -690,6 +712,19 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor impleme
             }
         }
         return copy;
+    }
+    /*
+     * return copy and convert to absolute
+     */
+    public String[] getSourceRootsAsArray() {
+        synchronized(sourceRoots) {
+            String[] copy = new String[sourceRoots.size()];
+            int index = 0;
+            for (String sr : sourceRoots) {
+                copy[index++] = sr;
+            }
+            return copy;
+        }
     }
     
     private NativeProjectProvider getNativeProject() {

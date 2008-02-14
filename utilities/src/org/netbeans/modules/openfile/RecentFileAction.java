@@ -40,7 +40,10 @@
  */
 
 package org.netbeans.modules.openfile;
+import java.awt.Component;
 import java.awt.Image;
+import java.awt.MouseInfo;
+import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.beans.BeanInfo;
 import java.util.List;
@@ -53,6 +56,9 @@ import javax.swing.ImageIcon;
 import javax.swing.JComponent;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
+import javax.swing.MenuElement;
+import javax.swing.MenuSelectionManager;
+import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.PopupMenuEvent;
@@ -167,6 +173,39 @@ public class RecentFileAction extends AbstractAction implements Presenter.Menu, 
             jmi.putClientProperty(FO_PROP, fo);
             jmi.addActionListener(this);
             menu.add(jmi);
+        }
+        
+        ensureSelected();
+    }
+
+    /** Workaround for JDK bug 6663119, it ensures that first item in submenu
+     * is correctly selected during keyboard navigation.
+     */
+    private void ensureSelected () {
+        if (menu.getMenuComponentCount() <=0) {
+            return;
+        }
+        
+        Component first = menu.getMenuComponent(0);
+        if (!(first instanceof JMenuItem)) {
+            return;
+        }
+        
+        Point loc = MouseInfo.getPointerInfo().getLocation();
+        SwingUtilities.convertPointFromScreen(loc, menu);
+        MenuElement[] selPath = MenuSelectionManager.defaultManager().getSelectedPath();
+        
+        // apply workaround only when mouse is not hovering over menu
+        // (which signalizes mouse driven menu traversing) and only
+        // when selected menu path contains expected value - submenu itself 
+        if (!menu.contains(loc) && selPath.length > 0 && 
+                menu.getPopupMenu() == selPath[selPath.length - 1]) {
+            // select first item in submenu through MenuSelectionManager
+            MenuElement[] newPath = new MenuElement[selPath.length + 1];
+            System.arraycopy(selPath, 0, newPath, 0, selPath.length);
+            JMenuItem firstItem = (JMenuItem)first;
+            newPath[selPath.length] = firstItem;
+            MenuSelectionManager.defaultManager().setSelectedPath(newPath);
         }
     }
     

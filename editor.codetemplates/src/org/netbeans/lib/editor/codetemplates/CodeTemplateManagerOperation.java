@@ -43,26 +43,28 @@ package org.netbeans.lib.editor.codetemplates;
 
 import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
-import java.lang.ref.Reference;
-import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.WeakHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.KeyStroke;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.EventListenerList;
+import javax.swing.text.AbstractDocument;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.editor.settings.CodeTemplateDescription;
 import org.netbeans.api.editor.settings.CodeTemplateSettings;
+import org.netbeans.api.lexer.TokenHierarchy;
+import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.lib.editor.codetemplates.api.CodeTemplate;
 import org.netbeans.lib.editor.codetemplates.api.CodeTemplateManager;
 import org.netbeans.lib.editor.codetemplates.spi.*;
@@ -84,44 +86,36 @@ public final class CodeTemplateManagerOperation
 {
     private static final Logger LOG = Logger.getLogger(CodeTemplateManagerOperation.class.getName());
     
-    private static final Map<String, Reference<CodeTemplateManagerOperation>> mime2operation = 
-            new HashMap<String, Reference<CodeTemplateManagerOperation>>(8);
+    private static final Map<MimePath, CodeTemplateManagerOperation> mime2operation = 
+            new WeakHashMap<MimePath, CodeTemplateManagerOperation>(8);
     
     private static final KeyStroke DEFAULT_EXPANSION_KEY = KeyStroke.getKeyStroke(KeyEvent.VK_TAB, 0);
     
     public static synchronized CodeTemplateManager getManager(Document doc) {
-        return get(doc).getManager();
+        String mimeType = (String)doc.getProperty("mimeType"); //NOI18N
+        return get(MimePath.parse(mimeType)).getManager();
     }
 
-    public static synchronized CodeTemplateManagerOperation get(Document doc) {
-        String mimeType = (String)doc.getProperty("mimeType"); //NOI18N
-        CodeTemplateManagerOperation operation = (CodeTemplateManagerOperation)
-                doc.getProperty(CodeTemplateManagerOperation.class);
-        boolean mimesEqual = (operation != null) && mimeTypesEqual(mimeType,
-                operation.getMimeType());
-
-        if (!mimesEqual) {
-            Reference<CodeTemplateManagerOperation> ref = mime2operation.get(mimeType);
-            operation = ref == null ? null : ref.get();
-            if (operation == null) {
-                operation = new CodeTemplateManagerOperation(mimeType);
-                mime2operation.put(mimeType, new WeakReference<CodeTemplateManagerOperation>(operation));
-            }
-
-            doc.putProperty(CodeTemplateManagerOperation.class, operation);
+    public static synchronized CodeTemplateManagerOperation get(Document document, int offset) {
+        MimePath mimePath = getFullMimePath(document, offset);
+        if (mimePath != null) {
+            return CodeTemplateManagerOperation.get(mimePath);
+        } else {
+            return null;
         }
-        
+    }
+    
+    public static synchronized CodeTemplateManagerOperation get(MimePath mimePath) {
+        CodeTemplateManagerOperation operation = mime2operation.get(mimePath);
+        if (operation == null) {
+            operation = new CodeTemplateManagerOperation(mimePath);
+            mime2operation.put(mimePath, operation);
+        }
         return operation;
     }
     
-    private static boolean mimeTypesEqual(String mimeType1, String mimeType2) {
-        return (mimeType1 == null && mimeType2 == null)
-            || (mimeType1 != null && mimeType1.equals(mimeType2));
-    }
-
-
     private final CodeTemplateManager manager;
-    private final String mimeType;
+    private final String mimePath;
     private final Lookup.Result<CodeTemplateSettings> ctslr;
     private final EventListenerList listenerList = new EventListenerList();
 
@@ -132,26 +126,26 @@ public final class CodeTemplateManagerOperation
     private List<CodeTemplate> selectionTemplates = Collections.<CodeTemplate>emptyList();
     private KeyStroke expansionKey = DEFAULT_EXPANSION_KEY;
     private String expansionKeyText = getExpandKeyStrokeText(expansionKey);
-    
-    private CodeTemplateManagerOperation(String mimeType) {
-        this.mimeType = mimeType;
-        
+
+    // Do not store mimePath in a private field, it would break the WeakHashMap cache
+    private CodeTemplateManagerOperation(MimePath mimePath) {
+        this.mimePath = mimePath.getPath();
         this.manager = CodeTemplateApiPackageAccessor.get().createCodeTemplateManager(this);
         assert manager != null : "Can't creat CodeTemplateManager"; //NOI18N
         
-        this.ctslr = MimeLookup.getLookup(MimePath.parse(mimeType)).lookupResult(CodeTemplateSettings.class);
+        this.ctslr = MimeLookup.getLookup(mimePath).lookupResult(CodeTemplateSettings.class);
         this.ctslr.addLookupListener(WeakListeners.create(LookupListener.class, this, this.ctslr));
         
         // Compute descriptions asynchronously
         RequestProcessor.getDefault().post(this);
     }
     
-    public CodeTemplateManager getManager() {
-        return manager;
+    public String getMimePath() {
+        return mimePath;
     }
     
-    public String getMimeType() {
-        return mimeType;
+    public CodeTemplateManager getManager() {
+        return manager;
     }
     
     public Collection<? extends CodeTemplate> getCodeTemplates() {
@@ -223,9 +217,9 @@ public final class CodeTemplateManagerOperation
     }
     
     public static Collection<? extends CodeTemplateFilter> getTemplateFilters(JTextComponent component, int offset) {
-        String mimeType = NbEditorUtilities.getMimeType(component);
+        MimePath mimeType = getFullMimePath(component.getDocument(), offset);
         Collection<? extends CodeTemplateFilter.Factory> filterFactories = 
-            MimeLookup.getLookup(MimePath.parse(mimeType)).lookupAll(CodeTemplateFilter.Factory.class);
+            MimeLookup.getLookup(mimeType).lookupAll(CodeTemplateFilter.Factory.class);
         
         List<CodeTemplateFilter> result = new ArrayList<CodeTemplateFilter>(filterFactories.size());
         for (CodeTemplateFilter.Factory factory : filterFactories) {
@@ -235,9 +229,9 @@ public final class CodeTemplateManagerOperation
     }
 
     public static void insert(CodeTemplate codeTemplate, JTextComponent component) {
-        String mimeType = NbEditorUtilities.getMimeType(component);
+        String mimePath = CodeTemplateApiPackageAccessor.get().getCodeTemplateMimePath(codeTemplate);
         Collection<? extends CodeTemplateProcessorFactory> processorFactories = 
-            MimeLookup.getLookup(MimePath.parse(mimeType)).lookupAll(CodeTemplateProcessorFactory.class);
+            MimeLookup.getLookup(mimePath).lookupAll(CodeTemplateProcessorFactory.class);
         
         CodeTemplateInsertHandler handler = new CodeTemplateInsertHandler(
                 codeTemplate, component, processorFactories);
@@ -350,7 +344,8 @@ public final class CodeTemplateManagerOperation
                 ctd.getAbbreviation(),
                 ctd.getDescription(), 
                 ctd.getParametrizedText(),
-                ctd.getContexts()
+                ctd.getContexts(),
+                ctd.getMimePath()
             );
             
             codeTemplatesMap.put(ct.getAbbreviation(), ct);
@@ -363,7 +358,7 @@ public final class CodeTemplateManagerOperation
     private void rebuildCodeTemplates() {
         Collection<? extends CodeTemplateSettings> allCts = ctslr.allInstances();
         CodeTemplateSettings cts = allCts.isEmpty() ? null : allCts.iterator().next();
-
+        
         Map<String, CodeTemplate> map = new HashMap<String, CodeTemplate>();
         List<CodeTemplate> templatesWithSelection = new ArrayList<CodeTemplate>();
         KeyStroke keyStroke = DEFAULT_EXPANSION_KEY;
@@ -377,7 +372,7 @@ public final class CodeTemplateManagerOperation
             keyStroke = patchExpansionKey(cts.getExpandKey());
         } else {
             if (LOG.isLoggable(Level.WARNING)) {
-                LOG.warning("Can't find CodeTemplateSettings for '" + mimeType + "'"); //NOI18N
+                LOG.warning("Can't find CodeTemplateSettings for '" + mimePath + "'"); //NOI18N
             }
         }
 
@@ -446,5 +441,32 @@ public final class CodeTemplateManagerOperation
     
     public void resultChanged(LookupEvent ev) {
         rebuildCodeTemplates();
+    }
+    
+    private static MimePath getFullMimePath(Document document, int offset) {
+        String langPath = null;
+
+        if (document instanceof AbstractDocument) {
+            AbstractDocument adoc = (AbstractDocument)document;
+            adoc.readLock();
+            try {
+                List<TokenSequence<?>> list = TokenHierarchy.get(document).embeddedTokenSequences(offset, true);
+                if (list.size() > 1) {
+                    langPath = list.get(list.size() - 1).languagePath().mimePath();
+                }
+            } finally {
+                adoc.readUnlock();
+            }
+        }
+
+        if (langPath == null) {
+            langPath = NbEditorUtilities.getMimeType(document);
+        }
+
+        if (langPath != null) {
+            return MimePath.parse(langPath);
+        } else {
+            return null;
+        }
     }
 }
