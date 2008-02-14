@@ -209,8 +209,10 @@ public class CliValidateBpelProjectDelegate extends Task {
                 ResultItem resultItem = (ResultItem) itr.next();
                 
                 if (!mAllowBuildWithError) {
-                    System.out.println(getValidationError(resultItem));
-                    System.out.println();
+                    if (resultItem.getType() == Validator.ResultType.ERROR) {
+                        System.out.println(getValidationError(resultItem));
+                        System.out.println();
+                    }
                 }
                 
                 if (resultItem.getType() == Validator.ResultType.ERROR) {
