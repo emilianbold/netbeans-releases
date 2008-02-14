@@ -279,8 +279,17 @@ public class IndentFactory implements IndentTask.Factory {
                 if (ts.offset () > end) return false;
             }
             Token t = ts.token ();
-            String id = t.text ().toString ().trim();
-            return ((Set) params [2]).contains (id);
+            String id = t.text ().toString ();
+            String trimedId = id.trim();
+            // If id has more than 2 leading newlines, should return false
+            int nlIdx = id.indexOf("\n");
+            if (nlIdx >= 0) {
+                nlIdx = id.indexOf("\n", nlIdx + 1);
+                if (nlIdx >= 0 && nlIdx < id.indexOf(trimedId)) {
+                    return false;
+                }
+            }
+            return ((Set) params [2]).contains (trimedId);
         }
 
         private static boolean isEmpty (
