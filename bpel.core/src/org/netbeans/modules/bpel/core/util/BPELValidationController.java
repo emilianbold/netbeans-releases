@@ -68,6 +68,7 @@ public class BPELValidationController extends ChangeEventListenerAdapter {
         myBpelModel = bpelModel;
         myTrigger = new ExternalModelsValidationTrigger( this );
         myAnnotations = new ArrayList<BPELValidationAnnotation>();
+        myValidationResult = new ArrayList<ResultItem>();
     }
 
     public void attach() {
@@ -144,14 +145,14 @@ startTime();
 out("---- VALIDATION.END");
 endTime();
               List<ResultItem> items = validation.getValidationResult();
-              List<ResultItem> result = new ArrayList<ResultItem>();
+              myValidationResult = new ArrayList<ResultItem>();
 
               synchronized(items) {
                 for (ResultItem item : items) {
-                  result.add(item);
+                  myValidationResult.add(item);
                 }
               }
-              notifyListeners(result);
+              notifyListeners(myValidationResult);
           }
       };
 out();
@@ -220,6 +221,10 @@ out();
 
     private ExternalModelsValidationTrigger getTrigger() {
       return myTrigger;
+    }
+
+    public List<ResultItem> getValidationResult() {
+      return myValidationResult;
     }
     
     private BpelModel myBpelModel;
