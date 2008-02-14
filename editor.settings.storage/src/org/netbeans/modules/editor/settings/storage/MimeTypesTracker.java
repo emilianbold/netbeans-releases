@@ -248,7 +248,7 @@ public final class MimeTypesTracker {
                         boolean add;
                         if (locator != null) {
                             Map<String, List<Object []>> scan = new HashMap<String, List<Object []>>();
-                            locator.scan(folder, mimeType, null, false, true, true, scan);
+                            locator.scan(folder, mimeType, null, false, true, true, false, scan);
                             add = !scan.isEmpty();
                         } else {
                             add = true;

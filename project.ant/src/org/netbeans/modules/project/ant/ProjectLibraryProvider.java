@@ -96,6 +96,10 @@ public class ProjectLibraryProvider implements ArealLibraryProvider<ProjectLibra
     private AntProjectListener apl;
 
     public static ProjectLibraryProvider INSTANCE;
+    
+    private boolean listening = true;
+    private final Map<ProjectLibraryArea,Reference<LP>> providers = new HashMap<ProjectLibraryArea,Reference<LP>>();
+    
     /**
      * Default constructor for lookup.
      */
@@ -198,8 +202,6 @@ public class ProjectLibraryProvider implements ArealLibraryProvider<ProjectLibra
 
     // ---- management of libraries ----
 
-    private boolean listening = true;
-    private final Map<ProjectLibraryArea,Reference<LP>> providers = new HashMap<ProjectLibraryArea,Reference<LP>>();
 
     private final class LP implements LibraryProvider<ProjectLibraryImplementation>, FileChangeSupportListener {
 
@@ -394,7 +396,9 @@ public class ProjectLibraryProvider implements ArealLibraryProvider<ProjectLibra
         }
     }
 
-    private static final Pattern LIBS_LINE = Pattern.compile("libs\\.([^.]+)\\.([^.]+)"); // NOI18N
+    //non private for test usage
+    static final Pattern LIBS_LINE = Pattern.compile("libs\\.([a-zA-Z0-9_\\-\\.]+)\\.([^.]+)"); // NOI18N
+    
     private static Map<String,ProjectLibraryImplementation> calculate(ProjectLibraryArea area) {
         Map<String,ProjectLibraryImplementation> libs = new HashMap<String,ProjectLibraryImplementation>();
         Definitions def = new Definitions(area.mainPropertiesFile);
@@ -461,7 +465,7 @@ public class ProjectLibraryProvider implements ArealLibraryProvider<ProjectLibra
         return libs;
     }
 
-    private synchronized boolean delta(Map<String,ProjectLibraryImplementation> libraries, Map<String,ProjectLibraryImplementation> newLibraries) {
+    private boolean delta(Map<String,ProjectLibraryImplementation> libraries, Map<String,ProjectLibraryImplementation> newLibraries) {
         if (!listening) {
             return false;
         }
