@@ -217,12 +217,12 @@ public final class ProfilesTracker {
             FileObject baseFolder = sfs.findResource(mimeTypes.getBasePath());
             if (baseFolder != null && baseFolder.isFolder()) {
                 // Scan base folder
-                locator.scan(baseFolder, null, null, false, true, true, scan);
+                locator.scan(baseFolder, null, null, false, true, true, false, scan);
 
                 // Scan mime type folders
                 Collection<String> mimes = mimeTypes.getMimeTypes();
                 for(String mime : mimes) {
-                    locator.scan(baseFolder, mime, null, false, true, true, scan);
+                    locator.scan(baseFolder, mime, null, false, true, true, false, scan);
                 }
             }
 
