@@ -42,6 +42,7 @@ package org.netbeans.modules.ruby.platform;
 
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.EventQueue;
 import java.io.File;
 import java.io.IOException;
 import java.text.Collator;
@@ -52,6 +53,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.AbstractListModel;
 import javax.swing.ComboBoxModel;
+import javax.swing.DefaultComboBoxModel;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JList;
@@ -61,9 +63,16 @@ import javax.swing.UIManager;
 import javax.swing.plaf.UIResource;
 import org.netbeans.api.ruby.platform.RubyPlatform;
 import org.netbeans.api.ruby.platform.RubyPlatformManager;
+import org.openide.util.Exceptions;
+import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 
 public final class PlatformComponentFactory {
 
+    /** Generally usable in conjuction with {@link #createComboWaitModel}. */
+    private static final String DETECTING_VALUE =
+            NbBundle.getMessage(PlatformComponentFactory.class, "PlatformComponentFactory.detetctingPlatforms");
+    
     private static final Logger LOGGER = Logger.getLogger(PlatformComponentFactory.class.getName());
     
     public static final Color INVALID_PLAF_COLOR = UIManager.getColor("nb.errorForeground"); // NOI18N
@@ -77,11 +86,43 @@ public final class PlatformComponentFactory {
      * RubyPlatformListModel} which contains all Ruby platform.
      */
     public static JComboBox getRubyPlatformsComboxBox() {
-        JComboBox plafComboBox = new JComboBox(new RubyPlatformListModel());
+        final JComboBox plafComboBox = new JComboBox();
         plafComboBox.setRenderer(new RubyPlatformListRenderer());
+        if (Util.isFirstPlatformTouch()) {
+            plafComboBox.setModel(createComboWaitModel());
+            plafComboBox.setEnabled(false);
+            RequestProcessor.getDefault().post(new Runnable() {
+                public void run() {
+                    try {
+                        Thread.sleep(3000);
+                    } catch (InterruptedException ex) {
+                        Exceptions.printStackTrace(ex);
+                    }
+                    RubyPlatformManager.performPlatformDetection();
+                    EventQueue.invokeLater(new Runnable() {
+                        public void run() {
+                            plafComboBox.setModel(new RubyPlatformListModel());
+                            plafComboBox.setEnabled(true);
+                        }
+                    });
+                }
+            });
+        } else {
+            plafComboBox.setModel(new RubyPlatformListModel());
+        }
         return plafComboBox;
     }
-    
+
+    public static RubyPlatform getPlatform(final JComboBox platforms) {
+        Object value = platforms.getModel().getSelectedItem();
+        return (value == DETECTING_VALUE) ? null : (RubyPlatform) value;
+    }
+
+    public static boolean isLoadingPlatforms(JComboBox platforms) {
+        Object value = platforms.getModel().getSelectedItem();
+        return value == DETECTING_VALUE;
+    }
+
     /**
      * Returns <code>JList</code> initialized with {@link RubyPlatformListModel}
      * which contains all Ruby platform.
@@ -91,6 +132,14 @@ public final class PlatformComponentFactory {
         plafList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         plafList.setCellRenderer(new RubyPlatformListRenderer());
         return plafList;
+    }
+
+    /**
+     * Use this model in situation when you need to populate combo in the
+     * background. The only item in this model is {@link #WAIT_VALUE}.
+     */
+    public static ComboBoxModel createComboWaitModel() {
+        return new DefaultComboBoxModel(new Object[]{ DETECTING_VALUE });
     }
 
     /**
@@ -123,15 +172,18 @@ public final class PlatformComponentFactory {
         private Object selectedPlaf;
 
         public RubyPlatformListModel() {
-            nbPlafs = getSortedPlatforms(null);
-            if (nbPlafs.length > 0) {
-                selectedPlaf = nbPlafs[0];
-            }
+            this(null);
         }
 
         public RubyPlatformListModel(final RubyPlatform initiallySelected) {
             nbPlafs = getSortedPlatforms(initiallySelected);
-            selectedPlaf = initiallySelected;
+            if (initiallySelected == null) {
+                if (nbPlafs.length > 0) {
+                    selectedPlaf = nbPlafs[0];
+                }
+            } else {
+                selectedPlaf = initiallySelected;
+            }
         }
 
         public int getSize() {
@@ -194,9 +246,6 @@ public final class PlatformComponentFactory {
             // #93658: GTK needs name to render cell renderer "natively"
             setName("ComboBox.listRenderer"); // NOI18N
 
-            RubyPlatform plaf = ((RubyPlatform) value);
-            setText(plaf.getLabel());
-
             if (isSelected) {
                 setBackground(list.getSelectionBackground());
                 setForeground(list.getSelectionForeground());
@@ -205,9 +254,17 @@ public final class PlatformComponentFactory {
                 setForeground(list.getForeground());
             }
 
-            if (plaf != null && !plaf.isValid()) {
-                setForeground(INVALID_PLAF_COLOR);
+            String label;
+            if (value instanceof String) {
+                label = (String) value;
+            } else {
+                RubyPlatform plaf = ((RubyPlatform) value);
+                label = plaf.getLabel();
+                if (plaf != null && !plaf.isValid()) {
+                    setForeground(INVALID_PLAF_COLOR);
+                }
             }
+            setText(label);
 
             return this;
         }

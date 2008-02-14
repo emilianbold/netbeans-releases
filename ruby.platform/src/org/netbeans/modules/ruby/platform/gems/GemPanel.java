@@ -45,6 +45,8 @@ import java.awt.Component;
 import java.awt.EventQueue;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -120,7 +122,10 @@ public final class GemPanel extends JPanel implements Runnable {
             platform = RubyPlatformManager.getDefaultPlatform();
         }
         platforms.setSelectedItem(platform);
-        this.gemManager = getSelectedPlatform().getGemManager();
+        RubyPlatform selPlatform = getSelectedPlatform();
+        if (selPlatform != null) {
+            this.gemManager = selPlatform.getGemManager();
+        }
 
         installedList.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
         installedList.getSelectionModel().addListSelectionListener(new MyListSelectionListener(installedList, installedDesc, uninstallButton));
@@ -136,6 +141,16 @@ public final class GemPanel extends JPanel implements Runnable {
             gemsTab.setSelectedIndex(TabIndex.NEW.ordinal());
         }
 
+        platforms.addPropertyChangeListener(new PropertyChangeListener() {
+            public void propertyChange(PropertyChangeEvent evt) {
+                // when the model has changed from "Detectin platform" to valid
+                // platform model itemStateChanged is not fired(??)
+                if (evt.getPropertyName().equals("model")) { // NOI18N
+                    GemPanel.this.gemManager = getSelectedPlatform().getGemManager();
+                    updateAsynchronously();
+                }
+            }
+        });
         platforms.addItemListener(new ItemListener() {
             public void itemStateChanged(ItemEvent e) {
                 if (e.getStateChange() == ItemEvent.SELECTED) {
@@ -160,14 +175,12 @@ public final class GemPanel extends JPanel implements Runnable {
         // This will also update the New and Installed lists because Update depends on these
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
-                if (getSelectedPlatform().hasRubyGemsInstalled()) {
-                    gemHomeValue.setText(gemManager.getGemHome());
-                    gemHomeValue.setForeground(UIManager.getColor("Label.foreground"));
-                    setEnabledGUI(false);
-                    refreshUpdated();
-                } else {
-                    gemHomeValue.setForeground(PlatformComponentFactory.INVALID_PLAF_COLOR);
-                    gemHomeValue.setText(GemManager.getNotInstalledMessage());
+                boolean loading = PlatformComponentFactory.isLoadingPlatforms(platforms);
+                if (loading || !getSelectedPlatform().hasRubyGemsInstalled()) {
+                    if (!loading) {
+                        gemHomeValue.setForeground(PlatformComponentFactory.INVALID_PLAF_COLOR);
+                        gemHomeValue.setText(GemManager.getNotInstalledMessage());
+                    }
                     availableGems = Collections.emptyList();
                     installedGems = Collections.emptyList();
                     newGems = Collections.emptyList();
@@ -176,6 +189,11 @@ public final class GemPanel extends JPanel implements Runnable {
                     notifyGemsUpdated();
                     updateList(TabIndex.INSTALLED, true);
                     setEnabledGUI(false);
+                } else {
+                    gemHomeValue.setText(gemManager.getGemHome());
+                    gemHomeValue.setForeground(UIManager.getColor("Label.foreground"));
+                    setEnabledGUI(false);
+                    refreshUpdated();
                 }
             }
         });
@@ -1167,7 +1185,7 @@ public final class GemPanel extends JPanel implements Runnable {
     }
 
     private RubyPlatform getSelectedPlatform() {
-        return (RubyPlatform) platforms.getSelectedItem();
+        return PlatformComponentFactory.getPlatform(platforms);
     }
 
     private class MyListSelectionListener implements ListSelectionListener {

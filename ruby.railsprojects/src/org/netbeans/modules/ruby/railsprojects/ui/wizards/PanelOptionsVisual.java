@@ -46,6 +46,7 @@ import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import org.netbeans.api.ruby.platform.RubyPlatform;
+import org.netbeans.modules.ruby.platform.PlatformComponentFactory;
 import org.netbeans.modules.ruby.platform.RubyPlatformCustomizer;
 import org.netbeans.modules.ruby.railsprojects.server.RailsServerManager;
 import org.openide.WizardDescriptor;
@@ -282,7 +283,7 @@ public class PanelOptionsVisual extends SettingsPanel implements ActionListener,
     }
     
     private RubyPlatform getPlatform() {
-        return (RubyPlatform) platforms.getModel().getSelectedItem();
+        return PlatformComponentFactory.getPlatform(platforms);
     }
     
     boolean valid(WizardDescriptor settings) {
