@@ -345,7 +345,9 @@ public final class PaletteUtils {
                     if( null == uniqueItems ) {
                         uniqueItems = new HashSet<PaletteItem>();
                     }
-                    uniqueItems.add( formItem );
+                    if (!PaletteItem.TYPE_CHOOSE_BEAN.equals(formItem.getExplicitComponentType())) {
+                        uniqueItems.add(formItem);
+                    }
                 }
             }
         }
