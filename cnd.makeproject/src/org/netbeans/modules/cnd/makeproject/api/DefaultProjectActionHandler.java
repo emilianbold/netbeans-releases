@@ -102,6 +102,10 @@ public class DefaultProjectActionHandler implements ActionListener {
         DefaultProjectActionHandler.customDebugActionHandlerProvider = customDebugActionHandlerProvider;
     }
     
+    public CustomProjectActionHandlerProvider getCustomDebugActionHandlerProvider() {
+        return customDebugActionHandlerProvider;
+    }
+    
     public void setCustomActionHandlerProvider(CustomProjectActionHandler customActionHandlerProvider) {
         this.customActionHandler = customActionHandlerProvider;
     }
