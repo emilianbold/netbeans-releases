@@ -67,7 +67,6 @@ import javax.swing.UIManager;
 import javax.swing.plaf.UIResource;
 import org.netbeans.api.ruby.platform.RubyPlatform;
 import org.netbeans.api.ruby.platform.RubyPlatformManager;
-import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 
@@ -97,11 +96,6 @@ public final class PlatformComponentFactory {
             plafComboBox.setEnabled(false);
             RequestProcessor.getDefault().post(new Runnable() {
                 public void run() {
-                    try {
-                        Thread.sleep(3000);
-                    } catch (InterruptedException ex) {
-                        Exceptions.printStackTrace(ex);
-                    }
                     RubyPlatformManager.performPlatformDetection();
                     EventQueue.invokeLater(new Runnable() {
                         public void run() {
