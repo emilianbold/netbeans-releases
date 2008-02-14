@@ -58,6 +58,7 @@ import java.util.Calendar;
 import org.netbeans.modules.mercurial.util.HgUtils;
 import org.netbeans.api.queries.SharabilityQuery;
 import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.ConcurrentHashMap;
 
 
 /**
@@ -69,7 +70,7 @@ public class MercurialInterceptor extends VCSInterceptor {
 
     private final FileStatusCache   cache;
 
-    private List<File> dirsToDelete; 
+    private ConcurrentHashMap<File, File> dirsToDelete = new ConcurrentHashMap<File,File>(); 
 
     private ConcurrentLinkedQueue<File> filesToRefresh = new ConcurrentLinkedQueue<File>();
 
@@ -79,7 +80,6 @@ public class MercurialInterceptor extends VCSInterceptor {
 
     public MercurialInterceptor() {
         cache = Mercurial.getInstance().getFileStatusCache();
-        dirsToDelete = new ArrayList<File>();
         refreshTask = rp.create(new RefreshTask());
     }
 
@@ -89,14 +89,13 @@ public class MercurialInterceptor extends VCSInterceptor {
         
         // We track the deletion of top level directories
         if (file.isDirectory()) {
-            for (Iterator i = dirsToDelete.iterator(); i.hasNext();) {
-                File dir = (File) i.next();
+            for (File dir : dirsToDelete.keySet()) {
                 if (file.equals(dir.getParentFile())) {
-                    i.remove();
+                    dirsToDelete.remove(dir);
                 }
             }
             if (SharabilityQuery.getSharability(file) != SharabilityQuery.NOT_SHARABLE) {
-                dirsToDelete.add(file);
+                dirsToDelete.put(file, file);
             }
         }
         return true;
@@ -125,7 +124,7 @@ public class MercurialInterceptor extends VCSInterceptor {
         if (file.exists()) {
             if (file.isDirectory()) {
                 file.delete();
-                if (!dirsToDelete.remove(file)) return;
+                if (!dirsToDelete.remove(file, file)) return;
                 if (root == null) return;
                 HgProgressSupport support = new HgProgressSupport() {
                     public void perform() {
@@ -164,7 +163,7 @@ public class MercurialInterceptor extends VCSInterceptor {
                 // skip the call to hg remove as we will do it for the directory
                 file.delete();
                 if (root == null) return;
-                for (File dir : dirsToDelete) {
+                for (File dir : dirsToDelete.keySet()) {
                     File tmpFile = file.getParentFile();
                     while (tmpFile != null) {
                         if (tmpFile.equals(dir)) return;

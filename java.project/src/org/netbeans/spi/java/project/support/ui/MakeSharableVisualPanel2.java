@@ -38,18 +38,20 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.spi.java.project.support.ui;
 
 import java.awt.Component;
 import java.io.File;
 import java.net.MalformedURLException;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.EventObject;
 import java.util.List;
 import java.util.logging.Logger;
 import javax.swing.Action;
 import javax.swing.DefaultCellEditor;
+import javax.swing.DefaultComboBoxModel;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.JComboBox;
 import javax.swing.JList;
@@ -64,6 +66,7 @@ import javax.swing.table.TableColumn;
 import org.netbeans.api.project.ant.AntArtifact;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.project.libraries.LibraryManager;
+import org.netbeans.api.queries.CollocationQuery;
 import org.netbeans.spi.project.libraries.LibraryTypeProvider;
 import org.netbeans.spi.project.libraries.support.LibrariesSupport;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
@@ -75,27 +78,29 @@ import org.openide.filesystems.URLMapper;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
+
 final class MakeSharableVisualPanel2 extends JPanel {
+
     DefaultTableModel model;
     private String location = null;
     AntProjectHelper helper;
     private ReferenceHelper refhelper;
-    
     String ACTION_COPY = "copy"; //NOI18N
     String ACTION_RELATIVE = "keep"; //NOI18N
     String ACTION_ABSOLUTE = "abs"; //NOI18N
     String ACTION_USE_LOCAL_LIBRARY = "use";
-    
-    String[] comboValues = new String[] {
+    String[] comboValues = new String[]{
         ACTION_COPY, ACTION_RELATIVE, ACTION_ABSOLUTE, ACTION_USE_LOCAL_LIBRARY
-    
     };
-    
+    String[] comboValuesJar = new String[]{
+        ACTION_COPY, ACTION_RELATIVE, ACTION_ABSOLUTE
+    };
+
     /** Creates new form MakeSharableVisualPanel2 */
     public MakeSharableVisualPanel2() {
         initComponents();
         createTableDefinition();
-        
+
     }
 
     @Override
@@ -125,7 +130,7 @@ final class MakeSharableVisualPanel2 extends JPanel {
             Object item = model.getValueAt(i, 0);
             String action = (String) model.getValueAt(i, 1);
             if (item instanceof Library) {
-                Library lib = (Library)item;
+                Library lib = (Library) item;
                 if (ACTION_ABSOLUTE.equals(action)) {
                     actions.add(new SharableLibrariesUtils.KeepLibraryAtLocation(lib, false, anthelper));
                 } else if (ACTION_RELATIVE.equals(action)) {
@@ -139,7 +144,7 @@ final class MakeSharableVisualPanel2 extends JPanel {
                 }
             } else if (item instanceof String) {
                 //file reference
-                String ref = (String)item;
+                String ref = (String) item;
                 if (ACTION_ABSOLUTE.equals(action)) {
                     actions.add(new SharableLibrariesUtils.KeepJarAtLocation(ref, false, anthelper, helper));
                 } else if (ACTION_RELATIVE.equals(action)) {
@@ -147,14 +152,14 @@ final class MakeSharableVisualPanel2 extends JPanel {
                 } else if (ACTION_COPY.equals(action)) {
                     actions.add(new SharableLibrariesUtils.CopyJars(helper, anthelper, ref));
                 } else {
-                    assert false: "no handling defined for action: " + action;
+                    assert false : "no handling defined for action: " + action;
                 }
             } else if (item instanceof AntArtifact) {
                 //project dependency.. do we want to handle? proably not..
             }
         }
         wiz.putProperty(SharableLibrariesUtils.PROP_ACTIONS, actions);
-        
+
     }
 
     private void createTableDefinition() {
@@ -164,7 +169,6 @@ final class MakeSharableVisualPanel2 extends JPanel {
             public boolean isCellEditable(int row, int col) {
                 return col == 1;
             }
-            
         };
         model.addColumn("jar");
         model.addColumn("action");
@@ -173,68 +177,62 @@ final class MakeSharableVisualPanel2 extends JPanel {
         col1.setHeaderValue(NbBundle.getMessage(MakeSharableVisualPanel2.class, "tblJars.header1"));
         col1.setResizable(true);
         col1.setCellRenderer(new DefaultTableCellRenderer() {
+
             @Override
             public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
                 String text = "";
                 if (value instanceof Library) {
-                    Library lib = (Library)value;
+                    Library lib = (Library) value;
                     text = lib.getDisplayName();
                 } else if (value instanceof String) {
-                    String v = helper.getStandardPropertyEvaluator().evaluate((String)value);
+                    String v = helper.getStandardPropertyEvaluator().evaluate((String) value);
                     File absFile = helper.resolveFile(v);
                     text = absFile.getAbsolutePath();
                 }
-                
+
                 return super.getTableCellRendererComponent(table, text, isSelected, hasFocus, row, column);
             }
-            
         });
         TableColumn col2 = tblJars.getColumn("action");
         col2.setHeaderValue(NbBundle.getMessage(MakeSharableVisualPanel2.class, "tblJars.header2"));
         col2.sizeWidthToFit();
-        
+
         JComboBox editorBox = new JComboBox(comboValues);
         editorBox.setEditable(false);
-        editorBox.setRenderer(new DefaultListCellRenderer() {
-            @Override
-            public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
-                String val = (String)value;
-                if (ACTION_ABSOLUTE.equals(val)) {
-                    val = NbBundle.getMessage(MakeSharableVisualPanel2.class, "TXT_Absolute");
-                } else if (ACTION_COPY.equals(val)) {
-                    val = NbBundle.getMessage(MakeSharableVisualPanel2.class, "TXT_Copy");
-                } else if (ACTION_RELATIVE.equals(val)) {
-                    val = NbBundle.getMessage(MakeSharableVisualPanel2.class, "TXT_Keep");
-                } else if (ACTION_USE_LOCAL_LIBRARY.equals(val)) {
-                    val = NbBundle.getMessage(MakeSharableVisualPanel2.class, "TXT_UseLocal");
-                }
-                return super.getListCellRendererComponent(list, val, index, isSelected, cellHasFocus);
-            }
-        });
-        DefaultCellEditor ed = new DefaultCellEditor(editorBox);
+        DefaultCellEditor ed = new MyCellEditor(editorBox);
         col2.setCellEditor(ed);
         col2.setCellRenderer(new DefaultTableCellRenderer() {
+
             @Override
             public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
-                String val = (String)value;
-                if (ACTION_ABSOLUTE.equals(val)) {
-                    val = NbBundle.getMessage(MakeSharableVisualPanel2.class, "TXT_Absolute");
-                } else if (ACTION_COPY.equals(val)) {
-                    val = NbBundle.getMessage(MakeSharableVisualPanel2.class, "TXT_Copy");
-                } else if (ACTION_RELATIVE.equals(val)) {
-                    val = NbBundle.getMessage(MakeSharableVisualPanel2.class, "TXT_Keep");
-                } else if (ACTION_USE_LOCAL_LIBRARY.equals(val)) {
-                    val = NbBundle.getMessage(MakeSharableVisualPanel2.class, "TXT_UseLocal");
+                String val = (String) value;
+                if (table.getValueAt(row, 0) instanceof Library) {
+                    if (ACTION_ABSOLUTE.equals(val)) {
+                        val = NbBundle.getMessage(MakeSharableVisualPanel2.class, "TXT_Absolute");
+                    } else if (ACTION_COPY.equals(val)) {
+                        val = NbBundle.getMessage(MakeSharableVisualPanel2.class, "TXT_Copy");
+                    } else if (ACTION_RELATIVE.equals(val)) {
+                        val = NbBundle.getMessage(MakeSharableVisualPanel2.class, "TXT_Keep");
+                    } else if (ACTION_USE_LOCAL_LIBRARY.equals(val)) {
+                        val = NbBundle.getMessage(MakeSharableVisualPanel2.class, "TXT_UseLocal");
+                    }
+                } else {
+                    if (ACTION_ABSOLUTE.equals(val)) {
+                        val = NbBundle.getMessage(MakeSharableVisualPanel2.class, "TXT_AbsoluteJar");
+                    } else if (ACTION_COPY.equals(val)) {
+                        val = NbBundle.getMessage(MakeSharableVisualPanel2.class, "TXT_CopyJar");
+                    } else if (ACTION_RELATIVE.equals(val)) {
+                        val = NbBundle.getMessage(MakeSharableVisualPanel2.class, "TXT_KeepJar");
+                    }
                 }
                 return super.getTableCellRendererComponent(table, val, isSelected, hasFocus, row, column);
             }
-            
         });
         tblJars.getSelectionModel().addListSelectionListener(new ListSelectionListener() {
+
             public void valueChanged(ListSelectionEvent e) {
                 populateDescriptionField();
             }
-
         });
         tblJars.getSelectionModel().setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
     }
@@ -307,10 +305,12 @@ final class MakeSharableVisualPanel2 extends JPanel {
     private javax.swing.JTextArea taDetails;
     private javax.swing.JTable tblJars;
     // End of variables declaration//GEN-END:variables
-
     private void populateTable(AntProjectHelper helper, List<String> libraries, List<String> jars) {
+        createTableDefinition();
         try {
             File libraryFile = helper.resolveFile(location);
+            File prjDir = FileUtil.toFile(helper.getProjectDirectory());
+            boolean absoluteLibrary = LibrariesSupport.isAbsoluteURL(LibrariesSupport.convertFilePathToURL(location));
             LibraryManager newmanager = LibraryManager.forLocation(libraryFile.toURI().toURL());
             LibraryManager oldmanager = LibraryManager.getDefault(); //TODO once we support moving from one place to another, change this
             for (String lib : libraries) {
@@ -323,17 +323,29 @@ final class MakeSharableVisualPanel2 extends JPanel {
                     action = ACTION_USE_LOCAL_LIBRARY;
                 }
                 if (library != null) {
-                    model.addRow(new Object[] {library, action});
-                } 
+                    model.addRow(new Object[]{library, action});
+                }
             }
             for (String jar : jars) {
                 if (jar != null) {
                     String value = helper.getStandardPropertyEvaluator().evaluate(jar);
                     if (!value.startsWith("${")) {
-                        model.addRow( new Object[] {jar, ACTION_COPY});
+                        File jarFile = helper.resolveFile(value);
+                        String action = ACTION_COPY;
+                        if (CollocationQuery.areCollocated(prjDir, jarFile)) {
+                            // in the same VCS, without one project structure..
+                            action = ACTION_RELATIVE;
+                        } else if (absoluteLibrary && CollocationQuery.areCollocated(libraryFile.getParentFile(), jarFile)) {
+                            // jar within the libraries folder or somehow relative to it.. 
+                            // the path to libraries is absolute though.. absolute path is best guess then as well.
+                            action = ACTION_ABSOLUTE;
+                        } else if (CollocationQuery.areCollocated(libraryFile.getParentFile(), jarFile)) {
+                            action = ACTION_RELATIVE;
+                        }
+                        model.addRow(new Object[]{jar, action});
                     } else {
                         Logger.getLogger(MakeSharableVisualPanel2.class.getName()).info("Cannot find jar reference:" + jar);
-                    }        
+                    }
                 } else {
                     Logger.getLogger(MakeSharableVisualPanel2.class.getName()).info("Cannot find jar reference:" + jar);
                 }
@@ -342,13 +354,13 @@ final class MakeSharableVisualPanel2 extends JPanel {
             Exceptions.printStackTrace(ex);
         }
     }
-    
+
     private void populateDescriptionField() {
         int row = tblJars.getSelectedRow();
         if (row != -1) {
             Object val = tblJars.getModel().getValueAt(row, 0);
             if (val instanceof Library) {
-                Library lib = (Library)val;
+                Library lib = (Library) val;
                 String type = lib.getType();
                 LibraryTypeProvider provider = LibrariesSupport.getLibraryTypeProvider(type);
                 assert provider != null;
@@ -367,8 +379,8 @@ final class MakeSharableVisualPanel2 extends JPanel {
                         contents.append(url).append("\n");
                     }
                 }
-                taDetails.setText("Library (" + typeString  + ")\n"+ 
-                        "Contents:\n" + contents);   
+                taDetails.setText("Library (" + typeString + ")\n" +
+                        "Contents:\n" + contents);
             } else if (val instanceof String) {
                 String ref = (String) val;
                 String text = "Jar/Folder\nBinary:";
@@ -387,16 +399,72 @@ final class MakeSharableVisualPanel2 extends JPanel {
                     absFile = helper.resolveFile(value);
                     text = text + "\nJavadoc:" + absFile.getAbsolutePath();
                 }
-                
-                
+
+
                 taDetails.setText(text);
             }
         } else {
             taDetails.setText("<No items selected>");
         }
     }
-    
 
-    
+    private class MyCellEditor extends DefaultCellEditor {
+
+
+        private JComboBox cb;
+        private DefaultListCellRenderer library;
+        private DefaultListCellRenderer jar;
+
+        MyCellEditor(JComboBox combo) {
+            super(combo);
+            cb = combo;
+            library = new DefaultListCellRenderer() {
+                @Override
+                public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+                    String val = (String) value;
+                    if (ACTION_ABSOLUTE.equals(val)) {
+                        val = NbBundle.getMessage(MakeSharableVisualPanel2.class, "TXT_Absolute");
+                    } else if (ACTION_COPY.equals(val)) {
+                        val = NbBundle.getMessage(MakeSharableVisualPanel2.class, "TXT_Copy");
+                    } else if (ACTION_RELATIVE.equals(val)) {
+                        val = NbBundle.getMessage(MakeSharableVisualPanel2.class, "TXT_Keep");
+                    } else if (ACTION_USE_LOCAL_LIBRARY.equals(val)) {
+                        val = NbBundle.getMessage(MakeSharableVisualPanel2.class, "TXT_UseLocal");
+                    }
+                    return super.getListCellRendererComponent(list, val, index, isSelected, cellHasFocus);
+                }
+            };
+            jar = new DefaultListCellRenderer() {
+                @Override
+                public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+                    String val = (String) value;
+                    if (ACTION_ABSOLUTE.equals(val)) {
+                        val = NbBundle.getMessage(MakeSharableVisualPanel2.class, "TXT_AbsoluteJar");
+                    } else if (ACTION_COPY.equals(val)) {
+                        val = NbBundle.getMessage(MakeSharableVisualPanel2.class, "TXT_CopyJar");
+                    } else if (ACTION_RELATIVE.equals(val)) {
+                        val = NbBundle.getMessage(MakeSharableVisualPanel2.class, "TXT_KeepJar");
+                    } else if (ACTION_USE_LOCAL_LIBRARY.equals(val)) {
+                        val = NbBundle.getMessage(MakeSharableVisualPanel2.class, "TXT_UseLocalJar");
+                    }
+                    return super.getListCellRendererComponent(list, val, index, isSelected, cellHasFocus);
+                }
+            };
+
+        }
+
+        @Override
+        public Component getTableCellEditorComponent(JTable table, Object value, boolean isSelected, int row, int column) {
+            if (table.getValueAt(row, 0) instanceof Library) {
+                cb.setRenderer(library);
+                cb.setModel(new DefaultComboBoxModel(comboValues));
+            } else {
+                cb.setRenderer(jar);
+                cb.setModel(new DefaultComboBoxModel(comboValuesJar));
+            }
+            super.getTableCellEditorComponent(table, value, isSelected, row, column);
+            return cb;
+        }
+    }
 }
 

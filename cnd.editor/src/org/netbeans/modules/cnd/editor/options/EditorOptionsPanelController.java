@@ -42,7 +42,6 @@ package org.netbeans.modules.cnd.editor.options;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import javax.swing.JComponent;
-import org.netbeans.modules.cnd.editor.api.CodeStyle;
 import org.netbeans.spi.options.OptionsPanelController;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
@@ -52,13 +51,14 @@ import org.openide.util.Lookup;
  * @author Alexander Simon
  */
 public class EditorOptionsPanelController extends OptionsPanelController {
-    private EditorOptionsPanel panel;
+    private EditorPropertySheet panel;
+    
     private final PropertyChangeSupport pcs = new PropertyChangeSupport(this);
     private boolean changed;
 
     
     public EditorOptionsPanelController(){
-         panel = new EditorOptionsPanel(this);
+         panel = new EditorPropertySheet(this);
     }
     
     public void update() {

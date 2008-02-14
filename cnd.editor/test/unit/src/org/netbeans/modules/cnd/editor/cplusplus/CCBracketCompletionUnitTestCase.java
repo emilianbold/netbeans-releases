@@ -667,7 +667,7 @@ public class CCBracketCompletionUnitTestCase extends CCFormatterBaseUnitTestCase
     
     public void testIZ102091() throws Exception {
         EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
-                put(EditorOptions.CC_FORMAT_NEWLINE_BEFORE_BRACE, 
+                put(EditorOptions.newLineBeforeBrace, 
                 CodeStyle.BracePlacement.NEW_LINE.name());
         try {
             setLoadDocumentText (
@@ -681,7 +681,7 @@ public class CCBracketCompletionUnitTestCase extends CCFormatterBaseUnitTestCase
             );
         } finally {
             EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
-                    put(EditorOptions.CC_FORMAT_NEWLINE_BEFORE_BRACE, 
+                    put(EditorOptions.newLineBeforeBrace, 
                     CodeStyle.BracePlacement.SAME_LINE.name());
         }
     }

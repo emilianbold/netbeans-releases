@@ -363,15 +363,17 @@ public class DestinationPanel extends ErrorMessagePanel {
                             filePath);
                 }
                 
-                final long requiredSize =
-                        product.getRequiredDiskSpace() + REQUIRED_SPACE_ADDITION;
-                final long availableSize =
-                        SystemUtils.getFreeSpace(file);
-                if (availableSize < requiredSize) {
-                    return StringUtils.format(
-                            component.getProperty(ERROR_NOT_ENOUGH_SPACE_PROPERTY),
-                            filePath,
-                            StringUtils.formatSize(requiredSize - availableSize));
+                if(!Boolean.getBoolean(SystemUtils.NO_SPACE_CHECK_PROPERTY)) {
+                    final long requiredSize =
+                            product.getRequiredDiskSpace() + REQUIRED_SPACE_ADDITION;
+                    final long availableSize =
+                            SystemUtils.getFreeSpace(file);
+                    if (availableSize < requiredSize) {
+                        return StringUtils.format(
+                                component.getProperty(ERROR_NOT_ENOUGH_SPACE_PROPERTY),
+                                filePath,
+                                StringUtils.formatSize(requiredSize - availableSize));
+                    }
                 }
             } catch (InitializationException e) {
                 ErrorManager.notifyError(component.getProperty(
