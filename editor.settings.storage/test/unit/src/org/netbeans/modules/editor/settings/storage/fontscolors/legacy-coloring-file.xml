@@ -40,42 +40,7 @@ However, if you add GPL Version 2 code and therefore, elected the GPL
 Version 2 license, then the option applies only if the new code is
 made subject to such option by the copyright holder.
 -->
-<!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.1//EN" "http://www.netbeans.org/dtds/filesystem-1_1.dtd">
-<filesystem>
-
-    <folder name="Editors">
-        <folder name="FontsColors">
-            <folder name="MyProfileXyz">
-                <folder name="Defaults">
-                    <file name="funny-token-colorings.xml" url="token-colorings-all-languages.xml"/>
-                    <file name="funny-highlight-colorings.xml" url="highlight-colorings-all-languages.xml">
-                        <attr name="nbeditor-settings-ColoringType" stringvalue="highlight"/>
-                    </file>
-                </folder>
-            </folder>
-        </folder>
-        
-        <folder name="text">
-            <folder name="x-type-A">
-                <folder name="FontsColors">
-                    <folder name="MyProfileXyz">
-                        <folder name="Defaults">
-                            <file name="moduleA-colorings.xml" url="module-A.xml"/>
-                            <file name="moduleB-colorings.xml" url="module-B.xml"/>
-                        </folder>
-                    </folder>
-                </folder>
-            </folder>
-        </folder>
-        <folder name="text">
-            <folder name="x-legacy">
-                <folder name="NetBeans">
-                    <folder name="Defaults">
-                        <file name="coloring.xml" url="legacy-coloring-file.xml"/>
-                    </folder>
-                </folder>
-            </folder>
-        </folder>
-    </folder>
-
-</filesystem>
+<fontscolors>
+    <fontcolor name="pp-active-block" bgColor="fffae1f0"/>
+    <fontcolor name="pp-inactive-block" bgColor="ffebe1fa"/>
+</fontscolors>
