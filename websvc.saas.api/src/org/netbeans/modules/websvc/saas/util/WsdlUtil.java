@@ -59,10 +59,17 @@ public class WsdlUtil {
         return null;
     }
     
-    public static WsdlData getWsdlDataAsynchronously(String url) {
+    public static void addWsdlData(String url, String packageName) {
         WsdlDataManager manager = Lookup.getDefault().lookup(WsdlDataManager.class);
         if (manager != null) {
-            return manager.getWsdlData(url, "", false);
+            manager.addWsdlData(url, packageName);
+        }
+    }
+    
+    public static WsdlData getWsdlDataAsynchronously(String url, String serviceName) {
+        WsdlDataManager manager = Lookup.getDefault().lookup(WsdlDataManager.class);
+        if (manager != null) {
+            return manager.getWsdlData(url, serviceName, false);
         } 
         return null;
     }

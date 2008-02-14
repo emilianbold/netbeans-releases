@@ -48,6 +48,7 @@
     <target name="all-saas">
         <antcall target="netbeans"/>
         <ant dir="../websvc.saas.ui"/>
+        <ant dir="../websvc.saas.codegen"/>
         <ant dir="../websvc.saas.services.amazon"/>
         <ant dir="../websvc.saas.services.delicious"/>
         <ant dir="../websvc.saas.services.facebook"/>
@@ -63,6 +64,7 @@
     <target name="all-saas-clean">
         <antcall target="clean"/>
         <ant dir="../websvc.saas.ui" target="clean"/>
+        <ant dir="../websvc.saas.codegen" target="clean"/>
         <ant dir="../websvc.saas.services.amazon" target="clean"/>
         <ant dir="../websvc.saas.services.delicious" target="clean"/>
         <ant dir="../websvc.saas.services.facebook" target="clean"/>
