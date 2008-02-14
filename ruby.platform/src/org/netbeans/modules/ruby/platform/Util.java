@@ -58,6 +58,8 @@ public final class Util {
     private static final String PROXY_AUTHENTICATION_USERNAME = "proxyAuthenticationUsername"; // NOI18N
     private static final String PROXY_AUTHENTICATION_PASSWORD = "proxyAuthenticationPassword"; // NOI18N
 
+    private static final String FIRST_TIME_KEY = "platform-manager-called-first-time"; // NOI18N
+
     private Util() {
     }
     
@@ -180,4 +182,11 @@ public final class Util {
         notifyLocalized(aClass, resName, NotifyDescriptor.INFORMATION_MESSAGE, params);
     }
 
+    public static void setFirstPlatformTouch(boolean b) {
+        Util.getPreferences().putBoolean(FIRST_TIME_KEY, b);
+    }
+
+    static boolean isFirstPlatformTouch() {
+        return Util.getPreferences().getBoolean(FIRST_TIME_KEY, true);
+    }
 }
