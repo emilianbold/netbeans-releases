@@ -38,7 +38,7 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.bpel.project.anttasks;
+package org.netbeans.modules.bpel.project.anttasks.ide;
 
 import java.io.File;
 
@@ -48,28 +48,30 @@ import org.netbeans.modules.bpel.model.spi.BpelModelFactory;
 import org.openide.util.Lookup;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+
 /**
  * This class helps Bpel project to obtain the Bpel model given a BPEL File URI
  * @author Sreenivasan Genipudi
  */
-public class IDEBPELCatalogModel {
+public class IdeBpelCatalogModel {
 
-    static IDEBPELCatalogModel singletonCatMod = null;
+    static IdeBpelCatalogModel singletonCatMod = null;
 
-    public IDEBPELCatalogModel() {}
+    public IdeBpelCatalogModel() {
+    }
 
-    public static IDEBPELCatalogModel getDefault(){
-        if (singletonCatMod == null){
-            singletonCatMod = new IDEBPELCatalogModel   ();
+    public static IdeBpelCatalogModel getDefault() {
+        if (singletonCatMod == null) {
+            singletonCatMod = new IdeBpelCatalogModel();
         }
         return singletonCatMod;
     }
 
-     public BpelModel getBPELModel(File file) throws Exception {
-             ModelSource source = org.netbeans.modules.xml.retriever.catalog.Utilities.createModelSource(FileUtil.toFileObject(file), true);
-             BpelModelFactory factory = (BpelModelFactory) Lookup.getDefault().lookup(BpelModelFactory.class);
-             BpelModel model = factory.getModel(source);
-             model.sync();
-             return model;
-         }
+    public BpelModel getBPELModel(File file) throws Exception {
+        ModelSource source = org.netbeans.modules.xml.retriever.catalog.Utilities.createModelSource(FileUtil.toFileObject(file), true);
+        BpelModelFactory factory = (BpelModelFactory) Lookup.getDefault().lookup(BpelModelFactory.class);
+        BpelModel model = factory.getModel(source);
+        model.sync();
+        return model;
+    }
 }

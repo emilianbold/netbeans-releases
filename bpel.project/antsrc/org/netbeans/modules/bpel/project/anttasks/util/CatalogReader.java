@@ -38,32 +38,26 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.bpel.project.anttasks;
+package org.netbeans.modules.bpel.project.anttasks.util;
 
 import java.io.FileReader;
-
 import java.net.MalformedURLException;
 import java.util.ArrayList;
-
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
-
 import org.apache.xml.resolver.Catalog;
 import org.apache.xml.resolver.CatalogManager;
 import org.apache.xml.resolver.tools.CatalogResolver;
 import org.apache.xml.resolver.tools.ResolvingXMLReader;
-
 import org.xml.sax.Attributes;
 import org.xml.sax.InputSource;
 import org.xml.sax.helpers.DefaultHandler;
+
 
 /**
  * This class helps Bpel project to Read the Catalog XML file
  * @author Sreenivasan Genipudi
  */
-public class BpelProjectCatalogReader {
+public class CatalogReader {
     private MyContentHandler mContentHandler = new MyContentHandler();
 
     /**
@@ -71,7 +65,7 @@ public class BpelProjectCatalogReader {
      * @param catalogXML Location of Catalog XML
      * @throws Excepetion Exception during parsing the Catalog.xml file.
      */
-    public BpelProjectCatalogReader(String catalogXML) throws Exception {
+    public CatalogReader(String catalogXML) throws Exception {
         CatalogResolver catalogResolver;
         Catalog apacheCatalogResolverObj;
 
@@ -143,6 +137,7 @@ class MyContentHandler extends DefaultHandler {
         return listOfNS;
     }
 
+    @Override
     public void startElement(String uri, String localName, String qName, 
                              Attributes atts) {
         if (qName.equals(SYSTEM_CONST)) {
@@ -159,9 +154,11 @@ class MyContentHandler extends DefaultHandler {
     }
     
 
+    @Override
     public void endElement(String uri, String localName, String qName) {
     }
 
+    @Override
     public void characters(char[] chars, int start, int length) {
     }
 

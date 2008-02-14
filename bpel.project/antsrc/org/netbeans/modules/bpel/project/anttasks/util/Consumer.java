@@ -16,7 +16,7 @@
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
-package org.netbeans.modules.bpel.project.anttasks.jbi;
+package org.netbeans.modules.bpel.project.anttasks.util;
 
 public class Consumer {
     //Member variable representing partner link name
@@ -34,6 +34,9 @@ public class Consumer {
     //Member variable representing Portname Namespace Prefix
     private String mPortNameNSPrefix = null;       
      
+    private String mProcessName = null;
+    private String mFilePath = null;
+    
     /**
      * Constructor
      * @param partnerLinkName Partner link name
@@ -42,7 +45,16 @@ public class Consumer {
      * @param portNameNS Namespace URI of the portname
      * @param partnerRoleName Partner role name
      */
-    public Consumer(String partnerLinkName, String portName, String partnerLinkNS, String portNameNS, String partnerRoleName, String partnerLinkNSPrefix, String portNameNSPrefix) {
+    public Consumer(
+            String partnerLinkName, 
+            String portName, 
+            String partnerLinkNS, 
+            String portNameNS, 
+            String partnerRoleName, 
+            String partnerLinkNSPrefix, 
+            String portNameNSPrefix,
+            String processName,
+            String filePath) {
         mPartnerLinkName = partnerLinkName;
         mPortName = portName;
         mPartnerLinkNS = partnerLinkNS;
@@ -50,8 +62,9 @@ public class Consumer {
         mPartnerRoleName =partnerRoleName;
         mPartnerLinkNSPrefix = partnerLinkNSPrefix;
         mPortNameNSPrefix = portNameNSPrefix;        
-    }
-    
+        mProcessName = processName;
+        mFilePath = filePath;
+    }    
     
     /**
      * Get Name of the Partner Link
@@ -60,6 +73,7 @@ public class Consumer {
     public String getPartnerLinkName() {
         return mPartnerLinkName;
     }
+    
     /**
      * Get Name of the Port
      * @return Name of the Port
@@ -67,6 +81,7 @@ public class Consumer {
     public String getPortName() {
         return mPortName;
     }
+    
     /**
      * Get Namespace URI of the Partner Link
      * @return Namespace URI of the Partner Link
@@ -74,6 +89,7 @@ public class Consumer {
     public String getPartnerLinkNamespace() {
         return mPartnerLinkNS;
     }
+    
     /**
      * Get Namespace Prefix of the Partner Link
      * @return Namespace URI of the Partner Link
@@ -81,6 +97,7 @@ public class Consumer {
     public String getPartnerLinkNamespacePrefix() {
         return mPartnerLinkNSPrefix;
     }   
+    
     /**
      * Return Namespace URI of portName
      * @return Namespace URI of the portname
@@ -88,6 +105,7 @@ public class Consumer {
     public String getPortNameNamespace() {
         return mPortNameNS;
     }    
+    
     /**
      * Return Namespace Prefix of portName
      * @return Namespace URI of the portname
@@ -95,6 +113,7 @@ public class Consumer {
     public String getPortNameNamespacePrefix() {
         return mPortNameNSPrefix;
     }     
+    
     /**
      * Return Partner Role name
      * @return Partner Role name
@@ -103,6 +122,15 @@ public class Consumer {
         return mPartnerRoleName;
     }
     
+    public String getProcessName() {
+        return mProcessName;
+    }
+    
+    public String getFilePath() {
+        return mFilePath;
+    }
+    
+    @Override
     public boolean equals(Object obj) {
         if (! (obj instanceof Provider)) {
             return false;
@@ -118,8 +146,8 @@ public class Consumer {
         return false;
     }
     
+    @Override
     public int hashCode() {
         return (this.mPartnerLinkName+this.mPortName+this.mPartnerRoleName).hashCode();
     }
-    
 }
