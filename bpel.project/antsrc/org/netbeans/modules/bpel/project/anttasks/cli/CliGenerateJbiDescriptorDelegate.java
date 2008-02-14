@@ -38,11 +38,10 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.bpel.project.anttasks;
+package org.netbeans.modules.bpel.project.anttasks.cli;
 
 import java.io.File;
-import java.util.ArrayList;
-import java.util.StringTokenizer;
+import java.util.Arrays;
 import org.netbeans.modules.bpel.project.CommandlineBpelProjectXmlCatalogProvider;
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.Task;
@@ -52,43 +51,14 @@ import org.apache.tools.ant.types.Reference;
  * Generates JBI Descriptor
  * @author Sreenivasan Genipudi
  */
-public class IDEGenerateJBIDescriptor extends Task {
+public class CliGenerateJbiDescriptorDelegate extends Task {
 
-    public void execute() throws BuildException {
-        if(this.mSourceDirectory == null) {
-            throw new BuildException("No directory is set for source files.");
-        }
-        File sourceDirectory = new File(this.mSourceDirectory);
-        // read project classpath
-        ArrayList projectDirs = new ArrayList();
+    private String mSourceDirectory = null;
+    private String mBuildDirectory = null;
+    private String mProjectClassPath = null;
 
-        if(this.mProjectClassPath != null
-                && !this.mProjectClassPath.trim().equals("")
-                && !this.mProjectClassPath.trim().equals("${javac.classpath}")) {
-            StringTokenizer st = new StringTokenizer(this.mProjectClassPath, ";");
-
-            while (st.hasMoreTokens()) {
-                String spath = st.nextToken();
-                try {
-                    File sFile =  new File(sourceDirectory.getParentFile().getCanonicalPath() + File.separator + spath);
-                    File srcFolder = new File(sFile.getParentFile().getParentFile().getCanonicalFile(), "src");
-                    projectDirs.add(srcFolder);
-                } catch(Exception ex) {
-                    throw new BuildException("Failed to create File object for dependent project path "+ spath);
-                }
-            }
-        }
-        // find the owner project
-        if(sourceDirectory != null) {
-            ArrayList srcList = new ArrayList();
-            srcList.add(sourceDirectory);
-            CommandlineBpelProjectXmlCatalogProvider.getInstance().setSourceDirectory(this.mSourceDirectory);
-            IDEJBIGenerator generator = new IDEJBIGenerator(projectDirs, srcList);
-            generator.generate(new File(mBuildDirectory));
-        }
+    public CliGenerateJbiDescriptorDelegate() {
     }
-
-    public IDEGenerateJBIDescriptor() {}
 
     public void setBuildDirectory(String buildDir) {
         mBuildDirectory = buildDir;
@@ -97,19 +67,27 @@ public class IDEGenerateJBIDescriptor extends Task {
     public void setSourceDirectory(String srcDir) {
         this.mSourceDirectory = srcDir;
     }
-    
+
     public void setClasspathRef(Reference ref) {
     }
-    
+
     public String getSourceDirectory() {
         return this.mSourceDirectory;
     }
-    
+
     public void setProjectClassPath(String projectClassPath) {
         this.mProjectClassPath = projectClassPath;
     }
 
-    private String mSourceDirectory = null;
-    private String mBuildDirectory = null;
-    private String mProjectClassPath = null;
+    @Override
+    public void execute() throws BuildException {
+        if (this.mSourceDirectory == null) {
+            throw new BuildException("No directory is set for source files.");
+        }
+        File sourceDirectory = new File(this.mSourceDirectory);
+        
+        CommandlineBpelProjectXmlCatalogProvider.getInstance().setSourceDirectory(this.mSourceDirectory);
+        
+        new CliJbiGenerator(Arrays.asList(sourceDirectory)).generate(new File(mBuildDirectory));
+    }
 }

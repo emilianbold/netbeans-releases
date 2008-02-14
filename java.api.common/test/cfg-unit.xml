@@ -39,9 +39,9 @@ Contributor(s):
 Portions Copyrighted 2007 Sun Microsystems, Inc.
 -->
 
-<mconfig name="java/commonapi">
+<mconfig name="java/api/common">
 
-    <testbag testattribs="unstable" executor="unit-executor" name="java/commonapi">
+    <testbag testattribs="stable" executor="unit-executor" name="java/api/common">
         <testset dir="unit/src">
             <patternset>
                 <include name="**/*Test.class"/>

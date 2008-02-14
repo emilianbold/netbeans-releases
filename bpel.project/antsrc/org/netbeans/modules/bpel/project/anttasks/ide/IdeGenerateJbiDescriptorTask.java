@@ -38,51 +38,54 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
+package org.netbeans.modules.bpel.project.anttasks.ide;
 
-package org.netbeans.modules.bpel.project.anttasks;
-
-import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
 import java.io.File;
-import java.io.FileFilter;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.FileReader;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.StringTokenizer;
-
+import java.util.Arrays;
+import org.netbeans.modules.bpel.project.CommandlineBpelProjectXmlCatalogProvider;
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.Task;
+import org.apache.tools.ant.types.Reference;
 
 /**
- * @author radval
- * Ant task to extract wsdl/xsd from dependent projects.
+ * Generates JBI Descriptor
+ * @author Sreenivasan Genipudi
  */
-public class DependentProjectsFileExtractor extends Task {
+public class IdeGenerateJbiDescriptorTask extends Task {
 
-    private String mBuildDirectory;
-    private String mProjectDirectory;
-    private String mProjectClassPath;
-    private String mSourceDirectory;
-    private File mBuildDir;
-    
-    public void setBuildDirectory(String buildDirectory) {
-        this.mBuildDirectory = buildDirectory;
+    @Override
+    public void execute() throws BuildException {
+        if(this.mSourceDirectory == null) {
+            throw new BuildException("No directory is set for source files.");
+        }
+        File sourceDirectory = new File(this.mSourceDirectory);
+
+        CommandlineBpelProjectXmlCatalogProvider.getInstance().setSourceDirectory(this.mSourceDirectory);
+        new IdeJbiGenerator(Arrays.asList(sourceDirectory)).generate(new File(mBuildDirectory));
     }
-    
+
+    public IdeGenerateJbiDescriptorTask() {}
+
+    public void setBuildDirectory(String buildDir) {
+        mBuildDirectory = buildDir;
+    }
+
     public void setSourceDirectory(String srcDir) {
         this.mSourceDirectory = srcDir;
+    }
+    
+    public void setClasspathRef(Reference ref) {
+    }
+    
+    public String getSourceDirectory() {
+        return this.mSourceDirectory;
     }
     
     public void setProjectClassPath(String projectClassPath) {
         this.mProjectClassPath = projectClassPath;
     }
-    
-    public void setProjectDirectory(String srcDir) {
-        this.mProjectDirectory = srcDir;
-    }
 
-    public void execute() throws BuildException {}
+    private String mSourceDirectory = null;
+    private String mBuildDirectory = null;
+    private String mProjectClassPath = null;
 }

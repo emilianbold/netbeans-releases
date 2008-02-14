@@ -38,39 +38,45 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.bpel.project.anttasks;
+package org.netbeans.modules.bpel.project.anttasks.cli;
 
-import org.openide.util.Lookup;
-import org.openide.util.lookup.AbstractLookup;
-import org.openide.util.lookup.Lookups;
+import java.io.File;
+import org.netbeans.modules.bpel.project.CommandlineBpelProjectXmlCatalogProvider;
+import org.apache.tools.ant.BuildException;
+import org.apache.tools.ant.Task;
+import org.apache.tools.ant.types.Reference;
+import org.netbeans.modules.bpel.project.anttasks.util.PackageCatalogArtifacts;
 
-
-public class MyLookup extends Lookup {
-    static Lookup mylookup = null;
-    static MyLookup m_instance = null;
-
-    public MyLookup() {
+/**
+ * Generates JBI Descriptor
+ * @author Sreenivasan Genipudi
+ */
+public class CliGenerateCatalogDelegate extends Task {
+    
+    private String mSourceDirectory = null;
+    private String mBuildDirectory = null;
+    
+    public CliGenerateCatalogDelegate() {
+    }
+    
+    public void setBuildDirectory(String buildDir) {
+        mBuildDirectory = buildDir;
+    }
+    
+    public void setSourceDirectory(String srcDir) {
+        this.mSourceDirectory = srcDir;
+    }
+    
+    @Override
+    public void execute() throws BuildException {
+        if (this.mSourceDirectory == null) {
+            throw new BuildException("No directory is set for source files.");
+        }
+        File sourceDirectory = new File(this.mSourceDirectory);
+        File buildDirectory = new File(this.mBuildDirectory);
         
-    }
-    private static Lookup   getInstance(){
-        if (m_instance == null ) {
-            m_instance = new MyLookup();
-        }
-        if (mylookup == null) {
-            mylookup = Lookups.metaInfServices(m_instance.getClass().getClassLoader());
-        }
-        return mylookup;
-    }
-    
-    public Object lookup(Class clazz) {
-        return getInstance().lookup(clazz);
-    }
-              
-    public  Lookup.Result lookup(Lookup.Template template) {
-        return getInstance().lookup(template);
-    }
-    
-    public Lookup.Item  lookupItem(Lookup.Template template) {
-        return getInstance().lookupItem(template);
+        CommandlineBpelProjectXmlCatalogProvider.getInstance().setSourceDirectory(this.mSourceDirectory);
+        
+        new PackageCatalogArtifacts().doCopy(sourceDirectory, buildDirectory);
     }
 }
