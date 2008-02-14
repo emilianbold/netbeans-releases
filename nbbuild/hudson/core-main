@@ -8,6 +8,8 @@
 
 ANT_OPTS="-Xmx512m"
 export ANT_OPTS
+HGMERGE=merge
+export HGMERGE
 
 rm -rf real.workspace
 hg clone . real.workspace || exit 1
@@ -51,7 +53,7 @@ fi
 
 if [ "$action" = "sync" ]; then
     HEADS=`hg heads --template "{node}\n" | wc -l`
-    if [ $HEADS == 2 ]; then
+    if [ $HEADS = 2 ]; then
       hg merge
       hg ci -m "Automated merge"
       hg up -C

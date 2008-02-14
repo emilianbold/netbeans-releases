@@ -39,51 +39,18 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.db;
+package org.netbeans.modules.db.explorer.actions;
 
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import org.netbeans.lib.ddl.DBConnection;
-import org.netbeans.modules.db.explorer.ConnectionList;
-import org.netbeans.modules.db.explorer.DatabaseConnection;
-import org.netbeans.modules.db.explorer.DatabaseNodeChildren;
-import org.netbeans.modules.db.explorer.nodes.RootNode;
-import org.netbeans.modules.db.server.ServerProviderManager;
-import org.netbeans.spi.db.explorer.DatabaseRuntime;
-import org.openide.modules.ModuleInstall;
 
-public class DatabaseModule extends ModuleInstall {
-    
-    public void close () {
-        // XXX this method is called in the event thread and could take long
-        // to execute
-        
-        // disconnect all connected connections
-        // but try to not initialize the nodes if they haven't been initialized yet
-        DatabaseNodeChildren rootNodeChildren = (DatabaseNodeChildren)RootNode.getInstance().getChildren();
-        if (rootNodeChildren.getChildrenInitialized()) {
-            DBConnection[] conns = ConnectionList.getDefault().getConnections();
-            for (int i = 0; i < conns.length; i++) {
-                try {
-                    ((DatabaseConnection)conns[i]).disconnect();
-                } catch (Exception e) {
-                    // cf. issue 64185 exceptions should only be logged
-                    Logger.getLogger("global").log(Level.INFO, null, e);
-                }
-            }
-        }
-        
-        // stop all running runtimes
-        DatabaseRuntime[] runtimes = ServerProviderManager.getDefault().getRuntimes();
-        for (int i = 0; i < runtimes.length; i++) {
-            if (runtimes[i].isRunning()) {
-                try {
-                    runtimes[i].stop();
-                } catch (Exception e) {
-                    // cf. issue 64185 exceptions should only be logged
-                    Logger.getLogger("global").log(Level.INFO, null, e);
-                }
-            }
-        }
+import org.openide.nodes.Node;
+
+
+public class ServerConnectAction extends DatabaseAction
+{
+    // TODO - fix serialversionuid
+    static final long serialVersionUID =6900032866933824412L;
+    public void performAction(Node[] activatedNodes)
+    {
+        // TODO - bring up connect to server action
     }
 }
