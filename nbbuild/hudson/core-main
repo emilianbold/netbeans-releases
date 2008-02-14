@@ -16,7 +16,7 @@ cd real.workspace
 if [ "$action" = "build" ]; then
 #    hg fetch http://hg.netbeans.org/main || exit 1
     hg pull http://hg.netbeans.org/main || exit 1
-    if [ `hg heads --template '{node|short}\n' | wc -l` == 1 ]
+    if [ `hg heads --template '{node|short}\n' | wc -l` = 1 ]
     then
        hg up || exit 6
     else
@@ -35,7 +35,7 @@ if [ "$action" = "build" ]; then
 
     for i in 1 2 3; do
        hg pull http://hg.netbeans.org/main || exit 5
-       if [ `hg heads --template '{node|short}\n' | wc -l` == 1 ]
+       if [ `hg heads --template '{node|short}\n' | wc -l` = 1 ]
        then
            hg up || exit 6
        else
