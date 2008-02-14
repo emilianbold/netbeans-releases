@@ -1,6 +1,6 @@
 #!/bin/sh
 
-[ "$action" = "build" ] || [ "$action" == "sync" ] || exit 101
+[ "$action" = "build" ] || [ "$action" = "sync" ] || exit 101
 
 [ -n "$push_username" ] || exit 102
 [ -n "$push_password" ] || exit 103
