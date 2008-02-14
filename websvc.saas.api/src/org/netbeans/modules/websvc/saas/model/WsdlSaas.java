@@ -94,12 +94,23 @@ public class WsdlSaas extends Saas implements PropertyChangeListener {
         return wsData;
     }
     
+    public String getDefaultServiceName() {
+        if (getMethods().size() > 0) {
+            return getMethods().get(0).getMethod().getServiceName();
+        }
+        assert false : "no serviceName";
+        return ""; //NOI18N
+    }
+    
     @Override
     public void toStateReady() {
         if (wsData == null) {
-            wsData = WsdlUtil.getWsdlDataAsynchronously(getUrl()); //NOI18N
+            wsData = WsdlUtil.getWsdlDataAsynchronously(getUrl(), getDefaultServiceName()); //NOI18N
             if (wsData != null) {
                 wsData.addPropertyChangeListener(WeakListeners.propertyChange(this, wsData));
+                if (wsData.isReady()) {
+                    setState(State.READY);
+                }
             }
         }
     }

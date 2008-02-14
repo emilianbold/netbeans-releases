@@ -57,7 +57,7 @@ import org.netbeans.modules.cnd.makeproject.api.remote.FilePathAdaptor;
 import org.netbeans.modules.cnd.makeproject.configurations.ui.IntNodeProp;
 import org.netbeans.modules.cnd.makeproject.api.platforms.Platforms;
 import org.netbeans.modules.cnd.makeproject.configurations.ui.BooleanNodeProp;
-import org.netbeans.modules.cnd.makeproject.configurations.ui.ProjectsNodeProp;
+import org.netbeans.modules.cnd.makeproject.configurations.ui.RequiredProjectsNodeProp;
 import org.netbeans.modules.cnd.settings.CppSettings;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -363,10 +363,9 @@ public class MakeConfiguration extends Configuration {
         Sheet sheet = new Sheet();
         
         Sheet.Set set = new Sheet.Set();
-        set.setName("Project Defaults"); // NOI18N
+        set.setName("ProjectDefaults"); // NOI18N
         set.setDisplayName(getString("ProjectDefaultsTxt"));
         set.setShortDescription(getString("ProjectDefaultsHint"));
-        set.put(new ProjectLocationNodeProp(project));
         set.put(new IntNodeProp(getCompilerSet(), true, "CompilerSCollection", getString("CompilerCollectionTxt"), getString("CompilerCollectionHint"))); // NOI18N
         set.put(new BooleanNodeProp(getCRequired(), true, "cRequired", getString("CRequiredTxt"), getString("CRequiredHint"))); // NOI18N
         set.put(new BooleanNodeProp(getCppRequired(), true, "cppRequired", getString("CppRequiredTxt"), getString("CppRequiredHint"))); // NOI18N
@@ -407,41 +406,10 @@ public class MakeConfiguration extends Configuration {
 	set2.setName("Projects"); // NOI18N
 	set2.setDisplayName(getString("ProjectsTxt1"));
 	set2.setShortDescription(getString("ProjectsHint"));
-	set2.put(new ProjectsNodeProp(getRequiredProjectsConfiguration(), project, conf, getBaseDir(), texts));
+	set2.put(new RequiredProjectsNodeProp(getRequiredProjectsConfiguration(), project, conf, getBaseDir(), texts));
 	sheet.put(set2);
 
 	return sheet;
-    }
-    
-    private class ProjectLocationNodeProp extends Node.Property {
-        String projectLocation;
-        
-        public ProjectLocationNodeProp(Project project) {
-            super(String.class);
-            FileObject projectFolder = project.getProjectDirectory();
-            File pf = FileUtil.toFile( projectFolder );
-            projectLocation = pf.getPath();
-        }
-        
-        public String getName() {
-            return getString("ProjectLocationTxt");
-        }
-        
-        public Object getValue() {
-            return projectLocation;
-        }
-        
-        public void setValue(Object v) {
-            ;//
-        }
-        
-        public boolean canWrite() {
-            return false;
-        }
-        
-        public boolean canRead() {
-            return true;
-        }
     }
     
     public boolean hasCPPFiles(MakeConfigurationDescriptor configurationDescriptor) {

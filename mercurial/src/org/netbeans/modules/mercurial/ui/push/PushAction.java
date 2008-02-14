@@ -98,9 +98,35 @@ public class PushAction extends ContextAction {
             return;
         }
 
+        push(context);
+    }
+    public boolean isEnabled() {
+        Set<File> ctxFiles = context != null? context.getRootFiles(): null;
+        if(HgUtils.getRootFile(context) == null || ctxFiles == null || ctxFiles.size() == 0) 
+            return false;
+        return true; // #121293: Speed up menu display, warn user if not set when Push selected
+    }
+    
+    public static void push(final VCSContext ctx){
+        final File root = HgUtils.getRootFile(ctx);
+        if (root == null) return;
+        String repository = root.getAbsolutePath();
+
+        RequestProcessor rp = Mercurial.getInstance().getRequestProcessor(repository);
+        HgProgressSupport support = new HgProgressSupport() {
+            public void perform() { getDefaultAndPerformPush(ctx, root); } };
+        support.start(rp, repository, 
+                org.openide.util.NbBundle.getMessage(PushAction.class, "MSG_PUSH_PROGRESS")); // NOI18N
+        
+    }
+                
+    static void getDefaultAndPerformPush(VCSContext ctx, File root) {
         // If the repository has no default pull path then inform user
-        if(HgRepositoryContextCache.getPushDefault(context) == null && 
-                HgRepositoryContextCache.getPullDefault(context) == null){
+        String tmpPushPath = HgRepositoryContextCache.getPushDefault(ctx);
+        if(tmpPushPath == null) {
+            tmpPushPath = HgRepositoryContextCache.getPullDefault(ctx);
+        }
+        if(tmpPushPath == null) {
             HgUtils.outputMercurialTabInRed( NbBundle.getMessage(PushAction.class,"MSG_PUSH_TITLE")); // NOI18N
             HgUtils.outputMercurialTabInRed( NbBundle.getMessage(PushAction.class,"MSG_PUSH_TITLE_SEP")); // NOI18N
             HgUtils.outputMercurialTab(NbBundle.getMessage(PushAction.class, "MSG_NO_DEFAULT_PUSH_SET_MSG")); // NOI18N
@@ -112,37 +138,12 @@ public class PushAction extends ContextAction {
                 JOptionPane.INFORMATION_MESSAGE);
             return;
         }
-
-        push(context);
-    }
-    public boolean isEnabled() {
-        Set<File> ctxFiles = context != null? context.getRootFiles(): null;
-        if(HgUtils.getRootFile(context) == null || ctxFiles == null || ctxFiles.size() == 0) 
-            return false;
-        return true; // #121293: Speed up menu display, warn user if not set when Push selected
-    }
-    
-    public static void push(VCSContext ctx){
-        final File root = HgUtils.getRootFile(ctx);
-        if (root == null) return;
-        String repository = root.getAbsolutePath();
-        String tmpPushPath = HgCommand.getPushDefault(root);
-        if(tmpPushPath == null) {
-            tmpPushPath = HgCommand.getPullDefault(root);
-        }
-        if(tmpPushPath == null) return;
         final String pushPath = tmpPushPath;
         final String fromPrjName = HgProjectUtils.getProjectName(root);
         final String toPrjName = HgProjectUtils.getProjectName(new File(pushPath));
+        performPush(root, pushPath, fromPrjName, toPrjName);
 
-        RequestProcessor rp = Mercurial.getInstance().getRequestProcessor(repository);
-        HgProgressSupport support = new HgProgressSupport() {
-            public void perform() { performPush(root, pushPath, fromPrjName, toPrjName); } };
-        support.start(rp, repository, 
-                org.openide.util.NbBundle.getMessage(PushAction.class, "MSG_PUSH_PROGRESS")); // NOI18N
-        
     }
-                
     static void performPush(File root, String pushPath, String fromPrjName, String toPrjName) {
         try {
             HgUtils.outputMercurialTabInRed(NbBundle.getMessage(PushAction.class, "MSG_PUSH_TITLE")); // NOI18N

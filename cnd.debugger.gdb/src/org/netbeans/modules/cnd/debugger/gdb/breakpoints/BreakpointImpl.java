@@ -58,6 +58,7 @@ public abstract class BreakpointImpl implements PropertyChangeListener {
     
     /* valid breakpoint states */
     public static final String BPSTATE_UNVALIDATED = "BpState_Unvalidated"; // NOI18N
+    public static final String BPSTATE_REVALIDATE = "BpState_Revalidate"; // NOI18N
     public static final String BPSTATE_VALIDATION_PENDING = "BpState_ValidationPending"; // NOI18N
     public static final String BPSTATE_VALIDATION_FAILED = "BpState_ValidationFailed"; // NOI18N
     public static final String BPSTATE_VALIDATED = "BpState_Validated"; // NOI18N
@@ -131,6 +132,7 @@ public abstract class BreakpointImpl implements PropertyChangeListener {
     protected void setState(String state) {
         if (!state.equals(this.state) &&
                 (state.equals(BPSTATE_UNVALIDATED) ||
+                 state.equals(BPSTATE_REVALIDATE) ||
                  state.equals(BPSTATE_VALIDATION_PENDING) ||
                  state.equals(BPSTATE_VALIDATION_FAILED) ||
                  state.equals(BPSTATE_VALIDATED) ||

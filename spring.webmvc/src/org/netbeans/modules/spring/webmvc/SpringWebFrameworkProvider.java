@@ -65,11 +65,8 @@ import org.openide.util.NbBundle;
  */
 public class SpringWebFrameworkProvider extends WebFrameworkProvider {
 
-    public static final String SPRING_LIB_NAME = "spring-framework-2.5"; // NOI18N
     public static final String CONTEXT_LOADER = "org.springframework.web.context.ContextLoaderListener"; // NOI18N
     public static final String DISPATCHER_SERVLET = "org.springframework.web.servlet.DispatcherServlet"; // NOI18N
-    public static final String ENCODING = "UTF-8"; // NOI18N
-
     private SpringWebModuleExtender panel;
 
     public SpringWebFrameworkProvider() {
