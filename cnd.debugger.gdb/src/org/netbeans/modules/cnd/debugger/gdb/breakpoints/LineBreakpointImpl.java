@@ -72,19 +72,21 @@ public class LineBreakpointImpl extends BreakpointImpl {
     }
     
     protected void setRequests() {
-        if (getDebugger().getState().equals(GdbDebugger.STATE_RUNNING)) {
+        String st = getState();
+        if (getDebugger().getState().equals(GdbDebugger.STATE_RUNNING) &&
+                !st.equals(BPSTATE_REVALIDATE)) {
             getDebugger().setSilentStop();
         }
-        if (getState().equals(BPSTATE_UNVALIDATED)) {
+        if (st.equals(BPSTATE_UNVALIDATED) || st.equals(BPSTATE_REVALIDATE)) {
             setState(BPSTATE_VALIDATION_PENDING);
             lineNumber = breakpoint.getLineNumber();
             String path = getDebugger().getBestPath(breakpoint.getPath());
             int token = getDebugger().getGdbProxy().break_insert(path + ':' + lineNumber);
             getDebugger().addPendingBreakpoint(token, this);
 	} else {
-	    if (getState().equals(BPSTATE_DELETION_PENDING)) {
+	    if (st.equals(BPSTATE_DELETION_PENDING)) {
 		getDebugger().getGdbProxy().break_delete(getBreakpointNumber());
-	    } else if (getState().equals(BPSTATE_VALIDATED)) {
+	    } else if (st.equals(BPSTATE_VALIDATED)) {
                 if (breakpoint.isEnabled()) {
                     getDebugger().getGdbProxy().break_enable(getBreakpointNumber());
                 } else {

@@ -426,6 +426,7 @@ public class TypeImpl extends OffsetableBase implements CsmType {
         
         PersistentUtils.writeStrings(qname, output);
         output.writeInt(firstOffset);
+        PersistentUtils.writeTypes(instantiationParams, output);
         UIDObjectFactory.getDefaultFactory().writeUID(classifierUID, output);
     }
 
@@ -440,6 +441,7 @@ public class TypeImpl extends OffsetableBase implements CsmType {
         
         this.qname = PersistentUtils.readStrings(input, NameCache.getManager());
         this.firstOffset = input.readInt();
+        PersistentUtils.readTypes(this.instantiationParams, input);
         this.classifierUID = UIDObjectFactory.getDefaultFactory().readUID(input);
     }
 
