@@ -101,12 +101,8 @@ public class BreakpointsEngineListener extends LazyActionsManagerListener
                 }
             }
         } else if (pname.equals(GdbDebugger.PROP_SHARED_LIB_LOADED)) {
-            RequestProcessor.getDefault().post(new Runnable() {
-                public void run() {
-                   sharedLibLoaded(); 
-                }
-            });
-            
+            assert !Thread.currentThread().getName().equals("GdbReaderRP");
+            sharedLibLoaded();
         }
     }
 
