@@ -42,11 +42,13 @@ package org.netbeans.modules.refactoring.java.ui;
 
 import java.io.IOException;
 import java.text.MessageFormat;
+import java.util.StringTokenizer;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.Modifier;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.fileinfo.NonRecursiveFolder;
+import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.TreePathHandle;
@@ -56,6 +58,7 @@ import org.netbeans.modules.refactoring.java.RetoucheUtils;
 import org.netbeans.modules.refactoring.spi.ui.CustomRefactoringPanel;
 import org.netbeans.modules.refactoring.spi.ui.RefactoringUI;
 import org.netbeans.modules.refactoring.spi.ui.RefactoringUIBypass;
+import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
@@ -203,8 +206,7 @@ public class RenameRefactoringUI implements RefactoringUI, RefactoringUIBypass {
         refactoring.getContext().add(RetoucheUtils.getClasspathInfoFor(jmiObject.getFolder()));
         //this.jmiObject = jmiObject;
         oldName = newName;
-        //[FIXME] this should be oldName of refactored object
-        this.dispOldName = newName;
+        this.dispOldName = RetoucheUtils.getPackageName(jmiObject.getFolder());
         fromListener = true;
         pkgRename = true;
     }
@@ -328,8 +330,68 @@ public class RenameRefactoringUI implements RefactoringUI, RefactoringUIBypass {
         if (byPassFolder != null) {
             dob = DataFolder.findFolder(byPassFolder);
         } else {
-            dob = DataObject.find(refactoring.getRefactoringSource().lookup(FileObject.class));
+            FileObject fob = refactoring.getRefactoringSource().lookup(FileObject.class);
+            if (fob!=null) {
+                dob = DataObject.find(refactoring.getRefactoringSource().lookup(FileObject.class));
+            }
         }
-        dob.rename(panel.getNameValue());
+        if (dob!=null) {
+            dob.rename(panel.getNameValue());
+        } else {
+            NonRecursiveFolder pack = refactoring.getRefactoringSource().lookup(NonRecursiveFolder.class);
+            if (pack!=null) {
+                renamePackage(pack.getFolder(), panel.getNameValue());
+            }
+        }
+    }
+    
+    private void renamePackage(FileObject source, String name) {
+        //copy/paste from PackageNode.setName()
+        FileObject root = ClassPath.getClassPath(source, ClassPath.SOURCE).findOwnerRoot(source);
+
+        name = name.replace('.', '/') + '/';           //NOI18N
+        String oldName = dispOldName.replace('.', '/') + '/';     //NOI18N
+        int i;
+        for (i = 0; i < oldName.length() && i < name.length(); i++) {
+            if (oldName.charAt(i) != name.charAt(i)) {
+                break;
+            }
+        }
+        i--;
+        int index = oldName.lastIndexOf('/', i);     //NOI18N
+        String commonPrefix = index == -1 ? null : oldName.substring(0, index);
+        String toCreate = (index + 1 == name.length()) ? "" : name.substring(index + 1);    //NOI18N
+        try {
+            FileObject commonFolder = commonPrefix == null ? root : root.getFileObject(commonPrefix);
+            FileObject destination = commonFolder;
+            StringTokenizer dtk = new StringTokenizer(toCreate, "/");    //NOI18N
+            while (dtk.hasMoreTokens()) {
+                String pathElement = dtk.nextToken();
+                FileObject tmp = destination.getFileObject(pathElement);
+                if (tmp == null) {
+                    tmp = destination.createFolder(pathElement);
+                }
+                destination = tmp;
+            }
+            DataFolder sourceFolder = DataFolder.findFolder(source);
+            DataFolder destinationFolder = DataFolder.findFolder(destination);
+            DataObject[] children = sourceFolder.getChildren();
+            for (int j = 0; j < children.length; j++) {
+                if (children[j].getPrimaryFile().isData()) {
+                    children[j].move(destinationFolder);
+                }
+            }
+            while (!commonFolder.equals(source)) {
+                if (source.getChildren().length == 0) {
+                    FileObject tmp = source;
+                    source = source.getParent();
+                    tmp.delete();
+                } else {
+                    break;
+                }
+            }
+        } catch (IOException ioe) {
+            ErrorManager.getDefault().notify(ioe);
+        }
     }
 }

@@ -49,7 +49,6 @@ import java.awt.font.FontRenderContext;
 import java.awt.geom.Rectangle2D;
 import java.awt.print.Paper;
 import java.awt.print.PrinterJob;
-
 import java.awt.print.PageFormat;
 import java.util.StringTokenizer;
 

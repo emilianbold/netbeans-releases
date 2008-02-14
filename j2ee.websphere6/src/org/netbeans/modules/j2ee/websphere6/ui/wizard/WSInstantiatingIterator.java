@@ -142,16 +142,12 @@ public class WSInstantiatingIterator
         String url = WSURIManager.constructUrl(this.version,
                 this.host, this.port, serverRoot, domainRoot);
         
-        // build the display name
-        String displayName = getDisplayName() + " [" + this.host +     // NOI18N
-                ":" + this.port +"]";                                  // NOI18N
-        
         // if all the data is normally validated - create the instance and 
         // attach the additional properties
         if (validate()) {
             InstanceProperties ip = InstanceProperties.
                     createInstanceProperties(url, username, password, 
-                    displayName);
+                    getDisplayName());
             ip.setProperty(WSDeploymentFactory.SERVER_ROOT_ATTR, serverRoot);
             ip.setProperty(WSDeploymentFactory.DOMAIN_ROOT_ATTR, domainRoot);
             ip.setProperty(WSDeploymentFactory.IS_LOCAL_ATTR, isLocal);
