@@ -105,15 +105,21 @@ import org.netbeans.api.project.Project;
 
             assert process != null;
             
-            // we've basically two modes here: a) with line-by-line forwarding to 
-            // a snooper or b) a bunch of threads taking care for I/O.
+            // we've basically two modes here: 
+            // a) sdtout line-by-line forwarding to 
+            //    a snooper an one single thread for stderr or 
+            // b) a bunch of threads taking care for I/O.
             
             if(snooper != null ) {
                 procOutput = new BufferedReader(new InputStreamReader(process.getInputStream()));
                 assert procOutput != null;
                 
                 String lineString;
+
+                // stderr is handled by a thread
+                (new StreamRedirectThread(process.getErrorStream(),  io.getErr())).start();
                 
+                // while stdout gets filtert through the snooper
                 while ((lineString = procOutput.readLine()) != null) {
                     snooper.lineFilter(lineString);
                 }
