@@ -38,39 +38,54 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.bpel.project.anttasks;
+package org.netbeans.modules.bpel.project.anttasks.ide;
 
-import org.openide.util.Lookup;
-import org.openide.util.lookup.AbstractLookup;
-import org.openide.util.lookup.Lookups;
+import java.io.File;
+import java.util.Arrays;
+import org.netbeans.modules.bpel.project.CommandlineBpelProjectXmlCatalogProvider;
+import org.apache.tools.ant.BuildException;
+import org.apache.tools.ant.Task;
+import org.apache.tools.ant.types.Reference;
 
+/**
+ * Generates JBI Descriptor
+ * @author Sreenivasan Genipudi
+ */
+public class IdeGenerateJbiDescriptorTask extends Task {
 
-public class MyLookup extends Lookup {
-    static Lookup mylookup = null;
-    static MyLookup m_instance = null;
+    @Override
+    public void execute() throws BuildException {
+        if(this.mSourceDirectory == null) {
+            throw new BuildException("No directory is set for source files.");
+        }
+        File sourceDirectory = new File(this.mSourceDirectory);
 
-    public MyLookup() {
-        
+        CommandlineBpelProjectXmlCatalogProvider.getInstance().setSourceDirectory(this.mSourceDirectory);
+        new IdeJbiGenerator(Arrays.asList(sourceDirectory)).generate(new File(mBuildDirectory));
     }
-    private static Lookup   getInstance(){
-        if (m_instance == null ) {
-            m_instance = new MyLookup();
-        }
-        if (mylookup == null) {
-            mylookup = Lookups.metaInfServices(m_instance.getClass().getClassLoader());
-        }
-        return mylookup;
+
+    public IdeGenerateJbiDescriptorTask() {}
+
+    public void setBuildDirectory(String buildDir) {
+        mBuildDirectory = buildDir;
+    }
+
+    public void setSourceDirectory(String srcDir) {
+        this.mSourceDirectory = srcDir;
     }
     
-    public Object lookup(Class clazz) {
-        return getInstance().lookup(clazz);
-    }
-              
-    public  Lookup.Result lookup(Lookup.Template template) {
-        return getInstance().lookup(template);
+    public void setClasspathRef(Reference ref) {
     }
     
-    public Lookup.Item  lookupItem(Lookup.Template template) {
-        return getInstance().lookupItem(template);
+    public String getSourceDirectory() {
+        return this.mSourceDirectory;
     }
+    
+    public void setProjectClassPath(String projectClassPath) {
+        this.mProjectClassPath = projectClassPath;
+    }
+
+    private String mSourceDirectory = null;
+    private String mBuildDirectory = null;
+    private String mProjectClassPath = null;
 }

@@ -38,26 +38,33 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.bpel.project.anttasks;
+package org.netbeans.modules.bpel.project.anttasks.cli;
 
-import java.io.File;
-import java.util.ArrayList;
-import java.util.StringTokenizer;
-import org.netbeans.modules.bpel.project.CommandlineBpelProjectXmlCatalogProvider;
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.Task;
+import org.apache.tools.ant.AntClassLoader;
+import org.apache.tools.ant.types.Path;
 import org.apache.tools.ant.types.Reference;
+import java.lang.reflect.Method;
 
 /**
- * Generates JBI Descriptor
+ * Ant task wrapper which invokes the JBI Generation task
  * @author Sreenivasan Genipudi
  */
-public class GenerateJBIDescriptor extends Task {
+public class CliGenerateJbiDescriptorTask extends Task {
     private String mSourceDirectory = null;
     private String mBuildDirectory = null;    
     private String mProjectClassPath= null;
+    private AntClassLoader m_myClassLoader = null;
+    private Reference m_ref = null;
+
+    public CliGenerateJbiDescriptorTask() {
+        // Does nothing
+    }
     
-    public GenerateJBIDescriptor() {}
+    public void setClasspathRef(Reference ref) {
+        this.m_ref = ref;
+    }
     
     public void setBuildDirectory(String buildDir) {
         mBuildDirectory = buildDir;
@@ -66,9 +73,6 @@ public class GenerateJBIDescriptor extends Task {
     public void setSourceDirectory(String srcDir) {
         this.mSourceDirectory = srcDir;
     }
-
-    public void setClasspathRef(Reference ref) {
-    }    
     
     public String getSourceDirectory() {
         return this.mSourceDirectory;
@@ -77,35 +81,50 @@ public class GenerateJBIDescriptor extends Task {
     public void setProjectClassPath(String projectClassPath) {
         this.mProjectClassPath = projectClassPath;
     }
-    
-    public void execute() throws BuildException {
-        if (this.mSourceDirectory == null) {
-            throw new BuildException("No directory is set for source files.");
-        }
-        File sourceDirectory = new File(this.mSourceDirectory);
-        ArrayList projectDirs = new ArrayList();
+        
+    @Override
+    public void execute() throws BuildException { 
+        try {
+            m_myClassLoader = new AntClassLoader(); 
+            initClassLoader();
+            Class antTaskClass =  Class.forName("org.netbeans.modules.bpel.project.anttasks.cli.CliGenerateJbiDescriptorDelegate", true, m_myClassLoader);
+            Thread.currentThread().setContextClassLoader(m_myClassLoader);
+            Object genJBIInstObj = antTaskClass.newInstance();
 
-        if (this.mProjectClassPath != null && !this.mProjectClassPath.trim().equals("") && !this.mProjectClassPath.trim().equals("${javac.classpath}")) {
-            StringTokenizer st = new StringTokenizer(this.mProjectClassPath, ";");
-           
-            while (st.hasMoreTokens()) {
-                String spath = st.nextToken();
-                try {
-                    File sFile =  new File(sourceDirectory.getParentFile().getCanonicalPath() + File.separator + spath);
-                    File srcFolder = new File(sFile.getParentFile().getParentFile().getCanonicalFile(), "src");
-                    projectDirs.add(srcFolder);
-                } 
-                catch(Exception e) {
-                    throw new BuildException("Failed to create File object for dependent project path "+ spath);
-                }
-            }
+            Method driver = antTaskClass.getMethod("setBuildDirectory", new Class[] {String.class});
+            Object[] param = new Object[] {this.mBuildDirectory};
+            driver.invoke(genJBIInstObj, param);
+                       
+            driver = antTaskClass.getMethod("setSourceDirectory", new Class[] {String.class});
+            param = new Object[] {this.mSourceDirectory};
+            driver.invoke(genJBIInstObj, param);   
+                      
+            driver = antTaskClass.getMethod("setProjectClassPath", new Class[] {String.class});
+            param = new Object[] {this.mProjectClassPath};
+            driver.invoke(genJBIInstObj, param);                          
+                    
+            driver = antTaskClass.getMethod("execute", (Class[]) null);
+            driver.invoke(genJBIInstObj, (Object[]) null);
         }
-        if(sourceDirectory != null) {
-            ArrayList srcList = new ArrayList();
-            srcList.add(sourceDirectory);
-            CommandlineBpelProjectXmlCatalogProvider.getInstance().setSourceDirectory(this.mSourceDirectory);
-            JBIGenerator generator = new JBIGenerator(projectDirs, srcList);
-            generator.generate(new File(mBuildDirectory));
+        catch (Exception e) {
+            throw new BuildException("Errors found.", e);
         }
+    }
+    
+    private void initClassLoader() {
+        Path path = new Path(getProject());
+        path.setRefid(m_ref);
+        
+        Path parentPath = new Path(getProject());
+        ClassLoader cl = this.getClass().getClassLoader();
+        if (cl instanceof AntClassLoader) {
+            parentPath.setPath(((AntClassLoader)cl).getClasspath());
+            ((AntClassLoader)cl).setParent(null);
+            parentPath.add(path);
+            path = parentPath;
+        }        
+        m_myClassLoader.setClassPath(path);
+        m_myClassLoader.setParent(null);
+        m_myClassLoader.setParentFirst(false);
     }
 }

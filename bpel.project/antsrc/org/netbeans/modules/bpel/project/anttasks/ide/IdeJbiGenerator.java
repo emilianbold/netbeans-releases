@@ -38,71 +38,30 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.bpel.project.anttasks;
+package org.netbeans.modules.bpel.project.anttasks.ide;
 
 import java.io.File;
-import java.io.FileFilter;
-import java.io.FileReader;
-import java.io.FileWriter;
-import java.io.StringWriter;
-import java.net.URI;
-import java.net.URL;
-import java.util.*;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
-import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ProjectUtils;
-import org.netbeans.api.project.SourceGroup;
-import org.netbeans.api.project.Sources;
-import org.netbeans.modules.xml.wsdl.model.PortType;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
-import org.xml.sax.InputSource;
-import org.xml.sax.helpers.XMLReaderFactory;
-import org.netbeans.modules.xml.retriever.catalog.Utilities;
-import javax.xml.namespace.QName;
-import org.apache.tools.ant.BuildException;
-import org.apache.tools.ant.types.Path;
-import org.apache.tools.ant.types.Reference;
-
-import org.netbeans.modules.xml.xam.dom.NamedComponentReference;
-import org.netbeans.modules.xml.wsdl.model.extensions.bpel.Role;
-import org.netbeans.modules.xml.wsdl.model.extensions.bpel.PartnerLinkType;
 import org.netbeans.modules.bpel.model.api.BpelModel;
-import org.netbeans.modules.bpel.model.api.PartnerLink;
-import org.netbeans.modules.bpel.model.api.references.WSDLReference;
-import org.apache.tools.ant.BuildException;
-
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.transform.*;
-import javax.xml.transform.stream.StreamResult;
-import javax.xml.transform.dom.DOMSource;
-
-import org.netbeans.modules.bpel.project.CommandlineBpelProjectXmlCatalogProvider;
-import org.netbeans.modules.bpel.project.portmap.DataWriter;
-
-import org.netbeans.modules.bpel.project.anttasks.jbi.Consumer;
-import org.netbeans.modules.bpel.project.anttasks.jbi.Provider;
+import org.netbeans.modules.bpel.project.anttasks.cli.CliJbiGenerator;
 
 /**
  * Generates JBI.xml
  * @author Sreenivasan Genipudi
  */
-public class IDEJBIGenerator extends JBIGenerator {
+public class IdeJbiGenerator extends CliJbiGenerator {
 
-    public IDEJBIGenerator() {
+    public IdeJbiGenerator() {
     }
 
-    public IDEJBIGenerator(List depedentProjectDirs , List sourceDirs) {
-        super(depedentProjectDirs, sourceDirs);
+    public IdeJbiGenerator(List sourceDirs) {
+        super(sourceDirs);
     }
-
-    public void processFile(File file) {
+    
+    @Override
+    protected void processFile(File file, File sourceDir) {
         String fileName = file.getName();
         String fileExtension = null;
         int dotIndex = fileName.lastIndexOf('.');
@@ -114,20 +73,21 @@ public class IDEJBIGenerator extends JBIGenerator {
             BpelModel bpelModel = null;
 
             try {
-                bpelModel =IDEBPELCatalogModel.getDefault().getBPELModel(file);
+                bpelModel = IdeBpelCatalogModel.getDefault().getBPELModel(file);
             }
             catch (Exception ex) {
                 this.logger.log(java.util.logging.Level.SEVERE, "Error while creating BPEL Model ", ex);
                 throw new RuntimeException("Error while creating BPEL Model ",ex);
             }
             try {
-                populateProviderConsumer(bpelModel);
+                populateProviderConsumer(bpelModel, file, sourceDir);
             }catch (Exception ex) {
+                ex.printStackTrace();
                 logger.log(Level.SEVERE, "Error encountered while processing BPEL file - "+file.getAbsolutePath());
                 throw new RuntimeException(ex);
             }
         }
     }
 
-    private Logger logger = Logger.getLogger(IDEJBIGenerator.class.getName());
+    private Logger logger = Logger.getLogger(IdeJbiGenerator.class.getName());
 }
