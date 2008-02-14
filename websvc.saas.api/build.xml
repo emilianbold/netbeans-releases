@@ -53,6 +53,7 @@
         <ant dir="../websvc.saas.services.facebook"/>
         <ant dir="../websvc.saas.services.flickr"/>
         <ant dir="../websvc.saas.services.google"/>
+        <ant dir="../websvc.saas.services.strikeiron"/>
         <ant dir="../websvc.saas.services.twitter"/>
         <ant dir="../websvc.saas.services.yahoo"/>
         <ant dir="../websvc.saas.services.youtube"/>
@@ -67,6 +68,7 @@
         <ant dir="../websvc.saas.services.facebook" target="clean"/>
         <ant dir="../websvc.saas.services.flickr" target="clean"/>
         <ant dir="../websvc.saas.services.google" target="clean"/>
+        <ant dir="../websvc.saas.services.strikeiron" target="clean"/>
         <ant dir="../websvc.saas.services.twitter" target="clean"/>
         <ant dir="../websvc.saas.services.yahoo" target="clean"/>
         <ant dir="../websvc.saas.services.youtube" target="clean"/>

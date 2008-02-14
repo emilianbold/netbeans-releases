@@ -59,7 +59,7 @@ import org.openide.explorer.propertysheet.PropertyEnv;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
-public class ProjectsPanel extends javax.swing.JPanel implements HelpCtx.Provider, PropertyChangeListener {
+public class RequiredProjectsPanel extends javax.swing.JPanel implements HelpCtx.Provider, PropertyChangeListener {
     private Project project;
     private MakeConfiguration conf;
     private MyListEditorPanel myListEditorPanel;
@@ -72,7 +72,7 @@ public class ProjectsPanel extends javax.swing.JPanel implements HelpCtx.Provide
     private JButton addLibraryFileButton;
     private JButton addLibraryOption;
     
-    public ProjectsPanel(Project project, MakeConfiguration conf, String baseDir, Object[] data, PropertyEditorSupport editor, PropertyEnv env) {
+    public RequiredProjectsPanel(Project project, MakeConfiguration conf, String baseDir, Object[] data, PropertyEditorSupport editor, PropertyEnv env) {
 	this.project = project;
 	this.conf = conf;
 	this.baseDir = baseDir;
@@ -227,7 +227,7 @@ public class ProjectsPanel extends javax.swing.JPanel implements HelpCtx.Provide
     private static ResourceBundle bundle;
     private static String getString(String s) {
 	if (bundle == null) {
-	    bundle = NbBundle.getBundle(ProjectsPanel.class);
+	    bundle = NbBundle.getBundle(RequiredProjectsPanel.class);
 	}
 	return bundle.getString(s);
     }
