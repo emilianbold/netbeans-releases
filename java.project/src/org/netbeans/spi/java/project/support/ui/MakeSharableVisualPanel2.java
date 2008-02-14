@@ -43,6 +43,7 @@ package org.netbeans.spi.java.project.support.ui;
 import java.awt.Component;
 import java.io.File;
 import java.net.MalformedURLException;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.EventObject;
@@ -65,6 +66,7 @@ import javax.swing.table.TableColumn;
 import org.netbeans.api.project.ant.AntArtifact;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.project.libraries.LibraryManager;
+import org.netbeans.api.queries.CollocationQuery;
 import org.netbeans.spi.project.libraries.LibraryTypeProvider;
 import org.netbeans.spi.project.libraries.support.LibrariesSupport;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
@@ -304,8 +306,11 @@ final class MakeSharableVisualPanel2 extends JPanel {
     private javax.swing.JTable tblJars;
     // End of variables declaration//GEN-END:variables
     private void populateTable(AntProjectHelper helper, List<String> libraries, List<String> jars) {
+        createTableDefinition();
         try {
             File libraryFile = helper.resolveFile(location);
+            File prjDir = FileUtil.toFile(helper.getProjectDirectory());
+            boolean absoluteLibrary = LibrariesSupport.isAbsoluteURL(LibrariesSupport.convertFilePathToURL(location));
             LibraryManager newmanager = LibraryManager.forLocation(libraryFile.toURI().toURL());
             LibraryManager oldmanager = LibraryManager.getDefault(); //TODO once we support moving from one place to another, change this
             for (String lib : libraries) {
@@ -325,7 +330,19 @@ final class MakeSharableVisualPanel2 extends JPanel {
                 if (jar != null) {
                     String value = helper.getStandardPropertyEvaluator().evaluate(jar);
                     if (!value.startsWith("${")) {
-                        model.addRow(new Object[]{jar, ACTION_COPY});
+                        File jarFile = helper.resolveFile(value);
+                        String action = ACTION_COPY;
+                        if (CollocationQuery.areCollocated(prjDir, jarFile)) {
+                            // in the same VCS, without one project structure..
+                            action = ACTION_RELATIVE;
+                        } else if (absoluteLibrary && CollocationQuery.areCollocated(libraryFile.getParentFile(), jarFile)) {
+                            // jar within the libraries folder or somehow relative to it.. 
+                            // the path to libraries is absolute though.. absolute path is best guess then as well.
+                            action = ACTION_ABSOLUTE;
+                        } else if (CollocationQuery.areCollocated(libraryFile.getParentFile(), jarFile)) {
+                            action = ACTION_RELATIVE;
+                        }
+                        model.addRow(new Object[]{jar, action});
                     } else {
                         Logger.getLogger(MakeSharableVisualPanel2.class.getName()).info("Cannot find jar reference:" + jar);
                     }
