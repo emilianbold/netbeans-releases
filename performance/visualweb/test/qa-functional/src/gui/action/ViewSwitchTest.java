@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -39,38 +39,45 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.lib.editor.codetemplates;
+package gui.action;
 
-import javax.swing.text.BadLocationException;
-import javax.swing.text.Document;
-import javax.swing.text.JTextComponent;
-import org.netbeans.lib.editor.codetemplates.api.CodeTemplate;
-
+import org.netbeans.jemmy.operators.ComponentOperator;
 
 /**
- * Abbreviation expander for code templates.
  *
- * @author Miloslav Metelka
- * @version 1.00
+ * @author mkhramov@netbeans.org
  */
+public class ViewSwitchTest extends org.netbeans.performance.test.utilities.PerformanceTestCase {
 
-final class CodeTemplateAbbrevExpander implements AbbrevExpander {
+    public ViewSwitchTest(String testName) {
+        super(testName);
+        expectedTime = WINDOW_OPEN;
+        WAIT_AFTER_OPEN=4000;             
+    }
+    public ViewSwitchTest(String testName, String perfomanceDataName) {
+        super(testName, perfomanceDataName);
+        expectedTime = WINDOW_OPEN;
+        WAIT_AFTER_OPEN=4000;             
+    }
+    
+    
+    public void initialize() {
+       
+    }
+    
+    public void prepare() {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
 
-    public boolean expand(JTextComponent component, int abbrevStartOffset, CharSequence abbrev) {
-        Document doc = component.getDocument();
-        CodeTemplateManagerOperation op = CodeTemplateManagerOperation.get(doc);
-        op.waitLoaded();
-        CodeTemplate ct = op.findByAbbreviation(abbrev.toString());
-        if (ct != null) {
-            try {
-                // Remove the abbrev text
-                doc.remove(abbrevStartOffset, abbrev.length());
-            } catch (BadLocationException ble) {
-            }
-            ct.insert(component);
-            return true;
-        }
-        return false;
+    
+    public ComponentOperator open() {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+    
+    
+    
+    public void close() {
+        
     }
 
 }

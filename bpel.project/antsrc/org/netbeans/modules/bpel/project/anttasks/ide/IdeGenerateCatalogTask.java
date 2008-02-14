@@ -38,46 +38,54 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.bpel.project.anttasks;
+package org.netbeans.modules.bpel.project.anttasks.ide;
 
 import java.io.File;
-import java.net.URI;
-import java.util.Collection;
-import java.util.Iterator;
-
-import org.netbeans.modules.xml.xam.spi.ValidationResult;
-import org.netbeans.modules.bpel.model.api.BpelModel;
-import org.netbeans.modules.xml.xam.spi.Validator;
-import org.netbeans.modules.bpel.model.spi.BpelModelFactory;
-import org.netbeans.modules.xml.xam.spi.Validation;
-import org.netbeans.modules.xml.xam.spi.ValidationResult;
-import org.netbeans.modules.xml.xam.spi.Validator;
-import org.netbeans.modules.xml.xam.spi.Validation;
-import org.netbeans.modules.xml.xam.spi.Validation.ValidationType;
-import org.netbeans.modules.xml.xam.spi.Validator.ResultItem;
-import org.openide.util.lookup.Lookups;
+import org.netbeans.modules.bpel.project.CommandlineBpelProjectXmlCatalogProvider;
+import org.apache.tools.ant.BuildException;
+import org.apache.tools.ant.Task;
+import org.apache.tools.ant.types.Reference;
+import org.netbeans.modules.bpel.project.anttasks.util.PackageCatalogArtifacts;
 
 /**
- * Class used for validating the BPEL files
+ * Generates JBI Descriptor
  * @author Sreenivasan Genipudi
  */
-public class ValidateBPEL {
-    public ValidateBPEL() {}
+public class IdeGenerateCatalogTask extends Task {
     
-    public Collection validate(URI bpelFileUri) {
-        BpelModel model = null;
-        try {
-            model = BPELCatalogModel.getDefault().getBPELModel(bpelFileUri);
-        }catch (Exception ex) {
-            throw new RuntimeException("Error while trying to create BPEL Model ",ex);
+    @Override
+    public void execute() throws BuildException {
+        if (this.mSourceDirectory == null) {
+            throw new BuildException("No directory is set for source files.");
         }
-        Validation validation = new Validation();
-        validation.validate((org.netbeans.modules.xml.xam.Model)model,  ValidationType.COMPLETE);
-        Collection col  =validation.getValidationResult();
-
-        for (Iterator itr = col.iterator(); itr.hasNext();) {
-           ResultItem resultItem = (ResultItem) itr.next();
-        }
-        return col;
+        File sourceDirectory = new File(this.mSourceDirectory);
+        File buildDirectory = new File(this.mBuildDirectory);
+        
+        CommandlineBpelProjectXmlCatalogProvider.getInstance().setSourceDirectory(this.mSourceDirectory);
+        
+        new PackageCatalogArtifacts().doCopy(sourceDirectory, buildDirectory);
     }
+    
+    public IdeGenerateCatalogTask() {}
+    
+    public void setBuildDirectory(String buildDir) {
+        mBuildDirectory = buildDir;
+    }
+    
+    public void setSourceDirectory(String srcDir) {
+        this.mSourceDirectory = srcDir;
+    }
+    
+    public void setClasspathRef(Reference ref) {
+    }
+    
+    public String getSourceDirectory() {
+        return this.mSourceDirectory;
+    }
+    
+    public void setProjectClassPath(String projectClassPath) {
+    }
+
+    private String mSourceDirectory = null;
+    private String mBuildDirectory = null;
 }

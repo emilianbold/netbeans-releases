@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -38,34 +38,39 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
+package org.netbeans.modules.bpel.project.anttasks.util;
 
-package org.netbeans.lib.editor.codetemplates;
+import org.openide.util.Lookup;
+import org.openide.util.lookup.AbstractLookup;
+import org.openide.util.lookup.Lookups;
 
-import javax.swing.text.JTextComponent;
 
-/**
- * Abbreviation expander attempts to expand the present typed abbreviation
- * in the document.
- *
- * @author Miloslav Metelka
- * @version 1.00
- */
+public class MyLookup extends Lookup {
+    static Lookup mylookup = null;
+    static MyLookup m_instance = null;
 
-public interface AbbrevExpander {
-
-    /**
-     * Attempt to expand the given abbreviation.
-     * <br/>
-     *
-     * @param component non-null text component in which the abbreviation
-     *  is being typed.
-     * @param abbrevStartOffset &gt;=0 offset where the abbreviation starts
-     *  in the document.
-     * @param abbrev non-null abbreviation that was typed in the text and could
-     *  possibly be expanded.
-     * @return true if the abbreviation was expanded successfully or false
-     *  if the abbreviation was not expanded.
-     */
-    boolean expand(JTextComponent component, int abbrevStartOffset, CharSequence abbrevText);
-
+    public MyLookup() {
+        
+    }
+    private static Lookup   getInstance(){
+        if (m_instance == null ) {
+            m_instance = new MyLookup();
+        }
+        if (mylookup == null) {
+            mylookup = Lookups.metaInfServices(m_instance.getClass().getClassLoader());
+        }
+        return mylookup;
+    }
+    
+    public Object lookup(Class clazz) {
+        return getInstance().lookup(clazz);
+    }
+              
+    public  Lookup.Result lookup(Lookup.Template template) {
+        return getInstance().lookup(template);
+    }
+    
+    public Lookup.Item  lookupItem(Lookup.Template template) {
+        return getInstance().lookupItem(template);
+    }
 }
