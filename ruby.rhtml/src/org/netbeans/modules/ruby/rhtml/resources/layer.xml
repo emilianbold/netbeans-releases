@@ -179,6 +179,18 @@
                         <attr name="position" intvalue="1960"/>
                     </file>                    
                 </folder>
+                
+                <folder name="text">
+                    <folder name="html">
+                        <folder name="CodeTemplates">
+                            <folder name="Defaults">
+                                <file name="codetemplates.shadow">
+                                    <attr name="originalFile" stringvalue="Editors/application/x-httpd-eruby"/>
+                                </file>
+                            </folder>
+                        </folder>
+                    </folder>
+                </folder>
             </folder>
         </folder>
     </folder>

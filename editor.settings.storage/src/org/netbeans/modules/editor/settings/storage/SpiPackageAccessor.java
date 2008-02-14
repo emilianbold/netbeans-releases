@@ -40,7 +40,6 @@
 package org.netbeans.modules.editor.settings.storage;
 
 import org.netbeans.modules.editor.settings.storage.spi.StorageReader;
-import org.openide.filesystems.FileObject;
 
 /**
  *
@@ -70,6 +69,4 @@ public abstract class SpiPackageAccessor {
     /** Creates a new instance of SpiPackageAccessor */
     protected SpiPackageAccessor() {
     }
-    
-    public abstract void storageReaderSetProcessedFile(StorageReader r, FileObject f);
 }

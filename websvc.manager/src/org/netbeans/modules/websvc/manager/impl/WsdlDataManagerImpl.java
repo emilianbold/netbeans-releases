@@ -53,6 +53,10 @@ public class WsdlDataManagerImpl implements WsdlDataManager {
         return WebServiceListModel.getInstance().getWebServiceData(wsdlUrl, serviceName, synchronuous);
     }
 
+    public void addWsdlData(String wsdlUrl, String packageName) {
+        WebServiceListModel.getInstance().addWebService(wsdlUrl, packageName, WebServiceListModel.DEFAULT_GROUP);
+    }
+    
     public void removeWsdlData(String wsdlUrl, String serviceName) {
         WsdlData data = WebServiceListModel.getInstance().findWebServiceData(wsdlUrl, serviceName, true);
         if (data != null) {

@@ -47,7 +47,7 @@
     xmlns:xsd="http://www.w3.org/2001/XMLSchema"             
     xsi:schemaLocation='http://xml.netbeans.org/websvc/saas/services/1.0 
                     ../../../../../../../../../../websvc.saas.api/src/org/netbeans/modules/websvc/saas/model/SaasServices.xsd'
-    url="http://wsparam.strikeiron.com/relauto/iplookup?WSDL"
+    url="http://wsparam.strikeiron.com/TaxDataComplete4?WSDL"
     type="http://schemas.xmlsoap.org/wsdl/"
     api-doc="http://www.strikeiron.com/WebServiceDetail.aspx?p=350">
     

@@ -92,16 +92,16 @@ public final class CodeTemplatesStorage implements StorageDescription<String, Co
         return "abbreviations.xml"; //NOI18N
     }
 
-    public StorageReader<String, CodeTemplateDescription> createReader(FileObject f) {
+    public StorageReader<String, CodeTemplateDescription> createReader(FileObject f, String mimePath) {
         if (MIME_TYPE.equals(f.getMIMEType())) {
-            return new Reader();
+            return new Reader(f, mimePath);
         } else {
             // assume legacy file
-            return new LegacyReader();
+            return new LegacyReader(f, mimePath);
         }
     }
 
-    public StorageWriter<String, CodeTemplateDescription> createWriter(FileObject f) {
+    public StorageWriter<String, CodeTemplateDescription> createWriter(FileObject f, String mimePath) {
         return new Writer();
     }
 
@@ -127,6 +127,9 @@ public final class CodeTemplatesStorage implements StorageDescription<String, Co
     private static final String MIME_TYPE = "text/x-nbeditor-codetemplatesettings"; //NOI18N
     
     private static abstract class TemplatesReader extends StorageReader<String, CodeTemplateDescription> {
+        protected TemplatesReader(FileObject f, String mimePath) {
+            super(f, mimePath);
+        }
         public abstract Map<String, CodeTemplateDescription> getAdded();
         public abstract Set<String> getRemoved();
     }
@@ -146,6 +149,10 @@ public final class CodeTemplatesStorage implements StorageDescription<String, Co
         private StringBuilder text = null;
         private StringBuilder cdataText = null;
         private boolean insideCdata = false;
+        
+        public Reader(FileObject f, String mimePath) {
+            super(f, mimePath);
+        }
         
         public Map<String, CodeTemplateDescription> getAdded() {
             return codeTemplatesMap;
@@ -242,7 +249,8 @@ public final class CodeTemplatesStorage implements StorageDescription<String, Co
                         description == null ? null : CharacterConversions.lineSeparatorToLineFeed(description),
                         code == null ? "" : CharacterConversions.lineSeparatorToLineFeed(code), //NOI18N
                         contexts,
-                        uuid
+                        uuid,
+                        getMimePath()
                     );
                     codeTemplatesMap.put(abbreviation, template);
                 }
@@ -287,6 +295,10 @@ public final class CodeTemplatesStorage implements StorageDescription<String, Co
         // The code template being processed
         private String abbreviation = null;
         private StringBuilder text = null;
+        
+        public LegacyReader(FileObject f, String mimePath) {
+            super(f, mimePath);
+        }
         
         public Map<String, CodeTemplateDescription> getAdded() {
             return codeTemplatesMap;
@@ -334,7 +346,8 @@ public final class CodeTemplatesStorage implements StorageDescription<String, Co
                         null,
                         CharacterConversions.lineSeparatorToLineFeed(parametrizedText),
                         null,
-                        null
+                        null,
+                        getMimePath()
                     );
                     codeTemplatesMap.put(abbreviation, template);
                 }

@@ -48,7 +48,6 @@ import java.util.List;
 import javax.swing.ImageIcon;
 import javax.swing.JScrollPane;
 import javax.swing.border.EmptyBorder;
-import javax.swing.border.LineBorder;
 import org.netbeans.installer.Installer;
 import org.netbeans.installer.product.Registry;
 import org.netbeans.installer.product.RegistryNode;
@@ -60,7 +59,6 @@ import org.netbeans.installer.product.filters.OrFilter;
 import org.netbeans.installer.product.filters.ProductFilter;
 import org.netbeans.installer.product.filters.RegistryFilter;
 import org.netbeans.installer.utils.ErrorManager;
-import org.netbeans.installer.utils.FileProxy;
 import org.netbeans.installer.utils.LogManager;
 import org.netbeans.installer.utils.ResourceUtils;
 import org.netbeans.installer.utils.StringUtils;
@@ -527,21 +525,23 @@ public class NbWelcomePanel extends ErrorMessagePanel {
                 }
             }
             
-            try {
-                final long availableSize = SystemUtils.getFreeSpace(
-                        Installer.getInstance().getLocalDirectory());
-                
-                long requiredSize = 0;
-                for (Product product: products) {
-                    requiredSize += product.getDownloadSize();
-                }
-                requiredSize += REQUIRED_SPACE_ADDITION;
-                
-                if (availableSize < requiredSize) {
-                    return StringUtils.format(
-                            template,
-                            Installer.getInstance().getLocalDirectory(),
-                            StringUtils.formatSize(requiredSize - availableSize));
+            try {                
+                if(!Boolean.getBoolean(SystemUtils.NO_SPACE_CHECK_PROPERTY)) {                     
+                    final long availableSize = SystemUtils.getFreeSpace(
+                            Installer.getInstance().getLocalDirectory());
+                    
+                    long requiredSize = 0;
+                    for (Product product: products) {
+                        requiredSize += product.getDownloadSize();
+                    }
+                    requiredSize += REQUIRED_SPACE_ADDITION;
+                    
+                    if (availableSize < requiredSize) {
+                        return StringUtils.format(
+                                template,
+                                Installer.getInstance().getLocalDirectory(),
+                                StringUtils.formatSize(requiredSize - availableSize));
+                    }
                 }
             } catch (NativeException e) {
                 ErrorManager.notifyError(

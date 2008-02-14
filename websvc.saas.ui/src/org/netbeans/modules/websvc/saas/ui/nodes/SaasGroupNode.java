@@ -43,7 +43,6 @@ package org.netbeans.modules.websvc.saas.ui.nodes;
 
 import java.awt.datatransfer.Transferable;
 import java.util.List;
-import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.actions.SystemAction; 
 import java.awt.Image;
@@ -65,6 +64,8 @@ import org.openide.loaders.DataFolder;
 import org.openide.nodes.AbstractNode;
 import org.openide.util.Utilities; 
 import org.openide.util.datatransfer.PasteType;
+import org.openide.util.lookup.AbstractLookup;
+import org.openide.util.lookup.InstanceContent;
 
 /**
  * Node representing Group of Web Services
@@ -74,11 +75,16 @@ public class SaasGroupNode extends AbstractNode {
     private final SaasGroup group;
 
     public SaasGroupNode(SaasGroup group) {
-        super(new SaasGroupNodeChildren(group));
-        this.group = group;
-        setName(group.getName());
+        this(group, new InstanceContent());
     }
     
+    protected SaasGroupNode(SaasGroup group, InstanceContent content) {
+        super(new SaasGroupNodeChildren(group), new AbstractLookup(content));
+        this.group = group;
+        content.add(group);
+        setName(group.getName());
+    }    
+
     @Override
     public boolean canRename() {
         return group.isUserDefined();
