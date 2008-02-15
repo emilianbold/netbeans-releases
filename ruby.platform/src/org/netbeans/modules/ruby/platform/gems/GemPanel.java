@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -88,7 +88,6 @@ import org.openide.util.RequestProcessor;
  * @todo Use a table instead of a list for the gem lists, use checkboxes to choose
  *   items to be uninstalled, and show the installation date (based
  *   on file timestamps)
- * @todo Split error output
  *
  * @author  Tor Norbye
  */
@@ -207,12 +206,12 @@ public final class GemPanel extends JPanel implements Runnable {
         if (gem.getInstalledVersions() != null && gem.getAvailableVersions() != null) {
             // It's an update gem
             sb.append("<h3>"); // NOI18N
-            sb.append(NbBundle.getMessage(GemPanel.class, "InstalledVersion"));
+            sb.append(getMessage("InstalledVersion"));
             sb.append("</h3>"); // NOI18N
             sb.append(gem.getInstalledVersions());
 
             sb.append("<h3>"); // NOI18N
-            sb.append(NbBundle.getMessage(GemPanel.class, "AvailableVersion"));
+            sb.append(getMessage("AvailableVersion"));
             sb.append("</h3>"); // NOI18N
             sb.append(gem.getAvailableVersions());
             sb.append("<br>"); // NOI18N
@@ -224,9 +223,9 @@ public final class GemPanel extends JPanel implements Runnable {
             }
             if (version.indexOf(',') == -1) {
             // TODO I18N
-                sb.append(NbBundle.getMessage(GemPanel.class, "Version"));
+                sb.append(getMessage("Version"));
             } else {
-                sb.append(NbBundle.getMessage(GemPanel.class, "Versions"));
+                sb.append(getMessage("Versions"));
             }
             sb.append("</h3>"); // NOI18N
             sb.append(version);
@@ -234,7 +233,7 @@ public final class GemPanel extends JPanel implements Runnable {
 
         if (gem.getDescription() != null) {
             sb.append("<h3>"); // NOI18N
-            sb.append(NbBundle.getMessage(GemPanel.class, "Description"));
+            sb.append(getMessage("Description"));
             sb.append("</h3>"); // NOI18N
             sb.append(gem.getDescription());
         }
@@ -963,9 +962,9 @@ public final class GemPanel extends JPanel implements Runnable {
                 // Get some information about the chosen gem
                 InstallationSettingsPanel panel = new InstallationSettingsPanel(chosen);
                 panel.getAccessibleContext().setAccessibleDescription(
-                        NbBundle.getMessage(GemPanel.class, "InstallationSettingsPanel.AccessibleContext.accessibleDescription"));
+                        getMessage("InstallationSettingsPanel.AccessibleContext.accessibleDescription"));
 
-                DialogDescriptor dd = new DialogDescriptor(panel, NbBundle.getMessage(GemPanel.class, "ChooseGemSettings"));
+                DialogDescriptor dd = new DialogDescriptor(panel, getMessage("ChooseGemSettings"));
                 dd.setOptionType(NotifyDescriptor.OK_CANCEL_OPTION);
                 dd.setModal(true);
                 dd.setHelpCtx(new HelpCtx(GemPanel.class));
@@ -974,7 +973,7 @@ public final class GemPanel extends JPanel implements Runnable {
                     Gem gem = new Gem(panel.getGemName(), null, null);
                     // XXX Do I really need to refresh it right way?
                     GemListRefresher completionTask = new GemListRefresher(newList, TabIndex.INSTALLED);
-                    boolean changed = gemManager.install(new Gem[] { gem }, this, false, false, panel.getVersion(),
+                    gemManager.install(new Gem[] { gem }, this, false, false, panel.getVersion(),
                             panel.getIncludeDepencies(), true, completionTask);
                 }
             }
@@ -1066,7 +1065,7 @@ public final class GemPanel extends JPanel implements Runnable {
             File gem = FileUtil.normalizeFile(chooser.getSelectedFile());
             Util.getPreferences().put(LAST_GEM_DIRECTORY, gem.getParentFile().getAbsolutePath());
             GemListRefresher completionTask = new GemListRefresher(newList, TabIndex.INSTALLED);
-            boolean changed = gemManager.installLocal(gem, this, false, false, true, completionTask);
+            gemManager.installLocal(gem, this, false, false, true, completionTask);
         }
     }//GEN-LAST:event_installLocalButtonActionPerformed
 
