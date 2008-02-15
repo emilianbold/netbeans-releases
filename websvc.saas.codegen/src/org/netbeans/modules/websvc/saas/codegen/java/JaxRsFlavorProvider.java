@@ -41,7 +41,7 @@
 package org.netbeans.modules.websvc.saas.codegen.java;
 
 import java.awt.datatransfer.Transferable;
-import org.netbeans.modules.websvc.saas.model.WsdlSaasMethod;
+import org.netbeans.modules.websvc.saas.model.WadlSaasMethod;
 import org.netbeans.modules.websvc.saas.spi.ConsumerFlavorProvider;
 import org.openide.util.datatransfer.ExTransferable;
 
@@ -49,18 +49,18 @@ import org.openide.util.datatransfer.ExTransferable;
  *
  * @author Ayub Khan
  */
-public class JaxWsFlavorProvider implements ConsumerFlavorProvider {
+public class JaxRsFlavorProvider implements ConsumerFlavorProvider {
 
-    public JaxWsFlavorProvider() {
+    public JaxRsFlavorProvider() {
     }
 
     public Transferable addDataFlavors(Transferable transferable) {
         try {
-            Object data = transferable.getTransferData(ConsumerFlavorProvider.WSDL_METHOD_FLAVOR);
-            if (data instanceof WsdlSaasMethod) {
-                WsdlSaasMethod method = (WsdlSaasMethod) data;
+            Object data = transferable.getTransferData(ConsumerFlavorProvider.WADL_METHOD_FLAVOR);
+            if (data instanceof WadlSaasMethod) {
+                WadlSaasMethod method = (WadlSaasMethod) data;
                 ExTransferable t = ExTransferable.create(transferable);
-                JaxWsEditorDrop editorDrop = new JaxWsEditorDrop(method);
+                JaxRsEditorDrop editorDrop = new JaxRsEditorDrop(method);
                 ActiveEditorDropTransferable s = new ActiveEditorDropTransferable(editorDrop);
                 t.put(s);
                 return t;
@@ -74,10 +74,10 @@ public class JaxWsFlavorProvider implements ConsumerFlavorProvider {
 
     private static class ActiveEditorDropTransferable extends ExTransferable.Single {
 
-        private JaxWsEditorDrop drop;
+        private JaxRsEditorDrop drop;
 
-        ActiveEditorDropTransferable(JaxWsEditorDrop drop) {
-            super(JaxWsEditorDrop.FLAVOR);
+        ActiveEditorDropTransferable(JaxRsEditorDrop drop) {
+            super(JaxRsEditorDrop.FLAVOR);
 
             this.drop = drop;
         }
