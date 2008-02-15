@@ -59,11 +59,11 @@ public class StopAction extends CallableSystemAction {
     }
 
     public boolean isEnabled() {
-        return (DerbyServerProvider.getDefault().isRunning()==true);
+        return (RegisterDerby.getDefault().isRunning()==true);
     }
     
     public void performAction()  {
-        DerbyServerProvider.getDefault().stop();
+        RegisterDerby.getDefault().stop();
         
     }
     
