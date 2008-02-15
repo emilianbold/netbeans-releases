@@ -52,6 +52,7 @@ import junit.textui.TestRunner;
 import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.NbDialogOperator;
 import org.netbeans.jellytools.WizardOperator;
+import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jemmy.EventTool;
 import org.netbeans.jemmy.operators.JButtonOperator;
 import org.netbeans.jemmy.operators.JComboBoxOperator;
@@ -60,6 +61,7 @@ import org.openide.filesystems.FileUtil;
 import org.xml.sax.SAXException;
 
 /**
+ * Tests for New REST web services from Entity Classes wizard
  *
  * @author lukas
  */
@@ -99,6 +101,11 @@ public class CRUDTSuite extends RestTestBase {
         return "o.n.m.ws.qaf.rest.crud"; //NOI18N
     }
 
+    /**
+     * Create new web project with entity classes from sample database
+     * (jdbc/sample), create new RESTful web services from created entities
+     * and deploy the project
+     */
     public void testRfE() {
         prepareEntityClasses();
         //RESTful Web Services from Entity Classes
@@ -128,6 +135,11 @@ public class CRUDTSuite extends RestTestBase {
         files.addAll(getFiles(getRestPackage() + ".converter")); //NOI18N
         assertEquals("Some files were not generated", 37, files.size()); //NOI18N
         checkFiles(files);
+        //make sure all REST services nodes are visible in project log. view
+        String restNodeLabel = Bundle.getStringTrimmed("org.netbeans.modules.websvc.rest.nodes.Bundle", "LBL_RestServices");
+        Node restNode = new Node(getProjectRootNode(), restNodeLabel);
+        restNode.expand();
+        assertEquals("missing node?", 14, restNode.getChildren().length);
     }
 
     /**
