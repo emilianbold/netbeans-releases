@@ -62,6 +62,7 @@ import org.openide.util.Exceptions;
 /**
  *
  * @author Petr Pisl
+ * @author Po-Ting Wu
  */
 public class ConfigurationUtils {
     
@@ -145,7 +146,7 @@ public class ConfigurationUtils {
      **/
     
     public static FileObject[] getFacesConfigFiles(WebModule webModule){
-        String[] sFiles = JSFConfigUtilities.getConfigFiles(webModule.getDeploymentDescriptor());
+        String[] sFiles = JSFConfigUtilities.getConfigFiles(webModule);
         if (sFiles.length > 0){
             FileObject documentBase = webModule.getDocumentBase();
             ArrayList files = new ArrayList();
