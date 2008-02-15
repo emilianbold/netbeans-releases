@@ -96,6 +96,14 @@
                 <include name="engine/**/*.*"/>
             </fileset>
         </copy>
+        <mkdir dir="${nbi.all.dir}/reglib"/>
+        <copy todir="${nbi.all.dir}/reglib">
+            <fileset dir="${hg.root}/reglib">
+		<include name="**/*.*"/>
+                <exclude name="build/**/*.*"/>
+                <exclude name="dist/**/*.*"/>                
+            </fileset>
+        </copy>
     </target>
 
     <target name="-get-translatedfiles" if="use.hg.root.translatedfiles">
