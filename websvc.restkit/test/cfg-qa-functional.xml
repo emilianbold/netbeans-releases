@@ -52,6 +52,7 @@ made subject to such option by the copyright holder.
                 <include name="org/netbeans/modules/ws/qaf/rest/PatternsTSuite.class"/>
                 <include name="org/netbeans/modules/ws/qaf/rest/RestSamplesTest.class"/>
                 <include name="org/netbeans/modules/ws/qaf/rest/CStubsTSuite.class"/>
+                <include name="org/netbeans/modules/ws/qaf/rest/RestNodeTest.class"/>
             </patternset>
         </testset>
     </testbag>
