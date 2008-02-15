@@ -53,17 +53,19 @@ import org.openide.nodes.Node;
 public class DerbyNodeProvider implements NodeProvider {
     private static DerbyNodeProvider DEFAULT = new DerbyNodeProvider();
     
-    private ArrayList<Node> nodes = new ArrayList<Node>();
-    
     public static DerbyNodeProvider getDefault() {
         return DEFAULT;
     }
     
     private DerbyNodeProvider() {
-        nodes.add(DerbyServerNode.getDefault());       
+        
     }
 
     public List<Node> getNodes() {
+        ArrayList<Node> nodes = new ArrayList<Node>();
+        
+        nodes.add(DerbyServerNode.getDefault());
+        
         return nodes;
     }
 }

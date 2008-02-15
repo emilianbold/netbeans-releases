@@ -62,7 +62,7 @@ public class DerbyServerNode extends AbstractNode {
         };
     
     // I'd like a less generic icon, but this is what we have for now...
-    private static final String ICON_BASE = "org/netbeans/modules/derby/resources/catalog.gif";
+    private static final String ICON_BASE = "org/netbeans/modules/derby/resources/database.gif";
     
     public static DerbyServerNode getDefault() {
         return DEFAULT;
