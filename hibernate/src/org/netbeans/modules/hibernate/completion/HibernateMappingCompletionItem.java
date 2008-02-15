@@ -112,6 +112,11 @@ public abstract class HibernateMappingCompletionItem implements CompletionItem {
     public static HibernateMappingCompletionItem createDatabaseColumnItem(int substitutionOffset, String name, boolean pk) {
         return new DatabaseColumnItem(substitutionOffset, name, pk);
     }
+    
+    public static HibernateMappingCompletionItem createCascadeStyleItem(int substitutionOffset, String displayText, String docText) {
+        return new CascadeStyleItem(substitutionOffset, displayText, docText);
+    }
+    
     protected int substitutionOffset;
 
     protected HibernateMappingCompletionItem(int substitutionOffset) {
@@ -591,6 +596,50 @@ public abstract class HibernateMappingCompletionItem implements CompletionItem {
                 return new ImageIcon(Utilities.loadImage(PK_COLUMN_ICON));
             else
                 return new ImageIcon(Utilities.loadImage(COLUMN_ICON));
+        }
+    }
+    
+        private static class CascadeStyleItem extends HibernateMappingCompletionItem {
+
+        private String displayText;
+        private String docText;
+
+        public CascadeStyleItem(int substitutionOffset, String displayText, String docText) {
+            super(substitutionOffset);
+            this.displayText = displayText;
+            this.docText = docText;
+        }
+
+        public int getSortPriority() {
+            return 100;
+        }
+
+        public CharSequence getSortText() {
+            return displayText;
+        }
+
+        public CharSequence getInsertPrefix() {
+            return displayText;
+        }
+
+        @Override
+        protected String getLeftHtmlText() {
+            return displayText;
+        }
+
+        @Override
+        public CompletionTask createDocumentationTask() {
+            return new AsyncCompletionTask(new AsyncCompletionQuery() {
+
+                @Override
+                protected void query(CompletionResultSet resultSet, Document doc, int caretOffset) {
+                    if (docText != null) {
+                        CompletionDocumentation documentation = HibernateMappingCompletionDocumentation.getAttribValueDoc(docText);
+                        resultSet.setDocumentation(documentation);
+                    }
+                    resultSet.finish();
+                }
+            });
         }
     }
 

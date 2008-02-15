@@ -83,16 +83,39 @@ public final class CompletionManager {
     private static final String KEY_TAG = "key";
     private static final String ONE_TO_MANY_TAG = "one-to-many";
     private static final String DISCRIMINATOR_TAG = "discriminator";
+    private static final String COMPOSITE_ID_TAG = "composite-id";
+    private static final String KEY_PROPERTY_TAG = "key-property";
+    private static final String KEY_MANY_TO_ONE_TAG = "key-many-to-one";
+    private static final String VERSION_TAG = "version";
+    private static final String TIMESTAMP_TAG = "timestamp";
+    private static final String MANY_TO_ONE_TAG = "many-to-one";
+    private static final String ONE_TO_ONE_TAG = "one-to-one";
+    private static final String COMPONENT_TAG = "component";
+    private static final String SUBCLASS_TAG = "subclass";
+    private static final String JOINED_SUBCLASS_TAG = "joined-subclass";
+    private static final String UNION_SUBCLASS_TAG = "union-subclass";
+    private static final String JOIN_TAG = "join";
+    private static final String COLUMN_TAG = "column";
+    private static final String IMPORT_TAG = "import";
+    private static final String ANY_TAG = "any";
+    private static final String MAP_TAG = "map";
+    private static final String LIST_TAG = "list";
+    private static final String LIST_INDEX_TAG = "list-index";
+    private static final String INDEX_TAG = "index";
+    private static final String MAP_KEY_TAG = "map-key";
+    private static final String ELEMENT_TAG = "element";
+    private static final String MANY_TO_MANY_TAG = "many-to-many";
     
-    
-    private static final String SCHEMA_ATTRIB = "schema";
-    private static final String CATALOG_ATTRIB = "catalog";
     private static final String TABLE_ATTRIB = "table"; // table name
     private static final String PACKAGE_ATTRIB = "package";
     private static final String CLASS_ATTRIB = "class";
     private static final String NAME_ATTRIB = "name";
     private static final String TYPE_ATTRIB = "type";
     private static final String COLUMN_ATTRIB = "column";
+    private static final String EXTENDS_ATTRIB = "extends";
+    private static final String PERSISTER_ATTRIB = "persister";
+    private static final String CASCADE_ATTRIB = "cascade";
+    
     private static Map<String, Completor> completors = new HashMap<String, Completor>();
 
     private CompletionManager() {
@@ -154,6 +177,20 @@ public final class CompletionManager {
             "true_false", NbBundle.getMessage(CompletionManager.class, "TRUE_FALSE_DESC"), // NOI18N
             "yes_no", NbBundle.getMessage(CompletionManager.class, "YES_NO_DESC") // NOI18N
         };
+        
+         String[] cascadeStyles = new String[] {
+             "none", null, // NOI18N
+             "all", null, // NOI18N
+             "delete", null, // NOI18N
+             "delete-orphan", null, // NOI18N
+             "evict", null, // NOI18N
+             "refresh", null, // NOI18N
+             "lock", null, // NOI18N
+             "merge", null, // NOI18N
+             "persist", null, // NOI18N
+             "replicate", null, // NOI18N
+             "save-update", null // NOI18N
+         };
 
         // Items for package attribute in the root element
         JavaClassCompletor javaPackageCompletor = new JavaClassCompletor(true);
@@ -168,23 +205,57 @@ public final class CompletionManager {
         registerCompletor(PROPERTY_TAG, TYPE_ATTRIB, typeCompletor);
         registerCompletor(ID_TAG, TYPE_ATTRIB, typeCompletor);
         registerCompletor(DISCRIMINATOR_TAG, TYPE_ATTRIB, typeCompletor);
+        registerCompletor(KEY_PROPERTY_TAG, TYPE_ATTRIB, typeCompletor);
+        registerCompletor(VERSION_TAG, TYPE_ATTRIB, typeCompletor);
+        registerCompletor(ELEMENT_TAG, TYPE_ATTRIB, typeCompletor);
+        registerCompletor(MAP_KEY_TAG, TYPE_ATTRIB, typeCompletor);
+        registerCompletor(INDEX_TAG, TYPE_ATTRIB, typeCompletor);
 
         // Items for classes to be mapped
         JavaClassCompletor javaClassCompletor = new JavaClassCompletor(false);
         registerCompletor(CLASS_TAG, NAME_ATTRIB, javaClassCompletor);
         registerCompletor(ONE_TO_MANY_TAG, CLASS_ATTRIB, javaClassCompletor);
-
+        registerCompletor(COMPOSITE_ID_TAG, CLASS_ATTRIB, javaClassCompletor);
+        registerCompletor(KEY_MANY_TO_ONE_TAG, CLASS_ATTRIB, javaClassCompletor);
+        registerCompletor(MANY_TO_ONE_TAG, CLASS_ATTRIB, javaClassCompletor);
+        registerCompletor(ONE_TO_ONE_TAG, CLASS_ATTRIB, javaClassCompletor);
+        registerCompletor(COMPONENT_TAG, CLASS_ATTRIB, javaClassCompletor);
+        registerCompletor(SUBCLASS_TAG, NAME_ATTRIB, javaClassCompletor);
+        registerCompletor(SUBCLASS_TAG, EXTENDS_ATTRIB, javaClassCompletor);
+        registerCompletor(JOINED_SUBCLASS_TAG, NAME_ATTRIB, javaClassCompletor);
+        registerCompletor(JOINED_SUBCLASS_TAG, EXTENDS_ATTRIB, javaClassCompletor);
+        registerCompletor(JOINED_SUBCLASS_TAG, PERSISTER_ATTRIB, javaClassCompletor);
+        registerCompletor(UNION_SUBCLASS_TAG, NAME_ATTRIB, javaClassCompletor);
+        registerCompletor(UNION_SUBCLASS_TAG, EXTENDS_ATTRIB, javaClassCompletor);
+        registerCompletor(UNION_SUBCLASS_TAG, PERSISTER_ATTRIB, javaClassCompletor);
+        registerCompletor(IMPORT_TAG, CLASS_ATTRIB, javaClassCompletor);
+        registerCompletor(MANY_TO_MANY_TAG, CLASS_ATTRIB, javaClassCompletor);
+        
         // Items for properties to be mapped
         PropertyCompletor propertyCompletor = new PropertyCompletor();
         registerCompletor(PROPERTY_TAG, NAME_ATTRIB, propertyCompletor);
         registerCompletor(ID_TAG, NAME_ATTRIB, propertyCompletor);
         registerCompletor(SET_TAG, NAME_ATTRIB, propertyCompletor);
+        registerCompletor(COMPOSITE_ID_TAG, NAME_ATTRIB, propertyCompletor);
+        registerCompletor(KEY_PROPERTY_TAG, NAME_ATTRIB, propertyCompletor);
+        registerCompletor(KEY_MANY_TO_ONE_TAG, NAME_ATTRIB, propertyCompletor);
+        registerCompletor(VERSION_TAG, NAME_ATTRIB, propertyCompletor);
+        registerCompletor(TIMESTAMP_TAG, NAME_ATTRIB, propertyCompletor);
+        registerCompletor(MANY_TO_ONE_TAG, NAME_ATTRIB, propertyCompletor);
+        registerCompletor(ONE_TO_ONE_TAG, NAME_ATTRIB, propertyCompletor);
+        registerCompletor(COMPONENT_TAG, NAME_ATTRIB, propertyCompletor);
+        registerCompletor(ANY_TAG, NAME_ATTRIB, propertyCompletor);
+        registerCompletor(MAP_TAG, NAME_ATTRIB, propertyCompletor);
+        registerCompletor(LIST_TAG, NAME_ATTRIB, propertyCompletor);
 
         // Items for database tables to be mapped to
         DatabaseTableCompletor databaseTableCompletor = new DatabaseTableCompletor();
         registerCompletor(CLASS_TAG, TABLE_ATTRIB, databaseTableCompletor);
         registerCompletor(SET_TAG, TABLE_ATTRIB, databaseTableCompletor);
-
+        registerCompletor(JOINED_SUBCLASS_TAG, TABLE_ATTRIB, databaseTableCompletor);
+        registerCompletor(UNION_SUBCLASS_TAG, TABLE_ATTRIB, databaseTableCompletor);
+        registerCompletor(JOIN_TAG, TABLE_ATTRIB, databaseTableCompletor);
+        registerCompletor(MAP_TAG, TABLE_ATTRIB, databaseTableCompletor);
 
         // Items for database columns to be mapped to
         DatabaseTableColumnCompletor databaseColumnCompletor = new DatabaseTableColumnCompletor();
@@ -192,6 +263,24 @@ public final class CompletionManager {
         registerCompletor(ID_TAG, COLUMN_ATTRIB, databaseColumnCompletor);
         registerCompletor(KEY_TAG, COLUMN_ATTRIB, databaseColumnCompletor);
         registerCompletor(DISCRIMINATOR_TAG, COLUMN_ATTRIB, databaseColumnCompletor);
+        registerCompletor(KEY_PROPERTY_TAG, COLUMN_ATTRIB, databaseColumnCompletor);
+        registerCompletor(KEY_MANY_TO_ONE_TAG, COLUMN_ATTRIB, databaseColumnCompletor);
+        registerCompletor(VERSION_TAG, COLUMN_ATTRIB, databaseColumnCompletor);
+        registerCompletor(TIMESTAMP_TAG, COLUMN_ATTRIB, databaseColumnCompletor);
+        registerCompletor(MANY_TO_ONE_TAG, COLUMN_ATTRIB, databaseColumnCompletor);
+        registerCompletor(COLUMN_TAG, NAME_ATTRIB, databaseColumnCompletor);
+        registerCompletor(LIST_INDEX_TAG, COLUMN_ATTRIB, databaseColumnCompletor);
+        registerCompletor(INDEX_TAG, COLUMN_ATTRIB, databaseColumnCompletor);
+        registerCompletor(MAP_KEY_TAG, COLUMN_ATTRIB, databaseColumnCompletor);
+        registerCompletor(ELEMENT_TAG, COLUMN_ATTRIB, databaseColumnCompletor);
+        registerCompletor(MANY_TO_MANY_TAG, COLUMN_ATTRIB, databaseColumnCompletor);
+        
+        // Items for cascade attribute
+        CascadeStyleCompletor cascadeStyleCompletor = new CascadeStyleCompletor(cascadeStyles);
+        registerCompletor(MANY_TO_ONE_TAG, CASCADE_ATTRIB, cascadeStyleCompletor);
+        registerCompletor(ONE_TO_ONE_TAG, CASCADE_ATTRIB, cascadeStyleCompletor);
+        registerCompletor(ANY_TAG, CASCADE_ATTRIB, cascadeStyleCompletor);
+        registerCompletor(MAP_TAG, CASCADE_ATTRIB, cascadeStyleCompletor);
     }
     
     private static CompletionManager INSTANCE = new CompletionManager();
@@ -215,9 +304,6 @@ public final class CompletionManager {
     }
 
     public void completeAttributes(CompletionResultSet resultSet, CompletionContext context) {
-        if( context.getTag().getNodeName().equalsIgnoreCase( "comment" ) ) {
-            System.err.println( "..........completing comment" );
-        }
     }
 
     public void completeElements(CompletionResultSet resultSet, CompletionContext context) {
@@ -299,6 +385,36 @@ public final class CompletionManager {
             for (int i = 0; i < itemTextAndDocs.length; i += 2) {
                 if (itemTextAndDocs[i].startsWith(typedChars)) {
                     HibernateMappingCompletionItem item = HibernateMappingCompletionItem.createAttribValueItem(caretOffset - typedChars.length(),
+                            itemTextAndDocs[i], itemTextAndDocs[i + 1]);
+                    results.add(item);
+                }
+            }
+
+            setAnchorOffset(context.getCurrentToken().getOffset() + 1);
+            return results;
+        }
+    }
+    
+    /**
+     * A  completor for completing the cascade attribute with cascade styles
+     * 
+     */
+    private static class CascadeStyleCompletor extends Completor {
+
+        private String[] itemTextAndDocs;
+
+        public CascadeStyleCompletor(String[] itemTextAndDocs) {
+            this.itemTextAndDocs = itemTextAndDocs;
+        }
+
+        public List<HibernateMappingCompletionItem> doCompletion(CompletionContext context) {
+            List<HibernateMappingCompletionItem> results = new ArrayList<HibernateMappingCompletionItem>();
+            int caretOffset = context.getCaretOffset();
+            String typedChars = context.getTypedPrefix();
+
+            for (int i = 0; i < itemTextAndDocs.length; i += 2) {
+                if (itemTextAndDocs[i].startsWith(typedChars)) {
+                    HibernateMappingCompletionItem item = HibernateMappingCompletionItem.createCascadeStyleItem(caretOffset - typedChars.length(),
                             itemTextAndDocs[i], itemTextAndDocs[i + 1]);
                     results.add(item);
                 }
