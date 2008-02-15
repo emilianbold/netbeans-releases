@@ -27,7 +27,8 @@ if [ "$action" = "build" ]; then
     fi
 
     ant -f nbbuild/build.xml build || exit 2
-    ant -f nbbuild/build.xml commit-validation commit-validation-junit-format # || exit 3
+    ant -f nbbuild/build.xml commit-validation # || exit 3
+    ant -f nbbuild/build.xml commit-validation-junit-format # || exit 3
     ant -f openide.util/build.xml test  || exit 4
     ant -f openide.modules/build.xml test || exit 4
     ant -f openide.filesystems/build.xml test # || exit 4
