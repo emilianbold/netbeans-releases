@@ -148,23 +148,36 @@ public final class CompletionManager {
 
     private void setupCompletors() {
 
-        String[] autowireItems = new String[]{
+        String[] defaultAutoWireItems = new String[]{
             "no", NbBundle.getMessage(CompletionManager.class, "DESC_autowire_no"), // NOI18N
             "byName", NbBundle.getMessage(CompletionManager.class, "DESC_autowire_byName"), // NOI18N
             "byType", NbBundle.getMessage(CompletionManager.class, "DESC_autowire_byType"), // NOI18N
             "constructor", NbBundle.getMessage(CompletionManager.class, "DESC_autowire_constructor"), // NOI18N
             "autodetect", NbBundle.getMessage(CompletionManager.class, "DESC_autowire_autodetect") // NOI18N
         };
-        AttributeValueCompletor completor = new AttributeValueCompletor(autowireItems);
-        registerCompletor(BEAN_TAG, AUTOWIRE_ATTRIB, completor);
+        AttributeValueCompletor completor = new AttributeValueCompletor(defaultAutoWireItems);
         registerCompletor(BEANS_TAG, DEFAULT_AUTOWIRE_ATTRIB, completor);
-
+        
+        String[] autoWireItems = new String[defaultAutoWireItems.length + 2];
+        System.arraycopy(defaultAutoWireItems, 0, autoWireItems, 0, defaultAutoWireItems.length);
+        autoWireItems[defaultAutoWireItems.length] = "default"; // NOI18N
+        autoWireItems[defaultAutoWireItems.length + 1] = null; // XXX: Documentation
+        completor = new AttributeValueCompletor(autoWireItems);
+        registerCompletor(BEAN_TAG, AUTOWIRE_ATTRIB, completor);
+        
         String[] defaultLazyInitItems = new String[]{
             "true", null, //XXX: Documentation // NOI18N
             "false", null, //XXX: Documentation // NOI18N
         };
         completor = new AttributeValueCompletor(defaultLazyInitItems);
         registerCompletor(BEANS_TAG, DEFAULT_LAZY_INIT_ATTRIB, completor);
+        
+        String[] lazyInitItems = new String[] {
+            defaultLazyInitItems[0], defaultLazyInitItems[1],
+            defaultLazyInitItems[2], defaultLazyInitItems[3],
+            "default", null // XXX: Documentation // NOI18N
+        };
+        completor = new AttributeValueCompletor(lazyInitItems);
         registerCompletor(BEAN_TAG, LAZY_INIT_ATTRIB, completor);
         
         String[] defaultMergeItems = new String[] {
@@ -182,6 +195,11 @@ public final class CompletionManager {
         };
         completor = new AttributeValueCompletor(defaultDepCheckItems);
         registerCompletor(BEANS_TAG, DEFAULT_DEPENDENCY_CHECK_ATTRIB, completor);
+
+        String[] depCheckItems = new String[defaultDepCheckItems.length + 2];
+        depCheckItems[defaultDepCheckItems.length] = "default"; // NOI18N
+        depCheckItems[defaultDepCheckItems.length + 1] = null; // XXX Documentation
+        completor = new AttributeValueCompletor(depCheckItems);
         registerCompletor(BEAN_TAG, DEPENDENCY_CHECK_ATTRIB, completor);
         
         String[] abstractItems = new String[] {
@@ -194,6 +212,7 @@ public final class CompletionManager {
         String[] autowireCandidateItems = new String[] {
             "true", null, // XXX: documentation? // NOI18N
             "false", null, // XXX: documentation? // NOI18N
+            "default", null, // XXX: documentation? // NOI18N
         };
         completor = new AttributeValueCompletor(autowireCandidateItems);
         registerCompletor(BEAN_TAG, AUTOWIRE_CANDIDATE_ATTRIB, completor);
@@ -201,6 +220,7 @@ public final class CompletionManager {
         String[] mergeItems = new String[] {
             "true", null, // XXX: documentation? // NOI18N
             "false", null, // XXX: documentation? // NOI18N
+            "default", null, // XXX: documentation? // NOI18N
         };
         completor = new AttributeValueCompletor(mergeItems);
         registerCompletor(LIST_TAG, MERGE_ATTRIB, completor);

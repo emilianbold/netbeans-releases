@@ -50,7 +50,7 @@
         <write-jar-content-list 
             dir="${basedir}/${build.classes.dir}" 
             output="${basedir}/${build.classes.dir}/${jar.contents.list}"
-            mask="(^native/.*|^org/.*|^com/apple/.*|^data/|^data/engine(_[a-zA-Z]+)*\.properties)"/>
+            mask="(^native/.*|^org/.*|^com/sun/servicetag/.*|^com/apple/.*|^data/|^data/engine(_[a-zA-Z]+)*\.properties)"/>
     </target>
     
     <target name="-post-jar">

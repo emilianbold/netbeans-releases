@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -39,41 +39,19 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.db.explorer.nodes;
+package org.netbeans.modules.xml.text.indent;
 
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
-import java.io.IOException;
+import org.netbeans.modules.editor.indent.spi.Context;
+import org.netbeans.modules.editor.indent.spi.IndentTask;
 
-
-import org.netbeans.modules.db.explorer.infos.DatabaseNodeInfo;
-import org.netbeans.modules.db.explorer.infos.DriverListNodeInfo;
-import org.netbeans.modules.db.explorer.infos.ServerNodeInfo;
-import org.openide.util.HelpCtx;
-
-public class ServerNode extends LeafNode implements PropertyChangeListener {
-
-    @Override
-    public void setInfo(DatabaseNodeInfo info) {
-        super.setInfo(info);
+/**
+ *
+ * @author Marek Fukala
+ */
+public class XMLIndentTaskFactory implements IndentTask.Factory {
+    
+    public IndentTask createTask(Context context) {
+        return new XMLIndentTask(context);
     }
     
-    @Override
-    public String getShortDescription() {
-        ServerNodeInfo serverinfo = (ServerNodeInfo)getInfo();
-        return serverinfo.getProvider().getShortDescription();
-    }
-
-    /** Help context where to find more about the paste type action.
-    * @return the help context for this action
-    */
-    @Override
-    public HelpCtx getHelpCtx() {
-        // TODO - set up help for this node
-        return new HelpCtx(ServerNode.class);
-    }
-
-    public void propertyChange(PropertyChangeEvent arg0) {
-    }
-
 }

@@ -39,16 +39,15 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.db.server;
+package org.netbeans.modules.db.runtime;
 
-import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.spi.db.explorer.DatabaseRuntime;
-import org.netbeans.spi.db.explorer.ServerProvider;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.Lookups;
 
@@ -59,13 +58,12 @@ import org.openide.util.lookup.Lookups;
  * by the IDE when a connection is being made to this server.
  *
  * @see org.netbeans.spi.db.explorer.DatabaseRuntime
- * @see org.netbeans.spi.db.explorer.ServerProvider
  *
- * @author Nam Nguyen, Andrei Badea, David Van Couvering
+ * @author Nam Nguyen, Andrei Badea
  */
-public final class ServerProviderManager {
+public final class DatabaseRuntimeManager {
     
-    private static final Logger LOGGER = Logger.getLogger(ServerProviderManager.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(DatabaseRuntimeManager.class.getName());
     private static final boolean LOG = LOGGER.isLoggable(Level.FINE);
     
     /**
@@ -76,43 +74,26 @@ public final class ServerProviderManager {
     /**
      * The singleton database runtime manager instance.
      */
-    private static ServerProviderManager DEFAULT = null;
+    private static DatabaseRuntimeManager DEFAULT = null;
     
     /**
      * The Lookup.Result instance containing all the DatabaseRuntime instances.
      */
-    private Lookup.Result runtimeResult = getRuntimesLookupResult();
-
-    /**
-     * The Lookup.Result instance containing all the ServerProvider instances,
-     * which also provide DatabaseRuntime functionality
-     */
-    private Lookup.Result providerResult = getServerProvidersLookupResult();
+    private Lookup.Result result = getLookupResult();
     
     /**
      * Returns the singleton database runtime manager instance.
      */
-    public static synchronized ServerProviderManager getDefault() {
+    public static synchronized DatabaseRuntimeManager getDefault() {
         if (DEFAULT == null) {
-            DEFAULT = new ServerProviderManager();
+            DEFAULT = new DatabaseRuntimeManager();
         }
         return DEFAULT;
     }
     
-    /**
-     * Get all database runtimes
-     * 
-     * @return all instances that implement the DatabaseRuntime interface
-     *   (which is a subset of the full ServerProvider interface)
-     * 
-     * @see org.netbeans.spi.db.explorer.DatabaseRuntime
-     * @see org.netbeans.spi.db.explorer.ServerProvider
-     */
     public DatabaseRuntime[] getRuntimes() {
-        ArrayList all = new ArrayList();
-        all.addAll(runtimeResult.allInstances());
-        all.addAll(providerResult.allInstances());
-        return (DatabaseRuntime[])all.toArray(new DatabaseRuntime[all.size()]);
+        Collection runtimes = result.allInstances();
+        return (DatabaseRuntime[])runtimes.toArray(new DatabaseRuntime[runtimes.size()]);
     }
     
     /**
@@ -129,9 +110,9 @@ public final class ServerProviderManager {
         if (jdbcDriverClassName == null) {
             throw new NullPointerException();
         }
-        List<DatabaseRuntime> runtimeList = new LinkedList<DatabaseRuntime>();
-        DatabaseRuntime[] runtimes = getRuntimes();
-        for (DatabaseRuntime runtime : runtimes ) {
+        List/*<DatabaseRuntime>*/ runtimeList = new LinkedList();
+        for (Iterator i = result.allInstances().iterator(); i.hasNext();) {
+            DatabaseRuntime runtime = (DatabaseRuntime)i.next();
             if (LOG) {
                 LOGGER.log(Level.FINE, "Runtime: " + runtime.getClass().getName() + " for driver " + runtime.getJDBCDriverClass()); // NOI18N
             }
@@ -142,21 +123,7 @@ public final class ServerProviderManager {
         return (DatabaseRuntime[])runtimeList.toArray(new DatabaseRuntime[runtimeList.size()]);
     }
     
-    /**
-     * Get the list of server providers
-     * 
-     * @return all instances that implement the full ServerProvider interface
-     */
-    public ServerProvider[] getServerProviders() {
-        Collection providers = providerResult.allInstances();
-        return (ServerProvider[])providers.toArray(new ServerProvider[providers.size()]);        
-    }
-    
-    private synchronized Lookup.Result getRuntimesLookupResult() {
+    private synchronized Lookup.Result getLookupResult() {
         return Lookups.forPath(RUNTIMES_PATH).lookupResult(DatabaseRuntime.class);
-    }
-
-    private synchronized Lookup.Result getServerProvidersLookupResult() {
-        return Lookups.forPath(RUNTIMES_PATH).lookupResult(ServerProvider.class);
     }
 }
