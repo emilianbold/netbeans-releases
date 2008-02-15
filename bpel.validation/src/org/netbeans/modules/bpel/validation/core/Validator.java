@@ -68,12 +68,22 @@ public abstract class Validator extends SimpleBpelModelVisitorAdaptor implements
           process.accept(Validator.this);
         }
         collection.add(getResultItems());
-        endTime("Validator " + getName());
+        endTime(getDisplayName());  // NOI18N
       }
     };
     bpelModel.invoke(run);
 
     return new ValidationResult(collection.get(0), Collections.singleton(model));
+  }
+
+  private String getDisplayName() {
+    String name = getName();
+    StringBuffer spaces = new StringBuffer();
+
+    for (int i=name.length(); i < 57; i++) {
+      spaces.append(" "); // NOI18N
+    }
+    return "Validator " + name + spaces;
   }
 
   public String getName() {
