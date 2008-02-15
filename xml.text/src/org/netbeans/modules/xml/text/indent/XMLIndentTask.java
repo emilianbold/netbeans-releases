@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -38,43 +38,47 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
+
 package org.netbeans.modules.xml.text.indent;
 
-
-import org.netbeans.editor.ext.ExtFormatter;
-import org.netbeans.modules.editor.FormatterIndentEngine;
-import org.netbeans.modules.xml.text.syntax.UniKit;
-import org.openide.util.HelpCtx;
+import javax.swing.text.BadLocationException;
+import org.netbeans.api.editor.mimelookup.MimePath;
+import org.netbeans.api.lexer.Language;
+import org.netbeans.api.lexer.LanguagePath;
+import org.netbeans.modules.editor.indent.spi.Context;
+import org.netbeans.modules.editor.indent.spi.ExtraLock;
+import org.netbeans.modules.editor.indent.spi.IndentTask;
 
 /**
- * @author  Libor Kramolis
- * @version 0.1
+ * Implementation of IndentTask for text/html mimetype.
+ *
+ * @author Marek Fukala
  */
-public class XMLIndentEngine extends FormatterIndentEngine {
+public class XMLIndentTask implements IndentTask {
 
-    /** serialVersionUID */
-    private static final long serialVersionUID =2687932177907992517L;
-    
+    private Context context;
 
-    /**
-     */
-    protected ExtFormatter createFormatter () {
-        return new XMLFormatter (UniKit.class);
+    XMLIndentTask(Context context) {
+        this.context = context;
+    }
+
+    public void reindent() throws BadLocationException {
+        getFormatter().process(context);
+    }
+
+    public ExtraLock indentLock() {
+        return null;
+    }
+
+    private XMLLexerFormatter getFormatter() {
+        MimePath mimePath = MimePath.parse (context.mimePath ());
+        LanguagePath languagePath = LanguagePath.get (Language.find (mimePath.getMimeType (0)));
+        
+        for (int i = 1; i < mimePath.size(); i++) {
+            languagePath = languagePath.embedded(Language.find(mimePath.getMimeType(i)));
+        }
+
+        return new XMLLexerFormatter(languagePath);
         //return null;
     }
-
-    /**
-     */
-    @Override
-    public HelpCtx getHelpCtx () {
-        return new HelpCtx (XMLIndentEngine.class);
-    }
-
-    /**
-     */
-    @Override
-    protected boolean acceptMimeType (String mimeType) {
-        return true;
-    }
-
 }
