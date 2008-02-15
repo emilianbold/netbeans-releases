@@ -360,7 +360,7 @@ made subject to such option by the copyright holder.
         </testset>
     </testbag>
     
-    <testbag name="Action: Button Component Acceptance Test" testattribs="acceptance, action, actionee4, all" executor="ide">
+    <testbag name="Action: Button Component Acceptance Test" testattribs="acceptance, action, actionee4, all, action_button" executor="ide">
         <testset dir="components/src">
             <patternset>  
                 <include name="org/netbeans/modules/visualweb/test/components/action/button/AcceptanceTest.class"/>
