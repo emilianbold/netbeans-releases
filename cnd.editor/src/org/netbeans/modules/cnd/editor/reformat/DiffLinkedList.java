@@ -37,73 +37,38 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.editor.options;
+package org.netbeans.modules.cnd.editor.reformat;
 
-import org.netbeans.modules.cnd.editor.api.CodeStyle;
-import org.openide.nodes.PropertySupport;
-import org.openide.util.NbBundle;
+import java.util.LinkedList;
+import org.netbeans.modules.cnd.editor.reformat.Reformatter.Diff;
 
-public class IntNodeProp extends PropertySupport.ReadWrite<Integer> {
-
-    private final CodeStyle.Language language;
-    private final String optionID;
-    private PreviewPreferences preferences;
-    private int state;
-
-    public IntNodeProp(CodeStyle.Language language, PreviewPreferences preferences, String optionID) {
-        super(optionID, Integer.class, getString("LBL_" + optionID), getString("HINT_" + optionID));
-        this.language = language;
-        this.optionID = optionID;
-        this.preferences = preferences;
-        init();
-    }
-
-    private static String getString(String key) {
-        return NbBundle.getMessage(IntNodeProp.class, key);
-    }
-
-    private void init() {
-        state = getPreferences().getInt(optionID, getDefault());
+/**
+ *
+ * @author Alexander Simon
+ */
+/*package local*/ class DiffLinkedList {
+    private LinkedList<Diff> storage = new LinkedList<Diff>();
+    
+    /*package local*/ void addFirst(int start, int end, String text){
+        Diff diff = new Diff(start, end, text);
+        Diff top = getFirst();
+        if (top != null && top.getStartOffset()>start) {
+            storage.remove();
+            storage.addFirst(diff);
+            storage.addFirst(top);
+        } else {
+            storage.addFirst(diff);
+        }
     }
     
-    private int getDefault(){
-        return (Integer) EditorOptions.getDefault(
-                getPreferences().getLanguage(), getPreferences().getStyleId(), optionID);
-    }
-
-    private PreviewPreferences getPreferences() {
-        return preferences;
-    }
-
-    @Override
-    public String getHtmlDisplayName() {
-        if (!isDefaultValue()) {
-            return "<b>" + getDisplayName();
+    /*package local*/ Diff getFirst(){
+        if (storage.isEmpty()){
+            return null;
         }
-        return null;
+        return storage.getFirst();
     }
 
-    public Integer getValue() {
-        return new Integer(state);
-    }
-
-    public void setValue(Integer v) {
-        state = v;
-        getPreferences().putInt(optionID, state);
-    }
-
-    @Override
-    public void restoreDefaultValue() {
-        setValue(getDefault());
-    }
-
-    @Override
-    public boolean supportsDefaultValue() {
-        return true;
-    }
-
-    @Override
-    public boolean isDefaultValue() {
-        return getDefault() == getValue().intValue();
+    /*package local*/ LinkedList<Diff> getStorage(){
+        return storage;
     }
 }

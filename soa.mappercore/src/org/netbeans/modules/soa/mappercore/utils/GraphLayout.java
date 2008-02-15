@@ -60,7 +60,7 @@ public class GraphLayout {
     }
     
     public static void layout(Graph graph) {
-        layout(graph, 30, 8, 1);
+        layout(graph, -8, 8, 1);
     }
     
     public static void layout(Graph graph, int x, int xMargin, int yMargin) {

@@ -945,6 +945,11 @@ public class TableCustomizer extends JPanel implements Customizer, FormAwareEdit
                 || ((lastSelectedCustomizer != 1) && bound))) {
             ensureColumnCount(0);
             ensureRowCount(0);
+            rowCountSpinner.setValue(0);
+            // Clear rowTableModel
+            for (int i=rowTableModel.getColumnCount()-1; i>=0; i--) {
+                rowTableModel.removeColumn(i);
+            }
         }
         columnCountSpinner.setValue(columns.size());
         lastSelectedCustomizer = (hardcoded ? 0 : (bound ? 1 : (fromComponent ? 2 : 3)));
