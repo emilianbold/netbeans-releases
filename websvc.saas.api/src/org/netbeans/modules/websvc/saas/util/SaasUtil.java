@@ -62,6 +62,7 @@ import javax.xml.parsers.SAXParserFactory;
 import javax.xml.transform.sax.SAXSource;
 import org.netbeans.modules.websvc.saas.model.Saas;
 import org.netbeans.modules.websvc.saas.model.SaasGroup;
+import org.netbeans.modules.websvc.saas.model.SaasServicesModel;
 import org.netbeans.modules.websvc.saas.model.WadlSaas;
 import org.netbeans.modules.websvc.saas.model.WadlSaasMethod;
 import org.netbeans.modules.websvc.saas.model.jaxb.Group;
@@ -188,6 +189,7 @@ public class SaasUtil {
             }
         }
     }
+    
     public static final QName QNAME_GROUP = new QName(Saas.NS_SAAS, "group");
 
     public static void saveSaasGroup(SaasGroup saasGroup, OutputStream output) throws JAXBException {

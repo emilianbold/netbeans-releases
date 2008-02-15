@@ -39,6 +39,7 @@
 
 package org.netbeans.modules.websvc.saas.model;
 
+import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URLClassLoader;
 import java.util.List;
@@ -77,13 +78,20 @@ public class Saas {
     private List<SaasMethod> saasMethods;
     
     private State state = State.UNINITIALIZED;
-    private FileObject saasFolder; // userdir folder to store customization and consumer artifacts
+    protected FileObject saasFolder; // userdir folder to store customization and consumer artifacts
     private FileObject moduleJar; // NBM this saas was loaded from
-    private URLClassLoader loader;
+    private boolean userDefined = true;
 
     public Saas(SaasGroup parentGroup, SaasServices services) {
         this.delegate = services;
         this.parentGroup = parentGroup;
+    }
+    
+    public Saas(String url, String displayName, String description) {
+        delegate = new SaasServices();
+        delegate.setUrl(url);
+        delegate.setDisplayName(url);
+        delegate.setDescription(description);
     }
 
     public SaasServices getDelegate() {
@@ -95,9 +103,33 @@ public class Saas {
     }
 
     public void setParentGroup(SaasGroup parentGroup) {
+        if (this.parentGroup == parentGroup) {
+            return;
+        }
         this.parentGroup = parentGroup;
+        SaasMetadata data = delegate.getSaasMetadata();
+        if (data == null) {
+            data = new SaasMetadata();
+            delegate.setSaasMetadata(data);
+            data.setGroup(parentGroup.getPathFromRoot());
+        }
     }
 
+    public void save() throws IOException {
+        
+        //TODO
+    }
+
+    public boolean isUserDefined() {
+        return userDefined;
+    }
+    
+    public void setUserDefined(boolean v) {
+        if (userDefined) {
+            userDefined = v;
+        }
+    }
+    
     public String getUrl() {
         return delegate.getUrl();
     }
@@ -186,7 +218,7 @@ public class Saas {
      * Get the URL class loader for the module defining this SaaS.
      * @return URLClassLoader instance; or null if this SaaS does not come from an NBM
      */
-    protected URLClassLoader getModuleLoader() {
+    /*protected URLClassLoader getModuleLoader() {
         if (loader == null) {
             try {
                 loader = new URLClassLoader(new URL[] { new URL(moduleJar.getPath()) });
@@ -195,5 +227,5 @@ public class Saas {
             }
         }
         return loader;
-    }
+    }*/
 }

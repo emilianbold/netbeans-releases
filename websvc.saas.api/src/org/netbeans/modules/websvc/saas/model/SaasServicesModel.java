@@ -151,6 +151,7 @@ public class SaasServicesModel {
                     SaasGroup child = parent.getChildGroup(g.getName());
                     if (child == null) {
                         child = new SaasGroup(parent, g);
+                        child.setUserDefined(false);
                         parent.addChildGroup(child);
                     }
 
@@ -223,7 +224,7 @@ public class SaasServicesModel {
     public void addGroup(SaasGroup parent, SaasGroup child) {
         init();
         parent.addChildGroup(child);
-    //TODO save
+        saveRootGroup();
     }
 
     /**
@@ -233,12 +234,13 @@ public class SaasServicesModel {
      */
     public void removeGroup(SaasGroup child) {
         removeGroup(rootGroup, child);
+        saveRootGroup();
     }
 
     public void removeGroup(SaasGroup parent, SaasGroup group) {
         init();
         parent.removeChildGroup(group);
-    //TODO save
+        saveRootGroup();
     }
 
     List<Saas> getServices() {
