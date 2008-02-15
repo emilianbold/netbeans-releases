@@ -250,11 +250,11 @@ public class DerbyOptions {
     private static void stopDerbyServer() {
         DatabaseConnection[] dbconn = ConnectionManager.getDefault().getConnections();
         for (int i = 0; i < dbconn.length; i++) {
-            if (DerbyServerProvider.getDefault().acceptsDatabaseURL(dbconn[i].getDatabaseURL())) {
+            if (RegisterDerby.getDefault().acceptsDatabaseURL(dbconn[i].getDatabaseURL())) {
                 ConnectionManager.getDefault().disconnect(dbconn[i]);
             }
         }
-        DerbyServerProvider.getDefault().stop();
+        RegisterDerby.getDefault().stop();
     }
 
     private static void registerDrivers(final String newLocation) {
