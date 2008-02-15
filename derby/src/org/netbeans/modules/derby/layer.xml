@@ -45,7 +45,7 @@ made subject to such option by the copyright holder.
     <folder name="Databases">
         <folder name="Runtimes">
             <file name="DerbyRuntime.instance">
-                <attr name="instanceCreate" methodvalue="org.netbeans.modules.derby.RegisterDerby.getDefault"/>
+                <attr name="instanceCreate" methodvalue="org.netbeans.modules.derby.DerbyServerProvider.getDefault"/>
                 <attr name="instanceOf" stringvalue="org.netbeans.spi.db.explorer.DatabaseRuntime"/>
             </file>
         </folder>
