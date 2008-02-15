@@ -154,9 +154,12 @@ public class ConfigFileSpringBeanSource implements SpringBeanSource {
             } else {
                 names = Collections.<String>emptyList();
             }
+            String parent = SpringXMLConfigEditorUtils.getAttribute(node, "parent"); // NOI18N
+            String factoryBean = SpringXMLConfigEditorUtils.getAttribute(node, "factory-bean"); // NOI18N
+            String factoryMethod = SpringXMLConfigEditorUtils.getAttribute(node, "factory-method"); // NOI18N
             Tag tag = (Tag)node;
             Location location = new ConfigFileLocation(file, tag.getElementOffset());
-            ConfigFileSpringBean bean = new ConfigFileSpringBean(id, names, clazz, location);
+            ConfigFileSpringBean bean = new ConfigFileSpringBean(id, names, clazz, parent, factoryBean, factoryMethod, location);
             if (id != null) {
                 addBeanID(id, bean);
             }

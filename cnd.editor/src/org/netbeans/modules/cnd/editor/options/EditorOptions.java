@@ -193,11 +193,11 @@ public class EditorOptions {
     public static final String blankLinesAfterMethods = "blankLinesAfterMethods"; //NOI18N
     public static final int blankLinesAfterMethodsDefault = 0;    
 
-    public static final String CC_FORMAT_NEWLINE_BEFORE_BRACE_NAMESPACE = "cc-add-newline-before-brace-namespace"; //NOI18N
-    public static final String defaultCCFormatNewlineBeforeBraceNamespace = BracePlacement.NEW_LINE.name();
+    public static final String newLineBeforeBraceNamespace = "newLineBeforeBraceNamespace"; //NOI18N
+    public static final String newLineBeforeBraceNamespaceDefault = BracePlacement.NEW_LINE.name();
 
-    public static final String CC_FORMAT_NEWLINE_BEFORE_BRACE_CLASS = "cc-add-newline-before-brace-class"; //NOI18N
-    public static final String defaultCCFormatNewlineBeforeBraceClass = BracePlacement.NEW_LINE.name();
+    public static final String newLineBeforeBraceClass = "newLineBeforeBraceClass"; //NOI18N
+    public static final String newLineBeforeBraceClassDefault = BracePlacement.NEW_LINE.name();
     
     /**
      * Whether insert extra new-line before the declaration or not.
@@ -211,8 +211,8 @@ public class EditorOptions {
      *           function();
      *         }
      */
-    public static final String CC_FORMAT_NEWLINE_BEFORE_BRACE_DECLARATION = "cc-add-newline-before-brace-declaratin"; //NOI18N
-    public static final String defaultCCFormatNewlineBeforeBraceDeclaration = BracePlacement.NEW_LINE.name();
+    public static final String newLineBeforeBraceDeclaration = "newLineBeforeBraceDeclaration"; //NOI18N
+    public static final String newLineBeforeBraceDeclarationDefault = BracePlacement.NEW_LINE.name();
 
     /**
      * Whether insert extra new-line before the compound bracket or not.
@@ -226,8 +226,8 @@ public class EditorOptions {
      *           function();
      *         }
      */
-    public static final String CC_FORMAT_NEWLINE_BEFORE_BRACE = "cc-add-newline-before-brace"; //NOI18N
-    public static final String defaultCCFormatNewlineBeforeBrace = BracePlacement.SAME_LINE.name();
+    public static final String newLineBeforeBrace = "newLineBeforeBrace"; //NOI18N
+    public static final String newLineBeforeBraceDefault = BracePlacement.SAME_LINE.name();
     
     
     /**
@@ -241,20 +241,20 @@ public class EditorOptions {
     public static final String indentPreprocessorDirectivesDefault = PreprocessorIndent.START_LINE.name();
 
     /** Whether the '*' should be added at the new line * in comment */
-    public static final String CC_FORMAT_LEADING_STAR_IN_COMMENT = "cc-format-leading-star-in-comment"; // NOI18N
-    public static final Boolean defaultCCFormatLeadingStarInComment = true;
+    public static final String addLeadingStarInComment = "addLeadingStarInComment"; // NOI18N
+    public static final Boolean addLeadingStarInCommentDefault = true;
     
     /**
      * How many spaces should be added to the statement that continues
      * on the next line.
      */
-    public static final String CC_FORMAT_STATEMENT_CONTINUATION_INDENT = "cc-format-statement-continuation-indent"; // NOI18N 
-    public static final int defaultCCFormatStatementContinuationIndent = 8;
+    public static final String statementContinuationIndent = "statementContinuationIndent"; // NOI18N 
+    public static final int statementContinuationIndentDefault = 8;
     
     private static final Preferences preferences = NbPreferences.forModule(EditorOptions.class);
 
-    private static final String C_DEFAULT_PROFILE = "c_default"; // NOI18N
-    private static final String CPP_DEFAULT_PROFILE = "cpp_default"; // NOI18N
+    public static final String DEFAULT_PROFILE = "Default"; // NOI18N
+    public static final String APACHE_PROFILE = "Apache"; // NOI18N
 
     private static Map<String,Object> defaults;
     
@@ -266,14 +266,14 @@ public class EditorOptions {
     
     private static void createDefaults() {
         defaults = new HashMap<String,Object>();
-        defaults.put(CC_FORMAT_NEWLINE_BEFORE_BRACE_NAMESPACE,defaultCCFormatNewlineBeforeBraceNamespace);
-        defaults.put(CC_FORMAT_NEWLINE_BEFORE_BRACE_CLASS,defaultCCFormatNewlineBeforeBraceClass);
-        defaults.put(CC_FORMAT_NEWLINE_BEFORE_BRACE_DECLARATION,defaultCCFormatNewlineBeforeBraceDeclaration);
-        defaults.put(CC_FORMAT_NEWLINE_BEFORE_BRACE,defaultCCFormatNewlineBeforeBrace);
+        defaults.put(newLineBeforeBraceNamespace,newLineBeforeBraceNamespaceDefault);
+        defaults.put(newLineBeforeBraceClass,newLineBeforeBraceClassDefault);
+        defaults.put(newLineBeforeBraceDeclaration,newLineBeforeBraceDeclarationDefault);
+        defaults.put(newLineBeforeBrace,newLineBeforeBraceDefault);
 
         defaults.put(indentPreprocessorDirectives,indentPreprocessorDirectivesDefault);
-        defaults.put(CC_FORMAT_LEADING_STAR_IN_COMMENT,defaultCCFormatLeadingStarInComment);
-        defaults.put(CC_FORMAT_STATEMENT_CONTINUATION_INDENT,defaultCCFormatStatementContinuationIndent);
+        defaults.put(addLeadingStarInComment,addLeadingStarInCommentDefault);
+        defaults.put(statementContinuationIndent,statementContinuationIndentDefault);
 
         defaults.put(indentCasesFromSwitch, indentCasesFromSwitchDefault);
         defaults.put(sharpAtStartLine, sharpAtStartLineDefault);
@@ -352,23 +352,35 @@ public class EditorOptions {
     public static String getCurrentProfileId(CodeStyle.Language language) {
         switch(language){
             case C:
-                return C_DEFAULT_PROFILE;
+                return NbPreferences.forModule(CodeStyle.class).node("CodeStyle").get("C_Style", DEFAULT_PROFILE);
             case CPP:
             default:
-                return CPP_DEFAULT_PROFILE;
+                return NbPreferences.forModule(CodeStyle.class).node("CodeStyle").get("CPP_Style", DEFAULT_PROFILE);
         }
     }
 
-    public static Object getLastValue(CodeStyle.Language language, String optionID) {
-        Preferences p = lastValues == null ? getPreferences(getCurrentProfileId(language)) : lastValues;
-        Object def = getDefault(optionID);
-        if (def instanceof Integer) {
-            return p.getInt(optionID, (Integer)def);
-        } else if (def instanceof Boolean) {
-            return p.getBoolean(optionID, (Boolean)def);
+    public static void setCurrentProfileId(CodeStyle.Language language, String style) {
+        switch(language){
+            case C:
+                NbPreferences.forModule(CodeStyle.class).node("CodeStyle").put("C_Style", style);
+                break;
+            case CPP:
+            default:
+                NbPreferences.forModule(CodeStyle.class).node("CodeStyle").put("CPP_Style", style);
+                break;
         }
-        return p.get(optionID, def.toString());
     }
+
+    public static Preferences getPreferences(CodeStyle.Language language, String profileId) {
+        switch(language){
+            case C:
+                return NbPreferences.forModule(CodeStyle.class).node("C_CodeStyles").node(profileId);
+            case CPP:
+            default:
+                return NbPreferences.forModule(CodeStyle.class).node("CPP_CodeStyles").node(profileId);
+        }
+    }
+
 
     public static int getGlobalIndentSize(CodeStyle.Language language) {
         Formatter f = (Formatter)Settings.getValue(getKitClass(language), "formatter");
@@ -396,10 +408,6 @@ public class EditorOptions {
         }
     }
     
-
-    public static Preferences getPreferences(String profileId) {
-        return NbPreferences.forModule(CodeStyle.class).node("CodeStyle").node(profileId);
-    }
 
     public static CodeStyle createCodeStyle(CodeStyle.Language language, Preferences p) {
         CodeStyle.getDefault(language);

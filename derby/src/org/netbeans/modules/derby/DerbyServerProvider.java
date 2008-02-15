@@ -45,17 +45,17 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.netbeans.api.db.explorer.JDBCDriver;
-import org.netbeans.api.db.explorer.JDBCDriverManager;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.derby.api.DerbyDatabases;
-import org.netbeans.spi.db.explorer.DatabaseRuntime;
+import org.netbeans.spi.db.explorer.ServerProvider;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.execution.NbProcessDescriptor;
@@ -68,32 +68,37 @@ import org.openide.util.Utilities;
 
 /**
  *
- * @author  Ludo, Petr Jiricka
+ * @author  Ludo, Petr Jiricka, David Van Couvering
  */
-public class RegisterDerby implements DatabaseRuntime {
+public class DerbyServerProvider implements ServerProvider {
     
     // XXX this class does too much. Should maybe be split into 
     // DatabaseRuntimeImpl, DerbyStartStop and the rest.
     
     // XXX refactor this soon, it is full of race conditions!
     
-    private static final Logger LOGGER = Logger.getLogger(RegisterDerby.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(DerbyServerProvider.class.getName());
     private static final boolean LOG = LOGGER.isLoggable(Level.FINE);
     
     private static final int START_TIMEOUT = 5; // seconds
     
-    private static RegisterDerby reg=null;
+    private static DerbyServerProvider reg=null;
+    ArrayList actions = new ArrayList();
     
     /** Derby server process */
     static Process process = null;
     
-    /** Creates a new instance of RegisterDerby */
-    private RegisterDerby() {
+    /** Creates a new instance of DerbyServerProvider */
+    private DerbyServerProvider() {
+        actions.add(new StartAction());
+        actions.add(new StopAction());
+        actions.add(new CreateDatabaseAction());
+        actions.add(new DerbySettingsAction());        
     }
     
-    public static synchronized RegisterDerby getDefault(){
+    public static synchronized DerbyServerProvider getDefault(){
         if (reg==null)
-            reg= new RegisterDerby();
+            reg= new DerbyServerProvider();
         return reg;
     }
     
@@ -140,24 +145,29 @@ public class RegisterDerby implements DatabaseRuntime {
         start(START_TIMEOUT);
     }
     
+    public boolean canRegister() {
+        return true;
+    }
+
+    public List getActions() {
+        return actions;
+    }
+
+    public String getDisplayName() {
+        return NbBundle.getBundle(DerbyServerProvider.class).getString("LBL_JavaDBServer");
+    }
+
+    public String getShortDescription() {
+        return NbBundle.getBundle(DerbyServerProvider.class).getString("DSC_JavaDBServer");
+    }
+    
     private String getNetworkServerClasspath() {
         return 
             Util.getDerbyFile("lib/derby.jar").getAbsolutePath() + File.pathSeparator +
             Util.getDerbyFile("lib/derbytools.jar").getAbsolutePath() + File.pathSeparator +
             Util.getDerbyFile("lib/derbynet.jar").getAbsolutePath(); // NOI18N
     }
-    
-    /**
-     * Returns the registered Derby driver.
-     */
-    private JDBCDriver getRegisteredDerbyDriver() {
-        JDBCDriver[] drvs = JDBCDriverManager.getDefault().getDrivers(DerbyOptions.DRIVER_CLASS_NET);
-        if (drvs.length > 0) {
-            return drvs[0];
-        }
-        return null;
-    }
-    
+        
     public int getPort() {
         return 1527;
     }
@@ -175,7 +185,7 @@ public class RegisterDerby implements DatabaseRuntime {
                     }
                     
                     ProgressHandle ph = ProgressHandleFactory.createHandle(NbBundle.getMessage(
-                        RegisterDerby.class, "MSG_CreatingDBProgressLabel", databaseName));
+                        DerbyServerProvider.class, "MSG_CreatingDBProgressLabel", databaseName));
                     ph.start();
                     try {
                         DerbyDatabases.createDatabase(databaseName, user, password);
@@ -184,7 +194,7 @@ public class RegisterDerby implements DatabaseRuntime {
                     }
                } catch (Exception e) {
                     LOGGER.log(Level.WARNING, null, e);
-                    String message = NbBundle.getMessage(RegisterDerby.class, "ERR_CreateDatabase", e.getMessage());
+                    String message = NbBundle.getMessage(DerbyServerProvider.class, "ERR_CreateDatabase", e.getMessage());
                     Util.showInformation(message);
                }
            }
@@ -212,7 +222,7 @@ public class RegisterDerby implements DatabaseRuntime {
             File derbyPropertiesParent = derbyProperties.getParentFile();
             derbyPropertiesParent.mkdirs();
             fileos = new FileOutputStream(derbyProperties);
-            derbyProps.store(fileos, NbBundle.getMessage(RegisterDerby.class, "MSG_DerbyPropsFile"));
+            derbyProps.store(fileos, NbBundle.getMessage(DerbyServerProvider.class, "MSG_DerbyPropsFile"));
         } catch (IOException ex) {
             LOGGER.log(Level.WARNING, null, ex);
         } finally {
@@ -270,7 +280,7 @@ public class RegisterDerby implements DatabaseRuntime {
             ee.setStringToLookFor("" + getPort());
             FileObject javaFO = getJavaPlatform().findTool("java");
             if (javaFO == null)
-                throw new Exception (NbBundle.getMessage(RegisterDerby.class, "EXC_JavaExecutableNotFound"));
+                throw new Exception (NbBundle.getMessage(DerbyServerProvider.class, "EXC_JavaExecutableNotFound"));
             String java = FileUtil.toFile(javaFO).getAbsolutePath();
             
             // create the derby.properties file
@@ -310,15 +320,15 @@ public class RegisterDerby implements DatabaseRuntime {
     
     private boolean waitStart(ExecSupport execSupport, int waitTime) {
         boolean started = false;
-        String waitMessage = NbBundle.getMessage(RegisterDerby.class, "MSG_StartingDerby");
+        String waitMessage = NbBundle.getMessage(DerbyServerProvider.class, "MSG_StartingDerby");
         ProgressHandle progress = ProgressHandleFactory.createHandle(waitMessage);
         progress.start();
         try {
             while (!started) {
                 started = execSupport.waitForMessage(waitTime * 1000);
                 if (!started) {
-                    String title = NbBundle.getMessage(RegisterDerby.class, "LBL_DerbyDatabase");
-                    String message = NbBundle.getMessage(RegisterDerby.class, "MSG_WaitStart", waitTime);
+                    String title = NbBundle.getMessage(DerbyServerProvider.class, "LBL_DerbyDatabase");
+                    String message = NbBundle.getMessage(DerbyServerProvider.class, "MSG_WaitStart", waitTime);
                     NotifyDescriptor waitConfirmation = new NotifyDescriptor.Confirmation(message, title, NotifyDescriptor.YES_NO_OPTION);
                     if (DialogDisplayer.getDefault().notify(waitConfirmation) != NotifyDescriptor.YES_OPTION) {
                         break;
@@ -347,7 +357,7 @@ public class RegisterDerby implements DatabaseRuntime {
             //processIn.flush();
             String java = FileUtil.toFile(getJavaPlatform().findTool("java")).getAbsolutePath();
             if (java == null)
-                throw new Exception (NbBundle.getMessage(RegisterDerby.class, "EXC_JavaExecutableNotFound"));
+                throw new Exception (NbBundle.getMessage(DerbyServerProvider.class, "EXC_JavaExecutableNotFound"));
             // java -Dderby.system.home="<userdir/derby>" -classpath  
             //     "<DERBY_INSTALL>/lib/derby.jar:<DERBY_INSTALL>/lib/derbytools.jar:<DERBY_INSTALL>/lib/derbynet.jar"
             //     org.apache.derby.drda.NetworkServerControl shutdown

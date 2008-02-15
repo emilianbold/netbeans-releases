@@ -352,7 +352,7 @@ class NewCndFileChooserPanelGUI extends javax.swing.JPanel implements ActionList
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(0, 6, 0, 0);
         jPanel1.add(documentNameTextField, gridBagConstraints);
-        documentNameTextField.getAccessibleContext().setAccessibleDescription("null");
+        documentNameTextField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getBundle(NewCndFileChooserPanelGUI.class).getString("AD_documentNameTextField")); // NOI18N
 
         jLabel5.setLabelFor(cbExtension);
         org.openide.awt.Mnemonics.setLocalizedText(jLabel5, org.openide.util.NbBundle.getMessage(NewCndFileChooserPanelGUI.class, "LBL_TargetChooser_Extension_Label")); // NOI18N
@@ -369,9 +369,9 @@ class NewCndFileChooserPanelGUI extends javax.swing.JPanel implements ActionList
         gridBagConstraints.gridy = 1;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(0, 6, 0, 0);
+        gridBagConstraints.insets = new java.awt.Insets(0, 6, 5, 0);
         jPanel1.add(cbExtension, gridBagConstraints);
+        cbExtension.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(NewCndFileChooserPanelGUI.class, "AD_ExtensionTextField")); // NOI18N
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
@@ -392,7 +392,7 @@ class NewCndFileChooserPanelGUI extends javax.swing.JPanel implements ActionList
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(0, 6, 6, 0);
         add(projectTextField, gridBagConstraints);
-        projectTextField.getAccessibleContext().setAccessibleDescription("null");
+        projectTextField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getBundle(NewCndFileChooserPanelGUI.class).getString("AD_projectTextField")); // NOI18N
 
         locationLabel.setLabelFor(locationComboBox);
         org.openide.awt.Mnemonics.setLocalizedText(locationLabel, org.openide.util.NbBundle.getMessage(NewCndFileChooserPanelGUI.class, "LBL_TargetChooser_Location_Label")); // NOI18N
@@ -407,7 +407,7 @@ class NewCndFileChooserPanelGUI extends javax.swing.JPanel implements ActionList
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 6, 5, 0);
         add(locationComboBox, gridBagConstraints);
-        locationComboBox.getAccessibleContext().setAccessibleDescription("null");
+        locationComboBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getBundle(NewCndFileChooserPanelGUI.class).getString("AD_locationComboBox")); // NOI18N
 
         jLabel2.setLabelFor(folderTextField);
         org.openide.awt.Mnemonics.setLocalizedText(jLabel2, org.openide.util.NbBundle.getMessage(NewCndFileChooserPanelGUI.class, "LBL_TargetChooser_Folder_Label")); // NOI18N
@@ -423,7 +423,7 @@ class NewCndFileChooserPanelGUI extends javax.swing.JPanel implements ActionList
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(0, 6, 12, 0);
         add(folderTextField, gridBagConstraints);
-        folderTextField.getAccessibleContext().setAccessibleDescription("null");
+        folderTextField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getBundle(NewCndFileChooserPanelGUI.class).getString("AD_folderTextField")); // NOI18N
 
         org.openide.awt.Mnemonics.setLocalizedText(browseButton, org.openide.util.NbBundle.getMessage(NewCndFileChooserPanelGUI.class, "LBL_TargetChooser_Browse_Button")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -431,7 +431,8 @@ class NewCndFileChooserPanelGUI extends javax.swing.JPanel implements ActionList
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.insets = new java.awt.Insets(0, 6, 12, 0);
         add(browseButton, gridBagConstraints);
-        browseButton.getAccessibleContext().setAccessibleDescription("null");
+        browseButton.getAccessibleContext().setAccessibleName("");
+        browseButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getBundle(NewCndFileChooserPanelGUI.class).getString("AD_browseButton")); // NOI18N
 
         jLabel4.setLabelFor(fileTextField);
         org.openide.awt.Mnemonics.setLocalizedText(jLabel4, org.openide.util.NbBundle.getMessage(NewCndFileChooserPanelGUI.class, "LBL_TargetChooser_CreatedFile_Label")); // NOI18N
@@ -447,7 +448,7 @@ class NewCndFileChooserPanelGUI extends javax.swing.JPanel implements ActionList
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(0, 6, 12, 0);
         add(fileTextField, gridBagConstraints);
-        fileTextField.getAccessibleContext().setAccessibleDescription("null");
+        fileTextField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getBundle(NewCndFileChooserPanelGUI.class).getString("AD_fileTextField")); // NOI18N
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
