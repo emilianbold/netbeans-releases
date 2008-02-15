@@ -60,6 +60,7 @@ import org.openide.filesystems.FileUtil;
 import org.openide.nodes.Node;
 
 /**
+ * Tests for New REST service client stub wizard
  *
  * @author lukas
  */
@@ -89,6 +90,9 @@ public class CStubsTSuite extends RestTestBase {
         TestRunner.run(suite());
     }
 
+    /**
+     * Test the wizard - add 2 projects, remove 1 and then Cancel the wizard
+     */
     public void testWizard() {
         //invoke the wizard
         //RESTful Web Service Client Stubs
@@ -128,10 +132,16 @@ public class CStubsTSuite extends RestTestBase {
         wo.cancel();
     }
 
+    /**
+     * Test stubs creation from a foreign project
+     */
     public void testCreateSimpleStubs() {
         createStubs("FromEntities"); //NOI18N
     }
 
+    /**
+     * Test stubs creation from a local WADL file
+     */
     public void testFromWADL() throws IOException {
         //RESTful Web Service Client Stubs
         String cStubsLabel = Bundle.getStringTrimmed("org.netbeans.modules.websvc.rest.wizard.Bundle", "Templates/WebServices/RestClientStubs");
