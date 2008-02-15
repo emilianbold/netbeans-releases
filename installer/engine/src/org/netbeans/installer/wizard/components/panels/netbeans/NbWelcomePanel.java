@@ -66,6 +66,7 @@ import org.netbeans.installer.utils.SystemUtils;
 import org.netbeans.installer.utils.applications.JavaUtils;
 import org.netbeans.installer.utils.exceptions.InitializationException;
 import org.netbeans.installer.utils.exceptions.NativeException;
+import org.netbeans.installer.utils.helper.ExecutionMode;
 import org.netbeans.installer.utils.helper.Status;
 import org.netbeans.installer.utils.helper.swing.NbiButton;
 import org.netbeans.installer.utils.helper.swing.NbiCheckBox;
@@ -246,7 +247,8 @@ public class NbWelcomePanel extends ErrorMessagePanel {
                         product.setStatus(Status.NOT_INSTALLED);
                     }
                 } else if(type.isJDKBundle() && product.getUid().equals("jdk")) { // current checking product in global registry is jdk
-                    if(product.getStatus() == Status.TO_BE_INSTALLED){
+                    if(product.getStatus() == Status.TO_BE_INSTALLED && 
+                        ExecutionMode.getCurrentExecutionMode() == ExecutionMode.NORMAL) {
                         // check if jdk is already installed                        
                         if(JavaUtils.findJDKHome(product.getVersion())!=null) {
                             product.setStatus(Status.NOT_INSTALLED);
