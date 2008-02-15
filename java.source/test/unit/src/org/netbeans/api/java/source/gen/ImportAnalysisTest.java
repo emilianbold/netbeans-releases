@@ -115,6 +115,7 @@ public class ImportAnalysisTest extends GeneratorTest {
         suite.addTest(new ImportAnalysisTest("testImportGetterSetter"));
         suite.addTest(new ImportAnalysisTest("testImportClashWithJavaLang"));
         suite.addTest(new ImportAnalysisTest("testImportNoClashJavaLang"));
+        suite.addTest(new ImportAnalysisTest("testImportNoClashCurrentPackage127486"));
         return suite;
     }
 
@@ -899,6 +900,25 @@ public class ImportAnalysisTest extends GeneratorTest {
         };
         src.runModificationTask(task).commit();
         assertFiles("testImportNoClashJavaLang.pass");
+    }
+    
+    public void testImportNoClashCurrentPackage127486() throws IOException {
+        testFile = getFile(getSourceDir(), getSourcePckg() + "ImportsTest127486.java");
+        JavaSource src = getJavaSource(testFile);
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
+
+            public void run(WorkingCopy workingCopy) throws IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                CompilationUnitTree cut = workingCopy.getCompilationUnit();
+                TreeMaker make = workingCopy.getTreeMaker();
+                ClassTree clazz = (ClassTree) cut.getTypeDecls().get(0);
+                ExpressionTree type = make.QualIdent(workingCopy.getElements().getTypeElement("org.netbeans.test.codegen.InputStream"));
+                VariableTree vt = make.Variable(make.Modifiers(EnumSet.noneOf(Modifier.class)), "test",type, null);
+                workingCopy.rewrite(clazz, make.addClassMember(clazz, vt));
+            }
+        };
+        src.runModificationTask(task).commit();
+        assertFiles("testImportNoClashCurrentPackage127486.pass");
     }
     
     String getSourcePckg() {
