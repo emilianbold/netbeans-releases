@@ -90,7 +90,8 @@ public class ChoiceExtensionProperty extends ExtensionProperty<String> {
 
     @Override
     public PropertyEditor getPropertyEditor() {
-        ComboBoxEditor ret = new ComboBoxEditor(choices.toArray(new String[]{}));
+        ComboBoxEditor<String> ret = 
+                new ComboBoxEditor<String>(choices.toArray(new String[]{}));
 //        ret.setValue(defaultChoice);
         return ret;
     }
@@ -105,8 +106,9 @@ public class ChoiceExtensionProperty extends ExtensionProperty<String> {
                 casaEE.getChildren(CasaExtensibilityElement.class);
         if (children != null && children.size() == 1) {
             return children.get(0).getQName().getLocalPart();
+        } else {
+            return ""; // NOI18N
         }
-        return "";
     }
 
     @Override
