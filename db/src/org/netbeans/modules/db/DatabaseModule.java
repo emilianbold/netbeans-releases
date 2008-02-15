@@ -48,7 +48,7 @@ import org.netbeans.modules.db.explorer.ConnectionList;
 import org.netbeans.modules.db.explorer.DatabaseConnection;
 import org.netbeans.modules.db.explorer.DatabaseNodeChildren;
 import org.netbeans.modules.db.explorer.nodes.RootNode;
-import org.netbeans.modules.db.runtime.DatabaseRuntimeManager;
+import org.netbeans.modules.db.server.ServerProviderManager;
 import org.netbeans.spi.db.explorer.DatabaseRuntime;
 import org.openide.modules.ModuleInstall;
 
@@ -74,7 +74,7 @@ public class DatabaseModule extends ModuleInstall {
         }
         
         // stop all running runtimes
-        DatabaseRuntime[] runtimes = DatabaseRuntimeManager.getDefault().getRuntimes();
+        DatabaseRuntime[] runtimes = ServerProviderManager.getDefault().getRuntimes();
         for (int i = 0; i < runtimes.length; i++) {
             if (runtimes[i].isRunning()) {
                 try {

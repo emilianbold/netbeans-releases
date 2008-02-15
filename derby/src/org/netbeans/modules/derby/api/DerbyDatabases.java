@@ -58,7 +58,7 @@ import org.netbeans.api.db.explorer.JDBCDriverManager;
 import org.netbeans.modules.derby.DbURLClassLoader;
 import org.netbeans.modules.derby.DerbyOptions;
 import org.netbeans.modules.derby.Util;
-import org.netbeans.modules.derby.RegisterDerby;
+import org.netbeans.modules.derby.DerbyServerProvider;
 import org.netbeans.modules.derby.spi.support.DerbySupport;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -216,7 +216,7 @@ public final class DerbyDatabases {
         }
 
         ensureSystemHome();
-        if (!RegisterDerby.getDefault().ensureStarted(true)) {
+        if (!DerbyServerProvider.getDefault().ensureStarted(true)) {
             throw new DatabaseException("The Derby server did not start"); // NOI18N
         }
 
@@ -225,7 +225,7 @@ public final class DerbyDatabases {
         boolean setupAuthentication = (user != null && user.length() >= 0);
 
         try {
-            String url = "jdbc:derby://localhost:" + RegisterDerby.getDefault().getPort() + "/" + databaseName; // NOI18N
+            String url = "jdbc:derby://localhost:" + DerbyServerProvider.getDefault().getPort() + "/" + databaseName; // NOI18N
             String urlForCreation = url + ";create=true"; // NOI18N
             Connection connection = driver.connect(urlForCreation, props);
 
@@ -361,7 +361,7 @@ public final class DerbyDatabases {
         if (drivers.length == 0) {
             throw new IllegalStateException("The " + DerbyOptions.DRIVER_DISP_NAME_NET + " driver was not found"); // NOI18N
         }
-        DatabaseConnection dbconn = DatabaseConnection.create(drivers[0], "jdbc:derby://localhost:" + RegisterDerby.getDefault().getPort() + "/" + databaseName, user, schema, password, rememberPassword); // NOI18N
+        DatabaseConnection dbconn = DatabaseConnection.create(drivers[0], "jdbc:derby://localhost:" + DerbyServerProvider.getDefault().getPort() + "/" + databaseName, user, schema, password, rememberPassword); // NOI18N
         ConnectionManager.getDefault().addConnection(dbconn);
         return dbconn;
     }

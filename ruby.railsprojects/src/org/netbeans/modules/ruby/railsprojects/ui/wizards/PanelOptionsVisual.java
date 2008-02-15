@@ -46,6 +46,7 @@ import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import org.netbeans.api.ruby.platform.RubyPlatform;
+import org.netbeans.modules.ruby.platform.PlatformComponentFactory;
 import org.netbeans.modules.ruby.platform.RubyPlatformCustomizer;
 import org.netbeans.modules.ruby.railsprojects.server.RailsServerManager;
 import org.openide.WizardDescriptor;
@@ -63,9 +64,15 @@ public class PanelOptionsVisual extends SettingsPanel implements ActionListener,
     public static final String JAVA_DB = "javadb"; // NOI18N
     public static final String JDBC = "jdbc"; // NOI18N
     
-    /** Creates new form PanelOptionsVisual */
-    public PanelOptionsVisual( PanelConfigureProject panel, int type ) {
+    public PanelOptionsVisual(PanelConfigureProject panel, int type) {
         initComponents();
+
+        PlatformComponentFactory.addPlatformChangeListener(platforms, new PlatformComponentFactory.PlatformChangeListener() {
+            public void platformChanged() {
+                fireChangeEvent();
+                initServerComboBox();
+            }
+        });
 
         javaDb = NbBundle.getMessage(PanelOptionsVisual.class, "JavaDB");
         otherJdbc = NbBundle.getMessage(PanelOptionsVisual.class, "OtherJDBC");
@@ -75,7 +82,7 @@ public class PanelOptionsVisual extends SettingsPanel implements ActionListener,
         dbCombo.addActionListener(this);
         this.panel = panel;
 
-        interpreterChanged();
+        fireChangeEvent();
         switch (type) {
 //            case NewRailsProjectWizardIterator.TYPE_LIB:
 //                setAsMainCheckBox.setVisible( false );
@@ -116,26 +123,26 @@ public class PanelOptionsVisual extends SettingsPanel implements ActionListener,
 
     public void actionPerformed( ActionEvent e ) {  
         if (e.getSource() == jdbcCheckBox) {
-            this.panel.fireChangeEvent();
+            fireChangeEvent();
         } else if (e.getSource() == warCheckBox) {
-            this.panel.fireChangeEvent();
+            fireChangeEvent();
         } else if (e.getSource() == dbCombo) {
             String db = (String)dbCombo.getSelectedItem();
             if (db.equals(javaDb) || db.equals(otherJdbc)) {
                 jdbcCheckBox.setSelected(true);
             }
-            this.panel.fireChangeEvent();
+            fireChangeEvent();
         }
         //if ( e.getSource() == createMainCheckBox ) {
         //    lastMainClassCheck = createMainCheckBox.isSelected();
         //    mainClassTextField.setEnabled( lastMainClassCheck );        
-        //    this.panel.fireChangeEvent();
+        //    fireChangeEvent();
         //}                
     }
     
     public void propertyChange(PropertyChangeEvent event) {
         if ("roots".equals(event.getPropertyName())) {
-            interpreterChanged();
+            fireChangeEvent();
         }
         //if (PanelProjectLocationVisual.PROP_PROJECT_NAME.equals(event.getPropertyName())) {
         //    String newProjectName = NewRailsProjectWizardIterator.getPackageName((String) event.getNewValue());
@@ -282,10 +289,13 @@ public class PanelOptionsVisual extends SettingsPanel implements ActionListener,
     }
     
     private RubyPlatform getPlatform() {
-        return (RubyPlatform) platforms.getModel().getSelectedItem();
+        return PlatformComponentFactory.getPlatform(platforms);
     }
     
     boolean valid(WizardDescriptor settings) {
+        if (PlatformComponentFactory.getPlatform(platforms) == null) {
+            return false;
+        }
         if ((warCheckBox.isSelected() || jdbcCheckBox.isSelected()) && !getPlatform().isJRuby()) {
             settings.putProperty( "WizardPanel_errorMessage", 
                     NbBundle.getMessage(PanelOptionsVisual.class, "JRubyRequired") ); //NOI18N
@@ -361,10 +371,11 @@ public class PanelOptionsVisual extends SettingsPanel implements ActionListener,
     //        }            
     //    }
     //    this.valid = valid;
-    //    this.panel.fireChangeEvent();
+    //    fireChangeEvent();
     //}
     
-    public void interpreterChanged() {
+    private void fireChangeEvent() {
         this.panel.fireChangeEvent();
     }
+    
 }
