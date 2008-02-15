@@ -155,7 +155,6 @@ public class CStubsTSuite extends RestTestBase {
         jtfo.typeText(path);
         //Open
         JButton jb = JButtonOperator.findJButton(ndo.getContentPane(), "Open", false, false);
-        System.out.println("jb: " + jb);
         if (jb != null) {
             JButtonOperator jbo = new JButtonOperator(jb);
             jbo.pushNoBlock();
