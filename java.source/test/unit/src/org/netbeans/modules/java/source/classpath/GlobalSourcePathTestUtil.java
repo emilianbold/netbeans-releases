@@ -37,73 +37,16 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.editor.options;
+package org.netbeans.modules.java.source.classpath;
 
-import org.netbeans.modules.cnd.editor.api.CodeStyle;
-import org.openide.nodes.PropertySupport;
-import org.openide.util.NbBundle;
-
-public class IntNodeProp extends PropertySupport.ReadWrite<Integer> {
-
-    private final CodeStyle.Language language;
-    private final String optionID;
-    private PreviewPreferences preferences;
-    private int state;
-
-    public IntNodeProp(CodeStyle.Language language, PreviewPreferences preferences, String optionID) {
-        super(optionID, Integer.class, getString("LBL_" + optionID), getString("HINT_" + optionID));
-        this.language = language;
-        this.optionID = optionID;
-        this.preferences = preferences;
-        init();
-    }
-
-    private static String getString(String key) {
-        return NbBundle.getMessage(IntNodeProp.class, key);
-    }
-
-    private void init() {
-        state = getPreferences().getInt(optionID, getDefault());
-    }
+/**
+ *
+ * @author Tomas Zezula
+ */
+public final class GlobalSourcePathTestUtil {
+    private GlobalSourcePathTestUtil () {}
     
-    private int getDefault(){
-        return (Integer) EditorOptions.getDefault(
-                getPreferences().getLanguage(), getPreferences().getStyleId(), optionID);
-    }
-
-    private PreviewPreferences getPreferences() {
-        return preferences;
-    }
-
-    @Override
-    public String getHtmlDisplayName() {
-        if (!isDefaultValue()) {
-            return "<b>" + getDisplayName();
-        }
-        return null;
-    }
-
-    public Integer getValue() {
-        return new Integer(state);
-    }
-
-    public void setValue(Integer v) {
-        state = v;
-        getPreferences().putInt(optionID, state);
-    }
-
-    @Override
-    public void restoreDefaultValue() {
-        setValue(getDefault());
-    }
-
-    @Override
-    public boolean supportsDefaultValue() {
-        return true;
-    }
-
-    @Override
-    public boolean isDefaultValue() {
-        return getDefault() == getValue().intValue();
+    public static void setUseLibraries (final boolean use) {
+        GlobalSourcePath.getDefault().setUseLibraries(use);
     }
 }

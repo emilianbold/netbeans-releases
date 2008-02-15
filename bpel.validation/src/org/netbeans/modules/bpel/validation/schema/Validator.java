@@ -48,7 +48,7 @@ public final class Validator extends XsdBasedValidator {
     }
     startTime();
     ValidationResult result = Validator.super.validate((BpelModel) model, validation, validationType);
-    endTime("Validator " + getName()); // NOI18N
+    endTime("Validator " + getName() + "    "); // NOI18N
 
     return result;
   }
