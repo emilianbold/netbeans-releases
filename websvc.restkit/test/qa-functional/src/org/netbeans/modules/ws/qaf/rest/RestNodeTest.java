@@ -55,10 +55,10 @@ public class RestNodeTest extends RestTestBase {
     private static final String[] services = {"ItemResource", "ItemsResource [/items]", "SampleResource [sample]"}; //NOI18N
 
     private static final String addMethod =
-            "    @javax.ws.rs.POST\n" +
-            "    @ConsumeMime(\"application/xml\")\n" +
-            "    public void postXml() {\n" +
-            "    }\n";
+            "    @javax.ws.rs.POST\n" + //NOI18N
+            "    @ConsumeMime(\"application/xml\")\n" + //NOI18N
+            "    public void postXml() {\n" + //NOI18N
+            "    }\n"; //NOI18N
 
     public RestNodeTest(String name) {
         super(name);
@@ -74,7 +74,7 @@ public class RestNodeTest extends RestTestBase {
      * view after opening a project
      */
     public void testNodesAfterOpen() {
-        assertEquals("Some node not shown", 3, getRestNode().getChildren().length);
+        assertEquals("Some node not shown", 3, getRestNode().getChildren().length); //NOI18N
         assertEquals("Some method not shown for " + services[0], 3, //NOI18N
                 getMethodsNode(services[0]).getChildren().length); //NOI18N
         assertEquals("Some method not shown for " + services[1], 1, //NOI18N
@@ -97,7 +97,7 @@ public class RestNodeTest extends RestTestBase {
         String open = Bundle.getStringTrimmed("org.openide.actions.Bundle", "Open");
         n.performPopupActionNoBlock(open);
         EditorOperator eo = new EditorOperator(services[2].substring(0, 14));
-        assertNotNull(services[2] + " not opened?", eo);
+        assertNotNull(services[2] + " not opened?", eo); //NOI18N
     }
 
     /**
@@ -108,7 +108,7 @@ public class RestNodeTest extends RestTestBase {
         String open = Bundle.getStringTrimmed("org.openide.actions.Bundle", "Open");
         n.performPopupActionNoBlock(open);
         EditorOperator eo = new EditorOperator(services[0]);
-        assertNotNull(services[0] + " not opened?", eo);
+        assertNotNull(services[0] + " not opened?", eo); //NOI18N
         assertEquals("wrong line", 40, eo.getLineNumber()); //NOI18N
     }
 
@@ -120,7 +120,7 @@ public class RestNodeTest extends RestTestBase {
         String open = Bundle.getStringTrimmed("org.openide.actions.Bundle", "Open");
         n.performPopupActionNoBlock(open);
         EditorOperator eo = new EditorOperator(services[1].substring(0, 13));
-        assertNotNull(services[0] + " not opened?", eo);
+        assertNotNull(services[0] + " not opened?", eo); //NOI18N
         assertEquals("wrong line", 47, eo.getLineNumber()); //NOI18N
     }
 
@@ -129,7 +129,7 @@ public class RestNodeTest extends RestTestBase {
      */
     public void testAddMethod() {
         EditorOperator eo = new EditorOperator(services[0]);
-        assertNotNull(services[0] + " not opened?", eo);
+        assertNotNull(services[0] + " not opened?", eo); //NOI18N
         eo.select(59);
         eo.insert(addMethod);
         eo.save();
@@ -144,7 +144,7 @@ public class RestNodeTest extends RestTestBase {
      */
     public void testRemoveMethod() {
         EditorOperator eo = new EditorOperator(services[0]);
-        assertNotNull(services[0] + " not opened?", eo);
+        assertNotNull(services[0] + " not opened?", eo); //NOI18N
         eo.deleteLine(60);
         eo.deleteLine(60);
         eo.deleteLine(60);
