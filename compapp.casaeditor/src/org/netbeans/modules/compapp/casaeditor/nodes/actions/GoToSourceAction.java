@@ -41,6 +41,7 @@ package org.netbeans.modules.compapp.casaeditor.nodes.actions;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
+import javax.swing.SwingUtilities;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.core.api.multiview.MultiViewHandler;
@@ -88,7 +89,7 @@ public class GoToSourceAction extends NodeAction {
                 FileObject fileObject = ownerProjectDir.getFileObject(filePath);
                 //System.out.println("Opening " + fileObject.getPath());
                 try {
-                    DataObject dataObject = DataObject.find(fileObject);
+                    final DataObject dataObject = DataObject.find(fileObject);
                     EditCookie editCookie = dataObject.getCookie(EditCookie.class);
                     if (editCookie != null) {
                         editCookie.edit();
@@ -103,15 +104,19 @@ public class GoToSourceAction extends NodeAction {
                             }
                         }
                     }
-//                    requestViewOpen(dataObject);
+                    SwingUtilities.invokeLater(new Runnable() {
+                        public void run() {
+                            requestViewOpen(dataObject);                            
+                        }
+                    });
                 } catch (DataObjectNotFoundException e) {
                     e.printStackTrace();
                 }
             }
         }
     }
-    
-    /*
+        
+    // This is a slightly modified version based on BpelMultiViewSupport.
     private void requestViewOpen(DataObject targetDO) {
         
         List<TopComponent> associatedTCs = new ArrayList<TopComponent>();
@@ -122,35 +127,28 @@ public class GoToSourceAction extends NodeAction {
         Set openTCs = TopComponent.getRegistry().getOpened();
         for (Object tc : openTCs) {
             TopComponent topComponent = (TopComponent) tc;
-            if (targetDO == (DataObject)topComponent.getLookup().lookup(
-                    DataObject.class)) 
-            {
+            if (targetDO == (DataObject)topComponent.getLookup().lookup(DataObject.class)) {
                 associatedTCs.add(topComponent);
             }
         }
         
         // Use the first TC in the list that has the desired perspective
-        boolean found = false;
         for (TopComponent targetTC: associatedTCs){
-            MultiViewHandler handler =
-                    MultiViews.findMultiViewHandler(targetTC);
+            MultiViewHandler handler = MultiViews.findMultiViewHandler(targetTC);
             if ( handler==null) {
                 continue;
             }
             MultiViewPerspective[] p = handler.getPerspectives();
             for (MultiViewPerspective mvp : p) {
-                if ( !mvp.preferredID().equals("bpelsource")) 
-                {
+                // Try to make it a little bit more generic.
+                // if (!mvp.preferredID().equals("bpelsource")) {
+                if (!mvp.preferredID().toLowerCase().contains("source")) { // NOI18N
                     handler.requestActive(mvp);
-                    found = true;
-                    break;
+                    return;
                 }
             }
-            if (found){
-                break;
-            }
         }
-    }*/
+    }
 
     @Override
     protected boolean enable(Node[] activatedNodes) {
