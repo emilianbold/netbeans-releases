@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- *
+ * 
  * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
- *
+ * 
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,13 +20,13 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- *
+ * 
  * Contributor(s):
- *
+ * 
  * The Original Software is NetBeans. The Initial Developer of the Original
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
- *
+ * 
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -38,52 +38,68 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
+
 package org.netbeans.modules.websvc.saas.codegen.java;
 
-import java.awt.datatransfer.Transferable;
-import org.netbeans.modules.websvc.saas.model.WsdlSaasMethod;
-import org.netbeans.modules.websvc.saas.spi.ConsumerFlavorProvider;
-import org.openide.util.datatransfer.ExTransferable;
+import java.io.IOException;
+import java.util.Set;
+import org.netbeans.api.progress.ProgressHandle;
+import org.openide.filesystems.FileObject;
 
 /**
  *
- * @author Ayub Khan
+ * @author Peter Liu
  */
-public class JaxWsFlavorProvider implements ConsumerFlavorProvider {
-
-    public JaxWsFlavorProvider() {
+public abstract class AbstractGenerator {
+    
+    private ProgressHandle pHandle;
+    private int totalWorkUnits;
+    private int workUnits;
+    
+    public AbstractGenerator() {
     }
-
-    public Transferable addDataFlavors(Transferable transferable) {
-        try {
-            Object data = transferable.getTransferData(ConsumerFlavorProvider.WSDL_METHOD_FLAVOR);
-            if (data instanceof WsdlSaasMethod) {
-                WsdlSaasMethod method = (WsdlSaasMethod) data;
-                ExTransferable t = ExTransferable.create(transferable);
-                JaxWsEditorDrop editorDrop = new JaxWsEditorDrop(method);
-                ActiveEditorDropTransferable s = new ActiveEditorDropTransferable(editorDrop);
-                t.put(s);
-                return t;
+    
+    public abstract Set<FileObject> generate(ProgressHandle pHandle) throws IOException;
+    
+    protected void initProgressReporting(ProgressHandle pHandle) {
+        initProgressReporting(pHandle, true);
+    }
+    
+    protected void initProgressReporting(ProgressHandle pHandle, boolean start) {
+        this.pHandle = pHandle;
+        this.totalWorkUnits = getTotalWorkUnits();
+        this.workUnits = 0;
+        
+        if (start) {
+            if (totalWorkUnits > 0) {
+                pHandle.start(totalWorkUnits);
+            } else {
+                pHandle.start();
             }
-        } catch (Exception ex) {
-            //Exceptions.printStackTrace(ex);
         }
-
-        return transferable;
     }
-
-    private static class ActiveEditorDropTransferable extends ExTransferable.Single {
-
-        private JaxWsEditorDrop drop;
-
-        ActiveEditorDropTransferable(JaxWsEditorDrop drop) {
-            super(JaxWsEditorDrop.FLAVOR);
-
-            this.drop = drop;
+    
+    protected void reportProgress(String message) {     
+        if (pHandle != null) {
+            if (totalWorkUnits > 0) {
+                pHandle.progress(message, ++workUnits);
+            } else {
+                pHandle.progress(message);
+            }
         }
-
-        public Object getData() {
-            return drop;
+    }
+    
+    protected void finishProgressReporting() {
+        if (pHandle != null) {
+            pHandle.finish();
         }
+    }
+    
+    protected int getTotalWorkUnits() {
+        return 0;
+    }
+    
+    protected ProgressHandle getProgressHandle() {
+        return pHandle;
     }
 }
