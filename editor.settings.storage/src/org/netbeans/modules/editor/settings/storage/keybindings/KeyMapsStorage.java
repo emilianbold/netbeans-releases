@@ -102,11 +102,11 @@ public final class KeyMapsStorage implements StorageDescription<Collection<KeySt
         return "keybindings.xml"; //NOI18N
     }
 
-    public StorageReader<Collection<KeyStroke>, MultiKeyBinding> createReader(FileObject f) {
-        return new KeyMapsReader();
+    public StorageReader<Collection<KeyStroke>, MultiKeyBinding> createReader(FileObject f, String mimePath) {
+        return new KeyMapsReader(f, mimePath);
     }
 
-    public StorageWriter<Collection<KeyStroke>, MultiKeyBinding> createWriter(FileObject f) {
+    public StorageWriter<Collection<KeyStroke>, MultiKeyBinding> createWriter(FileObject f, String mimePath) {
         return new KeyMapsWriter();
     }
 
@@ -127,6 +127,10 @@ public final class KeyMapsStorage implements StorageDescription<Collection<KeySt
     private static class KeyMapsReader extends StorageReader<Collection<KeyStroke>, MultiKeyBinding> {
         private Map<Collection<KeyStroke>, MultiKeyBinding> keyMap = new HashMap<Collection<KeyStroke>, MultiKeyBinding>();
         private Set<Collection<KeyStroke>> removedShortcuts = new HashSet<Collection<KeyStroke>>();
+
+        public KeyMapsReader(FileObject f, String mimePath) {
+            super(f, mimePath);
+        }
         
         public Map<Collection<KeyStroke>, MultiKeyBinding> getAdded() {
             return keyMap;

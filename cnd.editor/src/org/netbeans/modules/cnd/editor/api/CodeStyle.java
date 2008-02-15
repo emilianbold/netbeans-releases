@@ -46,6 +46,7 @@ import org.netbeans.editor.Formatter;
 import org.netbeans.editor.ext.ExtFormatter;
 import org.netbeans.modules.cnd.editor.cplusplus.CKit;
 import org.netbeans.modules.cnd.editor.options.EditorOptions;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -95,7 +96,7 @@ public final class CodeStyle {
     }
     
     private static CodeStyle create(Language language) {
-        return new CodeStyle(language, EditorOptions.getPreferences(EditorOptions.getCurrentProfileId(language)));
+        return new CodeStyle(language, EditorOptions.getPreferences(language, EditorOptions.getCurrentProfileId(language)));
     }
     
 
@@ -135,23 +136,23 @@ public final class CodeStyle {
     }
 
     public BracePlacement getFormatNewlineBeforeBraceNamespace() {
-        return BracePlacement.valueOf(getOption(EditorOptions.CC_FORMAT_NEWLINE_BEFORE_BRACE_NAMESPACE,
-                                      EditorOptions.defaultCCFormatNewlineBeforeBraceNamespace));
+        return BracePlacement.valueOf(getOption(EditorOptions.newLineBeforeBraceNamespace,
+                                      EditorOptions.newLineBeforeBraceNamespaceDefault));
     }
 
     public BracePlacement getFormatNewlineBeforeBraceClass() {
-        return BracePlacement.valueOf(getOption(EditorOptions.CC_FORMAT_NEWLINE_BEFORE_BRACE_CLASS,
-                                      EditorOptions.defaultCCFormatNewlineBeforeBraceClass));
+        return BracePlacement.valueOf(getOption(EditorOptions.newLineBeforeBraceClass,
+                                      EditorOptions.newLineBeforeBraceClassDefault));
     }
 
     public BracePlacement getFormatNewlineBeforeBraceDeclaration() {
-        return BracePlacement.valueOf(getOption(EditorOptions.CC_FORMAT_NEWLINE_BEFORE_BRACE_DECLARATION,
-                                      EditorOptions.defaultCCFormatNewlineBeforeBraceDeclaration));
+        return BracePlacement.valueOf(getOption(EditorOptions.newLineBeforeBraceDeclaration,
+                                      EditorOptions.newLineBeforeBraceDeclarationDefault));
     }
 
     public BracePlacement getFormatNewlineBeforeBrace() {
-        return BracePlacement.valueOf(getOption(EditorOptions.CC_FORMAT_NEWLINE_BEFORE_BRACE,
-                                      EditorOptions.defaultCCFormatNewlineBeforeBrace));
+        return BracePlacement.valueOf(getOption(EditorOptions.newLineBeforeBrace,
+                                      EditorOptions.newLineBeforeBraceDefault));
     }
 
 
@@ -166,13 +167,13 @@ public final class CodeStyle {
     }
             
     public boolean getFormatLeadingStarInComment() {
-        return getOption(EditorOptions.CC_FORMAT_LEADING_STAR_IN_COMMENT,
-                         EditorOptions.defaultCCFormatLeadingStarInComment);
+        return getOption(EditorOptions.addLeadingStarInComment,
+                         EditorOptions.addLeadingStarInCommentDefault);
     }
 
     public int getFormatStatementContinuationIndent() {
-        return getOption(EditorOptions.CC_FORMAT_STATEMENT_CONTINUATION_INDENT,
-                         EditorOptions.defaultCCFormatStatementContinuationIndent);
+        return getOption(EditorOptions.statementContinuationIndent,
+                         EditorOptions.statementContinuationIndentDefault);
     }
 
     public boolean spaceAroundUnaryOps() {
@@ -263,18 +264,33 @@ public final class CodeStyle {
     // Nested classes ----------------------------------------------------------
     public enum Language {
         C,
-        CPP,
+        CPP;
+        
+        @Override
+        public String toString() {
+            return NbBundle.getMessage(CodeStyle.class, "LBL_Language_"+name());
+        }
     }
 
     public enum BracePlacement {
         SAME_LINE,
-        NEW_LINE,
+        NEW_LINE;
+        
+        @Override
+        public String toString() {
+            return NbBundle.getMessage(CodeStyle.class, "LBL_bp_"+name());
+        }
     }
 
     public enum PreprocessorIndent {
         START_LINE,
         CODE_INDENT,
-        PREPROCESSOR_INDENT,
+        PREPROCESSOR_INDENT;
+
+        @Override
+        public String toString() {
+            return NbBundle.getMessage(CodeStyle.class, "LBL_pi_"+name());
+        }
     }
 
     // Communication with non public packages ----------------------------------

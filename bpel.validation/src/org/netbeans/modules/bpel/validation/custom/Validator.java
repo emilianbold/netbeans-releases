@@ -545,8 +545,7 @@ public final class Validator extends org.netbeans.modules.bpel.validation.core.V
   }
   
   @Override
-  public void visit(Reply reply)
-  {
+  public void visit(Reply reply) {
       super.visit(reply);
       WSDLReference<Operation> opRef = reply.getOperation();
       
@@ -565,21 +564,23 @@ public final class Validator extends org.netbeans.modules.bpel.validation.core.V
 
   @Override
   public void visit(Import imp) {
-      Model model = getModel(imp);
+    Model model = getModel(imp);
 
-      if (model == null) {
-        addError("FIX_NotWellFormedImport", imp); // NOI18N
-        return;
-      }
+    if (model == null) {
+      addError("FIX_Not_Well_Formed_Import", imp); // NOI18N
+      return;
+    }
+    if (isValidationComplete()) {
       validate(model);
+    }
   }
 
   private Model getModel(Import imp) {
-      Model model = ImportHelper.getWsdlModel(imp, false);
+    Model model = ImportHelper.getWsdlModel(imp, false);
 
-      if (model != null) {
-          return model;
-      }
-      return ImportHelper.getSchemaModel(imp, false);
+    if (model != null) {
+      return model;
+    }
+    return ImportHelper.getSchemaModel(imp, false);
   }
 }

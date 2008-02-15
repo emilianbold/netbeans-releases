@@ -455,7 +455,9 @@ public final class RailsServerManager {
 
     public static JComboBox getServerComboBox(RubyPlatform platform) {
         JComboBox result = new JComboBox();
-        result.setModel(new ServerListModel(platform));
+        if (platform != null) {
+            result.setModel(new ServerListModel(platform));
+        }
         result.setRenderer(new ServerListCellRendered());
         return result;
     }
@@ -498,13 +500,12 @@ public final class RailsServerManager {
         }
 
         public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
-
             RubyInstance server = (RubyInstance) value;
-
-            setText(server.getDisplayName());
-            setForeground(isSelected ? list.getSelectionForeground() : list.getForeground());
-            setBackground(isSelected ? list.getSelectionBackground() : list.getBackground());
-
+            if (server != null) {
+                setText(server.getDisplayName());
+                setForeground(isSelected ? list.getSelectionForeground() : list.getForeground());
+                setBackground(isSelected ? list.getSelectionBackground() : list.getBackground());
+            }
             return this;
         }
     }

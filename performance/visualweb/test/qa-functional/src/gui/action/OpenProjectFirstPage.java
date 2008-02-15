@@ -90,6 +90,7 @@ public class OpenProjectFirstPage extends org.netbeans.performance.test.utilitie
     }
     
     
+    @Override
     public void initialize(){
         log("::initialize::");
         EditorOperator.closeDiscardAll();
@@ -138,6 +139,7 @@ public class OpenProjectFirstPage extends org.netbeans.performance.test.utilitie
         return WebFormDesignerOperator.findWebFormDesignerOperator("Page1");
     }
     
+    @Override
     public void close(){
         log("::close");
         if(testedComponentOperator != null) {
@@ -146,6 +148,7 @@ public class OpenProjectFirstPage extends org.netbeans.performance.test.utilitie
         }
     }
     
+    @Override
     protected void shutdown() {
         log("::shutdown");
     }

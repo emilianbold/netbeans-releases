@@ -90,9 +90,11 @@ import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
 import org.openide.awt.HtmlBrowser;
+import org.openide.awt.StatusDisplayer;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.util.Exceptions;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -142,7 +144,7 @@ public class GoToSupport {
                     int[] span = getIdentifierSpan(doc, offset, token);
                     
                     if (span == null) {
-                        Toolkit.getDefaultToolkit().beep();
+                        CALLER.beep(goToSource, javadoc);
                         return ;
                     }
                     
@@ -186,7 +188,7 @@ public class GoToSupport {
                         }
                     } else {
                         if (!tooltip)
-                            CALLER.beep();
+                            CALLER.beep(goToSource, javadoc);
                         else
                             result[0] = null;
                         return;
@@ -194,7 +196,7 @@ public class GoToSupport {
                     
                     if (isError(el)) {
                         if (!tooltip)
-                            CALLER.beep();
+                            CALLER.beep(goToSource, javadoc);
                         else
                             result[0] = null;
                         return;
@@ -213,7 +215,7 @@ public class GoToSupport {
                     
                     if (isError(el)) {
                         if (!tooltip)
-                            CALLER.beep();
+                            CALLER.beep(goToSource, javadoc);
                         else
                             result[0] = null;
                         return;
@@ -226,7 +228,7 @@ public class GoToSupport {
                     
                     if (isError(el)) {
                         if (!tooltip)
-                            CALLER.beep();
+                            CALLER.beep(goToSource, javadoc);
                         else
                             result[0] = null;
                         return;
@@ -234,7 +236,7 @@ public class GoToSupport {
                     
                     if (el.getKind() != ElementKind.CONSTRUCTOR && (token[0].id() == JavaTokenId.SUPER || token[0].id() == JavaTokenId.THIS)) {
                         if (!tooltip)
-                            CALLER.beep();
+                            CALLER.beep(goToSource, javadoc);
                         else
                             result[0] = null;
                         return;
@@ -252,7 +254,7 @@ public class GoToSupport {
                         if (url != null) {
                             HtmlBrowser.URLDisplayer.getDefault().showURL(url);
                         } else {
-                            CALLER.beep ();
+                            CALLER.beep(goToSource, javadoc);
                         }
                     } else {
                         TreePath elpath = controller.getTrees().getPath(el);
@@ -273,27 +275,30 @@ public class GoToSupport {
                         
                         if (tree != null) {
                             long startPos = controller.getTrees().getSourcePositions().getStartPosition(controller.getCompilationUnit(), tree);
-                            long endPos   = controller.getTrees().getSourcePositions().getEndPosition(controller.getCompilationUnit(), tree);
                             
                             if (startPos != (-1)) {
                                 //check if the caret is inside the declaration itself, as jump in this case is not very usefull:
                                 if (isCaretInsideDeclarationName(controller, tree, elpath, offset)) {
-                                    CALLER.beep();
+                                    CALLER.beep(goToSource, javadoc);
                                 } else {
                                     //#71272: it is necessary to translate the offset:
                                     int targetOffset = controller.getPositionConverter().getOriginalPosition((int) startPos);
                                     
                                     if (targetOffset >= 0) {
-                                        CALLER.open(fo, targetOffset);
+                                        if (!CALLER.open(fo, targetOffset)) {
+                                            CALLER.warnCannotOpen(el);
+                                        }
                                     } else {
-                                        CALLER.beep();
+                                        CALLER.warnCannotOpen(el);
                                     }
                                 }
                             } else {
-                                CALLER.beep();
+                                CALLER.beep(goToSource, javadoc);
                             }
                         } else {
-                            CALLER.open(controller.getClasspathInfo(), el);
+                            if (!CALLER.open(controller.getClasspathInfo(), el)) {
+                                CALLER.warnCannotOpen(el);
+                            }
                         }
                     }
                 }
@@ -725,20 +730,28 @@ public class GoToSupport {
     }
     
     static UiUtilsCaller CALLER = new UiUtilsCaller() {
-        public void open(FileObject fo, int pos) {
-            UiUtils.open(fo, pos);
+        public boolean open(FileObject fo, int pos) {
+            return UiUtils.open(fo, pos);
         }
-        public void beep() {
+        public void beep(boolean goToSource, boolean goToJavadoc) {
             Toolkit.getDefaultToolkit().beep();
+            int value = goToSource ? 1 : goToJavadoc ? 2 : 0;
+            StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(GoToSupport.class, "WARN_CannotGoToGeneric", value));
         }
-        public void open(ClasspathInfo info, Element el) {
-            ElementOpen.open(info, el);
+        public boolean open(ClasspathInfo info, Element el) {
+            return ElementOpen.open(info, el);
+        }
+        public void warnCannotOpen(Element el) {
+            Toolkit.getDefaultToolkit().beep();
+            String displayName = Utilities.getElementName(el, false).toString();
+            StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(GoToSupport.class, "WARN_CannotGoTo", displayName));
         }
     };
     
     interface UiUtilsCaller {
-        public void open(FileObject fo, int pos);
-        public void beep();
-        public void open(ClasspathInfo info, Element el);
+        public boolean open(FileObject fo, int pos);
+        public void beep(boolean goToSource, boolean goToJavadoc);
+        public boolean open(ClasspathInfo info, Element el);
+        public void warnCannotOpen(Element el);
     }
 }

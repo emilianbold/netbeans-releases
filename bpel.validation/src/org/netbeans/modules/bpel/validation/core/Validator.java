@@ -44,14 +44,6 @@ import static org.netbeans.modules.soa.ui.util.UI.*;
  */
 public abstract class Validator extends SimpleBpelModelVisitorAdaptor implements ValidationVisitor, org.netbeans.modules.xml.xam.spi.Validator {
 
-  public String getName() {
-    return getClass().getName();
-  }
-
-  public Set<ResultItem> getResultItems() {
-    return myResultItems;
-  }
-
   public ValidationResult validate(Model model, Validation validation, ValidationType type) {
     myResultItems = new HashSet<ResultItem>();
     myValidation = validation;
@@ -68,18 +60,28 @@ public abstract class Validator extends SimpleBpelModelVisitorAdaptor implements
     final List<Set<ResultItem>> collection = new ArrayList<Set<ResultItem>>(1);
 
     Runnable run = new Runnable() {
-        public void run() {
-            Process process = bpelModel.getProcess();
+      public void run() {
+        startTime();
+        Process process = bpelModel.getProcess();
 
-            if (process != null) {
-              process.accept(Validator.this);
-            }
-            collection.add(getResultItems());
+        if (process != null) {
+          process.accept(Validator.this);
         }
+        collection.add(getResultItems());
+        endTime("Validator " + getName());
+      }
     };
     bpelModel.invoke(run);
 
     return new ValidationResult(collection.get(0), Collections.singleton(model));
+  }
+
+  public String getName() {
+    return getClass().getName();
+  }
+
+  public Set<ResultItem> getResultItems() {
+    return myResultItems;
   }
 
   protected final void addWarning(String key, Component component) {
@@ -98,12 +100,24 @@ public abstract class Validator extends SimpleBpelModelVisitorAdaptor implements
     addMessage(i18n(getClass(), key, param1, param2), ResultType.ERROR, component);
   }
 
-  private void addMessage(String message, ResultType type, Component component) {
+  protected final void addQuickFix(Outcome outcome) {
+    getResultItems().add(outcome);
+  }
+
+  protected final void addErrorMessage(String message, Component component) {
+    getResultItems().add(new ResultItem(this, ResultType.ERROR, component, message));
+  }
+
+  protected final void addMessage(String message, ResultType type, Component component) {
     getResultItems().add(new ResultItem(this, type, component, message));
   }
 
   protected final void validate(Model model) {
     myValidation.validate(model, myType);
+  }
+
+  protected final boolean isValidationComplete() {
+    return myType == ValidationType.COMPLETE;
   }
 
   private ValidationType myType;
