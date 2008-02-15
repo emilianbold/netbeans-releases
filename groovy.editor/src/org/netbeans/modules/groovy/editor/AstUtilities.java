@@ -350,9 +350,6 @@ public class AstUtilities {
             } else if (current instanceof DeclarationExpression) {
                 DeclarationExpression declarationExpression = (DeclarationExpression) current;
                 if (name.equals(declarationExpression.getVariableExpression().getName())) {
-                    // found variable is method parameter, return parent scope 
-                    // of whole declaration expression statement
-                    assert it.next() instanceof ExpressionStatement;
                     return it.next();
                 }
             } else {
