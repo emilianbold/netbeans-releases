@@ -34,10 +34,10 @@ import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmOffsetable;
-import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.api.model.xref.CsmReference;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.netbeans.modules.cnd.refactoring.support.CsmRefactoringUtils;
+import org.netbeans.modules.cnd.refactoring.support.ElementGripFactory;
 import org.netbeans.modules.refactoring.spi.RefactoringElementImplementation;
 import org.netbeans.modules.refactoring.spi.SimpleRefactoringElementImplementation;
 import org.openide.filesystems.FileObject;
@@ -57,12 +57,20 @@ public class CsmRefactoringElementImpl extends
     private final PositionBounds bounds;
     private final FileObject fo;
     private final String displayText;
+    private final Object enclosing;
     public CsmRefactoringElementImpl(PositionBounds bounds, 
             CsmReference elem, FileObject fo, String displayText) {
         this.elem = elem;
         this.bounds = bounds;
         this.fo = fo;
+        assert displayText != null;
         this.displayText = displayText;
+        ElementGripFactory.getDefault().put(fo, elem);
+        Object composite = ElementGripFactory.getDefault().get(fo, bounds.getBegin().getOffset());
+        if (composite==null) {
+            composite = fo;
+        }   
+        this.enclosing = composite;
     }
         
     public String getText() {
@@ -70,33 +78,34 @@ public class CsmRefactoringElementImpl extends
     }
 
     public String getDisplayText() {
-        if (displayText != null) {
-            return displayText;
-        }
-        // returns in bold text on line
-        try {
-            int stOffset = elem.getStartOffset();
-            int endOffset = elem.getEndOffset();
-            int startLine = Utilities.getRowFirstNonWhite(getDocument(), stOffset);
-            int endLine = Utilities.getRowLastNonWhite(getDocument(), endOffset);
-            String lineText = getDocument().getText(startLine, endLine - startLine + 1);
-            StringBuilder out = new StringBuilder(lineText);
-            out.insert(endOffset-startLine, "</b>"); // NOI18N
-            out.insert(stOffset-startLine,"<b>"); // NOI18N
-            return out.toString();        
-        } catch (BadLocationException ex) {
-            
-        }
-        return "";
+        return displayText;
+//        if (displayText != null) {
+//            return displayText;
+//        }
+//        // returns in bold text on line
+//        try {
+//            int stOffset = elem.getStartOffset();
+//            int endOffset = elem.getEndOffset();
+//            int startLine = Utilities.getRowFirstNonWhite(getDocument(), stOffset);
+//            int endLine = Utilities.getRowLastNonWhite(getDocument(), endOffset);
+//            String lineText = getDocument().getText(startLine, endLine - startLine + 1);
+//            StringBuilder out = new StringBuilder(lineText);
+//            out.insert(endOffset-startLine, "</b>"); // NOI18N
+//            out.insert(stOffset-startLine,"<b>"); // NOI18N
+//            return out.toString();        
+//        } catch (BadLocationException ex) {
+//            
+//        }
+//        return "";
     }
 
     public void performChange() {
     }
 
     public Lookup getLookup() {
-        return Lookups.singleton(elem);
+        return Lookups.fixed(elem, enclosing);
     }
-
+    
     public FileObject getParentFile() {
         return fo;
     }
@@ -140,7 +149,7 @@ public class CsmRefactoringElementImpl extends
         return new CsmRefactoringElementImpl(bounds, ref, fo, displayText);
     }
 
-    private BaseDocument getDocument() {
-        return (BaseDocument) bounds.getBegin().getCloneableEditorSupport().getDocument();
-    }
+//    private BaseDocument getDocument() {
+//        return (BaseDocument) bounds.getBegin().getCloneableEditorSupport().getDocument();
+//    }
 }

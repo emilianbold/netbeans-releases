@@ -125,7 +125,7 @@ public class CsmRefactoringUtils {
         return text;
     }
     
-    static FileObject getFileObject(CsmObject object) {
+    public static FileObject getFileObject(CsmObject object) {
         CsmFile container = null;
         if (CsmKindUtilities.isFile(object)) {
             container = (CsmFile)object;
@@ -151,7 +151,9 @@ public class CsmRefactoringUtils {
         CsmUID<T> uid = null;
         if (CsmKindUtilities.isIdentifiable(element)) {
             uid = ((CsmIdentifiable<T>)element).getUID();
-            if (uid.getObject() == null) {
+            boolean checkAssert = false;
+            assert checkAssert = true;
+            if (checkAssert && (uid.getObject() == null)) {
                 System.err.println("UID " + uid + "can't return object " + element);
                 uid = null;
             }
@@ -217,7 +219,7 @@ public class CsmRefactoringUtils {
         return null;
     }
     
-    private static boolean isLangContainerFeature(CsmObject obj) {
+    /*package*/ static boolean isLangContainerFeature(CsmObject obj) {
         assert obj != null;
         return CsmKindUtilities.isFunction(obj) ||
                     CsmKindUtilities.isClass(obj) ||

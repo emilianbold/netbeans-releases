@@ -38,34 +38,37 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.cnd.refactoring.support;
 
 import java.util.HashSet;
-import java.util.Map;
 import java.util.Set;
 import java.util.WeakHashMap;
+import org.netbeans.modules.cnd.api.model.CsmObject;
+import org.netbeans.modules.cnd.api.model.CsmOffsetable;
+import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.openide.filesystems.FileObject;
 
-/**
- * factory caching intervals with csm objects
- *
- * @author Vladimir Voskresensky
+/** 
+ * This is factory and container to store wrappers around refactoring elements
+ * it wrappers protect from removed or changed elements
+ * 
+ * based on Java's ElementGripFactory
+ * @author Vladimir Voskresenky
  */
-public class CsmObjectBoxFactory {
+public class ElementGripFactory {
 
-    private static CsmObjectBoxFactory instance;
-    private Map<FileObject, Interval> map = new WeakHashMap<FileObject, Interval>();
+    private static ElementGripFactory instance;
+    private WeakHashMap<FileObject, Interval> map = new WeakHashMap<FileObject, Interval>();
 
     /**
      * Creates a new instance of ElementGripFactory
      */
-    private CsmObjectBoxFactory() {
+    private ElementGripFactory() {
     }
 
-    public static CsmObjectBoxFactory getDefault() {
+    public static ElementGripFactory getDefault() {
         if (instance == null) {
-            instance = new CsmObjectBoxFactory();
+            instance = new ElementGripFactory();
         }
         return instance;
     }
@@ -74,7 +77,7 @@ public class CsmObjectBoxFactory {
         map.clear();
     }
 
-    public CsmObjectBox get(FileObject fileObject, int position) {
+    public ElementGrip get(FileObject fileObject, int position) {
         Interval start = map.get(fileObject);
         if (start == null) {
             return null;
@@ -86,25 +89,24 @@ public class CsmObjectBoxFactory {
         }
     }
 
-    public CsmObjectBox getParent(CsmObjectBox el) {
+    public ElementGrip getParent(ElementGrip el) {
         Interval start = map.get(el.getFileObject());
-        return start.getParent(el);
+        return (ElementGrip) start.getParent(el);
     }
 
-    public void put(FileObject parentFile) {
-//        Interval root = map.get(parentFile);
-//        Interval i = Interval.createInterval(tp, info, root, null, parentFile);
-//        if (i != null) {
-//            map.put(parentFile, i);
-//        }
+    public void put(FileObject parentFile, CsmOffsetable csmObj) {
+        Interval root = map.get(parentFile);
+        Interval i = Interval.createInterval(csmObj, root, null, parentFile);
+        if (i != null) {
+            map.put(parentFile, i);
+        }
     }
 
     private static class Interval {
 
-        long from = -1;
-        long to = -1;
+        long from = -1, to = -1;
         Set<Interval> subintervals = new HashSet<Interval>();
-        CsmObjectBox item = null;
+        ElementGrip item = null;
 
         Interval get(long position) {
             if (from <= position && to >= position) {
@@ -119,12 +121,12 @@ public class CsmObjectBoxFactory {
             return null;
         }
 
-        CsmObjectBox getParent(CsmObjectBox eh) {
+        ElementGrip getParent(ElementGrip eh) {
             for (Interval i : subintervals) {
                 if (i.item.equals(eh)) {
                     return this.item;
                 } else {
-                    CsmObjectBox e = i.getParent(eh);
+                    ElementGrip e = i.getParent(eh);
                     if (e != null) {
                         return e;
                     }
@@ -133,46 +135,45 @@ public class CsmObjectBoxFactory {
             return null;
         }
 
-//        public static Interval createInterval(TreePath tp, CompilationInfo info, Interval root, Interval p, FileObject parentFile) {
-//            Tree t = tp.getLeaf();
-//            long start = info.getTrees().getSourcePositions().getStartPosition(info.getCompilationUnit(), t);
-//            long end = info.getTrees().getSourcePositions().getEndPosition(info.getCompilationUnit(), t);
-//            Element current = info.getTrees().getElement(tp);
-//            Tree.Kind kind = tp.getLeaf().getKind();
-//            if (kind != Tree.Kind.CLASS && kind != Tree.Kind.METHOD) {
-//                if (tp.getParentPath() == null || tp.getParentPath().getLeaf().getKind() == Tree.Kind.COMPILATION_UNIT) {
-//                    //xxx: rather workaround. should be fixed better.
-//                    return null;
-//                } else {
-//                    return createInterval(tp.getParentPath(), info, root, p, parentFile);
-//                }
-//            }
-//            Interval i = null;
-//            if (root != null) {
-//                Interval o = root.get(start);
-//                if (o != null && current != null && current.equals(o.item.resolveElement(info))) {
-//                    if (p != null) {
-//                        o.subintervals.add(p);
-//                    }
-//                    return null;
-//                }
-//            }
-//            if (i == null) {
-//                i = new Interval();
-//            }
-//            if (i.from != start) {
-//                i.from = start;
-//                i.to = end;
-//                CsmObjectBox currentHandle2 = new CsmObjectBox(tp, info);
-//                i.item = currentHandle2;
-//            }
-//            if (p != null) {
-//                i.subintervals.add(p);
-//            }
-//            if (tp.getParentPath().getLeaf().getKind() == Tree.Kind.COMPILATION_UNIT) {
-//                return i;
-//            }
-//            return createInterval(tp.getParentPath(), info, root, i, parentFile);
-//        }
+        public static Interval createInterval(CsmOffsetable csmObj, Interval root, Interval parent, FileObject parentFile) {
+            long start = csmObj.getStartOffset();
+            long end = csmObj.getEndOffset();
+            CsmObject encl = CsmRefactoringUtils.getEnclosingElement(csmObj);
+            if (!CsmRefactoringUtils.isLangContainerFeature(csmObj)) {
+                if (!CsmKindUtilities.isOffsetable(encl)) {
+                    //xxx: rather workaround. should be fixed better.
+                    return null;
+                } else {
+                    return createInterval((CsmOffsetable) encl, root, parent, parentFile);
+                }
+            }
+            Interval i = null;
+            if (root != null) {
+                Interval o = root.get(start);
+                if (o != null && csmObj != null && csmObj.equals(o.item.getResolved())) {
+                    if (parent != null) {
+                        o.subintervals.add(parent);
+                    }
+                    return null;
+                }
+            }
+            if (i == null) {
+                i = new Interval();
+            }
+            if (i.from != start) {
+                i.from = start;
+                i.to = end;
+                ElementGrip currentHandle2 = new ElementGrip(csmObj);
+                i.item = currentHandle2;
+            }
+            if (parent != null) {
+                i.subintervals.add(parent);
+            }
+            if (!CsmKindUtilities.isOffsetable(encl)) {
+                return i;
+            }
+            return createInterval((CsmOffsetable) encl, root, i, parentFile);
+        }
     }
 }
+    

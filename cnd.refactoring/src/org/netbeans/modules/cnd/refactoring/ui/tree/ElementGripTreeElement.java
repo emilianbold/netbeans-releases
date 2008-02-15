@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -43,57 +43,43 @@ package org.netbeans.modules.cnd.refactoring.ui.tree;
 
 import javax.swing.Icon;
 import org.netbeans.modules.cnd.refactoring.support.ElementGrip;
-import org.netbeans.modules.refactoring.api.RefactoringElement;
 import org.netbeans.modules.refactoring.spi.ui.TreeElement;
 import org.netbeans.modules.refactoring.spi.ui.TreeElementFactory;
-import org.openide.filesystems.FileObject;
 
 /**
- * presentation of a leaf for refactoring element
+ * based on ElementGripTreeElement from java refactoring
  * @author Vladimir Voskresensky
  */
-public class RefactoringTreeElement implements TreeElement { 
+public class ElementGripTreeElement implements TreeElement {
     
-    private final RefactoringElement refactoringElement;
-    private final Object parent;
-    
-    RefactoringTreeElement(RefactoringElement element) {
-        this.refactoringElement = element;
-        Object curParent = element.getLookup().lookup(ElementGrip.class); 
-        if (curParent == null) {
-            curParent = element.getLookup().lookup(FileObject.class);
-        }
-        this.parent = curParent;
+    private ElementGrip element;
+    /** Creates a new instance of JavaTreeElement */
+    public ElementGripTreeElement(ElementGrip element) {
+        this.element = element;
     }
-    
+
     public TreeElement getParent(boolean isLogical) {
-        Object curParent = null;
         if (isLogical) {
-            curParent = this.parent;
+            ElementGrip enclosing = element.getParent();
+            if (enclosing == null) {
+                return TreeElementFactory.getTreeElement(element.getFileObject());
+            }
+            return TreeElementFactory.getTreeElement(enclosing);
         } else {
-            curParent = this.parent instanceof ElementGrip ? ((ElementGrip)this.parent).getFileObject() : this.parent;
+            return TreeElementFactory.getTreeElement(element.getFileObject());
         }
-        return curParent != null ? TreeElementFactory.getTreeElement(curParent) : null;
     }
-    
+
     public Icon getIcon() {
-        return null;   
+        return element.getIcon();
     }
 
     public String getText(boolean isLogical) {
-        return refactoringElement.getDisplayText();
+//        return CsmRefactoringUtils.htmlize(element.toString());
+        return element.toString();
     }
 
     public Object getUserObject() {
-        return refactoringElement;
+        return element;
     }
-    
-//    private CsmObject getCsmParent() {
-//        CsmOffsetable obj = null;// thisObject.getObject();
-//        CsmObject enclosing = null;
-//        if (obj != null) {
-//            enclosing = CsmRefactoringUtils.getEnclosingElement((CsmObject)obj);
-//        }
-//        return enclosing;
-//    }
 }
