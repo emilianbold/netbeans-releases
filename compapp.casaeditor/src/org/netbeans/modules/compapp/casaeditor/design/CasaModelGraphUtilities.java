@@ -65,7 +65,9 @@ import org.netbeans.modules.compapp.casaeditor.model.casa.CasaWrapperModel;
 import org.netbeans.modules.compapp.casaeditor.model.casa.CasaComponent;
 import org.netbeans.modules.compapp.casaeditor.model.casa.CasaConnection;
 import org.netbeans.modules.compapp.casaeditor.model.casa.CasaConsumes;
+import org.netbeans.modules.compapp.casaeditor.model.casa.CasaEndpoint;
 import org.netbeans.modules.compapp.casaeditor.model.casa.CasaEndpointRef;
+import org.netbeans.modules.compapp.casaeditor.model.casa.CasaExtensibilityElement;
 import org.netbeans.modules.compapp.casaeditor.model.casa.CasaServiceEngineServiceUnit;
 import org.netbeans.modules.compapp.casaeditor.model.casa.CasaPort;
 import org.netbeans.modules.compapp.casaeditor.model.casa.CasaProvides;
@@ -277,10 +279,10 @@ public class CasaModelGraphUtilities {
         CasaNodeWidget widget = (CasaNodeWidget) scene.addNode(su);
         
         for (CasaProvides provides : su.getProvides()) {
-            createPin(su, provides, provides.getEndpointName(), scene, false);
+            createPin(su, provides, provides.getDisplayName(), scene, false);
         }
         for (CasaConsumes consumes : su.getConsumes()) {
-            createPin(su, consumes, consumes.getEndpointName(), scene, false);
+            createPin(su, consumes, consumes.getDisplayName(), scene, false);
         }
         scene.validate();
 
@@ -359,6 +361,7 @@ public class CasaModelGraphUtilities {
         }
         return pinWidget;
     }
+   
 
     /**
      * Callers to this method must remember to call scene.validate().

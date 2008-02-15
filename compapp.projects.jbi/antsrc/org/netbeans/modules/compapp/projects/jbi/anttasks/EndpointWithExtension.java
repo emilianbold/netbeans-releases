@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- *
+ * 
  * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
- *
+ * 
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,13 +20,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
+ * 
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -37,29 +31,61 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ * 
+ * Contributor(s):
+ * 
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.compapp.casaeditor.model.casa;
+
+package org.netbeans.modules.compapp.projects.jbi.anttasks;
 
 import javax.xml.namespace.QName;
-import org.netbeans.modules.xml.xam.dom.NamedComponentReference;
+import org.netbeans.modules.compapp.projects.jbi.descriptor.endpoints.model.Endpoint;
 
 /**
  *
  * @author jqian
  */
-public interface CasaEndpointRef extends CasaComponent {
+public class EndpointWithExtension extends Endpoint {
+      
+    private String displayName;
+    private String processName;
+    private String filePath;
+
+    public EndpointWithExtension(String endpointName, 
+            QName serviceQName, 
+            QName interfaceQName, 
+            boolean isConsumes) {
+        super(endpointName, serviceQName, interfaceQName, isConsumes);
+    }
+
+    public String getDisplayName() {
+//        if (displayName == null || displayName.length() == 0) { 
+//            return getEndpointName(); 
+//        } else {
+//            return displayName;
+//        }
+        return displayName;
+    }
+
+    public String getFilePath() {
+        return filePath; 
+    }
+
+    public String getProcessName() {
+        return processName; 
+    }
+
+    public void setDisplayName(String displayName) {
+        this.displayName = displayName;
+    }
+
+    public void setFilePath(String filePath) {
+        this.filePath = filePath;
+    }
+
+    public void setProcessName(String processName) {
+        this.processName = processName;
+    }  
     
-    public static final String ENDPOINT_PROPERTY = "endpoint";  // NOI18N
-        
-    NamedComponentReference<CasaEndpoint> getEndpoint();
-    void setEndpoint(NamedComponentReference<CasaEndpoint> endpoint);
-    
-    // Convenience methods
-    String getEndpointName();
-    QName getInterfaceQName();
-    QName getServiceQName();
-    String getFullyQualifiedEndpointName();    
-    String getDisplayName();
-    String getProcessName();
-    String getFilePath();
 }
