@@ -42,6 +42,7 @@ import junit.textui.TestRunner;
 import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jellytools.nodes.Node;
+import org.netbeans.jemmy.EventTool;
 import org.netbeans.junit.NbTestSuite;
 
 /**
@@ -51,6 +52,12 @@ import org.netbeans.junit.NbTestSuite;
 public class RestNodeTest extends RestTestBase {
 
     private static final String[] services = {"ItemResource", "ItemsResource [/items]", "SampleResource [sample]"}; //NOI18N
+
+    private static final String addMethod =
+            "    @javax.ws.rs.POST\n" +
+            "    @ConsumeMime(\"application/xml\")\n" +
+            "    public void postXml() {\n" +
+            "    }\n";
 
     public RestNodeTest(String name) {
         super(name);
@@ -103,6 +110,32 @@ public class RestNodeTest extends RestTestBase {
         assertEquals("wrong line", 47, eo.getLineNumber()); //NOI18N
     }
 
+    public void testAddMethod() {
+        EditorOperator eo = new EditorOperator(services[0]);
+        assertNotNull(services[0] + " not opened?", eo);
+        eo.select(59);
+        eo.insert(addMethod);
+        eo.save();
+        // let's wait for a while here...
+        new EventTool().waitNoEvent(1000);
+        assertEquals("New method not shown for " + services[0], 4, //NOI18N
+                getMethodsNode(services[0]).getChildren().length); //NOI18N
+    }
+    
+    public void testRemoveMethod() {
+        EditorOperator eo = new EditorOperator(services[0]);
+        assertNotNull(services[0] + " not opened?", eo);
+        eo.deleteLine(60);
+        eo.deleteLine(60);
+        eo.deleteLine(60);
+        eo.deleteLine(60);
+        eo.save();
+        // let's wait for a while here...
+        new EventTool().waitNoEvent(1000);
+        assertEquals("New method still shown for " + services[0], 3, //NOI18N
+                getMethodsNode(services[0]).getChildren().length); //NOI18N
+    }
+    
     /** Creates suite from particular test cases. You can define order of testcases here. */
     public static NbTestSuite suite() {
         NbTestSuite suite = new NbTestSuite();
@@ -110,6 +143,8 @@ public class RestNodeTest extends RestTestBase {
         suite.addTest(new RestNodeTest("testOpenOnResource")); //NOI18N
         suite.addTest(new RestNodeTest("testOpenOnMethod")); //NOI18N
         suite.addTest(new RestNodeTest("testOpenOnLocator")); //NOI18N
+        suite.addTest(new RestNodeTest("testAddMethod")); //NOI18N
+        suite.addTest(new RestNodeTest("testRemoveMethod")); //NOI18N
         return suite;
     }
 
