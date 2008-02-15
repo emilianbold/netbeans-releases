@@ -61,14 +61,14 @@ public abstract class Validator extends SimpleBpelModelVisitorAdaptor implements
 
     Runnable run = new Runnable() {
       public void run() {
-startTime();
+        startTime();
         Process process = bpelModel.getProcess();
 
         if (process != null) {
           process.accept(Validator.this);
         }
         collection.add(getResultItems());
-endTime();
+        endTime("Validator " + getName());
       }
     };
     bpelModel.invoke(run);
@@ -83,17 +83,6 @@ endTime();
   public Set<ResultItem> getResultItems() {
     return myResultItems;
   }
-
-  private void startTime() {
-    myTime = System.currentTimeMillis ();
-  }
-
-  private void endTime() {
-    long currentTime = System.currentTimeMillis ();
-    out("Validator " + getName() + " takes " + (currentTime - myTime) + " ms.");
-  }
-
-  private long myTime;
 
   protected final void addWarning(String key, Component component) {
     addMessage(i18n(getClass(), key), ResultType.WARNING, component);
@@ -125,6 +114,10 @@ endTime();
 
   protected final void validate(Model model) {
     myValidation.validate(model, myType);
+  }
+
+  protected final boolean isValidationComplete() {
+    return myType == ValidationType.COMPLETE;
   }
 
   private ValidationType myType;
