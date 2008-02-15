@@ -89,7 +89,7 @@ public final class InsertModuleAllTargets extends Task {
             Project prj = getProject();
             @SuppressWarnings("unchecked")
             Set<String> existingTargets = prj.getTargets().keySet();
-            if (existingTargets.contains("all-openide/util")) {
+            if (existingTargets.contains("all-openide.util")) {
                 log("Already seem to have inserted targets into this project; will not do it twice", Project.MSG_VERBOSE);
                 return;
             }
