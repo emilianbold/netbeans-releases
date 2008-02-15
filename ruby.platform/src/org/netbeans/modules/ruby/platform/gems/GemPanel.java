@@ -48,6 +48,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.regex.Pattern;
@@ -66,6 +67,7 @@ import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
+import javax.swing.filechooser.FileFilter;
 import org.netbeans.api.options.OptionsDisplayer;
 import org.netbeans.api.ruby.platform.RubyPlatform;
 import org.netbeans.api.ruby.platform.RubyPlatformManager;
@@ -91,7 +93,9 @@ import org.openide.util.RequestProcessor;
  * @author  Tor Norbye
  */
 public final class GemPanel extends JPanel implements Runnable {
-    
+
+    private static final String LAST_GEM_DIRECTORY = "lastLocalGemDirectory"; // NOI18N
+
     private static final String LAST_PLATFORM_ID = "gemPanellastPlatformID"; // NOI18N
 
     static enum TabIndex { UPDATED, INSTALLED, NEW; }
@@ -510,6 +514,7 @@ public final class GemPanel extends JPanel implements Runnable {
         newDesc = new javax.swing.JTextPane();
         newProgress = new javax.swing.JProgressBar();
         newProgressLabel = new javax.swing.JLabel();
+        installLocalButton = new javax.swing.JButton();
         settingsPanel = new javax.swing.JPanel();
         proxyButton = new javax.swing.JButton();
         rubyPlatformLabel = new javax.swing.JLabel();
@@ -716,6 +721,9 @@ public final class GemPanel extends JPanel implements Runnable {
 
         org.openide.awt.Mnemonics.setLocalizedText(newProgressLabel, org.openide.util.NbBundle.getMessage(GemPanel.class, "GemPanel.newProgressLabel.text")); // NOI18N
 
+        org.openide.awt.Mnemonics.setLocalizedText(installLocalButton, org.openide.util.NbBundle.getMessage(GemPanel.class, "GemPanel.installLocalButton.text")); // NOI18N
+        installLocalButton.addActionListener(formListener);
+
         org.jdesktop.layout.GroupLayout newPanelLayout = new org.jdesktop.layout.GroupLayout(newPanel);
         newPanel.setLayout(newPanelLayout);
         newPanelLayout.setHorizontalGroup(
@@ -731,7 +739,9 @@ public final class GemPanel extends JPanel implements Runnable {
                         .add(searchNewText, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 156, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                     .add(newPanelLayout.createSequentialGroup()
                         .add(installButton)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 468, Short.MAX_VALUE)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(installLocalButton)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 344, Short.MAX_VALUE)
                         .add(newProgressLabel)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(newProgress, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
@@ -755,7 +765,9 @@ public final class GemPanel extends JPanel implements Runnable {
                     .add(jScrollPane4, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 279, Short.MAX_VALUE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(newPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
-                    .add(installButton)
+                    .add(newPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                        .add(installButton)
+                        .add(installLocalButton))
                     .add(newProgress, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                     .add(newProgressLabel))
                 .addContainerGap())
@@ -895,6 +907,9 @@ public final class GemPanel extends JPanel implements Runnable {
             else if (evt.getSource() == installButton) {
                 GemPanel.this.installButtonActionPerformed(evt);
             }
+            else if (evt.getSource() == installLocalButton) {
+                GemPanel.this.installLocalButtonActionPerformed(evt);
+            }
             else if (evt.getSource() == proxyButton) {
                 GemPanel.this.proxyButtonActionPerformed(evt);
             }
@@ -1033,6 +1048,27 @@ public final class GemPanel extends JPanel implements Runnable {
             updateAsynchronously();
         }
     }//GEN-LAST:event_browseGemHomeActionPerformed
+
+    private void installLocalButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_installLocalButtonActionPerformed
+        JFileChooser chooser = new JFileChooser(Util.getPreferences().get(LAST_GEM_DIRECTORY, ""));
+        chooser.setAcceptAllFileFilterUsed(false);
+        chooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
+        chooser.setFileFilter(new FileFilter() {
+            public boolean accept(File f) {
+                return f.isDirectory() || (f.isFile() && f.getName().toLowerCase(Locale.US).endsWith(".gem")); // NOI18N
+            }
+            public String getDescription() {
+                return getMessage("GemPanel.rubygems.files.filter");
+            }
+        });
+        int ret = chooser.showOpenDialog(this);
+        if (ret == JFileChooser.APPROVE_OPTION) {
+            File gem = FileUtil.normalizeFile(chooser.getSelectedFile());
+            Util.getPreferences().put(LAST_GEM_DIRECTORY, gem.getParentFile().getAbsolutePath());
+            GemListRefresher completionTask = new GemListRefresher(newList, TabIndex.INSTALLED);
+            boolean changed = gemManager.installLocal(gem, this, false, false, true, completionTask);
+        }
+    }//GEN-LAST:event_installLocalButtonActionPerformed
 
     public static File chooseGemRepository(final Component parent) {
         JFileChooser chooser = new JFileChooser();
@@ -1219,6 +1255,10 @@ public final class GemPanel extends JPanel implements Runnable {
             refreshGemList(tab);
         }
     }
+
+    private static String getMessage(String key) {
+        return NbBundle.getMessage(GemPanel.class, key);
+    }
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton browseGemHome;
@@ -1228,6 +1268,7 @@ public final class GemPanel extends JPanel implements Runnable {
     private javax.swing.JLabel instSearchLbl;
     private javax.swing.JTextField instSearchText;
     private javax.swing.JButton installButton;
+    private javax.swing.JButton installLocalButton;
     private javax.swing.JTextPane installedDesc;
     private javax.swing.JList installedList;
     private javax.swing.JPanel installedPanel;
