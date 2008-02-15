@@ -1769,18 +1769,21 @@ jarsigner.storepass=${jarsigner.storepass}
     </target>
 
     <target name="get-bundled-jvms">
-	<mkdir dir="${basedir}/cache/jvm"/>
+        <set property="jvm.cache.dir" 
+             value="${nbi.cache.dir}/jvm"/>
+	<mkdir dir="${jvm.cache.dir}"/>
+        
 	<get src="${binary.cache.host}/bundledjvm/jre-1_5_0_14-solaris-i586.sh"
-	     dest="${basedir}/cache/jvm/jre-1_5_0_14-solaris-i586.sh"
+	     dest="${jvm.cache.dir}/jre-1_5_0_14-solaris-i586.sh"
 	     usetimestamp="true"/>
 	<get src="${binary.cache.host}/bundledjvm/jre-1_5_0_14-solaris-sparc.sh"
-	     dest="${basedir}/cache/jvm/jre-1_5_0_14-solaris-sparc.sh"
+	     dest="${jvm.cache.dir}/jre-1_5_0_14-solaris-sparc.sh"
 	     usetimestamp="true"/>
 	<get src="${binary.cache.host}/bundledjvm/jre-1_5_0_14-linux-i586.bin"
-	     dest="${basedir}/cache/jvm/jre-1_5_0_14-linux-i586.bin"
+	     dest="${jvm.cache.dir}/jre-1_5_0_14-linux-i586.bin"
 	     usetimestamp="true"/>
 	<get src="${binary.cache.host}/bundledjvm/jre-1_5_0_14-windows-i586.exe"
-	     dest="${basedir}/cache/jvm/jre-1_5_0_14-windows-i586.exe"
+	     dest="${jvm.cache.dir}/jre-1_5_0_14-windows-i586.exe"
 	     usetimestamp="true"/>
     </target>
 
