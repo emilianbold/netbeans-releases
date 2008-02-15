@@ -46,7 +46,8 @@ import org.netbeans.jemmy.EventTool;
 import org.netbeans.junit.NbTestSuite;
 
 /**
- *
+ * Tests REST node in project logical view
+ * 
  * @author lukas
  */
 public class RestNodeTest extends RestTestBase {
@@ -68,6 +69,10 @@ public class RestNodeTest extends RestTestBase {
         return "Sample"; //NOI18N
     }
 
+    /**
+     * Test if all REST web service related nodes are visible in project logical
+     * view after opening a project
+     */
     public void testNodesAfterOpen() {
         assertEquals("Some node not shown", 3, getRestNode().getChildren().length);
         assertEquals("Some method not shown for " + services[0], 3, //NOI18N
@@ -84,6 +89,9 @@ public class RestNodeTest extends RestTestBase {
                 getSubresourceNode(services[2]).getChildren().length); //NOI18N
     }
 
+    /**
+     * Test "Open" action on the Resource node
+     */
     public void testOpenOnResource() {
         Node n = getResourceNode(services[2]);
         String open = Bundle.getStringTrimmed("org.openide.actions.Bundle", "Open");
@@ -92,6 +100,9 @@ public class RestNodeTest extends RestTestBase {
         assertNotNull(services[2] + " not opened?", eo);
     }
 
+    /**
+     * Test "Open" action on the resource's method node
+     */
     public void testOpenOnMethod() {
         Node n = new Node(getMethodsNode(services[0]), "getXML"); //NOI18N
         String open = Bundle.getStringTrimmed("org.openide.actions.Bundle", "Open");
@@ -101,6 +112,9 @@ public class RestNodeTest extends RestTestBase {
         assertEquals("wrong line", 40, eo.getLineNumber()); //NOI18N
     }
 
+    /**
+     * Test "Open" action on the resource's subresource locator node
+     */
     public void testOpenOnLocator() {
         Node n = new Node(getSubresourceNode(services[1]), "{name}"); //NOI18N
         String open = Bundle.getStringTrimmed("org.openide.actions.Bundle", "Open");
@@ -110,6 +124,9 @@ public class RestNodeTest extends RestTestBase {
         assertEquals("wrong line", 47, eo.getLineNumber()); //NOI18N
     }
 
+    /**
+     * Test new node visibility after adding a method to the resource
+     */
     public void testAddMethod() {
         EditorOperator eo = new EditorOperator(services[0]);
         assertNotNull(services[0] + " not opened?", eo);
@@ -122,6 +139,9 @@ public class RestNodeTest extends RestTestBase {
                 getMethodsNode(services[0]).getChildren().length); //NOI18N
     }
     
+    /**
+     * Test new node visibility after removing a method from the resource
+     */
     public void testRemoveMethod() {
         EditorOperator eo = new EditorOperator(services[0]);
         assertNotNull(services[0] + " not opened?", eo);
