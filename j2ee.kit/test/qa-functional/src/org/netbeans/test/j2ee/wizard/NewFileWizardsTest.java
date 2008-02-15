@@ -483,6 +483,7 @@ public class NewFileWizardsTest extends JellyTestCase {
      *@param newFiles files to check
      */
     private void checkFiles(List<File> newFiles) {
+        new EventTool().waitNoEvent(1000);
         // save all instead of timeout
         new SaveAllAction().performAPI();
         if (!CREATE_GOLDEN_FILES) {

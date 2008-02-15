@@ -294,6 +294,18 @@ public class ADGraphWindow extends TSEGraphWindow implements ActionListener, Acc
       }
    }
 
+
+   /*
+    * intercept the call to inject taking the lock to avoid 
+    * the IZ 127274
+    */ 
+   public void transmit(com.tomsawyer.editor.command.TSERoutingCommand command) 
+   {
+       synchronized (getTreeLock()) {
+           super.transmit(command);
+       }
+   }
+
    public void reshape(int x, int y, int width, int height)
    {
       super.reshape(x, y, width, height);

@@ -43,7 +43,6 @@ package org.netbeans.modules.websvc.saas.codegen.java;
 import java.awt.datatransfer.Transferable;
 import org.netbeans.modules.websvc.saas.model.WsdlSaasMethod;
 import org.netbeans.modules.websvc.saas.spi.ConsumerFlavorProvider;
-import org.openide.util.Exceptions;
 import org.openide.util.datatransfer.ExTransferable;
 
 /**
@@ -67,7 +66,7 @@ public class JaxWsFlavorProvider implements ConsumerFlavorProvider {
                 return t;
             }
         } catch (Exception ex) {
-            Exceptions.printStackTrace(ex);
+            //Exceptions.printStackTrace(ex);
         }
 
         return transferable;

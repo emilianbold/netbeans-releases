@@ -42,6 +42,7 @@
 package org.netbeans.modules.websvc.saas.codegen.java;
 
 import javax.lang.model.element.Modifier;
+import org.netbeans.modules.websvc.rest.model.api.RestConstants;
 
 /**
  *
@@ -56,7 +57,19 @@ public class Constants {
     public static final String XML_ELEMENT_ANNOTATION = "XmlElement";  //NOI18N
     
     public static final String XML_ATTRIBUTE_ANNOTATION = "XmlAttribute";  //NOI18N
-
+    
+    public static final String WEB_APPLICATION_EXCEPTION = RestConstants.REST_API_PACKAGE + "WebApplicationException";
+    
+    public static final String HTTP_RESPONSE = RestConstants.REST_API_PACKAGE + "core.Response"; //NOI18N
+    
+    public static final String RESPONSE_BUILDER = RestConstants.REST_API_PACKAGE + "core.Response.Builder";       //NOI8N
+    
+    public static final String ENTITY_TYPE = RestConstants.REST_API_PACKAGE + "Entity";
+    
+    public static final String HTTP_CONTEXT = RestConstants.REST_API_PACKAGE + "core.HttpContext";    //NOI18N
+    
+    public static final String URI_INFO = RestConstants.REST_API_PACKAGE + "core.UriInfo";     //NOI18N
+    
     public static final String URI_TYPE = "java.net.URI";       //NOI18N
     
     public static final String QUERY_TYPE = "javax.persistence.Query";       //NOI18N
@@ -138,6 +151,33 @@ public class Constants {
         
         public String toString() {
             return value;
+        }
+    }
+    
+    public enum HttpMethodType {
+        GET("get", "GET"),   //NOI18N
+        PUT("put", "PUT"), //NOI18N
+        POST("post", "POST"), //NOI18N
+        DELETE("delete", "DELETE"); //NOI18N
+        
+        private String prefix; 
+        private String annotationType;
+        
+        HttpMethodType(String prefix, String annotationType) {
+            this.prefix = prefix;
+            this.annotationType = annotationType;
+        }
+        
+        public String value() {
+            return name();
+        }
+        
+        public String prefix() {
+            return prefix;
+        }
+        
+        public String getAnnotationType() {
+            return annotationType;
         }
     }
    

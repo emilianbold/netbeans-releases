@@ -235,12 +235,15 @@ public class Reformatter implements ReformatTask {
         for (Tree t : endPath)
             reverseEndPath = reverseEndPath.prepend(t);
         TreePath path = null;
+        TreePath statementPath = null;
         while(reverseStartPath.head != null && reverseStartPath.head == reverseEndPath.head) {
             path = reverseStartPath.head instanceof CompilationUnitTree ? new TreePath((CompilationUnitTree)reverseStartPath.head) : new TreePath(path, reverseStartPath.head);
+            if (reverseStartPath.head instanceof StatementTree)
+                statementPath = path;
             reverseStartPath = reverseStartPath.tail;
             reverseEndPath = reverseEndPath.tail;
         }
-        return path;
+        return statementPath != null ? statementPath : path;
     }
     
     private class Lock implements ExtraLock {

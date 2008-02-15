@@ -42,6 +42,7 @@
 package org.netbeans.modules.compapp.projects.jbi.anttasks;
 
 import java.io.*;
+import java.net.URI;
 import java.util.*;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
@@ -467,12 +468,22 @@ public class BuildServiceAssembly extends Task {
         for (int i = 0; i < systemNodes.getLength(); i++) {
             Element systemNode = (Element) systemNodes.item(i);
             String uri = systemNode.getAttribute("uri");
-            if (uri != null && 
-                    // make sure the catalog data is along with the catalog.xml
-                    new File(sesuDir, uri).exists()) {
-                uri = sesuName + "/" + uri;
-                systemNode.setAttribute("uri", uri);
+            
+            if (uri != null) {
+                URI realUri = new URI(uri);
+                
+                if (realUri.getScheme() == null) {
+                    uri = "../" + sesuName + "/META-INF/" + uri;
+                    systemNode.setAttribute("uri", uri);
+                }
             }
+            
+//            if (uri != null && 
+//                    // make sure the catalog data is along with the catalog.xml
+//                    new File(sesuDir, uri).exists()) {
+//                uri = sesuName + "/" + uri;
+//                systemNode.setAttribute("uri", uri);
+//            }
         }
         
         return doc;
