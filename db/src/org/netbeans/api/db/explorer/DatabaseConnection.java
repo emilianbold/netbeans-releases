@@ -110,6 +110,7 @@ public final class DatabaseConnection {
      * @param driver the JDBC driver the new connection uses; cannot be null.
      * @param databaseURL the URL of the database to connect to; cannot be null.
      * @param user the username.
+     * @param schema the schema to use, or null for the default schema
      * @param password the password.
      * @param rememberPassword whether to remeber the password for the current session.
      *

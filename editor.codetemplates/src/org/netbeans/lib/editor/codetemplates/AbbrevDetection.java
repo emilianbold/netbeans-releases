@@ -69,6 +69,7 @@ import org.netbeans.editor.SettingsChangeEvent;
 import org.netbeans.editor.SettingsChangeListener;
 import org.netbeans.editor.SettingsNames;
 import org.netbeans.editor.SettingsUtil;
+import org.netbeans.lib.editor.codetemplates.api.CodeTemplate;
 import org.netbeans.lib.editor.util.swing.DocumentUtilities;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.editor.hints.ErrorDescriptionFactory;
@@ -105,8 +106,6 @@ PropertyChangeListener, KeyListener, CaretListener {
     private static final String SURROUND_WITH = NbBundle.getMessage(SurroundWithFix.class, "TXT_SurroundWithHint_Label"); //NOI18N
     private static final int SURROUND_WITH_DELAY = 250;
     
-    private static final AbbrevExpander[] abbrevExpanders = { new CodeTemplateAbbrevExpander() };
-
     public static AbbrevDetection get(JTextComponent component) {
         AbbrevDetection ad = (AbbrevDetection)component.getClientProperty(AbbrevDetection.class);
         if (ad == null) {
@@ -131,8 +130,8 @@ PropertyChangeListener, KeyListener, CaretListener {
      */
     private StringBuffer abbrevChars = new StringBuffer();
 
-    /** Chars on which to expand acceptor */
-    private Acceptor expandAcceptor;
+//    /** Chars on which to expand acceptor */
+//    private Acceptor expandAcceptor;
 
     /** Which chars reset abbreviation accounting */
     private Acceptor resetAcceptor;
@@ -175,7 +174,7 @@ PropertyChangeListener, KeyListener, CaretListener {
             ? ((BaseDocument)d).getKitClass()
             : org.netbeans.editor.BaseKit.class;
 
-        expandAcceptor = SettingsUtil.getAcceptor(kitClass, SettingsNames.ABBREV_EXPAND_ACCEPTOR, AcceptorFactory.FALSE);
+//        expandAcceptor = SettingsUtil.getAcceptor(kitClass, SettingsNames.ABBREV_EXPAND_ACCEPTOR, AcceptorFactory.FALSE);
         resetAcceptor = SettingsUtil.getAcceptor(kitClass, SettingsNames.ABBREV_RESET_ACCEPTOR, AcceptorFactory.TRUE);
     }
     
@@ -255,14 +254,16 @@ PropertyChangeListener, KeyListener, CaretListener {
         if (abbrevEndPosition != null && component != null
             && component.getCaretPosition() == abbrevEndPosition.getOffset()
             && !isAbbrevDisabled()
-            && !Boolean.TRUE.equals(doc.getProperty(EDITING_TEMPLATE_DOC_PROPERTY))) {
-            Document doc = component.getDocument();
-            CodeTemplateManagerOperation operation = CodeTemplateManagerOperation.get(doc);
-            KeyStroke expandKeyStroke = operation.getExpansionKey();
-            
-            if (expandKeyStroke.equals(KeyStroke.getKeyStrokeForEvent(evt))) {
-                if (expand()) {
-                    evt.consume();
+            && !Boolean.TRUE.equals(doc.getProperty(EDITING_TEMPLATE_DOC_PROPERTY))
+        ) {
+            CodeTemplateManagerOperation operation = CodeTemplateManagerOperation.get(component.getDocument(), abbrevEndPosition.getOffset());
+            if (operation != null) {
+                KeyStroke expandKeyStroke = operation.getExpansionKey();
+
+                if (expandKeyStroke.equals(KeyStroke.getKeyStrokeForEvent(evt))) {
+                    if (expand(operation)) {
+                        evt.consume();
+                    }
                 }
             }
         }
@@ -353,18 +354,15 @@ PropertyChangeListener, KeyListener, CaretListener {
         }
     }
 
-    public boolean expand() {
+    public boolean expand(CodeTemplateManagerOperation op) {
         CharSequence abbrevText = getAbbrevText();
         int abbrevEndOffset = abbrevEndPosition.getOffset();
-        for (int i = 0; i < abbrevExpanders.length; i++) {
-            if (abbrevExpanders[i].expand(component, 
-                    abbrevEndOffset - abbrevText.length(), abbrevText)
-            ) {
-                resetAbbrevChars();
-                return true;
-            }
+        if (expand(op, component, abbrevEndOffset - abbrevText.length(), abbrevText)) {
+            resetAbbrevChars();
+            return true;
+        } else {
+            return false;
         }
-        return false;
     }
     
     private void showSurroundWithHint() {
@@ -390,6 +388,23 @@ PropertyChangeListener, KeyListener, CaretListener {
         if (errorDescription != null) {
             errorDescription = null;
             HintsController.setErrors(doc, SURROUND_WITH, Collections.<ErrorDescription>emptySet());
+        }
+    }
+
+    private static boolean expand(CodeTemplateManagerOperation op, JTextComponent component, int abbrevStartOffset, CharSequence abbrev) {
+        op.waitLoaded();
+        CodeTemplate ct = op.findByAbbreviation(abbrev.toString());
+        if (ct != null) {
+            try {
+                // Remove the abbrev text
+                Document doc = component.getDocument();
+                doc.remove(abbrevStartOffset, abbrev.length());
+            } catch (BadLocationException ble) {
+            }
+            ct.insert(component);
+            return true;
+        } else {
+            return false;
         }
     }
 }

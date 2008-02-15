@@ -1101,6 +1101,7 @@ public class AstRenderer {
 	    }
 	    @Override
 	    protected VariableImpl createVariable(AST offsetAst, CsmFile file, CsmType type, String name, boolean _static, MutableDeclarationsContainer container1, MutableDeclarationsContainer container2, CsmScope scope2) {
+                type = TemplateUtils.checkTemplateType(type, scope1);
 		ParameterImpl parameter = new ParameterImpl(offsetAst, file, type, name, scope1);
 		result.add(parameter);
 		return parameter;
@@ -1305,11 +1306,7 @@ public class AstRenderer {
                 }
             }
         }
-        if (initializers != null) {
-            return initializers;
-        } else {
-            return Collections.EMPTY_LIST;
-        }
+        return initializers;
     }
     
     public static boolean isExpression(AST ast) {

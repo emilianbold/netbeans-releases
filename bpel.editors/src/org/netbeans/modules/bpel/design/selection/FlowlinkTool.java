@@ -275,8 +275,8 @@ public class FlowlinkTool implements DnDTool {
     
     
     public void paint(Graphics2D g2) {
-        if (getDesignView().getModel().isReadOnly()) return;
         if (!isActive()) return;
+//        if (getDesignView().getModel().isReadOnly()) return; //127263
         
         move();
         

@@ -104,8 +104,12 @@ public class CreateNativeLauncherAction extends WizardAction {
                 "-Xms64m"
             });
             if(System.getProperty(BUNDLED_JVM_FILE_PROPERTY)!=null) {
-                properties.addJVM(new LauncherResource(
-                        new File(System.getProperty(BUNDLED_JVM_FILE_PROPERTY))));
+                final LauncherResource jvm = new LauncherResource(
+                        new File(System.getProperty(BUNDLED_JVM_FILE_PROPERTY)));                        
+                properties.addJVM(jvm);
+                properties.getJvmArguments().add(
+                        "-D" + BUNDLED_JVM_FILE_PROPERTY + "=" + 
+                        jvm.getAbsolutePath());
             }
             File file = SystemUtils.createLauncher(
                     properties, platform, progress).getOutputFile();

@@ -32,7 +32,6 @@ import javax.swing.text.BadLocationException;
 import org.netbeans.editor.Formatter;
 import org.netbeans.editor.TokenID;
 import org.netbeans.modules.cnd.editor.api.CodeStyle;
-import org.netbeans.modules.cnd.editor.options.CodeStyleImpl;
 import org.netbeans.modules.cnd.editor.options.EditorOptions;
 
 /**
@@ -667,8 +666,8 @@ public class CCBracketCompletionUnitTestCase extends CCFormatterBaseUnitTestCase
     }
     
     public void testIZ102091() throws Exception {
-        ((CodeStyleImpl)CodeStyle.getDefault(CodeStyle.Language.CPP)).getPref().
-                put(EditorOptions.CC_FORMAT_NEWLINE_BEFORE_BRACE, 
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
+                put(EditorOptions.newLineBeforeBrace, 
                 CodeStyle.BracePlacement.NEW_LINE.name());
         try {
             setLoadDocumentText (
@@ -681,8 +680,8 @@ public class CCBracketCompletionUnitTestCase extends CCFormatterBaseUnitTestCase
                 "{|"
             );
         } finally {
-            ((CodeStyleImpl)CodeStyle.getDefault(CodeStyle.Language.CPP)).getPref().
-                    put(EditorOptions.CC_FORMAT_NEWLINE_BEFORE_BRACE, 
+            EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
+                    put(EditorOptions.newLineBeforeBrace, 
                     CodeStyle.BracePlacement.SAME_LINE.name());
         }
     }

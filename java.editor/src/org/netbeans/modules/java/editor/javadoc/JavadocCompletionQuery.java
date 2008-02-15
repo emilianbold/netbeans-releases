@@ -770,7 +770,9 @@ final class JavadocCompletionQuery extends AsyncCompletionQuery{
         TypeElement typeElem = type.getKind() == TypeKind.DECLARED ? (TypeElement)((DeclaredType)type).asElement() : null;
 //        final boolean isStatic = elem != null && (elem.getKind().isClass() || elem.getKind().isInterface() || elem.getKind() == TYPE_PARAMETER);
 //        final boolean isSuperCall = elem != null && elem.getKind().isField() && elem.getSimpleName().contentEquals(SUPER_KEYWORD);
-        final Scope scope = trees.getScope(trees.getPath(elem));
+        Element docelm = env.handle.resolve(controller);
+        TreePath docpath = trees.getPath(docelm);
+        final Scope scope = trees.getScope(docpath);
         final boolean[] ctorSeen = {false};
         TypeElement enclClass = scope.getEnclosingClass();
         final TypeMirror enclType = enclClass != null ? enclClass.asType() : null;

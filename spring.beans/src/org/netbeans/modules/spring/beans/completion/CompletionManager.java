@@ -82,7 +82,6 @@ import org.netbeans.modules.spring.beans.editor.ContextUtilities;
 import org.netbeans.modules.spring.beans.editor.SpringXMLConfigEditorUtils;
 import org.netbeans.modules.spring.beans.editor.SpringXMLConfigEditorUtils.Public;
 import org.netbeans.modules.spring.beans.editor.SpringXMLConfigEditorUtils.Static;
-import org.netbeans.modules.spring.beans.loader.SpringXMLConfigDataLoader;
 import org.netbeans.modules.spring.beans.utils.StringUtils;
 import org.netbeans.spi.editor.completion.CompletionResultSet;
 import org.openide.filesystems.FileObject;
@@ -149,23 +148,36 @@ public final class CompletionManager {
 
     private void setupCompletors() {
 
-        String[] autowireItems = new String[]{
+        String[] defaultAutoWireItems = new String[]{
             "no", NbBundle.getMessage(CompletionManager.class, "DESC_autowire_no"), // NOI18N
             "byName", NbBundle.getMessage(CompletionManager.class, "DESC_autowire_byName"), // NOI18N
             "byType", NbBundle.getMessage(CompletionManager.class, "DESC_autowire_byType"), // NOI18N
             "constructor", NbBundle.getMessage(CompletionManager.class, "DESC_autowire_constructor"), // NOI18N
             "autodetect", NbBundle.getMessage(CompletionManager.class, "DESC_autowire_autodetect") // NOI18N
         };
-        AttributeValueCompletor completor = new AttributeValueCompletor(autowireItems);
-        registerCompletor(BEAN_TAG, AUTOWIRE_ATTRIB, completor);
+        AttributeValueCompletor completor = new AttributeValueCompletor(defaultAutoWireItems);
         registerCompletor(BEANS_TAG, DEFAULT_AUTOWIRE_ATTRIB, completor);
-
+        
+        String[] autoWireItems = new String[defaultAutoWireItems.length + 2];
+        System.arraycopy(defaultAutoWireItems, 0, autoWireItems, 0, defaultAutoWireItems.length);
+        autoWireItems[defaultAutoWireItems.length] = "default"; // NOI18N
+        autoWireItems[defaultAutoWireItems.length + 1] = null; // XXX: Documentation
+        completor = new AttributeValueCompletor(autoWireItems);
+        registerCompletor(BEAN_TAG, AUTOWIRE_ATTRIB, completor);
+        
         String[] defaultLazyInitItems = new String[]{
             "true", null, //XXX: Documentation // NOI18N
             "false", null, //XXX: Documentation // NOI18N
         };
         completor = new AttributeValueCompletor(defaultLazyInitItems);
         registerCompletor(BEANS_TAG, DEFAULT_LAZY_INIT_ATTRIB, completor);
+        
+        String[] lazyInitItems = new String[] {
+            defaultLazyInitItems[0], defaultLazyInitItems[1],
+            defaultLazyInitItems[2], defaultLazyInitItems[3],
+            "default", null // XXX: Documentation // NOI18N
+        };
+        completor = new AttributeValueCompletor(lazyInitItems);
         registerCompletor(BEAN_TAG, LAZY_INIT_ATTRIB, completor);
         
         String[] defaultMergeItems = new String[] {
@@ -183,6 +195,11 @@ public final class CompletionManager {
         };
         completor = new AttributeValueCompletor(defaultDepCheckItems);
         registerCompletor(BEANS_TAG, DEFAULT_DEPENDENCY_CHECK_ATTRIB, completor);
+
+        String[] depCheckItems = new String[defaultDepCheckItems.length + 2];
+        depCheckItems[defaultDepCheckItems.length] = "default"; // NOI18N
+        depCheckItems[defaultDepCheckItems.length + 1] = null; // XXX Documentation
+        completor = new AttributeValueCompletor(depCheckItems);
         registerCompletor(BEAN_TAG, DEPENDENCY_CHECK_ATTRIB, completor);
         
         String[] abstractItems = new String[] {
@@ -195,6 +212,7 @@ public final class CompletionManager {
         String[] autowireCandidateItems = new String[] {
             "true", null, // XXX: documentation? // NOI18N
             "false", null, // XXX: documentation? // NOI18N
+            "default", null, // XXX: documentation? // NOI18N
         };
         completor = new AttributeValueCompletor(autowireCandidateItems);
         registerCompletor(BEAN_TAG, AUTOWIRE_CANDIDATE_ATTRIB, completor);
@@ -202,6 +220,7 @@ public final class CompletionManager {
         String[] mergeItems = new String[] {
             "true", null, // XXX: documentation? // NOI18N
             "false", null, // XXX: documentation? // NOI18N
+            "default", null, // XXX: documentation? // NOI18N
         };
         completor = new AttributeValueCompletor(mergeItems);
         registerCompletor(LIST_TAG, MERGE_ATTRIB, completor);
@@ -293,11 +312,10 @@ public final class CompletionManager {
                         if (className == null) {
                             return;
                         }
-                        ElementHandle<TypeElement> eh = SpringXMLConfigEditorUtils.findClassElementByBinaryName(className, js);
-                        if (eh == null) {
+                        TypeElement te = SpringXMLConfigEditorUtils.findClassElementByBinaryName(className, cc);
+                        if (te == null) {
                             return;
                         }
-                        TypeElement te = eh.resolve(cc);
                         ElementUtilities eu = cc.getElementUtilities();
                         List<ExecutableElement> matchingProps 
                                 = SpringXMLConfigEditorUtils.findPropertiesOnType(eu, te.asType(), 
@@ -566,7 +584,7 @@ public final class CompletionManager {
             }, true);
         }
         
-        private void doSmartJavaCompletion(JavaSource js, final List<SpringXMLConfigCompletionItem> results, 
+        private void doSmartJavaCompletion(final JavaSource js, final List<SpringXMLConfigCompletionItem> results, 
                 final String typedPrefix, final int substitutionOffset) throws IOException {
             js.runUserActionTask(new Task<CompilationController>() {
 
@@ -581,12 +599,8 @@ public final class CompletionManager {
                             NameKind.CASE_INSENSITIVE_PREFIX, EnumSet.allOf(SearchScope.class));
                     for (ElementHandle<TypeElement> eh : matchingTypes) {
                         if (eh.getKind() == ElementKind.CLASS) {
-                            TypeElement typeElement = eh.resolve(cc);
-                            if (typeElement != null && isAccessibleClass(typeElement)) {
-                                SpringXMLConfigCompletionItem item = SpringXMLConfigCompletionItem.createTypeItem(substitutionOffset,
-                                        typeElement, eh, cc.getElements().isDeprecated(typeElement), true);
-                                results.add(item);
-                            }
+                            LazyTypeCompletionItem item = LazyTypeCompletionItem.create(substitutionOffset, eh, js);
+                            results.add(item);
                         }
                     }
                 }
@@ -653,12 +667,11 @@ public final class CompletionManager {
 
                     public void run(CompilationController controller) throws Exception {
                         controller.toPhase(Phase.ELEMENTS_RESOLVED);
-                        ElementHandle<TypeElement> eh = SpringXMLConfigEditorUtils.findClassElementByBinaryName(classBinaryName, javaSource);
-                        if(eh == null) {
+                        TypeElement classElem = SpringXMLConfigEditorUtils.findClassElementByBinaryName(classBinaryName, controller);
+                        if (classElem == null) {
                             return;
                         }
                         
-                        TypeElement classElem = eh.resolve(controller);
                         ElementUtilities eu = controller.getElementUtilities();
                         ElementUtilities.ElementAcceptor acceptor = new ElementUtilities.ElementAcceptor() {
 
@@ -877,11 +890,10 @@ public final class CompletionManager {
                         if (className == null) {
                             return;
                         }
-                        ElementHandle<TypeElement> eh = SpringXMLConfigEditorUtils.findClassElementByBinaryName(className, js);
-                        if (eh == null) {
+                        TypeElement te = SpringXMLConfigEditorUtils.findClassElementByBinaryName(className, cc);
+                        if (te == null) {
                             return;
                         }
-                        TypeElement te = eh.resolve(cc);
                         TypeMirror startType = te.asType();
                         ElementUtilities eu = cc.getElementUtilities();
                         

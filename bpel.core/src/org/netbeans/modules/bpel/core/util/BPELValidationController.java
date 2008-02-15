@@ -68,6 +68,7 @@ public class BPELValidationController extends ChangeEventListenerAdapter {
         myBpelModel = bpelModel;
         myTrigger = new ExternalModelsValidationTrigger( this );
         myAnnotations = new ArrayList<BPELValidationAnnotation>();
+        myValidationResult = new ArrayList<ResultItem>();
     }
 
     public void attach() {
@@ -133,31 +134,51 @@ public class BPELValidationController extends ChangeEventListenerAdapter {
         notifyListeners(result);
     }
     
-    private void startValidation() {
-        synchronized(lock) {
-            final TimerTask timerTask= new TimerTask() {
-                public void run() {
-                    Thread.currentThread().setPriority(Thread.MIN_PRIORITY);
-//System.out.println();
-//System.out.println("---- VALIDATION");
-//System.out.println();
-                    Validation validation = new Validation();
-                    validation.validate(myBpelModel, ValidationType.PARTIAL);
-                    List<ResultItem> items = validation.getValidationResult();
-                    List<ResultItem> result = new ArrayList<ResultItem>();
+    private synchronized void startValidation() {
+      TimerTask task = new TimerTask() {
+          public void run() {
+              Thread.currentThread().setPriority(Thread.MIN_PRIORITY);
+              Validation validation = new Validation();
+out("---- VALIDATION.START");
+startTime();
+              validation.validate(myBpelModel, ValidationType.PARTIAL);
+out("---- VALIDATION.END");
+endTime();
+              List<ResultItem> items = validation.getValidationResult();
+              myValidationResult = new ArrayList<ResultItem>();
 
-                    synchronized(items) {
-                      for (ResultItem item : items) {
-                        result.add(item);
-                      }
-                    }
-                    notifyListeners(result);
+              synchronized(items) {
+                for (ResultItem item : items) {
+                  myValidationResult.add(item);
                 }
-            };
-            myTimer.cancel();
-            myTimer = new Timer();
-            myTimer.schedule(timerTask, DELAY);
-        }
+              }
+              notifyListeners(myValidationResult);
+          }
+      };
+out();
+//out("START TIMER");
+      myTimer.cancel();
+      myTimer = new Timer();
+      myTimer.schedule(task, DELAY);
+    }
+
+    private void startTime() {
+      myTime = System.currentTimeMillis ();
+    }
+
+    private void endTime() {
+      long currentTime = System.currentTimeMillis ();
+      out("It takes " + (currentTime - myTime) + " ms.");
+    }
+
+    private long myTime;
+
+    private static void out() {
+      System.out.println();
+    }
+
+    private void out(Object object) {
+      System.out.println("*** " + object); // NOI18N
     }
 
     private void notifyListeners(List<ResultItem> result) {
@@ -172,40 +193,47 @@ public class BPELValidationController extends ChangeEventListenerAdapter {
     }
     
     private void showAnnotationsInEditor(List<ResultItem> result) {
-      for (BPELValidationAnnotation annotation : myAnnotations) {
-        annotation.detach();
-      }
-      myAnnotations.clear();
+        synchronized (myAnnotations) {
+            for (BPELValidationAnnotation annotation : myAnnotations) {
+                annotation.detach();
+            }
+            myAnnotations.clear();
 //System.out.println();
 //System.out.println("SHOW ANNOTATION IN EDITOR");
 
-      for (ResultItem item : result) {
-        if (item.getType() != ResultType.ERROR) {
-          continue;
-        }
-        Line line = Util.getLine(item);
+            for (ResultItem item : result) {
+                if (item.getType() != ResultType.ERROR) {
+                    continue;
+                }
+                Line line = Util.getLine(item);
 //System.out.println("  see line: " + line);
 
-        if (line == null) {
-          continue;
+                if (line == null) {
+                    continue;
+                }
+                BPELValidationAnnotation annotation =
+                        new BPELValidationAnnotation();
+                myAnnotations.add(annotation);
+                annotation.show(line, item.getDescription());
+            }
         }
-        BPELValidationAnnotation annotation = new BPELValidationAnnotation();
-        myAnnotations.add(annotation);
-        annotation.show(line, item.getDescription());
-      }
     }
 
     private ExternalModelsValidationTrigger getTrigger() {
       return myTrigger;
     }
+
+    public List<ResultItem> getValidationResult() {
+      return myValidationResult;
+    }
     
     private BpelModel myBpelModel;
-    private Object lock = new Object();
     private Timer myTimer = new Timer();
     private List<ResultItem> myValidationResult;
     private ExternalModelsValidationTrigger myTrigger;
     private List<BPELValidationAnnotation> myAnnotations;
     private Map<BPELValidationListener, Object> myWeaklisteners;
 
+    // vlv
     private static final int DELAY = 3456;
 }

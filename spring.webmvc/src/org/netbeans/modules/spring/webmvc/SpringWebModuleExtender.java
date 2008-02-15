@@ -82,6 +82,7 @@ import org.netbeans.modules.j2ee.dd.api.web.WelcomeFileList;
 import org.netbeans.modules.spring.api.beans.ConfigFileGroup;
 import org.netbeans.modules.spring.api.beans.ConfigFileManager;
 import org.netbeans.modules.spring.api.beans.SpringScope;
+import org.netbeans.modules.spring.webmvc.utils.SpringWebFrameworkUtils;
 import org.netbeans.modules.web.api.webmodule.ExtenderController;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.spi.webmodule.WebModuleExtender;
@@ -153,7 +154,7 @@ public class SpringWebModuleExtender extends WebModuleExtender implements Change
             controller.setErrorMessage(NbBundle.getMessage(SpringConfigPanelVisual.class, "MSG_DispatcherNameIsEmpty")); // NOI18N
             return false;
         }
-        if (!SpringWebFrameworkValidator.isDispatcherNameValid(dispatcherName)){
+        if (!SpringWebFrameworkUtils.isDispatcherNameValid(dispatcherName)){
             controller.setErrorMessage(NbBundle.getMessage(SpringConfigPanelVisual.class, "MSG_DispatcherNameIsNotValid")); // NOI18N
             return false;
         }
@@ -161,7 +162,7 @@ public class SpringWebModuleExtender extends WebModuleExtender implements Change
             controller.setErrorMessage(NbBundle.getMessage(SpringConfigPanelVisual.class, "MSG_DispatcherMappingPatternIsEmpty")); // NOI18N
             return false;
         }
-        if (!SpringWebFrameworkValidator.isDispatcherMappingPatternValid(dispatcherMapping)){
+        if (!SpringWebFrameworkUtils.isDispatcherMappingPatternValid(dispatcherMapping)){
             controller.setErrorMessage(NbBundle.getMessage(SpringConfigPanelVisual.class, "MSG_DispatcherMappingPatternIsNotValid")); // NOI18N
             return false;
         }        
@@ -220,7 +221,7 @@ public class SpringWebModuleExtender extends WebModuleExtender implements Change
         public static final String SPRING_CLASS_NAME = "org.springframework.core.SpringVersion"; // NOI18N
         public static final String JSTL_CLASS_NAME = "javax.servlet.jsp.jstl.core.Config"; // NOI18N
         public static final String CONTEXT_LOADER = "org.springframework.web.context.ContextLoaderListener"; // NOI18N
-        public static final String DISPATCHER_SERVLET = "org.springframework.web.servlet.DispatcherServlet"; // NOI18N
+        public static final String DISPATCHER_SERVLET = "org.springframework.web.servlet.DispatcherServlet"; // NOI18N        
         public static final String ENCODING = "UTF-8"; // NOI18N
         private Set<FileObject> filesToOpen = new LinkedHashSet<FileObject>();
         private WebModule webModule;
@@ -311,7 +312,7 @@ public class SpringWebModuleExtender extends WebModuleExtender implements Change
             }
             addFileToOpen(copyResource("redirect.jsp", indexJsp)); // NOI18N
         }
-
+               
         public void addFileToOpen(FileObject file) {
             filesToOpen.add(file);
         }
@@ -326,8 +327,12 @@ public class SpringWebModuleExtender extends WebModuleExtender implements Change
             StringBuffer buffer = new StringBuffer();
             BufferedReader reader = new BufferedReader(new InputStreamReader(in, ENCODING));
             try {
-                String line = reader.readLine();
+                String line = reader.readLine();               
                 while (line != null) {
+                    // If an extension mapping is entered by the user, then update filename extensions in the Spring bean config file and index.jsp
+                    if ((resourceName.contains("-servlet.xml") || ((resourceName.equals("redirect.jsp"))))) { // NOI18N
+                        line = SpringWebFrameworkUtils.replaceExtensionInTemplates(line, dispatcherMapping);
+                    }
                     buffer.append(line);
                     buffer.append(lineSeparator);
                     line = reader.readLine();
