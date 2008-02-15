@@ -56,7 +56,10 @@ import com.sun.tools.javac.comp.Resolve;
 import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.tree.JCTree.JCClassDecl;
 import com.sun.tools.javac.tree.JCTree.JCMethodDecl;
+import java.io.IOException;
 import java.util.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.lang.model.SourceVersion;
 import javax.lang.model.element.*;
 import javax.lang.model.type.TypeKind;
@@ -67,6 +70,9 @@ import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.java.source.query.CommentHandler;
 import org.netbeans.modules.java.source.query.CommentSet;
 import org.netbeans.modules.java.source.builder.CommentHandlerService;
+import org.netbeans.modules.java.source.builder.CommentSetImpl;
+import org.netbeans.modules.java.source.parsing.SourceFileObject;
+import org.openide.util.Exceptions;
 
 /**
  *
@@ -75,7 +81,7 @@ import org.netbeans.modules.java.source.builder.CommentHandlerService;
 public final class TreeUtilities {
     
     private final CompilationInfo info;
-    private final CommentHandler handler;
+    private final CommentHandlerService handler;
     
     /** Creates a new instance of CommentUtilities */
     TreeUtilities(final CompilationInfo info) {
@@ -170,10 +176,33 @@ public final class TreeUtilities {
      * @return list of preceding/trailing comments attached to the given tree
      */
     public List<Comment> getComments(Tree tree, boolean preceding) {
-        CommentSet set = handler.getComments(tree);
+        CommentSetImpl set = handler.getComments(tree);
         
-        if (set == null)
-            return Collections.<Comment>emptyList();
+        if (!set.areCommentsMapped()) {
+            boolean assertsEnabled = false;
+            boolean automap = true;
+            
+            assert assertsEnabled = true;
+            
+            if (assertsEnabled) {
+                TreePath tp = TreePath.getPath(info.getCompilationUnit(), tree);
+                
+                if (tp == null) {
+                    Logger.getLogger(TreeUtilities.class.getName()).log(Level.WARNING, "Comment automap requested for Tree not from the root compilation info. Please, make sure to call GeneratorUtilities.importComments before Treeutilities.getComments. Tree: {0}", tree);
+                    Logger.getLogger(TreeUtilities.class.getName()).log(Level.WARNING, "Caller", new Exception());
+                    automap = false;
+                }
+            }
+            
+            if (automap) {
+                try {
+                    TokenSequence<JavaTokenId> seq = ((SourceFileObject) info.getCompilationUnit().getSourceFile()).getTokenHierarchy().tokenSequence(JavaTokenId.language());
+                    new TranslateIdentifier(info, true, false, seq).translate(tree);
+                } catch (IOException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+            }
+        }
         
         List<Comment> comments = preceding ? set.getPrecedingComments() : set.getTrailingComments();
         

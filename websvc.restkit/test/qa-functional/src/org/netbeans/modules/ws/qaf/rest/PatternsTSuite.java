@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -53,10 +53,10 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
 /**
- *
+ * Tests for New REST from Patterns wizard
+ * 
  * @author lukas
  */
-//TODO: add javadoc
 public class PatternsTSuite extends RestTestBase {
 
     private enum Pattern {
@@ -178,20 +178,20 @@ public class PatternsTSuite extends RestTestBase {
     /** Creates suite from particular test cases. You can define order of testcases here. */
     public static NbTestSuite suite() {
         NbTestSuite suite = new NbTestSuite();
-        suite.addTest(new PatternsTSuite("testSingletonDef"));
-        suite.addTest(new PatternsTSuite("testContainerIDef"));
-        suite.addTest(new PatternsTSuite("testCcContainerIDef"));
-        suite.addTest(new PatternsTSuite("testSingleton1"));
-        suite.addTest(new PatternsTSuite("testCcContainerI1"));
-        suite.addTest(new PatternsTSuite("testSingleton2"));
-        suite.addTest(new PatternsTSuite("testContainerI1"));
-        suite.addTest(new PatternsTSuite("testContainerI2"));
-        suite.addTest(new PatternsTSuite("testSingleton3"));
-        suite.addTest(new PatternsTSuite("testContainerI3"));
-        suite.addTest(new PatternsTSuite("testCcContainerI2"));
-        suite.addTest(new PatternsTSuite("testCcContainerI3"));
-        suite.addTest(new PatternsTSuite("testDeploy"));
-        suite.addTest(new PatternsTSuite("testUndeploy"));
+        suite.addTest(new PatternsTSuite("testSingletonDef")); //NOI18N
+        suite.addTest(new PatternsTSuite("testContainerIDef")); //NOI18N
+        suite.addTest(new PatternsTSuite("testCcContainerIDef")); //NOI18N
+        suite.addTest(new PatternsTSuite("testSingleton1")); //NOI18N
+        suite.addTest(new PatternsTSuite("testCcContainerI1")); //NOI18N
+        suite.addTest(new PatternsTSuite("testSingleton2")); //NOI18N
+        suite.addTest(new PatternsTSuite("testContainerI1")); //NOI18N
+        suite.addTest(new PatternsTSuite("testContainerI2")); //NOI18N
+        suite.addTest(new PatternsTSuite("testSingleton3")); //NOI18N
+        suite.addTest(new PatternsTSuite("testContainerI3")); //NOI18N
+        suite.addTest(new PatternsTSuite("testCcContainerI2")); //NOI18N
+        suite.addTest(new PatternsTSuite("testCcContainerI3")); //NOI18N
+        suite.addTest(new PatternsTSuite("testDeploy")); //NOI18N
+        suite.addTest(new PatternsTSuite("testUndeploy")); //NOI18N
         return suite;
     }
 
@@ -201,44 +201,71 @@ public class PatternsTSuite extends RestTestBase {
         TestRunner.run(suite());
     }
 
+    /**
+     * Test default setting for Singleton pattern
+     */
     public void testSingletonDef() {
         Set<File> files = createWsFromPatterns(null, Pattern.Singleton, null);
     }
 
+    /**
+     * Test application/json mime setting for Singleton pattern
+     */
     public void testSingleton1() {
         String name = "Singleton1"; //NOI18N
         Set<File> files = createWsFromPatterns(name, Pattern.Singleton, MimeType.APPLICATION_JSON);
     }
 
+    /**
+     * Test text/plain mime setting for Singleton pattern
+     */
     public void testSingleton2() {
         String name = "Singleton2"; //NOI18N
         Set<File> files = createWsFromPatterns(name, Pattern.Singleton, MimeType.TEXT_PLAIN);
     }
 
+    /**
+     * Test text/html mime setting for Singleton pattern
+     */
     public void testSingleton3() {
         String name = "Singleton3"; //NOI18N
         Set<File> files = createWsFromPatterns(name, Pattern.Singleton, MimeType.TEXT_HTML);
     }
 
+    /**
+     * Test default setting for Container Item pattern
+     */
     public void testContainerIDef() {
         Set<File> files = createWsFromPatterns(null, Pattern.ContainerItem, null);
     }
 
+    /**
+     * Test application/json mime setting for Container Item pattern
+     */
     public void testContainerI1() {
         String name = "CI1"; //NOI18N
         Set<File> files = createWsFromPatterns(name, Pattern.ContainerItem, MimeType.APPLICATION_JSON);
     }
 
+    /**
+     * Test text/plain mime setting for Container Item pattern
+     */
     public void testContainerI2() {
         String name = "CI2"; //NOI18N
         Set<File> files = createWsFromPatterns(name, Pattern.ContainerItem, MimeType.TEXT_PLAIN);
     }
 
+    /**
+     * Test text/html mime setting for Container Item pattern
+     */
     public void testContainerI3() {
         String name = "CI3"; //NOI18N
         Set<File> files = createWsFromPatterns(name, Pattern.ContainerItem, MimeType.TEXT_HTML);
     }
 
+    /**
+     * Test default setting for Client Controlled Container Item pattern
+     */
     public void testCcContainerIDef() {
         //TODO: have to set name because of issue 112610
         // http://www.netbeans.org/issues/show_bug.cgi?id=122610
@@ -246,16 +273,25 @@ public class PatternsTSuite extends RestTestBase {
         Set<File> files = createWsFromPatterns(name, Pattern.CcContainerItem, null);
     }
 
+    /**
+     * Test application/json mime setting for Client Controlled Container Item pattern
+     */
     public void testCcContainerI1() {
         String name = "CcCI1"; //NOI18N
         Set<File> files = createWsFromPatterns(name, Pattern.CcContainerItem, MimeType.APPLICATION_JSON);
     }
 
+    /**
+     * Test text/plain mime setting for Client Controlled Container Item pattern
+     */
     public void testCcContainerI2() {
         String name = "CcCI2"; //NOI18N
         Set<File> files = createWsFromPatterns(name, Pattern.CcContainerItem, MimeType.TEXT_PLAIN);
     }
 
+    /**
+     * Test text/html mime setting for Client Controlled Container Item pattern
+     */
     public void testCcContainerI3() {
         String name = "CcCI3"; //NOI18N
         Set<File> files = createWsFromPatterns(name, Pattern.CcContainerItem, MimeType.TEXT_HTML);

@@ -1769,18 +1769,21 @@ jarsigner.storepass=${jarsigner.storepass}
     </target>
 
     <target name="get-bundled-jvms">
-	<mkdir dir="${basedir}/cache/jvm"/>
+        <set property="jvm.cache.dir" 
+             value="${nbi.cache.dir}/jvm"/>
+	<mkdir dir="${jvm.cache.dir}"/>
+        
 	<get src="${binary.cache.host}/bundledjvm/jre-1_5_0_14-solaris-i586.sh"
-	     dest="${basedir}/cache/jvm/jre-1_5_0_14-solaris-i586.sh"
+	     dest="${jvm.cache.dir}/jre-1_5_0_14-solaris-i586.sh"
 	     usetimestamp="true"/>
 	<get src="${binary.cache.host}/bundledjvm/jre-1_5_0_14-solaris-sparc.sh"
-	     dest="${basedir}/cache/jvm/jre-1_5_0_14-solaris-sparc.sh"
+	     dest="${jvm.cache.dir}/jre-1_5_0_14-solaris-sparc.sh"
 	     usetimestamp="true"/>
 	<get src="${binary.cache.host}/bundledjvm/jre-1_5_0_14-linux-i586.bin"
-	     dest="${basedir}/cache/jvm/jre-1_5_0_14-linux-i586.bin"
+	     dest="${jvm.cache.dir}/jre-1_5_0_14-linux-i586.bin"
 	     usetimestamp="true"/>
 	<get src="${binary.cache.host}/bundledjvm/jre-1_5_0_14-windows-i586.exe"
-	     dest="${basedir}/cache/jvm/jre-1_5_0_14-windows-i586.exe"
+	     dest="${jvm.cache.dir}/jre-1_5_0_14-windows-i586.exe"
 	     usetimestamp="true"/>
     </target>
 
@@ -1789,85 +1792,85 @@ jarsigner.storepass=${jarsigner.storepass}
         <mkdir dir="${output.dir}/bundles/jdk"/>
         <create-bundle root="${output.dir}/registry-temp" 
                        platform="windows" 
-                       target="${output.dir}/bundles/jdk/jdk-1_5_0_14-${jdk.bundle.files.suffix}-windows${nb.build.suffix}.exe">
+                       target="${output.dir}/bundles/jdk/jdk-1_5_0_15-${jdk.bundle.files.suffix}-windows${nb.build.suffix}.exe">
             <component uid="nb-base" version="${nb.full.version}"/>
             <component uid="nb-javase" version="${nb.full.version}"/>
-	    <component uid="jdk" version="1.5.0.14.3"/>
+	    <component uid="jdk" version="1.5.0.15.4"/>
 	    <bundleProperty name="${welcome.type}" value="javase.jdk"/>
             <bundleProperty name="nbi.overall.license.resource" value="$S{nbi.overall.license.jdk5.resource}"/>
-	    <property name="nbi.bundled.jvm.file" value="${basedir}/cache/jvm/jre-1_5_0_14-windows-i586.exe"/>
+	    <property name="nbi.bundled.jvm.file" value="${jvm.cache.dir}/jre-1_5_0_14-windows-i586.exe"/>
         </create-bundle>
         <create-bundle root="${output.dir}/registry-temp" 
                        platform="linux" 
-                       target="${output.dir}/bundles/jdk/jdk-1_5_0_14-${jdk.bundle.files.suffix}-linux${nb.build.suffix}.sh">
+                       target="${output.dir}/bundles/jdk/jdk-1_5_0_15-${jdk.bundle.files.suffix}-linux${nb.build.suffix}.sh">
             <component uid="nb-base" version="${nb.full.version}"/>
             <component uid="nb-javase" version="${nb.full.version}"/>
-	    <component uid="jdk" version="1.5.0.14.3"/>
+	    <component uid="jdk" version="1.5.0.15.4"/>
 	    <bundleProperty name="${welcome.type}" value="javase.jdk"/>
             <bundleProperty name="nbi.overall.license.resource" value="$S{nbi.overall.license.jdk5.resource}"/>
-	    <property name="nbi.bundled.jvm.file" value="${basedir}/cache/jvm/jre-1_5_0_14-linux-i586.bin"/>
+	    <property name="nbi.bundled.jvm.file" value="${jvm.cache.dir}/jre-1_5_0_14-linux-i586.bin"/>
         </create-bundle>
         <create-bundle root="${output.dir}/registry-temp" 
                        platform="solaris-x86" 
-                       target="${output.dir}/bundles/jdk/jdk-1_5_0_14-${jdk.bundle.files.suffix}-solaris-x86${nb.build.suffix}.sh">
+                       target="${output.dir}/bundles/jdk/jdk-1_5_0_15-${jdk.bundle.files.suffix}-solaris-x86${nb.build.suffix}.sh">
             <component uid="nb-base" version="${nb.full.version}"/>
             <component uid="nb-javase" version="${nb.full.version}"/>
-	    <component uid="jdk" version="1.5.0.14.3"/>
+	    <component uid="jdk" version="1.5.0.15.4"/>
 	    <bundleProperty name="${welcome.type}" value="javase.jdk"/>
             <bundleProperty name="nbi.overall.license.resource" value="$S{nbi.overall.license.jdk5.resource}"/>
-	    <property name="nbi.bundled.jvm.file" value="${basedir}/cache/jvm/jre-1_5_0_14-solaris-i586.sh"/>
+	    <property name="nbi.bundled.jvm.file" value="${jvm.cache.dir}/jre-1_5_0_14-solaris-i586.sh"/>
         </create-bundle>
         <create-bundle root="${output.dir}/registry-temp" 
                        platform="solaris-sparc" 
-                       target="${output.dir}/bundles/jdk/jdk-1_5_0_14-${jdk.bundle.files.suffix}-solaris-sparc${nb.build.suffix}.sh">
+                       target="${output.dir}/bundles/jdk/jdk-1_5_0_15-${jdk.bundle.files.suffix}-solaris-sparc${nb.build.suffix}.sh">
             <component uid="nb-base" version="${nb.full.version}"/>
             <component uid="nb-javase" version="${nb.full.version}"/>
-	    <component uid="jdk" version="1.5.0.14.3"/>
+	    <component uid="jdk" version="1.5.0.15.4"/>
 	    <bundleProperty name="${welcome.type}" value="javase.jdk"/>
             <bundleProperty name="nbi.overall.license.resource" value="$S{nbi.overall.license.jdk5.resource}"/>
-            <property name="nbi.bundled.jvm.file" value="${basedir}/cache/jvm/jre-1_5_0_14-solaris-sparc.sh"/>
+            <property name="nbi.bundled.jvm.file" value="${jvm.cache.dir}/jre-1_5_0_14-solaris-sparc.sh"/>
         </create-bundle>
 
         <!-- JavaSE + JDK6 bundles -->
         <create-bundle root="${output.dir}/registry-temp" 
                        platform="windows" 
-                       target="${output.dir}/bundles/jdk/jdk-6u4-${jdk.bundle.files.suffix}-windows${nb.build.suffix}.exe">
+                       target="${output.dir}/bundles/jdk/jdk-6u5-${jdk.bundle.files.suffix}-windows${nb.build.suffix}.exe">
             <component uid="nb-base" version="${nb.full.version}"/>
             <component uid="nb-javase" version="${nb.full.version}"/>
-	    <component uid="jdk" version="1.6.0.4.10"/>
+	    <component uid="jdk" version="1.6.0.5.12"/>
 	    <bundleProperty name="${welcome.type}" value="javase.jdk"/>
             <bundleProperty name="nbi.overall.license.resource" value="$S{nbi.overall.license.jdk6.resource}"/>
-	    <property name="nbi.bundled.jvm.file" value="${basedir}/cache/jvm/jre-1_5_0_14-windows-i586.exe"/>
+	    <property name="nbi.bundled.jvm.file" value="${jvm.cache.dir}/jre-1_5_0_14-windows-i586.exe"/>
         </create-bundle>
         <create-bundle root="${output.dir}/registry-temp" 
                        platform="linux" 
-                       target="${output.dir}/bundles/jdk/jdk-6u4-${jdk.bundle.files.suffix}-linux${nb.build.suffix}.sh">
+                       target="${output.dir}/bundles/jdk/jdk-6u5-${jdk.bundle.files.suffix}-linux${nb.build.suffix}.sh">
             <component uid="nb-base" version="${nb.full.version}"/>
             <component uid="nb-javase" version="${nb.full.version}"/>
-	    <component uid="jdk" version="1.6.0.4.10"/>
+	    <component uid="jdk" version="1.6.0.5.12"/>
 	    <bundleProperty name="${welcome.type}" value="javase.jdk"/>
             <bundleProperty name="nbi.overall.license.resource" value="$S{nbi.overall.license.jdk6.resource}"/>
-	    <property name="nbi.bundled.jvm.file" value="${basedir}/cache/jvm/jre-1_5_0_14-linux-i586.bin"/>
+	    <property name="nbi.bundled.jvm.file" value="${jvm.cache.dir}/jre-1_5_0_14-linux-i586.bin"/>
         </create-bundle>
         <create-bundle root="${output.dir}/registry-temp" 
                        platform="solaris-x86" 
-                       target="${output.dir}/bundles/jdk/jdk-6u4-${jdk.bundle.files.suffix}-solaris-x86${nb.build.suffix}.sh">
+                       target="${output.dir}/bundles/jdk/jdk-6u5-${jdk.bundle.files.suffix}-solaris-x86${nb.build.suffix}.sh">
             <component uid="nb-base" version="${nb.full.version}"/>
             <component uid="nb-javase" version="${nb.full.version}"/>
-	    <component uid="jdk" version="1.6.0.4.10"/>
+	    <component uid="jdk" version="1.6.0.5.12"/>
 	    <bundleProperty name="${welcome.type}" value="javase.jdk"/>
             <bundleProperty name="nbi.overall.license.resource" value="$S{nbi.overall.license.jdk6.resource}"/>
-	    <property name="nbi.bundled.jvm.file" value="${basedir}/cache/jvm/jre-1_5_0_14-solaris-i586.sh"/>
+	    <property name="nbi.bundled.jvm.file" value="${jvm.cache.dir}/jre-1_5_0_14-solaris-i586.sh"/>
         </create-bundle>
         <create-bundle root="${output.dir}/registry-temp" 
                        platform="solaris-sparc" 
-                       target="${output.dir}/bundles/jdk/jdk-6u4-${jdk.bundle.files.suffix}-solaris-sparc${nb.build.suffix}.sh">
+                       target="${output.dir}/bundles/jdk/jdk-6u5-${jdk.bundle.files.suffix}-solaris-sparc${nb.build.suffix}.sh">
             <component uid="nb-base" version="${nb.full.version}"/>
             <component uid="nb-javase" version="${nb.full.version}"/>
-	    <component uid="jdk" version="1.6.0.4.10"/>
+	    <component uid="jdk" version="1.6.0.5.12"/>
 	    <bundleProperty name="${welcome.type}" value="javase.jdk"/>
             <bundleProperty name="nbi.overall.license.resource" value="$S{nbi.overall.license.jdk6.resource}"/>
-	    <property name="nbi.bundled.jvm.file" value="${basedir}/cache/jvm/jre-1_5_0_14-solaris-sparc.sh"/>
+	    <property name="nbi.bundled.jvm.file" value="${jvm.cache.dir}/jre-1_5_0_14-solaris-sparc.sh"/>
         </create-bundle>
     </target>
 
@@ -2066,7 +2069,7 @@ LANGUAGE_WEBPAGE_NAMES.push("${language.webpage.name}");
     <target name="generate-bundles">
 	<property name="welcome.type" value="NWP.welcome.page.type"/>
         <antcall target="generate-netbeans-bundles"/>
-        <!--<antcall target="generate-jdk-bundles"/>-->
+        <antcall target="generate-jdk-bundles"/>
         <!--<antcall target="generate-javatoolsbundle-bundles"/>-->
     </target>
 
@@ -2079,7 +2082,7 @@ LANGUAGE_WEBPAGE_NAMES.push("${language.webpage.name}");
         <antcall target="build-runtimes"/>
 	<!--<antcall target="build-wtk"/>-->
         <!--<antcall target="build-javaeesdk"/>-->
-        <!--<antcall target="build-jdk"/>-->
+        <antcall target="build-jdk"/>
 
         <!--<antcall target="export-temp-registry"/>-->
         
