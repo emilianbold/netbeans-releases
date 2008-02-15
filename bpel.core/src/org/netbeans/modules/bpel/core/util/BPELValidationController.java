@@ -144,11 +144,12 @@ public class BPELValidationController extends ChangeEventListenerAdapter {
       public void run() {
         Thread.currentThread().setPriority(Thread.MIN_PRIORITY);
         Validation validation = new Validation();
-//out();
-//out("START VALIDATION");
+        log();
+        log("START VALIDATION"); // NOI18N
         startTimeln();
         validation.validate(myBpelModel, ValidationType.PARTIAL);
         endTime("FAST VALIDATION"); // NOI18N
+        log("END VALIDATION"); // NOI18N
         
         List<ResultItem> items = validation.getValidationResult();
         myValidationResult = new ArrayList<ResultItem>();
@@ -161,8 +162,8 @@ public class BPELValidationController extends ChangeEventListenerAdapter {
         notifyListeners(myValidationResult);
       }
     };
-//out();
-//out("TIMER");
+    log();
+    log("TIMER"); // NOI18N
     myTimer.cancel();
     myTimer = new Timer();
     myTimer.schedule(task, DELAY);
