@@ -48,7 +48,6 @@ import java.beans.PropertyChangeListener;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.TreeMap;
-import java.util.prefs.AbstractPreferences;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.PreferenceChangeEvent;
 import java.util.prefs.PreferenceChangeListener;
@@ -78,7 +77,7 @@ public class EditorPropertySheet extends javax.swing.JPanel implements ActionLis
     private CodeStyle.Language currentLanguage;
     private String lastChangedproperty;
     private Map<CodeStyle.Language, String> defaultStyles = new HashMap<CodeStyle.Language, String>();
-    private Map<CodeStyle.Language, Map<String,Preferences>> allPreferences = new HashMap<CodeStyle.Language, Map<String, Preferences>>();
+    private Map<CodeStyle.Language, Map<String,PreviewPreferences>> allPreferences = new HashMap<CodeStyle.Language, Map<String, PreviewPreferences>>();
 
 
     EditorPropertySheet(EditorOptionsPanelController topControler) {
@@ -100,15 +99,16 @@ public class EditorPropertySheet extends javax.swing.JPanel implements ActionLis
         initLanguageCategory();
     }
     
-    private void initLanguageStylePreferences(CodeStyle.Language language, String style){
-        Map<String, Preferences> map = allPreferences.get(language);
+    private void initLanguageStylePreferences(CodeStyle.Language language, String styleId){
+        Map<String, PreviewPreferences> map = allPreferences.get(language);
         if (map == null){
-            map = new TreeMap<String, Preferences>();
+            map = new TreeMap<String, PreviewPreferences>();
             allPreferences.put(language, map);
         }
-        Preferences clone = new PreviewPreferences(EditorOptions.getPreferences(language, style));
+        PreviewPreferences clone = new PreviewPreferences(
+                                   EditorOptions.getPreferences(language, styleId), language, styleId);
         clone.addPreferenceChangeListener(this);
-        map.put(style, clone);
+        map.put(styleId, clone);
     }
     
     
@@ -133,11 +133,11 @@ public class EditorPropertySheet extends javax.swing.JPanel implements ActionLis
 
     private void initLanguageCategory(){
         DefaultComboBoxModel model = new DefaultComboBoxModel();
-        Map<String, Preferences> map = allPreferences.get(currentLanguage);
+        Map<String, PreviewPreferences> map = allPreferences.get(currentLanguage);
         String currentProfile = defaultStyles.get(currentLanguage);
         int index = 0;
         int i = 0;
-        for(Map.Entry<String, Preferences> entry : map.entrySet()) {
+        for(Map.Entry<String, PreviewPreferences> entry : map.entrySet()) {
             if (entry.getKey().equals(currentProfile)) {
                 index = i;
             }
@@ -152,7 +152,7 @@ public class EditorPropertySheet extends javax.swing.JPanel implements ActionLis
         styleComboBox.addActionListener(this);
     }
     
-    private void initSheets(Preferences preferences){
+    private void initSheets(PreviewPreferences preferences){
 	Sheet sheet = new Sheet();
 	Sheet.Set set = new Sheet.Set();
 	set.setName("Indents"); // NOI18N
@@ -322,17 +322,17 @@ public class EditorPropertySheet extends javax.swing.JPanel implements ActionLis
     }
     
     void store() {
-        for(Map.Entry<CodeStyle.Language, Map<String,Preferences>> entry : allPreferences.entrySet()){
+        for(Map.Entry<CodeStyle.Language, Map<String,PreviewPreferences>> entry : allPreferences.entrySet()){
             CodeStyle.Language language = entry.getKey();
-            Map<String,Preferences> map = entry.getValue();
+            Map<String,PreviewPreferences> map = entry.getValue();
             EditorOptions.setCurrentProfileId(language, defaultStyles.get(language));
-            for(Map.Entry<String,Preferences> prefEntry : map.entrySet()){
+            for(Map.Entry<String,PreviewPreferences> prefEntry : map.entrySet()){
                 String style = prefEntry.getKey();
-                Preferences preferences = prefEntry.getValue();
+                PreviewPreferences preferences = prefEntry.getValue();
                 Preferences toSave = EditorOptions.getPreferences(language, style);
                 try {
                     for (String key : preferences.keys()) {
-                            Object def = EditorOptions.getDefault(key);
+                            Object def = EditorOptions.getDefault(language, key, defaultStyles.get(language));
                             if (def instanceof Boolean) {
                                 toSave.putBoolean(key, preferences.getBoolean(key, (Boolean) def));
                             } else if (def instanceof Integer) {
@@ -410,8 +410,9 @@ public class EditorPropertySheet extends javax.swing.JPanel implements ActionLis
     
     private void repaintPreview() { 
         EntryWrapper category = (EntryWrapper)styleComboBox.getSelectedItem();
-        Preferences p = new PreviewPreferences(category.preferences);
         if (category != null) {
+            Preferences p = new PreviewPreferences(category.preferences,
+                            category.preferences.getLanguage(), category.preferences.getStyleId());
             jScrollPane1.setIgnoreRepaint(true);
             refreshPreview(previewPane, p);
             previewPane.setIgnoreRepaint(false);
@@ -595,60 +596,10 @@ public class EditorPropertySheet extends javax.swing.JPanel implements ActionLis
     private javax.swing.JComboBox styleComboBox;
     // End of variables declaration//GEN-END:variables
 
-    public static class PreviewPreferences extends AbstractPreferences {
-        private Map<String,Object> map = new HashMap<String, Object>();
-        public PreviewPreferences(Preferences master) {
-            super(null, ""); // NOI18N
-            try {
-                for (String key : master.keys()) {
-                    Object o = EditorOptions.getDefault(key);
-                    if (o instanceof Boolean) {
-                        putBoolean(key, master.getBoolean(key, (Boolean) EditorOptions.getDefault(key)));
-                    } else if (o instanceof Integer) {
-                        putInt(key, master.getInt(key, (Integer) EditorOptions.getDefault(key)));
-                    } else {
-                        map.put(key, master.get(key, EditorOptions.getDefault(key).toString()));
-                    }
-                }
-            } catch (BackingStoreException ex) {
-                Exceptions.printStackTrace(ex);
-            }
-        }
-
-        protected void putSpi(String key, String value) {
-            map.put(key, value);            
-        }
-        protected String getSpi(String key) {
-            return (String)map.get(key);                    
-        }
-        protected void removeSpi(String key) {
-            map.remove(key);
-        }
-        protected void removeNodeSpi() throws BackingStoreException {
-            throw new UnsupportedOperationException("Not supported yet.");
-        }
-        protected String[] keysSpi() throws BackingStoreException {
-            String array[] = new String[map.keySet().size()];
-            return map.keySet().toArray( array );
-        }
-        protected String[] childrenNamesSpi() throws BackingStoreException {
-            throw new UnsupportedOperationException("Not supported yet.");
-        }
-        protected AbstractPreferences childSpi(String name) {
-            throw new UnsupportedOperationException("Not supported yet.");
-        }
-        protected void syncSpi() throws BackingStoreException {
-            throw new UnsupportedOperationException("Not supported yet.");
-        }
-        protected void flushSpi() throws BackingStoreException {
-            throw new UnsupportedOperationException("Not supported yet.");
-        }
-    }
-
     private static class EntryWrapper {
         private final String name;
-        private final Preferences preferences;
-        private EntryWrapper(Map.Entry<String, Preferences> enrty){
+        private final PreviewPreferences preferences;
+        private EntryWrapper(Map.Entry<String, PreviewPreferences> enrty){
             this.name = enrty.getKey();
             this.preferences = enrty.getValue();
         }

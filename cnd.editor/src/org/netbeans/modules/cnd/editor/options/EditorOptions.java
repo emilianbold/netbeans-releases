@@ -376,7 +376,7 @@ public class EditorOptions {
         namedDefaults.put(APACHE_PROFILE, apache);
     }
 
-    public static Object getDefault(String id){
+    public static Object getDefault(CodeStyle.Language language, String styleId, String id){
         return defaults.get(id);
     }
     
