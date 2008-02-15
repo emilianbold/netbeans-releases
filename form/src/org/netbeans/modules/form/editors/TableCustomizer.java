@@ -1145,7 +1145,7 @@ public class TableCustomizer extends JPanel implements Customizer, FormAwareEdit
                 }
             }
             try {
-                modelProperty.setValue(rowTableModel);
+                modelProperty.setValue(new FormProperty.ValueWithEditor(rowTableModel, new TableModelEditor()));
             } catch (Exception ex) {
                 Logger.getLogger(getClass().getName()).log(Level.INFO, ex.getMessage(), ex);
             }
@@ -1161,7 +1161,7 @@ public class TableCustomizer extends JPanel implements Customizer, FormAwareEdit
         int selectionModel = selectionModelCombo.getSelectedIndex();
         model.setSelectionModel(selectionModel);
         try {
-            columnModelProperty.setValue(model);
+            columnModelProperty.setValue(new FormProperty.ValueWithEditor(model, new TableColumnModelEditor()));
         } catch (Exception ex) {
             Logger.getLogger(getClass().getName()).log(Level.INFO, ex.getMessage(), ex);
         }
@@ -1184,7 +1184,8 @@ public class TableCustomizer extends JPanel implements Customizer, FormAwareEdit
             resizingAllowed = header.isResizingAllowed();
         }
         try {
-            headerProperty.setValue(new JTableHeaderEditor.FormTableHeader(headerProperty, resizingAllowed, reorderingAllowedChoice.isSelected()));
+            value = new JTableHeaderEditor.FormTableHeader(headerProperty, resizingAllowed, reorderingAllowedChoice.isSelected());
+            headerProperty.setValue(new FormProperty.ValueWithEditor(value, new JTableHeaderEditor()));
         } catch (Exception ex) {
             Logger.getLogger(getClass().getName()).log(Level.INFO, ex.getMessage(), ex);
         }

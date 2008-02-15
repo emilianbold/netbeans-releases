@@ -84,7 +84,11 @@ public class ExportDiffPanel extends javax.swing.JPanel implements ActionListene
     public String getSelectedRevision() {
         String revStr = (String) revisionsComboBox.getSelectedItem();
         if (revStr != null) {
-            revStr = revStr.substring(0, revStr.indexOf(" ")); // NOI18N
+            if (revStr.equals(NbBundle.getMessage(ExportDiffPanel.class, "MSG_Fetching_Revisions"))) { // NOI18N
+                revStr = "tip"; // NOI18N
+            } else {
+                revStr = revStr.substring(0, revStr.indexOf(" ")); // NOI18N
+            }
         }
         return revStr;
     }

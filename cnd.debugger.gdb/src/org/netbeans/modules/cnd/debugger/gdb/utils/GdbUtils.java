@@ -278,7 +278,7 @@ public class GdbUtils {
             }
             key = info.substring(tstart, i - 1);
             if ((ch = info.charAt(i++)) == '{') {
-                tend = findMatchingCurly(info, i) - 1;
+                tend = findMatchingCurly(info, i);
             } else if (ch == '"') {
                 tend = findEndOfString(info, i);
             } else if (ch == '[') {
