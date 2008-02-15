@@ -54,14 +54,18 @@ import org.netbeans.jellytools.NewProjectWizardOperator;
 import org.netbeans.jellytools.OutputOperator;
 import org.netbeans.jellytools.OutputTabOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
+import org.netbeans.jellytools.actions.Action;
 import org.netbeans.jellytools.modules.j2ee.nodes.J2eeServerNode;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.nodes.ProjectRootNode;
 import org.netbeans.jemmy.EventTool;
 import org.netbeans.jemmy.JemmyProperties;
 import org.netbeans.jemmy.TimeoutExpiredException;
+import org.netbeans.jemmy.operators.JCheckBoxOperator;
 import org.netbeans.jemmy.operators.JComboBoxOperator;
+import org.netbeans.jemmy.operators.JDialogOperator;
 import org.netbeans.jemmy.operators.JTabbedPaneOperator;
+import org.netbeans.jemmy.operators.JTreeOperator;
 import org.netbeans.jemmy.operators.Operator;
 import org.netbeans.junit.ide.ProjectSupport;
 import org.openide.filesystems.FileObject;
@@ -460,6 +464,9 @@ public abstract class WebServicesTestBase extends JellyTestCase {
         // Opening Projects
         String openingProjectsTitle = Bundle.getStringTrimmed("org.netbeans.modules.project.ui.Bundle", "LBL_Opening_Projects_Progress");
         waitDialogClosed(openingProjectsTitle);
+        if (ProjectType.SAMPLE.equals(type)) {
+            checkMissingServer(projectName);
+        }
         // wait project appear in projects view
         ProjectRootNode node = ProjectsTabOperator.invoke().getProjectRootNode(name);
         // wait classpath scanning finished
@@ -655,5 +662,37 @@ public abstract class WebServicesTestBase extends JellyTestCase {
                 } catch (IOException ioe) {}
             }
         }
+    }
+
+    private void checkMissingServer(String project) {
+        // check missing target server dialog is shown    
+        // "Open Project"
+        String openProjectTitle = Bundle.getString("org.netbeans.modules.j2ee.common.ui.Bundle", "MSG_Broken_Server_Title");
+        boolean needToSetServer = false;
+        if(JDialogOperator.findJDialog(openProjectTitle, true, true) != null) {
+            new NbDialogOperator(openProjectTitle).close();
+            needToSetServer = true;
+        }
+        // Set as Main Project
+        String setAsMainProjectItem = Bundle.getStringTrimmed("org.netbeans.modules.project.ui.actions.Bundle", "LBL_SetAsMainProjectAction_Name");
+        new Action(null, setAsMainProjectItem).perform(new ProjectsTabOperator().getProjectRootNode(project));
+        // not display browser on run
+        // open project properties
+        ProjectsTabOperator.invoke().getProjectRootNode(project).properties();
+        // "Project Properties"
+        String projectPropertiesTitle = Bundle.getStringTrimmed("org.netbeans.modules.web.project.ui.customizer.Bundle", "LBL_Customizer_Title");
+        NbDialogOperator propertiesDialogOper = new NbDialogOperator(projectPropertiesTitle);
+        // select "Run" category
+        new Node(new JTreeOperator(propertiesDialogOper), "Run").select();
+        String displayBrowserLabel = Bundle.getStringTrimmed("org.netbeans.modules.web.project.ui.customizer.Bundle", "LBL_CustomizeRun_DisplayBrowser_JCheckBox");
+        new JCheckBoxOperator(propertiesDialogOper, displayBrowserLabel).setSelected(false);
+        if(needToSetServer) {
+            // set default server
+            new JComboBoxOperator(propertiesDialogOper).setSelectedIndex(0);
+        }
+        // confirm properties dialog
+        propertiesDialogOper.ok();
+        // if setting default server, it scans server jars; otherwise it continues immediatelly
+        ProjectSupport.waitScanFinished();
     }
 }
