@@ -255,6 +255,7 @@ public class CacheTest extends NbTestCase {
 
     private void touchFile(String projectName, String projectFile) throws Exception {
         FileObject fmtFo = TestUtil.getProjectFile(this, projectName, projectFile);
+        Thread.sleep(500);
         assertNotNull(fmtFo);
         File fmt = FileUtil.toFile(fmtFo);
         assertTrue("Changing timestamp should succeed", fmt.setLastModified(System.currentTimeMillis()));

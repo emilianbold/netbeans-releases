@@ -237,7 +237,7 @@ public class CustomizerRun extends JPanel implements HelpCtx.Provider {
                 uiProperties.setPlatform(((RubyPlatform) platforms.getSelectedItem()));
             }
         };
-        PlatformComponentFactory.addPlatformChangeListener(platforms, platformListener);;
+        PlatformComponentFactory.addPlatformChangeListener(platforms, platformListener);
     }
     
     public @Override void removeNotify() {
@@ -245,14 +245,6 @@ public class CustomizerRun extends JPanel implements HelpCtx.Provider {
         super.removeNotify();
     }
     
-    private String[] getEnvironmentNames() {
-        return new String[] {
-            NbBundle.getMessage(CustomizerRun.class, "Development"),
-            NbBundle.getMessage(CustomizerRun.class, "Testing"),
-            NbBundle.getMessage(CustomizerRun.class, "Production")
-        };
-    }
-        
     private void handleEncodingChange() {
         Charset enc = (Charset)encoding.getSelectedItem();
         String encName;
