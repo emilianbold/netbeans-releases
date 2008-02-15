@@ -51,8 +51,6 @@ import java.awt.Component;
 import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.ItemEvent;
-import java.awt.event.ItemListener;
 import java.text.Collator;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -69,6 +67,8 @@ import javax.swing.ListCellRenderer;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import org.netbeans.api.ruby.platform.RubyPlatform;
+import org.netbeans.modules.ruby.platform.PlatformComponentFactory;
+import org.netbeans.modules.ruby.platform.PlatformComponentFactory.PlatformChangeListener;
 import org.netbeans.modules.ruby.platform.RubyPlatformCustomizer;
 import org.netbeans.modules.ruby.railsprojects.RailsProject;
 import org.netbeans.modules.ruby.railsprojects.server.RailsServerManager;
@@ -90,7 +90,7 @@ public class CustomizerRun extends JPanel implements HelpCtx.Provider {
     private String[] keys;
     private Map<String/*|null*/,Map<String,String/*|null*/>/*|null*/> configs;
     RailsProjectProperties uiProperties;
-    private ItemListener platformListener;
+    private PlatformChangeListener platformListener;
     
     public CustomizerRun( RailsProjectProperties uiProperties ) {
         this.uiProperties = uiProperties;
@@ -232,18 +232,16 @@ public class CustomizerRun extends JPanel implements HelpCtx.Provider {
 
     public @Override void addNotify() {
         super.addNotify();
-        platformListener = new ItemListener() {
-            public void itemStateChanged(ItemEvent e) {
-                if (e.getStateChange() == ItemEvent.SELECTED) {
-                    uiProperties.setPlatform(((RubyPlatform) platforms.getSelectedItem()));
-                }
+        platformListener = new PlatformChangeListener() {
+            public void platformChanged() {
+                uiProperties.setPlatform(((RubyPlatform) platforms.getSelectedItem()));
             }
         };
-        platforms.addItemListener(platformListener);
+        PlatformComponentFactory.addPlatformChangeListener(platforms, platformListener);;
     }
     
     public @Override void removeNotify() {
-        platforms.removeItemListener(platformListener);
+        PlatformComponentFactory.removePlatformChangeListener(platforms, platformListener);
         super.removeNotify();
     }
     
@@ -521,16 +519,17 @@ public class CustomizerRun extends JPanel implements HelpCtx.Provider {
         RubyPlatformCustomizer.manage(platforms);
     }//GEN-LAST:event_manageButtonActionPerformed
 
-private void platformsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_platformsActionPerformed
-    initServerComboBox();
-}//GEN-LAST:event_platformsActionPerformed
+    private void platformsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_platformsActionPerformed
+        initServerComboBox();
+    }//GEN-LAST:event_platformsActionPerformed
 
     private void initServerComboBox(){
         serverComboBox.setModel(new RailsServerManager.ServerListModel(getPlatform()));
         uiProperties.setServer((RubyInstance) serverComboBox.getSelectedItem());
     }
+    
     private RubyPlatform getPlatform() {
-        return (RubyPlatform) platforms.getModel().getSelectedItem();
+        return PlatformComponentFactory.getPlatform(platforms);
     }
 
     private void configChanged(String activeConfig) {

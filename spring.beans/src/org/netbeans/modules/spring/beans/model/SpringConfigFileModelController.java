@@ -41,26 +41,18 @@
 
 package org.netbeans.modules.spring.beans.model;
 
-import java.io.BufferedReader;
 import java.io.File;
 import java.util.logging.Logger;
 import org.netbeans.modules.spring.beans.model.ExclusiveAccess.AsyncTask;
 import org.netbeans.modules.spring.beans.model.impl.ConfigFileSpringBeanSource;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.nio.charset.Charset;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
-import javax.swing.text.BadLocationException;
-import javax.swing.text.Document;
-import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.editor.BaseDocument;
-import org.netbeans.modules.spring.api.beans.SpringConstants;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
-import org.openide.text.CloneableEditorSupport;
 import org.openide.util.Exceptions;
 
 /**
@@ -165,53 +157,20 @@ public class SpringConfigFileModelController {
         }
     }
 
-    private static BaseDocument getAsDocument(FileObject fo) throws IOException {
-        LOGGER.log(Level.FINE, "Creating an ad-hoc document for {0}", fo);
-        StringBuilder builder = new StringBuilder();
-        Charset charset = FileEncodingQuery.getEncoding(fo);
-        BufferedReader reader = new BufferedReader(new InputStreamReader(fo.getInputStream(), charset));
-        try {
-            for (;;) {
-                String line = reader.readLine();
-                if (line != null) {
-                    builder.append(line).append('\n');
-                } else {
-                    break;
-                }
-            }
-        } finally {
-            reader.close();
-        }
-        Class<?> kitClass = CloneableEditorSupport.getEditorKit(SpringConstants.CONFIG_MIME_TYPE).getClass();
-        BaseDocument doc = new BaseDocument(kitClass, false);
-        try {
-            doc.insertString(0, builder.toString(), null);
-        } catch (BadLocationException e) {
-            // Unlikely to happen.
-            LOGGER.log(Level.FINE, null, e);
-        }
-        doc.putProperty(Document.StreamDescriptionProperty, fo);
-        return doc;
-    }
-
-    private static BaseDocument getOrOpenDocument(FileObject fo) throws IOException {
+    private static EditorCookie getEditorCookie(FileObject fo) throws IOException {
         DataObject dataObject = DataObject.find(fo);
-        EditorCookie ec = dataObject.getCookie(EditorCookie.class);
-        if (ec == null) {
-            throw new IOException("File " + fo + " does not have an EditorCookie.");
+        EditorCookie result = dataObject.getCookie(EditorCookie.class);
+        if (result == null) {
+            throw new IllegalStateException("File " + fo + " does not have an EditorCookie.");
         }
-        BaseDocument doc = (BaseDocument)ec.getDocument();
-        if (doc == null) {
-            doc = getAsDocument(fo);
-        }
-        return doc;
+        return result;
     }
 
     public final class DocumentRead {
 
         public DocumentRead(FileObject fo, boolean updateTask) throws IOException {
             if (fo != null) {
-                BaseDocument document = getOrOpenDocument(fo);
+                BaseDocument document = (BaseDocument)getEditorCookie(fo).openDocument();
                 doParse(fo, document, updateTask);
             }
         }
@@ -224,6 +183,7 @@ public class SpringConfigFileModelController {
     public final class DocumentWrite {
 
         private final FileObject fo;
+        private final EditorCookie editor;
         private final BaseDocument document;
         // Although this class is single-threaded, better to have these thread-safe,
         // since they are guarding the document locking, and that needs to be right
@@ -234,23 +194,33 @@ public class SpringConfigFileModelController {
 
         public DocumentWrite(FileObject fo) throws IOException {
             this.fo = fo;
-            document = getOrOpenDocument(fo);
+            editor = getEditorCookie(fo);
+            document = (BaseDocument)editor.openDocument();
         }
 
-        public void open() throws IOException {
+        public void open() {
             if (!open.getAndSet(true)) {
                 document.atomicLock();
             }
         }
 
-        public void close() {
-            if (open.get() && !closed.getAndSet(true)) {
+        public void commit() throws IOException {
+            assert open.get();
+            if (!closed.getAndSet(true)) {
+                document.atomicUnlock();
+                editor.saveDocument();
+            }
+        }
+
+        public void close() throws IOException {
+            assert open.get();
+            if (!closed.getAndSet(true)) {
                 document.atomicUnlock();
             }
-            // XXX save the document.
         }
 
         public BaseDocument getDocument() {
+            assert open.get();
             return document;
         }
 
