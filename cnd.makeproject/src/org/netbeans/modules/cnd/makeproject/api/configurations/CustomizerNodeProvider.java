@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -39,47 +39,13 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.spi.db.explorer;
+package org.netbeans.modules.cnd.makeproject.api.configurations;
 
-import java.util.List;
+import org.netbeans.modules.cnd.makeproject.api.configurations.ui.CustomizerNode;
 
-/**
- * Represents an instance of a database server that can be managed. 
- *
- * <p>Implementations of this class should be put in the Databases/Servers folder
- * in the default filesystem.</p>
- * 
- * <p>If the implementation is registered and the canRegister() method returns
- * true, the server is added as a node to the Databases folder</p>
- *
- * @author David Van Couvering
- */
-public interface ServerProvider extends DatabaseRuntime {
-
+public interface CustomizerNodeProvider {
     /**
-     * Return true if this server can be registered.  For example,
-     * if it's not installed and/or not running, then the provider
-     * may choose to return false.
-     * 
-     * If it returns true, then a node for the server will be displayed
-     * under Services->Databases
-     *  
-     * @return true if a server is available, false otherwise
+     * Creates an instance of CustomizerNode node
      */
-    boolean canRegister();
-    
-    /**
-     * @return a list of all actions this server supports
-     */
-    List getActions();
-    
-    /**
-     * @return the display name for this provider
-     */
-    String getDisplayName();
-
-    /**
-     * @return a short description of this provider
-     */
-    public String getShortDescription();
+    public CustomizerNode factoryCreate();
 }

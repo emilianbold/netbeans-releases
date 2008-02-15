@@ -46,7 +46,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.derby.DerbyOptions;
 import org.netbeans.modules.derby.JDKDerbyHelper;
-import org.netbeans.modules.derby.DerbyServerProvider;
+import org.netbeans.modules.derby.RegisterDerby;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 
@@ -121,6 +121,6 @@ public class DerbySupport {
      * @since 1.5
      */
     public static void ensureStarted() {
-        DerbyServerProvider.getDefault().ensureStarted(false);
+        RegisterDerby.getDefault().ensureStarted(false);
     }
 }

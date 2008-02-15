@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -39,55 +39,46 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.db.explorer.infos;
+package org.netbeans.modules.xml.text.indent;
 
+import javax.swing.text.BadLocationException;
+import org.netbeans.api.editor.mimelookup.MimePath;
+import org.netbeans.api.lexer.Language;
+import org.netbeans.api.lexer.LanguagePath;
+import org.netbeans.modules.editor.indent.spi.Context;
+import org.netbeans.modules.editor.indent.spi.ExtraLock;
+import org.netbeans.modules.editor.indent.spi.IndentTask;
 
+/**
+ * Implementation of IndentTask for text/html mimetype.
+ *
+ * @author Marek Fukala
+ */
+public class XMLIndentTask implements IndentTask {
 
-import java.util.Vector;
-import org.netbeans.api.db.explorer.DatabaseException;
-import org.netbeans.spi.db.explorer.ServerProvider;
-import org.openide.nodes.Children;
-import org.openide.nodes.Node;
+    private Context context;
 
-public class ServerNodeInfo extends DatabaseNodeInfo {
-    
-    // TODO - fix serialVersionUID
-    static final long serialVersionUID =-8322295510950137669L;
-    
-    ServerProvider provider;
-
-    /**
-     * Get the actions for this server node by querying the provider
-     * 
-     * @return
-     */
-    public Vector getActions() {
-        assert provider != null;
-        
-        Vector actions = super.getActions();
-        
-        actions.addAll(provider.getActions());
-
-        return actions;
+    XMLIndentTask(Context context) {
+        this.context = context;
     }
 
+    public void reindent() throws BadLocationException {
+        getFormatter().process(context);
+    }
 
-    public void refreshChildren() throws DatabaseException {
-        Children children = getNode().getChildren();
-        Node[] nodes = children.getNodes();
-        for (int i = 0; i < nodes.length; i++) {
-            DatabaseNodeInfo info = (DatabaseNodeInfo)nodes[i].getCookie(DatabaseNodeInfo.class);
-            info.refreshChildren();
+    public ExtraLock indentLock() {
+        return null;
+    }
+
+    private XMLLexerFormatter getFormatter() {
+        MimePath mimePath = MimePath.parse (context.mimePath ());
+        LanguagePath languagePath = LanguagePath.get (Language.find (mimePath.getMimeType (0)));
+        
+        for (int i = 1; i < mimePath.size(); i++) {
+            languagePath = languagePath.embedded(Language.find(mimePath.getMimeType(i)));
         }
-    }
 
-    void setProvider(ServerProvider provider) {
-        this.provider = provider;
+        return new XMLLexerFormatter(languagePath);
+        //return null;
     }
-    
-    public ServerProvider getProvider() {
-        return provider;
-    }
-    
-    
 }

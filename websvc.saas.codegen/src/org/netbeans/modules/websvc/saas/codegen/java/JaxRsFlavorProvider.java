@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -38,19 +38,52 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
+package org.netbeans.modules.websvc.saas.codegen.java;
 
-package org.netbeans.modules.db.explorer.actions;
+import java.awt.datatransfer.Transferable;
+import org.netbeans.modules.websvc.saas.model.WadlSaasMethod;
+import org.netbeans.modules.websvc.saas.spi.ConsumerFlavorProvider;
+import org.openide.util.datatransfer.ExTransferable;
 
+/**
+ *
+ * @author Ayub Khan
+ */
+public class JaxRsFlavorProvider implements ConsumerFlavorProvider {
 
-import org.openide.nodes.Node;
+    public JaxRsFlavorProvider() {
+    }
 
+    public Transferable addDataFlavors(Transferable transferable) {
+        try {
+            Object data = transferable.getTransferData(ConsumerFlavorProvider.WADL_METHOD_FLAVOR);
+            if (data instanceof WadlSaasMethod) {
+                WadlSaasMethod method = (WadlSaasMethod) data;
+                ExTransferable t = ExTransferable.create(transferable);
+                JaxRsEditorDrop editorDrop = new JaxRsEditorDrop(method);
+                ActiveEditorDropTransferable s = new ActiveEditorDropTransferable(editorDrop);
+                t.put(s);
+                return t;
+            }
+        } catch (Exception ex) {
+            //Exceptions.printStackTrace(ex);
+        }
 
-public class ServerConnectAction extends DatabaseAction
-{
-    // TODO - fix serialversionuid
-    static final long serialVersionUID =6900032866933824412L;
-    public void performAction(Node[] activatedNodes)
-    {
-        // TODO - bring up connect to server action
+        return transferable;
+    }
+
+    private static class ActiveEditorDropTransferable extends ExTransferable.Single {
+
+        private JaxRsEditorDrop drop;
+
+        ActiveEditorDropTransferable(JaxRsEditorDrop drop) {
+            super(JaxRsEditorDrop.FLAVOR);
+
+            this.drop = drop;
+        }
+
+        public Object getData() {
+            return drop;
+        }
     }
 }
