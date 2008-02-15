@@ -185,6 +185,7 @@ public class ConfigFileGroupsPanel extends javax.swing.JPanel {
         });
 
         org.openide.awt.Mnemonics.setLocalizedText(editGroupButton, org.openide.util.NbBundle.getMessage(ConfigFileGroupsPanel.class, "LBL_EditGroup")); // NOI18N
+        editGroupButton.setEnabled(false);
         editGroupButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 editGroupButtonActionPerformed(evt);

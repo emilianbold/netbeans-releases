@@ -213,7 +213,8 @@ public class SpringConfigModelController {
                                 try {
                                     beanSources.put(currentFile, docWrite.getBeanSource());
                                     ConfigModelSpringBeans springBeans = new ConfigModelSpringBeans(beanSources);
-                                    WriteContext context = new WriteContext(springBeans, currentFile, docWrite.getDocument());
+                                    WriteContext context = new WriteContext(springBeans, currentFile, docWrite);
+                                    // The action can call docWrite.commit().
                                     action.run(context);
                                 } finally {
                                     docWrite.close();
