@@ -381,6 +381,7 @@ public abstract class WebServicesTestBase extends JellyTestCase {
                     FileObject fo = FileUtil.toFileObject(FileUtil.normalizeFile(projectRoot));
                     assertNotNull("FO cannot be null", fo); //NOI18N
                     project = ProjectManager.getDefault().findProject(fo);
+                    checkMissingServer(projectName);
                 }
             }
             assertNotNull("Project cannot be null!", project); //NOI18N
