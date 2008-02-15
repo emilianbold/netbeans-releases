@@ -39,6 +39,7 @@
 
 package org.netbeans.modules.ws.qaf.rest;
 
+import javax.swing.JButton;
 import javax.swing.ListModel;
 import junit.textui.TestRunner;
 import org.netbeans.api.project.Project;
@@ -88,10 +89,11 @@ public class CStubsTSuite extends RestTestBase {
         //invoke the wizard
         //RESTful Web Service Client Stubs
         String cStubsLabel = Bundle.getStringTrimmed("org.netbeans.modules.websvc.rest.wizard.Bundle", "Templates/WebServices/RestClientStubs");
+        String path = FileUtil.toFile(getProject("FromEntities").getProjectDirectory()).getAbsolutePath();
         createNewWSFile(getProject(), cStubsLabel);
         WizardOperator wo = new WizardOperator(cStubsLabel);
         //add project
-        addProject(wo, "FromEntities");
+        addProject(wo, path);
         JListOperator jlo = new JListOperator(wo, 1);
         ListModel lm = jlo.getModel();
         try {
@@ -100,8 +102,9 @@ public class CStubsTSuite extends RestTestBase {
         }
         assertEquals(1, lm.getSize());
         //add second project
+        path = FileUtil.toFile(getProject("FromPatterns").getProjectDirectory()).getAbsolutePath();
         wo = new WizardOperator(cStubsLabel);
-        addProject(wo, "FromPatterns");
+        addProject(wo, path);
         try {
             Thread.sleep(1000);
         } catch (InterruptedException ie) {
@@ -127,11 +130,12 @@ public class CStubsTSuite extends RestTestBase {
     }
 
     protected void createStubs(String sourceProject) {
+        String sourcePath = FileUtil.toFile(getProject(sourceProject).getProjectDirectory()).getAbsolutePath();
         //RESTful Web Service Client Stubs
         String cStubsLabel = Bundle.getStringTrimmed("org.netbeans.modules.websvc.rest.wizard.Bundle", "Templates/WebServices/RestClientStubs");
         createNewWSFile(getProject(), cStubsLabel);
         WizardOperator wo = new WizardOperator(cStubsLabel);
-        addProject(wo, sourceProject);
+        addProject(wo, sourcePath);
         //http://www.netbeans.org/issues/show_bug.cgi?id=123573
         new JCheckBoxOperator(wo, 0).setSelected(false);
         wo.finish();
@@ -140,7 +144,7 @@ public class CStubsTSuite extends RestTestBase {
         waitDialogClosed(progressLabel);
     }
 
-    private void addProject(WizardOperator wo, String project) {
+    private void addProject(WizardOperator wo, String path) {
         //Add Project...
         new JButtonOperator(wo, 5).pushNoBlock();
         //Select Project
@@ -148,10 +152,16 @@ public class CStubsTSuite extends RestTestBase {
         NbDialogOperator ndo = new NbDialogOperator(prjDlgTitle);
         JTextFieldOperator jtfo = new JTextFieldOperator(ndo, 0);
         jtfo.clearText();
-        jtfo.typeText(FileUtil.toFile(getProject(project).getProjectDirectory()).getAbsolutePath());
+        jtfo.typeText(path);
         //Open
-        new JButtonOperator(ndo, 4).requestFocus();
-        new JButtonOperator(ndo, 4).pushNoBlock();
+        JButton jb = JButtonOperator.findJButton(ndo.getContentPane(), "Open", false, false);
+        System.out.println("jb: " + jb);
+        if (jb != null) {
+            JButtonOperator jbo = new JButtonOperator(jb);
+            jbo.pushNoBlock();
+        } else {
+            fail("Open button not found....");
+        }
     }
 
     private Project getProject(String name) {
