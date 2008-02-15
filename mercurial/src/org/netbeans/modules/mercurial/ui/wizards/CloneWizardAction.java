@@ -74,6 +74,7 @@ public final class CloneWizardAction extends CallableSystemAction implements Cha
     private WizardDescriptor wizardDescriptor;
     private CloneRepositoryWizardPanel cloneRepositoryWizardPanel;
     private CloneDestinationDirectoryWizardPanel cloneDestinationDirectoryWizardPanel;
+    private ClonePathsWizardPanel clonePathsWizardPanel;
     private PanelsIterator wizardIterator;
     private String errorMessage;
 
@@ -103,8 +104,10 @@ public final class CloneWizardAction extends CallableSystemAction implements Cha
             final String password = (String) wizardDescriptor.getProperty("password"); // NOI18N
             final String directory = (String) wizardDescriptor.getProperty("directory"); // NOI18N
             final String cloneName = (String) wizardDescriptor.getProperty("cloneName"); // NOI18N
+            final String pullPath = (String) wizardDescriptor.getProperty("defaultPullPath"); // NOI18N
+            final String pushPath = (String) wizardDescriptor.getProperty("defaultPushPath"); // NOI18N
             File cloneFile = new File(directory, cloneName);
-            CloneAction.performClone(repository, cloneFile.getAbsolutePath(), true, null);
+            CloneAction.performClone(repository, cloneFile.getAbsolutePath(), true, null, pullPath, pushPath);
         }
     }
     
@@ -118,6 +121,8 @@ public final class CloneWizardAction extends CallableSystemAction implements Cha
         }
         if (step == cloneRepositoryWizardPanel) {
             errorMessage = cloneRepositoryWizardPanel.getErrorMessage();
+        } else if (step == clonePathsWizardPanel) {
+            errorMessage = clonePathsWizardPanel.getErrorMessage();
         } else if (step == cloneDestinationDirectoryWizardPanel) {
             errorMessage = cloneDestinationDirectoryWizardPanel.getErrorMessage();
         }
@@ -156,9 +161,10 @@ public final class CloneWizardAction extends CallableSystemAction implements Cha
         protected WizardDescriptor.Panel[] initializePanels() {
             WizardDescriptor.Panel[] panels = new WizardDescriptor.Panel[2];
             cloneRepositoryWizardPanel = new CloneRepositoryWizardPanel();
+            clonePathsWizardPanel = new ClonePathsWizardPanel();
             cloneDestinationDirectoryWizardPanel = new CloneDestinationDirectoryWizardPanel();
             panels = new WizardDescriptor.Panel[] {                
-                cloneRepositoryWizardPanel, cloneDestinationDirectoryWizardPanel
+                cloneRepositoryWizardPanel, clonePathsWizardPanel, cloneDestinationDirectoryWizardPanel
             };
             panels[0].addChangeListener(CloneWizardAction.this);
             panels[1].addChangeListener(CloneWizardAction.this);

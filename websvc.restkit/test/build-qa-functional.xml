@@ -83,7 +83,7 @@ made subject to such option by the copyright holder.
     <target name="-init-httpunit" depends="-init-props, -httpunit"/>
 
     <target name="qa-functional-compiler" depends="-init-httpunit">
-        <ant inheritAll="false" antfile="../../websvc.kit/test/build.xml" target="buildtests"/>
+        <ant inheritAll="false" dir="../../websvc.kit/test" target="buildtests"/>
         <antcall target="xtest-qa-functional.qa-functional-compiler"/>
     </target>
 

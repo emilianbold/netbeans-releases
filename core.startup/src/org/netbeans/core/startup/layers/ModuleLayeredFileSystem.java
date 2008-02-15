@@ -145,11 +145,17 @@ implements LookupListener {
 
             ByteBuffer bb = Stamps.getModulesJARs().asMappedByteBuffer(location);
             if (bb != null) {
-                StartLog.logStart("Loading layers"); // NOI18N
-                fs = mgr.load(mgr.createEmptyFileSystem(), bb);
-                setStatusText(
-                    NbBundle.getMessage(ModuleLayeredFileSystem.class, "MSG_end_load_cache"));
-                StartLog.logEnd("Loading layers"); // NOI18N
+                try {
+                    StartLog.logStart("Loading layers"); // NOI18N
+                    fs = mgr.load(mgr.createEmptyFileSystem(), bb);
+                    setStatusText(NbBundle.getMessage(ModuleLayeredFileSystem.class, "MSG_end_load_cache"));
+                    StartLog.logEnd("Loading layers"); // NOI18N
+                } catch (IOException ex) {
+                    LayerCacheManager.err.log(Level.WARNING, "Ignoring cache of layers");
+                    if (LayerCacheManager.err.isLoggable(Level.FINE)) {
+                        LayerCacheManager.err.log(Level.WARNING, "Ignoring cache of layers", ex);
+                    }
+                }
             }
         }
         return fs != null ? fs : mgr.createEmptyFileSystem();
@@ -229,6 +235,7 @@ implements LookupListener {
                 err.log(Level.FINEST, "layers flushed");
             }
             public void cacheReady() {
+                /*
                 try {
                     err.log(Level.FINEST, "cache is ready");
                     cacheLayer = loadCache(manager);
@@ -238,6 +245,7 @@ implements LookupListener {
                 } catch (IOException ex) {
                     err.log(Level.INFO, "Cannot re-read cache", ex); // NOI18N
                 }
+                 */
             }
             public void run() throws IOException {
                 ByteArrayOutputStream os = new ByteArrayOutputStream();

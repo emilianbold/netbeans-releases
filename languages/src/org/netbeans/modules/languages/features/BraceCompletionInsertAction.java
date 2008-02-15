@@ -143,8 +143,10 @@ public class BraceCompletionInsertAction extends ExtDefaultKeyTypedAction {
                     caret.setDot (pos);
                 }
             }
+            char firstCharOfTokenText = ts.token().text().charAt(0);
+            boolean withLeadingWS = firstCharOfTokenText == '\n' || firstCharOfTokenText == ' ';
             if (!beg && 
-                ts.token ().id ().name ().indexOf ("whitespace") < 0
+                ts.token ().id ().name ().indexOf ("whitespace") < 0 && !withLeadingWS
             ) return;
             StyledDocument sdoc = (StyledDocument) doc;
             int ln = NbDocument.findLineNumber (sdoc, caret.getDot ());

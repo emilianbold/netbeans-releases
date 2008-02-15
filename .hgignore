@@ -3,10 +3,12 @@
 /dist$
 /nbproject/private$
 /test/(coverage|lib|results|work)$
+derby\.log
 \.class$
 \.DS_Store$
 \.orig$
 \.rej$
+\.swp$
 /gensrc$
 ^nbbuild/antsrc/org/netbeans/nbbuild/extlibs/external\.pyc$
 ^o.apache.tools.ant.module/external/lib$

@@ -72,19 +72,19 @@ public class NavigationCaseImpl extends DescriptionGroupImpl implements Navigati
     }
     
     public String getFromAction() {
-        return getChildElementText(JSFConfigQNames.FROM_ACTION.getQName(getModel().getVersion()));
+        return getChildElementText(JSFConfigQNames.FROM_ACTION.getQName(getNamespaceURI()));
     }
     
     public void setFromAction(String fromAction) {
-        setChildElementText(FROM_ACTION, fromAction, JSFConfigQNames.FROM_ACTION.getQName(getModel().getVersion()));
+        setChildElementText(FROM_ACTION, fromAction, JSFConfigQNames.FROM_ACTION.getQName(getNamespaceURI()));
     }
     
     public String getFromOutcome() {
-        return getChildElementText(JSFConfigQNames.FROM_OUTCOME.getQName(getModel().getVersion()));
+        return getChildElementText(JSFConfigQNames.FROM_OUTCOME.getQName(getNamespaceURI()));
     }
     
     public void setFromOutcome(String fromOutcome) {
-        setChildElementText(FROM_OUTCOME, fromOutcome, JSFConfigQNames.FROM_OUTCOME.getQName(getModel().getVersion()));
+        setChildElementText(FROM_OUTCOME, fromOutcome, JSFConfigQNames.FROM_OUTCOME.getQName(getNamespaceURI()));
     }
 
     protected List<String> getSortedListOfLocalNames() {
@@ -93,21 +93,21 @@ public class NavigationCaseImpl extends DescriptionGroupImpl implements Navigati
     
     public void setRedirected(boolean redirect) {
         if (redirect)
-            setChildElementText(REDIRECT, "", JSFConfigQNames.REDIRECT.getQName(getModel().getVersion()));
+            setChildElementText(REDIRECT, "", JSFConfigQNames.REDIRECT.getQName(getNamespaceURI()));
         else
-            setChildElementText(REDIRECT, null, JSFConfigQNames.REDIRECT.getQName(getModel().getVersion()));
+            setChildElementText(REDIRECT, null, JSFConfigQNames.REDIRECT.getQName(getNamespaceURI()));
     }
     
     public boolean isRedirected() {
-        return (null != getChildElementText(JSFConfigQNames.REDIRECT.getQName(getModel().getVersion())));
+        return (null != getChildElementText(JSFConfigQNames.REDIRECT.getQName(getNamespaceURI())));
     }
     
     public String getToViewId() {
-        return getChildElementText(JSFConfigQNames.TO_VIEW_ID.getQName(getModel().getVersion()));
+        return getChildElementText(JSFConfigQNames.TO_VIEW_ID.getQName(getNamespaceURI()));
     }
     
     public void setToViewId(String toViewId) {
-        setChildElementText(TO_VIEW_ID, toViewId, JSFConfigQNames.TO_VIEW_ID.getQName(getModel().getVersion()));
+        setChildElementText(TO_VIEW_ID, toViewId, JSFConfigQNames.TO_VIEW_ID.getQName(getNamespaceURI()));
     }
     
     public void accept(JSFConfigVisitor visitor) {

@@ -85,6 +85,14 @@ made subject to such option by the copyright holder.
         </testset>
     </testbag>
 
+    <testbag testattribs="samples" executor="ide" name="qa-functional tests">
+        <testset dir="qa-functional/src">
+            <patternset>
+                <include name="org/netbeans/modules/ws/qaf/WebServiceSamplesTest.class"/>
+            </patternset>
+        </testset>
+    </testbag>
+
     <compiler name="qa-functional-compiler" antfile="build-qa-functional.xml"
               target="qa-functional-compiler" default="true"/>
     <executor name="ide" antfile="build-qa-functional.xml" target="runidetest-with-appserver" default="true"/>

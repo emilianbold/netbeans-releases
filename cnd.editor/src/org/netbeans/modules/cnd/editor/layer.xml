@@ -3,15 +3,10 @@
 <filesystem>
     <folder name="OptionsDialog"> 
         <folder name="CPlusPlus">
-            <file name="CEditorOptionsPanelController.instance">
-                <attr name="instanceClass" stringvalue="org.netbeans.modules.cnd.editor.options.EditorOptionsPanelController$CEditorOptionsPanelController"/>
+            <file name="EditorOptionsPanelController.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.cnd.editor.options.EditorOptionsPanelController"/>
                 <attr name="instanceOf" stringvalue="org.netbeans.spi.options.OptionsPanelController"/>
                 <attr name="position" intvalue="400"/>
-            </file>
-            <file name="CppEditorOptionsPanelController.instance">
-                <attr name="instanceClass" stringvalue="org.netbeans.modules.cnd.editor.options.EditorOptionsPanelController$CppEditorOptionsPanelController"/>
-                <attr name="instanceOf" stringvalue="org.netbeans.spi.options.OptionsPanelController"/>
-                <attr name="position" intvalue="401"/>
             </file>
         </folder>     
     </folder>

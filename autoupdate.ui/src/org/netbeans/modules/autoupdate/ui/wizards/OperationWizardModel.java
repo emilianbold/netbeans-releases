@@ -53,6 +53,7 @@ import java.util.TreeMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JButton;
+import javax.swing.SwingUtilities;
 import org.netbeans.api.autoupdate.OperationContainer;
 import org.netbeans.api.autoupdate.OperationContainer.OperationInfo;
 import org.netbeans.api.autoupdate.OperationException;
@@ -240,17 +241,25 @@ public abstract class OperationWizardModel {
     }
     
     // XXX Hack in WizardDescriptor
-    public void modifyOptionsForFailed (WizardDescriptor wd) {
+    public void modifyOptionsForFailed (final WizardDescriptor wd) {
         recognizeButtons (wd);
-        wd.setOptions (new JButton [] { getOriginalCancel (wd) });
+        SwingUtilities.invokeLater (new Runnable () {
+            public void run () {
+                wd.setOptions (new JButton [] { getOriginalCancel (wd) });
+            }
+        });
     }
     
     // XXX Hack in WizardDescriptor
-    public void modifyOptionsForDoClose (WizardDescriptor wd, boolean canCancel) {
+    public void modifyOptionsForDoClose (final WizardDescriptor wd, final boolean canCancel) {
         recognizeButtons (wd);
-        JButton b = getOriginalFinish (wd);
+        final JButton b = getOriginalFinish (wd);
         Mnemonics.setLocalizedText (b, getBundle ("InstallUnitWizardModel_Buttons_Close"));
-        wd.setOptions (canCancel ? new JButton [] { b, getOriginalCancel (wd) } : new JButton [] { b });
+        SwingUtilities.invokeLater (new Runnable () {
+            public void run () {
+                wd.setOptions (canCancel ? new JButton [] { b, getOriginalCancel (wd) } : new JButton [] { b });
+            }
+        });
     }
     
     // XXX Hack in WizardDescriptor
@@ -261,12 +270,16 @@ public abstract class OperationWizardModel {
                 "InstallUnitWizardModel_Buttons_MnemonicNext", getBundle ("InstallUnitWizardModel_Buttons_Next")));
     }
     
-    public void modifyOptionsForContinue (WizardDescriptor wd, boolean canFinish) {
+    public void modifyOptionsForContinue (final WizardDescriptor wd, boolean canFinish) {
         if (canFinish) {
             recognizeButtons (wd);
-            JButton b = getOriginalFinish (wd);
+            final JButton b = getOriginalFinish (wd);
             Mnemonics.setLocalizedText (b, getBundle ("InstallUnitWizardModel_Buttons_Close"));
-            wd.setOptions (new JButton [] {b});
+            SwingUtilities.invokeLater (new Runnable () {
+                public void run () {
+                    wd.setOptions (new JButton [] {b});
+                }
+            });
         } else {
             recognizeButtons (wd);
             removeFinish (wd);
@@ -313,10 +326,10 @@ public abstract class OperationWizardModel {
     }
     
     // XXX Hack in WizardDescriptor
-    public void modifyOptionsForDisabledCancel (WizardDescriptor wd) {
+    public void modifyOptionsForDisabledCancel (final WizardDescriptor wd) {
         recognizeButtons (wd);
         Object [] options = wd.getOptions ();
-        List<JButton> newOptionsL = new ArrayList<JButton> ();
+        final List<JButton> newOptionsL = new ArrayList<JButton> ();
         List<Object> optionsL = Arrays.asList (options);
         for (Object o : optionsL) {
             assert o instanceof JButton : o + " instanceof JButton";
@@ -331,20 +344,16 @@ public abstract class OperationWizardModel {
                 }
             }
         }
-        wd.setOptions (newOptionsL.toArray ());
+        SwingUtilities.invokeLater (new Runnable () {
+            public void run () {
+                wd.setOptions (newOptionsL.toArray ());
+            }
+        });
     }
     
     public void doCleanup (boolean cancel) throws OperationException {
         getBaseContainer ().removeAll ();
         getCustomHandledContainer ().removeAll ();
-    }
-    
-    @SuppressWarnings("unchecked")
-    private Set<OperationInfo> listAll () {
-        Set<OperationInfo> infos = new HashSet<OperationInfo> ();
-        infos.addAll (getStandardInfos ());
-        infos.addAll (getCustomHandledInfos ());
-        return infos;
     }
     
     private void recognizeButtons (WizardDescriptor wd) {
@@ -374,9 +383,9 @@ public abstract class OperationWizardModel {
         return originalFinish;
     }
     
-    private void removeFinish (WizardDescriptor wd) {
+    private void removeFinish (final WizardDescriptor wd) {
         Object [] options = wd.getOptions ();
-        List<JButton> newOptionsL = new ArrayList<JButton> ();
+        final List<JButton> newOptionsL = new ArrayList<JButton> ();
         List<Object> optionsL = Arrays.asList (options);
         for (Object o : optionsL) {
             assert o instanceof JButton : o + " instanceof JButton";
@@ -387,7 +396,11 @@ public abstract class OperationWizardModel {
                 }
             }
         }
-        wd.setOptions (newOptionsL.toArray ());
+        SwingUtilities.invokeLater (new Runnable () {
+            public void run () {
+                wd.setOptions (newOptionsL.toArray ());
+            }
+        });
     }
     
     private void addRequiredElements (Set<UpdateElement> elems) {
