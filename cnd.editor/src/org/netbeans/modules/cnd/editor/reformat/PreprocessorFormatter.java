@@ -39,7 +39,6 @@
 
 package org.netbeans.modules.cnd.editor.reformat;
 
-import java.util.LinkedList;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.cnd.api.lexer.CppTokenId;
@@ -55,7 +54,7 @@ public class PreprocessorFormatter {
     private ReformatterImpl context;
     private final TokenSequence<CppTokenId> ts;
     private final CodeStyle codeStyle;
-    private final LinkedList<Diff> diffs;
+    private final DiffLinkedList diffs;
     private int prepocessorDepth = 0;
     
     public PreprocessorFormatter(ReformatterImpl context){
@@ -140,7 +139,7 @@ public class PreprocessorFormatter {
     }
 
     private void indentBefore(Token<CppTokenId> previous, String spaces) {
-        Diff diff = diffs.isEmpty() ? null : diffs.getFirst();
+        Diff diff = diffs.getFirst();
         if (diff != null && diff.getEndOffset() == ts.offset()) {
             if (diff.getText().startsWith("\n")) {
                 diff.setText("\n"+spaces);
@@ -149,13 +148,13 @@ public class PreprocessorFormatter {
             }
         } else if (previous != null && previous.id() == WHITESPACE) {
             if (!spaces.equals(previous.text().toString())){
-                diffs.addFirst(new Diff(ts.offset() - previous.length(),
-                                        ts.offset(), spaces));
+                diffs.addFirst(ts.offset() - previous.length(),
+                               ts.offset(), spaces);
             }
         } else {
             if (spaces.length()>0){
-                diffs.addFirst(new Diff(ts.offset(),
-                                        ts.offset(), spaces));
+                diffs.addFirst(ts.offset(),
+                               ts.offset(), spaces);
             }
         }
     }
@@ -163,13 +162,13 @@ public class PreprocessorFormatter {
     private void indentAfter(TokenSequence<CppTokenId> prep, Token<CppTokenId> next, String spaces) {
         if (next.id() == WHITESPACE) {
             if (!spaces.equals(next.text().toString())){
-                diffs.addFirst(new Diff(prep.offset() + prep.token().length(),
-                                        prep.offset() + prep.token().length() + next.length(), spaces));
+                diffs.addFirst(prep.offset() + prep.token().length(),
+                               prep.offset() + prep.token().length() + next.length(), spaces);
             }
         } else {
             if (spaces.length() > 0) {
-                diffs.addFirst(new Diff(prep.offset()+ prep.token().length(),
-                                        prep.offset()+ prep.token().length(), spaces));
+                diffs.addFirst(prep.offset()+ prep.token().length(),
+                               prep.offset()+ prep.token().length(), spaces);
             }
         }
     }
@@ -178,9 +177,9 @@ public class PreprocessorFormatter {
     private void indentByCode(Token<CppTokenId> previous, TokenSequence<CppTokenId> prep, Token<CppTokenId> next) {
         if (codeStyle.sharpAtStartLine()) {
             indentBefore(previous, "");
-            indentAfter(prep, next, context.getIndent("", 0));
+            indentAfter(prep, next, context.getIndent(""));
         } else {
-            indentBefore(previous, context.getIndent("", 0));
+            indentBefore(previous, context.getIndent(""));
             indentAfter(prep, next, "");
         }
     }

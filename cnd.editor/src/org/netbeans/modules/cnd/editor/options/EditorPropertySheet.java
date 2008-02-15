@@ -76,6 +76,7 @@ public class EditorPropertySheet extends javax.swing.JPanel implements ActionLis
     private EditorOptionsPanelController topControler;
     private boolean loaded = false;
     private CodeStyle.Language currentLanguage;
+    private String lastChangedproperty;
     private Map<CodeStyle.Language, String> defaultStyles = new HashMap<CodeStyle.Language, String>();
     private Map<CodeStyle.Language, Map<String,Preferences>> allPreferences = new HashMap<CodeStyle.Language, Map<String, Preferences>>();
 
@@ -353,6 +354,7 @@ public class EditorPropertySheet extends javax.swing.JPanel implements ActionLis
 
     // Change in the combo
     public void actionPerformed(ActionEvent e) {
+        lastChangedproperty = null;
         if (styleComboBox.equals(e.getSource())){
             EntryWrapper category = (EntryWrapper)styleComboBox.getSelectedItem();
             if (category != null) {
@@ -377,6 +379,7 @@ public class EditorPropertySheet extends javax.swing.JPanel implements ActionLis
     }
 
     public void preferenceChange(PreferenceChangeEvent evt) {
+        lastChangedproperty = evt.getKey();
         change();
     }
     
@@ -418,7 +421,17 @@ public class EditorPropertySheet extends javax.swing.JPanel implements ActionLis
     }
     
     private String getPreviwText(){
-        return getString("SAMPLE_TabsIndents");
+        if (lastChangedproperty != null) {
+            if (lastChangedproperty.startsWith("space")) {
+                return getString("SAMPLE_Spaces");
+            } else if (lastChangedproperty.startsWith("blank")) {
+                return getString("SAMPLE_BlankLines");
+            }  else if (lastChangedproperty.startsWith("align") ||
+                        lastChangedproperty.startsWith("new")) {
+                return getString("SAMPLE_AlignBraces");
+            }
+        }
+            return getString("SAMPLE_TabsIndents");
     }
     
     public void refreshPreview(JEditorPane pane, Preferences p) {
