@@ -241,6 +241,98 @@ public final class CodeStyle {
                          EditorOptions.spaceAfterTypeCastDefault);
     }
     
+    //SpacesBeforeLeftBraces
+    public boolean spaceBeforeClassDeclLeftBrace(){
+        return getOption(EditorOptions.spaceBeforeClassDeclLeftBrace,
+                         EditorOptions.spaceBeforeClassDeclLeftBraceDefault);
+    }
+    public boolean spaceBeforeMethodDeclLeftBrace(){
+        return getOption(EditorOptions.spaceBeforeMethodDeclLeftBrace,
+                         EditorOptions.spaceBeforeMethodDeclLeftBraceDefault);
+    }
+    public boolean spaceBeforeIfLeftBrace(){
+        return getOption(EditorOptions.spaceBeforeIfLeftBrace,
+                         EditorOptions.spaceBeforeIfLeftBraceDefault);
+    }
+    public boolean spaceBeforeElseLeftBrace(){
+        return getOption(EditorOptions.spaceBeforeElseLeftBrace,
+                         EditorOptions.spaceBeforeElseLeftBraceDefault);
+    }
+    public boolean spaceBeforeWhileLeftBrace(){
+        return getOption(EditorOptions.spaceBeforeWhileLeftBrace,
+                         EditorOptions.spaceBeforeWhileLeftBraceDefault);
+    }
+    public boolean spaceBeforeForLeftBrace(){
+        return getOption(EditorOptions.spaceBeforeForLeftBrace,
+                         EditorOptions.spaceBeforeForLeftBraceDefault);
+    }
+    public boolean spaceBeforeDoLeftBrace(){
+        return getOption(EditorOptions.spaceBeforeDoLeftBrace,
+                         EditorOptions.spaceBeforeDoLeftBraceDefault);
+    }
+    public boolean spaceBeforeSwitchLeftBrace(){
+        return getOption(EditorOptions.spaceBeforeSwitchLeftBrace,
+                         EditorOptions.spaceBeforeSwitchLeftBraceDefault);
+    }
+    public boolean spaceBeforeTryLeftBrace(){
+        return getOption(EditorOptions.spaceBeforeTryLeftBrace,
+                         EditorOptions.spaceBeforeTryLeftBraceDefault);
+    }
+    public boolean spaceBeforeCatchLeftBrace(){
+        return getOption(EditorOptions.spaceBeforeCatchLeftBrace,
+                         EditorOptions.spaceBeforeCatchLeftBraceDefault);
+    }
+    public boolean spaceBeforeArrayInitLeftBrace(){
+        return getOption(EditorOptions.spaceBeforeArrayInitLeftBrace,
+                         EditorOptions.spaceBeforeArrayInitLeftBraceDefault);
+    }
+
+    //SpacesWithinParentheses
+    public boolean spaceWithinParens(){
+        return getOption(EditorOptions.spaceWithinParens,
+                         EditorOptions.spaceWithinParensDefault);
+    }
+    public boolean spaceWithinMethodDeclParens(){
+        return getOption(EditorOptions.spaceWithinMethodDeclParens,
+                         EditorOptions.spaceWithinMethodDeclParensDefault);
+    }
+    public boolean spaceWithinMethodCallParens(){
+        return getOption(EditorOptions.spaceWithinMethodCallParens,
+                         EditorOptions.spaceWithinMethodCallParensDefault);
+    }
+    public boolean spaceWithinIfParens(){
+        return getOption(EditorOptions.spaceWithinIfParens,
+                         EditorOptions.spaceWithinIfParensDefault);
+    }
+    public boolean spaceWithinForParens(){
+        return getOption(EditorOptions.spaceWithinForParens,
+                         EditorOptions.spaceWithinForParensDefault);
+    }
+    public boolean spaceWithinWhileParens(){
+        return getOption(EditorOptions.spaceWithinWhileParens,
+                         EditorOptions.spaceWithinWhileParensDefault);
+    }
+    public boolean spaceWithinSwitchParens(){
+        return getOption(EditorOptions.spaceWithinSwitchParens,
+                         EditorOptions.spaceWithinSwitchParensDefault);
+    }
+    public boolean spaceWithinCatchParens(){
+        return getOption(EditorOptions.spaceWithinCatchParens,
+                         EditorOptions.spaceWithinCatchParensDefault);
+    }
+    public boolean spaceWithinTypeCastParens(){
+        return getOption(EditorOptions.spaceWithinTypeCastParens,
+                         EditorOptions.spaceWithinTypeCastParensDefault);
+    }
+    public boolean spaceWithinBraces(){
+        return getOption(EditorOptions.spaceWithinBraces,
+                         EditorOptions.spaceWithinBracesDefault);
+    }
+    public boolean spaceWithinArrayInitBrackets(){
+        return getOption(EditorOptions.spaceWithinArrayInitBrackets,
+                         EditorOptions.spaceWithinArrayInitBracketsDefault);
+    }
+    
     private boolean getOption(String key, boolean defaultValue) {
         return getPreferences().getBoolean(key, defaultValue);
     }

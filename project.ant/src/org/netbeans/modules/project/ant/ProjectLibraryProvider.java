@@ -942,11 +942,11 @@ public class ProjectLibraryProvider implements ArealLibraryProvider<ProjectLibra
                 String name;
                 if (libEntryFO.isFolder()) {
                     newFO = FileChooserAccessory.copyFolderRecursively(libEntryFO, sharedLibFolder);
-                    name = sharedLibFolder.getName()+File.separatorChar+newFO.getName()+File.separatorChar;
+                    name = sharedLibFolder.getNameExt()+File.separatorChar+newFO.getName()+File.separatorChar;
                 } else {
                     String libEntryName = getUniqueName(sharedLibFolder, libEntryFO.getName(), libEntryFO.getExt());
                     newFO = FileUtil.copyFile(libEntryFO, sharedLibFolder, libEntryName);
-                    name = sharedLibFolder.getName()+File.separatorChar+newFO.getNameExt();
+                    name = sharedLibFolder.getNameExt()+File.separatorChar+newFO.getNameExt();
                 }
                 URL u = LibrariesSupport.convertFilePathToURL(name);
                 if (FileUtil.isArchiveFile(newFO)) {

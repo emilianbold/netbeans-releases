@@ -85,10 +85,7 @@ public class ServiceCompositionNode extends FilterNode {
                     ProjectSensitiveActions.projectCommandAction(
                     JbiProjectConstants.COMMAND_JBICLEANCONFIG,
                     bundle.getString("LBL_JbiCleanConfigAction_Name"), // NOI18N
-                    null),
-                    org.openide.util.actions.SystemAction.get(org.openide.actions.FileSystemAction.class),
-                    null,
-                    org.openide.util.actions.SystemAction.get(org.openide.actions.ToolsAction.class),
+                    null)
                 };
     }
 
