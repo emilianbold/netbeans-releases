@@ -43,6 +43,7 @@ import org.netbeans.modules.websvc.saas.model.jaxb.Group;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.File;
+import java.io.IOException;
 import java.util.Enumeration;
 import java.util.List;
 import org.netbeans.modules.websvc.saas.model.jaxb.SaasServices;
@@ -221,10 +222,11 @@ public class SaasServicesModel {
         addGroup(rootGroup, child);
     }
 
-    public void addGroup(SaasGroup parent, SaasGroup child) {
+    public void addGroup(SaasGroup parent, SaasGroup group) {
         init();
-        parent.addChildGroup(child);
+        parent.addChildGroup(group);
         saveRootGroup();
+        fireChange(PROP_GROUPS, parent, null, group);
     }
 
     /**
@@ -241,6 +243,7 @@ public class SaasServicesModel {
         init();
         parent.removeChildGroup(group);
         saveRootGroup();
+        fireChange(PROP_GROUPS, parent, group, null);
     }
 
     List<Saas> getServices() {
@@ -260,18 +263,25 @@ public class SaasServicesModel {
         WsdlUtil.addWsdlData(url, packageName);
         WsdlSaas service = new WsdlSaas(parent, displayName, url, packageName);
         parent.addService(service);
+        service.save();
+        fireChange(PROP_SERVICES, parent, null, service);
     }
 
     /**
-     * Model mutation: add group from UI
-     * 
-     * @param parent
-     * @param child
+     * Model mutation: remve service from parent group, delete file, fire event
+     * @param service to remove.
      */
-    public void removeService(SaasGroup parent, Saas service) {
+    public void removeService(Saas service) {
         init();
+        SaasGroup parent = service.getParentGroup();
         parent.removeService(service);
-    //TODO save
+        try {
+            FileObject saasFile = service.getSaasFile();
+            saasFile.delete();
+            fireChange(PROP_SERVICES, parent, service, null);
+        } catch(IOException e) {
+            Exceptions.printStackTrace(e);
+        }
     }
     
     public FileObject getWebServiceHome() {

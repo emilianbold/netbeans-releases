@@ -88,7 +88,7 @@ public class AddGroupAction extends NodeAction {
                     newName = defaultName;
                 }
                 SaasGroup parent = nodes[0].getLookup().lookup(SaasGroup.class);
-                SaasGroup wsGroup = parent.createChildGroup(newName);
+                SaasGroup wsGroup = parent.createGroup(newName);
                 SaasServicesModel.getInstance().addGroup(parent, wsGroup);                
             } catch (IllegalArgumentException e) {
                 Exceptions.printStackTrace(e);
