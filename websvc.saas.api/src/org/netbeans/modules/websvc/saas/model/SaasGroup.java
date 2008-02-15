@@ -39,6 +39,7 @@
 
 package org.netbeans.modules.websvc.saas.model;
 
+import java.io.IOException;
 import org.netbeans.modules.websvc.saas.model.jaxb.Group;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -47,6 +48,7 @@ import java.util.SortedMap;
 import java.util.TreeMap;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -102,14 +104,20 @@ public class SaasGroup {
     }
 
     /**
-     * If this is part of model mutation, caller is responsible to ensure 
-     * SaasServices persists with proper Group information.
+     * Model mutation, also persists Saas with proper group information.
      * 
      * @param service saas service
      */
     public void addService(Saas service) {
+        getServices();
         services.put(service.getDisplayName(), service);
-        SaasServicesModel.getInstance().fireChange(PROP_CHILD_SERVICE, this, null, service);
+        service.setParentGroup(this);
+        try {
+            service.save();
+        } catch(IOException e) {
+            Exceptions.printStackTrace(e);
+        }
+        fireChange(PROP_CHILD_SERVICE, null, service);
     }
     
     /**
@@ -121,18 +129,38 @@ public class SaasGroup {
     public boolean removeService(Saas service) {
         Saas removed = services.remove(service.getDisplayName());
         if (removed != null) {
-            SaasServicesModel.getInstance().fireChange(PROP_CHILD_SERVICE, this, removed, null);
+            
+            fireChange(PROP_CHILD_SERVICE, removed, null);
             return true;
         }
         return false;
     }
 
     public void setName(String value) {
-        if (! isUserDefined()) {
-            getParent().removeChildGroup(this);
-            delegate.setName(value);
-            getParent().addChildGroup(this);
+        if (getParent() == null) {
+            throw new IllegalArgumentException("Cannot rename root group");
         }
+
+        if (value == null || value.equals(getName())) {
+            return;
+        }
+        
+        String message = null;
+        if (isUserDefined()) {
+            message = NbBundle.getMessage(getClass(), "MSG_GroupNotUserDefined");
+        }
+        
+        for (SaasGroup g : getParent().getChildrenGroups()) {
+            if (g.getName().equals(value)) {
+                message = NbBundle.getMessage(getClass(), "MSG_DuplicateGroupName");
+            }
+        }
+        
+        if (message != null) {
+            throw new IllegalArgumentException(message);
+        }
+        delegate.setName(value);
+        SaasServicesModel.getInstance().saveRootGroup();
     }
 
     public String getName() {
@@ -143,7 +171,7 @@ public class SaasGroup {
         return userDefined;
     }
 
-    public void setUserDefined(boolean v) {
+    void setUserDefined(boolean v) {
         if (userDefined) {
             userDefined = v;
         }
@@ -195,8 +223,15 @@ public class SaasGroup {
     }
     
     private void _removeSaas(Saas childService) {
-        services.remove(childService.getDisplayName());
-        //TODO cleanup persistence and remove local files
+        if (childService.isUserDefined()) {
+            return;
+        }
+        getServices();
+        Saas service = services.remove(childService.getDisplayName());
+        if (service != null) {
+            //TODO cleanup persistence and remove local files
+            fireChange(PROP_CHILD_SERVICE, service, null);
+        }
     }
     
     public boolean canRemove() {
@@ -218,7 +253,39 @@ public class SaasGroup {
      * @param group saas group to add
      */
     public void addChildGroup(SaasGroup group) {
+        getChildrenGroups();
         children.put(group.getName(), group);
-        SaasServicesModel.getInstance().fireChange(PROP_CHILD_GROUP, this, null, group);
+        fireChange(PROP_CHILD_GROUP, null, group);
+    }
+    
+    /**
+     * Return a clone of root group element that has one descendant at each level down to
+     * the current root.
+     * @return
+     */
+    public Group getPathFromRoot() {
+        Group group = new Group();
+        group.setName(getName());
+        SaasGroup parentGroup = getParent();
+        while(parentGroup != null) {
+            Group p = new Group();
+            p.setName(parentGroup.getName());
+            p.getGroup().add(group);
+            group = p;
+            parentGroup = parentGroup.getParent();
+        }
+        return group;
+    }
+
+    public SaasGroup createChildGroup(String name) {
+        Group g = new Group();
+        g.setName(name);
+        SaasGroup child = new SaasGroup(this, g);
+        SaasServicesModel.getInstance().addGroup(this, child);
+        return child;
+    }
+    
+    protected void fireChange(String property, Object old, Object neu) {
+        SaasServicesModel.getInstance().fireChange(property, this, old, neu);
     }
 }
