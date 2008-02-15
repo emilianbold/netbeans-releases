@@ -54,12 +54,14 @@ public class CommentSetImpl implements Cloneable, CommentSet {
     Tree tree;
     List<Comment> precedingComments = new ArrayList<Comment>();
     List<Comment> trailingComments = new ArrayList<Comment>();
+    private boolean commentsMapped;
 
     /**
      * Add the specified comment string to the list of preceding comments. 
      */
     public void addPrecedingComment(String s) {
         addPrecedingComment(Comment.create(s));
+        commentsMapped();
     }
 
     /**
@@ -67,6 +69,7 @@ public class CommentSetImpl implements Cloneable, CommentSet {
      */
     public void addPrecedingComment(Comment c) {
         precedingComments.add(c);
+        commentsMapped();
     }
 
     /**
@@ -74,6 +77,7 @@ public class CommentSetImpl implements Cloneable, CommentSet {
      */
     public void addPrecedingComments(List<Comment> comments) {
         precedingComments.addAll(comments);
+        commentsMapped();
     }
     
     /**
@@ -81,6 +85,7 @@ public class CommentSetImpl implements Cloneable, CommentSet {
      */
     public void addTrailingComment(String s) {
         addTrailingComment(Comment.create(s));
+        commentsMapped();
     }
 
     /**
@@ -88,6 +93,7 @@ public class CommentSetImpl implements Cloneable, CommentSet {
      */
     public void addTrailingComment(Comment c) {
         trailingComments.add(c);
+        commentsMapped();
     }
 
     /**
@@ -95,6 +101,7 @@ public class CommentSetImpl implements Cloneable, CommentSet {
      */
     public void addTrailingComments(List<Comment> comments) {
         trailingComments.addAll(comments);
+        commentsMapped();
     }
     
     public List<Comment> getPrecedingComments() {
@@ -158,5 +165,13 @@ public class CommentSetImpl implements Cloneable, CommentSet {
         }
         sb.append('}');
         return sb.toString();
+    }
+    
+    public boolean areCommentsMapped() {
+        return commentsMapped;
+    }
+    
+    public void commentsMapped() {
+        commentsMapped = true;
     }
 }
