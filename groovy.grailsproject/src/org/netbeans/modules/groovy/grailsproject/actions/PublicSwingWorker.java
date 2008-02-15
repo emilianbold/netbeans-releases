@@ -86,11 +86,12 @@ import org.netbeans.api.project.Project;
         
         public void run() {
 
-        try {
-            String tabName = "Grails Server : " + prj.getProjectDirectory().getName() 
+            String tabName = "grails : " + prj.getProjectDirectory().getName() 
                                                 + " (" + command +")";
             
             InputOutput io = IOProvider.getDefault().getIO(tabName, true);
+            
+        try {
 
             io.select();
             writer = io.getOut();
@@ -132,10 +133,19 @@ import org.netbeans.api.project.Project;
 
                 process.waitFor();
             }
+            
+            writer.close();
+            io.getErr().close();
 
             } catch (Exception e) {
                 LOG.log(Level.WARNING, "problem with process: " + e);
                 LOG.log(Level.WARNING, "message " + e.getLocalizedMessage());
+                
+                writer.close();
+                io.getErr().close();
+                
+                displayGrailsProcessError(e);
+                
                 e.printStackTrace();
             }
         }

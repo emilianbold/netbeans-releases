@@ -108,5 +108,6 @@ public class StreamRedirectThread extends Thread {
         } catch (IOException ioe) {
             Exceptions.printStackTrace(ioe);
         }
+        ow.close();
     }
 }
