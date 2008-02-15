@@ -54,8 +54,6 @@ import org.netbeans.api.xml.lexer.XMLTokenId;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Formatter;
 import org.netbeans.editor.Utilities;
-import org.netbeans.editor.ext.FormatTokenPosition;
-import org.netbeans.editor.ext.FormatWriter;
 import org.netbeans.modules.editor.indent.spi.Context;
 import org.netbeans.modules.editor.structure.formatting.JoinedTokenSequence;
 import org.netbeans.modules.editor.structure.formatting.TagBasedLexerFormatter;
@@ -64,7 +62,7 @@ import org.netbeans.modules.xml.text.folding.TokenElement.TokenType;
 import org.netbeans.modules.xml.text.syntax.XMLKit;
 
 /**
- * 
+ * New XML formatter based on Lexer APIs.
  * @author Samaresh (Samaresh.Panda@Sun.Com)
  */
 public class XMLLexerFormatter extends TagBasedLexerFormatter {
@@ -185,6 +183,7 @@ public class XMLLexerFormatter extends TagBasedLexerFormatter {
         int originalOffset = jts.offset();
         jts.move(tagStartOffset);
         jts.moveNext();
+        jts.moveNext();
         boolean thereAreMoreTokens = true;
 
         while (thereAreMoreTokens && jts.token().id() != XMLTokenId.TAG) {
@@ -193,15 +192,9 @@ public class XMLLexerFormatter extends TagBasedLexerFormatter {
 
         int r = jts.offset() + jts.token().length();
         jts.move(originalOffset);
-        jts.moveNext();
+        jts.moveNext();        
         return thereAreMoreTokens ? r : -1;
     }
-
-//    @Override
-//    protected boolean isJustBeforeClosingTag(JoinedTokenSequence jts, int tagTokenOffset) throws BadLocationException {
-//        // a workaround for the difference with XML syntax support
-//        return super.isJustBeforeClosingTag(jts, tagTokenOffset + "</".length()); //NOI18N
-//    }
 
     @Override
     protected int getOpeningSymbolOffset(JoinedTokenSequence jts, int tagTokenOffset) {
@@ -225,28 +218,9 @@ public class XMLLexerFormatter extends TagBasedLexerFormatter {
         return -1;
     }
 
-//    public void format(FormatWriter fw) {
-//        XMLFormatSupport xfs = new XMLFormatSupport(fw);
-//
-//        FormatTokenPosition pos = xfs.getFormatStartPosition();
-//
-//        if ((xfs.isLineStart(pos) == false) ||
-//                xfs.isIndentOnly()) { // don't do anything
-//        } else { // remove end-line whitespace
-//            while (pos.getToken() != null) {
-//                pos = xfs.removeLineEndWhitespace(pos);
-//                if (pos.getToken() != null) {
-//                    pos = xfs.getNextPosition(pos);
-//                }
-//            }
-//        }
-//    }
-
-    @Override
-    public void reformat(Context context, int startOffset, int endOffset) throws BadLocationException {
-//        if(!isFirstTime)//This is to prevent invoking of this method by the ActionFactory multiple times, we want only one time invocation
-//            return null;
-//       
+//    @Override
+//    public void reformat(Context context, int startOffset, int endOffset) throws BadLocationException {
+    public void reformat(Context context, int startOffset, int endOffset, boolean value) throws BadLocationException {
         BaseDocument doc = (BaseDocument) context.document();
         doc.atomicLock();
         try {
@@ -286,19 +260,12 @@ public class XMLLexerFormatter extends TagBasedLexerFormatter {
                 }
             }
         } catch (BadLocationException ble) {
+            //ignore exception
         } catch (IOException iox) {
+            //ignore exception
         } finally {
             doc.atomicUnlock();
-//            //isFirstTime = false;
-//            SYNCHRONIZER = RequestProcessor.getDefault().post(
-//                new Runnable() {
-//                    public void run() {
-//                        isFirstTime = true;
-//                    }
-//                }, 2000
-//            );
         }
-    //return null;
     }
 
     private void changePrettyText(BaseDocument doc, TokenElement tag, int so) throws BadLocationException {
