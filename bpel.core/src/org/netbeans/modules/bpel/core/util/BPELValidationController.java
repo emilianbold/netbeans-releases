@@ -222,5 +222,5 @@ public class BPELValidationController extends ChangeEventListenerAdapter {
   private Map<BPELValidationListener, Object> myWeaklisteners;
 
   // vlv
-  private static final int DELAY = 3456;
+  private static final int DELAY = 5432;
 }
