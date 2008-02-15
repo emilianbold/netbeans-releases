@@ -404,7 +404,7 @@ public final class UI {
 
   public static void endTime(Object object) {
     long currentTime = System.currentTimeMillis();
-    tim(object + ": " + (currentTime - ourTimes.pop()) + " ms."); // NOI18N
+    tim(object + ": " + ((currentTime - ourTimes.pop()) / MILLIS) + " sec."); // NOI18N
   }
 
   public static void tim() {
@@ -692,6 +692,8 @@ public final class UI {
   public static final int TINY_INSET = 2;
   public static final int SMALL_INSET = 7;
   public static final int MEDIUM_INSET = 11;
+
+  private static final double MILLIS = 1000.0;
 
   public static final String UH = System.getProperty("user.home"); // NOI18N
   public static final String LS = System.getProperty("line.separator"); // NOI18N
