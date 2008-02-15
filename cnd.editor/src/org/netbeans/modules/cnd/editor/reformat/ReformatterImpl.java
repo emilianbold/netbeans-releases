@@ -643,31 +643,24 @@ public class ReformatterImpl {
             if (p != null) {
                 switch(p.id()) {
                     case IF:
-                    {
                         spaceAfter(current, codeStyle.spaceWithinIfParens());
-                        break;
-                    }
+                        return;
                     case FOR:
-                    {
                         spaceAfter(current, codeStyle.spaceWithinForParens());
-                        break;
-                    }
+                        return;
                     case WHILE:
-                    {
                         spaceAfter(current, codeStyle.spaceWithinWhileParens());
-                        break;
-                    }
+                        return;
                     case SWITCH:
-                    {
                         spaceAfter(current, codeStyle.spaceWithinSwitchParens());
-                        break;
-                    }
+                        return;
                     case CATCH:
-                    {
                         spaceAfter(current, codeStyle.spaceWithinCatchParens());
-                        break;
-                    }
+                        return;
                 }
+            }
+            if (isTypeCast()){
+                spaceAfter(current, codeStyle.spaceWithinTypeCastParens());
             }
         }
     }
@@ -678,35 +671,139 @@ public class ReformatterImpl {
             if (p != null) {
                 switch(p.id()) {
                     case IF:
-                    {
                         spaceBefore(current, codeStyle.spaceWithinIfParens());
-                        break;
-                    }
+                        return;
                     case FOR:
-                    {
                         spaceBefore(current, codeStyle.spaceWithinForParens());
-                        break;
-                    }
+                        return;
                     case WHILE:
-                    {
                         spaceBefore(current, codeStyle.spaceWithinWhileParens());
-                        break;
-                    }
+                        return;
                     case SWITCH:
-                    {
                         spaceBefore(current, codeStyle.spaceWithinSwitchParens());
-                        break;
-                    }
+                        return;
                     case CATCH:
-                    {
                         spaceBefore(current, codeStyle.spaceWithinCatchParens());
-                        break;
-                    }
+                        return;
                 }
+            }
+            if (isTypeCast()){
+                spaceBefore(current, codeStyle.spaceWithinTypeCastParens());
+                spaceAfter(current, codeStyle.spaceAfterTypeCast());
             }
         }
     }
 
+    private boolean isTypeCast() {
+        int index = ts.index();
+        try {
+            boolean findId = false;
+            if (ts.token().id() == RPAREN) {
+                while (ts.movePrevious()) {
+                    switch (ts.token().id()) {
+                        case LPAREN:
+                        {
+                            if (findId) {
+                                ts.moveIndex(index);
+                                ts.moveNext();
+                                Token<CppTokenId> next = lookNextImportant();
+                                return next != null && next.id() == IDENTIFIER;
+                            }
+                            return false;
+                        }
+                        case INT:
+                        case LONG:
+                        case FLOAT:
+                        case DOUBLE:
+                            findId = true;
+                            break;
+                        case IDENTIFIER:
+                            if (findId) {
+                                return false;
+                            }
+                            findId = true;
+                            break;
+                        case AMP:
+                        case STAR:
+                        case LBRACKET:
+                        case RBRACKET:
+                        case WHITESPACE:
+                        case NEW_LINE:
+                        case LINE_COMMENT:
+                        case BLOCK_COMMENT:
+                        case PREPROCESSOR_DIRECTIVE:
+                            break;
+                        default:
+                            return false;
+                    }
+                }
+            } else if (ts.token().id() == LPAREN) {
+                while (ts.moveNext()) {
+                    switch (ts.token().id()) {
+                        case RPAREN:
+                        {
+                            if (findId) {
+                                Token<CppTokenId> next = lookNextImportant();
+                                return next != null && next.id() == IDENTIFIER;
+                            }
+                            return false;
+                        }
+                        case INT:
+                        case LONG:
+                        case FLOAT:
+                        case DOUBLE:
+                            findId = true;
+                            break;
+                        case IDENTIFIER:
+                            if (findId) {
+                                return false;
+                            }
+                            findId = true;
+                            break;
+                        case AMP:
+                        case STAR:
+                        case LBRACKET:
+                        case RBRACKET:
+                        case WHITESPACE:
+                        case NEW_LINE:
+                        case LINE_COMMENT:
+                        case BLOCK_COMMENT:
+                        case PREPROCESSOR_DIRECTIVE:
+                            break;
+                        default:
+                            return false;
+                    }
+                }
+            }
+            return false;
+        } finally {
+            ts.moveIndex(index);
+            ts.moveNext();
+        }
+    }
+
+    private Token<CppTokenId> lookNextImportant(){
+        int index = ts.index();
+        try {
+            while(ts.moveNext()){
+                switch (ts.token().id()) {
+                    case WHITESPACE:
+                    case NEW_LINE:
+                    case LINE_COMMENT:
+                    case BLOCK_COMMENT:
+                    case PREPROCESSOR_DIRECTIVE:
+                        break;
+                    default:
+                        return ts.token();
+                }
+            }
+            return null;
+        } finally {
+            ts.moveIndex(index);
+            ts.moveNext();
+        }
+    }
+    
     private Token<CppTokenId> lookPreviousStatement(){
         int index = ts.index();
         int balance = 0;
