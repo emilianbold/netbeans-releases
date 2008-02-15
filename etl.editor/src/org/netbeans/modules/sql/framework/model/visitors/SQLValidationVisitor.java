@@ -294,7 +294,7 @@ public class SQLValidationVisitor implements SQLVisitor {
         visitExpression(filter, true);
 
         if (!filter.isValid()) {
-            String nbBundle6 = mLoc.t("PRSR001: {0} ({1})",filter.getDisplayName(), filter.toString());
+            String nbBundle6 = mLoc.t("PRSR001: {0} {1}",filter.getDisplayName(), filter.toString());
             String descriptor = Localizer.parse(nbBundle6);
             String message = buildErrorMessageWithObjectIdentifier(descriptor, "ERROR_predicate_invalid");
             ValidationInfo expValidationInfo = new ValidationInfoImpl(filter, message, ValidationInfo.VALIDATION_ERROR);
@@ -421,9 +421,9 @@ public class SQLValidationVisitor implements SQLVisitor {
     }
 
     private String buildErrorMessageWithObjectIdentifiers(String identifier, String errorKey, Object[] errorParams) {
-        String nbBundle12 = mLoc.t("PRSR001: {0}{1}{2}",LOG_CATEGORY,errorKey,errorParams);
+        String nbBundle12 = mLoc.t("PRSR001: {0}-{1}",errorKey,errorParams);
         String errorMessage = Localizer.parse(nbBundle12);
-        String nbBundle8 = mLoc.t("PRSR001: {0}: {1}",identifier,errorMessage);
+        String nbBundle8 = mLoc.t("PRSR001: {0}-{1}",identifier,errorMessage);
         return Localizer.parse(nbBundle8);
     }
 
@@ -516,9 +516,11 @@ public class SQLValidationVisitor implements SQLVisitor {
                     ValidationInfoImpl vInfo = new ValidationInfoImpl(jCondition, desc, ValidationInfo.VALIDATION_WARNING);
                     validationInfoList.add(vInfo);
                 }
+                
+                
             }
         } catch (BaseException ex) {
-            mLogger.errorNoloc(mLoc.t("PRSR130: Error while validating SQLJoinOperator{0}", operator.getDisplayName()), ex);
+            mLogger.errorNoloc(mLoc.t("PRSR130: Error while validating SQLJoinOperator-{0}", operator.getDisplayName()), ex);
         }
     }
 

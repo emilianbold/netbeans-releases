@@ -84,6 +84,7 @@ import org.openide.util.Exceptions;
 /**
  *
  * @author Pavel Buzek
+ * @author Po-Ting Wu
  */
 public final class JsfForm implements ActiveEditorDrop {
         
@@ -353,7 +354,7 @@ public final class JsfForm implements ActiveEditorDrop {
         FileObject fileObject = getFO(target);
         if (fileObject != null) {
             WebModule webModule = WebModule.getWebModule(fileObject);
-            String[] configFiles = JSFConfigUtilities.getConfigFiles(webModule.getDeploymentDescriptor());
+            String[] configFiles = JSFConfigUtilities.getConfigFiles(webModule);
             return configFiles != null && configFiles.length > 0;
         }
         return false;

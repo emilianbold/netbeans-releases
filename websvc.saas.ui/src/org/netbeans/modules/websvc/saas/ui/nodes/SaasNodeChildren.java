@@ -92,11 +92,12 @@ public abstract class SaasNodeChildren<T> extends Children.Keys<T> implements Pr
     
     protected abstract void updateKeys();
 
-    protected static final Node[] EMPTY = new Node[0];
-    protected static final AbstractNode[] WAIT_NODES = { new AbstractNode(Children.LEAF) };
-    static {
-        WAIT_NODES[0].setName(NbBundle.getMessage(WsdlSaasNodeChildren.class, "NODE_LOAD_MSG"));
-        WAIT_NODES[0].setIconBaseWithExtension("org/netbeans/modules/websvc/saas/ui/resources/wait.gif"); // NOI18N
+    protected static final Object[] WAIT_HOLDER = new Object[] { new Object() };
+    protected Node[] getWaitNode() {
+        AbstractNode wait = new AbstractNode(Children.LEAF);
+        wait.setName(NbBundle.getMessage(WsdlSaasNodeChildren.class, "NODE_LOAD_MSG"));
+        wait.setIconBaseWithExtension("org/netbeans/modules/websvc/saas/ui/resources/wait.gif"); // NOI18N
+        return new Node[] { wait };
     }
 
     public boolean needsWaiting() {

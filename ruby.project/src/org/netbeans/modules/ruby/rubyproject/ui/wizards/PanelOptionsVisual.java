@@ -49,6 +49,7 @@ import java.text.MessageFormat;
 import java.util.StringTokenizer;
 import javax.swing.event.DocumentListener;
 import javax.swing.event.DocumentEvent;
+import org.netbeans.modules.ruby.platform.PlatformComponentFactory;
 import org.netbeans.modules.ruby.platform.RubyPlatformCustomizer;
 import org.openide.WizardDescriptor;
 import org.openide.WizardValidationException;
@@ -62,11 +63,16 @@ public final class PanelOptionsVisual extends SettingsPanel implements ActionLis
     private PanelConfigureProject panel;
     private boolean valid;
     
-    /** Creates new form PanelOptionsVisual */
-    public PanelOptionsVisual( PanelConfigureProject panel, int type ) {
+    public PanelOptionsVisual(PanelConfigureProject panel, int type) {
         initComponents();
         this.panel = panel;
-        interpreterChanged();
+        fireChangeEvent();
+        
+        PlatformComponentFactory.addPlatformChangeListener(platforms, new PlatformComponentFactory.PlatformChangeListener() {
+            public void platformChanged() {
+                fireChangeEvent();
+            }
+        });
 
         switch (type) {
 //            case NewRubyProjectWizardIterator.TYPE_LIB:
@@ -107,13 +113,13 @@ public final class PanelOptionsVisual extends SettingsPanel implements ActionLis
         if ( e.getSource() == createMainCheckBox ) {
             lastMainClassCheck = createMainCheckBox.isSelected();
             mainClassTextField.setEnabled( lastMainClassCheck );        
-            this.panel.fireChangeEvent();
+            fireChangeEvent();
         }                
     }
     
     public void propertyChange (PropertyChangeEvent event) {
         if ("roots".equals(event.getPropertyName())) {
-            interpreterChanged();
+            fireChangeEvent();
         }
         if (PanelProjectLocationVisual.PROP_PROJECT_NAME.equals(event.getPropertyName())) {
             String newProjectName = NewRubyProjectWizardIterator.getPackageName((String) event.getNewValue());
@@ -124,6 +130,10 @@ public final class PanelOptionsVisual extends SettingsPanel implements ActionLis
                 NbBundle.getMessage (PanelOptionsVisual.class,"TXT_ClassName"), new Object[] {newProjectName}
             ));
         }
+    }
+
+    private void fireChangeEvent() {
+        this.panel.fireChangeEvent();
     }
     
     /** This method is called from within the constructor to
@@ -212,14 +222,16 @@ public final class PanelOptionsVisual extends SettingsPanel implements ActionLis
     }//GEN-LAST:event_manageButtonActionPerformed
     
     boolean valid(WizardDescriptor settings) {
-        if (mainClassTextField.isVisible () && mainClassTextField.isEnabled ()) {
+        if (PlatformComponentFactory.getPlatform(platforms) == null) {
+            return false;
+        }
+        if (mainClassTextField.isVisible() && mainClassTextField.isEnabled()) {
             if (!valid) {
-                settings.putProperty( "WizardPanel_errorMessage", // NOI18N
-                    NbBundle.getMessage(PanelOptionsVisual.class,"ERROR_IllegalMainClassName")); //NOI18N
+                settings.putProperty("WizardPanel_errorMessage", // NOI18N
+                        NbBundle.getMessage(PanelOptionsVisual.class, "ERROR_IllegalMainClassName")); //NOI18N
             }
             return this.valid;
-        }
-        else {
+        } else {
             return true;
         }
     }
@@ -253,7 +265,7 @@ public final class PanelOptionsVisual extends SettingsPanel implements ActionLis
     private void mainClassChanged () {
         String mainClassName = this.mainClassTextField.getText ();
         StringTokenizer tk = new StringTokenizer (mainClassName, "."); //NOI18N
-        boolean valid = true;
+        valid = true;
         while (tk.hasMoreTokens()) {
             String token = tk.nextToken();
             if (token.length() == 0 || /* !Utilities.isJavaIdentifier(token)*/ token.equals(" ")) {
@@ -261,12 +273,8 @@ public final class PanelOptionsVisual extends SettingsPanel implements ActionLis
                 break;
             }            
         }
-        this.valid = valid;
-        this.panel.fireChangeEvent();
+        fireChangeEvent();
     }
 
-    public void interpreterChanged() {
-        this.panel.fireChangeEvent();
-    }    
 }
 

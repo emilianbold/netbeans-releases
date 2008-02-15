@@ -36,12 +36,15 @@ import javax.swing.text.Document;
 import javax.swing.text.SimpleAttributeSet;
 
 import org.netbeans.api.languages.Highlighting;
+import org.netbeans.api.languages.LanguageDefinitionNotFoundException;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
-import org.netbeans.spi.editor.highlighting.HighlightsSequence;
+import org.netbeans.modules.languages.Language;
+import org.netbeans.modules.languages.LanguagesManager;
 import org.netbeans.spi.editor.highlighting.HighlightsSequence;
 import org.netbeans.spi.editor.highlighting.support.AbstractHighlightsContainer;
+import org.openide.util.Exceptions;
 import org.openide.util.WeakListeners;
 
 
@@ -55,19 +58,23 @@ class TokenHighlightsLayer extends AbstractHighlightsContainer {
     private TokenHierarchy          hierarchy;
     private Document                document;
     private final PropertyChangeListener listener = new PropertyChangeListener () {
-        private Timer timer;
-        
+        private boolean parserInited;
+
         public void propertyChange (final PropertyChangeEvent evt) {
-            if (timer != null)
-                timer.cancel ();
-            timer = new Timer ();
-            timer.schedule (new TimerTask () {
-                public void run () {
-                    fireHighlightsChange ((Integer) evt.getOldValue (), (Integer) evt.getNewValue ());
-                    timer = null;
+            if (!parserInited) {
+                String mimeType = (String) document.getProperty ("mimeType");
+                try {
+                    Language language = LanguagesManager.getDefault().getLanguage(mimeType);
+                    if (language.getParser() != null) {
+                        parserInited = true;
+                    }
+                } catch (LanguageDefinitionNotFoundException ex) {
                 }
-            }, 200);
-        }
+            }
+            if (parserInited) {
+                fireHighlightsChange ((Integer) evt.getOldValue (), (Integer) evt.getNewValue ());
+            }
+        }            
     };
     
     TokenHighlightsLayer (final Document document) {

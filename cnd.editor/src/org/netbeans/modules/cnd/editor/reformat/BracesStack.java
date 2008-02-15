@@ -40,6 +40,10 @@
 package org.netbeans.modules.cnd.editor.reformat;
 
 import java.util.Stack;
+import org.netbeans.api.lexer.Token;
+import org.netbeans.api.lexer.TokenSequence;
+import org.netbeans.cnd.api.lexer.CppTokenId;
+import static org.netbeans.cnd.api.lexer.CppTokenId.*;
 
 /**
  *
@@ -54,16 +58,105 @@ class BracesStack {
     }
 
     public void push(StackEntry entry) {
-        stack.push(entry);
-    }
-
-    public StackEntry pop() {
-        if (stack.empty()) {
-            return null;
+        if (entry.getKind() == ELSE){
+            if (stack.size() > 0 && stack.peek().getKind() == IF) {
+                stack.pop();
+            }
         }
-        return stack.pop();
+        stack.push(entry);
+        System.out.println("push: "+toString());
     }
 
+    public int pop(TokenSequence<CppTokenId> ts) {
+        int res = popImpl(ts);
+        System.out.println("pop "+ts.token().id().name()+": "+toString());
+        return res;
+    }
+
+    public int popImpl(TokenSequence<CppTokenId> ts) {
+        if (stack.empty()) {
+            return 0;
+        }
+        CppTokenId id = ts.token().id();
+        if (id == RBRACE) {
+            return popBrace(ts);
+        }
+        return popStatement(ts);
+    }
+
+    public int popBrace(TokenSequence<CppTokenId> ts) {
+        int res = 0;
+        int brace = 0;
+        for (int i = stack.size() - 1; i >= 0; i--) {
+            StackEntry top = stack.get(i);
+            if (top.getKind() == LBRACE) {
+                brace = i - 1;
+                stack.setSize(i);
+                res = getLength();
+                if (isStatement(peek())){
+                    res--;
+                }
+                break;
+            }
+        }
+        if (brace < 0) {
+            stack.setSize(0);
+            return res;
+        }
+        popStatement(ts);
+        return res;
+    }
+
+    public int popStatement(TokenSequence<CppTokenId> ts) {
+        Token<CppTokenId> next = getNextImportant(ts);
+        for (int i = stack.size() - 1; i >= 0; i--) {
+            StackEntry top = stack.get(i);
+            switch (top.getKind()) {
+                case LBRACE: {
+                    stack.setSize(i + 1);
+                    return getLength();
+                }
+                case IF: //("if", "keyword-directive"),
+                {
+                    if (next != null && next.id() == ELSE) {
+                        stack.setSize(i + 1);
+                        return getLength();
+                    }
+                }
+                case ELSE: //("else", "keyword-directive"),
+                    break;
+                case TRY: //("try", "keyword-directive"), // C++
+                case CATCH: //("catch", "keyword-directive"), //C++
+                case SWITCH: //("switch", "keyword-directive"),
+                case FOR: //("for", "keyword-directive"),
+                case ASM: //("asm", "keyword-directive"), // gcc and C++
+                case DO: //("do", "keyword-directive"),
+                case WHILE: //("while", "keyword-directive"),
+                    break;
+            }
+        }
+        stack.setSize(0);
+        return 0;
+    }
+    
+    private boolean isStatement(StackEntry top){
+        if (top != null) {
+            switch (top.getKind()) {
+                case IF: //("if", "keyword-directive"),
+                case ELSE: //("else", "keyword-directive"),
+                case TRY: //("try", "keyword-directive"), // C++
+                case CATCH: //("catch", "keyword-directive"), //C++
+                case SWITCH: //("switch", "keyword-directive"),
+                case FOR: //("for", "keyword-directive"),
+                case ASM: //("asm", "keyword-directive"), // gcc and C++
+                case DO: //("do", "keyword-directive"),
+                case WHILE: //("while", "keyword-directive"),
+                    return true;
+            }
+        }
+        return false;
+    }
+    
     public StackEntry peek() {
         if (stack.empty()) {
             return null;
@@ -72,6 +165,69 @@ class BracesStack {
     }
 
     public int getLength() {
-        return stack.size();
+        StackEntry prev = null;
+        int res = 0;
+        for(int i = 0; i < stack.size(); i++){
+            StackEntry entry = stack.get(i);
+            if (entry.getKind() == LBRACE) {
+                if (prev == null || prev.getKind()==LBRACE) {
+                    res++;
+                }
+            } else {
+                res++;
+            }
+            prev = entry;
+        }
+        return res;
+    }
+    
+
+    private Token<CppTokenId> getNextImportant(TokenSequence<CppTokenId> ts) {
+        int i = ts.index();
+        try {
+            while (true) {
+                if (!ts.moveNext()) {
+                    return null;
+                }
+                Token<CppTokenId> current = ts.token();
+                switch (current.id()) {
+                    case WHITESPACE:
+                    case NEW_LINE:
+                    case BLOCK_COMMENT:
+                    case LINE_COMMENT:
+                    case PREPROCESSOR_DIRECTIVE:
+                        break;
+                    case IF: //("if", "keyword-directive"),
+                    case ELSE: //("else", "keyword-directive"),
+                    case SWITCH: //("switch", "keyword-directive"),
+                    case ASM: //("asm", "keyword-directive"), // gcc and C++
+                    case WHILE: //("while", "keyword-directive"),
+                    case DO: //("do", "keyword-directive"),
+                    case FOR: //("for", "keyword-directive"),
+                    case TRY: //("try", "keyword-directive"), // C++
+                    case CATCH: //("catch", "keyword-directive"), //C++
+                        return current;
+                    default:
+                        return null;
+                }
+            }
+        } finally {
+            ts.moveIndex(i);
+            ts.moveNext();
+        }
+    }
+    
+    @Override
+    public String toString(){
+        StringBuilder buf = new StringBuilder();
+        for(int i = 0; i < stack.size(); i++){
+            StackEntry entry = stack.get(i);
+            if (i > 0) {
+                buf.append(", ");
+            }
+            buf.append(entry.toString());
+        }
+        buf.append("+"+getLength());
+        return buf.toString();
     }
 }

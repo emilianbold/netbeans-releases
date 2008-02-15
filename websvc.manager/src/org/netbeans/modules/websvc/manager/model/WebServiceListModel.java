@@ -302,9 +302,9 @@ public class WebServiceListModel {
         }
 
         if (! strict && target != null) {
-            WebServiceData clone = new WebServiceData(target);
-            clone.setName(serviceName);
-            return clone;
+                WebServiceData clone = new WebServiceData(target);
+                clone.setName(serviceName);
+                return clone;
         }
         
         return null;

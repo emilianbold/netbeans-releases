@@ -45,23 +45,26 @@ import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Formatter;
 import org.netbeans.editor.ext.ExtFormatter;
 import org.netbeans.modules.cnd.editor.cplusplus.CKit;
-import org.netbeans.modules.cnd.editor.options.CodeStyleImpl;
 import org.netbeans.modules.cnd.editor.options.EditorOptions;
+import org.openide.util.NbBundle;
 
 /**
  *
  * @author Alexander Simon
  */
-abstract public class CodeStyle {
+public final class CodeStyle {
+    static {
+        EditorOptions.codeStyleFactory = new FactoryImpl();
+    }
+
     private static CodeStyle INSTANCE_C;
     private static CodeStyle INSTANCE_CPP;
     private Language language;
-    static {
-        EditorOptions.codeStyleProducer = new Producer();
-    }
+    private Preferences preferences;
 
-    protected CodeStyle(Language language) {
+    private CodeStyle(Language language, Preferences preferences) {
         this.language = language;
+        this.preferences = preferences;
     }
 
     public synchronized static CodeStyle getDefault(Language language) {
@@ -93,7 +96,7 @@ abstract public class CodeStyle {
     }
     
     private static CodeStyle create(Language language) {
-        return new CodeStyleImpl(language, EditorOptions.getPreferences(EditorOptions.getCurrentProfileId(language)));
+        return new CodeStyle(language, EditorOptions.getPreferences(language, EditorOptions.getCurrentProfileId(language)));
     }
     
 
@@ -133,23 +136,23 @@ abstract public class CodeStyle {
     }
 
     public BracePlacement getFormatNewlineBeforeBraceNamespace() {
-        return BracePlacement.valueOf(getOption(EditorOptions.CC_FORMAT_NEWLINE_BEFORE_BRACE_NAMESPACE,
-                                      EditorOptions.defaultCCFormatNewlineBeforeBraceNamespace));
+        return BracePlacement.valueOf(getOption(EditorOptions.newLineBeforeBraceNamespace,
+                                      EditorOptions.newLineBeforeBraceNamespaceDefault));
     }
 
     public BracePlacement getFormatNewlineBeforeBraceClass() {
-        return BracePlacement.valueOf(getOption(EditorOptions.CC_FORMAT_NEWLINE_BEFORE_BRACE_CLASS,
-                                      EditorOptions.defaultCCFormatNewlineBeforeBraceClass));
+        return BracePlacement.valueOf(getOption(EditorOptions.newLineBeforeBraceClass,
+                                      EditorOptions.newLineBeforeBraceClassDefault));
     }
 
     public BracePlacement getFormatNewlineBeforeBraceDeclaration() {
-        return BracePlacement.valueOf(getOption(EditorOptions.CC_FORMAT_NEWLINE_BEFORE_BRACE_DECLARATION,
-                                      EditorOptions.defaultCCFormatNewlineBeforeBraceDeclaration));
+        return BracePlacement.valueOf(getOption(EditorOptions.newLineBeforeBraceDeclaration,
+                                      EditorOptions.newLineBeforeBraceDeclarationDefault));
     }
 
     public BracePlacement getFormatNewlineBeforeBrace() {
-        return BracePlacement.valueOf(getOption(EditorOptions.CC_FORMAT_NEWLINE_BEFORE_BRACE,
-                                      EditorOptions.defaultCCFormatNewlineBeforeBrace));
+        return BracePlacement.valueOf(getOption(EditorOptions.newLineBeforeBrace,
+                                      EditorOptions.newLineBeforeBraceDefault));
     }
 
 
@@ -157,15 +160,20 @@ abstract public class CodeStyle {
         return PreprocessorIndent.valueOf(getOption(EditorOptions.indentPreprocessorDirectives,
                                       EditorOptions.indentPreprocessorDirectivesDefault));
     }
+
+    public boolean sharpAtStartLine(){
+        return getOption(EditorOptions.sharpAtStartLine,
+                         EditorOptions.sharpAtStartLineDefault);
+    }
             
     public boolean getFormatLeadingStarInComment() {
-        return getOption(EditorOptions.CC_FORMAT_LEADING_STAR_IN_COMMENT,
-                         EditorOptions.defaultCCFormatLeadingStarInComment);
+        return getOption(EditorOptions.addLeadingStarInComment,
+                         EditorOptions.addLeadingStarInCommentDefault);
     }
 
     public int getFormatStatementContinuationIndent() {
-        return getOption(EditorOptions.CC_FORMAT_STATEMENT_CONTINUATION_INDENT,
-                         EditorOptions.defaultCCFormatStatementContinuationIndent);
+        return getOption(EditorOptions.statementContinuationIndent,
+                         EditorOptions.statementContinuationIndentDefault);
     }
 
     public boolean spaceAroundUnaryOps() {
@@ -233,6 +241,98 @@ abstract public class CodeStyle {
                          EditorOptions.spaceAfterTypeCastDefault);
     }
     
+    //SpacesBeforeLeftBraces
+    public boolean spaceBeforeClassDeclLeftBrace(){
+        return getOption(EditorOptions.spaceBeforeClassDeclLeftBrace,
+                         EditorOptions.spaceBeforeClassDeclLeftBraceDefault);
+    }
+    public boolean spaceBeforeMethodDeclLeftBrace(){
+        return getOption(EditorOptions.spaceBeforeMethodDeclLeftBrace,
+                         EditorOptions.spaceBeforeMethodDeclLeftBraceDefault);
+    }
+    public boolean spaceBeforeIfLeftBrace(){
+        return getOption(EditorOptions.spaceBeforeIfLeftBrace,
+                         EditorOptions.spaceBeforeIfLeftBraceDefault);
+    }
+    public boolean spaceBeforeElseLeftBrace(){
+        return getOption(EditorOptions.spaceBeforeElseLeftBrace,
+                         EditorOptions.spaceBeforeElseLeftBraceDefault);
+    }
+    public boolean spaceBeforeWhileLeftBrace(){
+        return getOption(EditorOptions.spaceBeforeWhileLeftBrace,
+                         EditorOptions.spaceBeforeWhileLeftBraceDefault);
+    }
+    public boolean spaceBeforeForLeftBrace(){
+        return getOption(EditorOptions.spaceBeforeForLeftBrace,
+                         EditorOptions.spaceBeforeForLeftBraceDefault);
+    }
+    public boolean spaceBeforeDoLeftBrace(){
+        return getOption(EditorOptions.spaceBeforeDoLeftBrace,
+                         EditorOptions.spaceBeforeDoLeftBraceDefault);
+    }
+    public boolean spaceBeforeSwitchLeftBrace(){
+        return getOption(EditorOptions.spaceBeforeSwitchLeftBrace,
+                         EditorOptions.spaceBeforeSwitchLeftBraceDefault);
+    }
+    public boolean spaceBeforeTryLeftBrace(){
+        return getOption(EditorOptions.spaceBeforeTryLeftBrace,
+                         EditorOptions.spaceBeforeTryLeftBraceDefault);
+    }
+    public boolean spaceBeforeCatchLeftBrace(){
+        return getOption(EditorOptions.spaceBeforeCatchLeftBrace,
+                         EditorOptions.spaceBeforeCatchLeftBraceDefault);
+    }
+    public boolean spaceBeforeArrayInitLeftBrace(){
+        return getOption(EditorOptions.spaceBeforeArrayInitLeftBrace,
+                         EditorOptions.spaceBeforeArrayInitLeftBraceDefault);
+    }
+
+    //SpacesWithinParentheses
+    public boolean spaceWithinParens(){
+        return getOption(EditorOptions.spaceWithinParens,
+                         EditorOptions.spaceWithinParensDefault);
+    }
+    public boolean spaceWithinMethodDeclParens(){
+        return getOption(EditorOptions.spaceWithinMethodDeclParens,
+                         EditorOptions.spaceWithinMethodDeclParensDefault);
+    }
+    public boolean spaceWithinMethodCallParens(){
+        return getOption(EditorOptions.spaceWithinMethodCallParens,
+                         EditorOptions.spaceWithinMethodCallParensDefault);
+    }
+    public boolean spaceWithinIfParens(){
+        return getOption(EditorOptions.spaceWithinIfParens,
+                         EditorOptions.spaceWithinIfParensDefault);
+    }
+    public boolean spaceWithinForParens(){
+        return getOption(EditorOptions.spaceWithinForParens,
+                         EditorOptions.spaceWithinForParensDefault);
+    }
+    public boolean spaceWithinWhileParens(){
+        return getOption(EditorOptions.spaceWithinWhileParens,
+                         EditorOptions.spaceWithinWhileParensDefault);
+    }
+    public boolean spaceWithinSwitchParens(){
+        return getOption(EditorOptions.spaceWithinSwitchParens,
+                         EditorOptions.spaceWithinSwitchParensDefault);
+    }
+    public boolean spaceWithinCatchParens(){
+        return getOption(EditorOptions.spaceWithinCatchParens,
+                         EditorOptions.spaceWithinCatchParensDefault);
+    }
+    public boolean spaceWithinTypeCastParens(){
+        return getOption(EditorOptions.spaceWithinTypeCastParens,
+                         EditorOptions.spaceWithinTypeCastParensDefault);
+    }
+    public boolean spaceWithinBraces(){
+        return getOption(EditorOptions.spaceWithinBraces,
+                         EditorOptions.spaceWithinBracesDefault);
+    }
+    public boolean spaceWithinArrayInitBrackets(){
+        return getOption(EditorOptions.spaceWithinArrayInitBrackets,
+                         EditorOptions.spaceWithinArrayInitBracketsDefault);
+    }
+    
     private boolean getOption(String key, boolean defaultValue) {
         return getPreferences().getBoolean(key, defaultValue);
     }
@@ -245,29 +345,56 @@ abstract public class CodeStyle {
         return getPreferences().get(key, defaultValue);
     }
 
-    abstract protected Preferences getPreferences();
-    
+    private Preferences getPreferences(){
+        return preferences;
+    }
+
+    private void setPreferences(Preferences preferences){
+        this.preferences = preferences;
+    }
+
     // Nested classes ----------------------------------------------------------
     public enum Language {
         C,
-        CPP,
+        CPP;
+        
+        @Override
+        public String toString() {
+            return NbBundle.getMessage(CodeStyle.class, "LBL_Language_"+name());
+        }
     }
 
     public enum BracePlacement {
         SAME_LINE,
-        NEW_LINE,
+        NEW_LINE;
+        
+        @Override
+        public String toString() {
+            return NbBundle.getMessage(CodeStyle.class, "LBL_bp_"+name());
+        }
     }
 
     public enum PreprocessorIndent {
         START_LINE,
         CODE_INDENT,
-        PREPROCESSOR_INDENT,
+        PREPROCESSOR_INDENT;
+
+        @Override
+        public String toString() {
+            return NbBundle.getMessage(CodeStyle.class, "LBL_pi_"+name());
+        }
     }
 
     // Communication with non public packages ----------------------------------
-    private static class Producer implements EditorOptions.CodeStyleProducer {
+    private static class FactoryImpl implements EditorOptions.CodeStyleFactory {
         public CodeStyle create(Language language, Preferences preferences) {
-            return new CodeStyleImpl(language, preferences);
+            return new CodeStyle(language, preferences);
+        }
+        public Preferences getPreferences(CodeStyle codeStyle) {
+            return codeStyle.getPreferences();
+        }
+        public void setPreferences(CodeStyle codeStyle, Preferences preferences) {
+            codeStyle.setPreferences(preferences);
         }
     } 
 }

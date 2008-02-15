@@ -43,11 +43,13 @@ import org.netbeans.modules.websvc.saas.model.jaxb.Group;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.File;
+import java.io.IOException;
 import java.util.Enumeration;
 import java.util.List;
 import org.netbeans.modules.websvc.saas.model.jaxb.SaasServices;
 import org.netbeans.modules.websvc.saas.spi.websvcmgr.WsdlServiceProxyDescriptor;
 import org.netbeans.modules.websvc.saas.util.SaasUtil;
+import org.netbeans.modules.websvc.saas.util.WsdlUtil;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
@@ -150,6 +152,7 @@ public class SaasServicesModel {
                     SaasGroup child = parent.getChildGroup(g.getName());
                     if (child == null) {
                         child = new SaasGroup(parent, g);
+                        child.setUserDefined(false);
                         parent.addChildGroup(child);
                     }
 
@@ -158,7 +161,7 @@ public class SaasServicesModel {
                         if (Saas.NS_WADL.equals(ss.getType())) {
                             service = new WadlSaas(parent, ss);
                             //why contextclassloader only work here not later
-                            ((WadlSaas)service).getWadlModel();
+                            //((WadlSaas)service).getWadlModel();
                         } else if (Saas.NS_WSDL.equals(ss.getType())) {
                             service = new WsdlSaas(parent, ss);
                         } else {
@@ -219,10 +222,11 @@ public class SaasServicesModel {
         addGroup(rootGroup, child);
     }
 
-    public void addGroup(SaasGroup parent, SaasGroup child) {
+    public void addGroup(SaasGroup parent, SaasGroup group) {
         init();
-        parent.addChildGroup(child);
-    //TODO save
+        parent.addChildGroup(group);
+        saveRootGroup();
+        fireChange(PROP_GROUPS, parent, null, group);
     }
 
     /**
@@ -232,12 +236,14 @@ public class SaasServicesModel {
      */
     public void removeGroup(SaasGroup child) {
         removeGroup(rootGroup, child);
+        saveRootGroup();
     }
 
     public void removeGroup(SaasGroup parent, SaasGroup group) {
         init();
         parent.removeChildGroup(group);
-    //TODO save
+        saveRootGroup();
+        fireChange(PROP_GROUPS, parent, group, null);
     }
 
     List<Saas> getServices() {
@@ -254,21 +260,28 @@ public class SaasServicesModel {
      */
     public void addWsdlService(SaasGroup parent, String displayName, String url, String packageName) {
         init();
+        WsdlUtil.addWsdlData(url, packageName);
         WsdlSaas service = new WsdlSaas(parent, displayName, url, packageName);
         parent.addService(service);
-    //TODO save
+        service.save();
+        fireChange(PROP_SERVICES, parent, null, service);
     }
 
     /**
-     * Model mutation: add group from UI
-     * 
-     * @param parent
-     * @param child
+     * Model mutation: remve service from parent group, delete file, fire event
+     * @param service to remove.
      */
-    public void removeService(SaasGroup parent, Saas service) {
+    public void removeService(Saas service) {
         init();
+        SaasGroup parent = service.getParentGroup();
         parent.removeService(service);
-    //TODO save
+        try {
+            FileObject saasFile = service.getSaasFile();
+            saasFile.delete();
+            fireChange(PROP_SERVICES, parent, service, null);
+        } catch(IOException e) {
+            Exceptions.printStackTrace(e);
+        }
     }
     
     public FileObject getWebServiceHome() {

@@ -472,6 +472,16 @@ public class GlobalSourcePathTest extends NbTestCase {
         assertEquals(2, l.ids.size());
     }
     
+    public void testSetUseLibraries () {
+        GlobalSourcePathTestUtil.setUseLibraries(true);     //Assertion error shouldn't be thrown
+        try {
+            GlobalSourcePath.getDefault().setUseLibraries(true);
+            assertTrue(false);
+        } catch (AssertionError e) {
+            //AssertionError has to be thrown
+        }
+    }
+    
     
     public static class PRI implements FilteringPathResourceImplementation {
         
