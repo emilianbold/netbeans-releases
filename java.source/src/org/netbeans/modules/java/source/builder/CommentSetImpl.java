@@ -51,9 +51,8 @@ import static org.netbeans.modules.java.source.save.PositionEstimator.*;
  * Class that associates the before and after comments to a tree.
  */
 public class CommentSetImpl implements Cloneable, CommentSet {
-    Tree tree;
-    List<Comment> precedingComments = new ArrayList<Comment>();
-    List<Comment> trailingComments = new ArrayList<Comment>();
+    private final List<Comment> precedingComments = new ArrayList<Comment>();
+    private final List<Comment> trailingComments = new ArrayList<Comment>();
     private boolean commentsMapped;
 
     /**
@@ -125,10 +124,6 @@ public class CommentSetImpl implements Cloneable, CommentSet {
             precedingComments.get(0).pos() : NOPOS;
     }
         
-    void setTree(Tree newTree) {
-        tree = newTree;
-    }
-    
     public boolean hasChanges() {
         for (Comment c : precedingComments)
             if (c.isNew())

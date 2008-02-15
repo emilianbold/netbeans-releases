@@ -113,7 +113,6 @@ public class CommentHandlerService implements CommentHandler {
                 CommentSetImpl to = map.get(toTree);
                 if (to == null) {
                     to = (CommentSetImpl)from.clone();
-                    to.setTree(toTree);
                     map.put(toTree, to);
                 } 
                 else {
