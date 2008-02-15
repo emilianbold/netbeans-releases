@@ -213,7 +213,7 @@ public class GroovyParser implements Parser {
                     // See if I should try to remove the current line, since it has text on it.
                     int lineEnd = GroovyUtils.getRowLastNonWhite(doc, offset);
 
-                    if (lineEnd != -1) {
+                    if (lineEnd != -1 && offset < (doc.length() - 1)) {
                         StringBuilder sb = new StringBuilder(doc.length());
                         int lineStart = GroovyUtils.getRowStart(doc, offset);
                         int rest = lineStart + 2;
