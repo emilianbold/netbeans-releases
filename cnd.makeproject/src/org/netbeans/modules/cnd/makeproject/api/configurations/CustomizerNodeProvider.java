@@ -39,48 +39,13 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.cnd.debugger.gdb;
+package org.netbeans.modules.cnd.makeproject.api.configurations;
 
-import org.netbeans.modules.cnd.debugger.gdb.actions.GdbActionHandlerProvider;
-import org.openide.modules.ModuleInstall;
-
-import org.netbeans.modules.cnd.makeproject.api.configurations.ui.CustomizerRootNodeProvider;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ui.CustomizerNode;
-import org.netbeans.modules.cnd.makeproject.api.DefaultProjectActionHandler;
 
-import org.netbeans.api.debugger.DebuggerManager;
-
-/**
- *  Module installer for cnd gdb debugger. 
- *
- *  @author gordonp
- */
-public class GdbDebuggerModule extends ModuleInstall {
-    
-    @Override
-    public void restored() {
-        // Moved to services...
-        // Profiles
-//        debugCustomizerNode = new ProfileNodeProvider().createDebugNode();
-//        CustomizerRootNodeProvider.getInstance().addCustomizerNode(debugCustomizerNode);
-
-        // Set project action handler
-//        DefaultProjectActionHandler.getInstance().setCustomDebugActionHandlerProvider(
-//                    new GdbActionHandlerProvider());  
-    }
-
-    @Override
-    public void uninstalled() {
-        // Moved to services...
-        // Profiles
-//        CustomizerRootNodeProvider.getInstance().removeCustomizerNode(debugCustomizerNode);
-//        DefaultProjectActionHandler.getInstance().setCustomDebugActionHandlerProvider(null);
-    }
-    
-    @Override
-    public void close() {
-        // Kill all debug sessions
-        DebuggerManager.getDebuggerManager().finishAllSessions();
-        super.close();
-    }
+public interface CustomizerNodeProvider {
+    /**
+     * Creates an instance of CustomizerNode node
+     */
+    public CustomizerNode factoryCreate();
 }

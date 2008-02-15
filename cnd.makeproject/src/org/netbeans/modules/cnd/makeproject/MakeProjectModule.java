@@ -58,9 +58,7 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.Folder;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Item;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ui.CustomizerNode;
-import org.netbeans.modules.cnd.makeproject.api.configurations.ui.CustomizerRootNodeProvider;
 import org.netbeans.modules.cnd.makeproject.api.remote.FilePathAdaptor;
-import org.netbeans.modules.cnd.makeproject.runprofiles.RunProfileNodeProvider;
 import org.netbeans.modules.cnd.makeproject.ui.utils.PathPanel;
 import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.ui.support.FileSensitiveActions;
@@ -90,8 +88,8 @@ public class MakeProjectModule extends ModuleInstall {
         // Moved to services...
 //	RunProfileProvider profileProvider = new RunProfileProvider();
 //	ConfigurationDescriptorProvider.addAuxObjectProvider(profileProvider);
-	profileCustomizerNode = new RunProfileNodeProvider().createProfileNode();
-	CustomizerRootNodeProvider.getInstance().addCustomizerNode(profileCustomizerNode);
+//	profileCustomizerNode = new RunProfileNodeProvider().createProfileNode();
+//	CustomizerRootNodeProvider.getInstance().addCustomizerNode(profileCustomizerNode);
 
 	//see issue #64393
         DataLoaderPool.getDefault().addOperationListener(new L());
