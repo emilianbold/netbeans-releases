@@ -77,13 +77,13 @@ public class CRUDTSuite extends RestTestBase {
     /** Creates suite from particular test cases. You can define order of testcases here. */
     public static NbTestSuite suite() {
         NbTestSuite suite = new NbTestSuite();
-        suite.addTest(new CRUDTSuite("testRfE"));
-        suite.addTest(new CRUDTSuite("testDeploy"));
-        suite.addTest(new CRUDTSuite("testGet"));
-        suite.addTest(new CRUDTSuite("testPost"));
-        suite.addTest(new CRUDTSuite("testPut"));
-        suite.addTest(new CRUDTSuite("testDelete"));
-        suite.addTest(new CRUDTSuite("testUndeploy"));
+        suite.addTest(new CRUDTSuite("testRfE")); //NOI18N
+        suite.addTest(new CRUDTSuite("testDeploy")); //NOI18N
+        suite.addTest(new CRUDTSuite("testGet")); //NOI18N
+        suite.addTest(new CRUDTSuite("testPost")); //NOI18N
+        suite.addTest(new CRUDTSuite("testPut")); //NOI18N
+        suite.addTest(new CRUDTSuite("testDelete")); //NOI18N
+        suite.addTest(new CRUDTSuite("testUndeploy")); //NOI18N
         return suite;
     }
 
@@ -118,7 +118,6 @@ public class CRUDTSuite extends RestTestBase {
         new JButtonOperator(wo, 4).pushNoBlock();
         wo.next();
         wo = new WizardOperator(restLabel);
-        System.out.println("project: " + getProject());
         //Resource Package
         JComboBoxOperator jcbo = new JComboBoxOperator(wo, 2);
         jcbo.clearText();
