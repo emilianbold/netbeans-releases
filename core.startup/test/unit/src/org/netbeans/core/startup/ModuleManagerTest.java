@@ -2325,6 +2325,43 @@ public class ModuleManagerTest extends SetupHid {
         }
     }
 
+    public void testShouldDelegateResource() throws Exception {
+        File m1j = new File(getWorkDir(), "m1.jar");
+        createJar(m1j, Collections.singletonMap("java/nio/channels/Channel.class", "override"), Collections.singletonMap("OpenIDE-Module", "m1"));
+        File m2j = new File(getWorkDir(), "m2.jar");
+        Map<String,String> mani = new HashMap<String,String>();
+        mani.put("OpenIDE-Module", "m2");
+        mani.put("OpenIDE-Module-Module-Dependencies", "m1");
+        createJar(m2j, Collections.<String,String>emptyMap(), mani);
+        File m3j = new File(getWorkDir(), "m3.jar");
+        createJar(m3j, Collections.<String,String>emptyMap(), Collections.singletonMap("OpenIDE-Module", "m3"));
+        FakeModuleInstaller installer = new FakeModuleInstaller() {
+            public @Override boolean shouldDelegateResource(Module m, Module parent, String pkg) {
+                if (parent == null && pkg.equals("java/nio/channels/") && m.getCodeNameBase().equals("m1")) {
+                    return false;
+                } else {
+                    return true;
+                }
+            }
+        };
+        FakeEvents ev = new FakeEvents();
+        ModuleManager mgr = new ModuleManager(installer, ev);
+        mgr.mutexPrivileged().enterWriteAccess();
+        try {
+            Module m1 = mgr.create(m1j, null, false, false, false);
+            Module m2 = mgr.create(m2j, null, false, false, false);
+            Module m3 = mgr.create(m3j, null, false, false, false);
+            mgr.enable(new HashSet<Module>(Arrays.asList(m1, m2, m3)));
+            URL jreResource = ModuleManagerTest.class.getResource("/java/nio/channels/Channel.class");
+            assertNotNull(jreResource);
+            assertFalse(m1.getClassLoader().getResource("java/nio/channels/Channel.class").equals(jreResource));
+            assertFalse(m2.getClassLoader().getResource("java/nio/channels/Channel.class").equals(jreResource));
+            assertEquals(jreResource, m3.getClassLoader().getResource("java/nio/channels/Channel.class"));
+        } finally {
+            mgr.mutexPrivileged().exitWriteAccess();
+        }
+    }
+
     private File copyJar(File file, String manifest) throws IOException {
         File ret = File.createTempFile(file.getName(), "2ndcopy", file.getParentFile());
         JarFile jar = new JarFile(file);
