@@ -40,6 +40,7 @@
  */
 package org.netbeans.modules.bpel.refactoring;
 
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
@@ -58,6 +59,7 @@ import org.netbeans.modules.xml.schema.model.ComplexTypeDefinition;
 import org.netbeans.modules.xml.schema.model.Element;
 import org.netbeans.modules.xml.schema.model.ElementReference;
 import org.netbeans.modules.xml.schema.model.GlobalType;
+import org.netbeans.modules.xml.schema.model.LocalAttribute;
 import org.netbeans.modules.xml.schema.model.LocalElement;
 import org.netbeans.modules.xml.schema.model.Sequence;
 import org.netbeans.modules.xml.schema.model.SequenceDefinition;
@@ -243,8 +245,8 @@ final class XPath extends AbstractXPathVisitor {
   private List<LocationStep> createList(List<LocationStep> steps) {
     List<LocationStep> list = new LinkedList<LocationStep>();
     
-    for (int i=0; i < steps.size(); i++) {
-      list.add(steps.get(i));
+    for (LocationStep step : steps) {
+      list.add(step);
     }
     return list;
   }
@@ -323,7 +325,6 @@ final class XPath extends AbstractXPathVisitor {
     List<LocationStep> steps,
     String indent)
   {
-///out();
 //out(indent + "ELEMENT: " + Util.getName(element));
     if (checkUsages(element, steps, false)) {
       return;
@@ -355,7 +356,7 @@ final class XPath extends AbstractXPathVisitor {
     List<LocationStep> steps,
     String indent)
   {
-//out(indent + "CM.TYPE: " + Util.getName(type));
+//out(indent + "COMPLEX.TYPE: " + Util.getName(type));
     if (myVisitedComplexType.contains(type)) {
       return;
     }
@@ -375,10 +376,23 @@ final class XPath extends AbstractXPathVisitor {
     else if (definition instanceof ComplexContent) {
       visitComplexContent((ComplexContent) definition, steps, indent);
     }
-    else {
-//out(indent + "unk !!: " + definition);
-      return;
+//    else {
+//out(indent + "unknown !!: " + definition);
+//    }
+    Collection<LocalAttribute> attributes = type.getLocalAttributes();
+
+    for (LocalAttribute attribute : attributes) {
+      visitAttribute(attribute, steps, indent);
     }
+  }
+
+  private void visitAttribute(
+    LocalAttribute attribute,
+    List<LocationStep> steps,
+    String indent)
+  {
+//out(indent + "ATTRIBUTE: " + Util.getName(attribute));
+    checkUsages(attribute, steps, true);
   }
 
   private void visitComplexContent(
@@ -430,7 +444,7 @@ final class XPath extends AbstractXPathVisitor {
       return;
     }
     for (SequenceDefinition definition : content) {
-///out(indent + "      see: " + Util.getName(definition));
+////out(indent + "      see: " + Util.getName(definition));
       if (definition instanceof Element) {
         visitElement((Element) definition,
           createList(steps), indent + INDENT);
@@ -460,7 +474,7 @@ final class XPath extends AbstractXPathVisitor {
     List<LocationStep> steps,
     String indent)
   {
-//out(indent + "SM.TYPE: " + Util.getName(type));
+//out(indent + "SIMPLE.TYPE: " + Util.getName(type));
     checkUsages(type, steps, true);
   }
 
@@ -507,14 +521,15 @@ final class XPath extends AbstractXPathVisitor {
   @Override
   public void visit(LocationStep locationStep)
   {
-//out(" LCL STEP: " + locationStep);
-    XPathPredicateExpression [] expressions = locationStep.getPredicates();
+//out("=== LOCATION STEP: " + locationStep);
+    XPathPredicateExpression [] predicates = locationStep.getPredicates();
+//out("  predicates: " + predicates);
 
-    if (expressions == null) {
+    if (predicates == null) {
       return;
     }
-    for (XPathPredicateExpression expression : expressions) {
-      expression.accept(this);
+    for (XPathPredicateExpression predicate : predicates) {
+      predicate.accept(this);
     }
   }
 
@@ -542,7 +557,7 @@ final class XPath extends AbstractXPathVisitor {
   @Override
   public void visit(XPathLocationPath locationPath)
   {
-//out("LOCA PATH: " + locationPath);
+//out("LOCAL PATH: " + locationPath);
     visit(locationPath.getSteps());
   }
 
@@ -571,7 +586,7 @@ final class XPath extends AbstractXPathVisitor {
 //out();
 //out("name: " + myOldName);
 //out("step: " + step.getString());
-      if (step != null && equalsIgnorePrefix(myOldName, step.getString())) {
+      if (step != null && equalsIgnorePrefixAndAmpersand(myOldName, step.getString())) {
         addItem();
 
         if (myDoRename) {
@@ -594,9 +609,12 @@ final class XPath extends AbstractXPathVisitor {
     return false;
   }
 
-  private boolean equalsIgnorePrefix(String name, String step) {
+  private boolean equalsIgnorePrefixAndAmpersand(String name, String step) {
     if (name == null || step == null) {
       return false;
+    }
+    if (step.startsWith("@")) {
+      step = step.substring(1);
     }
     int k = step.indexOf(":"); // NOI18N
 
