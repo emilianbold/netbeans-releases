@@ -44,28 +44,41 @@ import java.util.Map;
 import java.util.prefs.AbstractPreferences;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
+import org.netbeans.modules.cnd.editor.api.CodeStyle;
 import org.openide.util.Exceptions;
 
 public class PreviewPreferences extends AbstractPreferences {
 
     private Map<String, Object> map = new HashMap<String, Object>();
+    private final CodeStyle.Language language;
+    private final String styleId;
 
-    public PreviewPreferences(Preferences master) {
+    public PreviewPreferences(Preferences master, CodeStyle.Language language, String styleId) {
         super(null, "");
+        this.language = language;
+        this.styleId = styleId;
         try {
             for (String key : master.keys()) {
-                Object o = EditorOptions.getDefault(key);
+                Object o = EditorOptions.getDefault(language, styleId, key);
                 if (o instanceof Boolean) {
-                    putBoolean(key, master.getBoolean(key, (Boolean) EditorOptions.getDefault(key)));
+                    putBoolean(key, master.getBoolean(key, (Boolean)o));
                 } else if (o instanceof Integer) {
-                    putInt(key, master.getInt(key, (Integer) EditorOptions.getDefault(key)));
+                    putInt(key, master.getInt(key, (Integer)o));
                 } else {
-                    map.put(key, master.get(key, EditorOptions.getDefault(key).toString()));
+                    map.put(key, master.get(key, o.toString()));
                 }
             }
         } catch (BackingStoreException ex) {
             Exceptions.printStackTrace(ex);
         }
+    }
+
+    public CodeStyle.Language getLanguage() {
+        return language;
+    }
+
+    public String getStyleId() {
+        return styleId;
     }
 
     protected void putSpi(String key, String value) {

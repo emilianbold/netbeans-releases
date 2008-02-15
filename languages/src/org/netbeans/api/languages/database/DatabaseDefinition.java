@@ -53,6 +53,7 @@ public class DatabaseDefinition extends DatabaseItem {
     private String                  name;
     private String                  type;
     private List<DatabaseUsage>     usages;
+    private DatabaseContext         context;
 
     public DatabaseDefinition (
         String name,
@@ -71,6 +72,14 @@ public class DatabaseDefinition extends DatabaseItem {
 
     public String getType () {
         return type;
+    }
+    
+    public void setContext(DatabaseContext context) {
+        this.context = context;
+    }
+    
+    public DatabaseContext getContext() {
+        return context;
     }
     
     public void addUsage (DatabaseUsage usage) {
