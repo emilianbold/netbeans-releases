@@ -54,12 +54,25 @@ public class ConfigFileSpringBean implements SpringBean {
     private final String id;
     private final List<String> names;
     private final String className;
+    private final String parent;
+    private final String factoryBean;
+    private final String factoryMethod;
     private final Location location;
 
-    public ConfigFileSpringBean(String id, List<String> names, String className, Location location) {
+    public ConfigFileSpringBean(
+            String id,
+            List<String> names,
+            String className,
+            String parent,
+            String factoryBean,
+            String factoryMethod,
+            Location location) {
         this.id = id;
         this.names = names;
         this.className = className;
+        this.parent = parent;
+        this.factoryBean = factoryBean;
+        this.factoryMethod = factoryMethod;
         this.location = location;
     }
 
@@ -73,6 +86,18 @@ public class ConfigFileSpringBean implements SpringBean {
 
     public String getClassName() {
         return className;
+    }
+
+    public String getParent() {
+        return parent;
+    }
+
+    public String getFactoryBean() {
+        return factoryBean;
+    }
+
+    public String getFactoryMethod() {
+        return factoryMethod;
     }
 
     public Location getLocation() {

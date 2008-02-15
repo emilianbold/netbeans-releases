@@ -1112,13 +1112,18 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
     @Override
     public Mirror visitIdentifier(IdentifierTree arg0, EvaluationContext evaluationContext) {
         TreePath currentPath = getCurrentPath();
+        Element elm = null;
+        if (currentPath != null) {
+            TreePath identifierPath = TreePath.getPath(currentPath, arg0);
+            if (identifierPath == null) identifierPath = getCurrentPath();
+            elm = evaluationContext.getTrees().getElement(identifierPath);
+            if (elm instanceof TypeElement && ((TypeElement) elm).asType() instanceof ErrorType) {
+                currentPath = null; // Elements not resolved correctly
+            }
+        }
         if (currentPath == null) {
             return getIdentifierByName(arg0, evaluationContext);
         }
-        TreePath identifierPath = TreePath.getPath(currentPath, arg0);
-        if (identifierPath == null) identifierPath = getCurrentPath();
-        //TreePath identifierPath = getCurrentPath();
-        Element elm = evaluationContext.getTrees().getElement(identifierPath);
         switch(elm.getKind()) {
             case CLASS:
             case ENUM:

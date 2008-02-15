@@ -70,6 +70,7 @@ import org.openide.util.Exceptions;
 /**
  *
  * @author radval
+ * 
  */
 public class DBExplorerUtil {
 

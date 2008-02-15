@@ -38,7 +38,7 @@ ant -Dbuildnum=$BUILDNUM -Dbuildnumber=$BUILDNUMBER -f nbbuild/build.xml build-n
 ERROR_CODE=$?
 
 if [ $ERROR_CODE != 0 ]; then
-    echo "ERROR: $ERROR_CODE - Can't build basic IDE"
+    echo "ERROR: $ERROR_CODE - Can't build stableuc module config"
     exit $ERROR_CODE;
 fi
 

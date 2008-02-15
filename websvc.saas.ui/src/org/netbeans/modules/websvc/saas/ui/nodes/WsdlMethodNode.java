@@ -50,13 +50,13 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.Action;
-import org.netbeans.modules.websvc.manager.util.ManagerUtil;
 import org.netbeans.modules.websvc.saas.model.Saas;
 import org.netbeans.modules.websvc.saas.model.WsdlSaasMethod;
 import org.netbeans.modules.websvc.saas.spi.SaasNodeActionsProvider;
 import org.netbeans.modules.websvc.saas.ui.actions.TestMethodAction;
 import org.netbeans.modules.websvc.saas.util.SaasTransferable;
 import org.netbeans.modules.websvc.saas.util.SaasUtil;
+import org.netbeans.modules.websvc.saas.util.TypeUtil;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.PropertySupport.Reflection;
@@ -102,7 +102,7 @@ public class WsdlMethodNode extends AbstractNode {
         JavaParameter currentParam = null;
         while(parameterIterator.hasNext()) {
             currentParam = (JavaParameter)parameterIterator.next();
-            String parameterType = ManagerUtil.getParameterType(currentParam);
+            String parameterType = TypeUtil.getParameterType(currentParam);
             signature += parameterType + " " + currentParam.getName();
             if(parameterIterator.hasNext()) {
                 signature += ", ";
@@ -140,7 +140,7 @@ public class WsdlMethodNode extends AbstractNode {
     
     private Image getMethodIcon() {
         JavaMethod javaMethod = method.getJavaMethod();
-        if(!"void".equals(javaMethod.getReturnType().getRealName())) {
+        if (javaMethod != null && !"void".equals(javaMethod.getReturnType().getRealName())) {
             Image image1 = Utilities.loadImage("org/netbeans/modules/websvc/manager/resources/methodicon.png");
             Image image2 = Utilities.loadImage("org/netbeans/modules/websvc/manager/resources/table_dp_badge.png");
             int x = image1.getWidth(null) - image2.getWidth(null);
@@ -165,6 +165,10 @@ public class WsdlMethodNode extends AbstractNode {
             ss.setDisplayName(NbBundle.getMessage(WsdlMethodNode.class, "METHOD_INFO"));
             ss.setShortDescription(NbBundle.getMessage(WsdlMethodNode.class, "METHOD_INFO"));
             sheet.put(ss);
+        }
+        
+        if (javaMethod == null) {
+            return sheet;
         }
         
         try {
@@ -236,7 +240,7 @@ public class WsdlMethodNode extends AbstractNode {
                 for(int ii=0;paramIterator.hasNext();ii++) {
                     currentParameter = (JavaParameter)paramIterator.next();
                     if(currentParameter.getType().isHolder()) {
-                        p = new Reflection(ManagerUtil.getParameterType(currentParameter), String.class, "toString", null); // NOI18N
+                        p = new Reflection(TypeUtil.getParameterType(currentParameter), String.class, "toString", null); // NOI18N
                     } else {
                         p = new Reflection(currentParameter.getType(), String.class, "getRealName", null); // NOI18N
                     }
@@ -282,6 +286,7 @@ public class WsdlMethodNode extends AbstractNode {
         return false;
     }
     
+    @Override
     public Transferable clipboardCopy() throws IOException {
         if (method.getSaas().getState() != Saas.State.READY) {
             method.getSaas().toStateReady();

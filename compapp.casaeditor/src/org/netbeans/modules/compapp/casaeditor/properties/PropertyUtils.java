@@ -40,7 +40,7 @@
  */
 package org.netbeans.modules.compapp.casaeditor.properties;
 
-
+import org.netbeans.modules.compapp.casaeditor.properties.extension.ExtensionPropertyFactory;
 import java.util.Map;
 import org.netbeans.modules.compapp.casaeditor.Constants;
 import org.netbeans.modules.compapp.casaeditor.model.casa.CasaComponent;
@@ -212,14 +212,14 @@ public abstract class PropertyUtils {
             CasaExtensibilityElement firstEE,
             CasaExtensibilityElement lastEE,
             String propertyType, 
-            JbiExtensionAttribute.Type attrType,
+            String attrType,
             String attributeName,
             String displayName,
             String description) {
         
         if (attrType == null) {
             System.err.println("Unsupported property type for " + attributeName);
-            attrType = JbiExtensionAttribute.Type.STRING;
+            attrType = "String"; //JbiExtensionAttribute.Type.STRING;
         }
         
         try {
@@ -258,6 +258,7 @@ public abstract class PropertyUtils {
      * @param description   description of the attribute
      * @param choiceMap     a map mapping choice element names to pre-built 
      *                      extensibility elements
+     * @param defaultChoice default choice
      */
     public static void installChoiceExtensionProperty(
             Sheet.Set propertySet, 
@@ -270,7 +271,8 @@ public abstract class PropertyUtils {
             String attributeName,
             String displayName,
             String description,
-            Map<String, CasaExtensibilityElement> choiceMap) {
+            Map<String, CasaExtensibilityElement> choiceMap,
+            String defaultChoice) {
         
         assert valueType == String.class;
         
@@ -281,11 +283,11 @@ public abstract class PropertyUtils {
                 firstEE,
                 lastEE,
                 propertyType,
-//                valueType,
                 attributeName,
                 displayName,
                 description,
-                choiceMap);
+                choiceMap,
+                defaultChoice);
             
             propertySet.put(property);
         } catch (Exception e) {
