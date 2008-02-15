@@ -40,6 +40,7 @@
 package org.netbeans.modules.compapp.casaeditor.properties.extension;
 
 import java.beans.PropertyEditor;
+import java.lang.reflect.InvocationTargetException;
 import org.netbeans.modules.compapp.casaeditor.model.casa.CasaComponent;
 import org.netbeans.modules.compapp.casaeditor.model.casa.CasaExtensibilityElement;
 import org.netbeans.modules.compapp.casaeditor.nodes.CasaNode;
