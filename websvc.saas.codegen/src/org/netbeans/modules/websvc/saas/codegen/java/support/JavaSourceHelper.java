@@ -75,6 +75,9 @@ import javax.lang.model.element.Modifier;
 import javax.lang.model.element.Name;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
+import javax.lang.model.type.DeclaredType;
+import javax.lang.model.type.TypeKind;
+import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
 import org.netbeans.api.java.source.Comment;
 import org.netbeans.api.java.source.Comment.Style;
@@ -86,6 +89,7 @@ import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.SourceGroup;
+import org.netbeans.modules.websvc.rest.model.api.RestConstants;
 import org.openide.ErrorManager;
 import org.openide.cookies.SaveCookie;
 import org.openide.filesystems.FileObject;
@@ -770,7 +774,26 @@ public class JavaSourceHelper {
         }
         return false;
     }
+    
+    public static TypeElement getXmlRepresentationClass(TypeElement typeElement, String defaultSuffix) {
+        List<ExecutableElement> methods = ElementFilter.methodsIn(typeElement.getEnclosedElements());
+        for (ExecutableElement method : methods) {
+            List<? extends AnnotationMirror> anmirs = method.getAnnotationMirrors();
 
+            AnnotationMirror mirrorHttpMethod = findAnnotation(anmirs, RestConstants.GET);
+            if (mirrorHttpMethod != null) {
+                TypeMirror tm = method.getReturnType();
+                if (tm != null && tm.getKind() == TypeKind.DECLARED) {
+                    TypeElement returnType = (TypeElement) ((DeclaredType) tm).asElement();
+                    if (returnType.getSimpleName().toString().endsWith(defaultSuffix)) {
+                        return returnType;
+                    }
+                }
+            }
+        }
+        return null;
+    }
+    
     public static TypeElement getTypeElement(JavaSource source) throws IOException {
         final TypeElement[] results = new TypeElement[1];
 
