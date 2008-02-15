@@ -52,8 +52,9 @@
 		infoclass = org.netbeans.modules.db.explorer.infos.RootNodeInfo;
 		children_ordering = {
 			org.openide.loaders.DataFolder$FolderNode = 0;
-			org.netbeans.modules.db.explorer.nodes.DriverListNode = 1;
-			org.netbeans.modules.db.explorer.nodes.ConnectionNode = 2;
+                        org.netbeans.modules.db.explorer.nodes.ServerNode = 1;
+			org.netbeans.modules.db.explorer.nodes.DriverListNode = 2;
+			org.netbeans.modules.db.explorer.nodes.ConnectionNode = 3;
 		};
 		iconbase = "org/netbeans/modules/db/resources/database";
 		children = (driverlist);
@@ -75,6 +76,38 @@
 			}
 		);
 	};
+	/**
+	* Server section.
+	* This section describes dynamic subnodes in "Databases" node. A server
+        * allows basic operations against a particular database server, such as
+        * create a database or open a connection.
+        *
+        * A server node is added dynamically if a provider is registered for
+        * the server (under Databases/Servers in the layer.xml), and if a server 
+        * is detected.
+        *
+        * Actions can be added by the provider in their layer file.  This is 
+        * described in more detail in the API documentation.
+	*/
+	server = {
+		name = Server;
+		displayname = "{0}";
+		activedisplayname = "{0}";
+		class = org.netbeans.modules.db.explorer.nodes.ServerNode;
+		infoclass = org.netbeans.modules.db.explorer.infos.ServerNodeInfo;
+		iconbase = "org/netbeans/modules/db/resources/database";
+		activeiconbase = "org/netbeans/modules/db/resources/database";
+		children = ();
+		options = {
+			cut = NO;
+			copy = NO;
+			delete = NO;
+		};
+		actions = (
+		);
+		children_ordering = {
+		};
+        };
 
 	/**
 	* Driver list section.
