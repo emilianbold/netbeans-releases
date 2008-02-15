@@ -73,9 +73,10 @@ import javax.swing.tree.DefaultTreeModel;
 import javax.swing.table.TableModel;
 import javax.swing.event.TableModelEvent;
 import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlPort;
-import org.netbeans.modules.websvc.manager.util.ManagerUtil;
+import org.netbeans.modules.websvc.saas.model.WsdlSaas;
+import org.netbeans.modules.websvc.saas.model.WsdlSaasMethod;
 import org.netbeans.modules.websvc.saas.spi.websvcmgr.WsdlServiceProxyDescriptor;
-import org.netbeans.modules.websvc.saas.model.jaxb.SaasServices;
+import org.netbeans.modules.websvc.saas.util.TypeUtil;
 import org.netbeans.swing.outline.DefaultOutlineModel;
 import org.netbeans.swing.outline.Outline;
 import org.netbeans.swing.outline.OutlineModel;
@@ -97,7 +98,6 @@ public class TestWebServiceMethodDlg extends JPanel implements ActionListener, M
     private Dialog dialog;
     private DialogDescriptor dlg = null;
     private String okString = NbBundle.getMessage(this.getClass(), "CLOSE");
-    private final JavaMethod method;
     /**
      * The runtimeClassLoader should be used when running the web service client.  This classloader
      * only includes the necessary runtime jars for JAX-RPC to run.  The classloader does NOT have a
@@ -109,19 +109,17 @@ public class TestWebServiceMethodDlg extends JPanel implements ActionListener, M
     
     private DefaultMutableTreeNode parameterRootNode = new DefaultMutableTreeNode();
     private DefaultMutableTreeNode resultRootNode = new DefaultMutableTreeNode();
-    private SaasServices wsData;
-    public String portName;
-    private WsdlPort port;
+    private final WsdlSaas wsData;
+    private final WsdlPort port;
+    private final JavaMethod method;
     private MethodTask methodTask;
     
     /** Creates new form TestWebServiceMethodDlg */
-    public TestWebServiceMethodDlg(SaasServices inWSData,  JavaMethod inMethod, WsdlPort inPort) {
-        this.method = inMethod;
-        wsData = inWSData;
-        port = inPort;
-        portName = inPort.getName();
-        //TODO:nam
-        //assert wsData.getJaxWsDescriptor() != null;
+    public TestWebServiceMethodDlg(WsdlSaasMethod saasMethod) {
+        method = saasMethod.getJavaMethod();
+        wsData = saasMethod.getSaas();
+        port = saasMethod.getWsdlPort();
+        assert wsData.getWsdlData().getJaxWsDescriptor() != null;
         
         initComponents();
         myInitComponents();
@@ -146,9 +144,9 @@ public class TestWebServiceMethodDlg extends JPanel implements ActionListener, M
             try {
                 List<URL> urlList = null;
                 
-                urlList = ManagerUtil.buildClasspath(null, true); // NOI18N
+                urlList = TypeUtil.buildClasspath(null, true); // NOI18N
                 
-                WsdlServiceProxyDescriptor descriptor = null;//TODO:nam wsData.getJaxWsDescriptor();
+                WsdlServiceProxyDescriptor descriptor = wsData.getWsdlData().getJaxWsDescriptor();
                 for (WsdlServiceProxyDescriptor.JarEntry entry : descriptor.getJars()) {
                     if (entry.getType().equals(WsdlServiceProxyDescriptor.JarEntry.PROXY_JAR_TYPE)) {
                         File jarFile = new File(descriptor.getXmlDescriptorFile().getParent(), entry.getName());
@@ -189,10 +187,6 @@ public class TestWebServiceMethodDlg extends JPanel implements ActionListener, M
             ErrorManager.getDefault().notify(ErrorManager.WARNING, ex);
             return null;
         }
-    }
-    
-    public SaasServices getWebServiceData() {
-        return this.wsData;
     }
     
     public void displayDialog(){
@@ -381,7 +375,7 @@ public class TestWebServiceMethodDlg extends JPanel implements ActionListener, M
         /**
          * specify the wrapper client class name for this method.
          */
-        String clientClassName = null; //TODO:nam wsData.getWsdlService().getJavaName();
+        String clientClassName = wsData.getWsdlModel().getJavaName();
         
         /**
          * Fix for Bug: 6217545
@@ -706,8 +700,8 @@ public class TestWebServiceMethodDlg extends JPanel implements ActionListener, M
              */
             Object returnObject=null;
             try {
-                returnObject = null; //TODO:nam ReflectionHelper.callMethodWithParams(clientClassName, paramList, javaMethod,urlClassLoader, wsData, port);
-            } catch(Exception wsre) { //TODO:nam WebServiceReflectionException wsre) {
+                returnObject = ReflectionHelper.callMethodWithParams(clientClassName, paramList, javaMethod,urlClassLoader, wsData.getWsdlData(), port);
+            } catch (Exception wsre) {
                 if(!cancelled) {
                     Throwable exception = wsre;
                     if (wsre.getCause() instanceof java.lang.reflect.InvocationTargetException) {

@@ -678,6 +678,7 @@ public class JavaHierarchyPanel extends javax.swing.JPanel {
 
         javaHierarchyModeButtonGroup.add(showSuperTypeHierarchyToggleButton);
         showSuperTypeHierarchyToggleButton.setIcon(JavaMembersAndHierarchyIcons.SUPER_TYPE_HIERARCHY_ICON);
+        showSuperTypeHierarchyToggleButton.setMnemonic('S');
         showSuperTypeHierarchyToggleButton.setSelected(true);
         showSuperTypeHierarchyToggleButton.setToolTipText(org.openide.util.NbBundle.getBundle(JavaHierarchyPanel.class).getString("TOOLTIP_showSuperTypeHierarchyToggleButton")); // NOI18N
         showSuperTypeHierarchyToggleButton.setMargin(new java.awt.Insets(2, 2, 2, 2));
@@ -685,22 +686,26 @@ public class JavaHierarchyPanel extends javax.swing.JPanel {
 
         javaHierarchyModeButtonGroup.add(showSubTypeHierarchyToggleButton);
         showSubTypeHierarchyToggleButton.setIcon(JavaMembersAndHierarchyIcons.SUB_TYPE_HIERARCHY_ICON);
+        showSubTypeHierarchyToggleButton.setMnemonic('B');
         showSubTypeHierarchyToggleButton.setToolTipText(org.openide.util.NbBundle.getBundle(JavaHierarchyPanel.class).getString("TOOLTIP_showSubTypeHierarchyToggleButton")); // NOI18N
         showSubTypeHierarchyToggleButton.setMargin(new java.awt.Insets(2, 2, 2, 2));
         filtersToolbar.add(showSubTypeHierarchyToggleButton);
 
         showFQNToggleButton.setIcon(JavaMembersAndHierarchyIcons.FQN_ICON);
+        showFQNToggleButton.setMnemonic('Q');
         showFQNToggleButton.setToolTipText(org.openide.util.NbBundle.getBundle(JavaHierarchyPanel.class).getString("TOOLTIP_showFQNToggleButton")); // NOI18N
         showFQNToggleButton.setMargin(new java.awt.Insets(2, 2, 2, 2));
         filtersToolbar.add(showFQNToggleButton);
 
         showInnerToggleButton.setIcon(JavaMembersAndHierarchyIcons.INNER_CLASS_ICON);
+        showInnerToggleButton.setMnemonic('I');
         showInnerToggleButton.setSelected(true);
         showInnerToggleButton.setToolTipText(org.openide.util.NbBundle.getBundle(JavaHierarchyPanel.class).getString("TOOLTIP_showInnerToggleButton")); // NOI18N
         showInnerToggleButton.setMargin(new java.awt.Insets(2, 2, 2, 2));
         filtersToolbar.add(showInnerToggleButton);
 
         expandAllButton.setIcon(JavaMembersAndHierarchyIcons.EXPAND_ALL_ICON);
+        expandAllButton.setMnemonic('E');
         expandAllButton.setToolTipText(org.openide.util.NbBundle.getMessage(JavaHierarchyPanel.class, "TOOLTIP_expandAll")); // NOI18N
         expandAllButton.setMargin(new java.awt.Insets(2, 2, 2, 2));
         filtersToolbar.add(expandAllButton);
@@ -716,14 +721,14 @@ public class JavaHierarchyPanel extends javax.swing.JPanel {
                     .add(layout.createSequentialGroup()
                         .add(filterLabel)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(filterTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 549, Short.MAX_VALUE)
+                        .add(filterTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 550, Short.MAX_VALUE)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(caseSensitiveFilterCheckBox))
                     .add(signatureEditorPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 710, Short.MAX_VALUE)
                     .add(layout.createSequentialGroup()
                         .add(filtersLabel)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(filtersToolbar, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 580, Short.MAX_VALUE)
+                        .add(filtersToolbar, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 581, Short.MAX_VALUE)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(closeButton)))
                 .addContainerGap())

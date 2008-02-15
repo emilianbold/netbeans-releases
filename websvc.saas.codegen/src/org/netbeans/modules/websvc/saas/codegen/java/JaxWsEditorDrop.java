@@ -40,7 +40,6 @@
  */
 package org.netbeans.modules.websvc.saas.codegen.java;
 
-import java.awt.datatransfer.Transferable;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.project.FileOwnerQuery;
@@ -51,11 +50,9 @@ import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlPort;
 import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlService;
 import org.netbeans.modules.websvc.core.jaxws.actions.JaxWsCodeGenerator;
 import org.netbeans.modules.websvc.saas.model.WsdlSaasMethod;
-import org.netbeans.modules.websvc.saas.spi.ConsumerFlavorProvider;
 import org.netbeans.modules.websvc.saas.util.LibrariesHelper;
 import org.openide.filesystems.FileObject;
 import org.openide.text.ActiveEditorDrop;
-import org.openide.util.Exceptions;
 
 /** JaxWsEditorDrop
  *
