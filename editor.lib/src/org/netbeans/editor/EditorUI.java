@@ -252,7 +252,7 @@ public class EditorUI implements ChangeListener, PropertyChangeListener, Setting
         Settings.addSettingsChangeListener(this);
 
         focusL = new FocusAdapter() {
-                     public void focusGained(FocusEvent evt) {
+                     public @Override void focusGained(FocusEvent evt) {
                          Registry.activate(getComponent());
                          /* Fix of #25475 - copyAction's enabled flag
                           * must be updated on focus change
@@ -1470,17 +1470,19 @@ public class EditorUI implements ChangeListener, PropertyChangeListener, Setting
 
     public void adjustWindow(int caretPercentFromWindowTop) {
         final Rectangle bounds = getExtentBounds();
-        if (component != null && (component.getCaret() instanceof Rectangle)) {
-            Rectangle caretRect = (Rectangle)component.getCaret();
-            bounds.y = caretRect.y - (caretPercentFromWindowTop * bounds.height) / 100
-                       + (caretPercentFromWindowTop * lineHeight) / 100;
-            Utilities.runInEventDispatchThread(
-                new Runnable() {
+        if (component != null) {
+            try {
+                Rectangle caretRect = component.modelToView(component.getCaretPosition());
+                bounds.y = caretRect.y - (caretPercentFromWindowTop * bounds.height) / 100
+                        + (caretPercentFromWindowTop * lineHeight) / 100;
+                Utilities.runInEventDispatchThread(new Runnable() {
                     public void run() {
                         scrollRectToVisible(bounds, SCROLL_SMALLEST);
                     }
-                }
-            );
+                });
+            } catch (BadLocationException e) {
+                LOG.log(Level.WARNING, null, e);
+            }
         }
     }
 

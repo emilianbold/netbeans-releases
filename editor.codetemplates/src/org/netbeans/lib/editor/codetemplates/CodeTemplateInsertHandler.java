@@ -467,11 +467,11 @@ implements DocumentListener, KeyListener {
     }
     
     public String getDocParameterValue(CodeTemplateParameterImpl paramImpl) {
-        MutablePositionRegion positionRegion = paramImpl.getPositionRegion();
-        int offset = positionRegion.getStartOffset();
+        MutablePositionRegion preg = paramImpl.getPositionRegion();
+        int offset = preg.getStartOffset();
         String parameterText;
         try {
-            parameterText = doc.getText(offset, positionRegion.getEndOffset() - offset);
+            parameterText = doc.getText(offset, preg.getEndOffset() - offset);
         } catch (BadLocationException e) {
             ErrorManager.getDefault().notify(e);
             parameterText = ""; //NOI18N
@@ -631,9 +631,9 @@ implements DocumentListener, KeyListener {
             endOffset = Math.max(endOffset, region.getSortedRegion(
                     region.getRegionCount() - 1).getEndOffset());
         }
-        JTextComponent component = getComponent();
+        JTextComponent c = getComponent();
         if (endOffset != 0) {
-            component.getUI().damageRange(component, startOffset, endOffset);
+            c.getUI().damageRange(c, startOffset, endOffset);
         }
     }
 
@@ -653,18 +653,18 @@ implements DocumentListener, KeyListener {
             component.removeKeyListener(this);
 
             // Restore original action map
-            JTextComponent component = getComponent();
-            component.setActionMap(componentOrigActionMap);
+            JTextComponent c = getComponent();
+            c.setActionMap(componentOrigActionMap);
 
             // Free the draw layers
-            EditorUI editorUI = Utilities.getEditorUI(component);
+            EditorUI editorUI = Utilities.getEditorUI(c);
             if (editorUI != null) {
                 for (DrawLayer drawLayer : drawLayers) {
                     editorUI.removeLayer(drawLayer.getName());
                 }
             }
-            component.putClientProperty(DrawLayer.TEXT_FRAME_START_POSITION_COMPONENT_PROPERTY, null);
-            component.putClientProperty(DrawLayer.TEXT_FRAME_END_POSITION_COMPONENT_PROPERTY, null);
+            c.putClientProperty(DrawLayer.TEXT_FRAME_START_POSITION_COMPONENT_PROPERTY, null);
+            c.putClientProperty(DrawLayer.TEXT_FRAME_END_POSITION_COMPONENT_PROPERTY, null);
 
             requestRepaint();
         }

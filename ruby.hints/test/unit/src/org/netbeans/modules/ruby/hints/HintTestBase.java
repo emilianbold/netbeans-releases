@@ -65,7 +65,6 @@ import org.netbeans.spi.editor.hints.Fix;
 import org.netbeans.spi.editor.hints.LazyFixList;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.FileUtil;
 
 /**
  * Common utility methods for testing a hint
@@ -87,12 +86,12 @@ public abstract class HintTestBase extends RubyTestBase {
         "lib/ruby/1.8/cgi.rb",
         "lib/ruby/1.8/net/imap.rb",
          // Biggest files in Rails
-        "lib/ruby/gems/1.8/gems/activerecord-1.15.5/test/associations_test.rb",
-        "lib/ruby/gems/1.8/gems/actionmailer-1.3.5/lib/action_mailer/vendor/text/format.rb",
-        "lib/ruby/gems/1.8/gems/actionpack-1.13.5/test/controller/routing_test.rb",
-        "lib/ruby/gems/1.8/gems/activerecord-1.15.5/lib/active_record/associations.rb",
-        "lib/ruby/gems/1.8/gems/activerecord-1.15.5/lib/active_record/base.rb",
-        "lib/ruby/gems/1.8/gems/actionpack-1.13.5/test/template/date_helper_test.rb",
+        "lib/ruby/gems/1.8/gems/activerecord-2.0.2/test/associations_test.rb",
+        "lib/ruby/gems/1.8/gems/actionmailer-2.0.2/lib/action_mailer/vendor/text-format-0.6.3/text/format.rb",
+        "lib/ruby/gems/1.8/gems/actionpack-2.0.2/test/controller/routing_test.rb",
+        "lib/ruby/gems/1.8/gems/activerecord-2.0.2/lib/active_record/associations.rb",
+        "lib/ruby/gems/1.8/gems/activerecord-2.0.2/lib/active_record/base.rb",
+        "lib/ruby/gems/1.8/gems/actionpack-2.0.2/test/template/date_helper_test.rb",
     };
     
     protected List<FileObject> getBigSourceFiles() {

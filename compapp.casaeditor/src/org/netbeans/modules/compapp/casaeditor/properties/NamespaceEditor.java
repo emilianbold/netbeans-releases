@@ -41,6 +41,7 @@
 
 package org.netbeans.modules.compapp.casaeditor.properties;
 
+import org.netbeans.modules.compapp.casaeditor.properties.spi.BaseCasaProperty;
 import java.awt.Component;
 import java.awt.Dialog;
 import java.awt.event.ActionEvent;

@@ -39,6 +39,7 @@
 
 package org.netbeans.modules.websvc.saas.model;
 
+import java.awt.Image;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -63,6 +64,8 @@ public class WadlSaas extends Saas {
 
     private Application wadlModel;
     private List<WadlSaasResource> resources;
+    private Image icon16;
+    private Image icon32;
     
     public WadlSaas(SaasGroup parentGroup, SaasServices services) {
         super(parentGroup, services);
@@ -74,7 +77,7 @@ public class WadlSaas extends Saas {
             try {
                 wadlModel = SaasUtil.loadWadl(in);
             } catch(JAXBException ex) {
-                String msg = NbBundle.getMessage(WadlSaas.class, "MSG_ErrorLoadingWadl", getModuleLoader());
+                String msg = NbBundle.getMessage(WadlSaas.class, "MSG_ErrorLoadingWadl", getUrl());
                 IOException ioe = new IOException(msg);
                 ioe.initCause(ex);
             }

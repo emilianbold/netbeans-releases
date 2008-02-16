@@ -55,10 +55,10 @@ public class DerbyServerNode extends AbstractNode {
     private static final DerbyServerNode DEFAULT = new DerbyServerNode();
     
     private SystemAction[] actions = new SystemAction[] {
-            new StartAction(),
-            new StopAction(),
-            new CreateDatabaseAction(),
-            new DerbySettingsAction()
+            SystemAction.get(StartAction.class),
+            SystemAction.get(StopAction.class),
+            SystemAction.get(CreateDatabaseAction.class),
+            SystemAction.get(DerbySettingsAction.class)
         };
     
     // I'd like a less generic icon, but this is what we have for now...

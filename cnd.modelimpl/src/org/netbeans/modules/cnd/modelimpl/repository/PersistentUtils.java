@@ -312,6 +312,27 @@ public class PersistentUtils {
         }       
     }
     
+    public static <T extends Collection<CsmType>> void readTypes(T collection, DataInput input) throws IOException {
+        int collSize = input.readInt();
+        assert collSize >= 0;
+        for (int i = 0; i < collSize; ++i) {
+            CsmType type = readType(input);
+            assert type != null;
+            collection.add(type);
+        }
+    }
+    
+    public static void writeTypes(Collection<? extends CsmType> types, DataOutput output) throws IOException {
+        assert types != null;
+        int collSize = types.size();
+        output.writeInt(collSize);
+
+        for (CsmType elem: types) {
+            assert elem != null;
+            writeType(elem, output);
+        }
+    }
+    
     ////////////////////////////////////////////////////////////////////////////
     // support inheritance 
     

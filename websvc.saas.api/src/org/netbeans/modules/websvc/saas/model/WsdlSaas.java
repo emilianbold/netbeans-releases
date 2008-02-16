@@ -42,6 +42,7 @@ package org.netbeans.modules.websvc.saas.model;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlPort;
@@ -54,6 +55,7 @@ import org.netbeans.modules.websvc.saas.spi.websvcmgr.WsdlData;
 import org.netbeans.modules.websvc.saas.util.WsdlUtil;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Exceptions;
 import org.openide.util.WeakListeners;
 
 /**
@@ -93,13 +95,23 @@ public class WsdlSaas extends Saas implements PropertyChangeListener {
         }
         return wsData;
     }
+
+    public String getDefaultServiceName() {
+        if (getMethods().size() > 0) {
+            return getMethods().get(0).getMethod().getServiceName();
+        }
+        return ""; //NOI18N
+    }
     
     @Override
     public void toStateReady() {
         if (wsData == null) {
-            wsData = WsdlUtil.getWsdlDataAsynchronously(getUrl()); //NOI18N
+            wsData = WsdlUtil.getWsdlDataAsynchronously(getUrl(), getDefaultServiceName()); //NOI18N
             if (wsData != null) {
                 wsData.addPropertyChangeListener(WeakListeners.propertyChange(this, wsData));
+                if (wsData.isReady()) {
+                    setState(State.READY);
+                }
             }
         }
     }
@@ -123,6 +135,7 @@ public class WsdlSaas extends Saas implements PropertyChangeListener {
                 boolean resolved = ((Boolean) newValue).booleanValue();
                 if (resolved) {
                     setState(State.READY);
+                    assert wsData.getName().equals(wsData.getWsdlService().getName());
                 } else {
                     setState(State.UNINITIALIZED);
                 }
@@ -171,4 +184,27 @@ public class WsdlSaas extends Saas implements PropertyChangeListener {
         return new WsdlSaasMethod(this, method);
     }
     
+    
+    @Override
+    public FileObject getSaasFolder() {
+        if (saasFolder == null) {
+            int begin = getUrl().lastIndexOf('/')+1;
+            int end = getUrl().lastIndexOf('?');
+            if (end <= begin) {
+                end = getUrl().lastIndexOf('.');
+            }
+
+            String folderName = (end <= begin) ? getUrl().substring(begin) : getUrl().substring(begin, end);
+            FileObject home = FileUtil.toFileObject(new File(SaasServicesModel.getInstance().WEBSVC_HOME));
+            saasFolder = home.getFileObject(folderName);
+            if (saasFolder == null) {
+                try {
+                    saasFolder = home.createFolder(folderName);
+                } catch (IOException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+            }
+        }
+        return saasFolder;
+    }
 }

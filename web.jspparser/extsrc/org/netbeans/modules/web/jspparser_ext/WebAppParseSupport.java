@@ -63,6 +63,7 @@ import java.util.regex.Pattern;
 import javax.servlet.ServletContext;
 import javax.servlet.jsp.tagext.TagLibraryInfo;
 import javax.swing.SwingUtilities;
+import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.FileStateInvalidException;
@@ -226,29 +227,13 @@ public class WebAppParseSupport implements WebAppParseProxy, PropertyChangeListe
     }
     
     private void createClassLoaders() {
-        // libraries in WEB-INF/lib
-        // Looking for jars in WEB-INF/lib is mainly for tests. Can a user create a lib dir in the document base
-        // and put here a jar?
-        FileObject webInf = org.netbeans.modules.web.api.webmodule.WebModule.getWebModule(wmRoot).getWebInf();
-        Hashtable<URL, URL> tomcatTable = new Hashtable<URL, URL>();
-        Hashtable<URL, URL> loadingTable = new Hashtable<URL, URL>();
-        FileObject libDir = webInf.getFileObject("lib"); // NOI18N
+        Map<URL, URL> tomcatTable = new Hashtable<URL, URL>();
+        Map<URL, URL> loadingTable = new Hashtable<URL, URL>();
         URL helpurl;
-        
-        if (libDir != null) {
-            Enumeration<? extends FileObject> libDirKids = libDir.getChildren(false);
-            while (libDirKids.hasMoreElements()) {
-                FileObject elem = libDirKids.nextElement();
-                if (elem.getExt().equals("jar")) { // NOI18N
-                    helpurl = findInternalURL(elem);
-                    if (!isUnexpectedLibrary(helpurl)) {
-                        tomcatTable.put(helpurl, helpurl);
-                        loadingTable.put(helpurl, helpurl);
-                    }
-                }
-            }
-        }
-        
+
+        FileObject webInf = getWebInf();
+        putWebInfLibraries(webInf, tomcatTable, loadingTable);
+
         // issue 54845. On the class loader we must put the java sources as well. It's in the case, when there are a
         // tag hendler, which is added in a tld, which is used in the jsp file.
         ClassPath cp = ClassPath.getClassPath(wmRoot, ClassPath.COMPILE);
@@ -275,10 +260,12 @@ public class WebAppParseSupport implements WebAppParseProxy, PropertyChangeListe
                 }
             }
         }
-        FileObject classesDir = webInf.getFileObject("classes");  //NOI18N
-        if (classesDir != null && loadingTable.get(helpurl = findInternalURL(classesDir)) == null){
-            loadingTable.put(helpurl, helpurl);
-            tomcatTable.put(helpurl, helpurl);
+        if (webInf != null) {
+            FileObject classesDir = webInf.getFileObject("classes");  //NOI18N
+            if (classesDir != null && loadingTable.get(helpurl = findInternalURL(classesDir)) == null){
+                loadingTable.put(helpurl, helpurl);
+                tomcatTable.put(helpurl, helpurl);
+            }
         }
         
         URL loadingURLs[] = loadingTable.values().toArray(new URL[0]);
@@ -287,7 +274,42 @@ public class WebAppParseSupport implements WebAppParseProxy, PropertyChangeListe
         waClassLoader = new ParserClassLoader(loadingURLs, tomcatURLs, getClass().getClassLoader());
         waContextClassLoader = new ParserClassLoader(loadingURLs, tomcatURLs, getClass().getClassLoader());
     }
-    
+
+    // #127379
+    private FileObject getWebInf() {
+        WebModule webModule = WebModule.getWebModule(wmRoot);
+        if (webModule != null) {
+            return webModule.getWebInf();
+        }
+        return null;
+    }
+
+    // libraries in WEB-INF/lib
+    // Looking for jars in WEB-INF/lib is mainly for tests. Can a user create a lib dir in the document base
+    // and put here a jar?
+    private void putWebInfLibraries(FileObject webInf, Map<URL, URL> tomcatTable, Map<URL, URL> loadingTable) {
+        if (webInf == null) {
+            return;
+        }
+        FileObject libDir = webInf.getFileObject("lib"); // NOI18N
+        if (libDir == null) {
+            return;
+        }
+
+        URL helpurl;
+        Enumeration<? extends FileObject> libDirKids = libDir.getChildren(false);
+        while (libDirKids.hasMoreElements()) {
+            FileObject elem = libDirKids.nextElement();
+            if (elem.getExt().equals("jar")) { // NOI18N
+                helpurl = findInternalURL(elem);
+                if (!isUnexpectedLibrary(helpurl)) {
+                    tomcatTable.put(helpurl, helpurl);
+                    loadingTable.put(helpurl, helpurl);
+                }
+            }
+        }
+    }
+
     private URL findInternalURL(FileObject fo) {
         URL url = URLMapper.findURL(fo, URLMapper.INTERNAL);
         return url;
@@ -387,7 +409,7 @@ public class WebAppParseSupport implements WebAppParseProxy, PropertyChangeListe
         }
         return waClassLoader;
     }
-    
+
     public class RRef {
         JspParserAPI.ParseResult result;
     }

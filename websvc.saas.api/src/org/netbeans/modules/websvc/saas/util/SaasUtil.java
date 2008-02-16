@@ -38,6 +38,8 @@
  */
 package org.netbeans.modules.websvc.saas.util;
 
+import java.awt.Image;
+import java.beans.BeanInfo;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -60,6 +62,7 @@ import javax.xml.parsers.SAXParserFactory;
 import javax.xml.transform.sax.SAXSource;
 import org.netbeans.modules.websvc.saas.model.Saas;
 import org.netbeans.modules.websvc.saas.model.SaasGroup;
+import org.netbeans.modules.websvc.saas.model.SaasServicesModel;
 import org.netbeans.modules.websvc.saas.model.WadlSaas;
 import org.netbeans.modules.websvc.saas.model.WadlSaasMethod;
 import org.netbeans.modules.websvc.saas.model.jaxb.Group;
@@ -75,6 +78,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
+import org.openide.util.Utilities;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.XMLReader;
@@ -164,7 +168,8 @@ public class SaasUtil {
         if (input == null) {
             return null;
         }
-        return loadJaxbObject(input, SaasGroup.class, false);
+        Group g = loadJaxbObject(input, Group.class, false);
+        return new SaasGroup(null, g);
     }
 
     public static SaasGroup loadSaasGroup(InputStream input) throws JAXBException {
@@ -185,6 +190,7 @@ public class SaasUtil {
             }
         }
     }
+    
     public static final QName QNAME_GROUP = new QName(Saas.NS_SAAS, "group");
 
     public static void saveSaasGroup(SaasGroup saasGroup, OutputStream output) throws JAXBException {
@@ -194,6 +200,12 @@ public class SaasUtil {
         marshaller.marshal(jbe, output);
     }
 
+    public static void saveSaas(Saas saas, FileObject file) throws IOException, JAXBException {
+        JAXBContext jc = JAXBContext.newInstance(SaasServices.class.getPackage().getName());
+        Marshaller marshaller = jc.createMarshaller();
+        marshaller.marshal(saas.getDelegate(), file.getOutputStream());
+    }
+    
     public static Application loadWadl(FileObject wadlFile) throws IOException {
         return loadJaxbObject(wadlFile, Application.class, true);
     }
@@ -402,4 +414,15 @@ public class SaasUtil {
         return sb.toString();
     }
     
+    public static Image loadIcon(Saas saas, int type) {
+        String path = saas.getSaasMetadata().getIcon16();
+        if (type == BeanInfo.ICON_COLOR_32x32 || type == BeanInfo.ICON_MONO_32x32) {
+            path =  saas.getSaasMetadata().getIcon32();
+        }
+        if (path != null) {
+            return Utilities.loadImage(path);
+        }
+        return null;
+    }
 }
+
