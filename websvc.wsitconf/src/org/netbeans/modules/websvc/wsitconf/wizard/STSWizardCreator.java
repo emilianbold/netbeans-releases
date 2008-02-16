@@ -226,7 +226,7 @@ public class STSWizardCreator {
         String portJavaName = port.getJavaName();
         String artifactsPckg = portJavaName.substring(0, portJavaName.lastIndexOf('.'));
 
-        serviceID = jaxWsSupport.addService(targetName, serviceImplPath, wsdlURL.toString(), service.getName(), port.getName(), artifactsPckg, jsr109Supported && Util.isJavaEE5orHigher(project));
+        serviceID = jaxWsSupport.addService(targetName, serviceImplPath, wsdlURL.toString(), service.getName(), port.getName(), artifactsPckg, jsr109Supported && Util.isJavaEE5orHigher(project), true);
         final String wsdlLocation = jaxWsSupport.getWsdlLocation(serviceID);
                        
         JavaSource targetSource = JavaSource.forFileObject(implClassFo);
