@@ -39,58 +39,46 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.cnd.debugger.gdb;
+package org.netbeans.modules.xml.text.indent;
 
-import org.netbeans.modules.cnd.debugger.gdb.actions.GdbActionHandlerProvider;
-import org.openide.modules.ModuleInstall;
-
-import org.netbeans.modules.cnd.makeproject.api.configurations.ui.CustomizerRootNodeProvider;
-import org.netbeans.modules.cnd.makeproject.api.configurations.ui.CustomizerNode;
-import org.netbeans.modules.cnd.makeproject.api.DefaultProjectActionHandler;
-
-import org.netbeans.modules.cnd.debugger.gdb.profiles.ui.ProfileNodeProvider;
-import org.netbeans.api.debugger.DebuggerManager;
+import javax.swing.text.BadLocationException;
+import org.netbeans.api.editor.mimelookup.MimePath;
+import org.netbeans.api.lexer.Language;
+import org.netbeans.api.lexer.LanguagePath;
+import org.netbeans.modules.editor.indent.spi.Context;
+import org.netbeans.modules.editor.indent.spi.ExtraLock;
+import org.netbeans.modules.editor.indent.spi.IndentTask;
 
 /**
- *  Module installer for cnd gdb debugger. 
+ * Implementation of IndentTask for text/html mimetype.
  *
- *  @author gordonp
+ * @author Marek Fukala
  */
-public class GdbDebuggerModule extends ModuleInstall {
-    
-    private CustomizerNode debugCustomizerNode;
-    
-    @Override
-    public void restored() {
+public class XMLIndentTask implements IndentTask {
+
+    private Context context;
+
+    XMLIndentTask(Context context) {
+        this.context = context;
+    }
+
+    public void reindent() throws BadLocationException {
+        getFormatter().process(context);
+    }
+
+    public ExtraLock indentLock() {
+        return null;
+    }
+
+    private XMLLexerFormatter getFormatter() {
+        MimePath mimePath = MimePath.parse (context.mimePath ());
+        LanguagePath languagePath = LanguagePath.get (Language.find (mimePath.getMimeType (0)));
         
-        // Profiles
-        if (!isDbxGuiLoaded()) {
-            debugCustomizerNode = new ProfileNodeProvider().createDebugNode();
-            CustomizerRootNodeProvider.getInstance().addCustomizerNode(debugCustomizerNode);
-
-            // Set project action handler
-            DefaultProjectActionHandler.getInstance().setCustomDebugActionHandlerProvider(
-                        new GdbActionHandlerProvider());  
+        for (int i = 1; i < mimePath.size(); i++) {
+            languagePath = languagePath.embedded(Language.find(mimePath.getMimeType(i)));
         }
-    }
 
-    @Override
-    public void uninstalled() {
-        // Profiles
-        if (!isDbxGuiLoaded()) {
-            CustomizerRootNodeProvider.getInstance().removeCustomizerNode(debugCustomizerNode);
-            DefaultProjectActionHandler.getInstance().setCustomDebugActionHandlerProvider(null);
-        }
-    }
-    
-    @Override
-    public void close() {
-        // Kill all debug sessions
-        DebuggerManager.getDebuggerManager().finishAllSessions();
-        super.close();
-    }
-    
-    private boolean isDbxGuiLoaded() {
-        return false;
+        return new XMLLexerFormatter(languagePath);
+        //return null;
     }
 }

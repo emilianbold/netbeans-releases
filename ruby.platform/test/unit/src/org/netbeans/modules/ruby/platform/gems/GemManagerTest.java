@@ -225,6 +225,26 @@ public class GemManagerTest extends RubyTestBase {
         assertEquals("0.1.1", gemManager.getVersion("pdf-writer"));
         assertEquals("1.15.3.6752", gemManager.getVersion("activerecord"));
     }
+    
+    public void testInstallLocal() throws IOException {
+        final RubyPlatform platform = RubyPlatformManager.getDefaultPlatform();
+        GemManager gemManager = platform.getGemManager();
+        RubyPlatform jruby = RubyPlatformManager.getDefaultPlatform();
+        FileObject gemRepo = FileUtil.toFileObject(getWorkDir()).createFolder("gem-repo");
+        GemManager.initializeRepository(gemRepo);
+        jruby.setGemHome(FileUtil.toFile(gemRepo));
+        jruby.getInfo().setGemPath("");
+        File rakeGem = getRakeGem();
+        assertNull("rake is not installed", gemManager.getVersion("rake"));
+        gemManager.installLocal(rakeGem, null, false, false, false, null);
+        assertNotNull("rake is installed", gemManager.getVersion("rake"));
+    }
+
+    private File getRakeGem() throws IOException {
+        File rakeGem = new File(TestUtil.getXTestJRubyHome(), "lib/ruby/gems/1.8/cache/rake-0.7.3.gem");
+        assertNotNull("rake gem found", rakeGem);
+        return rakeGem;
+    }
 
     // XXX
 //    public void testFindGemExecutableWith_GEM_HOME() throws Exception {

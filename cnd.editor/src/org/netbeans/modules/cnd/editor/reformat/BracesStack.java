@@ -67,55 +67,60 @@ class BracesStack {
         System.out.println("push: "+toString());
     }
 
-    private StackEntry safePop() {
-        if (stack.empty()) {
-            return null;
-        }
-        return stack.pop();
-    }
-
-    public StackEntry pop(TokenSequence<CppTokenId> ts) {
-        StackEntry res = popImpl(ts);
+    public int pop(TokenSequence<CppTokenId> ts) {
+        int res = popImpl(ts);
         System.out.println("pop "+ts.token().id().name()+": "+toString());
         return res;
     }
-    
-    public StackEntry popImpl(TokenSequence<CppTokenId> ts) {
+
+    public int popImpl(TokenSequence<CppTokenId> ts) {
         if (stack.empty()) {
-            return null;
+            return 0;
         }
         CppTokenId id = ts.token().id();
-        int brace;
         if (id == RBRACE) {
-            brace = 0;
-            for (int i = stack.size()-1; i >= 0; i--){
-                StackEntry top = stack.get(i);
-                if (top.getKind() == LBRACE){
-                    brace = i-1;
-                    break;
-                }
-            }
-            if (brace < 0){
-                StackEntry top = stack.get(0);
-                stack.setSize(0);
-                return top;
-            }
-        } else {
-            brace = stack.size() - 1;
+            return popBrace(ts);
         }
+        return popStatement(ts);
+    }
+
+    public int popBrace(TokenSequence<CppTokenId> ts) {
+        int res = 0;
+        int brace = 0;
+        for (int i = stack.size() - 1; i >= 0; i--) {
+            StackEntry top = stack.get(i);
+            if (top.getKind() == LBRACE) {
+                brace = i - 1;
+                stack.setSize(i);
+                res = getLength();
+                if (isStatement(peek())){
+                    res--;
+                }
+                break;
+            }
+        }
+        if (brace < 0) {
+            stack.setSize(0);
+            return res;
+        }
+        popStatement(ts);
+        return res;
+    }
+
+    public int popStatement(TokenSequence<CppTokenId> ts) {
         Token<CppTokenId> next = getNextImportant(ts);
-        for (int i = brace; i >= 0; i--) {
+        for (int i = stack.size() - 1; i >= 0; i--) {
             StackEntry top = stack.get(i);
             switch (top.getKind()) {
                 case LBRACE: {
                     stack.setSize(i + 1);
-                    return top;
+                    return getLength();
                 }
                 case IF: //("if", "keyword-directive"),
                 {
                     if (next != null && next.id() == ELSE) {
                         stack.setSize(i + 1);
-                        return top;
+                        return getLength();
                     }
                 }
                 case ELSE: //("else", "keyword-directive"),
@@ -130,9 +135,27 @@ class BracesStack {
                     break;
             }
         }
-        return null;
+        stack.setSize(0);
+        return 0;
     }
-
+    
+    private boolean isStatement(StackEntry top){
+        if (top != null) {
+            switch (top.getKind()) {
+                case IF: //("if", "keyword-directive"),
+                case ELSE: //("else", "keyword-directive"),
+                case TRY: //("try", "keyword-directive"), // C++
+                case CATCH: //("catch", "keyword-directive"), //C++
+                case SWITCH: //("switch", "keyword-directive"),
+                case FOR: //("for", "keyword-directive"),
+                case ASM: //("asm", "keyword-directive"), // gcc and C++
+                case DO: //("do", "keyword-directive"),
+                case WHILE: //("while", "keyword-directive"),
+                    return true;
+            }
+        }
+        return false;
+    }
     
     public StackEntry peek() {
         if (stack.empty()) {

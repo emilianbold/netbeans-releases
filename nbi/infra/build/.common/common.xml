@@ -412,7 +412,7 @@
       This target is not intended to be called directly.
     -->
     <target name=".checkout" 
-            depends=".checkout-repository,.checkout-copy">
+            depends=".checkout-repository,.pre-checkout-copy,.checkout-copy,.post-checkout-copy">
         <copy todir="${cvs.dir}" failonerror="false">
             <fileset dir="${translatedfiles.dir}"/>
         </copy>
@@ -500,6 +500,18 @@
             </fileset>
         </copy>
     </target>
+
+    <!--
+      Empty hooks. 
+      
+      They allow derivative scripts to inject custom logic which will be 
+      executed prior and after copying out the project's sources.
+      
+      These targets are not intended to be called directly.
+    -->
+    <target name=".pre-checkout-copy"/>
+    <target name=".post-checkout-copy"/>
+
     
     <!--
       An empty hook. 
