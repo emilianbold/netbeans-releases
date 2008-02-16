@@ -165,6 +165,7 @@ public class RestNodeTest extends RestTestBase {
         suite.addTest(new RestNodeTest("testOpenOnLocator")); //NOI18N
         suite.addTest(new RestNodeTest("testAddMethod")); //NOI18N
         suite.addTest(new RestNodeTest("testRemoveMethod")); //NOI18N
+        suite.addTest(new RestNodeTest("testCloseProject")); //NOI18N
         return suite;
     }
 

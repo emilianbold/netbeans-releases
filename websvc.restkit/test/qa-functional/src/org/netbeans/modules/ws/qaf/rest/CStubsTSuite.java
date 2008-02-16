@@ -81,6 +81,7 @@ public class CStubsTSuite extends RestTestBase {
         suite.addTest(new CStubsTSuite("testWizard")); //NOI18N
         suite.addTest(new CStubsTSuite("testCreateSimpleStubs")); //NOI18N
         suite.addTest(new CStubsTSuite("testFromWADL")); //NOI18N
+        suite.addTest(new CStubsTSuite("testCloseProject")); //NOI18N
         return suite;
     }
 

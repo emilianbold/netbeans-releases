@@ -162,6 +162,15 @@ public abstract class RestTestBase extends WebServicesTestBase {
     }
 
     /**
+     * Close project
+     */
+    public void testCloseProject() {
+        // Close
+        String close = Bundle.getStringTrimmed("org.netbeans.core.ui.Bundle", "LBL_Close");
+        getProjectRootNode().performPopupAction(close);
+    }
+
+    /**
      * Helper method to get folder containing data for Rest tests
      * (&lt;dataDir&gt/resources)
      */
