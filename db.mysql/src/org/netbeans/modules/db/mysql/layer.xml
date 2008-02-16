@@ -1,5 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.1//EN" "http://www.netbeans.org/dtds/filesystem-1_1.dtd">
 <filesystem>
-    <!-- TODO - register the MySQL node provider -->
+    <folder name="Databases">
+        <folder name="NodeProviders">
+            <file name="ServerNodeProvider.instance">
+                <attr name="instanceCreate" methodvalue="org.netbeans.modules.db.mysql.ServerNodeProvider.getDefault"/>
+                <attr name="instanceOf" stringvalue="org.netbeans.modules.db.api.explorer.NodeProvider"/>
+            </file>
+        </folder>
+    </folder>
 </filesystem>

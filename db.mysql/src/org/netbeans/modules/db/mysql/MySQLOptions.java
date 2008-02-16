@@ -41,9 +41,11 @@
 
 package org.netbeans.modules.db.mysql;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.util.ArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.openide.util.NbBundle;
 import org.openide.util.NbPreferences;
 
 /**
@@ -53,19 +55,22 @@ import org.openide.util.NbPreferences;
  * @author David Van Couvering
  */
 public class MySQLOptions {
+    private String adminPassword;
 
     private static final Logger LOGGER = Logger.getLogger(MySQLOptions.class.getName());
 
     private static final MySQLOptions DEFAULT = new MySQLOptions();
 
-    private static final String PROP_MYSQL_LOCATION = "location"; // NOI18N
-    private static final String PROP_HOST = "host"; // NO18N
-    private static final String PROP_PORT = "port"; // NO18N
-    private static final String PROP_ADMINUSER = "adminuser"; // NO18N
-    private static final String PROP_ADMINPWD = "adminpwd"; // NO18N
-    private static final String PROP_SAVEPWD = "savepwd"; // NO18N
-    private static final String PROP_DBDIR = "dbdir"; // NO18N
-    private static final String PROP_CONN_REGISTERED = "conn-registered"; // NOI18N
+    static final String PROP_MYSQL_LOCATION = "location"; // NOI18N
+    static final String PROP_HOST = "host"; // NO18N
+    static final String PROP_PORT = "port"; // NO18N
+    static final String PROP_ADMINUSER = "adminuser"; // NO18N
+    static final String PROP_ADMINPWD = "adminpwd"; // NO18N
+    static final String PROP_SAVEPWD = "savepwd"; // NO18N
+    static final String PROP_DBDIR = "dbdir"; // NO18N
+    static final String PROP_CONN_REGISTERED = "conn-registered"; // NOI18N
+    static final String PROP_PROVIDER_REGISTERED = "provider-registered"; // NOI18N
+    static final String PROP_PROVIDER_REMOVED = "provider-removed"; // NO18N
     
     // Currently not modifiable...
     private static final String DRIVER_CLASS = "com.mysql.jdbc.Driver";
@@ -74,28 +79,34 @@ public class MySQLOptions {
     private static final String DEFAULT_ADMIN_USER = "root";
     private static final String DEFAULT_ADMIN_PASSWORD = "";
     
-    public static MySQLOptions getDefault() {
+    private ArrayList<PropertyChangeListener> listeners = 
+            new ArrayList<PropertyChangeListener>();
+    
+    public static synchronized MySQLOptions getDefault() {
         return DEFAULT;
     }
     
-    private MySQLOptions() {
-        setSavePassword(false);
-    }
-
     protected final void putProperty(String key, String value) {
+        String oldval = getProperty(key);
         if (value != null) {
             NbPreferences.forModule(MySQLOptions.class).put(key, value);
         } else {
             NbPreferences.forModule(MySQLOptions.class).remove(key);
         }
+        notifyPropertyChange(key, oldval, value);
     }
 
     protected final void putProperty(String key, boolean value) {
+        boolean oldval = getBooleanProperty(key);
         NbPreferences.forModule(MySQLOptions.class).putBoolean(key, value);
+        
+        notifyPropertyChange(key, new Boolean(oldval), new Boolean(value)   );
     }
     
     protected final void clearProperty(String key) {
+        String oldval = getProperty(key);
         NbPreferences.forModule(MySQLOptions.class).remove(key);
+        notifyPropertyChange(key, oldval, null);
     }
     
     protected final String getProperty(String key) {
@@ -103,8 +114,26 @@ public class MySQLOptions {
     }
     
     protected final boolean getBooleanProperty(String key) {
-        return NbPreferences.forModule(MySQLOptions.class).getBoolean(key, false);        
+        return NbPreferences.forModule(MySQLOptions.class).getBoolean(key, false); 
     }
+    
+    public void addPropertyChangeListener(PropertyChangeListener listener) {
+        listeners.add(listener);
+    }
+    
+    public void removePropertyChangeListener(PropertyChangeListener listener) {
+        listeners.remove(listener);
+    }
+    
+    private void notifyPropertyChange(String key, Object oldval, Object newval) {
+        PropertyChangeEvent event = new PropertyChangeEvent(
+                this, key, oldval, newval);
+                
+        for ( PropertyChangeListener listener : listeners ) {
+            listener.propertyChange(event);
+        }
+    }
+
 
     /**
      * Returns the MySQL location or an empty string if the MySQL location
@@ -207,22 +236,27 @@ public class MySQLOptions {
     }
 
     public String getAdminPassword() {
-        return getProperty(PROP_ADMINPWD);
+        if ( isSavePassword() ) {
+            return getProperty(PROP_ADMINPWD);
+        } else {
+            return adminPassword;
+        }
     }
 
     public void setAdminPassword(String adminPassword) {
-        if ( isSavePassword() ) {
-            // 'null' is a valid password, but if we save as null
-            // it will actually clear the property.  So convert it to
-            // an empty string.
-            if ( adminPassword == null ) {
-                adminPassword = "";
-            }
-            putProperty(PROP_ADMINPWD, adminPassword);
-        } else {
-            LOGGER.log(Level.INFO, "Received request to save MySQL admin " +
-                    "password but the savePassword option is not set; ignoring");
+        // 'null' is a valid password, but if we save as null
+        // it will actually clear the property.  So convert it to
+        // an empty string.
+        if ( adminPassword == null ) {
+            adminPassword = "";
         }
+        
+        // Cache password for this session whether we save it or not.
+        this.adminPassword = adminPassword;
+        
+        if ( isSavePassword() ) {
+            putProperty(PROP_ADMINPWD, adminPassword);
+        } 
     }
     
     public void clearAdminPassword() {
@@ -235,8 +269,14 @@ public class MySQLOptions {
 
     public void setSavePassword(boolean savePassword) {
         putProperty(PROP_SAVEPWD, savePassword);
+        
+        // Clear the password from the persistent file if saving
+        // passwords is turned off; save the password to the persistent
+        // file if saving passwords is turned on
         if ( ! savePassword ) {
             clearAdminPassword();
+        } else {
+            putProperty(PROP_ADMINPWD, adminPassword);
         }
     }
     
@@ -246,6 +286,22 @@ public class MySQLOptions {
 
     public boolean getConnectionRegistered() {
         return getBooleanProperty(PROP_CONN_REGISTERED);
+    }
+    
+    public void setProviderRegistered(boolean registered) {
+        putProperty(PROP_PROVIDER_REGISTERED, registered);
+    }
+    
+    public boolean getProviderRegistered() {
+        return getBooleanProperty(PROP_PROVIDER_REGISTERED);
+    }
+    
+    public void setProviderRemoved(boolean removed) {
+        putProperty(PROP_PROVIDER_REMOVED, removed);
+    }
+    
+    public boolean getProviderRemoved() {
+        return getBooleanProperty(PROP_PROVIDER_REMOVED);
     }
 
 
@@ -259,27 +315,6 @@ public class MySQLOptions {
     }
     */
     
-
-    /**
-     * Return the JDBC URL based on the information we have
-     * 
-     * @return a JDBC URL, or null if we don't have enough information
-     */
-    public static String getURL(String host, String port) {
-        // Format is jdbc:mysql://<HOST>:<PORT>
-        // No database is specified for an admin connection.
-        StringBuffer url = new StringBuffer("jdbc:mysql://"); // NOI18N
-        url.append( host == null || host.equals("") ? "localhost" : host); // NO18N
-        if ( port != null && (! port.equals("")) ) {
-            url.append(":" + port);
-        }
-        
-        return url.toString();
-    }
-    
-    public String getURL() {
-        return getURL(getHost(), getPort());
-    }
 
     public static String getDriverClass() {
         return DRIVER_CLASS;
@@ -299,5 +334,6 @@ public class MySQLOptions {
     public static String getDefaultHost() {
         return DEFAULT_HOST;
     }
+
 
 }

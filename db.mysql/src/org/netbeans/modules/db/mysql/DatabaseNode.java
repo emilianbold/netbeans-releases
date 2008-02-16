@@ -39,70 +39,33 @@
 
 package org.netbeans.modules.db.mysql;
 
-import java.beans.PropertyChangeEvent;
-import java.util.ArrayList;
-import java.util.List;
-import org.netbeans.modules.db.api.explorer.NodeProvider;
-import org.openide.nodes.Node;
-import org.openide.nodes.NodeEvent;
-import org.openide.nodes.NodeListener;
-import org.openide.nodes.NodeMemberEvent;
-import org.openide.nodes.NodeReorderEvent;
+import org.openide.nodes.AbstractNode;
+import org.openide.nodes.Children;
+import org.openide.util.actions.SystemAction;
 
 /**
- * Provides a node for working with a local MySQL Server instance
+ * Represents a database. 
  * 
  * @author David Van Couvering
  */
-public class ServerNodeProvider implements NodeProvider {
-
-    private static ServerNodeProvider DEFAULT = new ServerNodeProvider();
-    private static MySQLOptions options = MySQLOptions.getDefault();
-    ArrayList<Node> nodes = new ArrayList<Node>();
-    private static final ArrayList<Node> emptyNodeList = new ArrayList<Node>();
+class DatabaseNode extends AbstractNode {
     
-    static ServerNodeProvider getDefault() {
-        return DEFAULT;
+    // I'd like a less generic icon, but this is what we have for now...
+    private static final String ICON_BASE = "org/netbeans/modules/db/mysql/resources/database.gif";
+    
+    private DatabaseModel model;    
+    
+    public DatabaseNode(DatabaseModel model) {
+        super(Children.LEAF);
+        setDisplayName(model.getDisplayName());
+        setShortDescription(model.getShortDescription());
+        setIconBaseWithExtension(ICON_BASE);
     }
-    
-    private ServerNodeProvider() {
-        // Right now only one server, although this may (likely) change
-        nodes.add(ServerNode.create(ServerInstance.getDefault()));
-    }
-
-    public List<Node> getNodes() {
-        if ( options.getProviderRegistered() ) {
-            return nodes;
-        } else {
-            return emptyNodeList;
-        }
-    } 
-    
-    static class ServerNodeListener implements NodeListener {
-
-        public void childrenAdded(NodeMemberEvent ev) {
-        }
-
-        public void childrenRemoved(NodeMemberEvent ev) {
-        }
-
-        public void childrenReordered(NodeReorderEvent ev) {
-        }
-
-        public void nodeDestroyed(NodeEvent ev) {
-            options.setProviderRemoved(true);
-        }
-
-        public void propertyChange(PropertyChangeEvent arg0) {
-        }
         
+   
+    @Override
+    public SystemAction[] getActions() {
+        return new SystemAction[0];
     }
-
-    public void register() {
-        if ( options.getProviderRegistered() ) {
-            return;
-        }
         
-        options.setProviderRegistered(true);
-    }
 }

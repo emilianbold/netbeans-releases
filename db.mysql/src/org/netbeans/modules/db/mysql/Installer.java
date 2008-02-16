@@ -52,7 +52,6 @@ import org.netbeans.api.db.explorer.ConnectionManager;
 import org.netbeans.api.db.explorer.DatabaseConnection;
 import org.netbeans.api.db.explorer.DatabaseException;
 import org.netbeans.api.db.explorer.JDBCDriver;
-import org.netbeans.api.db.explorer.JDBCDriverManager;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.openide.modules.ModuleInstall;
@@ -77,7 +76,7 @@ public class Installer extends ModuleInstall {
     public void restored() {
         // If MySQL was already registered once for this user, don't
         // do it again
-        if ( options.getConnectionRegistered() ) {
+        if ( options.getConnectionRegistered() && options.getProviderRegistered()) {
             return;
         }
             
@@ -110,7 +109,7 @@ public class Installer extends ModuleInstall {
          * Explorer.
          */
         private void findAndRegisterMySQL() {            
-            if ( (jdbcDriver = getJDBCDriver()) == null ) {
+            if ( (jdbcDriver = DatabaseUtils.getJDBCDriver()) == null ) {
                 // Driver not registered, that's OK, the user may 
                 // have deleted it, but nothing to do here.
                 return;
@@ -123,7 +122,7 @@ public class Installer extends ModuleInstall {
             String user = MySQLOptions.getDefaultAdminUser();
             String password = MySQLOptions.getDefaultAdminPassword();
             
-            String url = MySQLOptions.getURL(host, port);
+            String url = DatabaseUtils.getURL(host, port);
             ConnectStatus status = testConnection(url, user, password);
             
             if ( status == ConnectStatus.CONNECT_SUCCEEDED  ||
@@ -133,6 +132,7 @@ public class Installer extends ModuleInstall {
                 options.setAdminUser(user);
                 
                 registerConnection(host, port, user);
+                registerProvider();
             }
         }
 
@@ -141,49 +141,37 @@ public class Installer extends ModuleInstall {
                 return;
             }
             
-            String url = MySQLOptions.getURL(host, port);
-            DatabaseConnection[] connections = 
-                    ConnectionManager.getDefault().getConnections();
+            String url = DatabaseUtils.getURL(host, port);
             
-            for ( DatabaseConnection conn : connections ) {
-                // If there's already a connection registered, we're done
-                if ( conn.getDriverClass().equals(MySQLOptions.getDriverClass()) &&
-                     conn.getDatabaseURL().equals(url) && 
-                     conn.getUser().equals(user)) {
-                    options.setConnectionRegistered(true);
-                    return;
-                }
-            }
+            DatabaseConnection dbconn = DatabaseUtils.findDatabaseConnection(
+                    url, user, null, null);
             
-            DatabaseConnection dbconn = 
-                    DatabaseConnection.create(jdbcDriver, url, user, null, null, false);
-            
-            try {
-                ConnectionManager.getDefault().addConnection(dbconn);
+            if ( dbconn != null ) {
+                // Already registered, nothing to do here
                 options.setConnectionRegistered(true);
+            }
+                        
+            dbconn = DatabaseConnection.create(jdbcDriver, url, user, 
+                 null, null, false);
+
+            try {
+             ConnectionManager.getDefault().addConnection(dbconn);
+             options.setConnectionRegistered(true);
             } catch ( DatabaseException e ) {
-                LOGGER.log(Level.INFO, 
-                    "Unable to register default connection for MySQL", e);
-            }            
+             LOGGER.log(Level.INFO, 
+                 "Unable to register default connection for MySQL", e);
+            }
+        }
+
+        private void registerProvider() {
+            ServerNodeProvider.getDefault().register();
         }
 
         private ConnectStatus testConnection(String url, String user, 
-                String password) {            
-            Driver driver = getDriver();
-            Properties dbprops = new Properties();
+                String password) {
             Connection conn;
-
-            if ( driver == null ) {
-                return ConnectStatus.NO_SERVER;
-            } 
-            
-            if ((user != null) && (user.length() > 0)) {
-                dbprops.put("user", user); //NOI18N
-                dbprops.put("password", password); //NOI18N
-            }
-           
             try {
-                conn = driver.connect(url, dbprops);
+                conn = DatabaseUtils.connect(url, user, password);
             } catch (SQLException e) {
                 LOGGER.log(Level.FINE, null, e);
                 if ( isServerException(e) ) {
@@ -191,6 +179,9 @@ public class Installer extends ModuleInstall {
                 } else {
                     return ConnectStatus.NO_SERVER;
                 }
+            } catch ( DatabaseException e ) {
+                Exceptions.printStackTrace(e);
+                return ConnectStatus.NO_SERVER;
             }
             
             try { 
@@ -202,32 +193,6 @@ public class Installer extends ModuleInstall {
             return ConnectStatus.CONNECT_SUCCEEDED;            
         }
         
-        private JDBCDriver getJDBCDriver() {
-            JDBCDriver[]  drivers = JDBCDriverManager.getDefault().
-                    getDrivers(MySQLOptions.getDriverClass());
-
-            if ( drivers.length == 0 ) {
-                return null;
-            }
-
-            return drivers[0];
-        }
-        
-        private Driver getDriver() {
-            Driver driver;
-            ClassLoader driverLoader = new DriverClassLoader(jdbcDriver);
-            
-            try {
-                driver = (Driver)Class.forName(jdbcDriver.getClassName(), 
-                        true, driverLoader).newInstance();
-            } catch (Exception ex) {
-                Exceptions.printStackTrace(ex);
-                return null;
-            }
-            
-            return driver;
-
-        }
 
         private boolean isServerException(SQLException e) {
             // An exception whose SQL state starts with '20' is

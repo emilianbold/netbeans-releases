@@ -39,70 +39,75 @@
 
 package org.netbeans.modules.db.mysql;
 
-import java.beans.PropertyChangeEvent;
-import java.util.ArrayList;
-import java.util.List;
-import org.netbeans.modules.db.api.explorer.NodeProvider;
+import org.netbeans.api.db.explorer.DatabaseException;
 import org.openide.nodes.Node;
-import org.openide.nodes.NodeEvent;
-import org.openide.nodes.NodeListener;
-import org.openide.nodes.NodeMemberEvent;
-import org.openide.nodes.NodeReorderEvent;
+import org.openide.util.HelpCtx;
+import org.openide.util.NbBundle;
+import org.openide.util.actions.CookieAction;
 
 /**
- * Provides a node for working with a local MySQL Server instance
- * 
+ *
  * @author David Van Couvering
  */
-public class ServerNodeProvider implements NodeProvider {
+public class RefreshAction extends CookieAction {
+    private static final Class[] COOKIE_CLASSES = new Class[] {
+        ServerInstance.class
+    };
 
-    private static ServerNodeProvider DEFAULT = new ServerNodeProvider();
-    private static MySQLOptions options = MySQLOptions.getDefault();
-    ArrayList<Node> nodes = new ArrayList<Node>();
-    private static final ArrayList<Node> emptyNodeList = new ArrayList<Node>();
-    
-    static ServerNodeProvider getDefault() {
-        return DEFAULT;
-    }
-    
-    private ServerNodeProvider() {
-        // Right now only one server, although this may (likely) change
-        nodes.add(ServerNode.create(ServerInstance.getDefault()));
+    public RefreshAction() {
+        putValue("noIconInMenu", Boolean.TRUE);
+    }    
+        
+    protected boolean asynchronous() {
+        return false;
     }
 
-    public List<Node> getNodes() {
-        if ( options.getProviderRegistered() ) {
-            return nodes;
-        } else {
-            return emptyNodeList;
-        }
-    } 
-    
-    static class ServerNodeListener implements NodeListener {
+    public String getName() {
+        return NbBundle.getBundle(RefreshAction.class).
+                getString("LBL_RefreshAction");
+    }
 
-        public void childrenAdded(NodeMemberEvent ev) {
-        }
+    public HelpCtx getHelpCtx() {
+        return new HelpCtx(RefreshAction.class);
+    }
 
-        public void childrenRemoved(NodeMemberEvent ev) {
-        }
-
-        public void childrenReordered(NodeReorderEvent ev) {
-        }
-
-        public void nodeDestroyed(NodeEvent ev) {
-            options.setProviderRemoved(true);
-        }
-
-        public void propertyChange(PropertyChangeEvent arg0) {
+    @Override
+    protected boolean enable(Node[] activatedNodes) {
+        Node node = activatedNodes[0];
+        
+        ServerInstance server = node.getCookie(ServerInstance.class);
+        if ( server != null && server.isConnected() ) {
+            return true;
         }
         
+        return false;
     }
 
-    public void register() {
-        if ( options.getProviderRegistered() ) {
-            return;
-        }
+    @Override
+    protected int mode() {
+        return MODE_EXACTLY_ONE;
+    }
+
+    @Override
+    protected Class<?>[] cookieClasses() {
+        return COOKIE_CLASSES;
+    }
+
+    @Override
+    protected void performAction(Node[] activatedNodes) {
+        Node node = activatedNodes[0];
         
-        options.setProviderRegistered(true);
+        ServerInstance server = node.getCookie(ServerInstance.class);
+        
+        if ( server.isConnected() ) {
+            try {
+                server.refreshDatabaseList();
+            } catch ( DatabaseException e ) {
+                Utils.displayError(
+                    NbBundle.getMessage(this.getClass(), 
+                        "MSG_UnableToGetDatabaseList"), 
+                    e);
+            }
+        }
     }
 }
