@@ -61,8 +61,10 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.logging.Logger;
+import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jellytools.actions.SaveAllAction;
+import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.modules.ws.qaf.WebServicesTestBase;
 import org.netbeans.modules.ws.qaf.utilities.ContentComparator;
 import org.netbeans.modules.ws.qaf.utilities.FilteringLineDiff;
@@ -165,6 +167,18 @@ public abstract class RestTestBase extends WebServicesTestBase {
      */
     protected File getRestDataDir() {
         return new File(getDataDir(), "resources"); //NOI18N
+    }
+
+    /**
+     * Helper method to get RESTful Web Services node
+     * 
+     * @return RESTful Web Services node
+     */
+    protected Node getRestNode() {
+        String restNodeLabel = Bundle.getStringTrimmed("org.netbeans.modules.websvc.rest.nodes.Bundle", "LBL_RestServices");
+        Node restNode = new Node(getProjectRootNode(), restNodeLabel);
+        restNode.expand();
+        return restNode;
     }
 
     /**

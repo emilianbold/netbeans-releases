@@ -135,10 +135,7 @@ public class CRUDTSuite extends RestTestBase {
         assertEquals("Some files were not generated", 37, files.size()); //NOI18N
         checkFiles(files);
         //make sure all REST services nodes are visible in project log. view
-        String restNodeLabel = Bundle.getStringTrimmed("org.netbeans.modules.websvc.rest.nodes.Bundle", "LBL_RestServices");
-        Node restNode = new Node(getProjectRootNode(), restNodeLabel);
-        restNode.expand();
-        assertEquals("missing node?", 14, restNode.getChildren().length);
+        assertEquals("missing nodes?", 14, getRestNode().getChildren().length);
     }
 
     /**
