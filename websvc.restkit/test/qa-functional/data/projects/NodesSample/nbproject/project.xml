@@ -6,7 +6,7 @@
             <extension file="rest-build.xml" id="rest.2"/>
         </buildExtensions>
         <data xmlns="http://www.netbeans.org/ns/web-project/3">
-            <name>Sample</name>
+            <name>NodesSample</name>
             <minimum-ant-version>1.6</minimum-ant-version>
             <web-module-libraries>
                 <library files="18">
