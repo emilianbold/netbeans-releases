@@ -623,9 +623,6 @@ public final class ModuleManager {
         // The installer can perform additional checks:
         return installer.shouldDelegateResource(m, parent, pkg);
     }
-    public boolean isSpecialResource(String pkg) {
-        return installer.isSpecialResource(pkg);
-    }
     // Again, access from Module to ModuleInstaller:
     Manifest loadManifest(File jar) throws IOException {
         return installer.loadManifest(jar);
