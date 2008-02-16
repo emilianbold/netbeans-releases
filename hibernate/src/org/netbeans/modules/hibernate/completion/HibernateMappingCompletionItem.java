@@ -626,6 +626,20 @@ public abstract class HibernateMappingCompletionItem implements CompletionItem {
         protected String getLeftHtmlText() {
             return displayText;
         }
+        
+        @Override
+        public void processKeyEvent(KeyEvent evt) {
+            if (evt.getID() == KeyEvent.KEY_TYPED) {
+                if (evt.getKeyChar() == ',') { // NOI18N
+                    Completion.get().hideDocumentation();
+                    JTextComponent component = (JTextComponent) evt.getSource();
+                    int caretOffset = component.getSelectionEnd();
+                    substituteText(component, substitutionOffset, caretOffset - substitutionOffset, Character.toString(evt.getKeyChar()));
+                    Completion.get().showCompletion();
+                    evt.consume();
+                }
+            }
+        }
 
         @Override
         public CompletionTask createDocumentationTask() {

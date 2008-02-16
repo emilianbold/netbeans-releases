@@ -105,7 +105,6 @@ public final class CompletionManager {
     private static final String MAP_KEY_TAG = "map-key";
     private static final String ELEMENT_TAG = "element";
     private static final String MANY_TO_MANY_TAG = "many-to-many";
-    
     private static final String TABLE_ATTRIB = "table"; // table name
     private static final String PACKAGE_ATTRIB = "package";
     private static final String CLASS_ATTRIB = "class";
@@ -115,7 +114,6 @@ public final class CompletionManager {
     private static final String EXTENDS_ATTRIB = "extends";
     private static final String PERSISTER_ATTRIB = "persister";
     private static final String CASCADE_ATTRIB = "cascade";
-    
     private static Map<String, Completor> completors = new HashMap<String, Completor>();
 
     private CompletionManager() {
@@ -139,9 +137,9 @@ public final class CompletionManager {
             "foreign", NbBundle.getMessage(CompletionManager.class, "FOREIGN_GENERATOR_DESC"), // NOI18N
             "sequence-identity", NbBundle.getMessage(CompletionManager.class, "SEQUENCE_IDENTITY_GENERATOR_DESC") // NOI18N
         };
-        
+
         // Completion items for Hibernate type
-        String[] hibernateTypes = new String[] {
+        String[] hibernateTypes = new String[]{
             "big_decimal", NbBundle.getMessage(CompletionManager.class, "BIG_DECIMAL_DESC"), // NOI18N
             "big_integer", NbBundle.getMessage(CompletionManager.class, "BIG_INTEGER_DESC"), // NOI18N
             "binary", NbBundle.getMessage(CompletionManager.class, "BINARY_DESC"), // NOI18N
@@ -177,20 +175,20 @@ public final class CompletionManager {
             "true_false", NbBundle.getMessage(CompletionManager.class, "TRUE_FALSE_DESC"), // NOI18N
             "yes_no", NbBundle.getMessage(CompletionManager.class, "YES_NO_DESC") // NOI18N
         };
-        
-         String[] cascadeStyles = new String[] {
-             "none", null, // NOI18N
-             "all", null, // NOI18N
-             "delete", null, // NOI18N
-             "delete-orphan", null, // NOI18N
-             "evict", null, // NOI18N
-             "refresh", null, // NOI18N
-             "lock", null, // NOI18N
-             "merge", null, // NOI18N
-             "persist", null, // NOI18N
-             "replicate", null, // NOI18N
-             "save-update", null // NOI18N
-         };
+
+        String[] cascadeStyles = new String[]{
+            "none", null, // NOI18N
+            "all", null, // NOI18N
+            "delete", null, // NOI18N
+            "delete-orphan", null, // NOI18N
+            "evict", null, // NOI18N
+            "refresh", null, // NOI18N
+            "lock", null, // NOI18N
+            "merge", null, // NOI18N
+            "persist", null, // NOI18N
+            "replicate", null, // NOI18N
+            "save-update", null // NOI18N
+        };
 
         // Items for package attribute in the root element
         JavaClassCompletor javaPackageCompletor = new JavaClassCompletor(true);
@@ -199,7 +197,7 @@ public final class CompletionManager {
         // Items for Id generator classes
         AttributeValueCompletor generatorCompletor = new AttributeValueCompletor(generatorClasses);
         registerCompletor(GENERATOR_TAG, CLASS_ATTRIB, generatorCompletor);
-        
+
         // Items for Hibernate type 
         AttributeValueCompletor typeCompletor = new AttributeValueCompletor(hibernateTypes);
         registerCompletor(PROPERTY_TAG, TYPE_ATTRIB, typeCompletor);
@@ -230,7 +228,7 @@ public final class CompletionManager {
         registerCompletor(UNION_SUBCLASS_TAG, PERSISTER_ATTRIB, javaClassCompletor);
         registerCompletor(IMPORT_TAG, CLASS_ATTRIB, javaClassCompletor);
         registerCompletor(MANY_TO_MANY_TAG, CLASS_ATTRIB, javaClassCompletor);
-        
+
         // Items for properties to be mapped
         PropertyCompletor propertyCompletor = new PropertyCompletor();
         registerCompletor(PROPERTY_TAG, NAME_ATTRIB, propertyCompletor);
@@ -274,7 +272,7 @@ public final class CompletionManager {
         registerCompletor(MAP_KEY_TAG, COLUMN_ATTRIB, databaseColumnCompletor);
         registerCompletor(ELEMENT_TAG, COLUMN_ATTRIB, databaseColumnCompletor);
         registerCompletor(MANY_TO_MANY_TAG, COLUMN_ATTRIB, databaseColumnCompletor);
-        
+
         // Items for cascade attribute
         CascadeStyleCompletor cascadeStyleCompletor = new CascadeStyleCompletor(cascadeStyles);
         registerCompletor(MANY_TO_ONE_TAG, CASCADE_ATTRIB, cascadeStyleCompletor);
@@ -282,7 +280,6 @@ public final class CompletionManager {
         registerCompletor(ANY_TAG, CASCADE_ATTRIB, cascadeStyleCompletor);
         registerCompletor(MAP_TAG, CASCADE_ATTRIB, cascadeStyleCompletor);
     }
-    
     private static CompletionManager INSTANCE = new CompletionManager();
 
     public static CompletionManager getDefault() {
@@ -394,7 +391,7 @@ public final class CompletionManager {
             return results;
         }
     }
-    
+
     /**
      * A  completor for completing the cascade attribute with cascade styles
      * 
@@ -412,9 +409,17 @@ public final class CompletionManager {
             int caretOffset = context.getCaretOffset();
             String typedChars = context.getTypedPrefix();
 
+            String styleName = null;
+            if( typedChars.contains(",") ) {
+                int index = typedChars.lastIndexOf(",");
+                styleName = typedChars.substring(index+1);
+            } else {
+                styleName = typedChars;
+            }
+                
             for (int i = 0; i < itemTextAndDocs.length; i += 2) {
-                if (itemTextAndDocs[i].startsWith(typedChars)) {
-                    HibernateMappingCompletionItem item = HibernateMappingCompletionItem.createCascadeStyleItem(caretOffset - typedChars.length(),
+                if (itemTextAndDocs[i].startsWith(styleName)) {
+                    HibernateMappingCompletionItem item = HibernateMappingCompletionItem.createCascadeStyleItem(caretOffset - styleName.length(),
                             itemTextAndDocs[i], itemTextAndDocs[i + 1]);
                     results.add(item);
                 }
@@ -642,11 +647,11 @@ public final class CompletionManager {
             String typedChars = context.getTypedPrefix();
 
             final String tableName = HibernateCompletionEditorUtil.getTableName(context.getTag());
-            
+
             if (tableName == null) {
                 return Collections.emptyList();
             }
-            
+
             // For now: hard code them for the PERSON table so that I can test my completor
             List<String> columnNamesPerson = new ArrayList<String>();
             columnNamesPerson.add("PERSONID");
