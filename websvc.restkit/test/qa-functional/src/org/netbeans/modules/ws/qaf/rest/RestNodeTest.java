@@ -66,7 +66,7 @@ public class RestNodeTest extends RestTestBase {
 
     @Override
     protected String getProjectName() {
-        return "Sample"; //NOI18N
+        return "NodesSample"; //NOI18N
     }
 
     /**
@@ -165,6 +165,7 @@ public class RestNodeTest extends RestTestBase {
         suite.addTest(new RestNodeTest("testOpenOnLocator")); //NOI18N
         suite.addTest(new RestNodeTest("testAddMethod")); //NOI18N
         suite.addTest(new RestNodeTest("testRemoveMethod")); //NOI18N
+        suite.addTest(new RestNodeTest("testCloseProject")); //NOI18N
         return suite;
     }
 
@@ -172,13 +173,6 @@ public class RestNodeTest extends RestTestBase {
     public static void main(java.lang.String[] args) {
         // run whole suite
         TestRunner.run(suite());
-    }
-
-    private Node getRestNode() {
-        String restNodeLabel = Bundle.getStringTrimmed("org.netbeans.modules.websvc.rest.nodes.Bundle", "LBL_RestServices");
-        Node restNode = new Node(getProjectRootNode(), restNodeLabel);
-        restNode.expand();
-        return restNode;
     }
 
     private Node getResourceNode(String resourceName) {
