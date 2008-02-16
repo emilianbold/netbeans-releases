@@ -168,7 +168,8 @@ public class SaasUtil {
         if (input == null) {
             return null;
         }
-        return loadJaxbObject(input, SaasGroup.class, false);
+        Group g = loadJaxbObject(input, Group.class, false);
+        return new SaasGroup(null, g);
     }
 
     public static SaasGroup loadSaasGroup(InputStream input) throws JAXBException {
@@ -199,6 +200,12 @@ public class SaasUtil {
         marshaller.marshal(jbe, output);
     }
 
+    public static void saveSaas(Saas saas, FileObject file) throws IOException, JAXBException {
+        JAXBContext jc = JAXBContext.newInstance(SaasServices.class.getPackage().getName());
+        Marshaller marshaller = jc.createMarshaller();
+        marshaller.marshal(saas.getDelegate(), file.getOutputStream());
+    }
+    
     public static Application loadWadl(FileObject wadlFile) throws IOException {
         return loadJaxbObject(wadlFile, Application.class, true);
     }

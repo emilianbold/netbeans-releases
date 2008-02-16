@@ -721,14 +721,13 @@ public final class GemManager {
      * @param gem Gem description for the gem to be installed. Only the name is relevant.
      * @param parent For asynchronous tasks, provide a parent Component that will have progress dialogs added,
      *   a possible cursor change, etc.
-     * @param progressHandle If the task is not asynchronous, use the given handle for progress notification.
+     * @param rdoc If true, generate rdoc as part of the installation
+     * @param ri If true, generate ri data as part of the installation
+     * @param version If non null, install the specified version rather than the latest remote version
      * @param asynchronous If true, run the gem task asynchronously - returning immediately and running the gem task
      *    in a background thread. A progress bar and message will be displayed (along with the option to view the
      *    gem output). If the exit code is normal, the completion task will be run at the end.
      * @param asyncCompletionTask If asynchronous is true and the gem task completes normally, this task will be run at the end.
-     * @param rdoc If true, generate rdoc as part of the installation
-     * @param ri If true, generate ri data as part of the installation
-     * @param version If non null, install the specified version rather than the latest remote version
      */
     public boolean install(Gem[] gems, Component parent, boolean rdoc, boolean ri,
             String version, boolean includeDeps, boolean asynchronous,
@@ -747,14 +746,41 @@ public final class GemManager {
             return ok;
         }
     }
-    
+
+    /**
+     * Install the given gem.
+     *
+     * @param gem gem file to be installed (e.g. /path/to/rake-0.8.1.gem)
+     * @param parent For asynchronous tasks, provide a parent Component that will have progress dialogs added,
+     *   a possible cursor change, etc.
+     * @param rdoc If true, generate rdoc as part of the installation
+     * @param ri If true, generate ri data as part of the installation
+     * @param asynchronous If true, run the gem task asynchronously - returning immediately and running the gem task
+     *    in a background thread. A progress bar and message will be displayed (along with the option to view the
+     *    gem output). If the exit code is normal, the completion task will be run at the end.
+     * @param asyncCompletionTask If asynchronous is true and the gem task completes normally, this task will be run at the end.
+     */
+    boolean installLocal(File gem, GemPanel parent, boolean rdoc, boolean ri, boolean asynchronous, Runnable asyncCompletionTask) {
+        if (!checkGemHomePermissions()) {
+            return false;
+        }
+        GemRunner gemRunner = new GemRunner(platform);
+        if (asynchronous) {
+            gemRunner.installLocalAsynchronously(gem, rdoc, ri, resetCompletionTask(asyncCompletionTask), parent);
+            return false;
+        } else {
+            boolean ok = gemRunner.installLocal(gem, rdoc, ri);
+            resetLocal();
+            return ok;
+        }
+    }
+
     /**
      * Uninstall the given gem.
      *
      * @param gem Gem description for the gem to be uninstalled. Only the name is relevant.
      * @param parent For asynchronous tasks, provide a parent Component that will have progress dialogs added,
      *   a possible cursor change, etc.
-     * @param progressHandle If the task is not asynchronous, use the given handle for progress notification.
      * @param asynchronous If true, run the gem task asynchronously - returning immediately and running the gem task
      *    in a background thread. A progress bar and message will be displayed (along with the option to view the
      *    gem output). If the exit code is normal, the completion task will be run at the end.
@@ -783,7 +809,6 @@ public final class GemManager {
      *    will be updated.
      * @param parent For asynchronous tasks, provide a parent Component that will have progress dialogs added,
      *   a possible cursor change, etc.
-     * @param progressHandle If the task is not asynchronous, use the given handle for progress notification.
      * @param asynchronous If true, run the gem task asynchronously - returning immediately and running the gem task
      *    in a background thread. A progress bar and message will be displayed (along with the option to view the
      *    gem output). If the exit code is normal, the completion task will be run at the end.

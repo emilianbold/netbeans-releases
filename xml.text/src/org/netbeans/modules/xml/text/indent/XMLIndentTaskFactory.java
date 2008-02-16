@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -39,18 +39,19 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.db.explorer.actions;
+package org.netbeans.modules.xml.text.indent;
 
+import org.netbeans.modules.editor.indent.spi.Context;
+import org.netbeans.modules.editor.indent.spi.IndentTask;
 
-import org.openide.nodes.Node;
-
-
-public class ServerConnectAction extends DatabaseAction
-{
-    // TODO - fix serialversionuid
-    static final long serialVersionUID =6900032866933824412L;
-    public void performAction(Node[] activatedNodes)
-    {
-        // TODO - bring up connect to server action
+/**
+ *
+ * @author Marek Fukala
+ */
+public class XMLIndentTaskFactory implements IndentTask.Factory {
+    
+    public IndentTask createTask(Context context) {
+        return new XMLIndentTask(context);
     }
+    
 }

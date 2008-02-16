@@ -386,21 +386,14 @@ public final class Validator extends org.netbeans.modules.bpel.validation.core.V
               return context.isSchemaImported(schemaNamespaceUri);
           }
       });
-      //
       // Checks if the expression contains ";". 
       // If it does, then split it to parts and verifies them separately.
       if (XPathModelFactory.isSplitable(exprText)) {
-          // Notify the user that the expression is not completed
           context.addResultItem(exprText, Validator.ResultType.ERROR, i18n(Validator.class, "INCOMPLETE_XPATH")); // NOI18N
-
           String[] partsArr = XPathModelFactory.split(exprText);
+
           for (String anExprText : partsArr) {
               checkSingleExpr(model, anExprText);
-//              if (anExprText != null && anExprText.length() != 0) {
-//                  // Only the first expression graph has to be connected 
-//                  // to the right tree! The isFirst flag is used for it. 
-//                 checkSingleExpr(model, anExprText);
-//              }
           }
           return null;
       } 

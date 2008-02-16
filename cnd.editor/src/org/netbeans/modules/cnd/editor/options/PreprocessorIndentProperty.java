@@ -41,7 +41,6 @@ package org.netbeans.modules.cnd.editor.options;
 
 import java.beans.PropertyEditor;
 import java.beans.PropertyEditorSupport;
-import java.util.prefs.Preferences;
 import org.netbeans.modules.cnd.editor.api.CodeStyle;
 import org.openide.nodes.PropertySupport;
 import org.openide.util.NbBundle;
@@ -54,11 +53,11 @@ public class PreprocessorIndentProperty extends PropertySupport.ReadWrite<CodeSt
 
     private final CodeStyle.Language language;
     private final String optionID;
-    private Preferences preferences;
+    private PreviewPreferences preferences;
     private CodeStyle.PreprocessorIndent state;
     private PropertyEditor editor;
 
-    public PreprocessorIndentProperty(CodeStyle.Language language, Preferences preferences, String optionID) {
+    public PreprocessorIndentProperty(CodeStyle.Language language, PreviewPreferences preferences, String optionID) {
         super(optionID, CodeStyle.PreprocessorIndent.class, getString("LBL_"+optionID), getString("HINT_"+optionID));
         this.language = language;
         this.optionID = optionID;
@@ -71,20 +70,21 @@ public class PreprocessorIndentProperty extends PropertySupport.ReadWrite<CodeSt
     }
 
     private void init() {
-        state = CodeStyle.PreprocessorIndent.valueOf(getPreferences().get(optionID, (String) EditorOptions.getDefault(optionID)));
+        state = CodeStyle.PreprocessorIndent.valueOf(getPreferences().get(optionID, getDefault().name()));
     }
 
-    private Preferences getPreferences() {
-        Preferences node = preferences;
-        if (node == null) {
-            node = EditorOptions.getPreferences(language, EditorOptions.getCurrentProfileId(language));
-        }
-        return node;
+    private CodeStyle.PreprocessorIndent getDefault(){
+        return CodeStyle.PreprocessorIndent.valueOf((String) EditorOptions.getDefault(
+                getPreferences().getLanguage(), getPreferences().getStyleId(), optionID));
+    }
+
+    private PreviewPreferences getPreferences() {
+        return preferences;
     }
 
     @Override
     public String getHtmlDisplayName() {
-        if (isDefaultValue()) {
+        if (!isDefaultValue()) {
             return "<b>" + getDisplayName();
         }
         return null;
@@ -101,7 +101,7 @@ public class PreprocessorIndentProperty extends PropertySupport.ReadWrite<CodeSt
 
     @Override
     public void restoreDefaultValue() {
-        state = CodeStyle.PreprocessorIndent.valueOf((String) EditorOptions.getDefault(optionID));
+        setValue(getDefault());
     }
 
     @Override
@@ -111,7 +111,7 @@ public class PreprocessorIndentProperty extends PropertySupport.ReadWrite<CodeSt
 
     @Override
     public boolean isDefaultValue() {
-        return !CodeStyle.PreprocessorIndent.valueOf((String) EditorOptions.getDefault(optionID)).equals(getValue());
+        return getDefault().equals(getValue());
     }
 
     @Override

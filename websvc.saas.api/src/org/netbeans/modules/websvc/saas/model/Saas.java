@@ -40,16 +40,14 @@
 package org.netbeans.modules.websvc.saas.model;
 
 import java.io.IOException;
-import java.net.MalformedURLException;
-import java.net.URLClassLoader;
 import java.util.List;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
 import org.netbeans.modules.websvc.saas.model.jaxb.Method;
 import org.netbeans.modules.websvc.saas.model.jaxb.SaasServices;
 import org.netbeans.modules.websvc.saas.model.jaxb.SaasServices.Header;
 import org.netbeans.modules.websvc.saas.model.jaxb.SaasMetadata;
+import org.netbeans.modules.websvc.saas.util.SaasUtil;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
 import org.openide.util.RequestProcessor;
@@ -111,13 +109,28 @@ public class Saas {
         if (data == null) {
             data = new SaasMetadata();
             delegate.setSaasMetadata(data);
-            data.setGroup(parentGroup.getPathFromRoot());
         }
+        data.setGroup(parentGroup.getPathFromRoot());
     }
 
-    public void save() throws IOException {
-        
-        //TODO
+    protected FileObject saasFile;
+    public FileObject getSaasFile() throws IOException {
+        if (saasFile == null) {
+            String filename = getSaasFolder() + "-saas.xml"; //NOI18N
+            saasFile = getSaasFolder().getFileObject(filename);
+            if (saasFile == null) {
+                saasFile = getSaasFolder().createData(filename);
+            }
+        }
+        return saasFile;
+    }
+    
+    public void save() {
+        try {
+            SaasUtil.saveSaas(this, getSaasFile());
+        } catch(Exception e) {
+            Exceptions.printStackTrace(e);
+        }
     }
 
     public boolean isUserDefined() {

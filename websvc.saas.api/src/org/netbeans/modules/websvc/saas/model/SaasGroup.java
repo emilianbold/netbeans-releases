@@ -55,11 +55,6 @@ import org.openide.util.NbBundle;
  * @author nam
  */
 public class SaasGroup {
-    /**
-     * Property change event names
-     */
-    public static final String PROP_CHILD_GROUP = "childGroup";
-    public static final String PROP_CHILD_SERVICE = "childService";
 
     private final Group delegate;
     private final SaasGroup parent;
@@ -104,33 +99,25 @@ public class SaasGroup {
     }
 
     /**
-     * Model mutation, also persists Saas with proper group information.
+     * Not a mutation
      * 
      * @param service saas service
      */
     public void addService(Saas service) {
         getServices();
-        services.put(service.getDisplayName(), service);
         service.setParentGroup(this);
-        try {
-            service.save();
-        } catch(IOException e) {
-            Exceptions.printStackTrace(e);
-        }
-        fireChange(PROP_CHILD_SERVICE, null, service);
+        services.put(service.getDisplayName(), service);
     }
     
     /**
      * If this is part of model mutation, caller is responsible to ensure 
-     * SaasServices persists with proper Group information.
+     * SaasServices persists with proper Group information and eventing.
      * 
      * @param service saas service to remove
      */
     public boolean removeService(Saas service) {
         Saas removed = services.remove(service.getDisplayName());
         if (removed != null) {
-            
-            fireChange(PROP_CHILD_SERVICE, removed, null);
             return true;
         }
         return false;
@@ -146,7 +133,7 @@ public class SaasGroup {
         }
         
         String message = null;
-        if (isUserDefined()) {
+        if (! isUserDefined()) {
             message = NbBundle.getMessage(getClass(), "MSG_GroupNotUserDefined");
         }
         
@@ -206,31 +193,22 @@ public class SaasGroup {
         
         _removeChildGroup(group);
         
-        // only fire on top-level object
-        SaasServicesModel.getInstance().fireChange(PROP_CHILD_GROUP, this, group, null);
         return true;
     }
     
     private void _removeChildGroup(SaasGroup child) {
         if (child != null) {
             for (Saas saas : child.getServices()) {
-                _removeSaas(saas);
+                removeService(saas);
+                try {
+                    saas.getSaasFile().delete();
+                } catch(Exception e) {
+                    Exceptions.printStackTrace(e);
+                }
             }
             for (SaasGroup c : child.getChildrenGroups()) {
                 _removeChildGroup(c);
             }
-        }
-    }
-    
-    private void _removeSaas(Saas childService) {
-        if (childService.isUserDefined()) {
-            return;
-        }
-        getServices();
-        Saas service = services.remove(childService.getDisplayName());
-        if (service != null) {
-            //TODO cleanup persistence and remove local files
-            fireChange(PROP_CHILD_SERVICE, service, null);
         }
     }
     
@@ -255,7 +233,7 @@ public class SaasGroup {
     public void addChildGroup(SaasGroup group) {
         getChildrenGroups();
         children.put(group.getName(), group);
-        fireChange(PROP_CHILD_GROUP, null, group);
+        getDelegate().getGroup().add(group.getDelegate());
     }
     
     /**
@@ -277,15 +255,19 @@ public class SaasGroup {
         return group;
     }
 
-    public SaasGroup createChildGroup(String name) {
+    /**
+     * Just create a child group node with given name and back parent pointer.
+     * Caller should explicitly mutate model, flush, persist and fire event
+     * 
+     * @param name
+     * @return created group
+     */
+    public SaasGroup createGroup(String name) {
         Group g = new Group();
         g.setName(name);
         SaasGroup child = new SaasGroup(this, g);
-        SaasServicesModel.getInstance().addGroup(this, child);
+        child.setUserDefined(true);
         return child;
     }
     
-    protected void fireChange(String property, Object old, Object neu) {
-        SaasServicesModel.getInstance().fireChange(property, this, old, neu);
-    }
 }
