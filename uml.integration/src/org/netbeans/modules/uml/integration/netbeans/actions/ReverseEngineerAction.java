@@ -111,6 +111,11 @@ public final class ReverseEngineerAction extends AbstractAction
     IProject umlIProject;
     
     
+    public ReverseEngineerAction() 
+    {
+        putValue(NAME, getName());
+    }
+
     public void actionPerformed(ActionEvent e)
     {
         assert false;
@@ -389,7 +394,9 @@ public final class ReverseEngineerAction extends AbstractAction
     
     public String getName()
     {
-        return getLocalizedMessage("CTL_ReverseEngineerAction"); // NOI18N
+        String name = getLocalizedMessage("CTL_ReverseEngineerAction"); // NOI18N
+        putValue(NAME, name);
+        return name; 
     }
     
     /* NB60TBD
