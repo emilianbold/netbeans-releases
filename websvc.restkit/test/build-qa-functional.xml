@@ -87,7 +87,7 @@ made subject to such option by the copyright holder.
     <target name="qa-functional-compiler" depends="-init-httpunit,-init-cp-wa">
         <ant inheritAll="false" dir="../../websvc.kit/test" target="buildtests"/>
         <echo>Available Properties:</echo>
-        <echoproperties>
+        <echoproperties/>
         <echo>=====================</echo>
         <mkdir dir="../build"/>
         <mkdir dir="../build/test"/>
