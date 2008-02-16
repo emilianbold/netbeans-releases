@@ -1087,8 +1087,7 @@ public final class ModuleManager {
     }
     private void maybeAddToEnableList(Set<Module> willEnable, Set<Module> mightEnable, Module m, boolean okToFail) {
         if (! missingDependencies(m).isEmpty()) {
-            // Should never happen:
-            if (! okToFail) throw new IllegalStateException("Module was supposed to be OK: " + m); // NOI18N
+            assert okToFail : "Module " + m + " had unexpected problems: " + missingDependencies(m) + " (willEnable: " + willEnable + " mightEnable: " + mightEnable + ")";
             // Cannot satisfy its dependencies, exclude it.
             return;
         }
