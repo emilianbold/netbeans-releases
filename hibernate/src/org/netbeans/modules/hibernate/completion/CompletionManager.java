@@ -380,7 +380,7 @@ public final class CompletionManager {
             String typedChars = context.getTypedPrefix();
 
             for (int i = 0; i < itemTextAndDocs.length; i += 2) {
-                if (itemTextAndDocs[i].startsWith(typedChars)) {
+                if (itemTextAndDocs[i].startsWith(typedChars.trim())) {
                     HibernateMappingCompletionItem item = HibernateMappingCompletionItem.createAttribValueItem(caretOffset - typedChars.length(),
                             itemTextAndDocs[i], itemTextAndDocs[i + 1]);
                     results.add(item);
@@ -416,9 +416,9 @@ public final class CompletionManager {
             } else {
                 styleName = typedChars;
             }
-                
+            
             for (int i = 0; i < itemTextAndDocs.length; i += 2) {
-                if (itemTextAndDocs[i].startsWith(styleName)) {
+                if (itemTextAndDocs[i].startsWith(styleName.trim())) {
                     HibernateMappingCompletionItem item = HibernateMappingCompletionItem.createCascadeStyleItem(caretOffset - styleName.length(),
                             itemTextAndDocs[i], itemTextAndDocs[i + 1]);
                     results.add(item);
