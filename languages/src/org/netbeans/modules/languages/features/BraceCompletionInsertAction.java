@@ -124,16 +124,18 @@ public class BraceCompletionInsertAction extends ExtDefaultKeyTypedAction {
             }
             if (bracketPair.startsWith (insertString + ":")) {
                 Token token = tokenSequence.token ();
-                char firstCharOfTokenText = token.text ().charAt (0);
-                boolean startsWithWhiteSpcae = firstCharOfTokenText == '\n' || firstCharOfTokenText == ' ';
-                if (
-                    tokenSequence.offset () == caret.getDot () ||
-                    token.id ().name ().indexOf ("whitespace") >= 0 || startsWithWhiteSpcae
-                ) { // between tokens or in whitespace
-                    insertString += bracketPair.substring (i + 1);
-                    super.insertString (document, offset, caret, insertString, overwrite);
-                    caret.setDot (offset + 1);
-                    return;
+                if (token != null) {
+                    char firstCharOfTokenText = token.text ().charAt (0);
+                    boolean startsWithWhiteSpcae = firstCharOfTokenText == '\n' || firstCharOfTokenText == ' ';
+                    if (
+                        tokenSequence.offset () == caret.getDot () ||
+                        token.id ().name ().indexOf ("whitespace") >= 0 || startsWithWhiteSpcae
+                    ) { // between tokens or in whitespace
+                        insertString += bracketPair.substring (i + 1);
+                        super.insertString (document, offset, caret, insertString, overwrite);
+                        caret.setDot (offset + 1);
+                        return;
+                    }
                 }
             }
         }
