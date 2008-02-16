@@ -40,31 +40,11 @@
  */
 package org.netbeans.modules.cnd.makeproject;
 
-import java.awt.event.ActionEvent;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
-import javax.swing.Action;
-import org.netbeans.modules.cnd.makeproject.api.compilers.CCCCompiler;
-import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
-import org.netbeans.modules.cnd.api.compilers.CompilerSet;
-import org.netbeans.modules.cnd.api.compilers.Tool;
-import org.netbeans.spi.project.ActionProvider;
-import org.netbeans.spi.project.ui.support.FileSensitiveActions;
-import org.openide.util.ContextAwareAction;
-import org.openide.util.HelpCtx;
-import org.openide.util.Lookup;
-import org.openide.util.NbBundle;
-import org.openide.util.actions.CallableSystemAction;
 import org.openide.modules.ModuleInstall;
 
 public class MakeProjectModule extends ModuleInstall {
     @Override
     public void restored() {
-        // Moved to services...
-//	RunProfileProvider profileProvider = new RunProfileProvider();
-//	ConfigurationDescriptorProvider.addAuxObjectProvider(profileProvider);
-//	profileCustomizerNode = new RunProfileNodeProvider().createProfileNode();
-//	CustomizerRootNodeProvider.getInstance().addCustomizerNode(profileCustomizerNode);
     }
 
     public void uninstall() {
@@ -72,107 +52,5 @@ public class MakeProjectModule extends ModuleInstall {
 
     @Override
     public void close() {
-        CompilerSetManager csm = CompilerSetManager.getDefault(false);
-        if (csm != null) {
-            for (CompilerSet cs : csm.getCompilerSets()) {
-                for (Tool tool : cs.getTools()) {
-                    if (tool instanceof CCCCompiler) { // FIXUP: should implement/use 'capability' of tool
-                        ((CCCCompiler) tool).saveSystemIncludesAndDefines();
-                    }
-                }
-            }
-        }
-    }
-
-    public static class ActionWrapper extends CallableSystemAction implements ContextAwareAction, PropertyChangeListener {
-
-        private Action action;
-
-        public ActionWrapper(Action action) {
-            this.action = action;
-        }
-
-        public String getName() {
-            return (String) action.getValue(Action.NAME);
-        }
-
-        @Override
-        public String iconResource() {
-            return null;
-        }
-
-        public HelpCtx getHelpCtx() {
-            return HelpCtx.DEFAULT_HELP;
-        }
-
-        @Override
-        protected boolean asynchronous() {
-            return false;
-        }
-
-        @Override
-        public void actionPerformed(ActionEvent ev) {
-            action.actionPerformed(ev);
-        }
-
-        @Override
-        public boolean isEnabled() {
-            return action.isEnabled();
-        }
-
-        @Override
-        protected void addNotify() {
-            this.action.addPropertyChangeListener(this);
-            super.addNotify();
-        }
-
-        @Override
-        protected void removeNotify() {
-            this.action.removePropertyChangeListener(this);
-            super.removeNotify();
-        }
-
-        public void performAction() {
-            actionPerformed(new ActionEvent(this, 0, "")); // NOI18N
-        }
-
-        public Action createContextAwareInstance(Lookup actionContext) {
-            return ((ContextAwareAction) action).createContextAwareInstance(actionContext);
-        }
-
-        public void propertyChange(PropertyChangeEvent evt) {
-            firePropertyChange(evt.getPropertyName(), evt.getOldValue(), evt.getNewValue());
-        }
-    }
-
-    public static class CompileWrapper extends ActionWrapper {
-
-        CompileWrapper() {
-            super(FileSensitiveActions.fileCommandAction(
-                    ActionProvider.COMMAND_COMPILE_SINGLE,
-                    NbBundle.getMessage(MakeProjectModule.class, "LBL_CompileFile_Action"), // NOI18N
-                    null));
-        }
-    }
-
-    public static class RunWrapper extends ActionWrapper {
-
-        RunWrapper() {
-            super(FileSensitiveActions.fileCommandAction(
-                    ActionProvider.COMMAND_RUN_SINGLE,
-                    NbBundle.getMessage(MakeProjectModule.class, "LBL_RunFile_Action"), // NOI18N
-                    null));
-
-        }
-    }
-
-    public static class DebugWrapper extends ActionWrapper {
-
-        DebugWrapper() {
-            super(FileSensitiveActions.fileCommandAction(
-                    ActionProvider.COMMAND_DEBUG_SINGLE,
-                    NbBundle.getMessage(MakeProjectModule.class, "LBL_DebugFile_Action"), // NOI18N
-                    null));
-        }
     }
 }
