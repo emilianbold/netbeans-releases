@@ -27,9 +27,19 @@ if [ "$action" = "build" ]; then
     fi
 
     ant -f nbbuild/build.xml build || exit 2
-    ant -f nbbuild/build.xml commit-validation commit-validation-junit-format # || exit 3
-    ant -f openide.util/build.xml test # || exit 4
+    ant -f nbbuild/build.xml commit-validation # || exit 3
+    ant -f nbbuild/build.xml commit-validation-junit-format # || exit 3
+    ant -f openide.util/build.xml test  || exit 4
     ant -f openide.modules/build.xml test || exit 4
+    ant -f openide.filesystems/build.xml test # || exit 4
+# masterfs is currently broken, Radek wants me to disable it until 6.1M2:
+#    ant -f masterfs/build.xml test # || exit 4
+    ant -f openide.nodes/build.xml test # || exit 4
+    ant -f openide.options/build.xml test # || exit 4
+    ant -f openide.dialogs/build.xml test # || exit 4
+    ant -f openide.awt/build.xml test # || exit 4
+    ant -f openide.windows/build.xml test # || exit 4
+    ant -f openide.io/build.xml test # || exit 4
     if [ `hg out --template '{node|short}\n' http://hg.netbeans.org/main | wc -l` > 0 ]; then
         echo No outgoing changes
 #        exit 0

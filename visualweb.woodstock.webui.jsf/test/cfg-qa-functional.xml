@@ -360,7 +360,7 @@ made subject to such option by the copyright holder.
         </testset>
     </testbag>
     
-    <testbag name="Action: Button Component Acceptance Test" testattribs="acceptance, action, actionee4, all" executor="ide">
+    <testbag name="Action: Button Component Acceptance Test" testattribs="acceptance, action, actionee4, all, action_button" executor="ide">
         <testset dir="components/src">
             <patternset>  
                 <include name="org/netbeans/modules/visualweb/test/components/action/button/AcceptanceTest.class"/>
@@ -371,7 +371,7 @@ made subject to such option by the copyright holder.
     <testbag name="Action: Hyperlink Component Acceptance Test" testattribs="acceptance, action, actionee4, all" executor="ide">
         <testset dir="components/src">
             <patternset>  
-                <include name="org/netbeans/modules/visualweb/test/components/action/Hyperlink/AcceptanceTest.class"/>
+                <include name="org/netbeans/modules/visualweb/test/components/action/hyperlink/AcceptanceTest.class"/>
             </patternset>
         </testset>
     </testbag>
@@ -379,7 +379,7 @@ made subject to such option by the copyright holder.
      <testbag name="Action: Image Hyperlink Component Acceptance Test" testattribs="test, acceptance, action, actionee4, all" executor="ide">
         <testset dir="components/src">
             <patternset>  
-                <include name="org/netbeans/modules/visualweb/test/components/action/ImageHyperlink/AcceptanceTest.class"/>
+                <include name="org/netbeans/modules/visualweb/test/components/action/imagehyperlink/AcceptanceTest.class"/>
             </patternset>
         </testset>
     </testbag>
@@ -387,7 +387,7 @@ made subject to such option by the copyright holder.
      <testbag name="Action: Image Component Acceptance Test" testattribs="acceptance, action, actionee4, all" executor="ide">
         <testset dir="components/src">
             <patternset>  
-                <include name="org/netbeans/modules/visualweb/test/components/action/Image/AcceptanceTest.class"/>
+                <include name="org/netbeans/modules/visualweb/test/components/action/image/AcceptanceTest.class"/>
             </patternset>
         </testset>
     </testbag>

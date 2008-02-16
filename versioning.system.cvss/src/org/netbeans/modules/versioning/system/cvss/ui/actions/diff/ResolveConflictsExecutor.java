@@ -86,7 +86,6 @@ public class ResolveConflictsExecutor {
     private String rightFileRevision = null;
 
     public void exec(File file) {
-        assert SwingUtilities.isEventDispatchThread();
         MergeVisualizer merge = (MergeVisualizer) Lookup.getDefault().lookup(MergeVisualizer.class);
         if (merge == null) {
             throw new IllegalStateException("No Merge engine found."); // NOI18N
@@ -152,14 +151,18 @@ public class ResolveConflictsExecutor {
                                                               originalRightFileRevision,
                                                               fo, lock, encoding);
 
-        try {
-            Component c = merge.createView(diffs, s1, s2, result);
-            if (c instanceof TopComponent) {
-                ((TopComponent) c).putClientProperty(ResolveConflictsExecutor.class.getName(), Boolean.TRUE);
+        SwingUtilities.invokeLater(new Runnable () {
+            public void run() {
+                try {
+                    Component c = merge.createView(diffs, s1, s2, result);
+                    if (c instanceof TopComponent) {
+                        ((TopComponent) c).putClientProperty(ResolveConflictsExecutor.class.getName(), Boolean.TRUE);
+                    }
+                } catch (IOException ioex) {
+                    org.openide.ErrorManager.getDefault().notify(ioex);
+                }
             }
-        } catch (IOException ioex) {
-            org.openide.ErrorManager.getDefault().notify(ioex);
-        }
+        });
     }
 
     /**

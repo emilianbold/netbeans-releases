@@ -40,17 +40,11 @@
  */
 package org.netbeans.modules.xml.text.indent;
 
-import java.io.*;
-import javax.swing.text.Document;
 
 import org.netbeans.editor.ext.ExtFormatter;
-import org.netbeans.editor.BaseKit;
-import org.netbeans.modules.editor.EditorModule;
 import org.netbeans.modules.editor.FormatterIndentEngine;
-import org.openide.text.IndentEngine;
-import org.openide.util.HelpCtx;
-
 import org.netbeans.modules.xml.text.syntax.UniKit;
+import org.openide.util.HelpCtx;
 
 /**
  * @author  Libor Kramolis
@@ -65,17 +59,20 @@ public class XMLIndentEngine extends FormatterIndentEngine {
     /**
      */
     protected ExtFormatter createFormatter () {
-        return new XMLFormatter (UniKit.class);
+        //return new XMLFormatter (UniKit.class);
+        return null;
     }
 
     /**
      */
+    @Override
     public HelpCtx getHelpCtx () {
         return new HelpCtx (XMLIndentEngine.class);
     }
 
     /**
      */
+    @Override
     protected boolean acceptMimeType (String mimeType) {
         return true;
     }
