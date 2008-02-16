@@ -46,6 +46,7 @@ import java.util.List;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Caret;
 import org.netbeans.api.languages.LanguageDefinitionNotFoundException;
+import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.ext.ExtKit.ExtDefaultKeyTypedAction;
@@ -122,9 +123,12 @@ public class BraceCompletionInsertAction extends ExtDefaultKeyTypedAction {
                 return;
             }
             if (bracketPair.startsWith (insertString + ":")) {
+                Token token = tokenSequence.token ();
+                char firstCharOfTokenText = token.text ().charAt (0);
+                boolean startsWithWhiteSpcae = firstCharOfTokenText == '\n' || firstCharOfTokenText == ' ';
                 if (
                     tokenSequence.offset () == caret.getDot () ||
-                    tokenSequence.token ().id ().name ().indexOf ("whitespace") >= 0
+                    token.id ().name ().indexOf ("whitespace") >= 0 || startsWithWhiteSpcae
                 ) { // between tokens or in whitespace
                     insertString += bracketPair.substring (i + 1);
                     super.insertString (document, offset, caret, insertString, overwrite);
