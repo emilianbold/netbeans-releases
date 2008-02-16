@@ -138,7 +138,7 @@ public class AbstractComponentTest extends NbTestCase {
         }
     }    
     
-    public void NOtestComponentEvents() throws Exception {
+    public void testComponentEvents() throws Exception {
         TestModel model = new TestModel();
         TestComponent root = model.getRootComponent();
         TestComponentListener listener1 = new TestComponentListener();
@@ -168,7 +168,7 @@ public class AbstractComponentTest extends NbTestCase {
         listener2.assertEvent(ComponentEvent.EventType.CHILD_REMOVED, root);
     }
     
-    public void NOtestSetSameChild() throws Exception {
+    public void testSetSameChild() throws Exception {
         TestModel model = new TestModel();
         TestComponent root = model.getRootComponent();
 
@@ -184,7 +184,7 @@ public class AbstractComponentTest extends NbTestCase {
         assertEquals(1, root.getChildren(B.class).size());
     }
 
-    public void NOtestAddAlreadyAddedChild() throws Exception {
+    public void testAddAlreadyAddedChild() throws Exception {
         TestModel model = new TestModel();
         TestComponent root = model.getRootComponent();
 
@@ -206,7 +206,7 @@ public class AbstractComponentTest extends NbTestCase {
         assertEquals(1, root.getChildren(B.class).size());
     }
     
-    public void NOtestRemoveNonExistingChild() throws Exception {
+    public void testRemoveNonExistingChild() throws Exception {
         TestModel model = new TestModel();
         TestComponent root = model.getRootComponent();
 
@@ -321,7 +321,7 @@ public class AbstractComponentTest extends NbTestCase {
             0x3035, 0x309D, 0x309E, 0x30FC, 0x30FD, 0x30FE
         };
 
-    public void NOtestNCNamePattern() throws Exception {
+    public void testNCNamePattern() throws Exception {
         assertTrue(Utils.isValidNCName(String.valueOf(basechars)));
         assertTrue(Utils.isValidNCName(String.valueOf(ideographics)));
         
@@ -378,7 +378,7 @@ public class AbstractComponentTest extends NbTestCase {
                 int size = 0;
                 try {
                     do {
-                        size = root.getChildren().size();
+                        size = root.getChildren(B.class).size();
                     } while (size < COUNT);
                 } catch (Exception e) {
                     readerExc[0] = e;
