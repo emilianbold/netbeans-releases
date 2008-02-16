@@ -144,6 +144,8 @@ public abstract class GdbBreakpoint extends Breakpoint {
      * @param file name
      */
     public void setURL(String url) {
+        String old;
+        
         synchronized (this) {
             if (url != null && this.url != null && url.equals(this.url)) {
                 return;
@@ -177,7 +179,9 @@ public abstract class GdbBreakpoint extends Breakpoint {
             } catch (Exception ex) {
                 assert !Boolean.getBoolean("gdb.assertions.enabled"); // NOI18N
             }
+            old = this.url;
             this.url = url;
+            firePropertyChange (PROP_URL, old, url);
         }
     }
     
