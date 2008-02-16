@@ -39,65 +39,28 @@
 
 package org.netbeans.modules.db.mysql;
 
-import org.openide.nodes.AbstractNode;
-import org.openide.nodes.Children;
-import org.openide.util.actions.SystemAction;
+import org.openide.util.NbBundle;
 
 /**
- *
- * @author David
+ * Model class representing a database.  Right now all it has is a 
+ * name, but in the future it may provide more information.
+ * 
+ * @author David Van Couvering
  */
-class MySQLServerNode extends AbstractNode {
-    private static final MySQLServerNode DEFAULT = new MySQLServerNode();
-    private MySQLOptions options = MySQLOptions.getDefault();
+public class DatabaseModel {
+    private final String name;
     
-    // I'd like a less generic icon, but this is what we have for now...
-    private static final String ICON_BASE = "org/netbeans/modules/db/mysql/resources/database.gif";
-    
-    public static MySQLServerNode getDefault() {
-        return DEFAULT;
+    public DatabaseModel(String dbname) {
+        name = dbname;
     }
     
-    private MySQLServerNode() {
-        // No node children at this time, maybe later... 
-        super(new Children.Array());
-        this.setIconBaseWithExtension(ICON_BASE);
+    String getDisplayName() {
+        return name;
     }
-    
-    @Override
-    public String getDisplayName() {
-       return "MySQL (" + options.getHost() + ":" + options.getPort() + ")"; // NO18N
+
+    String getShortDescription() {
+       return NbBundle.getMessage(DatabaseModel.class, 
+               "LBL_DBNodeShortDescription",
+               getDisplayName());
     }
-   
-    @Override
-    public SystemAction[] getActions() {
-        // TODO - create actions, one at a time...
-        return new SystemAction[] {};
-    }
-    
-    @Override
-    public boolean canCopy() {
-        return false;
-    }
-    
-    @Override
-    public boolean canCut() {
-        return false;
-    }
-    
-    @Override
-    public boolean canRename() {
-        return false;
-    }
-    
-    @Override
-    public boolean canDestroy() {
-        return true;
-    }
-    
-    @Override
-    public SystemAction getDefaultAction() {
-        return null;
-    }
-    
 }
