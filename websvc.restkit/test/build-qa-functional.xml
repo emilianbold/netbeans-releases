@@ -57,8 +57,7 @@ made subject to such option by the copyright holder.
         <condition property="skip-download-httpunit" >
             <and>
                 <available file="${lib.dir}/httpunit-1.6.2.jar" />
-                <available file="${lib.dir}/jtidy-4aug2000r7-dev.jar" />
-                <available file="${lib.dir}/js-1.6R7.jar" />
+                <available file="${lib.dir}/Tidy-r7.jar" />
             </and>
         </condition>
     </target>
@@ -67,9 +66,8 @@ made subject to such option by the copyright holder.
         <echo message="Going to download httpunit. If it fails download it from http://www.httpunit.org/" />
         <echo message="(and unpack httpunit, js and jtidy jars into ${lib.dir})"/>
         <echo message="or invoke with -Dproxy.host='host' -Dproxy.port='port'" />
-        <get src="http://mirrors.ibiblio.org/pub/mirrors/maven2/httpunit/httpunit/1.6.2/httpunit-1.6.2.jar" dest="${lib.dir}/httpunit-1.6.2.jar"/>
-        <get src="http://mirrors.ibiblio.org/pub/mirrors/maven2/jtidy/jtidy/4aug2000r7-dev/jtidy-4aug2000r7-dev.jar" dest="${lib.dir}/jtidy-4aug2000r7-dev.jar"/>
-        <get src="http://mirrors.ibiblio.org/pub/mirrors/maven2/rhino/js/1.6R7/js-1.6R7.jar" dest="${lib.dir}/js-1.6R7.jar"/>
+        <get src="http://hg.netbeans.org/binaries/B4B42BDA5955665AE5B6D7FA60A4B401BD1063E2-httpunit-1.6.2.jar" dest="${lib.dir}/httpunit-1.6.2.jar"/>
+        <get src="http://hg.netbeans.org/binaries/414EE6C40F6EE7FC11EB4540E63AE04DE0656087-Tidy-r7.jar" dest="${lib.dir}/Tidy-r7.jar"/>
     </target>
     
     <target name="-setup-proxy" if="proxy.host" >
@@ -119,7 +117,7 @@ made subject to such option by the copyright holder.
             <fileset dir="qa-functional/data"/>
         </copy>
         <jar basedir="${dst.classes.dir}" destfile="lib/tests-qa-functional.jar"/>
-        <jar basedir="${dst.data.dir}" destfile="lib/data-qa-functional.zip"/>
+        <jar basedir="${dst.data.dir}" destfile="lib/data-qa-functional.zip" excludes="**/private/**"/>
     </target>
     
     <!--
