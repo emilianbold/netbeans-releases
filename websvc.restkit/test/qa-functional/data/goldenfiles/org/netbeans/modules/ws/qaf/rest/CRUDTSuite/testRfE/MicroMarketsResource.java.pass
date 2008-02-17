@@ -1,7 +1,7 @@
 /*
  *  MicroMarketsResource
  *
- * Created on December 6, 2007, 2:14 PM
+ * Created on February 17, 2008, 4:26 AM
  *
  * To change this template, choose Tools | Template Manager
  * and open the template in the editor.
@@ -95,7 +95,7 @@ public class MicroMarketsResource {
      * @return an instance of MicroMarketResource
      */
     @Path("{zipCode}/")
-    public o.n.m.ws.qaf.rest.crud.service.MicroMarketResource getMicroMarketResource(@UriParam("zipCode")
+    public MicroMarketResource getMicroMarketResource(@UriParam("zipCode")
     String id) {
         return new MicroMarketResource(id, context);
     }
