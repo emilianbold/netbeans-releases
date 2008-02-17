@@ -112,6 +112,7 @@ made subject to such option by the copyright holder.
                 <pathelement location="${netbeans.dest.dir}/platform8/modules/org-openide-loaders.jar"/>
                 <pathelement location="${netbeans.dest.dir}/platform8/modules/org-openide-nodes.jar"/>
                 <pathelement location="${netbeans.dest.dir}/platform8/modules/org-openide-text.jar"/>
+                <pathelement location="${netbeans.dest.dir}/platform8/modules/org-openide-windows.jar"/>
                 <pathelement location="${netbeans.dest.dir}/ide9/modules/org-netbeans-modules-projectapi.jar"/>
             </classpath>
             <compilerarg line="-Xlint -Xlint:-serial"/>
