@@ -126,13 +126,13 @@ public final class JAXWSSupport {
      * @param portName port name (from service:port element), e.g. SearchServicePort
      * @param packageName package name where java artifacts will be generated
      * @param isJsr109 Indicates if the web service is being created in a project that supports a JSR 109 container
+     * @param useProvider Indicates if we should generate a Provider implementation
      * @return returns the unique IDE service name
      */
-    public String addService(String name, String serviceImpl, String wsdlUrl, 
-            String serviceName, String portName, String packageName, boolean isJsr109) {
-        return impl.addService(name, serviceImpl, wsdlUrl, serviceName, portName, packageName, isJsr109);
+   public String addService(String name, String serviceImpl, String wsdlUrl, 
+            String serviceName, String portName, String packageName, boolean isJsr109, boolean useProvider) {
+        return impl.addService(name, serviceImpl, wsdlUrl, serviceName, portName, packageName, isJsr109, useProvider);
     }
-    
     /**
      * Returns the list of web services in the project
      * @return list of web services
