@@ -1089,13 +1089,6 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
         firePropertyChange(PROP_STATE, oldState, state);
     }
     
-    private void setStateNoFire(String state) {
-        if (state.equals(this.state)) {
-            return;
-        }
-        this.state = state;
-    }
-    
     public void setStarting() {
         setState(STATE_STARTING);
     }
