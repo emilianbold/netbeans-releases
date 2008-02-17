@@ -82,6 +82,7 @@ public class CRUDTSuite extends RestTestBase {
         suite.addTest(new CRUDTSuite("testPost")); //NOI18N
         suite.addTest(new CRUDTSuite("testPut")); //NOI18N
         suite.addTest(new CRUDTSuite("testDelete")); //NOI18N
+        suite.addTest(new CRUDTSuite("testCreateRestClient")); //NOI18N
         suite.addTest(new CRUDTSuite("testUndeploy")); //NOI18N
         return suite;
     }
@@ -204,6 +205,10 @@ public class CRUDTSuite extends RestTestBase {
             assertFalse(rs.next());
         } catch (SQLException ex) {
         }
+    }
+
+    public void testCreateRestClient() throws IOException {
+        prepareRestClient();
     }
 
     private void prepareEntityClasses() {
