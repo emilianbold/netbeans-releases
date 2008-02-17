@@ -89,7 +89,7 @@ public class PaletteTest extends RestNodeTest {
      */
     public void testAdSenseForContent() {
         Node n = getMethodsNode(services[2]);
-        n.tree().clickOnPath(getMethodNode(n, "getJson").getTreePath(), 2); //MOI18N
+        n.tree().clickOnPath(getMethodNode(n, "getJson").getTreePath(), 2); //NOI18N
         EditorOperator eo = new EditorOperator(services[2].substring(0, 14));
         assertNotNull(services[2] + " not opened?", eo); //NOI18N
         InputProcessor ip = new InputProcessor() {
@@ -351,7 +351,6 @@ public class PaletteTest extends RestNodeTest {
 
         @Override
         public void run() {
-        System.out.println("running");
             while (!ic.isDone()) {
                 Set<TopComponent> comps = TopComponent.getRegistry().getOpened();
                 for (TopComponent tc : comps) {
