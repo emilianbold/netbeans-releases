@@ -52,7 +52,6 @@ import junit.textui.TestRunner;
 import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.NbDialogOperator;
 import org.netbeans.jellytools.WizardOperator;
-import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jemmy.EventTool;
 import org.netbeans.jemmy.operators.JButtonOperator;
 import org.netbeans.jemmy.operators.JComboBoxOperator;
