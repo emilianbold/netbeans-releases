@@ -318,14 +318,14 @@ public class PaletteTest extends RestNodeTest {
 
     public static TestSuite suite() {
         TestSuite suite = new NbTestSuite();
-//        suite.addTest(new PaletteTest("testAdSenseForContent")); //NOI18N
-//        suite.addTest(new PaletteTest("testAdSenseForSearch")); //NOI18N
-//        suite.addTest(new PaletteTest("testMap")); //NOI18N
-//        suite.addTest(new PaletteTest("testAddressVerification")); //NOI18N
-//        suite.addTest(new PaletteTest("testEmailVerify")); //NOI18N
-//        suite.addTest(new PaletteTest("testIPAddressLookup")); //NOI18N
-//        suite.addTest(new PaletteTest("testReversePhoneLookup")); //NOI18N
-//        suite.addTest(new PaletteTest("testSalesandUseTaxComplete")); //NOI18N
+        suite.addTest(new PaletteTest("testAdSenseForContent")); //NOI18N
+        suite.addTest(new PaletteTest("testAdSenseForSearch")); //NOI18N
+        suite.addTest(new PaletteTest("testMap")); //NOI18N
+        suite.addTest(new PaletteTest("testAddressVerification")); //NOI18N
+        suite.addTest(new PaletteTest("testEmailVerify")); //NOI18N
+        suite.addTest(new PaletteTest("testIPAddressLookup")); //NOI18N
+        suite.addTest(new PaletteTest("testReversePhoneLookup")); //NOI18N
+        suite.addTest(new PaletteTest("testSalesandUseTaxComplete")); //NOI18N
         suite.addTest(new PaletteTest("testNewsSearch")); //NOI18N
         return suite;
     }
