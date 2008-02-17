@@ -88,8 +88,8 @@ public class PaletteTest extends RestNodeTest {
      * Test AdSenseForContent service
      */
     public void testAdSenseForContent() {
-        Node n = getResourceNode(services[2]);
-        n.tree().clickOnPath(n.getTreePath(), 2);
+        Node n = getMethodsNode(services[2]);
+        n.tree().clickOnPath(n.getTreePath(), 0);
         EditorOperator eo = new EditorOperator(services[2].substring(0, 14));
         assertNotNull(services[2] + " not opened?", eo); //NOI18N
         InputProcessor ip = new InputProcessor() {
@@ -105,8 +105,8 @@ public class PaletteTest extends RestNodeTest {
      * Test AdSenseForSearch service
      */
     public void testAdSenseForSearch() {
-        Node n = getResourceNode(services[2]);
-        n.tree().clickOnPath(n.getTreePath(), 2);
+        Node n = getMethodsNode(services[2]);
+        n.tree().clickOnPath(n.getTreePath(), 1);
         EditorOperator eo = new EditorOperator(services[2].substring(0, 14));
         assertNotNull(services[2] + " not opened?", eo); //NOI18N
         InputProcessor ip = new InputProcessor() {
@@ -356,18 +356,16 @@ public class PaletteTest extends RestNodeTest {
     }
 
     public static TestSuite suite() {
-        //tests will be enabled as soon as
-        //http://www.netbeans.org/issues/show_bug.cgi?id=127557 will be fixed
         TestSuite suite = new NbTestSuite();
-//        suite.addTest(new PaletteTest("testAdSenseForContent")); //NOI18N
-//        suite.addTest(new PaletteTest("testAdSenseForSearch")); //NOI18N
+        suite.addTest(new PaletteTest("testAdSenseForContent")); //NOI18N
+        suite.addTest(new PaletteTest("testAdSenseForSearch")); //NOI18N
         suite.addTest(new PaletteTest("testMap")); //NOI18N
         suite.addTest(new PaletteTest("testAddressVerification")); //NOI18N
         suite.addTest(new PaletteTest("testEmailVerify")); //NOI18N
         suite.addTest(new PaletteTest("testIPAddressLookup")); //NOI18N
         suite.addTest(new PaletteTest("testReversePhoneLookup")); //NOI18N
         suite.addTest(new PaletteTest("testSalesandUseTaxComplete")); //NOI18N
-//        suite.addTest(new PaletteTest("testNewsSearch")); //NOI18N
+        suite.addTest(new PaletteTest("testNewsSearch")); //NOI18N
         return suite;
     }
 
