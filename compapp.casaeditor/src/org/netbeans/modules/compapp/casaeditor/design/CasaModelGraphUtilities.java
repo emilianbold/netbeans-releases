@@ -44,6 +44,9 @@ package org.netbeans.modules.compapp.casaeditor.design;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import org.netbeans.api.visual.action.WidgetAction;
 import org.netbeans.api.visual.action.WidgetAction.Chain;
 import org.netbeans.api.visual.action.WidgetAction.WidgetDropTargetDragEvent;
@@ -53,10 +56,12 @@ import org.netbeans.api.visual.action.WidgetAction.WidgetKeyEvent;
 import org.netbeans.api.visual.action.WidgetAction.WidgetMouseEvent;
 import org.netbeans.api.visual.router.RouterFactory;
 import org.netbeans.api.visual.widget.ConnectionWidget;
+import org.netbeans.api.visual.widget.LabelWidget;
 import org.netbeans.api.visual.widget.Widget;
 import org.netbeans.modules.compapp.casaeditor.Constants;
 import org.netbeans.modules.compapp.casaeditor.graph.WaitMessageHandler;
 import org.netbeans.modules.compapp.casaeditor.graph.CasaNodeWidget;
+import org.netbeans.modules.compapp.casaeditor.graph.CasaNodeWidgetEngine;
 import org.netbeans.modules.compapp.casaeditor.graph.CasaPinWidget;
 import org.netbeans.modules.compapp.casaeditor.graph.CasaRegionWidget;
 import org.netbeans.modules.compapp.casaeditor.graph.RegionUtilities;
@@ -65,6 +70,7 @@ import org.netbeans.modules.compapp.casaeditor.model.casa.CasaWrapperModel;
 import org.netbeans.modules.compapp.casaeditor.model.casa.CasaComponent;
 import org.netbeans.modules.compapp.casaeditor.model.casa.CasaConnection;
 import org.netbeans.modules.compapp.casaeditor.model.casa.CasaConsumes;
+import org.netbeans.modules.compapp.casaeditor.model.casa.CasaEndpointRef;
 import org.netbeans.modules.compapp.casaeditor.model.casa.CasaEndpointRef;
 import org.netbeans.modules.compapp.casaeditor.model.casa.CasaServiceEngineServiceUnit;
 import org.netbeans.modules.compapp.casaeditor.model.casa.CasaPort;
@@ -82,6 +88,8 @@ import org.openide.util.NbBundle;
 public class CasaModelGraphUtilities {
     
     private static final DisablingAction DISABLER = new DisablingAction();
+    
+    private static final String NULL_PROCESS_NAME = "<NULL_PROCESS_NAME>";
     
     public static void renderModel(final CasaWrapperModel model, final CasaModelGraphScene scene)
     {
@@ -274,24 +282,59 @@ public class CasaModelGraphUtilities {
             int x,
             int y)
     {
-        CasaNodeWidget widget = (CasaNodeWidget) scene.addNode(su);
+        CasaNodeWidgetEngine sesuWidget = (CasaNodeWidgetEngine) scene.addNode(su);
         
-        for (CasaProvides provides : su.getProvides()) {
-            createPin(su, provides, provides.getEndpointName(), scene, false);
-        }
-        for (CasaConsumes consumes : su.getConsumes()) {
-            createPin(su, consumes, consumes.getEndpointName(), scene, false);
-        }
+        // mapping process names to endpoint lists
+        Map<String, List<CasaEndpointRef>> process2EndpointMap =
+                new HashMap<String, List<CasaEndpointRef>>();
+                
+        buildProcess2EndpointMap(process2EndpointMap, su.getProvides());
+        buildProcess2EndpointMap(process2EndpointMap, su.getConsumes());
+        
+        for (String processName : process2EndpointMap.keySet()) {
+            if (!processName.equals(NULL_PROCESS_NAME)) {
+                // add process name as a separate widget
+                sesuWidget.addGroupWidget(processName);
+            }
+            
+            List<CasaEndpointRef> endpoints = process2EndpointMap.get(processName);
+            for (CasaEndpointRef endpoint : endpoints) {
+                createPin(su, endpoint, endpoint.getDisplayName(), scene, false);
+            }
+        }        
+        sesuWidget.doneAddingWidget();
+        
         scene.validate();
 
         // set the location
         if (x > 0 && y > 0) {
-            widget.setPreferredLocation(new Point(x, y));
+            sesuWidget.setPreferredLocation(new Point(x, y));
         } else {
             scene.setModelPositionsFinalized(false);
         }
         
-        return widget;
+        return sesuWidget;
+    }
+    
+    private static void buildProcess2EndpointMap(
+            Map<String, List<CasaEndpointRef>> process2EndpointMap,
+            List<? extends CasaEndpointRef> endpoints) {
+        
+         for (CasaEndpointRef endpoint : endpoints) {
+             
+            String processName = endpoint.getProcessName();            
+            if (processName == null) {
+                processName = NULL_PROCESS_NAME;
+            }
+            
+            List<CasaEndpointRef> endpointList = process2EndpointMap.get(processName);
+            if (endpointList == null) {
+                endpointList = new ArrayList<CasaEndpointRef>();
+                process2EndpointMap.put(processName, endpointList);
+            }
+            
+            endpointList.add(endpoint);
+        }
     }
 
     public static boolean updateNodeProperties(
@@ -355,10 +398,30 @@ public class CasaModelGraphUtilities {
 
         if (doUpdate) {
             scene.validate();
-            CasaNodeWidget nodeWidget = (CasaNodeWidget) scene.findWidget(node);
+//            CasaNodeWidget nodeWidget = (CasaNodeWidget) scene.findWidget(node);
         }
         return pinWidget;
     }
+   
+    public static LabelWidget createGroup (
+            CasaComponent node,
+            String name,
+            CasaModelGraphScene scene,
+            boolean doUpdate)
+    {
+        LabelWidget labelWidget = new LabelWidget(scene);
+        labelWidget.setLabel(name);
+//        CasaPinWidget pinWidget = (CasaPinWidget) scene.addPin(node, pin);
+//        pinWidget.setProperties(name);
+//        pinWidget.setToolTipText(getToolTipName(node, pin, scene.getModel()));
+
+        if (doUpdate) {
+            scene.validate();
+//            CasaNodeWidget nodeWidget = (CasaNodeWidget) scene.findWidget(node);
+        }
+        return labelWidget;
+    }
+   
 
     /**
      * Callers to this method must remember to call scene.validate().

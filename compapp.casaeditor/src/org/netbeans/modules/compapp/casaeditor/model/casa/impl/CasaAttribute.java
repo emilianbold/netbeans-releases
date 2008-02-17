@@ -75,7 +75,10 @@ public enum CasaAttribute implements Attribute {
         BINDINGSTATE("bindingState"),       // NOI18N
         BINDINGTYPE("bindingType"),         // NOI18N
         PORTTYPE("portType"),               // NOI18N
-        TARGET_NAMESPACE("targetNamespace"),;   // NOI18N
+        TARGET_NAMESPACE("targetNamespace"),// NOI18N
+        DISPLAY_NAME("display-name"),       // NOI18N
+        PROCESS_NAME("process-name"),       // NOI18N
+        FILE_PATH("file-path");             // NOI18N
     
     private String name;
     private Class type;
