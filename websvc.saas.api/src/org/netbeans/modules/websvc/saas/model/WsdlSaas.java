@@ -76,17 +76,19 @@ public class WsdlSaas extends Saas implements PropertyChangeListener {
         this(parentGroup, new SaasServices());
         this.getDelegate().setDisplayName(displayName);
         this.getDelegate().setUrl(url);
-        SaasMetadata m = this.getDelegate().getSaasMetadata();
+        SaasMetadata m = delegate.getSaasMetadata();
         if (m == null) {
             m = new SaasMetadata();
             this.getDelegate().setSaasMetadata(m);
         }
+        m.setGroup(parentGroup.getPathFromRoot());
         CodeGen cg = m.getCodeGen();
         if (cg == null) {
             cg = new CodeGen();
             m.setCodeGen(cg);
         }
         cg.setPackageName(packageName);
+        setParentGroup(parentGroup);
     }
     
     public WsdlData getWsdlData() {
@@ -194,8 +196,12 @@ public class WsdlSaas extends Saas implements PropertyChangeListener {
                 end = getUrl().lastIndexOf('.');
             }
 
-            String folderName = (end <= begin) ? getUrl().substring(begin) : getUrl().substring(begin, end);
-            FileObject home = FileUtil.toFileObject(new File(SaasServicesModel.getInstance().WEBSVC_HOME));
+            String folderName = WsdlUtil.getServiceDirName(getUrl());
+            File websvcHome = new File(SaasServicesModel.WEBSVC_HOME);
+            if (! websvcHome.isDirectory()) {
+                websvcHome.mkdirs();
+            }
+            FileObject home = FileUtil.toFileObject(websvcHome);
             saasFolder = home.getFileObject(folderName);
             if (saasFolder == null) {
                 try {

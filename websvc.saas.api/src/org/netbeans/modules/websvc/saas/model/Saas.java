@@ -100,23 +100,14 @@ public class Saas {
         return parentGroup;
     }
 
-    public void setParentGroup(SaasGroup parentGroup) {
-        if (this.parentGroup == parentGroup) {
-            return;
-        }
+    protected void setParentGroup(SaasGroup parentGroup) {
         this.parentGroup = parentGroup;
-        SaasMetadata data = delegate.getSaasMetadata();
-        if (data == null) {
-            data = new SaasMetadata();
-            delegate.setSaasMetadata(data);
-        }
-        data.setGroup(parentGroup.getPathFromRoot());
     }
 
     protected FileObject saasFile;
     public FileObject getSaasFile() throws IOException {
         if (saasFile == null) {
-            String filename = getSaasFolder() + "-saas.xml"; //NOI18N
+            String filename = getSaasFolder().getName() + "-saas.xml"; //NOI18N
             saasFile = getSaasFolder().getFileObject(filename);
             if (saasFile == null) {
                 saasFile = getSaasFolder().createData(filename);

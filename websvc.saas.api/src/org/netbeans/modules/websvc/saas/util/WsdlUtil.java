@@ -39,10 +39,13 @@
 
 package org.netbeans.modules.websvc.saas.util;
 
+import java.io.IOException;
+import java.net.URL;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.modules.websvc.saas.spi.websvcmgr.WsdlData;
 import org.netbeans.modules.websvc.saas.spi.websvcmgr.WsdlDataManager;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 
 /**
@@ -92,6 +95,33 @@ public class WsdlUtil {
         String libraryName = (isJ2EE_15) ? "jaxws21" : "jaxrpc16";
         Library libDef = LibraryManager.getDefault().getLibrary(libraryName);
         return libDef;
+    }
+
+    public static String getCatalogForWsdl(String wsdlUrl) {
+        String serviceDir = getServiceDirName(wsdlUrl);
+        return "/" + serviceDir + "/catalog/catalog.xml";
+    }
+    
+    public static String getServiceDirName(String wsdlUrl) {
+        try {
+            URL url;
+            url = new URL(wsdlUrl);
+
+            String urlPath = url.getPath();
+            int start;
+            if (url.getProtocol().toLowerCase().startsWith("file")) { // NOI18N
+                start = urlPath.lastIndexOf(System.getProperty("path.separator")); // NOI18N
+                start = (start < 0) ? urlPath.lastIndexOf("/") : start; // NOI18N
+            } else {
+                start = urlPath.lastIndexOf("/");
+            }
+            start++;
+
+            return urlPath.substring(start).replace('.', '-'); // NOI18N
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+            return "";
+        }
     }
 
 }

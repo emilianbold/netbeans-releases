@@ -105,7 +105,6 @@ public class SaasGroup {
      */
     public void addService(Saas service) {
         getServices();
-        service.setParentGroup(this);
         services.put(service.getDisplayName(), service);
     }
     
@@ -251,6 +250,9 @@ public class SaasGroup {
             p.getGroup().add(group);
             group = p;
             parentGroup = parentGroup.getParent();
+        }
+        if (group == SaasServicesModel.getInstance().getRootGroup().getDelegate()) {
+            group = group.getGroup().get(0);
         }
         return group;
     }
