@@ -89,7 +89,7 @@ public class PaletteTest extends RestNodeTest {
      */
     public void testAdSenseForContent() {
         Node n = getMethodsNode(services[2]);
-        n.tree().clickOnPath(n.getTreePath(), 0);
+        n.tree().clickOnPath(getMethodNode(n, "getJson").getTreePath(), 2); //MOI18N
         EditorOperator eo = new EditorOperator(services[2].substring(0, 14));
         assertNotNull(services[2] + " not opened?", eo); //NOI18N
         InputProcessor ip = new InputProcessor() {
@@ -106,7 +106,7 @@ public class PaletteTest extends RestNodeTest {
      */
     public void testAdSenseForSearch() {
         Node n = getMethodsNode(services[2]);
-        n.tree().clickOnPath(n.getTreePath(), 1);
+        n.tree().clickOnPath(getMethodNode(n, "getJson").getTreePath(), 2); //MOI18N
         EditorOperator eo = new EditorOperator(services[2].substring(0, 14));
         assertNotNull(services[2] + " not opened?", eo); //NOI18N
         InputProcessor ip = new InputProcessor() {
@@ -122,8 +122,8 @@ public class PaletteTest extends RestNodeTest {
      * Test Google Map service
      */
     public void testMap() {
-        Node n = getResourceNode(services[2]);
-        n.tree().clickOnPath(n.getTreePath(), 2);
+        Node n = getMethodsNode(services[2]);
+        n.tree().clickOnPath(getMethodNode(n, "getJson").getTreePath(), 2); //MOI18N
         EditorOperator eo = new EditorOperator(services[2].substring(0, 14));
         assertNotNull(services[2] + " not opened?", eo); //NOI18N
         InputProcessor ip = new InputProcessor() {
@@ -224,17 +224,17 @@ public class PaletteTest extends RestNodeTest {
      * Test Yahoo NewsSearch service
      */
     public void testNewsSearch() {
-        Node n = getResourceNode(services[2]);
-        n.tree().clickOnPath(n.getTreePath(), 2);
-        EditorOperator eo = new EditorOperator(services[2].substring(0, 14));
-        assertNotNull(services[2] + " not opened?", eo); //NOI18N
+        Node n = getSubresourcesNode(services[1]);
+        n.tree().clickOnPath(getSubresourceNode(n, "{name} : ItemResource").getTreePath(), 2); //NOI18N
+        EditorOperator eo = new EditorOperator(services[1].substring(0, 13));
+        assertNotNull(services[1] + " not opened?", eo); //NOI18N
         InputProcessor ip = new InputProcessor() {
 
             public void setInput(NbDialogOperator dialogOperator) {
                 dialogOperator.ok();
             }
         };
-        dragAndDrop(8, services[2].substring(0, 14), ip);
+        dragAndDrop(8, services[1].substring(0, 13), ip);
     }
 
     private void dragAndDrop(int paletteItem, String target, InputProcessor input) {
@@ -302,51 +302,12 @@ public class PaletteTest extends RestNodeTest {
     private void drop(final int paletteItem, final Transferable drag,
             final String target, final InputProcessor input) {
         //Need to catch dialogs which are shown during drop operation
-        Thread t = new Thread(new Runnable() {
-
-            public void run() {
-                //Customize {0} Component
-                String dialogLabel = Bundle.getStringTrimmed(
-                        "org.netbeans.modules.websvc.rest.component.palette.Bundle",
-                        "LBL_CustomizeComponent",
-                        new String[]{PALETTE_ITEMS[paletteItem]});
-                //first wait for "Customize..." dialog and let the test take
-                //care of it (it should at least close it)
-                while (true) {
-                    JDialog dialog = JDialogOperator.findJDialog(dialogLabel, true, true);
-                    if (dialog != null) {
-                        input.setInput(new NbDialogOperator(dialog));
-                        break;
-                    }
-                    try {
-                        Thread.sleep(50);
-                    } catch (InterruptedException ex) {
-                        ex.printStackTrace();
-                    }
-                }
-                //second wait until generation process ends
-                //LBL_RestComponentProgress
-                dialogLabel = Bundle.getStringTrimmed(
-                        "org.netbeans.modules.websvc.rest.component.palette.Bundle",
-                        "LBL_RestComponentProgress",
-                        new String[]{PALETTE_ITEMS[paletteItem]});
-                // wait at most 60 second until generation progress dialog dismiss
-                // that's enough for simple services
-                long timeout = 60000;
-                if (paletteItem > 2 && paletteItem < 8) {
-                    // wait at most 240 second for StrikeIrons services
-                    // (it runs wsimport which can take some time :(
-                    timeout = 240000;
-                }
-                JemmyProperties.setCurrentTimeout("ComponentOperator.WaitStateTimeout", timeout); //NOI18N
-                new NbDialogOperator(dialogLabel).waitClosed();
-            }
-        }, "Waiter to catch input for " + PALETTE_ITEMS[paletteItem]); //NOI18N
+        InputCatcher ic = new InputCatcher(paletteItem, input);
         //start the thread which will catch shown dialogs
-        t.start();
+        ic.start();
         try {
             //do drop and wait for a result
-            Thread dropper = new Dropper(target, drag);
+            Thread dropper = new Dropper(target, drag, ic);
             SwingUtilities.invokeAndWait(dropper);
         } catch (InterruptedException ex) {
             Exceptions.printStackTrace(ex);
@@ -357,14 +318,14 @@ public class PaletteTest extends RestNodeTest {
 
     public static TestSuite suite() {
         TestSuite suite = new NbTestSuite();
-        suite.addTest(new PaletteTest("testAdSenseForContent")); //NOI18N
-        suite.addTest(new PaletteTest("testAdSenseForSearch")); //NOI18N
-        suite.addTest(new PaletteTest("testMap")); //NOI18N
-        suite.addTest(new PaletteTest("testAddressVerification")); //NOI18N
-        suite.addTest(new PaletteTest("testEmailVerify")); //NOI18N
-        suite.addTest(new PaletteTest("testIPAddressLookup")); //NOI18N
-        suite.addTest(new PaletteTest("testReversePhoneLookup")); //NOI18N
-        suite.addTest(new PaletteTest("testSalesandUseTaxComplete")); //NOI18N
+//        suite.addTest(new PaletteTest("testAdSenseForContent")); //NOI18N
+//        suite.addTest(new PaletteTest("testAdSenseForSearch")); //NOI18N
+//        suite.addTest(new PaletteTest("testMap")); //NOI18N
+//        suite.addTest(new PaletteTest("testAddressVerification")); //NOI18N
+//        suite.addTest(new PaletteTest("testEmailVerify")); //NOI18N
+//        suite.addTest(new PaletteTest("testIPAddressLookup")); //NOI18N
+//        suite.addTest(new PaletteTest("testReversePhoneLookup")); //NOI18N
+//        suite.addTest(new PaletteTest("testSalesandUseTaxComplete")); //NOI18N
         suite.addTest(new PaletteTest("testNewsSearch")); //NOI18N
         return suite;
     }
@@ -380,33 +341,105 @@ public class PaletteTest extends RestNodeTest {
 
         private String target;
         private Transferable drag;
+        private InputCatcher ic;
 
-        Dropper(String target, Transferable drag) {
+        Dropper(String target, Transferable drag, InputCatcher ic) {
             this.target = target;
             this.drag = drag;
+            this.ic = ic;
         }
 
         @Override
-        public synchronized void run() {
-            Set<TopComponent> comps = TopComponent.getRegistry().getOpened();
-            for (TopComponent tc : comps) {
-                org.openide.nodes.Node[] arr = tc.getActivatedNodes();
-                if (arr != null) {
-                    for (int j = 0; j < arr.length; j++) {
-                        if (!arr[j].getName().equals(target)) {
-                            continue;
-                        }
-                        EditorCookie ec = arr[j].getCookie(EditorCookie.class);
-                        if (ec != null) {
-                            JEditorPane[] panes = ec.getOpenedPanes();
-                            if (panes != null) {
-                                panes[0].getTransferHandler().importData(panes[0], drag);
-                                break;
+        public void run() {
+        System.out.println("running");
+            while (!ic.isDone()) {
+                Set<TopComponent> comps = TopComponent.getRegistry().getOpened();
+                for (TopComponent tc : comps) {
+                    org.openide.nodes.Node[] arr = tc.getActivatedNodes();
+                    if (arr != null) {
+                        for (int j = 0; j < arr.length; j++) {
+                            if (!arr[j].getName().equals(target)) {
+                                continue;
+                            }
+                            EditorCookie ec = arr[j].getCookie(EditorCookie.class);
+                            if (ec != null) {
+                                JEditorPane[] panes = ec.getOpenedPanes();
+                                if (panes != null) {
+                                    panes[0].getTransferHandler().importData(panes[0], drag);
+                                    break;
+                                }
                             }
                         }
                     }
                 }
             }
+        }
+    }
+
+    /**
+     * Thread responsible for catching shown dialogs and submitting user's input
+     */
+    private static class InputCatcher extends Thread {
+
+        private int paletteItem;
+        private InputProcessor input;
+        private boolean done;
+        private long time;
+        private static final long TIMEOUT = 15000;
+
+        InputCatcher(int paletteItem, InputProcessor input) {
+            super("Waiter to catch input for " + PALETTE_ITEMS[paletteItem]); //NOI18N
+            this.paletteItem = paletteItem;
+            this.input = input;
+            done = false;
+            time = System.currentTimeMillis();
+        }
+
+        @Override
+        public void run() {
+            //Customize {0} Component
+            String dialogLabel = Bundle.getStringTrimmed(
+                    "org.netbeans.modules.websvc.rest.component.palette.Bundle",
+                    "LBL_CustomizeComponent",
+                    new String[]{PALETTE_ITEMS[paletteItem]});
+            //first wait for "Customize..." dialog and let the test take
+            //care of it (it should at least close it)
+            while (!isDone()) {
+                JDialog dialog = JDialogOperator.findJDialog(dialogLabel, true, true);
+                if (dialog != null) {
+                    input.setInput(new NbDialogOperator(dialog));
+                    done = true;
+                    break;
+                }
+                try {
+                    Thread.sleep(500);
+                } catch (InterruptedException ex) {
+                    ex.printStackTrace();
+                }
+            }
+            //second wait until generation process ends
+            //LBL_RestComponentProgress
+            dialogLabel = Bundle.getStringTrimmed(
+                    "org.netbeans.modules.websvc.rest.component.palette.Bundle",
+                    "LBL_RestComponentProgress",
+                    new String[]{PALETTE_ITEMS[paletteItem]});
+            // wait at most 60 second until generation progress dialog dismiss
+            // that's enough for simple services
+            long timeout = 60000;
+            if (paletteItem > 2 && paletteItem < 8) {
+                // wait at most 240 second for StrikeIrons services
+                // (it runs wsimport which can take some time :(
+                timeout = 240000;
+            }
+            JemmyProperties.setCurrentTimeout("ComponentOperator.WaitStateTimeout", timeout); //NOI18N
+            JDialog dialog = JDialogOperator.findJDialog(dialogLabel, true, true);
+            if (dialog != null) {
+                new NbDialogOperator(dialog).waitClosed();
+            }
+        }
+
+        public boolean isDone() {
+            return done || time + TIMEOUT < System.currentTimeMillis();
         }
     }
 
