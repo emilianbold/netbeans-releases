@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
+ *
  * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,7 +20,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -31,9 +31,9 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
+ *
  * Contributor(s):
- * 
+ *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.ws.qaf.rest;
@@ -62,6 +62,8 @@ import org.openide.util.Exceptions;
 import org.openide.windows.TopComponent;
 
 /**
+ * Test Drag'n'Drop of the resource from the REST palette into the RESTful
+ * web service
  *
  * @author lukas
  */
@@ -82,7 +84,10 @@ public class PaletteTest extends RestNodeTest {
         super.setUp();
     }
 
-    public void testAddSenseForContent() {
+    /**
+     * Test AdSenseForContent service
+     */
+    public void testAdSenseForContent() {
         Node n = getResourceNode(services[2]);
         n.tree().clickOnPath(n.getTreePath(), 2);
         EditorOperator eo = new EditorOperator(services[2].substring(0, 14));
@@ -96,7 +101,10 @@ public class PaletteTest extends RestNodeTest {
         dragAndDrop(0, services[2].substring(0, 14), ip);
     }
 
-    public void testAddSenseForSearch() {
+    /**
+     * Test AdSenseForSearch service
+     */
+    public void testAdSenseForSearch() {
         Node n = getResourceNode(services[2]);
         n.tree().clickOnPath(n.getTreePath(), 2);
         EditorOperator eo = new EditorOperator(services[2].substring(0, 14));
@@ -110,6 +118,9 @@ public class PaletteTest extends RestNodeTest {
         dragAndDrop(1, services[2].substring(0, 14), ip);
     }
 
+    /**
+     * Test Google Map service
+     */
     public void testMap() {
         Node n = getResourceNode(services[2]);
         n.tree().clickOnPath(n.getTreePath(), 2);
@@ -124,6 +135,9 @@ public class PaletteTest extends RestNodeTest {
         dragAndDrop(2, services[2].substring(0, 14), ip);
     }
 
+    /**
+     * Test AddressVerification service
+     */
     public void testAddressVerification() {
         Node n = getResourceNode(services[0]);
         n.tree().clickOnPath(n.getTreePath(), 2);
@@ -138,6 +152,9 @@ public class PaletteTest extends RestNodeTest {
         dragAndDrop(3, services[0], ip);
     }
 
+    /**
+     * Test EmailVerify service
+     */
     public void testEmailVerify() {
         Node n = getResourceNode(services[0]);
         n.tree().clickOnPath(n.getTreePath(), 2);
@@ -152,6 +169,9 @@ public class PaletteTest extends RestNodeTest {
         dragAndDrop(4, services[0], ip);
     }
 
+    /**
+     * Test IPAddressLookup service
+     */
     public void testIPAddressLookup() {
         Node n = getResourceNode(services[0]);
         n.tree().clickOnPath(n.getTreePath(), 2);
@@ -166,6 +186,9 @@ public class PaletteTest extends RestNodeTest {
         dragAndDrop(5, services[0], ip);
     }
 
+    /**
+     * Test ReversePhoneLookup service
+     */
     public void testReversePhoneLookup() {
         Node n = getResourceNode(services[0]);
         n.tree().clickOnPath(n.getTreePath(), 2);
@@ -180,6 +203,9 @@ public class PaletteTest extends RestNodeTest {
         dragAndDrop(6, services[0], ip);
     }
 
+    /**
+     * Test SalesandUseTaxComplete service
+     */
     public void testSalesandUseTaxComplete() {
         Node n = getResourceNode(services[0]);
         n.tree().clickOnPath(n.getTreePath(), 2);
@@ -194,6 +220,9 @@ public class PaletteTest extends RestNodeTest {
         dragAndDrop(7, services[0], ip);
     }
 
+    /**
+     * Test Yahoo NewsSearch service
+     */
     public void testNewsSearch() {
         Node n = getResourceNode(services[2]);
         n.tree().clickOnPath(n.getTreePath(), 2);
@@ -237,6 +266,12 @@ public class PaletteTest extends RestNodeTest {
         drop(paletteItem, src, target, input);
     }
 
+    /**
+     * Get Transferable object from an instance of DefaultItem using reflection
+     *
+     * @param paletteItem instance of DefaultItem
+     * @return Transferable for drag operation
+     */
     private Transferable drag(Object paletteItem) {
         try {
             Method m = paletteItem.getClass().getDeclaredMethod("drag"); //NOI18N
@@ -256,14 +291,27 @@ public class PaletteTest extends RestNodeTest {
         return null;
     }
 
-    private void drop(final int paletteItem, final Transferable drag, final String target, final InputProcessor input) {
+    /**
+     * Perform actual drop operation
+     *
+     * @param paletteItem to get full title of popup dialogs
+     * @param drag what to drop
+     * @param target name of editor tab (where to drop)
+     * @param input input for generation process
+     */
+    private void drop(final int paletteItem, final Transferable drag,
+            final String target, final InputProcessor input) {
+        //Need to catch dialogs which are shown during drop operation
         Thread t = new Thread(new Runnable() {
 
             public void run() {
+                //Customize {0} Component
                 String dialogLabel = Bundle.getStringTrimmed(
                         "org.netbeans.modules.websvc.rest.component.palette.Bundle",
                         "LBL_CustomizeComponent",
                         new String[]{PALETTE_ITEMS[paletteItem]});
+                //first wait for "Customize..." dialog and let the test take
+                //care of it (it should at least close it)
                 while (true) {
                     JDialog dialog = JDialogOperator.findJDialog(dialogLabel, true, true);
                     if (dialog != null) {
@@ -276,6 +324,8 @@ public class PaletteTest extends RestNodeTest {
                         ex.printStackTrace();
                     }
                 }
+                //second wait until generation process ends
+                //LBL_RestComponentProgress
                 dialogLabel = Bundle.getStringTrimmed(
                         "org.netbeans.modules.websvc.rest.component.palette.Bundle",
                         "LBL_RestComponentProgress",
@@ -292,8 +342,10 @@ public class PaletteTest extends RestNodeTest {
                 new NbDialogOperator(dialogLabel).waitClosed();
             }
         }, "Waiter to catch input for " + PALETTE_ITEMS[paletteItem]); //NOI18N
+        //start the thread which will catch shown dialogs
         t.start();
         try {
+            //do drop and wait for a result
             Thread dropper = new Dropper(target, drag);
             SwingUtilities.invokeAndWait(dropper);
         } catch (InterruptedException ex) {
@@ -323,6 +375,9 @@ public class PaletteTest extends RestNodeTest {
         TestRunner.run(suite());
     }
 
+    /**
+     * Thread responsible for dropping Transferable into the correct editor tab
+     */
     private static class Dropper extends Thread {
 
         private String target;
@@ -357,6 +412,20 @@ public class PaletteTest extends RestNodeTest {
         }
     }
 
+    /**
+     * Each test case using drag and drop operation must implement this
+     * interface to be able to provide input for a dialog which allows one
+     * customization of a resource to be generated
+     *
+     * Simplest implementation which accepts default values can be:
+     * <pre>
+     *    InputProcessor ip = new InputProcessor() {
+     *      public void setInput(NbDialogOperator dialogOperator) {
+     *          dialogOperator.ok();
+     *      }
+     *    };
+     * </pre>
+     */
     private static interface InputProcessor {
 
         void setInput(NbDialogOperator dialogOperator);
