@@ -359,8 +359,8 @@ public class PaletteTest extends RestNodeTest {
         //tests will be enabled as soon as
         //http://www.netbeans.org/issues/show_bug.cgi?id=127557 will be fixed
         TestSuite suite = new NbTestSuite();
-//        suite.addTest(new PaletteTest("testAddSenseForContent")); //NOI18N
-//        suite.addTest(new PaletteTest("testAddSenseForSearch")); //NOI18N
+//        suite.addTest(new PaletteTest("testAdSenseForContent")); //NOI18N
+//        suite.addTest(new PaletteTest("testAdSenseForSearch")); //NOI18N
         suite.addTest(new PaletteTest("testMap")); //NOI18N
         suite.addTest(new PaletteTest("testAddressVerification")); //NOI18N
         suite.addTest(new PaletteTest("testEmailVerify")); //NOI18N
