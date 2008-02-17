@@ -410,13 +410,13 @@ public final class CompletionManager {
             String typedChars = context.getTypedPrefix();
 
             String styleName = null;
-            if( typedChars.contains(",") ) {
+            if (typedChars.contains(",")) {
                 int index = typedChars.lastIndexOf(",");
-                styleName = typedChars.substring(index+1);
+                styleName = typedChars.substring(index + 1);
             } else {
                 styleName = typedChars;
             }
-            
+
             for (int i = 0; i < itemTextAndDocs.length; i += 2) {
                 if (itemTextAndDocs[i].startsWith(styleName.trim())) {
                     HibernateMappingCompletionItem item = HibernateMappingCompletionItem.createCascadeStyleItem(caretOffset - styleName.length(),
@@ -505,7 +505,7 @@ public final class CompletionManager {
             }, true);
         }
 
-        private void doSmartJavaCompletion(JavaSource js, final List<HibernateMappingCompletionItem> results,
+        private void doSmartJavaCompletion(final JavaSource js, final List<HibernateMappingCompletionItem> results,
                 final String typedPrefix, final int substitutionOffset) throws IOException {
             js.runUserActionTask(new Task<CompilationController>() {
 
@@ -521,10 +521,8 @@ public final class CompletionManager {
                                 NameKind.CASE_INSENSITIVE_PREFIX, EnumSet.allOf(SearchScope.class));
                         for (ElementHandle<TypeElement> eh : matchingTypes) {
                             if (eh.getKind() == ElementKind.CLASS) {
-                                TypeElement typeElement = eh.resolve(cc);
-                                if (typeElement != null) {
-                                    HibernateMappingCompletionItem item = HibernateMappingCompletionItem.createTypeItem(substitutionOffset,
-                                            typeElement, eh, cc.getElements().isDeprecated(typeElement), true);
+                                if (eh.getKind() == ElementKind.CLASS) {
+                                    LazyTypeCompletionItem item = LazyTypeCompletionItem.create(substitutionOffset, eh, js);
                                     results.add(item);
                                 }
                             }
