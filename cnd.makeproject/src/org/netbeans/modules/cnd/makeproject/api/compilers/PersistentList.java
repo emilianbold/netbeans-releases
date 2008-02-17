@@ -64,7 +64,7 @@ public class PersistentList extends Vector implements Serializable{
     }
     
     private static String getRoot() {
-        String dir = System.getProperty("netbeans.user") + "/config/cndcodemodel/"; // NOI18N
+        String dir = System.getProperty("netbeans.user") + "/config/cnd-compilers/"; // NOI18N
         return dir;
     }
     
