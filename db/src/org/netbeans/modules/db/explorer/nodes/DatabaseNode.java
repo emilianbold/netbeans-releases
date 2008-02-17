@@ -70,7 +70,6 @@ public class DatabaseNode extends AbstractNode implements Node.Cookie {
     /** Properties */
     public static final String ROOT = "root"; //NOI18N
     public static final String DRIVER_LIST = "driverlist"; //NOI18N
-    public static final String SERVER = "server"; // NO18N
     public static final String DRIVER = "driver"; //NOI18N
     public static final String CONNECTION = "connection"; //NOI18N
     public static final String CATALOG = "catalog"; //NOI18N

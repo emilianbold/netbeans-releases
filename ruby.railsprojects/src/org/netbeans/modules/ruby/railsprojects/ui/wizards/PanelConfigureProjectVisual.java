@@ -47,23 +47,14 @@ import org.openide.WizardValidationException;
 import org.openide.util.NbBundle;
 
 /**
- * First panel in the NewProject wizard. Used for filling in
- * name, and directory of the project.
+ * First panel in the NewProject wizard. Used for filling in name, and directory
+ * of the project.
  */
 public class PanelConfigureProjectVisual extends JPanel {
 
     private PanelConfigureProject panel;
-        
-    private boolean ignoreProjectDirChanges;
-    
-    private boolean ignoreRakeProjectNameChanges;
-    
-    private boolean noDir = true;
-    
     private SettingsPanel projectLocationPanel;
-    
     private PanelOptionsVisual optionsPanel;
-    
     private int type;
     
     public PanelConfigureProjectVisual( PanelConfigureProject panel, int type ) {
@@ -105,7 +96,6 @@ public class PanelConfigureProjectVisual extends JPanel {
         //         //return false;
         //    }
         //}
-        
         
         wizardDescriptor.putProperty( "WizardPanel_errorMessage", "" ); //NOI18N
         return projectLocationPanel.valid( wizardDescriptor ) && optionsPanel.valid(wizardDescriptor);
@@ -179,9 +169,6 @@ public class PanelConfigureProjectVisual extends JPanel {
 
     }//GEN-END:initComponents
 
-    /** Currently only handles the "Browse..." button
-     */
-           
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JSeparator jSeparator1;
     private javax.swing.JPanel locationContainer;

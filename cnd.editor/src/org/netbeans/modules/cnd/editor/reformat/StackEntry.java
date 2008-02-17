@@ -161,7 +161,6 @@ class StackEntry {
                     case IF: //("if", "keyword-directive"),
                     case ELSE: //("else", "keyword-directive"),
                     case SWITCH: //("switch", "keyword-directive"),
-                    case CASE: //("case", "keyword-directive"),
                     case WHILE: //("while", "keyword-directive"),
                     case DO: //("do", "keyword-directive"),
                     case FOR: //("for", "keyword-directive"),

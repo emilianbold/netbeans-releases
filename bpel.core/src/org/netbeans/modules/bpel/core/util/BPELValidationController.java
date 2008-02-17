@@ -60,180 +60,167 @@ import org.netbeans.modules.bpel.model.api.BpelModel;
 import org.netbeans.modules.bpel.model.api.events.ChangeEvent;
 import org.netbeans.modules.bpel.model.api.events.ChangeEventListenerAdapter;
 import org.netbeans.modules.bpel.model.api.support.Util;
+import static org.netbeans.modules.soa.ui.util.UI.*;
 
+/**
+ * @author Vladimir Yaroslavskiy
+ * @version 2008.01.17
+ */
 public class BPELValidationController extends ChangeEventListenerAdapter {
     
-    public BPELValidationController(BpelModel bpelModel) {
-        myWeaklisteners = new WeakHashMap<BPELValidationListener, Object>();
-        myBpelModel = bpelModel;
-        myTrigger = new ExternalModelsValidationTrigger( this );
-        myAnnotations = new ArrayList<BPELValidationAnnotation>();
+  public BPELValidationController(BpelModel bpelModel) {
+    myWeaklisteners = new WeakHashMap<BPELValidationListener, Object>();
+    myBpelModel = bpelModel;
+    myTrigger = new ExternalModelsValidationTrigger( this );
+    myAnnotations = new ArrayList<BPELValidationAnnotation>();
+    myValidationResult = new ArrayList<ResultItem>();
+  }
+
+  public void attach() {
+    if (myBpelModel != null) {
+      myBpelModel.addEntityChangeListener(this);
+      myBpelModel.addEntityChangeListener(getTrigger());
+      getTrigger().loadImports();
+    }
+  }
+
+  public void detach() {
+    if (myBpelModel != null) {
+      myBpelModel.removeEntityChangeListener(this);
+      myBpelModel.removeEntityChangeListener(getTrigger());
+      getTrigger().clearTrigger();
+    }
+  }
+
+  public void addValidationListener(BPELValidationListener listener) {
+    synchronized(myWeaklisteners) {
+      myWeaklisteners.put(listener, null);
+    }
+  }
+  
+  public void removeValidationListener(BPELValidationListener listener) {
+    synchronized(myWeaklisteners) {
+      myWeaklisteners.remove(listener);
+    }
+  }
+  
+  BpelModel getModel() {
+    return myBpelModel;
+  }
+  
+  private void modelChanged(ChangeEvent event) {
+    if (event.isLastInAtomic()) {
+      startValidation();
+    }
+  }
+  
+  public void triggerValidation() {
+    triggerValidation(false);
+  }
+  
+  public void triggerValidation(boolean checkExternallyTriggered) {
+    if (checkExternallyTriggered && getTrigger().isTriggerDirty()) {
+      startValidation();
+    }
+    else if ( !checkExternallyTriggered) {
+      startValidation();
+    }
+  }
+  
+  @Override
+  public void notifyEvent(ChangeEvent changeEvent) {
+    if ( !State.VALID.equals(myBpelModel.getState())){
+      return;
+    }
+    modelChanged(changeEvent);
+  }
+
+  public void notifyCompleteValidationResults(List<ResultItem> result) {
+    notifyListeners(result);
+  }
+  
+  private synchronized void startValidation() {
+    TimerTask task = new TimerTask() {
+      public void run() {
+        Thread.currentThread().setPriority(Thread.MIN_PRIORITY);
+        Validation validation = new Validation();
+        log();
+        log("START VALIDATION"); // NOI18N
+        startTimeln();
+        validation.validate(myBpelModel, ValidationType.PARTIAL);
+        endTime("FAST VALIDATION"); // NOI18N
+        log("END VALIDATION"); // NOI18N
+        
+        List<ResultItem> items = validation.getValidationResult();
         myValidationResult = new ArrayList<ResultItem>();
-    }
 
-    public void attach() {
-        if (myBpelModel != null) {
-            myBpelModel.addEntityChangeListener(this);
-            myBpelModel.addEntityChangeListener(getTrigger());
-            getTrigger().loadImports();
-        }
-    }
-
-    public void detach() {
-        if (myBpelModel != null) {
-            myBpelModel.removeEntityChangeListener(this);
-            myBpelModel.removeEntityChangeListener(getTrigger());
-            getTrigger().clearTrigger();
-        }
-    }
-
-    public void addValidationListener(BPELValidationListener listener) {
-        synchronized(myWeaklisteners) {
-            myWeaklisteners.put(listener, null);
-        }
-    }
-    
-    public void removeValidationListener(BPELValidationListener listener) {
-        synchronized(myWeaklisteners) {
-            myWeaklisteners.remove(listener);
-        }
-    }
-    
-    BpelModel getModel() {
-        return myBpelModel;
-    }
-    
-    private void modelChanged(ChangeEvent event) {
-        if (event.isLastInAtomic()) {
-          startValidation();
-        }
-    }
-    
-    public void triggerValidation() {
-        triggerValidation(false);
-    }
-    
-    public void triggerValidation(boolean checkExternallyTriggered) {
-        if (checkExternallyTriggered && getTrigger().isTriggerDirty()) {
-            startValidation();
-        }
-        else if ( !checkExternallyTriggered) {
-            startValidation();
-        }
-    }
-    
-    @Override
-    public void notifyEvent(ChangeEvent changeEvent) {
-        if ( !State.VALID.equals(myBpelModel.getState())){
-            return;
-        }
-        modelChanged(changeEvent);
-    }
-
-    public void notifyCompleteValidationResults(List<ResultItem> result) {
-        notifyListeners(result);
-    }
-    
-    private synchronized void startValidation() {
-      TimerTask task = new TimerTask() {
-          public void run() {
-              Thread.currentThread().setPriority(Thread.MIN_PRIORITY);
-              Validation validation = new Validation();
-out("---- VALIDATION.START");
-startTime();
-              validation.validate(myBpelModel, ValidationType.PARTIAL);
-out("---- VALIDATION.END");
-endTime();
-              List<ResultItem> items = validation.getValidationResult();
-              myValidationResult = new ArrayList<ResultItem>();
-
-              synchronized(items) {
-                for (ResultItem item : items) {
-                  myValidationResult.add(item);
-                }
-              }
-              notifyListeners(myValidationResult);
+        synchronized(items) {
+          for (ResultItem item : items) {
+            myValidationResult.add(item);
           }
-      };
-out();
-//out("START TIMER");
-      myTimer.cancel();
-      myTimer = new Timer();
-      myTimer.schedule(task, DELAY);
-    }
-
-    private void startTime() {
-      myTime = System.currentTimeMillis ();
-    }
-
-    private void endTime() {
-      long currentTime = System.currentTimeMillis ();
-      out("It takes " + (currentTime - myTime) + " ms.");
-    }
-
-    private long myTime;
-
-    private static void out() {
-      System.out.println();
-    }
-
-    private void out(Object object) {
-      System.out.println("*** " + object); // NOI18N
-    }
-
-    private void notifyListeners(List<ResultItem> result) {
-        synchronized (myWeaklisteners) {
-            for (BPELValidationListener listener : myWeaklisteners.keySet()) {
-                if (listener != null) {
-                    listener.validationUpdated(result);
-                }
-            }
         }
-        showAnnotationsInEditor(result);
-    }
-    
-    private void showAnnotationsInEditor(List<ResultItem> result) {
-        synchronized (myAnnotations) {
-            for (BPELValidationAnnotation annotation : myAnnotations) {
-                annotation.detach();
-            }
-            myAnnotations.clear();
-//System.out.println();
-//System.out.println("SHOW ANNOTATION IN EDITOR");
+        notifyListeners(myValidationResult);
+      }
+    };
+    log();
+    log("TIMER"); // NOI18N
+    myTimer.cancel();
+    myTimer = new Timer();
+    myTimer.schedule(task, DELAY);
+  }
 
-            for (ResultItem item : result) {
-                if (item.getType() != ResultType.ERROR) {
-                    continue;
-                }
-                Line line = Util.getLine(item);
-//System.out.println("  see line: " + line);
-
-                if (line == null) {
-                    continue;
-                }
-                BPELValidationAnnotation annotation =
-                        new BPELValidationAnnotation();
-                myAnnotations.add(annotation);
-                annotation.show(line, item.getDescription());
-            }
+  private void notifyListeners(List<ResultItem> result) {
+    synchronized (myWeaklisteners) {
+      for (BPELValidationListener listener : myWeaklisteners.keySet()) {
+        if (listener != null) {
+          listener.validationUpdated(result);
         }
+      }
     }
+    showAnnotationsInEditor(result);
+  }
+  
+  private void showAnnotationsInEditor(List<ResultItem> result) {
+    synchronized (myAnnotations) {
+      for (BPELValidationAnnotation annotation : myAnnotations) {
+        annotation.detach();
+      }
+      myAnnotations.clear();
+//out();
+//out("SHOW ANNOTATION IN EDITOR");
 
-    private ExternalModelsValidationTrigger getTrigger() {
-      return myTrigger;
+      for (ResultItem item : result) {
+        if (item.getType() != ResultType.ERROR) {
+            continue;
+        }
+        Line line = Util.getLine(item);
+//out("  see line: " + line);
+
+        if (line == null) {
+            continue;
+        }
+        BPELValidationAnnotation annotation = new BPELValidationAnnotation();
+        myAnnotations.add(annotation);
+        annotation.show(line, item.getDescription());
+      }
     }
+  }
 
-    public List<ResultItem> getValidationResult() {
-      return myValidationResult;
-    }
-    
-    private BpelModel myBpelModel;
-    private Timer myTimer = new Timer();
-    private List<ResultItem> myValidationResult;
-    private ExternalModelsValidationTrigger myTrigger;
-    private List<BPELValidationAnnotation> myAnnotations;
-    private Map<BPELValidationListener, Object> myWeaklisteners;
+  private ExternalModelsValidationTrigger getTrigger() {
+    return myTrigger;
+  }
 
-    // vlv
-    private static final int DELAY = 3456;
+  public List<ResultItem> getValidationResult() {
+    return myValidationResult;
+  }
+  
+  private BpelModel myBpelModel;
+  private Timer myTimer = new Timer();
+  private List<ResultItem> myValidationResult;
+  private ExternalModelsValidationTrigger myTrigger;
+  private List<BPELValidationAnnotation> myAnnotations;
+  private Map<BPELValidationListener, Object> myWeaklisteners;
+
+  // vlv
+  private static final int DELAY = 5432;
 }

@@ -323,6 +323,7 @@ public class JaxWsServiceCreator implements ServiceCreator {
         }
         final URL wsdlURL = wsdlUrl;
         final WsdlService service = (WsdlService) wiz.getProperty(WizardProperties.WSDL_SERVICE);
+        final Boolean useProvider = (Boolean) wiz.getProperty(WizardProperties.USE_PROVIDER);
         if (service == null) {
             FileObject targetFolder = Templates.getTargetFolder(wiz);
             String targetName = Templates.getTargetName(wiz);
@@ -368,7 +369,7 @@ public class JaxWsServiceCreator implements ServiceCreator {
                                 targetFolder,
                                 targetName,
                                 wsdlURL,
-                                service1, port1);
+                                service1, port1, useProvider);
                         handle.finish();
                     } catch (Exception ex) {
                         handle.finish();

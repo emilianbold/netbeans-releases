@@ -132,13 +132,13 @@ public final class Validator extends org.netbeans.modules.bpel.validation.core.V
           }
       }
       if (entity instanceof VariableDeclarationScope) {
-          List<VariableDeclarationScope> scopes =
-                  entity.getChildren(VariableDeclarationScope.class);
-          if ( scopes == null ){
+          List<VariableDeclarationScope> scopes = entity.getChildren(VariableDeclarationScope.class);
+
+          if (scopes == null) {
               return;
           }
           for (VariableDeclarationScope scope : scopes) {
-              findDeclarationsDescendant( scope , set );
+              findDeclarationsDescendant(scope, set);
           }
       }
   }

@@ -55,6 +55,7 @@ import org.netbeans.modules.visualweb.gravy.toolbox.PaletteContainerOperator;
 import org.netbeans.modules.visualweb.gravy.designer.DesignerPaneOperator;
 import org.netbeans.modules.visualweb.gravy.properties.SheetTableOperator;
 import org.netbeans.jellytools.OutputOperator;
+import org.netbeans.jellytools.actions.SaveAllAction;
 import org.netbeans.jemmy.Waitable;
 import org.netbeans.jemmy.Waiter;
 import org.netbeans.jemmy.QueueTool;
@@ -163,7 +164,7 @@ public class AcceptanceTest extends RaveTestCase {
             log(">> Project Creation Failed");
             e.printStackTrace();
             log(e.toString());
-            fail();
+            fail(e);
         }
         log("**Done");
         endTest();
@@ -202,9 +203,12 @@ public class AcceptanceTest extends RaveTestCase {
         editor.setVerification(false);
         TestUtils.wait(2000);
         editor.requestFocus();
+        new SaveAllAction().perform();
+        log("Editor Dump:");
+        log(editor.getText());
         String expectedStr = "button1_action()";
-        assertFalse("There is no \"" + expectedStr + "\" string in jsp editor",
-                new EditorOperator("Page1").getText().contains(expectedStr));
+        assertTrue("There is no \"" + expectedStr + "\" string in jsp editor",
+                editor.getText().contains(expectedStr));
         editor.requestFocus();
         editor.typeText("log(\"Action Performed\");\n");
         log("Reformat code");

@@ -86,6 +86,8 @@ public class AttributeIsLocalTest extends HintTestBase {
             exceptions.add("base.rb");
             exceptions.add("httputils.rb");
             exceptions.add("baseData.rb");
+            exceptions.add("form_helper.rb");
+            exceptions.add("url_helper_test.rb");
         
             assertNoJRubyMatches(new AttributeIsLocal(), exceptions);
             
