@@ -75,8 +75,8 @@ import org.openide.util.Exceptions;
 public class RailsJdbcConnection implements RailsDatabaseConfiguration {
 
     private final DatabaseConnection development;
-    private final DatabaseConnection production;
     private final DatabaseConnection test;
+    private final DatabaseConnection production;
 
     /**
      * Creates a new JBDC database configuration.

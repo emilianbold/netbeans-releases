@@ -48,6 +48,9 @@ import org.netbeans.modules.ruby.railsprojects.RailsProject;
  */
 public interface RailsDatabaseConfiguration {
 
+    /**
+     * @return the name of the database represented by this configuration.
+     */
     String getDatabase();
     
     /**

@@ -51,6 +51,12 @@ import org.openide.WizardDescriptor;
 import org.openide.WizardValidationException;
 
 /**
+ * A panel for Rails database adapters.
+ * 
+ * TODO: currently only one (development) combo is displayed, test and production
+ * adapters need to be inserted to database.yml after initial generation 
+ * (AFAIK the rails generator doesn't let you specify those databases separately).
+ * 
  * @author  Erno Mononen
  */
 public class RailsAdaptersPanel extends SettingsPanel {
