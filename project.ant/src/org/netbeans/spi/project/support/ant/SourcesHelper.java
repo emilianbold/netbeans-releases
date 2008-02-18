@@ -193,11 +193,11 @@ public final class SourcesHelper {
                     if (owner != null && owner != p) {
                         return false;
                     }
+                    File f = FileUtil.toFile(file);
+                    if (f != null && SharabilityQuery.getSharability(f) == SharabilityQuery.NOT_SHARABLE) {
+                        return false;
+                    } // else MIXED, UNKNOWN, or SHARABLE; or not a disk file
                 }
-                File f = FileUtil.toFile(file);
-                if (f != null && SharabilityQuery.getSharability(f) == SharabilityQuery.NOT_SHARABLE) {
-                    return false;
-                } // else MIXED, UNKNOWN, or SHARABLE; or not a disk file
                 return true;
             }
 

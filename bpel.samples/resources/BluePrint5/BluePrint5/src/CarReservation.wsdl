@@ -114,6 +114,6 @@
                         messageType="tns:CarReservationStatus">
         <bpws:query>/ns:reserveStatus/ns:reservationID</bpws:query>
     </bpws:propertyAlias>
-    <bpws:property name="car" type="xsd:decimal"/>
+    <bpws:property name="car" type="ns:reserveType"/>
     <bpws:propertyAlias propertyName="tns:car" messageType="tns:CarReservation" part="reserveCarPart"/>
 </definitions>
