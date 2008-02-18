@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -38,42 +38,34 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.spring.beans.refactoring.plugins;
 
-import java.util.logging.Logger;
-import org.netbeans.api.fileinfo.NonRecursiveFolder;
-import org.netbeans.api.java.source.TreePathHandle;
-import org.netbeans.modules.refactoring.api.AbstractRefactoring;
-import org.netbeans.modules.refactoring.api.RenameRefactoring;
-import org.netbeans.modules.refactoring.api.WhereUsedQuery;
-import org.netbeans.modules.refactoring.spi.RefactoringPlugin;
-import org.netbeans.modules.refactoring.spi.RefactoringPluginFactory;
-import org.openide.filesystems.FileObject;
-import org.openide.util.Lookup;
+package org.netbeans.modules.spring.beans.refactoring;
+
+import java.io.IOException;
+import org.netbeans.modules.refactoring.spi.Transaction;
+import org.openide.util.Exceptions;
 
 /**
- * @author John Baker
+ *
+ * @author Andrei Badea
  */
-public class SpringBeansRefactoringPluginFactory implements RefactoringPluginFactory {
-    private static final Logger LOGGER = Logger.getLogger(SpringBeansRefactoringPluginFactory.class.getName());
-    
-    public RefactoringPlugin createInstance(AbstractRefactoring refactoring) {
-        Lookup sourceObj = refactoring.getRefactoringSource();
-        FileObject file = sourceObj.lookup(FileObject.class);
-        NonRecursiveFolder folder = sourceObj.lookup(NonRecursiveFolder.class);
-        TreePathHandle handle = sourceObj.lookup(TreePathHandle.class);
-        
-        if (refactoring instanceof WhereUsedQuery) {
-            if (handle != null) {
-                return new SpringBeansRefactoringFindUsagesPlugin((WhereUsedQuery) refactoring);
-            }
-        } else if (refactoring instanceof RenameRefactoring) {
-            return new SpringRenamePlugin((RenameRefactoring)refactoring);
-        }
+public class ModificationTransaction implements Transaction {
 
-        // TODO: RENAME
-        // TODO: MOVE
-        // TODO: DELETE
-        return null;
+    private final Modifications mods;
+
+    public ModificationTransaction(Modifications mods) {
+        this.mods = mods;
+    }
+
+    public void commit() {
+        try {
+            mods.commit();
+        } catch (IOException e) {
+            Exceptions.printStackTrace(e);
+        }
+    }
+
+    public void rollback() {
+        throw new UnsupportedOperationException("Not supported yet.");
     }
 }
