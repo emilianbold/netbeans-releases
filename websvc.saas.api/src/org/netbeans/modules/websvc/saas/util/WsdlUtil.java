@@ -62,11 +62,12 @@ public class WsdlUtil {
         return null;
     }
     
-    public static void addWsdlData(String url, String packageName) {
+    public static WsdlData addWsdlData(String url, String packageName) {
         WsdlDataManager manager = Lookup.getDefault().lookup(WsdlDataManager.class);
         if (manager != null) {
-            manager.addWsdlData(url, packageName);
+            return manager.addWsdlData(url, packageName);
         }
+        return null;
     }
     
     public static WsdlData getWsdlDataAsynchronously(String url, String serviceName) {

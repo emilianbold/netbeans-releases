@@ -107,8 +107,9 @@ public class Saas {
     protected FileObject saasFile;
     public FileObject getSaasFile() throws IOException {
         if (saasFile == null) {
-            String filename = getSaasFolder().getName() + "-saas.xml"; //NOI18N
-            saasFile = getSaasFolder().getFileObject(filename);
+            FileObject folder = getSaasFolder();
+            String filename = folder.getName() + "-saas.xml"; //NOI18N
+            saasFile = folder.getFileObject(filename);
             if (saasFile == null) {
                 saasFile = getSaasFolder().createData(filename);
             }
@@ -205,11 +206,15 @@ public class Saas {
     }
     
     public FileObject getSaasFolder() {
+        return getSaasFolder(true);
+    }
+    
+    public FileObject getSaasFolder(boolean create) {
         if (saasFolder == null) {
-            saasFolder = getParentGroup().getGroupFolder().getFileObject(getDisplayName(), null);
-            if (saasFolder == null) {
+            saasFolder = SaasServicesModel.getWebServiceHome().getFileObject(getDisplayName());
+            if (saasFolder == null && create) {
                 try {
-                    saasFolder = getParentGroup().getGroupFolder().createFolder(getDisplayName());
+                    saasFolder = SaasServicesModel.getWebServiceHome().createFolder(getDisplayName());
                 } catch(Exception ex) {
                     Exceptions.printStackTrace(ex);
                 }

@@ -236,23 +236,20 @@ public class SaasGroup {
     }
     
     /**
-     * Return a clone of root group element that has one descendant at each level down to
-     * the current root.
+     * Return a clone of group element that has one descendant at each level,
+     * excluding root, down to the current group.
      * @return
      */
     public Group getPathFromRoot() {
         Group group = new Group();
         group.setName(getName());
         SaasGroup parentGroup = getParent();
-        while(parentGroup != null) {
+        while(parentGroup != SaasServicesModel.getInstance().getRootGroup()) {
             Group p = new Group();
             p.setName(parentGroup.getName());
             p.getGroup().add(group);
             group = p;
             parentGroup = parentGroup.getParent();
-        }
-        if (group == SaasServicesModel.getInstance().getRootGroup().getDelegate()) {
-            group = group.getGroup().get(0);
         }
         return group;
     }

@@ -74,8 +74,9 @@ public class WsdlSaas extends Saas implements PropertyChangeListener {
 
     public WsdlSaas(SaasGroup parentGroup, String displayName, String url, String packageName) {
         this(parentGroup, new SaasServices());
-        this.getDelegate().setDisplayName(displayName);
-        this.getDelegate().setUrl(url);
+        getDelegate().setType(NS_WSDL);
+        getDelegate().setDisplayName(displayName);
+        getDelegate().setUrl(url);
         SaasMetadata m = delegate.getSaasMetadata();
         if (m == null) {
             m = new SaasMetadata();
@@ -105,10 +106,23 @@ public class WsdlSaas extends Saas implements PropertyChangeListener {
         return ""; //NOI18N
     }
     
+    public String getPackageName() {
+        String pname = getDelegate().getSaasMetadata().getCodeGen().getPackageName();
+        if (pname == null) {
+            pname = "";
+        }
+        return pname;
+    }
+    
     @Override
     public void toStateReady() {
         if (wsData == null) {
-            wsData = WsdlUtil.getWsdlDataAsynchronously(getUrl(), getDefaultServiceName()); //NOI18N
+            String serviceName = getDefaultServiceName();
+            wsData = WsdlUtil.getWsdlDataAsynchronously(getUrl(), serviceName); //NOI18N
+            // first-time the call will return null
+            if (wsData == null) {
+                wsData = WsdlUtil.addWsdlData(getUrl(), getPackageName());
+            }
             if (wsData != null) {
                 wsData.addPropertyChangeListener(WeakListeners.propertyChange(this, wsData));
                 if (wsData.isReady()) {
@@ -137,7 +151,7 @@ public class WsdlSaas extends Saas implements PropertyChangeListener {
                 boolean resolved = ((Boolean) newValue).booleanValue();
                 if (resolved) {
                     setState(State.READY);
-                    assert wsData.getName().equals(wsData.getWsdlService().getName());
+                    //assert wsData.getName().equals(wsData.getWsdlService().getName());
                 } else {
                     setState(State.UNINITIALIZED);
                 }
@@ -190,22 +204,12 @@ public class WsdlSaas extends Saas implements PropertyChangeListener {
     @Override
     public FileObject getSaasFolder() {
         if (saasFolder == null) {
-            int begin = getUrl().lastIndexOf('/')+1;
-            int end = getUrl().lastIndexOf('?');
-            if (end <= begin) {
-                end = getUrl().lastIndexOf('.');
-            }
-
             String folderName = WsdlUtil.getServiceDirName(getUrl());
-            File websvcHome = new File(SaasServicesModel.WEBSVC_HOME);
-            if (! websvcHome.isDirectory()) {
-                websvcHome.mkdirs();
-            }
-            FileObject home = FileUtil.toFileObject(websvcHome);
-            saasFolder = home.getFileObject(folderName);
+            FileObject websvcHome = SaasServicesModel.getWebServiceHome();
+            saasFolder = websvcHome.getFileObject(folderName);
             if (saasFolder == null) {
                 try {
-                    saasFolder = home.createFolder(folderName);
+                    saasFolder = websvcHome.createFolder(folderName);
                 } catch (IOException ex) {
                     Exceptions.printStackTrace(ex);
                 }

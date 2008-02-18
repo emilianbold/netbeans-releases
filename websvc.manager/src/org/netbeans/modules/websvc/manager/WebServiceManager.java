@@ -247,12 +247,13 @@ public final class WebServiceManager {
      * 
      * @throws java.io.IOException if the web service could not be added
      */
-    public void addWebService(String wsdl, String packageName, String groupId) throws IOException {
+    public WebServiceData addWebService(String wsdl, String packageName, String groupId) throws IOException {
         WebServiceData wsData = new WebServiceData(wsdl, groupId);
         wsData.setPackageName(packageName);
         wsData.setResolved(false);
 
         addWebService(wsData, true);
+        return wsData;
     }
 
     /**
