@@ -86,46 +86,49 @@ public class LoggingMapperModelFactory extends BpelMapperModelFactory {
         LoggingAlertingTreeModel targetModel = 
                 new LoggingAlertingTreeModel((ExtensibleElements)bpelEntity);
         
-        if (bpelEntity instanceof Copy) {
-            Copy copy = (Copy)bpelEntity;
+//        if (bpelEntity instanceof Copy) {
+//            Copy copy = (Copy)bpelEntity;
+//            //
+//            EmptyTreeModel sourceModel = new EmptyTreeModel();
+//            VariableTreeModel sourceVariableModel = new VariableTreeModel(context);
+//            sourceModel.addExtensionModel(sourceVariableModel);
+//            PartnerLinkTreeExtModel pLinkExtModel = 
+//                    new PartnerLinkTreeExtModel(copy, true);
+//            sourceModel.addExtensionModel(pLinkExtModel);
+//            //
+//            BpelMapperModel newMapperModel = new BpelMapperModel(
+//                    mapperTcContext, changeProcessor, sourceModel, targetModel);
+//            //
+//            addTraceGraph(copy, newMapperModel);
+//            postProcess(newMapperModel);
+//            //
+//            return newMapperModel;
+//            //
+//        } else if (bpelEntity instanceof Assign) {
+//            Assign assign = (Assign)bpelEntity;
+//            //
+//            EmptyTreeModel sourceModel = new EmptyTreeModel();
+//            VariableTreeModel variableModel = new VariableTreeModel(context);
+//            sourceModel.addExtensionModel(variableModel);
+//            PartnerLinkTreeExtModel pLinkExtModel = 
+//                    new PartnerLinkTreeExtModel(assign, true);
+//            sourceModel.addExtensionModel(pLinkExtModel);
+//            //
+//            BpelMapperModel newMapperModel = new BpelMapperModel(
+//                    mapperTcContext, changeProcessor, sourceModel, targetModel);
+//            addTraceGraph(assign, newMapperModel);
+//            postProcess(newMapperModel);
+//            //
+//            return newMapperModel;
+//            //
+//        } else {
             //
             EmptyTreeModel sourceModel = new EmptyTreeModel();
             VariableTreeModel sourceVariableModel = new VariableTreeModel(context);
             sourceModel.addExtensionModel(sourceVariableModel);
             PartnerLinkTreeExtModel pLinkExtModel = 
-                    new PartnerLinkTreeExtModel(copy, true);
+                    new PartnerLinkTreeExtModel(bpelEntity, true);
             sourceModel.addExtensionModel(pLinkExtModel);
-            //
-            BpelMapperModel newMapperModel = new BpelMapperModel(
-                    mapperTcContext, changeProcessor, sourceModel, targetModel);
-            //
-            addTraceGraph(copy, newMapperModel);
-            postProcess(newMapperModel);
-            //
-            return newMapperModel;
-            //
-        } else if (bpelEntity instanceof Assign) {
-            Assign assign = (Assign)bpelEntity;
-            //
-            EmptyTreeModel sourceModel = new EmptyTreeModel();
-            VariableTreeModel variableModel = new VariableTreeModel(context);
-            sourceModel.addExtensionModel(variableModel);
-            PartnerLinkTreeExtModel pLinkExtModel = 
-                    new PartnerLinkTreeExtModel(assign, true);
-            sourceModel.addExtensionModel(pLinkExtModel);
-            //
-            BpelMapperModel newMapperModel = new BpelMapperModel(
-                    mapperTcContext, changeProcessor, sourceModel, targetModel);
-            addTraceGraph(assign, newMapperModel);
-            postProcess(newMapperModel);
-            //
-            return newMapperModel;
-            //
-        } else {
-            //
-            EmptyTreeModel sourceModel = new EmptyTreeModel();
-            VariableTreeModel sourceVariableModel = new VariableTreeModel(context);
-            sourceModel.addExtensionModel(sourceVariableModel);
             //
             BpelMapperModel newMapperModel = new BpelMapperModel(
                     mapperTcContext, changeProcessor, sourceModel, targetModel);
@@ -134,7 +137,7 @@ public class LoggingMapperModelFactory extends BpelMapperModelFactory {
             postProcess(newMapperModel);
             //
             return newMapperModel;
-        }
+//        }
         //
 //        return null;
     }
