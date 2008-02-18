@@ -48,6 +48,7 @@ import org.netbeans.modules.ruby.platform.RubyPlatformCustomizer;
 import org.netbeans.modules.ruby.railsprojects.server.RailsServerManager;
 import org.openide.WizardDescriptor;
 import org.openide.WizardValidationException;
+import org.openide.util.NbBundle;
 
 public class PanelOptionsVisual extends SettingsPanel implements PropertyChangeListener {
     
@@ -101,7 +102,11 @@ public class PanelOptionsVisual extends SettingsPanel implements PropertyChangeL
     }
 
     private void initWarCheckBox() {
-        warCheckBox.setEnabled(getPlatform().isJRuby());
+        boolean jruby = getPlatform().isJRuby();
+        warCheckBox.setEnabled(jruby);
+        if (!jruby) {
+            warCheckBox.setSelected(false);
+        }
     }
     
     public void propertyChange(PropertyChangeEvent event) {
@@ -230,6 +235,7 @@ public class PanelOptionsVisual extends SettingsPanel implements PropertyChangeL
 
     private void platformsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_platformsActionPerformed
         initServerComboBox();
+        initWarCheckBox();
     }//GEN-LAST:event_platformsActionPerformed
     
     private void initServerComboBox(){
@@ -241,11 +247,11 @@ public class PanelOptionsVisual extends SettingsPanel implements PropertyChangeL
     }
     
     boolean valid(WizardDescriptor settings) {
-//        if ((warCheckBox.isSelected() || jdbcCheckBox.isSelected()) && !getPlatform().isJRuby()) {
-//            settings.putProperty( "WizardPanel_errorMessage", 
-//                    NbBundle.getMessage(PanelOptionsVisual.class, "JRubyRequired") ); //NOI18N
-//            return false;
-//        }
+        if ((warCheckBox.isSelected()) && !getPlatform().isJRuby()) {
+            settings.putProperty( "WizardPanel_errorMessage", 
+                    NbBundle.getMessage(PanelOptionsVisual.class, "JRubyRequired") ); //NOI18N
+            return false;
+        }
         //if (mainClassTextField.isVisible () && mainClassTextField.isEnabled ()) {
         //    if (!valid) {
         //        settings.putProperty( "WizardPanel_errorMessage", // NOI18N

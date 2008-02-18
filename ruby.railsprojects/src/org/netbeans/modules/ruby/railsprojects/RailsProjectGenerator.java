@@ -51,11 +51,9 @@ import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.modules.ruby.railsprojects.ui.customizer.RailsProjectProperties;
 import org.netbeans.modules.ruby.platform.execution.ExecutionDescriptor;
 import org.netbeans.api.ruby.platform.RubyPlatform;
-import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.ruby.NbUtilities;
 import org.netbeans.modules.ruby.RubyUtils;
 import org.netbeans.modules.ruby.platform.RubyExecution;
-import org.netbeans.modules.ruby.railsprojects.ui.wizards.PanelOptionsVisual;
 import org.netbeans.modules.ruby.rubyproject.RakeTargetsAction;
 import org.netbeans.modules.ruby.platform.execution.DirectoryFileLocator;
 import org.netbeans.modules.ruby.platform.execution.ExecutionService;
@@ -101,8 +99,6 @@ public class RailsProjectGenerator {
      */
     public static RakeProjectHelper createProject(RailsProjectCreateData data) throws IOException {
         FileObject dirFO = FileUtil.createFolder(data.getDir());
-//        boolean createJavaDb = false;
-//        boolean createJdbc = false;
         RubyPlatform platform = data.getPlatform();
         RailsDatabaseConfiguration railsDb = data.getDatabase();
         // Run Rails to generate the appliation skeleton
