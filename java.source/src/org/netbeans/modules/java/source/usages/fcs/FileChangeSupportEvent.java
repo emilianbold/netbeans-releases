@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -38,31 +38,49 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.bpel.validation.core;
 
-import org.netbeans.modules.xml.xam.Component;
-import org.netbeans.modules.xml.xam.spi.Validator.ResultItem;
-import org.netbeans.modules.xml.xam.spi.Validator.ResultType;
-import org.netbeans.modules.bpel.validation.core.QuickFix;
+package org.netbeans.modules.java.source.usages.fcs;
+import java.io.File;
+
+import java.util.EventObject;
+
+import org.openide.filesystems.FileObject;
+
+import org.openide.filesystems.FileUtil;
 
 /**
- * @author Vladimir Yaroslavskiy
- * @version 2007.12.07
+ * Event indicating that a file named by a given path was created, deleted, or changed.
+ * @author Jesse Glick
  */
-public final class Outcome extends ResultItem {
+public final class FileChangeSupportEvent extends EventObject {
 
-  public Outcome(CoreValidator validator, ResultType type, Component component, String description) {
-    this(validator, type, component, description, null);
-  }
+    public static final int EVENT_CREATED = 0;
+    public static final int EVENT_DELETED = 1;
+    public static final int EVENT_MODIFIED = 2;
 
-  public Outcome(CoreValidator validator, ResultType type, Component component, String description, QuickFix quickFix) {
-    super(validator, type, component, description);
-    myQuickFix = quickFix;
-  }         
-
-  public QuickFix getQuickFix() {
-    return myQuickFix;
-  }
-
-  private QuickFix myQuickFix;
+    private final int type;
+    private final File path;
+    
+    FileChangeSupportEvent(FileChangeSupport support, int type, File path) {
+        super(support);
+        this.type = type;
+        this.path = path;
+    }
+    
+    public int getType() {
+        return type;
+    }
+    
+    public File getPath() {
+        return path;
+    }
+    
+    public FileObject getFileObject() {
+        return FileUtil.toFileObject(path);
+    }
+    
+    public String toString() {
+        return "FCSE[" + "CDM".charAt(type) + ":" + path + "]"; // NOI18N
+    }
+    
 }
