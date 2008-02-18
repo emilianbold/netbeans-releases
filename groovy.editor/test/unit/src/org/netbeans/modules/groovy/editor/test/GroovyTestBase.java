@@ -59,6 +59,7 @@ import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Utilities;
 
 /**
  *
@@ -267,12 +268,28 @@ public class GroovyTestBase extends NbTestCase {
     }
     
     public static String readFile(File f) throws Exception {
-        FileReader r = new FileReader(f);
-        int fileLen = (int)f.length();
-        CharBuffer cb = CharBuffer.allocate(fileLen);
-        r.read(cb);
-        cb.rewind();
-        return cb.toString();
+        
+        // This is arguable not the fastest way of removing "\r"
+        // on windows, but hey, we are dealing with small testcases.
+        if(Utilities.isWindows()) {
+            BufferedReader br = new BufferedReader(new FileReader(f));
+            String returnString = "";
+            String oneLine = "";
+            
+            while ((oneLine = br.readLine()) != null) {
+                returnString = returnString + oneLine + "\n";
+                }
+            
+            return returnString;
+            }
+        else {
+            FileReader r = new FileReader(f);
+            int fileLen = (int)f.length();
+            CharBuffer cb = CharBuffer.allocate(fileLen);
+            r.read(cb);
+            cb.rewind();
+            return cb.toString();
+        }
     }
 
 }
