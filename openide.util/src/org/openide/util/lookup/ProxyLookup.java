@@ -53,6 +53,7 @@ import java.util.IdentityHashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import javax.swing.event.EventListenerList;
 import org.openide.util.Lookup;
@@ -317,22 +318,14 @@ public class ProxyLookup extends Lookup {
 
         /** Constructor.
          */
-        public R(ProxyLookup proxy, ImmutableInternalData data, Lookup.Template<T> t) {
+        public R(ProxyLookup proxy, Lookup.Template<T> t) {
             this.template = t;
             this.weakL = new WeakResult<T>(this);
             this.proxy = proxy;
-            this.data = data;
         }
         
         private ProxyLookup proxy() {
             return proxy;
-        }
-
-        /** When garbage collected, remove the template from the has map.
-         */
-        @Override
-        protected void finalize() {
-            proxy().unregisterTemplate(template);
         }
 
         @SuppressWarnings("unchecked")
@@ -669,6 +662,7 @@ public class ProxyLookup extends Lookup {
 
         public void run() {
             result.removeListeners();
+//TBD:            proxy().unregisterTemplate(template);
         }
     }
     
@@ -765,6 +759,18 @@ public class ProxyLookup extends Lookup {
         
         protected ImmutableInternalData() {
         }
+        
+        public static ImmutableInternalData create(Object lkp, Map<Template, Reference<R>> results) {
+            if (results.size() == 0 && lkp == EMPTY_ARR) {
+                return EMPTY;
+            }
+            if (results.size() == 1) {
+                Entry<Template,Reference<R>> e = results.entrySet().iterator().next();
+                return new SingleInternalData(lkp, e.getKey(), e.getValue());
+            }
+            
+            return new RealInternalData(lkp, results);
+        }
 
         protected abstract boolean isEmpty();
         protected abstract Map<Template, Reference<R>> getResults();
@@ -783,7 +789,7 @@ public class ProxyLookup extends Lookup {
                     // thta is still alive
                     return this;
                 }
-                return new RealInternalData(getRawLookups(), c);
+                return create(getRawLookups(), c);
             } else {
                 return this;
             }
@@ -803,10 +809,9 @@ public class ProxyLookup extends Lookup {
             }
             
             HashMap<Template, Reference<R>> res = new HashMap<Template, Reference<R>>(map);
-            
-            newData[0] = new RealInternalData(getRawLookups(), res);
-            R<T> newR = new R<T>(proxy, newData[0], template);
+            R<T> newR = new R<T>(proxy, template);
             res.put(template, new java.lang.ref.SoftReference<R>(newR));
+            newR.data = newData[0] = create(getRawLookups(), res);
             return newR;
         }
         final ImmutableInternalData setLookupsNoFire(Lookup[] lookups, boolean skipCheck) {
@@ -847,7 +852,7 @@ public class ProxyLookup extends Lookup {
                 return this;
             }
             
-            return new RealInternalData(l, getResults());
+            return create(l, getResults());
         }
         final Lookup[] getLookups(boolean clone) {
             Object l = this.getRawLookups();
