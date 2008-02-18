@@ -442,10 +442,14 @@ public class PaletteTest extends RestNodeTest {
         Node pn = new Node(spn, getRestPackage());
         pn.expand();
         Set<String> deleted = new HashSet<String>();
+        //Safe Delete
+        String sdTitle = Bundle.getStringTrimmed("org.netbeans.modules.refactoring.java.ui.Bundle", "LBL_SafeDel");
+        //Delete
+        String delLabel = Bundle.getStringTrimmed("org.netbeans.modules.refactoring.java.ui.Bundle", "LBL_SafeDel_Delete");
         for (String s : toDelete) {
             if (getFileFromProject(s).exists()) {
-                new Node(pn, s).performPopupAction("Delete"); //NOI18N
-                new NbDialogOperator("Safe Delete").ok(); //NOI18N
+                new Node(pn, s).performPopupAction(delLabel);
+                new NbDialogOperator(sdTitle).ok();
                 deleted.add(s);
             }
         }
