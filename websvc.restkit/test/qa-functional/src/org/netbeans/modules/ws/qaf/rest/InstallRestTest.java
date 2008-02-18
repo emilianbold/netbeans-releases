@@ -44,9 +44,7 @@ import junit.textui.TestRunner;
 import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.jellytools.PluginsOperator;
-import org.netbeans.jellytools.WizardOperator;
 import org.netbeans.jemmy.operators.JButtonOperator;
-import org.netbeans.jemmy.operators.JCheckBoxOperator;
 
 /**
  * Test (un)installation of the RESTful Web Services plugin from Update Center
@@ -107,27 +105,7 @@ public class InstallRestTest extends JellyTestCase {
 
     private void installPlugin() throws IOException {
         PluginsOperator po = PluginsOperator.invoke();
-        po.selectAvailablePlugins();
-        po.selectPlugins(new String[]{REST_KIT_LABEL});
-        po.install();
-        WizardOperator installerOper = po.installer();
-        installerOper.next();
-        // I accept the terms...
-        String acceptLabel = Bundle.getStringTrimmed(
-                "org.netbeans.modules.autoupdate.ui.wizards.Bundle",
-                "LicenseApprovalPanel.cbAccept.text");
-        JCheckBoxOperator acceptCheckboxOper = new JCheckBoxOperator(installerOper, acceptLabel);
-        if (!acceptCheckboxOper.isEnabled()) {
-            // wait until licence is shown and dialog is re-created
-            acceptCheckboxOper.waitComponentShowing(false);
-            // find check box again
-            acceptCheckboxOper = new JCheckBoxOperator(installerOper, acceptLabel);
-        }
-        acceptCheckboxOper.push();
-        // Install
-        String installInDialogLabel = Bundle.getStringTrimmed("org.netbeans.modules.autoupdate.ui.wizards.Bundle", "InstallUnitWizardModel_Buttons_Install");
-        new JButtonOperator(installerOper, installInDialogLabel).push();
-        installerOper.finish();
+        po.install(REST_KIT_LABEL);
     }
 
     private void uninstallPlugin() {
