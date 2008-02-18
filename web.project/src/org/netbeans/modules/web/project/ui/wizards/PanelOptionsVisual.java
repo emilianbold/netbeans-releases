@@ -50,11 +50,14 @@ import java.util.Set;
 import java.util.TreeSet;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JFileChooser;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.ant.FileChooser;
 import org.netbeans.api.project.ui.OpenProjects;
+import org.netbeans.api.queries.CollocationQuery;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeApplication;
@@ -86,12 +89,26 @@ public class PanelOptionsVisual extends javax.swing.JPanel {
     private List earProjects;
     
     /** Creates new form PanelOptionsVisual */
-    public PanelOptionsVisual(PanelConfigureProject panel) {
+    public PanelOptionsVisual(PanelConfigureProject pnl) {
         initComponents();
         setJ2eeVersionWarningPanel();
-        this.panel = panel;
+        this.panel = pnl;
         currentLibrariesLocation = ".."+File.separatorChar+"libraries"; // NOI18N
         librariesLocation.setText(currentLibrariesLocation);
+        librariesLocation.getDocument().addDocumentListener( new DocumentListener () {
+            public void insertUpdate(DocumentEvent e) {
+                panel.fireChangeEvent();
+            }
+            
+            public void removeUpdate(DocumentEvent e) {
+                panel.fireChangeEvent();
+            }
+            
+            public void changedUpdate(DocumentEvent e) {
+                panel.fireChangeEvent();
+            }
+        });
+        
         initServers(FoldersListSettings.getDefault().getLastUsedServer());
         // preselect the first item in the j2ee spec combo
         if (j2eeSpecComboBox.getModel().getSize() > 0) {
@@ -184,7 +201,7 @@ public class PanelOptionsVisual extends javax.swing.JPanel {
             .add(jPanel1Layout.createSequentialGroup()
                 .add(serverInstanceLabel)
                 .add(55, 55, 55)
-                .add(serverInstanceComboBox, 0, 273, Short.MAX_VALUE)
+                .add(serverInstanceComboBox, 0, 320, Short.MAX_VALUE)
                 .add(6, 6, 6)
                 .add(addServerButton))
             .add(jPanel1Layout.createSequentialGroup()
@@ -194,7 +211,7 @@ public class PanelOptionsVisual extends javax.swing.JPanel {
             .add(jPanel1Layout.createSequentialGroup()
                 .add(jLabelContextPath)
                 .add(23, 23, 23)
-                .add(jTextFieldContextPath, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 342, Short.MAX_VALUE))
+                .add(jTextFieldContextPath, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 392, Short.MAX_VALUE))
         );
         jPanel1Layout.setVerticalGroup(
             jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -246,8 +263,6 @@ public class PanelOptionsVisual extends javax.swing.JPanel {
 
         jLabel1.setText(org.openide.util.NbBundle.getMessage(PanelOptionsVisual.class, "LBL_PanelOptions_Location_Label")); // NOI18N
 
-        librariesLocation.setEditable(false);
-
         browseLibraries.setMnemonic('B');
         browseLibraries.setText(org.openide.util.NbBundle.getMessage(PanelOptionsVisual.class, "LBL_PanelOptions_Browse_Button")); // NOI18N
         browseLibraries.addActionListener(new java.awt.event.ActionListener() {
@@ -278,9 +293,9 @@ public class PanelOptionsVisual extends javax.swing.JPanel {
             .add(layout.createSequentialGroup()
                 .add(jLabelEnterprise)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(jComboBoxEnterprise, 0, 286, Short.MAX_VALUE))
+                .add(jComboBoxEnterprise, 0, 306, Short.MAX_VALUE))
             .add(org.jdesktop.layout.GroupLayout.TRAILING, jPanel1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-            .add(warningPlaceHolderPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 433, Short.MAX_VALUE)
+            .add(warningPlaceHolderPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 500, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -414,6 +429,25 @@ public class PanelOptionsVisual extends javax.swing.JPanel {
     }
     
     boolean valid(WizardDescriptor wizardDescriptor) {
+        if (sharableProject.isSelected()) {
+            String location = librariesLocation.getText();
+            if (new File(location).isAbsolute()) {
+                wizardDescriptor.putProperty( "WizardPanel_errorMessage", // NOI18N
+                    NbBundle.getMessage(PanelOptionsVisual.class, "WARN_PanelOptionsVisual.absolutePath"));
+                
+            } else {
+                    //TODO for some reason it can be null here, nut not in j2se projects..
+                if (projectLocation != null) {
+                    File projectLoc = FileUtil.normalizeFile(new File(projectLocation));
+                    File libLoc = PropertyUtils.resolveFile(projectLoc, location);
+                    if (!CollocationQuery.areCollocated(projectLoc, libLoc)) {
+                        wizardDescriptor.putProperty( "WizardPanel_errorMessage", // NOI18N
+                            NbBundle.getMessage(PanelOptionsVisual.class, "WARN_PanelOptionsVisual.relativePath")); 
+                    }
+                }
+            }
+        }
+        
         if (getSelectedServer() == null) {
             String errMsg = NbBundle.getMessage(PanelOptionsVisual.class, "MSG_NoServer");
             wizardDescriptor.putProperty( "WizardPanel_errorMessage", errMsg); // NOI18N
