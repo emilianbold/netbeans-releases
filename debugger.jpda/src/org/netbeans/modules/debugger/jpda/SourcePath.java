@@ -46,6 +46,8 @@ import com.sun.jdi.StackFrame;
 import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.spi.debugger.ContextProvider;
 
 import org.netbeans.api.debugger.jpda.CallStackFrame;
@@ -140,9 +142,9 @@ public class SourcePath {
             try {
                 new java.net.URL(url);
             } catch (java.net.MalformedURLException muex) {
-                ErrorManager.getDefault().notify(
-                        ErrorManager.getDefault().annotate(muex,
-                        "Malformed URL '"+url+"' produced by "+getContext ()));
+                Logger.getLogger(SourcePath.class.getName()).log(Level.WARNING,
+                        "Malformed URL '"+url+"' produced by "+getContext (), muex);
+                return null;
             }
         }
         return url;
@@ -429,9 +431,8 @@ public class SourcePath {
                     new java.net.URL(p1);
                     return p1;
                 } catch (java.net.MalformedURLException muex) {
-                    ErrorManager.getDefault().notify(
-                            ErrorManager.getDefault().annotate(muex,
-                            "Malformed URL '"+p1+"' produced by "+cp1));
+                    Logger.getLogger(SourcePath.class.getName()).log(Level.WARNING,
+                            "Malformed URL '"+p1+"' produced by "+cp1, muex);
                 }
             }
             p1 = cp2.getURL (relativePath, global);
@@ -439,9 +440,9 @@ public class SourcePath {
                 try {
                     new java.net.URL(p1);
                 } catch (java.net.MalformedURLException muex) {
-                    ErrorManager.getDefault().notify(
-                            ErrorManager.getDefault().annotate(muex,
-                            "Malformed URL '"+p1+"' produced by "+cp1));
+                    Logger.getLogger(SourcePath.class.getName()).log(Level.WARNING,
+                            "Malformed URL '"+p1+"' produced by "+cp2, muex);
+                    p1 = null;
                 }
             }
             return p1;
