@@ -97,7 +97,7 @@ public class ProjectLibraryProvider implements ArealLibraryProvider<ProjectLibra
 
     public static ProjectLibraryProvider INSTANCE;
     
-    private boolean listening = true;
+    private volatile boolean listening = true;
     private final Map<ProjectLibraryArea,Reference<LP>> providers = new HashMap<ProjectLibraryArea,Reference<LP>>();
     
     /**
@@ -245,8 +245,12 @@ public class ProjectLibraryProvider implements ArealLibraryProvider<ProjectLibra
             recalculate();
         }
 
-        private synchronized void recalculate() {
-            if (delta(libraries, calculate(area))) {
+        private void recalculate() {
+            boolean fire;
+            synchronized (this) {
+                fire = delta(libraries, calculate(area));
+            }
+            if (fire) {
                 pcs.firePropertyChange(LibraryProvider.PROP_LIBRARIES, null, null);
             }
         }
