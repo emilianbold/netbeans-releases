@@ -166,6 +166,18 @@ is divided into following sections:
                         <fileset dir="${{netbeans.home}}/../platform8/lib"><include name="*.jar" /></fileset>
                     </classpath>
                 </taskdef>
+                 <taskdef name="bulk-loader" classname="org.netbeans.modules.etl.project.anttasks.ETLBulkLoader">
+                    <classpath>
+                        <fileset dir="${{module.install.dir}}"><include name="*.jar" /></fileset>
+                        <fileset dir="${{module.install.dir}}/ext/etlpro"><include name="*.jar" /></fileset>
+                        <fileset dir="${{module.install.dir}}/ext/etl"><include name="*.jar" /></fileset>                                                
+                        <fileset dir="${{module.install.dir}}/ext"><include name="*.jar" /></fileset>
+                        <fileset dir="${{netbeans.home}}/../ide9/modules"><include name="*.jar" /></fileset>
+                        <fileset dir="${{netbeans.home}}/../platform8/modules"><include name="*.jar" /></fileset>
+                        <fileset dir="${{netbeans.home}}/../platform8/core"><include name="*.jar" /></fileset>
+                        <fileset dir="${{netbeans.home}}/../platform8/lib"><include name="*.jar" /></fileset>
+                    </classpath>
+                </taskdef>
             </target>
             <target name="init">
                 <!-- //B20050104                <xsl:attribute name="depends">pre-init,init-private,init-userdir,init-user,init-project,do-init,post-init,init-check,init-macrodef-javac,init-macrodef-nbjpda,init-macrodef-debug,init-taskdefs</xsl:attribute> -->
@@ -442,6 +454,10 @@ is divided into following sections:
                 </taskdef-->
                 <!--echo message="SAMPLE COMPLETED" /--> 
             </target>
+             <!--target name="etl_bulkloader">      
+                <xsl:attribute name="depends">init</xsl:attribute>
+                <bulk-loader/> 
+            </target-->
             
             <target name="pre-dist">
                 <xsl:comment>
