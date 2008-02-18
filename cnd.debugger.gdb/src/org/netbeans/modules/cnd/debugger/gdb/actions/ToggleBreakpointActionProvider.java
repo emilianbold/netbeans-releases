@@ -92,9 +92,8 @@ public class ToggleBreakpointActionProvider extends ActionsProviderSupport imple
         
         // 3) create a new line breakpoint
         lb = LineBreakpoint.create(url, ln);
-        lb.setPrintText(
-            NbBundle.getBundle(ToggleBreakpointActionProvider.class).getString("CTL_Line_Breakpoint_Print_Text")
-        );
+        lb.setPrintText(NbBundle.getBundle(
+                ToggleBreakpointActionProvider.class).getString("CTL_Line_Breakpoint_Print_Text")); // NOI18N
         d.addBreakpoint(lb);
     }
     

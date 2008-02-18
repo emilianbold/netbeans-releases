@@ -52,7 +52,6 @@ import junit.textui.TestRunner;
 import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.NbDialogOperator;
 import org.netbeans.jellytools.WizardOperator;
-import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jemmy.EventTool;
 import org.netbeans.jemmy.operators.JButtonOperator;
 import org.netbeans.jemmy.operators.JComboBoxOperator;
@@ -83,6 +82,7 @@ public class CRUDTSuite extends RestTestBase {
         suite.addTest(new CRUDTSuite("testPost")); //NOI18N
         suite.addTest(new CRUDTSuite("testPut")); //NOI18N
         suite.addTest(new CRUDTSuite("testDelete")); //NOI18N
+        suite.addTest(new CRUDTSuite("testCreateRestClient")); //NOI18N
         suite.addTest(new CRUDTSuite("testUndeploy")); //NOI18N
         return suite;
     }
@@ -135,10 +135,7 @@ public class CRUDTSuite extends RestTestBase {
         assertEquals("Some files were not generated", 37, files.size()); //NOI18N
         checkFiles(files);
         //make sure all REST services nodes are visible in project log. view
-        String restNodeLabel = Bundle.getStringTrimmed("org.netbeans.modules.websvc.rest.nodes.Bundle", "LBL_RestServices");
-        Node restNode = new Node(getProjectRootNode(), restNodeLabel);
-        restNode.expand();
-        assertEquals("missing node?", 14, restNode.getChildren().length);
+        assertEquals("missing nodes?", 14, getRestNode().getChildren().length);
     }
 
     /**
@@ -208,6 +205,10 @@ public class CRUDTSuite extends RestTestBase {
             assertFalse(rs.next());
         } catch (SQLException ex) {
         }
+    }
+
+    public void testCreateRestClient() throws IOException {
+        prepareRestClient();
     }
 
     private void prepareEntityClasses() {

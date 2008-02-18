@@ -190,6 +190,7 @@ public class PatternsTSuite extends RestTestBase {
         suite.addTest(new PatternsTSuite("testContainerI3")); //NOI18N
         suite.addTest(new PatternsTSuite("testCcContainerI2")); //NOI18N
         suite.addTest(new PatternsTSuite("testCcContainerI3")); //NOI18N
+        suite.addTest(new PatternsTSuite("testNodes")); //NOI18N
         suite.addTest(new PatternsTSuite("testDeploy")); //NOI18N
         suite.addTest(new PatternsTSuite("testUndeploy")); //NOI18N
         return suite;
@@ -295,6 +296,13 @@ public class PatternsTSuite extends RestTestBase {
     public void testCcContainerI3() {
         String name = "CcCI3"; //NOI18N
         Set<File> files = createWsFromPatterns(name, Pattern.CcContainerItem, MimeType.TEXT_HTML);
+    }
+
+    /**
+     * Make sure all REST services nodes are visible in project log. view
+     */
+    public void testNodes() {
+        assertEquals("missing nodes?", 20, getRestNode().getChildren().length); //NOI18N
     }
 
     //TODO: add selection of resource representation class as soon as issue 122619 get fixed

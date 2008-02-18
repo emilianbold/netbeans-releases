@@ -61,8 +61,7 @@ made subject to such option by the copyright holder.
         <condition property="skip-download-httpunit" >
             <and>
                 <available file="${lib.dir}/httpunit-1.6.2.jar" />
-                <available file="${lib.dir}/jtidy-4aug2000r7-dev.jar" />
-                <available file="${lib.dir}/js-1.6R7.jar" />
+                <available file="${lib.dir}/Tidy-r7.jar" />
             </and>
         </condition>
     </target>
