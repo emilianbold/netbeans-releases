@@ -36,25 +36,25 @@
 ==============================================================
 'Module', tokenID=identifier, offset=2253 [47:5/2253-47:11/2259]
 --OWNER:
-    FUNCTION_DEFINITION Cpu(int,int,int)  [46:1/2162-49:2/2340] ReferencesTestCase/cpu.cc
+    EXPR null text='Module("CPU", "generic", type, architecture, units'
 --RESOLVED TO:
     FUNCTION Module(const char*,const char*,int,int,int)  [54:5/2246-54:92/2333] ReferencesTestCase/module.h
 ==============================================================
 'type', tokenID=identifier, offset=2278 [47:30/2278-47:34/2282]
 --OWNER:
-    FUNCTION_DEFINITION Cpu(int,int,int)  [46:1/2162-49:2/2340] ReferencesTestCase/cpu.cc
+    EXPR null text='Module("CPU", "generic", type, architecture, units'
 --RESOLVED TO:
     VARIABLE type [46:10/2171-46:18/2179] ReferencesTestCase/cpu.cc  TYPE: int TEXT=int  [46:10/2171-46:13/2174]  INIT: null  SCOPE: Cpu 
 ==============================================================
 'architecture', tokenID=identifier, offset=2284 [47:36/2284-47:48/2296]
 --OWNER:
-    FUNCTION_DEFINITION Cpu(int,int,int)  [46:1/2162-49:2/2340] ReferencesTestCase/cpu.cc
+    EXPR null text='Module("CPU", "generic", type, architecture, units'
 --RESOLVED TO:
     VARIABLE architecture [46:34/2195-46:50/2211] ReferencesTestCase/cpu.cc  TYPE: int TEXT=int  [46:34/2195-46:37/2198]  INIT: null  SCOPE: Cpu 
 ==============================================================
 'units', tokenID=identifier, offset=2298 [47:50/2298-47:55/2303]
 --OWNER:
-    FUNCTION_DEFINITION Cpu(int,int,int)  [46:1/2162-49:2/2340] ReferencesTestCase/cpu.cc
+    EXPR null text='Module("CPU", "generic", type, architecture, units'
 --RESOLVED TO:
     VARIABLE units [46:67/2228-46:76/2237] ReferencesTestCase/cpu.cc  TYPE: int TEXT=int  [46:67/2228-46:70/2231]  INIT: null  SCOPE: Cpu 
 ==============================================================
