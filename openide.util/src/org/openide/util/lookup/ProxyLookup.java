@@ -247,21 +247,25 @@ public class ProxyLookup extends Lookup {
     }
 
     private Collection<Reference<R>> setData(
-        ImmutableInternalData data, Lookup[] current, 
+        ImmutableInternalData newData, Lookup[] current, 
         Map<Result,LookupListener> toAdd, Map<Result,LookupListener> toRemove
     ) {
         assert Thread.holdsLock(ProxyLookup.this);
-        assert data != null;
+        assert newData != null;
         
         ImmutableInternalData previous = this.data;
+        
+        if (previous == newData) {
+            return Collections.emptyList();
+        }
 
-        if (data.isEmpty()) {
-            this.data = data;
+        if (newData.isEmpty()) {
+            this.data = newData;
             // no affected results => exit
             return Collections.emptyList();
         }
 
-        Collection<Reference<R>> arr = data.references();
+        Collection<Reference<R>> arr = newData.references();
 
         Set<Lookup> removed = identityHashSet(previous.getLookupsList());
         Set<Lookup> currentSet = identityHashSet(Arrays.asList(current));
@@ -272,13 +276,25 @@ public class ProxyLookup extends Lookup {
         for (Reference<R> ref : arr) {
             R<?> r = ref.get();
             if (r != null) {
-                assert this.data == previous;
-                r.lookupChange(data, current, previous, newL, removed, toAdd, toRemove);
+                r.lookupChange(newData, current, previous, newL, removed, toAdd, toRemove);
+                if (this.data != previous) {
+                    // the data were changed by an re-entrant call
+                    // skip any other change processing, as it is not needed
+                    // anymore
+                    assert r.data == this.data;
+                    return Collections.emptyList();
+                }
             }
         }
-            
+        
         assert this.data == previous;
-        this.data = data;
+        for (Reference<R> ref : arr) {
+            R<?> r = ref.get();
+            if (r != null) {
+                r.data = newData;
+            }
+        }
+        this.data = newData;
         return arr;
     }
 
@@ -387,8 +403,6 @@ public class ProxyLookup extends Lookup {
             Set<Lookup> added, Set<Lookup> removed,
             Map<Result,LookupListener> toAdd, Map<Result,LookupListener> toRemove
         ) {
-            data = newData;
-
             if (weakL.getResults() == null) {
                 // not computed yet, do not need to do anything
                 return;
