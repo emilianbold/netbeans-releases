@@ -37,70 +37,51 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.gotodeclaration.element.providers;
+package org.netbeans.modules.websvc.core.jaxws.actions;
 
-import java.util.Collection;
-import org.netbeans.modules.cnd.api.model.CsmFile;
-import org.netbeans.modules.cnd.api.model.CsmMacro;
-import org.netbeans.modules.cnd.api.model.CsmProject;
-import org.netbeans.modules.cnd.gotodeclaration.element.spi.ElementProvider;
-import org.netbeans.modules.cnd.gotodeclaration.util.NameMatcher;
+import java.io.IOException;
+import org.openide.ErrorManager;
+import org.openide.nodes.Node;
+import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
+import org.openide.util.actions.CookieAction;
 
 /**
  *
- * @author vk155633
+ * @author rico
  */
-public class MacroProvider extends BaseProvider implements ElementProvider {
+public class JaxWsGenWSDLAction extends CookieAction{
 
-private static class MacroDelegate extends ProviderDelegate {
-
-
-        public String name() {
-            return "C/C++ Macros"; // NOI18N
-        }
-
-        public String getDisplayName() {
-            return NbBundle.getMessage(MacroProvider.class, "MACRO_PROVIDER_DISPLAY_NAME"); // NOI18N
-        }
-
-        protected void processProject(CsmProject project, ResultSet result, NameMatcher comparator) {
-            if( TRACE ) System.err.printf("MacroProvider.processProject %s\n", project.getName());
-            processFiles(project.getAllFiles(), result, comparator);
-        }
-
-        private void processFiles(Collection<CsmFile> files, ResultSet result, NameMatcher comparator) {
-            for( CsmFile file : files ) {
-                if( isCancelled() ) {
-                    return;
-                }
-                for( CsmMacro macro : file.getMacros() ) {
-                    if( isCancelled() ) {
-                        return;
-                    }
-                    if( comparator.matches(macro.getName().toString()) ) {
-                        result.add(new MacroElementDescriptor(macro));
-                    }
-                }
-            }
-        }
-
-
+    @Override
+    protected int mode() {
+        return MODE_EXACTLY_ONE;
     }
 
     @Override
-    protected ProviderDelegate createDelegate() {
-        return new MacroDelegate();
+    protected Class<?>[] cookieClasses() {
+        return new Class[]{JaxWsGenWSDLCookie.class};
     }
 
-    public String getDisplayName() {
-        return NbBundle.getMessage(MacroProvider.class, "MACRO_PROVIDER_DISPLAY_NAME"); // NOI18N
+    @Override
+    protected void performAction(Node[] activatedNodes) {
+        JaxWsGenWSDLCookie cookie = activatedNodes[0].getCookie(JaxWsGenWSDLCookie.class);
+        if(cookie != null){
+            try {
+                cookie.generateWSDL();
+            } catch (IOException ex) {
+                ErrorManager.getDefault().notify(ex);
+            }
+        }
     }
 
-    public String name() {
-        return "C/C++ Macros"; // NOI18N
+    @Override
+    public String getName() {
+        return NbBundle.getMessage(JaxWsGenWSDLAction.class, "LBL_Generate_WSDL");
     }
-    
 
-    
+    @Override
+    public HelpCtx getHelpCtx() {
+        return HelpCtx.DEFAULT_HELP;
+    }
+
 }
