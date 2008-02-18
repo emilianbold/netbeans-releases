@@ -281,14 +281,14 @@ public class PanelOptionsVisual extends SettingsPanel implements ActionListener,
             String location = librariesLocation.getText();
             if (new File(location).isAbsolute()) {
                 settings.putProperty( "WizardPanel_errorMessage", // NOI18N
-                    "<html>Please make sure the absolute path to library definitions is always accessible in the same way.<html>"); //NOI18N
+                    "<html>Please make sure the absolute path to library definitions is always accessible in the same way.<html>");
                 
             } else {
                 File projectLoc = FileUtil.normalizeFile(new File(projectLocation));
                 File libLoc = PropertyUtils.resolveFile(projectLoc, location);
                 if (!CollocationQuery.areCollocated(projectLoc, libLoc)) {
                     settings.putProperty( "WizardPanel_errorMessage", // NOI18N
-                        "<html>Please make sure the relative path to library definitions is always accessible in the same way.<html>"); //NOI18N
+                        "<html>Please make sure the relative path to library definitions is always accessible in the same way.<html>"); 
                 }
             }
         }
