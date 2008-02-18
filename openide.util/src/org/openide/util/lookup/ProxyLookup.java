@@ -58,6 +58,7 @@ import javax.swing.event.EventListenerList;
 import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
+import org.openide.util.Utilities;
 
 /** Implementation of lookup that can delegate to others.
  *
@@ -658,26 +659,29 @@ public class ProxyLookup extends Lookup {
             this.cache = cache;
         }
     }
+    private static final class WeakRef<T> extends WeakReference<R> implements Runnable {
+        private WeakResult<T> result;
+        
+        public WeakRef(R r, WeakResult<T> result) {
+            super(r, Utilities.activeReferenceQueue());
+            this.result = result;
+        }
+
+        public void run() {
+            result.removeListeners();
+        }
+    }
+    
     private static final class WeakResult<T> extends WaitableResult<T> implements LookupListener, Runnable {
         /** all results */
         private Lookup.Result<T>[] results;
-
-        private final Reference<R> result;
+        private final WeakRef<T> result;
         
         public WeakResult(R r) {
-            this.result = new WeakReference<R>(r);//, Utilities.activeReferenceQueue());
+            this.result = new WeakRef(r, this);
         }
         
-        protected void beforeLookup(Lookup.Template t) {
-            R r = result.get();
-            if (r != null) {
-                r.beforeLookup(t);
-            } else {
-                removeListeners();
-            }
-        }
-
-        private void removeListeners() {
+        final void removeListeners() {
             Lookup.Result<T>[] arr = this.getResults();
             if (arr == null) {
                 return;
@@ -685,6 +689,15 @@ public class ProxyLookup extends Lookup {
 
             for(int i = 0; i < arr.length; i++) {
                 arr[i].removeLookupListener(this);
+            }
+        }
+
+        protected void beforeLookup(Lookup.Template t) {
+            R r = result.get();
+            if (r != null) {
+                r.beforeLookup(t);
+            } else {
+                removeListeners();
             }
         }
 
@@ -754,7 +767,7 @@ public class ProxyLookup extends Lookup {
         }
 
         protected abstract boolean isEmpty();
-        protected abstract Map<Template<?>, Reference<R>> getResults();
+        protected abstract Map<Template, Reference<R>> getResults();
         protected abstract Object getRawLookups();
 
         final Collection<Reference<R>> references() {
@@ -763,7 +776,7 @@ public class ProxyLookup extends Lookup {
         
         final <T> ImmutableInternalData removeTemplate(ProxyLookup proxy, Template<T> template) {
             if (getResults().containsKey(template)) {
-                HashMap<Template<?>,Reference<R>> c = new HashMap<Lookup.Template<?>, Reference<ProxyLookup.R>>(getResults());
+                HashMap<Template,Reference<R>> c = new HashMap<Template, Reference<ProxyLookup.R>>(getResults());
                 Reference<R> ref = c.remove(template);
                 if (ref != null && ref.get() != null) {
                     // seems like there is a reference to a result for this template
@@ -779,7 +792,7 @@ public class ProxyLookup extends Lookup {
         <T> R<T> findResult(ProxyLookup proxy, ImmutableInternalData[] newData, Template<T> template) {
             assert Thread.holdsLock(proxy);
             
-            Map<Template<?>,Reference<R>> map = getResults();
+            Map<Template,Reference<R>> map = getResults();
             
             Reference<R> ref = map.get(template);
             R r = (ref == null) ? null : ref.get();
@@ -789,8 +802,7 @@ public class ProxyLookup extends Lookup {
                 return convertResult(r);
             }
             
-            HashMap<Template<?>, Reference<R>> res;
-            res = new HashMap<Template<?>, Reference<R>>(map);
+            HashMap<Template, Reference<R>> res = new HashMap<Template, Reference<R>>(map);
             
             newData[0] = new RealInternalData(getRawLookups(), res);
             R<T> newR = new R<T>(proxy, newData[0], template);
@@ -855,14 +867,38 @@ public class ProxyLookup extends Lookup {
 
     } // end of ImmutableInternalData
     
+    private static final class SingleInternalData extends ImmutableInternalData {
+        /** lookups to delegate to (either Lookup or array of Lookups) */
+        private final Object lookups;
+        private final Template template;
+        private final Reference<ProxyLookup.R> result;
+                
+        public SingleInternalData(Object lookups, Template<?> template, Reference<ProxyLookup.R> result) {
+            this.lookups = lookups;
+            this.template = template;
+            this.result = result;
+        }
+
+        protected final boolean isEmpty() {
+            return false;
+        }
+
+        protected Map<Template, Reference<R>> getResults() {
+            return Collections.singletonMap(template, result);
+        }
+        
+        protected Object getRawLookups() {
+            return lookups;
+        }
+    }
     private static final class RealInternalData extends ImmutableInternalData {
         /** lookups to delegate to (either Lookup or array of Lookups) */
         private final Object lookups;
 
         /** map of templates to currently active results */
-        private final Map<Template<?>,Reference<R>> results;
+        private final Map<Template,Reference<R>> results;
 
-        public RealInternalData(Object lookups, Map<Template<?>, Reference<ProxyLookup.R>> results) {
+        public RealInternalData(Object lookups, Map<Template, Reference<ProxyLookup.R>> results) {
             this.results = results;
             this.lookups = lookups;
         }
@@ -871,7 +907,7 @@ public class ProxyLookup extends Lookup {
             return false;
         }
 
-        protected Map<Template<?>, Reference<R>> getResults() {
+        protected Map<Template, Reference<R>> getResults() {
             boolean strict = false;
             assert strict = true;
             return strict ? Collections.unmodifiableMap(results) : results;
@@ -890,7 +926,7 @@ public class ProxyLookup extends Lookup {
             return true;
         }
 
-        protected Map<Template<?>, Reference<R>> getResults() {
+        protected Map<Template, Reference<R>> getResults() {
             return Collections.emptyMap();
         }
 
