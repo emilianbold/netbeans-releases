@@ -113,7 +113,7 @@
                         messageType="tns:AirlineReservationStatus">
         <bpws:query>/ns:reserveStatus/ns:reservationID</bpws:query>
     </bpws:propertyAlias>
-    <bpws:property name="air" type="xsd:boolean"/>
+    <bpws:property name="air" type="ns:reserveType"/>
     <bpws:propertyAlias propertyName="tns:air" 
                         messageType="tns:AirlineReservation" 
                         part="reserveAirlinePart"/>
