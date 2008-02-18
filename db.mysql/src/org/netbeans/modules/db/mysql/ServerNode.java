@@ -114,6 +114,7 @@ class ServerNode extends AbstractNode implements ChangeListener {
     public SystemAction[] getActions(boolean context) {
         return new SystemAction[] {
             SystemAction.get(SettingsAction.class),
+            SystemAction.get(CreateDatabaseAction.class),
             SystemAction.get(RefreshAction.class)
         };
     }

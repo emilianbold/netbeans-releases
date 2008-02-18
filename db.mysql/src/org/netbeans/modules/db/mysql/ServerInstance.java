@@ -46,6 +46,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.event.ChangeEvent;
@@ -63,11 +64,17 @@ import org.openide.util.NbBundle;
  */
 public class ServerInstance implements Node.Cookie {
     private static final Logger LOGGER = Logger.getLogger(ServerInstance.class.getName());
-    private static final String GET_DATABASES_SQL = "SHOW DATABASES";
-    
+        
     private static ServerInstance DEFAULT;;
 
-    private static MySQLOptions options = MySQLOptions.getDefault();
+    private static final MySQLOptions options = MySQLOptions.getDefault();
+    
+    // SQL commands
+    private static final String GET_DATABASES_SQL = "SHOW DATABASES";
+    private static final String GET_USERS_SQL = 
+            "SELECT DISTINCT user FROM mysql.user";
+    private static final String GRANT_ALL_SQL = "GRANT ALL on ?.* TO ?";
+
         
     final AdminConnection adminConn = new AdminConnection();
     final ArrayList<ChangeListener> listeners = new ArrayList<ChangeListener>();
@@ -101,6 +108,27 @@ public class ServerInstance implements Node.Cookie {
     
     public String getHost() {
         return options.getHost();
+    }
+
+    public List<String> getUsers() throws DatabaseException {
+        ArrayList<String> users = new ArrayList<String>();
+        Connection conn = adminConn.getConnection();
+        
+        if ( conn == null ) {
+            return users;
+        }
+        
+        try {
+            ResultSet rs = conn.prepareStatement(GET_USERS_SQL).executeQuery();
+
+            while ( rs.next() ) {
+                users.add(rs.getString(1));
+            }
+        } catch ( SQLException ex ) {
+            throw new DatabaseException(ex);
+        }
+        
+        return users;
     }
 
     public void setHost(String host) {
