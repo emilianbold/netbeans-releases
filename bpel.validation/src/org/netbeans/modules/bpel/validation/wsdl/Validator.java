@@ -41,16 +41,19 @@
 package org.netbeans.modules.bpel.validation.wsdl;
 
 import java.util.Collection;
+import java.util.List;
 import org.netbeans.modules.xml.xam.Component;
 import org.netbeans.modules.xml.xam.dom.NamedComponentReference;
 import org.netbeans.modules.xml.schema.model.GlobalElement;
 import org.netbeans.modules.xml.schema.model.GlobalType;
 import org.netbeans.modules.xml.wsdl.model.Message;
 import org.netbeans.modules.xml.wsdl.model.Part;
+import org.netbeans.modules.xml.wsdl.model.WSDLComponent;
 import org.netbeans.modules.xml.wsdl.model.ExtensibilityElement;
 import org.netbeans.modules.xml.wsdl.model.visitor.ChildVisitor;
 import org.netbeans.modules.xml.wsdl.model.visitor.WSDLVisitor;
 import org.netbeans.modules.xml.wsdl.model.extensions.bpel.CorrelationProperty;
+import org.netbeans.modules.xml.xam.dom.DocumentComponent;
 import org.netbeans.modules.xml.wsdl.model.extensions.bpel.PropertyAlias;
 import org.netbeans.modules.bpel.validation.core.WsdlValidator;
 import static org.netbeans.modules.soa.ui.util.UI.*;
@@ -71,8 +74,17 @@ public final class Validator extends WsdlValidator {
         }
         // # 90324
         PropertyAlias alias = (PropertyAlias) element;
+//out();
 //out("PROPERTY ALIAS: " + alias);
+//out("Query: " + alias.getQuery());
+
         if (alias.getQuery() != null) {
+          return;
+        }
+        DocumentComponent query = getQuery(alias);
+
+        if (query != null) {
+          addError("FIX_QUERY_PREFIX", alias); // NOI18N
           return;
         }
         // property
@@ -139,7 +151,7 @@ public final class Validator extends WsdlValidator {
         }
         // check
         if (aliasType != propertyType) {
-          addError("FIX_TYPE_IN_PROPERTY_ALIAS", alias, getTypeName(aliasType), getTypeName(propertyType));
+          addError("FIX_TYPE_IN_PROPERTY_ALIAS", alias, getTypeName(aliasType), getTypeName(propertyType)); // NOI18N
 //out("ERROR: " + getTypeName(aliasType) + " "  + getTypeName(propertyType));
         }
 //out();
@@ -186,6 +198,24 @@ public final class Validator extends WsdlValidator {
 
       if (element != null) {
         return getTypeOfElement(element);
+      }
+    }
+    return null;
+  }
+
+  private DocumentComponent getQuery(PropertyAlias alias) {
+    List<WSDLComponent> children = alias.getChildren();
+
+    for (WSDLComponent child : children) {
+//out("  child: " + child);
+      if ( !(child instanceof DocumentComponent)) {
+        continue;
+      }
+      DocumentComponent document = (DocumentComponent) child;
+      String tag = document.getPeer().getTagName();
+//out("   tag: " + tag);
+      if (tag.endsWith("query")) { // NOI18N
+        return document;
       }
     }
     return null;
