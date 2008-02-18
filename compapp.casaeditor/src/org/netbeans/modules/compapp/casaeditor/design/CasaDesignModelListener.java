@@ -254,7 +254,7 @@ public class CasaDesignModelListener implements PropertyChangeListener {
         if (widget instanceof CasaPinWidget) {
             CasaPinWidget pinWidget = (CasaPinWidget) widget;
             CasaEndpointRef endpointRef = (CasaEndpointRef) component;
-            pinWidget.setProperties(endpointRef.getEndpointName());
+            pinWidget.setProperties(endpointRef.getDisplayName());
             pinWidget.setToolTipText(CasaModelGraphUtilities.getToolTipName(endpointRef.getParent(), endpointRef, mScene.getModel()));
             
         } else if (widget instanceof CasaNodeWidgetBinding) {

@@ -41,7 +41,9 @@
 
 package org.netbeans.modules.cnd.debugger.gdb.breakpoints;
 
+import javax.swing.JPanel;
 import org.netbeans.modules.cnd.debugger.gdb.breakpoints.GdbBreakpoint;
+import org.openide.util.NbBundle;
 
 /**
  * Panel for customizing breakpoints. 
@@ -49,33 +51,57 @@ import org.netbeans.modules.cnd.debugger.gdb.breakpoints.GdbBreakpoint;
  *
  * @author Nik Molchanov (copied and modified from JDPA debugger).
  */
-public class ActionsPanel extends javax.swing.JPanel {
+public class ActionsPanel extends JPanel {
     
     private GdbBreakpoint  breakpoint;
     
     /** Creates new form LineBreakpointPanel */
-    public ActionsPanel (GdbBreakpoint b) {
+    public ActionsPanel(GdbBreakpoint b) {
         breakpoint = b;
-        initComponents ();
+        initComponents();
         
-        cbSuspend.addItem (java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/debugger/gdb/breakpoints/Bundle").getString("LBL_CB_Actions_Panel_Suspend_None"));
-        cbSuspend.addItem (java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/debugger/gdb/breakpoints/Bundle").getString("LBL_CB_Actions_Panel_Suspend_Current"));
-        cbSuspend.addItem (java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/debugger/gdb/breakpoints/Bundle").getString("LBL_CB_Actions_Panel_Suspend_All"));
-        switch (b.getSuspend ()) {
-            //case JPDABreakpoint.SUSPEND_NONE:
-            //    cbSuspend.setSelectedIndex (0);
-            //    break;
-            //case JPDABreakpoint.SUSPEND_EVENT_THREAD:
-            //    cbSuspend.setSelectedIndex (1);
-            //    break;
-            //case JPDABreakpoint.SUSPEND_ALL:
-            //case GdbBreakpoint.SUSPEND_ALL:
-            default:
-                cbSuspend.setSelectedIndex (2);
-                break;
+        cbSuspend.addItem(NbBundle.getMessage(ActionsPanel.class, "LBL_CB_Actions_Panel_Suspend_None")); // NOI18N
+        cbSuspend.addItem(NbBundle.getMessage(ActionsPanel.class, "LBL_CB_Actions_Panel_Suspend_Current")); // NOI18N
+        cbSuspend.addItem(NbBundle.getMessage(ActionsPanel.class, "LBL_CB_Actions_Panel_Suspend_All")); // NOI18N
+        switch (b.getSuspend()) {
+        case GdbBreakpoint.SUSPEND_NONE:
+            cbSuspend.setSelectedIndex(0);
+            break;
+        case GdbBreakpoint.SUSPEND_EVENT_THREAD:
+            cbSuspend.setSelectedIndex(1);
+            break;
+        case GdbBreakpoint.SUSPEND_ALL:
+        default:
+            cbSuspend.setSelectedIndex(2);
+            break;
         }
-        if (b.getPrintText () != null)
-            tfPrintText.setText (b.getPrintText ());
+        if (b.getPrintText() != null) {
+            tfPrintText.setText(b.getPrintText());
+        }
+    }
+    
+    /**
+     * Called when "Ok" button is pressed.
+     */
+    public void ok() {
+        String printText = tfPrintText.getText();
+        if (printText.trim().length () > 0) {
+            breakpoint.setPrintText(printText.trim());
+        } else {
+            breakpoint.setPrintText(null);
+        }
+        
+        switch (cbSuspend.getSelectedIndex()) {
+        case 0:
+            breakpoint.setSuspend(GdbBreakpoint.SUSPEND_NONE);
+            break;
+        case 1:
+            breakpoint.setSuspend(GdbBreakpoint.SUSPEND_EVENT_THREAD);
+            break;
+        case 2:
+            breakpoint.setSuspend(GdbBreakpoint.SUSPEND_ALL);
+            break;
+        }
     }
     
     /** This method is called from within the constructor to
@@ -161,30 +187,6 @@ public class ActionsPanel extends javax.swing.JPanel {
     {//GEN-HEADEREND:event_cbSuspendActionPerformed
         // TODO add your handling code here:
     }//GEN-LAST:event_cbSuspendActionPerformed
-    
-    /**
-     * Called when "Ok" button is pressed.
-     */
-    public void ok () {
-        String printText = tfPrintText.getText ();
-        if (printText.trim ().length () > 0)
-            breakpoint.setPrintText (printText.trim ());
-        else
-            breakpoint.setPrintText (null);
-        
-        switch (cbSuspend.getSelectedIndex ()) {
-            case 0:
-                //breakpoint.setSuspend (JPDABreakpoint.SUSPEND_NONE);
-                break;
-            case 1:
-                //breakpoint.setSuspend (JPDABreakpoint.SUSPEND_EVENT_THREAD);
-                break;
-            case 2:
-                //breakpoint.setSuspend (JPDABreakpoint.SUSPEND_ALL);
-                break;
-        }
-    }
-    
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JComboBox cbSuspend;
