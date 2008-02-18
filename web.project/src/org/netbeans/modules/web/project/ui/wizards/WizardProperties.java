@@ -66,6 +66,6 @@ public class WizardProperties {
     public static final String EXTENDERS = "extenders"; // NOI18N
     public static final String FRAMEWORK_NAMES = "frameworkNames"; //NOI18N
     
-    public static final String SHARED_LIBRARIES = "sharedLibraries";
+//    public static final String SHARED_LIBRARIES = "sharedLibraries";
      
 }

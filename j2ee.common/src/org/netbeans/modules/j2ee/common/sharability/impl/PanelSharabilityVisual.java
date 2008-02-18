@@ -14,9 +14,12 @@ import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.io.File;
 import javax.swing.DefaultComboBoxModel;
+import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JRadioButton;
 import javax.swing.event.ChangeListener;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.modules.j2ee.common.sharability.PanelSharability;
 import org.netbeans.modules.j2ee.common.sharability.SharabilityUtilities;
@@ -50,7 +53,20 @@ public class PanelSharabilityVisual extends javax.swing.JPanel {
         this.panel = panel;
         currentLibrariesLocation = ".." + File.separatorChar + "libraries"; // NOI18N
         librariesLocation.setText(currentLibrariesLocation);
+        librariesLocation.getDocument().addDocumentListener(new DocumentListener() {
+            public void insertUpdate(DocumentEvent e) {
+                changeSupport.fireChange();
+            }
 
+            public void removeUpdate(DocumentEvent e) {
+                changeSupport.fireChange();
+            }
+
+            public void changedUpdate(DocumentEvent e) {
+                changeSupport.fireChange();
+            }
+        });
+        
         libraryRadioButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 changeSupport.fireChange();
@@ -89,6 +105,10 @@ public class PanelSharabilityVisual extends javax.swing.JPanel {
         changeSupport.removeChangeListener(l);
     }
 
+    public JCheckBox getSharableProject() {
+        return sharableProject;
+    }
+    
     public JRadioButton getLibraryRadioButton() {
         return libraryRadioButton;
     }
@@ -141,10 +161,10 @@ public class PanelSharabilityVisual extends javax.swing.JPanel {
         libraryNameComboBox = new javax.swing.JComboBox();
         libraryNameLabel = new javax.swing.JLabel();
 
-        messageLabel.setText(org.openide.util.NbBundle.getMessage(PanelSharabilityVisual.class, "PanelSharabilityVisual.messageLabel.text")); // NOI18N
+        messageLabel.setText("null");
 
         buttonGroup1.add(serverRadioButton);
-        org.openide.awt.Mnemonics.setLocalizedText(serverRadioButton, org.openide.util.NbBundle.getMessage(PanelSharabilityVisual.class, "PanelSharabilityVisual.serverRadioButton.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(serverRadioButton, "null");
         serverRadioButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 serverRadioButtonActionPerformed(evt);
@@ -153,7 +173,7 @@ public class PanelSharabilityVisual extends javax.swing.JPanel {
 
         buttonGroup1.add(libraryRadioButton);
         libraryRadioButton.setSelected(true);
-        org.openide.awt.Mnemonics.setLocalizedText(libraryRadioButton, org.openide.util.NbBundle.getMessage(PanelSharabilityVisual.class, "PanelSharabilityVisual.libraryRadioButton.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(libraryRadioButton, "null");
         libraryRadioButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 libraryRadioButtonActionPerformed(evt);
@@ -161,7 +181,7 @@ public class PanelSharabilityVisual extends javax.swing.JPanel {
         });
 
         sharableProject.setSelected(true);
-        org.openide.awt.Mnemonics.setLocalizedText(sharableProject, org.openide.util.NbBundle.getMessage(PanelSharabilityVisual.class, "PanelSharabilityVisual.sharableProject.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(sharableProject, "null");
         sharableProject.setMargin(new java.awt.Insets(0, 0, 0, 0));
         sharableProject.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -170,11 +190,9 @@ public class PanelSharabilityVisual extends javax.swing.JPanel {
         });
 
         librariesLabel.setLabelFor(librariesLocation);
-        org.openide.awt.Mnemonics.setLocalizedText(librariesLabel, org.openide.util.NbBundle.getMessage(PanelSharabilityVisual.class, "PanelSharabilityVisual.librariesLabel.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(librariesLabel, "null");
 
-        librariesLocation.setEditable(false);
-
-        org.openide.awt.Mnemonics.setLocalizedText(browseLibraries, org.openide.util.NbBundle.getMessage(PanelSharabilityVisual.class, "PanelSharabilityVisual.browseLibraries.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(browseLibraries, "null");
         browseLibraries.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 browseLibrariesActionPerformed(evt);
@@ -184,7 +202,7 @@ public class PanelSharabilityVisual extends javax.swing.JPanel {
         libraryNameComboBox.setEditable(true);
 
         libraryNameLabel.setLabelFor(libraryNameComboBox);
-        org.openide.awt.Mnemonics.setLocalizedText(libraryNameLabel, org.openide.util.NbBundle.getMessage(PanelSharabilityVisual.class, "PanelSharabilityVisual.libraryNameLabel.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(libraryNameLabel, "null");
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
@@ -199,7 +217,7 @@ public class PanelSharabilityVisual extends javax.swing.JPanel {
                 .add(librariesLocation, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 175, Short.MAX_VALUE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(browseLibraries))
-            .add(jSeparator1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 454, Short.MAX_VALUE)
+            .add(jSeparator1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 785, Short.MAX_VALUE)
             .add(layout.createSequentialGroup()
                 .add(messageLabel)
                 .addContainerGap())
@@ -210,10 +228,10 @@ public class PanelSharabilityVisual extends javax.swing.JPanel {
                 .add(21, 21, 21)
                 .add(libraryNameLabel)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(libraryNameComboBox, 0, 274, Short.MAX_VALUE))
+                .add(libraryNameComboBox, 0, 457, Short.MAX_VALUE))
             .add(layout.createSequentialGroup()
                 .add(libraryRadioButton)
-                .addContainerGap(180, Short.MAX_VALUE))
+                .addContainerGap(456, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
