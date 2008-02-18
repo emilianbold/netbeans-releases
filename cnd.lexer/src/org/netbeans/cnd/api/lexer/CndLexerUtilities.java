@@ -67,7 +67,7 @@ public final class CndLexerUtilities {
     public static Language<CppTokenId> getLanguage(String mime) {
         if (C_MIME_TYPE.equals(mime)) {
             return CppTokenId.languageC();
-        } else if (C_MIME_TYPE.equals(mime)) {
+        } else if (CPLUSPLUS_MIME_TYPE.equals(mime)) {
             return CppTokenId.languageCpp();
         }
         return null;
