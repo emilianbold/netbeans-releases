@@ -272,5 +272,9 @@ public class StructureAnalyzerTest extends GroovyTestBase {
     public void testFolds1() throws Exception {
         checkFolds("testfiles/BookmarkController.groovy");
     }
+    
+    public void testCommentsFolding() throws Exception {
+        checkFolds("testfiles/FoldingTestTwo.groovy");
+    }
 
 }

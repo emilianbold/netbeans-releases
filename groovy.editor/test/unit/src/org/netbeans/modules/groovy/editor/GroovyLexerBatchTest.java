@@ -109,6 +109,22 @@ public class GroovyLexerBatchTest extends NbTestCase {
         LexerTestUtilities.assertTokenEquals(ts,GroovyTokenId.NLS, "\n", -1);
     }
  
+    public void testImportStatements(){
+        
+        String input = 
+                "import java.util.HashSet;\n" +
+                "import java.util.List;\n" +
+                "import java.util.Set;\n" +
+                "import java.util.Iterator;\n" +
+                "\n" +
+                "println \"hallo\"\n";
+        
+        TokenSequence<?> ts = seqForText(input);
+        dumpTokenStream(ts);
+    }    
+    
+    
+    
     public void testGstringLexing1(){
         
         TokenSequence<?> ts = seqForText("{{}}");
@@ -666,6 +682,17 @@ public class GroovyLexerBatchTest extends NbTestCase {
     void next(TokenSequence<?> ts, GroovyTokenId id, String fixedText){
         assertTrue(ts.moveNext());
         LexerTestUtilities.assertTokenEquals(ts,id, fixedText, -1);
+    }
+    
+    void dumpTokenStream (TokenSequence ts){
+//        System.out.println("#############################################");
+        
+        while (ts.moveNext()) {
+              Token t = ts.token();
+//              System.out.println("-------------------------------");  
+//              System.out.println("Token-Text :" + t.toString());  
+//              System.out.println("Token-ID   :" + t.id());
+            }
     }
     
 }
