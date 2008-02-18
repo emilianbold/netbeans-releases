@@ -43,6 +43,7 @@ package org.netbeans.modules.ruby.railsprojects.ui.wizards;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import javax.swing.DefaultComboBoxModel;
 import org.netbeans.api.ruby.platform.RubyPlatform;
 import org.netbeans.modules.ruby.platform.PlatformComponentFactory;
 import org.netbeans.modules.ruby.platform.RubyPlatformCustomizer;
@@ -65,6 +66,7 @@ public class PanelOptionsVisual extends SettingsPanel implements PropertyChangeL
             public void platformChanged() {
                 fireChangeEvent();
                 initServerComboBox();
+                initWarCheckBox();
             }
         });
 
@@ -143,8 +145,8 @@ public class PanelOptionsVisual extends SettingsPanel implements PropertyChangeL
         jLabel1 = new javax.swing.JLabel();
         warCheckBox = new javax.swing.JCheckBox();
         rubyPlatformLabel = new javax.swing.JLabel();
-        platforms = org.netbeans.modules.ruby.platform.PlatformComponentFactory.getRubyPlatformsComboxBox();
         manageButton = new javax.swing.JButton();
+        platforms = org.netbeans.modules.ruby.platform.PlatformComponentFactory.getRubyPlatformsComboxBox();
         serverLabel = new javax.swing.JLabel();
         serverComboBox = RailsServerManager.getServerComboBox(getPlatform());
 
@@ -157,16 +159,16 @@ public class PanelOptionsVisual extends SettingsPanel implements PropertyChangeL
 
         org.openide.awt.Mnemonics.setLocalizedText(rubyPlatformLabel, org.openide.util.NbBundle.getMessage(PanelOptionsVisual.class, "RubyPlatformLabel")); // NOI18N
 
-        platforms.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                platformsActionPerformed(evt);
-            }
-        });
-
         org.openide.awt.Mnemonics.setLocalizedText(manageButton, org.openide.util.NbBundle.getMessage(PanelOptionsVisual.class, "RubyHomeBrowse")); // NOI18N
         manageButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 manageButtonActionPerformed(evt);
+            }
+        });
+
+        platforms.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                platformsActionPerformed(evt);
             }
         });
 
@@ -241,12 +243,15 @@ public class PanelOptionsVisual extends SettingsPanel implements PropertyChangeL
     }//GEN-LAST:event_serverComboBoxActionPerformed
 
     private void platformsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_platformsActionPerformed
-        initServerComboBox();
-        initWarCheckBox();
     }//GEN-LAST:event_platformsActionPerformed
     
     private void initServerComboBox(){
-        serverComboBox.setModel(new RailsServerManager.ServerListModel(getPlatform()));
+        RubyPlatform platform = getPlatform();
+        if (platform != null) {
+            serverComboBox.setModel(new RailsServerManager.ServerListModel(getPlatform()));
+        } else {
+            serverComboBox.setModel(new DefaultComboBoxModel(new Object[]{}));
+        }
     }
     
     private RubyPlatform getPlatform() {
