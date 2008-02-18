@@ -94,6 +94,21 @@ public class ElementGripFactory {
         return (ElementGrip) start.getParent(el);
     }
 
+    public ElementGrip putInComposite(FileObject parentFile, CsmOffsetable csmObj) {
+        put(parentFile, csmObj);
+        ElementGrip composite = get(parentFile, csmObj.getStartOffset());
+        if (composite != null) {
+            // init parent of element grip
+            composite.initParent();
+            ElementGrip elemParent = composite.getParent();
+            while (elemParent != null) {
+                elemParent.initParent();
+                elemParent = elemParent.getParent();
+            }            
+        }
+        return composite;
+    }
+    
     public void put(FileObject parentFile, CsmOffsetable csmObj) {
         Interval root = map.get(parentFile);
         Interval i = Interval.createInterval(csmObj, root, null, parentFile);
@@ -135,24 +150,24 @@ public class ElementGripFactory {
             return null;
         }
 
-        public static Interval createInterval(CsmOffsetable csmObj, Interval root, Interval parent, FileObject parentFile) {
+        public static Interval createInterval(CsmOffsetable csmObj, Interval root, Interval previous, FileObject parentFile) {
             long start = csmObj.getStartOffset();
             long end = csmObj.getEndOffset();
             CsmObject encl = CsmRefactoringUtils.getEnclosingElement(csmObj);
             if (!CsmRefactoringUtils.isLangContainerFeature(csmObj)) {
                 if (!CsmKindUtilities.isOffsetable(encl)) {
-                    //xxx: rather workaround. should be fixed better.
+                    //this is file as enclosing element for macro and include directives
                     return null;
                 } else {
-                    return createInterval((CsmOffsetable) encl, root, parent, parentFile);
+                    return createInterval((CsmOffsetable) encl, root, previous, parentFile);
                 }
             }
             Interval i = null;
             if (root != null) {
                 Interval o = root.get(start);
                 if (o != null && csmObj != null && csmObj.equals(o.item.getResolved())) {
-                    if (parent != null) {
-                        o.subintervals.add(parent);
+                    if (previous != null) {
+                        o.subintervals.add(previous);
                     }
                     return null;
                 }
@@ -166,13 +181,18 @@ public class ElementGripFactory {
                 ElementGrip currentHandle2 = new ElementGrip(csmObj);
                 i.item = currentHandle2;
             }
-            if (parent != null) {
-                i.subintervals.add(parent);
+            if (previous != null) {
+                i.subintervals.add(previous);
             }
             if (!CsmKindUtilities.isOffsetable(encl)) {
                 return i;
             }
             return createInterval((CsmOffsetable) encl, root, i, parentFile);
+        }
+
+        @Override
+        public String toString() {
+            return "" + from + "-" + to + " :" + item;
         }
     }
 }

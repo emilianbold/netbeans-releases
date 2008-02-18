@@ -37,6 +37,7 @@ import org.netbeans.modules.cnd.api.model.CsmOffsetable;
 import org.netbeans.modules.cnd.api.model.xref.CsmReference;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.netbeans.modules.cnd.refactoring.support.CsmRefactoringUtils;
+import org.netbeans.modules.cnd.refactoring.support.ElementGrip;
 import org.netbeans.modules.cnd.refactoring.support.ElementGripFactory;
 import org.netbeans.modules.refactoring.spi.RefactoringElementImplementation;
 import org.netbeans.modules.refactoring.spi.SimpleRefactoringElementImplementation;
@@ -65,11 +66,10 @@ public class CsmRefactoringElementImpl extends
         this.fo = fo;
         assert displayText != null;
         this.displayText = displayText;
-        ElementGripFactory.getDefault().put(fo, elem);
-        Object composite = ElementGripFactory.getDefault().get(fo, bounds.getBegin().getOffset());
+        Object composite = ElementGripFactory.getDefault().putInComposite(fo, elem);
         if (composite==null) {
             composite = fo;
-        }   
+        }  
         this.enclosing = composite;
     }
         
@@ -79,24 +79,6 @@ public class CsmRefactoringElementImpl extends
 
     public String getDisplayText() {
         return displayText;
-//        if (displayText != null) {
-//            return displayText;
-//        }
-//        // returns in bold text on line
-//        try {
-//            int stOffset = elem.getStartOffset();
-//            int endOffset = elem.getEndOffset();
-//            int startLine = Utilities.getRowFirstNonWhite(getDocument(), stOffset);
-//            int endLine = Utilities.getRowLastNonWhite(getDocument(), endOffset);
-//            String lineText = getDocument().getText(startLine, endLine - startLine + 1);
-//            StringBuilder out = new StringBuilder(lineText);
-//            out.insert(endOffset-startLine, "</b>"); // NOI18N
-//            out.insert(stOffset-startLine,"<b>"); // NOI18N
-//            return out.toString();        
-//        } catch (BadLocationException ex) {
-//            
-//        }
-//        return "";
     }
 
     public void performChange() {
@@ -148,8 +130,4 @@ public class CsmRefactoringElementImpl extends
         }
         return new CsmRefactoringElementImpl(bounds, ref, fo, displayText);
     }
-
-//    private BaseDocument getDocument() {
-//        return (BaseDocument) bounds.getBegin().getCloneableEditorSupport().getDocument();
-//    }
 }

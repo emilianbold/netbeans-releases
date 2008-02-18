@@ -48,6 +48,8 @@ import org.netbeans.modules.cnd.modelutil.CsmImageLoader;
 import org.openide.filesystems.FileObject;
 
 /**
+ * This wrapper is used to create composition of scopes which is 
+ * remembered once and is not affected by the following changes in code
  * based on ElementGrip from java refactoring
  * @author Vladimir Voskresensky
  */
@@ -56,6 +58,8 @@ public final class ElementGrip {
     private String toString;
     private FileObject fileObject;
     private Icon icon;
+    private ElementGrip parent;
+    private boolean parentInited;
     
     /**
      * Creates a new instance of ElementGrip
@@ -76,8 +80,16 @@ public final class ElementGrip {
         return toString;
     }
 
+    /*package*/ void initParent() {
+        if (!parentInited) {
+            parent = ElementGripFactory.getDefault().getParent(this);
+            parentInited = true;
+        }
+    }
+    
     public ElementGrip getParent() {
-        return ElementGripFactory.getDefault().getParent(this);
+        initParent();
+        return parent;
     }
     
     public FileObject getFileObject() {

@@ -35,12 +35,15 @@ import javax.swing.text.StyleConstants;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.editor.settings.FontColorSettings;
+import org.netbeans.api.lexer.Language;
+import org.netbeans.api.lexer.LanguagePath;
+import org.netbeans.api.lexer.Token;
+import org.netbeans.api.lexer.TokenHierarchy;
+import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.api.project.Project;
+import org.netbeans.cnd.api.lexer.CndLexerUtilities;
+import org.netbeans.cnd.api.lexer.CppTokenId;
 import org.netbeans.editor.BaseDocument;
-import org.netbeans.editor.SyntaxSupport;
-import org.netbeans.editor.TokenContextPath;
-import org.netbeans.editor.TokenID;
-import org.netbeans.editor.TokenProcessor;
 import org.netbeans.modules.cnd.api.model.CsmClass;
 import org.netbeans.modules.cnd.api.model.CsmDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmEnum;
@@ -65,7 +68,6 @@ import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.openide.filesystems.FileObject;
 import org.openide.nodes.Node;
 import org.openide.text.CloneableEditorSupport;
-import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 
 /**
@@ -259,62 +261,66 @@ public class CsmRefactoringUtils {
         }
         return displayText;
     }
-    
-    public static String getHtml(int startLine, int endLine, final int stToken, final int endToken, BaseDocument doc) {
-        final StringBuilder buf = new StringBuilder();
+
+    public static String getHtml(int startLine, int endLine, final int stToken, final int endToken, BaseDocument doc) throws BadLocationException {
+        int startBold = stToken - startLine;
+        int endBold = endToken - startLine;
+        String content = doc.getText(startLine, endLine - startLine);
+
         String mime = (String) doc.getProperty("mimeType"); // NOI18N
-        Lookup lookup = MimeLookup.getLookup(MimePath.get(mime));
-        SyntaxSupport sup = doc.getSyntaxSupport();
-        final FontColorSettings settings = lookup.lookup(FontColorSettings.class);
-        boolean cont = true;
- 
-        
-        TokenProcessor tp = new TokenProcessor() {
-
-            private int bufferStartPos;
-            private char[] buffer;
-
-            public boolean token(TokenID tokenID, TokenContextPath tokenContextPath, int tokenBufferOffset, int tokenLength) {
-                String text = new String(buffer, tokenBufferOffset, tokenLength);
-                String category = tokenID.getCategory() == null ? tokenID.getName() : tokenID.getCategory().getName();
-                if (category == null) {
-                    category = "whitespace"; //NOI18N
-                } else {
-                    category = tokenContextPath.getNamePrefix() + category;
-                }
-                AttributeSet set = settings.getTokenFontColors(category);
-                if (tokenBufferOffset+bufferStartPos == stToken) {
-                    buf.append("<b>"); // NOI18N
-                }
-                buf.append(color(htmlize(text), set));
-                if (tokenBufferOffset+bufferStartPos+tokenLength == endToken) {
-                    buf.append("</b>"); // NOI18N
-                }
-                return true;
-            }
-
-            public int eot(int offset) {
-                return 0;
-            }
-
-            public void nextBuffer(char[] buffer, int offset, int len, int startPos, int preScan, boolean lastBuffer) {
-                this.buffer = buffer;
-                this.bufferStartPos = startPos - offset;
-            }
-
-        };  
-        while (cont) {
-            try {
-                sup.tokenizeText(tp, startLine, endLine, true); 
-                cont = false;
-            } catch (BadLocationException ex) {
-                Exceptions.printStackTrace(ex);
-            }
+        if (startBold >= 0 && endBold >= 0) {
+            StringBuilder buf = new StringBuilder();
+            buf.append(getHtml(mime, trimStart(content.substring(0, startBold))));
+            buf.append("<b>"); //NOI18N
+            buf.append(getHtml(mime, content.substring(startBold,endBold)));
+            buf.append("</b>");//NOI18N
+            buf.append(getHtml(mime, trimEnd(content.substring(endBold))));
+            return buf.toString();
+        } else {
+            return getHtml(mime, content);
         }
-        
-        return buf.toString();
+    }
+    
+    public static String getHtml(String mime, String content) {
+        final StringBuilder buf = new StringBuilder();
+        Language<CppTokenId> lang = CndLexerUtilities.getLanguage(mime);
+        if (lang == null) {
+            return content;
+        }
+        TokenHierarchy tokenH = TokenHierarchy.create(content, lang);
+        TokenSequence<?> tok = tokenH.tokenSequence();
+        appendHtml(buf, tok);
+        return buf.toString();        
     }
 
+    private static void appendHtml(StringBuilder buf, TokenSequence<?> ts) {
+        FontColorSettings settings = null;
+        LanguagePath languagePath = ts.languagePath();
+        while (languagePath != null && settings == null) {
+            String mime = languagePath.mimePath();
+            Lookup lookup = MimeLookup.getLookup(mime);
+            settings = lookup.lookup(FontColorSettings.class);       
+        }
+        while (ts.moveNext()) {
+            Token<?> token = ts.token();
+            TokenSequence<?> es = ts.embedded();
+            if (es != null && es.language() == CppTokenId.languagePreproc()) {
+                appendHtml(buf, es);
+            } else {
+                String category = token.id().primaryCategory();
+                if (category == null) {
+                    category = "whitespace"; //NOI18N
+                }
+                if (settings != null) {
+                    AttributeSet set = settings.getTokenFontColors(category);
+                    buf.append(color(htmlize(token.text().toString()), set));
+                } else {
+                    buf.append(token.text());
+                }
+            }
+        }            
+    }
+    
     public static String htmlize(String input) {
         String temp = org.openide.util.Utilities.replaceString(input, "<", "&lt;"); // NOI18N
         temp = org.openide.util.Utilities.replaceString(temp, ">", "&gt;"); // NOI18N
@@ -442,4 +448,26 @@ public class CsmRefactoringUtils {
         }
         return obj;
     }
+    
+    private static String trimStart(String s) {
+        for (int x = 0; x < s.length(); x++) {
+            if (Character.isWhitespace(s.charAt(x))) {
+                continue;
+            } else {
+                return s.substring(x, s.length());
+            }
+        }
+        return "";
+    }
+    
+    private static String trimEnd(String s) {
+        for (int x = s.length()-1; x >=0; x--) {
+            if (Character.isWhitespace(s.charAt(x))) {
+                continue;
+            } else {
+                return s.substring(0, x + 1);
+            }
+        }
+        return "";
+    }    
 }

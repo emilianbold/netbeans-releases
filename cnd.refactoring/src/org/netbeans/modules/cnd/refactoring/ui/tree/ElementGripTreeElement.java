@@ -53,18 +53,19 @@ import org.netbeans.modules.refactoring.spi.ui.TreeElementFactory;
 public class ElementGripTreeElement implements TreeElement {
     
     private ElementGrip element;
-    /** Creates a new instance of JavaTreeElement */
+    private ElementGrip parent;
+
     public ElementGripTreeElement(ElementGrip element) {
         this.element = element;
+        this.parent = element.getParent();
     }
 
     public TreeElement getParent(boolean isLogical) {
         if (isLogical) {
-            ElementGrip enclosing = element.getParent();
-            if (enclosing == null) {
+            if (parent == null) {
                 return TreeElementFactory.getTreeElement(element.getFileObject());
             }
-            return TreeElementFactory.getTreeElement(enclosing);
+            return TreeElementFactory.getTreeElement(parent);
         } else {
             return TreeElementFactory.getTreeElement(element.getFileObject());
         }
