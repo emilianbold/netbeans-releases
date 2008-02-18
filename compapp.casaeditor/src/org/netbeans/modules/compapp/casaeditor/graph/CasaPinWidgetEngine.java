@@ -45,8 +45,8 @@ import java.awt.Color;
 import java.awt.Font;
 import java.awt.Image;
 import java.awt.Rectangle;
+import javax.swing.border.LineBorder;
 import org.netbeans.api.visual.anchor.Anchor;
-import org.netbeans.api.visual.border.BorderFactory;
 import org.netbeans.api.visual.layout.LayoutFactory;
 import org.netbeans.api.visual.widget.ImageWidget;
 import org.netbeans.api.visual.widget.LabelWidget;
@@ -69,6 +69,7 @@ public class CasaPinWidgetEngine extends CasaPinWidget implements CasaMinimizabl
     private ImageWidget mCurrentImageWidget;
     private ImageWidget mEmptyWidget;
     
+    private static final boolean DEBUG = false;
     
     public CasaPinWidgetEngine(Scene scene, Image image) {
         super(scene);
@@ -97,6 +98,13 @@ public class CasaPinWidgetEngine extends CasaPinWidget implements CasaMinimizabl
                 addChild(mNameWidget);
                 addChild(mImageWidget);
                 break;
+        }
+        
+        if (DEBUG) {
+            setBorder(new LineBorder(Color.blue));
+            mImageWidget.setBorder(new LineBorder(Color.red));
+            mEmptyWidget.setBorder(new LineBorder(Color.green));
+            mNameWidget.setBorder(new LineBorder(Color.red));            
         }
     }
     

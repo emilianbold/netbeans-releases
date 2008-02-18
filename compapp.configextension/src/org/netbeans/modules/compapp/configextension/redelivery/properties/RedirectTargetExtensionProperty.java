@@ -38,7 +38,6 @@
  */
 package org.netbeans.modules.compapp.configextension.redelivery.properties;
 
-import org.netbeans.modules.compapp.configextension.redelivery.*;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyEditor;
 import java.beans.PropertyEditorSupport;
@@ -67,7 +66,7 @@ import org.w3c.dom.Node;
  * @author jqian
  */
 public class RedirectTargetExtensionProperty 
-        extends ExtensionProperty<Object[]> {
+        extends ExtensionProperty<EndpointOperation> {
 
     private static final String ENDPOINT_NAME = "endpoint-name";
     private static final String SERVICE_NAME = "service-name";
@@ -86,7 +85,7 @@ public class RedirectTargetExtensionProperty
             String displayName,
             String description) {
         super(node, extensionPointComponent, firstEE, lastEE, propertyType,
-                String.class, //?
+                EndpointOperation.class, 
                 propertyName, displayName, description);
     }
 
@@ -95,7 +94,7 @@ public class RedirectTargetExtensionProperty
 
         PropertyEditor endpointEditor = new ErrorEndpointAndOperationEditor();
         try {
-            Object[] value = getValue();
+            EndpointOperation value = getValue();
             endpointEditor.setValue(value);
         } catch (Exception ex) {
             Exceptions.printStackTrace(ex);
@@ -109,7 +108,7 @@ public class RedirectTargetExtensionProperty
     }
 
     @Override
-    public Object[] getValue()
+    public EndpointOperation getValue()
             throws IllegalAccessException, InvocationTargetException {
         
         CasaComponent component = getComponent();
@@ -126,24 +125,16 @@ public class RedirectTargetExtensionProperty
             endpoint = new Endpoint(serviceQName, endpointName);
         }
 
-        Object[] ret = new Object[2];
-        ret[0] = endpoint;
-        ret[1] = operationName;
-
-        return ret;
+        return new EndpointOperation(endpoint, operationName);
     }
 
     @Override
-    public void setValue(Object[] value)
+    public void setValue(EndpointOperation value)
             throws IllegalAccessException, IllegalArgumentException,
             InvocationTargetException {
 
-        if (value == null || value[0] == null) {
-            return;
-        }
-
-        Endpoint endpoint = (Endpoint) value[0];
-        String operationName = (String) value[1];
+        Endpoint endpoint = value.getEndpoint(); 
+        String operationName = value.getOperationName();
 
         String endpointName = endpoint.getEndpointName();
         String prefixedServiceName = endpoint.getPrefixedServiceName();
@@ -170,9 +161,9 @@ public class RedirectTargetExtensionProperty
 
         @Override
         public String getAsText() {
-            Object[] value = (Object[]) getValue();
-            Endpoint endpoint = (Endpoint) value[0];
-            String operationName = (String) value[1];
+            EndpointOperation value = (EndpointOperation) getValue();
+            Endpoint endpoint = value.getEndpoint();
+            String operationName = value.getOperationName();
             if (endpoint == null) {
                 return ""; // NOI18N
             } else {
@@ -190,7 +181,7 @@ public class RedirectTargetExtensionProperty
             
             CasaWrapperModel model = getModel();
             customEditor = new RedirectTargetCustomEditor(model);
-            customEditor.setValue(getValue());
+            customEditor.setValue((EndpointOperation) getValue());
             return customEditor;
         }
 
@@ -212,6 +203,26 @@ public class RedirectTargetExtensionProperty
         }
     }
 }
+
+class EndpointOperation {
+
+    private Endpoint endpoint;
+    private String operationName;
+    
+    EndpointOperation(Endpoint endpoint, String operationName) {
+        this.endpoint = endpoint;
+        this.operationName = operationName;
+    }
+
+    public Endpoint getEndpoint() {
+        return endpoint;
+    }
+
+    public String getOperationName() {
+        return operationName;
+    }
+}
+
 class XmlUtil {
 
     public static QName getAttributeNSName(Element e, String attrName) {

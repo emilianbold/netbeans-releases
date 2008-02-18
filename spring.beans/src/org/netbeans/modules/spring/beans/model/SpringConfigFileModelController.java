@@ -171,7 +171,12 @@ public class SpringConfigFileModelController {
         public DocumentRead(FileObject fo, boolean updateTask) throws IOException {
             if (fo != null) {
                 BaseDocument document = (BaseDocument)getEditorCookie(fo).openDocument();
-                doParse(fo, document, updateTask);
+                document.readLock();
+                try {
+                    doParse(fo, document, updateTask);
+                } finally {
+                    document.readUnlock();
+                }
             }
         }
 
