@@ -55,7 +55,7 @@ public class DatabaseConfigPanel implements
     private WizardDescriptor wizardDescriptor;
     private DatabaseConfigPanelVisual component;
     private final ChangeSupport changeSupport = new ChangeSupport(this);
-    
+
     public Component getComponent() {
         if (component == null) {
             component = new DatabaseConfigPanelVisual();
@@ -65,15 +65,21 @@ public class DatabaseConfigPanel implements
     }
 
     public HelpCtx getHelp() {
-        return null;    
+        return null;
     }
 
     public void readSettings(Object settings) {
         component.read((WizardDescriptor) settings);
+        Object substitute = component.getClientProperty("NewProjectWizard_Title"); // NOI18N
+        if (substitute != null) {
+            ((WizardDescriptor) settings).putProperty("NewProjectWizard_Title", substitute); // NOI18N
+        }
+
     }
 
     public void storeSettings(Object settings) {
         component.store((WizardDescriptor) settings);
+        ((WizardDescriptor) settings).putProperty("NewProjectWizard_Title", null); // NOI18N
     }
 
     public boolean isValid() {
@@ -89,7 +95,6 @@ public class DatabaseConfigPanel implements
     }
 
     public void validate() throws WizardValidationException {
-        
     }
 
     public boolean isFinishPanel() {

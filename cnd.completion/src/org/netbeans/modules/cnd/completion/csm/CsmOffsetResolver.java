@@ -47,11 +47,13 @@ import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmFunction;
 import org.netbeans.modules.cnd.api.model.CsmFunctionDefinition;
 import org.netbeans.modules.cnd.api.model.CsmInheritance;
+import org.netbeans.modules.cnd.api.model.CsmInitializerListContainer;
 import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.CsmType;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.api.model.CsmParameter;
 import org.netbeans.modules.cnd.api.model.CsmVariable;
+import org.netbeans.modules.cnd.api.model.deep.CsmExpression;
 
 /**
  * resolve file objects under offset
@@ -120,10 +122,16 @@ public class CsmOffsetResolver {
                 }
                 return param;
             }   
-            
             // check for constructor initializers
-            // ....
-            
+            if (CsmKindUtilities.isConstructor(lastObj)) {
+                CsmInitializerListContainer ctor = (CsmInitializerListContainer)lastObj;
+                for (CsmExpression izer : ctor.getInitializerList()) {
+                    if (CsmOffsetUtilities.isInObject(izer, offset)) {
+                        context.setLastObject(izer);
+                        return izer;
+                    }
+                }
+            }
             // for function definition search deeper in body's statements
             if (CsmKindUtilities.isFunctionDefinition(lastObj)) {
                 CsmFunctionDefinition funDef = (CsmFunctionDefinition)lastObj;
