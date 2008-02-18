@@ -660,6 +660,10 @@ public class CasaBuilder {
 
         Element casaConnections = newCasaDocument.createElement(CASA_CONNECTIONS_ELEM_NAME);
 
+        if (jbiDocument == null) {
+          return casaConnections;
+        }
+
         // 1. Copy jbi:connections from jbi document over.
         NodeList jbiConnections =
                 jbiDocument.getElementsByTagNameNS(JBI_NAMESPACE_URI, JBI_CONNECTION_ELEM_NAME);
