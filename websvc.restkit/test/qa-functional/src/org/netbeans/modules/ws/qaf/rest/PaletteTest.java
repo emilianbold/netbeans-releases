@@ -39,8 +39,12 @@
 package org.netbeans.modules.ws.qaf.rest;
 
 import java.awt.datatransfer.Transferable;
+import java.awt.event.KeyEvent;
+import java.io.File;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.Set;
 import javax.swing.JDialog;
 import javax.swing.JEditorPane;
@@ -52,12 +56,18 @@ import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jellytools.NbDialogOperator;
 import org.netbeans.jellytools.PaletteOperator;
 import org.netbeans.jellytools.nodes.Node;
+import org.netbeans.jellytools.nodes.SourcePackagesNode;
+import org.netbeans.jemmy.EventTool;
 import org.netbeans.jemmy.JemmyProperties;
 import org.netbeans.jemmy.operators.JCheckBoxOperator;
 import org.netbeans.jemmy.operators.JDialogOperator;
 import org.netbeans.jemmy.operators.JListOperator;
+import org.netbeans.jemmy.operators.JTextFieldOperator;
 import org.netbeans.junit.NbTestSuite;
+import org.netbeans.junit.ide.ProjectSupport;
 import org.openide.cookies.EditorCookie;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 import org.openide.windows.TopComponent;
 
@@ -84,6 +94,10 @@ public class PaletteTest extends RestNodeTest {
         super.setUp();
     }
 
+    protected String getRestPackage() {
+        return "o.n.m.qa.test"; //NOI18N
+    }
+
     /**
      * Test AdSenseForContent service
      */
@@ -92,13 +106,13 @@ public class PaletteTest extends RestNodeTest {
         n.tree().clickOnPath(getMethodNode(n, "getJson").getTreePath(), 2); //NOI18N
         EditorOperator eo = new EditorOperator(services[2].substring(0, 14));
         assertNotNull(services[2] + " not opened?", eo); //NOI18N
-        InputProcessor ip = new InputProcessor() {
-
-            public void setInput(NbDialogOperator dialogOperator) {
-                dialogOperator.ok();
-            }
-        };
+        String resourcePath = "myAdSenseForContent/"; //NOI18N
+        String resource = "AdSenseForContentResource"; //NOI18N
+        InputProcessor ip = new DefaultInputProcessor(resourcePath, null);
         dragAndDrop(0, services[2].substring(0, 14), ip);
+        String getter = "get" + Character.toUpperCase(resourcePath.charAt(0))  //NOI18N
+                + resourcePath.substring(1, resourcePath.length() - 1);
+        checkResource(eo, resourcePath, getter, resource);
     }
 
     /**
@@ -109,13 +123,13 @@ public class PaletteTest extends RestNodeTest {
         n.tree().clickOnPath(getMethodNode(n, "getJson").getTreePath(), 2); //MOI18N
         EditorOperator eo = new EditorOperator(services[2].substring(0, 14));
         assertNotNull(services[2] + " not opened?", eo); //NOI18N
-        InputProcessor ip = new InputProcessor() {
-
-            public void setInput(NbDialogOperator dialogOperator) {
-                dialogOperator.ok();
-            }
-        };
+        String resourcePath = "myAdSenseForSearch/"; //NOI18N
+        String resource = "AdSenseForSearchResource"; //NOI18N
+        InputProcessor ip = new DefaultInputProcessor(resourcePath, null);
         dragAndDrop(1, services[2].substring(0, 14), ip);
+        String getter = "get" + Character.toUpperCase(resourcePath.charAt(0))  //NOI18N
+                + resourcePath.substring(1, resourcePath.length() - 1);
+        checkResource(eo, resourcePath, getter, resource);
     }
 
     /**
@@ -126,13 +140,27 @@ public class PaletteTest extends RestNodeTest {
         n.tree().clickOnPath(getMethodNode(n, "getJson").getTreePath(), 2); //MOI18N
         EditorOperator eo = new EditorOperator(services[2].substring(0, 14));
         assertNotNull(services[2] + " not opened?", eo); //NOI18N
-        InputProcessor ip = new InputProcessor() {
-
-            public void setInput(NbDialogOperator dialogOperator) {
-                dialogOperator.ok();
-            }
-        };
+        String resourcePath = "myGoogleMap/"; //NOI18N
+        String resource = "GoogleMapResource"; //NOI18N
+        InputProcessor ip = new DefaultInputProcessor(resourcePath, null);
         dragAndDrop(2, services[2].substring(0, 14), ip);
+        String getter = "get" + Character.toUpperCase(resourcePath.charAt(0))  //NOI18N
+                + resourcePath.substring(1, resourcePath.length() - 1);
+        checkResource(eo, resourcePath, getter, resource);
+    }
+
+    public void testGoogleServices() {
+        //TODO: build and deploy project
+        //TODO: run some GET to verify running services
+        //TODO: undeploy project
+        //clean up original project - remove added code && created files
+        Set<String> toDelete = new HashSet<String>();
+        toDelete.add("AdSenseForContentResource"); //NOI18N
+        toDelete.add("AdSenseForSearchResource"); //NOI18N
+        toDelete.add("GenericRefConverter"); //NOI18N
+        toDelete.add("GoogleMapResource"); //NOI18N
+        toDelete.add("RestConnection"); //NOI18N
+        cleanResource(services[2].substring(0, 14), "@PUT", toDelete); //NOI18N
     }
 
     /**
@@ -143,13 +171,13 @@ public class PaletteTest extends RestNodeTest {
         n.tree().clickOnPath(n.getTreePath(), 2);
         EditorOperator eo = new EditorOperator(services[0]);
         assertNotNull(services[0] + " not opened?", eo); //NOI18N
-        InputProcessor ip = new InputProcessor() {
-
-            public void setInput(NbDialogOperator dialogOperator) {
-                dialogOperator.ok();
-            }
-        };
+        String resourcePath = "myUSAddressVerification/"; //NOI18N
+        String resource = "USAddressVerificationResource"; //NOI18N
+        InputProcessor ip = new DefaultInputProcessor(resourcePath, null);
         dragAndDrop(3, services[0], ip);
+        String getter = "get" + Character.toUpperCase(resourcePath.charAt(0))  //NOI18N
+                + resourcePath.substring(1, resourcePath.length() - 1);
+        checkResource(eo, resourcePath, getter, resource);
     }
 
     /**
@@ -160,13 +188,13 @@ public class PaletteTest extends RestNodeTest {
         n.tree().clickOnPath(n.getTreePath(), 2);
         EditorOperator eo = new EditorOperator(services[0]);
         assertNotNull(services[0] + " not opened?", eo); //NOI18N
-        InputProcessor ip = new InputProcessor() {
-
-            public void setInput(NbDialogOperator dialogOperator) {
-                dialogOperator.ok();
-            }
-        };
+        String resourcePath = "myEmailVerification/"; //NOI18N
+        String resource = "EmailVerificationResource"; //NOI18N
+        InputProcessor ip = new DefaultInputProcessor(resourcePath, null);
         dragAndDrop(4, services[0], ip);
+        String getter = "get" + Character.toUpperCase(resourcePath.charAt(0)) //NOI18N
+                + resourcePath.substring(1, resourcePath.length() - 1);
+        checkResource(eo, resourcePath, getter, resource);
     }
 
     /**
@@ -177,13 +205,13 @@ public class PaletteTest extends RestNodeTest {
         n.tree().clickOnPath(n.getTreePath(), 2);
         EditorOperator eo = new EditorOperator(services[0]);
         assertNotNull(services[0] + " not opened?", eo); //NOI18N
-        InputProcessor ip = new InputProcessor() {
-
-            public void setInput(NbDialogOperator dialogOperator) {
-                dialogOperator.ok();
-            }
-        };
+        String resourcePath = "myDNS/"; //NOI18N
+        String resource = "DNSResource"; //NOI18N
+        InputProcessor ip = new DefaultInputProcessor(resourcePath, null);
         dragAndDrop(5, services[0], ip);
+        String getter = "get" + Character.toUpperCase(resourcePath.charAt(0)) //NOI18N
+                + resourcePath.substring(1, resourcePath.length() - 1);
+        checkResource(eo, resourcePath, getter, resource);
     }
 
     /**
@@ -194,13 +222,13 @@ public class PaletteTest extends RestNodeTest {
         n.tree().clickOnPath(n.getTreePath(), 2);
         EditorOperator eo = new EditorOperator(services[0]);
         assertNotNull(services[0] + " not opened?", eo); //NOI18N
-        InputProcessor ip = new InputProcessor() {
-
-            public void setInput(NbDialogOperator dialogOperator) {
-                dialogOperator.ok();
-            }
-        };
+        String resourcePath = "myStandardReverseLookup/"; //NOI18N
+        String resource = "StandardReverseLookupResource"; //NOI18N
+        InputProcessor ip = new DefaultInputProcessor(resourcePath, null);
         dragAndDrop(6, services[0], ip);
+        String getter = "get" + Character.toUpperCase(resourcePath.charAt(0)) //NOI18N
+                + resourcePath.substring(1, resourcePath.length() - 1);
+        checkResource(eo, resourcePath, getter, resource);
     }
 
     /**
@@ -211,13 +239,33 @@ public class PaletteTest extends RestNodeTest {
         n.tree().clickOnPath(n.getTreePath(), 2);
         EditorOperator eo = new EditorOperator(services[0]);
         assertNotNull(services[0] + " not opened?", eo); //NOI18N
-        InputProcessor ip = new InputProcessor() {
-
-            public void setInput(NbDialogOperator dialogOperator) {
-                dialogOperator.ok();
-            }
-        };
+        String resourcePath = "myTaxDataComplete/"; //NOI18N
+        String resource = "TaxDataCompleteResource"; //NOI18N
+        InputProcessor ip = new DefaultInputProcessor(resourcePath, null);
         dragAndDrop(7, services[0], ip);
+        String getter = "get" + Character.toUpperCase(resourcePath.charAt(0)) //NOI18N
+                + resourcePath.substring(1, resourcePath.length() - 1);
+        checkResource(eo, resourcePath, getter, resource);
+    }
+
+    public void testStrikeIronServices() {
+        //TODO: build and deploy project
+        //TODO: run some GET to verify running services
+        //TODO: undeploy project
+        //clean up original project - remove added code && created files
+        Set<String> toDelete = new HashSet<String>();
+        toDelete.add("DNSConverter"); //NOI18N
+        toDelete.add("DNSResource"); //NOI18N
+        toDelete.add("EmailVerificationConverter"); //NOI18N
+        toDelete.add("EmailVerificationResource"); //NOI18N
+        toDelete.add("GenericRefConverter"); //NOI18N
+        toDelete.add("StandardReverseLookupConverter"); //NOI18N
+        toDelete.add("StandardReverseLookupResource"); //NOI18N
+        toDelete.add("TaxDataCompleteConverter"); //NOI18N
+        toDelete.add("TaxDataCompleteResource"); //NOI18N
+        toDelete.add("USAddressVerificationConverter"); //NOI18N
+        toDelete.add("USAddressVerificationResource"); //NOI18N
+        cleanResource(services[0], "@DELETE", toDelete); //NOI18N
     }
 
     /**
@@ -316,17 +364,102 @@ public class PaletteTest extends RestNodeTest {
         }
     }
 
+    private void checkResource(EditorOperator eo, String resourcePath,
+            String methodName, String newResourceName) {
+        // let's wait for a while here first...
+        ProjectSupport.waitScanFinished();
+        new EventTool().waitNoEvent(1000);
+        //check new method in the resource
+        assertTrue("missing method", eo.contains("\"" + resourcePath + "\"")); //NOI18N
+        assertTrue(eo.contains("public " + newResourceName + " " + methodName + "() {")); //NOI18N
+        //check new resource class
+        assertTrue(getFileFromProject(newResourceName).exists()); //NOI18N
+        //check nodes in the UI
+        String name = eo.getName();
+        Node n = getSubresourcesNode(name.substring(0, name.length() - 5));
+        if (n.isCollapsed()) {
+            n.expand();
+        } else {
+            n.collapse();
+            n.expand();
+        }
+        long timeout = 5000 + System.currentTimeMillis();
+        while (!n.isChildPresent(newResourceName) && System.currentTimeMillis() < timeout) {
+            try {
+                Thread.sleep(500);
+            } catch (InterruptedException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        }
+        assertTrue(n.isChildPresent(newResourceName));
+        n = getResourceNode(newResourceName); //NOI18N
+        if (n.isCollapsed()) {
+            n.expand();
+        }
+        n.tree().clickOnPath(n.getTreePath(), 2);
+        EditorOperator eo2 = new EditorOperator(newResourceName); //NOI18N
+        assertNotNull(newResourceName + " not opened?", eo2); //NOI18N
+        eo2.close(false);
+    }
+
+    private void cleanResource(String resourceName, String st, Set<String> toDelete) {
+        //clean the resource class (remove added code)
+        EditorOperator eo = new EditorOperator(resourceName);
+        assertNotNull(resourceName + " not opened?", eo); //NOI18N
+        eo.select(st);
+        System.out.println(eo.getText());
+        int begin = eo.getLineNumber() + 4;
+        eo.pushKey(KeyEvent.VK_PAGE_DOWN);
+        eo.pushKey(KeyEvent.VK_PAGE_DOWN);
+        eo.pushKey(KeyEvent.VK_PAGE_DOWN);
+        eo.select(begin, eo.getLineNumber() - 2);
+        eo.pushKey(KeyEvent.VK_DELETE);
+        if (eo.contains("import java.util.List")) {
+            eo.select("import java.util.List");
+            eo.deleteLine(eo.getLineNumber());
+        }
+        while (eo.contains("import com.")) {
+            eo.select("import com.");
+            eo.deleteLine(eo.getLineNumber());
+        }
+        eo.close(true);
+        //delete created files
+        SourcePackagesNode spn = new SourcePackagesNode(getProjectRootNode());
+        Node pn = new Node(spn, getRestPackage());
+        pn.expand();
+        Set<String> deleted = new HashSet<String>();
+        for (String s : toDelete) {
+            if (getFileFromProject(s).exists()) {
+                new Node(pn, s).performPopupAction("Delete"); //NOI18N
+                new NbDialogOperator("Safe Delete").ok(); //NOI18N
+                deleted.add(s);
+            }
+        }
+        assertEquals(3, getRestNode().getChildren().length);
+        toDelete.removeAll(deleted);
+        assertTrue(toDelete + " we're not created nor deleted", toDelete.isEmpty()); //NOI18N
+    }
+
+    private File getFileFromProject(String fileName) {
+        FileObject fo = getProject().getProjectDirectory().getFileObject("src/java"); //NOI18N
+        File f = FileUtil.toFile(fo);
+        return new File(f, getRestPackage().replace('.', File.separatorChar) + File.separatorChar + fileName + ".java"); //NOI18N
+    }
+
     public static TestSuite suite() {
         TestSuite suite = new NbTestSuite();
-        suite.addTest(new PaletteTest("testAdSenseForContent")); //NOI18N
-        suite.addTest(new PaletteTest("testAdSenseForSearch")); //NOI18N
+        //see http://www.netbeans.org/issues/show_bug.cgi?id=127557
+//        suite.addTest(new PaletteTest("testAdSenseForContent")); //NOI18N
+//        suite.addTest(new PaletteTest("testAdSenseForSearch")); //NOI18N
         suite.addTest(new PaletteTest("testMap")); //NOI18N
+        suite.addTest(new PaletteTest("testGoogleServices")); //NOI18N
         suite.addTest(new PaletteTest("testAddressVerification")); //NOI18N
         suite.addTest(new PaletteTest("testEmailVerify")); //NOI18N
         suite.addTest(new PaletteTest("testIPAddressLookup")); //NOI18N
         suite.addTest(new PaletteTest("testReversePhoneLookup")); //NOI18N
-        suite.addTest(new PaletteTest("testSalesandUseTaxComplete")); //NOI18N
-        suite.addTest(new PaletteTest("testNewsSearch")); //NOI18N
+//        suite.addTest(new PaletteTest("testSalesandUseTaxComplete")); //NOI18N
+        suite.addTest(new PaletteTest("testStrikeIronServices")); //NOI18N
+//        suite.addTest(new PaletteTest("testNewsSearch")); //NOI18N
         return suite;
     }
 
@@ -384,7 +517,7 @@ public class PaletteTest extends RestNodeTest {
         private InputProcessor input;
         private boolean done;
         private long time;
-        private static final long TIMEOUT = 15000;
+        private static final long TIMEOUT = 30000;
 
         InputCatcher(int paletteItem, InputProcessor input) {
             super("Waiter to catch input for " + PALETTE_ITEMS[paletteItem]); //NOI18N
@@ -396,22 +529,33 @@ public class PaletteTest extends RestNodeTest {
 
         @Override
         public void run() {
+            //Web Site Certified by Unknown Authority
+            String certDialogLabel = Bundle.getStringTrimmed(
+                    "org.netbeans.modules.xml.retriever.impl.Bundle",
+                    "TTL_CertifiedWebSite");
             //Customize {0} Component
             String dialogLabel = Bundle.getStringTrimmed(
                     "org.netbeans.modules.websvc.rest.component.palette.Bundle",
                     "LBL_CustomizeComponent",
                     new String[]{PALETTE_ITEMS[paletteItem]});
-            //first wait for "Customize..." dialog and let the test take
+            //first accept certificate for HTTPS connection (if it appears)
+            //then wait for "Customize..." dialog and let the test take
             //care of it (it should at least close it)
             while (!isDone()) {
-                JDialog dialog = JDialogOperator.findJDialog(dialogLabel, true, true);
+                JDialog dialog = JDialogOperator.findJDialog(certDialogLabel, true, true);
+                if (dialog != null) {
+                    new NbDialogOperator(dialog).yes();
+                    time = System.currentTimeMillis();
+                    continue;
+                }
+                dialog = JDialogOperator.findJDialog(dialogLabel, true, true);
                 if (dialog != null) {
                     input.setInput(new NbDialogOperator(dialog));
                     done = true;
                     break;
                 }
                 try {
-                    Thread.sleep(500);
+                    Thread.sleep(100);
                 } catch (InterruptedException ex) {
                     ex.printStackTrace();
                 }
@@ -459,5 +603,31 @@ public class PaletteTest extends RestNodeTest {
     private static interface InputProcessor {
 
         void setInput(NbDialogOperator dialogOperator);
+    }
+
+    private static class DefaultInputProcessor implements InputProcessor {
+
+        private String path;
+        private String methodName;
+
+        DefaultInputProcessor(String path, String methodName) {
+            this.path = path;
+            this.methodName = methodName;
+        }
+
+        public void setInput(NbDialogOperator dialogOperator) {
+            JTextFieldOperator jtfo = null;
+            if (path != null) {
+                jtfo = new JTextFieldOperator(dialogOperator, 0);
+                jtfo.clearText();
+                jtfo.typeText(path);
+            }
+            if (methodName != null) {
+                jtfo = new JTextFieldOperator(dialogOperator, 1);
+                jtfo.clearText();
+                jtfo.typeText(methodName);
+            }
+            dialogOperator.ok();
+        }
     }
 }
