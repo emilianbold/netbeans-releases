@@ -198,8 +198,6 @@ public class ClassPathRootsListener implements PropertyChangeListener {
                         }
                     };
                     
-                    System.err.println("adding listener to: " + f);
-
                     FileChangeSupport.DEFAULT.addListener(l, f);
                     
                     file2Listener.put(f, new  WeakReference<FileChangeSupportListener>(l));
@@ -237,7 +235,6 @@ public class ClassPathRootsListener implements PropertyChangeListener {
                     Reference<FileChangeSupportListener> ref = file2Listener.remove(r);
                     FileChangeSupportListener l = ref != null ? ref.get() : null;
                     
-                    System.err.println("removing listeners from: " + r);
                     FileChangeSupport.DEFAULT.removeListener(l, r);
                     
                     file2ClassPaths.remove(r);
@@ -248,8 +245,6 @@ public class ClassPathRootsListener implements PropertyChangeListener {
 
 
     static File fileForURL(URL root) {
-        long s = System.currentTimeMillis();
-        try {
         File f = fileForURLImpl(root);
         
         if (f == null) {
@@ -263,9 +258,6 @@ public class ClassPathRootsListener implements PropertyChangeListener {
         }
         
         return f;
-        }  finally {
-            System.err.println("fileForURL took: " + (System.currentTimeMillis() - s));
-        }
     }
     
     private static File fileForURLImpl(URL root) {
