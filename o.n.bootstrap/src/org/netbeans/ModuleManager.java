@@ -623,9 +623,6 @@ public final class ModuleManager {
         // The installer can perform additional checks:
         return installer.shouldDelegateResource(m, parent, pkg);
     }
-    public boolean isSpecialResource(String pkg) {
-        return installer.isSpecialResource(pkg);
-    }
     // Again, access from Module to ModuleInstaller:
     Manifest loadManifest(File jar) throws IOException {
         return installer.loadManifest(jar);
@@ -1087,8 +1084,7 @@ public final class ModuleManager {
     }
     private void maybeAddToEnableList(Set<Module> willEnable, Set<Module> mightEnable, Module m, boolean okToFail) {
         if (! missingDependencies(m).isEmpty()) {
-            // Should never happen:
-            if (! okToFail) throw new IllegalStateException("Module was supposed to be OK: " + m); // NOI18N
+            assert okToFail : "Module " + m + " had unexpected problems: " + missingDependencies(m) + " (willEnable: " + willEnable + " mightEnable: " + mightEnable + ")";
             // Cannot satisfy its dependencies, exclude it.
             return;
         }

@@ -14,7 +14,7 @@
  * 
  * The Original Software is NetBeans. The Initial Developer of the Original
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
- * Microsystems, Inc. All Rights Reserved.
+ * Microsystems, Inc. All Rights Reserved. 
  */
 package org.netbeans.modules.etl.project;
 
@@ -80,6 +80,7 @@ public final class EtlproProject implements Project, AntProjectListener, Project
     public static final String MODULE_INSTALL_DIR = "module.install.dir";
     public static final String COMMAND_GENWSDL = "gen-wsdl";
     public static final String COMMAND_SCHEMA = "gen-schema";
+    public static final String COMMAND_BULK_LOADER = "bulk-loader";
     private final AntProjectHelper helper;
     private final PropertyEvaluator eval;
     private final ReferenceHelper refHelper;

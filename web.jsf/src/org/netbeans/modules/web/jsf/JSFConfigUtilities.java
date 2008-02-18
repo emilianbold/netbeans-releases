@@ -64,6 +64,7 @@ import org.openide.util.Exceptions;
 /**
  *
  * @author petr
+ * @author Po-Ting Wu
  */
 public class JSFConfigUtilities {
     
@@ -129,10 +130,6 @@ public class JSFConfigUtilities {
         return "";
     }
     
-    
-    
-    
-    
     public static boolean validateXML(FileObject deploymentDesc){
         boolean value = false;  // the default value of the com.sun.faces.validateXml
         if (deploymentDesc != null){
@@ -170,15 +167,27 @@ public class JSFConfigUtilities {
     /** Returns relative path for all jsf configuration files in the web module. If there is no
      *  configuration file, then returns String array with lenght = 0.
      */
+    public static String[] getConfigFiles(WebModule webModule) {
+        if (webModule == null) {
+            return new String[0];
+        }
+
+        return getConfigFiles(webModule, webModule.getDeploymentDescriptor());
+    }
+
     public static String[] getConfigFiles(FileObject deploymentDesc){
+        if (deploymentDesc == null) {
+            return new String[0];
+        }
+
+        return getConfigFiles(WebModule.getWebModule(deploymentDesc), deploymentDesc);
+    }
+
+    public static String[] getConfigFiles(WebModule webModule, FileObject deploymentDesc){
         ArrayList<String> files = new ArrayList();
         String[]  filesURI;
-        // looking for WEB-INF/faces-config.xml
-        WebModule webModule = null;
-        if (deploymentDesc != null) {
-            webModule = WebModule.getWebModule(deploymentDesc);
-        }
         if (webModule != null) {
+            // looking for WEB-INF/faces-config.xml
             FileObject baseDir = webModule.getDocumentBase();
             FileObject fileObject = baseDir.getFileObject(DEFAULT_FACES_CONFIG_PATH);
             if (fileObject != null)

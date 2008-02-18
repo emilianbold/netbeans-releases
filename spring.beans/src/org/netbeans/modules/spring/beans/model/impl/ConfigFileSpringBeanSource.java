@@ -145,23 +145,26 @@ public class ConfigFileSpringBeanSource implements SpringBeanSource {
         }
 
         private void parseBean(Node node) {
-            String clazz = SpringXMLConfigEditorUtils.getAttribute(node, "class"); // NOI18N
-            String id = SpringXMLConfigEditorUtils.getAttribute(node, "id"); // NOI18N
-            String nameAttr = SpringXMLConfigEditorUtils.getAttribute(node, "name"); // NOI18N
+            String id = getTrimmedAttr(node, "id"); // NOI18N
+            String name = getTrimmedAttr(node, "name"); // NOI18N
             List<String> names;
-            if (nameAttr != null) {
-                names = Collections.unmodifiableList(StringUtils.tokenize(nameAttr, SpringXMLConfigEditorUtils.BEAN_NAME_DELIMITERS));
+            if (name != null) {
+                names = Collections.unmodifiableList(StringUtils.tokenize(name, SpringXMLConfigEditorUtils.BEAN_NAME_DELIMITERS));
             } else {
                 names = Collections.<String>emptyList();
             }
+            String clazz = getTrimmedAttr(node, "class"); // NOI18N
+            String parent = getTrimmedAttr(node, "parent"); // NOI18N
+            String factoryBean = getTrimmedAttr(node, "factory-bean"); // NOI18N
+            String factoryMethod = getTrimmedAttr(node, "factory-method"); // NOI18N
             Tag tag = (Tag)node;
             Location location = new ConfigFileLocation(file, tag.getElementOffset());
-            ConfigFileSpringBean bean = new ConfigFileSpringBean(id, names, clazz, location);
+            ConfigFileSpringBean bean = new ConfigFileSpringBean(id, names, clazz, parent, factoryBean, factoryMethod, location);
             if (id != null) {
                 addBeanID(id, bean);
             }
-            for (String name : names) {
-                addBeanName(name, bean);
+            for (String each : names) {
+                addBeanName(each, bean);
             }
             beans.add(bean);
         }
@@ -176,6 +179,14 @@ public class ConfigFileSpringBeanSource implements SpringBeanSource {
             if (name2Bean.get(name) == null) {
                 name2Bean.put(name, bean);
             }
+        }
+
+        private String getTrimmedAttr(Node node, String attrName) {
+            String attrValue = SpringXMLConfigEditorUtils.getAttribute(node, attrName);
+            if (attrValue != null) {
+                attrValue = attrValue.trim();
+            }
+            return attrValue;
         }
     }
 }

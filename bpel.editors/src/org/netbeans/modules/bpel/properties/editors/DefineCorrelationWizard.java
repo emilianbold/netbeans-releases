@@ -123,8 +123,11 @@ import org.netbeans.modules.bpel.nodes.BpelNode;
 import org.netbeans.modules.bpel.properties.ImportRegistrationHelper;
 import org.netbeans.modules.bpel.properties.ResolverUtility;
 import org.netbeans.modules.bpel.properties.Util;
+import org.netbeans.modules.soa.mappercore.Canvas;
 import org.netbeans.modules.soa.mappercore.DefaultMapperContext;
+import org.netbeans.modules.soa.mappercore.LeftTree;
 import org.netbeans.modules.soa.mappercore.Mapper;
+import org.netbeans.modules.soa.mappercore.RightTree;
 import org.netbeans.modules.soa.mappercore.model.Graph;
 import org.netbeans.modules.soa.mappercore.model.GraphSubset;
 import org.netbeans.modules.soa.mappercore.model.Link;
@@ -238,6 +241,11 @@ public class DefineCorrelationWizard implements WizardProperties {
     
     public void showWizardDialog() {
         Dialog dialog = DialogDisplayer.getDefault().createDialog(wizardDescriptor);
+        dialog.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(
+            DefineCorrelationWizard.class, "A11_DESCRIPTOR_DefineCorrelationWizardDialog"));
+        dialog.getAccessibleContext().setAccessibleName(NbBundle.getMessage(
+            DefineCorrelationWizard.class, "A11_NAME_DefineCorrelationWizardDialog"));
+        
         findNextAndFinishButtons(dialog);
         dialog.setPreferredSize(new Dimension(
             LEFT_DIMENSION_VALUE.width + PANEL_DIMENSION_VALUE.width + 50, 
@@ -575,6 +583,10 @@ public class DefineCorrelationWizard implements WizardProperties {
             activityComboBox.setEditable(false);
             activityComboBox.setMinimumSize(COMBOBOX_DIMENSION);
             activityComboBox.setPreferredSize(activityComboBox.getMinimumSize());
+            activityComboBox.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(
+                DefineCorrelationWizard.class, "A11_DESCRIPTOR_ActivityComboBox"));
+            activityComboBox.getAccessibleContext().setAccessibleName(NbBundle.getMessage(
+                DefineCorrelationWizard.class, "A11_NAME_ActivityComboBox"));
             wizardPanel.add(activityComboBox);
         }
 
@@ -717,8 +729,29 @@ public class DefineCorrelationWizard implements WizardProperties {
             } else if (isMapperChanged) {
                 correlationMapper.setModel(mapperModel);
             }
+            setAccessibilityInfo(correlationMapper);
             ((CorrelationMapperModel) mapperModel).expandTree(((CorrelationMapperModel) mapperModel).getLeftTreeModel());
             ((CorrelationMapperModel) mapperModel).expandTree(((CorrelationMapperModel) mapperModel).getRightTreeModel());
+        }
+
+        private void setAccessibilityInfo(Mapper correlationMapper) {
+            LeftTree leftTree = correlationMapper.getLeftTree();
+            leftTree.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(
+                DefineCorrelationWizard.class, "A11_DESCRIPTOR_MapperLeftTree"));
+            leftTree.getAccessibleContext().setAccessibleName(NbBundle.getMessage(
+                DefineCorrelationWizard.class, "A11_NAME_MapperLeftTree"));
+            
+            Canvas canvas = correlationMapper.getCanvas();
+            canvas.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(
+                DefineCorrelationWizard.class, "A11_DESCRIPTOR_MapperCanvas"));
+            canvas.getAccessibleContext().setAccessibleName(NbBundle.getMessage(
+                DefineCorrelationWizard.class, "A11_NAME_MapperCanvas"));
+            
+            RightTree rightTree = correlationMapper.getRightTree();
+            rightTree.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(
+                DefineCorrelationWizard.class, "A11_DESCRIPTOR_MapperRightTree"));
+            rightTree.getAccessibleContext().setAccessibleName(NbBundle.getMessage(
+                DefineCorrelationWizard.class, "A11_NAME_MapperRightTree"));
         }
 
         private CorrelationMapperTreeNode buildCorrelationTree(BpelEntity topBpelEntity, 

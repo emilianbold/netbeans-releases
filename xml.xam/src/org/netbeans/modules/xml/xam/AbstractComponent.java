@@ -166,7 +166,7 @@ public abstract class AbstractComponent<C extends Component<C>> implements Compo
      * @param type Interested children type to
      *	return.
      */
-    public <T extends C>List<T> getChildren(Class<T> type) {
+    public synchronized <T extends C>List<T> getChildren(Class<T> type) {
         List<T> result = new ArrayList<T>(_getChildren().size());
         for (C child : _getChildren()) {
             if (type.isAssignableFrom(child.getClass())) {

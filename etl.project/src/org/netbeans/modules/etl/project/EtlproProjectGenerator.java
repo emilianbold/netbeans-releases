@@ -14,7 +14,7 @@
  * 
  * The Original Software is NetBeans. The Initial Developer of the Original
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
- * Microsystems, Inc. All Rights Reserved.
+ * Microsystems, Inc. All Rights Reserved. 
  */
 package org.netbeans.modules.etl.project;
 
@@ -40,6 +40,7 @@ import org.netbeans.modules.mashup.tables.wizard.MashupTableWizardIterator;
 import org.netbeans.modules.sql.framework.common.utils.DBExplorerUtil;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
+import org.openide.util.Utilities;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
@@ -50,9 +51,9 @@ import org.w3c.dom.Element;
  * @author Pavel Buzek
  */
 public class EtlproProjectGenerator {
+
     private static transient final Logger mLogger = LogUtil.getLogger(EtlproProjectGenerator.class.getName());
     private static transient final Localizer mLoc = Localizer.get();
-    
     private static final String nbBundle1 = mLoc.t("PRSR001: collaborations");
     private static final String nbBundle2 = mLoc.t("PRSR001: conf");
     private static final String nbBundle3 = mLoc.t("PRSR001: setup");
@@ -74,7 +75,6 @@ public class EtlproProjectGenerator {
     private static FileObject dbObj = null;
     private static File databases = null;
     private static FileObject data = null;
-    
     public static String PRJ_LOCATION_DIR = "";
 
     private EtlproProjectGenerator() {
@@ -98,7 +98,8 @@ public class EtlproProjectGenerator {
         FileObject fo = FileUtil.toFileObject(rootF);
         assert fo != null : "At least disk roots must be mounted! " + rootF;
         fo.getFileSystem().refresh(false);
-        fo = FileUtil.toFileObject(dir);
+        //fo = FileUtil.toFileObject(dir);
+        fo = FileUtil.toFileObject(new File(dir, ""));
 
         // vlv # 113228
         if (fo == null) {
@@ -108,13 +109,13 @@ public class EtlproProjectGenerator {
         assert fo.getChildren().length == 0 : "Dir must have been empty: " + dir;
         AntProjectHelper h = setupProject(fo, name, j2eeLevel);
         fo.createFolder(DEFAULT_SRC_FOLDER); // NOI18N
-        data = fo.createFolder(DEFAULT_DATA_DIR); // NOI18N      
+        data = fo.createFolder(DEFAULT_DATA_DIR); // NOI18N   
 
         databases = new File(PRJ_LOCATION_DIR + "\\" + DEFAULT_NBPROJECT_DIR + "\\" + "private" + "\\" + DEFAULT_DATABASES_DIR);
         dbObj = FileUtil.createFolder(databases);
         //dbObj.lock();  
-        MashupTableWizardIterator.setProjectInfo(name,PRJ_LOCATION_DIR, true);
-        
+        MashupTableWizardIterator.setProjectInfo(name, PRJ_LOCATION_DIR, true);
+
 
         String dbName = databases.getPath();
         createDefaultDatabase(dbName);
@@ -207,7 +208,7 @@ public class EtlproProjectGenerator {
                     new NotifyDescriptor.Message(Localizer.parse(nbBundle10), NotifyDescriptor.INFORMATION_MESSAGE);
             DialogDisplayer.getDefault().notify(d);
         } else if (f.exists()) {
-            String nbBundle11 = mLoc.t("PRSR001: Database {0} already exists.",name);
+            String nbBundle11 = mLoc.t("PRSR001: Database {0} already exists.", name);
             NotifyDescriptor d =
                     new NotifyDescriptor.Message(Localizer.parse(nbBundle11), NotifyDescriptor.INFORMATION_MESSAGE);
             DialogDisplayer.getDefault().notify(d);
@@ -238,11 +239,21 @@ public class EtlproProjectGenerator {
     }
 
     public static String getDatabasesFolderPath() {
-        return databases.getPath();
+        //return databases.getPath();
+        String path = FileUtil.toFile(dbObj).getAbsolutePath();
+        /*if (Utilities.isWindows()) {
+            path = path.replace("\\", "/"); // NOI18N
+        }*/
+        return path;
     }
-    
+
     public static String getDataFolderPath() {
-        return data.getPath();
+        //return data.getPath();
+        String path = FileUtil.toFile(data).getAbsolutePath();
+        if (Utilities.isWindows()) {
+            path = path.replace("\\", "/"); // NOI18N
+        }
+        return path;
     }
     //Need for Migration - End
 }
