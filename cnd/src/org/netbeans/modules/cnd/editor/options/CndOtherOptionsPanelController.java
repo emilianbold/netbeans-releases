@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -39,61 +39,53 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.cnd.loaders;
+package org.netbeans.modules.cnd.editor.options;
 
-import java.io.IOException;
 
-import org.openide.filesystems.FileObject;
-import org.openide.loaders.DataObjectExistsException;
-import org.openide.loaders.ExtensionList;
-import org.openide.loaders.MultiDataObject;
-import org.openide.util.NbBundle;
-import org.openide.util.SharedClassObject;
-import org.netbeans.modules.cnd.MIMENames;
 
-/**
- *
- * @author Alexander Simon
- */
-public class CCDataLoader extends CndAbstractDataLoaderExt {
+import java.beans.PropertyChangeListener;
+import javax.swing.JComponent;
+import org.netbeans.spi.options.OptionsPanelController;
+import org.openide.util.HelpCtx;
+import org.openide.util.Lookup;
+
+public final class CndOtherOptionsPanelController extends OptionsPanelController {
+
+    private CndOtherOptionsPanel panel = new CndOtherOptionsPanel();
+
+    public void update() {
+        panel.update();
+}
+
+    public void applyChanges() {
+        panel.applyChanges();
+    }
     
-    private static CCDataLoader instance;
-
-    /** Serial version number */
-    static final long serialVersionUID = 6801389470714975684L;
-
-    /** The suffix list for C++ primary files */
-    private static final String[] cppExtensions =
-				{ "cc", "cpp", "c++", "cxx", "C", "mm" }; // NOI18N
-
-    protected CCDataLoader() {
-	super("org.netbeans.modules.cnd.loaders.CCDataObject"); // NOI18N
-        instance = this;
-        createExtentions(cppExtensions);
+    public void cancel() {
+        panel.cancel();
+    }
+    
+    public boolean isValid() {
+        return true; //panel.dataValid();
+    }
+    
+    public boolean isChanged() {
+        return panel.isChanged();
+    }
+    
+    public HelpCtx getHelpCtx() {
+        return new HelpCtx("netbeans.optionsDialog.advanced.formEditor"); // NOI18N
+    }
+    
+    public JComponent getComponent(Lookup masterLookup) {
+        return panel;
     }
 
-    public static CCDataLoader getInstance(){
-        if (instance == null) {
-            instance = SharedClassObject.findObject(CCDataLoader.class, true);
-        }
-        return instance;
+    public void addPropertyChangeListener(PropertyChangeListener l) {
+        panel.addPropertyChangeListener(l);
     }
 
-    /** set the default display name */
-    @Override
-    protected String defaultDisplayName() {
-	return NbBundle.getMessage(CndAbstractDataLoader.class, "PROP_CCDataLoader_Name"); // NOI18N
-    }
-
-    protected String getMimeType(){
-        return MIMENames.CPLUSPLUS_MIME_TYPE;
-    }
-
-    protected MultiDataObject createMultiObject(FileObject primaryFile) throws DataObjectExistsException, IOException {
-        return new CCDataObject(primaryFile, this);
-    }
-
-    public ExtensionList getDefaultExtensionList() {
-        return arrayToExtensionList(cppExtensions);
+    public void removePropertyChangeListener(PropertyChangeListener l) {
+        panel.removePropertyChangeListener(l);
     }
 }

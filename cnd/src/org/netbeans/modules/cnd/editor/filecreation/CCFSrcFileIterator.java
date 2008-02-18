@@ -89,11 +89,11 @@ public class CCFSrcFileIterator implements TemplateWizard.Iterator {
 
     public void initialize (TemplateWizard wiz) {
         DataObject dobj = wiz.getTemplate();
-        if (dobj.getLoader() instanceof CndAbstractDataLoaderExt) {
+        if (dobj.getLoader() instanceof CndHandlableExtensions) {
             Project project = Templates.getProject( wiz );
             Sources sources = ProjectUtils.getSources(project);
             SourceGroup[] groups = sources.getSourceGroups(Sources.TYPE_GENERIC);
-            ExtensionsSettings es = ExtensionsSettings.getInstance((CndAbstractDataLoaderExt)wiz.getTemplate().getLoader());
+            ExtensionsSettings es = ExtensionsSettings.getInstance((CndHandlableExtensions)wiz.getTemplate().getLoader());
             // this is the only place where we want to differ c headers from cpp headers (creation of new one)
             if (dobj instanceof HDataObject && dobj.getPrimaryFile().getPath().indexOf("cpp") == -1) { //NOI18N
                 es = es.getSpecializedInstance("c-header"); //NOI18N
