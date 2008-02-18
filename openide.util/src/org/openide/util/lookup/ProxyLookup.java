@@ -413,7 +413,6 @@ public class ProxyLookup extends Lookup {
             for (int i = 0; i < current.length; i++) {
                 if (added.contains(current[i])) {
                     // new lookup
-                    assert !Thread.holdsLock(newData.proxy);
                     arr[i] = current[i].lookup(template);
                     if (toAdd != null) {
                         toAdd.put(arr[i], weakL);
