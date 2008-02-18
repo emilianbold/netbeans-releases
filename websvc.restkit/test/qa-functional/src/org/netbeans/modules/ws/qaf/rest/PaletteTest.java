@@ -383,10 +383,10 @@ public class PaletteTest extends RestNodeTest {
         ProjectSupport.waitScanFinished();
         new EventTool().waitNoEvent(1000);
         //check new method in the resource
-        assertTrue("missing method", eo.contains("\"" + resourcePath + "\"")); //NOI18N
-        assertTrue(eo.contains("public " + newResourceName + " " + methodName + "() {")); //NOI18N
+        assertTrue("missing @Path?", eo.contains("\"" + resourcePath + "\"")); //NOI18N
+        assertTrue("missing method declaration?", eo.contains("public " + newResourceName + " " + methodName + "() {")); //NOI18N
         //check new resource class
-        assertTrue(getFileFromProject(newResourceName).exists()); //NOI18N
+        assertTrue("source for [" + newResourceName + "] missing?", getFileFromProject(newResourceName).exists()); //NOI18N
         //check nodes in the UI
         String name = eo.getName();
         Node n = getSubresourcesNode(name.substring(0, name.length() - 5));
@@ -404,7 +404,7 @@ public class PaletteTest extends RestNodeTest {
                 Exceptions.printStackTrace(ex);
             }
         }
-        assertTrue(n.isChildPresent(newResourceName));
+        assertTrue("locator node for [" + newResourceName + "] missing?", n.isChildPresent(newResourceName));
         n = getResourceNode(newResourceName); //NOI18N
         if (n.isCollapsed()) {
             n.expand();
@@ -453,7 +453,7 @@ public class PaletteTest extends RestNodeTest {
                 deleted.add(s);
             }
         }
-        assertEquals(3, getRestNode().getChildren().length);
+        assertEquals("should have only 3 nodes", 3, getRestNode().getChildren().length);
         toDelete.removeAll(deleted);
         assertTrue(toDelete + " we're not created (nor deleted)", toDelete.isEmpty()); //NOI18N
     }
