@@ -137,6 +137,37 @@ made subject to such option by the copyright holder.
         <property name="coverage.lib.path" refid="httpunit.libs"/>
     </target>
     
+    <!--
+    
+    -->
+    <target name="-init-jmaki">
+        <property name="plugins.jmaki.nbm.dir" value="${java.io.tmpdir}"/>
+        <property name="plugins.jmaki.nbm.name" value="org-netbeans-modules-sun-jmaki.nbm"/>
+        <property name="plugins.jmaki.nbm" value="${plugins.jmaki.nbm.dir}/${plugins.jmaki.nbm.name}"/>
+        <condition property="jmaki.do.download">
+            <and>
+                <not><isset property="plugins.skip.jmaki"/></not>
+                <not><available file="${plugins.jmaki.nbm}"/></not>
+            </and>
+        </condition>
+    </target>
+        
+    <target name="-download-jmaki" if="jmaki.do.download">
+        <echo message="Going to download ${plugins.jmaki.nbm.name}. If it fails download it from http://ajax.dev.java.net" />
+        <echo message="(and put it into ${java.io.tmpdir})"/>
+        <echo message="or invoke with -Dproxy.host='host' -Dproxy.port='port'" />
+        <get src="https://ajax.dev.java.net/files/documents/3115/86078/org-netbeans-modules-sun-jmaki.nbm" dest="${plugins.jmaki.nbm}"/>
+    </target>
+
+    <target name="-setup-jmaki-nbm" depends="-init-jmaki, -download-jmaki">
+        <condition property="xtest.userdata|plugins.jmaki.nbm" value="${plugins.jmaki.nbm}">
+            <and>
+                <available property="plugins.jmaki.nbm.present" file="${plugins.jmaki.nbm}"/>
+                <not><isset property="plugins.skip.jmaki"/></not>
+            </and>
+        </condition>
+    </target>
+    
     <!-- Run tests on Apache Tomcat server -->
     <target name="-runidetest-with-tomcat" if="tomcat.home">
         <echo>Running tests on Apache Tomcat (using: ${tomcat.home})</echo>
@@ -169,7 +200,7 @@ made subject to such option by the copyright holder.
     </target>
     
     <!-- Override to run tests on more servers at once -->
-    <target name="runidetest-with-appserver" depends="-init-cp-wa, -runidetest-with-glassfish, -runidetest-with-tomcat, -runidetest-with-jboss"/>
+    <target name="runidetest-with-appserver" depends="-init-cp-wa, -setup-jmaki-nbm, -runidetest-with-glassfish, -runidetest-with-tomcat, -runidetest-with-jboss"/>
     
 </project>
 
