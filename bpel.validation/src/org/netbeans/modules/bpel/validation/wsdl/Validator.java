@@ -72,6 +72,9 @@ public final class Validator extends WsdlValidator {
         // # 90324
         PropertyAlias alias = (PropertyAlias) element;
 //out("PROPERTY ALIAS: " + alias);
+        if (alias.getQuery() != null) {
+          return;
+        }
         // property
         NamedComponentReference<CorrelationProperty> ref1 = alias.getPropertyName();
 
