@@ -135,7 +135,17 @@ public class SourcePath {
      * @return url
      */
     public String getURL (String relativePath, boolean global) {
-        return getContext ().getURL (relativePath, global);
+        String url = getContext ().getURL (relativePath, global);
+        if (url != null) {
+            try {
+                new java.net.URL(url);
+            } catch (java.net.MalformedURLException muex) {
+                ErrorManager.getDefault().notify(
+                        ErrorManager.getDefault().annotate(muex,
+                        "Malformed URL '"+url+"' produced by "+getContext ()));
+            }
+        }
+        return url;
     }
     
     public String getURL (
@@ -414,8 +424,27 @@ public class SourcePath {
 
         public String getURL (String relativePath, boolean global) {
             String p1 = cp1.getURL (relativePath, global);
-            if (p1 != null) return p1;
-            return cp2.getURL (relativePath, global);
+            if (p1 != null) {
+                try {
+                    new java.net.URL(p1);
+                    return p1;
+                } catch (java.net.MalformedURLException muex) {
+                    ErrorManager.getDefault().notify(
+                            ErrorManager.getDefault().annotate(muex,
+                            "Malformed URL '"+p1+"' produced by "+cp1));
+                }
+            }
+            p1 = cp2.getURL (relativePath, global);
+            if (p1 != null) {
+                try {
+                    new java.net.URL(p1);
+                } catch (java.net.MalformedURLException muex) {
+                    ErrorManager.getDefault().notify(
+                            ErrorManager.getDefault().annotate(muex,
+                            "Malformed URL '"+p1+"' produced by "+cp1));
+                }
+            }
+            return p1;
         }
 
         public String getRelativePath (
