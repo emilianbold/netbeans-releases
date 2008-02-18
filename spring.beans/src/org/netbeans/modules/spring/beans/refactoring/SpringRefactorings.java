@@ -41,7 +41,14 @@
 
 package org.netbeans.modules.spring.beans.refactoring;
 
+import java.io.File;
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.net.URL;
+import java.net.URLDecoder;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.lang.model.element.Element;
@@ -52,9 +59,11 @@ import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.ElementUtilities;
 import org.netbeans.api.java.source.JavaSource;
+import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.TreePathHandle;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 
 /**
  *
@@ -73,7 +82,8 @@ public class SpringRefactorings {
     public static RenamedClassName getRenamedClassName(final TreePathHandle oldHandle, final JavaSource javaSource, final String newName) throws IOException {
         final RenamedClassName[] result = { null };
         javaSource.runUserActionTask(new Task<CompilationController>() {
-            public void run(CompilationController cc) throws Exception {
+            public void run(CompilationController cc) throws IOException {
+                cc.toPhase(Phase.ELEMENTS_RESOLVED);
                 Element element = oldHandle.resolveElement(cc);
                 if (element == null || element.getKind() != ElementKind.CLASS) {
                     return;
@@ -86,11 +96,7 @@ public class SpringRefactorings {
                     newBinaryName = ElementUtilities.getBinaryName((TypeElement)element) + '$' + newName;
                 } else if (element.getKind() == ElementKind.PACKAGE) {
                     String packageName = ((PackageElement)element).getQualifiedName().toString();
-                    if (packageName.length() > 0) {
-                        newBinaryName = packageName + '.' + newName;
-                    } else {
-                        newBinaryName = newName;
-                    }
+                    newBinaryName = createQualifiedName(packageName, newName);
                 } else {
                     LOGGER.log(Level.WARNING, "Enclosing element of {0} was neither class nor package", oldHandle);
                 }
@@ -98,6 +104,23 @@ public class SpringRefactorings {
             }
         }, true);
         return result[0];
+    }
+
+    public static List<String> getTopLevelClassNames(FileObject fo) throws IOException {
+        JavaSource javaSource = JavaSource.forFileObject(fo);
+        if (javaSource == null) {
+            return Collections.emptyList();
+        }
+        final List<String> result = new ArrayList<String>(1);
+        javaSource.runUserActionTask(new Task<CompilationController>() {
+            public void run(CompilationController cc) throws IOException {
+                cc.toPhase(Phase.ELEMENTS_RESOLVED);
+                for (TypeElement typeElement : cc.getTopLevelElements()) {
+                    result.add(ElementUtilities.getBinaryName(typeElement));
+                }
+            }
+        }, true);
+        return result;
     }
 
     public static String getPackageName(FileObject folder) {
@@ -125,6 +148,65 @@ public class SpringRefactorings {
             return parentName + '.' + newName;
         } else {
             return newName;
+        }
+    }
+
+    public static String getPackageName(URL url) {
+        File f = null;
+        try {
+            String path = URLDecoder.decode(url.getPath(), "UTF-8"); // NOI18N
+            f = FileUtil.normalizeFile(new File(path));
+        } catch (UnsupportedEncodingException u) {
+            throw new IllegalArgumentException("Cannot create package name for URL " + url); // NOI18N
+        }
+        String suffix = "";
+        do {
+            FileObject fo = FileUtil.toFileObject(f);
+            if (fo != null) {
+                if ("".equals(suffix))
+                    return getPackageName(fo);
+                String prefix = getPackageName(fo);
+                return prefix + ("".equals(prefix)?"":".") + suffix; // NOI18N
+            }
+            if (!"".equals(suffix)) {
+                suffix = "." + suffix; // NOI18N
+            }
+            try {
+                suffix = URLDecoder.decode(f.getPath().substring(f.getPath().lastIndexOf(File.separatorChar) + 1), "UTF-8") + suffix; // NOI18N
+            } catch (UnsupportedEncodingException u) {
+                throw new IllegalArgumentException("Cannot create package name for URL " + url); // NOI18N
+            }
+            f = f.getParentFile();
+        } while (f!=null);
+        throw new IllegalArgumentException("Cannot create package name for URL " + url); // NOI18N
+    }
+
+    public static String getSimpleElementName(String elementName) {
+        for (;;) {
+            if (elementName.length() == 0) {
+                return elementName;
+            }
+            int lastDot = elementName.lastIndexOf('.');
+            if (lastDot == -1) {
+                return elementName;
+            }
+            if (lastDot == elementName.length() - 1) {
+                elementName = elementName.substring(0, lastDot);
+                continue;
+            }
+            return elementName.substring(lastDot + 1);
+        }
+    }
+
+    public static String createQualifiedName(String packageName, String simpleName) {
+        if (packageName.length() == 0) {
+            return simpleName;
+        } else {
+            if (simpleName.length() == 0) {
+                return packageName;
+            } else {
+                return packageName + '.' + simpleName;
+            }
         }
     }
 
