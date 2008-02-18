@@ -47,10 +47,9 @@ import java.util.List;
 import java.util.Map;
 import org.netbeans.modules.j2ee.common.project.classpath.ClassPathSupport.Item;
 import org.netbeans.modules.j2ee.common.project.ui.ProjectProperties;
-import org.netbeans.modules.web.project.UpdateHelper;
+import org.netbeans.modules.java.api.common.util.CommonProjectUtils;
 import org.netbeans.modules.web.project.WebProjectType;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
-import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.openide.filesystems.FileObject;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -65,32 +64,23 @@ import org.w3c.dom.Text;
 public final class ClassPathSupportCallbackImpl implements org.netbeans.modules.j2ee.common.project.classpath.ClassPathSupport.Callback {
 
     private AntProjectHelper helper;
-    private UpdateHelper updateHelper;
+    
+    public static final String PATH_IN_DEPLOYMENT = "pathInDeployment";
 
-    public ClassPathSupportCallbackImpl(UpdateHelper updateHelper) {
-        this.helper = updateHelper.getAntProjectHelper();
-        this.updateHelper = updateHelper;
+    public ClassPathSupportCallbackImpl(AntProjectHelper helper) {
+        this.helper = helper;
     }
     
-    public EditableProperties getProperties(String path) {
-        return updateHelper.getProperties(path);
-    }
-
-    public void putProperties(String path, EditableProperties props) {
-        updateHelper.putProperties(path, props);
-    }
-
-    public void readDeploymentInformation(List<Item> items, String projectXMLElement) {
+    public void readAdditionalProperties(List<Item> items, String projectXMLElement) {
         Map<String, String> warIncludesMap = createWarIncludesMap(helper, projectXMLElement);
         for (Item item : items) {
-            String property = ProjectProperties.getAntPropertyName( item.getReference() );
+            String property = CommonProjectUtils.getAntPropertyName( item.getReference() );
             String deploymentPath = warIncludesMap.get(property);
-            item.setPathInDeployment(deploymentPath);
-            item.setIncludeInDeployment(deploymentPath != null);
+            item.setAdditionalProperty(PATH_IN_DEPLOYMENT, deploymentPath);
         }
     }
 
-    public void storeDeploymentInformation(List<Item> items, String projectXMLElement) {
+    public void storeAdditionalProperties(List<Item> items, String projectXMLElement) {
         putIncludedLibraries(items, helper, projectXMLElement);
     }
 
@@ -202,7 +192,7 @@ public final class ClassPathSupportCallbackImpl implements org.netbeans.modules.
         
         for (Item item : classpath) {
             webModuleLibs.appendChild(createLibraryElement(doc, 
-                ProjectProperties.getAntPropertyName( item.getReference() ), item, 
+                CommonProjectUtils.getAntPropertyName( item.getReference() ), item, 
                 antProjectHelper.getProjectDirectory()));
         }
 
@@ -223,12 +213,23 @@ public final class ClassPathSupportCallbackImpl implements org.netbeans.modules.
         Element webFile = doc.createElementNS(WebProjectType.PROJECT_CONFIGURATION_NAMESPACE, TAG_FILE);
         libraryElement.appendChild(webFile);
         webFile.appendChild(doc.createTextNode("${" + pathItem + "}"));
-        if (item.getPathInDeployment() != null) {
+        if (item.getAdditionalProperty(PATH_IN_DEPLOYMENT) != null) {
             Element pathInWar = doc.createElementNS(WebProjectType.PROJECT_CONFIGURATION_NAMESPACE, TAG_PATH_IN_WAR);
-            pathInWar.appendChild(doc.createTextNode(item.getPathInDeployment()));
+            pathInWar.appendChild(doc.createTextNode(item.getAdditionalProperty(PATH_IN_DEPLOYMENT)));
             libraryElement.appendChild(pathInWar);
         }
         return libraryElement;
+    }
+
+    public void initAdditionalProperties(Item item) {
+        switch (item.getType()) {
+            case Item.TYPE_JAR:
+                item.setAdditionalProperty(PATH_IN_DEPLOYMENT, 
+                        item.getResolvedFile().isDirectory() ? PATH_IN_WAR_DIR : PATH_IN_WAR_LIB);
+                break;
+            default:
+                item.setAdditionalProperty(PATH_IN_DEPLOYMENT, PATH_IN_WAR_LIB);
+        }
     }
     
 }

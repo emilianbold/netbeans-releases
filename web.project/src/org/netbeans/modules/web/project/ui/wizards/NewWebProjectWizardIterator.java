@@ -75,7 +75,7 @@ import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.project.WebProject;
 import org.netbeans.modules.web.project.api.WebProjectCreateData;
 import org.netbeans.modules.web.project.api.WebProjectUtilities;
-import org.netbeans.modules.web.project.ui.FoldersListSettings;
+import org.netbeans.modules.j2ee.common.project.ui.UserProjectSettings;
 import org.netbeans.modules.web.project.ui.customizer.WebProjectProperties;
 import org.netbeans.spi.java.project.support.ui.SharableLibrariesUtils;
 
@@ -155,7 +155,7 @@ public class NewWebProjectWizardIterator implements WizardDescriptor.ProgressIns
 
         Integer index = (Integer) wiz.getProperty(PROP_NAME_INDEX);
         if(index != null) {
-            FoldersListSettings.getDefault().setNewProjectCount(index.intValue());
+            UserProjectSettings.getDefault().setNewProjectCount(index.intValue());
         }
         wiz.putProperty(WizardProperties.NAME, null); // reset project name
 
@@ -170,7 +170,7 @@ public class NewWebProjectWizardIterator implements WizardDescriptor.ProgressIns
         }
 
         //remember last used server
-        FoldersListSettings.getDefault().setLastUsedServer(servInstID);
+        UserProjectSettings.getDefault().setLastUsedServer(servInstID);
 	
         // save last project location
         dirF = (dirF != null) ? dirF.getParentFile() : null;

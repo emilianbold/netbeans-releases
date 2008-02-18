@@ -83,6 +83,7 @@ import org.netbeans.api.queries.FileEncodingQuery;
 
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
 import org.netbeans.modules.j2ee.common.FileSearchUtility;
+import org.netbeans.modules.j2ee.common.project.ui.ProjectProperties;
 import org.netbeans.modules.j2ee.dd.api.web.DDProvider;
 import org.netbeans.modules.j2ee.dd.api.web.WebApp;
 import org.netbeans.modules.j2ee.dd.api.web.WelcomeFileList;
@@ -648,7 +649,7 @@ public class WebProjectUtilities {
         ep.setProperty(WebProjectProperties.DIST_WAR, "${"+WebProjectProperties.DIST_DIR+"}/${" + WebProjectProperties.WAR_NAME + "}"); // NOI18N
         ep.setProperty(WebProjectProperties.DIST_WAR_EAR, "${" + WebProjectProperties.DIST_DIR+"}/${" + WebProjectProperties.WAR_EAR_NAME + "}"); //NOI18N
         
-        ep.setProperty(WebProjectProperties.JAVAC_CLASSPATH, ""); // NOI18N
+        ep.setProperty(ProjectProperties.JAVAC_CLASSPATH, ""); // NOI18N
         
         ep.setProperty(WebProjectProperties.JSPCOMPILATION_CLASSPATH, "${jspc.classpath}:${javac.classpath}");
         
@@ -673,13 +674,13 @@ public class WebProjectUtilities {
             "# " + NbBundle.getMessage(WebProjectUtilities.class, "COMMENT_javac.compilerargs"), // NOI18N
         }, false);
         
-        ep.setProperty(WebProjectProperties.JAVAC_TEST_CLASSPATH, new String[] {
+        ep.setProperty(ProjectProperties.JAVAC_TEST_CLASSPATH, new String[] {
             "${javac.classpath}:", // NOI18N
             "${build.classes.dir}:", // NOI18N
             "${libs.junit.classpath}:", // NOI18N
             "${libs.junit_4.classpath}", // NOI18N
         });
-        ep.setProperty(WebProjectProperties.RUN_TEST_CLASSPATH, new String[] {
+        ep.setProperty(ProjectProperties.RUN_TEST_CLASSPATH, new String[] {
             "${javac.test.classpath}:", // NOI18N
             "${build.test.classes.dir}", // NOI18N
         });
@@ -688,11 +689,11 @@ public class WebProjectUtilities {
         });
         
         ep.setProperty(WebProjectProperties.BUILD_DIR, DEFAULT_BUILD_DIR);
-        ep.setProperty(WebProjectProperties.BUILD_TEST_CLASSES_DIR, "${build.dir}/test/classes"); // NOI18N
+        ep.setProperty(ProjectProperties.BUILD_TEST_CLASSES_DIR, "${build.dir}/test/classes"); // NOI18N
         ep.setProperty(WebProjectProperties.BUILD_TEST_RESULTS_DIR, "${build.dir}/test/results"); // NOI18N
         ep.setProperty(WebProjectProperties.BUILD_WEB_DIR, "${"+WebProjectProperties.BUILD_DIR+"}/web"); // NOI18N
         ep.setProperty(WebProjectProperties.BUILD_GENERATED_DIR, "${"+WebProjectProperties.BUILD_DIR+"}/generated"); // NOI18N
-        ep.setProperty(WebProjectProperties.BUILD_CLASSES_DIR, "${"+WebProjectProperties.BUILD_WEB_DIR+"}/WEB-INF/classes"); // NOI18N
+        ep.setProperty(ProjectProperties.BUILD_CLASSES_DIR, "${"+WebProjectProperties.BUILD_WEB_DIR+"}/WEB-INF/classes"); // NOI18N
         ep.setProperty(WebProjectProperties.BUILD_CLASSES_EXCLUDES, "**/*.java,**/*.form"); // NOI18N
         ep.setProperty(WebProjectProperties.BUILD_WEB_EXCLUDES, "${"+ WebProjectProperties.BUILD_CLASSES_EXCLUDES +"}"); //NOI18N
         ep.setProperty(WebProjectProperties.DIST_JAVADOC_DIR, "${"+WebProjectProperties.DIST_DIR+"}/javadoc"); // NOI18N

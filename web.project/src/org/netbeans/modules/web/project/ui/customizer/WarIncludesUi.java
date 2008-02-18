@@ -84,7 +84,11 @@ import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.project.libraries.LibraryChooser;
 import org.netbeans.modules.web.project.WebProject;
 import org.netbeans.modules.j2ee.common.project.classpath.ClassPathSupport;
-import org.netbeans.modules.web.project.ui.FoldersListSettings;
+import org.netbeans.modules.j2ee.common.project.ui.AntArtifactChooser;
+import org.netbeans.modules.j2ee.common.project.ui.ProjectProperties;
+import org.netbeans.modules.java.api.common.util.CommonProjectUtils;
+import org.netbeans.modules.web.project.classpath.ClassPathSupportCallbackImpl;
+import org.netbeans.modules.j2ee.common.project.ui.UserProjectSettings;
 import org.netbeans.modules.web.project.ui.customizer.WarIncludesUiSupport.ClasspathTableModel;
 import org.openide.util.Exceptions;
 
@@ -174,7 +178,7 @@ public class WarIncludesUi {
                 chooser.setMultiSelectionEnabled( true );
                 chooser.setDialogTitle( NbBundle.getMessage( WarIncludesUi.class, "LBL_AddFile_DialogTitle" ) ); // NOI18N
                 chooser.setAcceptAllFileFilterUsed(true);
-                File curDir = FoldersListSettings.getDefault().getLastUsedClassPathFolder(); 
+                File curDir = UserProjectSettings.getDefault().getLastUsedClassPathFolder(); 
                 chooser.setCurrentDirectory (curDir);
                 int option = chooser.showOpenDialog( SwingUtilities.getWindowAncestor( list ) ); // Show the chooser
                 
@@ -190,7 +194,7 @@ public class WarIncludesUi {
                     }
                     WarIncludesUiSupport.addJarFiles(filePaths, FileUtil.toFile(project.getProjectDirectory()), listModel);
                     curDir = FileUtil.normalizeFile(chooser.getCurrentDirectory());
-                    FoldersListSettings.getDefault().setLastUsedClassPathFolder(curDir);
+                    UserProjectSettings.getDefault().setLastUsedClassPathFolder(curDir);
                 }
             }
             else if ( source == addLibrary ) {
@@ -266,7 +270,7 @@ public class WarIncludesUi {
                 if (message != null) {
                     DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message (message, NotifyDescriptor.WARNING_MESSAGE));
                 }
-                cpItem.setPathInDeployment((String) listModel.getValueAt(e.getFirstRow(), 1));
+                cpItem.setAdditionalProperty(ClassPathSupportCallbackImpl.PATH_IN_DEPLOYMENT, (String) listModel.getValueAt(e.getFirstRow(), 1));
             }
         }
     }
@@ -293,11 +297,11 @@ public class WarIncludesUi {
         // Contains well known paths in the WebProject
         private static final Map WELL_KNOWN_PATHS_NAMES = new HashMap();
         static {
-            WELL_KNOWN_PATHS_NAMES.put( WebProjectProperties.JAVAC_CLASSPATH, NbBundle.getMessage( WarIncludesUi.class, "LBL_JavacClasspath_DisplayName" ) );
-            WELL_KNOWN_PATHS_NAMES.put( WebProjectProperties.JAVAC_TEST_CLASSPATH, NbBundle.getMessage( WarIncludesUi.class,"LBL_JavacTestClasspath_DisplayName") );
-            WELL_KNOWN_PATHS_NAMES.put( WebProjectProperties.RUN_TEST_CLASSPATH, NbBundle.getMessage( WarIncludesUi.class, "LBL_RunTestClasspath_DisplayName" ) );
-            WELL_KNOWN_PATHS_NAMES.put( WebProjectProperties.BUILD_CLASSES_DIR, NbBundle.getMessage( WarIncludesUi.class, "LBL_BuildClassesDir_DisplayName" ) );            
-            WELL_KNOWN_PATHS_NAMES.put( WebProjectProperties.BUILD_TEST_CLASSES_DIR, NbBundle.getMessage (WarIncludesUi.class,"LBL_BuildTestClassesDir_DisplayName") );
+            WELL_KNOWN_PATHS_NAMES.put( ProjectProperties.JAVAC_CLASSPATH, NbBundle.getMessage( WarIncludesUi.class, "LBL_JavacClasspath_DisplayName" ) );
+            WELL_KNOWN_PATHS_NAMES.put( ProjectProperties.JAVAC_TEST_CLASSPATH, NbBundle.getMessage( WarIncludesUi.class,"LBL_JavacTestClasspath_DisplayName") );
+            WELL_KNOWN_PATHS_NAMES.put( ProjectProperties.RUN_TEST_CLASSPATH, NbBundle.getMessage( WarIncludesUi.class, "LBL_RunTestClasspath_DisplayName" ) );
+            WELL_KNOWN_PATHS_NAMES.put( ProjectProperties.BUILD_CLASSES_DIR, NbBundle.getMessage( WarIncludesUi.class, "LBL_BuildClassesDir_DisplayName" ) );            
+            WELL_KNOWN_PATHS_NAMES.put( ProjectProperties.BUILD_TEST_CLASSES_DIR, NbBundle.getMessage (WarIncludesUi.class,"LBL_BuildTestClassesDir_DisplayName") );
         };
 
         public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
@@ -322,7 +326,7 @@ public class WarIncludesUi {
                         return item.getLibrary().getDisplayName();
                     }
                 case ClassPathSupport.Item.TYPE_CLASSPATH:
-                    String name = (String)WELL_KNOWN_PATHS_NAMES.get( WebProjectProperties.getAntPropertyName( item.getReference() ) );
+                    String name = (String)WELL_KNOWN_PATHS_NAMES.get( CommonProjectUtils.getAntPropertyName( item.getReference() ) );
                     return name == null ? item.getReference() : name;
                 case ClassPathSupport.Item.TYPE_ARTIFACT:
                     if ( item.isBroken() ) {

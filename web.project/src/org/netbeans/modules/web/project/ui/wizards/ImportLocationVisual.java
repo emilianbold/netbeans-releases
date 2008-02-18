@@ -69,6 +69,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ui.OpenProjects;
+import org.netbeans.modules.j2ee.common.project.ui.UserProjectSettings;
 import org.netbeans.spi.project.ui.support.ProjectChooser;
 
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
@@ -110,7 +111,7 @@ public class ImportLocationVisual extends SettingsPanel implements HelpCtx.Provi
         initComponents ();
         currentLibrariesLocation = ".."+File.separatorChar+"libraries"; // NOI18N
         librariesLocation.setText(currentLibrariesLocation);
-        initServers(FoldersListSettings.getDefault().getLastUsedServer());
+        initServers(UserProjectSettings.getDefault().getLastUsedServer());
         // preselect the first item in the j2ee spec combo
         if (j2eeSpecComboBox.getModel().getSize() > 0) {
             j2eeSpecComboBox.setSelectedIndex(0);
@@ -192,7 +193,7 @@ public class ImportLocationVisual extends SettingsPanel implements HelpCtx.Provi
         if(generatedProjectNameIndex == 0) {
             generatedProjectName = (String) settings.getProperty ("name"); //NOI18N
             if (generatedProjectName == null) {
-                    generatedProjectNameIndex = FoldersListSettings.getDefault().getNewProjectCount() + 1;
+                    generatedProjectNameIndex = UserProjectSettings.getDefault().getNewProjectCount() + 1;
                     String formater = NbBundle.getMessage(ImportLocationVisual.class,"LBL_NPW1_DefaultProjectName");
                     while ((generatedProjectName = validFreeProjectName(projectLocation, formater, generatedProjectNameIndex)) == null)
                         generatedProjectNameIndex++;                
@@ -211,7 +212,7 @@ public class ImportLocationVisual extends SettingsPanel implements HelpCtx.Provi
             srcRoot = FileUtil.normalizeFile(new File(srcPath));
         }
         if (srcRoot != null)
-            FoldersListSettings.getDefault().setLastUsedImportLocation(srcRoot);
+            UserProjectSettings.getDefault().setLastUsedImportLocation(srcRoot);
         settings.putProperty (WizardProperties.SOURCE_ROOT, srcRoot);
         settings.putProperty (WizardProperties.NAME, projectNameTextField.getText().trim());
 
@@ -242,7 +243,7 @@ public class ImportLocationVisual extends SettingsPanel implements HelpCtx.Provi
             String j2ee = getSelectedJ2eeSpec();
             if (j2ee != null) {
                 String warningType = J2eeVersionWarningPanel.findWarningType(j2ee);
-                FoldersListSettings fls = FoldersListSettings.getDefault();
+                UserProjectSettings fls = UserProjectSettings.getDefault();
                 if (warningType.equals(J2eeVersionWarningPanel.WARN_SET_SOURCE_LEVEL_14) && fls.isAgreedSetSourceLevel14()) {
                     sourceLevel = "1.4"; //NOI18N
                 }
@@ -779,7 +780,7 @@ public class ImportLocationVisual extends SettingsPanel implements HelpCtx.Provi
             if (currentDirectory != null) {
                 chooser.setCurrentDirectory(currentDirectory);
             } else {
-                File lastUsedImportLoc = (File) FoldersListSettings.getDefault().getLastUsedImportLocation();
+                File lastUsedImportLoc = (File) UserProjectSettings.getDefault().getLastUsedImportLocation();
                 if (lastUsedImportLoc != null)
                     chooser.setCurrentDirectory(lastUsedImportLoc.getParentFile());
                 else                    

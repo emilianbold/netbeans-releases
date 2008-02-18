@@ -76,7 +76,7 @@ import org.netbeans.modules.web.project.ProjectWebModule;
 import org.netbeans.modules.web.project.api.WebProjectUtilities;
 import org.netbeans.modules.web.project.WebProject;
 import org.netbeans.modules.web.project.api.WebProjectCreateData;
-import org.netbeans.modules.web.project.ui.FoldersListSettings;
+import org.netbeans.modules.j2ee.common.project.ui.UserProjectSettings;
 import org.netbeans.spi.java.project.support.ui.SharableLibrariesUtils;
 
 /**
@@ -216,12 +216,12 @@ public class ImportWebProjectWizardIterator implements WizardDescriptor.Progress
 
         Integer index = (Integer) wiz.getProperty(NewWebProjectWizardIterator.PROP_NAME_INDEX);
         if (index != null) {
-            FoldersListSettings.getDefault().setNewProjectCount(index.intValue());
+            UserProjectSettings.getDefault().setNewProjectCount(index.intValue());
         }
         wiz.putProperty(WizardProperties.NAME, null); // reset project name
 
         //remember last used server
-        FoldersListSettings.getDefault().setLastUsedServer(serverInstanceID);
+        UserProjectSettings.getDefault().setLastUsedServer(serverInstanceID);
 
         handle.progress(NbBundle.getMessage(ImportWebProjectWizardIterator.class, "LBL_NewWebProjectWizardIterator_WizardProgress_PreparingToOpen"), 3);
         

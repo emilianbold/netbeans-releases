@@ -61,6 +61,7 @@ import org.openide.util.NbBundle;
 import org.netbeans.api.project.libraries.Library;
 
 import org.netbeans.modules.j2ee.common.project.classpath.ClassPathSupport;
+import org.netbeans.modules.j2ee.common.project.ui.AntArtifactChooser;
 import org.netbeans.modules.web.project.classpath.ClassPathSupportCallbackImpl;
 import org.netbeans.spi.java.project.support.ui.EditJarSupport;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
@@ -224,7 +225,7 @@ public class ClassPathUiSupport {
         for (int i = 0, j=1; i < libraries.length; i++) {
             if (!alreadyIncludedLibs.contains(libraries[i])) {
                 ClassPathSupport.Item item = ClassPathSupport.Item.create( libraries[i], null);
-                item.setPathInDeployment(ClassPathSupportCallbackImpl.PATH_IN_WAR_LIB);
+                item.setAdditionalProperty(ClassPathSupportCallbackImpl.PATH_IN_DEPLOYMENT, ClassPathSupportCallbackImpl.PATH_IN_WAR_LIB);
                 listModel.add( lastIndex + j++, item);
             }
         }
@@ -249,7 +250,7 @@ public class ClassPathUiSupport {
             File f = PropertyUtils.resolveFile(base, filePaths[i]);
             String pathInWar = (f.isDirectory() ? ClassPathSupportCallbackImpl.PATH_IN_WAR_DIR : ClassPathSupportCallbackImpl.PATH_IN_WAR_LIB);
             ClassPathSupport.Item item = ClassPathSupport.Item.create( filePaths[i], base, null);
-            item.setPathInDeployment(pathInWar);
+            item.setAdditionalProperty(ClassPathSupportCallbackImpl.PATH_IN_DEPLOYMENT, pathInWar);
             if ( !listModel.contains( item ) ) {
                 listModel.add( current, item );
                 indexes[delta + i] = current;
@@ -270,7 +271,7 @@ public class ClassPathUiSupport {
         for( int i = 0; i < artifactItems.length; i++ ) {
             int current = lastIndex + 1 + i;
             ClassPathSupport.Item item = ClassPathSupport.Item.create( artifactItems[i].getArtifact(), artifactItems[i].getArtifactURI(), null) ;
-            item.setPathInDeployment(ClassPathSupportCallbackImpl.PATH_IN_WAR_LIB);
+            item.setAdditionalProperty(ClassPathSupportCallbackImpl.PATH_IN_DEPLOYMENT, ClassPathSupportCallbackImpl.PATH_IN_WAR_LIB);
             if ( !listModel.contains( item ) ) {
                 listModel.add( current, item );
                 indexes[i] = current;
@@ -332,7 +333,7 @@ public class ClassPathUiSupport {
             if (column == 0)
                 return getItem(row);
             else {
-                String pathInWar = getItem(row).getPathInDeployment();
+                String pathInWar = getItem(row).getAdditionalProperty(ClassPathSupportCallbackImpl.PATH_IN_DEPLOYMENT);
                 return (ClassPathSupportCallbackImpl.PATH_IN_WAR_LIB.equals(pathInWar) || ClassPathSupportCallbackImpl.PATH_IN_WAR_DIR.equals(pathInWar)) ? Boolean.TRUE : Boolean.FALSE;
             }
         }
@@ -344,9 +345,9 @@ public class ClassPathUiSupport {
             if (value == Boolean.TRUE) {
                 ClassPathSupport.Item item = getItem(row);
                 String pathInWar = (item.getType() == ClassPathSupport.Item.TYPE_JAR && item.getResolvedFile().isDirectory()) ? ClassPathSupportCallbackImpl.PATH_IN_WAR_DIR : ClassPathSupportCallbackImpl.PATH_IN_WAR_LIB;
-                item.setPathInDeployment(pathInWar);
+                item.setAdditionalProperty(ClassPathSupportCallbackImpl.PATH_IN_DEPLOYMENT, pathInWar);
             } else
-                getItem(row).setPathInDeployment(ClassPathSupportCallbackImpl.PATH_IN_WAR_NONE);
+                getItem(row).setAdditionalProperty(ClassPathSupportCallbackImpl.PATH_IN_DEPLOYMENT, ClassPathSupportCallbackImpl.PATH_IN_WAR_NONE);
             fireTableCellUpdated(row, column);
         }
         
