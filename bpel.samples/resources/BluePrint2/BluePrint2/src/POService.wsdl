@@ -101,6 +101,8 @@
             <xsd:import schemaLocation="purchaseOrder.xsd" namespace="http://manufacturing.org/xsd/purchase"/>
         </xsd:schema>
     </types>
-    <vprop:property name="corrprop" type="xsd:Name"/>
-    <vprop:propertyAlias propertyName="tns:corrprop" messageType="tns:POMessage" part="purchaseOrder"/>
+    <vprop:property name="corrprop" type="xsd:int"/>
+    <vprop:propertyAlias propertyName="tns:corrprop" messageType="tns:POMessage" part="purchaseOrder">
+        <vprop:query>/sns:purchaseOrder/sns:orderId</vprop:query>
+    </vprop:propertyAlias>
 </definitions>

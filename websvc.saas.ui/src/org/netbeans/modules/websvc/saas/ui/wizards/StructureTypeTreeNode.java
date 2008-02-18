@@ -107,9 +107,7 @@ public class StructureTypeTreeNode extends AbstractParameterTreeNode {
             
             for (int i = 0; i < fields.size(); i++) {
                 String fieldName = fields.get(i);
-                //TODO
-                //String fieldType = ReflectionHelper.getPropertyType(type, fieldName, urlClassLoader);
-                String fieldType = null;
+                String fieldType = ReflectionHelper.getPropertyType(type, fieldName, urlClassLoader);
                 Object newChildValue = ReflectionHelper.getPropertyValue(structObj, fieldName, urlClassLoader);
                 
                 
