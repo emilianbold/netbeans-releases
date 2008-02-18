@@ -85,7 +85,7 @@
             <input>
                 <soap:body use="literal"/>
             </input>
-        </operation>                
+        </operation>
     </binding>
     <wsdl:service xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/" name="AirlineReservationService">
         <wsdl:port name="AirlineReservationPortTypePort" binding="tns:AirlineReservationSoapBinding">
@@ -99,6 +99,6 @@
         </plnk:role>
         <plnk:role name="AirlineReservationCallbackServiceRole"
                    portType="tns:AirlineReservationCallbackPortType">
-        </plnk:role>                
-    </plnk:partnerLinkType>    
+        </plnk:role>
+    </plnk:partnerLinkType>
 </definitions>

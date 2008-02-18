@@ -38,10 +38,10 @@
           <Group type="102" alignment="0" attributes="0">
               <Component id="jLabelEnterprise" min="-2" max="-2" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
-              <Component id="jComboBoxEnterprise" pref="286" max="32767" attributes="0"/>
+              <Component id="jComboBoxEnterprise" pref="306" max="32767" attributes="0"/>
           </Group>
           <Component id="jPanel1" alignment="1" max="32767" attributes="0"/>
-          <Component id="warningPlaceHolderPanel" alignment="0" pref="433" max="32767" attributes="0"/>
+          <Component id="warningPlaceHolderPanel" alignment="0" pref="500" max="32767" attributes="0"/>
       </Group>
     </DimensionLayout>
     <DimensionLayout dim="1">
@@ -103,7 +103,7 @@
               <Group type="102" attributes="0">
                   <Component id="serverInstanceLabel" min="-2" max="-2" attributes="0"/>
                   <EmptySpace min="-2" pref="55" max="-2" attributes="0"/>
-                  <Component id="serverInstanceComboBox" pref="273" max="32767" attributes="0"/>
+                  <Component id="serverInstanceComboBox" pref="320" max="32767" attributes="0"/>
                   <EmptySpace min="-2" pref="6" max="-2" attributes="0"/>
                   <Component id="addServerButton" min="-2" max="-2" attributes="0"/>
               </Group>
@@ -115,7 +115,7 @@
               <Group type="102" attributes="0">
                   <Component id="jLabelContextPath" min="-2" max="-2" attributes="0"/>
                   <EmptySpace min="-2" pref="23" max="-2" attributes="0"/>
-                  <Component id="jTextFieldContextPath" pref="342" max="32767" attributes="0"/>
+                  <Component id="jTextFieldContextPath" pref="392" max="32767" attributes="0"/>
               </Group>
           </Group>
         </DimensionLayout>
@@ -308,9 +308,6 @@
       </Properties>
     </Component>
     <Component class="javax.swing.JTextField" name="librariesLocation">
-      <Properties>
-        <Property name="editable" type="boolean" value="false"/>
-      </Properties>
     </Component>
     <Component class="javax.swing.JButton" name="browseLibraries">
       <Properties>
