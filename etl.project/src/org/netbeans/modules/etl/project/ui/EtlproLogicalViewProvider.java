@@ -207,8 +207,7 @@ public class EtlproLogicalViewProvider implements LogicalViewProvider {
                 EtlproProject pro = (EtlproProject) project;  
                 String prj_locn = pro.getProjectDirectory().getPath();
                 try {
-                    prj_locn = pro.getProjectDirectory().getFileSystem().getRoot().toString()+prj_locn;                  
-                    System.out.println("PRJ_LOCATION_DIR *********** " + prj_locn);
+                    prj_locn = pro.getProjectDirectory().getFileSystem().getRoot().toString()+prj_locn;                                      
                 } catch (FileStateInvalidException ex) {
                     Exceptions.printStackTrace(ex);
                 }
