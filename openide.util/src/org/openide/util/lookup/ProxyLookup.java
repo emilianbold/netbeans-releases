@@ -132,6 +132,9 @@ public class ProxyLookup extends Lookup {
         synchronized (ProxyLookup.this) {
             orig = getData();
             ImmutableInternalData newData = data.setLookupsNoFire(lookups);
+            if (newData == data) {
+                return;
+            }
             arr = setData(newData, lookups, toAdd, toRemove);
         }
         
@@ -251,7 +254,7 @@ public class ProxyLookup extends Lookup {
         assert data != null;
         
         ImmutableInternalData previous = this.data;
-        
+
         if (data.isEmpty()) {
             this.data = data;
             // no affected results => exit
@@ -273,7 +276,7 @@ public class ProxyLookup extends Lookup {
                 r.lookupChange(data, current, previous, newL, removed, toAdd, toRemove);
             }
         }
-        
+            
         assert this.data == previous;
         this.data = data;
         return arr;
@@ -821,6 +824,24 @@ public class ProxyLookup extends Lookup {
 
         final ImmutableInternalData setLookupsNoFire(Lookup[] lookups) {
             Object l;
+            
+            Lookup[] previous = getLookups(false);
+            if (previous == lookups) {
+                return this;
+            }
+            
+            if (previous.length == lookups.length) {
+                int same = 0;
+                for (int i = 0; i < previous.length; i++) {
+                    if (lookups[i] != previous[i]) {
+                        break;
+                    }
+                    same++;
+                }
+                if (same == previous.length) {
+                    return this;
+                }
+            }
             
             if (lookups.length == 1) {
                 l = lookups[0];
