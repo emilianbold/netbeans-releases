@@ -103,6 +103,6 @@
     </types>
     <vprop:property name="corrprop" type="xsd:int"/>
     <vprop:propertyAlias propertyName="tns:corrprop" messageType="tns:POMessage" part="purchaseOrder">
-        <vprop:query>/sns:purchaseOrder/sns:orderId</vprop:query>                        
+        <vprop:query>/sns:purchaseOrder/sns:orderId</vprop:query>
     </vprop:propertyAlias>
 </definitions>

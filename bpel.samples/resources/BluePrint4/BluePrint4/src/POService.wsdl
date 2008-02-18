@@ -100,6 +100,6 @@
     <bpws:property name="clrorla" type="xsd:int"/>
     
     <bpws:propertyAlias propertyName="tns:clrorla" messageType="tns:POMessage" part="purchaseOrder">
-        <bpws:query>/sns:purchaseOrder/sns:orderId</bpws:query>           
+        <bpws:query>/sns:purchaseOrder/sns:orderId</bpws:query>
     </bpws:propertyAlias>
 </definitions>

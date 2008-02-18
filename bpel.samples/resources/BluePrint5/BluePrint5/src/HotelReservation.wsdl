@@ -44,7 +44,7 @@
         <xsd:schema targetNamespace="http://localhost/BluePrint5/HotelReservation">
             <xsd:import schemaLocation="reservation.xsd" namespace="http://ReservationSystem.org/xsd/reserve"/>
         </xsd:schema>
-    </types>    
+    </types>
     <message name="HotelReservation">
         <part name="reserveHotelPart"
               element="ns:reserve"></part>

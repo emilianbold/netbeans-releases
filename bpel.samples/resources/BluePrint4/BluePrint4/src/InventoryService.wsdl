@@ -44,7 +44,7 @@
             <xsd:import schemaLocation="inventory.xsd" namespace="http://manufacturing.org/xsd/inventory"/>
             <xsd:import schemaLocation="purchaseOrder.xsd" namespace="http://manufacturing.org/xsd/purchase"/>
         </xsd:schema>
-    </types>                 
+    </types>
 
     <message name="InventoryMessage">
         <part name="inventoryPart"
