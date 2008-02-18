@@ -67,7 +67,7 @@ public class PanelOptionsVisual extends SettingsPanel implements ActionListener,
     
     private static boolean lastMainClassCheck = true; // XXX Store somewhere
     
-    public static final String SHARED_LIBRARIES = "sharedLibraries";
+    public static final String SHARED_LIBRARIES = "sharedLibraries"; //NOI18N
     
     private PanelConfigureProject panel;
     private boolean valid;
@@ -255,7 +255,7 @@ public class PanelOptionsVisual extends SettingsPanel implements ActionListener,
         if (sharableProject.isSelected()) {
             librariesLocation.setText(currentLibrariesLocation);
         } else {
-            librariesLocation.setText("");
+            librariesLocation.setText(""); //NOi18N
         }
     }//GEN-LAST:event_sharableProjectActionPerformed
 
@@ -281,14 +281,14 @@ public class PanelOptionsVisual extends SettingsPanel implements ActionListener,
             String location = librariesLocation.getText();
             if (new File(location).isAbsolute()) {
                 settings.putProperty( "WizardPanel_errorMessage", // NOI18N
-                    "<html>Please make sure the absolute path to library definitions is always accessible in the same way.<html>");
+                    NbBundle.getMessage(PanelOptionsVisual.class, "WARN_PanelOptionsVisual.absolutePath"));
                 
             } else {
                 File projectLoc = FileUtil.normalizeFile(new File(projectLocation));
                 File libLoc = PropertyUtils.resolveFile(projectLoc, location);
                 if (!CollocationQuery.areCollocated(projectLoc, libLoc)) {
                     settings.putProperty( "WizardPanel_errorMessage", // NOI18N
-                        "<html>Please make sure the relative path to library definitions is always accessible in the same way.<html>"); 
+                        NbBundle.getMessage(PanelOptionsVisual.class, "WARN_PanelOptionsVisual.relativePath")); 
                 }
             }
         }
