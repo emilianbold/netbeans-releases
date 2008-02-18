@@ -38,7 +38,7 @@
     
     <import namespace="http://enterprise.netbeans.org/bpel/AsynchronousSampleSchemaNamespace"
             location="AsynchronousSample.xsd" 
-            importType="http://www.w3.org/2001/XMLSchema" />
+            importType="http://www.w3.org/2001/XMLSchema"/>
     <import namespace="http://enterprise.netbeans.org/bpel/AsynchronousSample" 
             location="AsynchronousSample.wsdl" 
             importType="http://schemas.xmlsoap.org/wsdl/"/>
@@ -55,7 +55,7 @@
         <variable name="outputVar" messageType="wsdlNS:responseMessage"/>
     </variables>
     
-    <sequence>   
+    <sequence>
         <receive 
             name="start"
             partnerLink="partnerLinkA"
@@ -70,7 +70,7 @@
                 <from variable="inputVar" part="inputType"/>
                 <to variable="outputVar" part="resultType"/>
             </copy>
-        </assign>  
+        </assign>
         
         <invoke name="end"  
                 partnerLink="partnerLinkA"
