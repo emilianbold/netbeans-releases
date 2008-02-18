@@ -401,7 +401,7 @@ public class ProjectLibraryProvider implements ArealLibraryProvider<ProjectLibra
     }
 
     //non private for test usage
-    static final Pattern LIBS_LINE = Pattern.compile("libs\\.([a-zA-Z0-9_\\-\\.]+)\\.([^.]+)"); // NOI18N
+    static final Pattern LIBS_LINE = Pattern.compile("libs\\.([^${}]+)\\.([^${}.]+)"); // NOI18N
     
     private static Map<String,ProjectLibraryImplementation> calculate(ProjectLibraryArea area) {
         Map<String,ProjectLibraryImplementation> libs = new HashMap<String,ProjectLibraryImplementation>();

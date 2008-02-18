@@ -39,6 +39,7 @@ package org.netbeans.installer.utils.system.launchers;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.io.InputStream;
 import org.netbeans.installer.utils.FileUtils;
 import org.netbeans.installer.utils.LogManager;
@@ -50,7 +51,7 @@ import org.netbeans.installer.utils.StringUtils;
  * @author Dmitry Lipin
  */
 public class LauncherResource {
-    
+
     public static enum Type {
         BUNDLED,
         ABSOLUTE,
@@ -58,7 +59,7 @@ public class LauncherResource {
         RELATIVE_USERHOME,
         RELATIVE_LAUNCHER_PARENT,
         RELATIVE_LAUNCHER_TMPDIR;
-        
+
         public long toLong() {
             switch (this) {
                 case BUNDLED : return 0L;
@@ -70,7 +71,7 @@ public class LauncherResource {
             }
             return 1L;
         }
-        
+
         public String toString() {
             switch(this) {
                 case BUNDLED:
@@ -87,7 +88,7 @@ public class LauncherResource {
                     return "nbi.launcher.tmp.dir";
                 default:
                     return null;
-                    
+
             }
         }
         public String getPathString(String path) {
@@ -101,7 +102,7 @@ public class LauncherResource {
             }
         }
     };
-    
+
     private Type  type;
     private String path;
     private boolean resourceBased;
@@ -158,7 +159,7 @@ public class LauncherResource {
         } else {
             return null;
         }
-        
+
     }
     public String getAbsolutePath() {
         return type.getPathString(path);
@@ -171,5 +172,25 @@ public class LauncherResource {
         } else {
             return 0;
         }
+    }
+
+    public String getMD5() {
+        final InputStream is = getInputStream();
+        String md5 = null;
+        if (is != null) {
+            try {
+                md5 = FileUtils.getMd5(is);
+            } catch (IOException e) {
+                LogManager.log(e);
+            } finally {
+                try {
+                    is.close();
+                } catch (IOException e) {
+                    LogManager.log(e);
+                }
+            }
+        }
+
+        return md5;
     }
 }

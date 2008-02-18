@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -38,31 +38,22 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.bpel.validation.core;
 
-import org.netbeans.modules.xml.xam.Component;
-import org.netbeans.modules.xml.xam.spi.Validator.ResultItem;
-import org.netbeans.modules.xml.xam.spi.Validator.ResultType;
-import org.netbeans.modules.bpel.validation.core.QuickFix;
+package org.netbeans.modules.java.source.usages.fcs;
+import java.util.EventListener;
 
 /**
- * @author Vladimir Yaroslavskiy
- * @version 2007.12.07
+ * Listener for changes in file existence and/or contents.
+ * Unlike the Filesystems API, renames etc. are not considered special;
+ * the "file" is identified uniquely by its path, not an object.
+ * @author Jesse Glick
  */
-public final class Outcome extends ResultItem {
+public interface FileChangeSupportListener extends EventListener {
 
-  public Outcome(CoreValidator validator, ResultType type, Component component, String description) {
-    this(validator, type, component, description, null);
-  }
+    void fileCreated(FileChangeSupportEvent event);
 
-  public Outcome(CoreValidator validator, ResultType type, Component component, String description, QuickFix quickFix) {
-    super(validator, type, component, description);
-    myQuickFix = quickFix;
-  }         
+    void fileDeleted(FileChangeSupportEvent event);
 
-  public QuickFix getQuickFix() {
-    return myQuickFix;
-  }
+    void fileModified(FileChangeSupportEvent event);
 
-  private QuickFix myQuickFix;
 }

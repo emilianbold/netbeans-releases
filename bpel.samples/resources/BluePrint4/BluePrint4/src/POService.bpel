@@ -93,7 +93,7 @@
     <correlationSets>
         <bpws:correlationSet name="CorrelationSet" properties="pos:clrorla"/>
         <correlationSet name="POConfirmationSet"
-                        properties="ns0:OrderID "/>
+                        properties="ns0:OrderID"/>
     </correlationSets>
     <sequence>
         <receive name="sendPurchaseOrder"

@@ -569,7 +569,9 @@ public class PaletteTest extends RestNodeTest {
                 dialog = JDialogOperator.findJDialog(dialogLabel, true, true);
                 if (dialog != null) {
                     input.setInput(new NbDialogOperator(dialog));
-                    done = true;
+                    synchronized (this) {
+                        done = true;
+                    }
                     break;
                 }
                 try {
@@ -599,7 +601,7 @@ public class PaletteTest extends RestNodeTest {
             }
         }
 
-        public boolean isDone() {
+        public synchronized boolean isDone() {
             return done || time + TIMEOUT < System.currentTimeMillis();
         }
     }
