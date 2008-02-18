@@ -41,6 +41,7 @@ package org.netbeans.modules.ruby.railsprojects.ui.wizards;
 import java.awt.BorderLayout;
 import org.netbeans.api.ruby.platform.RubyPlatform;
 import org.openide.WizardDescriptor;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -56,6 +57,8 @@ public class DatabaseConfigPanelVisual extends javax.swing.JPanel {
         initComponents();
         jdbcPanel = new JdbcConnectionsPanel();
         adaptersPanel = new RailsAdaptersPanel();
+        setName(NbBundle.getMessage(DatabaseConfigPanelVisual.class, "LAB_ConfigureDatabase"));
+        putClientProperty("NewProjectWizard_Title", NbBundle.getMessage(DatabaseConfigPanelVisual.class, "TXT_ConfigureDatabase")); // NOI18N
                 
         initInnerPanels();
     }
