@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -50,7 +50,6 @@ import org.netbeans.modules.ruby.platform.RubyPlatformCustomizer;
 import org.netbeans.modules.ruby.railsprojects.server.RailsServerManager;
 import org.openide.WizardDescriptor;
 import org.openide.WizardValidationException;
-import org.openide.util.NbBundle;
 
 public class PanelOptionsVisual extends SettingsPanel implements PropertyChangeListener {
     
@@ -142,7 +141,7 @@ public class PanelOptionsVisual extends SettingsPanel implements PropertyChangeL
     private void initComponents() {
 
         setAsMainCheckBox = new javax.swing.JCheckBox();
-        jLabel1 = new javax.swing.JLabel();
+        jrubyUsedLabel = new javax.swing.JLabel();
         warCheckBox = new javax.swing.JCheckBox();
         rubyPlatformLabel = new javax.swing.JLabel();
         manageButton = new javax.swing.JButton();
@@ -153,7 +152,7 @@ public class PanelOptionsVisual extends SettingsPanel implements PropertyChangeL
         setAsMainCheckBox.setSelected(true);
         org.openide.awt.Mnemonics.setLocalizedText(setAsMainCheckBox, org.openide.util.NbBundle.getBundle(PanelOptionsVisual.class).getString("LBL_setAsMainCheckBox")); // NOI18N
 
-        org.openide.awt.Mnemonics.setLocalizedText(jLabel1, org.openide.util.NbBundle.getMessage(PanelOptionsVisual.class, "UsingRuby")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(jrubyUsedLabel, org.openide.util.NbBundle.getMessage(PanelOptionsVisual.class, "UsingRuby")); // NOI18N
 
         org.openide.awt.Mnemonics.setLocalizedText(warCheckBox, org.openide.util.NbBundle.getMessage(PanelOptionsVisual.class, "WarFile")); // NOI18N
 
@@ -189,30 +188,28 @@ public class PanelOptionsVisual extends SettingsPanel implements PropertyChangeL
             .add(layout.createSequentialGroup()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(setAsMainCheckBox)
-                    .add(layout.createSequentialGroup()
-                        .addContainerGap()
-                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(serverLabel)
-                            .add(rubyPlatformLabel))
-                        .add(20, 20, 20)
-                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(serverComboBox, 0, 452, Short.MAX_VALUE)
-                            .add(platforms, 0, 452, Short.MAX_VALUE))
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(manageButton))
-                    .add(layout.createSequentialGroup()
-                        .addContainerGap()
-                        .add(jLabel1))
-                    .add(layout.createSequentialGroup()
-                        .addContainerGap()
-                        .add(warCheckBox)))
+                    .add(warCheckBox))
+                .add(334, 334, 334))
+            .add(layout.createSequentialGroup()
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(serverLabel)
+                    .add(rubyPlatformLabel))
+                .add(20, 20, 20)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(serverComboBox, 0, 508, Short.MAX_VALUE)
+                    .add(platforms, 0, 508, Short.MAX_VALUE))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(manageButton)
+                .addContainerGap())
+            .add(layout.createSequentialGroup()
+                .add(jrubyUsedLabel)
                 .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
                 .add(setAsMainCheckBox)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 8, Short.MAX_VALUE)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(rubyPlatformLabel)
                     .add(manageButton)
@@ -222,10 +219,10 @@ public class PanelOptionsVisual extends SettingsPanel implements PropertyChangeL
                     .add(serverLabel)
                     .add(serverComboBox, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 22, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .add(19, 19, 19)
-                .add(jLabel1)
+                .add(jrubyUsedLabel)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(warCheckBox)
-                .add(101, 101, 101))
+                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
         setAsMainCheckBox.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getBundle(PanelOptionsVisual.class).getString("ACSN_setAsMainCheckBox")); // NOI18N
@@ -298,7 +295,7 @@ public class PanelOptionsVisual extends SettingsPanel implements PropertyChangeL
     }
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JLabel jLabel1;
+    private javax.swing.JLabel jrubyUsedLabel;
     private javax.swing.JButton manageButton;
     private javax.swing.JComboBox platforms;
     private javax.swing.JLabel rubyPlatformLabel;
