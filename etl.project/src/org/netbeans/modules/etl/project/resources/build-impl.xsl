@@ -454,10 +454,11 @@ is divided into following sections:
                 </taskdef-->
                 <!--echo message="SAMPLE COMPLETED" /--> 
             </target>
-             <!--target name="etl_bulkloader">      
+             <target name="etl_bulkloader">      
                 <xsl:attribute name="depends">init</xsl:attribute>
-                <bulk-loader/> 
-            </target-->
+                <echo message="BULK-LOADER" /> 
+                <!--bulk-loader/--> 
+            </target>
             
             <target name="pre-dist">
                 <xsl:comment>
