@@ -276,7 +276,6 @@ public class PanelOptionsVisual extends SettingsPanel implements ActionListener,
     
     boolean valid(WizardDescriptor settings) {
         
-        // TODO: check whether libraries file is property file and is collocated
         if (sharableProject.isSelected()) {
             String location = librariesLocation.getText();
             if (new File(location).isAbsolute()) {
@@ -306,7 +305,6 @@ public class PanelOptionsVisual extends SettingsPanel implements ActionListener,
     }
     
     void read (WizardDescriptor d) {
-        //TODO:
     }
     
     void validate (WizardDescriptor d) throws WizardValidationException {
