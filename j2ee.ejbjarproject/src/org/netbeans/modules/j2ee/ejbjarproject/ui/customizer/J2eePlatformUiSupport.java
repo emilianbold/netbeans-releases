@@ -65,8 +65,8 @@ public class J2eePlatformUiSupport {
     private J2eePlatformUiSupport() {
     }
     
-    public static ComboBoxModel createPlatformComboBoxModel(String serverInstanceId) {
-        return new J2eePlatformComboBoxModel(serverInstanceId);
+    public static ComboBoxModel createPlatformComboBoxModel(String serverInstanceId, String spec) {
+        return new J2eePlatformComboBoxModel(serverInstanceId, spec);
     }
     
     public static String getServerInstanceID(Object j2eePlatformModelObject) {
@@ -97,12 +97,14 @@ public class J2eePlatformUiSupport {
     private static final class J2eePlatformComboBoxModel extends AbstractListModel implements ComboBoxModel {
         private static final long serialVersionUID = 27396850247176406L;
         
+        private final String spec;
         private J2eePlatformAdapter[] j2eePlatforms;
         private String initialJ2eePlatform;
         private J2eePlatformAdapter selectedJ2eePlatform;
         
-        public J2eePlatformComboBoxModel(String serverInstanceID) {
-            initialJ2eePlatform = serverInstanceID;
+        public J2eePlatformComboBoxModel(String serverInstanceID, String spec) {
+            this.spec = spec;
+            this.initialJ2eePlatform = serverInstanceID;
             getJ2eePlatforms();
         }
         
@@ -131,7 +133,8 @@ public class J2eePlatformUiSupport {
                 for (int i = 0; i < serverInstanceIDs.length; i++) {
                     J2eePlatform j2eePlatform = Deployment.getDefault().getJ2eePlatform(serverInstanceIDs[i]);
                     if (j2eePlatform != null) {
-                        if (j2eePlatform.getSupportedModuleTypes().contains(J2eeModule.EJB)) {
+                        if (j2eePlatform.getSupportedModuleTypes().contains(J2eeModule.EJB)
+                                && (spec == null || j2eePlatform.getSupportedSpecVersions(J2eeModule.EJB).contains(spec))) {
                             J2eePlatformAdapter adapter = new J2eePlatformAdapter(j2eePlatform);
                             orderedNames.add(adapter);
 

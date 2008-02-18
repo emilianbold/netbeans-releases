@@ -339,9 +339,9 @@ public class EjbJarProjectProperties {
         
         // CustomizerRun
         J2EE_SERVER_INSTANCE_MODEL = J2eePlatformUiSupport.createPlatformComboBoxModel( 
-            privateProperties.getProperty( J2EE_SERVER_INSTANCE ));
+            privateProperties.getProperty(J2EE_SERVER_INSTANCE), projectProperties.getProperty(J2EE_PLATFORM));
         J2EE_PLATFORM_MODEL = J2eePlatformUiSupport.createSpecVersionComboBoxModel(
-            projectProperties.getProperty( J2EE_PLATFORM ));
+            projectProperties.getProperty(J2EE_PLATFORM));
     }
     
     public void save() {
