@@ -186,7 +186,9 @@ public abstract class RestTestBase extends WebServicesTestBase {
     protected Node getRestNode() {
         String restNodeLabel = Bundle.getStringTrimmed("org.netbeans.modules.websvc.rest.nodes.Bundle", "LBL_RestServices");
         Node restNode = new Node(getProjectRootNode(), restNodeLabel);
-        restNode.expand();
+        if (restNode.isCollapsed()) {
+            restNode.expand();
+        }
         return restNode;
     }
 
