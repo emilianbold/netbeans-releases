@@ -276,13 +276,26 @@ public class PaletteTest extends RestNodeTest {
         n.tree().clickOnPath(getSubresourceNode(n, "{name} : ItemResource").getTreePath(), 2); //NOI18N
         EditorOperator eo = new EditorOperator(services[1].substring(0, 13));
         assertNotNull(services[1] + " not opened?", eo); //NOI18N
-        InputProcessor ip = new InputProcessor() {
-
-            public void setInput(NbDialogOperator dialogOperator) {
-                dialogOperator.ok();
-            }
-        };
+        //TBD ???
+        String resourcePath = "myNewsSearch/"; //NOI18N
+        String resource = "NewsSearchResource"; //NOI18N
+        InputProcessor ip = new DefaultInputProcessor(resourcePath, null);
         dragAndDrop(8, services[1].substring(0, 13), ip);
+        String getter = "get" + Character.toUpperCase(resourcePath.charAt(0)) //NOI18N
+                + resourcePath.substring(1, resourcePath.length() - 1);
+        checkResource(eo, resourcePath, getter, resource);
+    }
+
+    public void testYahooServices() {
+        //TODO: build and deploy project
+        //TODO: run some GET to verify running services
+        //TODO: undeploy project
+        //clean up original project - remove added code && created files
+        Set<String> toDelete = new HashSet<String>();
+        //TBD ???
+        toDelete.add("Converter"); //NOI18N
+        toDelete.add("Resource"); //NOI18N
+        cleanResource(services[0], "@Path(\"{name}\")", toDelete); //NOI18N
     }
 
     private void dragAndDrop(int paletteItem, String target, InputProcessor input) {
@@ -407,13 +420,14 @@ public class PaletteTest extends RestNodeTest {
         EditorOperator eo = new EditorOperator(resourceName);
         assertNotNull(resourceName + " not opened?", eo); //NOI18N
         eo.select(st);
-        System.out.println(eo.getText());
+        //clean added methods
         int begin = eo.getLineNumber() + 4;
         eo.pushKey(KeyEvent.VK_PAGE_DOWN);
         eo.pushKey(KeyEvent.VK_PAGE_DOWN);
         eo.pushKey(KeyEvent.VK_PAGE_DOWN);
         eo.select(begin, eo.getLineNumber() - 2);
         eo.pushKey(KeyEvent.VK_DELETE);
+        //clean added imports
         if (eo.contains("import java.util.List")) { //NOI18N
             eo.select("import java.util.List"); //NOI18N
             eo.deleteLine(eo.getLineNumber());
@@ -437,7 +451,7 @@ public class PaletteTest extends RestNodeTest {
         }
         assertEquals(3, getRestNode().getChildren().length);
         toDelete.removeAll(deleted);
-        assertTrue(toDelete + " we're not created nor deleted", toDelete.isEmpty()); //NOI18N
+        assertTrue(toDelete + " we're not created (nor deleted)", toDelete.isEmpty()); //NOI18N
     }
 
     private File getFileFromProject(String fileName) {
@@ -460,6 +474,7 @@ public class PaletteTest extends RestNodeTest {
 //        suite.addTest(new PaletteTest("testSalesandUseTaxComplete")); //NOI18N
         suite.addTest(new PaletteTest("testStrikeIronServices")); //NOI18N
 //        suite.addTest(new PaletteTest("testNewsSearch")); //NOI18N
+//        suite.addTest(new PaletteTest("testYahooServices")); //NOI18N
         return suite;
     }
 
