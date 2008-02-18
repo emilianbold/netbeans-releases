@@ -300,32 +300,27 @@ public class ProxyLookup extends Lookup {
      * (more useful).
      */
     private static final class R<T> extends WaitableResult<T> {
+        /** weak listener & result */
+        private final WeakResult<T> weakL;
+        
         /** list of listeners added */
         private javax.swing.event.EventListenerList listeners;
-
-        /** template for this result */
-        private final Lookup.Template<T> template;
 
         /** collection of Objects */
         private Collection[] cache;
 
-        /** weak listener & result */
-        private final WeakResult<T> weakL;
         
         /** associated lookup */
-        private final ProxyLookup proxy;
         private ImmutableInternalData data;
 
         /** Constructor.
          */
         public R(ProxyLookup proxy, Lookup.Template<T> t) {
-            this.template = t;
-            this.weakL = new WeakResult<T>(this);
-            this.proxy = proxy;
+            this.weakL = new WeakResult<T>(proxy, this, t);
         }
         
         private ProxyLookup proxy() {
-            return proxy;
+            return weakL.result.proxy;
         }
 
         @SuppressWarnings("unchecked")
@@ -350,7 +345,7 @@ public class ProxyLookup extends Lookup {
                 Result<T>[] arr = newResults(myLkps.length);
 
                 for (int i = 0; i < arr.length; i++) {
-                    arr[i] = myLkps[i].lookup(template);
+                    arr[i] = myLkps[i].lookup(weakL.result.template);
                 }
 
                 synchronized (proxy()) {
@@ -422,7 +417,7 @@ public class ProxyLookup extends Lookup {
             for (int i = 0; i < current.length; i++) {
                 if (added.contains(current[i])) {
                     // new lookup
-                    arr[i] = current[i].lookup(template);
+                    arr[i] = current[i].lookup(weakL.result.template);
                     if (toAdd != null) {
                         toAdd.put(arr[i], weakL);
                     }
@@ -620,6 +615,8 @@ public class ProxyLookup extends Lookup {
          * @return results to work on.
          */
         private Lookup.Result<T>[] myBeforeLookup() {
+            Template<T> template = weakL.result.template;
+            
             proxy().beforeLookup(template);
 
             Lookup.Result<T>[] arr = initResults();
@@ -638,7 +635,7 @@ public class ProxyLookup extends Lookup {
         /** Used by proxy results to synchronize before lookup.
          */
         protected void beforeLookup(Lookup.Template t) {
-            if (t.getType() == template.getType()) {
+            if (t.getType() == weakL.result.template.getType()) {
                 myBeforeLookup();
             }
         }
@@ -653,26 +650,31 @@ public class ProxyLookup extends Lookup {
         }
     }
     private static final class WeakRef<T> extends WeakReference<R> implements Runnable {
-        private WeakResult<T> result;
+        final WeakResult<T> result;
+        final ProxyLookup proxy;
+        final Template<T> template;
         
-        public WeakRef(R r, WeakResult<T> result) {
+        public WeakRef(R r, WeakResult<T> result, ProxyLookup proxy, Template<T> template) {
             super(r, Utilities.activeReferenceQueue());
             this.result = result;
+            this.template = template;
+            this.proxy = proxy;
         }
 
         public void run() {
             result.removeListeners();
-//TBD:            proxy().unregisterTemplate(template);
+            proxy.unregisterTemplate(template);
         }
     }
+    
     
     private static final class WeakResult<T> extends WaitableResult<T> implements LookupListener, Runnable {
         /** all results */
         private Lookup.Result<T>[] results;
         private final WeakRef<T> result;
         
-        public WeakResult(R r) {
-            this.result = new WeakRef(r, this);
+        public WeakResult(ProxyLookup proxy, R r, Template<T> t) {
+            this.result = new WeakRef(r, this, proxy, t);
         }
         
         final void removeListeners() {
@@ -750,7 +752,6 @@ public class ProxyLookup extends Lookup {
             this.results = results;
         }
     } // end of WeakResult
-    
     
     static abstract class ImmutableInternalData extends Object {
         static final ImmutableInternalData EMPTY = new EmptyInternalData();
