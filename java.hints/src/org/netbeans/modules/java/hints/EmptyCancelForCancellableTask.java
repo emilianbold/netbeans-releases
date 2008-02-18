@@ -130,24 +130,13 @@ public class EmptyCancelForCancellableTask extends AbstractHint {
             return null;
         }
         
-        try {
-            Document doc = compilationInfo.getDocument();
-            
-            if (doc == null)
-                return null;
-            
-            int[] span = Utilities.findIdentifierSpan(treePath, compilationInfo, doc);
-            
-            if (span[0] != (-1) && span[1] != (-1)) {
-                String message = NbBundle.getMessage(EmptyCancelForCancellableTask.class, "MSG_EmptyCancel");
-                ErrorDescription ed = ErrorDescriptionFactory.createErrorDescription(getSeverity().toEditorSeverity(), message, doc, doc.createPosition(span[0]), doc.createPosition(span[1]));
-                
-                return Collections.singletonList(ed);
-            }
-        } catch (BadLocationException ex) {
-            Exceptions.printStackTrace(ex);
-        } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
+        int[] span = compilationInfo.getTreeUtilities().findNameSpan((MethodTree) treePath.getLeaf());
+
+        if (span != null) {
+            String message = NbBundle.getMessage(EmptyCancelForCancellableTask.class, "MSG_EmptyCancel");
+            ErrorDescription ed = ErrorDescriptionFactory.createErrorDescription(getSeverity().toEditorSeverity(), message, compilationInfo.getFileObject(), span[0], span[1]);
+
+            return Collections.singletonList(ed);
         }
         
         return null;

@@ -174,6 +174,7 @@ public class WhereUsedPanel extends JPanel implements CustomRefactoringPanel {
             }
         } else if (CsmKindUtilities.isFunction(refObject)) {
             String functionFQN = ((CsmFunction)refObject).getSignature().toString();
+            functionFQN = CsmRefactoringUtils.htmlize(functionFQN);
             labelText = getString("DSC_FunctionUsages", functionFQN); // NOI18N
         } else if (CsmKindUtilities.isClass(refObject)) {
             CsmDeclaration.Kind classKind = ((CsmDeclaration)refObject).getKind();

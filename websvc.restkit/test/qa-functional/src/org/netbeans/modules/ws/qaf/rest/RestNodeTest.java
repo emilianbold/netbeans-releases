@@ -83,11 +83,11 @@ public class RestNodeTest extends RestTestBase {
         assertEquals("Some method not shown for " + services[2], 2, //NOI18N
                 getMethodsNode(services[2]).getChildren().length); //NOI18N
         assertEquals("Offending locator for " + services[0], 0, //NOI18N
-                getSubresourceNode(services[0]).getChildren().length); //NOI18N
+                getSubresourcesNode(services[0]).getChildren().length); //NOI18N
         assertEquals("Missing locator for " + services[1], 1, //NOI18N
-                getSubresourceNode(services[1]).getChildren().length); //NOI18N
+                getSubresourcesNode(services[1]).getChildren().length); //NOI18N
         assertEquals("Offending locator for " + services[2], 0, //NOI18N
-                getSubresourceNode(services[2]).getChildren().length); //NOI18N
+                getSubresourcesNode(services[2]).getChildren().length); //NOI18N
     }
 
     /**
@@ -117,7 +117,7 @@ public class RestNodeTest extends RestTestBase {
      * Test "Open" action on the resource's subresource locator node
      */
     public void testOpenOnLocator() {
-        Node n = new Node(getSubresourceNode(services[1]), "{name}"); //NOI18N
+        Node n = new Node(getSubresourcesNode(services[1]), "{name}"); //NOI18N
         String open = Bundle.getStringTrimmed("org.openide.actions.Bundle", "Open");
         n.performPopupActionNoBlock(open);
         EditorOperator eo = new EditorOperator(services[1].substring(0, 13));
@@ -178,21 +178,35 @@ public class RestNodeTest extends RestTestBase {
 
     protected Node getResourceNode(String resourceName) {
         Node n = new Node(getRestNode(), resourceName);
-        n.expand();
+        if (n.isCollapsed()) {
+            n.expand();
+        }
         return n;
     }
 
     protected Node getMethodsNode(String resourceName) {
         String methodsLabel = Bundle.getStringTrimmed("org.netbeans.modules.websvc.rest.nodes.Bundle", "LBL_HttpMethods");
         Node n = new Node(getResourceNode(resourceName), methodsLabel);
-        n.expand();
+        if (n.isCollapsed()) {
+            n.expand();
+        }
         return n;
     }
+    
+    protected Node getMethodNode(Node methodsNode, String methodName) {
+        return new Node(methodsNode, methodName);
+    }
 
-    protected Node getSubresourceNode(String resourceName) {
+    protected Node getSubresourcesNode(String resourceName) {
         String subresourceLabel = Bundle.getStringTrimmed("org.netbeans.modules.websvc.rest.nodes.Bundle", "LBL_SubResourceLocators");
         Node n = new Node(getResourceNode(resourceName), subresourceLabel);
-        n.expand();
+        if (n.isCollapsed()) {
+            n.expand();
+        }
         return n;
+    }
+    
+    protected Node getSubresourceNode(Node subresourcesNode, String locatorName) {
+        return new Node(subresourcesNode, locatorName);
     }
 }

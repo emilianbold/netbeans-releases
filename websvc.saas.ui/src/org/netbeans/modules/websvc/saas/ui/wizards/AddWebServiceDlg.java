@@ -92,7 +92,7 @@ public class AddWebServiceDlg extends JPanel  implements ActionListener {
     private JButton cancelButton = new JButton();
     private JButton addButton = new JButton();
     
-    private String groupId;
+    private SaasGroup group;
     private final boolean jaxRPCAvailable;
 
     private static final String[] KEYWORDS = 
@@ -128,7 +128,7 @@ public class AddWebServiceDlg extends JPanel  implements ActionListener {
     public AddWebServiceDlg(SaasGroup group) {
         initComponents();
         myInitComponents();
-        this.groupId = groupId;
+        this.group = group;
         jaxRPCAvailable = WsdlUtil.isJAXRPCAvailable();
     }
 
@@ -391,8 +391,7 @@ public class AddWebServiceDlg extends JPanel  implements ActionListener {
         dialog = null;
         
         // Run the add W/S asynchronously
-        //TODO:nam
-        // SaasServiceModel.getInstance().addWebService(wsdl, packageName, groupId);
+        SaasServicesModel.getInstance().addWsdlService(group, wsdl, packageName);
     }    
     
     public void actionPerformed(ActionEvent evt) {
