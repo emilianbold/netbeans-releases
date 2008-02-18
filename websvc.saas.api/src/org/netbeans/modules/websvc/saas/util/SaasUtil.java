@@ -62,7 +62,6 @@ import javax.xml.parsers.SAXParserFactory;
 import javax.xml.transform.sax.SAXSource;
 import org.netbeans.modules.websvc.saas.model.Saas;
 import org.netbeans.modules.websvc.saas.model.SaasGroup;
-import org.netbeans.modules.websvc.saas.model.SaasServicesModel;
 import org.netbeans.modules.websvc.saas.model.WadlSaas;
 import org.netbeans.modules.websvc.saas.model.WadlSaasMethod;
 import org.netbeans.modules.websvc.saas.model.jaxb.Group;
@@ -74,6 +73,7 @@ import org.netbeans.modules.websvc.saas.model.wadl.ParamStyle;
 import org.netbeans.modules.websvc.saas.model.wadl.RepresentationType;
 import org.netbeans.modules.websvc.saas.model.wadl.Resource;
 import org.netbeans.modules.websvc.saas.spi.SaasNodeActionsProvider;
+import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
@@ -192,7 +192,8 @@ public class SaasUtil {
     }
     
     public static final QName QNAME_GROUP = new QName(Saas.NS_SAAS, "group");
-
+    public static final QName QNAME_SAAS_SERVICES = new QName(Saas.NS_SAAS, "saas-services");
+    
     public static void saveSaasGroup(SaasGroup saasGroup, OutputStream output) throws JAXBException {
         JAXBContext jc = JAXBContext.newInstance(Group.class.getPackage().getName());
         Marshaller marshaller = jc.createMarshaller();
@@ -203,7 +204,21 @@ public class SaasUtil {
     public static void saveSaas(Saas saas, FileObject file) throws IOException, JAXBException {
         JAXBContext jc = JAXBContext.newInstance(SaasServices.class.getPackage().getName());
         Marshaller marshaller = jc.createMarshaller();
-        marshaller.marshal(saas.getDelegate(), file.getOutputStream());
+        JAXBElement<SaasServices> jbe = new JAXBElement<SaasServices>(QNAME_SAAS_SERVICES, SaasServices.class, saas.getDelegate());
+        OutputStream out = null;
+        FileLock lock = null;
+        try {
+            lock = file.lock();
+            out = file.getOutputStream(lock);
+            marshaller.marshal(jbe, out);
+        } finally {
+            if (out != null) {
+                out.close();
+            }
+            if (lock != null) {
+                lock.releaseLock();
+            }
+        }
     }
     
     public static Application loadWadl(FileObject wadlFile) throws IOException {

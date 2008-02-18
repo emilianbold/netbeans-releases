@@ -82,7 +82,11 @@ public class WsdlPortNode extends AbstractNode {
                 new SaasTransferable(port,SaasTransferable.WSDL_PORT_FLAVORS));
     }    
     
-    // Create the popup menu:
+    @Override
+    public String getDisplayName() {
+        return port.getName();
+    }
+    
     @Override
     public Action[] getActions(boolean context) {
         List<Action> actions = new ArrayList<Action>();
@@ -100,21 +104,21 @@ public class WsdlPortNode extends AbstractNode {
         return actions.length > 0 ? actions[0] : null;
     }
     
-    private static final Image icon = 
-        Utilities.loadImage("org/netbeans/modules/websvc/manager/resources/wsport-closed.png"); // NOI18N
-    private static final Image iconOpened = 
-        Utilities.loadImage("org/netbeans/modules/websvc/manager/resources/wsport-open.png"); // NOI18N
-
+    private static final java.awt.Image ICON =
+       Utilities.loadImage( "org/netbeans/modules/websvc/saas/ui/resources/wsport-closed.png" ); //NOI18N
+    private static final java.awt.Image OPENED_ICON =
+       Utilities.loadImage( "org/netbeans/modules/websvc/saas/ui/resources/wsport-open.png" ); //NOI18N
+    
     @Override
-    public Image getIcon(int type){
-        return icon;
+    public Image getIcon(int type) {
+        return ICON;
     }
     
     @Override
     public Image getOpenedIcon(int type){
-        return iconOpened;
+        return OPENED_ICON;
     }
-    
+
     /**
      * Create a property sheet for the individual W/S port node. The properties sheet contains the
      * the following properties:

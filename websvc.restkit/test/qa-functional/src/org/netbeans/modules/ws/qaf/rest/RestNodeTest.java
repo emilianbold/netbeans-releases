@@ -178,14 +178,18 @@ public class RestNodeTest extends RestTestBase {
 
     protected Node getResourceNode(String resourceName) {
         Node n = new Node(getRestNode(), resourceName);
-        n.expand();
+        if (n.isCollapsed()) {
+            n.expand();
+        }
         return n;
     }
 
     protected Node getMethodsNode(String resourceName) {
         String methodsLabel = Bundle.getStringTrimmed("org.netbeans.modules.websvc.rest.nodes.Bundle", "LBL_HttpMethods");
         Node n = new Node(getResourceNode(resourceName), methodsLabel);
-        n.expand();
+        if (n.isCollapsed()) {
+            n.expand();
+        }
         return n;
     }
     
@@ -196,7 +200,9 @@ public class RestNodeTest extends RestTestBase {
     protected Node getSubresourcesNode(String resourceName) {
         String subresourceLabel = Bundle.getStringTrimmed("org.netbeans.modules.websvc.rest.nodes.Bundle", "LBL_SubResourceLocators");
         Node n = new Node(getResourceNode(resourceName), subresourceLabel);
-        n.expand();
+        if (n.isCollapsed()) {
+            n.expand();
+        }
         return n;
     }
     

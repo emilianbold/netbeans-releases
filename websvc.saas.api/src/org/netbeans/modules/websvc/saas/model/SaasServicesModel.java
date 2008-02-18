@@ -99,6 +99,7 @@ public class SaasServicesModel {
             setState(State.INITIALIZING);
             loadUserDefinedGroups();
             loadFromDefaultFileSystem();
+            loadFromWebServicesHome();
             setState(State.READY);
         }
     }
@@ -126,7 +127,12 @@ public class SaasServicesModel {
             Enumeration<? extends FileObject> en = f.getFolders(false);
             while (en.hasMoreElements()) {
                 FileObject groupFolder = en.nextElement();
-                loadGroupFromDefaultFileSystemFolder(groupFolder);
+                for (FileObject fo : groupFolder.getChildren()) {
+                    if (fo.isFolder()) {
+                        continue;
+                    }
+                    loadSaasServiceFile(fo);
+                }
             }
         }
     }
@@ -139,13 +145,35 @@ public class SaasServicesModel {
         }
     }
     
-    private void loadGroupFromDefaultFileSystemFolder(FileObject folder) {
-        for (FileObject fo : folder.getChildren()) {
-            if (fo.isFolder()) {
+    public static FileObject getWebServiceHome() {
+        File websvcDir = new File(WEBSVC_HOME);
+        if (! websvcDir.isFile()) {
+            websvcDir.mkdirs();
+        }
+        return FileUtil.toFileObject(websvcDir);
+    }
+    
+    private void loadFromWebServicesHome() {
+        for (FileObject fo : getWebServiceHome().getChildren()) {
+            if (! fo.isFolder()) {
                 continue;
             }
+            for (FileObject file : fo.getChildren()) {
+                if (! file.getNameExt().endsWith("-saas.xml")) { //NOI18N
+                    continue;
+                }
+                try {
+                    loadSaasServiceFile(file);
+                } catch(Exception ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+            }
+        }
+    }
+
+    private void loadSaasServiceFile(FileObject saasFile) {
             try {
-                SaasServices ss = SaasUtil.loadSaasServices(fo);
+                SaasServices ss = SaasUtil.loadSaasServices(saasFile);
                 Group g = ss.getSaasMetadata().getGroup();
                 SaasGroup parent = rootGroup;
                 while (g != null) {
@@ -160,8 +188,6 @@ public class SaasServicesModel {
                         Saas service;
                         if (Saas.NS_WADL.equals(ss.getType())) {
                             service = new WadlSaas(parent, ss);
-                            //why contextclassloader only work here not later
-                            //((WadlSaas)service).getWadlModel();
                         } else if (Saas.NS_WSDL.equals(ss.getType())) {
                             service = new WsdlSaas(parent, ss);
                         } else {
@@ -177,9 +203,8 @@ public class SaasServicesModel {
             } catch (Exception ex) {
                 Exceptions.printStackTrace(ex);
             }
-        }
     }
-
+    
     public SaasGroup getRootGroup() {
         init();
         return rootGroup;
@@ -260,13 +285,18 @@ public class SaasServicesModel {
      */
     public void addWsdlService(SaasGroup parent, String displayName, String url, String packageName) {
         init();
-        WsdlUtil.addWsdlData(url, packageName);
         WsdlSaas service = new WsdlSaas(parent, displayName, url, packageName);
+        service.getSaasFolder();
+        WsdlUtil.addWsdlData(url, packageName);
         parent.addService(service);
         service.save();
         fireChange(PROP_SERVICES, parent, null, service);
     }
-
+    
+    public void addWsdlService(SaasGroup parent, String url, String packageName) {
+        addWsdlService(parent, WsdlUtil.getServiceDirName(url), url, packageName);
+    }
+    
     /**
      * Model mutation: remve service from parent group, delete file, fire event
      * @param service to remove.
@@ -276,15 +306,18 @@ public class SaasServicesModel {
         SaasGroup parent = service.getParentGroup();
         parent.removeService(service);
         try {
-            FileObject saasFile = service.getSaasFile();
-            saasFile.delete();
+            FileObject saasFolder = service.getSaasFolder();
+            if (saasFolder != null) {
+                saasFolder.delete();
+            }
+            if (service instanceof WsdlSaas) {
+                WsdlSaas saas = (WsdlSaas) service;
+                WsdlUtil.removeWsdlData(saas.getWsdlData());
+            }
             fireChange(PROP_SERVICES, parent, service, null);
         } catch(IOException e) {
             Exceptions.printStackTrace(e);
         }
     }
     
-    public FileObject getWebServiceHome() {
-        return FileUtil.toFileObject(new File(WEBSVC_HOME));
-    }
 }
