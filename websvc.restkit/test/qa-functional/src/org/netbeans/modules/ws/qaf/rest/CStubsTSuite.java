@@ -43,6 +43,7 @@ import java.io.File;
 import java.io.IOException;
 import javax.swing.JButton;
 import javax.swing.ListModel;
+import junit.framework.TestSuite;
 import junit.textui.TestRunner;
 import org.netbeans.api.project.Project;
 import org.netbeans.jellytools.Bundle;
@@ -76,8 +77,8 @@ public class CStubsTSuite extends RestTestBase {
     }
 
     /** Creates suite from particular test cases. You can define order of testcases here. */
-    public static NbTestSuite suite() {
-        NbTestSuite suite = new NbTestSuite();
+    public static TestSuite suite() {
+        TestSuite suite = new NbTestSuite();
         suite.addTest(new CStubsTSuite("testWizard")); //NOI18N
         suite.addTest(new CStubsTSuite("testCreateSimpleStubs")); //NOI18N
         suite.addTest(new CStubsTSuite("testFromWADL")); //NOI18N
