@@ -1177,7 +1177,6 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
                 setExited();
                 finish(false);
             } else if (reason.equals("breakpoint-hit")) { // NOI18N
-                GdbBreakpoint breakpoint;
                 String tid = map.get("thread-id"); // NOI18N
                 if (tid != null && !tid.equals(currentThreadID)) {
                     currentThreadID = tid;
@@ -1191,12 +1190,17 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
                         return;
                     }
                 } else {
-                    updateCurrentCallStack();
-                    if ((breakpoint = impl.getBreakpoint()) != null) {
+                    GdbBreakpoint breakpoint = impl.getBreakpoint();
+                    if (breakpoint.getSuspend() == GdbBreakpoint.SUSPEND_NONE) {
                         fireBreakpointEvent(breakpoint, new GdbBreakpointEvent(
-                                breakpoint, this, GdbBreakpointEvent.CONDITION_NONE, null));
+                                    breakpoint, this, GdbBreakpointEvent.CONDITION_NONE, null));
+                        gdb.exec_continue();
+                    } else {
+                        updateCurrentCallStack();
+                        fireBreakpointEvent(breakpoint, new GdbBreakpointEvent(
+                                    breakpoint, this, GdbBreakpointEvent.CONDITION_NONE, null));
+                        setStopped();
                     }
-                    setStopped();
                 }
                 if (dlopenPending) {
                     dlopenPending = false;
