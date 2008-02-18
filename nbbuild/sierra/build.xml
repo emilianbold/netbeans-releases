@@ -92,7 +92,7 @@
         <property name="env.BUILD_NUMBER" value=""/>
 
         <echo file="${build.number}" message="sierra hudson: ${env.BUILD_NUMBER}${line.separator}" append="true"/>
-        <echo file="${build.number}" message=" sierra build: ${long_stamp}${line.separator}" append="true"/>
+        <echo file="${build.number}" message="sierra build: ${long_stamp}${line.separator}" append="true"/>
 
         <chmod file="${home}/nbbuild/netbeans/bin/netbeans" perm="ugo+rx"/>
     </target>

@@ -256,6 +256,9 @@ public class HintsTestBase extends NbTestCase {
         test.clearWorkDir();
         File root = test.getWorkDir();
         assert root.isDirectory() && root.list().length == 0;
+
+        FileUtil.refreshFor(File.listRoots());
+        
         FileObject fo = FileUtil.toFileObject(root);
         if (fo != null) {
             // Presumably using masterfs.

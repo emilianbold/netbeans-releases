@@ -208,7 +208,7 @@ public class RailsDeprecations implements AstRule {
                 
                 // Add a warning - you're using a deprecated field. Use the
                 // method/attribute instead!
-                String message = NbBundle.getMessage(RailsDeprecations.class, "DeprecatedMethodUse", name, deprecatedMethods.get(name));
+                String message = NbBundle.getMessage(RailsDeprecations.class, "DeprecatedRailsMethodUse", name, deprecatedMethods.get(name));
                 addFix(info, node, result, message);
             }
         }
