@@ -152,7 +152,7 @@ public class CStubsTSuite extends RestTestBase {
         new JRadioButtonOperator(wo, 1).clickMouse();
         new JTextFieldOperator(wo, 2).typeText(new File(getRestDataDir(), "testApplication.wadl").getCanonicalFile().getAbsolutePath()); //NOI18N
         //http://www.netbeans.org/issues/show_bug.cgi?id=123573
-        new JCheckBoxOperator(wo, 0).setSelected(false);
+        new JCheckBoxOperator(wo, 0).setSelected(useJMaki());
         wo.finish();
         //Generating Client Stubs From RESTful Web Services...
         String progressLabel = Bundle.getStringTrimmed("org.netbeans.modules.websvc.rest.wizard.Bundle", "LBL_ClientStubsProgress");
@@ -167,11 +167,15 @@ public class CStubsTSuite extends RestTestBase {
         WizardOperator wo = new WizardOperator(cStubsLabel);
         addProject(wo, sourcePath);
         //http://www.netbeans.org/issues/show_bug.cgi?id=123573
-        new JCheckBoxOperator(wo, 0).setSelected(false);
+        new JCheckBoxOperator(wo, 0).setSelected(useJMaki());
         wo.finish();
         //Generating Client Stubs From RESTful Web Services...
         String progressLabel = Bundle.getStringTrimmed("org.netbeans.modules.websvc.rest.wizard.Bundle", "LBL_ClientStubsProgress");
         waitDialogClosed(progressLabel);
+    }
+    
+    protected boolean useJMaki() {
+        return false;
     }
 
     private void addProject(WizardOperator wo, String path) {
