@@ -45,9 +45,11 @@ import java.io.File;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import java.util.regex.Matcher;
@@ -56,6 +58,7 @@ import java.util.regex.Pattern;
 import org.netbeans.api.project.ant.AntArtifact;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.project.libraries.LibraryManager;
+import org.netbeans.modules.j2ee.common.project.ui.ProjectProperties;
 import org.netbeans.modules.java.api.common.ant.UpdateHelper;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
@@ -79,8 +82,9 @@ public final class ClassPathSupport {
     private PropertyEvaluator evaluator;
     private ReferenceHelper referenceHelper;
     private AntProjectHelper antProjectHelper;
-    private Set<String> wellKnownPaths;
-    private String antArtifactPrefix;
+    private UpdateHelper updateHelper;
+    private static Set<String> wellKnownPaths = new HashSet<String>(Arrays.asList(ProjectProperties.WELL_KNOWN_PATHS));
+    private static String antArtifactPrefix = ProjectProperties.ANT_ARTIFACT_PREFIX;
         
     private Callback callback;
 
@@ -88,22 +92,28 @@ public final class ClassPathSupport {
     public ClassPathSupport( PropertyEvaluator evaluator, 
                               ReferenceHelper referenceHelper,
                               AntProjectHelper antProjectHelper,
-                              String wellKnownPaths[],
-                              String antArtifactPrefix,
+                              UpdateHelper updateHelper,
                               Callback callback) {
         this.evaluator = evaluator;
         this.referenceHelper = referenceHelper;
         this.antProjectHelper = antProjectHelper;
-        this.wellKnownPaths = wellKnownPaths == null ? null : new HashSet<String>( Arrays.asList( wellKnownPaths ) );
-        this.antArtifactPrefix = antArtifactPrefix;
+        this.updateHelper = updateHelper;
         this.callback = callback;
     }
 
     /** Creates list of <CODE>Items</CODE> from given property.
      */    
+    public Iterator<Item> itemsIterator(String propertyValue) {
+        return itemsIterator(propertyValue, null);
+    }
+    
     public Iterator<Item> itemsIterator( String propertyValue, String webModuleLibraries ) {
         // XXX More performance frendly impl. would retrun a lazzy iterator.
         return itemsList( propertyValue, webModuleLibraries ).iterator();
+    }
+    
+    public List<Item> itemsList(String propertyValue) {
+        return itemsList(propertyValue, null);
     }
     
     public List<Item> itemsList( String propertyValue, String projectXMLElement ) {    
@@ -181,7 +191,7 @@ public final class ClassPathSupport {
             items.add( item );
         }
         if (projectXMLElement != null) {
-            callback.readDeploymentInformation(items, projectXMLElement);
+            callback.readAdditionalProperties(items, projectXMLElement);
         }
 
         return items;        
@@ -191,6 +201,10 @@ public final class ClassPathSupport {
      * !! This method creates references in the project !!
      * !! This method may add <included-library> items to project.xml !!
      */
+    public String[] encodeToStrings(List<Item> classpath) {
+        return encodeToStrings(classpath, null);
+    }
+    
     public String[] encodeToStrings( List<Item> classpath, String projectXMLElement ) {
         List<String> items = new ArrayList<String>();
         for (Item item : classpath) {
@@ -213,9 +227,9 @@ public final class ClassPathSupport {
                             referenceHelper.createExtraForeignFileReferenceAsIs(item.getSourceFilePath(), item.getSourceProperty());
                         } else {
                             //oh well, how do I do this otherwise??
-                            EditableProperties ep = callback.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
+                            EditableProperties ep = updateHelper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
                             ep.remove(item.getSourceProperty());
-                            callback.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, ep);
+                            updateHelper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, ep);
                         }
                     }
                     if (item.hasChangedJavadoc()) {
@@ -223,9 +237,9 @@ public final class ClassPathSupport {
                             referenceHelper.createExtraForeignFileReferenceAsIs(item.getJavadocFilePath(), item.getJavadocProperty());
                         } else {
                             //oh well, how do I do this otherwise??
-                            EditableProperties ep = callback.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
+                            EditableProperties ep = updateHelper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
                             ep.remove(item.getJavadocProperty());
-                            callback.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, ep);
+                            updateHelper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, ep);
                         }
                     }
                     break;
@@ -265,7 +279,7 @@ public final class ClassPathSupport {
         }
 
         if ( projectXMLElement != null ) {
-            callback.storeDeploymentInformation(classpath, projectXMLElement );
+            callback.storeAdditionalProperties(classpath, projectXMLElement );
         }
         String arr[] = items.toArray(new String[items.size()]);
         // remove ":" from last item:
@@ -328,6 +342,8 @@ public final class ClassPathSupport {
         private String initialSourceFilePath;
         private String initialJavadocFilePath;
         private String libraryName;
+        
+        private Map<String, String> additionalProperties = new HashMap<String, String>();
 
         private Item( int type, Object object, String raw, String eval, String property, boolean broken) {
             this.type = type;
@@ -355,22 +371,14 @@ public final class ClassPathSupport {
             this(type, object, raw, eval, property, false);
         }
               
-        public String getPathInDeployment () {
-            return pathInDeployment;
+        public String getAdditionalProperty(String key) {
+            return additionalProperties.get(key);
         }
-
-        public void setPathInDeployment (String pathInDeployment) {
-            this.pathInDeployment = pathInDeployment;
+        
+        public void setAdditionalProperty(String key, String value) {
+            additionalProperties.put(key, value);
         }
-
-        public void setIncludeInDeployment(boolean includeInDeployment) {
-            this.includeInDeployment = includeInDeployment;
-        }
-
-        public boolean getIncludeInDeployment() {
-            return includeInDeployment;
-        }
-
+        
         public void setRaw(String raw) {
             this.raw = raw;
         }
@@ -379,10 +387,6 @@ public final class ClassPathSupport {
             return raw;
         }
         
-//        public String getEvaluated() {
-//            return eval == null ? getRaw() : eval;
-//        }
-
         // Factory methods -----------------------------------------------------
         
         
@@ -428,7 +432,7 @@ public final class ClassPathSupport {
             }
             Item itm = new Item( type, null, null, null, property, true);
             if (type == TYPE_LIBRARY) {
-                Pattern LIBRARY_REFERENCE = Pattern.compile("\\$\\{libs\\.([^${}]+)\\.[^${}]+\\}"); // NOI18N
+                Pattern LIBRARY_REFERENCE = Pattern.compile("\\$\\{libs\\.([a-zA-Z0-9_\\-\\.]+)\\.([^.]+)\\}"); // NOI18N
                 Matcher m = LIBRARY_REFERENCE.matcher(property);
                 if (m.matches()) {
                     itm.libraryName = m.group(1);
@@ -620,6 +624,7 @@ public final class ClassPathSupport {
             return broken;
         }
                         
+        @Override
         public int hashCode() {
         
             int hash = getType();
@@ -644,6 +649,7 @@ public final class ClassPathSupport {
             return hash;
         }
     
+        @Override
         public boolean equals( Object itemObject ) {
 
             if ( !( itemObject instanceof Item ) ) {
@@ -686,6 +692,7 @@ public final class ClassPathSupport {
 
         }
      
+        @Override
         public String toString() {
             return "artifactURI=" + artifactURI
                     + ", type=" + type 
@@ -755,11 +762,25 @@ public final class ClassPathSupport {
         
     }
     
+    /**
+     * Callback to customize classpath support behaviour.
+     */
     public static interface Callback {
-        EditableProperties getProperties(String path);
-        void putProperties(String path, EditableProperties props);
-        void readDeploymentInformation(List<Item> items, String projectXMLElement);
-        void storeDeploymentInformation(List<Item> items, String projectXMLElement);
+        
+        /**
+         * Reads additional information from project XML for classpath items.
+         */
+        void readAdditionalProperties(List<Item> items, String projectXMLElement);
+        
+        /**
+         * Writes additional information from classpath items to project XML.
+         */
+        void storeAdditionalProperties(List<Item> items, String projectXMLElement);
+        
+        /**
+         * Initializes additional information to a default state.
+         */
+        void initAdditionalProperties(Item item);
     }
     
 }

@@ -46,7 +46,9 @@ import java.net.URI;
 import java.net.URL;
 import java.util.*;
 import org.netbeans.modules.j2ee.common.project.classpath.ClassPathSupport;
+import org.netbeans.modules.java.api.common.util.CommonProjectUtils;
 import org.netbeans.spi.project.libraries.support.LibrariesSupport;
+import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -57,18 +59,85 @@ import org.openide.filesystems.FileUtil;
  * 
  * @author Petr Hrebejk, Radko Najman, David Konecny
  */
-public class ProjectProperties {
+public final class ProjectProperties {
+
+    public static final String JAVA_EE_5 = "1.5"; // NOI18N
+    public static final String J2EE_1_4 = "1.4"; // NOI18N
+    public static final String J2EE_1_3 = "1.3"; // NOI18N
+
+    public static final String JAVAC_CLASSPATH = "javac.classpath"; //NOI18N
+    public static final String JAVAC_TEST_CLASSPATH = "javac.test.classpath"; // NOI18N
+    public static final String RUN_CLASSPATH = "run.classpath"; // NOI18N
+    public static final String RUN_TEST_CLASSPATH = "run.test.classpath"; // NOI18N
+    public static final String BUILD_CLASSES_DIR = "build.classes.dir"; //NOI18N
+    public static final String BUILD_TEST_CLASSES_DIR = "build.test.classes.dir"; // NOI18N
     
-    /** XXX to be deleted when introduced in AntPropertyHeleper API
-     */    
-    public static String getAntPropertyName( String property ) {
-        if ( property != null && 
-             property.startsWith( "${" ) && // NOI18N
-             property.endsWith( "}" ) ) { // NOI18N
-            return property.substring( 2, property.length() - 1 ); 
+    public static final String[] WELL_KNOWN_PATHS = new String[] {
+        "${" + JAVAC_CLASSPATH + "}", // NOI18N
+        "${" + JAVAC_TEST_CLASSPATH + "}", // NOI18N
+        "${" + RUN_CLASSPATH + "}", // NOI18N
+        "${" + RUN_TEST_CLASSPATH + "}", // NOI18N
+        "${" + BUILD_CLASSES_DIR + "}", // NOI18N
+        "${" + BUILD_TEST_CLASSES_DIR + "}" // NOI18N
+    };    
+   
+    // Prefixes and suffixes of classpath
+    public static final String ANT_ARTIFACT_PREFIX = "${reference."; // NOI18N
+    
+    /** Store locations of libraries in the classpath param that have more the one
+     * file into the properties in the following format:
+     * 
+     * <ul>
+     * <li>libs.foo.classpath.libdir.1=C:/foo
+     * <li>libs.foo.classpath.libdirs=1
+     * <li>libs.foo.classpath.libfile.1=C:/bar/a.jar
+     * <li>libs.foo.classpath.libfile.2=C:/bar/b.jar
+     * <li>libs.foo.classpath.libfiles=1
+     * </ul>
+     * This is needed for the Ant copy task as it cannot copy more the one file
+     * and it needs different handling for files and directories.
+     * <br>
+     * It removes all properties that match this format that were in the {@link #properties}
+     * but are not in the {@link #classpath}.
+     */
+    public static void storeLibrariesLocations (Iterator<ClassPathSupport.Item> classpath, EditableProperties privateProps, FileObject projectFolder) {
+        ArrayList exLibs = new ArrayList ();
+        Iterator propKeys = privateProps.keySet().iterator();
+        while (propKeys.hasNext()) {
+            String key = (String) propKeys.next();
+            if (key.endsWith(".libdirs") || key.endsWith(".libfiles") || //NOI18N
+                    (key.indexOf(".libdir.") > 0) || (key.indexOf(".libfile.") > 0)) { //NOI18N
+                exLibs.add(key);
+            }
         }
-        else {
-            return property;
+        while (classpath.hasNext()) {
+            ClassPathSupport.Item item = (ClassPathSupport.Item)classpath.next();
+            ArrayList<String> files = new ArrayList<String>();
+            ArrayList<String> dirs = new ArrayList<String>();
+            getFilesForItem (item, files, dirs, projectFolder);
+            String key;
+            if (files.size() > 1 || (files.size()>0 && dirs.size()>0)) {
+                String ref = item.getType() == ClassPathSupport.Item.TYPE_LIBRARY ? item.getRaw() : item.getReference();
+                for (int i = 0; i < files.size(); i++) {
+                    String path = files.get(i);
+                    key = CommonProjectUtils.getAntPropertyName(ref)+".libfile." + (i+1); //NOI18N
+                    privateProps.setProperty (key, "" + path); //NOI18N
+                    exLibs.remove(key);
+                }
+            }
+            if (dirs.size() > 1 || (files.size()>0 && dirs.size()>0)) {
+                String ref = item.getType() == ClassPathSupport.Item.TYPE_LIBRARY ? item.getRaw() : item.getReference();
+                for (int i = 0; i < dirs.size(); i++) {
+                    String path = dirs.get(i);
+                    key = CommonProjectUtils.getAntPropertyName(ref)+".libdir." + (i+1); //NOI18N
+                    privateProps.setProperty (key, "" + path); //NOI18N
+                    exLibs.remove(key);
+                }
+            }
+        }
+        Iterator unused = exLibs.iterator();
+        while (unused.hasNext()) {
+            privateProps.remove(unused.next());
         }
     }
     
