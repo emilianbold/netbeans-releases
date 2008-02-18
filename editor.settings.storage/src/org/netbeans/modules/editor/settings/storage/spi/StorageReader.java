@@ -99,8 +99,7 @@ public abstract class StorageReader<K extends Object, V extends Object> extends 
 
     @Override
     public void fatalError(SAXParseException e) throws SAXException {
-        log("fatal error", e); //NOI18N
-        throw e;
+        throw log("fatal error", e); //NOI18N
     }
 
     @Override
@@ -164,19 +163,28 @@ public abstract class StorageReader<K extends Object, V extends Object> extends 
     private final boolean isDefaultProfile;
     private final String mimePath;
     
-    private void log(String errorType, SAXParseException e) {
+    private SAXException log(String errorType, SAXParseException e) {
+        Level level;
+        String message;
+        
         if (file == null) {
-            LOG.log(Level.FINE, "XML parser " + errorType, e); //NOI18N
+            level = Level.FINE;
+            message = "XML parser " + errorType;
         } else {
-            Level level;
             if (isModuleFile()) { //NOI18N
                 level = Level.WARNING; // warnings for module layer supplied files
             } else {
                 level = Level.FINE; // user files, can be from previous versions
             }
 
-            LOG.log(level, "XML parser " + errorType + " in file " + file.getPath(), e); //NOI18N
+            message = "XML parser " + errorType + " in file " + file.getPath();
         }
+        
+        SAXException saxe = new SAXException(message);
+        saxe.initCause(e);
+        LOG.log(level, message, saxe); //NOI18N
+        
+        return saxe;
     }
 
     // package accessor trick

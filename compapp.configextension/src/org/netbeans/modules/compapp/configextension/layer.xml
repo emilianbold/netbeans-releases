@@ -2,6 +2,7 @@
 <!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.1//EN" "http://www.netbeans.org/dtds/filesystem-1_1.dtd">
 <filesystem>
     <folder name="JbiExtensions">
+        
         <folder name="ConfigExtension">
             <attr name="xsdFileName" stringvalue="config-ext.xsd"/>
             <attr name="extensionType" stringvalue="endpoint"/>
@@ -14,6 +15,22 @@
                 <file name="name">
                     <attr name="type" stringvalue="String"/>
                     <attr name="description" stringvalue="Application Configuration Name"/>
+                </file>
+            </folder>
+        </folder>
+        
+        <folder name="ConfigEndpointExtension">
+            <attr name="xsdFileName" stringvalue="config-ext.xsd"/>
+            <attr name="extensionType" stringvalue="endpoint"/>
+            <attr name="extensionTarget" stringvalue="all"/>
+            <attr name="prefix" stringvalue="config-endpoint"/>
+            <attr name="namespace" stringvalue="http://www.sun.com/jbi/descriptor/config-endpoint"/>
+            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.namebeans.modules.compapp.configextension.Bundle"/>
+            <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/namebeans/modules/compapp/configextension/resources/config-ext.png"/>
+            <folder name="codegen">
+                <file name="disableInBC">
+                    <attr name="type" stringvalue="Boolean"/>
+                    <attr name="description" stringvalue="Whether to generate this endpoint in the BC SU's jbi.xml."/>
                 </file>
             </folder>
         </folder>

@@ -152,68 +152,70 @@ public class JaxWsUtils {
     public static void generateJaxWsImplementationClass(Project project, FileObject targetFolder, String targetName, WsdlModel wsdlModel, org.netbeans.modules.websvc.api.jaxws.project.config.Service service) throws Exception {
         WsdlService wsdlService = wsdlModel.getServiceByName(service.getServiceName());
         WsdlPort wsdlPort = null;
-        if (wsdlService != null)
+        if (wsdlService != null) {
             wsdlPort = wsdlService.getPortByName(service.getPortName());
-        if (wsdlService!=null && wsdlPort!=null) {
+        }
+        if (wsdlService != null && wsdlPort != null) {
             String serviceID = service.getName();
-            if(wsdlPort.isProvider()){
-                generateProviderImplClass(project, targetFolder, targetName, wsdlService, wsdlPort, serviceID);
-            }else{
+            if (wsdlPort.isProvider()/*from customization*/ || service.isUseProvider() /*from ws creation wizard*/) {
+                generateProviderImplClass(project, targetFolder, null, targetName, wsdlService, wsdlPort, serviceID);
+            } else {
                 generateJaxWsImplClass(project, targetFolder, targetName, null, wsdlService, wsdlPort, false, serviceID);
             }
         }
     }
-    
+
     /** This method is called from Create Web Service from WSDL wizard
      */
-    public static void generateJaxWsImplementationClass(Project project, FileObject targetFolder, String targetName, URL wsdlURL, WsdlService service, WsdlPort port) throws Exception {
-        generateJaxWsImplClass(project, targetFolder, targetName, wsdlURL, service, port, true, null);
+    public static void generateJaxWsImplementationClass(Project project, FileObject targetFolder, String targetName, URL wsdlURL, WsdlService service, WsdlPort port, boolean useProvider) throws Exception {
+        if (useProvider) {
+            generateJaxWsProvider(project, targetFolder, targetName, wsdlURL, service, port);
+        } else {
+            generateJaxWsImplClass(project, targetFolder, targetName, wsdlURL, service, port, true, null);
+        }
     }
-    
     /** This method is called from Create Web Service from WSDL wizard
      */
     public static void generateJaxWsArtifacts(Project project, FileObject targetFolder, String targetName, URL wsdlURL, String service, String port) throws Exception {
         initProjectInfo(project);
         JAXWSSupport jaxWsSupport = JAXWSSupport.getJAXWSSupport(project.getProjectDirectory());
-        String artifactsPckg =  "service."+targetName.toLowerCase(); //NOI18N
+        String artifactsPckg = "service." + targetName.toLowerCase(); //NOI18N
         ClassPath classPath = ClassPath.getClassPath(targetFolder, ClassPath.SOURCE);
         String serviceImplPath = classPath.getResourceName(targetFolder, '.', false);
-        jaxWsSupport.addService(targetName, serviceImplPath+"."+targetName, wsdlURL.toExternalForm(), service, port, artifactsPckg, jaxWsInJ2ee14Supported || (jsr109Supported && Util.isJavaEE5orHigher(project)));
+        jaxWsSupport.addService(targetName, serviceImplPath + "." + targetName, wsdlURL.toExternalForm(), service, port, artifactsPckg, jaxWsInJ2ee14Supported || (jsr109Supported && Util.isJavaEE5orHigher(project)), false);
     }
-    
-    
-    public static void generateProviderImplClass(Project project, FileObject targetFolder,
-            String targetName, final WsdlService service, final WsdlPort port, String serviceID) throws Exception{
-        
+
+    public static void generateProviderImplClass(Project project, FileObject targetFolder, FileObject implClass,
+            String targetName, final WsdlService service, final WsdlPort port, String serviceID) throws Exception {
         JAXWSSupport jaxWsSupport = JAXWSSupport.getJAXWSSupport(project.getProjectDirectory());
-        
-        FileObject implClassFo = GenerationUtils.createClass(targetFolder, targetName, null);
-        implClassFo.setAttribute("jax-ws-service", Boolean.TRUE);
-        implClassFo.setAttribute("jax-ws-service-provider", Boolean.TRUE);
-        DataObject.find(implClassFo).setValid(false);
-        
+        FileObject implClassFo = implClass;
+        if (implClassFo == null) {
+            implClassFo = GenerationUtils.createClass(targetFolder, targetName, null);
+            implClassFo.setAttribute("jax-ws-service", Boolean.TRUE);
+            implClassFo.setAttribute("jax-ws-service-provider", Boolean.TRUE);
+            DataObject.find(implClassFo).setValid(false);
+        }
         final String wsdlLocation = jaxWsSupport.getWsdlLocation(serviceID);
         JavaSource targetSource = JavaSource.forFileObject(implClassFo);
         CancellableTask<WorkingCopy> task = new CancellableTask<WorkingCopy>() {
-            
+
             public void run(WorkingCopy workingCopy) throws java.io.IOException {
                 workingCopy.toPhase(Phase.RESOLVED);
                 ClassTree javaClass = SourceUtils.getPublicTopLevelTree(workingCopy);
-                if (javaClass!=null) {
+                if (javaClass != null) {
                     TreeMaker make = workingCopy.getTreeMaker();
                     GenerationUtils genUtils = GenerationUtils.newInstance(workingCopy);
-                    
+
                     // add implementation clause
                     ExpressionTree implClause = make.Identifier("javax.xml.ws.Provider<javax.xml.transform.Source>"); //NOI18N
                     ClassTree modifiedClass = make.addClassImplementsClause(javaClass, implClause);
-                    
+
                     // add @Stateless annotation
                     if (projectType == EJB_PROJECT_TYPE) {//EJB project
                         TypeElement StatelessAn = workingCopy.getElements().getTypeElement("javax.ejb.Stateless"); //NOI18N
                         AnnotationTree StatelessAnnotation = make.Annotation(
                                 make.QualIdent(StatelessAn),
-                                Collections.<ExpressionTree>emptyList()
-                                );
+                                Collections.<ExpressionTree>emptyList());
                         modifiedClass = genUtils.addAnnotation(modifiedClass, StatelessAnnotation);
                     }
                     TypeElement serviceModeAn = workingCopy.getElements().getTypeElement("javax.xml.ws.ServiceMode"); //NOI18N
@@ -223,10 +225,9 @@ public class JaxWsUtils {
                             make.Assignment(make.Identifier("value"), idTree));
                     AnnotationTree serviceModeAnnotation = make.Annotation(
                             make.QualIdent(serviceModeAn),
-                            attrs
-                            );
+                            attrs);
                     modifiedClass = genUtils.addAnnotation(modifiedClass, serviceModeAnnotation);
-                    
+
                     TypeElement wsProviderAn = workingCopy.getElements().getTypeElement("javax.xml.ws.WebServiceProvider"); //NOI18N
                     attrs = new ArrayList<ExpressionTree>();
                     attrs.add(
@@ -237,20 +238,18 @@ public class JaxWsUtils {
                             make.Assignment(make.Identifier("targetNamespace"), make.Literal(port.getNamespaceURI()))); //NOI18N
                     attrs.add(
                             make.Assignment(make.Identifier("wsdlLocation"), make.Literal(wsdlLocation))); //NOI18N
-                    
+
                     AnnotationTree providerAnnotation = make.Annotation(
                             make.QualIdent(wsProviderAn),
-                            attrs
-                            );
+                            attrs);
                     modifiedClass = genUtils.addAnnotation(modifiedClass, providerAnnotation);
-                    
-                    String type= "javax.xml.transform.Source";
+
+                    String type = "javax.xml.transform.Source";
                     List<VariableTree> params = new ArrayList<VariableTree>();
                     params.add(make.Variable(
                             make.Modifiers(
                             Collections.<Modifier>emptySet(),
-                            Collections.<AnnotationTree>emptyList()
-                            ),
+                            Collections.<AnnotationTree>emptyList()),
                             "source", // name
                             make.Identifier(type), // parameter type
                             null // initializer - does not make sense in parameters.
@@ -258,8 +257,7 @@ public class JaxWsUtils {
                     // create method
                     ModifiersTree methodModifiers = make.Modifiers(
                             Collections.<Modifier>singleton(Modifier.PUBLIC),
-                            Collections.<AnnotationTree>emptyList()
-                            );
+                            Collections.<AnnotationTree>emptyList());
                     MethodTree method = make.Method(
                             methodModifiers, // public
                             "invoke", // operation name
@@ -270,28 +268,29 @@ public class JaxWsUtils {
                             "{ //TODO implement this method\nthrow new UnsupportedOperationException(\"Not implemented yet.\") }", // body text
                             null // default value - not applicable here, used by annotations
                             );
-                    
-                    modifiedClass =  make.addClassMember(modifiedClass, method);
+
+                    modifiedClass = make.addClassMember(modifiedClass, method);
                     workingCopy.rewrite(javaClass, modifiedClass);
                 }
             }
-            
+
             public void cancel() {
             }
         };
         targetSource.runModificationTask(task).commit();
         //open in editor
-        
+
         DataObject dobj = DataObject.find(implClassFo);
         List<Service> services = jaxWsSupport.getServices();
-        if (serviceID!=null) {
-            for (Service serv:services) {
+        if (serviceID != null) {
+            for (Service serv : services) {
                 if (serviceID.equals(serv.getName())) {
-                    
+
                     final EditCookie editCookie = dobj.getCookie(EditCookie.class);
-                    if (editCookie!=null) {
-                        RequestProcessor.getDefault().post(new Runnable(){
-                            public void run(){
+                    if (editCookie != null) {
+                        RequestProcessor.getDefault().post(new Runnable() {
+
+                            public void run() {
                                 editCookie.edit();
                             }
                         }, 1000);
@@ -301,6 +300,25 @@ public class JaxWsUtils {
             }
         }
     }
+
+    private static void generateJaxWsProvider(Project project, FileObject targetFolder, String targetName, URL wsdlURL, final WsdlService service, final WsdlPort port) throws Exception {
+        initProjectInfo(project);
+        JAXWSSupport jaxWsSupport = JAXWSSupport.getJAXWSSupport(project.getProjectDirectory());
+        String portJavaName = port.getJavaName();
+        String artifactsPckg = portJavaName.substring(0, portJavaName.lastIndexOf("."));
+        FileObject implClassFo = GenerationUtils.createClass(targetFolder, targetName, null);
+        implClassFo.setAttribute("jax-ws-service", Boolean.TRUE);
+        implClassFo.setAttribute("jax-ws-service-provider", Boolean.TRUE);
+        DataObject.find(implClassFo).setValid(false);
+        ClassPath classPath = ClassPath.getClassPath(implClassFo, ClassPath.SOURCE);
+        String serviceImplPath = classPath.getResourceName(implClassFo, '.', false);
+        String serviceID = jaxWsSupport.addService(targetName, serviceImplPath, wsdlURL.toString(), service.getName(),
+                port.getName(), artifactsPckg, jaxWsInJ2ee14Supported || (jsr109Supported && Util.isJavaEE5orHigher(project)), true);
+
+        generateProviderImplClass(project, targetFolder, implClassFo, targetName, service, port, serviceID);
+
+    }
+
     
     private static void generateJaxWsImplClass(Project project, FileObject targetFolder, String targetName, URL wsdlURL, final WsdlService service, final WsdlPort port, boolean addService, String serviceID) throws Exception {
         initProjectInfo(project);
@@ -319,7 +337,7 @@ public class JaxWsUtils {
         String portJavaName = port.getJavaName();
         String artifactsPckg = portJavaName.substring(0, portJavaName.lastIndexOf("."));
         if (addService) {
-            serviceID = jaxWsSupport.addService(targetName, serviceImplPath, wsdlURL.toString(), service.getName(), port.getName(), artifactsPckg, jaxWsInJ2ee14Supported || (jsr109Supported && Util.isJavaEE5orHigher(project)));
+            serviceID = jaxWsSupport.addService(targetName, serviceImplPath, wsdlURL.toString(), service.getName(), port.getName(), artifactsPckg, jaxWsInJ2ee14Supported || (jsr109Supported && Util.isJavaEE5orHigher(project)), false);
         }
         
         final String wsdlLocation = jaxWsSupport.getWsdlLocation(serviceID);

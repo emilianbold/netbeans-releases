@@ -96,9 +96,18 @@ final class GemRunner {
         return install(gemNames, rdoc, ri, includeDeps, version, null, null);
     }
 
+    boolean installLocal(File gem, boolean rdoc, boolean ri) {
+        return installLocal(gem, rdoc, ri, null, null);
+    }
+
     boolean installAsynchronously(List<String> gemNames, boolean rdoc, boolean ri,
             boolean includeDeps, String version, Runnable asyncCompletionTask, Component parent) {
         return install(gemNames, rdoc, ri, includeDeps, version, asyncCompletionTask, parent);
+    }
+
+    boolean installLocalAsynchronously(File gem, boolean rdoc, boolean ri,
+            Runnable asyncCompletionTask, Component parent) {
+        return installLocal(gem, rdoc, ri, asyncCompletionTask, parent);
     }
 
     boolean update(final List<String> gemNames, boolean rdoc, boolean ri) {
@@ -149,6 +158,38 @@ final class GemRunner {
             argList.add("> 0"); // NOI18N
         }
         
+        String[] args = argList.toArray(new String[argList.size()]);
+
+        String gemCmd = "install"; // NOI18N
+        if (asyncCompletionTask != null) {
+            String title = NbBundle.getMessage(GemManager.class, "Installation");
+            String success = NbBundle.getMessage(GemManager.class, "InstallationOk");
+            String failure = NbBundle.getMessage(GemManager.class, "InstallationFailed");
+            asynchGemRunner(parent, title, success, failure, asyncCompletionTask, gemCmd, args);
+            return false;
+        } else {
+            return gemRunner(gemCmd, null, null, args);
+        }
+    }
+
+    private boolean installLocal(final File gem, boolean rdoc,
+            boolean ri, Runnable asyncCompletionTask, Component parent) {
+        List<String> argList = new ArrayList<String>();
+
+        argList.add(gem.getAbsolutePath());
+
+        //argList.add("--verbose"); // NOI18N
+        if (!rdoc) {
+            argList.add("--no-rdoc"); // NOI18N
+        }
+        
+        if (!ri) {
+            argList.add("--no-ri"); // NOI18N
+        }
+        
+        // XXX make customizable
+        argList.add("--ignore-dependencies"); // NOI18N
+
         String[] args = argList.toArray(new String[argList.size()]);
 
         String gemCmd = "install"; // NOI18N

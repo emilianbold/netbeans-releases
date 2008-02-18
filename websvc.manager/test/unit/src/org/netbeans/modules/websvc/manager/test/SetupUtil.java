@@ -77,11 +77,8 @@ public class SetupUtil {
         String workDirByOS = 
                 System.getProperty("os.name").startsWith("Windows") ? WORKDIR_SPACES : WORKDIR;
         
-        File websvcHome = new File(workingDir, workDirByOS);
+        File websvcHome = new File(WebServiceManager.WEBSVC_HOME);
         data.setWebsvcHome(websvcHome);
-        
-        WebServiceDescriptor.WEBSVC_HOME = websvcHome.getAbsolutePath();
-        WebServiceManager.WEBSVC_HOME = websvcHome.getAbsolutePath();
         
         File websvcUserDir = new File(WebServiceManager.WEBSVC_HOME);
         websvcUserDir.mkdirs();

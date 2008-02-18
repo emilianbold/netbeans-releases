@@ -38,61 +38,102 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.cnd.makeproject.api.configurations.ui;
 
-import java.util.Vector;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Set;
+import org.netbeans.modules.cnd.makeproject.api.configurations.CustomizerNodeProvider;
+import org.openide.util.Lookup;
 
 public class CustomizerRootNodeProvider {
+
     private static CustomizerRootNodeProvider instance = null;
-    private Vector customizerNodes = null;
+    private ArrayList<CustomizerNode> customizerNodes = null;
 
     public static CustomizerRootNodeProvider getInstance() {
-	if (instance == null)
-	    instance = new CustomizerRootNodeProvider();
-	return instance;
+        if (instance == null) {
+            instance = new CustomizerRootNodeProvider();
+        }
+        return instance;
     }
 
-    public Vector getCustomizerNodes() {
-	if (customizerNodes == null) {
-	    customizerNodes = new Vector();
-	}
-	return customizerNodes;
+    private List<CustomizerNode> getCustomizerNodesRegisteredOldStyle() {
+        if (customizerNodes == null) {
+            customizerNodes = new ArrayList();
+        }
+        return customizerNodes;
     }
-    
-    public Vector getCustomizerNodes(boolean advanced) {
-        Vector ret = new Vector();
-        CustomizerNode[] nodes = getCustomizerNodesAsArray();
-        for (int i = 0; i < nodes.length; i++) {
-            if (nodes[i].advanced == advanced)
-                ret.add(nodes[i]);
+
+    public List<CustomizerNode> getCustomizerNodes(boolean advanced) {
+        ArrayList<CustomizerNode> ret = new ArrayList<CustomizerNode>();
+        List<CustomizerNode> nodes = getCustomizerNodes();
+        for (CustomizerNode n : nodes) {
+            if (n.advanced == advanced) {
+                ret.add(n);
+            }
         }
         return ret;
     }
 
-    public CustomizerNode[] getCustomizerNodesAsArray() {
-	Vector cn = getCustomizerNodes();
-	return (CustomizerNode[]) cn.toArray(new CustomizerNode[cn.size()]);
+    public synchronized List<CustomizerNode> getCustomizerNodes() {
+        ArrayList<CustomizerNode> list = new ArrayList<CustomizerNode>();
+        // Add nodes from providers registerd old-style
+        list.addAll(getCustomizerNodesRegisteredOldStyle());
+        // Add nodes from providers register via services
+        for (CustomizerNodeProvider provider : getCustomizerNodeProviders()) {
+            list.add(provider.factoryCreate());
+        }
+        return list;
     }
-    
+
     public CustomizerNode getCustomizerNode(String id) {
-        CustomizerNode[] nodes = getCustomizerNodesAsArray();
-        for (int i = 0; i < nodes.length; i++) {
-            if (nodes[i].name.equals(id))
-                return nodes[i];
+        List<CustomizerNode> nodes = getCustomizerNodes();
+        for (CustomizerNode n : nodes) {
+            if (n.name.equals(id)) {
+                return n;
+            }
         }
         return null;
     }
     
-    public void addCustomizerNode(CustomizerNode node) {
-	synchronized(getCustomizerNodes()) {
-	    getCustomizerNodes().add(node);
-	}
+    public List<CustomizerNode> getCustomizerNodes(String id) {
+        ArrayList<CustomizerNode> list = new ArrayList<CustomizerNode>();
+        List<CustomizerNode> nodes = getCustomizerNodes();
+        for (CustomizerNode n : nodes) {
+            if (n.name.equals(id)) {
+                list.add(n);
+            }
+        }
+        return list;
     }
 
-    public void removeCustomizerNode(CustomizerNode node) {
-	synchronized(getCustomizerNodes()) {
-	    getCustomizerNodes().remove(node);
-	}
+    public synchronized void addCustomizerNode(CustomizerNode node) {
+        getCustomizerNodesRegisteredOldStyle().add(node);
+    }
+
+    public synchronized void removeCustomizerNode(CustomizerNode node) {
+        getCustomizerNodesRegisteredOldStyle().remove(node);
+    }
+
+    /*
+     * Get list (dynamic) registered via services
+     */
+    private static Set<CustomizerNodeProvider> getCustomizerNodeProviders() {
+        HashSet providers = new HashSet();
+        Lookup.Template template = new Lookup.Template(CustomizerNodeProvider.class);
+        Lookup.Result result = Lookup.getDefault().lookup(template);
+        Collection collection = result.allInstances();
+        Iterator iterator = collection.iterator();
+        while (iterator.hasNext()) {
+            Object caop = iterator.next();
+            if (caop instanceof CustomizerNodeProvider) {
+                providers.add(caop);
+            }
+        }
+        return providers;
     }
 }

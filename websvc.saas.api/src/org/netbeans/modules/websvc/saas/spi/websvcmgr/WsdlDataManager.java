@@ -68,12 +68,12 @@ public interface WsdlDataManager {
     WsdlData getWsdlData(String wsdlUrl, String serviceName, boolean synchronuous);
     
     /**
-     * Add the WSDL data for given WSDL URL from persistence
+     * Asynchronously add the WSDL data for given WSDL URL from persistence.
      * @param wsdlUrl
      * @param packageName
+     * @return a wsdl data object, would not be in ready state, so attach a listener.
      */
-  
-    void addWsdlData(String wsdlUrl, String packageName);
+    WsdlData addWsdlData(String wsdlUrl, String packageName);
 
     /**
      * Remove the WSDL data for given WSDL URL from persistence.
