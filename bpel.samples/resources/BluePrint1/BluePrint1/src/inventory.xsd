@@ -39,7 +39,7 @@
         <xs:complexType  name="inventoryType">
             <xs:sequence>
                 <xs:element name="inventoryStatus" type="xs:boolean"/>
-                <xs:element name="inventoryStatusMessage" type="xs:string" />
+                <xs:element name="inventoryStatusMessage" type="xs:string"/>
             </xs:sequence>
         </xs:complexType>
 </xs:schema>
