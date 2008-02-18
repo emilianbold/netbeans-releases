@@ -414,12 +414,12 @@ public class PaletteTest extends RestNodeTest {
         eo.pushKey(KeyEvent.VK_PAGE_DOWN);
         eo.select(begin, eo.getLineNumber() - 2);
         eo.pushKey(KeyEvent.VK_DELETE);
-        if (eo.contains("import java.util.List")) {
-            eo.select("import java.util.List");
+        if (eo.contains("import java.util.List")) { //NOI18N
+            eo.select("import java.util.List"); //NOI18N
             eo.deleteLine(eo.getLineNumber());
         }
-        while (eo.contains("import com.")) {
-            eo.select("import com.");
+        while (eo.contains("import com.")) { //NOI18N
+            eo.select("import com."); //NOI18N
             eo.deleteLine(eo.getLineNumber());
         }
         eo.close(true);
