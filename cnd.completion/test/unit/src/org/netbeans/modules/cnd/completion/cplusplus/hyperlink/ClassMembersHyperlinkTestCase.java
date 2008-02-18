@@ -172,6 +172,10 @@ public class ClassMembersHyperlinkTestCase extends HyperlinkBaseTestCase {
         performTest("ClassA.cc", 69, 30, "ClassA.h", 33, 5); // /*static*/ void ClassA::privateFooSt()
     }
     
+    public void testInitList() throws Exception {
+        performTest("ClassA.cc", 8, 25, "ClassA.h", 46, 5); // privateMemberInt in "ClassA::ClassA() : privateMemberInt(1)"
+    }
+    
     public void testConstructors() throws Exception {
         // declaration do definition
         performTest("ClassA.h", 7, 10, "ClassA.cc", 8, 1); // public ClassA();
