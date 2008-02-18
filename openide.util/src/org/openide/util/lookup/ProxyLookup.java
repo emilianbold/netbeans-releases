@@ -41,8 +41,6 @@
 
 package org.openide.util.lookup;
 
-import java.io.PrintWriter;
-import java.io.StringWriter;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
@@ -60,7 +58,6 @@ import javax.swing.event.EventListenerList;
 import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
-import org.openide.util.Utilities;
 
 /** Implementation of lookup that can delegate to others.
  *
@@ -78,7 +75,7 @@ public class ProxyLookup extends Lookup {
      * @param lookups the initial delegates
      */
     public ProxyLookup(Lookup... lookups) {
-        data = ImmutableInternalData.create(this, lookups);
+        data = ImmutableInternalData.create(this).setLookupsNoFire(lookups, true);
     }
 
     /**
@@ -92,7 +89,7 @@ public class ProxyLookup extends Lookup {
 
     @Override
     public String toString() {
-        return "ProxyLookup(class=" + getClass() + ")->" + Arrays.asList(data.getLookups(false)); // NOI18N
+        return "ProxyLookup(class=" + getClass() + ")->" + Arrays.asList(getData().getLookups(false)); // NOI18N
     }
 
     /** Getter for the delegates.
@@ -101,7 +98,7 @@ public class ProxyLookup extends Lookup {
     */
     protected final Lookup[] getLookups() {
         synchronized (ProxyLookup.this) {
-            return data.getLookups(true);
+            return getData().getLookups(true);
         }
     }
 
@@ -131,8 +128,8 @@ public class ProxyLookup extends Lookup {
         ImmutableInternalData orig;
         synchronized (ProxyLookup.this) {
             orig = getData();
-            ImmutableInternalData newData = data.setLookupsNoFire(lookups);
-            if (newData == data) {
+            ImmutableInternalData newData = getData().setLookupsNoFire(lookups, false);
+            if (newData == getData()) {
                 return;
             }
             arr = setData(newData, lookups, toAdd, toRemove);
@@ -182,7 +179,7 @@ public class ProxyLookup extends Lookup {
 
         Lookup[] tmpLkps;
         synchronized (ProxyLookup.this) {
-            tmpLkps = data.getLookups(false);
+            tmpLkps = getData().getLookups(false);
         }
 
         for (int i = 0; i < tmpLkps.length; i++) {
@@ -202,7 +199,7 @@ public class ProxyLookup extends Lookup {
 
         Lookup[] tmpLkps; 
         synchronized (ProxyLookup.this) {
-            tmpLkps = data.getLookups(false);
+            tmpLkps = getData().getLookups(false);
         }
 
         for (int i = 0; i < tmpLkps.length; i++) {
@@ -224,8 +221,8 @@ public class ProxyLookup extends Lookup {
     public final <T> Result<T> lookup(Lookup.Template<T> template) {
         synchronized (ProxyLookup.this) {
             ImmutableInternalData[] res = { null };
-            R<T> newR = data.findResult(this, res, template);
-            setData(res[0], data.getLookups(false), null, null);
+            R<T> newR = getData().findResult(this, res, template);
+            setData(res[0], getData().getLookups(false), null, null);
             return newR;
         }
     }
@@ -238,11 +235,12 @@ public class ProxyLookup extends Lookup {
             if (id == null) {
                 return;
             }
-            setData(id.removeTemplate(this, template), data.getLookups(false), null, null);
+            setData(id.removeTemplate(this, template), getData().getLookups(false), null, null);
         }
     }
 
     private ImmutableInternalData getData() {
+        assert Thread.holdsLock(this);
         return data;
     }
 
@@ -253,14 +251,14 @@ public class ProxyLookup extends Lookup {
         assert Thread.holdsLock(ProxyLookup.this);
         assert newData != null;
         
-        ImmutableInternalData previous = this.data;
+        ImmutableInternalData previous = this.getData();
         
         if (previous == newData) {
             return Collections.emptyList();
         }
 
         if (newData.isEmpty()) {
-            this.data = newData;
+            this.setData(newData);
             // no affected results => exit
             return Collections.emptyList();
         }
@@ -277,25 +275,25 @@ public class ProxyLookup extends Lookup {
             R<?> r = ref.get();
             if (r != null) {
                 r.lookupChange(newData, current, previous, newL, removed, toAdd, toRemove);
-                if (this.data != previous) {
+                if (this.getData() != previous) {
                     // the data were changed by an re-entrant call
                     // skip any other change processing, as it is not needed
                     // anymore
-                    assert r.data == this.data;
-                    return Collections.emptyList();
                 }
             }
         }
-        
-        assert this.data == previous;
-        for (Reference<R> ref : arr) {
+                for (Reference<R> ref : arr) {
             R<?> r = ref.get();
             if (r != null) {
                 r.data = newData;
             }
         }
-        this.data = newData;
+        this.setData(newData);
         return arr;
+    }
+
+    private void setData(ImmutableInternalData data) {
+        this.data = data;
     }
 
     /** Result of a lookup request. Allows access to single object
@@ -754,18 +752,13 @@ public class ProxyLookup extends Lookup {
         /** map of templates to currently active results */
         private final Map<Template<?>,Reference<R>> results;
         private final ProxyLookup proxy;
-        private final Exception creation = new Exception("ImmutableInternalData");
-        private final ImmutableInternalData current;
-        private static int counter;
-        private final int cnt = ++counter;
 
         public ImmutableInternalData(ProxyLookup proxy, Object lookups, Map<Template<?>, Reference<ProxyLookup.R>> results) {
             this.results = results;
             this.proxy = proxy;
             this.lookups = lookups;
-            this.current = proxy.data;
         }
-        
+  /*      
         @Override
         public String toString() {
             Object l = this.lookups;
@@ -786,7 +779,7 @@ public class ProxyLookup extends Lookup {
             creation.printStackTrace(new PrintWriter(s));
             return s.toString();
         }
-
+*/
         final Collection<Reference<R>> references() {
             return results.values();
         }
@@ -806,8 +799,8 @@ public class ProxyLookup extends Lookup {
             }
         }
         
-        static ImmutableInternalData create(ProxyLookup proxy, Lookup[] lookups) {
-            return new ImmutableInternalData(proxy, lookups, Collections.<Template<?>,Reference<ProxyLookup.R>>emptyMap());
+        static ImmutableInternalData create(ProxyLookup proxy) {
+            return new ImmutableInternalData(proxy, EMPTY_ARR, Collections.<Template<?>,Reference<ProxyLookup.R>>emptyMap());
         }
 
 
@@ -832,28 +825,30 @@ public class ProxyLookup extends Lookup {
         }
 
         final ProxyLookup proxy() {
-            assert proxy.data == this : proxy.data.cnt + " != " + this.cnt;
+            assert proxy.data == this : proxy.data + " != " + this;
             return proxy;
         }
 
-        final ImmutableInternalData setLookupsNoFire(Lookup[] lookups) {
+        final ImmutableInternalData setLookupsNoFire(Lookup[] lookups, boolean skipCheck) {
             Object l;
             
-            Lookup[] previous = getLookups(false);
-            if (previous == lookups) {
-                return this;
-            }
-            
-            if (previous.length == lookups.length) {
-                int same = 0;
-                for (int i = 0; i < previous.length; i++) {
-                    if (lookups[i] != previous[i]) {
-                        break;
-                    }
-                    same++;
-                }
-                if (same == previous.length) {
+            if (!skipCheck) {
+                Lookup[] previous = getLookups(false);
+                if (previous == lookups) {
                     return this;
+                }
+            
+                if (previous.length == lookups.length) {
+                    int same = 0;
+                    for (int i = 0; i < previous.length; i++) {
+                        if (lookups[i] != previous[i]) {
+                            break;
+                        }
+                        same++;
+                    }
+                    if (same == previous.length) {
+                        return this;
+                    }
                 }
             }
             

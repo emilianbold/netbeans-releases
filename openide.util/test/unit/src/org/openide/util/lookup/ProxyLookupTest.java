@@ -217,9 +217,9 @@ implements AbstractLookupBaseHid.Impl {
      */
     private void doProxyLookupTemplateCaching(Lookup[] lookups, boolean reget) {
         // Create MyProxyLookup with one lookup containing the String object
-        InstanceContent ic = new InstanceContent();
-        ic.add(new String("Hello World")); //NOI18N
-        lookups[0] = new AbstractLookup(ic);
+        InstanceContent inst = new InstanceContent();
+        inst.add(new String("Hello World")); //NOI18N
+        lookups[0] = new AbstractLookup(inst);
         ProxyLookup proxy = new ProxyLookup(lookups);
         if (reget) {
             lookups = proxy.getLookups();
