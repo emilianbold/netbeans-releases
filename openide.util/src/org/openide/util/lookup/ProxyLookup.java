@@ -745,69 +745,47 @@ public class ProxyLookup extends Lookup {
     } // end of WeakResult
     
     
-    private static final class ImmutableInternalData extends Object {
-        /** lookups to delegate to (either Lookup or array of Lookups) */
-        private final Object lookups;
-
-        /** map of templates to currently active results */
-        private final Map<Template<?>,Reference<R>> results;
+    private static abstract class ImmutableInternalData extends Object {
         private final ProxyLookup proxy;
 
-        public ImmutableInternalData(ProxyLookup proxy, Object lookups, Map<Template<?>, Reference<ProxyLookup.R>> results) {
-            this.results = results;
+        public ImmutableInternalData(ProxyLookup proxy) {
             this.proxy = proxy;
-            this.lookups = lookups;
         }
-  /*      
-        @Override
-        public String toString() {
-            Object l = this.lookups;
-            if (l instanceof Lookup) {
-                l = new Lookup[] { (Lookup)l };
-            } else {
-                Lookup[] arr = (Lookup[])l;
-                l = arr;
-            }
-            StringWriter s = new StringWriter();
-            s.write(super.toString() + " cnt: " + cnt);
-            s.write("current when creation: " + current.cnt);
-            s.write("\nResult:\n");
-            s.write(results.toString());
-            s.write("\nlookups:\n");
-            s.write(Arrays.toString((Object[])l));
-            s.write("\n");
-            creation.printStackTrace(new PrintWriter(s));
-            return s.toString();
-        }
-*/
+
+        protected abstract boolean isEmpty();
+        protected abstract Map<Template<?>, Reference<R>> getResults();
+        protected abstract Object getRawLookups();
+
         final Collection<Reference<R>> references() {
-            return results.values();
+            return getResults().values();
         }
         
         final <T> ImmutableInternalData removeTemplate(ProxyLookup proxy, Template<T> template) {
-            if (results.containsKey(template)) {
-                HashMap<Template<?>,Reference<R>> c = new HashMap<Lookup.Template<?>, Reference<ProxyLookup.R>>(results);
+            if (getResults().containsKey(template)) {
+                HashMap<Template<?>,Reference<R>> c = new HashMap<Lookup.Template<?>, Reference<ProxyLookup.R>>(getResults());
                 Reference<R> ref = c.remove(template);
                 if (ref != null && ref.get() != null) {
                     // seems like there is a reference to a result for this template
                     // thta is still alive
                     return this;
                 }
-                return new ImmutableInternalData(proxy, lookups, c);
+                return new RealInternalData(proxy, getRawLookups(), c);
             } else {
                 return this;
             }
         }
         
         static ImmutableInternalData create(ProxyLookup proxy) {
-            return new ImmutableInternalData(proxy, EMPTY_ARR, Collections.<Template<?>,Reference<ProxyLookup.R>>emptyMap());
+            return new EmptyInternalData(proxy);
         }
 
 
         <T> R<T> findResult(ProxyLookup proxy, ImmutableInternalData[] newData, Template<T> template) {
             assert Thread.holdsLock(proxy);
             
-            Reference<R> ref = results.get(template);
+            Map<Template<?>,Reference<R>> map = getResults();
+            
+            Reference<R> ref = map.get(template);
             R r = (ref == null) ? null : ref.get();
 
             if (r != null) {
@@ -816,9 +794,9 @@ public class ProxyLookup extends Lookup {
             }
             
             HashMap<Template<?>, Reference<R>> res;
-            res = new HashMap<Template<?>, Reference<R>>(results);
+            res = new HashMap<Template<?>, Reference<R>>(map);
             
-            newData[0] = new ImmutableInternalData(proxy, lookups, res);
+            newData[0] = new RealInternalData(proxy, getRawLookups(), res);
             R<T> newR = new R<T>(newData[0], template);
             res.put(template, new java.lang.ref.SoftReference<R>(newR));
             return newR;
@@ -862,11 +840,16 @@ public class ProxyLookup extends Lookup {
                     l = lookups.clone();
                 }
             }
-            return new ImmutableInternalData(proxy, l, results);
+            
+            if (isEmpty() && l == EMPTY_ARR) {
+                return this;
+            }
+            
+            return new RealInternalData(proxy, l, getResults());
         }
         final Lookup[] getLookups(boolean clone) {
             assert Thread.holdsLock(proxy());
-            Object l = this.lookups;
+            Object l = this.getRawLookups();
             if (l instanceof Lookup) {
                 return new Lookup[] { (Lookup)l };
             } else {
@@ -881,9 +864,52 @@ public class ProxyLookup extends Lookup {
             return Arrays.asList(getLookups(false));            
         }
 
-        private boolean isEmpty() {
-            return (Object)results == (Object)Collections.emptyMap();
+    } // end of ImmutableInternalData
+    
+    private static final class RealInternalData extends ImmutableInternalData {
+        /** lookups to delegate to (either Lookup or array of Lookups) */
+        private final Object lookups;
+
+        /** map of templates to currently active results */
+        private final Map<Template<?>,Reference<R>> results;
+
+        public RealInternalData(ProxyLookup proxy, Object lookups, Map<Template<?>, Reference<ProxyLookup.R>> results) {
+            super(proxy);
+            this.results = results;
+            this.lookups = lookups;
         }
 
+        protected final boolean isEmpty() {
+            return false;
+        }
+
+        protected Map<Template<?>, Reference<R>> getResults() {
+            boolean strict = false;
+            assert strict = true;
+            return strict ? Collections.unmodifiableMap(results) : results;
+        }
+        
+        protected Object getRawLookups() {
+            return lookups;
+        }
     }
+    
+    private static final class EmptyInternalData extends ImmutableInternalData {
+        public EmptyInternalData(ProxyLookup proxy) {
+            super(proxy);
+        }
+
+        protected final boolean isEmpty() {
+            return true;
+        }
+
+        protected Map<Template<?>, Reference<R>> getResults() {
+            return Collections.emptyMap();
+        }
+
+        @Override
+        protected Object getRawLookups() {
+            return EMPTY_ARR;
+        }
+    } // end of EmptyInternalData
 }
