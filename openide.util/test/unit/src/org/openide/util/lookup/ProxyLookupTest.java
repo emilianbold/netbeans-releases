@@ -90,7 +90,8 @@ implements AbstractLookupBaseHid.Impl {
 
         final Lookup.Template<Object> template = new Lookup.Template<Object>(Object.class);
         final Object[] IGNORE = {
-            ProxyLookup.EMPTY_ARR,
+            ProxyLookup.ImmutableInternalData.EMPTY,
+            ProxyLookup.ImmutableInternalData.EMPTY_ARR,
             Utilities.activeReferenceQueue(),
             Collections.emptyMap(),
             Collections.emptyList(),

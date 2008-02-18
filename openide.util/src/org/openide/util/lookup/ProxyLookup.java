@@ -65,9 +65,6 @@ import org.openide.util.LookupListener;
  * @since 1.9
  */
 public class ProxyLookup extends Lookup {
-    /** empty array of lookups for potential use */
-    static final Lookup[] EMPTY_ARR = new Lookup[0];
-
     /** data representing the state of the lookup */
     private ImmutableInternalData data;
 
@@ -75,7 +72,7 @@ public class ProxyLookup extends Lookup {
      * @param lookups the initial delegates
      */
     public ProxyLookup(Lookup... lookups) {
-        data = ImmutableInternalData.create(this).setLookupsNoFire(lookups, true);
+        data = ImmutableInternalData.EMPTY.setLookupsNoFire(lookups, true);
     }
 
     /**
@@ -84,7 +81,7 @@ public class ProxyLookup extends Lookup {
      * @since 3.27
      */
     protected ProxyLookup() {
-        this(EMPTY_ARR);
+        data = ImmutableInternalData.EMPTY;
     }
 
     @Override
@@ -313,18 +310,21 @@ public class ProxyLookup extends Lookup {
         /** weak listener & result */
         private final WeakResult<T> weakL;
         
+        /** associated lookup */
+        private final ProxyLookup proxy;
         private ImmutableInternalData data;
 
         /** Constructor.
          */
-        public R(ImmutableInternalData data, Lookup.Template<T> t) {
+        public R(ProxyLookup proxy, ImmutableInternalData data, Lookup.Template<T> t) {
             this.template = t;
             this.weakL = new WeakResult<T>(this);
+            this.proxy = proxy;
             this.data = data;
         }
         
         private ProxyLookup proxy() {
-            return data.proxy();
+            return proxy;
         }
 
         /** When garbage collected, remove the template from the has map.
@@ -745,11 +745,12 @@ public class ProxyLookup extends Lookup {
     } // end of WeakResult
     
     
-    private static abstract class ImmutableInternalData extends Object {
-        private final ProxyLookup proxy;
+    static abstract class ImmutableInternalData extends Object {
+        static final ImmutableInternalData EMPTY = new EmptyInternalData();
+        static final Lookup[] EMPTY_ARR = new Lookup[0];
 
-        public ImmutableInternalData(ProxyLookup proxy) {
-            this.proxy = proxy;
+        
+        protected ImmutableInternalData() {
         }
 
         protected abstract boolean isEmpty();
@@ -769,17 +770,12 @@ public class ProxyLookup extends Lookup {
                     // thta is still alive
                     return this;
                 }
-                return new RealInternalData(proxy, getRawLookups(), c);
+                return new RealInternalData(getRawLookups(), c);
             } else {
                 return this;
             }
         }
         
-        static ImmutableInternalData create(ProxyLookup proxy) {
-            return new EmptyInternalData(proxy);
-        }
-
-
         <T> R<T> findResult(ProxyLookup proxy, ImmutableInternalData[] newData, Template<T> template) {
             assert Thread.holdsLock(proxy);
             
@@ -796,17 +792,11 @@ public class ProxyLookup extends Lookup {
             HashMap<Template<?>, Reference<R>> res;
             res = new HashMap<Template<?>, Reference<R>>(map);
             
-            newData[0] = new RealInternalData(proxy, getRawLookups(), res);
-            R<T> newR = new R<T>(newData[0], template);
+            newData[0] = new RealInternalData(getRawLookups(), res);
+            R<T> newR = new R<T>(proxy, newData[0], template);
             res.put(template, new java.lang.ref.SoftReference<R>(newR));
             return newR;
         }
-
-        final ProxyLookup proxy() {
-            assert proxy.data == this : proxy.data + " != " + this;
-            return proxy;
-        }
-
         final ImmutableInternalData setLookupsNoFire(Lookup[] lookups, boolean skipCheck) {
             Object l;
             
@@ -845,10 +835,9 @@ public class ProxyLookup extends Lookup {
                 return this;
             }
             
-            return new RealInternalData(proxy, l, getResults());
+            return new RealInternalData(l, getResults());
         }
         final Lookup[] getLookups(boolean clone) {
-            assert Thread.holdsLock(proxy());
             Object l = this.getRawLookups();
             if (l instanceof Lookup) {
                 return new Lookup[] { (Lookup)l };
@@ -873,8 +862,7 @@ public class ProxyLookup extends Lookup {
         /** map of templates to currently active results */
         private final Map<Template<?>,Reference<R>> results;
 
-        public RealInternalData(ProxyLookup proxy, Object lookups, Map<Template<?>, Reference<ProxyLookup.R>> results) {
-            super(proxy);
+        public RealInternalData(Object lookups, Map<Template<?>, Reference<ProxyLookup.R>> results) {
             this.results = results;
             this.lookups = lookups;
         }
@@ -895,8 +883,7 @@ public class ProxyLookup extends Lookup {
     }
     
     private static final class EmptyInternalData extends ImmutableInternalData {
-        public EmptyInternalData(ProxyLookup proxy) {
-            super(proxy);
+        EmptyInternalData() {
         }
 
         protected final boolean isEmpty() {
