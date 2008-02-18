@@ -25,8 +25,9 @@
                   <Component id="groupFilesScrollPane" pref="390" max="32767" attributes="1"/>
                   <Component id="groupsScrollPane" alignment="1" pref="390" max="32767" attributes="1"/>
               </Group>
-              <EmptySpace max="-2" attributes="0"/>
+              <EmptySpace min="-2" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" max="-2" attributes="0">
+                  <Component id="detectButton" max="32767" attributes="1"/>
                   <Component id="removeGroupButton" min="0" max="32767" attributes="1"/>
                   <Component id="editGroupButton" alignment="0" max="32767" attributes="1"/>
                   <Component id="addFileButton" alignment="1" max="32767" attributes="1"/>
@@ -59,7 +60,9 @@
                       <Component id="addFileButton" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="removeFileButton" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace min="-2" pref="146" max="-2" attributes="0"/>
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Component id="detectButton" min="-2" max="-2" attributes="0"/>
+                      <EmptySpace max="-2" attributes="0"/>
                   </Group>
                   <Component id="groupFilesScrollPane" pref="202" max="32767" attributes="2"/>
               </Group>
@@ -102,6 +105,7 @@
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
           <ResourceString bundle="org/netbeans/modules/spring/beans/ui/customizer/Bundle.properties" key="LBL_EditGroup" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
+        <Property name="enabled" type="boolean" value="false"/>
       </Properties>
       <Events>
         <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="editGroupButtonActionPerformed"/>
@@ -157,6 +161,17 @@
       </Properties>
       <Events>
         <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="removeFileButtonActionPerformed"/>
+      </Events>
+    </Component>
+    <Component class="javax.swing.JButton" name="detectButton">
+      <Properties>
+        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/spring/beans/ui/customizer/Bundle.properties" key="LBL_Autodetect" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+        <Property name="enabled" type="boolean" value="false"/>
+      </Properties>
+      <Events>
+        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="detectButtonActionPerformed"/>
       </Events>
     </Component>
   </SubComponents>

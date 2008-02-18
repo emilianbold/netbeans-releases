@@ -48,6 +48,7 @@ import org.netbeans.modules.spring.api.Action;
 import org.netbeans.modules.spring.api.beans.ConfigFileGroup;
 import org.netbeans.modules.spring.api.beans.SpringScope;
 import org.netbeans.modules.spring.beans.SpringScopeAccessor;
+import org.netbeans.modules.spring.beans.model.SpringConfigFileModelController.DocumentWrite;
 import org.netbeans.modules.spring.beans.model.SpringConfigModelController;
 import org.openide.filesystems.FileObject;
 
@@ -101,12 +102,12 @@ public final class SpringConfigModel {
     public static final class WriteContext {
 
         private final SpringBeans springBeans;
-        private final Document document;
+        private final DocumentWrite docWrite;
         private final File file;
 
-        public WriteContext(SpringBeans springBeans, File file, Document document) {
+        public WriteContext(SpringBeans springBeans, File file, DocumentWrite docWrite) {
             this.springBeans = springBeans;
-            this.document = document;
+            this.docWrite = docWrite;
             this.file = file;
         }
 
@@ -114,12 +115,16 @@ public final class SpringConfigModel {
             return springBeans;
         }
 
-        public Document getCurrentDocument() {
-            return document;
+        public Document getDocument() {
+            return docWrite.getDocument();
         }
 
-        public File getCurrentFile() {
+        public File getFile() {
             return file;
+        }
+
+        public void commit() throws IOException {
+            docWrite.commit();
         }
     }
 }

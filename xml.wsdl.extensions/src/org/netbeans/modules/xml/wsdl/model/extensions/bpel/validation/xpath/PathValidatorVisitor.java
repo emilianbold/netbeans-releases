@@ -97,7 +97,7 @@ public class PathValidatorVisitor extends XPathModelTracerVisitor {
             Set<GlobalType> lastStepTypes = getLastStepSchemaTypeSet(locationPath);
             if (lastStepTypes == null || lastStepTypes.isEmpty()) {
                 // Error. Can not resolve type of the last location path element.
-                myContext.addResultItem(ResultType.ERROR, "UNRESOLVED_XPATH_TAIL"); // NOI18N
+//vlv                myContext.addResultItem(ResultType.ERROR, "UNRESOLVED_XPATH_TAIL"); // NOI18N
                 return;
             } 
             if (lastStepTypes.size() == 1) {
@@ -228,9 +228,7 @@ public class PathValidatorVisitor extends XPathModelTracerVisitor {
                 // Error. A global type has to be specified for the last element (attribute)
                 // of the Location path.
                 String lastElementName = ((Named)sComp).getName();
-                myContext.addResultItem(ResultType.ERROR, 
-                        "QUERY_TAIL_NOT_GLOBAL_TYPE",
-                        lastElementName); // NOI18N
+//vlv                myContext.addResultItem(ResultType.ERROR, "QUERY_TAIL_NOT_GLOBAL_TYPE", lastElementName); // NOI18N
                 return null;
             } else {
                 return Collections.singleton(type);
@@ -255,9 +253,7 @@ public class PathValidatorVisitor extends XPathModelTracerVisitor {
                 // Error. The set of possible schema components for the tail 
                 // of location path doesn't contain any object with global type. 
                 String lastElementName = ((Named)sComp).getName();
-                myContext.addResultItem(ResultType.ERROR, 
-                        "QUERY_TAIL_NOT_GLOBAL_TYPE",
-                        lastElementName); // NOI18N
+//vlv                myContext.addResultItem(ResultType.ERROR, "QUERY_TAIL_NOT_GLOBAL_TYPE", lastElementName); // NOI18N
                 return null;
             } else if (!allTailsAreGlobal) {
                 // Error. The set of possible schema components for the tail 

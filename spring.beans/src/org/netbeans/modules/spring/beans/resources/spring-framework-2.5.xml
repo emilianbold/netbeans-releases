@@ -42,7 +42,7 @@ made subject to such option by the copyright holder.
 -->
 <!DOCTYPE library PUBLIC "-//NetBeans//DTD Library Declaration 1.0//EN" "http://www.netbeans.org/dtds/library-declaration-1_0.dtd">
 <library version="1.0">
-    <name>spring-framework-2.5</name>
+    <name>spring-framework</name>
     <type>j2se</type>
     <localizing-bundle>org.netbeans.modules.spring.beans.resources.Bundle</localizing-bundle>
     <volume>
@@ -56,5 +56,11 @@ made subject to such option by the copyright holder.
     </volume>
     <volume>
         <type>javadoc</type>
+    </volume>
+    <volume>
+        <!-- please check with mkleint@netbeans.org before/after updating this or "classpath" section -->
+        <type>maven-pom</type>
+        <resource>http://repo1.maven.org/maven2/org/springframework/spring/2.5/spring-2.5.pom</resource>
+        <resource>http://repo1.maven.org/maven2/org/springframework/spring-webmvc/2.5/spring-webmvc-2.5.pom</resource>
     </volume>
 </library>

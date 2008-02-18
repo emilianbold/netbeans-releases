@@ -732,28 +732,42 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
         Reference<Task> taskRef = url2CompileWithDepsTask.get(root);
         Task t = taskRef != null ? taskRef.get() : null;
         Collection<File> storedFiles;
-                
+        
         if (t == null || !t.cancel()) {
-            //the task either does not exist, or has been already started - create new one:
-            LOGGER.log(Level.FINE, "creating a new task for root: {0}", root.toExternalForm());
-            final Collection<File> storedFilesFin = storedFiles = new LinkedHashSet<File>();
-            t = WORKER.create(new Runnable() {
-                public void run() {
-                    synchronized (RepositoryUpdater.this) {
-                        compileScheduled--;
-                    }
-                    submit(Work.compileWithDeps(root, storedFilesFin));
+            if (lockRU == 0 || t != null) {
+                storedFiles = new LinkedHashSet<File>();
+                url2CompileWithDeps.put(root, storedFiles);
+            } else {
+                storedFiles = url2CompileWithDeps.get(root);
+                
+                if (storedFiles == null) {
+                    url2CompileWithDeps.put(root, storedFiles = new  LinkedList<File>());
                 }
-            });
-            url2CompileWithDepsTask.put(root, new WeakReference<Task>(t));
-            t.schedule(Integer.MAX_VALUE);
-            url2CompileWithDeps.put(root, storedFiles);
-            compileScheduled++;
+            }
+            
+            if (lockRU == 0) {
+                //the task either does not exist, or has been already started - create new one:
+                LOGGER.log(Level.FINE, "creating a new task for root: {0}", root.toExternalForm());
+                final Collection<File> storedFilesFin = storedFiles;
+                t = WORKER.create(new Runnable() {
+                    public void run() {
+                        synchronized (RepositoryUpdater.this) {
+                            compileScheduled--;
+                        }
+                        submit(Work.compileWithDeps(root, storedFilesFin));
+                    }
+                });
+                url2CompileWithDepsTask.put(root, new WeakReference<Task>(t));
+                compileScheduled++;
+            } else {
+                url2CompileWithDepsTask.remove(root);
+            }
         } else {
             storedFiles = url2CompileWithDeps.get(root);
-            assert storedFiles != null;
         }
         
+        assert storedFiles != null;
+
         storedFiles.add(file);
         
         if (lockRU > 0) {
@@ -808,6 +822,8 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
     public synchronized void unlockRU(final Runnable notifyFinished) {
         if (--lockRU > 0)
             return ;
+        
+        assert lockRU == 0;
         
         if (recompileToBeScheduled) {
             submit(Work.recompile());

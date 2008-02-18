@@ -362,7 +362,7 @@ final public class PersistenceHandler implements PersistenceObserver {
                 if (previous != null) {
                     WindowManagerImpl.getInstance().setPreviousModeForTopComponent(tcRefConfig.tc_id, mode, previous, tcRefConfig.previousIndex);
                 } else {
-                    Logger.getLogger(PersistenceHandler.class.getName()).log(Level.WARNING, null,
+                    Logger.getLogger(PersistenceHandler.class.getName()).log(Level.INFO, null,
                                       new java.lang.NullPointerException("Cannot find previous mode named \'" +
                                                                          tcRefConfig.previousMode +
                                                                          "\'")); 

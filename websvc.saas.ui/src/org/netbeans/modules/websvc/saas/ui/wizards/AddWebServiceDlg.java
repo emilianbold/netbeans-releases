@@ -61,9 +61,9 @@ import java.net.MalformedURLException;
 
 import javax.swing.filechooser.FileFilter;
 import javax.swing.*;
-import org.netbeans.modules.websvc.manager.util.ManagerUtil;
 import org.netbeans.modules.websvc.saas.model.SaasGroup;
 import org.netbeans.modules.websvc.saas.model.SaasServicesModel;
+import org.netbeans.modules.websvc.saas.util.WsdlUtil;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -92,7 +92,7 @@ public class AddWebServiceDlg extends JPanel  implements ActionListener {
     private JButton cancelButton = new JButton();
     private JButton addButton = new JButton();
     
-    private String groupId;
+    private SaasGroup group;
     private final boolean jaxRPCAvailable;
 
     private static final String[] KEYWORDS = 
@@ -128,8 +128,8 @@ public class AddWebServiceDlg extends JPanel  implements ActionListener {
     public AddWebServiceDlg(SaasGroup group) {
         initComponents();
         myInitComponents();
-        this.groupId = groupId;
-        jaxRPCAvailable = ManagerUtil.isJAXRPCAvailable();
+        this.group = group;
+        jaxRPCAvailable = WsdlUtil.isJAXRPCAvailable();
     }
 
 
@@ -391,8 +391,7 @@ public class AddWebServiceDlg extends JPanel  implements ActionListener {
         dialog = null;
         
         // Run the add W/S asynchronously
-        //TODO:nam
-        // SaasServiceModel.getInstance().addWebService(wsdl, packageName, groupId);
+        SaasServicesModel.getInstance().addWsdlService(group, wsdl, packageName);
     }    
     
     public void actionPerformed(ActionEvent evt) {

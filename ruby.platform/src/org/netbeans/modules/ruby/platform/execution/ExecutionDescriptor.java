@@ -42,9 +42,12 @@ package org.netbeans.modules.ruby.platform.execution;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import org.netbeans.api.ruby.platform.RubyPlatform;
 import org.netbeans.modules.ruby.platform.RubyExecution;
+import org.netbeans.modules.ruby.platform.gems.GemManager;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Utilities;
 
@@ -67,6 +70,7 @@ public class ExecutionDescriptor {
     private final RubyPlatform platform;
     private FileLocator fileLocator;
     String script;
+    private Map<String, String> additionalEnv;
     private String[] additionalArgs;
     private String initialArgs;
     private FileObject fileObject;
@@ -80,7 +84,7 @@ public class ExecutionDescriptor {
     List<OutputRecognizer> outputRecognizers = new ArrayList<OutputRecognizer>();
 
     public ExecutionDescriptor(final RubyPlatform platform) {
-        this.platform = platform;
+        this(platform, null, null);
     }
 
     public ExecutionDescriptor(final RubyPlatform platform, final String displayName, final File pwd) {
@@ -92,7 +96,12 @@ public class ExecutionDescriptor {
         this.displayName = displayName;
         this.pwd = pwd;
         this.script = script;
-        assert (pwd != null) && pwd.isDirectory() : pwd + " is a directory";
+        assert (pwd == null) || pwd.isDirectory() : pwd + " is a directory";
+        if (platform.hasRubyGemsInstalled()) {
+            Map<String, String> env = new HashMap<String, String>();
+            GemManager.adjustEnvironment(platform, env);
+            addAdditionalEnv(env);
+        }
     }
     
     public ExecutionDescriptor cmd(final File cmd) {
@@ -201,7 +210,7 @@ public class ExecutionDescriptor {
         this.classPath = classPath;
         return this;
     }
-    
+
     String getDisplayName() {
         return debug ? displayName + " (debug)" : displayName; // NOI18N
     }
@@ -260,5 +269,16 @@ public class ExecutionDescriptor {
      */
     public boolean getAppendJdkToPath() {
         return appendJdkToPath;
+    }
+
+    public void addAdditionalEnv(Map<String, String> additionalEnv) {
+        if (this.additionalEnv == null) {
+            this.additionalEnv = new HashMap<String, String>();
+        }
+        this.additionalEnv.putAll(additionalEnv);
+    }
+
+    Map<String, String> getAdditionalEnvironment() {
+        return additionalEnv;
     }
 }

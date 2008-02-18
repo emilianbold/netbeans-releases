@@ -89,7 +89,8 @@ public class WsdlSaasMethod extends SaasMethod {
     }
     
     public JavaMethod getJavaMethod() {
-        return ((Operation)getWsdlOperation().getInternalJAXWSOperation()).getJavaMethod();
+        Operation op = (Operation)getWsdlOperation().getInternalJAXWSOperation();
+        return (op != null) ? op.getJavaMethod() : null;
     }
     
     private void init() {

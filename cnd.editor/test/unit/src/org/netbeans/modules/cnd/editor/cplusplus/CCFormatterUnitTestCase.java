@@ -292,8 +292,8 @@ public class CCFormatterUnitTestCase extends CCFormatterBaseUnitTestCase {
     }
 
     public void testReformatMultiLineSystemOutPrintln2() {
-        CodeStyle.getDefault(CodeStyle.Language.CPP).getPreferences().
-                put(EditorOptions.CC_FORMAT_NEWLINE_BEFORE_BRACE_DECLARATION, 
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
+                put(EditorOptions.newLineBeforeBraceDeclaration, 
                 CodeStyle.BracePlacement.SAME_LINE.name());
         try {
             setLoadDocumentText(
@@ -310,8 +310,8 @@ public class CCFormatterUnitTestCase extends CCFormatterBaseUnitTestCase {
                     + "}\n"
                     );
         } finally {
-            CodeStyle.getDefault(CodeStyle.Language.CPP).getPreferences().
-                    put(EditorOptions.CC_FORMAT_NEWLINE_BEFORE_BRACE_DECLARATION, 
+            EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
+                    put(EditorOptions.newLineBeforeBraceDeclaration, 
                     CodeStyle.BracePlacement.NEW_LINE.name());
         }
     }
@@ -407,8 +407,8 @@ public class CCFormatterUnitTestCase extends CCFormatterBaseUnitTestCase {
      * @see http://www.netbeans.org/issues/show_bug.cgi?id=49450
      */
     public void testReformatMultilineConstructor() {
-        CodeStyle.getDefault(CodeStyle.Language.CPP).getPreferences().
-                put(EditorOptions.CC_FORMAT_NEWLINE_BEFORE_BRACE_DECLARATION, 
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
+                put(EditorOptions.newLineBeforeBraceDeclaration, 
                 CodeStyle.BracePlacement.SAME_LINE.name());
         try {
             setLoadDocumentText(
@@ -431,8 +431,8 @@ public class CCFormatterUnitTestCase extends CCFormatterBaseUnitTestCase {
                     "    }\n" +
                     "};");
         } finally {
-            CodeStyle.getDefault(CodeStyle.Language.CPP).getPreferences().
-                    put(EditorOptions.CC_FORMAT_NEWLINE_BEFORE_BRACE_DECLARATION, 
+            EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
+                    put(EditorOptions.newLineBeforeBraceDeclaration, 
                     CodeStyle.BracePlacement.NEW_LINE.name());
         }
     }
@@ -488,8 +488,8 @@ public class CCFormatterUnitTestCase extends CCFormatterBaseUnitTestCase {
      * @see http://www.netbeans.org/issues/show_bug.cgi?id=97544
      */
     public void testReformatSimpleClass() {
-        CodeStyle.getDefault(CodeStyle.Language.CPP).getPreferences().
-                put(EditorOptions.CC_FORMAT_NEWLINE_BEFORE_BRACE_DECLARATION, 
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
+                put(EditorOptions.newLineBeforeBraceDeclaration, 
                 CodeStyle.BracePlacement.SAME_LINE.name());
         try {
             setLoadDocumentText(
@@ -514,8 +514,8 @@ public class CCFormatterUnitTestCase extends CCFormatterBaseUnitTestCase {
                 "    int k;\n" +
                 "};\n");
         } finally {
-            CodeStyle.getDefault(CodeStyle.Language.CPP).getPreferences().
-                    put(EditorOptions.CC_FORMAT_NEWLINE_BEFORE_BRACE_DECLARATION, 
+            EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
+                    put(EditorOptions.newLineBeforeBraceDeclaration, 
                     CodeStyle.BracePlacement.NEW_LINE.name());
         }
     }
@@ -582,8 +582,8 @@ public class CCFormatterUnitTestCase extends CCFormatterBaseUnitTestCase {
      * @see http://www.netbeans.org/issues/show_bug.cgi?id=100665
      */
     public void testReformatPreprocessorsDirectives() {
-        CodeStyle.getDefault(CodeStyle.Language.CPP).getPreferences().
-                put(EditorOptions.CC_FORMAT_NEWLINE_BEFORE_BRACE_DECLARATION, 
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
+                put(EditorOptions.newLineBeforeBraceDeclaration, 
                 CodeStyle.BracePlacement.SAME_LINE.name());
         try {
             setLoadDocumentText(
@@ -606,8 +606,8 @@ public class CCFormatterUnitTestCase extends CCFormatterBaseUnitTestCase {
                 "    int ddd;\n" +
                 "}\n");
         } finally {
-            CodeStyle.getDefault(CodeStyle.Language.CPP).getPreferences().
-                    put(EditorOptions.CC_FORMAT_NEWLINE_BEFORE_BRACE_DECLARATION, 
+            EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
+                    put(EditorOptions.newLineBeforeBraceDeclaration, 
                     CodeStyle.BracePlacement.NEW_LINE.name());
         }
     }
@@ -660,8 +660,8 @@ public class CCFormatterUnitTestCase extends CCFormatterBaseUnitTestCase {
      * @see http://www.netbeans.org/issues/show_bug.cgi?id=91173
      */
     public void testReformatConstructorInitializer() {
-        CodeStyle.getDefault(CodeStyle.Language.CPP).getPreferences().
-                put(EditorOptions.CC_FORMAT_NEWLINE_BEFORE_BRACE_DECLARATION, 
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
+                put(EditorOptions.newLineBeforeBraceDeclaration, 
                 CodeStyle.BracePlacement.SAME_LINE.name());
         try {
             setLoadDocumentText(
@@ -676,8 +676,8 @@ public class CCFormatterUnitTestCase extends CCFormatterBaseUnitTestCase {
                 "    ComputeSupportMetric();\n" +
                 "}\n");
         } finally {
-            CodeStyle.getDefault(CodeStyle.Language.CPP).getPreferences().
-                    put(EditorOptions.CC_FORMAT_NEWLINE_BEFORE_BRACE_DECLARATION, 
+            EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
+                    put(EditorOptions.newLineBeforeBraceDeclaration, 
                     CodeStyle.BracePlacement.NEW_LINE.name());
         }
     }
@@ -706,8 +706,8 @@ public class CCFormatterUnitTestCase extends CCFormatterBaseUnitTestCase {
      * @see http://www.netbeans.org/issues/show_bug.cgi?id=91173
      */
     public void testReformatMultilineMainDefinition() {
-        CodeStyle.getDefault(CodeStyle.Language.CPP).getPreferences().
-                put(EditorOptions.CC_FORMAT_NEWLINE_BEFORE_BRACE_DECLARATION, 
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
+                put(EditorOptions.newLineBeforeBraceDeclaration, 
                 CodeStyle.BracePlacement.SAME_LINE.name());
         try {
             setLoadDocumentText(
@@ -722,8 +722,8 @@ public class CCFormatterUnitTestCase extends CCFormatterBaseUnitTestCase {
                 "    return (EXIT_SUCCESS);\n" +
                 "};\n");
         } finally {
-            CodeStyle.getDefault(CodeStyle.Language.CPP).getPreferences().
-                    put(EditorOptions.CC_FORMAT_NEWLINE_BEFORE_BRACE_DECLARATION, 
+            EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
+                    put(EditorOptions.newLineBeforeBraceDeclaration, 
                     CodeStyle.BracePlacement.NEW_LINE.name());
         }
     }
@@ -870,8 +870,8 @@ public class CCFormatterUnitTestCase extends CCFormatterBaseUnitTestCase {
     }
     
     public void testIdentInnerEnum() {
-        CodeStyle.getDefault(CodeStyle.Language.CPP).getPreferences().
-                put(EditorOptions.CC_FORMAT_NEWLINE_BEFORE_BRACE_DECLARATION, 
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
+                put(EditorOptions.newLineBeforeBraceDeclaration, 
                 CodeStyle.BracePlacement.SAME_LINE.name());
         try {
             setLoadDocumentText(
@@ -910,8 +910,8 @@ public class CCFormatterUnitTestCase extends CCFormatterBaseUnitTestCase {
                 "};\n"
             );
         } finally {
-            CodeStyle.getDefault(CodeStyle.Language.CPP).getPreferences().
-                    put(EditorOptions.CC_FORMAT_NEWLINE_BEFORE_BRACE_DECLARATION, 
+            EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
+                    put(EditorOptions.newLineBeforeBraceDeclaration, 
                     CodeStyle.BracePlacement.NEW_LINE.name());
         }
     }
@@ -957,8 +957,8 @@ public class CCFormatterUnitTestCase extends CCFormatterBaseUnitTestCase {
     }
 
     public void testTemplate() {
-        CodeStyle.getDefault(CodeStyle.Language.CPP).getPreferences().
-                put(EditorOptions.CC_FORMAT_NEWLINE_BEFORE_BRACE_DECLARATION, 
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
+                put(EditorOptions.newLineBeforeBraceDeclaration, 
                 CodeStyle.BracePlacement.SAME_LINE.name());
         try {
             setLoadDocumentText(
@@ -989,8 +989,8 @@ public class CCFormatterUnitTestCase extends CCFormatterBaseUnitTestCase {
                 "};\n"
                 );
         } finally {
-            CodeStyle.getDefault(CodeStyle.Language.CPP).getPreferences().
-                    put(EditorOptions.CC_FORMAT_NEWLINE_BEFORE_BRACE_DECLARATION, 
+            EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
+                    put(EditorOptions.newLineBeforeBraceDeclaration, 
                     CodeStyle.BracePlacement.NEW_LINE.name());
         }
     }
@@ -1078,8 +1078,8 @@ public class CCFormatterUnitTestCase extends CCFormatterBaseUnitTestCase {
     };
 
     public void testIdentMultyLineMain() {
-        CodeStyle.getDefault(CodeStyle.Language.CPP).getPreferences().
-                put(EditorOptions.CC_FORMAT_NEWLINE_BEFORE_BRACE_DECLARATION, 
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
+                put(EditorOptions.newLineBeforeBraceDeclaration, 
                 CodeStyle.BracePlacement.SAME_LINE.name());
         try {
             setLoadDocumentText(
@@ -1098,8 +1098,8 @@ public class CCFormatterUnitTestCase extends CCFormatterBaseUnitTestCase {
                 "}\n"
             );
         } finally {
-            CodeStyle.getDefault(CodeStyle.Language.CPP).getPreferences().
-                    put(EditorOptions.CC_FORMAT_NEWLINE_BEFORE_BRACE_DECLARATION, 
+            EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
+                    put(EditorOptions.newLineBeforeBraceDeclaration, 
                     CodeStyle.BracePlacement.NEW_LINE.name());
         }
     };
@@ -1124,8 +1124,8 @@ public class CCFormatterUnitTestCase extends CCFormatterBaseUnitTestCase {
     };
     
     public void testIdentMultyConstructor() {
-        CodeStyle.getDefault(CodeStyle.Language.CPP).getPreferences().
-                put(EditorOptions.CC_FORMAT_NEWLINE_BEFORE_BRACE_DECLARATION, 
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
+                put(EditorOptions.newLineBeforeBraceDeclaration, 
                 CodeStyle.BracePlacement.SAME_LINE.name());
         try {
             setLoadDocumentText(
@@ -1143,8 +1143,8 @@ public class CCFormatterUnitTestCase extends CCFormatterBaseUnitTestCase {
                 "}\n"
             );
         } finally {
-            CodeStyle.getDefault(CodeStyle.Language.CPP).getPreferences().
-                    put(EditorOptions.CC_FORMAT_NEWLINE_BEFORE_BRACE_DECLARATION, 
+            EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
+                    put(EditorOptions.newLineBeforeBraceDeclaration, 
                     CodeStyle.BracePlacement.NEW_LINE.name());
         }
     };
@@ -1281,8 +1281,8 @@ public class CCFormatterUnitTestCase extends CCFormatterBaseUnitTestCase {
     };
     
     public void testMacroDefineWithBrace2() {
-        CodeStyle.getDefault(CodeStyle.Language.CPP).getPreferences().
-                put(EditorOptions.CC_FORMAT_NEWLINE_BEFORE_BRACE, 
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
+                put(EditorOptions.newLineBeforeBrace, 
                 CodeStyle.BracePlacement.NEW_LINE.name());
         try {
             setLoadDocumentText(
@@ -1291,15 +1291,15 @@ public class CCFormatterUnitTestCase extends CCFormatterBaseUnitTestCase {
             assertDocumentText("Incorrect formatting for macro define with brace",
                     "#define SOME_IF(a, b) if ((a) > (b)) { /* do something */ }\n");
         } finally {
-            CodeStyle.getDefault(CodeStyle.Language.CPP).getPreferences().
-                    put(EditorOptions.CC_FORMAT_NEWLINE_BEFORE_BRACE, 
+            EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
+                    put(EditorOptions.newLineBeforeBrace, 
                     CodeStyle.BracePlacement.SAME_LINE.name());
         }
     }
 
     public void testMacroDefineWithBrace3() {
-        CodeStyle.getDefault(CodeStyle.Language.CPP).getPreferences().
-                put(EditorOptions.CC_FORMAT_NEWLINE_BEFORE_BRACE, 
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
+                put(EditorOptions.newLineBeforeBrace, 
                 CodeStyle.BracePlacement.NEW_LINE.name());
         try {
             setLoadDocumentText(
@@ -1310,15 +1310,15 @@ public class CCFormatterUnitTestCase extends CCFormatterBaseUnitTestCase {
                     "\n"+
                     "#define SOME_IF(a, b) if ((a) > (b)) { /* do something */ }\n");
         } finally {
-            CodeStyle.getDefault(CodeStyle.Language.CPP).getPreferences().
-                    put(EditorOptions.CC_FORMAT_NEWLINE_BEFORE_BRACE, 
+            EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
+                    put(EditorOptions.newLineBeforeBrace, 
                     CodeStyle.BracePlacement.SAME_LINE.name());
         }
     }
 
     public void testMacroDefineWithParen() {
-        CodeStyle.getDefault(CodeStyle.Language.CPP).getPreferences().
-                put(EditorOptions.CC_FORMAT_NEWLINE_BEFORE_BRACE_DECLARATION, 
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
+                put(EditorOptions.newLineBeforeBraceDeclaration, 
                 CodeStyle.BracePlacement.SAME_LINE.name());
         try {
             setLoadDocumentText(
@@ -1337,8 +1337,8 @@ public class CCFormatterUnitTestCase extends CCFormatterBaseUnitTestCase {
                     "    return 0;\n" +
                     "}\n");
         } finally {
-            CodeStyle.getDefault(CodeStyle.Language.CPP).getPreferences().
-                    put(EditorOptions.CC_FORMAT_NEWLINE_BEFORE_BRACE_DECLARATION, 
+            EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
+                    put(EditorOptions.newLineBeforeBraceDeclaration, 
                     CodeStyle.BracePlacement.NEW_LINE.name());
         }
     }
@@ -1363,10 +1363,10 @@ public class CCFormatterUnitTestCase extends CCFormatterBaseUnitTestCase {
     }
 
     public void testMacroDefineWithParen2() {
-        CodeStyle.getDefault(CodeStyle.Language.CPP).getPreferences().
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
                 putBoolean(EditorOptions.spaceBeforeMethodCallParen, true);
-        CodeStyle.getDefault(CodeStyle.Language.CPP).getPreferences().
-                put(EditorOptions.CC_FORMAT_NEWLINE_BEFORE_BRACE_DECLARATION, 
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
+                put(EditorOptions.newLineBeforeBraceDeclaration, 
                 CodeStyle.BracePlacement.SAME_LINE.name());
         try {
             setLoadDocumentText(
@@ -1385,16 +1385,16 @@ public class CCFormatterUnitTestCase extends CCFormatterBaseUnitTestCase {
                     "    return 0;\n" +
                     "}\n");
         } finally {
-            CodeStyle.getDefault(CodeStyle.Language.CPP).getPreferences().
+            EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
                     putBoolean(EditorOptions.spaceBeforeMethodCallParen, false);
-            CodeStyle.getDefault(CodeStyle.Language.CPP).getPreferences().
-                    put(EditorOptions.CC_FORMAT_NEWLINE_BEFORE_BRACE_DECLARATION, 
+            EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
+                    put(EditorOptions.newLineBeforeBraceDeclaration, 
                     CodeStyle.BracePlacement.NEW_LINE.name());
         }
     }
 
     public void testMacroDefineWithParen21() {
-        CodeStyle.getDefault(CodeStyle.Language.CPP).getPreferences().
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
                 putBoolean(EditorOptions.spaceBeforeMethodCallParen, true);
         try {
             setLoadDocumentText(
@@ -1414,7 +1414,7 @@ public class CCFormatterUnitTestCase extends CCFormatterBaseUnitTestCase {
                     "    return 0;\n" +
                     "}\n");
         } finally {
-            CodeStyle.getDefault(CodeStyle.Language.CPP).getPreferences().
+            EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
                     putBoolean(EditorOptions.spaceBeforeMethodCallParen, false);
         }
     }

@@ -48,7 +48,7 @@
                     ../../../../../../../../../../websvc.saas.api/src/org/netbeans/modules/websvc/saas/model/SaasServices.xsd' 
                type="http://research.sun.com/wadl/2006/10"
                api-doc="http://www.google.com/apis/maps/documentation/services.html#Geocoding"
-               url="/org/netbeans/modules/websvc/saas/services/google/resources/GoogleGeocoderWadl.xml">
+               url="org/netbeans/modules/websvc/saas/services/google/resources/GoogleGeocoderWadl.xml">
 
     <description>Google Service</description>
     

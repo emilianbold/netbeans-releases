@@ -66,7 +66,7 @@ import org.openide.util.Utilities;
  * 
  */
 public final class FileObjectFactory {
-    private final Map allInstances = Collections.synchronizedMap(new WeakHashMap());
+    final Map allInstances = Collections.synchronizedMap(new WeakHashMap());
     private RootObj root;
 
     public static FileObjectFactory getInstance(final FileInfo fInfo) {
@@ -169,23 +169,13 @@ public final class FileObjectFactory {
         RecoverSuccess , RecoverFail, NoRecover
     }    
 
-    private boolean printWarning(File file, Status stat) {
-        NbPreferences.root().node("/org/netbeans").put("warning", file.getAbsolutePath());
-        ByteArrayOutputStream bos = new ByteArrayOutputStream();
-        PrintStream ps = new PrintStream(bos);
-        new Exception().printStackTrace(ps);
-        ps.close();
-        String h = "WARNING(please REPORT):  Externally ";
-        h += file.exists() ? "created " : "deleted "; //NOI18N
-        h += (file.isDirectory() ? "folder: " : "file: "); //NOI18N
-        if (Utilities.isWindows()) {
-            h += file.getAbsolutePath().replace('\\', '/');
-        } else {
-            h += file.getAbsolutePath();
-        }        
-        h += "  (For additional information see: http://wiki.netbeans.org/wiki/view/FileSystems)";//NOI18N
-        Logger.getLogger("org.netbeans.modules.masterfs.filebasedfs.fileobjects.FolderObj").log(Level.WARNING, bos.toString().replace("java.lang.Exception", h));//NOI18N
-        return true;
+    private void printWarning(File file, Status stat) {
+        StringBuilder sb = new StringBuilder("WARNING(please REPORT):  Externally ");
+        sb.append(file.exists() ? "created " : "deleted "); //NOI18N
+        sb.append(file.isDirectory() ? "folder: " : "file: "); //NOI18N
+        sb.append(file.getAbsolutePath());
+        sb.append("  (For additional information see: http://wiki.netbeans.org/wiki/view/FileSystems)");//NOI18N        
+        throw new AssertionError(sb.toString());
     }
     
     private FileObject issueIfExist(File file, Caller caller, FileObject parent, FileNaming child, int initTouch, FileBasedFileSystem lfs) {
