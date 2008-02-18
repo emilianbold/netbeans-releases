@@ -358,6 +358,7 @@ made subject to such option by the copyright holder.
                 <package>org.netbeans.modules.j2ee.common.method</package>
                 <package>org.netbeans.modules.j2ee.common.queries.api</package>
                 <package>org.netbeans.modules.j2ee.common.queries.spi</package>
+                <package>org.netbeans.modules.j2ee.common.sharability</package>
                 <package>org.netbeans.modules.j2ee.common.source</package>
                 <package>org.netbeans.modules.j2ee.common.ui</package>
             </friend-packages>
