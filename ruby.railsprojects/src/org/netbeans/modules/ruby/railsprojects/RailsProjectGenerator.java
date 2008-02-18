@@ -167,6 +167,7 @@ public class RailsProjectGenerator {
             commentOutSocket(dirFO);
         }
 
+        
         ProjectManager.getDefault().saveProject(p);
         
         // Start the server? No, disabled for now; this clobbers the generate-project
