@@ -149,9 +149,11 @@ public abstract class SpringXMLConfigCompletionDoc implements CompletionDocument
                 } else {
                     sb.append(NbBundle.getMessage(SpringXMLConfigCompletionDoc.class, "LBL_BeanLabel", beanName));
                 }
-                sb.append("<pre>"); // NOI18N
-                sb.append(beanClassName);
-                sb.append("</pre>"); // NOI18N
+                if (beanClassName != null) {
+                    sb.append("<pre>"); // NOI18N
+                    sb.append(beanClassName);
+                    sb.append("</pre>"); // NOI18N
+                }
                 displayText = sb.toString();
             }
             return displayText;

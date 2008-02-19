@@ -103,9 +103,6 @@ made subject to such option by the copyright holder.
             <file name="DS-F8.shadow">
                 <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-ui-actions-AddBreakpointAction.instance"/>
             </file>
-            <file name="SO-4.shadow">
-                <attr name="originalFile" stringvalue="Actions/Window/Debug/org-netbeans-modules-debugger-jpda-heapwalk-actions-ClassesCountsViewAction.instance"/>
-            </file>
             <file name="A-RIGHT.shadow">
                 <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-core-windows-actions-NextTabAction.instance"/>
             </file>
@@ -289,9 +286,6 @@ made subject to such option by the copyright holder.
 <!--            <file name="S-F1.shadow">
                 <attr name="originalFile" stringvalue="Actions/Tools/javadoc-Search-Doc-Action.instance"/>
             </file>-->
-            <file name="D-O.shadow">
-                <attr name="originalFile" stringvalue="Actions/System/org-netbeans-modules-openfile-OpenFileAction.instance"/>
-            </file>
             <file name="D-1.shadow">
                 <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-ui-logical-tab-action.instance"/>
             </file>
@@ -459,9 +453,6 @@ made subject to such option by the copyright holder.
             </file>
             <file name="DS-F8.shadow">
                 <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-ui-actions-AddBreakpointAction.instance"/>
-            </file>
-            <file name="SO-4.shadow">
-                <attr name="originalFile" stringvalue="Actions/Window/Debug/org-netbeans-modules-debugger-jpda-heapwalk-actions-ClassesCountsViewAction.instance"/>
             </file>
             <file name="A-RIGHT.shadow">
                 <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-core-windows-actions-NextTabAction.instance"/>
@@ -761,9 +752,6 @@ made subject to such option by the copyright holder.
             </file>
             <file name="DS-F8.shadow">
                 <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-ui-actions-AddBreakpointAction.instance"/>
-            </file>
-            <file name="SO-4.shadow">
-                <attr name="originalFile" stringvalue="Actions/Window/Debug/org-netbeans-modules-debugger-jpda-heapwalk-actions-ClassesCountsViewAction.instance"/>
             </file>
             <file name="D-PAGE_DOWN.shadow">
                 <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-core-windows-actions-NextTabAction.instance"/>

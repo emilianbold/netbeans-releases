@@ -115,6 +115,7 @@ public final class SharableLibrariesUtils {
         chooser.setCurrentDirectory(lib);
         chooser.setFileSelectionMode( JFileChooser.DIRECTORIES_ONLY );
         chooser.setDialogTitle(NbBundle.getMessage(SharableLibrariesUtils.class,"LBL_Browse_Libraries_Title"));
+        chooser.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(SharableLibrariesUtils.class,"ASCD_Browse_Libraries_Title"));
         if (JFileChooser.APPROVE_OPTION == chooser.showOpenDialog(comp)) {
             String[] files;
             try {
@@ -137,7 +138,7 @@ public final class SharableLibrariesUtils {
      * @param ref
      * @param libraryNames
      * @param jarReferences
-     * @return
+     * @return true is migration was performed, false when aborted.
      */
     public static boolean showMakeSharableWizard(final AntProjectHelper helper, ReferenceHelper ref, List<String> libraryNames, List<String> jarReferences) {
 
@@ -295,8 +296,12 @@ public final class SharableLibrariesUtils {
                 newVal = absFile.getAbsolutePath();
             }
             if (main) {
+                // mkleint: why isn't there a way to set the reference, but one always have to create it
+                // creating will create a unique key..
+                refhelper.destroyReference(key);
                 refhelper.createForeignFileReferenceAsIs(newVal, key);
             } else {
+                refhelper.destroyReference(key);
                 refhelper.createExtraForeignFileReferenceAsIs(newVal, key);
             }
         }

@@ -58,10 +58,12 @@ import javax.swing.table.JTableHeader;
 import javax.swing.table.TableColumn;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.PlatformsCustomizer;
+import org.netbeans.modules.java.api.common.ui.PlatformUiSupport;
 import org.netbeans.api.project.libraries.LibraryManager;
+import org.netbeans.modules.j2ee.common.sharability.SharabilityUtilities;
 import org.netbeans.modules.web.project.classpath.ClassPathSupport;
 import org.netbeans.modules.web.project.ui.WebLogicalViewProvider;
-import org.netbeans.modules.web.project.ui.wizards.PanelOptionsVisual;
+import org.netbeans.spi.java.project.support.ui.SharableLibrariesUtils;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.awt.Mnemonics;
 import org.openide.filesystems.FileUtil;
@@ -727,10 +729,10 @@ public class CustomizerLibraries extends JPanel implements HelpCtx.Provider, Lis
         } else {
             File prjLoc = FileUtil.toFile(uiProperties.getProject().getProjectDirectory());
             String s[] = splitPath(librariesLocation.getText().trim());
-            String loc = PanelOptionsVisual.browseForLibraryLication(s[0], this, prjLoc);
+            String loc = SharableLibrariesUtils.browseForLibraryLocation(s[0], this, prjLoc);
             if (loc != null) {
                 librariesLocation.setText(s[1] != null ? loc + File.separator + s[1] :
-                    loc + File.separator + WebProjectProperties.DEFAULT_LIBRARIES_FILENAME);
+                    loc + File.separator + SharabilityUtilities.DEFAULT_LIBRARIES_FILENAME);
                 switchLibrary();
             }
         }

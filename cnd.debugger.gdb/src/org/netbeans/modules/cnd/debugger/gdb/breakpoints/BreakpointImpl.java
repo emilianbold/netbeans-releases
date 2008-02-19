@@ -58,6 +58,7 @@ public abstract class BreakpointImpl implements PropertyChangeListener {
     
     /* valid breakpoint states */
     public static final String BPSTATE_UNVALIDATED = "BpState_Unvalidated"; // NOI18N
+    public static final String BPSTATE_REVALIDATE = "BpState_Revalidate"; // NOI18N
     public static final String BPSTATE_VALIDATION_PENDING = "BpState_ValidationPending"; // NOI18N
     public static final String BPSTATE_VALIDATION_FAILED = "BpState_ValidationFailed"; // NOI18N
     public static final String BPSTATE_VALIDATED = "BpState_Validated"; // NOI18N
@@ -131,6 +132,7 @@ public abstract class BreakpointImpl implements PropertyChangeListener {
     protected void setState(String state) {
         if (!state.equals(this.state) &&
                 (state.equals(BPSTATE_UNVALIDATED) ||
+                 state.equals(BPSTATE_REVALIDATE) ||
                  state.equals(BPSTATE_VALIDATION_PENDING) ||
                  state.equals(BPSTATE_VALIDATION_FAILED) ||
                  state.equals(BPSTATE_VALIDATED) ||
@@ -160,6 +162,7 @@ public abstract class BreakpointImpl implements PropertyChangeListener {
     }
 
     protected abstract void setRequests();
+    protected abstract void suspend();
 
     /**
      * Called when Fix&Continue is invoked. Reqritten in LineBreakpointImpl.
@@ -178,10 +181,18 @@ public abstract class BreakpointImpl implements PropertyChangeListener {
     }
 
     public void propertyChange(PropertyChangeEvent evt) {
-        if (Breakpoint.PROP_DISPOSED.equals(evt.getPropertyName())) {
+        String pname = evt.getPropertyName();
+        if (pname.equals(Breakpoint.PROP_DISPOSED)) {
             remove();
-        }
-        if (!evt.getPropertyName().equals(GdbBreakpoint.PROP_LINE_NUMBER)) {
+        } else if (pname.equals(GdbBreakpoint.PROP_SUSPEND)) {
+            if (evt.getOldValue() instanceof Integer && evt.getNewValue() instanceof Integer) {
+                Integer oldValue = (Integer) evt.getOldValue();
+                Integer newValue = (Integer) evt.getNewValue();
+                if (newValue != oldValue && newValue.intValue() == GdbBreakpoint.SUSPEND_EVENT_THREAD) {
+                    suspend();
+                }
+            }
+        } else if (!pname.equals(GdbBreakpoint.PROP_LINE_NUMBER)) {
             update();
         }
     }

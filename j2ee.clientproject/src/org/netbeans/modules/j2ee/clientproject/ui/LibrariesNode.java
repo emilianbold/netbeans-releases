@@ -102,11 +102,12 @@ import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.netbeans.spi.project.support.ant.ReferenceHelper;
 import org.netbeans.spi.java.project.support.ui.PackageView;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
-import org.netbeans.modules.j2ee.clientproject.UpdateHelper;
 import org.netbeans.modules.j2ee.clientproject.classpath.AppClientProjectClassPathExtender;
 import org.netbeans.modules.j2ee.clientproject.ui.customizer.AntArtifactChooser;
 import org.netbeans.modules.j2ee.clientproject.ui.customizer.AppClientClassPathUi;
+import org.netbeans.modules.j2ee.clientproject.ui.customizer.AppClientProjectProperties;
 import org.netbeans.modules.j2ee.clientproject.ui.customizer.LibrariesChooser;
+import org.netbeans.modules.java.api.common.ant.UpdateHelper;
 import org.openide.util.Exceptions;
 
 
@@ -344,7 +345,7 @@ final class LibrariesNode extends AbstractNode {
             if (platformProperty!=null && projectDir !=null && projectDir.isValid() && !projectDir.isVirtual()) {
                 result.add(new Key());
             }
-            if (j2eePlatformProperty != null) {
+            if (j2eePlatformProperty != null && !Boolean.parseBoolean(projectSharedProps.getProperty(AppClientProjectProperties.J2EE_PLATFORM_SHARED))) {
                 result.add(new Key(true));
             }
             //XXX: Workaround: Remove this when there will be API for listening on nonexistent files

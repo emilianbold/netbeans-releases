@@ -45,7 +45,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import com.sun.source.util.TreePath;
 import org.netbeans.api.java.source.WorkingCopy;
-import org.netbeans.modules.spring.beans.refactoring.plugins.RefactoringVisitor;
 
 /**
  *

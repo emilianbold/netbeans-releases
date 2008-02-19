@@ -355,7 +355,7 @@ public class AddCommand extends BuildableCommand {
         }
 
         if (dir.equals(".")) { //NOI18N
-            argumentRequests.add(new ArgumentRequest(file.getName()));
+            argumentRequests.add(new ArgumentRequest(file.getName(), true));
         }
         else {
             argumentRequests.add(new ArgumentRequest(dir + "/" + file.getName())); //NOI18N

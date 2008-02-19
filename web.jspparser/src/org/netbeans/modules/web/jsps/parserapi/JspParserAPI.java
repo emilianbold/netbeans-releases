@@ -231,7 +231,7 @@ public interface JspParserAPI {
         }
         
         public String toString() {
-            StringBuffer result = new StringBuffer();
+            StringBuilder result = new StringBuilder();
             result.append("--------- JspParserAPI.parseResult(), success: ");
             result.append(isParsingSuccess());
             result.append("\n");
@@ -354,7 +354,7 @@ public interface JspParserAPI {
         }
         
         public String toString() {
-            StringBuffer result = new StringBuffer();
+            StringBuilder result = new StringBuilder();
             result.append("ERROR in ")
                   .append(getSourcePath())
                   .append(" at [")

@@ -106,7 +106,9 @@ made subject to such option by the copyright holder.
                 </test-type>
             </test-dependencies>
             <friend-packages>
+                <friend>org.netbeans.modules.db.mysql</friend>
                 <friend>org.netbeans.modules.db.sql.editor</friend>
+                <friend>org.netbeans.modules.derby</friend>
                 <friend>org.netbeans.modules.j2ee.jpa.verification</friend>
                 <friend>org.netbeans.modules.j2ee.persistence</friend>
                 <package>org.netbeans.modules.db.api.explorer</package>

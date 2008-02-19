@@ -107,19 +107,6 @@ public class PullAction extends ContextAction {
                     JOptionPane.INFORMATION_MESSAGE);
             return;
         }
-        // If the repository has no default pull path then inform user
-        if(HgRepositoryContextCache.getPullDefault(context) == null){
-            HgUtils.outputMercurialTabInRed( NbBundle.getMessage(PullAction.class,"MSG_PULL_TITLE")); // NOI18N
-            HgUtils.outputMercurialTabInRed( NbBundle.getMessage(PullAction.class,"MSG_PULL_TITLE_SEP")); // NOI18N
-            HgUtils.outputMercurialTab(NbBundle.getMessage(PullAction.class, "MSG_NO_DEFAULT_PULL_SET_MSG")); // NOI18N
-            HgUtils.outputMercurialTabInRed(NbBundle.getMessage(PullAction.class, "MSG_PULL_DONE")); // NOI18N
-            HgUtils.outputMercurialTab(""); // NOI18N
-            JOptionPane.showMessageDialog(null,
-                NbBundle.getMessage(PullAction.class,"MSG_NO_DEFAULT_PULL_SET"),
-                NbBundle.getMessage(PullAction.class,"MSG_PULL_TITLE"),
-                JOptionPane.INFORMATION_MESSAGE);
-            return;
-        }
         pull(context);
     }
 
@@ -193,23 +180,40 @@ public class PullAction extends ContextAction {
         final File root = HgUtils.getRootFile(ctx);
         if (root == null) return;
         String repository = root.getAbsolutePath();
-        final String pullPath = HgCommand.getPullDefault(root);
-        // We assume that if fromPrjName is null that it is a remote pull.
-        // This is not true as a project which is in a subdirectory of a
-        // repository will report a project name of null. This does no harm.
-        final String fromPrjName = HgProjectUtils.getProjectName(new File(pullPath));
-        Project proj = HgUtils.getProject(ctx);
-        final String toPrjName = HgProjectUtils.getProjectName(proj);
 
-       RequestProcessor rp = Mercurial.getInstance().getRequestProcessor(repository);
+        RequestProcessor rp = Mercurial.getInstance().getRequestProcessor(repository);
         HgProgressSupport support = new HgProgressSupport() {
-            public void perform() { performPull(fromPrjName != null ? PullType.LOCAL : PullType.OTHER, ctx, root, pullPath, fromPrjName, toPrjName); } };
+            public void perform() { getDefaultAndPerformPull(ctx, root); } };
 
         support.start(rp, repository, org.openide.util.NbBundle.getMessage(PullAction.class, "MSG_PULL_PROGRESS")); // NOI18N
     }
 
     public boolean isEnabled() {
         return HgUtils.getRootFile(context) != null;
+    }
+
+    static void getDefaultAndPerformPull(VCSContext ctx, File root) {
+        final String pullPath = HgCommand.getPullDefault(root);
+        // If the repository has no default pull path then inform user
+        if(pullPath == null) {
+            HgUtils.outputMercurialTabInRed( NbBundle.getMessage(PullAction.class,"MSG_PULL_TITLE")); // NOI18N
+            HgUtils.outputMercurialTabInRed( NbBundle.getMessage(PullAction.class,"MSG_PULL_TITLE_SEP")); // NOI18N
+            HgUtils.outputMercurialTab(NbBundle.getMessage(PullAction.class, "MSG_NO_DEFAULT_PULL_SET_MSG")); // NOI18N
+            HgUtils.outputMercurialTabInRed(NbBundle.getMessage(PullAction.class, "MSG_PULL_DONE")); // NOI18N
+            HgUtils.outputMercurialTab(""); // NOI18N
+            JOptionPane.showMessageDialog(null,
+                NbBundle.getMessage(PullAction.class,"MSG_NO_DEFAULT_PULL_SET"),
+                NbBundle.getMessage(PullAction.class,"MSG_PULL_TITLE"),
+                JOptionPane.INFORMATION_MESSAGE);
+            return;
+        }
+        // We assume that if fromPrjName is null that it is a remote pull.
+        // This is not true as a project which is in a subdirectory of a
+        // repository will report a project name of null. This does no harm.
+        final String fromPrjName = HgProjectUtils.getProjectName(new File(pullPath));
+        Project proj = HgUtils.getProject(ctx);
+        final String toPrjName = HgProjectUtils.getProjectName(proj);
+        performPull(fromPrjName != null ? PullType.LOCAL : PullType.OTHER, ctx, root, pullPath, fromPrjName, toPrjName);
     }
 
     static void performPull(PullType type, VCSContext ctx, File root, String pullPath, String fromPrjName, String toPrjName) {

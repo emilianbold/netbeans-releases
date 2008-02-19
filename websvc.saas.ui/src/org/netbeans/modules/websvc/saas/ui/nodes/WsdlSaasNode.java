@@ -50,17 +50,22 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import javax.swing.Action;
 import org.netbeans.modules.websvc.saas.model.Saas;
+import org.netbeans.modules.websvc.saas.model.Saas;
+import org.netbeans.modules.websvc.saas.model.Saas;
 import org.netbeans.modules.websvc.saas.model.WsdlSaas;
 import org.netbeans.modules.websvc.saas.ui.actions.ViewWSDLAction;
 import org.netbeans.modules.websvc.saas.util.SaasTransferable;
+import org.netbeans.modules.websvc.saas.util.SaasUtil;
 import org.netbeans.modules.websvc.saas.util.WsdlUtil;
 import org.openide.nodes.PropertySupport;
 import org.openide.nodes.Sheet;
 import org.openide.nodes.Sheet.Set;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
+import org.openide.util.Utilities;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.datatransfer.ExTransferable;
+import org.openide.util.lookup.AbstractLookup;
 import org.openide.util.lookup.InstanceContent;
 
 /**
@@ -75,7 +80,7 @@ public class WsdlSaasNode extends SaasNode {
     }
     
     protected WsdlSaasNode(WsdlSaas saas, InstanceContent content) {
-        super(new WsdlSaasNodeChildren(saas), saas);
+        super(new WsdlSaasNodeChildren(saas), new AbstractLookup(content), saas);
         content.add(saas);
         transferable = ExTransferable.create(
             new SaasTransferable<WsdlSaas>(saas, SaasTransferable.WSDL_METHOD_FLAVORS));
@@ -87,10 +92,14 @@ public class WsdlSaasNode extends SaasNode {
     }
     
     private static final java.awt.Image ICON =
-       org.openide.util.Utilities.loadImage( "org/netbeans/modules/websvc/saas/ui/resources/webservice.png" ); //NOI18N
+       Utilities.loadImage( "org/netbeans/modules/websvc/saas/ui/resources/webservice.png" ); //NOI18N
     
     @Override
-    public java.awt.Image getIcon(int type) {
+    public Image getIcon(int type) {
+        Image icon = SaasUtil.loadIcon(saas, type);
+        if (icon != null) {
+            return icon;
+        }
         return ICON;
     }
     
@@ -164,7 +173,7 @@ public class WsdlSaasNode extends SaasNode {
     
     @Override
     public Transferable clipboardCopy() throws IOException {
-        if (getSaas().getState() != Saas.State.READY) {
+        if (getSaas().getState() != Saas.State.RESOLVED) {
             getSaas().toStateReady();
             return super.clipboardCopy();
         }

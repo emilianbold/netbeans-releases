@@ -436,13 +436,7 @@ public final class ModuleUpdater extends Thread {
             }
             
             if (installedNBMs > 0) {
-                try {
-                    File stamp = new File(cluster, ".lastModified"); // NOI18N
-                    stamp.createNewFile();
-                    stamp.setLastModified(System.currentTimeMillis());
-                } catch (IOException ex) {
-                    ex.printStackTrace();
-                }
+                UpdaterDispatcher.touchLastModified (cluster);
             }
         }
         

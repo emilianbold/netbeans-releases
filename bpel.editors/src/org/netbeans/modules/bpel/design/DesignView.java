@@ -202,7 +202,9 @@ public class DesignView extends JPanel implements
         scrollPane.addScrollListener(new TriScrollPane.ScrollListener() {
 
             public void viewScrolled(JComponent view) {
-                //getDecorationManager().repositionComponentsRecursive();
+                if (view == consumersView || view == providersView){
+                    processView.repaint();
+                }
             }
         });
     }

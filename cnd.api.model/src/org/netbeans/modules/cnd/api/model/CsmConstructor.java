@@ -41,15 +41,9 @@
 
 package org.netbeans.modules.cnd.api.model;
 
-import java.util.List;
-import org.netbeans.modules.cnd.api.model.deep.CsmExpression;
-
 /**
  * Represents constructor
  * @author Vladimir Kvashin
  */
-public interface CsmConstructor extends CsmMethod<CsmConstructor> {
-
-    List<CsmExpression> getInitializerList();
-
+public interface CsmConstructor extends CsmMethod<CsmConstructor>, CsmInitializerListContainer {
 }

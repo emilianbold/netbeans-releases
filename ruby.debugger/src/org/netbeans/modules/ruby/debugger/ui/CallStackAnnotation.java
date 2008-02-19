@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -51,9 +51,6 @@ import org.netbeans.modules.ruby.debugger.EditorUtil;
 import org.netbeans.modules.ruby.debugger.model.CallSite;
 import org.openide.util.RequestProcessor;
 
-/**
- * @author Martin Krauskopf
- */
 public final class CallStackAnnotation {
 
     private static Map<CallSite, DebuggerAnnotation[]> stackAnnotations;
@@ -64,7 +61,7 @@ public final class CallStackAnnotation {
     private static RequestProcessor.Task taskAnnotate;
 
     private static DebuggerAnnotation[] annotateCallSite(final CallSite site) {
-        Object line = EditorUtil.getLine(site.getPath(), site.getLine());
+        Object line = EditorUtil.getLineAnnotable(site.getPath(), site.getLine());
         if (line == null) {
             return null;
         }

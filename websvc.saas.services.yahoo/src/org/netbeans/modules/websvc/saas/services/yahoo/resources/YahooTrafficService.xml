@@ -48,7 +48,7 @@
                     ../../../../../../../../../../websvc.saas.api/src/org/netbeans/modules/websvc/saas/model/SaasServices.xsd' 
                type="http://research.sun.com/wadl/2006/10"
                api-doc="http://developer.yahoo.com/traffic/rest/V1/index.html"
-               url="/org/netbeans/modules/websvc/saas/services/yahoo/resources/YahooTrafficServiceWadl.xml">
+               url="org/netbeans/modules/websvc/saas/services/yahoo/resources/YahooTrafficServiceWadl.xml">
 
     <description>Yahoo Traffic Service</description>
     

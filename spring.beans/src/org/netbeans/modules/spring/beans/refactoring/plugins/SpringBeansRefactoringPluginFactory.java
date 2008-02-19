@@ -40,11 +40,12 @@
  */
 package org.netbeans.modules.spring.beans.refactoring.plugins;
 
-import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.fileinfo.NonRecursiveFolder;
 import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.modules.refactoring.api.AbstractRefactoring;
+import org.netbeans.modules.refactoring.api.MoveRefactoring;
+import org.netbeans.modules.refactoring.api.RenameRefactoring;
 import org.netbeans.modules.refactoring.api.WhereUsedQuery;
 import org.netbeans.modules.refactoring.spi.RefactoringPlugin;
 import org.netbeans.modules.refactoring.spi.RefactoringPluginFactory;
@@ -56,16 +57,21 @@ import org.openide.util.Lookup;
  */
 public class SpringBeansRefactoringPluginFactory implements RefactoringPluginFactory {
     private static final Logger LOGGER = Logger.getLogger(SpringBeansRefactoringPluginFactory.class.getName());
+    
     public RefactoringPlugin createInstance(AbstractRefactoring refactoring) {
-        Lookup look = refactoring.getRefactoringSource();
-        FileObject file = look.lookup(FileObject.class);
-        NonRecursiveFolder folder = look.lookup(NonRecursiveFolder.class);
-        TreePathHandle handle = look.lookup(TreePathHandle.class);
+        Lookup sourceObj = refactoring.getRefactoringSource();
+        FileObject file = sourceObj.lookup(FileObject.class);
+        NonRecursiveFolder folder = sourceObj.lookup(NonRecursiveFolder.class);
+        TreePathHandle handle = sourceObj.lookup(TreePathHandle.class);
         
         if (refactoring instanceof WhereUsedQuery) {
             if (handle != null) {
                 return new SpringBeansRefactoringFindUsagesPlugin((WhereUsedQuery) refactoring);
             }
+        } else if (refactoring instanceof RenameRefactoring) {
+            return new SpringRenamePlugin((RenameRefactoring)refactoring);
+        } else if (refactoring instanceof MoveRefactoring) {
+            return new SpringMovePlugin((MoveRefactoring)refactoring);
         }
 
         // TODO: RENAME

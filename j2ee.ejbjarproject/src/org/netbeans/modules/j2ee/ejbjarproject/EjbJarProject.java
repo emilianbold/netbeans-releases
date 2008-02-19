@@ -75,9 +75,6 @@ import org.netbeans.modules.j2ee.ejbjarproject.classpath.ClassPathProviderImpl;
 import org.netbeans.modules.j2ee.ejbjarproject.classpath.EjbJarProjectClassPathExtender;
 import org.netbeans.modules.j2ee.ejbjarproject.jaxws.EjbProjectJAXWSClientSupport;
 import org.netbeans.modules.j2ee.ejbjarproject.jaxws.EjbProjectJAXWSSupport;
-import org.netbeans.modules.j2ee.ejbjarproject.queries.CompiledSourceForBinaryQuery;
-import org.netbeans.modules.j2ee.ejbjarproject.queries.JavadocForBinaryQueryImpl;
-import org.netbeans.modules.j2ee.ejbjarproject.queries.UnitTestForSourceQueryImpl;
 import org.netbeans.modules.j2ee.ejbjarproject.ui.EjbJarLogicalViewProvider;
 import org.netbeans.modules.j2ee.ejbjarproject.ui.customizer.EjbJarProjectProperties;
 import org.netbeans.api.project.ProjectInformation;
@@ -118,11 +115,13 @@ import org.openide.util.lookup.Lookups;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
 import org.netbeans.modules.j2ee.ejbjarproject.jaxws.EjbProjectJAXWSVersionProvider;
-import org.netbeans.modules.j2ee.ejbjarproject.queries.EjbJarProjectEncodingQueryImpl;
 import org.netbeans.modules.j2ee.ejbjarproject.ui.BrokenReferencesAlertPanel;
 import org.netbeans.modules.j2ee.ejbjarproject.ui.FoldersListSettings;
 import org.netbeans.modules.j2ee.ejbjarproject.ui.customizer.CustomizerProviderImpl;
-import org.netbeans.modules.j2ee.ejbjarproject.queries.SourceLevelQueryImpl;
+import org.netbeans.modules.java.api.common.SourceRoots;
+import org.netbeans.modules.java.api.common.ant.UpdateHelper;
+import org.netbeans.modules.java.api.common.ant.UpdateImplementation;
+import org.netbeans.modules.java.api.common.queries.QuerySupport;
 import org.netbeans.spi.java.project.support.ui.BrokenReferencesSupport;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.netbeans.spi.project.support.ant.EditableProperties;
@@ -249,7 +248,8 @@ public class EjbJarProject implements Project, AntProjectListener, FileChangeLis
         refHelper = new ReferenceHelper(helper, aux, helper.getStandardPropertyEvaluator());
         buildExtender = AntBuildExtenderFactory.createAntExtender(new EjbExtenderImplementation());
         genFilesHelper = new GeneratedFilesHelper(helper, buildExtender);
-        this.updateHelper = new UpdateHelper (this, this.helper, this.aux, this.genFilesHelper, UpdateHelper.createDefaultNotifier());
+        UpdateImplementation updateProject = new UpdateProjectImpl(this, helper, aux, genFilesHelper);
+        this.updateHelper = new UpdateHelper(updateProject, helper);
         this.cpProvider = new ClassPathProviderImpl(helper, evaluator(), getSourceRoots(), getTestSourceRoots());
         ejbModule = new EjbJarProvider(this, helper, cpProvider);
         apiEjbJar = EjbJarFactory.createEjbJar(ejbModule);
@@ -347,17 +347,18 @@ public class EjbJarProject implements Project, AntProjectListener, FileChangeLis
                 new EjbJarLogicalViewProvider(this, updateHelper, evaluator(), spp, refHelper),
                 new CustomizerProviderImpl( this, updateHelper, evaluator(), refHelper ),
                 new ClassPathProviderMerger(cpProvider),
-                new CompiledSourceForBinaryQuery(helper,evaluator(),getSourceRoots(),getTestSourceRoots()),
-                new JavadocForBinaryQueryImpl(helper, evaluator()),
+                QuerySupport.createCompiledSourceForBinaryQuery(helper, evaluator(), getSourceRoots(), getTestSourceRoots()),
+                QuerySupport.createJavadocForBinaryQuery(helper, evaluator()),
                 new AntArtifactProviderImpl(),
                 new ProjectXmlSavedHookImpl(),
                 UILookupMergerSupport.createProjectOpenHookMerger(new ProjectOpenedHookImpl()),
-                new UnitTestForSourceQueryImpl(getSourceRoots(),getTestSourceRoots()),
-                new SourceLevelQueryImpl(helper, evaluator()),
+                QuerySupport.createUnitTestForSourceQuery(getSourceRoots(), getTestSourceRoots()),
+                QuerySupport.createSourceLevelQuery(evaluator()),
                 new EjbJarSources (helper, evaluator(), getSourceRoots(), getTestSourceRoots()),
-                new EjbJarSharabilityQuery(helper, evaluator(), getSourceRoots(), getTestSourceRoots()),
-                new EjbJarFileBuiltQuery (helper, evaluator(),getSourceRoots(),getTestSourceRoots()),
-                new EjbJarProjectEncodingQueryImpl(evaluator()),
+                QuerySupport.createSharabilityQuery(helper, evaluator(), getSourceRoots(), getTestSourceRoots(),
+                        EjbJarProjectProperties.META_INF),
+                QuerySupport.createFileBuiltQuery(helper, evaluator(), getSourceRoots(), getTestSourceRoots()),
+                QuerySupport.createFileEncodingQuery(evaluator(), EjbJarProjectProperties.SOURCE_ENCODING),
                 new RecommendedTemplatesImpl(updateHelper),
                 refHelper,
                 classpathExtender,
@@ -408,14 +409,14 @@ public class EjbJarProject implements Project, AntProjectListener, FileChangeLis
      */    
     public synchronized SourceRoots getSourceRoots() {        
         if (this.sourceRoots == null) { //Local caching, no project metadata access
-            this.sourceRoots = new SourceRoots(this.updateHelper, evaluator(), getReferenceHelper(), "source-roots", false, "src.{0}{1}.dir"); //NOI18N
+            this.sourceRoots = SourceRoots.create(this.updateHelper, evaluator(), getReferenceHelper(), EjbJarProjectType.PROJECT_CONFIGURATION_NAMESPACE, "source-roots", false, "src.{0}{1}.dir"); //NOI18N
         }
         return this.sourceRoots;
     }
     
     public synchronized SourceRoots getTestSourceRoots() {
         if (this.testRoots == null) { //Local caching, no project metadata access
-            this.testRoots = new SourceRoots(this.updateHelper, evaluator(), getReferenceHelper(), "test-roots", true, "test.{0}{1}.dir"); //NOI18N
+            this.testRoots = SourceRoots.create(this.updateHelper, evaluator(), getReferenceHelper(), EjbJarProjectType.PROJECT_CONFIGURATION_NAMESPACE, "test-roots", true, "test.{0}{1}.dir"); //NOI18N
         }
         return this.testRoots;
     }
@@ -613,8 +614,10 @@ public class EjbJarProject implements Project, AntProjectListener, FileChangeLis
                     ProjectManager.mutex().writeAccess(new Runnable() {
                         public void run() {
                             EditableProperties ep = helper.getProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH);
-                            String classpath = Utils.toClasspathString(platform.getClasspathEntries());
-                            ep.setProperty(EjbJarProjectProperties.J2EE_PLATFORM_CLASSPATH, classpath);
+                            if (!Boolean.parseBoolean(ep.getProperty(EjbJarProjectProperties.J2EE_PLATFORM_SHARED))) {
+                                String classpath = Utils.toClasspathString(platform.getClasspathEntries());
+                                ep.setProperty(EjbJarProjectProperties.J2EE_PLATFORM_CLASSPATH, classpath);
+                            }
                             helper.putProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH, ep);
                             try {
                                 ProjectManager.getDefault().saveProject(EjbJarProject.this);

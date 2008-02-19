@@ -98,6 +98,11 @@ final class Deleter extends Plugin {
       List<Model> models = getModels(myElements);
       List<ErrorItem> errors = RefactoringUtil.precheckUsageModels(models, true);
 
+      if (errors == null) {
+        errors = new ArrayList<ErrorItem>();
+      }
+      populateErrors(errors);
+
       if (errors != null && errors.size() > 0) {
         return processErrors(errors);
       } 
@@ -114,6 +119,23 @@ final class Deleter extends Plugin {
     return null;
   }
 
+  private void populateErrors(List<ErrorItem> errors) {
+    for (Element element : myElements) {
+      Object object = element.getUserObject();
+
+      if (object instanceof PropertyAlias) {
+        continue;
+      }
+      ErrorItem error = new ErrorItem(
+        object,
+        i18n(Deleter.class, "ERR_Cascade_Delete_For_PropertyAlias_Only"), // NOI18N
+        ErrorItem.Level.FATAL);
+
+      errors.add(error);
+      break;
+    }
+  }
+      
   public Problem fastCheckParameters() {
     return null;
   }

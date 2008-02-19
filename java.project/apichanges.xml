@@ -117,8 +117,13 @@ is the proper place.
                 <p> A new utility class for helping project types create UI for
                 sharable Libraries.
                 </p>
+                <p> An additional protected method for use in ProjectClassPathModifierImplementation subclasses named
+                <code>performSharabilityHeuristics()</code> that takes classpath roots and tries to find the best way to reference that jar/folder.
+                </p>
+                
             </description>
             <class package="org.netbeans.spi.java.project.support.ui" name="SharableLibrariesUtils"/>
+            <class package="org.netbeans.spi.java.project.classpath" name="ProjectClassPathModifierImplementation"/>
             <issue number="44035"/>
         </change>        
     <change id="AttachJavadocSourceToJar">

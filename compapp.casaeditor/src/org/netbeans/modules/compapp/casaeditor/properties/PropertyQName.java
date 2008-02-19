@@ -50,6 +50,7 @@
 
 package org.netbeans.modules.compapp.casaeditor.properties;
 
+import org.netbeans.modules.compapp.casaeditor.properties.spi.BaseCasaProperty;
 import java.beans.PropertyEditor;
 import javax.xml.namespace.QName;
 import org.netbeans.modules.compapp.casaeditor.model.casa.CasaEndpointRef;

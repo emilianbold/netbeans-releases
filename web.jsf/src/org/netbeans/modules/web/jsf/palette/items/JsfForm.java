@@ -84,6 +84,7 @@ import org.openide.util.Exceptions;
 /**
  *
  * @author Pavel Buzek
+ * @author Po-Ting Wu
  */
 public final class JsfForm implements ActiveEditorDrop {
         
@@ -353,7 +354,7 @@ public final class JsfForm implements ActiveEditorDrop {
         FileObject fileObject = getFO(target);
         if (fileObject != null) {
             WebModule webModule = WebModule.getWebModule(fileObject);
-            String[] configFiles = JSFConfigUtilities.getConfigFiles(webModule.getDeploymentDescriptor());
+            String[] configFiles = JSFConfigUtilities.getConfigFiles(webModule);
             return configFiles != null && configFiles.length > 0;
         }
         return false;
@@ -507,10 +508,11 @@ public final class JsfForm implements ActiveEditorDrop {
                             String relatedClass = typeElement.getSimpleName().toString();
                             String relatedManagedBean = JSFClientGenerator.getManagedBeanName(relatedClass);
                             String detailManagedBean = bean.getSimpleName().toString();
-                            stringBuffer.append("<h2>List of " + name + "</h2>\n");
-                            stringBuffer.append("<h:outputText rendered=\"#{not " + relatedManagedBean + ".detail" + relatedClass + "s.rowAvailable}\" value=\"No " + name + "\"/><br>\n");
+                            stringBuffer.append("<br />\n");
+                            stringBuffer.append("<b>List of " + name + ":</b>\n");
+                            stringBuffer.append("<h:outputText rendered=\"#{" + relatedManagedBean + ".detail" + relatedClass + "s.rowCount == 0}\" escape=\"false\" value=\"<br />(No " + name + " Found)\"/>\n<br />\n");
                             stringBuffer.append("<h:dataTable value=\"#{" + relatedManagedBean + ".detail" + relatedClass + "s}\" var=\"item\" \n");
-                            stringBuffer.append("border=\"1\" cellpadding=\"2\" cellspacing=\"0\" \n rendered=\"#{not empty " + relatedManagedBean + ".detail" + relatedClass + "s}\">\n"); //NOI18N
+                            stringBuffer.append("border=\"1\" cellpadding=\"2\" cellspacing=\"0\" \n rendered=\"#{" + relatedManagedBean + ".detail" + relatedClass + "s.rowCount > 0}\">\n"); //NOI18N
                             String removeItems = "remove" + methodName.substring(3);
                             String commands = " <h:column>\n <h:commandLink value=\"Destroy\" action=\"#'{'" + relatedManagedBean + ".destroyFrom" + detailManagedBean + "'}'\">\n" 
                                     + "<f:param name=\"" + relatedIdProperty +"\" value=\"#'{'{0}." + relatedIdProperty + "'}'\"/>\n"
@@ -519,25 +521,27 @@ public final class JsfForm implements ActiveEditorDrop {
                                     + " <h:commandLink value=\"Edit\" action=\"#'{'" + relatedManagedBean + ".editSetup'}'\">\n"
                                     + "<f:param name=\"" + relatedIdProperty +"\" value=\"#'{'{0}." + relatedIdProperty + "'}'\"/>\n"
                                     + "<h:outputText value=\" \"/>\n </h:commandLink>\n"
-                                    + (otherSideMultiplicity == REL_TO_MANY ? "<h:commandLink value=\"Remove\" action=\"#'{'" + managedBean + "." + removeItems + "'}'\"/>" : "")
+                                    + "<h:commandLink value=\"Remove\" action=\"#'{'" + managedBean + "." + removeItems + "'}'\"/>"
                                     + "</h:column>\n";
                             
                             JsfTable.createTable(controller, typeElement, variable + "." + propName, stringBuffer, commands, "detailSetup");
                             stringBuffer.append("</h:dataTable>\n");
-                            if (otherSideMultiplicity == REL_TO_MANY) {
-                                stringBuffer.append("<br>\n Add " + relatedClass + "s:\n <br>\n");
-                                String itemsToAdd = JSFClientGenerator.getPropNameFromMethod(methodName + "ToAdd");
-                                stringBuffer.append("<h:selectManyListbox id=\"add" + relatedClass + "s\" value=\"#{" 
-                                        + managedBean + "." + itemsToAdd + "}\" title=\"Add " + name + ":\">\n");
-                                String availableItems = JSFClientGenerator.getPropNameFromMethod(methodName + "Available");
-                                stringBuffer.append("<f:selectItems value=\"#{" + managedBean + "." + availableItems + "}\"/>\n");
-                                stringBuffer.append("</h:selectManyListbox>\n");
-                                String addItems = "add" + methodName.substring(3);
-                                stringBuffer.append("<h:commandButton value=\"Add\" action=\"#{" + managedBean + "." + addItems + "}\"/>\n <br>\n");
-                            }
-                            stringBuffer.append("<h:commandLink value=\"New " + name + "\" action=\"#{" + relatedManagedBean + ".createFrom" + detailManagedBean + "Setup}\">\n");
+
+                            String availableItems = JSFClientGenerator.getPropNameFromMethod(methodName + "Available");
+                            stringBuffer.append("<h:panelGroup rendered=\"#{not empty " + managedBean + "." + availableItems + "}\">");
+                            stringBuffer.append("<br />\n<b>Add " + relatedClass + "s:</b>\n<br />\n");
+                            String itemsToAdd = JSFClientGenerator.getPropNameFromMethod(methodName + "ToAdd");
+                            stringBuffer.append("<h:selectManyListbox id=\"add" + relatedClass + "s\" value=\"#{" 
+                                    + managedBean + "." + itemsToAdd + "}\" title=\"Add " + name + ":\">\n");
+                            stringBuffer.append("<f:selectItems value=\"#{" + managedBean + "." + availableItems + "}\"/>\n");
+                            stringBuffer.append("</h:selectManyListbox>\n");
+                            String addItems = "add" + methodName.substring(3);
+                            stringBuffer.append("<h:commandButton value=\"Add\" action=\"#{" + managedBean + "." + addItems + "}\"/>\n <br>\n");
+                            stringBuffer.append("</h:panelGroup>\n");
+
+                            stringBuffer.append("<br />\n<h:commandLink value=\"Add New " + typeElement.getSimpleName() + "\" action=\"#{" + relatedManagedBean + ".createFrom" + detailManagedBean + "Setup}\">\n");
                             stringBuffer.append("<f:param name=\"relatedId\" value=\"#{" + variable + "." + idProperty + "}\"/>\n");
-                            stringBuffer.append("</h:commandLink>\n <br>\n <br>\n");
+                            stringBuffer.append("</h:commandLink>\n<br />\n");
                         } else {
                             Logger.getLogger("global").log(Level.INFO, "cannot find referenced class: " + method.getReturnType()); // NOI18N
                         }

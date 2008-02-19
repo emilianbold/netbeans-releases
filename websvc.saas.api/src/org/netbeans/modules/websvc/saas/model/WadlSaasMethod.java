@@ -43,7 +43,9 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import org.netbeans.modules.websvc.saas.model.jaxb.Method;
+import org.netbeans.modules.websvc.saas.model.wadl.Application;
 import org.netbeans.modules.websvc.saas.model.wadl.Resource;
+import org.netbeans.modules.websvc.saas.model.wadl.Resources;
 import org.netbeans.modules.websvc.saas.util.SaasUtil;
 import org.openide.util.Exceptions;
 
@@ -53,25 +55,43 @@ import org.openide.util.Exceptions;
  */
 public class WadlSaasMethod extends SaasMethod {
     private Resource[] path;
+    private WadlSaasResource parent;
     private org.netbeans.modules.websvc.saas.model.wadl.Method wadlMethod;
 
     public WadlSaasMethod(WadlSaas wadlSaas, Method method) {
         super(wadlSaas, method);
+    }
+    
+    public WadlSaasMethod(WadlSaasResource parent, org.netbeans.modules.websvc.saas.model.wadl.Method wadlMethod) {
+        this(parent.getSaas(), (Method) null);
+        this.parent = parent;
+        this.wadlMethod = wadlMethod;
     }
 
     public WadlSaas getSaas() {
         return (WadlSaas) super.getSaas();
     }
     
+    public WadlSaasResource getParentResource() {
+        return parent;
+    }
+    
     public Resource[] getResourcePath() {
-        if (path == null) {
+        if (path == null || path.length == 0) {
             ArrayList<Resource> result = new ArrayList<Resource>();
-            for (Resource base : getSaas().getResources()) {
-                findPathToMethod(base, result);
-                if (result.size() > 0) {
-                    break;
+            try {
+                Application app = this.getSaas().getWadlModel();
+                Resources rs = app.getResources();
+                for (Resource r : rs.getResource()) {
+                    findPathToMethod(r, result);
                 }
+            } catch (IOException ex) {
             }
+//            WadlSaasResource current = getParentResource();
+//            while (current != null) {
+//                result.add(0, current.getResource());
+//                current = current.getParent();
+//            }
             path = result.toArray(new Resource[result.size()]);
         }
         return path;
@@ -96,15 +116,19 @@ public class WadlSaasMethod extends SaasMethod {
     }
     
     public org.netbeans.modules.websvc.saas.model.wadl.Method getWadlMethod() {
-        if (wadlMethod == null && getHref() != null) {
-            try {
-                if (getHref().charAt(0) == '/') {
-                    wadlMethod = SaasUtil.wadlMethodFromXPath(getSaas().getWadlModel(), getHref());
-                } else {
-                    wadlMethod = SaasUtil.wadlMethodFromIdRef(getSaas().getWadlModel(), getHref());
+        if (wadlMethod == null) {
+            if (getHref() != null && getHref().length() > 0) {
+                try {
+                    if (getHref().charAt(0) == '/') {
+                        wadlMethod = SaasUtil.wadlMethodFromXPath(getSaas().getWadlModel(), getHref());
+                    } else {
+                        wadlMethod = SaasUtil.wadlMethodFromIdRef(getSaas().getWadlModel(), getHref());
+                    }
+                } catch (IOException ioe) {
+                    Exceptions.printStackTrace(ioe); 
                 }
-            } catch (IOException ioe) {
-                Exceptions.printStackTrace(ioe); 
+            } else {
+                throw new IllegalArgumentException("Element method " + getName() + " should define attribute 'href'");
             }
         }
         return wadlMethod;

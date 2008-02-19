@@ -39,16 +39,15 @@
 
 package org.netbeans.modules.websvc.saas.model;
 
-import java.net.MalformedURLException;
-import java.net.URLClassLoader;
+import java.io.IOException;
 import java.util.List;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
 import org.netbeans.modules.websvc.saas.model.jaxb.Method;
 import org.netbeans.modules.websvc.saas.model.jaxb.SaasServices;
 import org.netbeans.modules.websvc.saas.model.jaxb.SaasServices.Header;
 import org.netbeans.modules.websvc.saas.model.jaxb.SaasMetadata;
+import org.netbeans.modules.websvc.saas.util.SaasUtil;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
 import org.openide.util.RequestProcessor;
@@ -63,8 +62,10 @@ public class Saas {
 
     public static enum State { 
         UNINITIALIZED, 
-        RETRIEVED, 
-        READY 
+        INITIALIZING, 
+        RESOLVED,
+        READY
+     
     }
     
     public static final String NS_SAAS = "http://xml.netbeans.org/websvc/saas/services/1.0";
@@ -77,13 +78,20 @@ public class Saas {
     private List<SaasMethod> saasMethods;
     
     private State state = State.UNINITIALIZED;
-    private FileObject saasFolder; // userdir folder to store customization and consumer artifacts
+    protected FileObject saasFolder; // userdir folder to store customization and consumer artifacts
     private FileObject moduleJar; // NBM this saas was loaded from
-    private URLClassLoader loader;
+    private boolean userDefined = true;
 
     public Saas(SaasGroup parentGroup, SaasServices services) {
         this.delegate = services;
         this.parentGroup = parentGroup;
+    }
+    
+    public Saas(String url, String displayName, String description) {
+        delegate = new SaasServices();
+        delegate.setUrl(url);
+        delegate.setDisplayName(displayName);
+        delegate.setDescription(description);
     }
 
     public SaasServices getDelegate() {
@@ -94,10 +102,41 @@ public class Saas {
         return parentGroup;
     }
 
-    public void setParentGroup(SaasGroup parentGroup) {
+    protected void setParentGroup(SaasGroup parentGroup) {
         this.parentGroup = parentGroup;
     }
 
+    protected FileObject saasFile;
+    public FileObject getSaasFile() throws IOException {
+        if (saasFile == null) {
+            FileObject folder = getSaasFolder();
+            String filename = folder.getName() + "-saas.xml"; //NOI18N
+            saasFile = folder.getFileObject(filename);
+            if (saasFile == null) {
+                saasFile = getSaasFolder().createData(filename);
+            }
+        }
+        return saasFile;
+    }
+    
+    public void save() {
+        try {
+            SaasUtil.saveSaas(this, getSaasFile());
+        } catch(Exception e) {
+            Exceptions.printStackTrace(e);
+        }
+    }
+
+    public boolean isUserDefined() {
+        return userDefined;
+    }
+    
+    public void setUserDefined(boolean v) {
+        if (userDefined) {
+            userDefined = v;
+        }
+    }
+    
     public String getUrl() {
         return delegate.getUrl();
     }
@@ -119,7 +158,7 @@ public class Saas {
     public void toStateReady() {
         RequestProcessor.getDefault().post(new Runnable() {
             public void run() {
-                setState(State.READY);
+                setState(State.RESOLVED);
             }
         });
     }
@@ -169,11 +208,15 @@ public class Saas {
     }
     
     public FileObject getSaasFolder() {
+        return getSaasFolder(true);
+    }
+    
+    public FileObject getSaasFolder(boolean create) {
         if (saasFolder == null) {
-            saasFolder = getParentGroup().getGroupFolder().getFileObject(getDisplayName(), null);
-            if (saasFolder == null) {
+            saasFolder = SaasServicesModel.getWebServiceHome().getFileObject(getDisplayName());
+            if (saasFolder == null && create) {
                 try {
-                    saasFolder = getParentGroup().getGroupFolder().createFolder(getDisplayName());
+                    saasFolder = SaasServicesModel.getWebServiceHome().createFolder(getDisplayName());
                 } catch(Exception ex) {
                     Exceptions.printStackTrace(ex);
                 }
@@ -182,11 +225,16 @@ public class Saas {
         return saasFolder;
     }
     
+    @Override
+    public String toString() {
+        return getDisplayName();
+    }
+    
     /**
      * Get the URL class loader for the module defining this SaaS.
      * @return URLClassLoader instance; or null if this SaaS does not come from an NBM
      */
-    protected URLClassLoader getModuleLoader() {
+    /*protected URLClassLoader getModuleLoader() {
         if (loader == null) {
             try {
                 loader = new URLClassLoader(new URL[] { new URL(moduleJar.getPath()) });
@@ -195,5 +243,5 @@ public class Saas {
             }
         }
         return loader;
-    }
+    }*/
 }

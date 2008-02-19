@@ -42,10 +42,13 @@
 <project name="properties" default="none" basedir=".">
     <property environment="env"/>
 
+    <!-- daily -->
+    <property name="netbeans.host" value="http://bits.netbeans.org"/>
+    <property name="netbeans.path" value="dev/nightly/latest/zip"/>
+
     <!-- dev -->
-    <property name="netbeans.host" value="http://deadlock.netbeans.org"/>
-    <property name="netbeans.path" value="hudson/job/trunk/lastSuccessfulBuild/artifact/nbbuild/dist/zip"/>
-    <property name="netbeans.dir" value=".netbeans/dev"/>
+    <!--property name="netbeans.host" value="http://deadlock.netbeans.org"/>
+    <property name="netbeans.path" value="hudson/job/trunk/lastSuccessfulBuild/artifact/nbbuild/dist/zip"/-->
 
     <property name="test.cvs.root" value=":pserver:guest@cvs.dev.java.net:/cvs"/>
     <property name="test.cvs.path" value="open-jbi-components/driver-tests/bpelse"/>
@@ -144,6 +147,7 @@
     <property name="jbi" location="${test}/${test.cvs.path}"/>
     <property name="latest" value="${cache}/latest"/>
     <property name="netbeans" value="${cache}/netbeans"/>
+    <property name="netbeans.dir" value=".netbeans/dev"/>
     <property name="sierra.dir"  value=".netbeans/sierra"/>
     <property name="samples" value="${home}/bpel.samples/resources"/>
     <property name="build.number" value="${home}/nbbuild/netbeans/platform8/build_number"/>

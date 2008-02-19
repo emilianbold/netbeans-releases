@@ -50,11 +50,11 @@ class DumpVisitor extends Node.Visitor {
 
     private int indent = 0;
 
-    private StringBuffer buf;
+    private StringBuilder buf;
 
     private DumpVisitor() {
         super();
-        buf = new StringBuffer();
+        buf = new StringBuilder();
     }
 
     /**
@@ -74,7 +74,7 @@ class DumpVisitor extends Node.Visitor {
         if (attrs == null)
             return "";
 
-        StringBuffer buf = new StringBuffer();
+        StringBuilder buf = new StringBuilder();
         for (int i=0; i < attrs.getLength(); i++) {
             buf.append(" " + attrs.getQName(i) + "=\""
                        + attrs.getValue(i) + "\"");

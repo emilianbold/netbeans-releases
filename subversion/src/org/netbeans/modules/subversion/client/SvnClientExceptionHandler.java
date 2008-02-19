@@ -661,10 +661,10 @@ public class SvnClientExceptionHandler {
         if(isCancelledAction(ex.getMessage())) {
             cancelledAction();
             return;
-        }                 
-        Subversion.LOG.log(Level.WARNING, ex.getMessage(), ex);
+        }                   
+        Subversion.LOG.log(Level.INFO, ex.getMessage(), ex);
         if( annotate ) {
-            String msg = getCustomizedMessage(ex);
+            String msg = getCustomizedMessage(ex);  
             if(msg == null) {
                 if(ex instanceof SVNClientException) {
                     msg = parseExceptionMessage((SVNClientException) ex);    
