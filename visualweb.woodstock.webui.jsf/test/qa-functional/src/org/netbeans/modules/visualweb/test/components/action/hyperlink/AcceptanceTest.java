@@ -213,7 +213,7 @@ public class AcceptanceTest extends RaveTestCase {
         editor.requestFocus();
         TestUtils.wait(2000);
         editor.pushKey(KeyEvent.VK_ENTER);
-        editor.typeText("hyperlink1.setUrl(\"http://www.google.com\");");
+        editor.typeText("//hyperlink1.setUrl(\"http://www.google.com\");");
         editor.pushKey(KeyEvent.VK_ENTER);
         
         TestUtils.wait(200);
