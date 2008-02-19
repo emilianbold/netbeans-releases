@@ -57,7 +57,7 @@ import org.openide.util.Exceptions;
  *
  * @author Rohan Ranade (Rohan.Ranade@Sun.COM)
  */
-public class BeansRefHyperlinkProcessor implements HyperlinkProcessor {
+public class BeansRefHyperlinkProcessor extends HyperlinkProcessor {
 
     private boolean globalSearch;
 

@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- *
+ * 
  * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
- *
+ * 
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,13 +20,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
+ * 
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -37,56 +31,46 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ * 
+ * Contributor(s):
+ * 
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.refactoring.support;
+package org.netbeans.modules.ruby.railsprojects.database;
 
-import javax.swing.Icon;
-import org.netbeans.modules.cnd.api.model.CsmObject;
-import org.netbeans.modules.cnd.api.model.CsmUID;
-import org.netbeans.modules.cnd.modelutil.CsmImageLoader;
-import org.openide.filesystems.FileObject;
-
+import org.netbeans.modules.ruby.railsprojects.RailsProject;
 
 /**
- * wrapper object for csm object to be stored in index collection
- * @author Vladimir Voskresensky
+ * Handles the database configuration for a Rails project.
+ *
+ * @author Erno Mononen
  */
-public final class CsmObjectBox {
-
-    private CsmUID<CsmObject> delegateElementHandle;
-    private String toString;
-    private FileObject fileObject;
-    private Icon icon;
+public interface RailsDatabaseConfiguration {
 
     /**
-     * Creates a new instance of ElementGrip
+     * @return the name of the database represented by this configuration.
      */
-    public CsmObjectBox(CsmObject object) {
-        this.delegateElementHandle = CsmRefactoringUtils.getHandler(object);
-        this.toString = CsmRefactoringUtils.getHtml(object);
-        this.fileObject = CsmRefactoringUtils.getFileObject(object);
-        this.icon = CsmImageLoader.getIcon(object);
-    }
-
-    public Icon getIcon() {
-        return icon;
-    }
-
-    @Override
-    public String toString() {
-        return toString;
-    }
-
-    public CsmObjectBox getParent() {
-        return CsmObjectBoxFactory.getDefault().getParent(this);
-    }
-
-    public FileObject getFileObject() {
-        return fileObject;
-    }
-
-    public CsmUID<CsmObject> getHandle() {
-        return delegateElementHandle;
-    }
+    String getDatabase();
+    
+    /**
+     * Checks whether this configuration requires additional config. If the 
+     * method returns true, the client should invoke the {@link editConfig(FileObject)} 
+     * method.
+     * 
+     * @return true if additional configuration is required, false otherwise.
+     */
+    boolean needExtraConfig();
+    
+    /**
+     * Edits the database config file (database.yml) of the given <code>project</code>
+     * as required by this configuration, and in case of JDBC connections, 
+     * possibly adds a reference to the required 
+     * driver jar files to the properties of the <code>project</code>.
+     * 
+     * @param projectDir the project whose <code>database.yml</code> is 
+     * to be edited.
+     */
+    void editConfig(RailsProject project);
+    
 }

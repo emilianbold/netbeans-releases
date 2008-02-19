@@ -671,7 +671,7 @@ public class CompletionResolverImpl implements CompletionResolver {
             resolveTypes |= RESOLVE_CLASS_ENUMERATORS;
             resolveTypes |= RESOLVE_CLASS_NESTED_CLASSIFIERS;
         }
-        if (CsmContextUtilities.isInFunctionBody(context, offset)) {
+        if (CsmContextUtilities.isInFunctionBodyOrInitializerList(context, offset)) {
             // some other info to remember in this context
             resolveTypes |= RESOLVE_GLOB_VARIABLES;
             resolveTypes |= RESOLVE_GLOB_ENUMERATORS;

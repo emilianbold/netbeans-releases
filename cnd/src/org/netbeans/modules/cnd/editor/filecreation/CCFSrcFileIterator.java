@@ -55,6 +55,7 @@ import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
 import org.netbeans.modules.cnd.loaders.CndAbstractDataLoaderExt;
+import org.netbeans.modules.cnd.loaders.HDataObject;
 import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.WizardDescriptor;
 import org.openide.cookies.OpenCookie;
@@ -87,11 +88,16 @@ public class CCFSrcFileIterator implements TemplateWizard.Iterator {
     }
 
     public void initialize (TemplateWizard wiz) {
-        if (wiz.getTemplate().getLoader() instanceof CndAbstractDataLoaderExt) {
+        DataObject dobj = wiz.getTemplate();
+        if (dobj.getLoader() instanceof CndHandlableExtensions) {
             Project project = Templates.getProject( wiz );
             Sources sources = ProjectUtils.getSources(project);
             SourceGroup[] groups = sources.getSourceGroups(Sources.TYPE_GENERIC);
-            ExtensionsSettings es = ExtensionsSettings.getInstance((CndAbstractDataLoaderExt)wiz.getTemplate().getLoader());
+            ExtensionsSettings es = ExtensionsSettings.getInstance((CndHandlableExtensions)wiz.getTemplate().getLoader());
+            // this is the only place where we want to differ c headers from cpp headers (creation of new one)
+            if (dobj instanceof HDataObject && dobj.getPrimaryFile().getPath().indexOf("cpp") == -1) { //NOI18N
+                es = es.getSpecializedInstance("c-header"); //NOI18N
+            }
             targetChooserDescriptorPanel = new NewCndFileChooserPanel(project, groups, null, es);
         } else {
             targetChooserDescriptorPanel = wiz.targetChooser();

@@ -178,32 +178,36 @@ public class GetCleanAction extends AbstractSystemAction {
                     } else {
                         target = FileUtil.toFileObject(file);
                     }
-                    InputStream in = null;
-                    OutputStream out = null;
-                    FileLock lock = null;
-                    try {
-                        in = new FileInputStream(cleanFile);
-                        lock = target.lock();
-                        out = target.getOutputStream(lock);
-                        copyStream(in, out);
-                    } finally {
-                        if (in != null) {
-                            try {
-                                in.close();
-                            } catch (IOException alreadyClosed) {
+                    if (target == null) {
+                        org.netbeans.modules.versioning.util.Utils.copyStreamsCloseAll(new FileOutputStream(file), new FileInputStream(cleanFile));
+                        FileUtil.refreshFor(file);
+                    } else {
+                        InputStream in = null;
+                        OutputStream out = null;
+                        FileLock lock = null;
+                        try {
+                            in = new FileInputStream(cleanFile);
+                            lock = target.lock();
+                            out = target.getOutputStream(lock);
+                            copyStream(in, out);
+                        } finally {
+                            if (in != null) {
+                                try {
+                                    in.close();
+                                } catch (IOException alreadyClosed) {
+                                }
+                            }
+                            if (out != null) {
+                                try {
+                                    out.close();
+                                } catch (IOException alreadyClosed) {
+                                }
+                            }
+                            if (lock != null) {
+                                lock.releaseLock();
                             }
                         }
-                        if (out != null) {
-                            try {
-                                out.close();
-                            } catch (IOException alreadyClosed) {
-                            }
-                        }
-                        if (lock != null) {
-                            lock.releaseLock();
-                        }
-                    }
-
+                    }                   
                 } finally {
 //                    CvsVersioningSystem.ignoreFilesystemEvents(false);
                 }
