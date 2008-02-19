@@ -45,7 +45,6 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -126,16 +125,10 @@ public final class SharabilityUtilities {
         if (platform == null) {
             throw new IOException("Server instance does not exist"); // NOI18N
         }
-        String serverType = Deployment.getDefault().getServerID(serverInstanceId);
-        if (serverType == null) {
-            throw new IOException("Server instance does not exist"); // NOI18N
-        }
-        return createLibrary(location, libraryName, serverType, platform.getClasspathEntries());
+        return createLibrary(location, libraryName, platform.getClasspathEntries());
     }
 
-    public static Library createLibrary(File location,
-            String libraryName, String serverType, File[] files) throws IOException {
-
+    public static Library createLibrary(File location, String libraryName, File[] files) throws IOException {
         Parameters.notNull("location", location); // NOI18N
 
         FileObject libraries = FileUtil.toFileObject(FileUtil.normalizeFile(location));
@@ -151,14 +144,14 @@ public final class SharabilityUtilities {
         content.put("classpath", classpath); // NOI18N
 
         FileObject baseFolder = libraries.getParent();
-        String folderName = getFolderName(baseFolder, serverType);
+        String folderName = getFolderName(baseFolder, libraryName);
         FileObject jarFolder = FileUtil.createFolder(baseFolder, folderName);
 
         Map<String, Integer> usedNames = new  HashMap<String, Integer>();
         for (File jarFile : files) {
             FileObject jarObject = FileUtil.toFileObject(FileUtil.normalizeFile(jarFile));
             if (jarObject != null) {
-                String name = jarObject.getName() + "-" + getEntrySuffix(jarObject.getNameExt(), usedNames);
+                String name = jarObject.getName() + getEntrySuffix(jarObject.getNameExt(), usedNames);
                 FileUtil.copyFile(jarObject, jarFolder, name, jarObject.getExt());
                 URL u = LibrariesSupport.convertFilePathToURL(folderName
                         + File.separator + jarObject.getNameExt().replace(jarObject.getName(), name));
@@ -183,7 +176,7 @@ public final class SharabilityUtilities {
         if (value.intValue() == 0) {
             return ""; // NOI18N
         }
-        return value.toString();
+        return "-" + value.toString();
     }
 
     public static String getDisplayLibraryName(String name) {
@@ -199,9 +192,9 @@ public final class SharabilityUtilities {
         return LIBRARY_PREFIX + name;
     }
 
-    private static String getFolderName(FileObject baseFolder, String serverType) {
+    private static String getFolderName(FileObject baseFolder, String libraryName) {
         int suffix = 2;
-        String baseName = LIBRARY_PREFIX + serverType.toLowerCase(Locale.ENGLISH);  //NOI18N
+        String baseName = libraryName;  //NOI18N
 
         String name = baseName;
         while (baseFolder.getFileObject(name) != null) {

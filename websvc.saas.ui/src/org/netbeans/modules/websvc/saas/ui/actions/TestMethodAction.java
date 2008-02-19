@@ -41,6 +41,7 @@
 
 package org.netbeans.modules.websvc.saas.ui.actions;
 
+import org.netbeans.modules.websvc.saas.model.Saas;
 import org.netbeans.modules.websvc.saas.model.WsdlSaasMethod;
 import org.netbeans.modules.websvc.saas.ui.wizards.TestWebServiceMethodDlg;
 import org.openide.nodes.Node;
@@ -69,6 +70,7 @@ public class TestMethodAction extends NodeAction {
         return HelpCtx.DEFAULT_HELP;
     }
     
+    @Override
     protected String iconResource() {
         return "org/netbeans/modules/visualweb/saas/ui/resources/ActionIcon.gif";
     }
@@ -80,7 +82,8 @@ public class TestMethodAction extends NodeAction {
     protected void performAction(org.openide.nodes.Node[] nodes) {
         if (nodes != null && nodes.length == 1) {
             WsdlSaasMethod method = nodes[0].getLookup().lookup(WsdlSaasMethod.class);
-            if (method != null && method.getJavaMethod() != null) {
+            if (method != null && method.getSaas().getState() == Saas.State.READY &&
+                    method.getJavaMethod() != null) {
                 TestWebServiceMethodDlg testDialog = new TestWebServiceMethodDlg(method);
                 testDialog.displayDialog();
             }

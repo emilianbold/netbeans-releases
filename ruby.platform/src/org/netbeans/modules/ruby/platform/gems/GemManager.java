@@ -61,7 +61,6 @@ import java.util.regex.Pattern;
 import org.netbeans.api.ruby.platform.RubyPlatform;
 import org.netbeans.api.ruby.platform.RubyPlatformManager;
 import org.netbeans.modules.gsfret.source.usages.ClassIndexManager;
-import org.netbeans.modules.ruby.platform.DebuggerPreferences;
 import org.netbeans.modules.ruby.platform.Util;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -78,8 +77,6 @@ import org.openide.util.Utilities;
  * Class which handles gem interactions - executing gem, installing, uninstalling, etc.
  *
  * @todo Use the new ExecutionService to do process management.
- *
- * @author Tor Norbye
  */
 public final class GemManager {
 
@@ -188,6 +185,13 @@ public final class GemManager {
     }
 
     /** Initialize/creates empty Gem Repository. */
+    public static void initializeRepository(File gemRepo) throws IOException {
+        if (!gemRepo.exists()) {
+            gemRepo.mkdirs();
+        }
+        initializeRepository(FileUtil.toFileObject(gemRepo));
+    }
+    /** Initialize/creates empty Gem Repository. */
     public static void initializeRepository(FileObject gemRepo) throws IOException {
         for (String dir : TOP_LEVEL_REPO_DIRS) {
             gemRepo.createFolder(dir);
@@ -252,10 +256,6 @@ public final class GemManager {
         }
         if (result) {
             storeGemPath(gemPath);
-            DebuggerPreferences prefs = DebuggerPreferences.getInstance();
-            if (!platform.isJRuby() && platform.hasFastDebuggerInstalled()) {
-                prefs.setUseClassicDebugger(platform, false);
-            }
         }
         return result;
     }
@@ -398,8 +398,8 @@ public final class GemManager {
             }
 
             // special hack for fast debugger
-            if (specName.startsWith("ruby-debug-base-")) {
-                boolean forJavaPlaf = specName.endsWith("-java.gemspec");
+            if (specName.startsWith("ruby-debug-base-")) { // NOI18N
+                boolean forJavaPlaf = specName.endsWith("-java.gemspec"); // NOI18N
                 if (platform.isJRuby() && !forJavaPlaf) {
                     continue;
                 }
@@ -422,16 +422,16 @@ public final class GemManager {
         }
         
         if (gemFiles == null) {
-            LOGGER.log(level, "No gems found, gemFiles is null");
+            LOGGER.log(level, "No gems found, gemFiles is null"); // NOI18N
             return;
         }
         
-        LOGGER.log(level, "Found " + gemFiles.size() + " gems.");
+        LOGGER.log(level, "Found " + gemFiles.size() + " gems."); // NOI18N
         for (String key : gemFiles.keySet()) {
             Map<String, File> value = gemFiles.get(key);
-            LOGGER.log(level, key + " has " + (value == null ? "null" : "" + value.size()) + " version(s):");
+            LOGGER.log(level, key + " has " + (value == null ? "null" : "" + value.size()) + " version(s):"); // NOI18N
             for (String version : value.keySet()) {
-                LOGGER.log(level, version + " at " + value.get(version));
+                LOGGER.log(level, version + " at " + value.get(version)); // NOI18N
             }
         }
     }
@@ -1106,7 +1106,7 @@ public final class GemManager {
     }
 
     static boolean isValidGemHome(final File gemHomeF) {
-        Parameters.notNull("gemHomeF", gemHomeF);
+        Parameters.notNull("gemHomeF", gemHomeF); // NOI18N
         boolean valid = gemHomeF.isDirectory();
         for (int i = 0; valid && i < TOP_LEVEL_REPO_DIRS.length; i++) {
             String dir = TOP_LEVEL_REPO_DIRS[i];

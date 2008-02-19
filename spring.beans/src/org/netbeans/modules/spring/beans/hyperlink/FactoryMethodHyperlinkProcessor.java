@@ -57,7 +57,7 @@ import org.w3c.dom.Node;
  * 
  * @author Rohan Ranade (Rohan.Ranade@Sun.COM)
  */
-public class FactoryMethodHyperlinkProcessor implements HyperlinkProcessor {
+public class FactoryMethodHyperlinkProcessor extends HyperlinkProcessor {
 
     private static final String FACTORY_BEAN_ATTRIB = "factory-bean"; // NOI18N
     private static final String FACTORY_METHOD_ATTRIB = "factory-method"; // NOI18N

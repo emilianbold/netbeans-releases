@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -48,11 +48,7 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.text.MessageFormat;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
-import java.util.ResourceBundle;
-import javax.swing.JComponent;
-import javax.swing.JPanel;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.ruby.rubyproject.RubyProject;
@@ -62,13 +58,12 @@ import org.netbeans.modules.ruby.spi.project.support.rake.PropertyEvaluator;
 import org.netbeans.modules.ruby.spi.project.support.rake.ReferenceHelper;
 import org.netbeans.spi.project.ui.CustomizerProvider;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer;
-import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.lookup.Lookups;
 
-
-/** Customization of Ruby project
+/**
+ * Customization of Ruby project.
  *
  * @author Petr Hrebejk
  */
@@ -80,17 +75,6 @@ public class CustomizerProviderImpl implements CustomizerProvider {
     private final ReferenceHelper refHelper;
     private final GeneratedFilesHelper genFileHelper;
     
-    private ProjectCustomizer.Category categories[];
-    private ProjectCustomizer.CategoryComponentProvider panelProvider;
-    
-    // Option indexes
-    private static final int OPTION_OK = 0;
-    private static final int OPTION_CANCEL = OPTION_OK + 1;
-    
-    // Option command names
-    private static final String COMMAND_OK = "OK";          // NOI18N
-    private static final String COMMAND_CANCEL = "CANCEL";  // NOI18N
-
     public static final String CUSTOMIZER_FOLDER_PATH = "Projects/org-netbeans-modules-ruby-rubyproject/Customizer"; //NOI18N
     
     private static Map <Project, Dialog> project2Dialog = new HashMap<Project, Dialog>(); 

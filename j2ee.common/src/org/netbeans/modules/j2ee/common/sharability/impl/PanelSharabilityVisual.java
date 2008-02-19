@@ -14,9 +14,12 @@ import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.io.File;
 import javax.swing.DefaultComboBoxModel;
+import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JRadioButton;
 import javax.swing.event.ChangeListener;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.modules.j2ee.common.sharability.PanelSharability;
 import org.netbeans.modules.j2ee.common.sharability.SharabilityUtilities;
@@ -50,7 +53,20 @@ public class PanelSharabilityVisual extends javax.swing.JPanel {
         this.panel = panel;
         currentLibrariesLocation = ".." + File.separatorChar + "libraries"; // NOI18N
         librariesLocation.setText(currentLibrariesLocation);
+        librariesLocation.getDocument().addDocumentListener(new DocumentListener() {
+            public void insertUpdate(DocumentEvent e) {
+                changeSupport.fireChange();
+            }
 
+            public void removeUpdate(DocumentEvent e) {
+                changeSupport.fireChange();
+            }
+
+            public void changedUpdate(DocumentEvent e) {
+                changeSupport.fireChange();
+            }
+        });
+        
         libraryRadioButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 changeSupport.fireChange();
@@ -89,6 +105,10 @@ public class PanelSharabilityVisual extends javax.swing.JPanel {
         changeSupport.removeChangeListener(l);
     }
 
+    public JCheckBox getSharableProject() {
+        return sharableProject;
+    }
+    
     public JRadioButton getLibraryRadioButton() {
         return libraryRadioButton;
     }
@@ -172,8 +192,6 @@ public class PanelSharabilityVisual extends javax.swing.JPanel {
         librariesLabel.setLabelFor(librariesLocation);
         org.openide.awt.Mnemonics.setLocalizedText(librariesLabel, org.openide.util.NbBundle.getMessage(PanelSharabilityVisual.class, "PanelSharabilityVisual.librariesLabel.text")); // NOI18N
 
-        librariesLocation.setEditable(false);
-
         org.openide.awt.Mnemonics.setLocalizedText(browseLibraries, org.openide.util.NbBundle.getMessage(PanelSharabilityVisual.class, "PanelSharabilityVisual.browseLibraries.text")); // NOI18N
         browseLibraries.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -196,10 +214,10 @@ public class PanelSharabilityVisual extends javax.swing.JPanel {
             .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
                 .add(librariesLabel)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(librariesLocation, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 175, Short.MAX_VALUE)
+                .add(librariesLocation, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 162, Short.MAX_VALUE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(browseLibraries))
-            .add(jSeparator1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 454, Short.MAX_VALUE)
+            .add(jSeparator1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 434, Short.MAX_VALUE)
             .add(layout.createSequentialGroup()
                 .add(messageLabel)
                 .addContainerGap())
@@ -210,10 +228,10 @@ public class PanelSharabilityVisual extends javax.swing.JPanel {
                 .add(21, 21, 21)
                 .add(libraryNameLabel)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(libraryNameComboBox, 0, 274, Short.MAX_VALUE))
+                .add(libraryNameComboBox, 0, 254, Short.MAX_VALUE))
             .add(layout.createSequentialGroup()
                 .add(libraryRadioButton)
-                .addContainerGap(180, Short.MAX_VALUE))
+                .addContainerGap(167, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
