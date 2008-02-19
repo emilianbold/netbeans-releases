@@ -16,17 +16,22 @@
     <DimensionLayout dim="0">
       <Group type="103" groupAlignment="0" attributes="0">
           <Group type="102" attributes="0">
-              <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
-                  <Component id="developmentLabel" alignment="0" min="-2" max="-2" attributes="0"/>
-                  <Component id="testLabel" alignment="0" min="-2" max="-2" attributes="0"/>
-                  <Component id="productionLabel" alignment="0" min="-2" max="-2" attributes="0"/>
-              </Group>
-              <EmptySpace max="-2" attributes="0"/>
-              <Group type="103" groupAlignment="0" attributes="0">
-                  <Component id="productionComboBox" alignment="0" pref="384" max="32767" attributes="0"/>
-                  <Component id="testComboBox" alignment="0" pref="384" max="32767" attributes="0"/>
-                  <Component id="developmentComboBox" alignment="0" pref="384" max="32767" attributes="0"/>
+                  <Component id="useJdbc" min="-2" max="-2" attributes="0"/>
+                  <Group type="102" alignment="1" attributes="0">
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Group type="103" groupAlignment="0" attributes="0">
+                          <Component id="developmentLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                          <Component id="testLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                          <Component id="productionLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                      </Group>
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Group type="103" groupAlignment="0" attributes="0">
+                          <Component id="productionComboBox" alignment="0" pref="384" max="32767" attributes="0"/>
+                          <Component id="testComboBox" alignment="0" pref="384" max="32767" attributes="0"/>
+                          <Component id="developmentComboBox" alignment="0" pref="384" max="32767" attributes="0"/>
+                      </Group>
+                  </Group>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
           </Group>
@@ -35,22 +40,23 @@
     <DimensionLayout dim="1">
       <Group type="103" groupAlignment="0" attributes="0">
           <Group type="102" alignment="0" attributes="0">
+              <Component id="useJdbc" min="-2" max="-2" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
                   <Component id="developmentLabel" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="developmentComboBox" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
-              <EmptySpace type="separate" max="-2" attributes="0"/>
+              <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
                   <Component id="testLabel" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="testComboBox" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
-              <EmptySpace type="separate" max="-2" attributes="0"/>
+              <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
                   <Component id="productionLabel" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="productionComboBox" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
-              <EmptySpace pref="37" max="32767" attributes="0"/>
+              <EmptySpace pref="66" max="32767" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>
@@ -82,6 +88,13 @@
     <Component class="javax.swing.JComboBox" name="productionComboBox">
     </Component>
     <Component class="javax.swing.JComboBox" name="testComboBox">
+    </Component>
+    <Component class="javax.swing.JCheckBox" name="useJdbc">
+      <Properties>
+        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/ruby/railsprojects/ui/wizards/Bundle.properties" key="UseJdbc" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+      </Properties>
     </Component>
   </SubComponents>
 </Form>
