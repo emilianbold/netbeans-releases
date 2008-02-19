@@ -238,9 +238,15 @@ public class StructureAnalyzer implements StructureScanner {
                     }
                     importEnd = offset;
                 } else if (t.id() == GroovyTokenId.BLOCK_COMMENT) {
-                    int offset = ts.offset();
-                    OffsetRange blockRange = new OffsetRange(offset, offset + t.length());
-                    commentfolds.add(blockRange);
+                    // does this Block comment (GSF_BLOCK_COMMENT) span
+                    // multiple lines? E.g. includes \n ?
+                    StringBuffer sb = new StringBuffer(t.text());
+                    
+                    if(sb.indexOf("\n") != -1) {
+                        int offset = ts.offset();
+                        OffsetRange blockRange = new OffsetRange(offset, offset + t.length());
+                        commentfolds.add(blockRange);
+                    }
                 }
             }
             
