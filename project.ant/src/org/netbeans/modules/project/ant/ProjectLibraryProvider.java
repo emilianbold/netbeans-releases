@@ -924,7 +924,8 @@ public class ProjectLibraryProvider implements ArealLibraryProvider<ProjectLibra
         String[] volumes = LibrariesSupport.getLibraryTypeProvider(lib.getType()).getSupportedVolumeTypes();
         for (String volume : volumes) {
             List<URL> volumeContent = new ArrayList<URL>();
-            for (URL libEntry : lib.getContent(volume)) {
+            for (URL origlibEntry : lib.getContent(volume)) {
+                URL libEntry = origlibEntry;
                 String jarFolder = null;
                 if ("jar".equals(libEntry.getProtocol())) { // NOI18N
                     jarFolder = getJarFolder(libEntry);
@@ -947,7 +948,7 @@ public class ProjectLibraryProvider implements ArealLibraryProvider<ProjectLibra
                 if (CollocationQuery.areCollocated(libBaseFolder, FileUtil.toFile(libEntryFO))) {
                     // if the jar/folder is in relation to the library folder (parent+child/same vcs)
                     // don't replicate it but reference the original file.
-                    u = libEntry;
+                    u = origlibEntry;
                 } else {
                     FileObject newFO;
                     String name;
