@@ -44,6 +44,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+import javax.swing.Action;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.db.explorer.DatabaseException;
@@ -111,12 +112,16 @@ class ServerNode extends AbstractNode implements ChangeListener {
     }
                 
     @Override
-    public SystemAction[] getActions(boolean context) {
-        return new SystemAction[] {
-            SystemAction.get(SettingsAction.class),
-            SystemAction.get(CreateDatabaseAction.class),
-            SystemAction.get(RefreshAction.class)
-        };
+    public Action[] getActions(boolean context) {
+        if ( context ) {
+            return super.getActions(context);
+        } else {
+            return new SystemAction[] {
+                SystemAction.get(CreateDatabaseAction.class),
+                SystemAction.get(RefreshAction.class),
+                SystemAction.get(PropertiesAction.class)
+            };
+        }
     }
             
     private static class ChildFactory 

@@ -39,7 +39,7 @@
 
 package org.netbeans.modules.db.mysql;
 
-import org.netbeans.modules.db.mysql.ui.SettingsPanel;
+import org.netbeans.modules.db.mysql.ui.PropertiesPanel;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
@@ -49,13 +49,13 @@ import org.openide.util.actions.CookieAction;
  *
  * @author David Van Couvering
  */
-public class SettingsAction extends CookieAction {
+public class PropertiesAction extends CookieAction {
     
     private static final Class[] COOKIE_CLASSES = new Class[] {
         ServerInstance.class
     };
 
-    public SettingsAction() {
+    public PropertiesAction() {
         putValue("noIconInMenu", Boolean.TRUE);
     }    
         
@@ -64,18 +64,18 @@ public class SettingsAction extends CookieAction {
     }
 
     public String getName() {
-        return NbBundle.getBundle(SettingsAction.class).getString("LBL_SettingsAction");
+        return NbBundle.getBundle(PropertiesAction.class).getString("LBL_PropertiesAction");
     }
 
     public HelpCtx getHelpCtx() {
-        return new HelpCtx(SettingsAction.class);
+        return new HelpCtx(PropertiesAction.class);
     }
 
     @Override
     protected void performAction(Node[] activatedNodes) {
         Node node = activatedNodes[0];
         ServerInstance server = node.getCookie(ServerInstance.class);
-        SettingsPanel.showMySQLSettings(server);
+        PropertiesPanel.showMySQLProperties(server);
     }
 
     @Override

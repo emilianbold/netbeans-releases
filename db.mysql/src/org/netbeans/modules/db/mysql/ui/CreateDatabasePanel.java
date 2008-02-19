@@ -1,5 +1,5 @@
 /*
- * SettingsPanel.java
+ * CreateDatabasePanel.java
  *
  * Created on February 15, 2008, 12:59 PM
  */
@@ -18,13 +18,13 @@ import javax.swing.ComboBoxModel;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.event.DocumentListener;
-import javax.swing.event.ListDataEvent;
 import javax.swing.event.ListDataListener;
 import org.netbeans.api.db.explorer.DatabaseException;
 import org.netbeans.modules.db.mysql.*;
 import org.netbeans.modules.db.mysql.SampleManager.Sample;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.util.NbBundle;
 
 /**
@@ -33,11 +33,12 @@ import org.openide.util.NbBundle;
  * @author  David Van Couvering
  */
 public class CreateDatabasePanel extends javax.swing.JPanel {
-    
+
     private static final Logger LOGGER = Logger.getLogger(
             CreateDatabasePanel.class.getName());
 
     DialogDescriptor descriptor;
+    final ServerInstance server;
     private Color nbErrorForeground;
 
     
@@ -87,7 +88,8 @@ public class CreateDatabasePanel extends javax.swing.JPanel {
             descriptor.setValid(true);
         }
     }
-    public static boolean showCreateDatabase(ServerInstance server) {
+    
+    public static boolean showCreateDatabaseDialog(ServerInstance server) {
         assert SwingUtilities.isEventDispatchThread();
         
         CreateDatabasePanel panel = new CreateDatabasePanel(server);
@@ -105,19 +107,124 @@ public class CreateDatabasePanel extends javax.swing.JPanel {
             dialog.setVisible(true);
             dialog.dispose();
 
+            // The user cancelled
             if (!DialogDescriptor.OK_OPTION.equals(desc.getValue())) {
                 return false;
             }
+                        
+            return createDatabase(panel.getServer(), panel.getDatabaseName(),
+                        panel.getGrantUser(), panel.isCreateConnection());
+        }
+    }
+
+    /**
+     * Create a database based on settings of the dialog
+     * 
+     * @param server the ServerInstance we are working with
+     * @param dbname the name of the database
+     * @param grantUser the user name to grant full access to or null if 
+     *      no grant is desired
+     * @param createConnection
+     *      set to true if the user wants to create and register a
+     *      DatabaseConnection for this database in the Database Explorer
+     * 
+     * @return true to indicate the dialog can be exited, false to indicate
+     *      that the dialog should stay displayed (e.g. we want the user
+     *      to be able to try again).
+     */
+    private static boolean createDatabase(ServerInstance server,
+            String dbname, DatabaseUser grantUser, 
+            boolean createConnection) {
+        
+        boolean dbCreated = false;
+        try {
+            if ( ! checkDeleteExistingDatabase(server, dbname) ) {
+                return true;
+            }
             
-            // TODO - Take action basied on dialog settings
+            server.createDatabase(dbname);
             
+            dbCreated = true;
+            
+            // TODO - Create sample schema and tables
+            
+            if ( grantUser != null ) {
+                server.grantFullDatabaseRights(dbname, grantUser);
+            }
+            
+            // TODO - Create database connection            
+        } catch ( DatabaseException ex ) {
+            displayCreateFailure(server, ex, dbname, dbCreated);
+            return false;
+        }
+        
+        return true;
+    }
+    
+    private static void displayCreateFailure(ServerInstance server,
+            DatabaseException ex, String dbname, boolean dbCreated) {
+        Utils.displayError("CreateDatabasePanel.MSG_CreateFailed", ex);
+
+        if ( dbCreated ) {
+            NotifyDescriptor ndesc = new NotifyDescriptor.Confirmation(
+                    NbBundle.getMessage(CreateDatabasePanel.class,
+                        "CreateDatabasePanel.MSG_DeleteCreatedDatabase",
+                        dbname),
+                    NbBundle.getMessage(CreateDatabasePanel.class,
+                        "CreateDatabasePanel.STR_DeleteCreatedDatabaseTitle"),
+                    NotifyDescriptor.YES_NO_OPTION);
+            
+            Object response = DialogDisplayer.getDefault().notify(ndesc);
+            
+            if ( response == NotifyDescriptor.YES_OPTION ) {
+                try {
+                    server.dropDatabase(dbname);
+                } catch ( DatabaseException exc ) {
+                    Utils.displayError(
+                        NbBundle.getMessage(CreateDatabasePanel.class, 
+                           "CreateDatabasePanel.MSG_DeleteFailed"), 
+                        ex);
+                }
+            }
+        }
+    }
+
+    
+    /**
+     * Check to see if a database exists, and drop it if the user wants
+     * to.
+     * 
+     * @return true if it's OK to continue or false to cancel
+     */
+    private static boolean checkDeleteExistingDatabase(
+            ServerInstance server, String dbname) throws DatabaseException {
+        if ( ! server.databaseExists(dbname)) {
             return true;
         }
+             
+       NotifyDescriptor ndesc = new NotifyDescriptor.Confirmation(
+                NbBundle.getMessage(CreateDatabasePanel.class, 
+                        "CreateDatabasePanel.MSG_DatabaseAlreadyExists",
+                    dbname),
+                NbBundle.getMessage(CreateDatabasePanel.class,
+                    "CreateDatabasePanel.STR_DatabaseExistsTitle"),
+                NotifyDescriptor.YES_NO_CANCEL_OPTION);
+        
+        Object response =  DialogDisplayer.getDefault().notify(ndesc);
+        
+        if ( response == NotifyDescriptor.CANCEL_OPTION ) {
+            return false;
+        } else if ( response == NotifyDescriptor.YES_OPTION) {
+            server.dropDatabase(dbname);
+        }
+        
+        return true;        
     }
     
 
     /** Creates new form CreateDatabasePanel */
     public CreateDatabasePanel(ServerInstance server) {
+        this.server = server;
         nbErrorForeground = UIManager.getColor("nb.errorForeground"); //NOI18N
         if (nbErrorForeground == null) {
             //nbErrorForeground = new Color(89, 79, 191); // RGB suggested by Bruce in #28466
@@ -130,8 +237,15 @@ public class CreateDatabasePanel extends javax.swing.JPanel {
         comboDatabaseName.addActionListener(actionListener);
         
         comboUsers.setModel(new UsersComboModel(server));
-        setGrantAccess(false);
-        this.chkFullAccess.addActionListener(actionListener);
+        
+        if ( comboUsers.getItemCount() == 0 ) {
+            comboUsers.setVisible(false);
+            chkGrantAccess.setVisible(false);
+        } else {
+            comboUsers.setSelectedIndex(0);
+            setGrantAccess(false);
+            chkGrantAccess.addActionListener(actionListener);
+        }
         
         setCreateConnection(true);
 
@@ -144,11 +258,15 @@ public class CreateDatabasePanel extends javax.swing.JPanel {
 
 
     private String getDatabaseName() {
-        return (String)comboDatabaseName.getSelectedItem();
+        String dbname = (String)comboDatabaseName.getEditor().getItem();
+        if ( dbname != null ) {
+            dbname = dbname.trim();
+        }
+        return dbname;
     }
     
-    private String getGrantUser() {
-        return (String)comboUsers.getSelectedItem();
+    private DatabaseUser getGrantUser() {
+        return (DatabaseUser)comboUsers.getSelectedItem();
     }
     
     private void setDialogDescriptor(DialogDescriptor desc) {
@@ -157,11 +275,11 @@ public class CreateDatabasePanel extends javax.swing.JPanel {
     }
     
     private void setGrantAccess(boolean grant) {
-        this.chkFullAccess.setSelected(grant);
+        this.chkGrantAccess.setSelected(grant);
     }
     
     private boolean isGrantAccess() {
-        return chkFullAccess.isSelected();
+        return chkGrantAccess.isSelected();
     }
     
     private void setCreateConnection(boolean create) {
@@ -170,6 +288,10 @@ public class CreateDatabasePanel extends javax.swing.JPanel {
     
     private boolean isCreateConnection() {
         return chkCreateConnection.isSelected();
+    }
+    
+    private ServerInstance getServer() {
+        return server;
     }
 
 
@@ -186,12 +308,12 @@ public class CreateDatabasePanel extends javax.swing.JPanel {
         messageLabel = new javax.swing.JLabel();
         comboDatabaseName = new javax.swing.JComboBox();
         jLabel1 = new javax.swing.JLabel();
-        chkFullAccess = new javax.swing.JCheckBox();
+        chkGrantAccess = new javax.swing.JCheckBox();
         comboUsers = new javax.swing.JComboBox();
         chkCreateConnection = new javax.swing.JCheckBox();
 
         messageLabel.setForeground(new java.awt.Color(255, 0, 51));
-        messageLabel.setText(org.openide.util.NbBundle.getMessage(CreateDatabasePanel.class, "SettingsPanel.messageLabel.text")); // NOI18N
+        messageLabel.setText(org.openide.util.NbBundle.getMessage(CreateDatabasePanel.class, "CreateDatabasePanel.messageLabel.text")); // NOI18N
 
         comboDatabaseName.setEditable(true);
         comboDatabaseName.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
@@ -203,7 +325,7 @@ public class CreateDatabasePanel extends javax.swing.JPanel {
 
         jLabel1.setText(org.openide.util.NbBundle.getMessage(CreateDatabasePanel.class, "CreateDatabasePanel.jLabel1.text")); // NOI18N
 
-        chkFullAccess.setText(org.openide.util.NbBundle.getMessage(CreateDatabasePanel.class, "CreateDatabasePanel.chkFullAccess.text")); // NOI18N
+        chkGrantAccess.setText(org.openide.util.NbBundle.getMessage(CreateDatabasePanel.class, "CreateDatabasePanel.chkGrantAccess.text")); // NOI18N
 
         comboUsers.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
 
@@ -214,38 +336,39 @@ public class CreateDatabasePanel extends javax.swing.JPanel {
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
-                .addContainerGap()
+                .add(9, 9, 9)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(messageLabel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 432, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(messageLabel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 344, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                     .add(chkCreateConnection)
                     .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING, false)
                         .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createSequentialGroup()
                             .add(jLabel1)
-                            .add(18, 18, 18)
+                            .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                             .add(comboDatabaseName, 0, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                         .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createSequentialGroup()
-                            .add(chkFullAccess)
+                            .add(chkGrantAccess)
                             .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                            .add(comboUsers, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 235, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))))
+                            .add(comboUsers, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 216, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))))
                 .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
-                .addContainerGap()
+                .addContainerGap(20, Short.MAX_VALUE)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(jLabel1)
                     .add(comboDatabaseName, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .add(18, 18, 18)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(chkFullAccess)
-                    .add(comboUsers, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 13, Short.MAX_VALUE)
+                .add(9, 9, 9)
                 .add(chkCreateConnection)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(comboUsers, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(chkGrantAccess))
                 .add(18, 18, 18)
-                .add(messageLabel)
-                .add(7, 7, 7))
+                .add(messageLabel))
         );
+
+        messageLabel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(CreateDatabasePanel.class, "CreateDatabasePanel.messageLabel.AccessibleContext.accessibleName")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
 
 private void comboDatabaseNameActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_comboDatabaseNameActionPerformed
@@ -256,7 +379,7 @@ private void comboDatabaseNameActionPerformed(java.awt.event.ActionEvent evt) {/
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JCheckBox chkCreateConnection;
-    private javax.swing.JCheckBox chkFullAccess;
+    private javax.swing.JCheckBox chkGrantAccess;
     private javax.swing.JComboBox comboDatabaseName;
     private javax.swing.JComboBox comboUsers;
     private javax.swing.JLabel jLabel1;
@@ -265,6 +388,9 @@ private void comboDatabaseNameActionPerformed(java.awt.event.ActionEvent evt) {/
 
     private static class DatabaseComboModel implements ComboBoxModel {
         static final Sample[] SAMPLES = Sample.values();
+        static final String samplePrefix =
+                NbBundle.getMessage(CreateDatabasePanel.class, 
+                    "CreateDatabasePanel.STR_SampleDatabase") + ": ";
         
         String selected = null;
         final ArrayList<ListDataListener> listeners = new ArrayList<ListDataListener>();
@@ -274,7 +400,14 @@ private void comboDatabaseNameActionPerformed(java.awt.event.ActionEvent evt) {/
         }
 
         public Object getSelectedItem() {
-            return selected;
+            if ( selected != null && selected.startsWith(samplePrefix)) {
+                // trim off the "Sample database: " string
+                return selected.replace(samplePrefix, "");
+            } else if ( selected != null ) {
+                return selected; 
+            } else {
+                return "";
+            }
         }
 
         public int getSize() {
@@ -282,9 +415,7 @@ private void comboDatabaseNameActionPerformed(java.awt.event.ActionEvent evt) {/
         }
 
         public Object getElementAt(int index) {
-            return NbBundle.getMessage(CreateDatabasePanel.class, 
-                    "CreateDatabasePanel.STR_SampleDatabase") + ": " + 
-                    SAMPLES[index].toString();
+            return  samplePrefix + SAMPLES[index].toString();
         }
 
         public void addListDataListener(ListDataListener listener) {
@@ -298,29 +429,38 @@ private void comboDatabaseNameActionPerformed(java.awt.event.ActionEvent evt) {/
     private static class UsersComboModel implements ComboBoxModel {
         final ServerInstance server;
 
-        List<String> users;
-        String selected;
+        ArrayList<DatabaseUser> users= new ArrayList<DatabaseUser>();
+        DatabaseUser selected;
                 
         public UsersComboModel(ServerInstance server) {
             this.server = server;
                         
             try {            
-                users = server.getUsers();
+                users.addAll(server.getUsers());
                 
                 // Remove the root user, this user always has full access
-                users.remove("root"); // NOI18N
+                DatabaseUser rootUser = null;
+                for ( DatabaseUser user : users ) {
+                    if ( user.getUser() != null && user.getUser().equals("root")) {
+                        // Note the user.  We can't remove it while iterating,
+                        // that's a concurrent modification...
+                        rootUser = user;
+                        break;
+                    }
+                }
+                
+                if ( rootUser != null ) {
+                    users.remove(rootUser);
+                }
             } catch ( DatabaseException dbe )  {
                 LOGGER.log(Level.WARNING, null, dbe);
-                Utils.displayError("CreateDatabasPanel.MSG_UnableToGetUsers", 
+                Utils.displayError("CreateDatabasePanel.MSG_UnableToGetUsers", 
                         dbe);
-                users = new ArrayList<String>();
             }
-            
-            assert users != null;
         }
 
         public void setSelectedItem(Object item) {
-            selected = (String)item;
+            selected = (DatabaseUser)item;
         }
 
         public Object getSelectedItem() {

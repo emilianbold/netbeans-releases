@@ -42,6 +42,7 @@
 package org.netbeans.modules.db.mysql;
 
 import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -70,10 +71,16 @@ public class ServerInstance implements Node.Cookie {
     private static final MySQLOptions options = MySQLOptions.getDefault();
     
     // SQL commands
-    private static final String GET_DATABASES_SQL = "SHOW DATABASES";
+    private static final String GET_DATABASES_SQL = "SHOW DATABASES"; // NOI18N
     private static final String GET_USERS_SQL = 
-            "SELECT DISTINCT user FROM mysql.user";
-    private static final String GRANT_ALL_SQL = "GRANT ALL on ?.* TO ?";
+            "SELECT DISTINCT user, host FROM mysql.user"; // NOI18N
+    private static final String CREATE_DATABASE_SQL = "CREATE DATABASE "; // NOI18N
+    private static final String DROP_DATABASE_SQL = "DROP DATABASE "; // NOI18N
+    
+    // This is in two parts because the database name is an identifier and can't
+    // be parameterized (it gets quoted and it is a syntax error to quote it).
+    private static final String GRANT_ALL_SQL_1 = "GRANT ALL ON "; // NOI18N
+    private static final String GRANT_ALL_SQL_2 = ".* TO ?@?"; // NOI8N
 
         
     final AdminConnection adminConn = new AdminConnection();
@@ -108,27 +115,6 @@ public class ServerInstance implements Node.Cookie {
     
     public String getHost() {
         return options.getHost();
-    }
-
-    public List<String> getUsers() throws DatabaseException {
-        ArrayList<String> users = new ArrayList<String>();
-        Connection conn = adminConn.getConnection();
-        
-        if ( conn == null ) {
-            return users;
-        }
-        
-        try {
-            ResultSet rs = conn.prepareStatement(GET_USERS_SQL).executeQuery();
-
-            while ( rs.next() ) {
-                users.add(rs.getString(1));
-            }
-        } catch ( SQLException ex ) {
-            throw new DatabaseException(ex);
-        }
-        
-        return users;
     }
 
     public void setHost(String host) {
@@ -217,18 +203,13 @@ public class ServerInstance implements Node.Cookie {
     
     public void refreshDatabaseList() throws DatabaseException { 
         databases = new ArrayList<DatabaseModel>();
-        Connection conn = adminConn.getConnection();
-        
-        if ( conn == null ) {
-            notifyChange();
-            return;
-        }
-        
         try {
-            ResultSet rs = conn.prepareStatement(GET_DATABASES_SQL).executeQuery();
+            ResultSet rs = adminConn.getConnection()
+                    .prepareStatement(GET_DATABASES_SQL).
+                    executeQuery();
 
             while ( rs.next() ) {
-                databases.add(new DatabaseModel(rs.getString(1)));
+                databases.add(new DatabaseModel(this, rs.getString(1)));
             }
         } catch ( SQLException ex ) {
             throw new DatabaseException(ex);
@@ -237,7 +218,14 @@ public class ServerInstance implements Node.Cookie {
         }
     }
 
-
+    /**
+     * Get the list of databases.  NOTE that the list is retrieved from
+     * a cache to improve performance.  If you want to ensure that the
+     * list is up-to-date, call <i>refreshDatabaseList</i>
+     * 
+     * @return
+     * @throws org.netbeans.api.db.explorer.DatabaseException
+     */
     public Collection<DatabaseModel> getDatabases() throws DatabaseException {
         if ( databases == null ) {
             refreshDatabaseList();
@@ -245,7 +233,7 @@ public class ServerInstance implements Node.Cookie {
         
         return databases;
     }
-    
+        
     public void connect() throws DatabaseException {
         try {
             adminConn.reconnect();
@@ -254,6 +242,93 @@ public class ServerInstance implements Node.Cookie {
             refreshDatabaseList();
         }
     }
+    
+    public boolean databaseExists(String dbname)  throws DatabaseException {
+        refreshDatabaseList();
+        
+        return getDatabases().contains(dbname);
+    }
+    
+    public void createDatabase(String dbname) throws DatabaseException {
+        try { 
+            adminConn.getConnection()
+                    .prepareStatement(CREATE_DATABASE_SQL + dbname)
+                    .executeUpdate();
+            
+            refreshDatabaseList();
+        } catch ( SQLException e ) {
+            throw new DatabaseException(e);
+        }
+    }
+    
+    public void dropDatabase(String dbname) throws DatabaseException {
+        try {
+            adminConn.getConnection()
+                    .prepareStatement(DROP_DATABASE_SQL + dbname)
+                    .executeUpdate();
+            
+            refreshDatabaseList();
+        } catch ( SQLException sqle ) {
+            throw new DatabaseException(sqle);
+        }
+        
+    }
+    
+    /**
+     * Get the list of users defined for this server
+     * 
+     * @return the list of users
+     * 
+     * @throws org.netbeans.api.db.explorer.DatabaseException
+     *      if some problem occurred
+     */
+    public List<DatabaseUser> getUsers() throws DatabaseException {
+        ArrayList<DatabaseUser> users = new ArrayList<DatabaseUser>();
+        Connection conn = adminConn.getConnection();
+        
+        if ( conn == null ) {
+            return users;
+        }
+        
+        try {
+            ResultSet rs = conn.prepareStatement(GET_USERS_SQL).executeQuery();
+
+            while ( rs.next() ) {
+                String user = rs.getString(1).trim();
+                String host = rs.getString(2).trim();
+                users.add(new DatabaseUser(user, host));
+            }
+        } catch ( SQLException ex ) {
+            throw new DatabaseException(ex);
+        }
+        
+        return users;
+    }
+
+    /**
+     * Grant full rights to the database to the specified user
+     * 
+     * @param dbname the database whose rights we are granting
+     * @param grantUser the name of the user to grant the rights to
+     * 
+     * @throws org.netbeans.api.db.explorer.DatabaseException
+     *      if some error occurs
+     */
+    public void grantFullDatabaseRights(String dbname, DatabaseUser grantUser) 
+        throws DatabaseException {
+        try {
+            PreparedStatement ps = adminConn.getConnection()
+                    .prepareStatement(GRANT_ALL_SQL_1 + dbname +
+                        GRANT_ALL_SQL_2);
+            ps.setString(1, grantUser.getUser());
+            ps.setString(2, grantUser.getHost());
+            
+            ps.executeUpdate();
+        } catch ( SQLException sqle ) {
+            throw new DatabaseException(sqle);
+        }
+    }
+
 
     void addChangeListener(ChangeListener listener) {
         listeners.add(listener);
@@ -276,6 +351,13 @@ public class ServerInstance implements Node.Cookie {
         }
         
         synchronized Connection getConnection() throws DatabaseException {
+            try {
+                if ( conn == null || conn.isClosed() ) {
+                    reconnect();
+                }
+            } catch ( SQLException sqle ) {
+                throw new DatabaseException(sqle);
+            }
             return conn;
         }
             

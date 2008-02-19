@@ -73,6 +73,10 @@ public class CreateDatabaseAction extends CookieAction {
 
     @Override
     protected boolean enable(Node[] activatedNodes) {
+        if ( activatedNodes.length == 0 ) {
+            return false;
+        }
+        
         Node node = activatedNodes[0];
         
         ServerInstance server = node.getCookie(ServerInstance.class);
@@ -98,6 +102,6 @@ public class CreateDatabaseAction extends CookieAction {
         Node node = activatedNodes[0];
         
         ServerInstance server = node.getCookie(ServerInstance.class);
-        CreateDatabasePanel.showCreateDatabase(server);
+        CreateDatabasePanel.showCreateDatabaseDialog(server);
     }
 }

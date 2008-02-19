@@ -39,6 +39,7 @@
 
 package org.netbeans.modules.db.mysql;
 
+import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
 
 /**
@@ -47,11 +48,17 @@ import org.openide.util.NbBundle;
  * 
  * @author David Van Couvering
  */
-public class DatabaseModel {
+public class DatabaseModel implements Node.Cookie {
     private final String name;
+    private final ServerInstance server;
     
-    public DatabaseModel(String dbname) {
+    public DatabaseModel(ServerInstance server, String dbname) {
         name = dbname;
+        this.server = server;
+    }
+
+    String getDbName() {
+        return name;
     }
     
     String getDisplayName() {
@@ -62,5 +69,9 @@ public class DatabaseModel {
        return NbBundle.getMessage(DatabaseModel.class, 
                "LBL_DBNodeShortDescription",
                getDisplayName());
+    }
+    
+    ServerInstance getServer() {
+        return server;
     }
 }

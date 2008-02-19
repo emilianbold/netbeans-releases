@@ -39,8 +39,10 @@
 
 package org.netbeans.modules.db.mysql;
 
+import javax.swing.Action;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
+import org.openide.nodes.Node;
 import org.openide.util.actions.SystemAction;
 
 /**
@@ -53,10 +55,11 @@ class DatabaseNode extends AbstractNode {
     // I'd like a less generic icon, but this is what we have for now...
     private static final String ICON_BASE = "org/netbeans/modules/db/mysql/resources/database.gif";
     
-    private DatabaseModel model;    
+    private final DatabaseModel model;    
     
     public DatabaseNode(DatabaseModel model) {
         super(Children.LEAF);
+        this.model = model;
         setDisplayName(model.getDisplayName());
         setShortDescription(model.getShortDescription());
         setIconBaseWithExtension(ICON_BASE);
@@ -64,8 +67,25 @@ class DatabaseNode extends AbstractNode {
         
    
     @Override
-    public SystemAction[] getActions() {
-        return new SystemAction[0];
+    public Action[] getActions(boolean context) {
+        if ( context ) {
+            return super.getActions(context);
+        } else {
+            return new SystemAction[] {
+                SystemAction.get(DeleteDatabaseAction.class)
+            };
+        }
+    }
+
+    @Override
+    @SuppressWarnings("unchecked")
+    public Node.Cookie getCookie(Class cls) {
+        if ( cls == DatabaseModel.class ) {
+            return model;
+        } else {
+            return super.getCookie(cls);
+        }
+        
     }
         
 }

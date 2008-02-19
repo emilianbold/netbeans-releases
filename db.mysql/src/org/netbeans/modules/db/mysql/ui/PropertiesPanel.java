@@ -1,5 +1,5 @@
 /*
- * SettingsPanel.java
+ * PropertiesPanel.java
  *
  * Created on February 15, 2008, 12:59 PM
  */
@@ -21,7 +21,7 @@ import org.openide.util.NbBundle;
  *
  * @author  David Van Couvering
  */
-public class SettingsPanel extends javax.swing.JPanel {
+public class PropertiesPanel extends javax.swing.JPanel {
     MySQLOptions options = MySQLOptions.getDefault();
     DialogDescriptor descriptor;
     private Color nbErrorForeground;
@@ -52,12 +52,12 @@ public class SettingsPanel extends javax.swing.JPanel {
         String error = null;
         
         if ( getHost() == null || getHost().equals("")) {
-            error = NbBundle.getMessage(SettingsPanel.class,
-                        "SettingsPanel.MSG_SpecifyHost");
+            error = NbBundle.getMessage(PropertiesPanel.class,
+                        "PropertiesPanel.MSG_SpecifyHost");
         }
         if ( getUser() == null || getUser().equals("")) {
-            error = NbBundle.getMessage(SettingsPanel.class,
-                        "SettingsPanel.MSG_SpecifyUser");
+            error = NbBundle.getMessage(PropertiesPanel.class,
+                        "PropertiesPanel.MSG_SpecifyUser");
         }
         
         if (error != null) {
@@ -68,20 +68,20 @@ public class SettingsPanel extends javax.swing.JPanel {
             descriptor.setValid(true);
         }
     }
-    public static boolean showMySQLSettings(ServerInstance server) {
+    public static boolean showMySQLProperties(ServerInstance server) {
         assert SwingUtilities.isEventDispatchThread();
         
-        SettingsPanel panel = new SettingsPanel(server);
-        String title = NbBundle.getMessage(SettingsPanel.class, 
-                "SettingsPanel.LBL_MySQLSettingsTitle");
+        PropertiesPanel panel = new PropertiesPanel(server);
+        String title = NbBundle.getMessage(PropertiesPanel.class, 
+                "PropertiesPanel.LBL_MySQLPropertiesTitle");
 
         DialogDescriptor desc = new DialogDescriptor(panel, title);
         panel.setDialogDescriptor(desc);
 
         for (;;) {                    
             Dialog dialog = DialogDisplayer.getDefault().createDialog(desc);
-            String acsd = NbBundle.getMessage(SettingsPanel.class, 
-                    "SettingsPanel.ACSD_SettingsPanel");
+            String acsd = NbBundle.getMessage(PropertiesPanel.class, 
+                    "PropertiesPanel.ACSD_PropertiesPanel");
             dialog.getAccessibleContext().setAccessibleDescription(acsd);
             dialog.setVisible(true);
             dialog.dispose();
@@ -100,8 +100,8 @@ public class SettingsPanel extends javax.swing.JPanel {
                 server.connect();
             } catch ( DatabaseException e ) {
                 Utils.displayError(
-                        NbBundle.getMessage(SettingsPanel.class, 
-                            "SettingsPanel.MSG_UnableToConnect"), 
+                        NbBundle.getMessage(PropertiesPanel.class, 
+                            "PropertiesPanel.MSG_UnableToConnect"), 
                         e);
             }
            
@@ -109,8 +109,8 @@ public class SettingsPanel extends javax.swing.JPanel {
         }
     }
 
-    /** Creates new form SettingsPanel */
-    public SettingsPanel(ServerInstance server) {
+    /** Creates new form PropertiesPanel */
+    public PropertiesPanel(ServerInstance server) {
         nbErrorForeground = UIManager.getColor("nb.errorForeground"); //NOI18N
         if (nbErrorForeground == null) {
             //nbErrorForeground = new Color(89, 79, 191); // RGB suggested by Bruce in #28466
@@ -176,29 +176,29 @@ public class SettingsPanel extends javax.swing.JPanel {
         txtPassword = new javax.swing.JPasswordField();
         messageLabel = new javax.swing.JLabel();
 
-        jLabel1.setText(org.openide.util.NbBundle.getMessage(SettingsPanel.class, "SettingsPanel.jLabel1.text")); // NOI18N
+        jLabel1.setText(org.openide.util.NbBundle.getMessage(PropertiesPanel.class, "PropertiesPanel.jLabel1.text")); // NOI18N
 
-        jLabel2.setText(org.openide.util.NbBundle.getMessage(SettingsPanel.class, "SettingsPanel.jLabel2.text")); // NOI18N
+        jLabel2.setText(org.openide.util.NbBundle.getMessage(PropertiesPanel.class, "PropertiesPanel.jLabel2.text")); // NOI18N
 
-        jLabel3.setText(org.openide.util.NbBundle.getMessage(SettingsPanel.class, "SettingsPanel.jLabel3.text")); // NOI18N
+        jLabel3.setText(org.openide.util.NbBundle.getMessage(PropertiesPanel.class, "PropertiesPanel.jLabel3.text")); // NOI18N
 
-        jLabel4.setText(org.openide.util.NbBundle.getMessage(SettingsPanel.class, "SettingsPanel.jLabel4.text")); // NOI18N
+        jLabel4.setText(org.openide.util.NbBundle.getMessage(PropertiesPanel.class, "PropertiesPanel.jLabel4.text")); // NOI18N
 
-        chkSavePassword.setText(org.openide.util.NbBundle.getMessage(SettingsPanel.class, "SettingsPanel.chkSavePassword.text")); // NOI18N
+        chkSavePassword.setText(org.openide.util.NbBundle.getMessage(PropertiesPanel.class, "PropertiesPanel.chkSavePassword.text")); // NOI18N
 
-        txtHost.setText(org.openide.util.NbBundle.getMessage(SettingsPanel.class, "SettingsPanel.txtHost.text")); // NOI18N
+        txtHost.setText(org.openide.util.NbBundle.getMessage(PropertiesPanel.class, "PropertiesPanel.txtHost.text")); // NOI18N
         txtHost.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 txtHostActionPerformed(evt);
             }
         });
 
-        txtPort.setText(org.openide.util.NbBundle.getMessage(SettingsPanel.class, "SettingsPanel.txtPort.text")); // NOI18N
+        txtPort.setText(org.openide.util.NbBundle.getMessage(PropertiesPanel.class, "PropertiesPanel.txtPort.text")); // NOI18N
 
-        txtUser.setText(org.openide.util.NbBundle.getMessage(SettingsPanel.class, "SettingsPanel.txtUser.text")); // NOI18N
+        txtUser.setText(org.openide.util.NbBundle.getMessage(PropertiesPanel.class, "PropertiesPanel.txtUser.text")); // NOI18N
 
         messageLabel.setForeground(new java.awt.Color(255, 0, 51));
-        messageLabel.setText(org.openide.util.NbBundle.getMessage(SettingsPanel.class, "SettingsPanel.messageLabel.text")); // NOI18N
+        messageLabel.setText(org.openide.util.NbBundle.getMessage(PropertiesPanel.class, "PropertiesPanel.messageLabel.text")); // NOI18N
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);

@@ -73,6 +73,11 @@ public class RefreshAction extends CookieAction {
 
     @Override
     protected boolean enable(Node[] activatedNodes) {
+        if ( activatedNodes.length == 0 ) {
+            // this can happen when a delete occurs
+            return false;
+        }
+        
         Node node = activatedNodes[0];
         
         ServerInstance server = node.getCookie(ServerInstance.class);
