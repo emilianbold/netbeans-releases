@@ -39,7 +39,7 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.cnd.editor.options;
+package org.netbeans.modules.cnd.ui.options;
 
 
 

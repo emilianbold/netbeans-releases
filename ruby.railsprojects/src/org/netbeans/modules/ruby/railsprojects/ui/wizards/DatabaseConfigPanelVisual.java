@@ -64,7 +64,7 @@ public class DatabaseConfigPanelVisual extends javax.swing.JPanel {
     }
 
     private boolean isJdbc() {
-        return useJdbcCheckBox.isSelected();
+        return configureUsingJdbc.isSelected();
     }
     
     private SettingsPanel getActivePanel() {
@@ -74,12 +74,13 @@ public class DatabaseConfigPanelVisual extends javax.swing.JPanel {
     void read(WizardDescriptor descriptor) {
         RubyPlatform platform = 
                 (RubyPlatform) descriptor.getProperty(NewRailsProjectWizardIterator.PLATFORM);
-        useJdbcCheckBox.setEnabled(platform.isJRuby());
+        configureUsingJdbc.setSelected(platform.isJRuby());
         jdbcPanel.read(descriptor);
         adaptersPanel.read(descriptor);
     }
     
     void store(WizardDescriptor descriptor) {
+        
         getActivePanel().store(descriptor);
     }
 
@@ -105,18 +106,18 @@ public class DatabaseConfigPanelVisual extends javax.swing.JPanel {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        useJdbcCheckBox = new javax.swing.JCheckBox();
         connectionPanelContainer = new javax.swing.JPanel();
         jSeparator1 = new javax.swing.JSeparator();
-
-        useJdbcCheckBox.setText(org.openide.util.NbBundle.getMessage(DatabaseConfigPanelVisual.class, "UseJdbc")); // NOI18N
-        useJdbcCheckBox.addItemListener(new java.awt.event.ItemListener() {
-            public void itemStateChanged(java.awt.event.ItemEvent evt) {
-                useJdbcCheckBoxItemStateChanged(evt);
-            }
-        });
+        configureUsingJdbc = new javax.swing.JCheckBox();
 
         connectionPanelContainer.setLayout(new java.awt.BorderLayout());
+
+        configureUsingJdbc.setText(org.openide.util.NbBundle.getMessage(DatabaseConfigPanelVisual.class, "LBL_ConfigureUsingIDEConnections")); // NOI18N
+        configureUsingJdbc.addItemListener(new java.awt.event.ItemListener() {
+            public void itemStateChanged(java.awt.event.ItemEvent evt) {
+                configureUsingJdbcItemStateChanged(evt);
+            }
+        });
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
@@ -125,35 +126,34 @@ public class DatabaseConfigPanelVisual extends javax.swing.JPanel {
             .add(layout.createSequentialGroup()
                 .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(jSeparator1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 597, Short.MAX_VALUE)
-                    .add(layout.createSequentialGroup()
-                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(useJdbcCheckBox)
-                            .add(connectionPanelContainer, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 579, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                        .addContainerGap(18, Short.MAX_VALUE))))
+                    .add(jSeparator1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 585, Short.MAX_VALUE)
+                    .add(configureUsingJdbc)
+                    .add(connectionPanelContainer, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 579, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
                 .addContainerGap()
-                .add(useJdbcCheckBox)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(jSeparator1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 4, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .add(configureUsingJdbc)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
-                .add(connectionPanelContainer, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 277, Short.MAX_VALUE)
-                .addContainerGap())
+                .add(jSeparator1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(connectionPanelContainer, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 301, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .add(29, 29, 29))
         );
     }// </editor-fold>//GEN-END:initComponents
 
-private void useJdbcCheckBoxItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_useJdbcCheckBoxItemStateChanged
+private void configureUsingJdbcItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_configureUsingJdbcItemStateChanged
     initInnerPanels();
-}//GEN-LAST:event_useJdbcCheckBoxItemStateChanged
+    // TODO add your handling code here:
+}//GEN-LAST:event_configureUsingJdbcItemStateChanged
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JCheckBox configureUsingJdbc;
     private javax.swing.JPanel connectionPanelContainer;
     private javax.swing.JSeparator jSeparator1;
-    private javax.swing.JCheckBox useJdbcCheckBox;
     // End of variables declaration//GEN-END:variables
 
 }

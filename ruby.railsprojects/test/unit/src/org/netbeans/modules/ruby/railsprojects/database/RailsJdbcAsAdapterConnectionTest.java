@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
- *
+ * 
+ * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * 
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,13 +20,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
+ * 
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -37,56 +31,47 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ * 
+ * Contributor(s):
+ * 
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.ruby.railsprojects.database;
+
+import junit.framework.TestCase;
 
 /**
- * DisplayAction.java
  *
- *
- * Created: Wed Mar  1 16:58:40 2000
- *
- * @author Ana von Klopp
- * @version
+ * @author Erno Mononen
  */
+public class RailsJdbcAsAdapterConnectionTest extends TestCase {
 
-package org.netbeans.modules.web.monitor.client;
+    private String derby = "jdbc:derby://localhost:1527/sample";
+    private String mysql = "jdbc:mysql://99.11.22.33:3306/db";
+    private String postgresql = "jdbc:postgresql://localhost:5432/depot";
 
-import org.openide.nodes.Node;
-import org.openide.util.HelpCtx;
-import org.openide.util.NbBundle;
-import org.openide.util.actions.NodeAction;
-
-public class DisplayAction extends NodeAction {
-
-    /**
-     * Default constructor
-     */
-    public DisplayAction() {}
-
-    /**
-     * Sets the name of the action
-     */
-    public String getName() {
-	return NbBundle.getBundle(DisplayAction.class).getString("MON_Display_12");
+    public RailsJdbcAsAdapterConnectionTest(String testName) {
+        super(testName);
     }
 
-    /**
-     * Not implemented
-     */
-    public HelpCtx getHelpCtx() {
-	return HelpCtx.DEFAULT_HELP;
-    }
+    public void testResolveAdapterParams() {
+        RailsJdbcAsAdapterConnection.AdapterParameters derbyParams = RailsJdbcAsAdapterConnection.resolveAdapterParams(derby);
+        assertEquals("derby", derbyParams.getAdapterName());
+        assertEquals("localhost", derbyParams.getHostName());
+        assertEquals("1527", derbyParams.getPort());
+        assertEquals("sample", derbyParams.getDatabase());
 
-    public boolean enable(Node[] nodes) {
-	if(nodes != null && nodes.length == 1) return true;
-	else return false;
-    }
-    
-    public void performAction(Node[] nodes) { 
-	TransactionView.getInstance().displayTransaction(nodes[0]);
-    }
+        RailsJdbcAsAdapterConnection.AdapterParameters mysqlParams = RailsJdbcAsAdapterConnection.resolveAdapterParams(mysql);
+        assertEquals("mysql", mysqlParams.getAdapterName());
+        assertEquals("99.11.22.33", mysqlParams.getHostName());
+        assertEquals("3306", mysqlParams.getPort());
+        assertEquals("db", mysqlParams.getDatabase());
 
-    public boolean asynchronous() { 
-	return false; 
-    } 
-} // DisplayAction
+        RailsJdbcAsAdapterConnection.AdapterParameters postgresqlParams = RailsJdbcAsAdapterConnection.resolveAdapterParams(postgresql);
+        assertEquals("postgresql", postgresqlParams.getAdapterName());
+        assertEquals("localhost", postgresqlParams.getHostName());
+        assertEquals("5432", postgresqlParams.getPort());
+        assertEquals("depot", postgresqlParams.getDatabase());
+
+    }
+}
