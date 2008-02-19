@@ -66,8 +66,7 @@ final class PanelConfigureProject implements WizardDescriptor.Panel, WizardDescr
     }
     
     public boolean isFinishPanel() {
-        //return false;
-        return true;
+        return false;
     }
 
     public Component getComponent() {

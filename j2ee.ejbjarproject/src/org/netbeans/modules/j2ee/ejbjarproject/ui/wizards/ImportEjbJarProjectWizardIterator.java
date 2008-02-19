@@ -82,7 +82,7 @@ public class ImportEjbJarProjectWizardIterator implements WizardDescriptor.Progr
     // Make sure list of steps is accurate.
     private static final String[] STEPS = new String[]{
         NbBundle.getMessage(ImportEjbJarProjectWizardIterator.class, "LBL_IW_ImportTitle"), //NOI18N
-        //NbBundle.getMessage(ImportEjbJarProjectWizardIterator.class, "PanelShareabilityVisual.label"), 
+        NbBundle.getMessage(ImportEjbJarProjectWizardIterator.class, "PanelShareabilityVisual.label"), 
         NbBundle.getMessage(ImportEjbJarProjectWizardIterator.class, "LAB_ConfigureSourceRoots") //NOI18N
     };
 
@@ -92,7 +92,7 @@ public class ImportEjbJarProjectWizardIterator implements WizardDescriptor.Progr
     private WizardDescriptor.Panel[] createPanels() {
         return new WizardDescriptor.Panel[] {
             new ImportLocation(),
-            //new PanelSharability(WizardProperties.PROJECT_DIR, WizardProperties.SERVER_INSTANCE_ID, false),
+            new PanelSharability(WizardProperties.PROJECT_DIR, WizardProperties.SERVER_INSTANCE_ID, false),
             new PanelSourceFolders.Panel()
         };
     }

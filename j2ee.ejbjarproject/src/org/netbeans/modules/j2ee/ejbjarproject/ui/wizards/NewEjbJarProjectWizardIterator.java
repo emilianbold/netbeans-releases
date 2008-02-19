@@ -81,13 +81,13 @@ public class NewEjbJarProjectWizardIterator implements WizardDescriptor.Progress
     // Make sure list of steps is accurate.
     private static final String[] STEPS = new String[] {
         NbBundle.getBundle("org/netbeans/modules/j2ee/ejbjarproject/ui/wizards/Bundle").getString("LBL_NWP1_ProjectTitleName"), //NOI18N
-        //NbBundle.getMessage(NewEjbJarProjectWizardIterator.class, "PanelShareabilityVisual.label")
+        NbBundle.getMessage(NewEjbJarProjectWizardIterator.class, "PanelShareabilityVisual.label")
     };
 
     private WizardDescriptor.Panel[] createPanels() {
         return new WizardDescriptor.Panel[] {
             new PanelConfigureProject(),
-            //new PanelSharability(WizardProperties.PROJECT_DIR, WizardProperties.SERVER_INSTANCE_ID, true)
+            new PanelSharability(WizardProperties.PROJECT_DIR, WizardProperties.SERVER_INSTANCE_ID, true)
         };
     }
 

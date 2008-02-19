@@ -79,7 +79,6 @@ import org.netbeans.modules.web.project.api.WebProjectUtilities;
 import org.netbeans.modules.web.project.WebProject;
 import org.netbeans.modules.web.project.api.WebProjectCreateData;
 import org.netbeans.modules.j2ee.common.project.ui.UserProjectSettings;
-import org.netbeans.spi.java.project.support.ui.SharableLibrariesUtils;
 
 /**
  * Wizard to create a new Web project for an existing web module.
@@ -98,7 +97,7 @@ public class ImportWebProjectWizardIterator implements WizardDescriptor.Progress
     private WizardDescriptor.Panel[] createPanels() {
         return new WizardDescriptor.Panel[] {
             new ImportWebProjectWizardIterator.ThePanel(),
-            //new PanelSharability(WizardProperties.PROJECT_DIR, WizardProperties.SERVER_INSTANCE_ID, false),
+            new PanelSharability(WizardProperties.PROJECT_DIR, WizardProperties.SERVER_INSTANCE_ID, false),
             new PanelSourceFolders.Panel()
         };
     }
@@ -106,7 +105,7 @@ public class ImportWebProjectWizardIterator implements WizardDescriptor.Progress
     private String[] createSteps() {
         return new String[] {
             NbBundle.getMessage(ImportWebProjectWizardIterator.class, "LBL_IW_Step1"), //NOI18N
-            //NbBundle.getMessage(ImportWebProjectWizardIterator.class, "PanelShareabilityVisual.label"),            
+            NbBundle.getMessage(ImportWebProjectWizardIterator.class, "PanelShareabilityVisual.label"),            
             NbBundle.getMessage(ImportWebProjectWizardIterator.class, "LBL_IW_Step2") //NOI18N
         };
     }
@@ -293,7 +292,7 @@ public class ImportWebProjectWizardIterator implements WizardDescriptor.Progress
     public final void addChangeListener(ChangeListener l) {}
     public final void removeChangeListener(ChangeListener l) {}
 
-    public final class ThePanel implements WizardDescriptor.ValidatingPanel {
+    public final class ThePanel implements WizardDescriptor.ValidatingPanel, WizardDescriptor.FinishablePanel {
 
         private ImportLocationVisual panel;
         private WizardDescriptor wizardDescriptor;
@@ -380,6 +379,10 @@ public class ImportWebProjectWizardIterator implements WizardDescriptor.Progress
                     NbBundle.getMessage(ImportWebProjectWizardIterator.class, labelMnemonicId));
             button.setMnemonic(NbBundle.getMessage(ImportWebProjectWizardIterator.class, mnemonicId).charAt(0));
             return button;
+        }
+
+        public boolean isFinishPanel() {
+            return false;
         }
 
     }

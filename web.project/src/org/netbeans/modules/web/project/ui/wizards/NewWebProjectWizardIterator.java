@@ -100,13 +100,13 @@ public class NewWebProjectWizardIterator implements WizardDescriptor.ProgressIns
 	if (WebFrameworks.getFrameworks().size() > 0)
 	    steps = new String[] {
 		NbBundle.getMessage(NewWebProjectWizardIterator.class, "LBL_NWP1_ProjectTitleName"), //NOI18N
-                //NbBundle.getMessage(NewWebProjectWizardIterator.class, "PanelShareabilityVisual.label"),
+                NbBundle.getMessage(NewWebProjectWizardIterator.class, "PanelShareabilityVisual.label"),
 		NbBundle.getMessage(NewWebProjectWizardIterator.class, "LBL_NWP2_Frameworks") //NOI18N
 	    };
 	else
 	    steps = new String[] {
 		NbBundle.getMessage(NewWebProjectWizardIterator.class, "LBL_NWP1_ProjectTitleName"), //NOI18N
-                //NbBundle.getMessage(NewWebProjectWizardIterator.class, "PanelShareabilityVisual.label")
+                NbBundle.getMessage(NewWebProjectWizardIterator.class, "PanelShareabilityVisual.label")
 	    };
 	
         return steps;
@@ -235,14 +235,14 @@ public class NewWebProjectWizardIterator implements WizardDescriptor.ProgressIns
 	    //standard panels + configurable framework panel
 	    panels = new WizardDescriptor.Panel[] {
 		new PanelConfigureProject(),
-                //new PanelSharability(WizardProperties.PROJECT_DIR, WizardProperties.SERVER_INSTANCE_ID, true),
+                new PanelSharability(WizardProperties.PROJECT_DIR, WizardProperties.SERVER_INSTANCE_ID, true),
 		new PanelSupportedFrameworks()
 	    };
 	else
 	    //no framework available, don't show framework panel
 	    panels = new WizardDescriptor.Panel[] {
 		new PanelConfigureProject(),
-                //new PanelSharability(WizardProperties.PROJECT_DIR, WizardProperties.SERVER_INSTANCE_ID, true)
+                new PanelSharability(WizardProperties.PROJECT_DIR, WizardProperties.SERVER_INSTANCE_ID, true)
 	    };
         panelsCount = panels.length;
         
