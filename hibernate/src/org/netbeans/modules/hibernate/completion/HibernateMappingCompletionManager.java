@@ -105,6 +105,7 @@ public final class HibernateMappingCompletionManager {
     private static final String MAP_KEY_TAG = "map-key";
     private static final String ELEMENT_TAG = "element";
     private static final String MANY_TO_MANY_TAG = "many-to-many";
+    
     private static final String TABLE_ATTRIB = "table"; // table name
     private static final String PACKAGE_ATTRIB = "package";
     private static final String CLASS_ATTRIB = "class";
