@@ -28,12 +28,13 @@
 package org.netbeans.modules.cnd.refactoring.support;
 
 import java.awt.Color;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.Iterator;
 import javax.swing.text.AttributeSet;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.StyleConstants;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
-import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.editor.settings.FontColorSettings;
 import org.netbeans.api.lexer.Language;
 import org.netbeans.api.lexer.LanguagePath;
@@ -50,6 +51,7 @@ import org.netbeans.modules.cnd.api.model.CsmEnum;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmFunctionDefinition;
 import org.netbeans.modules.cnd.api.model.CsmIdentifiable;
+import org.netbeans.modules.cnd.api.model.CsmModelAccessor;
 import org.netbeans.modules.cnd.api.model.CsmNamedElement;
 import org.netbeans.modules.cnd.api.model.CsmNamespace;
 import org.netbeans.modules.cnd.api.model.CsmNamespaceDefinition;
@@ -78,20 +80,38 @@ public class CsmRefactoringUtils {
 
     private CsmRefactoringUtils() {}
     
-    public static Project getContextProject(CsmObject contextObject) {
+    public static CsmProject getContextCsmProject(CsmObject contextObject) {
         CsmFile contextFile = null;
         if (CsmKindUtilities.isOffsetable(contextObject)) {
             contextFile = ((CsmOffsetable)contextObject).getContainingFile();
         } else if (CsmKindUtilities.isFile(contextObject)) {
             contextFile = (CsmFile)contextObject;
         }
-        Project out = null;
         CsmProject csmProject = null;
         if (contextFile != null) {
             csmProject = contextFile.getProject();
         } else if (CsmKindUtilities.isNamespace(contextObject)) {
             csmProject = ((CsmNamespace)contextObject).getProject();
         }
+        return csmProject;
+    }
+
+    public static Collection<CsmProject> getRelatedCsmProjects(CsmObject origObject, boolean allProjects) {
+        Collection<CsmProject> out = Collections.<CsmProject>emptyList();
+        if (!allProjects) {
+            CsmProject p = getContextCsmProject(origObject);
+            out = Collections.singleton(p);
+        } else {
+            // for now return all...
+            Collection<CsmProject> all = CsmModelAccessor.getModel().projects();
+            out = all;
+        }
+        return out;
+    }
+    
+    public static Project getContextProject(CsmObject contextObject) {
+        CsmProject csmProject = getContextCsmProject(contextObject);
+        Project out = null;
         if (csmProject != null) {
             Object o = csmProject.getPlatformProject();
             if (o instanceof NativeProject) {

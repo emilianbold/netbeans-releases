@@ -85,7 +85,7 @@ public class EditorOptions {
     public static final String sharpAtStartLine = "sharpAtStartLine"; //NOI18N
     public static final boolean sharpAtStartLineDefault = true;
     public static final String indentCasesFromSwitch = "indentCasesFromSwitch"; //NOI18N
-    public static final boolean indentCasesFromSwitchDefault = false;
+    public static final boolean indentCasesFromSwitchDefault = true;
 
     //BracesPlacement
     public static final String newLineBeforeBraceNamespace = "newLineBeforeBraceNamespace"; //NOI18N
@@ -374,30 +374,38 @@ public class EditorOptions {
 //          the * character (e.g., "(char *)i" instead of "(char*)i")
         Map<String,Object> apache = new HashMap<String,Object>();
         namedDefaults.put(APACHE_PROFILE, apache);
+        apache.put(indentCasesFromSwitch, false);
     }
 
     public static Object getDefault(CodeStyle.Language language, String styleId, String id){
+        Map<String,Object> map = namedDefaults.get(styleId);
+        if (map != null){
+            Object res = map.get(id);
+            if (res != null){
+                return res;
+            }
+        }
         return defaults.get(id);
     }
     
     public static String getCurrentProfileId(CodeStyle.Language language) {
         switch(language){
             case C:
-                return NbPreferences.forModule(CodeStyle.class).node("CodeStyle").get("C_Style", DEFAULT_PROFILE);
+                return NbPreferences.forModule(CodeStyle.class).node("CodeStyle").get("C_Style", DEFAULT_PROFILE); // NOI18N
             case CPP:
             default:
-                return NbPreferences.forModule(CodeStyle.class).node("CodeStyle").get("CPP_Style", DEFAULT_PROFILE);
+                return NbPreferences.forModule(CodeStyle.class).node("CodeStyle").get("CPP_Style", DEFAULT_PROFILE); // NOI18N
         }
     }
 
     public static void setCurrentProfileId(CodeStyle.Language language, String style) {
         switch(language){
             case C:
-                NbPreferences.forModule(CodeStyle.class).node("CodeStyle").put("C_Style", style);
+                NbPreferences.forModule(CodeStyle.class).node("CodeStyle").put("C_Style", style); // NOI18N
                 break;
             case CPP:
             default:
-                NbPreferences.forModule(CodeStyle.class).node("CodeStyle").put("CPP_Style", style);
+                NbPreferences.forModule(CodeStyle.class).node("CodeStyle").put("CPP_Style", style); // NOI18N
                 break;
         }
     }
@@ -405,16 +413,16 @@ public class EditorOptions {
     public static Preferences getPreferences(CodeStyle.Language language, String profileId) {
         switch(language){
             case C:
-                return NbPreferences.forModule(CodeStyle.class).node("C_CodeStyles").node(profileId);
+                return NbPreferences.forModule(CodeStyle.class).node("C_CodeStyles").node(profileId); // NOI18N
             case CPP:
             default:
-                return NbPreferences.forModule(CodeStyle.class).node("CPP_CodeStyles").node(profileId);
+                return NbPreferences.forModule(CodeStyle.class).node("CPP_CodeStyles").node(profileId); // NOI18N
         }
     }
 
 
     public static int getGlobalIndentSize(CodeStyle.Language language) {
-        Formatter f = (Formatter)Settings.getValue(getKitClass(language), "formatter");
+        Formatter f = (Formatter)Settings.getValue(getKitClass(language), "formatter"); // NOI18N
         if (f != null) {
             return f.getShiftWidth();
         }
