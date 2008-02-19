@@ -40,7 +40,7 @@
  */
 package org.netbeans.modules.derby;
 
-import org.netbeans.modules.derby.ui.DerbySystemHomePanel;
+import org.netbeans.modules.derby.ui.DerbyPropertiesPanel;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.CallableSystemAction;
@@ -49,14 +49,14 @@ import org.openide.util.actions.CallableSystemAction;
  *
  * @author Pavel Buzek
  */
-public class DerbySettingsAction extends CallableSystemAction {
+public class DerbyPropertiesAction extends CallableSystemAction {
 
-    public DerbySettingsAction() {
+    public DerbyPropertiesAction() {
         putValue("noIconInMenu", Boolean.TRUE);
     }    
     
     public void performAction() {
-        DerbySystemHomePanel.showDerbySettings();
+        DerbyPropertiesPanel.showDerbyProperties();
     }
     
     protected boolean asynchronous() {
@@ -64,10 +64,10 @@ public class DerbySettingsAction extends CallableSystemAction {
     }
 
     public String getName() {
-        return NbBundle.getBundle(CreateDatabaseAction.class).getString("LBL_SettingsAction");
+        return NbBundle.getBundle(CreateDatabaseAction.class).getString("LBL_PropertiesAction");
     }
 
     public HelpCtx getHelpCtx() {
-        return new HelpCtx(DerbySettingsAction.class);
+        return new HelpCtx(DerbyPropertiesAction.class);
     }
 }
