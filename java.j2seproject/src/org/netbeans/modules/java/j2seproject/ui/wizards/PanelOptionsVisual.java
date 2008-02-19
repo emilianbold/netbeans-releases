@@ -181,9 +181,8 @@ public class PanelOptionsVisual extends SettingsPanel implements ActionListener,
 
         mainClassTextField.setText("com.myapp.Main");
 
-        sharableProject.setMnemonic('P');
         sharableProject.setSelected(true);
-        sharableProject.setText(org.openide.util.NbBundle.getMessage(PanelOptionsVisual.class, "LBL_PanelOptions_SharableProject_Checkbox")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(sharableProject, org.openide.util.NbBundle.getMessage(PanelOptionsVisual.class, "LBL_PanelOptions_SharableProject_Checkbox")); // NOI18N
         sharableProject.setMargin(new java.awt.Insets(0, 0, 0, 0));
         sharableProject.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -191,10 +190,10 @@ public class PanelOptionsVisual extends SettingsPanel implements ActionListener,
             }
         });
 
-        jLabel1.setText(org.openide.util.NbBundle.getMessage(PanelOptionsVisual.class, "LBL_PanelOptions_Location_Label")); // NOI18N
+        jLabel1.setLabelFor(librariesLocation);
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel1, org.openide.util.NbBundle.getMessage(PanelOptionsVisual.class, "LBL_PanelOptions_Location_Label")); // NOI18N
 
-        browseLibraries.setMnemonic('B');
-        browseLibraries.setText(org.openide.util.NbBundle.getMessage(PanelOptionsVisual.class, "LBL_PanelOptions_Browse_Button")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(browseLibraries, org.openide.util.NbBundle.getMessage(PanelOptionsVisual.class, "LBL_PanelOptions_Browse_Button")); // NOI18N
         browseLibraries.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 browseLibrariesActionPerformed(evt);
