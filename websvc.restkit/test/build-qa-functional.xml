@@ -169,6 +169,9 @@ made subject to such option by the copyright holder.
     </target>
 
     <target name="-setup-jmaki-nbm" depends="-init-jmaki, -download-jmaki">
+        <condition property="xtest.userdata|plugins.jmaki.skip" value="true">
+            <istrue value="${plugins.jmaki.skip}"/>
+        </condition>
         <condition property="xtest.userdata|plugins.jmaki.nbm" value="${plugins.jmaki.nbm.tmp}">
             <and>
                 <available file="${plugins.jmaki.nbm.tmp}"/>
