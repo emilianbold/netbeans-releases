@@ -264,7 +264,7 @@ textCheckBox.addItemListener(new java.awt.event.ItemListener() {
         return nameField.getText();
     }
     
-    public boolean searchJavadoc() {
+    public boolean searchInComments() {
         return textCheckBox.isSelected();
     }
     

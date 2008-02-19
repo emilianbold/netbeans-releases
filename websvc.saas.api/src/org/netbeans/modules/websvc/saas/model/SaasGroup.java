@@ -269,4 +269,7 @@ public class SaasGroup {
         return child;
     }
     
+    public String toString() {
+        return getName();
+    }
 }

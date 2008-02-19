@@ -168,6 +168,7 @@ public abstract class RestTestBase extends WebServicesTestBase {
         // Close
         String close = Bundle.getStringTrimmed("org.netbeans.core.ui.Bundle", "LBL_Close");
         getProjectRootNode().performPopupAction(close);
+        System.gc();
     }
 
     /**

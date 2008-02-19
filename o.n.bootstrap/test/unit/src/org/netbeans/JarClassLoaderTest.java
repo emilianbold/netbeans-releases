@@ -157,7 +157,7 @@ public class JarClassLoaderTest extends NbTestCase {
         assertURLsContent(jcl.getResources("/resource.txt"), "content");
     }
 
-    public void testFromNonExistantJAR() throws Exception {
+    public void testFromNonExistentJAR() throws Exception {
         File jar = new File(jars, "default-package-resource.jar");
         File snd = new File(jars, "copy.jar");
         FileInputStream is = new FileInputStream(jar);

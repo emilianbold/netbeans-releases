@@ -50,6 +50,7 @@ import org.netbeans.modules.websvc.saas.ui.actions.ViewApiDocAction;
 import org.netbeans.modules.websvc.saas.util.SaasUtil;
 import org.openide.nodes.AbstractNode;
 import org.openide.util.actions.SystemAction;
+import org.openide.util.lookup.AbstractLookup;
 
 /**
  *
@@ -58,8 +59,8 @@ import org.openide.util.actions.SystemAction;
 public abstract class SaasNode extends AbstractNode {
     protected Saas saas;
     
-    public SaasNode(SaasNodeChildren nodeChildren, Saas saas) {
-        super(nodeChildren);
+    public SaasNode(SaasNodeChildren nodeChildren, AbstractLookup lookup, Saas saas) {
+        super(nodeChildren, lookup);
         this.saas = saas;
     }
 

@@ -64,10 +64,14 @@ public class SaasGroupNodeChildren extends Children.Keys<Object> implements Prop
         model.addPropertyChangeListener(WeakListeners.propertyChange(this, model));
     }
     
+    protected void setGroup(SaasGroup g) {
+        group = g;
+    }
+    
     @Override
     protected void addNotify() {
-        super.addNotify();
         updateKeys();
+        super.addNotify();
     }
 
     public void propertyChange(PropertyChangeEvent evt) {
@@ -81,7 +85,7 @@ public class SaasGroupNodeChildren extends Children.Keys<Object> implements Prop
         }
     }
     
-    private void updateKeys() {
+    protected void updateKeys() {
         ArrayList<Object> keys = new ArrayList<Object>();
         keys.addAll(group.getChildrenGroups());
         keys.addAll(group.getServices());

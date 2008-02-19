@@ -112,10 +112,10 @@ made subject to such option by the copyright holder.
         <folder name="AnnotationTypes">
             <folder name="BreakpointActions">  <!-- Editor gutter popup menu -->
                 <file name="org-netbeans-modules-cnd-debugger-gdb-actions-BreakpointEnableAction.instance">
-                    <attr name="position" intvalue="100"/>
+                    <attr name="position" intvalue="150"/>
                 </file>
                 <file name="org-netbeans-modules-cnd-debugger-gdb-actions-BreakpointCustomizeAction.instance">
-                    <attr name="position" intvalue="200"/>
+                    <attr name="position" intvalue="250"/>
                 </file>
             </folder>
             <file name="FunctionBreakpoint.xml" url="FunctionBreakpoint.xml"/>

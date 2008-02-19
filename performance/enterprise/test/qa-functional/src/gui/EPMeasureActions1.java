@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -39,54 +39,29 @@
  * made subject to such option by the copyright holder.
  */
 
+package gui;
+
+
+import org.netbeans.junit.NbTestSuite;
+import gui.actions.*;
+
 /**
- * DisplayAction.java
+ * Measure UI-RESPONSIVENES and WINDOW_OPENING.
  *
- *
- * Created: Wed Mar  1 16:58:40 2000
- *
- * @author Ana von Klopp
- * @version
+ * @author  mmirilovic@netbeans.org, rashid@netbeans.org, mrkam@netbeans.org
  */
+public class EPMeasureActions1  {
 
-package org.netbeans.modules.web.monitor.client;
-
-import org.openide.nodes.Node;
-import org.openide.util.HelpCtx;
-import org.openide.util.NbBundle;
-import org.openide.util.actions.NodeAction;
-
-public class DisplayAction extends NodeAction {
-
-    /**
-     * Default constructor
-     */
-    public DisplayAction() {}
-
-    /**
-     * Sets the name of the action
-     */
-    public String getName() {
-	return NbBundle.getBundle(DisplayAction.class).getString("MON_Display_12");
-    }
-
-    /**
-     * Not implemented
-     */
-    public HelpCtx getHelpCtx() {
-	return HelpCtx.DEFAULT_HELP;
-    }
-
-    public boolean enable(Node[] nodes) {
-	if(nodes != null && nodes.length == 1) return true;
-	else return false;
+    public static NbTestSuite suite() {
+        NbTestSuite suite = new NbTestSuite();
+            
+        suite.addTest(new CreateBPELmodule("measureTime", "Create BPEL module"));
+        suite.addTest(new CreateCompositeApplication("measureTime", "Create Composite Application"));
+        suite.addTest(new AddNewWSDLDocument("measureTime", "Add New WSDL Document"));
+        suite.addTest(new AddNewXMLSchema("measureTime", "Add New XML Schema"));
+        suite.addTest(new AddNewXMLDocument("measureTime", "Add New XML Document"));
+        suite.addTest(new AddNewBpelProcess("measureTime", "Add New Bpel Process")); 
+        return suite;
     }
     
-    public void performAction(Node[] nodes) { 
-	TransactionView.getInstance().displayTransaction(nodes[0]);
-    }
-
-    public boolean asynchronous() { 
-	return false; 
-    } 
-} // DisplayAction
+}
