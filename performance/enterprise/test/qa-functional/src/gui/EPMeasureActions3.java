@@ -39,35 +39,33 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.ruby.debugger;
+package gui;
 
-import org.netbeans.api.debugger.DebuggerEngine;
-import org.netbeans.spi.debugger.DebuggerEngineProvider;
 
-public final class RubyDebuggerEngineProvider extends DebuggerEngineProvider {
-    
-    static final String RUBY_LANGUAGE = "Ruby"; // NOI18N
-    
-    private DebuggerEngine.Destructor destructor;
-    
-    public String[] getLanguages() {
-        return new String[] { RUBY_LANGUAGE };
-    }
-    
-    public String getEngineTypeID() {
-        return "RubyDebuggerEngine"; // NOI18N
-    }
-    
-    public Object[] getServices() {
-        return new Object[] {};
-    }
-    
-    public void setDestructor(DebuggerEngine.Destructor destructor) {
-        this.destructor = destructor;
-    }
-    
-    public DebuggerEngine.Destructor getDestructor() {
-        return destructor;
+import org.netbeans.junit.NbTestSuite;
+import gui.actions.*;
+
+/**
+ * Measure UI-RESPONSIVENES and WINDOW_OPENING.
+ *
+ * @author  mmirilovic@netbeans.org, rashid@netbeans.org, mrkam@netbeans.org
+ */
+public class EPMeasureActions3  {
+
+    public static NbTestSuite suite() {
+        NbTestSuite suite = new NbTestSuite();
+            
+        suite.addTest(new SchemaNavigatorSchemaView("measureTime", "Schema Navigator Schema View"));
+        suite.addTest(new NavigatorSchemaViewMode("measureTime","Schema Navigator Schema View mode"));
+        
+
+//TODO there is an password dialog solve before enable to run again        suite.addTest(new DeployProject("measureTime","Deploy Project"));
+        suite.addTest(new OpenComplexDiagram("measureTime","Open Complex Diagram"));         
+        suite.addTest(new OpenBPELproject("measureTime","OpenBPELproject"));
+
+        suite.addTest(new StartAppserver("measureTime","Start Appserver"));
+        suite.addTest(new OpenSchemaView("testOpenComplexSchemaView", "Open Complex Schema View"));
+        return suite;
     }
     
 }

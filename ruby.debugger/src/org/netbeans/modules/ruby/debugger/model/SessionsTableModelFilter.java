@@ -56,9 +56,6 @@ import static org.netbeans.spi.debugger.ui.Constants.SESSION_STATE_COLUMN_ID;
 import static org.netbeans.spi.debugger.ui.Constants.SESSION_LANGUAGE_COLUMN_ID;
 import static org.netbeans.spi.debugger.ui.Constants.SESSION_HOST_NAME_COLUMN_ID;
 
-/**
- * @author Martin Krauskopf
- */
 public final class SessionsTableModelFilter implements TableModelFilter {
 
     private final List<ModelListener> listeners;
