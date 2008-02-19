@@ -120,6 +120,7 @@ public class RubyPlatformTest extends RubyTestBase {
         FileObject gemRepo = FileUtil.toFileObject(getWorkDir()).createFolder("gem-repo");
         GemManager.initializeRepository(gemRepo);
         jruby.setGemHome(FileUtil.toFile(gemRepo));
+        jruby.getInfo().setGemPath("");
         assertFalse("does not have fast debugger", jruby.hasFastDebuggerInstalled());
         installFakeFastRubyDebugger(jruby);
         assertTrue("does have fast debugger", jruby.hasFastDebuggerInstalled());
