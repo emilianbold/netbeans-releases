@@ -506,23 +506,19 @@ public final class ElementUtilities {
             }
         }
         Types types = JavacTypes.instance(ctx);
-        DeclaredType implType = (DeclaredType)impl.asType();
         for (TypeMirror t : types.directSupertypes(element.asType())) {
-            for (ExecutableElement ee : findUnimplementedMethods(impl, (TypeElement)((DeclaredType)t).asElement())) {
+            for (ExecutableElement ee : findUnimplementedMethods(impl, (TypeElement) ((DeclaredType) t).asElement())) {
                 //check if "the same" method has already been added:
                 boolean exists = false;
-                TypeMirror eeType = types.asMemberOf(implType, ee);
                 for (ExecutableElement existing : undef) {
-                    if (existing.getSimpleName().contentEquals(ee.getSimpleName())) {
-                        TypeMirror existingType = types.asMemberOf(implType, existing);
-                        if (types.isSameType(eeType, existingType)) {
-                            exists = true;
-                            break;
-                        }
+                    if (info.getElements().overrides(existing, ee, impl)) {
+                        exists = true;
+                        break;
                     }
                 }
-                if (!exists)
+                if (!exists) {
                     undef.add(ee);
+                }
             }
         }
         return undef;
