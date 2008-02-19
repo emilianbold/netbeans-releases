@@ -67,7 +67,7 @@ made subject to such option by the copyright holder.
                 <attr name="position" intvalue="100"/>
             </file>
             <file name="CndOtherOptionsPanelController.instance">
-                <attr name="instanceClass" stringvalue="org.netbeans.modules.cnd.editor.options.CndOtherOptionsPanelController"/>
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.cnd.ui.options.CndOtherOptionsPanelController"/>
                 <attr name="instanceOf" stringvalue="org.netbeans.spi.options.OptionsPanelController"/>
                 <attr name="position" intvalue="1000"/>
             </file>
