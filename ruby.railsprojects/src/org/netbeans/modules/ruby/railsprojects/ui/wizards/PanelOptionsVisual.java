@@ -110,7 +110,8 @@ public class PanelOptionsVisual extends SettingsPanel implements PropertyChangeL
     }
 
     private void initWarCheckBox() {
-        boolean jruby = getPlatform().isJRuby();
+        RubyPlatform platform = getPlatform();
+        boolean jruby = platform != null ? platform.isJRuby() : false;
         warCheckBox.setEnabled(jruby);
         if (!jruby) {
             warCheckBox.setSelected(false);
