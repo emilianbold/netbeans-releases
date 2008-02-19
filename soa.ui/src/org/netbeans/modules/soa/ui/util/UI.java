@@ -211,6 +211,10 @@ public final class UI {
     return text;
   }
 
+  public static void a11y(Component component, String description) {
+    component.getAccessibleContext().setAccessibleDescription(description);
+  }
+
   public static String i18n(Class clazz, String key) {
     if (key == null) {
       return null;
