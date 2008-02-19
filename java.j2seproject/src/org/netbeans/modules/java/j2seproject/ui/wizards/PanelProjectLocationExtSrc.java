@@ -77,32 +77,38 @@ public class PanelProjectLocationExtSrc extends SettingsPanel {
             public void changedUpdate(DocumentEvent e) {
                 calculateProjectFolder ();
                 dataChanged ();
+                firePropertyChange (PanelProjectLocationVisual.PROP_PROJECT_NAME,null, projectName.getText());
             }
 
             public void insertUpdate(DocumentEvent e) {
                 calculateProjectFolder ();
                 dataChanged ();
+                firePropertyChange (PanelProjectLocationVisual.PROP_PROJECT_NAME,null, projectName.getText());
             }
 
             public void removeUpdate(DocumentEvent e) {
                 calculateProjectFolder ();
                 dataChanged ();
+                firePropertyChange (PanelProjectLocationVisual.PROP_PROJECT_NAME,null, projectName.getText());
             }
         });        
         this.projectLocation.getDocument().addDocumentListener(new DocumentListener () {
             public void changedUpdate(DocumentEvent e) {             
                 setCalculateProjectFolder (false);
                 dataChanged ();
+                firePropertyChange (PanelProjectLocationVisual.PROP_PROJECT_LOCATION,null, projectLocation.getText());
             }
 
             public void insertUpdate(DocumentEvent e) {
                 setCalculateProjectFolder (false);
                 dataChanged ();
+                firePropertyChange (PanelProjectLocationVisual.PROP_PROJECT_LOCATION,null, projectLocation.getText());
             }
 
             public void removeUpdate(DocumentEvent e) {
                 setCalculateProjectFolder (false);
                 dataChanged ();
+                firePropertyChange (PanelProjectLocationVisual.PROP_PROJECT_LOCATION,null, projectLocation.getText());
             }
         });
     }
