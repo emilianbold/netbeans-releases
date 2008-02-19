@@ -115,6 +115,7 @@ public final class SharableLibrariesUtils {
         chooser.setCurrentDirectory(lib);
         chooser.setFileSelectionMode( JFileChooser.DIRECTORIES_ONLY );
         chooser.setDialogTitle(NbBundle.getMessage(SharableLibrariesUtils.class,"LBL_Browse_Libraries_Title"));
+        chooser.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(SharableLibrariesUtils.class,"ASCD_Browse_Libraries_Title"));
         if (JFileChooser.APPROVE_OPTION == chooser.showOpenDialog(comp)) {
             String[] files;
             try {

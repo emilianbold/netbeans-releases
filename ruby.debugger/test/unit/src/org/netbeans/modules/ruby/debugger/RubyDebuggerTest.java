@@ -59,9 +59,6 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.RequestProcessor;
 
-/**
- * @author Martin Krauskopf
- */
 public final class RubyDebuggerTest extends TestBase {
     
     private static final boolean VERBOSE = false;

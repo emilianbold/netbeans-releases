@@ -63,7 +63,6 @@ import org.openide.util.WeakListeners;
  * @author nam
  */
 public class WsdlSaas extends Saas implements PropertyChangeListener {
-    //TODO consolidate and remove
     private WsdlData wsData;
     
     private List<WsdlSaasPort> ports;
@@ -92,13 +91,24 @@ public class WsdlSaas extends Saas implements PropertyChangeListener {
         setParentGroup(parentGroup);
     }
     
+    public void setWsdlData(WsdlData data) {
+        wsData = data;
+    }
+    
     public WsdlData getWsdlData() {
-        if (getState() != State.READY) {
-            throw new IllegalStateException("Current state: " + getState() + ", expect: " + State.READY);
+        if (getState() != State.RESOLVED && getState() != State.READY) {
+            throw new IllegalStateException("Current state: " + getState() + ", expect resolved or ready");
         }
         return wsData;
     }
 
+    public void refresh() {
+        if (wsData == null || getState() == State.INITIALIZING) {
+            throw new IllegalStateException("Could not refresh null WSDL data or while it is initializing");
+        }
+        WsdlUtil.refreshWsdlData(wsData);
+    }
+    
     public String getDefaultServiceName() {
         if (getMethods().size() > 0) {
             return getMethods().get(0).getMethod().getServiceName();
@@ -127,6 +137,8 @@ public class WsdlSaas extends Saas implements PropertyChangeListener {
                 wsData.addPropertyChangeListener(WeakListeners.propertyChange(this, wsData));
                 if (wsData.isReady()) {
                     setState(State.READY);
+                } else {
+                    setState(State.INITIALIZING);
                 }
             }
         }
@@ -145,19 +157,21 @@ public class WsdlSaas extends Saas implements PropertyChangeListener {
     }
 
     public void propertyChange(PropertyChangeEvent evt) {
-        if (evt.getPropertyName().equals("resolved")) { //NOI18N
-            Object newValue = evt.getNewValue();
-            if (newValue instanceof Boolean) {
-                boolean resolved = ((Boolean) newValue).booleanValue();
-                if (resolved) {
-                    setState(State.READY);
-                    //assert wsData.getName().equals(wsData.getWsdlService().getName());
-                } else {
-                    setState(State.UNINITIALIZED);
-                }
-
+        String property = evt.getPropertyName();
+        Object newValue = evt.getNewValue();
+        if (property.equals("resolved")) { //NOI18N
+            if (Boolean.TRUE.equals(newValue)) {
+                setState(State.RESOLVED);
+            } else {
+                setState(State.UNINITIALIZED);
             }
-            
+        } else if (property.equals("compiled")) {
+            if (Boolean.TRUE.equals(newValue)) {
+                WsdlUtil.saveWsdlData(getWsdlData());
+                setState(State.READY);
+            } else {
+                setState(State.UNINITIALIZED);
+            }
         }
     }
 

@@ -47,8 +47,6 @@ import org.openide.util.NbBundle;
 
 /**
  * Debugger Annotation class.
- *
- * @author Martin Krauskopf
  */
 public final class DebuggerAnnotation extends Annotation {
     

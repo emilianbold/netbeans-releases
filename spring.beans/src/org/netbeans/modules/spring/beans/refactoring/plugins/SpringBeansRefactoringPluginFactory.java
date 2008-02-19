@@ -40,11 +40,12 @@
  */
 package org.netbeans.modules.spring.beans.refactoring.plugins;
 
-import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.fileinfo.NonRecursiveFolder;
 import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.modules.refactoring.api.AbstractRefactoring;
+import org.netbeans.modules.refactoring.api.MoveRefactoring;
+import org.netbeans.modules.refactoring.api.RenameRefactoring;
 import org.netbeans.modules.refactoring.api.WhereUsedQuery;
 import org.netbeans.modules.refactoring.spi.RefactoringPlugin;
 import org.netbeans.modules.refactoring.spi.RefactoringPluginFactory;
@@ -67,6 +68,10 @@ public class SpringBeansRefactoringPluginFactory implements RefactoringPluginFac
             if (handle != null) {
                 return new SpringBeansRefactoringFindUsagesPlugin((WhereUsedQuery) refactoring);
             }
+        } else if (refactoring instanceof RenameRefactoring) {
+            return new SpringRenamePlugin((RenameRefactoring)refactoring);
+        } else if (refactoring instanceof MoveRefactoring) {
+            return new SpringMovePlugin((MoveRefactoring)refactoring);
         }
 
         // TODO: RENAME
