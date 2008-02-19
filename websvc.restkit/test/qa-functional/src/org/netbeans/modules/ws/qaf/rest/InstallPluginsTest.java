@@ -40,26 +40,35 @@ package org.netbeans.modules.ws.qaf.rest;
 
 import java.io.File;
 import java.io.IOException;
+import javax.swing.JDialog;
+import junit.framework.TestSuite;
 import junit.textui.TestRunner;
 import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.JellyTestCase;
+import org.netbeans.jellytools.NbDialogOperator;
 import org.netbeans.jellytools.PluginsOperator;
 import org.netbeans.jellytools.WizardOperator;
 import org.netbeans.jemmy.operators.JButtonOperator;
 import org.netbeans.jemmy.operators.JCheckBoxOperator;
+import org.netbeans.jemmy.operators.JDialogOperator;
+import org.netbeans.jemmy.operators.JFileChooserOperator;
+import org.netbeans.junit.NbTestSuite;
 
 /**
- * Test (un)installation of the RESTful Web Services plugin from Update Center
+ * Test installation of plugins
  * 
  * @author lukas
  */
-public class InstallRestTest extends JellyTestCase {
+public class InstallPluginsTest extends JellyTestCase {
 
-    static final String FLAG = ".rest.plugin.installed"; //NOI18N
+    static final String REST_FLAG = ".rest.plugin.installed"; //NOI18N
     static final String REST_KIT_LABEL = "RESTful Web Services"; //NOI18N
+    static final String JMAKI_FLAG = ".jmaki.plugin.installed"; //NOI18N
+    static final String JMAKI_KIT_LABEL = "jMaki Ajax support"; //NOI18N
     private File flagF;
-
-    public InstallRestTest(String name) {
+    private File flagF2;
+    
+    public InstallPluginsTest(String name) {
         super(name);
     }
 
@@ -68,13 +77,15 @@ public class InstallRestTest extends JellyTestCase {
         super.setUp();
         if (System.getProperty("xtest.tmpdir") != null) { //NOI18N
             //XTest execution
-            flagF = new File(System.getProperty("xtest.tmpdir"), FLAG); //NOI18N
+            flagF = new File(System.getProperty("xtest.tmpdir"), REST_FLAG); //NOI18N
+            flagF2 = new File(System.getProperty("xtest.tmpdir"), JMAKI_FLAG); //NOI18N
         } else {
             //Internal-execution
-            flagF = new File(System.getProperty("java.io.tmpdir"), FLAG); //NOI18N
+            flagF = new File(System.getProperty("java.io.tmpdir"), REST_FLAG); //NOI18N
+            flagF2 = new File(System.getProperty("java.io.tmpdir"), JMAKI_FLAG); //NOI18N
         }
     }
-    
+
     /**
      * Install RESTful plugin iff it is not already installed
      * 
@@ -83,32 +94,60 @@ public class InstallRestTest extends JellyTestCase {
     public void testInstallRest() throws IOException {
         try {
             Class.forName("org.netbeans.modules.websvc.rest.spi.RestSupport");
+            fail(REST_KIT_LABEL + " is already installed.");
         } catch (ClassNotFoundException cnfe) {
             flagF.createNewFile();
-            installPlugin();
+            PluginsOperator po = PluginsOperator.invoke();
+            po.install(REST_KIT_LABEL);
         }
     }
 
     /**
-     * Install RESTful plugin iff it has been installed by the test.
-     * One can bypass this constraint by setting system property:
-     * "plugins.rest.forceUninstall=true"
+     * Install jMaki plugin iff it is not already installed
+     * 
+     * <b>Important:</b> Runs only if plugins.jmaki.skip=false or is not set at all
      * 
      * @throws java.io.IOException
      */
-    public void testUnInstallRest() {
-        if (flagF.exists() && flagF.isFile()) { //NOI18N
-            flagF.delete();
-            uninstallPlugin();
-        } else if (Boolean.getBoolean("plugins.rest.forceUninstall")) { //NOI18N
-            uninstallPlugin();
+    public void testInstallJMaki() throws IOException {
+        if (Boolean.getBoolean("plugins.jmaki.skip")) { //NOI18N
+            fail("plugins.jmaki.skip was set true, skipping the test..."); //NOI18N
+        }
+        try {
+            Class.forName("org.netbeans.modules.sun.jmaki.Installer"); //NOI18N
+            fail(JMAKI_KIT_LABEL + " is already installed.");
+        } catch (ClassNotFoundException cnfe) {
+            flagF2.createNewFile();
+            installPlugin();
         }
     }
 
     private void installPlugin() throws IOException {
+        assertNotNull("plugins.jmaki.nbm not set", System.getProperty("plugins.jmaki.nbm")); //NOI18N
+        File jmakiNbm = new File(System.getProperty("plugins.jmaki.nbm")); //NOI18N
+        assertTrue("jmaki nbm does not exist", jmakiNbm.exists()); //NOI18N
+        Thread t = new Thread(new Runnable() {
+
+            public void run() {
+                while (true) {
+                    String dialogLabel = "Warning";
+                    JDialog dialog = JDialogOperator.findJDialog(dialogLabel, false, false);
+                    if (dialog != null) {
+                        new JButtonOperator(new NbDialogOperator(dialog), "Continue").push();
+                        break;
+                    }
+                }
+            }
+        });
+        t.start();
         PluginsOperator po = PluginsOperator.invoke();
-        po.selectAvailablePlugins();
-        po.selectPlugins(new String[]{REST_KIT_LABEL});
+        //"Add Plugins..."
+        String addPluginsBtn = Bundle.getStringTrimmed("org.netbeans.modules.autoupdate.ui.Bundle", "UnitTab_bAddLocallyDownloads_Name");
+        new JButtonOperator(po.selectDownloaded(), addPluginsBtn).push();
+        JFileChooserOperator jfco = new JFileChooserOperator(po);
+        jfco.setCurrentDirectory(jmakiNbm.getParentFile());
+        jfco.selectFile(jmakiNbm.getName());
+        jfco.approve();
         po.install();
         WizardOperator installerOper = po.installer();
         installerOper.next();
@@ -126,22 +165,20 @@ public class InstallRestTest extends JellyTestCase {
         acceptCheckboxOper.push();
         // Install
         String installInDialogLabel = Bundle.getStringTrimmed("org.netbeans.modules.autoupdate.ui.wizards.Bundle", "InstallUnitWizardModel_Buttons_Install");
-        new JButtonOperator(installerOper, installInDialogLabel).push();
+        new JButtonOperator(installerOper, installInDialogLabel).pushNoBlock();
         installerOper.finish();
     }
 
-    private void uninstallPlugin() {
-        PluginsOperator po = PluginsOperator.invoke();
-        po.selectInstalled();
-        po.selectPlugins(new String[]{REST_KIT_LABEL});
-        po.uninstall();
-        // Uninstall
-        String uninstallInDialogLabel = Bundle.getStringTrimmed("org.netbeans.modules.autoupdate.ui.wizards.Bundle", "UninstallUnitWizardModel_Buttons_Uninstall");
-        new JButtonOperator(po.installer(), uninstallInDialogLabel).push();
-        po.installer().finish();
+    public TestSuite suite() {
+        TestSuite suite = new NbTestSuite();
+        suite.addTest(new InstallPluginsTest("testInstallRest")); //NOI18N
+        if (!Boolean.getBoolean("plugins.jmaki.skip")) { //NOI18N
+            suite.addTest(new InstallPluginsTest("testInstallJMaki")); //NOI18N
+        }
+        return suite;
     }
-
+    
     public static void main(String... args) {
-        TestRunner.run(InstallRestTest.class);
+        TestRunner.run(InstallPluginsTest.class);
     }
 }
