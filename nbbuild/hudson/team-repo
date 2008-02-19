@@ -1,10 +1,27 @@
 #!/bin/sh
 
+if [ -z $repository && -n $1 ]; then
+    repository = $1
+fi
+
+if [ -z $action && -n $2]; then
+    action = $2
+fi
+
+if [ -z $push_username && -n $3 ]; then
+    push_username = $3
+fi
+
+if [ -z $push_password && -n $4 ]; then
+    push_password = $4
+fi
+
 [ "$action" = "build" ] || [ "$action" = "sync" ] || exit 101
 
 [ -n "$push_username" ] || exit 102
 [ -n "$push_password" ] || exit 103
 
+[ -n "$repository" ] || exit 104
 
 ANT_OPTS="-Xmx512m"
 export ANT_OPTS
@@ -68,8 +85,8 @@ if [ "$action" = "sync" ]; then
       hg ci -m "Automated merge"
       hg up -C
     fi
-    hg fetch http://hg.netbeans.org/core-main
-    hg push https://"$push_username":"$push_password"@hg.netbeans.org/core-main
+    hg fetch http://hg.netbeans.org/$repository
+    hg push https://"$push_username":"$push_password"@hg.netbeans.org/$repository
     exit 0
 fi
 
