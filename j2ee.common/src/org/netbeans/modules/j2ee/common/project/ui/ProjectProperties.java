@@ -45,6 +45,7 @@ import java.io.File;
 import java.net.URI;
 import java.net.URL;
 import java.util.*;
+import javax.swing.ImageIcon;
 import org.netbeans.modules.j2ee.common.project.classpath.ClassPathSupport;
 import org.netbeans.modules.java.api.common.util.CommonProjectUtils;
 import org.netbeans.spi.project.libraries.support.LibrariesSupport;
@@ -52,6 +53,7 @@ import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Utilities;
 
 
 /** Helper class. Defines constants for properties. Knows the proper
@@ -83,6 +85,21 @@ public final class ProjectProperties {
    
     // Prefixes and suffixes of classpath
     public static final String ANT_ARTIFACT_PREFIX = "${reference."; // NOI18N
+
+    private static String RESOURCE_ICON_JAR = "org/netbeans/modules/j2ee/common/project/ui/resources/jar.gif"; //NOI18N
+    private static String RESOURCE_ICON_LIBRARY = "org/netbeans/modules/j2ee/common/project/ui/resources/libraries.gif"; //NOI18N
+    private static String RESOURCE_ICON_ARTIFACT = "org/netbeans/modules/j2ee/common/project/ui/resources/projectDependencies.gif"; //NOI18N
+    private static String RESOURCE_ICON_BROKEN_BADGE = "org/netbeans/modules/j2ee/common/project/ui/resources/brokenProjectBadge.gif"; //NOI18N
+    private static String RESOURCE_ICON_SOURCE_BADGE = "org/netbeans/modules/j2ee/common/project/ui/resources/jarSourceBadge.png"; //NOI18N
+    private static String RESOURCE_ICON_JAVADOC_BADGE = "org/netbeans/modules/j2ee/common/project/ui/resources/jarJavadocBadge.png"; //NOI18N
+
+
+    public static ImageIcon ICON_JAR = new ImageIcon( Utilities.loadImage( RESOURCE_ICON_JAR ) );
+    public static ImageIcon ICON_LIBRARY = new ImageIcon( Utilities.loadImage( RESOURCE_ICON_LIBRARY ) );
+    public static ImageIcon ICON_ARTIFACT  = new ImageIcon( Utilities.loadImage( RESOURCE_ICON_ARTIFACT ) );
+    public static ImageIcon ICON_BROKEN_BADGE  = new ImageIcon( Utilities.loadImage( RESOURCE_ICON_BROKEN_BADGE ) );
+    public static ImageIcon ICON_JAVADOC_BADGE  = new ImageIcon( Utilities.loadImage( RESOURCE_ICON_JAVADOC_BADGE ) );
+    public static ImageIcon ICON_SOURCE_BADGE  = new ImageIcon( Utilities.loadImage( RESOURCE_ICON_SOURCE_BADGE ) );
     
     /** Store locations of libraries in the classpath param that have more the one
      * file into the properties in the following format:
@@ -100,9 +117,9 @@ public final class ProjectProperties {
      * It removes all properties that match this format that were in the {@link #properties}
      * but are not in the {@link #classpath}.
      */
-    public static void storeLibrariesLocations (Iterator<ClassPathSupport.Item> classpath, EditableProperties privateProps, FileObject projectFolder) {
+    public static void storeLibrariesLocations (Iterator<ClassPathSupport.Item> classpath, EditableProperties props, FileObject projectFolder) {
         ArrayList exLibs = new ArrayList ();
-        Iterator propKeys = privateProps.keySet().iterator();
+        Iterator propKeys = props.keySet().iterator();
         while (propKeys.hasNext()) {
             String key = (String) propKeys.next();
             if (key.endsWith(".libdirs") || key.endsWith(".libfiles") || //NOI18N
@@ -121,7 +138,7 @@ public final class ProjectProperties {
                 for (int i = 0; i < files.size(); i++) {
                     String path = files.get(i);
                     key = CommonProjectUtils.getAntPropertyName(ref)+".libfile." + (i+1); //NOI18N
-                    privateProps.setProperty (key, "" + path); //NOI18N
+                    props.setProperty (key, "" + path); //NOI18N
                     exLibs.remove(key);
                 }
             }
@@ -130,14 +147,14 @@ public final class ProjectProperties {
                 for (int i = 0; i < dirs.size(); i++) {
                     String path = dirs.get(i);
                     key = CommonProjectUtils.getAntPropertyName(ref)+".libdir." + (i+1); //NOI18N
-                    privateProps.setProperty (key, "" + path); //NOI18N
+                    props.setProperty (key, "" + path); //NOI18N
                     exLibs.remove(key);
                 }
             }
         }
         Iterator unused = exLibs.iterator();
         while (unused.hasNext()) {
-            privateProps.remove(unused.next());
+            props.remove(unused.next());
         }
     }
     

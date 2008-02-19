@@ -331,13 +331,11 @@ public final class ClassPathSupport {
         private URI artifactURI;
         private int type;
         private String property;
-        private String pathInDeployment;
         private String raw;
         private String eval;
         private boolean broken;
         private String sourceFilePath;
         private String javadocFilePath;
-        private boolean includeInDeployment;
         
         private String initialSourceFilePath;
         private String initialJavadocFilePath;
@@ -356,7 +354,6 @@ public final class ClassPathSupport {
                 this.raw = raw;
                 this.eval = eval;
                 this.property = property;
-                this.pathInDeployment = null;
             } else {
                 throw new IllegalArgumentException ("invalid classpath item, type=" + type + " object type:" + object.getClass().getName());
             }
@@ -697,12 +694,11 @@ public final class ClassPathSupport {
             return "artifactURI=" + artifactURI
                     + ", type=" + type 
                     + ", property=" + property
-                    + ", pathInDeployment=" + pathInDeployment
-                    + ", includeInDeployment=" + includeInDeployment
                     + ", raw=" + raw
                     + ", eval=" + eval
                     + ", object=" + object
-                    + ", broken=" + broken;
+                    + ", broken=" + broken
+                    + ", additional=" + additionalProperties;
         }
         
     }
