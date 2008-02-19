@@ -853,7 +853,8 @@ public class NbWelcomePanel extends ErrorMessagePanel {
         JAVAME_JDK("javame.jdk"),
         RUBY_JDK("ruby.jdk"),
         CND_JDK("cnd.jdk"),
-        CUSTOMIZE_JDK("customize.jdk");
+        CUSTOMIZE_JDK("customize.jdk"),
+        JAVA_TOOLS("java.tools");
         
         private String name;
         private BundleType(String s) {

@@ -66,6 +66,7 @@ import org.netbeans.installer.wizard.components.panels.JdkLocationPanel;
 import org.netbeans.installer.products.sjsas.wizard.panels.ASPanel;
 import org.netbeans.installer.utils.FileProxy;
 import org.netbeans.installer.utils.ResourceUtils;
+import org.netbeans.installer.utils.helper.Text;
 
 
 /**
@@ -234,12 +235,12 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
             FileUtils.writeFile(new File(directory, JTB_LICENSE), 
                     ResourceUtils.getResource(JTB_LEGAL_RESOURCE_PREFIX + JTB_LICENSE,
                     cl));
-            FileUtils.writeFile(new File(directory, JTB_DISTRIBUTION), 
-                    ResourceUtils.getResource(JTB_LEGAL_RESOURCE_PREFIX + JTB_DISTRIBUTION,
-                    cl));
-            FileUtils.writeFile(new File(directory, JTB_THIRDPARTYREADME), 
-                    ResourceUtils.getResource(JTB_LEGAL_RESOURCE_PREFIX + JTB_THIRDPARTYREADME,
-                    cl));
+//            FileUtils.writeFile(new File(directory, JTB_DISTRIBUTION), 
+//                    ResourceUtils.getResource(JTB_LEGAL_RESOURCE_PREFIX + JTB_DISTRIBUTION,
+//                    cl));
+//            FileUtils.writeFile(new File(directory, JTB_THIRDPARTYREADME), 
+//                    ResourceUtils.getResource(JTB_LEGAL_RESOURCE_PREFIX + JTB_THIRDPARTYREADME,
+//                    cl));
         } catch (IOException e) {
             throw new InstallationException(
                     getString("CL.install.error.legal.creation"), // NOI18N
@@ -317,6 +318,11 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
     public boolean allowModifyMode() {
         return false;
     }
+    
+    @Override
+    public Text getLicense() {
+       return null;
+    }    
     
     // private //////////////////////////////////////////////////////////////////////
     private FilesList modifyASLauncherFiles(
@@ -645,7 +651,7 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
     public static final String JTB_LEGAL_RESOURCE_PREFIX =
             "org/netbeans/installer/products/sjsas/jtblegal/";
     public static final String JTB_LICENSE =
-            "Java_EE_5_Tools_Update_3_Beta-License.txt";//NOI18N
+            "Java_EE_5_Tools_Update_4-License.txt";//NOI18N
     public static final String JTB_THIRDPARTYREADME =
             "THIRDPARTYREADME.txt";
     public static final String JTB_DISTRIBUTION =
