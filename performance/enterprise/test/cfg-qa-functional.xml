@@ -56,14 +56,14 @@ made subject to such option by the copyright holder.
     </testbag>
     
     <!-- 1st round -->    
-<!--    <testbag testattribs="all or ui_responsiveness or actions" prio="2"
+    <testbag testattribs="all or ui_responsiveness or actions" prio="2"
              executor="ide_performance" name="UI responsiveness - Actions 1/3" >
         <testset dir="qa-functional/src">
             <patternset>
                 <include name="gui/EPMeasureActions1.class"/>
             </patternset>
         </testset>
-    </testbag>-->
+    </testbag>
     <testbag testattribs="all or ui_responsiveness or actions" prio="2"
              executor="ide_performance" name="UI responsiveness - Actions 2/3" >
         <testset dir="qa-functional/src">
@@ -72,14 +72,14 @@ made subject to such option by the copyright holder.
             </patternset>
         </testset>
     </testbag>
-<!--    <testbag testattribs="all or ui_responsiveness or actions" prio="2"
+    <testbag testattribs="all or ui_responsiveness or actions" prio="2"
              executor="ide_performance" name="UI responsiveness - Actions 3/3" >
         <testset dir="qa-functional/src">
             <patternset>
                 <include name="gui/EPMeasureActions3.class"/>
             </patternset>
         </testset>
-    </testbag>-->
+    </testbag>
 <!-- no enteprise specific menus/dialogs tests so far    <testbag testattribs="all or ui_responsiveness or dialogs" prio="3"
              executor="ide_performance" name="UI responsiveness - Dialogs" >
         <testset dir="qa-functional/src">
