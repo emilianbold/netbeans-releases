@@ -277,9 +277,47 @@
 
         <set property="jdk.bundle.files.suffix"
              value="${nb.files.prefix}-${build.number}${nb.build.suffix}"/>
-
+	<!--
+        <set property="jdk.bundle.files.suffix"
+             value="nb-6_1"/>
+	-->
 	<set property="nb.bundles.output.dir"
              value="${output.dir}/bundles"/>
+
+        <condition property="do.build.jdk">
+             <or>
+	         <equals arg1="${build.jdk5}" arg2="1"/>
+                 <equals arg1="${build.jdk6}" arg2="1"/>
+             </or>
+        </condition>
+        <condition property="do.build.jdk5">
+	     <equals arg1="${build.jdk5}" arg2="1"/>
+        </condition>
+        <condition property="do.build.jdk6">
+	     <equals arg1="${build.jdk6}" arg2="1"/>
+        </condition>
+        <condition property="do.build.netbeans">
+	     <not>
+	         <equals arg1="${disable.build.netbeans}" arg2="1"/>
+             </not>
+        </condition>
+
+        <condition property="do.build.jdk.no.netbeans">
+	     <and>
+		<isset property="do.build.jdk"/>
+		<not>
+                    <isset property="do.build.netbeans"/>
+		</not>
+	     </and>
+        </condition>
+
+
+
+        <condition property="nb.locales.isset">
+ 	     <not>
+ 	     	<equals arg1="${nb.locales}" arg2=""/>
+ 	     </not>
+        </condition>
 
 	<!--
         <get
@@ -596,7 +634,7 @@ jarsigner.storepass=${jarsigner.storepass}
         <antcall target="build-netbeans-engine"/>
     </target>
 
-    <target name="build-netbeans">
+    <target name="build-netbeans" if="do.build.netbeans">
         <!--<antcall target="build-nb-ide-group"/>-->
         <antcall target="build-nb-base"/>
         <antcall target="build-nb-javase"/>        
@@ -610,14 +648,20 @@ jarsigner.storepass=${jarsigner.storepass}
         <antcall target="build-nb-php"/>
     </target>
 
-     <target name="build-runtimes">
+    <target name="build-netbeans-for-jdk" if="do.build.jdk.no.netbeans">
+        <antcall target="build-nb-base"/>
+        <antcall target="build-nb-javase"/>        
+    </target>
+
+     <target name="build-runtimes" if="do.build.netbeans">
          <antcall target="build-runtimes-group"/>
          <antcall target="build-glassfish"/>
          <antcall target="build-tomcat"/>
          <antcall target="build-openesb"/>
      </target>
 
-     <target name="build-jdk">
+     <target name="build-jdk" if="do.build.jdk">
+	 <antcall target="build-netbeans-for-jdk"/>
          <antcall target="build-jdk5"/>
          <antcall target="build-jdk6"/>
      </target>
@@ -636,7 +680,7 @@ jarsigner.storepass=${jarsigner.storepass}
     </target>
 
 
-    <target name="generate-netbeans-bundles">
+    <target name="generate-netbeans-bundles" if="do.build.netbeans">
 	<antcall target="generate-netbeans-javase-bundles"/>
         <antcall target="generate-netbeans-javaee-bundles"/>
         <antcall target="generate-netbeans-javame-bundles"/>
@@ -652,6 +696,10 @@ jarsigner.storepass=${jarsigner.storepass}
         <!--<antcall target="generate-javatoolsbundle-bundles"/>-->
     </target>
 
+    <target name="generate-jdk-bundles" depends="init-jdk-bundles,get-bundled-jvms" if="do.build.jdk">	
+	<antcall target="generate-jdk5-bundles"/>
+        <antcall target="generate-jdk6-bundles"/>
+    </target>
 
     <target name="build-core-engine">
 	<property name="engine.dist.file.name" value="nbi-engine.jar"/>
@@ -1366,7 +1414,7 @@ jarsigner.storepass=${jarsigner.storepass}
      </target>
 
 
-     <target name="build-jdk5">
+     <target name="build-jdk5" if="do.build.jdk5">
         <echo message="BUILDING JDK5 ========================================"/>
         <ant dir="${nbi.netbeans.dir}/infra/build/products/jdk" antfile="build_jdk5.xml" target="release-all">
             <property 
@@ -1392,7 +1440,7 @@ jarsigner.storepass=${jarsigner.storepass}
         </ant>
      </target>
 
-     <target name="build-jdk6">
+     <target name="build-jdk6" if="do.build.jdk6">
         <echo message="BUILDING JDK6 ========================================"/>
         <ant dir="${nbi.netbeans.dir}/infra/build/products/jdk" antfile="build_jdk6.xml" target="release-all">
             <property 
@@ -1947,7 +1995,7 @@ jarsigner.storepass=${jarsigner.storepass}
         </delete>
     </target>
 
-    <target name="get-bundled-jvms">
+    <target name="get-bundled-jvms" if="do.build.jdk">
         <set property="jvm.cache.dir" 
              value="${nbi.cache.dir}/jvm"/>
 	<mkdir dir="${jvm.cache.dir}"/>
@@ -1966,18 +2014,18 @@ jarsigner.storepass=${jarsigner.storepass}
 	     usetimestamp="true"/>
     </target>
 
-    <target name="generate-jdk-bundles" depends="get-bundled-jvms">	
+    <target name="init-jdk-bundles" if="do.build.jdk">
 	<set property="jdk.output.dir"
              value="${nb.bundles.output.dir}/jdk"/>
 
         <mkdir dir="${jdk.output.dir}"/>
-
-	<antcall target="generate-jdk5-bundles"/>
-        <antcall target="generate-jdk6-bundles"/>
+        <antcall target="build-netbeans-engine">
+		<param name="netbeans.engine.branding.kit" value="jdk"/>
+	</antcall>
     </target>
 
 
-    <target name="generate-jdk5-bundles">
+    <target name="generate-jdk5-bundles" if="do.build.jdk5">
 	<!-- JavaSE + JDK5 bundles --> 
         <create-bundle root="${output.dir}/registry-temp" 
                        platform="windows" 
@@ -2021,7 +2069,7 @@ jarsigner.storepass=${jarsigner.storepass}
         </create-bundle>
     </target>
 
-    <target name="generate-jdk6-bundles">
+    <target name="generate-jdk6-bundles" if="do.build.jdk6">
         <!-- JavaSE + JDK6 bundles -->
         <create-bundle root="${output.dir}/registry-temp" 
                        platform="windows" 
@@ -2082,7 +2130,11 @@ jarsigner.storepass=${jarsigner.storepass}
             codebase="http://bits.netbeans.org/download/6.1/nightly/${build.number}/registry"/>
     </target>
 
-    <target name="prepare-web-page" depends="init-web-page,init-web-page-ml,build-web-page,release-web-page"/>
+    <target name="prepare-web-page" if="do.build.netbeans">
+	<antcall target="prepare-netbeans-web-page"/>
+    </target>
+
+    <target name="prepare-netbeans-web-page" depends="init-web-page,init-web-page-ml,build-web-page,release-web-page"/>
 
     <target name="init-web-page">
 	<property name="web.page.dir" value="${nbi.all.dir}/webtemp"/>

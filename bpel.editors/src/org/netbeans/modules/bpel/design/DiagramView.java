@@ -50,7 +50,7 @@ import org.openide.util.NbBundle;
  * @author Alexey
  */
 public abstract class DiagramView extends JPanel implements Autoscroll {
-
+    
     private DesignView designView;
     private PlaceHolderManager placeholderManager;
     private NameEditor nameEditor;
