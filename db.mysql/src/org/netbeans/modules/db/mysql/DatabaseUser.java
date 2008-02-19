@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * 
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
  * 
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -40,9 +40,36 @@
 package org.netbeans.modules.db.mysql;
 
 /**
- *
- * @author David
+ * Represents a database user
+ * 
+ * @author David Van Couvering
  */
-public class MySQLConnection {
+public class DatabaseUser {
+    private final String user;
+    private final String host;
+    
+    public DatabaseUser(String user, String host) {
+        this.user = user;
+        this.host = host;
+    }
 
+    public String getHost() {
+        return host;
+    }
+
+    public String getUser() {
+        return user;
+    }    
+    
+    /** 
+     * Used for displaying on forms and such.  DON'T use this in SQL
+     * commands, which may require quoting
+     */
+    @Override
+    public String toString() {
+        return 
+            (user == null || user.equals("") ? "*" : user) +
+            "@" +
+            (host == null || host.equals("") || host.equals("%") ? "*" : host);
+    }
 }
