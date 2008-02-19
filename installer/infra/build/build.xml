@@ -359,7 +359,7 @@
             file="${temp.file}" 
             prefix="swdp"/>
         <get
-            src="${glassfish.builds.host}/java/re/javaeesdk/5.0_03/archive/fcs/latest/bundles/"
+            src="${glassfish.builds.host}/java/re/javaeesdk/5.0_04/archive/fcs/latest/bundles/"
             dest="${temp.file}"/>
 	<sjsam-buildnumber
 	    file="${temp.file}" 
@@ -381,7 +381,7 @@
             prefix="wsrp"/>
 
         <get
-            src="${portalpack.builds.host}/portalserver/PortalTooling/updates/nb6/build.txt"
+            src="${portalpack.builds.host}/portalserver/PortalTooling/updates/nb601/build.txt"
             dest="${temp.file}"/>
         <loadfile property="portalpack.build.number"
       	    srcFile="${temp.file}">
@@ -761,6 +761,49 @@ jarsigner.storepass=${jarsigner.storepass}
         </ant>
     </target>
 
+    <target name="build-tools-group">
+        <echo message="BUILDING TOOLS-GROUP ====================================="/>        
+        <ant dir="${nbi.netbeans.dir}/infra/build/groups/tools-group" target="release-all">
+            <property 
+                name="basedir" 
+                value="${nbi.netbeans.dir}/infra/build/groups/tools-group"/>
+            <property 
+                name="environment.properties" 
+                value="${environment.properties}"/>
+            
+            <property
+                name="release.parent.uid"
+                value=""/>
+            <property
+                name="release.parent.version"
+                value=""/>
+            <property
+                name="release.parent.platforms"
+                value=""/>
+        </ant> 
+    </target>
+
+    <target name="build-documentation-group">
+        <echo message="BUILDING DOCUMENTATION-GROUP ==================================="/>
+        <ant dir="${nbi.netbeans.dir}/infra/build/groups/documentation-group" target="release-all">
+            <property 
+                name="basedir" 
+                value="${nbi.netbeans.dir}/infra/build/groups/documentation-group"/>
+            <property 
+                name="environment.properties" 
+                value="${environment.properties}"/>
+            
+            <property
+                name="release.parent.uid"
+                value=""/>
+            <property
+                name="release.parent.version"
+                value=""/>
+            <property
+                name="release.parent.platforms"
+                value=""/>
+        </ant>
+    </target>
 
     <target name="build-nb-base">
         <echo message="BUILDING NB-BASE =========================================="/>
