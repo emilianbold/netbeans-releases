@@ -143,8 +143,11 @@ made subject to such option by the copyright holder.
     <target name="-init-jmaki">
         <property name="plugins.jmaki.nbm.dir" value="${java.io.tmpdir}"/>
         <property name="plugins.jmaki.nbm.name" value="org-netbeans-modules-sun-jmaki.nbm"/>
-        <condition name="plugins.jmaki.nbm.tmp" value="${plugins.jmaki.nbm}" else="${plugins.jmaki.nbm.dir}/${plugins.jmaki.nbm.name}">
-            <isset property="plugins.jmaki.nbm"/>
+        <condition property="plugins.jmaki.nbm.tmp" value="${plugins.jmaki.nbm}" else="${plugins.jmaki.nbm.dir}/${plugins.jmaki.nbm.name}">
+            <and>
+                <isset property="plugins.jmaki.nbm"/>
+                <available file="${plugins.jmaki.nbm}"/>
+            </and>
         </condition>
         <condition property="plugins.jmaki.do.download">
             <and>
