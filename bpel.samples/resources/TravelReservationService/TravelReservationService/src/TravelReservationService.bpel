@@ -175,7 +175,7 @@
                 </pick>
             </sequence>
         </if>
-        <if name="HasVehicle">    
+        <if name="HasVehicle">
             <condition>
                 not($ItineraryIn.itinerary/ota:ItineraryInfo/ota:ReservationItems/ota:Item/ota:Vehicle)
             </condition>
@@ -226,12 +226,12 @@
                         </sequence>
                     </onAlarm>
                 </pick>
-            </sequence> 
+            </sequence>
         </if>
         <if name="HasHotel">
             <condition>
                 not($ItineraryIn.itinerary/ota:ItineraryInfo/ota:ReservationItems/ota:Item/ota:Hotel)
-            </condition> 
+            </condition>
             <sequence>
                 <invoke name="ReserveHotel" 
                         partnerLink="Hotel" 
@@ -267,7 +267,7 @@
                                     <from>$ReserveHotelIn.itinerary/ota:ItineraryRef</from>
                                     <to variable="CancelHotelIn" part="itinerary"/>
                                 </copy>
-                            </assign>            
+                            </assign>
                             <invoke name="CancelHotel" 
                                     partnerLink="Hotel" 
                                     portType="hres:HotelReservationPortType" 

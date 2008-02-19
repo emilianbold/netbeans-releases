@@ -72,11 +72,11 @@ public class AutoLayoutAction extends GraphAction {
         this.putValue(Action.SMALL_ICON, new ImageIcon(autoLayoutImgUrl));
 
         //action tooltip
-        String nbBundle1 = mLoc.t("PRSR001: AutoLayout All Graph Objects");
+        String nbBundle1 = mLoc.t("PRSR001: AutoLayout All Graph Objects (Cntl-L)");
         this.putValue(Action.SHORT_DESCRIPTION, Localizer.parse(nbBundle1));
 
-        // Acceleratot Cntl-Shift-L
-        this.putValue(Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke('L', InputEvent.CTRL_MASK + InputEvent.SHIFT_DOWN_MASK));
+        // Acceleratot Cntl-L
+        this.putValue(Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke('L', InputEvent.CTRL_MASK ));
 
     }
 

@@ -48,7 +48,6 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.Collection;
-import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.websvc.manager.codegen.Wsdl2Java;
@@ -60,6 +59,7 @@ import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlService;
 import org.netbeans.modules.websvc.manager.model.WebServiceListModel;
 import org.netbeans.modules.websvc.manager.model.WebServiceData;
 import org.netbeans.modules.websvc.manager.model.WebServiceGroup;
+import org.netbeans.modules.websvc.saas.util.WsdlUtil;
 import org.netbeans.modules.xml.retriever.Retriever;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -107,7 +107,7 @@ public final class WebServiceManager {
             wsData.setState(WebServiceData.State.WSDL_RETRIEVING);
 
             File localWsdlFile = copyWsdlResources(wsData.getOriginalWsdlUrl());
-            File catalogFile = new File(WEBSVC_HOME, getCatalogForWsdl(wsData.getOriginalWsdlUrl()));
+            File catalogFile = new File(WEBSVC_HOME, WsdlUtil.getCatalogForWsdl(wsData.getOriginalWsdlUrl()));
 
             wsData.setWsdlFile(localWsdlFile.getAbsolutePath());
             wsData.setCatalog(catalogFile.getAbsolutePath());
@@ -247,12 +247,13 @@ public final class WebServiceManager {
      * 
      * @throws java.io.IOException if the web service could not be added
      */
-    public void addWebService(String wsdl, String packageName, String groupId) throws IOException {
+    public WebServiceData addWebService(String wsdl, String packageName, String groupId) throws IOException {
         WebServiceData wsData = new WebServiceData(wsdl, groupId);
         wsData.setPackageName(packageName);
         wsData.setResolved(false);
 
         addWebService(wsData, true);
+        return wsData;
     }
 
     /**
@@ -370,31 +371,9 @@ public final class WebServiceManager {
         }
     }
 
-    private static String getCatalogForWsdl(String wsdlUrl) {
-        try {
-            URL url;
-            url = new URL(wsdlUrl);
-
-            String urlPath = url.getPath();
-            int start;
-            if (url.getProtocol().toLowerCase().startsWith("file")) { // NOI18N
-                start = urlPath.lastIndexOf(System.getProperty("path.separator")); // NOI18N
-                start = (start < 0) ? urlPath.lastIndexOf("/") : start; // NOI18N
-            } else {
-                start = urlPath.lastIndexOf("/");
-            }
-            start = (start < 0) ? 0 : start;
-
-            return urlPath.substring(start).replace('.', '-') + "-catalog/catalog.xml"; // NOI18N
-        } catch (IOException ex) {
-            Logger.getLogger(WebServiceManager.class.getName()).log(Level.INFO, ex.getLocalizedMessage(), ex);
-            return null;
-        }
-    }
-
     static File copyWsdlResources(String wsdlUrl) throws IOException {
         File userDirFile = new File(WEBSVC_HOME);
-        File catalogFile = new File(userDirFile, getCatalogForWsdl(wsdlUrl));
+        File catalogFile = new File(userDirFile, WsdlUtil.getCatalogForWsdl(wsdlUrl));
         File dir = catalogFile.getParentFile();
 
         boolean success = false;

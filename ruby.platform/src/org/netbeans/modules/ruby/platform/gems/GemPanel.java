@@ -44,6 +44,7 @@ package org.netbeans.modules.ruby.platform.gems;
 import java.awt.Component;
 import java.awt.EventQueue;
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -51,6 +52,8 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 import javax.swing.DefaultListModel;
@@ -88,11 +91,11 @@ import org.openide.util.RequestProcessor;
  * @todo Use a table instead of a list for the gem lists, use checkboxes to choose
  *   items to be uninstalled, and show the installation date (based
  *   on file timestamps)
- *
- * @author  Tor Norbye
  */
 public final class GemPanel extends JPanel implements Runnable {
 
+    private static final Logger LOGGER = Logger.getLogger(GemPanel.class.getName());
+    
     private static final String LAST_GEM_DIRECTORY = "lastLocalGemDirectory"; // NOI18N
 
     private static final String LAST_PLATFORM_ID = "gemPanellastPlatformID"; // NOI18N
@@ -178,7 +181,7 @@ public final class GemPanel extends JPanel implements Runnable {
                     setEnabledGUI(false);
                 } else {
                     gemHomeValue.setText(gemManager.getGemHome());
-                    gemHomeValue.setForeground(UIManager.getColor("Label.foreground"));
+                    gemHomeValue.setForeground(UIManager.getColor("Label.foreground")); // NOI18N
                     setEnabledGUI(false);
                     refreshUpdated();
                 }
@@ -1079,8 +1082,18 @@ public final class GemPanel extends JPanel implements Runnable {
             if (GemManager.isValidGemHome(gemHomeF)) {
                 return gemHomeF;
             }
-            // XXX if not a valid repo, offer to create/initialize it there
-            Util.notifyLocalized(GemPanel.class, "GemPanel.invalid.gemHome", gemHomeF.getAbsolutePath());
+            if (!gemHomeF.exists() || (gemHomeF.isDirectory() && gemHomeF.list().length == 0)) {
+                if (Util.confirmLocalized(GemPanel.class, "GemPanel.empty.create.gemrepo", gemHomeF.getAbsolutePath())) { // NOI18N
+                    try {
+                        GemManager.initializeRepository(gemHomeF);
+                        return gemHomeF;
+                    } catch (IOException ioe) {
+                        LOGGER.log(Level.SEVERE, ioe.getLocalizedMessage(), ioe);
+                    }
+                }
+            } else {
+                Util.notifyLocalized(GemPanel.class, "GemPanel.invalid.gemHome", gemHomeF.getAbsolutePath()); // NOI18N
+            }
         }
         return null;
     }
@@ -1148,7 +1161,7 @@ public final class GemPanel extends JPanel implements Runnable {
         for (String error : errors) {
             sb.append(error);
         }
-        Util.notifyLocalized(GemPanel.class, "GemPanel.NoNetwork", NotifyDescriptor.ERROR_MESSAGE, sb.toString());
+        Util.notifyLocalized(GemPanel.class, "GemPanel.NoNetwork", NotifyDescriptor.ERROR_MESSAGE, sb.toString()); // NOI18N
     }
 
     private void refreshGemLists() {

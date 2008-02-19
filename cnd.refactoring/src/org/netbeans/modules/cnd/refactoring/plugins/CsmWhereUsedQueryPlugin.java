@@ -44,6 +44,8 @@ import java.util.Collection;
 import org.netbeans.modules.cnd.api.model.CsmClass;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmObject;
+import org.netbeans.modules.cnd.api.model.CsmUID;
+import org.netbeans.modules.cnd.api.model.CsmValidable;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.api.model.xref.CsmIncludeHierarchyResolver;
 import org.netbeans.modules.cnd.api.model.xref.CsmReference;
@@ -51,7 +53,6 @@ import org.netbeans.modules.cnd.api.model.xref.CsmReferenceRepository;
 import org.netbeans.modules.cnd.api.model.xref.CsmTypeHierarchyResolver;
 import org.netbeans.modules.cnd.refactoring.api.WhereUsedQueryConstants;
 import org.netbeans.modules.cnd.refactoring.elements.CsmRefactoringElementImpl;
-import org.netbeans.modules.refactoring.api.WhereUsedQuery;
 import org.netbeans.modules.refactoring.api.Problem;
 import org.netbeans.modules.refactoring.api.ProgressEvent;
 import org.netbeans.modules.refactoring.api.WhereUsedQuery;
@@ -76,17 +77,52 @@ public class CsmWhereUsedQueryPlugin extends CsmRefactoringPlugin {
     }
     
     public Problem prepare(final RefactoringElementsBag elements) {
-        CsmObject referencedObject = refactoring.getRefactoringSource().lookup(CsmObject.class);
+        CsmUID referencedObjectUID = refactoring.getRefactoringSource().lookup(CsmUID.class);
+        CsmObject referencedObject = referencedObjectUID == null ? null : (CsmObject) referencedObjectUID.getObject();
         if (referencedObject == null) {
             return null;
         }
-        CsmFile startFile = getCsmFile(startReferenceObject);
-        Collection<CsmFile> files = getRelevantFiles(startFile, referencedObject);
+        CsmFile startFile = getCsmFile(startReferenceObject);     
+        Collection<CsmFile> files = getRelevantFiles(startFile, referencedObject, refactoring);
         fireProgressListenerStart(ProgressEvent.START, files.size());
         processQuery(referencedObject, elements, files);
         fireProgressListenerStop();
         return null;
     }
+
+    @Override
+    public Problem checkParameters() {
+        return super.checkParameters();
+    }
+
+    @Override
+    public Problem preCheck() {
+        CsmUID uid = refactoring.getRefactoringSource().lookup(CsmUID.class);    
+        Problem invalidContext = new Problem(true, NbBundle.getMessage(CsmWhereUsedQueryPlugin.class, "MSG_InvalidObjectNothingToFind")); // NOI18N;
+        if (uid == null) {
+            CsmFile startFile = getCsmFile(startReferenceObject);
+            if (startFile == null || !startFile.isValid()) {
+                return invalidContext;
+            }              
+            return super.preCheck();
+        }
+        CsmObject referencedObject = (CsmObject) uid.getObject();
+        if (referencedObject == null) {
+            return invalidContext;
+        }
+        if (referencedObject instanceof CsmValidable) {
+            if (!((CsmValidable)referencedObject).isValid()) {
+                return invalidContext;
+            }
+        }
+        return super.preCheck();
+    }
+
+    @Override
+    public Problem fastCheckParameters() {
+        return super.fastCheckParameters();
+    }
+    
     
     //    //@Override
 //    protected Problem fastCheckParameters(CompilationController info) {
@@ -104,8 +140,9 @@ public class CsmWhereUsedQueryPlugin extends CsmRefactoringPlugin {
     private Problem checkParametersForMethod(boolean overriders, boolean usages) {
         if (!(usages || overriders)) {
             return new Problem(true, NbBundle.getMessage(CsmWhereUsedQueryPlugin.class, "MSG_NothingToFind"));
-        } else
+        } else {
             return null;
+        }
     }
         
     private boolean isFindSubclasses() {

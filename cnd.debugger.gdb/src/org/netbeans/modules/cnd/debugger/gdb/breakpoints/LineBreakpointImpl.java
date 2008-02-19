@@ -73,8 +73,7 @@ public class LineBreakpointImpl extends BreakpointImpl {
     
     protected void setRequests() {
         String st = getState();
-        if (getDebugger().getState().equals(GdbDebugger.STATE_RUNNING) &&
-                !st.equals(BPSTATE_REVALIDATE)) {
+        if (getDebugger().getState().equals(GdbDebugger.STATE_RUNNING) && !st.equals(BPSTATE_REVALIDATE)) {
             getDebugger().setSilentStop();
         }
         if (st.equals(BPSTATE_UNVALIDATED) || st.equals(BPSTATE_REVALIDATE)) {
@@ -94,6 +93,10 @@ public class LineBreakpointImpl extends BreakpointImpl {
                 }
             }
 	}
+    }
+    
+    protected void suspend() {
+        //System.err.println("");
     }
 }
 

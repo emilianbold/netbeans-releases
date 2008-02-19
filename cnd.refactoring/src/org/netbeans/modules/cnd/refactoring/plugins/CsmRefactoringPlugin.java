@@ -43,15 +43,21 @@ package org.netbeans.modules.cnd.refactoring.plugins;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import org.netbeans.modules.cnd.api.model.CsmFile;
+import org.netbeans.modules.cnd.api.model.CsmFunction;
+import org.netbeans.modules.cnd.api.model.CsmNamespace;
+import org.netbeans.modules.cnd.api.model.CsmNamespaceDefinition;
 import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.CsmOffsetable;
 import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.api.model.CsmValidable;
+import org.netbeans.modules.cnd.api.model.util.CsmBaseUtilities;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
+import org.netbeans.modules.cnd.api.model.xref.CsmIncludeHierarchyResolver;
 import org.netbeans.modules.cnd.refactoring.support.CsmRefactoringUtils;
 import org.netbeans.modules.cnd.refactoring.elements.DiffElement;
 import org.netbeans.modules.cnd.refactoring.support.ModificationResult;
@@ -187,19 +193,67 @@ public abstract class CsmRefactoringPlugin extends ProgressProviderAdapter imple
         return null;
     }  
     
-    protected Collection<CsmFile> getRelevantFiles(CsmFile startFile, CsmObject referencedObject) {
+    protected Collection<CsmFile> getRelevantFiles(CsmFile startFile, CsmObject referencedObject, AbstractRefactoring refactoring) {
         CsmObject enclScope = referencedObject == null ? null : CsmRefactoringUtils.getEnclosingElement(referencedObject);
         CsmFile scopeFile = null;
+        if (enclScope == null) {
+            return Collections.<CsmFile>emptyList();
+        }
         if (CsmKindUtilities.isFunction(enclScope)) {
             scopeFile = ((CsmOffsetable)enclScope).getContainingFile();
+        } else if (CsmKindUtilities.isNamespaceDefinition(enclScope)) {
+            CsmNamespace ns = ((CsmNamespaceDefinition)enclScope).getNamespace();
+            if (ns != null && ns.getName().length() == 0) {
+                // this is unnamed namespace and has file local visibility
+                // if declared in source file which is not included anywhere
+                if (isDeclarationInLeafFile(enclScope)) {
+                    scopeFile = ((CsmNamespaceDefinition)enclScope).getContainingFile();
+                }
+            }
+        } else if (CsmKindUtilities.isFunction(referencedObject)) {
+            // this is possible file local function
+            // if declared in source file which is not included anywhere
+            if (CsmBaseUtilities.isFileLocalFunction((CsmFunction)referencedObject)) {
+                if (isDeclarationInLeafFile(referencedObject)) {
+                    scopeFile = ((CsmFunction)referencedObject).getContainingFile();
+                }
+            }
         }
         if (startFile.equals(scopeFile)) {
             return Collections.singleton(scopeFile);
         } else {
-            CsmProject prj = startFile.getProject();
-            return prj.getAllFiles();
+            CsmProject[] prjs = refactoring.getContext().lookup(CsmProject[].class);
+            CsmFile declFile = getCsmFile(referencedObject);
+            if (prjs == null || prjs.length == 0 || declFile == null) {
+                CsmProject prj = startFile.getProject();
+                return prj.getAllFiles();
+            } else {
+                CsmProject declPrj = declFile.getProject();
+                Collection<CsmProject> relevantPrjs = new HashSet<CsmProject>();
+                for (CsmProject csmProject : prjs) {
+                    // if the same project or declaration from shared library
+                    if (csmProject.equals(declPrj) || csmProject.getLibraries().contains(declPrj)) {
+                        relevantPrjs.add(csmProject);
+                    }
+                }
+                Collection<CsmFile> relevantFiles = new HashSet<CsmFile>();
+                for (CsmProject csmProject : relevantPrjs) {
+                    relevantFiles.addAll(csmProject.getAllFiles());
+                }
+                return relevantFiles;
+            }
         }
     }   
+    
+    private boolean isDeclarationInLeafFile(CsmObject obj) {
+        boolean out = false;
+        if (CsmKindUtilities.isOffsetable(obj)) {
+            CsmFile file = ((CsmOffsetable)obj).getContainingFile();
+            // check that file is not included anywhere yet
+            out = CsmIncludeHierarchyResolver.getDefault().getFiles(file).isEmpty();
+        }
+        return out;
+    }
     
     protected Problem isResovledElement(CsmObject ref) {
         if (ref==null) {
