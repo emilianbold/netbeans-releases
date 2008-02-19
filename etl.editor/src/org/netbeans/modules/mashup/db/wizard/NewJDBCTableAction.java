@@ -36,6 +36,7 @@ public final class NewJDBCTableAction extends CallableSystemAction {
         wizardDescriptor.setTitleFormat(new MessageFormat("{0}"));
         wizardDescriptor.setTitle(Localizer.parse(nbBundle1));
         Dialog dialog = DialogDisplayer.getDefault().createDialog(wizardDescriptor);
+        dialog.getAccessibleContext().setAccessibleDescription("This dialog lets user to create flatfile tables from jdbc sources");
         dialog.setVisible(true);
         dialog.toFront();
         boolean cancelled = wizardDescriptor.getValue() != WizardDescriptor.FINISH_OPTION;

@@ -165,6 +165,8 @@ public class SpringXMLConfigHyperlinkProvider implements HyperlinkProvider {
         } else if(env.getType().isAttributeHyperlink()) {
             if (isPNamespaceName(env.getDocumentContext(), env.getAttribName())) {
                 currentProcessor = pHyperlinkProcessor;
+            } else {
+                currentProcessor = null;
             }
         } else {
             currentProcessor = null;
