@@ -171,8 +171,7 @@ public class DatabaseUtils {
      * 
      * @return the database connection
      */
-    static DatabaseConnection findDatabaseConnection(String url, String user,
-            String schema, String password) {
+    static DatabaseConnection findDatabaseConnection(String url, String user) {
         DatabaseConnection[] connections = 
             ConnectionManager.getDefault().getConnections();
 
@@ -188,18 +187,20 @@ public class DatabaseUtils {
         return null;
     }
     
-    /**
-     * Return the JDBC URL based on the information we have
-     * 
-     * @return a JDBC URL, or null if we don't have enough information
-     */
     public static String getURL(String host, String port) {
+        return getURL(host, port, null);
+    }
+    
+    public static String getURL(String host, String port, String database) {
         // Format is jdbc:mysql://<HOST>:<PORT>
         // No database is specified for an admin connection.
         StringBuffer url = new StringBuffer("jdbc:mysql://"); // NOI18N
         url.append( host == null || host.equals("") ? "localhost" : host); // NO18N
         if ( port != null && (! port.equals("")) ) {
             url.append(":" + port);
+        }
+        if ( database != null && (! database.equals(""))) {
+            url.append("/" + database); // NOI18N
         }
         
         return url.toString();

@@ -191,6 +191,10 @@ public class ServerInstance implements Node.Cookie {
     public String getURL() {
         return DatabaseUtils.getURL(getHost(), getPort());
     }
+    
+    public String getURL(String databaseName) {
+        return DatabaseUtils.getURL(getHost(), getPort(), databaseName);
+    }
 
     
     private void notifyChange() {

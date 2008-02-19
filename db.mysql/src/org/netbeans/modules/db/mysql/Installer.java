@@ -143,8 +143,8 @@ public class Installer extends ModuleInstall {
             
             String url = DatabaseUtils.getURL(host, port);
             
-            DatabaseConnection dbconn = DatabaseUtils.findDatabaseConnection(
-                    url, user, null, null);
+            DatabaseConnection dbconn = 
+                    DatabaseUtils.findDatabaseConnection(url, user);
             
             if ( dbconn != null ) {
                 // Already registered, nothing to do here

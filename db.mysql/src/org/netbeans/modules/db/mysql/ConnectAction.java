@@ -39,54 +39,77 @@
 
 package org.netbeans.modules.db.mysql;
 
-import javax.swing.Action;
-import org.openide.nodes.AbstractNode;
-import org.openide.nodes.Children;
+import org.netbeans.api.db.explorer.ConnectionManager;
+import org.netbeans.api.db.explorer.DatabaseConnection;
+import org.netbeans.api.db.explorer.DatabaseException;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.nodes.Node;
-import org.openide.util.actions.SystemAction;
+import org.openide.util.HelpCtx;
+import org.openide.util.NbBundle;
+import org.openide.util.actions.CookieAction;
 
 /**
- * Represents a database. 
+ * Connect to a database
  * 
  * @author David Van Couvering
  */
-class DatabaseNode extends AbstractNode {
-    
-    // I'd like a less generic icon, but this is what we have for now...
-    private static final String ICON_BASE = "org/netbeans/modules/db/mysql/resources/database.gif";
-    
-    private final DatabaseModel model;    
-    
-    public DatabaseNode(DatabaseModel model) {
-        super(Children.LEAF);
-        this.model = model;
-        setDisplayName(model.getDisplayName());
-        setShortDescription(model.getShortDescription());
-        setIconBaseWithExtension(ICON_BASE);
-    }
+public class ConnectAction extends CookieAction {
+    private static final Class[] COOKIE_CLASSES = new Class[] {
+        DatabaseModel.class
+    };
+
+    public ConnectAction() {
+        putValue("noIconInMenu", Boolean.TRUE);
+    }    
         
-   
+    protected boolean asynchronous() {
+        return false;
+    }
+
+    public String getName() {
+        return NbBundle.getBundle(ConnectAction.class).
+                getString("LBL_ConnectAction");
+    }
+
+    public HelpCtx getHelpCtx() {
+        return new HelpCtx(ConnectAction.class);
+    }
+    
     @Override
-    public Action[] getActions(boolean context) {
-        if ( context ) {
-            return super.getActions(context);
-        } else {
-            return new SystemAction[] {
-                SystemAction.get(ConnectAction.class),
-                SystemAction.get(DeleteDatabaseAction.class)
-            };
-        }
+    public boolean enable(Node[] activatedNodes) {
+        return true;
+    }
+
+
+    @Override
+    protected int mode() {
+        return MODE_EXACTLY_ONE;
     }
 
     @Override
-    @SuppressWarnings("unchecked")
-    public Node.Cookie getCookie(Class cls) {
-        if ( cls == DatabaseModel.class ) {
-            return model;
-        } else {
-            return super.getCookie(cls);
-        }
-        
+    protected Class<?>[] cookieClasses() {
+        return COOKIE_CLASSES;
     }
+
+    @Override
+    protected void performAction(Node[] activatedNodes) {
+        DatabaseModel model = activatedNodes[0].getCookie(DatabaseModel.class);        
+        ServerInstance server = model.getServer();
+        String dbname = model.getDbName();
         
+        DatabaseConnection conn = 
+                DatabaseUtils.findDatabaseConnection(
+                    server.getURL(dbname), 
+                    server.getUser());
+        
+        if ( conn == null ) {
+            ConnectionManager.getDefault().
+                showAddConnectionDialogFromEventThread(
+                    DatabaseUtils.getJDBCDriver(),
+                    server.getURL(dbname));
+        } else {
+            ConnectionManager.getDefault().showConnectionDialog(conn);            
+        }      
+    }
 }
