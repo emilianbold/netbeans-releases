@@ -726,6 +726,9 @@ public class CustomizerLibraries extends JPanel implements HelpCtx.Provider, Lis
                 librariesLocation.setEnabled(true);
                 librariesLocation.setText(uiProperties.getProject().getAntProjectHelper().getLibrariesLocation());
                 Mnemonics.setLocalizedText(librariesBrowse, NbBundle.getMessage(CustomizerLibraries.class, "LBL_CustomizerLibraries_Browse_JButton")); // NOI18N
+                updateJars(uiProperties.JAVAC_CLASSPATH_MODEL.getDefaultListModel());
+                updateJars(uiProperties.JAVAC_TEST_CLASSPATH_MODEL);
+                updateJars(uiProperties.RUN_TEST_CLASSPATH_MODEL);
                 switchLibrary();
             }
         } else {
@@ -747,10 +750,27 @@ public class CustomizerLibraries extends JPanel implements HelpCtx.Provider, Lis
                 libs.add(item.getLibrary().getName());
             }
             if (item.getType() == ClassPathSupport.Item.TYPE_JAR) {
-                jarReferences.add(item.getReference()); 
+                if (item.getReference() != null) {
+                    //TODO reference is null for not yet persisted items.
+                    // there seems to be no way to generate a reference string without actually
+                    // creating and writing the property..
+                    jarReferences.add(item.getReference());
+                }
             }
         }
     }    
+
+    private void updateJars(DefaultListModel model) {
+        for (int i = 0; i < model.size(); i++) {
+            ClassPathSupport.Item item = (ClassPathSupport.Item) model.get(i);
+            if (item.getType() == ClassPathSupport.Item.TYPE_JAR) {
+                if (item.getReference() != null) {
+                    uiProperties.cs.updateJarReference(item);
+                }
+            }
+        }
+        
+    }
     
     private void jCheckBoxBuildSubprojectsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jCheckBoxBuildSubprojectsActionPerformed
         // TODO add your handling code here:

@@ -289,6 +289,27 @@ public final class ClassPathSupport {
         return arr;
     }
     
+    public void updateJarReference(Item item) {
+        String eval = evaluator.evaluate( item.getReference() );
+
+        item.object = eval;
+
+        //TODO these should be encapsulated in the Item class 
+        // but that means we need to pass evaluator and antProjectHelper there.
+        String ref = item.getSourceReference();
+        eval = evaluator.evaluate( ref );
+        if (eval != null && !eval.contains(Item.SOURCE_START)) {
+            item.setSourceFilePath(eval);
+        }
+        ref = item.getJavadocReference();
+        eval = evaluator.evaluate( ref );
+        File f2 = null;
+        if (eval != null && !eval.contains(Item.JAVADOC_START)) {
+            item.setJavadocFilePath(eval);
+        }
+        
+    }
+    
     public String getLibraryReference( Item item ) {
         if ( item.getType() != Item.TYPE_LIBRARY ) {
             throw new IllegalArgumentException( "Item must be of type LIBRARY" );
