@@ -327,6 +327,11 @@ public class ProxyLookup extends Lookup {
         private Result<T>[] newResults(int len) {
             return new Result[len];
         }
+        
+        @Override
+        protected void finalize() {
+            weakL.result.run();
+        }
 
         /** initializes the results
          */
@@ -655,7 +660,7 @@ public class ProxyLookup extends Lookup {
         final Template<T> template;
         
         public WeakRef(R r, WeakResult<T> result, ProxyLookup proxy, Template<T> template) {
-            super(r, Utilities.activeReferenceQueue());
+            super(r);
             this.result = result;
             this.template = template;
             this.proxy = proxy;
