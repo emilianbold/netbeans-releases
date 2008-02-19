@@ -82,4 +82,9 @@ public interface WsdlDataManager {
      */
   
     void removeWsdlData(String wsdlUrl, String serviceName);
+    
+    /**
+     * Save WSDL data
+     */
+    void save(WsdlData data);
 }

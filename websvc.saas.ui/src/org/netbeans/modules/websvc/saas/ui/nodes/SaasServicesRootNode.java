@@ -40,10 +40,12 @@
 package org.netbeans.modules.websvc.saas.ui.nodes;
 
 import java.awt.Image;
+import java.beans.PropertyChangeEvent;
 import org.netbeans.modules.websvc.saas.model.SaasGroup;
 import org.netbeans.modules.websvc.saas.model.SaasServicesModel;
 import org.netbeans.modules.websvc.saas.model.jaxb.Group;
 import org.openide.nodes.AbstractNode;
+import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
 
 /**
@@ -52,11 +54,9 @@ import org.openide.util.NbBundle;
  */
 public class SaasServicesRootNode extends AbstractNode {
     static final SaasGroup PLACE_HOLDER_GROUP = new SaasGroup(null, new Group());
-    private SaasGroup root;
     
     public SaasServicesRootNode() {
         super(new RootNodeChildren(PLACE_HOLDER_GROUP));
-        root = PLACE_HOLDER_GROUP;
     }
 
     @Override
@@ -94,11 +94,35 @@ public class SaasServicesRootNode extends AbstractNode {
         }
         
         @Override
-        protected void addNotify() {
-            if (group == PLACE_HOLDER_GROUP) {
-                group = SaasServicesModel.getInstance().getRootGroup();
+        public void propertyChange(PropertyChangeEvent evt) {
+            if (evt.getSource() == SaasServicesModel.getInstance().getRootGroup() ||
+                evt.getNewValue() == SaasServicesModel.State.READY) {
+                super.setGroup(SaasServicesModel.getInstance().getRootGroup());
+                updateKeys();
             }
-            super.addNotify();
+            super.propertyChange(evt);
+        }
+    
+        @Override
+        protected void updateKeys() {
+            if (needsWait()) {
+                SaasServicesModel.getInstance().initRootGroup();
+                setKeys(SaasNodeChildren.WAIT_HOLDER);
+            } else {
+                super.updateKeys();
+            }
+        }
+        
+        private boolean needsWait() {
+            return SaasServicesModel.getInstance().getState() != SaasServicesModel.State.READY;
+        }
+        
+        @Override
+        protected Node[] createNodes(Object key) {
+            if (needsWait()) {
+                return SaasNodeChildren.getWaitNode();
+            }
+            return super.createNodes(key);
         }
     }
 }

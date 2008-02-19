@@ -93,7 +93,7 @@ public abstract class SaasNodeChildren<T> extends Children.Keys<T> implements Pr
     protected abstract void updateKeys();
 
     protected static final Object[] WAIT_HOLDER = new Object[] { new Object() };
-    protected Node[] getWaitNode() {
+    protected static Node[] getWaitNode() {
         AbstractNode wait = new AbstractNode(Children.LEAF);
         wait.setName(NbBundle.getMessage(WsdlSaasNodeChildren.class, "NODE_LOAD_MSG"));
         wait.setIconBaseWithExtension("org/netbeans/modules/websvc/saas/ui/resources/wait.gif"); // NOI18N

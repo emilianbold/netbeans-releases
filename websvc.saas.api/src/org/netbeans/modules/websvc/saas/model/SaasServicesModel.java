@@ -47,6 +47,7 @@ import java.io.IOException;
 import java.util.Enumeration;
 import java.util.List;
 import org.netbeans.modules.websvc.saas.model.jaxb.SaasServices;
+import org.netbeans.modules.websvc.saas.spi.websvcmgr.WsdlData;
 import org.netbeans.modules.websvc.saas.spi.websvcmgr.WsdlServiceProxyDescriptor;
 import org.netbeans.modules.websvc.saas.util.SaasUtil;
 import org.netbeans.modules.websvc.saas.util.WsdlUtil;
@@ -55,6 +56,7 @@ import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.Repository;
 import org.openide.util.Exceptions;
+import org.openide.util.RequestProcessor;
 
 /**
  *
@@ -88,6 +90,14 @@ public class SaasServicesModel {
     private SaasServicesModel() {
     }
 
+    public void initRootGroup() {
+        RequestProcessor.getDefault().post(new Runnable() {
+            public void run() {
+                init();
+            }
+        });
+    }
+    
     private void init() {
         if (state == State.READY) {
             return;
@@ -217,6 +227,10 @@ public class SaasServicesModel {
     private void setState(State state) {
         synchronized (state) {
             this.state = state;
+            if (state == State.READY) {
+                fireChange(PROP_GROUPS, rootGroup, null, rootGroup.getChildrenGroups());
+                fireChange(PROP_SERVICES, rootGroup, null, rootGroup.getServices());
+            }
         }
     }
 
@@ -287,7 +301,11 @@ public class SaasServicesModel {
         init();
         WsdlSaas service = new WsdlSaas(parent, displayName, url, packageName);
         service.getSaasFolder();
-        WsdlUtil.addWsdlData(url, packageName);
+        WsdlData data = WsdlUtil.addWsdlData(url, packageName);
+        if (data != null) {
+            service.setWsdlData(data);
+            data.addPropertyChangeListener(service);
+        }
         parent.addService(service);
         service.save();
         fireChange(PROP_SERVICES, parent, null, service);

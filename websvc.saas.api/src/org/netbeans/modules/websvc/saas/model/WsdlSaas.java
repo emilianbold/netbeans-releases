@@ -63,7 +63,6 @@ import org.openide.util.WeakListeners;
  * @author nam
  */
 public class WsdlSaas extends Saas implements PropertyChangeListener {
-    //TODO consolidate and remove
     private WsdlData wsData;
     
     private List<WsdlSaasPort> ports;
@@ -90,6 +89,10 @@ public class WsdlSaas extends Saas implements PropertyChangeListener {
         }
         cg.setPackageName(packageName);
         setParentGroup(parentGroup);
+    }
+    
+    public void setWsdlData(WsdlData data) {
+        wsData = data;
     }
     
     public WsdlData getWsdlData() {
@@ -145,19 +148,18 @@ public class WsdlSaas extends Saas implements PropertyChangeListener {
     }
 
     public void propertyChange(PropertyChangeEvent evt) {
-        if (evt.getPropertyName().equals("resolved")) { //NOI18N
-            Object newValue = evt.getNewValue();
-            if (newValue instanceof Boolean) {
-                boolean resolved = ((Boolean) newValue).booleanValue();
-                if (resolved) {
-                    setState(State.READY);
-                    //assert wsData.getName().equals(wsData.getWsdlService().getName());
-                } else {
-                    setState(State.UNINITIALIZED);
-                }
-
+        String property = evt.getPropertyName();
+        Object newValue = evt.getNewValue();
+        if (property.equals("resolved")) { //NOI18N
+            if (Boolean.TRUE.equals(newValue)) {
+                setState(State.READY);
+            } else {
+                setState(State.UNINITIALIZED);
             }
-            
+        } else if (property.equals("compiled")) {
+            if (Boolean.TRUE.equals(newValue)) {
+                WsdlUtil.saveWsdlData(getWsdlData());
+            }
         }
     }
 
