@@ -65,9 +65,16 @@ import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Queue;
 import java.util.Set;
 import java.util.StringTokenizer;
+import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
+import java.util.concurrent.locks.Condition;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
@@ -108,7 +115,6 @@ import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
 import org.openide.util.WeakListeners;
-import org.openide.util.lookup.Lookups;
 import org.openide.windows.WindowManager;
 
 /**
@@ -145,8 +151,10 @@ public final class OpenProjectList {
     /** List of recently closed projects */
     private final RecentProjectList recentProjects;
 
+    /** lock to prevent modifications of the recentTemplates variable from multiple threads */
+    private static Object RECENT_TEMPLATES_LOCK = new Object();
     /** LRU List of recently used templates */
-    private List<String> recentTemplates;
+    private final List<String> recentTemplates;
     
     /** Property change listeners */
     private final PropertyChangeSupport pchSupport;
@@ -170,6 +178,7 @@ public final class OpenProjectList {
         };
         pchSupport = new PropertyChangeSupport( this );
         recentProjects = new RecentProjectList(10); // #47134
+        recentTemplates = new ArrayList<String>();
     }
     
            
@@ -199,8 +208,20 @@ public final class OpenProjectList {
         }
     }
     
+    Future<Project[]> openProjectsAPI() {
+        return LOAD;
+    }
+
+    /** Modifications to the recentTemplates variables shall be done only 
+     * when hodling a lock.
+     * @return the list
+     */
+    private List<String> getRecentTemplates() {
+        assert Thread.holdsLock(this);
+        return recentTemplates;
+    }
     
-    private final class LoadOpenProjects implements Runnable, LookupListener {
+    private final class LoadOpenProjects implements Runnable, LookupListener, Future<Project[]> {
         final RequestProcessor RP = new RequestProcessor("Load Open Projects"); // NOI18N
         final RequestProcessor.Task TASK = RP.create(this);
         private int action;
@@ -209,12 +230,14 @@ public final class OpenProjectList {
         private List<String> recentTemplates;
         private Project mainProject;
         private Lookup.Result<FileObject> currentFiles;
+        private int entered;
+        private final Lock enteredGuard = new ReentrantLock();
+        private final Condition enteredZeroed = enteredGuard.newCondition();
         
         public LoadOpenProjects(int a) {
             action = a;
             currentFiles = Utilities.actionsGlobalContext().lookupResult(FileObject.class);
             currentFiles.addLookupListener(WeakListeners.create(LookupListener.class, this, currentFiles));
-            resultChanged(null);
         }
 
         final void waitFinished() {
@@ -229,6 +252,7 @@ public final class OpenProjectList {
                 case 0: 
                     action = 1;
                     TASK.schedule(0);
+                    resultChanged(null);
                     return;
                 case 1:
                     action = 2;
@@ -259,7 +283,7 @@ public final class OpenProjectList {
             synchronized (INSTANCE) {
                 INSTANCE.openProjects = openedProjects;
                 INSTANCE.mainProject = mainProject;
-                INSTANCE.recentTemplates = recentTemplates;
+                INSTANCE.getRecentTemplates().addAll(recentTemplates);
             }
             
             INSTANCE.pchSupport.firePropertyChange(PROPERTY_OPEN_PROJECTS, new Project[0], openedProjects.toArray(new Project[0]));
@@ -321,6 +345,69 @@ public final class OpenProjectList {
             }
 
         }
+
+        final void enter() {
+            try {
+                enteredGuard.lock();
+                entered++;
+            } finally {
+                enteredGuard.unlock();
+            }
+        }
+    
+        final void exit() {
+            try {
+                enteredGuard.lock();
+                if (--entered == 0) {
+                    enteredZeroed.signalAll();
+                }
+            } finally {
+                enteredGuard.unlock();
+            }
+        }
+
+        public boolean cancel(boolean mayInterruptIfRunning) {
+            return false;
+        }
+
+        public boolean isCancelled() {
+            return false;
+        }
+
+        public boolean isDone() {
+            return TASK.isFinished() && entered == 0;
+        }
+
+        public Project[] get() throws InterruptedException, ExecutionException {
+            TASK.waitFinished();
+            try {
+                enteredGuard.lock();
+                while (entered > 0) {
+                    enteredZeroed.await();
+                }
+            } finally {
+                enteredGuard.unlock();
+            }
+            return getDefault().getOpenProjects();
+        }
+
+        public Project[] get(long timeout, TimeUnit unit) throws InterruptedException, ExecutionException, TimeoutException {
+            long ms = unit.convert(timeout, TimeUnit.MILLISECONDS);
+            if (!TASK.waitFinished(timeout)) {
+                throw new TimeoutException();
+            } 
+            try {
+                enteredGuard.lock();
+                if (entered > 0) {
+                    if (!enteredZeroed.await(ms, TimeUnit.MILLISECONDS)) {
+                        throw new TimeoutException();
+                    }
+                }
+            } finally {
+                enteredGuard.unlock();
+            }
+            return getDefault().getOpenProjects();
+        }
     }
     
     public void open( Project p ) {
@@ -379,7 +466,7 @@ public final class OpenProjectList {
 			    public void run() {
                                 //fix for #67114:
                                 try {
-                                    Thread.currentThread().sleep(50);
+                                    Thread.sleep(50);
                                 } catch (InterruptedException e) {
                                     // ignored
                                 }
@@ -407,6 +494,9 @@ public final class OpenProjectList {
         assert !Arrays.asList(projects).contains(null) : "Projects can't be null";
         LOAD.waitFinished();
             
+            
+        try {
+            LOAD.enter();
         boolean recentProjectsChanged = false;
         int  maxWork = 1000;
         int  workForSubprojects = maxWork / 2;
@@ -502,7 +592,6 @@ public final class OpenProjectList {
         LogRecord[] addedRec = createRecord("UI_OPEN_PROJECTS", projectsToOpen.toArray(new Project[0])); // NOI18N
         log(addedRec);
         
-        
         Mutex.EVENT.readAccess(new Action<Void>() {
             public Void run() {
                 pchSupport.firePropertyChange( PROPERTY_OPEN_PROJECTS, oldprjs.toArray(new Project[oldprjs.size()]), 
@@ -514,18 +603,43 @@ public final class OpenProjectList {
                 return null;
             }
         });
+        } finally {
+            LOAD.exit();
+    }
     }
        
-    public void close( Project projects[], boolean notifyUI ) {
+    public void close( Project someProjects[], boolean notifyUI ) {
         LOAD.waitFinished();
+        
+        Project[] projects = new Project[someProjects.length];
+        Project[] now = getOpenProjects();
+        for (int i = 0; i < someProjects.length; i++) {
+            projects[i] = someProjects[i];
+            if (someProjects[i] instanceof LazyProject) {
+                LazyProject lp = (LazyProject)someProjects[i];
+                for (Project p : now) {
+                    if (lp.getProjectDirectory().equals(p.getProjectDirectory())) {
+                        projects[i] = p;
+                        break;
+                    }
+                }
+            }
+        }
+        
+        
         if (!ProjectUtilities.closeAllDocuments (projects, notifyUI )) {
             return;
         }
+        
+        try {
+            LOAD.enter();
+
         logProjects("close(): closing project: ", projects);
         boolean mainClosed = false;
         boolean someClosed = false;
         List<Project> oldprjs = new ArrayList<Project>();
         List<Project> newprjs = new ArrayList<Project>();
+        List<Project> notifyList = new ArrayList<Project>();
         synchronized ( this ) {
             oldprjs.addAll(openProjects);
             for( int i = 0; i < projects.length; i++ ) {
@@ -541,6 +655,8 @@ public final class OpenProjectList {
                 projects[i].getProjectDirectory().removeFileChangeListener(deleteListener);
                 
                 recentProjects.add( projects[i] );
+                notifyList.add(projects[i]);
+                
                 someClosed = true;
             }
             if ( someClosed ) {
@@ -556,10 +672,7 @@ public final class OpenProjectList {
             }
         }
         //#125750 not necessary to call notifyClosed() under synchronized lock.
-        List<Project> lst = new ArrayList<Project>();
-        lst.addAll(oldprjs);
-        lst.removeAll(newprjs);
-        for (Project closed : lst) {
+        for (Project closed : notifyList) {
             notifyClosed( closed );
         }
         logProjects("close(): openProjects == ", openProjects.toArray(new Project[0])); // NOI18N
@@ -583,6 +696,9 @@ public final class OpenProjectList {
         }
         LogRecord[] removedRec = createRecord("UI_CLOSED_PROJECTS", projects); // NOI18N
         log(removedRec);
+        } finally {
+            LOAD.exit();
+    }
     }
         
     public synchronized Project[] getOpenProjects() {
@@ -685,20 +801,20 @@ public final class OpenProjectList {
         
     
     // Used from NewFile action    
-    public void updateTemplatesLRU( FileObject template ) {
+    public synchronized void updateTemplatesLRU( FileObject template ) {
         
         String templateName = template.getPath();
         
-        if ( recentTemplates.contains( templateName ) ) {
-            recentTemplates.remove( templateName );
+        if ( getRecentTemplates().contains( templateName ) ) {
+            getRecentTemplates().remove( templateName );
         }
-        recentTemplates.add( 0, templateName );
+        getRecentTemplates().add( 0, templateName );
         
-        if ( recentTemplates.size() > 100 ) {
-            recentTemplates.remove( 100 );
+        if ( getRecentTemplates().size() > 100 ) {
+            getRecentTemplates().remove( 100 );
         }
         
-        OpenProjectListSettings.getInstance().setRecentTemplates( new ArrayList<String>( recentTemplates ) );
+        OpenProjectListSettings.getInstance().setRecentTemplates( new ArrayList<String>( getRecentTemplates() )  );
     }
     
     
@@ -910,24 +1026,26 @@ public final class OpenProjectList {
         ArrayList<String> privilegedTemplates = new ArrayList<String>( Arrays.asList( pt == null ? new String[0]: ptNames ) );
         FileSystem sfs = Repository.getDefault().getDefaultFileSystem();            
                 
-        Iterator<String> it = recentTemplates.iterator();
-        for( int i = 0; i < NUM_TEMPLATES && it.hasNext(); i++ ) {
-            String templateName = it.next();
-            FileObject fo = sfs.findResource( templateName );
-            if ( fo == null ) {
-                it.remove(); // Does not exists remove
-            }
-            else if ( isRecommended( project, fo ) ) {
-                result.add( fo );
-                privilegedTemplates.remove( templateName ); // Not to have it twice
-            }
-            else {
-                continue;
+        synchronized (this) {
+            Iterator<String> it = getRecentTemplates().iterator();
+            for( int i = 0; i < NUM_TEMPLATES && it.hasNext(); i++ ) {
+                String templateName = it.next();
+                FileObject fo = sfs.findResource( templateName );
+                if ( fo == null ) {
+                    it.remove(); // Does not exists remove
+                }
+                else if ( isRecommended( project, fo ) ) {
+                    result.add( fo );
+                    privilegedTemplates.remove( templateName ); // Not to have it twice
+                }
+                else {
+                    continue;
+                }
             }
         }
         
         // If necessary fill the list with the rest of privileged templates
-        it = privilegedTemplates.iterator();
+        Iterator<String> it = privilegedTemplates.iterator();
         for( int i = result.size(); i < NUM_TEMPLATES && it.hasNext(); i++ ) {
             String path = it.next();
             FileObject fo = sfs.findResource( path );

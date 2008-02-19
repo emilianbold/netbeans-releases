@@ -113,6 +113,11 @@ import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import org.netbeans.modules.web.jsf.api.facesmodel.ManagedBean;
+import org.openide.windows.TopComponent;
+import java.awt.Component;
+import java.awt.Container;
+import org.openide.windows.Mode;
+import org.openide.windows.WindowManager;
 
 /**
  * A specific concrete ModelSet class that knows all about JSF.
@@ -396,7 +401,7 @@ public class FacesModelSet extends ModelSet implements FacesDesignProject {
     private FacesContainer facesContainer;
 
     // Memory leak probing
-    private static final Logger TIMERS = Logger.getLogger("TIMER.facesModelSets"); // NOI18N
+    private static final Logger TIMERS = Logger.getLogger("TIMER.visualweb"); // NOI18N
     
     /**
      * @param project
@@ -422,18 +427,30 @@ public class FacesModelSet extends ModelSet implements FacesDesignProject {
                 try {
                     if (projectBuiltQueryStatus != null && projectBuiltQueryStatus.isBuilt()) {
                         classPathChanged();
-                        StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(FacesModelSet.class, "MSG_RefreshingModels")); // NOI18N
                         SwingUtilities.invokeLater(new Runnable() {
-                           public void run() {
-                               try {
-                                   // Now refresh all models
-                                   for (Iterator i = getModelsMap().values().iterator(); i.hasNext(); ) {
-                                       ((FacesModel)i.next()).refreshUnits();
-                                   }    
-                               } finally {
-                                   StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(FacesModelSet.class, "MSG_RefreshingModelsDone")); // NOI18N
-                               }
-                           }
+                            public void run() {
+                                List<FacesModel> visibleModels = getVisibleModels();
+                                if (visibleModels.size() > 0) {
+                                    StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(FacesModelSet.class,
+                                            "MSG_RefreshingModels")); // NOI18N
+                                }
+                                try {
+                                    // refresh visible models immediately and rest of them whenever they are visible
+                                    for (Iterator i = getModelsMap().values().iterator(); i.hasNext();) {
+                                        FacesModel fm = (FacesModel) i.next();
+                                        boolean immediate = false;
+                                        if (visibleModels.size() > 0 && (visibleModels.contains(fm) || !fm.isPageBean())) {
+                                            immediate = true;
+                                        }
+                                        fm.refreshUnits(immediate);
+                                    }
+                                } finally {
+                                    if (visibleModels.size() > 0) {
+                                        StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(FacesModelSet.class,
+                                                "MSG_RefreshingModelsDone")); // NOI18N
+                                    }
+                                }
+                            }
                         });
                     }
                 } catch (IllegalStateException ise) {
@@ -444,6 +461,57 @@ public class FacesModelSet extends ModelSet implements FacesDesignProject {
         projectBuiltQueryStatus.addChangeListener(projectBuiltQueryStatusChangeListener);
     }
 
+    private List<FacesModel> getVisibleModels() {
+        List<FacesModel> visibleModels = new ArrayList<FacesModel>();
+        for(Mode mode : WindowManager.getDefault().getModes()) {
+            TopComponent tc = mode.getSelectedTopComponent();
+            if(tc != null && tc.isOpened() && isMultiViewTopComponent(tc)){
+                TopComponent topComponent = getSelectedMultiView(tc);
+                if(topComponent != null && isDesignerTopComponent(topComponent)) {
+                    DataObject dObj = topComponent.getActivatedNodes()[0].getLookup().lookup(DataObject.class);
+                    visibleModels.add((FacesModel)getModel(dObj.getPrimaryFile()));
+                }
+            }
+        }
+        return visibleModels;
+    }
+    
+    // Copied from org.netbeans.modules.visualweb.outline.OutlineManagerListener
+    private static boolean isDesignerTopComponent(TopComponent tc) {
+        return tc != null &&
+               "org.netbeans.modules.visualweb.designer.jsf.ui.JsfTopComponent".equals(tc.getClass().getName()); // NOI18N
+    }
+
+    // Copied from org.netbeans.modules.visualweb.outline.OutlineManagerListener
+    private static boolean isMultiViewTopComponent(TopComponent tc) {
+        return tc != null && 
+               "org.netbeans.core.multiview.MultiViewCloneableTopComponent".equals(tc.getClass().getName()); // NOI18N
+    }
+    
+    // Copied from org.netbeans.modules.visualweb.outline.OutlineManagerListener
+    private static TopComponent getSelectedMultiView(TopComponent tc) {
+        for (TopComponent containedTC : findDescendantsOfTopComponent(tc)) {
+            if(containedTC.isVisible()) { // XXX Means is selected in that multiview (terrible hack)
+                return containedTC;
+            }
+        }
+        return null;
+    }
+    
+    // Copied from org.netbeans.modules.visualweb.outline.OutlineManagerListener
+    private static TopComponent[] findDescendantsOfTopComponent(Container parent) {
+        List<TopComponent> list = new ArrayList<TopComponent>();
+        for (Component child : parent.getComponents()) {
+            if(child instanceof TopComponent) {
+                list.add((TopComponent)child);
+                continue;
+            }
+            if(child instanceof Container) {
+                list.addAll(java.util.Arrays.asList(findDescendantsOfTopComponent((Container)child)));
+            }
+        }
+        return list.toArray(new TopComponent[0]);
+    }    
 
     private void doModeling() {
         //In case of new project, we need to model all the managed beans in order

@@ -1399,7 +1399,7 @@ public class RADComponent {
         return new PropertyListenerConvertor();
     }
 
-    protected void setPropertyListener(FormProperty property) {
+    public void setPropertyListener(FormProperty property) {
         if (propertyListener == null)
             propertyListener = createPropertyListener();
         if (propertyListener != null) {
@@ -1609,7 +1609,7 @@ public class RADComponent {
         
         @Override
         public BeanDescriptor getBeanDescriptor() {
-            return (beanInfo == this) ? null : beanInfo.getBeanDescriptor();            
+            return (beanInfo == this) ? new BeanDescriptor(beanClass) : beanInfo.getBeanDescriptor();            
         }
 
         @Override

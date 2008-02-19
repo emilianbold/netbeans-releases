@@ -52,7 +52,6 @@ import junit.framework.TestResult;
 import org.netbeans.core.execution.Install;
 import org.netbeans.xtest.plugin.ide.services.XTestErrorManager;
 import org.netbeans.xtest.testrunner.JUnitTestRunner;
-import org.openide.ErrorManager;
 
 /**
  * Portion of Main that needs to run with access to Execution API & impl.
@@ -60,6 +59,8 @@ import org.openide.ErrorManager;
  */
 public class MainWithExec implements Main.MainWithExecInterface {
     
+    private static final Logger LOGGER = Logger.getLogger(MainWithExec.class.getName());
+
     /* Terminates all pending tasks.
      * It calls org.netbeans.core.execution.Install.killPendingTasks() method.
      */
@@ -85,10 +86,10 @@ public class MainWithExec implements Main.MainWithExecInterface {
     public void discardChanges() {
         Object[] dobs = org.openide.loaders.DataObject.getRegistry().getModifiedSet().toArray();
         if(dobs.length > 0) {
-            Main.errMan.log(ErrorManager.USER, new java.util.Date().toString() + ": discarding changes in unsaved files:");
+            LOGGER.info(new java.util.Date().toString() + ": discarding changes in unsaved files:");
             for(int i=0;i<dobs.length;i++) {
                 org.openide.loaders.DataObject obj = (org.openide.loaders.DataObject)dobs[i];
-                Main.errMan.log(ErrorManager.USER, "        "+obj.getPrimaryFile().getPath());
+                LOGGER.info("        "+obj.getPrimaryFile().getPath());
                 obj.setModified(false);
             }
         }
@@ -180,7 +181,7 @@ public class MainWithExec implements Main.MainWithExecInterface {
                     // ClassNotFound exception, etc
                     e.printStackTrace();
                 }
-            }
+            } 
             errorInTest = false;
         }
         

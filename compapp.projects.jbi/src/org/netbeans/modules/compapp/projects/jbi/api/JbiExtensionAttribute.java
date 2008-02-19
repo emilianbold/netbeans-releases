@@ -38,7 +38,6 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.compapp.projects.jbi.api;
 
 import java.io.Serializable;
@@ -47,36 +46,52 @@ import java.io.Serializable;
  * JBI Extension attribute
  *
  * @author tli
+ * @author jqian
  */
 public class JbiExtensionAttribute implements Serializable {
-
+    
     /**
-     * Name of the extension element.
+     * Name of the extension attribute.
      */
     private String name;
-
     /**
-     * Type of the extension. The current supported types are "String", 
-     * "Integer", "Boolean" and "QName".
+     * Type of the extension attribute. 
      */
     private String type;
-
     /**
-     * DOCUMENT ME!
+     * Description of the extension attribute.
      */
     private String description;
+    /**
+     * Whether to generate this attribute in codegen.
+     */
+    private boolean codeGen;
 
     /**
-     * DOCUMENT ME!
+     * Constructs a JbiExtensionAttribute.
      *
-     * @param name
-     * @param type
-     * @param description
+     * @param name  attribute name
+     * @param type  attribute type
+     * @param description   attribute description
      */
     public JbiExtensionAttribute(String name, String type, String description) {
+        this(name, type, description, true);
+    }
+
+    /**
+     * Constructs a JbiExtensionAttribute.
+     *
+     * @param name  attribute name
+     * @param type  attribute type
+     * @param description   attribute description
+     * @param codeGen       whether to generate this attribute in codegen
+     */
+    public JbiExtensionAttribute(String name, String type, String description,
+            boolean codeGen) {
         this.name = name;
         this.type = type;
         this.description = description;
+        this.codeGen = codeGen;
     }
 
     /**
@@ -105,15 +120,25 @@ public class JbiExtensionAttribute implements Serializable {
     public String getDescription() {
         return this.description;
     }
-    
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @return the codeGen flag
+     */
+    public boolean getCodeGen() {
+        return this.codeGen;
+    }
+
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
         sb.append("JbiExtensionAttribute:")
                 .append(" name=").append(getName())
                 .append(" type=").append(getType())
+                .append(" codeGen=").append(getCodeGen())
                 .append(" description=").append(getDescription());
-        
+
         return sb.toString();
     }
 }

@@ -41,11 +41,14 @@
 
 package org.netbeans.modules.spring.api.beans.model;
 
+import java.io.File;
 import java.io.IOException;
+import javax.swing.text.Document;
 import org.netbeans.modules.spring.api.Action;
 import org.netbeans.modules.spring.api.beans.ConfigFileGroup;
 import org.netbeans.modules.spring.api.beans.SpringScope;
 import org.netbeans.modules.spring.beans.SpringScopeAccessor;
+import org.netbeans.modules.spring.beans.model.SpringConfigFileModelController.DocumentWrite;
 import org.netbeans.modules.spring.beans.model.SpringConfigModelController;
 import org.openide.filesystems.FileObject;
 
@@ -90,5 +93,38 @@ public final class SpringConfigModel {
      */
     public void runReadAction(final Action<SpringBeans> action) throws IOException {
         controller.runReadAction(action);
+    }
+
+    public void runWriteAction(Action<WriteContext> action) throws IOException {
+        controller.runWriteAction(action);
+    }
+
+    public static final class WriteContext {
+
+        private final SpringBeans springBeans;
+        private final DocumentWrite docWrite;
+        private final File file;
+
+        public WriteContext(SpringBeans springBeans, File file, DocumentWrite docWrite) {
+            this.springBeans = springBeans;
+            this.docWrite = docWrite;
+            this.file = file;
+        }
+
+        public SpringBeans getSpringBeans() {
+            return springBeans;
+        }
+
+        public Document getDocument() {
+            return docWrite.getDocument();
+        }
+
+        public File getFile() {
+            return file;
+        }
+
+        public void commit() throws IOException {
+            docWrite.commit();
+        }
     }
 }

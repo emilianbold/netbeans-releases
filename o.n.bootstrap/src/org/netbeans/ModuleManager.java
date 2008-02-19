@@ -623,9 +623,6 @@ public final class ModuleManager {
         // The installer can perform additional checks:
         return installer.shouldDelegateResource(m, parent, pkg);
     }
-    public boolean isSpecialResource(String pkg) {
-        return installer.isSpecialResource(pkg);
-    }
     // Again, access from Module to ModuleInstaller:
     Manifest loadManifest(File jar) throws IOException {
         return installer.loadManifest(jar);
@@ -910,7 +907,7 @@ public final class ModuleManager {
             // They all were OK so far; add to system classloader and install them.
             if (classLoader != null) {
                 Util.err.fine("enable: adding to system classloader");
-                List<ClassLoader> nueclassloaders = new ArrayList<ClassLoader>(toEnable.size());
+                LinkedList<ClassLoader> nueclassloaders = new LinkedList<ClassLoader>();
                 if (moduleFactory.removeBaseClassLoader()) {
                     ClassLoader base = ModuleManager.class.getClassLoader();
                     nueclassloaders.add(moduleFactory.getClasspathDelegateClassLoader(this, base));
@@ -922,7 +919,11 @@ public final class ModuleManager {
                     }
                 } else {
                     for (Module m : toEnable) {
-                        nueclassloaders.add(m.getClassLoader());
+                        if (m.getClassLoader() == ClassLoader.getSystemClassLoader()) {
+                            nueclassloaders.addFirst(m.getClassLoader());
+                        } else {
+                            nueclassloaders.add(m.getClassLoader());
+                        }
                     }
                 }
                 classLoader.append((nueclassloaders.toArray(new ClassLoader[nueclassloaders.size()])), toEnable);
@@ -1083,8 +1084,7 @@ public final class ModuleManager {
     }
     private void maybeAddToEnableList(Set<Module> willEnable, Set<Module> mightEnable, Module m, boolean okToFail) {
         if (! missingDependencies(m).isEmpty()) {
-            // Should never happen:
-            if (! okToFail) throw new IllegalStateException("Module was supposed to be OK: " + m); // NOI18N
+            assert okToFail : "Module " + m + " had unexpected problems: " + missingDependencies(m) + " (willEnable: " + willEnable + " mightEnable: " + mightEnable + ")";
             // Cannot satisfy its dependencies, exclude it.
             return;
         }

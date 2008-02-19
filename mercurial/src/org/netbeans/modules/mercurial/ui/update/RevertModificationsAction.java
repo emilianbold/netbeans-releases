@@ -52,6 +52,7 @@ import org.netbeans.modules.mercurial.FileInformation;
 import org.netbeans.modules.mercurial.util.HgUtils;
 import org.netbeans.modules.mercurial.HgProgressSupport;
 import org.netbeans.modules.mercurial.HgException;
+import org.netbeans.modules.mercurial.ui.actions.ContextAction;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.util.RequestProcessor;
@@ -59,7 +60,6 @@ import org.openide.util.NbBundle;
 import org.netbeans.modules.mercurial.util.HgCommand;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import javax.swing.AbstractAction;
 import org.netbeans.modules.mercurial.util.HgRepositoryContextCache;
 
 /**
@@ -67,7 +67,7 @@ import org.netbeans.modules.mercurial.util.HgRepositoryContextCache;
  *
  * @author Padraig O'Briain
  */
-public class RevertModificationsAction extends AbstractAction {
+public class RevertModificationsAction extends ContextAction {
     
     private final VCSContext context;
  
@@ -76,20 +76,7 @@ public class RevertModificationsAction extends AbstractAction {
         putValue(Action.NAME, name);
     }
 
-    public void actionPerformed(ActionEvent e) {
-        if(!Mercurial.getInstance().isGoodVersionAndNotify()) return;
-        if(!HgRepositoryContextCache.hasHistory(context)){
-            HgUtils.outputMercurialTabInRed(
-                    NbBundle.getMessage(UpdateAction.class,
-                    "MSG_REVERT_TITLE")); // NOI18N
-            HgUtils.outputMercurialTabInRed(
-                    NbBundle.getMessage(UpdateAction.class,
-                    "MSG_REVERT_TITLE_SEP")); // NOI18N
-            HgUtils.outputMercurialTab(NbBundle.getMessage(UpdateAction.class, "MSG_REVERT_NOTHING")); // NOI18N
-            HgUtils.outputMercurialTabInRed(NbBundle.getMessage(UpdateAction.class, "MSG_REVERT_DONE")); // NOI18N
-            HgUtils.outputMercurialTab(""); // NOI18N
-            return;
-        }
+    public void performAction(ActionEvent e) {
         revert(context);
     }
 
@@ -140,6 +127,20 @@ public class RevertModificationsAction extends AbstractAction {
             HgUtils.outputMercurialTabInRed(
                     NbBundle.getMessage(RevertModificationsAction.class,
                     "MSG_REVERT_TITLE_SEP")); // NOI18N
+            
+            // No revisions to revert too
+            if (NbBundle.getMessage(RevertModificationsAction.class,
+                    "MSG_Revision_Default").startsWith(revStr)) {
+                HgUtils.outputMercurialTab(
+                        NbBundle.getMessage(RevertModificationsAction.class,
+                        "MSG_REVERT_NOTHING")); // NOI18N
+                HgUtils.outputMercurialTabInRed(
+                        NbBundle.getMessage(RevertModificationsAction.class,
+                        "MSG_REVERT_DONE")); // NOI18N
+                HgUtils.outputMercurialTabInRed(""); // NOI18N
+                return;
+            }
+            
             HgUtils.outputMercurialTab(
                     NbBundle.getMessage(RevertModificationsAction.class,
                     "MSG_REVERT_REVISION_STR", revStr)); // NOI18N
@@ -147,16 +148,24 @@ public class RevertModificationsAction extends AbstractAction {
                 HgUtils.outputMercurialTab(file.getAbsolutePath());
             }
             HgUtils.outputMercurialTab(""); // NOI18N
- 
+
             HgCommand.doRevert(repository, revertFiles, revStr);
             FileStatusCache cache = Mercurial.getInstance().getFileStatusCache();
             File[] conflictFiles = cache.listFiles(revertFiles.toArray(new File[0]), FileInformation.STATUS_VERSIONED_CONFLICT);
-            if(conflictFiles.length != 0){
+            if (conflictFiles.length != 0) {
                 ConflictResolvedAction.conflictResolved(repository, conflictFiles);
             }
         } catch (HgException ex) {
             NotifyDescriptor.Exception e = new NotifyDescriptor.Exception(ex);
             DialogDisplayer.getDefault().notifyLater(e);
+        }
+
+        if (revStr == null) {
+            for (File file : revertFiles) {
+                HgUtils.forceStatusRefresh(file);
+            }
+        } else {
+            HgUtils.forceStatusRefresh(revertFiles.get(0));
         }
 
         // refresh filesystem to take account of changes
@@ -173,6 +182,9 @@ public class RevertModificationsAction extends AbstractAction {
     }
 
     public boolean isEnabled() {
-        return HgUtils.getRootFile(context) != null;
+        Set<File> ctxFiles = context != null? context.getRootFiles(): null;
+        if(HgUtils.getRootFile(context) == null || ctxFiles == null || ctxFiles.size() == 0) 
+            return false;
+        return true; 
     }
 }

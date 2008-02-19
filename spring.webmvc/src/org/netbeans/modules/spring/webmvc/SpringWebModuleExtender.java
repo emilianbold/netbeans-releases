@@ -60,13 +60,16 @@ import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.regex.Pattern;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.project.classpath.ProjectClassPathModifier;
 import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.api.project.Project;
+import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.project.libraries.LibraryManager;
+import org.netbeans.modules.j2ee.core.api.support.SourceGroups;
 import org.netbeans.modules.j2ee.dd.api.common.CommonDDBean;
 import org.netbeans.modules.j2ee.dd.api.common.CreateCapability;
 import org.netbeans.modules.j2ee.dd.api.common.InitParam;
@@ -79,6 +82,7 @@ import org.netbeans.modules.j2ee.dd.api.web.WelcomeFileList;
 import org.netbeans.modules.spring.api.beans.ConfigFileGroup;
 import org.netbeans.modules.spring.api.beans.ConfigFileManager;
 import org.netbeans.modules.spring.api.beans.SpringScope;
+import org.netbeans.modules.spring.webmvc.utils.SpringWebFrameworkUtils;
 import org.netbeans.modules.web.api.webmodule.ExtenderController;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.spi.webmodule.WebModuleExtender;
@@ -88,6 +92,7 @@ import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.ChangeSupport;
 import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
@@ -97,32 +102,28 @@ import org.openide.util.NbBundle;
  *
  * @author Craig MacKay
  */
-public class SpringWebModuleExtender extends WebModuleExtender implements ChangeListener {  
-    
+public class SpringWebModuleExtender extends WebModuleExtender implements ChangeListener {      
     private static final Logger LOGGER = Logger.getLogger(SpringWebModuleExtender.class.getName());
     
     private SpringConfigPanelVisual frameworkPanelVisual;
     private final SpringWebFrameworkProvider framework;
     private final ExtenderController controller;
     private boolean customizer;
-    private String dispatcherName; 
-    private String dispatcherMapping; 
+    private String dispatcherName = "dispatcher"; // NOI18N
+    private String dispatcherMapping = "*.htm"; // NOI18N
     private boolean includeJstl = true;
-
+    private ChangeSupport changeSupport = new ChangeSupport(this); 
+    
     /**
      * Creates a new instance of SpringWebModuleExtender 
      * @param framework
      * @param controller an instance of org.netbeans.modules.web.api.webmodule.ExtenderController 
-     * @param customizer
-     * @param dispatcherName
-     * @param dispatcherMapping
+     * @param customizer     
      */
-    public SpringWebModuleExtender(SpringWebFrameworkProvider framework, ExtenderController controller, boolean customizer, String dispatcherName, String dispatcherMapping) {
+    public SpringWebModuleExtender(SpringWebFrameworkProvider framework, ExtenderController controller, boolean customizer) {
         this.framework = framework;
         this.controller = controller;
-        this.customizer = customizer;
-        this.dispatcherName = dispatcherName;
-        this.dispatcherMapping = dispatcherMapping; 
+        this.customizer = customizer;       
     }
     
     public ExtenderController getController() {
@@ -150,49 +151,25 @@ public class SpringWebModuleExtender extends WebModuleExtender implements Change
 
     public boolean isValid() {
         if (dispatcherName == null || dispatcherName.trim().length() == 0){
-            controller.setErrorMessage(NbBundle.getMessage(SpringConfigPanelVisual.class, "MSG_NamePatternIsEmpty")); // NOI18N
+            controller.setErrorMessage(NbBundle.getMessage(SpringConfigPanelVisual.class, "MSG_DispatcherNameIsEmpty")); // NOI18N
             return false;
         }
-        if (!isNamePatternValid(dispatcherName)){
-            controller.setErrorMessage(NbBundle.getMessage(SpringConfigPanelVisual.class, "MSG_NamePatternIsNotValid")); // NOI18N
+        if (!SpringWebFrameworkUtils.isDispatcherNameValid(dispatcherName)){
+            controller.setErrorMessage(NbBundle.getMessage(SpringConfigPanelVisual.class, "MSG_DispatcherNameIsNotValid")); // NOI18N
             return false;
         }
         if (dispatcherMapping == null || dispatcherMapping.trim().length() == 0) {
-            controller.setErrorMessage(NbBundle.getMessage(SpringConfigPanelVisual.class, "MSG_MappingPatternIsEmpty")); // NOI18N
+            controller.setErrorMessage(NbBundle.getMessage(SpringConfigPanelVisual.class, "MSG_DispatcherMappingPatternIsEmpty")); // NOI18N
             return false;
         }
-        if (!isMappingPatternValid(dispatcherMapping)){
-            controller.setErrorMessage(NbBundle.getMessage(SpringConfigPanelVisual.class, "MSG_MappingPatternIsNotValid")); // NOI18N
+        if (!SpringWebFrameworkUtils.isDispatcherMappingPatternValid(dispatcherMapping)){
+            controller.setErrorMessage(NbBundle.getMessage(SpringConfigPanelVisual.class, "MSG_DispatcherMappingPatternIsNotValid")); // NOI18N
             return false;
         }        
         controller.setErrorMessage(null);
         return true;    
     }
-    
-    private boolean isNamePatternValid(String pattern) {        
-        return Pattern.matches("\\w+", pattern);
-    }
-    
-    private boolean isMappingPatternValid(String pattern){
-        // mapping validation based on the Servlet 2.4 specification,section SRV.11.2
-        if (pattern.startsWith("*.")){ // NOI18N
-            String p = pattern.substring(2);
-            if (p.indexOf('.') == -1 && p.indexOf('*') == -1  
-                    && p.indexOf('/') == -1 && !p.trim().equals("") && !p.contains(" ") && Pattern.matches("\\w+",p)) { // NOI18N
-                return true;
-            }
-        }
         
-        if ((pattern.length() > 3) && pattern.endsWith("/*") && pattern.startsWith("/") && !pattern.contains(" ")) // NOI18N
-            return true;
-        
-        if (pattern.matches("/")){ // NOI18N
-            return true;
-        }
-               
-        return false;
-    }
-
     public HelpCtx getHelp() {
         return new HelpCtx(SpringWebModuleExtender.class);
     }
@@ -203,36 +180,19 @@ public class SpringWebModuleExtender extends WebModuleExtender implements Change
     public void storeSettings(Object settings) {
     }
 
-    private final List<ChangeListener> listeners = new ArrayList<ChangeListener>(1);
-
     public final void addChangeListener(ChangeListener l) {
-        synchronized (listeners) {
-            listeners.add(l);
-        }
+        changeSupport.addChangeListener(l);
     }
 
-    public final void removeChangeListener(ChangeListener l) {
-        synchronized (listeners) {
-            listeners.remove(l);
-        }
+    public final void removeChangeListener(ChangeListener l) {       
+        changeSupport.removeChangeListener(l);
     }
-    
-    private void fireStateChanged() {
-        // Fire change event to check for valid dispatcher name and mapping.        
-        ChangeEvent e = new ChangeEvent(this);
-        Object[] changeListeners = listeners.toArray();
-        for (int i = 0; i < changeListeners.length; i++) {
-            ChangeListener changeListener = (ChangeListener)changeListeners[i];
-            changeListener.stateChanged(e);
-        }        
-    }
-    
+        
     public void stateChanged(ChangeEvent e) {
-        SpringConfigPanelVisual panel = ((SpringConfigPanelVisual)e.getSource());        
-        dispatcherName = panel.getDispatcherName();
-        dispatcherMapping = panel.getDispatcherMapping();
-        includeJstl = panel.getIncludeJstl();
-        fireStateChanged();
+        dispatcherName = getComponent().getDispatcherName();
+        dispatcherMapping = getComponent().getDispatcherMapping();
+        includeJstl = getComponent().getIncludeJstl();
+        changeSupport.fireChange();
     }
 
     @Override
@@ -261,7 +221,7 @@ public class SpringWebModuleExtender extends WebModuleExtender implements Change
         public static final String SPRING_CLASS_NAME = "org.springframework.core.SpringVersion"; // NOI18N
         public static final String JSTL_CLASS_NAME = "javax.servlet.jsp.jstl.core.Config"; // NOI18N
         public static final String CONTEXT_LOADER = "org.springframework.web.context.ContextLoaderListener"; // NOI18N
-        public static final String DISPATCHER_SERVLET = "org.springframework.web.servlet.DispatcherServlet"; // NOI18N
+        public static final String DISPATCHER_SERVLET = "org.springframework.web.servlet.DispatcherServlet"; // NOI18N        
         public static final String ENCODING = "UTF-8"; // NOI18N
         private Set<FileObject> filesToOpen = new LinkedHashSet<FileObject>();
         private WebModule webModule;
@@ -291,17 +251,21 @@ public class SpringWebModuleExtender extends WebModuleExtender implements Change
             }
             ddRoot.write(dd);
 
-            // ADD JSTL IF ENABLED
+            // ADD JSTL LIBRARY IF ENABLED AND SPRING LIBRARY
             if (includeJstl) {
                 Library jstlLibrary = getLibrary(JSTL_CLASS_NAME);            
-                assert jstlLibrary != null;
-                addLibraryToWebModule(jstlLibrary, webModule);                
+                assert jstlLibrary != null; 
+                Library springLibrary = getLibrary(SPRING_CLASS_NAME);
+                assert springLibrary != null;
+                Library[] libraries = {springLibrary, jstlLibrary};                
+                addLibrariesToWebModule(libraries, webModule);                
+            } else {
+                // JUST ADD SPRING LIBRARY
+                Library springLibrary = getLibrary(SPRING_CLASS_NAME);
+                assert springLibrary != null;
+                Library[] libraries = {springLibrary};
+                addLibrariesToWebModule(libraries, webModule);
             }
-
-            // ADD SPRING LIBRARY
-            Library springLibrary = getLibrary(SPRING_CLASS_NAME);
-            assert springLibrary != null;
-            addLibraryToWebModule(springLibrary, webModule);
 
             // CREATE WEB-INF/JSP FOLDER
             FileObject webInf = webModule.getWebInf();
@@ -348,7 +312,7 @@ public class SpringWebModuleExtender extends WebModuleExtender implements Change
             }
             addFileToOpen(copyResource("redirect.jsp", indexJsp)); // NOI18N
         }
-
+               
         public void addFileToOpen(FileObject file) {
             filesToOpen.add(file);
         }
@@ -363,8 +327,12 @@ public class SpringWebModuleExtender extends WebModuleExtender implements Change
             StringBuffer buffer = new StringBuffer();
             BufferedReader reader = new BufferedReader(new InputStreamReader(in, ENCODING));
             try {
-                String line = reader.readLine();
+                String line = reader.readLine();               
                 while (line != null) {
+                    // If an extension mapping is entered by the user, then update filename extensions in the Spring bean config file and index.jsp
+                    if ((resourceName.contains("-servlet.xml") || ((resourceName.equals("redirect.jsp"))))) { // NOI18N
+                        line = SpringWebFrameworkUtils.replaceExtensionInTemplates(line, dispatcherMapping);
+                    }
                     buffer.append(line);
                     buffer.append(lineSeparator);
                     line = reader.readLine();
@@ -386,9 +354,25 @@ public class SpringWebModuleExtender extends WebModuleExtender implements Change
             return target;
         }
 
-        @SuppressWarnings(value = "deprecation")
-        protected void addLibraryToWebModule(Library library, WebModule webModule) throws IOException {
-            FileOwnerQuery.getOwner(webModule.getDocumentBase()).getLookup().lookup(org.netbeans.spi.java.project.classpath.ProjectClassPathExtender.class).addLibrary(library);
+        protected boolean addLibrariesToWebModule(Library[] libraries, WebModule webModule) throws IOException, UnsupportedOperationException {
+            FileObject fileObject = webModule.getDocumentBase();
+            Project project = FileOwnerQuery.getOwner(fileObject);
+            if (project == null) {
+                return false;
+            }
+            boolean addLibraryResult = false;
+            try {
+                SourceGroup[] groups = SourceGroups.getJavaSourceGroups(project);
+                if (groups.length == 0) {
+                    return false;
+                }
+                addLibraryResult = ProjectClassPathModifier.addLibraries(libraries, groups[0].getRootFolder(), ClassPath.COMPILE);
+            } catch (IOException e) {
+                LOGGER.log(Level.WARNING, "Libraries required for the Spring MVC project not added", e); // NOI18N
+            } catch (UnsupportedOperationException uoe) {
+                LOGGER.log(Level.WARNING, "This project does not support adding these types of libraries to the classpath", uoe); // NOI18N
+            }
+            return addLibraryResult;
         }
 
         protected Listener addListener(WebApp webApp, String classname) throws IOException {

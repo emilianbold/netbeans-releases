@@ -14,7 +14,7 @@
  * 
  * The Original Software is NetBeans. The Initial Developer of the Original
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
- * Microsystems, Inc. All Rights Reserved.
+ * Microsystems, Inc. All Rights Reserved. 
  */
 package org.netbeans.modules.etl.project.ui;
 
@@ -238,7 +238,9 @@ public class EtlproLogicalViewProvider implements LogicalViewProvider {
         protected Sheet createSheet() {
             Sheet sheet = Sheet.createDefault();
             Sheet.Set set = Sheet.createPropertiesSet();
-            Property nameProp = new PropertySupport.Name(this, "Name", "ETL Project Name");
+            String nbBundle8 = mLoc.t("PRSR001: Name");
+            String nbBundle9 = mLoc.t("PRSR001: ETL Project Name");
+            Property nameProp = new PropertySupport.Name(this, Localizer.parse(nbBundle8), Localizer.parse(nbBundle9));
             set.put(nameProp);
             sheet.put(set);
             return sheet;

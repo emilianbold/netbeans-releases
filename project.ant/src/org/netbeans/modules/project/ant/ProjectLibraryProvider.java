@@ -96,6 +96,10 @@ public class ProjectLibraryProvider implements ArealLibraryProvider<ProjectLibra
     private AntProjectListener apl;
 
     public static ProjectLibraryProvider INSTANCE;
+    
+    private boolean listening = true;
+    private final Map<ProjectLibraryArea,Reference<LP>> providers = new HashMap<ProjectLibraryArea,Reference<LP>>();
+    
     /**
      * Default constructor for lookup.
      */
@@ -198,8 +202,6 @@ public class ProjectLibraryProvider implements ArealLibraryProvider<ProjectLibra
 
     // ---- management of libraries ----
 
-    private boolean listening = true;
-    private final Map<ProjectLibraryArea,Reference<LP>> providers = new HashMap<ProjectLibraryArea,Reference<LP>>();
 
     private final class LP implements LibraryProvider<ProjectLibraryImplementation>, FileChangeSupportListener {
 
@@ -394,7 +396,9 @@ public class ProjectLibraryProvider implements ArealLibraryProvider<ProjectLibra
         }
     }
 
-    private static final Pattern LIBS_LINE = Pattern.compile("libs\\.([^.]+)\\.([^.]+)"); // NOI18N
+    //non private for test usage
+    static final Pattern LIBS_LINE = Pattern.compile("libs\\.([a-zA-Z0-9_\\-\\.]+)\\.([^.]+)"); // NOI18N
+    
     private static Map<String,ProjectLibraryImplementation> calculate(ProjectLibraryArea area) {
         Map<String,ProjectLibraryImplementation> libs = new HashMap<String,ProjectLibraryImplementation>();
         Definitions def = new Definitions(area.mainPropertiesFile);
@@ -436,10 +440,10 @@ public class ProjectLibraryProvider implements ArealLibraryProvider<ProjectLibra
                             jarFolder = component.substring(index+2);
                             component = component.substring(0, index);
                         }
-                        File f = new File(component.replace('/', File.separatorChar).replace('\\', File.separatorChar).replace("${base}"+File.separatorChar, ""));
+                        String f = component.replace('/', File.separatorChar).replace('\\', File.separatorChar).replace("${base}"+File.separatorChar, "");
                         File normalizedFile = FileUtil.normalizeFile(new File(component.replace('/', File.separatorChar).replace('\\', File.separatorChar).replace("${base}", area.mainPropertiesFile.getParent())));
                         try {
-                            URL u = LibrariesSupport.convertFileToURL(f);
+                            URL u = LibrariesSupport.convertFilePathToURL(f);
                             if (FileUtil.isArchiveFile(normalizedFile.toURI().toURL())) {
                                 u = FileUtil.getArchiveRoot(u);
                                 if (jarFolder != null) {
@@ -461,7 +465,7 @@ public class ProjectLibraryProvider implements ArealLibraryProvider<ProjectLibra
         return libs;
     }
 
-    private synchronized boolean delta(Map<String,ProjectLibraryImplementation> libraries, Map<String,ProjectLibraryImplementation> newLibraries) {
+    private boolean delta(Map<String,ProjectLibraryImplementation> libraries, Map<String,ProjectLibraryImplementation> newLibraries) {
         if (!listening) {
             return false;
         }
@@ -586,15 +590,18 @@ public class ProjectLibraryProvider implements ArealLibraryProvider<ProjectLibra
                     jarFolder = getJarFolder(entry);
                     entry = FileUtil.getArchiveFile(entry);
                 } else if (!"file".equals(entry.getProtocol())) { // NOI18N
-                    throw new IllegalArgumentException(entry.toExternalForm());
+                    value.add(entry.toString());
+                    Logger.getLogger(ProjectLibraryProvider.class.getName()).fine("Setting url=" + entry + " as content for library volume type: " + volumeType);
+                    continue;
                 }
-                File f = LibrariesSupport.convertURLToFile(entry);
+                String p = LibrariesSupport.convertURLToFilePath(entry);
+                File f = new File(p);
                 // store properties always separated by '/' for consistency
                 StringBuilder s = new StringBuilder();
                 if (f.isAbsolute()) {
                     s.append(f.getAbsolutePath().replace('\\', '/')); //NOI18N
                 } else {
-                    s.append("${base}/" + f.getPath().replace('\\', '/')); // NOI18N
+                    s.append("${base}/" + p.replace('\\', '/')); // NOI18N
                 }
                 if (jarFolder != null) {
                     s.append("!/"); // NOI18N
@@ -895,7 +902,8 @@ public class ProjectLibraryProvider implements ArealLibraryProvider<ProjectLibra
      */
     public static Library copyLibrary(final Library lib, final URL location, 
             final boolean generateLibraryUniqueName) throws IOException {
-        final File libBaseFolder = LibrariesSupport.convertURLToFile(location).getParentFile();
+        assert LibrariesSupport.isAbsoluteURL(location);
+        final File libBaseFolder = new File(LibrariesSupport.convertURLToFilePath(location)).getParentFile();
         FileObject sharedLibFolder;
         try {
             sharedLibFolder = ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction<FileObject>() {
@@ -921,7 +929,8 @@ public class ProjectLibraryProvider implements ArealLibraryProvider<ProjectLibra
                 if (libEntryFO == null) {
                     if (!"file".equals(libEntry.getProtocol()) && // NOI18N
                         !"nbinst".equals(libEntry.getProtocol())) { // NOI18N
-                        Logger.getLogger(ProjectLibraryProvider.class.getName()).warning("copyLibrary is ignoring entry "+libEntry);
+                        Logger.getLogger(ProjectLibraryProvider.class.getName()).info("copyLibrary is ignoring entry "+libEntry);
+                        //this is probably exclusively urls to maven poms.
                         continue;
                     } else {
                         Logger.getLogger(ProjectLibraryProvider.class.getName()).warning("Library '"+lib.getDisplayName()+ // NOI18N
@@ -933,13 +942,13 @@ public class ProjectLibraryProvider implements ArealLibraryProvider<ProjectLibra
                 String name;
                 if (libEntryFO.isFolder()) {
                     newFO = FileChooserAccessory.copyFolderRecursively(libEntryFO, sharedLibFolder);
-                    name = sharedLibFolder.getName()+File.separatorChar+newFO.getName()+File.separatorChar;
+                    name = sharedLibFolder.getNameExt()+File.separatorChar+newFO.getName()+File.separatorChar;
                 } else {
                     String libEntryName = getUniqueName(sharedLibFolder, libEntryFO.getName(), libEntryFO.getExt());
                     newFO = FileUtil.copyFile(libEntryFO, sharedLibFolder, libEntryName);
-                    name = sharedLibFolder.getName()+File.separatorChar+newFO.getNameExt();
+                    name = sharedLibFolder.getNameExt()+File.separatorChar+newFO.getNameExt();
                 }
-                URL u = LibrariesSupport.convertFileToURL(new File(name));
+                URL u = LibrariesSupport.convertFilePathToURL(name);
                 if (FileUtil.isArchiveFile(newFO)) {
                     u = FileUtil.getArchiveRoot(u);
                 }

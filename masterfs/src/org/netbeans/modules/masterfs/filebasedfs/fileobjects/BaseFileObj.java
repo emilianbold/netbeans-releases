@@ -58,6 +58,7 @@ import javax.swing.event.EventListenerList;
 import java.io.*;
 import java.util.Date;
 import java.util.Enumeration;
+import java.util.NoSuchElementException;
 import java.util.Stack;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -83,8 +84,6 @@ public abstract class BaseFileObj extends FileObject {
     private FileChangeListener versioningWeakListener;    
     private final FileChangeListener versioningListener = new FileChangeListenerForVersioning();
     
-
-    
     //static fields 
     static final long serialVersionUID = -1244650210876356809L;
     static final Attributes attribs;
@@ -92,7 +91,6 @@ public abstract class BaseFileObj extends FileObject {
         final BridgeForAttributes attrBridge = new BridgeForAttributes();
         attribs = new Attributes(attrBridge, attrBridge, attrBridge);
     }
-
 
     //private fields
     private EventListenerList eventSupport;
@@ -268,30 +266,33 @@ public abstract class BaseFileObj extends FileObject {
         final String originalExt = getExt();
         
         //TODO: no lock used
-            FileNaming[] allRenamed = NamingFactory.rename(getFileName(),file2Rename.getName(),handler);
-            if (allRenamed == null) {
-                FileObject parentFo = getExistingParent();
-                String parentPath = (parentFo != null) ? parentFo.getPath() : file.getParentFile().getAbsolutePath();
-                FSException.io("EXC_CannotRename", file.getName(), parentPath, file2Rename.getName());// NOI18N            
-            }
-            FileBasedFileSystem fs = getLocalFileSystem();
-            fs.getFactory().rename(); 
-            BaseFileObj.attribs.renameAttributes(file.getAbsolutePath().replace('\\', '/'), file2Rename.getAbsolutePath().replace('\\', '/'));//NOI18N
-            for (int i = 0; i < allRenamed.length; i++) {
-                FolderObj par = (allRenamed[i].getParent() != null) ? 
-                    (FolderObj)fs.getFactory().get(allRenamed[i].getParent().getFile()) : null;
-                if (par != null) {
-                    ChildrenCache childrenCache = par.getChildrenCache();
-                    final Mutex.Privileged mutexPrivileged = (childrenCache != null) ? childrenCache.getMutexPrivileged() : null;
-                    if (mutexPrivileged != null) mutexPrivileged.enterWriteAccess();
-                    try {
-                        childrenCache.removeChild(allRenamed[i]);
-                        childrenCache.getChild(allRenamed[i].getName(), true);
-                    } finally {
-                        if (mutexPrivileged != null) mutexPrivileged.exitWriteAccess();
-                    }                
+        FileBasedFileSystem fs = getLocalFileSystem();
+
+        synchronized(fs.getFactory().allInstances) { 
+                FileNaming[] allRenamed = NamingFactory.rename(getFileName(),file2Rename.getName(),handler);
+                if (allRenamed == null) {
+                    FileObject parentFo = getExistingParent();
+                    String parentPath = (parentFo != null) ? parentFo.getPath() : file.getParentFile().getAbsolutePath();
+                    FSException.io("EXC_CannotRename", file.getName(), parentPath, file2Rename.getName());// NOI18N            
                 }
-            }
+                fs.getFactory().rename(); 
+                BaseFileObj.attribs.renameAttributes(file.getAbsolutePath().replace('\\', '/'), file2Rename.getAbsolutePath().replace('\\', '/'));//NOI18N
+                for (int i = 0; i < allRenamed.length; i++) {
+                    FolderObj par = (allRenamed[i].getParent() != null) ? 
+                        (FolderObj)fs.getFactory().get(allRenamed[i].getParent().getFile()) : null;
+                    if (par != null) {
+                        ChildrenCache childrenCache = par.getChildrenCache();
+                        final Mutex.Privileged mutexPrivileged = (childrenCache != null) ? childrenCache.getMutexPrivileged() : null;
+                        if (mutexPrivileged != null) mutexPrivileged.enterWriteAccess();
+                        try {
+                            childrenCache.removeChild(allRenamed[i]);
+                            childrenCache.getChild(allRenamed[i].getName(), true);
+                        } finally {
+                            if (mutexPrivileged != null) mutexPrivileged.exitWriteAccess();
+                        }                
+                    }
+                }
+        }
         //TODO: RELOCK
         LockForFile.relock(file,file2Rename);
             
@@ -303,28 +304,24 @@ public abstract class BaseFileObj extends FileObject {
         ProvidedExtensions extensions =  getProvidedExtensions();        
         rename(lock, name, ext, extensions.getRenameHandler(getFileName().getFile(), FileInfo.composeName(name, ext)));
     }
-
-
+    
+      
     public Object getAttribute(final String attrName) {
         if (attrName.equals("FileSystem.rootPath")) {
             return "";//NOI18N
-        }
-        
-        if (attrName.equals("java.io.File")) {
+        } else if (attrName.equals("java.io.File")) {
             File file = getFileName().getFile();
             if (file != null && FileChangedManager.getInstance().exists(file)) {
                 return file;
             }
-        }
+        } else if (attrName.equals("ExistsParentNoPublicAPI")) {
+            return getExistingParent() != null;
+        } 
                 
         return BaseFileObj.attribs.readAttribute(getFileName().getFile().getAbsolutePath().replace('\\', '/'), attrName);//NOI18N
     }
 
     public final void setAttribute(final String attrName, final Object value) throws java.io.IOException {
-        if ("request_for_refreshing_files_be_aware_this_is_not_public_api".equals(attrName) && (value instanceof File)) {//NOI18N
-            getLocalFileSystem().refreshFor((File)value);
-            return;
-        }
         final Object oldValue = BaseFileObj.attribs.readAttribute(getFileName().getFile().getAbsolutePath().replace('\\', '/'), attrName);//NOI18N
         BaseFileObj.attribs.writeAttribute(getFileName().getFile().getAbsolutePath().replace('\\', '/'), attrName, value);//NOI18N
         fireFileAttributeChangedEvent(attrName, oldValue, value);
@@ -406,11 +403,18 @@ public abstract class BaseFileObj extends FileObject {
         Enumeration pListeners = (parent != null) ? parent.getListeners() : null;
         
         assert this.isValid() : this.toString();
-        fireFileDataCreatedEvent(getListeners(), new FileEvent(this, this, expected));
-        
+        FileEventImpl parentFe = null;
         if (parent != null && pListeners != null) {
+            parentFe = new FileEventImpl(parent, this, expected);
+        }
+        if (parentFe != null) {
             assert parent.isValid() : parent.toString();
-            parent.fireFileDataCreatedEvent(pListeners, new FileEvent(parent, this, expected));
+            final FileEventImpl fe = new FileEventImpl(this, parentFe);
+            fireFileDataCreatedEvent(getListeners(), fe);
+            parent.fireFileDataCreatedEvent(pListeners, parentFe);
+        } else {
+            final FileEventImpl fe = new FileEventImpl(this, this, expected);
+            fireFileDataCreatedEvent(getListeners(), fe);
         }
         stopWatch.stop();
     }
@@ -423,13 +427,20 @@ public abstract class BaseFileObj extends FileObject {
         
         final BaseFileObj parent = getExistingParent();
         Enumeration pListeners = (parent != null) ? parent.getListeners() : null;
-        
-        fireFileFolderCreatedEvent(getListeners(), new FileEvent(this, this, expected));
 
+        FileEventImpl parentFe = null;
         if (parent != null && pListeners != null) {
-            parent.fireFileFolderCreatedEvent(pListeners, new FileEvent(parent, this, expected));
+            parentFe = new FileEventImpl(parent, this, expected);
         }
-
+        if (parentFe != null) {
+            assert parent.isValid() : parent.toString();
+            final FileEventImpl fe = new FileEventImpl(this, parentFe);
+            fireFileFolderCreatedEvent(getListeners(), fe);
+            parent.fireFileFolderCreatedEvent(pListeners, parentFe);
+        } else {
+            final FileEventImpl fe = new FileEventImpl(this, this, expected);
+            fireFileFolderCreatedEvent(getListeners(), fe);
+        }
         stopWatch.stop();
     }
 
@@ -441,10 +452,17 @@ public abstract class BaseFileObj extends FileObject {
         final BaseFileObj parent = (BaseFileObj)((p instanceof BaseFileObj) ? p : null);//getExistingParent();
         Enumeration pListeners = (parent != null) ? parent.getListeners() : null;
         
-        fireFileChangedEvent(getListeners(), new FileEvent(this, this, expected));
-
+        FileEventImpl parentFe = null;
         if (parent != null && pListeners != null) {
-            parent.fireFileChangedEvent(pListeners, new FileEvent(parent, this, expected));
+            parentFe = new FileEventImpl(parent, this, expected);
+        }
+        if (parentFe != null) {
+            final FileEventImpl fe = new FileEventImpl(this, parentFe);
+            fireFileChangedEvent(getListeners(), fe);
+            parent.fireFileChangedEvent(pListeners, parentFe);
+        } else {
+            final FileEventImpl fe = new FileEventImpl(this, this, expected);
+            fireFileChangedEvent(getListeners(), fe);
         }
         stopWatch.stop();
     }
@@ -457,10 +475,17 @@ public abstract class BaseFileObj extends FileObject {
         final BaseFileObj parent = (BaseFileObj)((p instanceof BaseFileObj) ? p : null);//getExistingParent();
         Enumeration pListeners = (parent != null) ?parent.getListeners() : null;        
         
-        fireFileDeletedEvent(getListeners(), new FileEvent(this, this, expected));
-
+        FileEventImpl parentFe = null;
         if (parent != null && pListeners != null) {
-            parent.fireFileDeletedEvent(pListeners, new FileEvent(parent, this, expected));
+            parentFe = new FileEventImpl(parent, this, expected);
+        }
+        if (parentFe != null) {
+            final FileEventImpl fe = new FileEventImpl(this, parentFe);
+            fireFileDeletedEvent(getListeners(), fe);
+            parent.fireFileDeletedEvent(pListeners, parentFe);
+        } else {
+            final FileEventImpl fe = new FileEventImpl(this, this, expected);
+            fireFileDeletedEvent(getListeners(), fe);
         }
         stopWatch.stop();
     }
@@ -472,7 +497,7 @@ public abstract class BaseFileObj extends FileObject {
         
         final BaseFileObj parent = getExistingParent();
         Enumeration pListeners = (parent != null) ?parent.getListeners() : null;        
-        
+
         fireFileRenamedEvent(getListeners(), new FileRenameEvent(this, originalName, originalExt));
 
         if (parent != null && pListeners != null) {
@@ -592,26 +617,7 @@ public abstract class BaseFileObj extends FileObject {
             if (fire) {
                 fireFileDeletedEvent(expected);
             }
-        } else {
-            /*FolderObj parent = getExistingParent();
-            if (parent != null) {
-                ChildrenCache childrenCache = parent.getChildrenCache();
-                final Mutex.Privileged mutexPrivileged = (childrenCache != null) ? childrenCache.getMutexPrivileged() : null;
-                if (mutexPrivileged != null) {
-                    mutexPrivileged.enterWriteAccess();
-                }
-                try {
-                    if (childrenCache.getChild(getFileName().getFile().getName(), false) == null) {
-                        parent.refresh(expected);
-                    }
-                } finally {
-                    if (mutexPrivileged != null) {
-                        mutexPrivileged.exitWriteAccess();
-                    }
-                }
-            }*/
-            //refreshExistingParent(expected, fire);
-        }
+        } 
     }
     
 
@@ -810,4 +816,54 @@ public abstract class BaseFileObj extends FileObject {
             Logger.getLogger("org.netbeans.modules.masterfs.filebasedfs.fileobjects.FolderObj").log(Level.WARNING, bos.toString().replaceAll("java[.]lang[.]Exception", h));//NOI18N
         return true;
     }    
+    
+    private static class FileEventImpl extends FileEvent implements Enumeration<FileEvent> {
+        private FileEventImpl next;
+        public boolean hasMoreElements() {
+            return next != null;
+        }
+
+        public FileEvent nextElement() {
+            if (next == null) {
+                throw new NoSuchElementException(); 
+            }
+            return next;
+        }        
+        
+        public FileEventImpl(FileObject src, FileObject file, boolean expected) {
+            super(src, file, expected);
+        }
+        
+        public FileEventImpl(FileObject src, FileEventImpl next) {
+            super(src, next.getFile(), next.isExpected());
+            this.next = next;
+        }        
+    }  
+    
+    /*private static class FileRenameEventImpl extends FileRenameEvent implements Enumeration<FileEvent> {
+        private FileRenameEventImpl next;
+        public boolean hasMoreElements() {
+            return next != null;
+        }
+
+        public FileEvent nextElement() {
+            if (next == null) {
+                throw new NoSuchElementException(); 
+            }
+            return next;
+        }        
+        
+        public FileRenameEventImpl(FileObject src, FileRenameEventImpl next) {
+            this(src, next.getFile(), next.getName(), next.getExt());
+            this.next = next;            
+            
+        }
+        
+        public FileRenameEventImpl(FileObject src, String name, String ext) {
+            super(src, name, ext);
+        }
+        public FileRenameEventImpl(FileObject src, FileObject file, String name, String ext) {
+            super(src, file, name, ext, false);
+        }
+    }*/
 }

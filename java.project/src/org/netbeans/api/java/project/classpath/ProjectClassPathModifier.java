@@ -132,7 +132,7 @@ public class ProjectClassPathModifier {
     /**
      * Adds archive files or folders into the project's classpath if the
      * entries are not already there.
-     * @param classPathRoots roots to be added, each root has to be either a root of an archive or a folder
+     * @param classPathRoots roots to be added, each root has to be either a root of an archive or a folder url can be absolute or relative
      * @param projectArtifact a file whose classpath should be extended
      * @param classPathType the type of classpath to be extended, @see ClassPath
      * @return true in case the classpath was changed, (at least one classpath root was added to the classpath),
@@ -163,7 +163,7 @@ public class ProjectClassPathModifier {
                     if (LibrariesSupport.isAbsoluteURL(urlToAdd)) {
                         fo = URLMapper.findFileObject(urlToAdd);
                     } else {
-                        File f = PropertyUtils.resolveFile(projectFolderFile, LibrariesSupport.convertURLToFile(urlToAdd).getPath());
+                        File f = PropertyUtils.resolveFile(projectFolderFile, LibrariesSupport.convertURLToFilePath(urlToAdd));
                         fo = FileUtil.toFileObject(f);
                     }
                     if (fo == null) {

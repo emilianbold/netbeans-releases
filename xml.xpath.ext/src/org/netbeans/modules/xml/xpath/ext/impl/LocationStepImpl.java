@@ -179,7 +179,7 @@ public class LocationStepImpl extends XPathExpressionImpl implements LocationSte
             case NODETYPE_NODE:
                 switch (getAxis()) {
                 case CHILD: // it means that the location step is "node()"
-                    sb.append(StepNodeTestType.NODETYPE_NODE.getXPathText());
+                    sb.append(sntt.getXPathText());
                     break;
                 case SELF:   // it means that the location step is abbreviated step "."
                     sb.append("."); // NOI18N
@@ -199,7 +199,7 @@ public class LocationStepImpl extends XPathExpressionImpl implements LocationSte
             case NODETYPE_COMMENT:
             case NODETYPE_PI:
             case NODETYPE_TEXT:
-                sb.append(sntt.getNodeType().getXPathText());
+                sb.append(sntt.getXPathText());
                 break;
             }
         }
@@ -227,5 +227,32 @@ public class LocationStepImpl extends XPathExpressionImpl implements LocationSte
     @Override
     public String toString() {
         return getString();
+    }
+    
+    @Override
+    public boolean equals(Object obj) { 
+        if (obj instanceof LocationStep) {
+            //
+            // Compare Node Test
+            LocationStep step2 = (LocationStep)obj;
+            StepNodeTest snt2 = step2.getNodeTest();
+            if (!snt2.equals(mNodeTest)) {
+                return false;
+            }
+            //
+            // Compare Axis
+            if (step2.getAxis() != mAxis) {
+                return false;
+            }
+            //
+            // Compare predicates
+            XPathPredicateExpression[] predicates2 = step2.getPredicates();
+            if (!XPathUtils.samePredicatesArr(mPredicates, predicates2)) {
+                return false;
+            }
+            //
+            return true;
+        }
+        return false;
     }
 }

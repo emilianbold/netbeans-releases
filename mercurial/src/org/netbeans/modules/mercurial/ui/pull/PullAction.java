@@ -54,6 +54,7 @@ import org.netbeans.modules.mercurial.HgException;
 import org.netbeans.modules.mercurial.HgProgressSupport;
 import org.netbeans.modules.mercurial.Mercurial;
 import org.netbeans.modules.mercurial.ui.merge.MergeAction;
+import org.netbeans.modules.mercurial.ui.actions.ContextAction;
 import org.netbeans.modules.mercurial.util.HgCommand;
 import org.netbeans.modules.mercurial.util.HgProjectUtils;
 import org.netbeans.modules.mercurial.util.HgRepositoryContextCache;
@@ -75,7 +76,7 @@ import org.netbeans.api.project.Project;
  *
  * @author John Rice
  */
-public class PullAction extends AbstractAction {
+public class PullAction extends ContextAction {
     private static final String CHANGESET_FILES_PREFIX = "files:"; //NOI18N
     
     public enum PullType {
@@ -92,8 +93,7 @@ public class PullAction extends AbstractAction {
         putValue(Action.NAME, name);
     }
 
-    public void actionPerformed(ActionEvent e) {
-        if(!Mercurial.getInstance().isGoodVersionAndNotify()) return;
+    public void performAction(ActionEvent e) {
         final File root = HgUtils.getRootFile(context);
         if (root == null) {
             HgUtils.outputMercurialTabInRed( NbBundle.getMessage(PullAction.class,"MSG_PULL_TITLE")); // NOI18N
@@ -105,19 +105,6 @@ public class PullAction extends AbstractAction {
                     NbBundle.getMessage(PullAction.class, "MSG_PULL_NOT_SUPPORTED_INVIEW"),// NOI18N
                     NbBundle.getMessage(PullAction.class, "MSG_PULL_NOT_SUPPORTED_INVIEW_TITLE"),// NOI18N
                     JOptionPane.INFORMATION_MESSAGE);
-            return;
-        }
-        // If the repository has no default pull path then inform user
-        if(HgRepositoryContextCache.getPullDefault(context) == null){
-            HgUtils.outputMercurialTabInRed( NbBundle.getMessage(PullAction.class,"MSG_PULL_TITLE")); // NOI18N
-            HgUtils.outputMercurialTabInRed( NbBundle.getMessage(PullAction.class,"MSG_PULL_TITLE_SEP")); // NOI18N
-            HgUtils.outputMercurialTab(NbBundle.getMessage(PullAction.class, "MSG_NO_DEFAULT_PULL_SET_MSG")); // NOI18N
-            HgUtils.outputMercurialTabInRed(NbBundle.getMessage(PullAction.class, "MSG_PULL_DONE")); // NOI18N
-            HgUtils.outputMercurialTab(""); // NOI18N
-            JOptionPane.showMessageDialog(null,
-                NbBundle.getMessage(PullAction.class,"MSG_NO_DEFAULT_PULL_SET"),
-                NbBundle.getMessage(PullAction.class,"MSG_PULL_TITLE"),
-                JOptionPane.INFORMATION_MESSAGE);
             return;
         }
         pull(context);
@@ -193,26 +180,40 @@ public class PullAction extends AbstractAction {
         final File root = HgUtils.getRootFile(ctx);
         if (root == null) return;
         String repository = root.getAbsolutePath();
+
+        RequestProcessor rp = Mercurial.getInstance().getRequestProcessor(repository);
+        HgProgressSupport support = new HgProgressSupport() {
+            public void perform() { getDefaultAndPerformPull(ctx, root); } };
+
+        support.start(rp, repository, org.openide.util.NbBundle.getMessage(PullAction.class, "MSG_PULL_PROGRESS")); // NOI18N
+    }
+
+    public boolean isEnabled() {
+        return HgUtils.getRootFile(context) != null;
+    }
+
+    static void getDefaultAndPerformPull(VCSContext ctx, File root) {
         final String pullPath = HgCommand.getPullDefault(root);
+        // If the repository has no default pull path then inform user
+        if(pullPath == null) {
+            HgUtils.outputMercurialTabInRed( NbBundle.getMessage(PullAction.class,"MSG_PULL_TITLE")); // NOI18N
+            HgUtils.outputMercurialTabInRed( NbBundle.getMessage(PullAction.class,"MSG_PULL_TITLE_SEP")); // NOI18N
+            HgUtils.outputMercurialTab(NbBundle.getMessage(PullAction.class, "MSG_NO_DEFAULT_PULL_SET_MSG")); // NOI18N
+            HgUtils.outputMercurialTabInRed(NbBundle.getMessage(PullAction.class, "MSG_PULL_DONE")); // NOI18N
+            HgUtils.outputMercurialTab(""); // NOI18N
+            JOptionPane.showMessageDialog(null,
+                NbBundle.getMessage(PullAction.class,"MSG_NO_DEFAULT_PULL_SET"),
+                NbBundle.getMessage(PullAction.class,"MSG_PULL_TITLE"),
+                JOptionPane.INFORMATION_MESSAGE);
+            return;
+        }
         // We assume that if fromPrjName is null that it is a remote pull.
         // This is not true as a project which is in a subdirectory of a
         // repository will report a project name of null. This does no harm.
         final String fromPrjName = HgProjectUtils.getProjectName(new File(pullPath));
         Project proj = HgUtils.getProject(ctx);
         final String toPrjName = HgProjectUtils.getProjectName(proj);
-
-       RequestProcessor rp = Mercurial.getInstance().getRequestProcessor(repository);
-        HgProgressSupport support = new HgProgressSupport() {
-            public void perform() { performPull(fromPrjName != null ? PullType.LOCAL : PullType.OTHER, ctx, root, pullPath, fromPrjName, toPrjName); } };
-
-        support.start(rp, repository, org.openide.util.NbBundle.getMessage(PullAction.class, "MSG_PULL_PROGRESS")); // NOI18N
-    }
-
-    public boolean isEnabled() {
-        Set<File> ctxFiles = context != null? context.getRootFiles(): null;
-        if(HgUtils.getRootFile(context) == null || ctxFiles == null || ctxFiles.size() == 0) 
-            return false;
-        return true; // #121293: Speed up menu display, warn user if not set when Pull selected
+        performPull(fromPrjName != null ? PullType.LOCAL : PullType.OTHER, ctx, root, pullPath, fromPrjName, toPrjName);
     }
 
     static void performPull(PullType type, VCSContext ctx, File root, String pullPath, String fromPrjName, String toPrjName) {
@@ -261,19 +262,24 @@ public class PullAction extends AbstractAction {
             if (list != null && !list.isEmpty()) {
 
                 if (!bNoChanges) {
-                    annotateChangeSets(listIncoming, PullAction.class, "MSG_CHANGESETS_TO_PULL"); // NOI18N
+                    annotateChangeSets(HgUtils.replaceHttpPassword(listIncoming), PullAction.class, "MSG_CHANGESETS_TO_PULL"); // NOI18N
                 }
 
-                HgUtils.outputMercurialTab(list);
+                HgUtils.outputMercurialTab(HgUtils.replaceHttpPassword(list));
                 if (fromPrjName != null) {
                     HgUtils.outputMercurialTabInRed(NbBundle.getMessage(
-                            PullAction.class, "MSG_PULL_FROM", fromPrjName, HgUtils.stripDoubleSlash(pullPath))); // NOI18N
+                            PullAction.class, "MSG_PULL_FROM", fromPrjName, HgUtils.stripDoubleSlash(HgUtils.replaceHttpPassword(pullPath)))); // NOI18N
                 } else {
                     HgUtils.outputMercurialTabInRed(NbBundle.getMessage(
-                            PullAction.class, "MSG_PULL_FROM_NONAME", HgUtils.stripDoubleSlash(pullPath))); // NOI18N
+                            PullAction.class, "MSG_PULL_FROM_NONAME", HgUtils.stripDoubleSlash(HgUtils.replaceHttpPassword(pullPath)))); // NOI18N
                 }
-                HgUtils.outputMercurialTabInRed(NbBundle.getMessage(
-                        PullAction.class, "MSG_PULL_TO", toPrjName, root)); // NOI18N
+                if (toPrjName != null) {
+                    HgUtils.outputMercurialTabInRed(NbBundle.getMessage(
+                            PullAction.class, "MSG_PULL_TO", toPrjName, root)); // NOI18N
+                } else {
+                    HgUtils.outputMercurialTabInRed(NbBundle.getMessage(
+                            PullAction.class, "MSG_PULL_TO_NONAME", root)); // NOI18N
+                }
 
                 // Handle Merge - both automatic and merge with conflicts
                 boolean bMergeNeededDueToPull = HgCommand.isMergeNeededMsg(list.get(list.size() - 1));

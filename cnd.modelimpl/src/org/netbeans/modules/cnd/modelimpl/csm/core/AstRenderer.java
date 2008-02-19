@@ -1101,6 +1101,7 @@ public class AstRenderer {
 	    }
 	    @Override
 	    protected VariableImpl createVariable(AST offsetAst, CsmFile file, CsmType type, String name, boolean _static, MutableDeclarationsContainer container1, MutableDeclarationsContainer container2, CsmScope scope2) {
+                type = TemplateUtils.checkTemplateType(type, scope1);
 		ParameterImpl parameter = new ParameterImpl(offsetAst, file, type, name, scope1);
 		result.add(parameter);
 		return parameter;
@@ -1288,6 +1289,24 @@ public class AstRenderer {
             }
         }
         return null;
+    }
+    
+    public static List<CsmExpression> renderConstructorInitializersList(AST ast, CsmScope scope, CsmFile file) {
+        List<CsmExpression> initializers = null;
+        for (AST token = ast.getFirstChild(); token != null; token = token.getNextSibling()) {
+            if (token.getType() == CPPTokenTypes.CSM_CTOR_INITIALIZER_LIST) {
+                for (AST initializerToken = token.getFirstChild(); initializerToken != null; initializerToken = initializerToken.getNextSibling()) {
+                    if (initializerToken.getType() == CPPTokenTypes.CSM_CTOR_INITIALIZER) {
+                        ExpressionBase initializer = new ExpressionBase(initializerToken, file, null, scope);
+                        if (initializers == null) {
+                            initializers = new ArrayList<CsmExpression>();
+                        }
+                        initializers.add(initializer);
+                    }
+                }
+            }
+        }
+        return initializers;
     }
     
     public static boolean isExpression(AST ast) {

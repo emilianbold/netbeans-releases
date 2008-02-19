@@ -68,6 +68,7 @@ import org.netbeans.modules.cnd.makeproject.configurations.ConfigurationXMLWrite
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
 import org.netbeans.modules.cnd.makeproject.MakeProject;
 import org.netbeans.modules.cnd.makeproject.MakeProjectType;
+import org.netbeans.modules.cnd.makeproject.MakeSources;
 import org.netbeans.modules.cnd.makeproject.NativeProjectProvider;
 import org.netbeans.modules.cnd.makeproject.api.remote.FilePathAdaptor;
 import org.netbeans.modules.cnd.makeproject.ui.MakeLogicalViewProvider;
@@ -105,6 +106,7 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor impleme
     private Folder externalFileItems = null;
     private Folder rootFolder = null;
     private HashMap projectItems = null;
+    private List<String> sourceRoots = null;
     private Set<ChangeListener> projectItemsChangeListeners = new HashSet<ChangeListener>();
     private NativeProject nativeProject = null;
     public static String DEFAULT_PROJECT_MAKFILE_NAME = "Makefile"; // NOI18N
@@ -115,6 +117,7 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor impleme
         this.baseDir = baseDir;
         rootFolder = new Folder(this, null, "root", "root", true); // NOI18N
         projectItems = new HashMap();
+        sourceRoots = new ArrayList<String>();
         setModified(true);
         ToolsPanel.addCompilerSetModifiedListener(this);
     }
@@ -190,7 +193,7 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor impleme
                 externalFileItems.addItem(new Item((String)importantItems.next()));
             }
         }
-        addSourceFilesFromFolders(sourceFileFolders, false);
+        addSourceFilesFromFolders(sourceFileFolders, false, false);
         setModified(true);
     }
     
@@ -397,6 +400,7 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor impleme
         setLogicalFolders(copyExtProjectDescriptor.getLogicalFolders());
         setProjectItemsMap(((MakeConfigurationDescriptor)copyProjectDescriptor).getProjectItemsMap());
         setProjectItemsChangeListeners(((MakeConfigurationDescriptor)copyProjectDescriptor).getProjectItemsChangeListeners());
+        setSourceRoots(((MakeConfigurationDescriptor)copyProjectDescriptor).getSourceRootsRaw());
     }
     
     public void assign(ConfigurationDescriptor clonedConfigurationDescriptor) {
@@ -418,6 +422,7 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor impleme
         setLogicalFolders(((MakeConfigurationDescriptor)clonedConfigurationDescriptor).getLogicalFolders());
         setProjectItemsMap(((MakeConfigurationDescriptor)clonedConfigurationDescriptor).getProjectItemsMap());
         setProjectItemsChangeListeners(((MakeConfigurationDescriptor)clonedConfigurationDescriptor).getProjectItemsChangeListeners());
+        setSourceRoots(((MakeConfigurationDescriptor)clonedConfigurationDescriptor).getSourceRootsRaw());
     }
     
     public ConfigurationDescriptor cloneProjectDescriptor() {
@@ -428,6 +433,7 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor impleme
         clone.setLogicalFolders(getLogicalFolders());
         clone.setProjectItemsMap(getProjectItemsMap());
         clone.setProjectItemsChangeListeners(getProjectItemsChangeListeners());
+        clone.setSourceRoots(getSourceRootsRaw());
         return clone;
     }
     
@@ -594,6 +600,133 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor impleme
         return subProjects;
     }
     
+    /*
+     * Add a new root.
+     * Don't add if root inside project
+     * Don't add if root is subdir of existing root
+     */
+    private void addSourceRoot(String path) {
+        String absPath = IpeUtils.toAbsolutePath(getBaseDir(), path);
+        String canonicalPath = null;
+        try {
+            canonicalPath = new File(absPath).getCanonicalPath();
+        }
+        catch (IOException ioe) {
+            canonicalPath = null;
+        }
+        String relPath = FilePathAdaptor.normalize(IpeUtils.toRelativePath(getBaseDir(), path));
+        boolean addPath = true;
+        ArrayList<String> toBeRemoved = new ArrayList<String>();
+        
+        if (IpeUtils.isPathAbsolute(relPath) || relPath.startsWith("..")) { // NOI18N
+            synchronized (sourceRoots) {
+                if (canonicalPath != null) {
+                    int canonicalPathLength = canonicalPath.length();
+                    for (String sourceRoot : sourceRoots) {
+                        String absSourceRoot = IpeUtils.toAbsolutePath(getBaseDir(), sourceRoot);
+                        String canonicalSourceRoot = null;
+                        try {
+                            canonicalSourceRoot = new File(absSourceRoot).getCanonicalPath();
+                        }
+                        catch (IOException ioe) {
+                            canonicalSourceRoot = null;
+                        }
+                        if (canonicalSourceRoot != null) {
+                            int canonicalSourceRootLength = canonicalSourceRoot.length();
+                            if (canonicalSourceRoot.equals(canonicalPath)) {
+                                // Identical - don't add
+                                addPath = false;
+                                break;
+                            }
+                            if (canonicalSourceRoot.startsWith(canonicalPath) && canonicalSourceRoot.charAt(canonicalPathLength) == File.separatorChar) {
+                                // Existing root sub dir of new path - remove existing path
+                                toBeRemoved.add(sourceRoot);
+                                continue;
+                            }
+                            if (canonicalPath.startsWith(canonicalSourceRoot) && canonicalPath.charAt(canonicalSourceRootLength) == File.separatorChar) {
+                                // Sub dir of existing root - don't add
+                                addPath = false;
+                                break;
+                            }
+                        }
+                    }
+                }
+                if (toBeRemoved.size() > 0) {
+                    for (String toRemove : toBeRemoved) {
+                        sourceRoots.remove(toRemove);
+                    }
+                }
+                if (addPath) {
+                    sourceRoots.add(relPath);
+                    setModified();
+                }
+            }
+        }
+    }
+    
+    /*
+     * Return real list
+     */
+    public List<String> getSourceRootsRaw() {
+        return sourceRoots;
+    }
+    
+    public void setSourceRoots(List list) {
+        synchronized (sourceRoots) {
+            sourceRoots = list;
+        }
+    }
+    
+    public void setSourceRootsList(List<String> list) {
+        synchronized (sourceRoots) {
+            sourceRoots.clear();
+            for (String l : list) {
+                addSourceRoot(l);
+            }
+        }
+        MakeSources makeSources = (MakeSources)getProject().getLookup().lookup(MakeSources.class);
+        if (makeSources != null) {
+            makeSources.sourceRootsChanged();
+        }
+    }
+    
+    /*
+     * return copy
+     */
+    public List<String> getSourceRoots() {
+        List<String> copy;
+        synchronized(sourceRoots) {
+            copy = new ArrayList<String>(sourceRoots);
+        }
+        return copy;
+    }
+    
+    /*
+     * return copy and convert to absolute
+     */
+    public List<String> getAbsoluteSourceRoots() {
+        List<String> copy = new ArrayList<String>();
+        synchronized(sourceRoots) {
+            for (String sr : sourceRoots) {
+                copy.add(IpeUtils.toAbsolutePath(baseDir, sr));
+            }
+        }
+        return copy;
+    }
+    /*
+     * return copy and convert to absolute
+     */
+    public String[] getSourceRootsAsArray() {
+        synchronized(sourceRoots) {
+            String[] copy = new String[sourceRoots.size()];
+            int index = 0;
+            for (String sr : sourceRoots) {
+                copy[index++] = sr;
+            }
+            return copy;
+        }
+    }
+    
     private NativeProjectProvider getNativeProject() {
         if (nativeProject == null) {
             FileObject fo = FileUtil.toFileObject(new File(baseDir));
@@ -631,23 +764,35 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor impleme
         }
     }
     
-    public void addSourceFilesFromFolders(Iterator sourceFileFolders, boolean acrynchron) {
-        addSourceFilesFromFolders(rootFolder, sourceFileFolders, acrynchron);
+    public void addSourceFilesFromFolders(Iterator sourceFileFolders, boolean acrynchron, boolean notify) {
+        addSourceFilesFromFolders(rootFolder, sourceFileFolders, acrynchron, notify);
     }
     
-    public void addSourceFilesFromFolders(Folder folder, Iterator sourceFileFoldersIterator, boolean acrynchron) {
+    public void addSourceFilesFromFolders(Folder folder, Iterator sourceFileFoldersIterator, boolean acrynchron, boolean notify) {
         if (sourceFileFoldersIterator == null)
             return;
         if (acrynchron)
-            new AddFilesThread(sourceFileFoldersIterator, folder).start();
+            new AddFilesThread(sourceFileFoldersIterator, folder, notify).start();
         else {
             while (sourceFileFoldersIterator.hasNext()) {
                 ArrayList filesAdded = new ArrayList();
                 FolderEntry folderEntry = (FolderEntry)sourceFileFoldersIterator.next();
-                Folder top = new Folder(folder.getConfigurationDescriptor(), folder, folderEntry.getFile().getName(), folderEntry.getFile().getName(), true);
+                Folder top = folder.findFolderByName(folderEntry.getFile().getName());
+                if (top == null) {
+                    top = new Folder(folder.getConfigurationDescriptor(), folder, folderEntry.getFile().getName(), folderEntry.getFile().getName(), true);
+                    folder.addFolder(top);
+                }
                 addFiles(top, folderEntry.getFile(), folderEntry.isAddSubfoldersSelected(), folderEntry.getFileFilter(), null, filesAdded);
-                folder.addFolder(top);
                 getNativeProject().fireFilesAdded(filesAdded);
+                
+                addSourceRoot(folderEntry.getFile().getPath());
+            }
+            if (notify) {
+                // Notify that list has changed
+                MakeSources makeSources = (MakeSources)getProject().getLookup().lookup(MakeSources.class);
+                if (makeSources != null) {
+                    makeSources.sourceRootsChanged();
+                }
             }
         }
     }
@@ -656,10 +801,12 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor impleme
         Iterator iterator;
         Folder folder;
         private ProgressHandle handle;
+        private boolean notify;
         
-        AddFilesThread(Iterator iterator, Folder folder) {
+        AddFilesThread(Iterator iterator, Folder folder, boolean notify) {
             this.iterator = iterator;
             this.folder = folder;
+            this.notify = notify;
             handle = ProgressHandleFactory.createHandle(getString("AddingFilesTxt"));
         }
         public void run() {
@@ -669,14 +816,25 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor impleme
                 handle.start();
                 while (iterator.hasNext()) {
                     FolderEntry folderEntry = (FolderEntry)iterator.next();
-                    Folder top = new Folder(folder.getConfigurationDescriptor(), folder, folderEntry.getFile().getName(), folderEntry.getFile().getName(), true);
-                    addFiles(top, folderEntry.getFile(), folderEntry.isAddSubfoldersSelected(), folderEntry.getFileFilter(), handle, filesAdded);
-                    folder.addFolder(top);
+                    Folder top = folder.findFolderByName(folderEntry.getFile().getName());
+                    if (top == null) {
+                        top = new Folder(folder.getConfigurationDescriptor(), folder, folderEntry.getFile().getName(), folderEntry.getFile().getName(), true);
+                        folder.addFolder(top);
+                    }
+                    addFiles(top, folderEntry.getFile(), folderEntry.isAddSubfoldersSelected(), FolderEntry.getFileFilter(), handle, filesAdded);
+                    addSourceRoot(folderEntry.getFile().getPath());
                 }
             } finally {
                 handle.finish();
             }
             getNativeProject().fireFilesAdded(filesAdded);
+            if (notify) {
+                // Notify that list has changed
+                MakeSources makeSources = (MakeSources)getProject().getLookup().lookup(MakeSources.class);
+                if (makeSources != null) {
+                    makeSources.sourceRootsChanged();
+                }
+            }
         }
     }
     
@@ -701,7 +859,9 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor impleme
                     continue;
                 Folder dirfolder = folder;
                 if (addSubFolders) {
-                    dirfolder = folder.addNewFolder(files[i].getName(), files[i].getName(), true);
+                    dirfolder = folder.findFolderByName(files[i].getName());
+                    if (dirfolder == null)
+                        dirfolder = folder.addNewFolder(files[i].getName(), files[i].getName(), true);
                 }
                 addFiles(dirfolder, files[i], addSubFolders, filter, handle, filesAdded);
                 if (dirfolder.size() == 0)

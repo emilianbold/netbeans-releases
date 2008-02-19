@@ -161,7 +161,7 @@ public class DesignBeanNode extends AbstractNode implements DesignBeanListener {
     final static public String PROPERTY_ID_DISPLAY = NbBundle.getMessage(DesignBeanNode.class, "LBL_Id"); // NOI18N
     
     // Memory leak probing
-    private static final Logger TIMERS = Logger.getLogger("TIMER.designBeanNodes"); // NOI18N
+    private static final Logger TIMERS = Logger.getLogger("TIMER.visualweb"); // NOI18N
     
     private final DesignContextListener designContextListener = new DesignBeanNodeDesignContextListener(this);
 
@@ -206,8 +206,8 @@ public class DesignBeanNode extends AbstractNode implements DesignBeanListener {
     private DesignBeanNode(DesignBean liveBean, Children children, Lookup fixedLookup, DesignBeanNodeLookup designBeanNodeLookup) {
         super(children, new ProxyLookup(new Lookup[] {fixedLookup, designBeanNodeLookup}));
         
-        if (TIMERS.isLoggable(Level.FINE)) {
-            LogRecord rec = new LogRecord(Level.FINE, "DesignBeanNode"); // NOI18N
+        if (TIMERS.isLoggable(Level.FINER)) {
+            LogRecord rec = new LogRecord(Level.FINER, "DesignBeanNode"); // NOI18N
             rec.setParameters(new Object[]{this });
             TIMERS.log(rec);
         }

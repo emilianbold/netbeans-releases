@@ -84,7 +84,11 @@ public class ExportDiffPanel extends javax.swing.JPanel implements ActionListene
     public String getSelectedRevision() {
         String revStr = (String) revisionsComboBox.getSelectedItem();
         if (revStr != null) {
-            revStr = revStr.substring(0, revStr.indexOf(" ")); // NOI18N
+            if (revStr.equals(NbBundle.getMessage(ExportDiffPanel.class, "MSG_Fetching_Revisions"))) { // NOI18N
+                revStr = "tip"; // NOI18N
+            } else {
+                revStr = revStr.substring(0, revStr.indexOf(" ")); // NOI18N
+            }
         }
         return revStr;
     }
@@ -181,7 +185,7 @@ public class ExportDiffPanel extends javax.swing.JPanel implements ActionListene
     private void getDefaultOutputFile() {
         String folderName = HgModuleConfig.getDefault().getExportFolder();
         String fileName = HgModuleConfig.getDefault().getExportFilename();
-        File file = new File(folderName, fileName);
+        File file = new File(folderName, fileName + ".patch"); // ensure syntax highlighting of default patch on display in editor
         outputFileTextField.setText(file.getAbsolutePath());
     }
 

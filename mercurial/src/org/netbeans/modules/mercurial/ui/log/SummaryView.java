@@ -62,6 +62,7 @@ import java.io.IOException;
 import java.text.DateFormat;
 import java.util.List;
 import java.util.List;
+import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.modules.mercurial.ExceptionHandler;
 import org.netbeans.modules.mercurial.HgException;
 import org.netbeans.modules.mercurial.HgProgressSupport;
@@ -97,7 +98,7 @@ class SummaryView implements MouseListener, ComponentListener, MouseMotionListen
         this.master = master;
         this.results = results;
         this.dispResults = expandResults(results);
-        FontColorSettings fcs = (FontColorSettings) MimeLookup.getMimeLookup("text/x-java").lookup(FontColorSettings.class); // NOI18N
+        FontColorSettings fcs = (FontColorSettings) MimeLookup.getLookup(MimePath.get("text/x-java")).lookup(FontColorSettings.class); // NOI18N
         searchHiliteAttrs = fcs.getFontColors("highlight-search"); // NOI18N
         message = master.getCriteria().getCommitMessage();
         resultsList = new JList(new SummaryListModel());
@@ -136,6 +137,7 @@ class SummaryView implements MouseListener, ComponentListener, MouseMotionListen
         // not interested
     }
     
+    @SuppressWarnings("unchecked")
     private List expandResults(List<RepositoryRevision> results) {
         ArrayList newResults = new ArrayList(results.size());
         for (RepositoryRevision repositoryRevision : results) {
@@ -172,13 +174,13 @@ class SummaryView implements MouseListener, ComponentListener, MouseMotionListen
     }
 
     public void mousePressed(MouseEvent e) {
-        if (e.isPopupTrigger()) {
+        if (!master.isIncomingSearch() && e.isPopupTrigger()) {
             onPopup(e);
         }
     }
 
     public void mouseReleased(MouseEvent e) {
-        if (e.isPopupTrigger()) {
+        if (!master.isIncomingSearch() && e.isPopupTrigger()) {
             onPopup(e);
         }
     }
@@ -292,7 +294,7 @@ class SummaryView implements MouseListener, ComponentListener, MouseMotionListen
         final boolean diffToPrevEnabled = selection.length == 1;
         
         if (revision > 0) {
-            menu.add(new JMenuItem(new AbstractAction(NbBundle.getMessage(SummaryView.class, "CTL_SummaryView_DiffToPrevious", previousRevision)) { // NOI18N
+            menu.add(new JMenuItem(new AbstractAction(NbBundle.getMessage(SummaryView.class, "CTL_SummaryView_DiffToPrevious", "" + previousRevision )) { // NOI18N
                 {
                     setEnabled(diffToPrevEnabled);
                 }
@@ -319,7 +321,7 @@ class SummaryView implements MouseListener, ComponentListener, MouseMotionListen
         }));
         */
         if (!revisionSelected) {
-            menu.add(new JMenuItem(new AbstractAction(NbBundle.getMessage(SummaryView.class, "CTL_SummaryView_RollbackTo", revision)) { // NOI18N
+            menu.add(new JMenuItem(new AbstractAction(NbBundle.getMessage(SummaryView.class, "CTL_SummaryView_RollbackTo", "" + revision)) { // NOI18N
                 {                    
                     setEnabled(rollbackToEnabled);
                 }
@@ -477,7 +479,7 @@ class SummaryView implements MouseListener, ComponentListener, MouseMotionListen
                 RepositoryRevision.Event drev = (RepositoryRevision.Event) o;
                 File file = VersionsCache.getInstance().getFileRevision(drev.getFile(), drev.getLogInfoHeader().getLog().getRevision());
 
-                FileObject fo = FileUtil.toFileObject(file);
+                FileObject fo = FileUtil.toFileObject(FileUtil.normalizeFile(file));
                 org.netbeans.modules.versioning.util.Utils.openFile(fo, drev.getLogInfoHeader().getLog().getRevision());
             } catch (IOException ex) {
                 // Ignore if file not available in cache
@@ -635,9 +637,11 @@ class SummaryView implements MouseListener, ComponentListener, MouseMotionListen
             }
             
             actionsPane.setVisible(true);
-            diffLink.set(NbBundle.getMessage(SummaryView.class, "CTL_Action_Diff"), foregroundColor, backgroundColor);
-            revertLink.set(NbBundle.getMessage(SummaryView.class, "CTL_Action_Revert"), foregroundColor, backgroundColor); // NOI18N
-        }
+            if(!master.isIncomingSearch()){
+                diffLink.set(NbBundle.getMessage(SummaryView.class, "CTL_Action_Diff"), foregroundColor, backgroundColor);
+                revertLink.set(NbBundle.getMessage(SummaryView.class, "CTL_Action_Revert"), foregroundColor, backgroundColor); // NOI18N
+            }
+    }
 
         private void renderRevision(JList list, RepositoryRevision.Event dispRevision, final int index, boolean isSelected) {
             Style style;

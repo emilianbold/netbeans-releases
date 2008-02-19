@@ -483,6 +483,7 @@ public class NewFileWizardsTest extends JellyTestCase {
      *@param newFiles files to check
      */
     private void checkFiles(List<File> newFiles) {
+        new EventTool().waitNoEvent(1000);
         // save all instead of timeout
         new SaveAllAction().performAPI();
         if (!CREATE_GOLDEN_FILES) {
@@ -553,6 +554,7 @@ public class NewFileWizardsTest extends JellyTestCase {
      */
     public void testOpenEjbMultiRootProject() {
         assertNotNull(J2eeProjectSupport.openProject(getMultiEjbPath()));
+        Utils.checkMissingServer("MultiSrcRootEjb");
         new ProjectsTabOperator().getProjectRootNode("MultiSrcRootEjb").expand();
     }
     
@@ -561,6 +563,7 @@ public class NewFileWizardsTest extends JellyTestCase {
      */
     public void testOpenWebMultiRootProject() {
         assertNotNull(J2eeProjectSupport.openProject(getMultiWebPath()));
+        Utils.checkMissingServer("MultiSrcRootWar");
         new ProjectsTabOperator().getProjectRootNode("MultiSrcRootWar").expand();
     }
     

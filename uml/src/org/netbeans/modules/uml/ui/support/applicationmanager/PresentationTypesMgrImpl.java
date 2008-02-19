@@ -44,7 +44,6 @@
 package org.netbeans.modules.uml.ui.support.applicationmanager;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -119,14 +118,7 @@ public abstract class PresentationTypesMgrImpl implements IPresentationTypesMgr
                createInitStringsSection(rootElement);
                createOwnerMetaTypesSection(rootElement);
                createInvalidDrawEnginesOnDiagramsSection(rootElement);
-         
-               try
-               {
-                  XMLManip.save(doc, location);
-               }
-               catch (IOException e)
-               {
-               }
+               XMLManip.save(doc, location);
             }
          }
       }

@@ -69,7 +69,7 @@ import org.openide.util.NbBundle;
  */
 public class JspParserImpl implements JspParserAPI {
     
-    private HashMap<JspParserImpl.WAParseSupportKey, WebAppParseProxy> parseSupports;
+    HashMap<JspParserImpl.WAParseSupportKey, WebAppParseProxy> parseSupports;
     
     private static Constructor webAppParserImplConstructor;
     
@@ -179,7 +179,7 @@ public class JspParserImpl implements JspParserAPI {
             throw new IOException();
         }
         WebAppParseProxy pp = getParseProxy(wm);
-                return pp.getTaglibMap(true);
+        return pp.getTaglibMap(true);
     }
     
     private synchronized WebAppParseProxy getParseProxy(WebModule wm) {

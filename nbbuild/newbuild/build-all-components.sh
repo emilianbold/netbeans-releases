@@ -38,7 +38,7 @@ ant -Dbuildnum=$BUILDNUM -Dbuildnumber=$BUILDNUMBER -f nbbuild/build.xml build-n
 ERROR_CODE=$?
 
 if [ $ERROR_CODE != 0 ]; then
-    echo "ERROR: $ERROR_CODE - Can't build basic IDE"
+    echo "ERROR: $ERROR_CODE - Can't build stableuc module config"
     exit $ERROR_CODE;
 fi
 
@@ -154,7 +154,7 @@ ERROR_CODE=$?
     cd $NB_ALL/nbbuild
     #Remove the build helper files
     rm -f netbeans-ml/nb.cluster.*
-    rm -f netbeans-ml/build_info
+#    rm -f netbeans-ml/build_info
     rm -rf netbeans-ml/extra
     rm -rf netbeans-ml/testtools
 fi
@@ -163,7 +163,7 @@ cd $NB_ALL/nbbuild
 
 #Remove the build helper files
 rm -f netbeans/nb.cluster.*
-rm -f netbeans/build_info
+#rm -f netbeans/build_info
 rm -rf netbeans/extra
 rm -rf netbeans/testtools
 

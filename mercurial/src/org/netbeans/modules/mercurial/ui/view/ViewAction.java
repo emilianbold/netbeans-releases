@@ -54,6 +54,7 @@ import java.util.List;
 import javax.swing.*;
 import java.awt.event.ActionEvent;
 import org.netbeans.modules.mercurial.config.HgConfigFiles;
+import org.netbeans.modules.mercurial.ui.actions.ContextAction;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
@@ -63,7 +64,7 @@ import org.openide.util.Utilities;
  * 
  * @author John Rice
  */
-public class ViewAction extends AbstractAction {
+public class ViewAction extends ContextAction {
     
     private final VCSContext context;
     private static final String HG_SCRIPTS_DIR = "scripts";
@@ -73,8 +74,7 @@ public class ViewAction extends AbstractAction {
         putValue(Action.NAME, name);
     }
     
-    public void actionPerformed(ActionEvent e) {
-        if(!Mercurial.getInstance().isGoodVersionAndNotify()) return;
+    public void performAction(ActionEvent e) {
         final File root = HgUtils.getRootFile(context);
         if (root == null) return;
         String repository = root.getAbsolutePath();
@@ -146,10 +146,6 @@ public class ViewAction extends AbstractAction {
     }
 
     public boolean isEnabled() {
-        File root = HgUtils.getRootFile(context);
-        if (root == null)
-            return false;
-        else
-            return true;
+        return HgUtils.getRootFile(context) != null;
     } 
 }

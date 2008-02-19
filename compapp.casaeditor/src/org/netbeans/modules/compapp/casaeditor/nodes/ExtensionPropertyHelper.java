@@ -41,6 +41,8 @@
 
 package org.netbeans.modules.compapp.casaeditor.nodes;
 
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -72,14 +74,6 @@ public class ExtensionPropertyHelper {
     private static Logger logger = Logger.getLogger(
             "org.netbeans.modules.compapp.casaeditor.nodes.ExtensionPropertyHelper"); // NOI18N
            
-    private static Map<String, Class> classMap = new HashMap<String, Class>();
-    
-    static {
-        classMap.put("String", String.class); // NOI18N
-        classMap.put("Integer", Integer.class); // NOI18N
-        classMap.put("QName", QName.class); // NOI18N
-    }
-    
     private static String EXTENSION_TARGET_ALL = "all"; // NOI18N
     
     /**
@@ -123,7 +117,14 @@ public class ExtensionPropertyHelper {
             String eeNamespace = eeQName.getNamespaceURI();
             String eeLocalName = eeQName.getLocalPart();
 
-            for (JbiExtensionInfo extInfo : installedExtInfo.getJbiExtensionList()) {
+            List<JbiExtensionInfo> extInfoList = installedExtInfo.getJbiExtensionList();
+            Collections.sort(extInfoList, new Comparator<JbiExtensionInfo>() {
+                public int compare(JbiExtensionInfo o1, JbiExtensionInfo o2) {
+                    return o1.getName().compareTo(o2.getName());
+                }                
+            });
+            
+            for (JbiExtensionInfo extInfo : extInfoList) {
                 if (!(extInfo.getNameSpace().equals(eeNamespace)) ||
                         !(extensionType.equals(extInfo.getType()))) {
                     continue;
@@ -217,6 +218,7 @@ public class ExtensionPropertyHelper {
         CasaComponentFactory casaFactory = casaModel.getFactory();
 
         String extElementName = extElement.getName();
+        String extElementDescription = extElement.getDescription();
         Element domElement = document.createElementNS(namespace, extElementName);
         
         CasaExtensibilityElement newEE = (CasaExtensibilityElement) 
@@ -232,7 +234,11 @@ public class ExtensionPropertyHelper {
         lastEE = newEE;
                 
         if (extElement instanceof JbiChoiceExtensionElement) {
-            // Note that multi-level choice  element is not supported for now.
+            // Note that multi-level choice element is not supported for now.
+            
+            JbiChoiceExtensionElement choiceExtElement = 
+                    (JbiChoiceExtensionElement) extElement;
+            String defaultChoice = choiceExtElement.getDefaultChoice();
                     
             // Build choice map.
             Map<String, CasaExtensibilityElement> choiceMap = 
@@ -252,8 +258,9 @@ public class ExtensionPropertyHelper {
                     CasaNode.ALWAYS_WRITABLE_PROPERTY, 
                     String.class, 
                     extElementName, extElementName, 
-                    "", // FIXME: description
-                    choiceMap); 
+                    extElementDescription,
+                    choiceMap,
+                    defaultChoice); 
             
         } else {        
             // Add properties for attributes of the current extenstion element.
@@ -263,14 +270,17 @@ public class ExtensionPropertyHelper {
                     String attrName = attr.getName();
                     String attrType = attr.getType();
                     String attrDescription = attr.getDescription();
+                    boolean codeGen = attr.getCodeGen();
 
-                    lastEE.setAttribute(attrName, ""); // NOI18N
+                    if (codeGen) {
+                        lastEE.setAttribute(attrName, ""); // NOI18N
+                    }
 
                     if (install) {
                         PropertyUtils.installExtensionProperty(
                             extSheetSet, node, casaExtPoint, 
                             firstEE, lastEE,
-                            CasaNode.ALWAYS_WRITABLE_PROPERTY, classMap.get(attrType), 
+                            CasaNode.ALWAYS_WRITABLE_PROPERTY, attrType, 
                             attrName, attrName, attrDescription);
                     }
                 }
@@ -302,7 +312,13 @@ public class ExtensionPropertyHelper {
                   
         // Add a property for choice extension element.
         if (extElement instanceof JbiChoiceExtensionElement) {
+            
+            JbiChoiceExtensionElement choiceExtElement = 
+                    (JbiChoiceExtensionElement) extElement;
+            String defaultChoice = choiceExtElement.getDefaultChoice();
+            
             String elementName = extElement.getName();
+            String elementDescription = extElement.getDescription();
             
             List<CasaExtensibilityElement> currentChildren = 
                     lastEE.getExtensibilityElements();
@@ -341,8 +357,9 @@ public class ExtensionPropertyHelper {
                         CasaNode.ALWAYS_WRITABLE_PROPERTY, 
                         String.class, 
                         elementName, elementName, 
-                        "", // FIXME: description
-                        choiceMap); 
+                        elementDescription,
+                        choiceMap,
+                        defaultChoice); 
             }
         } 
         
@@ -357,7 +374,7 @@ public class ExtensionPropertyHelper {
                     extSheetSet, node, casaExtPoint, 
                     firstEE, lastEE,
                     CasaNode.ALWAYS_WRITABLE_PROPERTY, 
-                    classMap.get(attrType), 
+                    attrType, 
                     attrName, attrName, attrDescription);
             }
         } 

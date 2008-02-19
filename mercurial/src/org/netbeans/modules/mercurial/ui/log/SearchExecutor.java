@@ -140,7 +140,9 @@ class SearchExecutor implements Runnable {
         }
         
         HgLogMessage[] messages;
-        if (master.isOutSearch()) {
+        if (master.isIncomingSearch()) {
+            messages = HgCommand.getIncomingMessages(rootUrl);
+        }else if (master.isOutSearch()) {
             messages = HgCommand.getOutMessages(rootUrl);
         } else {
             messages = HgCommand.getLogMessages(rootUrl, files, fromRevision, toRevision);

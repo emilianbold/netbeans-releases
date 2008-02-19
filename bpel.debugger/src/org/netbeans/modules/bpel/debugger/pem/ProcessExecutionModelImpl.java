@@ -33,6 +33,7 @@ import org.netbeans.modules.bpel.debugger.api.psm.PsmEntity;
 import org.netbeans.modules.bpel.debugger.bdiclient.impl.ProcessInstanceImpl;
 import org.netbeans.modules.bpel.debugger.eventlog.ActivityCompletedRecord;
 import org.netbeans.modules.bpel.debugger.eventlog.ActivityStartedRecord;
+import org.netbeans.modules.bpel.debugger.eventlog.ActivityTerminatedRecord;
 import org.netbeans.modules.bpel.debugger.eventlog.BranchCompletedRecord;
 import org.netbeans.modules.bpel.debugger.eventlog.BranchStartedRecord;
 import org.netbeans.modules.bpel.debugger.eventlog.EventLog;
@@ -178,6 +179,8 @@ public class ProcessExecutionModelImpl implements ProcessExecutionModel {
                     update((ActivityStartedRecord) record);
                 } else if (record instanceof ActivityCompletedRecord) {
                     update((ActivityCompletedRecord) record);
+                } else if (record instanceof ActivityTerminatedRecord) {
+                    update((ActivityTerminatedRecord) record);
                 } else if (record instanceof BranchStartedRecord) {
                     update((BranchStartedRecord) record);
                 } else if (record instanceof BranchCompletedRecord) {
@@ -228,6 +231,21 @@ public class ProcessExecutionModelImpl implements ProcessExecutionModel {
     }
     
     private void update(
+            final ActivityTerminatedRecord record) {
+        final PsmEntity psmEntity = myPsm.find(record.getActivityXpath());
+        if (psmEntity == null) {
+            return;
+        }
+        
+        final BranchImpl branch = myBranches.get(record.getBranchId());
+        if (branch == null) {
+            return;
+        }
+        
+        branch.activityTerminated(psmEntity);
+    }
+    
+    private void update(
             final BranchStartedRecord record) {
         final String parentId = record.getParentBranchId();
         
@@ -239,8 +257,9 @@ public class ProcessExecutionModelImpl implements ProcessExecutionModel {
         final BranchImpl newBranch = 
                 new BranchImpl(record.getBranchId(), parentBranch);
         
-        if (((newBranch.getParent() == null) && (myCurrentBranch == null)) || 
-                newBranch.getParent().equals(myCurrentBranch)) {
+        final Branch parent = newBranch.getParent();
+        if (((parent == null) && (myCurrentBranch == null)) || 
+                ((parent != null) && (parent.equals(myCurrentBranch)))) {
             myCurrentBranch = newBranch;
         }
         
@@ -389,7 +408,8 @@ public class ProcessExecutionModelImpl implements ProcessExecutionModel {
         
         public void activityStarted(final PsmEntity psmEntity) {
             final PsmEntity psmParent = psmEntity.getParent();
-            final PemEntityImpl pemEntity = createEntity(psmEntity, myId, true);
+            
+            PemEntityImpl pemEntity = createEntity(psmEntity, myId, true);
             
             if (!myCallStack.empty()) {
                 final PemEntityImpl pemParent = myCallStack.peek();
@@ -496,9 +516,15 @@ public class ProcessExecutionModelImpl implements ProcessExecutionModel {
                             handlersPem = pems[0];
                         }
                         
-                        // Then we need to attach the current (<onAlarm> or 
-                        // <onEvent>) entity to this
-                        handlersPem.addChild(pemEntity);
+                        // If the handlers PEM entity does not contain a child 
+                        // of this type (<onAlarm> or <onEvent>) -- add it. 
+                        // Otherwise, just reuse the existing one.
+                        pems = handlersPem.getChildren(psmEntity);
+                        if (pems.length == 0) {
+                            handlersPem.addChild(pemEntity);
+                        } else {
+                            pemEntity = pems[0];
+                        }
                         
                         myCallStack.push(handlersPem);
                     } else {
@@ -550,6 +576,21 @@ public class ProcessExecutionModelImpl implements ProcessExecutionModel {
                         
                         pemEntity.setState(PemEntity.State.COMPLETED);
                     }
+                }
+            }
+        }
+        
+        public void activityTerminated(final PsmEntity psmEntity) {
+            if (!myCallStack.isEmpty()) {
+                // If the call stack is not empty -- try to remove all entities,
+                // that are "below" it
+                PsmEntity tip = myCallStack.peek().getPsmEntity();
+                while (tip.getXpath().startsWith(psmEntity.getXpath())) {
+                    final PemEntityImpl pemEntity = myCallStack.pop();
+                    
+                    pemEntity.setState(PemEntity.State.COMPLETED);
+                    
+                    tip = myCallStack.peek().getPsmEntity();
                 }
             }
         }

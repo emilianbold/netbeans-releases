@@ -56,6 +56,7 @@ import java.awt.event.ActionEvent;
 import org.netbeans.modules.mercurial.util.HgCommand;
 import org.netbeans.modules.mercurial.HgProgressSupport;
 import org.netbeans.modules.mercurial.util.HgUtils;
+import org.netbeans.modules.mercurial.ui.actions.ContextAction;
 
 /**
  * Status action for mercurial: 
@@ -63,7 +64,7 @@ import org.netbeans.modules.mercurial.util.HgUtils;
  * 
  * @author John Rice
  */
-public class StatusAction extends AbstractAction {
+public class StatusAction extends ContextAction {
     
     private final VCSContext context;
 
@@ -72,9 +73,7 @@ public class StatusAction extends AbstractAction {
         putValue(Action.NAME, name);
     }
     
-    public void actionPerformed(ActionEvent ev) {
-        if(!Mercurial.getInstance().isGoodVersionAndNotify()) return;
-
+    public void performAction(ActionEvent ev) {
         File [] files = context.getRootFiles().toArray(new File[context.getRootFiles().size()]);
         if (files == null || files.length == 0) return;
                 
@@ -87,12 +86,7 @@ public class StatusAction extends AbstractAction {
     }
     
     public boolean isEnabled() {
-        // If it's a mercurial managed repository enable action
-        File root = HgUtils.getRootFile(context);
-        if (root == null)
-            return false;
-        else
-            return true;
+        return HgUtils.getRootFile(context) != null;
     } 
 
     /**

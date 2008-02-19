@@ -44,9 +44,8 @@ import java.awt.Color;
 import java.awt.Dialog;
 import java.awt.EventQueue;
 import java.io.File;
-import java.util.List;
 import java.util.Locale;
-import java.util.prefs.Preferences;
+import java.util.Set;
 import javax.swing.AbstractListModel;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
@@ -73,7 +72,6 @@ import org.openide.util.RequestProcessor;
 public class RubyPlatformCustomizer extends JPanel {
     
     private static final String LAST_PLATFORM_DIRECTORY = "lastPlatformDirectory"; // NOI18N
-    private static final String FIRST_TIME_KEY = "platform-manager-called-first-time"; // NOI18N
     
     private static String lastSelectedPlatformID;
     
@@ -120,10 +118,8 @@ public class RubyPlatformCustomizer extends JPanel {
         });
 
         // run platform detection is this is the first time
-        Preferences preferences = Util.getPreferences();
-        if (preferences.getBoolean(FIRST_TIME_KEY, true)) {
+        if (Util.isFirstPlatformTouch()) {
             performPlatformDetection();
-            preferences.putBoolean(FIRST_TIME_KEY, false);
         } else {
             setAutoDetecting(false);
         }
@@ -233,18 +229,18 @@ public class RubyPlatformCustomizer extends JPanel {
             return getPaths().size();
         }
 
-        void addPath(String path) {
-            platform.getGemManager().addRepository(path);
+        void addPath(File repo) {
+            platform.getGemManager().addGemPath(repo);
             super.fireIntervalAdded(this, 0, getSize());
         }
 
-        void removePath(String path) {
-            platform.getGemManager().removeRepository(path);
+        void removePath(File path) {
+            platform.getGemManager().removeGemPath(path);
             super.fireIntervalRemoved(this, 0, getSize());
         }
 
-        private List<String> getPaths() {
-            return platform.getGemManager().getRepositories();
+        private Set<File> getPaths() {
+            return platform.getGemManager().getGemPath();
         }
     }
 
@@ -627,7 +623,7 @@ public class RubyPlatformCustomizer extends JPanel {
         if (repo != null) {
             String absPath = repo.getAbsolutePath();
             if (!getGemPathListModel().getPaths().contains(absPath)) {
-                getGemPathListModel().addPath(absPath);
+                getGemPathListModel().addPath(repo);
                 refreshPlatform();
                 gemPathList.requestFocus();
                 gemPathList.setSelectedValue(absPath, true);
@@ -636,7 +632,7 @@ public class RubyPlatformCustomizer extends JPanel {
 }//GEN-LAST:event_addGemPathActionPerformed
 
     private void removeGemPathActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_removeGemPathActionPerformed
-        getGemPathListModel().removePath((String) gemPathList.getSelectedValue());
+        getGemPathListModel().removePath((File) gemPathList.getSelectedValue());
         refreshPlatform();
         if (getGemPathListModel().getSize() > 0) {
             gemPathList.setSelectedIndex(0);

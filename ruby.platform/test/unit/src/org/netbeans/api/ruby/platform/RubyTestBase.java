@@ -38,8 +38,11 @@
  */
 package org.netbeans.api.ruby.platform;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.Properties;
 import org.netbeans.api.ruby.platform.RubyPlatform.Info;
 import org.netbeans.junit.MockServices;
@@ -159,8 +162,20 @@ public abstract class RubyTestBase extends NbTestCase {
 
     protected static void installFakeFastRubyDebugger(RubyPlatform platform) throws IOException {
         String gemplaf = platform.isJRuby() ? "java" : "";
-        installFakeGem("ruby-debug-base", "0.10.0", gemplaf, platform);
-        installFakeGem("ruby-debug-ide", "0.1.10", gemplaf, platform);
+        installFakeGem("ruby-debug-base", RubyPlatform.RDEBUG_BASE_VERSION, gemplaf, platform);
+        installFakeGem("ruby-debug-ide", RubyPlatform.RDEBUG_IDE_VERSION, gemplaf, platform);
+    }
+
+    protected static void uninstallFakeGem(final String name, final String version, final String actualPlatform, final RubyPlatform platform) throws IOException {
+        FileObject gemHome = platform.getGemManager().getGemHomeFO();
+        String gemplaf = actualPlatform == null ? "" : "-" + actualPlatform;
+        FileObject gem = gemHome.getFileObject("specifications/" + name + '-' + version + gemplaf + ".gemspec");
+        gem.delete();
+        platform.getGemManager().reset();
+    }
+    
+    protected static void uninstallFakeGem(final String name, final String version, final RubyPlatform platform) throws IOException {
+        uninstallFakeGem(name, version, null, platform);
     }
 
     protected static void installFakeGem(final String name, final String version, final String actualPlatform, final RubyPlatform platform) throws IOException {
@@ -191,4 +206,16 @@ public abstract class RubyTestBase extends NbTestCase {
         return binaryF;
     }
 
+    /** Copy-pasted from APISupport. */
+    protected static String slurp(File file) throws IOException {
+        InputStream is = new FileInputStream(file);
+        try {
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            FileUtil.copy(is, baos);
+            return baos.toString("UTF-8");
+        } finally {
+            is.close();
+        }
+    }
+    
 }

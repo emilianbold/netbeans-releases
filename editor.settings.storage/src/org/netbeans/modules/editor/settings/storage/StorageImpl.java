@@ -163,7 +163,7 @@ public final class StorageImpl <K extends Object, V extends Object> {
     private List<Object []> scan(MimePath mimePath, String profile, boolean scanModules, boolean scanUsers) {
         Map<String, List<Object []>> files = new HashMap<String, List<Object []>>();
 
-        SettingsType.getLocator(storageDescription).scan(baseFolder, mimePath.getPath(), profile, true, scanModules, scanUsers, files);
+        SettingsType.getLocator(storageDescription).scan(baseFolder, mimePath.getPath(), profile, true, scanModules, scanUsers, mimePath.size() > 1, files);
         assert files.size() <= 1 : "Too many results in the scan"; //NOI18N
         
         return files.get(profile);
@@ -184,39 +184,67 @@ public final class StorageImpl <K extends Object, V extends Object> {
 
             if (profileInfos != null) {
                 for(Object [] info : profileInfos) {
+                    assert info.length == 5;
                     FileObject profileHome = (FileObject) info[0];
                     FileObject settingFile = (FileObject) info[1];
                     boolean modulesFile = ((Boolean) info[2]).booleanValue();
+                    FileObject linkTarget = (FileObject) info[3];
+                    boolean legacyFile = ((Boolean) info[4]).booleanValue();
+                    
+                    if (linkTarget != null) {
+                        // link to another mimetype
+                        MimePath linkedMimePath = MimePath.parse(linkTarget.getPath().substring(baseFolder.getPath().length() + 1));
+                        assert linkedMimePath != mimePath : "linkedMimePath should not be the same as the original one"; //NOI18N
+                        
+                        if (linkedMimePath.size() == 1) {
+                            Map<K, V> linkedMap = load(linkedMimePath, profile, defaults);
+                            map.putAll(linkedMap);
+                            LOG.fine("Adding linked '" + storageDescription.getId() + "' from: '" + linkedMimePath.getPath() + "'"); //NOI18N
+                        } else {
+                            if (LOG.isLoggable(Level.WARNING)) {
+                                LOG.warning("Linking to other than top level mime types is prohibited. " //NOI18N
+                                    + "Ignoring editor settings link from '" + mimePath.getPath() //NOI18N
+                                    + "' to '" + linkedMimePath.getPath() + "'"); //NOI18N
+                            }
+                        }
+                    } else {
+                        // real settings file
+                        StorageReader<? extends K, ? extends V> reader = storageDescription.createReader(settingFile, mimePath.getPath());
 
-                    StorageReader<? extends K, ? extends V> reader = storageDescription.createReader(settingFile);
+                        // Load data from the settingFile
+                        Utils.load(settingFile, reader, !legacyFile);
+                        Map<? extends K, ? extends V> added = reader.getAdded();
+                        Set<? extends K> removed = reader.getRemoved();
 
-                    // Load data from the settingFile
-                    Utils.load(settingFile, reader);
-                    Map<? extends K, ? extends V> added = reader.getAdded();
-                    Set<? extends K> removed = reader.getRemoved();
+                        if (LOG.isLoggable(Level.FINE)) {
+                            LOG.fine("Loading '" + storageDescription.getId() + "' from: '" + settingFile.getPath() + "'"); //NOI18N
+                        }
 
-                    if (LOG.isLoggable(Level.FINE)) {
-                        LOG.fine("Loading '" + storageDescription.getId() + "' from: '" + settingFile.getPath() + "'"); //NOI18N
-                    }
+                        if (LOG.isLoggable(Level.FINEST)) {
+                            LOG.finest("--- Removing '" + storageDescription.getId() + "': " + removed); //NOI18N
+                        }
 
-                    if (LOG.isLoggable(Level.FINEST)) {
-                        LOG.finest("--- Removing '" + storageDescription.getId() + "': " + removed); //NOI18N
-                    }
+                        // First remove all entries marked as removed
+                        for(K key : removed) {
+                            map.remove(key);
+                        }
 
-                    // First remove all code templates marked as removed
-                    for(K key : removed) {
-                        map.remove(key);
-                    }
+                        if (LOG.isLoggable(Level.FINEST)) {
+                            LOG.finest("--- Adding '" + storageDescription.getId() + "': " + added); //NOI18N
+                        }
 
-                    if (LOG.isLoggable(Level.FINEST)) {
-                        LOG.finest("--- Adding '" + storageDescription.getId() + "': " + added); //NOI18N
-                    }
+                        // Then add all new entries
+                        for (K key : added.keySet()) {
+                            V value = added.get(key);
+                            V origValue = map.put(key, value);
+                            if (LOG.isLoggable(Level.FINEST) && origValue != null && !origValue.equals(value)) {
+                                LOG.finest("--- Replacing old entry for '" + key + "', orig value = '" + origValue + "', new value = '" + value + "'"); //NOI18N
+                            }
+                        }
 
-                    // Then add all new bindings
-                    map.putAll(added);
-
-                    if (LOG.isLoggable(Level.FINEST)) {
-                        LOG.finest("-------------------------------------"); //NOI18N
+                        if (LOG.isLoggable(Level.FINEST)) {
+                            LOG.finest("-------------------------------------"); //NOI18N
+                        }
                     }
                 }
             }
@@ -241,14 +269,15 @@ public final class StorageImpl <K extends Object, V extends Object> {
             Utils.diff(defaultData, data, added, removed);
 
             // Perform the operation
+            final String mimePathString = mimePath.getPath();
             final String settingFileName = SettingsType.getLocator(storageDescription).getWritableFileName(
-                mimePath.getPath(), profile, null, defaults);
+                mimePathString, profile, null, defaults);
             
             sfs.runAtomicAction(new FileSystem.AtomicAction() {
                 public void run() throws IOException {
                     if (added.size() > 0 || removed.size() > 0) {
                         FileObject f = FileUtil.createData(baseFolder, settingFileName);
-                        StorageWriter<K, V> writer = storageDescription.createWriter(f);
+                        StorageWriter<K, V> writer = storageDescription.createWriter(f, mimePathString);
                         writer.setAdded(added);
                         writer.setRemoved(removed.keySet());
                         Utils.save(f, writer);
@@ -287,10 +316,14 @@ public final class StorageImpl <K extends Object, V extends Object> {
                 sfs.runAtomicAction(new FileSystem.AtomicAction() {
                     public void run() throws IOException {
                         for(Object [] info : profileInfos) {
+                            assert info.length == 5;
                             FileObject profileHome = (FileObject) info[0];
                             FileObject settingFile = (FileObject) info[1];
                             boolean modulesFile = ((Boolean) info[2]).booleanValue();
+                            
+                            // will delete either a real settings file or a link file (.shadow)
                             settingFile.delete();
+                            
                             if (LOG.isLoggable(Level.FINE)) {
                                 LOG.fine("Deleting '" + storageDescription.getId() + "' file: '" + settingFile.getPath() + "'"); //NOI18N
                             }

@@ -43,8 +43,6 @@ package org.netbeans.modules.websvc.saas.ui.nodes;
 
 import java.awt.datatransfer.Transferable;
 import java.util.List;
-import org.openide.nodes.Node;
-import org.openide.nodes.NodeTransfer;
 import org.openide.util.HelpCtx;
 import org.openide.util.actions.SystemAction; 
 import java.awt.Image;
@@ -55,6 +53,7 @@ import javax.swing.Action;
 import org.netbeans.modules.websvc.saas.model.SaasGroup;
 import org.netbeans.modules.websvc.saas.model.SaasServicesModel;
 import org.netbeans.modules.websvc.saas.spi.SaasNodeActionsProvider;
+import org.netbeans.modules.websvc.saas.ui.actions.AddGroupAction;
 import org.netbeans.modules.websvc.saas.ui.actions.AddServiceAction;
 import org.netbeans.modules.websvc.saas.ui.actions.DeleteGroupAction;
 import org.netbeans.modules.websvc.saas.ui.actions.RenameGroupAction;
@@ -65,25 +64,37 @@ import org.openide.loaders.DataFolder;
 import org.openide.nodes.AbstractNode;
 import org.openide.util.Utilities; 
 import org.openide.util.datatransfer.PasteType;
+import org.openide.util.lookup.AbstractLookup;
+import org.openide.util.lookup.InstanceContent;
 
 /**
- * A second level node representing Group of Web Services
- * @author Winston Prakash
+ * Node representing Group of Web Services
+ * @author nam
  */
-public class SaasGroupNode extends AbstractNode implements Node.Cookie {
+public class SaasGroupNode extends AbstractNode {
     private final SaasGroup group;
 
-    /**
-     * Constructor for Saas Services root node
-     */
-    public SaasGroupNode() {
-        this(SaasServicesModel.getInstance().getRootGroup());
+    public SaasGroupNode(SaasGroup group) {
+        this(group, new InstanceContent());
     }
     
-    public SaasGroupNode(SaasGroup group) {
-        super(new SaasGroupNodeChildren(group));
+    protected SaasGroupNode(SaasGroup group, InstanceContent content) {
+        super(new SaasGroupNodeChildren(group), new AbstractLookup(content));
         this.group = group;
-        setName(group.getName());
+        content.add(group);
+    }    
+
+    @Override
+    public String getName() {
+        return group.getName();
+    }
+    
+    @Override
+    public void setName(String name){
+        if (group.isUserDefined()) {
+            super.setName(name);
+            group.setName(name);
+        }
     }
     
     @Override
@@ -119,13 +130,7 @@ public class SaasGroupNode extends AbstractNode implements Node.Cookie {
         }
         return Utilities.loadImage("org/netbeans/modules/websvc/saas/resources/folder-open.png");
     }
-    
-    @Override
-    public void setName(String name){
-        super.setName(name);
-        group.setName(name);
-    }
-    
+
     @Override
     public Action[] getActions(boolean context) {
         List<Action> actions = new ArrayList<Action>();
@@ -135,6 +140,7 @@ public class SaasGroupNode extends AbstractNode implements Node.Cookie {
             }
         }
         actions.add(SystemAction.get(AddServiceAction.class));
+        actions.add(SystemAction.get(AddGroupAction.class));
         actions.add(SystemAction.get(DeleteGroupAction.class));
         actions.add(SystemAction.get(RenameGroupAction.class));
         return actions.toArray(new Action[actions.size()]);
@@ -142,7 +148,7 @@ public class SaasGroupNode extends AbstractNode implements Node.Cookie {
     
     @Override
     public boolean canDestroy() {
-        return true;
+        return group.isUserDefined();
     }
     
     @Override

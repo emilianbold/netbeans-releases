@@ -290,7 +290,6 @@ public abstract class BpelNode<T>
     private String cachedShortDescription;
     private String cachedHtmlDisplayName;
     private Object NAME_LOCK = new Object();
-//    private BPELValidationListener validationListener;
     private ChangeValidationListener validationListener;
     private boolean isErrorBadged;
     private boolean isWarningBadged;

@@ -52,6 +52,7 @@ import java.util.Map;
 import java.util.Set;
 import org.netbeans.api.ruby.platform.RubyPlatform;
 import org.netbeans.api.ruby.platform.RubyPlatformManager;
+import org.netbeans.modules.ruby.platform.gems.GemManager;
 import org.netbeans.modules.ruby.railsprojects.server.spi.RubyInstance;
 import org.netbeans.modules.ruby.railsprojects.server.spi.RubyInstanceProvider;
 import org.openide.util.lookup.Lookups;
@@ -65,9 +66,10 @@ import org.openide.util.lookup.Lookups;
  * 
  * @author peterw99, Erno Mononen
  */
-class ServerRegistry implements VetoableChangeListener {
+public class ServerRegistry implements VetoableChangeListener {
 
     private static ServerRegistry defaultRegistry; 
+
     private ServerRegistry() {
     }
 
@@ -108,7 +110,7 @@ class ServerRegistry implements VetoableChangeListener {
         return result;
     }
     
-    RubyInstance getServer(String serverId, RubyPlatform platform) {
+    public RubyInstance getServer(String serverId, RubyPlatform platform) {
 
         for (RubyInstanceProvider provider : Lookups.forPath("Servers/Ruby").lookupAll(RubyInstanceProvider.class)) {
             RubyInstance instance = provider.getInstance(serverId); 
@@ -165,7 +167,12 @@ class ServerRegistry implements VetoableChangeListener {
         }
 
         private void initMongrel() {
-            String mongrelVersion = platform.getGemManager().getVersion(Mongrel.GEM_NAME);
+            GemManager gemManager = platform.getGemManager();
+            if (gemManager == null) {
+                return;
+            }
+            
+            String mongrelVersion = gemManager.getVersion(Mongrel.GEM_NAME);
             if (mongrelVersion == null) {
                 // remove all mongrels
                 for (Iterator<RubyServer> it = servers.iterator(); it.hasNext(); ) {

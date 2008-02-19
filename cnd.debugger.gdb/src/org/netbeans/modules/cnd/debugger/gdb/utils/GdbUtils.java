@@ -278,7 +278,7 @@ public class GdbUtils {
             }
             key = info.substring(tstart, i - 1);
             if ((ch = info.charAt(i++)) == '{') {
-                tend = findMatchingCurly(info, i) - 1;
+                tend = findMatchingCurly(info, i);
             } else if (ch == '"') {
                 tend = findEndOfString(info, i);
             } else if (ch == '[') {
@@ -838,5 +838,10 @@ public class GdbUtils {
             }
         }
         return -1;
+    }
+    
+    public static String threadId() {
+        Thread cur = Thread.currentThread();
+        return cur.getName() + ':' + Long.toString(cur.getId());
     }
 }

@@ -42,6 +42,7 @@ package org.netbeans.modules.mercurial.ui.properties;
 
 import org.netbeans.modules.versioning.spi.VCSContext;
 import org.netbeans.modules.mercurial.util.HgUtils;
+import org.netbeans.modules.mercurial.ui.actions.ContextAction;
 
 import javax.swing.*;
 import java.io.File;
@@ -59,7 +60,7 @@ import org.openide.util.HelpCtx;
  * 
  * @author John Rice
  */
-public class PropertiesAction extends AbstractAction {
+public class PropertiesAction extends ContextAction {
     
     private final VCSContext context;
 
@@ -68,8 +69,7 @@ public class PropertiesAction extends AbstractAction {
         putValue(Action.NAME, name);
     }
     
-    public void actionPerformed(ActionEvent e) {
-        if(!Mercurial.getInstance().isGoodVersionAndNotify()) return;
+    public void performAction(ActionEvent e) {
         File root = HgUtils.getRootFile(context);
         if (root == null) {
             return;
@@ -107,6 +107,7 @@ public class PropertiesAction extends AbstractAction {
         dialog.pack();
         dialog.setVisible(true);
         if (dd.getValue() == okButton) {
+            hgProperties.updateLastSelection();
             hgProperties.setProperties();
         }
     }

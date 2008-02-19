@@ -54,18 +54,11 @@ import java.security.Permission;
 import java.security.PrivilegedActionException;
 import java.security.PrivilegedExceptionAction;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
-import java.util.prefs.PreferenceChangeEvent;
-import java.util.prefs.PreferenceChangeListener;
-import java.util.prefs.Preferences;
 import org.openide.util.Lookup;
-import org.openide.util.Lookup.Item;
-import org.openide.util.NbPreferences;
 
 /** NetBeans security manager implementation.
 * @author Ales Novak, Jesse Glick
@@ -109,12 +102,10 @@ public class TopSecurityManager extends SecurityManager {
             if (delegates.contains(sm)) throw new SecurityException();
             delegates.add(sm);
             if (fsSecManager == null) {
-                Lookup.Result<SecurityManager> res = Lookup.getDefault().lookup(new Lookup.Template(SecurityManager.class));
-                Iterator<? extends Item<SecurityManager>> it = res.allItems().iterator();
-                for (; it.hasNext();) {
-                    Lookup.Item<SecurityManager> item = it.next();
+                for (Lookup.Item<SecurityManager> item : Lookup.getDefault().lookupResult(SecurityManager.class).allItems()) {
                     if (item != null && "org.netbeans.modules.masterfs.filebasedfs.utils.FileChangedManager".equals(item.getId())) {//NOI18N
                         fsSecManager = item.getInstance();
+                        break;
                     }
                 }
                 assert fsSecManager != null;
@@ -308,8 +299,6 @@ public class TopSecurityManager extends SecurityManager {
     public @Override void checkRead(FileDescriptor fd) {
     }
 
-    private static Map m = new HashMap();
-    private static PreferenceChangeListener pcl = null;
     
     public @Override void checkWrite(FileDescriptor fd) {
     }
@@ -317,7 +306,6 @@ public class TopSecurityManager extends SecurityManager {
     /** The method has awful performance in super class */
     public @Override void checkDelete(String file) {
         notifyDelete(file);
-        prepareForWarning(file);
         try {
             checkPermission(allPermission);
             return;
@@ -325,44 +313,10 @@ public class TopSecurityManager extends SecurityManager {
             super.checkDelete(file);
         }
     }
-    
-    static {
-        registerPrintingWarnings();
-    }
-    
-    private static void prepareForWarning(String file) {        
-        Exception exc = new Exception(file);
-        StackTraceElement[] elems = exc.getStackTrace();
-        for (int i = 0; i < elems.length; i++) {
-            StackTraceElement stackTraceElement = elems[i];
-            if (stackTraceElement.getClassName().contains("org.netbeans.modules.masterfs")) {
-                return;
-            }
-        }
-        m.put(file, exc);
-    }
-    
-    private static void registerPrintingWarnings() {
-        final Preferences retval = NbPreferences.forModule(TopSecurityManager.class);        
-        if (pcl == null) {
-            retval.addPreferenceChangeListener(pcl = new PreferenceChangeListener() {
-                public void preferenceChange(PreferenceChangeEvent evt) {
-                    if ("warning".equals(evt.getKey())) {
-                        Exception exc = (Exception) m.get(evt.getNewValue());
-                        if (exc != null) {
-                            exc.printStackTrace();
-                        }
-                        retval.put("warning", "null");
-                    }
-                }
-            });
-        }
-    }
-    
+           
     /** The method has awful performance in super class */
     public @Override void checkWrite(String file) {
         notifyWrite(file);
-        prepareForWarning(file);
         try {
             checkPermission(allPermission);
             return;

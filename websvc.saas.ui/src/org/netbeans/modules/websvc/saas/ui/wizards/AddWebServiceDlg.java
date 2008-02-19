@@ -63,7 +63,7 @@ import javax.swing.filechooser.FileFilter;
 import javax.swing.*;
 import org.netbeans.modules.websvc.saas.model.SaasGroup;
 import org.netbeans.modules.websvc.saas.model.SaasServicesModel;
-import org.netbeans.modules.websvc.saas.util.SaasUtil;
+import org.netbeans.modules.websvc.saas.util.WsdlUtil;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -129,7 +129,7 @@ public class AddWebServiceDlg extends JPanel  implements ActionListener {
         initComponents();
         myInitComponents();
         this.groupId = groupId;
-        jaxRPCAvailable = SaasUtil.isJAXRPCAvailable();
+        jaxRPCAvailable = WsdlUtil.isJAXRPCAvailable();
     }
 
 

@@ -51,10 +51,16 @@ import org.openide.util.Lookup;
  * @author Alexander Simon
  */
 public class EditorOptionsPanelController extends OptionsPanelController {
-    private EditorOptionsPanel panel = new EditorOptionsPanel(this);
+    private EditorPropertySheet panel;
+    
     private final PropertyChangeSupport pcs = new PropertyChangeSupport(this);
     private boolean changed;
-                    
+
+    
+    public EditorOptionsPanelController(){
+         panel = new EditorPropertySheet(this);
+    }
+    
     public void update() {
         changed = false;
 	panel.load();

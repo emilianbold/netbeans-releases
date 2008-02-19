@@ -38,11 +38,18 @@
  */
 package org.netbeans.modules.websvc.saas.util;
 
+import java.awt.Image;
+import java.beans.BeanInfo;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBElement;
 import javax.xml.bind.JAXBException;
@@ -55,12 +62,23 @@ import javax.xml.parsers.SAXParserFactory;
 import javax.xml.transform.sax.SAXSource;
 import org.netbeans.modules.websvc.saas.model.Saas;
 import org.netbeans.modules.websvc.saas.model.SaasGroup;
+import org.netbeans.modules.websvc.saas.model.SaasServicesModel;
+import org.netbeans.modules.websvc.saas.model.WadlSaas;
+import org.netbeans.modules.websvc.saas.model.WadlSaasMethod;
 import org.netbeans.modules.websvc.saas.model.jaxb.Group;
 import org.netbeans.modules.websvc.saas.model.jaxb.SaasServices;
 import org.netbeans.modules.websvc.saas.model.wadl.Application;
+import org.netbeans.modules.websvc.saas.model.wadl.Method;
+import org.netbeans.modules.websvc.saas.model.wadl.Param;
+import org.netbeans.modules.websvc.saas.model.wadl.ParamStyle;
+import org.netbeans.modules.websvc.saas.model.wadl.RepresentationType;
+import org.netbeans.modules.websvc.saas.model.wadl.Resource;
+import org.netbeans.modules.websvc.saas.spi.SaasNodeActionsProvider;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
+import org.openide.util.Utilities;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.XMLReader;
@@ -75,16 +93,19 @@ public class SaasUtil {
         if (input == null) {
             return null;
         }
-        InputStream in = input.getInputStream();
+        InputStream in = null;
         try {
-            JAXBException jbex = null;
+            Exception jbex = null;
             try {
+                in = input.getInputStream();
                 T t = loadJaxbObject(in, type, includeAware);
                 if (t != null) {
                     return t;
                 }
             } catch (JAXBException ex) {
                 jbex = ex;
+            } catch (IOException ioe) {
+                jbex = ioe;
             }
             String msg = NbBundle.getMessage(SaasUtil.class, "MSG_ErrorLoadingJaxb", type.getName(), input.getPath());
             IOException ioe = new IOException(msg);
@@ -107,6 +128,8 @@ public class SaasUtil {
         JAXBContext jc = JAXBContext.newInstance(type.getPackage().getName());
         Unmarshaller unmarshaller = jc.createUnmarshaller();
         Object o;
+        //TODO fix claspath: http://www.jroller.com/navanee/entry/unsupportedoperationexception_this_parser_does_not
+        includeAware = false;
         if (includeAware) {
             SAXSource ss = getSAXSourceWithXIncludeEnabled(in);
             o = unmarshaller.unmarshal(ss);
@@ -128,6 +151,7 @@ public class SaasUtil {
         try {
             SAXParserFactory spf = SAXParserFactory.newInstance();
             spf.setNamespaceAware(true);
+//TODO: fix classpath http://www.jroller.com/navanee/entry/unsupportedoperationexception_this_parser_does_not            
             spf.setXIncludeAware(true);
             SAXParser saxParser = spf.newSAXParser();
             XMLReader xmlReader = saxParser.getXMLReader();
@@ -144,13 +168,14 @@ public class SaasUtil {
         if (input == null) {
             return null;
         }
-        return loadJaxbObject(input, SaasGroup.class, false);
+        Group g = loadJaxbObject(input, Group.class, false);
+        return new SaasGroup(null, g);
     }
 
     public static SaasGroup loadSaasGroup(InputStream input) throws JAXBException {
         Group g = loadJaxbObject(input, Group.class);
         if (g != null) {
-            return new SaasGroup(null, g);
+            return new SaasGroup((SaasGroup)null, g);
         }
         return null;
     }
@@ -165,6 +190,7 @@ public class SaasUtil {
             }
         }
     }
+    
     public static final QName QNAME_GROUP = new QName(Saas.NS_SAAS, "group");
 
     public static void saveSaasGroup(SaasGroup saasGroup, OutputStream output) throws JAXBException {
@@ -174,6 +200,12 @@ public class SaasUtil {
         marshaller.marshal(jbe, output);
     }
 
+    public static void saveSaas(Saas saas, FileObject file) throws IOException, JAXBException {
+        JAXBContext jc = JAXBContext.newInstance(SaasServices.class.getPackage().getName());
+        Marshaller marshaller = jc.createMarshaller();
+        marshaller.marshal(saas.getDelegate(), file.getOutputStream());
+    }
+    
     public static Application loadWadl(FileObject wadlFile) throws IOException {
         return loadJaxbObject(wadlFile, Application.class, true);
     }
@@ -189,4 +221,208 @@ public class SaasUtil {
     public static SaasServices loadSaasServices(InputStream in) throws JAXBException {
         return loadJaxbObject(in, SaasServices.class, true);
     }
+
+    private static Lookup.Result<SaasNodeActionsProvider> extensionsResult = null;
+    public static Collection<? extends SaasNodeActionsProvider> getSaasNodeActionsProviders() {
+        if (extensionsResult == null) {
+            extensionsResult = Lookup.getDefault().lookupResult(SaasNodeActionsProvider.class);
+        }
+        return extensionsResult.allInstances();
+    }
+    
+    /*public static <T> T fromXPath(Object root, String xpath, Class<T> type) {
+        JXPathContext context = JXPathContext.newContext(root);
+        context.registerNamespace("", Saas.NS_WADL);
+        return type.cast(context.getValue(xpath));
+    }*/
+
+    public static Method wadlMethodFromIdRef(Application app, String methodIdRef) {
+        String methodId = methodIdRef;
+        if (methodId.charAt(0) == '#') {
+            methodId = methodId.substring(1);
+        }
+        Method result = null;
+        for (Object o : app.getResourceTypeOrMethodOrRepresentation()) {
+            if (o instanceof Method) {
+                Method m = (Method) o;
+                if (methodId.equals(m.getId())) {
+                    return m;
+                }
+            }
+        }
+        for (Resource base : app.getResources().getResource()) {
+            result = findMethodById(base, methodId);
+            if (result != null) {
+                return result;
+            }
+        }
+        return null;
+    }
+    
+    static Method findMethodById(Resource base, String methodId) {
+        for (Object o : base.getMethodOrResource()) {
+            if (o instanceof Method) {
+                Method m = (Method)o;
+                if (methodId.equals(m.getId())) {
+                    return m;
+                }
+                continue;
+            } else {
+                Method m = findMethodById((Resource)o, methodId);
+                if (m != null) {
+                    return m;
+                }
+            }
+        }
+        return null;
+    }
+    
+    public static Method wadlMethodFromXPath(Application app, String xpath) {
+        String paths[] = xpath.split("/");
+        Resource current = null;
+        for (int pathIndex = 0; pathIndex < paths.length; pathIndex++) {
+            String path = paths[pathIndex];
+            if ("application".equals(path) || path.length() == 0 || "resources".equals(path)) {
+                continue;
+            } else if (path.startsWith("resource[")) {
+                int i = getIndex(path);
+                if (i > -1) {
+                    List<Resource> resources = getCurrentResources(app, current);
+                    if (i < resources.size()) {
+                        current = resources.get(i);
+                        continue;
+                    }    
+                }
+                return null;
+            } else if (path.startsWith("method[")) {
+                int iTarget = getIndex(path);
+                if (iTarget > -1) {
+                    int i = 0;
+                    for (Object o : current.getMethodOrResource()) {
+                        if (o instanceof Method) {
+                            if (i == iTarget) {
+                                if (pathIndex == (paths.length -1)) {
+                                    return (Method) o;
+                                } else {
+                                    return null;
+                                }
+                            }
+                            if (i < iTarget) {
+                                i++;
+                            } else {
+                                return null;
+                            }
+                        }
+                    }
+                }
+                return null;
+            }
+        }
+        return null;
+    }
+    
+    static List<Resource> getCurrentResources(Application app, Resource current) {
+        if (current == null) {
+            return app.getResources().getResource();
+        }
+        List<Resource> result = new ArrayList<Resource>();
+        for (Object o : current.getMethodOrResource()) {
+            if (o instanceof Resource) {
+                result.add((Resource)o);
+            }
+        }
+        return result;
+    }
+    
+    static int getIndex(String path) {
+        int iOpen = path.indexOf('[');
+        int iClose = path.indexOf(']');
+        if (iOpen < 0 || iClose < 0 || iClose <= iOpen) {
+            return -1;
+        }
+        try {
+            return Integer.valueOf(path.substring(iOpen+1, iClose)) - 1; //xpath index is 1-based
+        } catch (NumberFormatException e) {
+            return -1;
+        }
+    }
+
+    public static Set<String> getMediaTypesFromJAXBElement(List<JAXBElement<RepresentationType>> repElements) {
+        Set<String> result = new HashSet<String>();
+        for (JAXBElement<RepresentationType> repElement : repElements) {
+            result.add(repElement.getValue().getMediaType());
+        }
+        return result;
+    }
+    
+    public static Set<String> getMediaTypes(List<RepresentationType> repTypes) {
+        Set<String> result = new HashSet<String>();
+        for (RepresentationType repType : repTypes) {
+            result.add(repType.getMediaType());
+        }
+        return result;
+    }
+    
+    public static String getSignature(WadlSaasMethod method) {
+        WadlSaas saas = method.getSaas();
+        Resource[] paths = method.getResourcePath();
+        Method m = method.getWadlMethod();
+        
+        StringBuffer sb = new StringBuffer();
+        sb.append(m.getName());
+        sb.append(" : ");
+        try {
+            sb.append(saas.getWadlModel().getResources().getBase());
+        } catch(IOException ex) {
+            // should not happen at this point
+        }
+        for (Resource r : paths) {
+            sb.append(r.getPath());
+            sb.append('/');
+        }
+        Param[] params = m.getRequest().getParam().toArray(new Param[m.getRequest().getParam().size()]);
+        if (params.length > 0) {
+            sb.append(" (");
+        }
+        for (int i=0 ; i < params.length; i++) {
+            Param p = params[i];
+            if (i > 0) {
+                sb.append(",");
+            }
+            if (p.getStyle() == ParamStyle.TEMPLATE) {
+                sb.append('{');
+                sb.append(p.getName());
+                sb.append('}');
+            } else if (p.getStyle() == ParamStyle.QUERY) {
+                sb.append('?');
+                sb.append(p.getName());
+            } else if (p.getStyle() == ParamStyle.MATRIX) {
+                sb.append('[');
+                sb.append(p.getName());
+                sb.append(']');
+            } else if (p.getStyle() == ParamStyle.HEADER) {
+                sb.append('<');
+                sb.append(p.getName());
+                sb.append('>');
+            } else {
+                sb.append(p.getName());
+            }
+        }
+        if (params.length > 0) {
+            sb.append(" )");
+        }
+        return sb.toString();
+    }
+    
+    public static Image loadIcon(Saas saas, int type) {
+        String path = saas.getSaasMetadata().getIcon16();
+        if (type == BeanInfo.ICON_COLOR_32x32 || type == BeanInfo.ICON_MONO_32x32) {
+            path =  saas.getSaasMetadata().getIcon32();
+        }
+        if (path != null) {
+            return Utilities.loadImage(path);
+        }
+        return null;
+    }
 }
+

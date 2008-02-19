@@ -71,6 +71,7 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
+import javax.lang.model.element.TypeParameterElement;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
@@ -98,6 +99,7 @@ import org.netbeans.modules.j2ee.persistence.dd.PersistenceMetadata;
 import org.netbeans.modules.j2ee.persistence.dd.PersistenceUtils;
 import org.netbeans.modules.j2ee.persistence.dd.persistence.model_1_0.Persistence;
 import org.netbeans.modules.j2ee.persistence.dd.persistence.model_1_0.PersistenceUnit;
+import org.netbeans.modules.web.api.webmodule.ExtenderController;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.api.webmodule.WebProjectConstants;
 import org.netbeans.modules.web.jsf.JSFFrameworkProvider;
@@ -112,6 +114,8 @@ import org.netbeans.modules.web.jsf.palette.items.JsfForm;
 import org.netbeans.modules.web.jsf.palette.items.JsfTable;
 import org.netbeans.modules.web.jsf.wizards.JSFClientGenerator.AnnotationInfo;
 import org.netbeans.modules.web.jsf.wizards.JSFClientGenerator.TypeInfo;
+import org.netbeans.modules.web.spi.webmodule.WebModuleExtender;
+import org.openide.ErrorManager;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
@@ -209,7 +213,8 @@ public class JSFClientGenerator {
         //automatically add JSF framework if it is not added
         JSFFrameworkProvider fp = new JSFFrameworkProvider();
         if (!fp.isInWebModule(wm)) {
-            fp.extend(wm);
+            WebModuleExtender wme = fp.createWebModuleExtender(wm, ExtenderController.create());
+            wme.extend(wm);
         }
         
         controllerFileObject = generateControllerClass(fieldName, pkg, idGetter.get(0), persistenceUnit, simpleControllerName, 
@@ -220,7 +225,7 @@ public class JSFClientGenerator {
                 simpleEntityName, idGetter.get(0), managedBean, isInjection);
             
         final String indexJspToUse = addLinkToListJspIntoIndexJsp(wm, jsfFolder, simpleEntityName);
-        final String linkToIndex = indexJspToUse != null ? "<br>\n<a href=\"" + wm.getContextPath() + "/" + indexJspToUse + "\">Back to index</a>\n" : "";  //NOI18N
+        final String linkToIndex = indexJspToUse != null ? "<br />\n<a href=\"" + wm.getContextPath() + "/" + indexJspToUse + "\">Back to index</a>\n" : "";  //NOI18N
 
         generateListJsp(jsfRoot, classpathInfo, entityClass, simpleEntityName, managedBean, linkToIndex, fieldName, idProperty[0], doc);
         
@@ -250,7 +255,7 @@ public class JSFClientGenerator {
         FileObject documentBase = wm.getDocumentBase();
         FileObject indexjsp = documentBase.getFileObject(INDEX_PAGE); //NOI18N
         String indexjspString = INDEX_PAGE;
-        String find = "<h1>JSP Page</h1>"; // NOI18N
+        String find = "<title>JSP Page</title>"; // NOI18N
         if (indexjsp == null) {
             indexjsp = documentBase.getFileObject(WELCOME_JSF_PAGE); //NOI18N
             indexjspString = "faces/" + WELCOME_JSF_PAGE;
@@ -290,8 +295,8 @@ public class JSFClientGenerator {
                 + "</head>\n<body>\n<f:view>\n  <h:messages errorStyle=\"color: red\" infoStyle=\"color: green\" layout=\"table\"/>\n ");
         listSb.append("<h1>Listing " + simpleEntityName + "s</h1>\n");
         listSb.append("<h:form>\n");
-        listSb.append("<h:commandLink action=\"#{" + managedBean + ".createSetup}\" value=\"New " + simpleEntityName + "\"/>\n"
-                + linkToIndex + "<br>\n");
+        listSb.append("<h:outputText escape=\"false\" value=\"(No " + simpleEntityName + "s Found)<br />\" rendered=\"#{" + managedBean + ".itemCount == 0}\" />\n");
+        listSb.append("<h:panelGroup rendered=\"#{" + managedBean + ".itemCount > 0}\">\n");
         listSb.append(MessageFormat.format("<h:outputText value=\"Item #'{'{0}.firstItem + 1'}'..#'{'{0}.lastItem'}' of #'{'{0}.itemCount}\"/>"
                 + "&nbsp;\n"
                 + "<h:commandLink action=\"#'{'{0}.prev'}'\" value=\"Previous #'{'{0}.batchSize'}'\" rendered=\"#'{'{0}.firstItem >= {0}.batchSize'}'\"/>"
@@ -315,7 +320,10 @@ public class JSFClientGenerator {
                 JsfTable.createTable(controller, typeElement, managedBean + "." + fieldName, listSb, commands, "detailSetup");
             }
         }, true);
-        listSb.append("</h:dataTable>\n </h:form>\n</f:view>\n</body>\n</html>\n");
+        listSb.append("</h:dataTable>\n</h:panelGroup>\n");
+        listSb.append("<br />\n<h:commandLink action=\"#{" + managedBean + ".createSetup}\" value=\"New " + simpleEntityName + "\"/>\n"
+                + linkToIndex + "\n");
+        listSb.append("</h:form>\n</f:view>\n</body>\n</html>\n");
         
         try {
             doc.remove(0, doc.getLength());
@@ -353,18 +361,18 @@ public class JSFClientGenerator {
                 + "<html>\n<head>\n <meta http-equiv=\"Content-Type\" content=\"text/html; charset=UTF-8\" />\n"
                 + "<title>New " + simpleEntityName + "</title>\n"
                 + "</head>\n<body>\n<f:view>\n  <h:messages errorStyle=\"color: red\" infoStyle=\"color: green\" layout=\"table\"/>\n ");
-        newSb.append("<h1>New " + managedBean + "</h1>\n");
+        newSb.append("<h1>New " + simpleEntityName + "</h1>\n");
         newSb.append("<h:form>\n  <h:panelGrid columns=\"2\">\n");
         
         TypeElement typeElement = controller.getElements().getTypeElement(entityClass);
         JsfForm.createForm(controller, typeElement, JsfForm.FORM_TYPE_NEW, managedBean + "." + fieldName, newSb, true);
-        newSb.append("</h:panelGrid>\n");
+        newSb.append("</h:panelGrid>\n<br />\n");
         
         List<String> classNames = new ArrayList<String>();
         List<String> idProperties = new ArrayList<String>();
         for (ElementHandle<ExecutableElement> handle : toOneRelMethods) {
             ExecutableElement method = handle.resolve(controller);
-            ExecutableElement otherSide = JsfForm.getOtherSideOfRelation(controller.getTypes(), method, fieldAccess);
+            ExecutableElement otherSide = JsfForm.getOtherSideOfRelation(controller, method, fieldAccess);
             if (otherSide != null) {
                 TypeElement relClass = (TypeElement) otherSide.getEnclosingElement();
                 classNames.add(relClass.getQualifiedName().toString());
@@ -384,7 +392,7 @@ public class JSFClientGenerator {
                 }
             }
             newSb.append("<h:commandLink action=\"#{" + managedBean + ".createFrom" + 
-                    classNames.get(i) + "}\" value=\"Create\" rendered=\"#{" + managedBean + "." + fieldName + "." + idProperties.get(i) + " != null" + negativeCondition.toString() + "}\"/>\n");
+                    simpleClassName(classNames.get(i)) + "}\" value=\"Create\" rendered=\"#{" + managedBean + "." + fieldName + "." + idProperties.get(i) + " != null" + negativeCondition.toString() + "}\"/>\n");
             if (i > 0) {
                 newRenderDefaultOption.append(" and ");
             }
@@ -394,9 +402,9 @@ public class JSFClientGenerator {
         
 //      <h:commandLink action="#{comment.create}" value="Create" rendered="#{comment.comment.postId == null}"/>
         if (classNames.size() == 0) {
-            newSb.append("<h:commandLink action=\"#{" + managedBean + ".create}\" value=\"Create\"/>\n<br>\n");
+            newSb.append("<h:commandLink action=\"#{" + managedBean + ".create}\" value=\"Create\"/>\n<br />\n");
         } else {
-            newSb.append("<h:commandLink action=\"#{" + managedBean + ".create}\" value=\"Create\" rendered=\"#{" + newRenderDefaultOption.toString() + "}\"/>\n<br>\n");
+            newSb.append("<h:commandLink action=\"#{" + managedBean + ".create}\" value=\"Create\" rendered=\"#{" + newRenderDefaultOption.toString() + "}\"/>\n<br />\n");
         }
         
         newSb.append("<h:commandLink action=\"" + fieldName + "_list\" value=\"Show All " + simpleEntityName + "\"/>\n " + linkToIndex
@@ -438,13 +446,13 @@ public class JSFClientGenerator {
                 + "<html>\n<head>\n <meta http-equiv=\"Content-Type\" content=\"text/html; charset=UTF-8\" />\n"
                 + "<title>Edit " + simpleEntityName + "</title>\n"
                 + "</head>\n<body>\n<f:view>\n  <h:messages errorStyle=\"color: red\" infoStyle=\"color: green\" layout=\"table\"/>\n ");
-        editSb.append("<h1>Edit " + managedBean + "</h1>\n");
+        editSb.append("<h1>Edit " + simpleEntityName + "</h1>\n");
         editSb.append("<h:form>\n  <h:inputHidden value=\"#{" + managedBean + "." + fieldName + "}\" immediate=\"true\"/>\n"
                 + "<h:panelGrid columns=\"2\">\n");
         
         TypeElement typeElement = controller.getElements().getTypeElement(entityClass);
         JsfForm.createForm(controller, typeElement, JsfForm.FORM_TYPE_EDIT, managedBean + "." + fieldName, editSb, true);
-        editSb.append("</h:panelGrid>\n<h:commandLink action=\"#{" + managedBean + ".edit}\" value=\"Save\"/>\n<br>\n"
+        editSb.append("</h:panelGrid>\n<br />\n<h:commandLink action=\"#{" + managedBean + ".edit}\" value=\"Save\"/>\n<br />\n"
                 + "<h:commandLink action=\"" + fieldName + "_list\" value=\"Show All " + simpleEntityName + "\"/>\n" + linkToIndex
                 + "</h:form>\n </f:view>\n</body>\n</html>\n");
 
@@ -485,14 +493,14 @@ public class JSFClientGenerator {
                 + "<html>\n<head>\n <meta http-equiv=\"Content-Type\" content=\"text/html; charset=UTF-8\" />\n"
                 + "<title>Detail of " + simpleEntityName + "</title>\n"
                 + "</head>\n<body>\n<f:view>\n  <h:messages errorStyle=\"color: red\" infoStyle=\"color: green\" layout=\"table\"/>\n ");
-        detailSb.append("<h1>Detail of " + managedBean + "</h1>\n");
+        detailSb.append("<h1>Detail of " + simpleEntityName + "</h1>\n");
         detailSb.append("<h:form>\n  <h:panelGrid columns=\"2\">\n");
         
         TypeElement typeElement = controller.getElements().getTypeElement(entityClass);
         JsfForm.createForm(controller, typeElement, JsfForm.FORM_TYPE_DETAIL, managedBean + "." + fieldName, detailSb, true);
         detailSb.append("</h:panelGrid>\n");
         JsfForm.createTablesForRelated(controller, typeElement, JsfForm.FORM_TYPE_DETAIL, managedBean + "." + fieldName, idProperty, isInjection, detailSb);
-        detailSb.append("<h:commandLink action=\"" + fieldName + "_edit\" value=\"Edit\" />\n<br>\n"
+        detailSb.append("<br />\n<h:commandLink action=\"" + fieldName + "_edit\" value=\"Edit\" />\n<br>\n"
                 + "<h:commandLink action=\"" + fieldName + "_list\" value=\"Show All " + simpleEntityName + "\"/>\n" + linkToIndex
                 + "</h:form>\n </f:view>\n</body>\n</html>\n");
 
@@ -1006,6 +1014,7 @@ public class JSFClientGenerator {
                     StringBuffer updateRelatedInEditPre = new StringBuffer();
                     StringBuffer updateRelatedInEditPost = new StringBuffer();
                     StringBuffer updateRelatedInDestroy = new StringBuffer();
+                    StringBuffer initRelatedInCreateSetup = new StringBuffer();
 
                     List<ElementHandle<ExecutableElement>> allRelMethods = new ArrayList<ElementHandle<ExecutableElement>>(toOneRelMethods);
                     allRelMethods.addAll(toManyRelMethods);
@@ -1018,16 +1027,19 @@ public class JSFClientGenerator {
                     methodInfo = new MethodInfo("getDetail" + simpleEntityName + "s", publicModifier, "javax.faces.model.DataModel", null, null, null, "return model;", null, null);
                     modifiedClassTree = TreeMakerUtils.addMethod(modifiedClassTree, workingCopy, methodInfo);
                     
-                    //ensure imports -- mbohm: not working; only last one taking effect!
-                    TreeMakerUtils.createImport(workingCopy, "javax.faces.model.ListDataModel");
-                    TreeMakerUtils.createImport(workingCopy, "java.util.List");
-                    TreeMakerUtils.createImport(workingCopy, "java.util.ArrayList");
-                    TreeMakerUtils.createImport(workingCopy, "javax.persistence.Query");
-                    TreeMakerUtils.createImport(workingCopy, "javax.faces.application.FacesMessage");
-                    TreeMakerUtils.createImport(workingCopy, "javax.faces.context.FacesContext");
+                    String[] importFqs = {"javax.faces.model.ListDataModel",
+                                "java.util.ArrayList",
+                                "javax.persistence.Query",
+                                "javax.faces.application.FacesMessage",
+                                "javax.faces.context.FacesContext"
+                    };
+                    CompilationUnitTree modifiedImportCut = null;
+                    for (String importFq : importFqs) {
+                        modifiedImportCut = TreeMakerUtils.createImport(workingCopy, modifiedImportCut, importFq);
+                    }
                     
                     TypeInfo[] typeInfos = {new TypeInfo("java.util.Collection", new String[]{entityClass})};
-                    methodInfo = new MethodInfo("setDetail" + simpleEntityName + "s", publicModifier, new TypeInfo("void"), null, typeInfos, new String[]{"m"}, "model = new javax.faces.model.ListDataModel(new java.util.ArrayList(m));", null, null);
+                    methodInfo = new MethodInfo("setDetail" + simpleEntityName + "s", publicModifier, new TypeInfo("void"), null, typeInfos, new String[]{"m"}, "model = new ListDataModel(new ArrayList(m));", null, null);
                     modifiedClassTree = TreeMakerUtils.addMethod(modifiedClassTree, workingCopy, methodInfo);
                     
                     String bodyText = null;
@@ -1064,17 +1076,16 @@ public class JSFClientGenerator {
                         ElementHandle<ExecutableElement> handle = it.next();
                         ExecutableElement m = handle.resolve(workingCopy);
                         int multiplicity = JsfForm.isRelationship(workingCopy, m, isFieldAccess);
-                        ExecutableElement otherSide = JsfForm.getOtherSideOfRelation(workingCopy.getTypes(), m, isFieldAccess);
-                        //was not being executed in nb55, and is generating broken code now. comment out for the time being.
-                        /*
+                        ExecutableElement otherSide = JsfForm.getOtherSideOfRelation(workingCopy, m, isFieldAccess);
+
                         if (otherSide != null) {
                             TypeElement relClass = (TypeElement)otherSide.getEnclosingElement();
                             boolean isRelFieldAccess = JsfForm.isFieldAccess(relClass);
                             int otherSideMultiplicity = JsfForm.isRelationship(workingCopy, otherSide, isRelFieldAccess);
                             TypeMirror t = m.getReturnType();
-                            List<? extends TypeParameterElement> typeParameters = m.getTypeParameters();
-                            boolean isCollection = typeParameters.size() > 0;
-                            String relType = JsfForm.stripCollection(t, workingCopy.getTypes()).toString();
+                            TypeMirror tstripped = JsfForm.stripCollection(t, workingCopy.getTypes());
+                            boolean isCollection = t != tstripped;
+                            String relType = tstripped.toString();
                             String simpleRelType = simpleClassName(relType); //just "Pavilion"
                             String relTypeReference = simpleRelType;
                             String mName = m.getSimpleName().toString();
@@ -1090,14 +1101,20 @@ public class JSFClientGenerator {
 //                                relFieldName + "." + otherSide.getName() + "().add(" + fieldName +");\n") +
 //                            relFieldName + "=em.merge(" + relFieldName +");\n}\n\n");
                             
-                            updateRelatedInCreate.append("\n//update property " + relFieldName + " of entity " + simpleRelType + "\n" +
-                                                        (isCollection ? "for(" + relTypeReference + " " + relFieldName + " : " + fieldName + "." + mName + "()){\n" :
-                                                            relTypeReference + " " + relFieldName + "=" + fieldName + "." + mName +"();\n" +
-                                                            "if (" + relFieldName + " != null) {\n") +
-                                                        relFieldName + " = em.merge(" + relFieldName +");\n" +
-                                                        ((otherSideMultiplicity == JsfForm.REL_TO_ONE) ? relFieldName + ".s" + otherName.substring(1) + "(" + fieldName+ ");\n" :
-                                                            relFieldName + "." + otherName + "().add(" + fieldName +");\n") +
-                                                        relFieldName + "=em.merge(" + relFieldName +");\n}\n\n");
+                            if (isCollection) {
+                                initRelatedInCreateSetup.append("if " + fieldName + "." + mName + "() == null) {\n" + 
+                                        fieldName + ".s" + mName.substring(1) + "(new ArrayList<" + relTypeReference + ">());\n}\n");
+                            }
+                            
+                            String relTypeInstanceName = relTypeReference.substring(0,1).toLowerCase() + relTypeReference.substring(1);
+                            updateRelatedInCreate.append("\n//update property " + relFieldName + " of entity " + fieldName + "\n" + //mbohm: why doesn't this show
+                                                        (isCollection ? "for(" + relTypeReference + " " + relTypeInstanceName + " : " + fieldName + "." + mName + "()){\n" :
+                                                            relTypeReference + " " + relTypeInstanceName + "=" + fieldName + "." + mName +"();\n" +
+                                                            "if (" + relTypeInstanceName + " != null) {\n") +
+                                                        relTypeInstanceName + " = em.merge(" + relTypeInstanceName +");\n" +
+                                                        ((otherSideMultiplicity == JsfForm.REL_TO_ONE) ? relTypeInstanceName + ".s" + otherName.substring(1) + "(" + fieldName+ ");\n" :
+                                                            relTypeInstanceName + "." + otherName + "().add(" + fieldName +");\n") +
+                                                        relTypeInstanceName + " = em.merge(" + relTypeInstanceName +");\n}\n\n");
                             
 //                    if (isCollection) {
 //                        updateRelatedInEditPre.append("\n Collection<" + relTypeReference + "> " + relFieldName + "sOld = em.find("
@@ -1128,18 +1145,18 @@ public class JSFClientGenerator {
 //                    } 
                             
                             if (isCollection) {
-                                updateRelatedInEditPre.append("\n Collection<" + relTypeReference + "> " + relFieldName + "sOld = em.find(" +
+                                updateRelatedInEditPre.append("\n Collection<" + relTypeReference + "> " + relTypeInstanceName + "sOld = em.find(" +
                                     entityReferenceName + ".class, " + fieldName + "." + idGetterName[0] + "())." + mName + "();\n");
-                                updateRelatedInEditPost.append("\n//update property " + relFieldName + " of entity " + simpleRelType + "\n" +
-                                    "Collection <" + relTypeReference + "> " + relFieldName + "sNew = " + fieldName + "." + mName + "();\n" +
-                                    "for(" + relTypeReference + " " + relFieldName + "New : " + relFieldName + "sNew) {\n" +
-                                    ((otherSideMultiplicity == JsfForm.REL_TO_ONE) ? relFieldName + "New.s" + otherName.substring(1) + "(" + fieldName+ ");\n" :
-                                        relFieldName + "New." + otherName + "().add(" + fieldName +");\n") +
-                                    relFieldName + "New=em.merge(" + relFieldName +"New);\n}\n" +
-                                    "for(" + relTypeReference + " " + relFieldName + "Old : " + relFieldName + "sOld) {\n" +
-                                    ((otherSideMultiplicity == JsfForm.REL_TO_ONE) ? relFieldName + "Old.s" + otherName.substring(1) + "(null);\n" :
-                                        relFieldName + "Old." + otherName + "().remove(" + fieldName +");\n") +
-                                    relFieldName + "Old=em.merge(" + relFieldName +"Old);\n}\n");
+                                updateRelatedInEditPost.append("\n//update property " + relTypeInstanceName + " of entity " + fieldName + "\n" + //mbohm: why doesn't this show up
+                                    "Collection <" + relTypeReference + "> " + relTypeInstanceName + "sNew = " + fieldName + "." + mName + "();\n" +
+                                    "for(" + relTypeReference + " " + relTypeInstanceName + "New : " + relTypeInstanceName + "sNew) {\n" +
+                                    ((otherSideMultiplicity == JsfForm.REL_TO_ONE) ? relTypeInstanceName + "New.s" + otherName.substring(1) + "(" + fieldName+ ");\n" :
+                                        relTypeInstanceName + "New." + otherName + "().add(" + fieldName +");\n") +
+                                    relTypeInstanceName + "New=em.merge(" + relTypeInstanceName +"New);\n}\n" +
+                                    "for(" + relTypeReference + " " + relTypeInstanceName + "Old : " + relTypeInstanceName + "sOld) {\n" +
+                                    ((otherSideMultiplicity == JsfForm.REL_TO_ONE) ? relTypeInstanceName + "Old.s" + otherName.substring(1) + "(null);\n" :
+                                        relTypeInstanceName + "Old." + otherName + "().remove(" + fieldName +");\n") +
+                                    relTypeInstanceName + "Old = em.merge(" + relTypeInstanceName +"Old);\n}\n");
                             } else {
                                 updateRelatedInEditPre.append("\n" + relTypeReference + " " + relFieldName + "Old = em.find("
                                     + entityReferenceName +".class, " + fieldName + "." + idGetterName[0] + "())." + mName + "();\n");
@@ -1152,7 +1169,7 @@ public class JSFClientGenerator {
                                     "if(" + relFieldName + "Old != null) {\n" +
                                     ((otherSideMultiplicity == JsfForm.REL_TO_ONE) ? relFieldName + "Old.s" + otherName.substring(1) + "(null);\n" :
                                         relFieldName + "Old." + otherName + "().remove(" + fieldName +");\n") +
-                                    relFieldName + "Old=em.merge(" + relFieldName +"Old);\n}\n");
+                                    relFieldName + "Old = em.merge(" + relFieldName +"Old);\n}\n");
                             } 
                             
 //                    updateRelatedInDestroy.append("\n//update property " + relFieldName + " of entity " + simpleRelType + "\n" +
@@ -1163,13 +1180,13 @@ public class JSFClientGenerator {
 //                                relFieldName + "." + otherSide.getName() + "().remove(" + fieldName +");\n") +
 //                            relFieldName + "=em.merge(" + relFieldName +");\n}\n\n");
 
-                            updateRelatedInDestroy.append("\n//update property " + relFieldName + " of entity " + simpleRelType + "\n" +
-                                    (isCollection ? "Collection<" + relTypeReference + "> " + relFieldName + "s" : relTypeReference + " " + relFieldName) + " = " + fieldName + "." + mName +"();\n" +
-                                    (isCollection ? "for(" + relTypeReference + " " + relFieldName + " : " + relFieldName + "s" : "if (" + relFieldName + " != null") + ") {\n" +
-                                    relFieldName + " = em.merge(" + relFieldName +");\n" +
-                                    ((otherSideMultiplicity == JsfForm.REL_TO_ONE) ? relFieldName + ".s" + otherName.substring(1) + "(null);\n" :
-                                        relFieldName + "." + otherName + "().remove(" + fieldName +");\n") +
-                                    relFieldName + "=em.merge(" + relFieldName +");\n}\n\n");
+                            updateRelatedInDestroy.append("\n//update property " + relFieldName + " of entity " + fieldName + "\n" +    //mbohm: why doesn't this show up
+                                    (isCollection ? "Collection<" + relTypeReference + "> " + relTypeInstanceName + "s" : relTypeReference + " " + relTypeInstanceName) + " = " + fieldName + "." + mName +"();\n" +
+                                    (isCollection ? "for(" + relTypeReference + " " + relTypeInstanceName + " : " + relTypeInstanceName + "s" : "if (" + relTypeInstanceName + " != null") + ") {\n" +
+                                    relTypeInstanceName + " = em.merge(" + relTypeInstanceName +");\n" +
+                                    ((otherSideMultiplicity == JsfForm.REL_TO_ONE) ? relTypeInstanceName + ".s" + otherName.substring(1) + "(null);\n" :
+                                        relTypeInstanceName + "." + otherName + "().remove(" + fieldName +");\n") +
+                                    relTypeInstanceName + " = em.merge(" + relTypeInstanceName +");\n}\n\n");
                             
 //                    Method destroyFromDetail = JMIGenerationUtil.createMethod(javaClass, "destroyFrom" + simpleRelType, Modifier.PUBLIC, "String"); //NOI18N
 //                    String relIdGetter = JsfForm.getIdGetter(isRelFieldAccess, relClass).getName();
@@ -1207,11 +1224,11 @@ public class JSFClientGenerator {
 //                    javaClass.getFeatures().add(controllerAccess);
                             
                             if (isInjection) {
-                                bodyText = "javax.faces.context.FacesContext context = javax.faces.context.FacesContext.getCurrentInstance();\n" + 
+                                bodyText = "FacesContext context = FacesContext.getCurrentInstance();\n" + 
                                         "return (" + simpleRelType +"Controller) context.getApplication().getELResolver().getValue(\n context.getELContext(), null, \"" + 
                                         getManagedBeanName(simpleRelType) +"\");\n";
                             } else {
-                                bodyText = "javax.faces.context.FacesContext context = javax.faces.context.FacesContext.getCurrentInstance();\n" + 
+                                bodyText = "FacesContext context = FacesContext.getCurrentInstance();\n" + 
                                         "return (" + simpleRelType +"Controller) context.getApplication().getVariableResolver().resolveVariable(\n context, \""  +
                                         getManagedBeanName(simpleRelType) +"\");\n";
                             }
@@ -1251,10 +1268,11 @@ public class JSFClientGenerator {
 //                                + "} finally {\n em.close();\n}\n");
 //                        javaClass.getFeatures().add(getRelatedAvailable);
                             
-                            if (multiplicity == JsfForm.REL_TO_MANY && otherSideMultiplicity == JsfForm.REL_TO_MANY) {
+                            if (multiplicity == JsfForm.REL_TO_MANY) {
                                 //methods needed to add items into N:M relationship
+                                modifiedImportCut = TreeMakerUtils.createImport(workingCopy, modifiedImportCut, "java.util.List");
                                 bodyText = "EntityManager em = getEntityManager();\n try{\n" + 
-                                        "javax.persistence.Query q = em.createQuery(\"select o from " + simpleRelType + " as o where " + 
+                                        "Query q = em.createQuery(\"select o from " + simpleRelType + " as o where " + 
                                         (otherSideMultiplicity == JsfForm.REL_TO_MANY ? ":param not member of o." + getPropNameFromMethod(otherName) + "\");\n" : 
                                             "o." + getPropNameFromMethod(otherName) + " <> :param or o." + getPropNameFromMethod(otherName) + " IS NULL\");\n") + 
                                         "q.setParameter(\"param\", " + fieldName + ");\n" + 
@@ -1282,12 +1300,13 @@ public class JSFClientGenerator {
 //                        javaClass.getFeatures().add(setRelatedToAdd);
                                 
                                 String relatedToAddName = getPropNameFromMethod(mName);
-                                modifiedClassTree = TreeMakerUtils.addVariable(modifiedClassTree, workingCopy, relatedToAddName, relTypeReference, publicModifier, null, null);
+                                String relatedCollectionType = relType + "[]";
+                                modifiedClassTree = TreeMakerUtils.addVariable(modifiedClassTree, workingCopy, relatedToAddName, relatedCollectionType, publicModifier, null, null);
 
-                                methodInfo = new MethodInfo(mName + "ToAdd", publicModifier, relTypeReference, null, null, null, "return " + relatedToAddName + ";\n", null, null);
+                                methodInfo = new MethodInfo(mName + "ToAdd", publicModifier, relatedCollectionType, null, null, null, "return " + relatedToAddName + ";\n", null, null);
                                 modifiedClassTree = TreeMakerUtils.addMethod(modifiedClassTree, workingCopy, methodInfo);
                                 
-                                methodInfo = new MethodInfo("s" + mName.substring(1) + "ToAdd", publicModifier, "void", null, new String[]{relTypeReference}, new String[]{relatedToAddName}, "this." + relatedToAddName + " = " + relatedToAddName + ";\n", null, null);
+                                methodInfo = new MethodInfo("s" + mName.substring(1) + "ToAdd", publicModifier, "void", null, new String[]{relatedCollectionType}, new String[]{relatedToAddName}, "this." + relatedToAddName + " = " + relatedToAddName + ";\n", null, null);
                                 modifiedClassTree = TreeMakerUtils.addMethod(modifiedClassTree, workingCopy, methodInfo);
                                 
 //                        Method addRelated = JMIGenerationUtil.createMethod(javaClass, "add" + m.getName().substring(3), Modifier.PUBLIC, "String");
@@ -1307,21 +1326,25 @@ public class JSFClientGenerator {
 //                                + "}\n } finally {\n em.close();\n }\n"
 //                                + "return \"" + fieldName + "_detail\";\n");
 //                        javaClass.getFeatures().add(addRelated);
-
-                                bodyText = "EntityManager em = getEntityManager();\n" +
-                                    "try {\n em.getTransaction().begin();\n" + 
+                                bodyText = "";
+                                bodyText = "if (" + relatedToAddName + " == null || " + relatedToAddName + ".length == 0) {\n" + 
+                                        "addErrorMessage(\"You must select one or more " + simpleRelType.toLowerCase() + "s to add.\");\n" + 
+                                        "return null;\n" + 
+                                        "}\n";
+                                bodyText += "EntityManager em = getEntityManager();\n" +
+                                    "try {\n utx.begin();\n" + 
                                     "for(" + simpleRelType + " entity : " + relatedToAddName + ") {\n" + 
                                     "entity." + (otherSideMultiplicity == JsfForm.REL_TO_MANY ? otherName + "().add(" + fieldName + ");\n" : "s" + otherName.substring(1) + "(" + fieldName + ");\n") + 
                                     "entity = em.merge(entity);\n" + 
                                     fieldName + "." + mName + "().add(entity);\n" + 
                                     "}\n" + 
                                     fieldName + " = em.merge(" + fieldName + ");\n" + 
-                                    "em.getTransaction().commit();\n" + 
+                                    "utx.commit();\n" + 
                                     setEntityName + "(" + fieldName + ");\n" + 
-                                    "addSuccessMessage(\"" + simpleRelType + " successfully added.\");\n" + 
+                                    "addSuccessMessage(\"" + simpleRelType + " successfully added.\");\n" +
                                     "} catch (Exception ex) {\n try {\n addErrorMessage(ex.getLocalizedMessage());\n" + 
-                                    "em.getTransaction().rollback();\n } catch (Exception e) {\n addErrorMessage(e.getLocalizedMessage());\n" + 
-                                    "}\n } finally {\n em.close();\n }\n" + 
+                                    "utx.rollback();\n } catch (Exception e) {\n addErrorMessage(e.getLocalizedMessage());\n" + 
+                                    "}\nreturn null;\n} finally {\n em.close();\n }\n" + 
                                     "return \"" + fieldName + "_detail\";\n";
                                 methodInfo = new MethodInfo("add" + mName.substring(3), publicModifier, "java.lang.String", null, null, null, bodyText, null, null);
                                 modifiedClassTree = TreeMakerUtils.addMethod(modifiedClassTree, workingCopy, methodInfo);
@@ -1351,22 +1374,22 @@ public class JSFClientGenerator {
                                 
                                 bodyText = "EntityManager em = getEntityManager();\n" + 
                                     "try {\n" + 
-                                    "em.getTransaction().begin();\n" + 
+                                    "utx.begin();\n" + 
                                     simpleRelType + " entity = (" + simpleRelType +") " + controllerAccessName + "().getDetail" + simpleRelType + "s().getRowData();\n" + 
                                     "entity." + (otherSideMultiplicity == JsfForm.REL_TO_MANY ? otherName + "().remove(" + fieldName + ");\n" : "s" + otherName.substring(1) + "(null);\n") + 
                                     "entity = em.merge(entity);\n" + 
                                     fieldName + "." + mName + "().remove(entity);\n" + 
                                     fieldName + " = em.merge(" + fieldName + ");\n" + 
-                                    "em.getTransaction().commit();\n" + 
+                                    "utx.commit();\n" + 
                                     setEntityName + "(" + fieldName + ");\n" + 
-                                    "addSuccessMessage(\"" + simpleEntityName + " successfully removed.\");\n" + 
+                                    "addSuccessMessage(\"" + simpleRelType + " successfully removed.\");\n" +
                                     "} catch (Exception ex) {\n" + 
                                     "try {\n" + 
                                     "addErrorMessage(ex.getLocalizedMessage());\n" + 
-                                    "em.getTransaction().rollback();\n" + 
+                                    "utx.rollback();\n" + 
                                     "} catch (Exception e) {\n" + 
                                     "addErrorMessage(e.getLocalizedMessage());\n" + 
-                                    "}\n } finally {\n em.close();\n }\n" + 
+                                    "}\nreturn null;\n} finally {\n em.close();\n }\n" + 
                                     "return \"" + fieldName + "_detail\";\n";
                                 methodInfo = new MethodInfo("remove" + mName.substring(3), publicModifier, "java.lang.String", null, null, null, bodyText, null, null);
                                 modifiedClassTree = TreeMakerUtils.addMethod(modifiedClassTree, workingCopy, methodInfo);
@@ -1412,7 +1435,7 @@ public class JSFClientGenerator {
                         } else {
                             ErrorManager.getDefault().log(ErrorManager.INFORMATIONAL, "Cannot detect other side of a relationship.");
                         }
-                        */
+
                     }
                     
                     methodInfo = new MethodInfo("get" + simpleEntityName, publicModifier, entityClass, null, null, null, "return " + fieldName + ";", null, null);
@@ -1425,7 +1448,9 @@ public class JSFClientGenerator {
 //            createSetup.setBodyText("this." + fieldName + " = new " + entityReferenceName + "();\n return \"" + fieldName + "_create\";"); //NOI18N
 //            javaClass.getFeatures().add(createSetup);
                     
-                    bodyText = "this." + fieldName + " = new " + entityReferenceName + "();\n return \"" + fieldName + "_create\";";
+                    bodyText = "this." + fieldName + " = new " + entityReferenceName + "();\n"; 
+                    bodyText += initRelatedInCreateSetup.toString();
+                    bodyText += "return \"" + fieldName + "_create\";";
                     methodInfo = new MethodInfo("createSetup", publicModifier, "java.lang.String", null, null, null, bodyText, null, null);
                     modifiedClassTree = TreeMakerUtils.addMethod(modifiedClassTree, workingCopy, methodInfo);
                     
@@ -1450,7 +1475,8 @@ public class JSFClientGenerator {
                     bodyText = "EntityManager em = getEntityManager();\n" + 
                             "try {\n " + BEGIN + "\n em.persist(" + fieldName + ");\n" + updateRelatedInCreate.toString() + COMMIT + "\n" +   //NOI18N
                             "addSuccessMessage(\"" + simpleEntityName + " was successfully created.\");\n"  + //NOI18N
-                            "} catch (Exception ex) {\n try {\n addErrorMessage(ex.getLocalizedMessage());\n" + ROLLBACK + "\n } catch (Exception e) {\n addErrorMessage(e.getLocalizedMessage());\n}\n } " +   //NOI18N
+                            "} catch (Exception ex) {\n try {\n addErrorMessage(ex.getLocalizedMessage());\n" + ROLLBACK + "\n } catch (Exception e) {\n addErrorMessage(e.getLocalizedMessage());\n" + 
+                            "}\nreturn null;\n} " +   //NOI18N
                             "finally {\n em.close();\n }\n" + 
                             "return \"" + fieldName + "_list\";";
                     methodInfo = new MethodInfo("create", publicModifier, "java.lang.String", null, null, null, bodyText, null, null);
@@ -1509,7 +1535,8 @@ public class JSFClientGenerator {
                         fieldName + " = em.merge(" + fieldName + ");\n " + 
                         updateRelatedInEditPost.toString() + COMMIT + "\n" +   //NOI18N
                         "addSuccessMessage(\"" + simpleEntityName + " was successfully updated.\");\n" +   //NOI18N
-                        "} catch (Exception ex) {\n try {\n addErrorMessage(ex.getLocalizedMessage());\n" + ROLLBACK + "\n } catch (Exception e) {\n addErrorMessage(e.getLocalizedMessage());\n}\n} " +   //NOI18N
+                        "} catch (Exception ex) {\n try {\n addErrorMessage(ex.getLocalizedMessage());\n" + ROLLBACK + "\n } catch (Exception e) {\n addErrorMessage(e.getLocalizedMessage());\n" + 
+                        "}\nreturn null;\n} " +   //NOI18N
                         "finally {\n em.close();\n }\n" +  //NOI18N
                         "return \"" + fieldName + "_list\";";
                     methodInfo = new MethodInfo("edit", publicModifier, "java.lang.String", null, null, null, bodyText, null, null);
@@ -1520,7 +1547,8 @@ public class JSFClientGenerator {
                         fieldName + " = em.merge(" + fieldName + ");\n" + updateRelatedInDestroy.toString() + 
                         "em.remove(" + fieldName + ");\n " + COMMIT + "\n" +   //NOI18N
                         "addSuccessMessage(\"" + simpleEntityName + " was successfully deleted.\");\n" +   //NOI18N
-                        "} catch (Exception ex) {\n try {\n addErrorMessage(ex.getLocalizedMessage());\n" + ROLLBACK + "\n } catch (Exception e) {\n addErrorMessage(e.getLocalizedMessage());\n}\n} " +   //NOI18N
+                        "} catch (Exception ex) {\n try {\n addErrorMessage(ex.getLocalizedMessage());\n" + ROLLBACK + "\n } catch (Exception e) {\n addErrorMessage(e.getLocalizedMessage());\n" + 
+                        "}\nreturn null;\n} " +   //NOI18N
                         "finally {\n em.close();\n }\n" +  //NOI18N
                         "return \"" + fieldName + "_list\";";
                     methodInfo = new MethodInfo("destroy", publicModifier, "java.lang.String", null, null, null, bodyText, null, null);
@@ -1575,9 +1603,9 @@ public class JSFClientGenerator {
 //            javaClass.getFeatures().add(getEntities);
 
                     String dmReferenceName = "javax.faces.model.DataModel";
-                    String ldmReferenceName = "javax.faces.model.ListDataModel";
+                    String ldmReferenceName = "ListDataModel";
                     bodyText = "EntityManager em = getEntityManager();\n try{\n" + 
-                        "javax.persistence.Query q = em.createQuery(\"select object(o) from " + simpleEntityName +" as o\");\n" + 
+                        "Query q = em.createQuery(\"select object(o) from " + simpleEntityName +" as o\");\n" + 
                         "q.setMaxResults(batchSize);\n" + 
                         "q.setFirstResult(firstItem);\n" + 
                         "model = new " + ldmReferenceName + "(q.getResultList());\n" + 
@@ -1612,14 +1640,14 @@ public class JSFClientGenerator {
 //            findById.getParameters().add(idParameter);
 //            javaClass.getFeatures().add(findById);
 
-                    bodyText = "javax.faces.application.FacesMessage facesMsg = new javax.faces.application.FacesMessage(javax.faces.application.FacesMessage.SEVERITY_ERROR, msg, msg);\n" + //NOI18N
-                        "javax.faces.context.FacesContext fc = javax.faces.context.FacesContext.getCurrentInstance();\n" + //NOI18N
+                    bodyText = "FacesMessage facesMsg = new FacesMessage(FacesMessage.SEVERITY_ERROR, msg, msg);\n" + //NOI18N
+                        "FacesContext fc = FacesContext.getCurrentInstance();\n" + //NOI18N
                         "fc.addMessage(null, facesMsg);"; //NOI18N
                     methodInfo = new MethodInfo("addErrorMessage", publicStaticModifier, "void", null, new String[]{"java.lang.String"}, new String[]{"msg"}, bodyText, null, null);
                     modifiedClassTree = TreeMakerUtils.addMethod(modifiedClassTree, workingCopy, methodInfo); 
 
-                    bodyText = "javax.faces.application.FacesMessage facesMsg = new javax.faces.application.FacesMessage(javax.faces.application.FacesMessage.SEVERITY_INFO, msg, msg);\n" + //NOI18N
-                        "javax.faces.context.FacesContext fc = javax.faces.context.FacesContext.getCurrentInstance();\n" + //NOI18N
+                    bodyText = "FacesMessage facesMsg = new FacesMessage(FacesMessage.SEVERITY_INFO, msg, msg);\n" + //NOI18N
+                        "FacesContext fc = FacesContext.getCurrentInstance();\n" + //NOI18N
                         "fc.addMessage(\"successInfo\", facesMsg);"; //NOI18N
                     methodInfo = new MethodInfo("addSuccessMessage", publicStaticModifier, "void", null, new String[]{"java.lang.String"}, new String[]{"msg"}, bodyText, null, null);
                     modifiedClassTree = TreeMakerUtils.addMethod(modifiedClassTree, workingCopy, methodInfo); 
@@ -1688,8 +1716,9 @@ public class JSFClientGenerator {
 //            // </editor-fold>
 
                     if (!alreadyGenerated) {
+                        modifiedImportCut = TreeMakerUtils.createImport(workingCopy, modifiedImportCut, "java.util.List");
                         bodyText = "EntityManager em = getEntityManager();\n try{\n" + 
-                                "java.util.List <" + relTypeReference + "> l = (java.util.List <" + relTypeReference +">) em.createQuery(\"select o from " + simpleRelType + " as o\").getResultList();\n" + 
+                                "List <" + relTypeReference + "> l = (List <" + relTypeReference +">) em.createQuery(\"select o from " + simpleRelType + " as o\").getResultList();\n" + 
                                 "SelectItem select[] = new SelectItem[l.size()];\n" + 
                                 "int i = 0;\n for(" + relTypeReference + " x : l) {\n" + 
                                 "select[i++] = new SelectItem(x);\n}\nreturn select;\n" + 
@@ -2749,10 +2778,11 @@ public class JSFClientGenerator {
             return wc.getTreeMaker().Modifiers(flags, annotationTrees);
         }
         
-        //currently not working
-        public static void createImport(WorkingCopy wc, String fq) {
-            CompilationUnitTree cut = wc.getCompilationUnit();
-            List<? extends ImportTree> imports = cut.getImports();
+        public static CompilationUnitTree createImport(WorkingCopy wc, CompilationUnitTree modifiedCut, String fq) {
+            if (modifiedCut == null) {
+                modifiedCut = wc.getCompilationUnit();  //use committed cut as modifiedCut
+            }
+            List<? extends ImportTree> imports = modifiedCut.getImports();
             boolean found = false;
             for (ImportTree imp : imports) {
                if (fq.equals(imp.getQualifiedIdentifier().toString())) {
@@ -2763,11 +2793,13 @@ public class JSFClientGenerator {
             if (!found) {
                 TreeMaker make = wc.getTreeMaker();
                 CompilationUnitTree newCut = make.addCompUnitImport(
-                    cut, 
+                    modifiedCut, 
                     make.Import(make.Identifier(fq), false)
-                );
-                wc.rewrite(cut, newCut);
+                );                                              //create a newCut from modifiedCut
+                wc.rewrite(wc.getCompilationUnit(), newCut);    //replace committed cut with newCut in change map
+                return newCut;                                  //return the newCut we just created
             }
+            return modifiedCut; //no newCut created from modifiedCut, so just return modifiedCut
         }
         
     }

@@ -587,7 +587,7 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                     p = JavaSource.Priority.MAX;
                     break;
             }
-            JavaSourceAccessor.INSTANCE.runSpecialTask (cw, p);
+            JavaSourceAccessor.getINSTANCE().runSpecialTask (cw, p);
         }
     }
     
@@ -732,28 +732,42 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
         Reference<Task> taskRef = url2CompileWithDepsTask.get(root);
         Task t = taskRef != null ? taskRef.get() : null;
         Collection<File> storedFiles;
-                
+        
         if (t == null || !t.cancel()) {
-            //the task either does not exist, or has been already started - create new one:
-            LOGGER.log(Level.FINE, "creating a new task for root: {0}", root.toExternalForm());
-            final Collection<File> storedFilesFin = storedFiles = new LinkedHashSet<File>();
-            t = WORKER.create(new Runnable() {
-                public void run() {
-                    synchronized (RepositoryUpdater.this) {
-                        compileScheduled--;
-                    }
-                    submit(Work.compileWithDeps(root, storedFilesFin));
+            if (lockRU == 0 || t != null) {
+                storedFiles = new LinkedHashSet<File>();
+                url2CompileWithDeps.put(root, storedFiles);
+            } else {
+                storedFiles = url2CompileWithDeps.get(root);
+                
+                if (storedFiles == null) {
+                    url2CompileWithDeps.put(root, storedFiles = new  LinkedList<File>());
                 }
-            });
-            url2CompileWithDepsTask.put(root, new WeakReference<Task>(t));
-            t.schedule(Integer.MAX_VALUE);
-            url2CompileWithDeps.put(root, storedFiles);
-            compileScheduled++;
+            }
+            
+            if (lockRU == 0) {
+                //the task either does not exist, or has been already started - create new one:
+                LOGGER.log(Level.FINE, "creating a new task for root: {0}", root.toExternalForm());
+                final Collection<File> storedFilesFin = storedFiles;
+                t = WORKER.create(new Runnable() {
+                    public void run() {
+                        synchronized (RepositoryUpdater.this) {
+                            compileScheduled--;
+                        }
+                        submit(Work.compileWithDeps(root, storedFilesFin));
+                    }
+                });
+                url2CompileWithDepsTask.put(root, new WeakReference<Task>(t));
+                compileScheduled++;
+            } else {
+                url2CompileWithDepsTask.remove(root);
+            }
         } else {
             storedFiles = url2CompileWithDeps.get(root);
-            assert storedFiles != null;
         }
         
+        assert storedFiles != null;
+
         storedFiles.add(file);
         
         if (lockRU > 0) {
@@ -808,6 +822,8 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
     public synchronized void unlockRU(final Runnable notifyFinished) {
         if (--lockRU > 0)
             return ;
+        
+        assert lockRU == 0;
         
         if (recompileToBeScheduled) {
             submit(Work.recompile());
@@ -1325,7 +1341,7 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                                         }
                                         else {
                                             CompileWorker.this.work = new Work (WorkType.COMPILE_CONT,null);
-                                            JavaSourceAccessor.INSTANCE.runSpecialTask (CompileWorker.this,JavaSource.Priority.MAX);
+                                            JavaSourceAccessor.getINSTANCE().runSpecialTask (CompileWorker.this,JavaSource.Priority.MAX);
                                             continuation = true;
                                             return null;
                                         }
@@ -1333,7 +1349,7 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                                 }
                                 if (!scanRoots()) {
                                     CompileWorker.this.work = new Work (WorkType.COMPILE_CONT,null);
-                                    JavaSourceAccessor.INSTANCE.runSpecialTask (CompileWorker.this,JavaSource.Priority.MAX);
+                                    JavaSourceAccessor.getINSTANCE().runSpecialTask (CompileWorker.this,JavaSource.Priority.MAX);
                                     continuation = true;
                                     return null;
                                 }
@@ -1373,7 +1389,7 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                                     }
                                     if (!scanRoots ()) {
                                         CompileWorker.this.work = new Work (WorkType.COMPILE_CONT,null);
-                                        JavaSourceAccessor.INSTANCE.runSpecialTask (CompileWorker.this,JavaSource.Priority.MAX);
+                                        JavaSourceAccessor.getINSTANCE().runSpecialTask (CompileWorker.this,JavaSource.Priority.MAX);
                                         continuation = true;
                                         return null;
                                     }
@@ -1405,7 +1421,7 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                                 final Document doc = editor.getDocument();
                                 JavaSource js = doc == null ? null : JavaSource.forDocument(doc);
                                 if (js != null) {
-                                    JavaSourceAccessor.INSTANCE.revalidate(js);
+                                    JavaSourceAccessor.getINSTANCE().revalidate(js);
                                 }
                             }
                             LOGGER.fine(String.format("Complete binary scan time: %d ms. Complete source scan time: %d ms.", cbst, csst));      //NOI18N
@@ -2060,7 +2076,7 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                         final CompilerListener listener = new CompilerListener ();
                         final JavaFileManager fm = ClasspathInfoAccessor.getINSTANCE().getFileManager(cpInfo);                
                         JavaFileObject active = FileObjects.nbFileObject(fo, rootFo, filter, false);
-                        JavacTaskImpl jt = JavaSourceAccessor.INSTANCE.createJavacTask(cpInfo, listener, sourceLevel);
+                        JavacTaskImpl jt = JavaSourceAccessor.getINSTANCE().createJavacTask(cpInfo, listener, sourceLevel);
                         jt.setTaskListener(listener);
                         Iterable<? extends CompilationUnitTree> trees = jt.parse(new JavaFileObject[] {active});
                         Iterable<? extends TypeElement> classes = jt.enter();
@@ -2713,7 +2729,7 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                             }
                         }
                         if (jt == null) {
-                            jt = JavaSourceAccessor.INSTANCE.createJavacTask(cpInfo, listener, sourceLevel);
+                            jt = JavaSourceAccessor.getINSTANCE().createJavacTask(cpInfo, listener, sourceLevel);
                             jt.setTaskListener(listener);
                             LOGGER.fine("Created new JavacTask for: " + FileUtil.getFileDisplayName(rootFo));    //NOI18N
                         }

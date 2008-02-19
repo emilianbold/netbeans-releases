@@ -50,115 +50,117 @@ package org.netbeans.modules.compapp.casaeditor.properties;
 import java.beans.PropertyEditorSupport;
 import java.util.Arrays;
 
-import java.util.List;
 import org.openide.explorer.propertysheet.ExPropertyEditor;
 import org.openide.explorer.propertysheet.PropertyEnv;
 
 /**
  * @author radval
- *
- * To change the template for this generated type comment go to
- * Window - Preferences - Java - Code Generation - Code and Comments
+ * @author jqian
  */
-public class ComboBoxEditor extends PropertyEditorSupport implements ExPropertyEditor {
-        PropertyEnv mEnv;
-        
-        /**
-         * Describe variable <code>vals</code> here.
-         *
-         */
-        private String[] vals = null;
+public class ComboBoxEditor<T> extends PropertyEditorSupport
+        implements ExPropertyEditor {
 
-        /**
-         * Creates a new <code>ListEditor</code> instance.
-         *
-         * @param values a <code>String[]</code> value
-         */
-        public ComboBoxEditor(String[] values) {
-            setValues(values);
-        }
-        
-        /**
-         * Creates a new <code>ListEditor</code> instance.
-         *
-         * @param values a <code>String[]</code> value
-         */
-        public ComboBoxEditor(List<String> values) {
-            this(values.toArray(new String[0]));
-        }
+    private PropertyEnv mEnv;
+    /**
+     * Describe variable <code>vals</code> here.
+     *
+     */
+    private T[] vals = null;
 
-        /**
-         * Describe <code>setValues</code> method here.
-         *
-         * @param values a <code>String[]</code> value
-         */
-        public void setValues(String[] values) {
-            vals = values;
-        }
+    public ComboBoxEditor() {
+    }
 
-        /**
-         * Returns all the values
-         *
-         * @return array of [yes, no]
-         */
-        @Override
-        public String[] getTags() {
-            return vals;
-        }
-
-        /**
-         * The special case here is, if there is no value set, then it
-         * is a "no"
-         *
-         * @return yes or no
-         */
-        @Override
-        public String getAsText() {
-            if (getValue() == null) {
-/*                if(vals != null && vals.length != 0) {
-                    return vals[0];
-                }*/
-                return "";
-            }
-            return getValue().toString();
-        }
-
-        /**
-         * Set the value from the PropertyEditor to the object
-         *
-         * @param t a <code>String</code> value
-         */
-        @Override
-        public void setAsText(String t) {
-            setValue(t);
-        }
-
-        @Override
-        public void setValue(Object t) { if (t==null) return; // TMP FIXME
-        if (t.equals("")) return;
-            if (!Arrays.asList(vals).contains(t)) {
-                throw new IllegalArgumentException("Illegal argument: " + t);
-            }
-            super.setValue(t);
-        }
-
-        /**
-         * Describe <code>supportsCustomEditor</code> method here.
-         *
-         * @return a <code>boolean</code> value
-         */
-        @Override
-        public boolean supportsCustomEditor() {
-            return false;
-        }
-
-        /**
-         * This method is called by the IDE to pass
-         * the environment to the property editor.
-         * @param env Environment passed by the ide.
-         */
-        public void attachEnv(PropertyEnv env) {
-            mEnv = env;
-        }
+    /**
+     * Creates a new <code>ListEditor</code> instance.
+     *
+     * @param values a <code>String[]</code> value
+     */
+    public ComboBoxEditor(T[] values) {
+        setValues(values);
+    }
     
+    /**
+     * Describe <code>setValues</code> method here.
+     *
+     * @param values a <code>String[]</code> value
+     */
+    public void setValues(T[] values) {
+        vals = values;
+    }
+
+    public T[] getValues() {
+        return vals;
+    }
+
+    /**
+     * Returns all the values
+     *
+     * @return array of all the options
+     */
+    @Override
+    public String[] getTags() {
+        if (vals == null) {
+            return new String[] {""};
+        }
+        
+        String[] ret = new String[vals.length];
+        for (int i = 0; i < vals.length; i++) {
+            ret[i] = vals[i].toString();
+        }
+        return ret;
+    }
+
+    /**
+     * The special case here is, if there is no value set, then it
+     * is a "no"
+     *
+     * @return yes or no
+     */
+    @Override
+    public String getAsText() {
+        if (getValue() == null) {
+            return "";
+        }
+        return getValue().toString();
+    }
+
+    /**
+     * Set the value from the PropertyEditor to the object
+     *
+     * @param t a <code>String</code> value
+     */
+    @Override
+    public void setAsText(String t) {
+        setValue(t);
+    }
+
+    @Override
+    public void setValue(Object t) {
+        if (t == null || vals == null) {
+            return;
+        }
+        if (!Arrays.asList(vals).contains(t)) {
+            return; //throw new IllegalArgumentException("Illegal argument: " + t);
+        }
+        super.setValue(t);
+    }
+
+    /**
+     * Describe <code>supportsCustomEditor</code> method here.
+     *
+     * @return a <code>boolean</code> value
+     */
+    @Override
+    public boolean supportsCustomEditor() {
+        return false;
+    }
+
+    /**
+     * This method is called by the IDE to pass
+     * the environment to the property editor.
+     * @param env Environment passed by the ide.
+     */
+    public void attachEnv(PropertyEnv env) {
+        mEnv = env;
+    }
 }

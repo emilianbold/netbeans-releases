@@ -48,7 +48,7 @@
                     ../../../../../../../../../../websvc.saas.api/src/org/netbeans/modules/websvc/saas/model/SaasServices.xsd' 
                type="http://research.sun.com/wadl/2006/10"
                api-doc="http://amazon.com/dev_api_ref"
-               url="nbres:/org/netbeans/modules/websvc/saas/services/amazon/resources/AmazonECSWadl.xml">
+               url="org/netbeans/modules/websvc/saas/services/amazon/resources/AmazonECSWadl.xml">
 
     <description>Amazon Electronic Commerce Service</description>
     
@@ -70,7 +70,7 @@
     </saas-metadata>
 
     <methods>
-        <method name="getComps" href="//resource[@path='xml']/method[@id='amazonecs.ItemSearch']"/>
+        <method name="getComps" href="#amazonecs.ItemSearch"/>
     </methods>
 
 </saas-services>

@@ -48,7 +48,7 @@
                     ../../../../../../../../../../websvc.saas.api/src/org/netbeans/modules/websvc/saas/model/SaasServices.xsd' 
                type="http://research.sun.com/wadl/2006/10"
                api-doc="http://zillow.com/dev_api_ref"
-               url="nbres:/org/netbeans/modules/websvc/saas/services/zillow/resources/ZillowWadl.xml">
+               url="org/netbeans/modules/websvc/saas/services/zillow/resources/ZillowWadl.xml">
 
     <description>Zillow Service</description>
     
@@ -70,9 +70,9 @@
     </saas-metadata>
 
     <methods>
-        <method name="getComps" href="//resource[@path='GetComps.htm']/method[@id='zillow.homevaluation_GetComps']"/>
-        <method name="getRegionChart" href="//resource[@path='GetRegionChart.htm']/method[@id='zillow.homevaluation_GetRegionChart']"/>
-        <method name="GetZestimate" href="//resource[@path='GetZestimate.htm']/method[@id='zillow.homevaluation_GetZestimate']"/>
+        <method name="getComps" href="#zillow.homevaluation_GetComps"/>
+        <method name="getRegionChart" href="#zillow.homevaluation_GetRegionChart"/>
+        <method name="getZestimate" href="#zillow.homevaluation_GetZestimate"/>
     </methods>
 
 </saas-services>

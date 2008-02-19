@@ -179,6 +179,14 @@ made subject to such option by the copyright holder.
                     </run-dependency>
                 </dependency>
                 <dependency>
+                    <code-name-base>org.netbeans.modules.websvc.saas.api</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <specification-version>1.0</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
                     <code-name-base>org.netbeans.modules.xml.retriever</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
@@ -304,6 +312,7 @@ made subject to such option by the copyright holder.
                 <friend>org.netbeans.modules.websvc.kit</friend>
                 <friend>org.netbeans.modules.websvc.rest</friend>
                 <friend>org.netbeans.modules.websvc.saas.api</friend>
+                <friend>org.netbeans.modules.websvc.saas.ui</friend>
                 <package>org.netbeans.modules.websvc.manager.api</package>
                 <package>org.netbeans.modules.websvc.manager.model</package>
                 <package>org.netbeans.modules.websvc.manager.spi</package>

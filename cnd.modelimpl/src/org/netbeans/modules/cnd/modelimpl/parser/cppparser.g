@@ -167,6 +167,9 @@ tokens {
 	CSM_USING_DIRECTIVE<AST=org.netbeans.modules.cnd.modelimpl.parser.NamedFakeAST>;
 	CSM_USING_DECLARATION<AST=org.netbeans.modules.cnd.modelimpl.parser.NamedFakeAST>;
 
+        CSM_CTOR_INITIALIZER<AST=org.netbeans.modules.cnd.modelimpl.parser.FakeAST>;
+        CSM_CTOR_INITIALIZER_LIST<AST=org.netbeans.modules.cnd.modelimpl.parser.FakeAST>;
+
 	CSM_QUALIFIED_ID<AST=org.netbeans.modules.cnd.modelimpl.parser.NamedFakeAST>;
 
 	////////// STATEMENTS //////////
@@ -2023,13 +2026,17 @@ ctor_body
 
 ctor_initializer
 	:
-	COLON superclass_init (COMMA superclass_init)*
+	COLON! superclass_init (COMMA! superclass_init)*
+
+        {#ctor_initializer = #(#[CSM_CTOR_INITIALIZER_LIST, "CSM_CTOR_INITIALIZER_LIST"], #ctor_initializer);}
 	;
 
 superclass_init
 	{String q;} 
 	: 
-	q = qualified_id LPAREN (expression_list)? RPAREN
+	q = qualified_id LPAREN! (expression_list)? RPAREN!
+
+        {#superclass_init = #(#[CSM_CTOR_INITIALIZER, "CSM_CTOR_INITIALIZER"], #superclass_init);}
 	;
 
 dtor_head[boolean definition]
@@ -2191,7 +2198,7 @@ exception_specification
 	{String so;}
 	:	LITERAL_throw 
 		LPAREN 
-		(exception_type_id (COMMA exception_type_id)? )? 
+		(exception_type_id (COMMA exception_type_id)* )? 
 		RPAREN
 	;
 
@@ -2733,7 +2740,7 @@ remainder_expression
 
 conditional_expression
 	:	
-		logical_or_expression
+		general_logical_expression
 		(QUESTIONMARK expression COLON conditional_expression)?
 	;
 
@@ -2743,6 +2750,15 @@ constant_expression
 		{#constant_expression = #(#[CSM_EXPRESSION, "CSM_EXPRESSION"], #constant_expression);}
 	;
 
+/* Due to problems with stack overflow on expressions like ((((....(((1+1)+1)+...)+1)
+   RepositoryValidationTest started to fail, so we intentionally loose operator precedence here 
+   greatly reducing peak stack size */
+general_logical_expression
+        :
+                relational_expression ((OR | AND | BITWISEOR | BITWISEXOR | AMPERSAND | NOTEQUAL | EQUAL) relational_expression)*
+        ;
+
+/*
 logical_or_expression
 	:	
 		logical_and_expression (OR logical_and_expression)* 
@@ -2772,7 +2788,7 @@ equality_expression
 	:	
 		relational_expression ((NOTEQUAL | EQUAL) relational_expression)*
 	;
-
+*/
 relational_expression
 	:	shift_expression
 		(options {warnWhenFollowAmbig = false;}:

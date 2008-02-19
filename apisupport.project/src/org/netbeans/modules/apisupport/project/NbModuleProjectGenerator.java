@@ -54,7 +54,6 @@ import java.util.TreeSet;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import org.netbeans.api.project.ProjectManager;
-import org.netbeans.api.queries.CollocationQuery;
 import org.netbeans.modules.apisupport.project.ui.customizer.SingleModuleProperties;
 import org.netbeans.modules.apisupport.project.universe.LocalizedBundleInfo;
 import org.netbeans.modules.apisupport.project.universe.ModuleList;
@@ -257,7 +256,7 @@ public class NbModuleProjectGenerator {
                     File nborg = ModuleList.findNetBeansOrg(projectDir);
                     if (nborg == null) {
                         throw new IllegalArgumentException(projectDir + " doesn't " + // NOI18N
-                                "point to directory within the netbeans.org CVS tree"); // NOI18N
+                                "point to a top-level directory within the netbeans.org main or contrib repositories"); // NOI18N
                     }
                     final FileObject dirFO = FileUtil.createFolder(projectDir);
                     if (ProjectManager.getDefault().findProject(dirFO) != null) {
@@ -269,6 +268,7 @@ public class NbModuleProjectGenerator {
                     createBundle(dirFO, bundlePath, name);
                     createLayerInSrc(dirFO, layerPath);
                     createEmptyTestDir(dirFO);
+                    createInitialProperties(dirFO);
                     ModuleList.refresh();
                     ProjectManager.getDefault().clearNonProjectCache();
                     return null;
@@ -340,8 +340,12 @@ public class NbModuleProjectGenerator {
         File projectDirF = FileUtil.toFile(projectDir);
         String suiteLocation;
         String suitePropertiesLocation;
-        if (CollocationQuery.areCollocated(projectDirF, suiteDir)) {
-            suiteLocation = "${basedir}/" + PropertyUtils.relativizeFile(projectDirF, suiteDir); // NOI18N
+        //mkleint: removed CollocationQuery.areCollocated() reference
+        // when AlwaysRelativeCQI gets removed the condition resolves to false more frequently.
+        // that might not be desirable.
+        String rel = PropertyUtils.relativizeFile(projectDirF, suiteDir);
+        if (rel != null) {
+            suiteLocation = "${basedir}/" + rel; // NOI18N
             suitePropertiesLocation = "nbproject/suite.properties"; // NOI18N
         } else {
             suiteLocation = suiteDir.getAbsolutePath();
@@ -371,9 +375,13 @@ public class NbModuleProjectGenerator {
         }
         EditableProperties globalProps = Util.loadProperties(suiteGlobalPropFO);
         String projectPropKey = "project." + cnb; // NOI18N
-        if (CollocationQuery.areCollocated(projectDirF, suiteDir)) {
+        String rel = PropertyUtils.relativizeFile(suiteDir, projectDirF);
+        //mkleint: removed CollocationQuery.areCollocated() reference
+        // when AlwaysRelativeCQI gets removed the condition resolves to false more frequently.
+        // that might not be desirable.
+        if (rel != null) {
             globalProps.setProperty(projectPropKey,
-                    PropertyUtils.relativizeFile(suiteDir, projectDirF));
+                    rel);
         } else {
             File suitePrivPropsFile = new File(suiteDir, "nbproject/private/private.properties"); // NOI18N
             FileObject suitePrivPropFO;

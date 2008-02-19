@@ -43,6 +43,7 @@ package org.netbeans.modules.uml.core.support.umlutils;
 
 import java.io.File;
 
+import java.io.IOException;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 
@@ -52,7 +53,12 @@ import org.dom4j.Element;
 import org.dom4j.Node;
 import java.util.List;
 
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.modules.uml.core.support.umlsupport.XMLManip;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
+import org.openide.util.Exceptions;
 /**
  * <p>Title: </p>
  * <p>Description: </p>
@@ -62,7 +68,10 @@ import org.netbeans.modules.uml.core.support.umlsupport.XMLManip;
  * @version 1.0
  */
 
-public class PropertyDefinitionXML extends PropertyDefinition implements IPropertyDefinitionXML{
+public class PropertyDefinitionXML extends PropertyDefinition 
+        implements IPropertyDefinitionXML {
+  
+  private static final Logger logger = Logger.getLogger("org.netbeans.modules.uml.core");
 
   private String m_File = null;
 
@@ -127,36 +136,32 @@ public class PropertyDefinitionXML extends PropertyDefinition implements IProper
    * @return HRESULT
    *
    */
-  private Document getDOMDocument(String fileName)
-  {
-    Document doc = null;
-    try {
-      File file = new File(fileName);
-      if (file.canWrite()) {
-        //DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
-        //DocumentBuilder db = dbf.newDocumentBuilder();
-        if (file.exists()) {
-          doc = XMLManip.getDOMDocument(fileName);//db.parse(file);
-        }
-        else {
-          boolean created = file.createNewFile();
-          if (created )
-          {
-            doc = XMLManip.getDOMDocument();//db.newDocument();
-            Element xmlEle = doc.addElement("PropertyDefinitions");
+    private Document getDOMDocument(String fileName) {
+        Document doc = null;
+        File file = new File(fileName);
+        FileObject fo = FileUtil.toFileObject(file);
+
+        if (fo != null && fo.canRead()) {
+            //DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+            //DocumentBuilder db = dbf.newDocumentBuilder();
+            doc = XMLManip.getDOMDocument(fileName);//db.parse(file);
+        } else {
+            try {
+                fo = FileUtil.createData(file);
+                doc = XMLManip.getDOMDocument();
+                Element xmlEle = doc.addElement("PropertyDefinitions");
             //doc.appendChild(xmlEle);
-            
             //xmlEle.setParent(doc);
             //save the document now.
-          }
-        }
-      }
-    } catch (Exception e)
-    {
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
+                String mesg = ex.getMessage();
+                logger.log(Level.WARNING, mesg != null ? mesg : "", ex);
 
+            }
+        }
+        return doc;
     }
-    return doc;
-  }
 
   /**
    * Take the "|" delimited string and build a xpath query from it.

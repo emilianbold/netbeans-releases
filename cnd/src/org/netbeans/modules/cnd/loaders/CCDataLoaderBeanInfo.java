@@ -42,9 +42,12 @@
 package org.netbeans.modules.cnd.loaders;
 
 import java.awt.Image;
+import java.beans.BeanInfo;
 import java.beans.IntrospectionException;
+import java.beans.Introspector;
 import java.beans.PropertyDescriptor;
-import org.openide.util.NbBundle;
+import org.openide.ErrorManager;
+import org.openide.loaders.MultiFileLoader;
 import org.openide.util.Utilities;
 
 /**
@@ -53,21 +56,19 @@ import org.openide.util.Utilities;
  */
 public class CCDataLoaderBeanInfo extends CndAbstractDataLoaderBeanInfo {
 
-    private static final String PROP_DEF_EXT = NbBundle.getBundle(CCDataLoaderBeanInfo.class).getString("PROP_CC_Def_Extension"); // NOI18N
-    private static final String HINT_DEF_EXT = NbBundle.getBundle(CCDataLoaderBeanInfo.class).getString("HINT_CC_Def_Extension"); // NOI18N
-
     @Override
     public PropertyDescriptor[] getPropertyDescriptors() {
-        PropertyDescriptor[] properties = new PropertyDescriptor[1];
+        return new PropertyDescriptor[0];
+    }
+
+    @Override
+    public BeanInfo[] getAdditionalBeanInfo () {
         try {
-            properties[0] = new PropertyDescriptor("defaultExtension", CCDataLoader.class, "getDefaultExtension", "setDefaultExtension"); // NOI18N
-            properties[0].setDisplayName(PROP_DEF_EXT);
-            properties[0].setShortDescription(HINT_DEF_EXT);
-        } catch( IntrospectionException e) {
-            e.printStackTrace();
+            return new BeanInfo[] { Introspector.getBeanInfo (MultiFileLoader.class) };
+        } catch (IntrospectionException ie) {
+            ErrorManager.getDefault().notify(ie);
             return null;
         }
-        return properties;
     }
 
     @Override

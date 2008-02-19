@@ -54,13 +54,11 @@ import javax.swing.event.ListDataListener;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.PlatformsCustomizer;
 import org.netbeans.api.project.libraries.LibraryManager;
+import org.netbeans.modules.java.api.common.ui.PlatformUiSupport;
 import org.netbeans.modules.java.j2seproject.classpath.ClassPathSupport;
 import org.netbeans.modules.java.j2seproject.ui.J2SELogicalViewProvider;
-import org.netbeans.modules.java.j2seproject.ui.wizards.PanelOptionsVisual;
-//import org.netbeans.spi.java.project.support.ui.MakeSharableUtils;
+import org.netbeans.spi.java.project.support.ui.SharableLibrariesUtils;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
-import org.openide.DialogDisplayer;
-import org.openide.NotifyDescriptor;
 import org.openide.awt.Mnemonics;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
@@ -170,8 +168,8 @@ public class CustomizerLibraries extends JPanel implements HelpCtx.Provider, Lis
         if (!isSharable) {
             sharedLibrariesLabel.setEnabled(false);
             librariesLocation.setEnabled(false);
-//            librariesBrowse.setText("Make Sharable...");
-            librariesBrowse.setEnabled(false);
+            librariesBrowse.setText("Make Sharable...");
+//            librariesBrowse.setEnabled(false);
         } else {
             librariesLocation.setText(uiProperties.getProject().getAntProjectHelper().getLibrariesLocation());
         }
@@ -804,25 +802,32 @@ public class CustomizerLibraries extends JPanel implements HelpCtx.Provider, Lis
     private void librariesBrowseActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_librariesBrowseActionPerformed
         if (!isSharable) {
 
-            List<String> libs = collectLibs(uiProperties.JAVAC_CLASSPATH_MODEL, new ArrayList<String>());
-            libs = collectLibs(uiProperties.JAVAC_TEST_CLASSPATH_MODEL, libs);
-            libs = collectLibs(uiProperties.RUN_CLASSPATH_MODEL, libs);
-            libs = collectLibs(uiProperties.RUN_TEST_CLASSPATH_MODEL, libs);
-            boolean result = false; //MakeSharableUtils.showMakeSharableWizard(uiProperties.getProject().getAntProjectHelper(), libs);
+            List<String> libs = new ArrayList<String>();
+            List<String> jars = new ArrayList<String>();
+            collectLibs(uiProperties.JAVAC_CLASSPATH_MODEL, libs, jars);
+            collectLibs(uiProperties.JAVAC_TEST_CLASSPATH_MODEL, libs, jars);
+            collectLibs(uiProperties.RUN_CLASSPATH_MODEL, libs, jars);
+            collectLibs(uiProperties.RUN_TEST_CLASSPATH_MODEL, libs, jars);
+            boolean result = SharableLibrariesUtils.showMakeSharableWizard(uiProperties.getProject().getAntProjectHelper(), uiProperties.getProject().getReferenceHelper(), libs, jars);
             if (result) {
                 isSharable = true;
                 sharedLibrariesLabel.setEnabled(true);
                 librariesLocation.setEnabled(true);
                 librariesLocation.setText(uiProperties.getProject().getAntProjectHelper().getLibrariesLocation());
                 Mnemonics.setLocalizedText(librariesBrowse, NbBundle.getMessage(CustomizerLibraries.class, "LBL_CustomizerLibraries_Browse_JButton")); // NOI18N
+                updateJars(uiProperties.JAVAC_CLASSPATH_MODEL);
+                updateJars(uiProperties.JAVAC_TEST_CLASSPATH_MODEL);
+                updateJars(uiProperties.RUN_CLASSPATH_MODEL);
+                updateJars(uiProperties.RUN_TEST_CLASSPATH_MODEL);
+                switchLibrary();
             }
         } else {
             File prjLoc = FileUtil.toFile(uiProperties.getProject().getProjectDirectory());
             String s[] = splitPath(librariesLocation.getText().trim());
-            String loc = PanelOptionsVisual.browseForLibraryLication(s[0], this, prjLoc);
+            String loc = SharableLibrariesUtils.browseForLibraryLocation(s[0], this, prjLoc);
             if (loc != null) {
                 librariesLocation.setText(s[1] != null ? loc + File.separator + s[1] : 
-                    loc + File.separator + J2SEProjectProperties.DEFAULT_LIBRARIES_FILENAME);
+                    loc + File.separator + SharableLibrariesUtils.DEFAULT_LIBRARIES_FILENAME);
                 switchLibrary();
             }
         }
@@ -830,19 +835,35 @@ public class CustomizerLibraries extends JPanel implements HelpCtx.Provider, Lis
    
     
     
-    private List<String> collectLibs(DefaultListModel model, List<String> libs) {
+    private void collectLibs(DefaultListModel model, List<String> libs, List<String> jarReferences) {
         for (int i = 0; i < model.size(); i++) {
             ClassPathSupport.Item item = (ClassPathSupport.Item) model.get(i);
             if (item.getType() == ClassPathSupport.Item.TYPE_LIBRARY) {
                 libs.add(item.getLibrary().getName());
             }
             if (item.getType() == ClassPathSupport.Item.TYPE_JAR) {
-                //TODO
+                if (item.getReference() != null) {
+                    //TODO reference is null for not yet persisted items.
+                    // there seems to be no way to generate a reference string without actually
+                    // creating and writing the property..
+                    jarReferences.add(item.getReference());
+                }
             }
         }
-        return libs;
+
     }
     
+    private void updateJars(DefaultListModel model) {
+        for (int i = 0; i < model.size(); i++) {
+            ClassPathSupport.Item item = (ClassPathSupport.Item) model.get(i);
+            if (item.getType() == ClassPathSupport.Item.TYPE_JAR) {
+                if (item.getReference() != null) {
+                    uiProperties.cs.updateJarReference(item);
+                }
+            }
+        }
+        
+    }
     
     
     // Variables declaration - do not modify//GEN-BEGIN:variables

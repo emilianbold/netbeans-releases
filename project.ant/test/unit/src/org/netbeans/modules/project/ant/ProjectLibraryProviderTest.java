@@ -38,6 +38,7 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.StringTokenizer;
 import java.util.TreeMap;
+import java.util.regex.Matcher;
 import java.util.zip.CRC32;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
@@ -102,6 +103,31 @@ public class ProjectLibraryProviderTest extends NbTestCase {
         ProjectLibraryProvider.FIRE_CHANGES_SYNCH = true;
         registerTestLibraryTypeProvider();
     }
+    
+    
+    public void testPatternMatching() throws Exception {
+        Matcher matcher = ProjectLibraryProvider.LIBS_LINE.matcher("libs.grapht.classpath");
+        assertTrue(matcher.matches());
+        assertEquals(matcher.group(2), "classpath");
+        matcher = ProjectLibraryProvider.LIBS_LINE.matcher("libs.grapht_1_0.classpath");
+        assertTrue(matcher.matches());
+        assertEquals(matcher.group(2), "classpath");
+        matcher = ProjectLibraryProvider.LIBS_LINE.matcher("libs.grapht_1_0.classpath2");
+        assertTrue(matcher.matches());
+        assertEquals(matcher.group(2), "classpath2");
+        matcher = ProjectLibraryProvider.LIBS_LINE.matcher("libs.grapht_1_0.classpath_1");
+        assertTrue(matcher.matches());
+        assertEquals(matcher.group(2), "classpath_1");
+        matcher = ProjectLibraryProvider.LIBS_LINE.matcher("libs.grapht-1.0.classpath");
+        assertTrue(matcher.matches());
+        assertEquals(matcher.group(2), "classpath");
+        matcher = ProjectLibraryProvider.LIBS_LINE.matcher("libs.grapht-1.0.classpath_1");
+        assertTrue(matcher.matches());
+        assertEquals(matcher.group(2), "classpath_1");
+        matcher = ProjectLibraryProvider.LIBS_LINE.matcher("libs.grapht-1.0.1-classpath");
+        assertTrue(matcher.matches());
+        assertEquals(matcher.group(2), "1-classpath");
+    }
 
     // XXX test name/type/description
     // XXX test : vs. ; and / vs. \ (in <definitions> and in *.properties)
@@ -119,8 +145,8 @@ public class ProjectLibraryProviderTest extends NbTestCase {
         assertEquals("jgraph", lib.getDisplayName());
         assertNull(lib.getDescription());
         assertEquals("j2se", lib.getType());
-        assertEquals(Arrays.asList(new URL("jar:file:jgraph.jar!/"), new URL("jar:file:../extra%20libs/jgraph-extras.jar!/")), lib.getContent("classpath"));
-        assertEquals(Arrays.asList(new URL("file:api/jgraph-docs/"), new URL("jar:file:api/jgraph-docs.zip!/docs/api/")), lib.getContent("javadoc"));
+        assertEquals(Arrays.asList(new URL("jar:file:jgraph.jar!/"), new URL("jar:file:../extra%20libs/jgraph-extras.jar!/")), lib.getRawContent("classpath"));
+        assertEquals(Arrays.asList(new URL("file:api/jgraph-docs/"), new URL("jar:file:api/jgraph-docs.zip!/docs/api/")), lib.getRawContent("javadoc"));
         assertEquals(Collections.emptyList(), lib.getContent("src"));
     }
 
@@ -132,9 +158,9 @@ public class ProjectLibraryProviderTest extends NbTestCase {
                 "libs.jgraph.javadoc=" + new File(getWorkDir(), "jgraph-api"));
         storeDefs(project, "../libs/libraries.properties");
         Library lib = LibraryManager.forLocation(new URL(base, "libs/libraries.properties")).getLibrary("jgraph");
-        assertEquals(Collections.singletonList(new URL("jar:file:jgraph.jar!/")), lib.getContent("classpath"));
-        assertEquals(Collections.singletonList(new URL("jar:" + base + "jgraph-src.zip!/")), lib.getContent("src"));
-        assertEquals(Collections.singletonList(new URL(base, "jgraph-api/")), lib.getContent("javadoc"));
+        assertEquals(Collections.singletonList(new URL("jar:file:jgraph.jar!/")), lib.getRawContent("classpath"));
+        assertEquals(Collections.singletonList(new URL("jar:" + base + "jgraph-src.zip!/")), lib.getRawContent("src"));
+        assertEquals(Collections.singletonList(new URL(base, "jgraph-api/")), lib.getRawContent("javadoc"));
     }
 
     public void testPrivateOverridesSharedProperties() throws Exception {
@@ -209,11 +235,11 @@ public class ProjectLibraryProviderTest extends NbTestCase {
                 "libs.jgraph.classpath=${base}/jgraph",
                 "libs.collections.classpath=${base}/collections");
         contentlist.assertEventCount(1);
-        assertEquals(Collections.singletonList(new URL("file:jgraph/")), lib1.getContent("classpath"));
+        assertEquals(Collections.singletonList(new URL("file:jgraph/")), lib1.getRawContent("classpath"));
         liblist.assertEventCount(1);
         assertEquals(lib1, mgr.getLibrary("jgraph"));
         Library lib2 = mgr.getLibrary("collections");
-        assertEquals(Collections.singletonList(new URL("file:collections/")), lib2.getContent("classpath"));
+        assertEquals(Collections.singletonList(new URL("file:collections/")), lib2.getRawContent("classpath"));
         pplist.assertEventCount(1);
         assertEquals(("{libs.collections.classpath=" + getWorkDir() + "/collections, libs.jgraph.classpath=" + 
                 getWorkDir() + "/jgraph}").replace('/', File.separatorChar),
@@ -237,8 +263,8 @@ public class ProjectLibraryProviderTest extends NbTestCase {
         Library lib = mgr.createLibrary("j2se", "javahelp", content);
         assertEquals("j2se", lib.getType());
         assertEquals("javahelp", lib.getName());
-        assertEquals(content.get("classpath"), lib.getContent("classpath"));
-        assertEquals(content.get("javadoc"), lib.getContent("javadoc"));
+        assertEquals(content.get("classpath"), lib.getRawContent("classpath"));
+        assertEquals(content.get("javadoc"), lib.getRawContent("javadoc"));
         lib = mgr.createLibrary("j2me", "gps", Collections.<String,List<URL>>emptyMap());
         assertEquals("j2me", lib.getType());
         assertEquals("gps", lib.getName());
@@ -329,7 +355,7 @@ public class ProjectLibraryProviderTest extends NbTestCase {
         List<URL> path = Arrays.asList(paths);
         impl.setContent(volumeType, path);
         l.assertEventCount(1);
-        assertEquals(path, lib.getContent(volumeType));
+        assertEquals(path, lib.getRawContent(volumeType));
     }
 
     private static LibraryImplementation getLibraryImplementation(Library lib) throws Exception {
@@ -378,16 +404,16 @@ public class ProjectLibraryProviderTest extends NbTestCase {
         assertNotNull(result);
         assertEquals(u, result.getManager().getLocation());
         assertEquals(Arrays.asList(new URL("jar:file:vino/bertie.jar!/"),
-                new URL("jar:file:vino/dog.jar!/")), result.getContent("jars"));
-        assertEquals(Arrays.asList(new URL("jar:file:vino/bertie-2.jar!/docs/api/")), result.getContent("sources"));
+                new URL("jar:file:vino/dog.jar!/")), result.getRawContent("jars"));
+        assertEquals(Arrays.asList(new URL("jar:file:vino/bertie-2.jar!/docs/api/")), result.getRawContent("sources"));
         assertEquals("vino", result.getName());
         assertEquals("j2test", result.getType());
         //assertNotNull(LibrariesSupport.resolveLibraryEntryFileObject(u, result.getContent("jars").get(0)));
         assertEquals(new File(this.getWorkDir(), "libraries/vino/bertie.jar").getPath(), 
-                FileUtil.toFile(LibrariesSupport.resolveLibraryEntryFileObject(u, FileUtil.getArchiveFile(result.getContent("jars").get(0)))).getPath());
+                FileUtil.toFile(LibrariesSupport.resolveLibraryEntryFileObject(u, FileUtil.getArchiveFile(result.getRawContent("jars").get(0)))).getPath());
         //assertNotNull(LibrariesSupport.resolveLibraryEntryFileObject(u, result.getContent("sources").get(0)));
         assertEquals(new File(this.getWorkDir(), "libraries/vino/bertie-2.jar").getPath(), 
-                FileUtil.toFile(LibrariesSupport.resolveLibraryEntryFileObject(u, FileUtil.getArchiveFile(result.getContent("sources").get(0)))).getPath());
+                FileUtil.toFile(LibrariesSupport.resolveLibraryEntryFileObject(u, FileUtil.getArchiveFile(result.getRawContent("sources").get(0)))).getPath());
     }
     
     private void createFakeJAR(File f, String content) throws IOException {

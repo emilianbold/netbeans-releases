@@ -49,6 +49,8 @@ import java.awt.FlowLayout;
 import java.awt.datatransfer.Transferable;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.text.MessageFormat;
 import java.util.*;
 import java.util.ArrayList;
@@ -78,6 +80,8 @@ import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreeModel;
 import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
+import javax.xml.XMLConstants;
+import javax.xml.namespace.NamespaceContext;
 import javax.xml.namespace.QName;
 import org.netbeans.modules.bpel.model.api.Activity;
 import org.netbeans.modules.bpel.model.api.BPELElementsBuilder;
@@ -135,7 +139,9 @@ import org.netbeans.modules.xml.schema.model.Element;
 import org.netbeans.modules.xml.schema.model.GlobalElement;
 import org.netbeans.modules.xml.schema.model.GlobalSimpleType;
 import org.netbeans.modules.xml.schema.model.GlobalType;
+import org.netbeans.modules.xml.schema.model.Schema;
 import org.netbeans.modules.xml.schema.model.SchemaComponent;
+import org.netbeans.modules.xml.schema.model.SchemaModel;
 import org.netbeans.modules.xml.schema.model.SchemaModelFactory;
 import org.netbeans.modules.xml.schema.model.SimpleType;
 import org.netbeans.modules.xml.schema.model.TypeContainer;
@@ -146,13 +152,22 @@ import org.netbeans.modules.xml.wsdl.model.OperationParameter;
 import org.netbeans.modules.xml.wsdl.model.Part;
 import org.netbeans.modules.xml.wsdl.model.PortType;
 import org.netbeans.modules.xml.wsdl.model.RequestResponseOperation;
+import org.netbeans.modules.xml.wsdl.model.WSDLComponent;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
 import org.netbeans.modules.xml.wsdl.model.extensions.bpel.BPELQName;
 import org.netbeans.modules.xml.wsdl.model.extensions.bpel.CorrelationProperty;
 import org.netbeans.modules.xml.wsdl.model.extensions.bpel.PropertyAlias;
-import org.netbeans.modules.xml.wsdl.model.extensions.bpel.PropertyAlias;
+import org.netbeans.modules.xml.wsdl.model.extensions.bpel.Query;
+import org.netbeans.modules.xml.xam.dom.AbstractDocumentComponent;
 import org.netbeans.modules.xml.xam.dom.NamedComponentReference;
+import org.netbeans.modules.xml.xpath.ext.XPathLocationPath;
+import org.netbeans.modules.xml.xpath.ext.LocationStep;
+import org.netbeans.modules.xml.xpath.ext.StepNodeNameTest;
+import org.netbeans.modules.xml.xpath.ext.XPathModel;
+import org.netbeans.modules.xml.xpath.ext.XPathModelFactory;
+import org.netbeans.modules.xml.xpath.ext.XPathModelHelper;
 import org.netbeans.modules.xml.xpath.ext.schema.FindAllChildrenSchemaVisitor;
+import org.netbeans.modules.xml.xpath.ext.spi.ExternalModelResolver;
 import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
 import org.openide.WizardDescriptor;
@@ -286,6 +301,9 @@ public class DefineCorrelationWizard implements WizardProperties {
     
         iconFileName = IMAGE_FOLDER_NAME + "GLOBAL_ELEMENT" + IMAGE_FILE_EXT; // NOI18N
         mapIcons.put(Element.class, new ImageIcon(Utilities.loadImage(iconFileName)));
+    
+        iconFileName = IMAGE_FOLDER_NAME + "ATTRIBUTE" + IMAGE_FILE_EXT; // NOI18N
+        mapIcons.put(Attribute.class, new ImageIcon(Utilities.loadImage(iconFileName)));
     
         iconFileName = IMAGE_FOLDER_NAME + "GLOBAL_COMPLEX_TYPE" + IMAGE_FILE_EXT; // NOI18N
         mapIcons.put(ComplexType.class, new ImageIcon(Utilities.loadImage(iconFileName)));
@@ -802,7 +820,7 @@ public class DefineCorrelationWizard implements WizardProperties {
                 return false;
             }
             NamedComponentReference<? extends GlobalType> typeRef = 
-                getSchemaComponentTypeRef(schemaComponent);
+                WizardUtils.getSchemaComponentTypeRef(schemaComponent);
             return ((typeRef != null) && (typeRef.get() instanceof ComplexType));
         }
         
@@ -810,40 +828,7 @@ public class DefineCorrelationWizard implements WizardProperties {
             if (! (schemaComponent instanceof Attribute)) {
                 return false;
             }
-            return (getSchemaComponentTypeName(schemaComponent) == null);
-        }
-
-        private NamedComponentReference<? extends GlobalType> getSchemaComponentTypeRef(SchemaComponent schemaComponent) {
-            NamedComponentReference<? extends GlobalType> typeRef = null;
-            try {
-                typeRef = ((TypeContainer) schemaComponent).getType();
-            } catch (Exception e) {}
-            return typeRef;
-        }
-
-        private String getSchemaComponentTypeName(SchemaComponent schemaComponent) {
-            String typeName = null;
-            if ((schemaComponent instanceof SimpleType) || (schemaComponent instanceof ComplexType)) {
-                typeName = schemaComponent.getAttribute(BpelAttributes.NAME);
-            } else {
-                NamedComponentReference<? extends GlobalType> typeRef = getSchemaComponentTypeRef(schemaComponent);
-                if (typeRef != null) {
-                    typeName = typeRef.get().getName();
-                } else {
-                    typeName = ((SchemaComponent) schemaComponent).getAttribute(BpelAttributes.TYPE);
-                }
-            }
-            return typeName;
-        }
-
-        public String getSchemaComponentName(SchemaComponent schemaComponent) {
-            String name = null;
-            if (schemaComponent instanceof SimpleType) {
-                name = getSchemaComponentTypeName(schemaComponent);
-            } else  {
-                name = schemaComponent.toString();
-            }
-            return name;
+            return (WizardUtils.getSchemaComponentTypeName(schemaComponent) == null);
         }
         
         private void defineCorrelationMapperKeyBindings() {
@@ -1093,9 +1078,9 @@ public class DefineCorrelationWizard implements WizardProperties {
                     correlationProperty.setType(typeRef);
                 }                
                 assert (typeRef != null);
+                WizardUtils.importWsdlIntoWsdl(wizardWsdlModel, source.getWSDLModel());
+                WizardUtils.importWsdlIntoWsdl(wizardWsdlModel, target.getWSDLModel());
                 if (Util.isUniquePropertyName(wizardWsdlModel, propertyName)) {
-                    WizardUtils.importWsdlIntoWsdl(wizardWsdlModel, source.getWSDLModel());
-                    WizardUtils.importWsdlIntoWsdl(wizardWsdlModel, target.getWSDLModel());
                     try {
                         wizardWsdlModel.startTransaction();
                         wizardWsdlModel.addChildComponent(wizardWsdlModel.getRootComponent(), 
@@ -1108,9 +1093,9 @@ public class DefineCorrelationWizard implements WizardProperties {
             
             private String getBasePropertyName() {
                 return CORRELATION_PROPERTY_NAME_PREFIX + 
-                       WizardDefineCorrelationPanel.this.getSchemaComponentName(source.getSchemaComponent()) + 
+                       WizardUtils.getSchemaComponentName(source.getSchemaComponent()) + 
                        "_" +
-                       WizardDefineCorrelationPanel.this.getSchemaComponentName(target.getSchemaComponent()); 
+                       WizardUtils.getSchemaComponentName(target.getSchemaComponent()); 
             }
             
             @Override
@@ -1137,8 +1122,8 @@ public class DefineCorrelationWizard implements WizardProperties {
                        targetType = target.getTypeNameIgnoreNamespace();
 
                 if (! sourceType.equals(targetType)) {
-                    String sourceComponentName = WizardDefineCorrelationPanel.this.getSchemaComponentName(sourceSchemaComponent),
-                           targetComponentName = WizardDefineCorrelationPanel.this.getSchemaComponentName(targetSchemaComponent);
+                    String sourceComponentName = WizardUtils.getSchemaComponentName(sourceSchemaComponent),
+                           targetComponentName = WizardUtils.getSchemaComponentName(targetSchemaComponent);
                     String errMsg = MessageFormat.format(NbBundle.getMessage(WizardDefineCorrelationPanel.class, 
                         "LBL_ErrMsg_Different_Schema_Component_Types"),
                         new Object[] {sourceComponentName, targetComponentName});
@@ -1148,11 +1133,11 @@ public class DefineCorrelationWizard implements WizardProperties {
             }
         }
         //--------------------------------------------------------------------//
-        private class CorrelationDataHolder {
+        private class CorrelationDataHolder implements WizardConstants {
             private BpelEntity activity;
             private Message message;
             private Part part;
-            private SchemaComponent schemaComponent;
+            private CorrelationMapperTreeNode mapperTreeNode;
 
             public WSDLModel getWSDLModel() {
                 PortType portType = ((PortTypeReference) activity).getPortType().get();
@@ -1277,7 +1262,11 @@ public class DefineCorrelationWizard implements WizardProperties {
                     propertyAlias.setMessageType(messageTypeRef);
 
                     propertyAlias.setPart(part.getName());
-
+                    
+                    Query query = getPropertyAliasQuery(wizardWsdlModel,
+                        propertyAlias);
+                    if (query != null) propertyAlias.setQuery(query);
+                    
                     try {
                         wizardWsdlModel.startTransaction();
                         wizardWsdlModel.addChildComponent(wizardWsdlModel.getRootComponent(), 
@@ -1286,6 +1275,31 @@ public class DefineCorrelationWizard implements WizardProperties {
                         wizardWsdlModel.endTransaction();
                     }
                 }
+            }
+            
+            private Query getPropertyAliasQuery(WSDLModel wizardWsdlModel,
+                PropertyAlias propertyAlias) {
+                // Query is used for a property alias only if a part contains an attribute 
+                // <element> (not an attribute <type>, either complex type or simple type)
+                NamedComponentReference<GlobalElement> partElementRef = part.getElement();
+                if ((partElementRef != null) && (getSchemaComponent() != null)) {
+                    CorrelationMapperTreeNode parentObj = mapperTreeNode;
+                    Object userObj = parentObj.getUserObject();
+                    List<SchemaComponent> queryComponents = new ArrayList<SchemaComponent>();
+                    do {
+                        queryComponents.add(0, (SchemaComponent) userObj);                            
+                        parentObj = (CorrelationMapperTreeNode) parentObj.getParent();
+                        userObj = parentObj.getUserObject();
+                    } while (! (userObj instanceof Part)); 
+                    String strQueryAbsPath = WizardUtils.makeLocationPath(wizardWsdlModel, queryComponents);
+                    if (strQueryAbsPath.length() > 0) {
+                        Query query = (Query) wizardWsdlModel.getFactory().create(
+                            propertyAlias, BPELQName.QUERY.getQName());
+                        query.setContent(strQueryAbsPath);
+                        return query;
+                    }
+                }
+                return null;
             }
             
             public NamedComponentReference<GlobalType> getGlobalTypeReference() throws WizardValidationException {
@@ -1302,14 +1316,14 @@ public class DefineCorrelationWizard implements WizardProperties {
                 
                 String errMsg = MessageFormat.format(NbBundle.getMessage(WizardDefineCorrelationPanel.class, 
                     "LBL_ErrMsg_Unknown_Schema_Component_Type"), new Object[] {
-                    typeName, getSchemaComponentName(schemaComponent)});
+                    typeName, WizardUtils.getSchemaComponentName(getSchemaComponent())});
                 throw new WizardValidationException(wizardPanel, errMsg, errMsg);
             }
 
             private NamedComponentReference<GlobalType> resolveSimpleType(String typeName,
                 Collection<GlobalSimpleType> primitiveSimpleTypes) {
                 Collection<GlobalSimpleType> 
-                    globalSimpleTypes = schemaComponent.getModel().getSchema().getSimpleTypes();
+                    globalSimpleTypes = getSchemaComponent().getModel().getSchema().getSimpleTypes();
                 GlobalSimpleType simpleType = null;
                 for (GlobalSimpleType globalSimpleType : globalSimpleTypes) {
                     if (globalSimpleType.toString().equals(typeName)) {
@@ -1337,7 +1351,7 @@ public class DefineCorrelationWizard implements WizardProperties {
                 
                 for (SchemaComponent component : componentList) {
                  String baseTypeName = component.getAnyAttribute(new QName(
-                     Constants.SCHEMA_COMPONENT_ATTRIBUTE_BASE));
+                     WizardConstants.SCHEMA_COMPONENT_ATTRIBUTE_BASE));
                     if (baseTypeName != null) {
                         baseTypeName = WizardUtils.ignoreNamespace(baseTypeName);
                         NamedComponentReference<GlobalType> typeRef = findGlobalSimpleType(baseTypeName, 
@@ -1358,7 +1372,7 @@ public class DefineCorrelationWizard implements WizardProperties {
                 NamedComponentReference<GlobalType> typeRef = null;
                 for (GlobalSimpleType globalSimpleType : globalSimpleTypes) {
                     if (globalSimpleType.toString().equals(typeName)) {
-                        typeRef = schemaComponent.createReferenceTo(globalSimpleType, GlobalType.class);
+                        typeRef = getSchemaComponent().createReferenceTo(globalSimpleType, GlobalType.class);
                         return typeRef;
                     }
                 }
@@ -1366,7 +1380,7 @@ public class DefineCorrelationWizard implements WizardProperties {
             }
             
             public String getTypeNameIgnoreNamespace() {
-                String typeName = WizardDefineCorrelationPanel.this.getSchemaComponentTypeName(schemaComponent);
+                String typeName = WizardUtils.getSchemaComponentTypeName(getSchemaComponent());
                 return WizardUtils.ignoreNamespace(typeName);
             }
             
@@ -1391,9 +1405,8 @@ public class DefineCorrelationWizard implements WizardProperties {
             }
 
             public void extractDataFromTreePath(TreePath treePath) {
-                CorrelationMapperTreeNode treeNode = (CorrelationMapperTreeNode) treePath.getLastPathComponent();
-                schemaComponent = (SchemaComponent) treeNode.getUserObject();
-                getPartAndMessage(treeNode);
+                mapperTreeNode = (CorrelationMapperTreeNode) treePath.getLastPathComponent();
+                getPartAndMessage(mapperTreeNode);
             }
             
             public void extractDataFromLink(Link link) {
@@ -1425,8 +1438,15 @@ public class DefineCorrelationWizard implements WizardProperties {
             public void setMessage(Message message) {this.message = message;}
             public Part getPart() {return part;}
             public void setPart(Part part) {this.part = part;}
-            public SchemaComponent getSchemaComponent() {return schemaComponent;}
-            public void setSchemaComponent(SchemaComponent schemaComponent) {this.schemaComponent = schemaComponent;}
+            public CorrelationMapperTreeNode getMapperTreeNode() {return mapperTreeNode;}
+            public SchemaComponent getSchemaComponent() {
+                try {
+                    return ((SchemaComponent) mapperTreeNode.getUserObject());
+                } catch(ClassCastException cce) {
+                    ErrorManager.getDefault().notify(cce);
+                    return null;
+                }
+            }
         }
         //====================================================================//
         private class ActionDeleteKey extends AbstractAction {
@@ -1537,16 +1557,16 @@ public class DefineCorrelationWizard implements WizardProperties {
                     } else if (userObj instanceof Part) {
                         userObjectName = ((Part) userObj).getName();
                     } else if ((userObj instanceof Element) || (userObj instanceof Attribute)) {
-                        userObjectName = getSchemaComponentName((SchemaComponent) userObj);
+                        userObjectName = WizardUtils.getSchemaComponentName((SchemaComponent) userObj);
                         if (getChildCount() == 0) { // simple type
-                            String typeName = getSchemaComponentTypeName((SchemaComponent) userObj);
+                            String typeName = WizardUtils.getSchemaComponentTypeName((SchemaComponent) userObj);
                             if (typeName != null) {
                                 userObjectName += " " + MessageFormat.format(SIMPLE_TYPE_NAME_PATTERN, 
                                     new Object[] {typeName});
                             }
                         }
                     } else if ((userObj instanceof SimpleType) || (userObj instanceof ComplexType)) {
-                        userObjectName = getSchemaComponentName((SchemaComponent) userObj);
+                        userObjectName = WizardUtils.getSchemaComponentName((SchemaComponent) userObj);
                         patternValues = new Object[] {userObjectName};
                     } else {
                         userObjectName = userObj.toString();
@@ -1568,7 +1588,7 @@ public class DefineCorrelationWizard implements WizardProperties {
                     if (userObj instanceof Message) userObjClass = Message.class;
                     if (userObj instanceof Part) userObjClass = Part.class;
                     if (userObj instanceof Element) userObjClass = Element.class;
-                    if (userObj instanceof Attribute) userObjClass = SimpleType.class;
+                    if (userObj instanceof Attribute) userObjClass = Attribute.class;
                     if (userObj instanceof SimpleType) userObjClass = SimpleType.class;
                     if (userObj instanceof ComplexType) userObjClass = ComplexType.class;
                 }
@@ -1607,9 +1627,18 @@ public class DefineCorrelationWizard implements WizardProperties {
                 TreeNode rootNode = (TreeNode) mapperTreeModel.getRoot();
                 expandTreeNode(rootNode, (mapperTreeModel.equals(rightTreeModel)));
             }
-            
+
             private void expandTreeNode(TreeNode treeNode, boolean isRightTreeExpanded) {
-                if (treeNode == null) return;
+                expandTreeNode(treeNode, (isRightTreeExpanded ? 6 : 5), isRightTreeExpanded);
+                // value (-1) for the variable "expandLevel" means that all 
+                // tree nodes should be expanded
+                // expandTreeNode(treeNode, -1, isRightTreeExpanded);
+            }
+            
+            private void expandTreeNode(TreeNode treeNode, int expandLevel, 
+                boolean isRightTreeExpanded) {
+                if ((treeNode == null) || (expandLevel == 0)) return;
+                
                 TreePath treePath = new TreePath(isRightTreeExpanded ?
                     ((CorrelationMapperTreeModel) rightTreeModel).getPathToRoot(treeNode) :
                     ((CorrelationMapperTreeModel) leftTreeModel).getPathToRoot(treeNode));
@@ -1620,10 +1649,13 @@ public class DefineCorrelationWizard implements WizardProperties {
                     JTree leftTree = (JTree) correlationMapper.getLeftTree();
                     leftTree.expandPath(treePath);
                 }
+                expandLevel = (expandLevel == -1 ? -1 : expandLevel - 1);
+                if (expandLevel == 0) return;
+                
                 int childCount = treeNode.getChildCount();
                 for (int i = 0; i < childCount; ++i) {
                     TreeNode childNode = treeNode.getChildAt(i);
-                    expandTreeNode(childNode, isRightTreeExpanded);
+                    expandTreeNode(childNode, expandLevel, isRightTreeExpanded);
                 }
             }
 
@@ -1748,7 +1780,9 @@ public class DefineCorrelationWizard implements WizardProperties {
                 return false;
             }
 
-            public void copy(TreePath treePath, GraphSubset graphGroup, int x, int y) {}
+            public GraphSubset copy(TreePath treePath, GraphSubset graphGroup, int x, int y) {
+                return null;
+            }
 
             public void move(TreePath treePath, GraphSubset graphGroup, int x, int y) {}
             
@@ -1883,7 +1917,40 @@ class CorrelationWizardWSDLWrapper {
     }
 }
 //============================================================================//
-class WizardUtils {
+class WizardUtils implements WizardConstants {
+    public static NamedComponentReference<? extends GlobalType> getSchemaComponentTypeRef(SchemaComponent schemaComponent) {
+        NamedComponentReference<? extends GlobalType> typeRef = null;
+        try {
+            typeRef = ((TypeContainer) schemaComponent).getType();
+        } catch (Exception e) {}
+        return typeRef;
+    }
+
+    public static String getSchemaComponentTypeName(SchemaComponent schemaComponent) {
+        String typeName = null;
+        if ((schemaComponent instanceof SimpleType) || (schemaComponent instanceof ComplexType)) {
+            typeName = schemaComponent.getAttribute(BpelAttributes.NAME);
+        } else {
+            NamedComponentReference<? extends GlobalType> typeRef = getSchemaComponentTypeRef(schemaComponent);
+            if (typeRef != null) {
+                typeName = typeRef.get().getName();
+            } else {
+                typeName = ((SchemaComponent) schemaComponent).getAttribute(BpelAttributes.TYPE);
+            }
+        }
+        return typeName;
+    }
+
+    public static String getSchemaComponentName(SchemaComponent schemaComponent) {
+        String name = null;
+        if (schemaComponent instanceof SimpleType) {
+            name = getSchemaComponentTypeName(schemaComponent);
+        } else  {
+            name = schemaComponent.toString();
+        }
+        return name;
+    }
+    
     public static Operation getBpelEntityOpration(BpelEntity bpelEntity) {
         if (bpelEntity == null) return null;
         PortType portType = ((PortTypeReference) bpelEntity).getPortType().get();
@@ -1916,8 +1983,8 @@ class WizardUtils {
                 importedWsdlModel.getModelSource().getLookup().lookup(FileObject.class);
             objImport.setLocation(importedFileObject.getNameExt());
 
-            baseWsdlModel.startTransaction();
             if (! wsdlContainsImport(baseWsdlModel, objImport)) {
+                baseWsdlModel.startTransaction();
                 baseWsdlModel.getDefinitions().addImport(objImport);
             }
         } catch (Exception e) {
@@ -1957,6 +2024,122 @@ class WizardUtils {
         }
         return false;
     }
+
+    public static String makeLocationPath(final WSDLModel wsdlModel,
+        final List<SchemaComponent> schemaComponents) {
+        if ((schemaComponents == null) || (schemaComponents.isEmpty())) return null;
+        XPathModelHelper xpathHelper = XPathModelHelper.getInstance();
+        XPathModel xpathModel = xpathHelper.newXPathModel();
+
+        NamespaceContext namespaceContext = new WsdlNamespaceContext(
+            wsdlModel.getDefinitions());
+        xpathModel.setNamespaceContext(namespaceContext);
+        
+        xpathModel.setExternalModelResolver(new ExternalModelResolver() {
+            public Collection<SchemaModel> getModels(String schemaNamespaceUri) {
+                List<Schema> schemaList = wsdlModel.findSchemas(schemaNamespaceUri);
+                ArrayList<SchemaModel> schemaModels = new ArrayList<SchemaModel>(schemaList.size());
+                for (Schema schema : schemaList) {
+                    SchemaModel schemaModel = schema.getModel();
+                    schemaModels.add(schemaModel);
+                }
+                return schemaModels;
+            }
+
+            public Collection<SchemaModel> getVisibleModels() {
+                SchemaModel schemaModel = schemaComponents.get(0).getModel();
+                return Collections.singleton(schemaModel);
+            }
+
+            public boolean isSchemaVisible(String schemaNamespaceUri) {
+                List<Schema> schemaList = wsdlModel.findSchemas(schemaNamespaceUri);
+                return ((schemaList != null) && (schemaList.size() > 0));
+            }
+        });
+        XPathModelFactory xpathModelFactory = xpathModel.getFactory();
+        List<LocationStep> locationSteps = new ArrayList<LocationStep>(
+            schemaComponents.size());
+        for (SchemaComponent schemaComponent : schemaComponents) {
+            String namespacePrefix = getNamespacePrefix(wsdlModel, schemaComponent);
+            StepNodeNameTest stepNodeNameTest = null;
+            if (namespacePrefix != null) {
+                stepNodeNameTest = new StepNodeNameTest(new QName(null, 
+                getSchemaComponentName(schemaComponent), namespacePrefix));
+            } else {
+                new StepNodeNameTest(xpathModel, schemaComponent);
+            }
+            LocationStep locationStep = xpathModelFactory.newLocationStep(null, 
+                stepNodeNameTest, null);
+            locationSteps.add(locationStep);
+        }
+        XPathLocationPath locationPath = xpathModelFactory.newXPathLocationPath(
+            locationSteps.toArray(new LocationStep[locationSteps.size()]));
+        locationPath.setAbsolute(true);
+        xpathModel.setRootExpression(locationPath);
+        return locationPath.getExpressionString();
+    }
+    
+    public static String getNamespacePrefix(WSDLModel wsdlModel, SchemaComponent schemaComponent) {
+        assert ((wsdlModel != null) && (schemaComponent != null));
+        String uri = schemaComponent.getModel().getSchema().getTargetNamespace();
+        if (uri != null) {
+            try {
+                new URI(uri);
+            }
+            catch (URISyntaxException e) {
+                ErrorManager.getDefault().notify(e);
+                return null;
+            }
+        }
+        try {
+            String prefix = getNamespacePrefix(wsdlModel, uri);
+            if (prefix != null) {
+                return prefix;
+            }
+            prefix = DEFAULT_NS_PREFIX;
+
+            int i = getMaxSuffixNumber(wsdlModel, prefix);
+            prefix += (++i);
+            
+            wsdlModel.startTransaction();
+            if (i == 0) { 
+                ((AbstractDocumentComponent) wsdlModel.getDefinitions()).addPrefix(
+                    prefix, uri);
+            }
+            return prefix;
+        }
+        finally {
+            wsdlModel.endTransaction();
+        }
+    }
+    
+    private static String getNamespacePrefix(WSDLModel wsdlModel, String uri) {
+        String prefix = wsdlModel.getDefinitions().getPeer().lookupPrefix(uri);
+        if ((prefix != null) && (prefix.length() == 0)) {
+            return null;
+        }
+        return prefix;
+    }
+    
+    private static int getMaxSuffixNumber(WSDLModel wsdlModel, String checkedPrefix) {
+        assert (checkedPrefix != null);
+        Set<String> prefixes = ((AbstractDocumentComponent) 
+            wsdlModel.getDefinitions()).getPrefixes().keySet();
+        int maxSuffixNumber = -1;
+        for (String registeredPrefix : prefixes) {
+            if (registeredPrefix.startsWith(checkedPrefix)) {
+                String end = registeredPrefix.substring(checkedPrefix.length());
+                try {
+                    int suffixNumber = Integer.parseInt(end);
+                    if (suffixNumber > maxSuffixNumber) {
+                        maxSuffixNumber = suffixNumber;
+                    }
+                }
+                catch (NumberFormatException e) {}
+            }
+        }
+        return maxSuffixNumber;
+    }
 }
 //============================================================================//
 class OnMessageActivityComplexName {
@@ -1971,8 +2154,43 @@ class OnMessageActivityComplexName {
     public String getOperationName() {return operationName;}
     public String getPickName() {return pickName;}
 }
-interface Constants {
-    String SCHEMA_COMPONENT_ATTRIBUTE_BASE = "base";
+//============================================================================//
+interface WizardConstants {
+    String 
+        SCHEMA_COMPONENT_ATTRIBUTE_BASE = "base", // NOI18N
+        DEFAULT_NS_PREFIX = "ns"; // NOI18N
+}
+//============================================================================//
+class WsdlNamespaceContext implements NamespaceContext {
+    private WSDLComponent mXPathOwner;
+    
+    public WsdlNamespaceContext(WSDLComponent xPathOwner) {
+        mXPathOwner = xPathOwner;
+    }
+
+    public String getNamespaceURI(String prefix) {
+        if (prefix == null || prefix.length() == 0) {
+            // the default namespace isn't supported by BPEL XPath
+            // so, empty prefix corresponds to empty namespace.
+            return XMLConstants.NULL_NS_URI;
+        }
+        assert (mXPathOwner instanceof AbstractDocumentComponent);
+        String nsUri = ((AbstractDocumentComponent) mXPathOwner).lookupNamespaceURI(
+            prefix, true);
+        return nsUri;
+    }
+
+    public String getPrefix(String namespaceURI) {
+        assert mXPathOwner instanceof AbstractDocumentComponent;
+        String nsPrefix = ((AbstractDocumentComponent) mXPathOwner).lookupPrefix(
+            namespaceURI);
+        return nsPrefix;
+    }
+
+    public Iterator getPrefixes(String namespaceURI) {
+        String single = getPrefix(namespaceURI);
+        return Collections.singletonList(single).iterator();
+    }
 }
 //============================================================================//
 interface WizardProperties {

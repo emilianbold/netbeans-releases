@@ -1527,9 +1527,10 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
   </target>
 
   <target name="clean-cluster" description="Clean only one cluster - takes clean.cluster.name as parameters">
+    <fail message="specify -Dclean.cluster.name= property" unless="clean.cluster.name"/>
     <resolve name="modules.to.clean" value="${clean.cluster.name}"/>
     <antcall target="cleanall" inheritAll="false">
-      <param name="allmodules" value="${nb.cluster.visualweb}"/>
+      <param name="allmodules" value="${modules.to.clean}"/>
     </antcall>
     <delete file="netbeans/${clean.cluster.name}.built" failonerror="false"/>
   </target>
@@ -1539,7 +1540,6 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
     <antcall target="cleanall" inheritAll="false">
       <param name="allmodules" value="${nb.cluster.visualweb}"/>
     </antcall>
-<!--    <delete dir="netbeans/visualweb1"/>-->
   </target>
 
 
@@ -1750,14 +1750,17 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
     <echo message="Packaging sources of ${cluster.name} modules"/>
     <resolve name="cluster-modules" value="${cluster.name}"/>
     <resolve name="harness-modules" value="nb.cluster.harness"/>
+    
     <mkdir dir="${netbeans.build.dir}"/>
-    <!-- XXX should this target be deleted, or rewritten to Hg? -->
-    <taskdef name="definefileset" classname="org.netbeans.nbbuild.PrintCvsModules" classpath="nbantext.jar"/>
-    <definefileset modules="${cluster-modules}" id="source-modules" dir=".."/>
-    <definefileset modules="${harness-modules}" id="harness-source-modules" dir=".."/>
+    <dirset id="source.dirset" dir="${nb_all}" includes="${cluster-modules},${harness-modules},nbbuild"/>
+    <pathconvert property="source.dirs" pathsep="," refid="source.dirset">
+      <regexpmapper from="${nb_all}/(.*)$" to="\1/**/*" handledirsep="yes"/>
+    </pathconvert>
     <zip zipfile="${netbeans.build.dir}/${cluster.name}-src-${buildnum}.zip" duplicate="preserve">
-      <fileset refid="source-modules" />
-      <fileset refid="harness-source-modules" />
+      <zipfileset dir="${nb_all}" includes="${source.dirs}">
+          <exclude name="*/build/**/*"/>
+          <exclude name="nbbuild/netbeans/**"/>
+      </zipfileset>
     </zip>
   </target>
 
@@ -1769,17 +1772,18 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
 
     <taskdef name="resolvelist" classname="org.netbeans.nbbuild.ResolveList" classpath="nbantext.jar"/>
     <resolvelist name="modules.for.checkout.list" list="${nb.clusters.list}"/>
-
     <resolve name="harness-modules" value="nb.cluster.harness"/>
+    
     <mkdir dir="${netbeans.build.dir}"/>
-    <property name="source.zip.filename" location="${netbeans.build.dir}/${cluster.config}-src-${buildnum}.zip"/>
-    <!-- XXX should this target be deleted, or rewritten to Hg? -->
-    <taskdef name="definefileset" classname="org.netbeans.nbbuild.PrintCvsModules" classpath="nbantext.jar"/>
-    <definefileset modules="${modules.for.checkout.list}" id="source-modules" dir=".."/>
-    <definefileset modules="${harness-modules}" id="harness-source-modules" dir=".."/>
+    <dirset id="source.dirset" dir="${nb_all}" includes="${modules.for.checkout.list},${harness-modules},nbbuild"/>
+    <pathconvert property="source.dirs" pathsep="," refid="source.dirset">
+      <regexpmapper from="${nb_all}/(.*)$" to="\1/**/*" handledirsep="yes"/>
+    </pathconvert>
     <zip zipfile="${netbeans.build.dir}/${cluster.config}-src-${buildnum}.zip" duplicate="preserve">
-      <fileset refid="source-modules"/>
-      <fileset refid="harness-source-modules"/>
+      <zipfileset dir="${nb_all}" includes="${source.dirs}">
+          <exclude name="*/build/**/*"/>
+          <exclude name="nbbuild/netbeans/**"/>
+      </zipfileset>
     </zip>
   </target>
 

@@ -42,20 +42,23 @@ package org.netbeans.modules.spring.beans.editor;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.HashMap;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
+import javax.lang.model.element.PackageElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.DeclaredType;
+import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
-import javax.lang.model.util.Elements;
+import javax.lang.model.util.SimpleElementVisitor6;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.StyledDocument;
@@ -63,6 +66,7 @@ import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.ElementHandle;
+import org.netbeans.api.java.source.ElementUtilities;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.Task;
@@ -80,7 +84,6 @@ import org.netbeans.modules.xml.text.syntax.dom.EmptyTag;
 import org.netbeans.modules.xml.text.syntax.dom.StartTag;
 import org.netbeans.modules.xml.text.syntax.dom.Tag;
 import org.openide.awt.StatusDisplayer;
-import org.openide.cookies.EditCookie;
 import org.openide.cookies.EditorCookie;
 import org.openide.cookies.LineCookie;
 import org.openide.cookies.OpenCookie;
@@ -138,8 +141,68 @@ public final class SpringXMLConfigEditorUtils {
 
         return null;
     }
+    
+    public static TypeElement findClassElementByBinaryName(final String binaryName, CompilationController cc) {
+        if (!binaryName.contains("$")) { // NOI18N
+            // fast search based on fqn
+            return cc.getElements().getTypeElement(binaryName);
+        } else {
+            // get containing package
+            String packageName = ""; // NOI18N
+            int dotIndex = binaryName.lastIndexOf("."); // NOI18N
+            if (dotIndex != -1) {
+                packageName = binaryName.substring(0, dotIndex);
+            }
+            PackageElement packElem = cc.getElements().getPackageElement(packageName);
+            if (packElem == null) {
+                return null;
+            }
 
-    public static Node getBean(Tag tag) {
+            // scan for element matching the binaryName
+            return new BinaryNameTypeScanner().visit(packElem, binaryName);
+        }
+    }
+    
+    private static class BinaryNameTypeScanner extends SimpleElementVisitor6<TypeElement, String> {
+
+        @Override
+        public TypeElement visitPackage(PackageElement packElem, String binaryName) {
+            for(Element e : packElem.getEnclosedElements()) {
+                if(e.getKind().isClass()) {
+                    TypeElement ret = e.accept(this, binaryName);
+                    if(ret != null) {
+                        return ret;
+                    }
+                }
+            }
+            
+            return null;
+        }
+
+        @Override
+        public TypeElement visitType(TypeElement typeElement, String binaryName) {
+            String bName = ElementUtilities.getBinaryName(typeElement);
+            if(binaryName.equals(bName)) {
+                return typeElement;
+            } else if(binaryName.startsWith(bName)) {
+                for(Element child : typeElement.getEnclosedElements()) {
+                    if(!child.getKind().isClass()) {
+                        continue;
+                    }
+                    
+                    TypeElement retVal = child.accept(this, binaryName);
+                    if(retVal != null) {
+                        return retVal;
+                    }
+                }
+            }
+            
+            return null;
+        }
+        
+    }
+
+    public static Node getBean(Node tag) {
         if (tag == null) {
             return null;
         }
@@ -161,7 +224,7 @@ public final class SpringXMLConfigEditorUtils {
 
     }
 
-    public static String getBeanClassName(Tag tag) {
+    public static String getBeanClassName(Node tag) {
         Node bean = getBean(tag);
         if (bean != null) {
             NamedNodeMap attribs = bean.getAttributes();
@@ -191,19 +254,19 @@ public final class SpringXMLConfigEditorUtils {
         return null;
     }
 
-    public static void findAndOpenJavaClass(final String fqn, Document doc) {
+    public static void findAndOpenJavaClass(final String classBinaryName, Document doc) {
         final JavaSource js = getJavaSource(doc);
         if (js != null) {
             try {
                 js.runUserActionTask(new Task<CompilationController>() {
                     public void run(CompilationController cc) throws Exception {
                         boolean opened = false;
-                        TypeElement element = cc.getElements().getTypeElement(fqn.trim());
+                        TypeElement element = findClassElementByBinaryName(classBinaryName, cc);
                         if (element != null) {
-                            opened = !ElementOpen.open(js.getClasspathInfo(), element);
+                            opened = ElementOpen.open(js.getClasspathInfo(), element);
                         }
                         if (!opened) {
-                            String msg = NbBundle.getMessage(SpringXMLConfigEditorUtils.class, "LBL_SourceNotFound", fqn);
+                            String msg = NbBundle.getMessage(SpringXMLConfigEditorUtils.class, "LBL_SourceNotFound", classBinaryName);
                             StatusDisplayer.getDefault().setStatusText(msg);
                         }
                     }
@@ -214,12 +277,12 @@ public final class SpringXMLConfigEditorUtils {
         }
     }
 
-    public static ElementHandle<ExecutableElement> findMethod(Document doc, final String classFqn,
+    public static ElementHandle<ExecutableElement> findMethod(Document doc, final String classBinName,
             final String methodName, int argCount, Public publicFlag, Static staticFlag) {
         JavaSource js = getJavaSource(doc);
         if (js != null) {
             try {
-                MethodFinder methodFinder = new MethodFinder(classFqn, methodName, argCount, publicFlag, staticFlag);
+                MethodFinder methodFinder = new MethodFinder(classBinName, methodName, argCount, publicFlag, staticFlag);
                 js.runUserActionTask(methodFinder, false);
                 return methodFinder.getMethodHandle();
             } catch (IOException ex) {
@@ -234,15 +297,15 @@ public final class SpringXMLConfigEditorUtils {
      * Open the specified method of the specified class in the editor
      * 
      * @param doc The document on from which the java model context is to be created
-     * @param classFqn fully qualified name of the class whose method is to be opened in the editor
+     * @param classBinName binary name of the class whose method is to be opened in the editor
      * @param methodName name of the method
      * @param argCount number of arguments that the method has (-1 if caller doesn't care)
      * @param publicFlag YES if the method is public, NO if not, DONT_CARE if caller doesn't care
      * @param staticFlag YES if the method is static, NO if not, DONT_CARE if caller doesn't care
      */
-    public static void openMethodInEditor(Document doc, final String classFqn,
+    public static void openMethodInEditor(Document doc, final String classBinName,
             final String methodName, int argCount, Public publicFlag, Static staticFlag) {
-        if (classFqn == null || methodName == null || doc == null) {
+        if (classBinName == null || methodName == null || doc == null) {
             return;
         }
 
@@ -251,7 +314,7 @@ public final class SpringXMLConfigEditorUtils {
             return;
         }
 
-        final ElementHandle<ExecutableElement> eh = findMethod(doc, classFqn, methodName, argCount, publicFlag, staticFlag);
+        final ElementHandle<ExecutableElement> eh = findMethod(doc, classBinName, methodName, argCount, publicFlag, staticFlag);
         if (eh != null) {
             try {
                 js.runUserActionTask(new Task<CompilationController>() {
@@ -356,17 +419,26 @@ public final class SpringXMLConfigEditorUtils {
         return false;
     }
     
+    public static String getPropertyNameFromMethodName(String methodName) {
+        if(methodName.length() < 4) {
+            return null;
+        }
+        char[] propertyName = methodName.substring(3).toCharArray();
+        propertyName[0] = Character.toLowerCase(propertyName[0]);
+        return String.valueOf(propertyName);
+    }
+    
     private static final class MethodFinder implements Task<CompilationController> {
 
-        private String classFqn;
+        private String classBinName;
         private String methodName;
         private int argCount;
         private Public publicFlag;
         private Static staticFlag;
         private ElementHandle<ExecutableElement> methodHandle;
 
-        public MethodFinder(String classFqn, String methodName, int argCount, Public publicFlag, Static staticFlag) {
-            this.classFqn = classFqn;
+        public MethodFinder(String classBinName, String methodName, int argCount, Public publicFlag, Static staticFlag) {
+            this.classBinName = classBinName;
             this.methodName = methodName;
             this.argCount = argCount;
             this.publicFlag = publicFlag;
@@ -375,8 +447,7 @@ public final class SpringXMLConfigEditorUtils {
 
         public void run(CompilationController cc) throws Exception {
             cc.toPhase(Phase.ELEMENTS_RESOLVED);
-            Elements elements = cc.getElements();
-            TypeElement element = elements.getTypeElement(classFqn.trim());
+            TypeElement element = findClassElementByBinaryName(classBinName, cc);
             while (element != null) {
                 List<ExecutableElement> methods = ElementFilter.methodsIn(element.getEnclosedElements());
                 for (ExecutableElement method : methods) {
@@ -430,6 +501,74 @@ public final class SpringXMLConfigEditorUtils {
 
         public ElementHandle<ExecutableElement> getMethodHandle() {
             return this.methodHandle;
+        }
+    }
+    
+    public static List<ExecutableElement> findPropertiesOnType(ElementUtilities eu, TypeMirror type,
+            String propertyName, boolean searchGetters, boolean searchSetters) {
+        PropertyAcceptor propertyAcceptor = new PropertyAcceptor(propertyName, searchGetters, searchSetters);
+        Iterable<? extends Element> matchingProp = eu.getMembers(type, propertyAcceptor);
+        Iterator<? extends Element> it = matchingProp.iterator();
+        // no matching element found
+        if (!it.hasNext()) {
+            return Collections.emptyList();
+        }
+        
+        List<ExecutableElement> retList = new ArrayList<ExecutableElement>();
+        for(Element e : matchingProp) {
+            retList.add((ExecutableElement) e);
+        }
+        
+        return retList;
+    }
+       
+    private static class PropertyAcceptor implements ElementUtilities.ElementAcceptor {
+        private boolean searchSetters;
+        private boolean searchGetters;
+        private String propPrefix;
+
+        public PropertyAcceptor(String propPrefix, boolean searchGetters, boolean searchSetters) {
+            // captialize first character of the property prefix - for matching
+            if(propPrefix.length() > 0) {
+                char[] prop = propPrefix.toCharArray();
+                prop[0] = Character.toUpperCase(prop[0]);
+                this.propPrefix = String.valueOf(prop);
+            } else {
+                this.propPrefix = propPrefix;
+            }
+            this.searchGetters = searchGetters;
+            this.searchSetters = searchSetters;
+        }
+        
+        public boolean accept(Element e, TypeMirror type) {
+            if (e.getKind() != ElementKind.METHOD) {
+                return false;
+            }
+
+            ExecutableElement ee = (ExecutableElement) e;
+            String methodName = ee.getSimpleName().toString();
+            if(methodName.length() < 4) {
+                return false;
+            }
+            
+            if(ee.getModifiers().contains(Modifier.PRIVATE) || ee.getModifiers().contains(Modifier.STATIC)) {
+                return false;
+            }
+            
+            if(!methodName.startsWith(propPrefix, 3)) {
+                return false;
+            }
+            
+            if (searchSetters && methodName.startsWith("set") && ee.getParameters().size() == 1 
+                    && ee.getReturnType().getKind() == TypeKind.VOID) { // NOI18N
+                return true;
+            }
+            if(searchGetters && methodName.startsWith("get") && ee.getParameters().size() == 0
+                    && ee.getReturnType().getKind() != TypeKind.VOID) { // NOI18N
+                return true;
+            }
+
+            return false;
         }
     }
 }

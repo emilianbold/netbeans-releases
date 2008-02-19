@@ -51,8 +51,8 @@ import java.util.HashMap;
 import java.util.Map;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.modules.java.api.common.ant.UpdateHelper;
 import org.netbeans.modules.web.project.WebProject;
-import org.netbeans.modules.web.project.UpdateHelper;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.spi.project.support.ant.ReferenceHelper;
 import org.netbeans.spi.project.ui.CustomizerProvider;
@@ -158,6 +158,7 @@ public class CustomizerProviderImpl implements CustomizerProvider {
 // as modified before the project customizer is shown. 
 //            assert !ProjectManager.getDefault().isModified(project) : 
 //                "Some of the customizer panels has written the changed data before OK Button was pressed. Please file it as bug."; //NOI18N
+            uiProperties.save();
             
             // Close & dispose the the dialog
             Dialog dialog = (Dialog)project2Dialog.get( project );

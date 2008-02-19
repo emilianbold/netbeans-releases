@@ -483,20 +483,25 @@ public final class GeneratorUtilities {
             StatementTree statement = copy.getTypes().getNoType(TypeKind.VOID) == element.getReturnType() ?
                 make.ExpressionStatement(inv) : make.Return(inv);
             body = make.Block(Collections.singletonList(statement), false);
+        }
+
+        //add @Override annotation:
+        SpecificationVersion thisFOVersion = new SpecificationVersion(SourceLevelQuery.getSourceLevel(copy.getFileObject()));
+        SpecificationVersion version15 = new SpecificationVersion("1.5"); //NOI18N
+
+        if (thisFOVersion.compareTo(version15) >= 0) {
+            boolean generate = true;
             
-            //add @Override annotation if developing for 1.5:
-            if (supportsOverride(copy.getFileObject())) {
+            if (thisFOVersion.compareTo(version15) == 0) {
+                generate = !element.getEnclosingElement().getKind().isInterface();
+            }
+            
+            if (generate) {
                 annotations.add(make.Annotation(make.Identifier("Override"), Collections.<ExpressionTree>emptyList())); //NOI18N
             }
         }
-
+        
         return make.Method(make.Modifiers(flags, annotations), element.getSimpleName(), returnType, typeParams, params, throwsList, body, null);
-    }
-    
-    private static boolean supportsOverride(FileObject fo) {
-        SpecificationVersion myVersion = new SpecificationVersion(SourceLevelQuery.getSourceLevel(fo));
-        SpecificationVersion version = new SpecificationVersion("1.5"); //NOI18N
-        return myVersion.compareTo(version) >= 0;
     }
     
     private static class ClassMemberComparator {
