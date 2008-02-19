@@ -87,4 +87,9 @@ public interface WsdlDataManager {
      * Save WSDL data
      */
     void save(WsdlData data);
+    
+    /**
+     * Refresh WSDL artifacts from given data.
+     */
+    void refresh(WsdlData data);
 }

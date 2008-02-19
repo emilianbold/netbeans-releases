@@ -300,6 +300,7 @@ public class SaasServicesModel {
     public void addWsdlService(SaasGroup parent, String displayName, String url, String packageName) {
         init();
         WsdlSaas service = new WsdlSaas(parent, displayName, url, packageName);
+        service.setUserDefined(true);
         service.getSaasFolder();
         WsdlData data = WsdlUtil.addWsdlData(url, packageName);
         if (data != null) {

@@ -66,7 +66,7 @@ public abstract class SaasNodeChildren<T> extends Children.Keys<T> implements Pr
 
     public void propertyChange(PropertyChangeEvent evt) {
         if (evt.getSource() == saas && evt.getPropertyName().equals(Saas.PROP_STATE)) {
-            if (evt.getNewValue() == Saas.State.READY) {
+            if (evt.getNewValue() == Saas.State.RESOLVED) {
                 updateKeys();
             }
         }
@@ -101,6 +101,6 @@ public abstract class SaasNodeChildren<T> extends Children.Keys<T> implements Pr
     }
 
     public boolean needsWaiting() {
-        return saas.getState() != Saas.State.READY;
+        return saas.getState() != Saas.State.RESOLVED;
     }
 }
