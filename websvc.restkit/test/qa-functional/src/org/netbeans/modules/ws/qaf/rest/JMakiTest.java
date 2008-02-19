@@ -50,7 +50,17 @@ import org.netbeans.junit.NbTestSuite;
 import org.netbeans.junit.ide.ProjectSupport;
 
 /**
- *
+ * Test jMaki client stub.
+ * 
+ * Running of this test suite can be influenced by following system properties:
+ * "plugins.jmaki.skip=true"
+ *    - skipping this suite and related preparation steps (un/installing of the jMaki plugin)
+ * "plugins.jmaki.nbm=/path/to/jmaki.nbm"
+ *    - where to find jmaki.nbm (default is to download nbm from:
+ *      https://ajax.dev.java.net/files/documents/3115/86078/org-netbeans-modules-sun-jmaki.nbm)
+ * "plugins.rest.forceUninstall=true"
+ *    - unistall jMaki plugin even if it has not been installed by tests
+ * 
  * @author lukas
  */
 public class JMakiTest extends CStubsTSuite {
@@ -119,7 +129,7 @@ public class JMakiTest extends CStubsTSuite {
      */
     public static TestSuite suite() {
         TestSuite suite = new NbTestSuite();
-        if (!Boolean.getBoolean("plugins.jmaki.skip")) {
+        if (!Boolean.getBoolean("plugins.jmaki.skip")) { //NOI18N
             suite.addTest(new JMakiTest("testCreateStubs")); //NOI18N
             suite.addTest(new JMakiTest("testFromWADL")); //NOI18N
             suite.addTest(new JMakiTest("testCloseProject")); //NOI18N

@@ -55,7 +55,7 @@ import org.netbeans.jemmy.operators.JFileChooserOperator;
 import org.netbeans.junit.NbTestSuite;
 
 /**
- * Test (un)installation of the RESTful Web Services plugin from Update Center
+ * Test installation of plugins
  * 
  * @author lukas
  */
@@ -141,7 +141,9 @@ public class InstallPluginsTest extends JellyTestCase {
         });
         t.start();
         PluginsOperator po = PluginsOperator.invoke();
-        new JButtonOperator(po.selectDownloaded(), "Add Plugins...").push();
+        //"Add Plugins..."
+        String addPluginsBtn = Bundle.getStringTrimmed("org.netbeans.modules.autoupdate.ui.Bundle", "UnitTab_bAddLocallyDownloads_Name");
+        new JButtonOperator(po.selectDownloaded(), addPluginsBtn).push();
         JFileChooserOperator jfco = new JFileChooserOperator(po);
         jfco.setCurrentDirectory(jmakiNbm.getParentFile());
         jfco.selectFile(jmakiNbm.getName());

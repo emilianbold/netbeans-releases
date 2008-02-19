@@ -48,14 +48,10 @@ import org.netbeans.jellytools.PluginsOperator;
 import org.netbeans.jemmy.operators.JButtonOperator;
 
 /**
- *
+ * Test uninstallation of plugins
+ * 
  * @author lukas
  */
-
-//props:
-//plugins.jmaki.nbm (file)
-//plugins.jmaki.skip
-//plugins.rest.forceUninstall
 public class UnInstallPluginsTest extends JellyTestCase {
 
     private File flagF;
