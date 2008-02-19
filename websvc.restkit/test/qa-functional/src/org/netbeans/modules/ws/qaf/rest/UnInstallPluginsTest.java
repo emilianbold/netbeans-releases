@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * 
- * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
  * 
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -39,7 +39,8 @@
 package org.netbeans.modules.ws.qaf.rest;
 
 import java.io.File;
-import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import junit.textui.TestRunner;
 import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.JellyTestCase;
@@ -47,17 +48,20 @@ import org.netbeans.jellytools.PluginsOperator;
 import org.netbeans.jemmy.operators.JButtonOperator;
 
 /**
- * Test (un)installation of the RESTful Web Services plugin from Update Center
- * 
+ *
  * @author lukas
  */
-public class InstallRestTest extends JellyTestCase {
 
-    static final String FLAG = ".rest.plugin.installed"; //NOI18N
-    static final String REST_KIT_LABEL = "RESTful Web Services"; //NOI18N
+//props:
+//plugins.jmaki.nbm (file)
+//plugins.jmaki.skip
+//plugins.rest.forceUninstall
+public class UnInstallPluginsTest extends JellyTestCase {
+
     private File flagF;
+    private File flagF2;
 
-    public InstallRestTest(String name) {
+    public UnInstallPluginsTest(String name) {
         super(name);
     }
 
@@ -66,52 +70,48 @@ public class InstallRestTest extends JellyTestCase {
         super.setUp();
         if (System.getProperty("xtest.tmpdir") != null) { //NOI18N
             //XTest execution
-            flagF = new File(System.getProperty("xtest.tmpdir"), FLAG); //NOI18N
+            flagF = new File(System.getProperty("xtest.tmpdir"), InstallPluginsTest.REST_FLAG); //NOI18N
+            flagF2 = new File(System.getProperty("xtest.tmpdir"), InstallPluginsTest.JMAKI_FLAG); //NOI18N
         } else {
             //Internal-execution
-            flagF = new File(System.getProperty("java.io.tmpdir"), FLAG); //NOI18N
-        }
-    }
-    
-    /**
-     * Install RESTful plugin iff it is not already installed
-     * 
-     * @throws java.io.IOException
-     */
-    public void testInstallRest() throws IOException {
-        try {
-            Class.forName("org.netbeans.modules.websvc.rest.spi.RestSupport");
-        } catch (ClassNotFoundException cnfe) {
-            flagF.createNewFile();
-            installPlugin();
+            flagF = new File(System.getProperty("java.io.tmpdir"), InstallPluginsTest.REST_FLAG); //NOI18N
+            flagF2 = new File(System.getProperty("java.io.tmpdir"), InstallPluginsTest.JMAKI_FLAG); //NOI18N
         }
     }
 
     /**
-     * Install RESTful plugin iff it has been installed by the test.
-     * One can bypass this constraint by setting system property:
+     * UnInstall plugins iff they were installed by tests.
+     * One can bypass this constraint by using following system properties:
      * "plugins.rest.forceUninstall=true"
+     * "plugins.jmaki.forceUninstall=true"
      * 
      * @throws java.io.IOException
      */
-    public void testUnInstallRest() {
-        if (flagF.exists() && flagF.isFile()) { //NOI18N
+    public void testUnInstallPlugins() {
+        List<String> toUninstall = new ArrayList<String>();
+        if (flagF.exists() && flagF.isFile()) {
             flagF.delete();
-            uninstallPlugin();
+            toUninstall.add(InstallPluginsTest.REST_KIT_LABEL);
         } else if (Boolean.getBoolean("plugins.rest.forceUninstall")) { //NOI18N
-            uninstallPlugin();
+            toUninstall.add(InstallPluginsTest.REST_KIT_LABEL);
+        }
+        if (!Boolean.getBoolean("plugins.jmaki.skip")) { //NOI18N
+            if (flagF2.exists() && flagF2.isFile()) {
+                flagF2.delete();
+                toUninstall.add(InstallPluginsTest.JMAKI_KIT_LABEL);
+            } else if (Boolean.getBoolean("plugins.jmaki.forceUninstall")) { //NOI18N
+                toUninstall.add(InstallPluginsTest.JMAKI_KIT_LABEL);
+            }
+        }
+        if (!toUninstall.isEmpty()) {
+            uninstallPlugins(toUninstall.toArray(new String[toUninstall.size()]));
         }
     }
 
-    private void installPlugin() throws IOException {
-        PluginsOperator po = PluginsOperator.invoke();
-        po.install(REST_KIT_LABEL);
-    }
-
-    private void uninstallPlugin() {
+    private void uninstallPlugins(String[] kits) {
         PluginsOperator po = PluginsOperator.invoke();
         po.selectInstalled();
-        po.selectPlugins(new String[]{REST_KIT_LABEL});
+        po.selectPlugins(kits);
         po.uninstall();
         // Uninstall
         String uninstallInDialogLabel = Bundle.getStringTrimmed("org.netbeans.modules.autoupdate.ui.wizards.Bundle", "UninstallUnitWizardModel_Buttons_Uninstall");
@@ -120,6 +120,6 @@ public class InstallRestTest extends JellyTestCase {
     }
 
     public static void main(String... args) {
-        TestRunner.run(InstallRestTest.class);
+        TestRunner.run(UnInstallPluginsTest.class);
     }
 }

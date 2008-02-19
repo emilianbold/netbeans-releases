@@ -86,7 +86,11 @@ public class JMakiTest extends CStubsTSuite {
         addJMakiFrameWork();
         createStubs("FromEntities"); //NOI18N
     }
-
+    
+    public void testJMakiTestsSkipped() {
+        //nothing to do
+    }
+    
     private void addJMakiFrameWork() {
         // open project properties
         getProjectRootNode().properties();
@@ -95,7 +99,7 @@ public class JMakiTest extends CStubsTSuite {
         NbDialogOperator propertiesDialogOper = new NbDialogOperator(projectPropertiesTitle);
         // select "Frameworks" category
         new Node(new JTreeOperator(propertiesDialogOper), "Frameworks").select();
-        new JButtonOperator(propertiesDialogOper, "Add...").pushNoBlock();
+        new JButtonOperator(propertiesDialogOper, "Add ...").pushNoBlock();
         //Add a Framework
         String addFrameworkTitle = Bundle.getStringTrimmed("org.netbeans.modules.web.project.ui.customizer.Bundle", "LBL_SelectWebExtension_DialogTitle");
         NbDialogOperator addFrameworkDialogOper = new NbDialogOperator(addFrameworkTitle);
@@ -112,9 +116,13 @@ public class JMakiTest extends CStubsTSuite {
      */
     public static TestSuite suite() {
         TestSuite suite = new NbTestSuite();
-        suite.addTest(new JMakiTest("testCreateStubs")); //NOI18N
-        suite.addTest(new JMakiTest("testFromWADL")); //NOI18N
-        suite.addTest(new JMakiTest("testCloseProject")); //NOI18N
+        if (!Boolean.getBoolean("plugins.jmaki.skip")) {
+            suite.addTest(new JMakiTest("testCreateStubs")); //NOI18N
+            suite.addTest(new JMakiTest("testFromWADL")); //NOI18N
+            suite.addTest(new JMakiTest("testCloseProject")); //NOI18N
+        } else {
+            suite.addTest(new JMakiTest("testJMakiTestsSkipped"));
+        }
         return suite;
     }
 
