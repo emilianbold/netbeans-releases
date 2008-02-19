@@ -73,13 +73,13 @@ public class SwitchToSchemaView  extends org.netbeans.performance.test.utilities
     
     protected void initialize() {
         log(":: initialize");
-        Node doc = new Node(EPUtilities.getProcessFilesNode("SOATestProject"), testSchemaFileName);
-        doc.select();
-        new OpenAction().perform(doc);
     }
         
     public void prepare() {
         log(":: prepare");
+        Node doc = new Node(EPUtilities.getProcessFilesNode("SOATestProject"), testSchemaFileName);
+        doc.select();
+        new OpenAction().perform(doc);
         schemaComponentOperator = XMLSchemaComponentOperator.findXMLSchemaComponentOperator(testSchemaFileName);
         schemaComponentOperator.getDesignButton().pushNoBlock();
     }
@@ -87,7 +87,7 @@ public class SwitchToSchemaView  extends org.netbeans.performance.test.utilities
     public ComponentOperator open() {
         log(":: open");
         schemaComponentOperator = XMLSchemaComponentOperator.findXMLSchemaComponentOperator(testSchemaFileName);
-        schemaComponentOperator.getSchemaButton().push();
+        schemaComponentOperator.getSchemaButton().clickMouse();
         
         return new XMLSchemaComponentOperator(testSchemaFileName);
     }

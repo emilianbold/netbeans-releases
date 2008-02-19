@@ -41,14 +41,24 @@
 
 package org.netbeans.modules.websvc.saas.ui.actions;
 
+import org.netbeans.modules.websvc.saas.model.Saas;
+import org.netbeans.modules.websvc.saas.model.WsdlSaas;
+import org.netbeans.modules.websvc.saas.model.WsdlSaasMethod;
+import org.netbeans.modules.websvc.saas.model.WsdlSaasPort;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
+import org.openide.cookies.EditorCookie;
+import org.openide.filesystems.FileObject;
+import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
+import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.NodeAction;
 
 /**
  *
- * @author  David Botterill, cao
+ * @author  nam
  */
 public class ViewWSDLAction extends NodeAction {
     
@@ -57,8 +67,11 @@ public class ViewWSDLAction extends NodeAction {
     }
     
     protected boolean enable(Node[] nodes) {
-        //TODO maybe check lookup if not to much performance cost
-        return true;
+        WsdlSaas saas = getWsdlSaas(nodes);
+        if (saas != null) {
+            return saas.getState() == Saas.State.RESOLVED;
+        }
+        return false;
     }
     
     public HelpCtx getHelpCtx() {
@@ -69,9 +82,54 @@ public class ViewWSDLAction extends NodeAction {
         return NbBundle.getMessage(ViewWSDLAction.class, "VIEW_WSDL");
     }
     
-    protected void performAction(Node[] activatedNodes) {
-        //TODO review original
+    private WsdlSaas getWsdlSaas(Node[] nodes) {
+        if (nodes == null || nodes.length != 1) {
+            return null;
+        }
 
+        WsdlSaas saas = nodes[0].getLookup().lookup(WsdlSaas.class);
+        if (saas == null) {
+            WsdlSaasPort port = nodes[0].getLookup().lookup(WsdlSaasPort.class);
+            if (port != null) {
+                saas = port.getParentSaas();
+            }
+        }
+        if (saas == null) {
+            WsdlSaasMethod method = nodes[0].getLookup().lookup(WsdlSaasMethod.class);
+            if (method != null) {
+                saas = method.getSaas();
+            }
+        }
+        return saas;
+    }
+    
+    protected void performAction(Node[] nodes) {
+        WsdlSaas saas = getWsdlSaas(nodes);
+        if (saas == null) {
+            throw new IllegalArgumentException("No nodes assoaciated WsdlSaas in lookup.");
+        }
+        if (saas.getState() != Saas.State.RESOLVED) {
+            throw new IllegalStateException("WsdlSaas is not in resolved state.");
+        }
+
+        String location = saas.getWsdlData().getWsdlFile();
+        FileObject wsdlFileObject = saas.getLocalWsdlFile();
+
+        if (null == wsdlFileObject) {
+            String errorMessage = NbBundle.getMessage(ViewWSDLAction.class, "WSDL_FILE_NOT_FOUND", location);
+            NotifyDescriptor d = new NotifyDescriptor.Message(errorMessage);
+            DialogDisplayer.getDefault().notify(d);
+            return;
+        }
+
+        //TODO: open in read-only mode
+        try {
+            DataObject wsdlDataObject = DataObject.find(wsdlFileObject);
+            EditorCookie editorCookie = wsdlDataObject.getCookie(EditorCookie.class);
+            editorCookie.open();
+        } catch (Exception e) {
+            Exceptions.printStackTrace(e);
+        }
     }
     
     public boolean asynchronous() {
