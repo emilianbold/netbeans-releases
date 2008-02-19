@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -144,6 +144,12 @@ public class GemManagerTest extends RubyTestBase {
         GemManager.isValidGemHome(FileUtil.toFile(gemRepo));
     }
     
+    public void testInitializeRepositoryFile() throws Exception {
+        File gemRepo = new File(getWorkDir(), "gem-repo");
+        GemManager.initializeRepository(gemRepo);
+        GemManager.isValidGemHome(gemRepo);
+    }
+    
     public void testGetVersionForPlatform() throws IOException {
         final RubyPlatform platform = RubyPlatformManager.getDefaultPlatform();
         GemManager gemManager = platform.getGemManager();
@@ -224,6 +230,26 @@ public class GemManagerTest extends RubyTestBase {
         assertEquals("0.3.3", gemManager.getVersion("bar-baz"));
         assertEquals("0.1.1", gemManager.getVersion("pdf-writer"));
         assertEquals("1.15.3.6752", gemManager.getVersion("activerecord"));
+    }
+    
+    public void testInstallLocal() throws IOException {
+        final RubyPlatform platform = RubyPlatformManager.getDefaultPlatform();
+        GemManager gemManager = platform.getGemManager();
+        RubyPlatform jruby = RubyPlatformManager.getDefaultPlatform();
+        FileObject gemRepo = FileUtil.toFileObject(getWorkDir()).createFolder("gem-repo");
+        GemManager.initializeRepository(gemRepo);
+        jruby.setGemHome(FileUtil.toFile(gemRepo));
+        jruby.getInfo().setGemPath("");
+        File rakeGem = getRakeGem();
+        assertNull("rake is not installed", gemManager.getVersion("rake"));
+        gemManager.installLocal(rakeGem, null, false, false, false, null);
+        assertNotNull("rake is installed", gemManager.getVersion("rake"));
+    }
+
+    private File getRakeGem() throws IOException {
+        File rakeGem = new File(TestUtil.getXTestJRubyHome(), "lib/ruby/gems/1.8/cache/rake-0.7.3.gem");
+        assertNotNull("rake gem found", rakeGem);
+        return rakeGem;
     }
 
     // XXX

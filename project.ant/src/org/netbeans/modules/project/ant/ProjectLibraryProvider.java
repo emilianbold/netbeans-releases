@@ -52,6 +52,7 @@ import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.api.project.ui.OpenProjects;
+import org.netbeans.api.queries.CollocationQuery;
 import org.netbeans.api.queries.SharabilityQuery;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.netbeans.spi.project.libraries.ArealLibraryProvider;
@@ -96,6 +97,10 @@ public class ProjectLibraryProvider implements ArealLibraryProvider<ProjectLibra
     private AntProjectListener apl;
 
     public static ProjectLibraryProvider INSTANCE;
+    
+    private volatile boolean listening = true;
+    private final Map<ProjectLibraryArea,Reference<LP>> providers = new HashMap<ProjectLibraryArea,Reference<LP>>();
+    
     /**
      * Default constructor for lookup.
      */
@@ -198,8 +203,6 @@ public class ProjectLibraryProvider implements ArealLibraryProvider<ProjectLibra
 
     // ---- management of libraries ----
 
-    private boolean listening = true;
-    private final Map<ProjectLibraryArea,Reference<LP>> providers = new HashMap<ProjectLibraryArea,Reference<LP>>();
 
     private final class LP implements LibraryProvider<ProjectLibraryImplementation>, FileChangeSupportListener {
 
@@ -243,8 +246,12 @@ public class ProjectLibraryProvider implements ArealLibraryProvider<ProjectLibra
             recalculate();
         }
 
-        private synchronized void recalculate() {
-            if (delta(libraries, calculate(area))) {
+        private void recalculate() {
+            boolean fire;
+            synchronized (this) {
+                fire = delta(libraries, calculate(area));
+            }
+            if (fire) {
                 pcs.firePropertyChange(LibraryProvider.PROP_LIBRARIES, null, null);
             }
         }
@@ -394,7 +401,9 @@ public class ProjectLibraryProvider implements ArealLibraryProvider<ProjectLibra
         }
     }
 
-    private static final Pattern LIBS_LINE = Pattern.compile("libs\\.([^.]+)\\.([^.]+)"); // NOI18N
+    //non private for test usage
+    static final Pattern LIBS_LINE = Pattern.compile("libs\\.([^${}]+)\\.([^${}.]+)"); // NOI18N
+    
     private static Map<String,ProjectLibraryImplementation> calculate(ProjectLibraryArea area) {
         Map<String,ProjectLibraryImplementation> libs = new HashMap<String,ProjectLibraryImplementation>();
         Definitions def = new Definitions(area.mainPropertiesFile);
@@ -461,7 +470,7 @@ public class ProjectLibraryProvider implements ArealLibraryProvider<ProjectLibra
         return libs;
     }
 
-    private synchronized boolean delta(Map<String,ProjectLibraryImplementation> libraries, Map<String,ProjectLibraryImplementation> newLibraries) {
+    private boolean delta(Map<String,ProjectLibraryImplementation> libraries, Map<String,ProjectLibraryImplementation> newLibraries) {
         if (!listening) {
             return false;
         }
@@ -915,7 +924,8 @@ public class ProjectLibraryProvider implements ArealLibraryProvider<ProjectLibra
         String[] volumes = LibrariesSupport.getLibraryTypeProvider(lib.getType()).getSupportedVolumeTypes();
         for (String volume : volumes) {
             List<URL> volumeContent = new ArrayList<URL>();
-            for (URL libEntry : lib.getContent(volume)) {
+            for (URL origlibEntry : lib.getContent(volume)) {
+                URL libEntry = origlibEntry;
                 String jarFolder = null;
                 if ("jar".equals(libEntry.getProtocol())) { // NOI18N
                     jarFolder = getJarFolder(libEntry);
@@ -934,22 +944,29 @@ public class ProjectLibraryProvider implements ArealLibraryProvider<ProjectLibra
                         continue;
                     }
                 }
-                FileObject newFO;
-                String name;
-                if (libEntryFO.isFolder()) {
-                    newFO = FileChooserAccessory.copyFolderRecursively(libEntryFO, sharedLibFolder);
-                    name = sharedLibFolder.getName()+File.separatorChar+newFO.getName()+File.separatorChar;
+                URL u;
+                if (CollocationQuery.areCollocated(libBaseFolder, FileUtil.toFile(libEntryFO))) {
+                    // if the jar/folder is in relation to the library folder (parent+child/same vcs)
+                    // don't replicate it but reference the original file.
+                    u = origlibEntry;
                 } else {
-                    String libEntryName = getUniqueName(sharedLibFolder, libEntryFO.getName(), libEntryFO.getExt());
-                    newFO = FileUtil.copyFile(libEntryFO, sharedLibFolder, libEntryName);
-                    name = sharedLibFolder.getName()+File.separatorChar+newFO.getNameExt();
-                }
-                URL u = LibrariesSupport.convertFilePathToURL(name);
-                if (FileUtil.isArchiveFile(newFO)) {
-                    u = FileUtil.getArchiveRoot(u);
-                }
-                if (jarFolder != null) {
-                    u = appendJarFolder(u, jarFolder);
+                    FileObject newFO;
+                    String name;
+                    if (libEntryFO.isFolder()) {
+                        newFO = FileChooserAccessory.copyFolderRecursively(libEntryFO, sharedLibFolder);
+                        name = sharedLibFolder.getNameExt()+File.separatorChar+newFO.getName()+File.separatorChar;
+                    } else {
+                        String libEntryName = getUniqueName(sharedLibFolder, libEntryFO.getName(), libEntryFO.getExt());
+                        newFO = FileUtil.copyFile(libEntryFO, sharedLibFolder, libEntryName);
+                        name = sharedLibFolder.getNameExt()+File.separatorChar+newFO.getNameExt();
+                    }
+                    u = LibrariesSupport.convertFilePathToURL(name);
+                    if (FileUtil.isArchiveFile(newFO)) {
+                        u = FileUtil.getArchiveRoot(u);
+                    }
+                    if (jarFolder != null) {
+                        u = appendJarFolder(u, jarFolder);
+                    }
                 }
                 volumeContent.add(u);
             }

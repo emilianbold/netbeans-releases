@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- *
+ * 
  * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
- *
+ * 
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,101 +20,133 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- *
+ * 
+ * If you wish your version of this file to be governed by only the CDDL
+ * or only the GPL Version 2, indicate your decision by adding
+ * "[Contributor] elects to include this software in this distribution
+ * under the [CDDL or GPL Version 2] license." If you do not indicate a
+ * single choice of license, a recipient has the option to distribute
+ * your version of this file under either the CDDL, the GPL Version 2 or
+ * to extend the choice of license to its licensees as provided above.
+ * However, if you add GPL Version 2 code and therefore, elected the GPL
+ * Version 2 license, then the option applies only if the new code is
+ * made subject to such option by the copyright holder.
+ * 
  * Contributor(s):
- *
- * Portions Copyrighted 2007 Sun Microsystems, Inc.
+ * 
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
+
 package org.netbeans.modules.cnd.gotodeclaration.element.providers;
 
-import java.util.*;
-import org.netbeans.modules.cnd.api.model.*;
+import org.netbeans.modules.cnd.api.model.CsmDeclaration;
+import org.netbeans.modules.cnd.api.model.CsmFunction;
+import org.netbeans.modules.cnd.api.model.CsmFunctionDefinition;
+import org.netbeans.modules.cnd.api.model.CsmNamespace;
+import org.netbeans.modules.cnd.api.model.CsmProject;
+import org.netbeans.modules.cnd.api.model.CsmVariable;
 import org.netbeans.modules.cnd.gotodeclaration.element.spi.ElementProvider;
 import org.netbeans.modules.cnd.gotodeclaration.util.NameMatcher;
 import org.openide.util.NbBundle;
 
 /**
- * ElementProvider for functions and variables
- * @author Vladimir Kvashin
+ *
+ * @author vk155633
  */
 public class FuncVarElementProvider extends BaseProvider implements ElementProvider {
 
+    private static class FuncVarDelegate extends ProviderDelegate {
+
+        public String name() {
+            return "C/C++ Functions and Variables"; // NOI18N
+        }
+
+        public String getDisplayName() {
+            return NbBundle.getMessage(FuncVarElementProvider.class, "FUNCVAR_PROVIDER_DISPLAY_NAME"); // NOI18N
+        }
+
+        protected void processProject(CsmProject project, ResultSet result, NameMatcher comparator) {
+            if( TRACE ) System.err.printf("FuncVarElementProvider.processProject %s\n", project.getName());
+            processNamespace(project.getGlobalNamespace(), result, comparator);
+        }
+
+        private void processNamespace(CsmNamespace nsp, ResultSet result, NameMatcher comparator) {
+            if( TRACE ) System.err.printf("processNamespace %s\n", nsp.getQualifiedName());
+            for( CsmDeclaration declaration : nsp.getDeclarations() ) {
+                if( isCancelled() ) {
+                    return;
+                }
+                processDeclaration(declaration, result, comparator);
+            }
+            for( CsmNamespace child : nsp.getNestedNamespaces() ) {
+                if( isCancelled() ) {
+                    return;
+                }
+                processNamespace(child, result, comparator);
+            }
+        }
+
+        private void processDeclaration(CsmDeclaration decl, ResultSet result, NameMatcher comparator) {
+            switch (decl.getKind()) {
+                case FUNCTION_DEFINITION:
+                    if( comparator.matches(decl.getName().toString()) ) {
+                        CsmFunctionDefinition fdef = (CsmFunctionDefinition) decl;
+    //		    CsmFunction fdecl = fdef.getDeclaration();
+    //		    if( fdecl == null || fdecl == fdef) {
+                            result.add(new FunctionElementDescriptor(fdef));
+    //		    }
+                    }
+                    break;
+                case FUNCTION:
+                    if( comparator.matches(decl.getName().toString()) ) {
+                        CsmFunction fdecl = (CsmFunction) decl;
+                        CsmFunctionDefinition fdef = fdecl.getDefinition();
+                        if( fdef == null || fdef.equals(fdecl) ) {
+                            result.add(new FunctionElementDescriptor((CsmFunction) decl));
+                        }
+                    }
+                    break;
+                case VARIABLE:
+                    if( comparator.matches(decl.getName().toString()) ) {
+                        result.add(new VariableElementDescriptor((CsmVariable) decl));
+                    }
+                    break;
+                case CLASS:
+                case UNION:
+                case STRUCT:
+                case ENUM:
+                case TYPEDEF:
+                case BUILT_IN:
+                case ENUMERATOR:
+                case MACRO:
+                case VARIABLE_DEFINITION:
+                case TEMPLATE_SPECIALIZATION:
+                case ASM:
+                case TEMPLATE_DECLARATION:
+                case NAMESPACE_DEFINITION:
+                case NAMESPACE_ALIAS:
+                case USING_DIRECTIVE:
+                case USING_DECLARATION:
+                case CLASS_FORWARD_DECLARATION:
+                case CLASS_FRIEND_DECLARATION:
+                    break;
+            }
+        }
+
+
+    }
     
-    public String name() {
-	return "C/C++ Functions and Variables"; // NOI18N
+    @Override
+    protected ProviderDelegate createDelegate() {
+        return new FuncVarDelegate();
     }
 
     public String getDisplayName() {
-	return NbBundle.getMessage(FuncVarElementProvider.class, "FUNCVAR_PROVIDER_DISPLAY_NAME"); // NOI18N
+        return NbBundle.getMessage(FuncVarElementProvider.class, "FUNCVAR_PROVIDER_DISPLAY_NAME"); // NOI18N
     }
 
-    protected void processProject(CsmProject project, ResultSet result, NameMatcher comparator) {
-	if( TRACE ) System.err.printf("FuncVarElementProvider.processProject %s\n", project.getName());
-        processNamespace(project.getGlobalNamespace(), result, comparator);
+    public String name() {
+        return "C/C++ Functions and Variables"; // NOI18N
     }
     
-    private void processNamespace(CsmNamespace nsp, ResultSet result, NameMatcher comparator) {
-        if( TRACE ) System.err.printf("processNamespace %s\n", nsp.getQualifiedName());
-	for( CsmDeclaration declaration : nsp.getDeclarations() ) {
-            if( isCancelled() ) {
-		return;
-	    }
-	    processDeclaration(declaration, result, comparator);
-	}
-	for( CsmNamespace child : nsp.getNestedNamespaces() ) {
-            if( isCancelled() ) {
-		return;
-	    }
-	    processNamespace(child, result, comparator);
-	}
-    }
-
-    private void processDeclaration(CsmDeclaration decl, ResultSet result, NameMatcher comparator) {
-        switch (decl.getKind()) {
-            case FUNCTION_DEFINITION:
-		if( comparator.matches(decl.getName().toString()) ) {
-		    CsmFunctionDefinition fdef = (CsmFunctionDefinition) decl;
-//		    CsmFunction fdecl = fdef.getDeclaration();
-//		    if( fdecl == null || fdecl == fdef) {
-                        result.add(new FunctionElementDescriptor(fdef));
-//		    }
-		}
-		break;
-            case FUNCTION:
-		if( comparator.matches(decl.getName().toString()) ) {
-                    CsmFunction fdecl = (CsmFunction) decl;
-                    CsmFunctionDefinition fdef = fdecl.getDefinition();
-                    if( fdef == null || fdef.equals(fdecl) ) {
-                        result.add(new FunctionElementDescriptor((CsmFunction) decl));
-                    }
-		}
-		break;
-            case VARIABLE:
-		if( comparator.matches(decl.getName().toString()) ) {
-                    result.add(new VariableElementDescriptor((CsmVariable) decl));
-		}
-		break;
-            case CLASS:
-            case UNION:
-            case STRUCT:
-            case ENUM:
-            case TYPEDEF:
-            case BUILT_IN:
-            case ENUMERATOR:
-            case MACRO:
-            case VARIABLE_DEFINITION:
-            case TEMPLATE_SPECIALIZATION:
-            case ASM:
-            case TEMPLATE_DECLARATION:
-            case NAMESPACE_DEFINITION:
-            case NAMESPACE_ALIAS:
-            case USING_DIRECTIVE:
-            case USING_DECLARATION:
-            case CLASS_FORWARD_DECLARATION:
-            case CLASS_FRIEND_DECLARATION:
-                break;
-        }
-    }
-
-
 }

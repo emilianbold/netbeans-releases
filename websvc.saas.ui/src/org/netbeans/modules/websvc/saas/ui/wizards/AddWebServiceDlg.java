@@ -61,9 +61,9 @@ import java.net.MalformedURLException;
 
 import javax.swing.filechooser.FileFilter;
 import javax.swing.*;
-import org.netbeans.modules.websvc.manager.util.ManagerUtil;
 import org.netbeans.modules.websvc.saas.model.SaasGroup;
 import org.netbeans.modules.websvc.saas.model.SaasServicesModel;
+import org.netbeans.modules.websvc.saas.util.WsdlUtil;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -92,7 +92,7 @@ public class AddWebServiceDlg extends JPanel  implements ActionListener {
     private JButton cancelButton = new JButton();
     private JButton addButton = new JButton();
     
-    private String groupId;
+    private SaasGroup group;
     private final boolean jaxRPCAvailable;
 
     private static final String[] KEYWORDS = 
@@ -120,19 +120,12 @@ public class AddWebServiceDlg extends JPanel  implements ActionListener {
     }
     
     
-    public AddWebServiceDlg() {
-        this(SaasServicesModel.getInstance().getRootGroup());
-    }
-    
-    
     public AddWebServiceDlg(SaasGroup group) {
         initComponents();
         myInitComponents();
-        this.groupId = groupId;
-        jaxRPCAvailable = ManagerUtil.isJAXRPCAvailable();
+        this.group = group;
+        jaxRPCAvailable = WsdlUtil.isJAXRPCAvailable();
     }
-
-
     
     private static boolean isValidPackageName(String packageName) {
         if (packageName == null || packageName.length() == 0) { // let jaxws pick package name
@@ -190,7 +183,7 @@ public class AddWebServiceDlg extends JPanel  implements ActionListener {
         
         // Check the package name
         final String packageName = jTxtpackageName.getText().trim();
-        if (!isValidPackageName(packageName)) {
+        if (packageName.length() > 0 && !isValidPackageName(packageName)) {
             setErrorMessage(NbBundle.getMessage(AddWebServiceDlg.class, "INVALID_PACKAGE"));
             addButton.setEnabled(false);
         }else if (jTxtLocalFilename.isEnabled()) {
@@ -391,8 +384,7 @@ public class AddWebServiceDlg extends JPanel  implements ActionListener {
         dialog = null;
         
         // Run the add W/S asynchronously
-        //TODO:nam
-        // SaasServiceModel.getInstance().addWebService(wsdl, packageName, groupId);
+        SaasServicesModel.getInstance().addWsdlService(group, wsdl, packageName);
     }    
     
     public void actionPerformed(ActionEvent evt) {
@@ -487,7 +479,7 @@ public class AddWebServiceDlg extends JPanel  implements ActionListener {
             }
         });
 
-        errorLabel.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/websvc/manager/resources/warning.png"))); // NOI18N
+        errorLabel.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/websvc/saas/ui/resources/warning.png"))); // NOI18N
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);

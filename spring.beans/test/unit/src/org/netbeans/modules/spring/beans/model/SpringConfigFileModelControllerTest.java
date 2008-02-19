@@ -42,7 +42,10 @@
 package org.netbeans.modules.spring.beans.model;
 
 import java.io.IOException;
+import java.lang.ref.WeakReference;
 import java.util.concurrent.Callable;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.Document;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.spring.beans.ConfigFileTestCase;
 import org.netbeans.modules.spring.beans.TestUtils;
@@ -63,7 +66,6 @@ public class SpringConfigFileModelControllerTest extends ConfigFileTestCase {
     public void testReadParse() throws Exception {
         String contents = TestUtils.createXMLConfigText("");
         TestUtils.copyStringToFile(contents, configFile);
-
         final ParseCountingBeanSource beanSource = new ParseCountingBeanSource();
         final SpringConfigFileModelController controller = new SpringConfigFileModelController(configFile, beanSource);
 
@@ -90,7 +92,6 @@ public class SpringConfigFileModelControllerTest extends ConfigFileTestCase {
     public void testWriteParse() throws Exception {
         String contents = TestUtils.createXMLConfigText("");
         TestUtils.copyStringToFile(contents, configFile);
-
         final ParseCountingBeanSource beanSource = new ParseCountingBeanSource();
         final SpringConfigFileModelController controller = new SpringConfigFileModelController(configFile, beanSource);
 
@@ -123,6 +124,81 @@ public class SpringConfigFileModelControllerTest extends ConfigFileTestCase {
             }
         });
     };
+
+    public void testCanGCDocument() throws Exception {
+        String contents = TestUtils.createXMLConfigText("");
+        TestUtils.copyStringToFile(contents, configFile);
+
+        final SpringConfigFileModelController controller = new SpringConfigFileModelController(configFile, new ConfigFileSpringBeanSource());
+        final BaseDocument[] doc = { null };
+        ExclusiveAccess.getInstance().runSyncTask(new  Callable<Void>() {
+            public Void call() throws IOException {
+                DocumentWrite docWrite = controller.getDocumentWrite();
+                docWrite.open();
+                try {
+                    doc[0] = docWrite.getDocument();
+                    assertTrue(doc[0].isAtomicLock());
+                } finally {
+                    docWrite.close();
+                    assertFalse(doc[0].isAtomicLock());
+                }
+                return null;
+            }
+        });
+        WeakReference<Document> docRef = new WeakReference<Document>(doc[0]);
+        doc[0] = null;
+        assertGC("Should be possible to GC the document", docRef);
+    }
+
+    public void testCanSaveDocument() throws Exception {
+        String contents = TestUtils.createXMLConfigText("");
+        TestUtils.copyStringToFile(contents, configFile);
+
+        final SpringConfigFileModelController controller = new SpringConfigFileModelController(configFile, new ConfigFileSpringBeanSource());
+        ExclusiveAccess.getInstance().runSyncTask(new  Callable<Void>() {
+            public Void call() throws IOException {
+                DocumentWrite docWrite = controller.getDocumentWrite();
+                docWrite.open();
+                try {
+                    Document doc = docWrite.getDocument();
+                    doc.remove(0, doc.getLength());
+                    doc.insertString(0, "modified", null);
+                    docWrite.commit();
+                } catch (BadLocationException e) {
+                    fail();
+                } finally {
+                    docWrite.close();
+                }
+                return null;
+            }
+        });
+        assertEquals("modified", TestUtils.copyFileToString(configFile));
+    }
+
+    public void testDocumentNotSavedWhenCommitNotCalled() throws Exception {
+        String contents = TestUtils.createXMLConfigText("");
+        TestUtils.copyStringToFile(contents, configFile);
+
+        final SpringConfigFileModelController controller = new SpringConfigFileModelController(configFile, new ConfigFileSpringBeanSource());
+        ExclusiveAccess.getInstance().runSyncTask(new  Callable<Void>() {
+            public Void call() throws IOException {
+                DocumentWrite docWrite = controller.getDocumentWrite();
+                docWrite.open();
+                try {
+                    Document doc = docWrite.getDocument();
+                    doc.remove(0, doc.getLength());
+                    doc.insertString(0, "modified", null);
+                    // Not calling commit(), the document should not be saved.
+                } catch (BadLocationException e) {
+                    fail();
+                } finally {
+                    docWrite.close();
+                }
+                return null;
+            }
+        });
+        assertEquals(contents, TestUtils.copyFileToString(configFile));
+    }
 
     private static final class ParseCountingBeanSource extends ConfigFileSpringBeanSource {
 

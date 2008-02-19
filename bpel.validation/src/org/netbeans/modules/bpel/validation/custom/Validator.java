@@ -89,13 +89,14 @@ import org.netbeans.modules.xml.xam.Component;
 import org.netbeans.modules.xml.xam.spi.Validator.ResultType;
 import org.netbeans.modules.xml.xam.dom.NamedComponentReference;
 import org.netbeans.modules.xml.xam.Model;
+import org.netbeans.modules.bpel.validation.core.BpelValidator;
 import static org.netbeans.modules.soa.ui.util.UI.*;
 
 /**
  * @author Vladimir Yaroslavskiy
  * @version 2007.05.03
  */
-public final class Validator extends org.netbeans.modules.bpel.validation.core.Validator {
+public final class Validator extends BpelValidator {
 
   @Override
   public void visit(ForEach forEach) {
@@ -545,8 +546,7 @@ public final class Validator extends org.netbeans.modules.bpel.validation.core.V
   }
   
   @Override
-  public void visit(Reply reply)
-  {
+  public void visit(Reply reply) {
       super.visit(reply);
       WSDLReference<Operation> opRef = reply.getOperation();
       
@@ -565,21 +565,23 @@ public final class Validator extends org.netbeans.modules.bpel.validation.core.V
 
   @Override
   public void visit(Import imp) {
-      Model model = getModel(imp);
+    Model model = getModel(imp);
 
-      if (model == null) {
-        addError("FIX_NotWellFormedImport", imp); // NOI18N
-        return;
-      }
+    if (model == null) {
+      addError("FIX_Not_Well_Formed_Import", imp); // NOI18N
+      return;
+    }
+    if (isValidationComplete()) {
       validate(model);
+    }
   }
 
   private Model getModel(Import imp) {
-      Model model = ImportHelper.getWsdlModel(imp, false);
+    Model model = ImportHelper.getWsdlModel(imp, false);
 
-      if (model != null) {
-          return model;
-      }
-      return ImportHelper.getSchemaModel(imp, false);
+    if (model != null) {
+      return model;
+    }
+    return ImportHelper.getSchemaModel(imp, false);
   }
 }

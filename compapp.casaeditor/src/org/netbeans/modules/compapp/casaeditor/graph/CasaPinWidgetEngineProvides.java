@@ -39,15 +39,6 @@
  * made subject to such option by the copyright holder.
  */
 
-/*
-* CasaEngineProvidesPinWidget.java
-*
-* Created on November 7, 2006, 4:07 PM
-*
-* To change this template, choose Tools | Template Manager
-* and open the template in the editor.
-*/
-
 package org.netbeans.modules.compapp.casaeditor.graph;
 
 import org.netbeans.api.visual.widget.Scene;
@@ -64,6 +55,7 @@ public class CasaPinWidgetEngineProvides extends CasaPinWidgetEngine {
         super(scene, CasaPinWidget.IMAGE_ARROW_RIGHT_PROVIDES);
     }
 
+    @Override
     protected Directions getDirection() {
         return Directions.LEFT;
     }

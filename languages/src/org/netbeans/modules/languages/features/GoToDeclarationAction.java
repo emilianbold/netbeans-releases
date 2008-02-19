@@ -42,21 +42,29 @@
 package org.netbeans.modules.languages.features;
 
 import org.netbeans.api.languages.ASTPath;
-import org.netbeans.api.languages.ParseException;
 import java.awt.event.ActionEvent;
+import java.io.File;
+import java.io.IOException;
+import java.net.URISyntaxException;
+import java.net.URL;
 import javax.swing.text.JTextComponent;
+import javax.swing.text.StyledDocument;
 import org.netbeans.editor.BaseAction;
 import org.netbeans.modules.editor.NbEditorDocument;
 import org.netbeans.api.languages.ASTNode;
-import org.netbeans.api.languages.ParseException;
 import org.netbeans.api.languages.database.DatabaseContext;
+import org.netbeans.api.languages.database.DatabaseDefinition;
 import org.netbeans.api.languages.database.DatabaseUsage;
 import org.netbeans.api.languages.database.DatabaseItem;
 import org.netbeans.modules.editor.NbEditorUtilities;
 import org.netbeans.modules.languages.ParserManagerImpl;
-import org.openide.ErrorManager;
+import org.openide.cookies.EditorCookie;
 import org.openide.cookies.LineCookie;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
+import org.openide.loaders.DataObjectNotFoundException;
+import org.openide.nodes.Node;
 import org.openide.text.Line;
 import org.openide.text.NbDocument;
 import org.openide.util.NbBundle;
@@ -86,12 +94,52 @@ public class GoToDeclarationAction extends BaseAction {
         if (item instanceof DatabaseUsage) {
             item = ((DatabaseUsage) item).getDefinition();
         }
+        
         int offset = item.getOffset();
-        DataObject dobj = NbEditorUtilities.getDataObject (doc);
+        DataObject dobj = null;
+        StyledDocument docToGo = null;
+        URL url = ((DatabaseDefinition) item).getSourceFileUrl();
+        if (url == null) {
+            dobj = NbEditorUtilities.getDataObject (doc);
+            docToGo = doc;
+        } else {
+            File file = null;
+            try {
+                file = new File(url.toURI());
+            } catch (URISyntaxException ex) {
+                ex.printStackTrace();
+            }
+            
+            if (file != null && file.exists()) {
+                /** convert file to an uni absolute pathed file (../ etc will be coverted) */
+                file = FileUtil.normalizeFile(file);
+                FileObject fobj = FileUtil.toFileObject(file);
+                try {
+                    dobj = DataObject.find(fobj);
+                } catch (DataObjectNotFoundException ex) {
+                    ex.printStackTrace();
+                }
+                if (dobj != null) {
+                    Node nodeOfDobj = dobj.getNodeDelegate();
+                    EditorCookie ec = nodeOfDobj.getCookie(EditorCookie.class);
+                    try {
+                        docToGo = ec.openDocument();
+                    } catch (IOException ex) {
+                        ex.printStackTrace();
+                    }
+                }
+                
+            }
+        }
+        
+        if (dobj == null) {
+            return;
+        }
+        
         LineCookie lc = (LineCookie)dobj.getCookie(LineCookie.class);
         Line.Set lineSet = lc.getLineSet();
-        Line line = lineSet.getCurrent(NbDocument.findLineNumber(doc, offset));
-        int column = NbDocument.findLineColumn (doc, offset);
+        Line line = lineSet.getCurrent(NbDocument.findLineNumber(docToGo, offset));
+        int column = NbDocument.findLineColumn (docToGo, offset);
         line.show (Line.SHOW_GOTO, column);
     }
     

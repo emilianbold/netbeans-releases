@@ -39,6 +39,7 @@
 
 package org.netbeans.modules.websvc.saas.model;
 
+import java.io.IOException;
 import org.netbeans.modules.websvc.saas.model.jaxb.Group;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -47,17 +48,13 @@ import java.util.SortedMap;
 import java.util.TreeMap;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
+import org.openide.util.NbBundle;
 
 /**
  *
  * @author nam
  */
 public class SaasGroup {
-    /**
-     * Property change event names
-     */
-    public static final String PROP_CHILD_GROUP = "childGroup";
-    public static final String PROP_CHILD_SERVICE = "childService";
 
     private final Group delegate;
     private final SaasGroup parent;
@@ -102,37 +99,54 @@ public class SaasGroup {
     }
 
     /**
-     * If this is part of model mutation, caller is responsible to ensure 
-     * SaasServices persists with proper Group information.
+     * Not a mutation
      * 
      * @param service saas service
      */
     public void addService(Saas service) {
+        getServices();
         services.put(service.getDisplayName(), service);
-        SaasServicesModel.getInstance().fireChange(PROP_CHILD_SERVICE, this, null, service);
     }
     
     /**
      * If this is part of model mutation, caller is responsible to ensure 
-     * SaasServices persists with proper Group information.
+     * SaasServices persists with proper Group information and eventing.
      * 
      * @param service saas service to remove
      */
     public boolean removeService(Saas service) {
         Saas removed = services.remove(service.getDisplayName());
         if (removed != null) {
-            SaasServicesModel.getInstance().fireChange(PROP_CHILD_SERVICE, this, removed, null);
             return true;
         }
         return false;
     }
 
     public void setName(String value) {
-        if (! isUserDefined()) {
-            getParent().removeChildGroup(this);
-            delegate.setName(value);
-            getParent().addChildGroup(this);
+        if (getParent() == null) {
+            throw new IllegalArgumentException("Cannot rename root group");
         }
+
+        if (value == null || value.equals(getName())) {
+            return;
+        }
+        
+        String message = null;
+        if (! isUserDefined()) {
+            message = NbBundle.getMessage(getClass(), "MSG_GroupNotUserDefined");
+        }
+        
+        for (SaasGroup g : getParent().getChildrenGroups()) {
+            if (g.getName().equals(value)) {
+                message = NbBundle.getMessage(getClass(), "MSG_DuplicateGroupName");
+            }
+        }
+        
+        if (message != null) {
+            throw new IllegalArgumentException(message);
+        }
+        delegate.setName(value);
+        SaasServicesModel.getInstance().saveRootGroup();
     }
 
     public String getName() {
@@ -143,7 +157,7 @@ public class SaasGroup {
         return userDefined;
     }
 
-    public void setUserDefined(boolean v) {
+    void setUserDefined(boolean v) {
         if (userDefined) {
             userDefined = v;
         }
@@ -178,25 +192,23 @@ public class SaasGroup {
         
         _removeChildGroup(group);
         
-        // only fire on top-level object
-        SaasServicesModel.getInstance().fireChange(PROP_CHILD_GROUP, this, group, null);
         return true;
     }
     
     private void _removeChildGroup(SaasGroup child) {
         if (child != null) {
             for (Saas saas : child.getServices()) {
-                _removeSaas(saas);
+                removeService(saas);
+                try {
+                    saas.getSaasFile().delete();
+                } catch(Exception e) {
+                    Exceptions.printStackTrace(e);
+                }
             }
             for (SaasGroup c : child.getChildrenGroups()) {
                 _removeChildGroup(c);
             }
         }
-    }
-    
-    private void _removeSaas(Saas childService) {
-        services.remove(childService.getDisplayName());
-        //TODO cleanup persistence and remove local files
     }
     
     public boolean canRemove() {
@@ -218,7 +230,46 @@ public class SaasGroup {
      * @param group saas group to add
      */
     public void addChildGroup(SaasGroup group) {
+        getChildrenGroups();
         children.put(group.getName(), group);
-        SaasServicesModel.getInstance().fireChange(PROP_CHILD_GROUP, this, null, group);
+        getDelegate().getGroup().add(group.getDelegate());
+    }
+    
+    /**
+     * Return a clone of group element that has one descendant at each level,
+     * excluding root, down to the current group.
+     * @return
+     */
+    public Group getPathFromRoot() {
+        Group group = new Group();
+        group.setName(getName());
+        SaasGroup parentGroup = getParent();
+        while(parentGroup != SaasServicesModel.getInstance().getRootGroup()) {
+            Group p = new Group();
+            p.setName(parentGroup.getName());
+            p.getGroup().add(group);
+            group = p;
+            parentGroup = parentGroup.getParent();
+        }
+        return group;
+    }
+
+    /**
+     * Just create a child group node with given name and back parent pointer.
+     * Caller should explicitly mutate model, flush, persist and fire event
+     * 
+     * @param name
+     * @return created group
+     */
+    public SaasGroup createGroup(String name) {
+        Group g = new Group();
+        g.setName(name);
+        SaasGroup child = new SaasGroup(this, g);
+        child.setUserDefined(true);
+        return child;
+    }
+    
+    public String toString() {
+        return getName();
     }
 }

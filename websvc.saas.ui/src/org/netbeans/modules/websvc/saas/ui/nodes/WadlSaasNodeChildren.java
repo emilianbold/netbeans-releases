@@ -64,17 +64,17 @@ public class WadlSaasNodeChildren extends SaasNodeChildren<Object> {
     
     @Override
     protected void updateKeys() {
-        if (getSaas().getState() == Saas.State.READY) {
+        if (getSaas().getState() == Saas.State.RESOLVED) {
             setKeys(getSaas().getResourcesOrMethods());
         } else {
-            setKeys(Collections.emptyList());
+            setKeys(WAIT_HOLDER);
         }
     }
     
     @Override
     protected Node[] createNodes(Object key) {
         if (needsWaiting()) {
-            return WAIT_NODES;
+            return getWaitNode();
         }
         try {
             if (key instanceof WadlSaasMethod) {

@@ -105,6 +105,26 @@ is the proper place.
 
     <changes>
         <change>
+            <summary>SPI refinements</summary>
+            <version major="1" minor="17"/>
+            <date day="14" month="2" year="2008"/>
+            <author login="vstejskal"/>
+            <compatibility addition="no" binary="incompatible" source="incompatible" semantic="compatible" deprecation="no" deletion="no" modification="yes" />
+            <description>
+            <p>
+                The <code>createReader</code> and <code>createWriter</code> methods
+                of <code>StorageDescription</code> now have second parameter, which
+                is a mime path string of the file being read or writter respectively.
+            </p>
+            <p>
+                The <code>StorageReader.getMimePath</code> method was added alongside
+                with a new constructor that takse two parameters <code>FileObject</code>
+                that the reader is dealing with and the mime path <code>String</code> of
+                that file.
+            </p>
+            </description>
+        </change>
+        <change>
             <summary>Added StorageSupport.stringToKeyStrokes and keyStrokesToString</summary>
             <version major="1" minor="16"/>
             <date day="6" month="12" year="2007"/>

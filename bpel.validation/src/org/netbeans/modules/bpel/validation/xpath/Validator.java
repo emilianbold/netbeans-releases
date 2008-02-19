@@ -102,13 +102,14 @@ import org.netbeans.modules.xml.schema.model.LocalSimpleType;
 import org.netbeans.modules.xml.schema.model.LocalComplexType;
 import org.netbeans.modules.xml.schema.model.visitor.DeepSchemaVisitor;
 import org.netbeans.modules.xml.xam.dom.DocumentComponent;
+import org.netbeans.modules.bpel.validation.core.BpelValidator;
 import static org.netbeans.modules.soa.ui.util.UI.*;
 
 /**
  * @author Vladimir Yaroslavskiy
  * @version 2008.02.08
  */
-public final class Validator extends org.netbeans.modules.bpel.validation.core.Validator {
+public final class Validator extends BpelValidator {
 
   @Override
   public void visit(Copy copy) {
@@ -136,18 +137,8 @@ public final class Validator extends org.netbeans.modules.bpel.validation.core.V
       return;
     }
     if (fromType != toType) {
-      addError("FIX_TYPE_IN_COPY", copy, getTypeString(fromType), getTypeString(toType));
+      addError("FIX_TYPE_IN_COPY", copy, getTypeName(fromType), getTypeName(toType));
     }
-  }
-
-  private String getTypeString(Component component) {
-    if (component == null) {
-      return "n/a";
-    }
-    if (component instanceof Named) {
-      return ((Named) component).getName();
-    }
-    return component.toString();
   }
 
   private Component getType(From from) {
@@ -386,21 +377,14 @@ public final class Validator extends org.netbeans.modules.bpel.validation.core.V
               return context.isSchemaImported(schemaNamespaceUri);
           }
       });
-      //
       // Checks if the expression contains ";". 
       // If it does, then split it to parts and verifies them separately.
       if (XPathModelFactory.isSplitable(exprText)) {
-          // Notify the user that the expression is not completed
           context.addResultItem(exprText, Validator.ResultType.ERROR, i18n(Validator.class, "INCOMPLETE_XPATH")); // NOI18N
-
           String[] partsArr = XPathModelFactory.split(exprText);
+
           for (String anExprText : partsArr) {
               checkSingleExpr(model, anExprText);
-//              if (anExprText != null && anExprText.length() != 0) {
-//                  // Only the first expression graph has to be connected 
-//                  // to the right tree! The isFirst flag is used for it. 
-//                 checkSingleExpr(model, anExprText);
-//              }
           }
           return null;
       } 
@@ -423,96 +407,6 @@ public final class Validator extends org.netbeans.modules.bpel.validation.core.V
       }
   }
 
-  private Component getTypeOfElement(Component component) {
-//out();
-//out("GET TYPE: " + component);
-    GlobalType type = null;
-
-    if (component instanceof TypeContainer) {
-//out("1");
-      NamedComponentReference<? extends GlobalType> ref = ((TypeContainer) component).getType();
-
-      if (ref != null) { 
-        type = ref.get();
-
-        if (type != null) {
-//out("2");
-          return type;
-        }
-      }
-    }
-//out("3");
-    if (component instanceof DocumentComponent && component instanceof SchemaComponent) {
-      DocumentComponent document = (DocumentComponent) component;
-      String typeName = document.getPeer().getAttribute("type");
-      typeName = removePrefix(typeName);
-      type = findType(typeName, (SchemaComponent) component);
-    }
-    if (type != null) {
-      return type;
-    }
-//out("4");
-    return component;
-  }
-
-  private GlobalType findType(String typeName, SchemaComponent component) {
-//out("= findType: " + typeName);
-    if (typeName == null || typeName.equals("")) {
-      return null;
-    }
-    SchemaModel model = component.getModel();
-    Collection<Schema> schemas = model.findSchemas("http://www.w3.org/2001/XMLSchema");
-    GlobalType type = null;
-
-    for (Schema schema : schemas) {
-      type = findType(typeName, schema);
-
-      if (type != null) {
-        return type;
-      }
-    }
-    return findType(typeName, model.getSchema());
-  }
-
-  private GlobalType findType(final String typeName, Schema schema) {
-//out();
-//out("= in schema: " + schema.getTargetNamespace());
-    myGlobalType = null;
-
-    schema.accept(new DeepSchemaVisitor() {
-
-      @Override
-      public void visit(GlobalSimpleType type) {
-//out("  see GLOBAL Simple TYPE : " + type.getName());
-        if (typeName.equals(type.getName())) {
-//out("!!!=== FOUND GLOBAL Simple TYPE ==== : " + type.getName());
-          myGlobalType = type;
-        }
-      }
-      @Override
-      public void visit(GlobalComplexType type) {
-//out(" see GLOBAL Complex TYPE : " + type.getName());
-        if (typeName.equals(type.getName())) {
-//out("!!!=== FOUND GLOBAL Complex TYPE ==== : " + type.getName());
-          myGlobalType = type;
-        }
-      }
-    });
-    return myGlobalType;
-  }
-
-  private String removePrefix(String value) {
-    if (value == null) {
-      return null;
-    }
-    int k = value.indexOf(":");
-
-    if (k == -1) {
-      return value;
-    }
-    return value.substring(k + 1);
-  }
-
   private static void out() {
     System.out.println();
   }
@@ -521,6 +415,5 @@ public final class Validator extends org.netbeans.modules.bpel.validation.core.V
     System.out.println("*** " + object); // NOI18N
   }
 
-  private GlobalType myGlobalType;
   private BpelEntity myValidatedActivity; 
 }

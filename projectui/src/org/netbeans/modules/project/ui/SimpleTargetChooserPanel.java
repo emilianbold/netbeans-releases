@@ -138,6 +138,9 @@ final class SimpleTargetChooserPanel implements WizardDescriptor.Panel<WizardDes
         
         // Try to preselect a folder            
         FileObject preselectedTarget = Templates.getTargetFolder( wizard );
+        if (preselectedTarget == null) {
+            preselectedTarget = project.getProjectDirectory();
+        }
         // Try to preserve the already entered target name
         String targetName = Templates.getTargetName( wizard );
         // Init values

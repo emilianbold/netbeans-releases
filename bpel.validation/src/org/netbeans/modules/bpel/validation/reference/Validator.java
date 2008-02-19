@@ -49,76 +49,59 @@ import org.netbeans.modules.xml.xam.spi.ValidationResult;
 import org.netbeans.modules.xml.xam.spi.Validation;
 import org.netbeans.modules.xml.xam.spi.Validation.ValidationType;
 import org.netbeans.modules.bpel.validation.core.Outcome;
+import org.netbeans.modules.bpel.validation.core.BpelValidator;
 import static org.netbeans.modules.soa.ui.util.UI.*;
 
 /**
  * @author Vladimir Yaroslavskiy
  * @version 2007.05.03
  */
-public final class Validator extends org.netbeans.modules.bpel.validation.core.Validator {
+public final class Validator extends BpelValidator {
 
-  public ValidationResult validate(Model model, Validation validation, ValidationType type) {
-      if ( !(model instanceof BpelModel)) {
-          return null;
-      }
-      final BpelModel bpelModel = (BpelModel) model;
-
-      if (bpelModel.getState() == Model.State.NOT_WELL_FORMED) {
-          return null;
-      }
-      final ArrayList<Set<ResultItem>> collection = new ArrayList<Set<ResultItem>>(1);
-      Set<Model> models = Collections.singleton((Model) bpelModel);
-      
-      Runnable run = new Runnable() {
-          public void run() {
-              collection.add(getResults(bpelModel));
-          }
-      };
-      bpelModel.invoke(run);
-      
-      return new ValidationResult(collection.get(0), models);
+  @Override
+  public void visit(Process process) {
+    processEntity(process);
   }
-  
-  private Set<ResultItem> getResults(BpelModel model) {
-      Set<ResultItem> result = new HashSet<ResultItem>();
-      Process process = model.getProcess();
-      collectResults(process, result);
-      return result;
-  }
-  
-  private void collectResults(BpelEntity entity, Set<ResultItem> result) {
-      checkReferenceCollection(entity, result);
-      checkExpressions(entity, result);
-      List<BpelEntity> children = entity.getChildren();
 
-      for (BpelEntity child : children) {
-          collectResults(child, result);
-      }
-  }
-  
-  private void checkExpressions(BpelEntity entity, Set<ResultItem> result) {
-      if ( entity instanceof ContentElement ){
-          String expression = ((ContentElement) entity).getContent();
-          Collection<String> collection = ExpressionUpdater.getInstance().getUsedVariables( expression );
-          Set<String> set = new HashSet<String>( collection );
-          findDeclarationsAscendant( entity , set );
+  private void processEntity(BpelEntity entity) {
+    checkReferenceCollection(entity);
+    checkExpressions(entity);
+    List<BpelEntity> children = entity.getChildren();
 
-          if ( set.size() >0 ){
-              StringBuilder builder = new StringBuilder();
-              for (String string : set) {
-                  builder.append( string );
-                  builder.append(", "); // NOI18N
-              }
-              String str ;
-              if ( set.size() >1 ){
-                  str = i18n(getClass(), FIX_VARIABLES);
-              } else {
-                  str = i18n(getClass(), FIX_VARIABLE);
-              }
-              str = MessageFormat.format( str, builder.substring(0, builder.length()-2), expression.trim());
-              result.add(new Outcome(this, ResultType.ERROR, (Component)entity, str));
-          }
-      }
+    for (BpelEntity child : children) {
+      processEntity(child);
+    }
+  }
+
+  private void checkExpressions(BpelEntity entity) {
+    if ( !(entity instanceof ContentElement)) {
+      return;
+    }
+    String expression = ((ContentElement) entity).getContent();
+    Collection<String> collection = ExpressionUpdater.getInstance().getUsedVariables(expression);
+    Set<String> set = new HashSet<String>(collection);
+    findDeclarationsAscendant(entity, set);
+
+    if (set.size() == 0) {
+      return;
+    }
+    StringBuilder builder = new StringBuilder();
+
+    for (String string : set) {
+      builder.append( string );
+      builder.append(", "); // NOI18N
+    }
+    String str;
+
+    if (set.size() > 1) {
+      str = i18n(Validator.class, FIX_VARIABLES);
+      str = MessageFormat.format(str, builder.substring(0, builder.length()-2), expression.trim());
+    }
+    else {
+      str = i18n(Validator.class, FIX_VARIABLE);
+      str = MessageFormat.format(str, builder.substring(0, builder.length()-2), expression.trim());
+    }
+    addErrorMessage(str, entity);
   }
   
   private void findDeclarationsAscendant(BpelEntity entity, Set<String> set) {
@@ -132,16 +115,15 @@ public final class Validator extends org.netbeans.modules.bpel.validation.core.V
       BpelContainer parent = entity.getParent();
 
       if (parent != null) {
-          findDeclarationsAscendant(parent, set);
+        findDeclarationsAscendant(parent, set);
       }
   }
   
   private void findDeclarationsDescendant(BpelEntity entity, Set<String> set) {
       if (entity instanceof VariableDeclaration) {
           String name = ((VariableDeclaration)entity).getVariableName();
-          set.remove( name );
+          set.remove(name);
       }
-      
       List<Variable> list = entity.getChildren(Variable.class);
 
       if (list != null) {
@@ -150,20 +132,20 @@ public final class Validator extends org.netbeans.modules.bpel.validation.core.V
               set.remove( name );
           }
       }
-      if ( entity instanceof VariableDeclarationScope ){
-          List<VariableDeclarationScope> scopes =
-                  entity.getChildren(VariableDeclarationScope.class);
-          if ( scopes == null ){
+      if (entity instanceof VariableDeclarationScope) {
+          List<VariableDeclarationScope> scopes = entity.getChildren(VariableDeclarationScope.class);
+
+          if (scopes == null) {
               return;
           }
           for (VariableDeclarationScope scope : scopes) {
-              findDeclarationsDescendant( scope , set );
+              findDeclarationsDescendant(scope, set);
           }
       }
   }
 
   @SuppressWarnings("unchecked")
-  private void checkReferenceCollection(BpelEntity entity, Set<ResultItem> result) {
+  private void checkReferenceCollection(BpelEntity entity) {
     if ( !(entity instanceof ReferenceCollection)) {
       return;
     }
@@ -175,7 +157,7 @@ public final class Validator extends org.netbeans.modules.bpel.validation.core.V
         continue;
       }
       if (reference.isBroken()) {
-        result.add(new Outcome(this, ResultType.ERROR, (Component) entity,
+        addQuickFix(new Outcome(this, ResultType.ERROR, (Component) entity,
           getMessage(entity, reference), QuickFix.get(entity, (Reference<Referenceable>) reference)));
       }
     }
@@ -187,25 +169,19 @@ public final class Validator extends org.netbeans.modules.bpel.validation.core.V
       Attribute attr = null;
 
       if (ref instanceof MappedReference) {
-          attr = ((MappedReference) ref).getAttribute();
-      }
-      else {
-          str = i18n(getClass(), FIX_UNKNOWN);
-          str = MessageFormat.format(str, tagName);
-          assert false;
-          return str;
+        attr = ((MappedReference) ref).getAttribute();
       }
       if (ref instanceof BpelReference) {
-          str = i18n(getClass(), FIX_REFERENCE);
-          str = MessageFormat.format( str, tagName , attr.getName()) + " " + i18n(getClass(), FIX_CORRECTION); // NOI18N
+        str = i18n(getClass(), FIX_REFERENCE);
+        str = MessageFormat.format(str, tagName, attr.getName()) + " " + i18n(getClass(), FIX_CORRECTION); // NOI18N
       }
       else if (ref instanceof WSDLReference) {
-          str = i18n(getClass(), FIX_REFERENCE_EXTERNAL);
-          str = MessageFormat.format( str, tagName , attr.getName(), WSDL) + " " + i18n(getClass(), FIX_CORRECTION_EXTERNAL); // NOI18N
+        str = i18n(getClass(), FIX_REFERENCE_EXTERNAL);
+        str = MessageFormat.format(str, tagName, attr.getName(), WSDL) + " " + i18n(getClass(), FIX_CORRECTION_EXTERNAL); // NOI18N
       }
       else if (ref instanceof SchemaReference) {
-          str = i18n(getClass(), FIX_REFERENCE_EXTERNAL);
-          str = MessageFormat.format( str, tagName , attr.getName(), XSD) + " " + i18n(getClass(),FIX_CORRECTION_EXTERNAL); // NOI18N
+        str = i18n(getClass(), FIX_REFERENCE_EXTERNAL);
+        str = MessageFormat.format(str, tagName, attr.getName(), XSD) + " " + i18n(getClass(),FIX_CORRECTION_EXTERNAL); // NOI18N
       }
       return str;
   }

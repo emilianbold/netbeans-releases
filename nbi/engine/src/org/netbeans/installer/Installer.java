@@ -747,6 +747,17 @@ public class Installer implements FinishHandler {
                 LogManager.unindent();
                 continue;
             }
+            if (arguments[i].equalsIgnoreCase(NO_SPACE_CHECK_ARG)) {
+                LogManager.logIndent(StringUtils.format(
+                        PARSING_ARGUMENT_STRING, NO_SPACE_CHECK_ARG)); // NOI18N
+                
+                System.setProperty(
+                        SystemUtils.NO_SPACE_CHECK_PROPERTY,
+                        UNARY_ARG_VALUE);
+                
+                LogManager.unindent();
+                continue;
+            }
         }
         if (arguments.length == 0) {
             LogManager.log(
@@ -1094,6 +1105,9 @@ public class Installer implements FinishHandler {
     
     public static final String BUNDLE_PROPERTIES_ARG =
             "--bundle-properties"; // NOI18N
+
+    public static final String NO_SPACE_CHECK_ARG =
+            "--nospacecheck"; // NOI18N
     
     public static final String UNARY_ARG_VALUE =
             "true"; // NOI18N

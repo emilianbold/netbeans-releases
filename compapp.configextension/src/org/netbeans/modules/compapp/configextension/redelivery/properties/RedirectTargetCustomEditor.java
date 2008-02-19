@@ -84,10 +84,9 @@ public class RedirectTargetCustomEditor extends javax.swing.JPanel
         endpointComboBox.setModel(endpointComboBoxModel);
     }
     
-    public void setValue(Object value) {
-        Object[] values = (Object[]) value;
-        Endpoint endpoint = (Endpoint) values[0];
-        String operationName = (String) values[1];
+    public void setValue(EndpointOperation value) {
+        Endpoint endpoint = value.getEndpoint();
+        String operationName = value.getOperationName();
         endpointComboBox.setSelectedItem(endpoint);   
         operationComboBox.setSelectedItem(operationName);
         
@@ -217,11 +216,11 @@ private void endpointComboBoxItemStateChanged(java.awt.event.ItemEvent evt) {//G
     private javax.swing.JLabel operationLabel;
     // End of variables declaration//GEN-END:variables
 
-    public Object getPropertyValue() throws IllegalStateException {
+    public EndpointOperation getPropertyValue() throws IllegalStateException {
         Endpoint endpoint = (Endpoint) endpointComboBox.getSelectedItem();
         String operationName = (String) operationComboBox.getSelectedItem();
               
-        return new Object[] {endpoint, operationName};
+        return new EndpointOperation(endpoint, operationName);
     }
     
     public void validateValue() throws PropertyVetoException {

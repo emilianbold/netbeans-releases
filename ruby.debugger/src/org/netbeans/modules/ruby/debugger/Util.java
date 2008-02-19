@@ -55,9 +55,6 @@ import org.openide.awt.Mnemonics;
 import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
 
-/**
- * @author Martin Krauskopf
- */
 public final class Util {
     
     public static final Logger LOGGER = Logger.getLogger(Util.class.getName());

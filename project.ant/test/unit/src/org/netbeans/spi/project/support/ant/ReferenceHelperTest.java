@@ -65,9 +65,9 @@ import org.netbeans.api.queries.CollocationQuery;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.project.ant.ProjectLibraryProvider;
 import org.netbeans.modules.project.ant.Util;
-import org.netbeans.modules.queries.AlwaysRelativeCollocationQuery;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.netbeans.spi.project.SubprojectProvider;
+import org.netbeans.spi.queries.CollocationQueryImplementation;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -157,7 +157,7 @@ public class ReferenceHelperTest extends NbTestCase {
         MockLookup.setLookup(
             Lookups.fixed(AntBasedTestUtil.testAntBasedProjectType(), AntBasedTestUtil.testCollocationQueryImplementation(getWorkDir())),
             Lookups.singleton(l),
-            Lookups.exclude(Lookups.metaInfServices(l), AlwaysRelativeCollocationQuery.class));
+            Lookups.exclude(Lookups.metaInfServices(l), CollocationQueryImplementation.class));
         scratch = TestUtil.makeScratchDir(this);
         projdir = scratch.createFolder("proj");
         TestUtil.createFileFromContent(ReferenceHelperTest.class.getResource("data/project.xml"), projdir, "nbproject/project.xml");

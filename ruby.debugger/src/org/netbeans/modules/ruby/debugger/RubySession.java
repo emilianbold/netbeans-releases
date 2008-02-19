@@ -65,9 +65,6 @@ import org.rubyforge.debugcommons.model.RubyThread;
 import org.rubyforge.debugcommons.model.RubyValue;
 import org.rubyforge.debugcommons.model.RubyVariable;
 
-/**
- * @author Martin Krauskopf
- */
 public final class RubySession {
     
     /**

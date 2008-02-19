@@ -47,8 +47,6 @@ import org.openide.util.NbPreferences;
 
 /**
  * Preferences for Ruby Debugger.
- *
- * @author Martin Krauskopf
  */
 public class DebuggerPreferences {
     

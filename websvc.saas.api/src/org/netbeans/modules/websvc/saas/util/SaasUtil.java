@@ -73,10 +73,12 @@ import org.netbeans.modules.websvc.saas.model.wadl.ParamStyle;
 import org.netbeans.modules.websvc.saas.model.wadl.RepresentationType;
 import org.netbeans.modules.websvc.saas.model.wadl.Resource;
 import org.netbeans.modules.websvc.saas.spi.SaasNodeActionsProvider;
+import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
+import org.openide.util.Utilities;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.XMLReader;
@@ -166,7 +168,8 @@ public class SaasUtil {
         if (input == null) {
             return null;
         }
-        return loadJaxbObject(input, SaasGroup.class, false);
+        Group g = loadJaxbObject(input, Group.class, false);
+        return new SaasGroup(null, g);
     }
 
     public static SaasGroup loadSaasGroup(InputStream input) throws JAXBException {
@@ -187,8 +190,10 @@ public class SaasUtil {
             }
         }
     }
+    
     public static final QName QNAME_GROUP = new QName(Saas.NS_SAAS, "group");
-
+    public static final QName QNAME_SAAS_SERVICES = new QName(Saas.NS_SAAS, "saas-services");
+    
     public static void saveSaasGroup(SaasGroup saasGroup, OutputStream output) throws JAXBException {
         JAXBContext jc = JAXBContext.newInstance(Group.class.getPackage().getName());
         Marshaller marshaller = jc.createMarshaller();
@@ -196,6 +201,26 @@ public class SaasUtil {
         marshaller.marshal(jbe, output);
     }
 
+    public static void saveSaas(Saas saas, FileObject file) throws IOException, JAXBException {
+        JAXBContext jc = JAXBContext.newInstance(SaasServices.class.getPackage().getName());
+        Marshaller marshaller = jc.createMarshaller();
+        JAXBElement<SaasServices> jbe = new JAXBElement<SaasServices>(QNAME_SAAS_SERVICES, SaasServices.class, saas.getDelegate());
+        OutputStream out = null;
+        FileLock lock = null;
+        try {
+            lock = file.lock();
+            out = file.getOutputStream(lock);
+            marshaller.marshal(jbe, out);
+        } finally {
+            if (out != null) {
+                out.close();
+            }
+            if (lock != null) {
+                lock.releaseLock();
+            }
+        }
+    }
+    
     public static Application loadWadl(FileObject wadlFile) throws IOException {
         return loadJaxbObject(wadlFile, Application.class, true);
     }
@@ -404,12 +429,15 @@ public class SaasUtil {
         return sb.toString();
     }
     
-    public static String loadIcon(Saas saas, int type) {
+    public static Image loadIcon(Saas saas, int type) {
         String path = saas.getSaasMetadata().getIcon16();
         if (type == BeanInfo.ICON_COLOR_32x32 || type == BeanInfo.ICON_MONO_32x32) {
             path =  saas.getSaasMetadata().getIcon32();
         }
-        return path;
+        if (path != null) {
+            return Utilities.loadImage(path);
+        }
+        return null;
     }
 }
 
