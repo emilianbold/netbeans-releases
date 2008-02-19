@@ -58,9 +58,6 @@ import org.openide.util.NbBundle;
 import org.rubyforge.debugcommons.model.RubyThreadInfo;
 import static org.netbeans.spi.debugger.ui.Constants.THREAD_STATE_COLUMN_ID;
 
-/**
- * @author Martin Krauskopf
- */
 public final class ThreadsModel implements TreeModel, TableModel, NodeModel, NodeActionsProvider {
     
     private static final String CURRENT =

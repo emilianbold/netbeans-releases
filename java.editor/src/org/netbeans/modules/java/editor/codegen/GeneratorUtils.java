@@ -127,7 +127,7 @@ public class GeneratorUtils {
     public static List<? extends ExecutableElement> findUndefs(CompilationInfo info, TypeElement impl) {
         if (ERR.isLoggable(ErrorManager.INFORMATIONAL))
             ERR.log(ErrorManager.INFORMATIONAL, "findUndefs(" + info + ", " + impl + ")");
-        List<? extends ExecutableElement> undef = findUndefs(info, impl, impl);
+        List<? extends ExecutableElement> undef = info.getElementUtilities().findUnimplementedMethods(impl);
         if (ERR.isLoggable(ErrorManager.INFORMATIONAL))
             ERR.log(ErrorManager.INFORMATIONAL, "undef=" + undef);
         return undef;
@@ -227,7 +227,8 @@ public class GeneratorUtils {
             ClassTree clazz = (ClassTree)path.getLeaf();
             List<Tree> members = new ArrayList<Tree>(clazz.getMembers());
             GeneratorUtilities gu = GeneratorUtilities.get(wc);
-            for(ExecutableElement element : findUndefs(wc, te, te))
+            ElementUtilities elemUtils = wc.getElementUtilities();
+            for(ExecutableElement element : elemUtils.findUnimplementedMethods(te))
                 members.add(gu.createAbstractMethodImplementation(te, element));
             ClassTree nue = make.Class(clazz.getModifiers(), clazz.getSimpleName(), clazz.getTypeParameters(), clazz.getExtendsClause(), (List<ExpressionTree>)clazz.getImplementsClause(), members);
             wc.rewrite(clazz, nue);
@@ -381,42 +382,6 @@ public class GeneratorUtils {
             lastMember = tree;
         }
         return index;
-    }
-    
-    private static List<? extends ExecutableElement> findUndefs(CompilationInfo info, TypeElement impl, TypeElement element) {
-        List<ExecutableElement> undef = new ArrayList<ExecutableElement>();
-        ElementUtilities eu = info.getElementUtilities();
-        if (element.getModifiers().contains(Modifier.ABSTRACT)) {
-            for (Element e : element.getEnclosedElements()) {
-                if (e.getKind() == ElementKind.METHOD && e.getModifiers().contains(Modifier.ABSTRACT)) {
-                    ExecutableElement ee = (ExecutableElement)e;
-                    Element eeImpl = eu.getImplementationOf(ee, impl);
-                    if (eeImpl == null || (eeImpl == ee && impl != element))                        
-                        undef.add(ee);
-                }
-            }
-        }
-        Types types = info.getTypes();
-        DeclaredType implType = (DeclaredType)impl.asType();
-        for (TypeMirror t : types.directSupertypes(element.asType())) {
-            for (ExecutableElement ee : findUndefs(info, impl, (TypeElement)((DeclaredType)t).asElement())) {
-                //check if "the same" method has already been added:
-                boolean exists = false;
-                TypeMirror eeType = types.asMemberOf(implType, ee);
-                for (ExecutableElement existing : undef) {
-                    if (existing.getSimpleName().contentEquals(ee.getSimpleName())) {
-                        TypeMirror existingType = types.asMemberOf(implType, existing);
-                        if (types.isSameType(eeType, existingType)) {
-                            exists = true;
-                            break;
-                        }
-                    }
-                }                
-                if (!exists)
-                    undef.add(ee);
-            }
-        }        
-        return undef;
     }
     
     private static List<? extends VariableElement> findAllAccessibleFields(CompilationInfo info, TypeElement accessibleFrom, TypeElement toScan) {
