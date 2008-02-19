@@ -1527,9 +1527,10 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
   </target>
 
   <target name="clean-cluster" description="Clean only one cluster - takes clean.cluster.name as parameters">
+    <fail message="specify -Dclean.cluster.name= property" unless="clean.cluster.name"/>
     <resolve name="modules.to.clean" value="${clean.cluster.name}"/>
     <antcall target="cleanall" inheritAll="false">
-      <param name="allmodules" value="${nb.cluster.visualweb}"/>
+      <param name="allmodules" value="${modules.to.clean}"/>
     </antcall>
     <delete file="netbeans/${clean.cluster.name}.built" failonerror="false"/>
   </target>

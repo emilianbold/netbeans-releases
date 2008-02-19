@@ -65,7 +65,6 @@ import javax.swing.text.PlainDocument;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.AntDeploymentHelper;
 import org.netbeans.modules.web.project.ProjectWebModule;
 
-import org.netbeans.modules.web.project.SourceRoots;
 import org.netbeans.modules.web.project.classpath.ClassPathSupport;
 import org.netbeans.modules.web.spi.webmodule.WebModuleExtender;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
@@ -76,24 +75,27 @@ import org.openide.util.MutexException;
 import org.openide.util.Mutex;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
-import org.netbeans.api.queries.CollocationQuery;
 import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
+import org.netbeans.modules.java.api.common.SourceRoots;
+import org.netbeans.modules.java.api.common.ant.UpdateHelper;
+import org.netbeans.modules.java.api.common.ui.PlatformUiSupport;
+import org.netbeans.modules.web.project.UpdateProjectImpl;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.netbeans.spi.project.support.ant.ReferenceHelper;
 import org.netbeans.modules.web.project.WebProjectUtil;
-import org.netbeans.modules.web.project.UpdateHelper;
 import org.netbeans.modules.web.project.Utils;
 import org.netbeans.modules.web.project.WebProject;
+import org.netbeans.modules.web.project.WebProjectType;
 import org.netbeans.modules.web.project.classpath.ClassPathSupport.Item;
 import org.netbeans.modules.websvc.spi.webservices.WebServicesConstants;
 import org.netbeans.spi.project.libraries.support.LibrariesSupport;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.URLMapper;
+import org.openide.modules.SpecificationVersion;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
@@ -136,6 +138,7 @@ public class WebProjectProperties {
     public static final String J2EE_SERVER_INSTANCE = "j2ee.server.instance"; //NOI18N
     public static final String J2EE_SERVER_TYPE = "j2ee.server.type"; //NOI18N
     public static final String J2EE_PLATFORM_CLASSPATH = "j2ee.platform.classpath"; //NOI18N
+    public static final String J2EE_PLATFORM_SHARED = "j2ee.platform.shared"; //NOI18N
     public static final String JAVAC_SOURCE = "javac.source"; //NOI18N
     public static final String JAVAC_DEBUG = "javac.debug"; //NOI18N
     public static final String JAVAC_DEPRECATION = "javac.deprecation"; //NOI18N
@@ -201,8 +204,6 @@ public class WebProjectProperties {
     
     // Prefixes and suffixes of classpath
     public static final String ANT_ARTIFACT_PREFIX = "${reference."; // NOI18N
-    
-    public static final String DEFAULT_LIBRARIES_FILENAME = "nblibraries.properties";
 
     public ClassPathSupport cs;
 
@@ -292,7 +293,7 @@ public class WebProjectProperties {
         this.updateHelper = updateHelper;
         
         //this is called from updatehelper when user confirms the project update
-        updateHelper.setProjectUpdateListener(new UpdateHelper.ProjectUpdateListener() {
+        project.getUpdateImplementation().setProjectUpdateListener(new UpdateProjectImpl.ProjectUpdateListener() {
             public void projectUpdated() {
                 needsUpdate = true;
             }
@@ -338,7 +339,11 @@ public class WebProjectProperties {
         RUN_TEST_CLASSPATH_MODEL = ClassPathUiSupport.createListModel( cs.itemsIterator( (String)projectProperties.get( RUN_TEST_CLASSPATH ), null ) );
         PLATFORM_MODEL = PlatformUiSupport.createPlatformComboBoxModel (evaluator.getProperty(JAVA_PLATFORM));
         PLATFORM_LIST_RENDERER = PlatformUiSupport.createPlatformListCellRenderer();
-        JAVAC_SOURCE_MODEL = PlatformUiSupport.createSourceLevelComboBoxModel (PLATFORM_MODEL, evaluator.getProperty(JAVAC_SOURCE), evaluator.getProperty(JAVAC_TARGET), evaluator.getProperty(J2EE_PLATFORM));
+        SpecificationVersion minimalSourceLevel = null;
+        if (evaluator.getProperty(J2EE_PLATFORM).equals(J2eeModule.JAVA_EE_5)) {
+            minimalSourceLevel = new SpecificationVersion(J2eeModule.JAVA_EE_5);
+        }
+        JAVAC_SOURCE_MODEL = PlatformUiSupport.createSourceLevelComboBoxModel (PLATFORM_MODEL, evaluator.getProperty(JAVAC_SOURCE), evaluator.getProperty(JAVAC_TARGET), minimalSourceLevel);
         JAVAC_SOURCE_RENDERER = PlatformUiSupport.createSourceLevelListCellRenderer ();
         SHARED_LIBRARIES_MODEL = new PlainDocument(); 
         try {
@@ -556,7 +561,7 @@ public class WebProjectProperties {
         projectProperties.setProperty( WAR_CONTENT_ADDITIONAL, war_includes );
         
         //Handle platform selection and javac.source javac.target properties
-        PlatformUiSupport.storePlatform (projectProperties, updateHelper, PLATFORM_MODEL.getSelectedItem(), JAVAC_SOURCE_MODEL.getSelectedItem());
+        PlatformUiSupport.storePlatform (projectProperties, updateHelper, WebProjectType.PROJECT_CONFIGURATION_NAMESPACE, PLATFORM_MODEL.getSelectedItem(), JAVAC_SOURCE_MODEL.getSelectedItem());
 
         // Handle other special cases
         if ( NO_DEPENDENCIES_MODEL.isSelected() ) { // NOI18N
@@ -707,39 +712,7 @@ public class WebProjectProperties {
             updateHelper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, ep);
         }
     }
-        
-    /**
-     * Tokenize library classpath and try to relativize all the jars.
-     * @param property library property name ala "libs.someLib.classpath"
-     * @param projectDir project dir for relativization
-     * @return relativized library classpath or null if some jar is not collocated
-     */
-    private String relativizeLibraryClasspath(String property, File projectDir) {
-        String value = PropertyUtils.getGlobalProperties().getProperty(property);
-        // bugfix #42852, check if the classpath property is set, otherwise return null
-        if (value == null) {
-            return null;
-        }
-        String[] paths = PropertyUtils.tokenizePath(value);
-        StringBuffer sb = new StringBuffer();
-        for (int i=0; i<paths.length; i++) {
-            File f = updateHelper.getAntProjectHelper().resolveFile(paths[i]);
-            if (CollocationQuery.areCollocated(f, projectDir)) {
-                sb.append(PropertyUtils.relativizeFile(projectDir, f));
-            } else {
-                return null;
-            }
-            if (i+1<paths.length) {
-                sb.append(File.pathSeparatorChar);
-            }
-        }
-        if (sb.length() == 0) {
-            return null;
-        } else {
-            return sb.toString();
-        }
-    }
-    
+            
     private void storeRoots( SourceRoots roots, DefaultTableModel tableModel ) throws MalformedURLException {
         Vector data = tableModel.getDataVector();
         URL[] rootURLs = new URL[data.size()];
@@ -827,8 +800,10 @@ public class WebProjectProperties {
             return;
         }
         ((WebProject) project).registerJ2eePlatformListener(j2eePlatform);
-        String classpath = Utils.toClasspathString(j2eePlatform.getClasspathEntries());
-        privateProps.setProperty(J2EE_PLATFORM_CLASSPATH, classpath);
+        if(!Boolean.parseBoolean(projectProps.getProperty(WebProjectProperties.J2EE_PLATFORM_SHARED))) {
+            String classpath = Utils.toClasspathString(j2eePlatform.getClasspathEntries());
+            privateProps.setProperty(J2EE_PLATFORM_CLASSPATH, classpath);
+        }
 
         // update j2ee.platform.wscompile.classpath
         if (j2eePlatform.isToolSupported(J2eePlatform.TOOL_WSCOMPILE)) {

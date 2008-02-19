@@ -44,7 +44,6 @@ package org.netbeans.lib.editor.codetemplates;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import org.netbeans.lib.editor.codetemplates.api.CodeTemplate;
 import org.netbeans.lib.editor.codetemplates.spi.CodeTemplateFilter;
@@ -62,8 +61,7 @@ public class SurroundWithFix implements Fix {
     
     public static List<Fix> getFixes(JTextComponent component) {
         List<Fix> fixes = new ArrayList<Fix>();
-        Document doc = component.getDocument();
-        CodeTemplateManagerOperation op = CodeTemplateManagerOperation.get(doc);
+        CodeTemplateManagerOperation op = CodeTemplateManagerOperation.get(component.getDocument(), component.getSelectionStart());
         op.waitLoaded();
         Collection<? extends CodeTemplateFilter> filters = CodeTemplateManagerOperation.getTemplateFilters(component, component.getSelectionStart());
         for (CodeTemplate template : op.findSelectionTemplates()) {

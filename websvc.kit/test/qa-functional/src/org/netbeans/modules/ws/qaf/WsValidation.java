@@ -99,6 +99,8 @@ public class WsValidation extends WebServicesTestBase {
 
     protected static final String WEB_SERVICES_NODE_NAME = Bundle.getStringTrimmed("org.netbeans.modules.websvc.core.jaxws.nodes.Bundle", "LBL_WebServices");
     private static final String WEB_SERVICE_CLIENTS_NODE_NAME = Bundle.getStringTrimmed("org.netbeans.modules.websvc.core.jaxws.nodes.Bundle", "LBL_ServiceReferences");
+    private static int foId = 0;
+    
 
     protected enum HandlerType {
 
@@ -347,12 +349,12 @@ public class WsValidation extends WebServicesTestBase {
         createHandler(getHandlersPackage(), "WsMsgHandler2", HandlerType.MESSAGE); //NOI18N
         createHandler(getHandlersPackage(), "WsLogHandler1", HandlerType.LOGICAL); //NOI18N
         createHandler(getHandlersPackage(), "WsLogHandler2", HandlerType.LOGICAL); //NOI18N
-        String path = "xml-resources/web-service-references/" + getWsName() + "/bindings/"; //NOI18N
+        String path = "xml-resources/web-service-references/" + getWsName() + "Service/bindings/"; //NOI18N
         FileObject fo = getProject().getProjectDirectory().getFileObject("src/conf/"); //NOI18N
         if (fo == null) {
             fo = getProject().getProjectDirectory();
         }
-        File handlerCfg = new File(FileUtil.toFile(fo), path + getWsName() + "_handler.xml"); //NOI18N
+        File handlerCfg = new File(FileUtil.toFile(fo), path + getWsName() + "Service_handler.xml"); //NOI18N
         Node clientNode = new Node(getProjectRootNode(), WEB_SERVICE_CLIENTS_NODE_NAME + "|" + getWsName()); //NOI18N
         configureHandlers(clientNode, handlerCfg, false);
     }
@@ -663,6 +665,8 @@ public class WsValidation extends WebServicesTestBase {
     }
 
     private void checkHandlers(String[] handlerClasses, FileObject handlerConfigFO, boolean isService) throws IOException {
+        //Let's keep the config file to resolve possible issues
+        handlerConfigFO.copy(FileUtil.toFileObject(getWorkDir()), handlerConfigFO.getName() + foId++, "xml"); //NOI18N
         if (isService) {
             HandlerChains hChains = HandlerChainsProvider.getDefault().getHandlerChains(handlerConfigFO);
             HandlerChain[] chains = hChains.getHandlerChains();

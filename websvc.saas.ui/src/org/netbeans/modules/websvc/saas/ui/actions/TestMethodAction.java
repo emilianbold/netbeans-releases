@@ -41,7 +41,8 @@
 
 package org.netbeans.modules.websvc.saas.ui.actions;
 
-import com.sun.tools.ws.processor.model.java.JavaMethod;
+import org.netbeans.modules.websvc.saas.model.WsdlSaasMethod;
+import org.netbeans.modules.websvc.saas.ui.wizards.TestWebServiceMethodDlg;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
@@ -57,9 +58,10 @@ public class TestMethodAction extends NodeAction {
         super();
     }
 
-    
     protected boolean enable(Node[] activatedNodes) {
-        //TODO:nam
+        if (activatedNodes.length == 1) {
+            return activatedNodes[0].getLookup().lookup(WsdlSaasMethod.class) != null;
+        }
         return false;
     }
     
@@ -76,9 +78,16 @@ public class TestMethodAction extends NodeAction {
     }
     
     protected void performAction(org.openide.nodes.Node[] nodes) {
-        //TODO: review orignal
+        if (nodes != null && nodes.length == 1) {
+            WsdlSaasMethod method = nodes[0].getLookup().lookup(WsdlSaasMethod.class);
+            if (method != null && method.getJavaMethod() != null) {
+                TestWebServiceMethodDlg testDialog = new TestWebServiceMethodDlg(method);
+                testDialog.displayDialog();
+            }
+        }
     }
     
+    @Override
     protected boolean asynchronous() {
         return false;
     }

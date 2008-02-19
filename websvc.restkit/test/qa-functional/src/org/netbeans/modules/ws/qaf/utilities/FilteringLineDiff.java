@@ -66,8 +66,9 @@ public class FilteringLineDiff extends LineDiff {
     }
 
     /**
-     *  Lines beginning with " * Created " or " * @author " and empty lines
-     * are treated equals.
+     *  Lines beginning with " * Created ", " * @author " or "import " and empty
+     * lines are treated equals. One can check import statements by buildng
+     * a project.
      *
      * @param l1 first line to compare
      * @param l2 second line to compare
@@ -78,7 +79,11 @@ public class FilteringLineDiff extends LineDiff {
         if (super.compareLines(l1, l2)) {
             return true;
         }
-        if (((l1.indexOf(" * Created ") == 0) && (l2.indexOf(" * Created ") == 0)) || ((l1.indexOf(" * @author ") == 0) && (l2.indexOf(" * @author ") == 0)) || ((l1.indexOf("Created-By: ") == 0) && (l2.indexOf("Created-By: ") == 0))) {
+        if (((l1.indexOf(" * Created ") == 0) && (l2.indexOf(" * Created ") == 0))
+                || ((l1.indexOf(" * @author ") == 0) && (l2.indexOf(" * @author ") == 0))
+                || ((l1.indexOf("Created-By: ") == 0) && (l2.indexOf("Created-By: ") == 0))
+                || ((l1.indexOf("import ") == 0) && (l2.indexOf("import ") == 0))
+                ) {
             return true;
         }
         if (l1.trim().length() == 0 && super.compareLines(l1.trim(), l2.trim())) {

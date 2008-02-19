@@ -48,7 +48,7 @@
                     ../../../../../../../../../../websvc.saas.api/src/org/netbeans/modules/websvc/saas/model/SaasServices.xsd'
                type="http://research.sun.com/wadl/2006/10"
                api-doc="http://api.flickr.com/"
-               url="/org/netbeans/modules/websvc/saas/services/flickr/resources/FlickrWadl.xml">
+               url="org/netbeans/modules/websvc/saas/services/flickr/resources/FlickrWadl.xml">
     
     <description>Picture Service</description>
     <display-name>Picture</display-name>

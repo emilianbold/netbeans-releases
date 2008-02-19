@@ -65,16 +65,23 @@ public class JbiExtensionElement implements Serializable {
      * A list of attributes.
      */
     private List<JbiExtensionAttribute> attributes;
+    
+    /**
+     * Description of the element.
+     */
+    private String description;
 
     /**
      * 
      */
     public JbiExtensionElement(String name, 
             List<JbiExtensionElement> subElements,
-            List<JbiExtensionAttribute> attributes) {
+            List<JbiExtensionAttribute> attributes,
+            String description) {
         this.name = name;
         this.elements = subElements;
         this.attributes = attributes;
+        this.description = description;
     }
     
     /**
@@ -96,6 +103,13 @@ public class JbiExtensionElement implements Serializable {
      */
     public List<JbiExtensionAttribute> getAttributes() {
         return attributes;
+    }
+    
+    /**
+     * Gets the description of the element.
+     */
+    public String getDescription() {
+        return description;
     }
       
     @Override

@@ -39,8 +39,10 @@
 
 package org.netbeans.modules.websvc.saas.model;
 
+import java.awt.Image;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import javax.xml.bind.JAXBException;
@@ -52,6 +54,7 @@ import org.netbeans.modules.websvc.saas.util.SaasUtil;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 
 /**
  *
@@ -60,6 +63,9 @@ import org.openide.util.NbBundle;
 public class WadlSaas extends Saas {
 
     private Application wadlModel;
+    private List<WadlSaasResource> resources;
+    private Image icon16;
+    private Image icon32;
     
     public WadlSaas(SaasGroup parentGroup, SaasServices services) {
         super(parentGroup, services);
@@ -71,7 +77,7 @@ public class WadlSaas extends Saas {
             try {
                 wadlModel = SaasUtil.loadWadl(in);
             } catch(JAXBException ex) {
-                String msg = NbBundle.getMessage(WadlSaas.class, "MSG_ErrorLoadingWadl", getModuleLoader());
+                String msg = NbBundle.getMessage(WadlSaas.class, "MSG_ErrorLoadingWadl", getUrl());
                 IOException ioe = new IOException(msg);
                 ioe.initCause(ex);
             }
@@ -79,18 +85,45 @@ public class WadlSaas extends Saas {
         return wadlModel;
     }
     
-    public List<Resource> getResources() {
-        try {
-            return getWadlModel().getResources().getResource();
-        } catch(Exception ex) {
-            Exceptions.printStackTrace(ex);
+    public List<WadlSaasResource> getResources() {
+        if (resources == null) {
+            resources = new ArrayList<WadlSaasResource>();
+            try {
+                for (Resource r : getWadlModel().getResources().getResource()) {
+                    resources.add(new WadlSaasResource(this, null, r));
+                }
+            } catch(Exception ex) {
+                Exceptions.printStackTrace(ex);
+                return Collections.EMPTY_LIST;
+            }
         }
-        return Collections.EMPTY_LIST;
+        return Collections.unmodifiableList(resources);
     } 
     
     public FileObject getLocalWadlFile() {
         //TODO
         return null;
+    }
+    
+    @Override
+    protected WadlSaasMethod createSaasMethod(Method m) {
+        return new WadlSaasMethod(this, m);
+    }
+    
+    @Override
+    public void toStateReady() {
+        if (wadlModel == null) {
+            RequestProcessor.getDefault().post(new Runnable() {
+                public void run() {
+                    try {
+                        getWadlModel();
+                        setState(State.READY);  
+                    } catch(IOException ioe) {
+                        Exceptions.printStackTrace(ioe);
+                    }
+                }
+            });
+        }
     }
     
     /**
@@ -102,19 +135,9 @@ public class WadlSaas extends Saas {
         if (getMethods() != null && getMethods().size() > 0) {
             return getMethods();
         }
-        try {
-            return getWadlModel().getResources().getResource();
-        } catch(Exception ex) {
-            Exceptions.printStackTrace(ex);
-        }
-        return Collections.EMPTY_LIST;
+        return getResources();
     }
 
-    @Override
-    protected SaasMethod createSaasMethod(Method method) {
-        return new WadlSaasMethod(this, method);
-    }
-    
     public String getBaseURL() {
         try {
             return getWadlModel().getResources().getBase();

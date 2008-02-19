@@ -423,7 +423,7 @@ public abstract class ModelSet implements FileChangeListener {
      */
     public URLClassLoader getProjectClassLoader() {
         if (classLoader == null) {
-            Set urls1Set = new LinkedHashSet();
+            Set<URL> urls1Set = new LinkedHashSet<URL>();
 
 			// Add design time and run time jars from COMPLIBS
             LibraryManager libraryManager = JsfProjectUtils.getProjectLibraryManager(project);
@@ -440,13 +440,13 @@ public abstract class ModelSet implements FileChangeListener {
                     }
                 }
             
-                if (JsfProjectUtils.hasLibraryReference(project, library, ClassPath.COMPILE)) {
-                    // TODO The following hardcoded constants are defined in
-                    // org.netbeans.modules.visualweb.project.jsf.libraries.provider.ComponentLibraryTypeProvider
-                    // org.netbeans.modules.visualweb.project.jsf.libraries.provider.ThemeLibraryTypeProvider
-                    // However this class is not part of a public package.
-                    if (library.getType().equals("complib") || 
-                            library.getType().equals("theme")) { // NOI18N
+                // TODO The following hardcoded constants are defined in
+                // org.netbeans.modules.visualweb.project.jsf.libraries.provider.ComponentLibraryTypeProvider
+                // org.netbeans.modules.visualweb.project.jsf.libraries.provider.ThemeLibraryTypeProvider
+                // However this class is not part of a public package.
+                if (library.getType().equals("complib") || 
+                        library.getType().equals("theme")) { // NOI18N
+                    if (JsfProjectUtils.hasLibraryReference(project, library, ClassPath.COMPILE)) {
                         for (String volumeType : volumeTypes) {
                             if (library.getType().equals("theme") && // NOI18N
                                     (!volumeType.equals("classpath"))) { // NOI18N
@@ -636,8 +636,8 @@ public abstract class ModelSet implements FileChangeListener {
             super(urls, parent);
             this.urls = urls;
             
-            if (TIMERS.isLoggable(Level.FINE)) {
-                LogRecord rec = new LogRecord(Level.FINE, "ModelSet$ProjectClassLoader"); // NOI18N
+            if (TIMERS.isLoggable(Level.FINER)) {
+                LogRecord rec = new LogRecord(Level.FINER, "ModelSet$ProjectClassLoader"); // NOI18N
                 rec.setParameters(new Object[]{ this });
                 TIMERS.log(rec);
             }

@@ -60,6 +60,8 @@ import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.xml.lexer.XMLTokenId;
 import org.netbeans.editor.Utilities;
+import org.netbeans.modules.xml.text.folding.TokenElement.Token;
+import org.netbeans.modules.xml.text.folding.TokenElement.TokenType;
 import org.openide.util.RequestProcessor;
 
 /**
@@ -252,7 +254,8 @@ public class XmlFoldManager implements FoldManager {
                             currentNode = tagName;
                         } else {
                             String tagName = image.substring(1);
-                            stack.push(new TokenElement(tokenType, tagName, currentTokensSize, currentTokensSize+image.length()));
+                            stack.push(new TokenElement(tokenType, tagName,
+                                    currentTokensSize, currentTokensSize+image.length(), -1));
                         }
                     }
                     break;
@@ -264,7 +267,8 @@ public class XmlFoldManager implements FoldManager {
                             image.endsWith(Token.COMMENT_END.getValue()))) {
                         if (image.startsWith(Token.COMMENT_START.getValue())) {
                             String foldName = NbBundle.getMessage(XmlFoldManager.class, "LBL_COMMENT"); //NOI18N
-                            stack.push(new TokenElement(tokenType, foldName, currentTokensSize, currentTokensSize+image.length()));
+                            stack.push(new TokenElement(tokenType, foldName,
+                                    currentTokensSize, currentTokensSize+image.length(), -1));
                         } else if(image.endsWith(Token.COMMENT_END.getValue())) {
                             TokenElement tokenElem = stack.pop();
                             int so = tokenElem.getStartOffset();
@@ -282,7 +286,8 @@ public class XmlFoldManager implements FoldManager {
                             image.endsWith(Token.CDATA_END.getValue()))) {
                         if (image.startsWith(Token.CDATA_START.getValue())) {
                             String foldName = NbBundle.getMessage(XmlFoldManager.class, "LBL_CDATA"); //NOI18N
-                            stack.push(new TokenElement(tokenType, foldName, currentTokensSize, currentTokensSize+image.length()));
+                            stack.push(new TokenElement(tokenType, foldName,
+                                    currentTokensSize, currentTokensSize+image.length(), -1));
                         } else if(image.endsWith(Token.CDATA_END.getValue())) {
                             TokenElement tokenElem = stack.pop();
                             int so = tokenElem.getStartOffset();
@@ -351,104 +356,5 @@ public class XmlFoldManager implements FoldManager {
             //Exceptions.printStackTrace(ex);
             return false;
         }
-    }
-       
-    public class TokenElement {
-        private TokenType type;
-        private String name;
-        private int startOffset;
-        private int endOffset;
-        
-        public TokenElement(TokenType type, String name, int startOffset, int endOffset) {
-            this.type = type;
-            this.name = name;
-            this.startOffset = startOffset;
-            this.endOffset = endOffset;
-        }
-        
-        private TokenType getType() {
-            return type;
-        }
-        
-        private String getName() {
-            return name;
-        }
-        
-        private int getStartOffset() {
-            return startOffset;
-        }
-        
-        private int getEndOffset() {
-            return endOffset;
-        }
-        
-        public String toString() {
-            return type + ", " + name + ", " + startOffset + ", " + endOffset;
-        }
-    }
-    
-    public enum Token {
-
-        EQUALS_TOKEN("=", TokenType.TOKEN_ATTR_EQUAL), WHITESPACE_TOKEN(" ", TokenType.TOKEN_WHITESPACE),
-
-        CLOSE_ELEMENT(">", TokenType.TOKEN_ELEMENT_END_TAG), //NOI18N
-
-        SELF_CLOSE_ELEMENT("/>", TokenType.TOKEN_ELEMENT_END_TAG), //NOI18N
-
-        CDATA_START("<![CDATA[", TokenType.TOKEN_CDATA_VAL), //NOI18N
-
-        CDATA_END("]]>", TokenType.TOKEN_CDATA_VAL), //NOI18N
-
-        COMMENT_START("<!--", TokenType.TOKEN_COMMENT), //NOI18N
-
-        COMMENT_END("-->", TokenType.TOKEN_COMMENT); //NOI18N
-
-        Token(String val, TokenType type) {
-            value = val;
-            this.type = type;
-        }
-
-        public String getValue() {
-            return value;
-        }
-
-        public TokenType getType() {
-            return type;
-        }
-
-        @Override
-        public String toString() {
-            return getType() + " '" + value + "'";
-        }
-
-        private final String value;
-        private final TokenType type;
-    }
-    
-    public enum TokenType {
-
-        TOKEN_ELEMENT_NAME,
-        TOKEN_ELEMENT_START_TAG,
-        TOKEN_ELEMENT_END_TAG,
-        TOKEN_ATTR_NAME,
-        TOKEN_ATTR_NS,
-        TOKEN_ATTR_VAL,
-        TOKEN_ATTR_QUOTATION,
-        TOKEN_ATTR_EQUAL,
-        TOKEN_CHARACTER_DATA,
-        TOKEN_WHITESPACE,
-        TOKEN_COMMENT,
-        TOKEN_COMMENT_TAG,
-        TOKEN_PI_START_TAG,
-        TOKEN_PI_NAME,
-        TOKEN_PI_VAL,
-        TOKEN_PI_END_TAG,
-        TOKEN_DEC_ATTR_NAME,
-        TOKEN_DEC_ATTR_VAL,
-        TOKEN_CDATA_VAL,
-        TOKEN_DTD_VAL,
-        TOKEN_DOC_VAL,
-        TOKEN_NS,
-        TOKEN_NS_SEPARATOR,
-    }
+    }       
 }

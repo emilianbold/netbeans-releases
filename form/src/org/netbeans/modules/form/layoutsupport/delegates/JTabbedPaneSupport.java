@@ -42,8 +42,6 @@
 package org.netbeans.modules.form.layoutsupport.delegates;
 
 import java.awt.*;
-import java.beans.*;
-import java.util.*;
 import javax.swing.*;
 import java.lang.reflect.Method;
 
@@ -253,11 +251,12 @@ public class JTabbedPaneSupport extends AbstractLayoutSupport {
                         ((FormProperty)constraints.getProperties()[2])
                             .getRealValue();
 
-                    tabbedPane.addTab(
+                    tabbedPane.insertTab(
                         title instanceof String ? (String) title : null,
                         icon instanceof Icon ? (Icon) icon : null,
                         components[i],
-                        tooltip instanceof String ? (String) tooltip : null);
+                        tooltip instanceof String ? (String) tooltip : null,
+                        index+i);
                 }
                 catch (Exception ex) {
                     org.openide.ErrorManager.getDefault().notify(org.openide.ErrorManager.INFORMATIONAL, ex);

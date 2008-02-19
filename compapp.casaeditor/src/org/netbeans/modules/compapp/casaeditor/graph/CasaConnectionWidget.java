@@ -92,7 +92,7 @@ public class CasaConnectionWidget extends ConnectionWidget {
                 ObjectScene objectScene = (ObjectScene) getScene();
                 final CasaConnection myCasaConnection =
                         (CasaConnection) objectScene.findObject(CasaConnectionWidget.this);
-                System.out.println("obj for connection is " + myCasaConnection);
+                //System.out.println("obj for connection is " + myCasaConnection);
                 if (myCasaConnection == null) {
                     return; // FIXME
                 }

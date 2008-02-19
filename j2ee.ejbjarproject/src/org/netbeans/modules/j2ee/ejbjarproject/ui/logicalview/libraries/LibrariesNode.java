@@ -99,12 +99,12 @@ import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.netbeans.spi.project.support.ant.ReferenceHelper;
 import org.netbeans.spi.java.project.support.ui.PackageView;
 import org.netbeans.modules.j2ee.ejbjarproject.ui.FoldersListSettings;
-import org.netbeans.modules.j2ee.ejbjarproject.UpdateHelper;
 import org.netbeans.modules.j2ee.ejbjarproject.classpath.EjbJarProjectClassPathExtender;
 import org.netbeans.modules.j2ee.ejbjarproject.ui.customizer.AntArtifactChooser;
 import org.netbeans.modules.j2ee.ejbjarproject.ui.customizer.EjbJarClassPathUi;
 import org.netbeans.modules.j2ee.ejbjarproject.ui.customizer.EjbJarProjectProperties;
 import org.netbeans.modules.j2ee.ejbjarproject.ui.customizer.LibrariesChooser;
+import org.netbeans.modules.java.api.common.ant.UpdateHelper;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.util.Exceptions;
 import org.openide.util.lookup.Lookups;
@@ -344,7 +344,7 @@ public final class LibrariesNode extends AbstractNode {
             if (platformProperty!=null && projectDir !=null && projectDir.isValid() && !projectDir.isVirtual()) {
                 result.add (new Key());
             }
-            if (j2eePlatformProperty != null) {
+            if (j2eePlatformProperty != null && !Boolean.parseBoolean(projectSharedProps.getProperty(EjbJarProjectProperties.J2EE_PLATFORM_SHARED))) {
                 result.add(new Key(true));
             }
             //XXX: Workaround: Remove this when there will be API for listening on nonexistent files

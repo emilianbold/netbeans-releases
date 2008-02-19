@@ -83,7 +83,8 @@ public final class FileSelectionVisualPanel extends JPanel {
 
     @Override
     public String getName() {
-        return "Choose Data source";
+        String nbBundle3 = mLoc.t("PRSR001: Choose Data source");
+        return Localizer.parse(nbBundle3);
     }
 
     public boolean canAdvance() {
@@ -231,8 +232,8 @@ public final class FileSelectionVisualPanel extends JPanel {
         if (evt.getActionCommand().equalsIgnoreCase(JFileChooser.APPROVE_SELECTION)) {
             File files[] = fileChooser.getSelectedFiles();
             if ((files == null) || (files.length <= 0)) {
-                String nbBundle1 = mLoc.t("PRSR001: Bad file selection. Please try again.");
-                String msg = Localizer.parse(nbBundle1);
+                String nbBundle2 = mLoc.t("PRSR001: Bad file selection. Please try again.");
+                String msg = Localizer.parse(nbBundle2);
                 error.setText(msg);
                 return;
             }
@@ -319,7 +320,8 @@ public final class FileSelectionVisualPanel extends JPanel {
         if (model.getRowCount() == 0) {
             canAdvance = false;
             removeButton.setEnabled(false);
-            setErrorText("No table available for processing.");
+            String nbBundle1 = mLoc.t("PRSR001: No table available for processing.");
+            setErrorText(Localizer.parse(nbBundle1));
         }
         owner.fireChangeEvent();
     }

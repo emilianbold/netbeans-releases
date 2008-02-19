@@ -88,6 +88,7 @@ import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.java.project.classpath.ProjectClassPathModifier;
+import org.netbeans.modules.java.api.common.ant.UpdateHelper;
 import org.netbeans.api.project.libraries.LibraryChooser;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
@@ -96,7 +97,6 @@ import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.netbeans.spi.project.support.ant.ReferenceHelper;
 import org.netbeans.spi.java.project.support.ui.PackageView;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
-import org.netbeans.modules.web.project.UpdateHelper;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.project.WebProject;
 import org.netbeans.modules.web.project.ui.customizer.AntArtifactChooser;
@@ -358,7 +358,7 @@ final class LibrariesNode extends AbstractNode {
             if (platformProperty!=null) {
                 result.add (new Key());
             }
-            if (j2eePlatformProperty != null) {
+            if (j2eePlatformProperty != null && !Boolean.parseBoolean(projectSharedProps.getProperty(WebProjectProperties.J2EE_PLATFORM_SHARED))) {
                 result.add(new Key(true));
             }
             //XXX: Workaround: Remove this when there will be API for listening on nonexistent files

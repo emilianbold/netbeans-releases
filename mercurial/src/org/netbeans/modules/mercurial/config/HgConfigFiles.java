@@ -86,8 +86,8 @@ public class HgConfigFiles {
     private static final String WINDOWS_USER_APPDATA = getAPPDATA();
     private static final String WINDOWS_CONFIG_DIR = WINDOWS_USER_APPDATA + "\\Mercurial";                                      // NOI18N
     private static final String WINDOWS_GLOBAL_CONFIG_DIR = getGlobalAPPDATA() + "\\Mercurial";                                 // NOI18N
-    private static final String HG_RC_FILE = "hgrc";                                                                       // NOI18N
-    private static final String HG_REPO_DIR = ".hg";                                                                       // NOI18N
+    public static final String HG_RC_FILE = "hgrc";                                                                       // NOI18N
+    public static final String HG_REPO_DIR = ".hg";                                                                       // NOI18N
     
     /**
      * Creates a new instance

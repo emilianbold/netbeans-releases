@@ -43,7 +43,6 @@ package org.netbeans.modules.websvc.saas.ui.nodes;
 
 import java.awt.datatransfer.Transferable;
 import java.util.List;
-import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.actions.SystemAction; 
 import java.awt.Image;
@@ -65,6 +64,8 @@ import org.openide.loaders.DataFolder;
 import org.openide.nodes.AbstractNode;
 import org.openide.util.Utilities; 
 import org.openide.util.datatransfer.PasteType;
+import org.openide.util.lookup.AbstractLookup;
+import org.openide.util.lookup.InstanceContent;
 
 /**
  * Node representing Group of Web Services
@@ -74,9 +75,26 @@ public class SaasGroupNode extends AbstractNode {
     private final SaasGroup group;
 
     public SaasGroupNode(SaasGroup group) {
-        super(new SaasGroupNodeChildren(group));
+        this(group, new InstanceContent());
+    }
+    
+    protected SaasGroupNode(SaasGroup group, InstanceContent content) {
+        super(new SaasGroupNodeChildren(group), new AbstractLookup(content));
         this.group = group;
-        setName(group.getName());
+        content.add(group);
+    }    
+
+    @Override
+    public String getName() {
+        return group.getName();
+    }
+    
+    @Override
+    public void setName(String name){
+        if (group.isUserDefined()) {
+            super.setName(name);
+            group.setName(name);
+        }
     }
     
     @Override
@@ -112,15 +130,7 @@ public class SaasGroupNode extends AbstractNode {
         }
         return Utilities.loadImage("org/netbeans/modules/websvc/saas/resources/folder-open.png");
     }
-    
-    @Override
-    public void setName(String name){
-        if (group.isUserDefined()) {
-            super.setName(name);
-            group.setName(name);
-        }
-    }
-    
+
     @Override
     public Action[] getActions(boolean context) {
         List<Action> actions = new ArrayList<Action>();

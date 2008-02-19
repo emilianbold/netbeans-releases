@@ -71,10 +71,14 @@ public abstract class GdbBreakpoint extends Breakpoint {
     public static final String          PROP_URL = "url"; // NOI18N
     public static final String          PROP_CONDITION = "condition"; // NOI18N
     
+    public static final int             SUSPEND_NONE = 0;
+    public static final int             SUSPEND_EVENT_THREAD = 1;
+    public static final int             SUSPEND_ALL = 2;
+    
     private int                         lineNumber;
     private boolean                     enabled = true;
     private boolean                     hidden = false;
-    private int                         suspend = 0; // Not fully implemented yet!
+    private int                         suspend = SUSPEND_ALL;
     private String                      printText;
     private HashSet                     breakpointListeners = new HashSet();
     private GdbDebugger                 debugger;
@@ -140,6 +144,8 @@ public abstract class GdbBreakpoint extends Breakpoint {
      * @param file name
      */
     public void setURL(String url) {
+        String old;
+        
         synchronized (this) {
             if (url != null && this.url != null && url.equals(this.url)) {
                 return;
@@ -173,9 +179,10 @@ public abstract class GdbBreakpoint extends Breakpoint {
             } catch (Exception ex) {
                 assert !Boolean.getBoolean("gdb.assertions.enabled"); // NOI18N
             }
+            old = this.url;
             this.url = url;
+            firePropertyChange (PROP_URL, old, url);
         }
-//        firePropertyChange(PROP_URL, old, url);
     }
     
     /**
@@ -270,7 +277,7 @@ public abstract class GdbBreakpoint extends Breakpoint {
      * @param printText a new value of print text property
      */
     public void setPrintText(String printText) {
-        if (this.printText == null || this.printText.equals(printText)) {
+        if (printText == null || printText.equals(this.printText)) {
             return;
         }
         String old = this.printText;

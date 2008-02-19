@@ -48,9 +48,17 @@ import org.netbeans.modules.websvc.saas.*;
  * @author nam
  */
 public interface WsdlDataManager {
+    /**
+     * Find the WSDL data for the given WSDL URL and service name.
+     * 
+     * @param wsdlUrl
+     * @param serviceName  optional service name; if null return default service
+     * @return WsdlData object or null if does not exist in repository.
+     */
+    WsdlData findWsdlData(String wsdlUrl, String serviceName);
     
     /**
-     * Find or create the WSDL data for the given WSDL URL.
+     * Get the WSDL data for the given WSDL URL.
      * 
      * @param wsdlUrl
      * @param serviceName  optional service name; if null return default service
@@ -60,8 +68,17 @@ public interface WsdlDataManager {
     WsdlData getWsdlData(String wsdlUrl, String serviceName, boolean synchronuous);
     
     /**
+     * Asynchronously add the WSDL data for given WSDL URL from persistence.
+     * @param wsdlUrl
+     * @param packageName
+     * @return a wsdl data object, would not be in ready state, so attach a listener.
+     */
+    WsdlData addWsdlData(String wsdlUrl, String packageName);
+
+    /**
      * Remove the WSDL data for given WSDL URL from persistence.
      * @param wsdlUrl
+     * @param serviceName
      */
   
     void removeWsdlData(String wsdlUrl, String serviceName);

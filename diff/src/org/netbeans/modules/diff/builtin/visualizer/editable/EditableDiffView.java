@@ -132,7 +132,7 @@ public class EditableDiffView extends DiffControllerImpl implements DiffView, Do
     private int diffSerial;
     private Difference[] diffs = NO_DIFFERENCES;
    
-    private int ignoredUpdateEvents;
+    private boolean ignoredUpdateEvents;
     
     private int horizontalScroll1ChangedValue = -1;
     private int horizontalScroll2ChangedValue = -1;
@@ -172,7 +172,7 @@ public class EditableDiffView extends DiffControllerImpl implements DiffView, Do
         if (!binaryDiff) {
             jEditorPane2.getEditorPane().putClientProperty(DiffMarkProviderCreator.MARK_PROVIDER_KEY, diffMarkprovider);
         }
-        jSplitPane1.setName(org.openide.util.NbBundle.getMessage(EditableDiffView.class, "DiffComponent.title")); // NOI18N
+        jSplitPane1.setName(org.openide.util.NbBundle.getMessage(EditableDiffView.class, "DiffComponent.title", ss1.getName(), ss2.getName())); // NOI18N
         spui = new DiffSplitPaneUI(jSplitPane1);
         jSplitPane1.setUI(spui);
         jSplitPane1.setResizeWeight(0.5);
@@ -318,8 +318,13 @@ public class EditableDiffView extends DiffControllerImpl implements DiffView, Do
             setDifferenceIndex(location);
             SwingUtilities.invokeLater(new Runnable() {
                 public void run() {
-                    ignoredUpdateEvents = 6;
+                    ignoredUpdateEvents = true;
                     showCurrentDifference();
+                    SwingUtilities.invokeLater(new Runnable() {
+                        public void run() {
+                            ignoredUpdateEvents = false;
+                        }
+                    });
                 }
             });
         }
@@ -551,8 +556,7 @@ public class EditableDiffView extends DiffControllerImpl implements DiffView, Do
      */
     void updateCurrentDifference() {
         assert SwingUtilities.isEventDispatchThread();
-        if (ignoredUpdateEvents > 0) {
-            ignoredUpdateEvents--;
+        if (ignoredUpdateEvents) {
             return;
         }
         int cd = computeCurrentDifference();

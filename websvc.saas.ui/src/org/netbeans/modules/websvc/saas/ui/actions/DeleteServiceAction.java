@@ -41,21 +41,24 @@
 
 package org.netbeans.modules.websvc.saas.ui.actions;
 
+import org.netbeans.modules.websvc.saas.model.Saas;
+import org.netbeans.modules.websvc.saas.model.SaasGroup;
+import org.netbeans.modules.websvc.saas.model.SaasServicesModel;
 import org.openide.util.actions.NodeAction;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.nodes.Node;
-import org.openide.nodes.FilterNode;
-import org.openide.DialogDisplayer;
-import org.openide.NotifyDescriptor;
-import org.openide.ErrorManager;
-import java.io.IOException;
 
 public class DeleteServiceAction extends NodeAction {
     
     protected boolean enable(Node[] nodes) {
-        //TODO:nam
-        return false;
+        for (Node n : nodes) {
+            Saas saas = n.getLookup().lookup(Saas.class);
+            if (saas == null || saas.isUserDefined()) {
+                return false;
+            }
+        }
+        return true;
     }
     
     public org.openide.util.HelpCtx getHelpCtx() {
@@ -71,7 +74,13 @@ public class DeleteServiceAction extends NodeAction {
     }
     
     protected void performAction(Node[] nodes) {
-        //TODO: nam check the original code when implement.
+        for (Node n : nodes) {
+            Saas saas = n.getLookup().lookup(Saas.class);
+            if (saas == null || saas.isUserDefined()) {
+                return;
+            }
+            SaasServicesModel.getInstance().removeService(saas);
+        }
     }
     
     protected boolean asynchronous() {

@@ -63,12 +63,18 @@ public class AcceptorFactory {
           public final boolean accept(char ch) {
               return Character.isWhitespace(ch);
           }
+          public @Override String toString() {
+            return "o.n.e.AcceptorFactory.WHITESPACE"; //NOI18N
+          }
       };
 
     public static final Acceptor LETTER_DIGIT
     = new Acceptor() {
           public final boolean accept(char ch) {
               return Character.isLetterOrDigit(ch);
+          }
+          public @Override String toString() {
+            return "o.n.e.AcceptorFactory.LETTER_DIGIT"; //NOI18N
           }
       };
 
@@ -77,6 +83,9 @@ public class AcceptorFactory {
           public final boolean accept(char ch) {
               return Character.isJavaIdentifierPart(ch);
           }
+          public @Override String toString() {
+            return "o.n.e.AcceptorFactory.JAVA_IDENTIFIER"; //NOI18N
+          }
       };
 
     public static final Acceptor NON_JAVA_IDENTIFIER
@@ -84,43 +93,58 @@ public class AcceptorFactory {
           public final boolean accept(char ch) {
               return !Character.isJavaIdentifierPart(ch);
           }
+          public @Override String toString() {
+            return "o.n.e.AcceptorFactory.NON_JAVA_IDENTIFIER"; //NOI18N
+          }
       };
 
     private static final class Fixed implements Acceptor {
-	private boolean state;
-	
-	public Fixed(boolean state) {
-	    this.state = state;
-	}
+        private boolean state;
+
+        public Fixed(boolean state) {
+            this.state = state;
+        }
+
+        public final boolean accept(char ch) {
+                  return state;
+        }
         
-	public final boolean accept(char ch) {
-              return state;
-	}
+        public @Override String toString() {
+            return "o.n.e.AcceptorFactory.Fixed@" + Integer.toHexString(System.identityHashCode(this)) + " : state = " + state; //NOI18N
+        }
     }
 
     private static final class Char implements Acceptor {
-	private char hit;
-	
-	public Char(char hit) {
-	    this.hit = hit;
-	}
+        private char hit;
+
+        public Char(char hit) {
+            this.hit = hit;
+        }
+
+        public final boolean accept(char ch) {
+                  return ch == hit;
+        }
         
-	public final boolean accept(char ch) {
-              return ch == hit;
-	}
+        public @Override String toString() {
+            return "o.n.e.AcceptorFactory.Char@" + Integer.toHexString(System.identityHashCode(this)) + " : hit = " + hit; //NOI18N
+        }
     }
 
     private static final class TwoChar implements Acceptor {
-	private char hit1, hit2;
-	
-	public TwoChar(char hit1, char hit2) {
-	    this.hit1 = hit1;
-	    this.hit2 = hit2;
-	}
-        
-	public final boolean accept(char ch) {
+        private char hit1, hit2;
+
+        public TwoChar(char hit1, char hit2) {
+            this.hit1 = hit1;
+            this.hit2 = hit2;
+        }
+
+        public final boolean accept(char ch) {
               return ch == hit1 || ch == hit2;
-	}
+        }
+        
+        public @Override String toString() {
+            return "o.n.e.AcceptorFactory.TwoChar@" + Integer.toHexString(System.identityHashCode(this)) + " : hit1 = " + hit1 + ", hit2 = " + hit2; //NOI18N
+        }
     }
 
 
