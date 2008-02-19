@@ -43,6 +43,9 @@ made subject to such option by the copyright holder.
 <project name="org.netbeans.modules.websvc.qatests/test-qa-functional" basedir="." default="all">
     
     <property file="../nbproject/private/private.properties"/>
+
+    <!-- turn off jMaki tests for now -->
+    <property name="plugins.jmaki.skip" value="true"/>
     
     <!-- Imports default qa-functional-compiler and runidetest executor.
         jemmy and jellytools jars are on classpath for both. -->
@@ -152,6 +155,7 @@ made subject to such option by the copyright holder.
         <condition property="plugins.jmaki.do.download">
             <and>
                 <not><isset property="plugins.jmaki.skip"/></not>
+                <isfalse value="${plugins.jmaki.skip}"/>
                 <not><available file="${plugins.jmaki.nbm.tmp}"/></not>
             </and>
         </condition>
