@@ -25,9 +25,9 @@ new Test().method()
 
 class Test {
     
-    /** This is a multiline
-     *  comment.
-     *  I wanna have it folded!
+    /* Not a JavaDoc one,
+     * just a simple comment
+     *  I wanna have it folded as well
      */
     
     
