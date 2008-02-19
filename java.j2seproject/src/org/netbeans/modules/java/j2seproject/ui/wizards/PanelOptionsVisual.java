@@ -279,16 +279,18 @@ public class PanelOptionsVisual extends SettingsPanel implements ActionListener,
         
         if (sharableProject.isSelected()) {
             String location = librariesLocation.getText();
-            if (new File(location).isAbsolute()) {
-                settings.putProperty( "WizardPanel_errorMessage", // NOI18N
-                    NbBundle.getMessage(PanelOptionsVisual.class, "WARN_PanelOptionsVisual.absolutePath"));
-                
-            } else {
-                File projectLoc = FileUtil.normalizeFile(new File(projectLocation));
-                File libLoc = PropertyUtils.resolveFile(projectLoc, location);
-                if (!CollocationQuery.areCollocated(projectLoc, libLoc)) {
+            if (projectLocation != null) {
+                if (new File(location).isAbsolute()) {
                     settings.putProperty( "WizardPanel_errorMessage", // NOI18N
-                        NbBundle.getMessage(PanelOptionsVisual.class, "WARN_PanelOptionsVisual.relativePath")); 
+                        NbBundle.getMessage(PanelOptionsVisual.class, "WARN_PanelOptionsVisual.absolutePath"));
+                
+                } else {
+                    File projectLoc = FileUtil.normalizeFile(new File(projectLocation));
+                    File libLoc = PropertyUtils.resolveFile(projectLoc, location);
+                    if (!CollocationQuery.areCollocated(projectLoc, libLoc)) {
+                        settings.putProperty( "WizardPanel_errorMessage", // NOI18N
+                            NbBundle.getMessage(PanelOptionsVisual.class, "WARN_PanelOptionsVisual.relativePath")); 
+                    }
                 }
             }
         }
