@@ -95,9 +95,11 @@ import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 
 import org.netbeans.modules.j2ee.common.project.classpath.ClassPathSupport;
 import org.netbeans.modules.j2ee.common.project.ui.AntArtifactChooser;
+import org.netbeans.modules.j2ee.common.project.ui.ClassPathUiSupport;
 import org.netbeans.modules.j2ee.common.project.ui.ProjectProperties;
 import org.netbeans.modules.java.api.common.util.CommonProjectUtils;
 import org.netbeans.modules.j2ee.common.project.ui.UserProjectSettings;
+import org.netbeans.modules.web.project.classpath.ClassPathSupportCallbackImpl;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.util.Exceptions;
 
@@ -115,23 +117,11 @@ public class WebClassPathUi {
      */    
     public static class ClassPathListCellRenderer extends DefaultListCellRenderer {
         
-        private static String RESOURCE_ICON_JAR = "org/netbeans/modules/web/project/ui/resources/jar.gif"; //NOI18N
-        private static String RESOURCE_ICON_LIBRARY = "org/netbeans/modules/web/project/ui/resources/libraries.gif"; //NOI18N
-        private static String RESOURCE_ICON_ARTIFACT = "org/netbeans/modules/web/project/ui/resources/projectDependencies.gif"; //NOI18N
         private static String RESOURCE_ICON_CLASSPATH = "org/netbeans/modules/web/project/ui/resources/referencedClasspath.gif"; //NOI18N
-        private static String RESOURCE_ICON_BROKEN_BADGE = "org/netbeans/modules/web/project/ui/resources/brokenProjectBadge.gif"; //NOI18N
-        private static String RESOURCE_ICON_SOURCE_BADGE = "org/netbeans/modules/web/project/ui/resources/jarSourceBadge.png"; //NOI18N
-        private static String RESOURCE_ICON_JAVADOC_BADGE = "org/netbeans/modules/web/project/ui/resources/jarJavadocBadge.png"; //NOI18N
         
         
-        private static ImageIcon ICON_JAR = new ImageIcon( Utilities.loadImage( RESOURCE_ICON_JAR ) );
         private static ImageIcon ICON_FOLDER = null; 
-        private static ImageIcon ICON_LIBRARY = new ImageIcon( Utilities.loadImage( RESOURCE_ICON_LIBRARY ) );
-        private static ImageIcon ICON_ARTIFACT  = new ImageIcon( Utilities.loadImage( RESOURCE_ICON_ARTIFACT ) );
         private static ImageIcon ICON_CLASSPATH  = new ImageIcon( Utilities.loadImage( RESOURCE_ICON_CLASSPATH ) );
-        private static ImageIcon ICON_BROKEN_BADGE  = new ImageIcon( Utilities.loadImage( RESOURCE_ICON_BROKEN_BADGE ) );
-        private static ImageIcon ICON_JAVADOC_BADGE  = new ImageIcon( Utilities.loadImage( RESOURCE_ICON_JAVADOC_BADGE ) );
-        private static ImageIcon ICON_SOURCE_BADGE  = new ImageIcon( Utilities.loadImage( RESOURCE_ICON_SOURCE_BADGE ) );
         
         private static ImageIcon ICON_BROKEN_JAR;
         private static ImageIcon ICON_BROKEN_LIBRARY;
@@ -214,17 +204,17 @@ public class WebClassPathUi {
                 case ClassPathSupport.Item.TYPE_LIBRARY:
                     if ( item.isBroken() ) {
                         if ( ICON_BROKEN_LIBRARY == null ) {
-                            ICON_BROKEN_LIBRARY = new ImageIcon( Utilities.mergeImages( ICON_LIBRARY.getImage(), ICON_BROKEN_BADGE.getImage(), 7, 7 ) );
+                            ICON_BROKEN_LIBRARY = new ImageIcon( Utilities.mergeImages( ProjectProperties.ICON_LIBRARY.getImage(), ProjectProperties.ICON_BROKEN_BADGE.getImage(), 7, 7 ) );
                         }
                         return ICON_BROKEN_LIBRARY;
                     }
                     else {
-                        return ICON_LIBRARY;
+                        return ProjectProperties.ICON_LIBRARY;
                     }
                 case ClassPathSupport.Item.TYPE_ARTIFACT:
                     if ( item.isBroken() ) {
                         if ( ICON_BROKEN_ARTIFACT == null ) {
-                            ICON_BROKEN_ARTIFACT = new ImageIcon( Utilities.mergeImages( ICON_ARTIFACT.getImage(), ICON_BROKEN_BADGE.getImage(), 7, 7 ) );
+                            ICON_BROKEN_ARTIFACT = new ImageIcon( Utilities.mergeImages( ProjectProperties.ICON_ARTIFACT.getImage(), ProjectProperties.ICON_BROKEN_BADGE.getImage(), 7, 7 ) );
                         }
                         return ICON_BROKEN_ARTIFACT;
                     }
@@ -234,23 +224,23 @@ public class WebClassPathUi {
                             ProjectInformation pi = ProjectUtils.getInformation(p);
                             return pi.getIcon();
                         }
-                        return ICON_ARTIFACT;
+                        return ProjectProperties.ICON_ARTIFACT;
                     }
                 case ClassPathSupport.Item.TYPE_JAR:
                     if ( item.isBroken() ) {
                         if ( ICON_BROKEN_JAR == null ) {
-                            ICON_BROKEN_JAR = new ImageIcon( Utilities.mergeImages( ICON_JAR.getImage(), ICON_BROKEN_BADGE.getImage(), 7, 7 ) );
+                            ICON_BROKEN_JAR = new ImageIcon( Utilities.mergeImages( ProjectProperties.ICON_JAR.getImage(), ProjectProperties.ICON_BROKEN_BADGE.getImage(), 7, 7 ) );
                         }
                         return ICON_BROKEN_JAR;
                     }
                     else {
                         File file = item.getResolvedFile();
-                        ImageIcon icn = file.isDirectory() ? getFolderIcon() : ICON_JAR;
+                        ImageIcon icn = file.isDirectory() ? getFolderIcon() : ProjectProperties.ICON_JAR;
                         if (item.getSourceFilePath() != null) {
-                            icn =  new ImageIcon( Utilities.mergeImages( icn.getImage(), ICON_SOURCE_BADGE.getImage(), 8, 8 ));
+                            icn =  new ImageIcon( Utilities.mergeImages( icn.getImage(), ProjectProperties.ICON_SOURCE_BADGE.getImage(), 8, 8 ));
                         }
                         if (item.getJavadocFilePath() != null) {
-                            icn =  new ImageIcon( Utilities.mergeImages( icn.getImage(), ICON_JAVADOC_BADGE.getImage(), 8, 0 ));
+                            icn =  new ImageIcon( Utilities.mergeImages( icn.getImage(), ProjectProperties.ICON_JAVADOC_BADGE.getImage(), 8, 0 ));
                         }
                         return icn;
                     }
@@ -367,6 +357,8 @@ public class WebClassPathUi {
         private final ButtonModel moveDown;
         private final ButtonModel edit;
         private Document libraryPath;
+        private boolean includeNewFilesInDeployment;
+        private ClassPathSupport.Callback callback;
                     
         public EditMediator( WebProject project,
                              ListComponent list,
@@ -399,6 +391,8 @@ public class WebClassPathUi {
             this.moveDown = moveDown;
             this.edit = edit;
             this.libraryPath = libPath;
+            this.includeNewFilesInDeployment = includeNewFilesInDeployment;
+            callback = new ClassPathSupportCallbackImpl(project.getAntProjectHelper());
 
             this.project = project;
         }
@@ -475,7 +469,12 @@ public class WebClassPathUi {
                         Exceptions.printStackTrace(ex);
                         return;
                     }
-                    int[] newSelection = ClassPathUiSupport.addJarFiles( listModel, list.getSelectedIndices(), filePaths, FileUtil.toFile(project.getProjectDirectory()));
+                    // value of PATH_IN_DEPLOYMENT depends on whether file or folder is being added.
+                    // do not override value set by callback.initAdditionalProperties if includeNewFilesInDeployment
+                    int[] newSelection = ClassPathUiSupport.addJarFiles( listModel, list.getSelectedIndices(), 
+                            filePaths, FileUtil.toFile(project.getProjectDirectory()), callback,
+                            includeNewFilesInDeployment ? null : ClassPathSupportCallbackImpl.PATH_IN_DEPLOYMENT, 
+                            includeNewFilesInDeployment ? null : ClassPathSupportCallbackImpl.PATH_IN_WAR_NONE);
                     list.setSelectedIndices( newSelection );
                     curDir = FileUtil.normalizeFile(chooser.getCurrentDirectory());
                     UserProjectSettings.getDefault().setLastUsedClassPathFolder(curDir);
@@ -512,7 +511,10 @@ public class WebClassPathUi {
                         null, project.getReferenceHelper().getLibraryChooserImportHandler()); // XXX filter to j2se libs only?
                 if (added != null) {
                     Set<Library> includedLibraries = new HashSet<Library>();
-                   int[] newSelection = ClassPathUiSupport.addLibraries(listModel, list.getSelectedIndices(), added.toArray(new Library[added.size()]), includedLibraries);
+                   int[] newSelection = ClassPathUiSupport.addLibraries(listModel, list.getSelectedIndices(), 
+                           added.toArray(new Library[added.size()]), includedLibraries, callback,
+                           ClassPathSupportCallbackImpl.PATH_IN_DEPLOYMENT, 
+                           includeNewFilesInDeployment ? ClassPathSupportCallbackImpl.PATH_IN_WAR_LIB : ClassPathSupportCallbackImpl.PATH_IN_WAR_NONE);
                    list.setSelectedIndices( newSelection );
                 }
             }
@@ -531,7 +533,9 @@ public class WebClassPathUi {
                 AntArtifactChooser.ArtifactItem artifactItems[] = AntArtifactChooser.showDialog(
                         new String[] {JavaProjectConstants.ARTIFACT_TYPE_JAR, JavaProjectConstants.ARTIFACT_TYPE_FOLDER}, project, list.getComponent().getParent());
                 if (artifactItems != null) {
-                    int[] newSelection = ClassPathUiSupport.addArtifacts( listModel, list.getSelectedIndices(), artifactItems);
+                    int[] newSelection = ClassPathUiSupport.addArtifacts( listModel, list.getSelectedIndices(), artifactItems, callback,
+                            ClassPathSupportCallbackImpl.PATH_IN_DEPLOYMENT, 
+                            includeNewFilesInDeployment ? ClassPathSupportCallbackImpl.PATH_IN_WAR_LIB : ClassPathSupportCallbackImpl.PATH_IN_WAR_NONE);
                     list.setSelectedIndices( newSelection );
                 }
             }

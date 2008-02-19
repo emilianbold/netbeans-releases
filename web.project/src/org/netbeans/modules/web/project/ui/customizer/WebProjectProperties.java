@@ -75,6 +75,7 @@ import org.openide.util.Mutex;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.queries.FileEncodingQuery;
+import org.netbeans.modules.j2ee.common.project.ui.ClassPathUiSupport;
 import org.netbeans.modules.j2ee.common.project.ui.ProjectProperties;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
@@ -201,7 +202,7 @@ public class WebProjectProperties {
     ComboBoxModel JAVAC_SOURCE_MODEL;
 
     // CustomizerLibraries
-    ClassPathUiSupport.ClassPathTableModel JAVAC_CLASSPATH_MODEL;
+    ClassPathTableModel JAVAC_CLASSPATH_MODEL;
     DefaultListModel JAVAC_TEST_CLASSPATH_MODEL;
     DefaultListModel RUN_TEST_CLASSPATH_MODEL;
     ComboBoxModel PLATFORM_MODEL;
@@ -316,7 +317,7 @@ public class WebProjectProperties {
         EditableProperties projectProperties = updateHelper.getProperties( AntProjectHelper.PROJECT_PROPERTIES_PATH );                
         EditableProperties privateProperties = updateHelper.getProperties( AntProjectHelper.PRIVATE_PROPERTIES_PATH );
 
-        JAVAC_CLASSPATH_MODEL = ClassPathUiSupport.createTableModel( cs.itemsIterator( (String)projectProperties.get( ProjectProperties.JAVAC_CLASSPATH ), ClassPathSupportCallbackImpl.TAG_WEB_MODULE_LIBRARIES) );
+        JAVAC_CLASSPATH_MODEL = ClassPathTableModel.createTableModel( cs.itemsIterator( (String)projectProperties.get( ProjectProperties.JAVAC_CLASSPATH ), ClassPathSupportCallbackImpl.TAG_WEB_MODULE_LIBRARIES) );
         JAVAC_TEST_CLASSPATH_MODEL = ClassPathUiSupport.createListModel( cs.itemsIterator( (String)projectProperties.get( ProjectProperties.JAVAC_TEST_CLASSPATH ), null ) );
         RUN_TEST_CLASSPATH_MODEL = ClassPathUiSupport.createListModel( cs.itemsIterator( (String)projectProperties.get( ProjectProperties.RUN_TEST_CLASSPATH ), null ) );
         PLATFORM_MODEL = PlatformUiSupport.createPlatformComboBoxModel (evaluator.getProperty(JAVA_PLATFORM));
@@ -466,7 +467,7 @@ public class WebProjectProperties {
         //test whether user wants to update his project to newest version
         if(needsUpdate) {
             //remove servlet24 and jsp20 libraries (they are not used in 4.1)
-            ClassPathUiSupport.ClassPathTableModel cptm = getJavaClassPathModel();
+            ClassPathTableModel cptm = getJavaClassPathModel();
 
             ArrayList cpItemsToRemove = new ArrayList();
             for(int i = 0; i < cptm.getRowCount(); i++) {
@@ -865,7 +866,7 @@ public class WebProjectProperties {
         serverId = privateProps.getProperty(J2EE_SERVER_INSTANCE);
     }
     
-    public ClassPathUiSupport.ClassPathTableModel getJavaClassPathModel() {
+    public ClassPathTableModel getJavaClassPathModel() {
         return JAVAC_CLASSPATH_MODEL;
     }
     
