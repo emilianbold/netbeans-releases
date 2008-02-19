@@ -50,9 +50,6 @@ import org.netbeans.spi.viewmodel.TableModel;
 import org.netbeans.spi.viewmodel.UnknownTypeException;
 import static org.netbeans.spi.debugger.ui.Constants.BREAKPOINT_ENABLED_COLUMN_ID;
 
-/**
- * @author Martin Krauskopf
- */
 public final class BreakpointModel implements NodeModel, TableModel {
     
     public static final String LINE_BREAKPOINT =

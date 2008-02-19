@@ -48,11 +48,14 @@ import org.netbeans.modules.spring.beans.model.impl.ConfigFileSpringBeanSource;
 import java.io.IOException;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
+import javax.swing.text.Position.Bias;
 import org.netbeans.editor.BaseDocument;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
+import org.openide.text.CloneableEditorSupport;
+import org.openide.text.PositionRef;
 import org.openide.util.Exceptions;
 
 /**
@@ -185,10 +188,11 @@ public class SpringConfigFileModelController {
         }
     }
 
+    // XXX rename to more proper name and remove commit().
     public final class DocumentWrite {
 
         private final FileObject fo;
-        private final EditorCookie editor;
+        private final CloneableEditorSupport editor;
         private final BaseDocument document;
         // Although this class is single-threaded, better to have these thread-safe,
         // since they are guarding the document locking, and that needs to be right
@@ -199,8 +203,13 @@ public class SpringConfigFileModelController {
 
         public DocumentWrite(FileObject fo) throws IOException {
             this.fo = fo;
-            editor = getEditorCookie(fo);
+            editor = (CloneableEditorSupport)getEditorCookie(fo);
             document = (BaseDocument)editor.openDocument();
+        }
+
+        public PositionRef createPositionRef(int offset, Bias bias) {
+            assert open.get();
+            return editor.createPositionRef(offset, bias);
         }
 
         public void open() {

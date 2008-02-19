@@ -69,8 +69,6 @@ import org.rubyforge.debugcommons.RubyDebuggerProxy;
 /**
  * Implementation of {@link RubyDebuggerImplementation} SPI, providing an entry
  * to point to the Ruby debugging.
- *
- * @author Martin Krauskopf
  */
 public final class RubyDebugger implements RubyDebuggerImplementation {
     
