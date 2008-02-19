@@ -98,12 +98,15 @@ public class JMakiTest extends CStubsTSuite {
         String projectPropertiesTitle = Bundle.getStringTrimmed("org.netbeans.modules.web.project.ui.customizer.Bundle", "LBL_Customizer_Title");
         NbDialogOperator propertiesDialogOper = new NbDialogOperator(projectPropertiesTitle);
         // select "Frameworks" category
-        new Node(new JTreeOperator(propertiesDialogOper), "Frameworks").select();
-        new JButtonOperator(propertiesDialogOper, "Add ...").pushNoBlock();
+        String frmLabel = Bundle.getStringTrimmed("org.netbeans.modules.web.project.ui.customizer.Bundle", "LBL_Config_Frameworks");
+        new Node(new JTreeOperator(propertiesDialogOper), frmLabel).select();
+        //Add ...
+        String addBtn = Bundle.getStringTrimmed("org.netbeans.modules.web.project.ui.customizer.Bundle", "LBL_AddFramework");
+        new JButtonOperator(propertiesDialogOper, addBtn).pushNoBlock();
         //Add a Framework
         String addFrameworkTitle = Bundle.getStringTrimmed("org.netbeans.modules.web.project.ui.customizer.Bundle", "LBL_SelectWebExtension_DialogTitle");
         NbDialogOperator addFrameworkDialogOper = new NbDialogOperator(addFrameworkTitle);
-        new JListOperator(addFrameworkDialogOper).selectItem("jMaki");
+        new JListOperator(addFrameworkDialogOper).selectItem("jMaki"); //NOI18N
         addFrameworkDialogOper.ok();
         // confirm properties dialog
         propertiesDialogOper.ok();
