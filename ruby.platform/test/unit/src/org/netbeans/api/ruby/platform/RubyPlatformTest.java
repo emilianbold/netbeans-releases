@@ -74,14 +74,14 @@ public class RubyPlatformTest extends RubyTestBase {
 
     public void testFindGemExecutableInRubyBin() throws Exception {
         RubyPlatform platform = RubyPlatformManager.addPlatform(setUpRubyWithGems());
-        touch("rdebug-ide", platform.getBinDir());
+        touch(platform.getBinDir(), "rdebug-ide");
         assertNotNull(platform.findExecutable("rdebug-ide"));
     }
 
     public void testFindGemExecutableInGemRepo() throws Exception {
         RubyPlatform platform = RubyPlatformManager.addPlatform(setUpRubyWithGems());
         GemManager gemManager = platform.getGemManager();
-        touch("rdebug-ide", new File(gemManager.getGemHome(), "bin").getPath());
+        touch(new File(gemManager.getGemHome(), "bin").getPath(), "rdebug-ide");
         assertNotNull(platform.findExecutable("rdebug-ide"));
     }
 
@@ -107,12 +107,6 @@ public class RubyPlatformTest extends RubyTestBase {
         assertEquals("right label for build-in JRuby", "Built-in JRuby (1.1RC1)", jruby.getLabel());
         RubyPlatform ruby = RubyPlatformManager.addPlatform(setUpRuby());
         assertEquals("right label for Ruby", "Ruby (0.1)", ruby.getLabel());
-    }
-
-    private String touch(String path, String dir) throws IOException {
-        File f = new File(dir, path);
-        f.createNewFile();
-        return f.getAbsolutePath();
     }
 
     public void testHasFastDebuggerInstalled() throws IOException {
