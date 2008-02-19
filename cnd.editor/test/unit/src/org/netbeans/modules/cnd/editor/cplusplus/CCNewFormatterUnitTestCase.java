@@ -28,8 +28,10 @@
 
 package org.netbeans.modules.cnd.editor.cplusplus;
 
+import javax.swing.text.BadLocationException;
 import org.netbeans.modules.cnd.editor.api.CodeStyle;
 import org.netbeans.modules.cnd.editor.options.EditorOptions;
+import org.netbeans.modules.cnd.editor.reformat.Reformatter;
 
 /**
  * Class was taken from java
@@ -38,10 +40,24 @@ import org.netbeans.modules.cnd.editor.options.EditorOptions;
  *
  * @author Alexander Simon
  */
-public class CCFormatterUnitTestCase extends CCFormatterBaseUnitTestCase {
+public class CCNewFormatterUnitTestCase extends CCFormatterBaseUnitTestCase {
 
-    public CCFormatterUnitTestCase(String testMethodName) {
+    public CCNewFormatterUnitTestCase(String testMethodName) {
         super(testMethodName);
+    }
+
+    /**
+     * Perform reformatting of the whole document's text.
+     */
+    @Override
+    protected void reformat() {
+        Reformatter f = new Reformatter(getDocument(), CodeStyle.getDefault(getDocument()));
+        try {
+            f.reformat();
+        } catch (BadLocationException e) {
+            e.printStackTrace(getLog());
+            fail(e.getMessage());
+	}
     }
 
     // -------- Reformat tests -----------
@@ -180,6 +196,9 @@ public class CCFormatterUnitTestCase extends CCFormatterBaseUnitTestCase {
      */
     public void testReformatMultilineConstructor() {
         EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
+                put(EditorOptions.newLineBeforeBraceClass, 
+                CodeStyle.BracePlacement.SAME_LINE.name());
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
                 put(EditorOptions.newLineBeforeBraceDeclaration, 
                 CodeStyle.BracePlacement.SAME_LINE.name());
         try {
@@ -204,8 +223,11 @@ public class CCFormatterUnitTestCase extends CCFormatterBaseUnitTestCase {
                     "};");
         } finally {
             EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
-                    put(EditorOptions.newLineBeforeBraceDeclaration, 
+                    put(EditorOptions.newLineBeforeBraceClass, 
                     CodeStyle.BracePlacement.NEW_LINE.name());
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
+                put(EditorOptions.newLineBeforeBraceDeclaration, 
+                CodeStyle.BracePlacement.NEW_LINE.name());
         }
     }
 
@@ -261,7 +283,7 @@ public class CCFormatterUnitTestCase extends CCFormatterBaseUnitTestCase {
      */
     public void testReformatSimpleClass() {
         EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
-                put(EditorOptions.newLineBeforeBraceDeclaration, 
+                put(EditorOptions.newLineBeforeBraceClass, 
                 CodeStyle.BracePlacement.SAME_LINE.name());
         try {
             setLoadDocumentText(
@@ -287,7 +309,7 @@ public class CCFormatterUnitTestCase extends CCFormatterBaseUnitTestCase {
                 "};\n");
         } finally {
             EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
-                    put(EditorOptions.newLineBeforeBraceDeclaration, 
+                    put(EditorOptions.newLineBeforeBraceClass, 
                     CodeStyle.BracePlacement.NEW_LINE.name());
         }
     }
@@ -849,7 +871,7 @@ public class CCFormatterUnitTestCase extends CCFormatterBaseUnitTestCase {
         setLoadDocumentText(
             "#define BRACE {\n" +
             "int main() {\n" +
-            "if (a){\n" +
+            "if (a) {\n" +
             "}\n" +
             "}\n"
             );
@@ -858,7 +880,7 @@ public class CCFormatterUnitTestCase extends CCFormatterBaseUnitTestCase {
             "#define BRACE {\n" +
             "int main()\n" +
             "{\n" +
-            "    if (a){\n" +
+            "    if (a) {\n" +
             "    }\n" +
             "}\n"
         );
@@ -868,7 +890,7 @@ public class CCFormatterUnitTestCase extends CCFormatterBaseUnitTestCase {
         setLoadDocumentText(
             "#define BRACE }\n" +
             "int main() {\n" +
-            "if (a){\n" +
+            "if (a) {\n" +
             "}\n" +
             "}\n"
             );
@@ -877,7 +899,7 @@ public class CCFormatterUnitTestCase extends CCFormatterBaseUnitTestCase {
             "#define BRACE }\n" +
             "int main()\n" +
             "{\n" +
-            "    if (a){\n" +
+            "    if (a) {\n" +
             "    }\n" +
             "}\n"
         );
@@ -1097,7 +1119,7 @@ public class CCFormatterUnitTestCase extends CCFormatterBaseUnitTestCase {
 
     public void testSwitchFormatting() {
         setLoadDocumentText(
-                "switch (GetTypeID()){\n" +
+                "switch (GetTypeID()) {\n" +
                 "case FAST:\n" +
                 "metric += 100;\n" +
                 "break;\n" +
@@ -1110,7 +1132,7 @@ public class CCFormatterUnitTestCase extends CCFormatterBaseUnitTestCase {
                 "}\n");
         reformat();
         assertDocumentText("Incorrect formatting for macro define with paren",
-                "switch (GetTypeID()){\n" +
+                "switch (GetTypeID()) {\n" +
                 "    case FAST:\n" +
                 "        metric += 100;\n" +
                 "        break;\n" +
@@ -1121,40 +1143,5 @@ public class CCFormatterUnitTestCase extends CCFormatterBaseUnitTestCase {
                 "    default:\n" +
                 "        break;\n" +
                 "}\n");
-    }
-
-    public void testSwitchFormatting2() {
-        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
-                putBoolean(EditorOptions.indentCasesFromSwitch, false);
-        try {
-        setLoadDocumentText(
-                "switch (GetTypeID()){\n" +
-                "case FAST:\n" +
-                "metric += 100;\n" +
-                "break;\n" +
-                "case ULTRA:\n" +
-                "case SLOW:\n" +
-                "metric += 200;\n" +
-                "break;\n" +
-                "default:\n" +
-                "break;\n" +
-                "}\n");
-        reformat();
-        assertDocumentText("Incorrect formatting for macro define with paren",
-                "switch (GetTypeID()){\n" +
-                "case FAST:\n" +
-                "    metric += 100;\n" +
-                "    break;\n" +
-                "case ULTRA:\n" +
-                "case SLOW:\n" +
-                "    metric += 200;\n" +
-                "    break;\n" +
-                "default:\n" +
-                "    break;\n" +
-                "}\n");
-        } finally {
-            EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
-                    putBoolean(EditorOptions.indentCasesFromSwitch, true);
-        }
     }
 }
