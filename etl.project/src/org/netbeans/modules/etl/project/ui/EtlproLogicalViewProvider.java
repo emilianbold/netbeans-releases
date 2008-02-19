@@ -31,6 +31,7 @@ import javax.swing.Action;
 
 import javax.swing.JSeparator;
 import net.java.hulp.i18n.Logger;
+import org.openide.filesystems.FileStateInvalidException;
 import org.openide.nodes.*;
 import org.openide.util.*;
 import org.openide.loaders.DataFolder;
@@ -61,7 +62,6 @@ import org.netbeans.modules.mashup.tables.wizard.MashupTableWizardIterator;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
-
 /**
  * Support for creating logical views.
  * @author Petr Hrebejk
@@ -75,6 +75,7 @@ public class EtlproLogicalViewProvider implements LogicalViewProvider {
     private final ReferenceHelper resolver;
     private static transient final Logger mLogger = LogUtil.getLogger(EtlproLogicalViewProvider.class.getName());
     private static transient final Localizer mLoc = Localizer.get();
+    
 
     public EtlproLogicalViewProvider(Project project, AntProjectHelper helper, PropertyEvaluator evaluator, SubprojectProvider spp, ReferenceHelper resolver) {
         this.project = project;
@@ -199,12 +200,18 @@ public class EtlproLogicalViewProvider implements LogicalViewProvider {
         }
 
         @Override
-        public Action[] getActions(boolean context) {
+        public Action[] getActions(boolean context) {            
             if (context) {
                 return super.getActions(true);
             } else {
-                EtlproProject pro = (EtlproProject) project;                
-                MashupTableWizardIterator.setProjectInfo(pro.getName(),EtlproProjectGenerator.PRJ_LOCATION_DIR, true);
+                EtlproProject pro = (EtlproProject) project;  
+                String prj_locn = pro.getProjectDirectory().getPath();
+                try {
+                    prj_locn = pro.getProjectDirectory().getFileSystem().getRoot().toString()+prj_locn;                                      
+                } catch (FileStateInvalidException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+                MashupTableWizardIterator.setProjectInfo(pro.getName(),prj_locn, true);
                 return getAdditionalActions();
             }
         }
@@ -257,6 +264,8 @@ public class EtlproLogicalViewProvider implements LogicalViewProvider {
             String nbBundle5 = mLoc.t("PRSR001: Generate Schema");
             String nbBundle6 = mLoc.t("PRSR001: Redeploy Project");
             String nbBundle7 = mLoc.t("PRSR001: Deploy Project");
+            String nbBundle10 = mLoc.t("PRSR001: Bulk Loader");
+
 
             return new Action[]{
                 CommonProjectActions.newFileAction(), 
@@ -267,6 +276,7 @@ public class EtlproLogicalViewProvider implements LogicalViewProvider {
                 null,
                 ProjectSensitiveActions.projectCommandAction(EtlproProject.COMMAND_GENWSDL, Localizer.parse(nbBundle4), null), // NOI18N
                 ProjectSensitiveActions.projectCommandAction(EtlproProject.COMMAND_SCHEMA, Localizer.parse(nbBundle5), null), // NOI18N
+                ProjectSensitiveActions.projectCommandAction(EtlproProject.COMMAND_BULK_LOADER, Localizer.parse(nbBundle10), null), // NOI18N
                 null,
                 SystemAction.get(NewFlatfileDatabaseWizardAction.class),
                 SystemAction.get(NewFlatfileTableAction.class),              

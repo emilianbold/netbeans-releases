@@ -229,11 +229,11 @@ public final class NativeProjectProvider {
 	NativeFileItem.Language getLanguage(File file, DataObject dobj) {
 	    if (dobj == null) {
 		String path = file.getAbsolutePath();
-		if (CCDataLoader.getInstance().getExtensions().isRegistered(path)) {
+		if (CCDataLoader.getInstance().getDefaultExtensionList().isRegistered(path)) {
 		    return NativeFileItem.Language.CPP;
-		} else if (CDataLoader.getInstance().getExtensions().isRegistered(path)) {
+		} else if (CDataLoader.getInstance().getDefaultExtensionList().isRegistered(path)) {
 		    return NativeFileItem.Language.C;
-		} else if (HDataLoader.getInstance().getExtensions().isRegistered(path)) {
+		} else if (HDataLoader.getInstance().getDefaultExtensionList().isRegistered(path)) {
 		    return NativeFileItem.Language.C_HEADER;
 		} else {
 		    return NativeFileItem.Language.OTHER;

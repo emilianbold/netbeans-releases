@@ -46,6 +46,7 @@ import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.api.model.xref.CsmReference;
 import org.netbeans.modules.cnd.refactoring.api.WhereUsedQueryConstants;
+import org.netbeans.modules.cnd.refactoring.support.CsmRefactoringUtils;
 import org.netbeans.modules.refactoring.api.AbstractRefactoring;
 import org.netbeans.modules.refactoring.api.Problem;
 import org.netbeans.modules.refactoring.api.WhereUsedQuery;
@@ -97,10 +98,11 @@ public class WhereUsedQueryUI implements RefactoringUI {
         } else {
             // query.getContext().add();
         }
-        if (panel.getReferencedObject() == null) {
+        CsmObject refObj = panel.getReferencedObject();
+        if (refObj == null) {
             query.setRefactoringSource(Lookup.EMPTY);
         } else {
-            query.setRefactoringSource(Lookups.singleton(panel.getReferencedObject()));
+            query.setRefactoringSource(Lookups.fixed(refObj, CsmRefactoringUtils.getHandler(refObj)));
         }
         if (panel.isVirtualMethod()) {
             setForMethod();
@@ -116,16 +118,18 @@ public class WhereUsedQueryUI implements RefactoringUI {
     private void setForMethod() {
         assert panel != null;
         if (panel.isMethodFromBaseClass()) {
-            if (panel.getBaseMethod() == null) {
+            CsmObject refObj = panel.getBaseMethod();
+            if (refObj == null) {
                 query.setRefactoringSource(Lookup.EMPTY);
             } else {
-                query.setRefactoringSource(Lookups.singleton(panel.getBaseMethod()));
+                query.setRefactoringSource(Lookups.fixed(refObj, CsmRefactoringUtils.getHandler(refObj)));
             }            
         } else {
-            if (panel.getReferencedObject() == null) {
+            CsmObject refObj = panel.getReferencedObject();
+            if (refObj == null) {
                 query.setRefactoringSource(Lookup.EMPTY);
             } else {
-                query.setRefactoringSource(Lookups.singleton(panel.getReferencedObject()));
+                query.setRefactoringSource(Lookups.fixed(refObj, CsmRefactoringUtils.getHandler(refObj)));
             }
         }
         query.putValue(WhereUsedQueryConstants.FIND_OVERRIDING_METHODS,panel.isMethodOverriders());

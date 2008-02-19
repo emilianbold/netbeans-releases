@@ -106,7 +106,7 @@ public class JaxRsEditorDrop implements ActiveEditorDrop {
         final List<Exception> errors = new ArrayList<Exception>();
        
         final ProgressDialog dialog = new ProgressDialog(
-                NbBundle.getMessage(JaxRsEditorDrop.class, "LBL_RestComponentProgress", 
+                NbBundle.getMessage(JaxRsEditorDrop.class, "LBL_JaxRsCodeGenProgress", 
                 displayName));
 
         generatorTask = RequestProcessor.getDefault().create(new Runnable() {
@@ -128,7 +128,7 @@ public class JaxRsEditorDrop implements ActiveEditorDrop {
 
                     DialogDescriptor desc = new DialogDescriptor(panel, 
                             NbBundle.getMessage(JaxRsEditorDrop.class,
-                            "LBL_CustomizeComponent", displayName));
+                            "LBL_CustomizeSaasService", displayName));
                     Object response = DialogDisplayer.getDefault().notify(desc);
                     
                     if (response.equals(NotifyDescriptor.YES_OPTION)) {

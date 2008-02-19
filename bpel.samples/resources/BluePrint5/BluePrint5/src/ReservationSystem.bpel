@@ -97,7 +97,7 @@
         <variable name="reserveHotelVar"
                   messageType="ns3:HotelReservation"></variable>
         <variable name="hotelStatusVar"
-                  messageType="ns3:HotelReservationStatus"></variable>                  
+                  messageType="ns3:HotelReservationStatus"></variable>
         <variable name="tempCarStatusVar"
                   messageType="ns2:CarReservationStatus"></variable>
         <variable name="tempAirlineStatusVar"
