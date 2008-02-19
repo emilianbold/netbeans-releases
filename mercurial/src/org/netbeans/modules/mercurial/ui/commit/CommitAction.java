@@ -322,6 +322,7 @@ public class CommitAction extends ContextAction {
         FileStatusCache cache = Mercurial.getInstance().getFileStatusCache();
         final File repository = HgUtils.getRootFile(ctx);
         List<File> addCandidates = new ArrayList<File>();
+        List<File> deleteCandidates = new ArrayList<File>();
         List<File> commitCandidates = new ArrayList<File>();
         Iterator<HgFileNode> it = commitFiles.keySet().iterator();
 
@@ -334,8 +335,11 @@ public class CommitAction extends ContextAction {
              HgFileNode node = it.next();
              CommitOptions option = commitFiles.get(node);
              if (option != CommitOptions.EXCLUDE) {
-                 if ((cache.getStatus(node.getFile()).getStatus() & FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY) != 0) {
+                 int  status = cache.getStatus(node.getFile()).getStatus();
+                 if ((status & FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY) != 0) {
                      addCandidates.add(node.getFile()); 
+                 } else  if ((status & FileInformation.STATUS_VERSIONED_DELETEDLOCALLY) != 0) {
+                     deleteCandidates.add(node.getFile()); 
                  }
                  commitCandidates.add(node.getFile()); 
                  incPaths.add(node.getFile().getAbsolutePath());
@@ -366,6 +370,12 @@ public class CommitAction extends ContextAction {
                 HgCommand.doAdd(repository, addCandidates, logger);
                 for (File f : addCandidates) {
                     logger.output("hg add " + f.getName()); //NOI18N
+                }
+            }
+            if (deleteCandidates.size() > 0 ) {
+                HgCommand.doRemove(repository, deleteCandidates, logger);
+                for (File f : deleteCandidates) {
+                    logger.output("hg delete " + f.getName()); //NOI18N
                 }
             }
             HgCommand.doCommit(repository, commitCandidates, message, logger);
