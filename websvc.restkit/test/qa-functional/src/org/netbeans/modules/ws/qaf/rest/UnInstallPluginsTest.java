@@ -89,19 +89,27 @@ public class UnInstallPluginsTest extends JellyTestCase {
      */
     public void testUnInstallPlugins() {
         List<String> toUninstall = new ArrayList<String>();
+        boolean hadFlag = false;
         if (flagF.exists() && flagF.isFile()) {
             flagF.delete();
+            hadFlag = true;
             toUninstall.add(InstallPluginsTest.REST_KIT_LABEL);
         } else if (Boolean.getBoolean("plugins.rest.forceUninstall")) { //NOI18N
+            hadFlag = true;
             toUninstall.add(InstallPluginsTest.REST_KIT_LABEL);
         }
         if (!Boolean.getBoolean("plugins.jmaki.skip")) { //NOI18N
             if (flagF2.exists() && flagF2.isFile()) {
                 flagF2.delete();
+                hadFlag = true;
                 toUninstall.add(InstallPluginsTest.JMAKI_KIT_LABEL);
             } else if (Boolean.getBoolean("plugins.jmaki.forceUninstall")) { //NOI18N
+            hadFlag = true;
                 toUninstall.add(InstallPluginsTest.JMAKI_KIT_LABEL);
             }
+        }
+        if (hadFlag) {
+            fail(toUninstall.toString() + " is/are already uninstalled"); //NOI18N
         }
         if (!toUninstall.isEmpty()) {
             uninstallPlugins(toUninstall.toArray(new String[toUninstall.size()]));

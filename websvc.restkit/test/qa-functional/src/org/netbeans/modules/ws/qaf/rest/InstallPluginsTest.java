@@ -94,6 +94,7 @@ public class InstallPluginsTest extends JellyTestCase {
     public void testInstallRest() throws IOException {
         try {
             Class.forName("org.netbeans.modules.websvc.rest.spi.RestSupport");
+            fail(REST_KIT_LABEL + " is already installed.");
         } catch (ClassNotFoundException cnfe) {
             flagF.createNewFile();
             PluginsOperator po = PluginsOperator.invoke();
@@ -114,6 +115,7 @@ public class InstallPluginsTest extends JellyTestCase {
         }
         try {
             Class.forName("org.netbeans.modules.sun.jmaki.Installer"); //NOI18N
+            fail(JMAKI_KIT_LABEL + " is already installed.");
         } catch (ClassNotFoundException cnfe) {
             flagF2.createNewFile();
             installPlugin();
