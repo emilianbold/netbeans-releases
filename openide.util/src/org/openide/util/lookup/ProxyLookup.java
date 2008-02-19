@@ -59,7 +59,6 @@ import javax.swing.event.EventListenerList;
 import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
-import org.openide.util.Utilities;
 
 /** Implementation of lookup that can delegate to others.
  *
@@ -679,7 +678,7 @@ public class ProxyLookup extends Lookup {
         private final WeakRef<T> result;
         
         public WeakResult(ProxyLookup proxy, R r, Template<T> t) {
-            this.result = new WeakRef(r, this, proxy, t);
+            this.result = new WeakRef<T>(r, this, proxy, t);
         }
         
         final void removeListeners() {
