@@ -38,6 +38,7 @@ public final class NewFlatfileDatabaseWizardAction extends CallableSystemAction 
         wizardDescriptor.setTitleFormat(new MessageFormat("{0}"));
         wizardDescriptor.setTitle(Localizer.parse(nbBundle1));
         Dialog dialog = DialogDisplayer.getDefault().createDialog(wizardDescriptor);
+        dialog.getAccessibleContext().setAccessibleDescription("This is the Dialog which lets the user create a mashup database");
         dialog.setSize(630, 334);
         dialog.setVisible(true);
         dialog.toFront();
