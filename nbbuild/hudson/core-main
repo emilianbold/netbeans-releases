@@ -33,8 +33,8 @@ if [ "$action" = "build" ]; then
     ant -f nbbuild/build.xml build || exit 2
     ant -f nbbuild/build.xml commit-validation # || exit 3
     ant -f nbbuild/build.xml commit-validation-junit-format # || exit 3
-    testmodule openide.util/build.xml test  || exit 4
-    testmodule openide.modules/build.xml test || exit 4
+    testmodule openide.util  || exit 4
+    testmodule openide.modules || exit 4
     testmodule openide.filesystems || exit 4
 # masterfs is currently broken, Radek wants me to disable it until 6.1M2:
 #    ant -f masterfs|| exit 4
