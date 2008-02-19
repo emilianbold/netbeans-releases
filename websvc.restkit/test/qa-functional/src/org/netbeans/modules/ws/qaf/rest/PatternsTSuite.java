@@ -44,7 +44,9 @@ import java.util.Set;
 import junit.textui.TestRunner;
 import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.EditorOperator;
+import org.netbeans.jellytools.NbDialogOperator;
 import org.netbeans.jellytools.WizardOperator;
+import org.netbeans.jemmy.operators.JButtonOperator;
 import org.netbeans.jemmy.operators.JComboBoxOperator;
 import org.netbeans.jemmy.operators.JRadioButtonOperator;
 import org.netbeans.jemmy.operators.JTextFieldOperator;
@@ -54,7 +56,7 @@ import org.openide.filesystems.FileUtil;
 
 /**
  * Tests for New REST from Patterns wizard
- * 
+ *
  * @author lukas
  */
 public class PatternsTSuite extends RestTestBase {
@@ -157,6 +159,50 @@ public class PatternsTSuite extends RestTestBase {
             }
             throw new AssertionError("Unknown type: " + this); //NOI18N
         }
+
+        public int getRepresentationClassTxtIndex() {
+            switch (this) {
+                case Singleton:
+                    return 5;
+                case ContainerItem:
+                case CcContainerItem:
+                    return 6;
+            }
+            throw new AssertionError("Unknown type: " + this); //NOI18N
+        }
+
+        public int getRepresentationClassSelectIndex() {
+            switch (this) {
+                case Singleton:
+                    return 2;
+                case ContainerItem:
+                case CcContainerItem:
+                    return 3;
+            }
+            throw new AssertionError("Unknown type: " + this); //NOI18N
+        }
+
+        public int getContainerRepresentationClassTxtIndex() {
+            switch (this) {
+                case Singleton:
+                    return -1;
+                case ContainerItem:
+                case CcContainerItem:
+                    return 7;
+            }
+            throw new AssertionError("Unknown type: " + this); //NOI18N
+        }
+
+        public int getContainerRepresentationClassSelectIndex() {
+            switch (this) {
+                case Singleton:
+                    return -1;
+                case ContainerItem:
+                case CcContainerItem:
+                    return 4;
+            }
+            throw new AssertionError("Unknown type: " + this); //NOI18N
+        }
     }
 
     /** Def constructor.
@@ -173,33 +219,6 @@ public class PatternsTSuite extends RestTestBase {
 
     protected String getRestPackage() {
         return "o.n.m.ws.qaf.rest.patterns"; //NOI18N
-    }
-
-    /** Creates suite from particular test cases. You can define order of testcases here. */
-    public static NbTestSuite suite() {
-        NbTestSuite suite = new NbTestSuite();
-        suite.addTest(new PatternsTSuite("testSingletonDef")); //NOI18N
-        suite.addTest(new PatternsTSuite("testContainerIDef")); //NOI18N
-        suite.addTest(new PatternsTSuite("testCcContainerIDef")); //NOI18N
-        suite.addTest(new PatternsTSuite("testSingleton1")); //NOI18N
-        suite.addTest(new PatternsTSuite("testCcContainerI1")); //NOI18N
-        suite.addTest(new PatternsTSuite("testSingleton2")); //NOI18N
-        suite.addTest(new PatternsTSuite("testContainerI1")); //NOI18N
-        suite.addTest(new PatternsTSuite("testContainerI2")); //NOI18N
-        suite.addTest(new PatternsTSuite("testSingleton3")); //NOI18N
-        suite.addTest(new PatternsTSuite("testContainerI3")); //NOI18N
-        suite.addTest(new PatternsTSuite("testCcContainerI2")); //NOI18N
-        suite.addTest(new PatternsTSuite("testCcContainerI3")); //NOI18N
-        suite.addTest(new PatternsTSuite("testNodes")); //NOI18N
-        suite.addTest(new PatternsTSuite("testDeploy")); //NOI18N
-        suite.addTest(new PatternsTSuite("testUndeploy")); //NOI18N
-        return suite;
-    }
-
-    /* Method allowing test execution directly from the IDE. */
-    public static void main(java.lang.String[] args) {
-        // run whole suite
-        TestRunner.run(suite());
     }
 
     /**
@@ -305,7 +324,6 @@ public class PatternsTSuite extends RestTestBase {
         assertEquals("missing nodes?", 20, getRestNode().getChildren().length); //NOI18N
     }
 
-    //TODO: add selection of resource representation class as soon as issue 122619 get fixed
     private Set<File> createWsFromPatterns(String name, Pattern pattern, MimeType mimeType) {
         //RESTful Web Services from Patterns
         String patternsTypeName = Bundle.getStringTrimmed("org.netbeans.modules.websvc.rest.wizard.Bundle", "Templates/WebServices/RestServicesFromPatterns");
@@ -333,7 +351,19 @@ public class PatternsTSuite extends RestTestBase {
                 jcbo = new JComboBoxOperator(wo, pattern.getResourceMimeTypeJComboIndex());
                 jcbo.selectItem(mimeType.toString());
             }
-            //TODO: set resource representation class
+            //set resource representation class
+            if (MimeType.APPLICATION_JSON.equals(mimeType)) {
+                jtfo = new JTextFieldOperator(wo, pattern.getRepresentationClassTxtIndex());
+                jtfo.clearText();
+                jtfo.typeText("org.codehaus.jettison.json.JSONString"); //NOI18N
+            } else if (MimeType.TEXT_PLAIN.equals(mimeType)) {
+                new JButtonOperator(wo, pattern.getRepresentationClassSelectIndex()).pushNoBlock();
+                //"Find Type"
+                String fTypeLbl = Bundle.getStringTrimmed("org.netbeans.modules.java.source.ui.Bundle", "DLG_FindType");
+                NbDialogOperator nbo = new NbDialogOperator(fTypeLbl);
+                new JTextFieldOperator(nbo, 0).typeText("Level"); //NOI18N
+                nbo.ok();
+            }
             if (Pattern.Singleton.equals(pattern)) {
                 //set resource URI template
                 jtfo = new JTextFieldOperator(wo, pattern.getResourceURITemplateTxtIndex());
@@ -352,7 +382,19 @@ public class PatternsTSuite extends RestTestBase {
                 jtfo = new JTextFieldOperator(wo, pattern.getContainerResourceURITemplateTxtIndex());
                 jtfo.clearText();
                 jtfo.typeText("/" + name + "ContainerURI"); //NOI18N
-                //TODO: set container resource representation class
+                //set container resource representation class
+                if (MimeType.APPLICATION_JSON.equals(mimeType)) {
+                    jtfo = new JTextFieldOperator(wo, pattern.getContainerRepresentationClassTxtIndex());
+                    jtfo.clearText();
+                    jtfo.typeText("org.codehaus.jettison.json.JSONObject"); //NOI18N
+                } else if (MimeType.TEXT_PLAIN.equals(mimeType)) {
+                    new JButtonOperator(wo, pattern.getContainerRepresentationClassSelectIndex()).pushNoBlock();
+                    //"Find Type"
+                    String fTypeLbl = Bundle.getStringTrimmed("org.netbeans.modules.java.source.ui.Bundle", "DLG_FindType");
+                    NbDialogOperator nbo = new NbDialogOperator(fTypeLbl);
+                    new JTextFieldOperator(nbo, 0).typeText("Properties"); //NOI18N
+                    nbo.ok();
+                }
             }
         }
         wo.finish();
@@ -391,9 +433,40 @@ public class PatternsTSuite extends RestTestBase {
     }
 
     private void closeCreatedFiles(Set<File> files) {
-        for (File f: files) {
+        for (File f : files) {
             EditorOperator eo = new EditorOperator(f.getName());
             eo.close();
         }
+    }
+
+    /**
+     * Creates suite from particular test cases. You can define order of testcases here.
+     */
+    public static NbTestSuite suite() {
+        NbTestSuite suite = new NbTestSuite();
+        suite.addTest(new PatternsTSuite("testSingletonDef")); //NOI18N
+        suite.addTest(new PatternsTSuite("testContainerIDef")); //NOI18N
+        suite.addTest(new PatternsTSuite("testCcContainerIDef")); //NOI18N
+        suite.addTest(new PatternsTSuite("testSingleton1")); //NOI18N
+        suite.addTest(new PatternsTSuite("testCcContainerI1")); //NOI18N
+        suite.addTest(new PatternsTSuite("testSingleton2")); //NOI18N
+        suite.addTest(new PatternsTSuite("testContainerI1")); //NOI18N
+        suite.addTest(new PatternsTSuite("testContainerI2")); //NOI18N
+        suite.addTest(new PatternsTSuite("testSingleton3")); //NOI18N
+        suite.addTest(new PatternsTSuite("testContainerI3")); //NOI18N
+        suite.addTest(new PatternsTSuite("testCcContainerI2")); //NOI18N
+        suite.addTest(new PatternsTSuite("testCcContainerI3")); //NOI18N
+        suite.addTest(new PatternsTSuite("testNodes")); //NOI18N
+        suite.addTest(new PatternsTSuite("testDeploy")); //NOI18N
+        suite.addTest(new PatternsTSuite("testUndeploy")); //NOI18N
+        return suite;
+    }
+
+    /**
+     * Method allowing test execution directly from the IDE.
+     */
+    public static void main(java.lang.String[] args) {
+        // run whole suite
+        TestRunner.run(suite());
     }
 }
