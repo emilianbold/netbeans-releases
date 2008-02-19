@@ -45,8 +45,10 @@ import java.awt.Component;
 import java.io.File;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeListener;
+import org.netbeans.api.queries.CollocationQuery;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.WizardDescriptor;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.ChangeSupport;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
@@ -75,6 +77,8 @@ public class PanelSharability implements WizardDescriptor.Panel, WizardDescripto
     private PanelSharabilityVisual panel;
 
     private WizardDescriptor descriptor;
+    
+    private File projectLocation;
 
     public PanelSharability(String projectLocationProperty, String serverIdProperty, boolean finish) {
         this.projectLocationProperty = projectLocationProperty;
@@ -121,6 +125,23 @@ public class PanelSharability implements WizardDescriptor.Panel, WizardDescripto
                 return false;
             }
 
+            if (panel.getSharableProject().isSelected()) {
+                String location = panel.getSharedLibarariesLocation();
+                if (new File(location).isAbsolute()) {
+                    descriptor.putProperty(PROP_ERROR_MESSAGE, decorateMessage(
+                            NbBundle.getMessage(PanelSharability.class, "PanelSharableServer.absolutePathWarning.text")));
+
+                } else {
+                    if (projectLocation != null) {
+                        File projectLoc = FileUtil.normalizeFile(projectLocation);
+                        File libLoc = PropertyUtils.resolveFile(projectLoc, location);
+                        if (!CollocationQuery.areCollocated(projectLoc, libLoc)) {
+                            descriptor.putProperty(PROP_ERROR_MESSAGE, decorateMessage(
+                                    NbBundle.getMessage(PanelSharability.class, "PanelSharableServer.relativePathWarning.text")));
+                        }
+                    }
+                }
+            }           
             descriptor.putProperty(PROP_ERROR_MESSAGE, decorateMessage(
                     NbBundle.getMessage(PanelSharability.class, "PanelSharableServer.licenseWarning.text")));
         }
@@ -130,12 +151,15 @@ public class PanelSharability implements WizardDescriptor.Panel, WizardDescripto
 
     public void readSettings(Object settings) {
         descriptor = (WizardDescriptor) settings;
-        panel.setProjectLocation((File) descriptor.getProperty(projectLocationProperty));
+        
+        projectLocation = (File) descriptor.getProperty(projectLocationProperty);
+        panel.setProjectLocation(projectLocation);
         panel.setServerInstance((String) descriptor.getProperty(serverIdProperty));
     }
 
     public void storeSettings(Object settings) {
         WizardDescriptor d = (WizardDescriptor) settings;
+        
         d.putProperty(WIZARD_SHARED_LIBRARIES, panel.getSharedLibarariesLocation());
         d.putProperty(WIZARD_SERVER_LIBRARY, panel.getServerLibraryName());
     }

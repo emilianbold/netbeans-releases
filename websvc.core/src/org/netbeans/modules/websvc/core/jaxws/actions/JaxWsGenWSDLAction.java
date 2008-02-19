@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- *
+ * 
  * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
- *
+ * 
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,13 +20,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
+ * 
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -37,50 +31,57 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ * 
+ * Contributor(s):
+ * 
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.debugger.gdb.actions;
+package org.netbeans.modules.websvc.core.jaxws.actions;
 
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
-import org.netbeans.modules.cnd.debugger.gdb.GdbDebugger;
-import org.netbeans.spi.debugger.ActionsProviderSupport;
-import org.netbeans.spi.debugger.ContextProvider;
+import java.io.IOException;
+import org.openide.ErrorManager;
+import org.openide.nodes.Node;
+import org.openide.util.HelpCtx;
+import org.openide.util.NbBundle;
+import org.openide.util.actions.CookieAction;
 
 /**
-* Representation of a debugging session.
-*
-* @author  Gordon Prieur (copied from Jan Jancura's and Marian Petras' JPDA implementation)
-*/
-public abstract class GdbDebuggerActionProvider extends ActionsProviderSupport 
-                implements PropertyChangeListener {
-    
-    private GdbDebugger debugger;
-    
-    private volatile boolean disabled;
-    
-    GdbDebuggerActionProvider(ContextProvider lookupProvider) {
-        debugger = (GdbDebugger) lookupProvider.lookupFirst(null, GdbDebugger.class);
-        debugger.addPropertyChangeListener(GdbDebugger.PROP_STATE, this);
-    }
-    
-    public void propertyChange(PropertyChangeEvent evt) {
-           checkEnabled(debugger.getState()); 
-    }
-    
-    protected abstract void checkEnabled(String debuggerState);
-    
+ *
+ * @author rico
+ */
+public class JaxWsGenWSDLAction extends CookieAction{
+
     @Override
-    public boolean isEnabled(Object action) {
-        if (!disabled) {
-            checkEnabled(debugger.getState());
+    protected int mode() {
+        return MODE_EXACTLY_ONE;
+    }
+
+    @Override
+    protected Class<?>[] cookieClasses() {
+        return new Class[]{JaxWsGenWSDLCookie.class};
+    }
+
+    @Override
+    protected void performAction(Node[] activatedNodes) {
+        JaxWsGenWSDLCookie cookie = activatedNodes[0].getCookie(JaxWsGenWSDLCookie.class);
+        if(cookie != null){
+            try {
+                cookie.generateWSDL();
+            } catch (IOException ex) {
+                ErrorManager.getDefault().notify(ex);
+            }
         }
-        return super.isEnabled(action);
     }
-    
-    GdbDebugger getDebugger() {
-        return debugger;
+
+    @Override
+    public String getName() {
+        return NbBundle.getMessage(JaxWsGenWSDLAction.class, "LBL_Generate_WSDL");
     }
-    
-    
+
+    @Override
+    public HelpCtx getHelpCtx() {
+        return HelpCtx.DEFAULT_HELP;
+    }
+
 }

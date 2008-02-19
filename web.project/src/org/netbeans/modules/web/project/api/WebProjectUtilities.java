@@ -83,6 +83,7 @@ import org.netbeans.api.queries.FileEncodingQuery;
 
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
 import org.netbeans.modules.j2ee.common.FileSearchUtility;
+import org.netbeans.modules.j2ee.common.sharability.SharabilityUtilities;
 import org.netbeans.modules.j2ee.dd.api.web.DDProvider;
 import org.netbeans.modules.j2ee.dd.api.web.WebApp;
 import org.netbeans.modules.j2ee.dd.api.web.WelcomeFileList;
@@ -194,7 +195,8 @@ public class WebProjectUtilities {
         final boolean createBluePrintsStruct = SRC_STRUCT_BLUEPRINTS.equals(sourceStructure);
         final boolean createJakartaStructure = SRC_STRUCT_JAKARTA.equals(sourceStructure);
         
-        final AntProjectHelper h = setupProject(projectDir, name, serverInstanceID, j2eeLevel, createData.getLibrariesDefinition());
+        final AntProjectHelper h = setupProject(projectDir, name, serverInstanceID,
+                j2eeLevel, createData.getLibrariesDefinition(), createData.getServerLibraryName());
         
         FileObject srcFO = projectDir.createFolder(DEFAULT_SRC_FOLDER);
         FileObject confFolderFO = null;
@@ -300,7 +302,7 @@ public class WebProjectUtilities {
         try {
             ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction<Void>() {
                 public Void run() throws Exception {
-                    copyRequiredLibraries(h, refHelper);
+                    copyRequiredLibraries(h, refHelper, createData);
                     return null;
                 }
             });
@@ -445,7 +447,9 @@ public class WebProjectUtilities {
         assert serverInstanceID != null: "Server instance ID can't be null"; //NOI18N
         assert j2eeLevel != null: "Java EE version can't be null"; //NOI18N
         
-        final AntProjectHelper antProjectHelper = setupProject(projectDir, name, serverInstanceID, j2eeLevel, createData.getLibrariesDefinition());
+        final AntProjectHelper antProjectHelper = setupProject(projectDir, name,
+                serverInstanceID, j2eeLevel, createData.getLibrariesDefinition(), createData.getServerLibraryName());
+        
         final WebProject p = (WebProject) ProjectManager.getDefault().findProject(antProjectHelper.getProjectDirectory());
         final ReferenceHelper referenceHelper = p.getReferenceHelper();
         EditableProperties ep = new EditableProperties(true);
@@ -518,7 +522,7 @@ public class WebProjectUtilities {
                     }
                     antProjectHelper.putPrimaryConfigurationData(data,true);
                     ProjectManager.getDefault().saveProject(p);
-                    copyRequiredLibraries(antProjectHelper, referenceHelper);
+                    copyRequiredLibraries(antProjectHelper, referenceHelper, createData);
                     return null;
                 }
             });
@@ -592,15 +596,23 @@ public class WebProjectUtilities {
         return antProjectHelper;
     }
     
-    private static void copyRequiredLibraries(AntProjectHelper h, ReferenceHelper rh) throws IOException {
+    private static void copyRequiredLibraries(AntProjectHelper h, ReferenceHelper rh, WebProjectCreateData data) throws IOException {
         if (!h.isSharableProject()) {
             return;
         }
-        if (rh.getProjectLibraryManager().getLibrary("junit") == null) {
+        if (rh.getProjectLibraryManager().getLibrary("junit") == null) { // NOI18N
             rh.copyLibrary(LibraryManager.getDefault().getLibrary("junit")); // NOI18N
         }
-        if (rh.getProjectLibraryManager().getLibrary("junit_4") == null) {
+        if (rh.getProjectLibraryManager().getLibrary("junit_4") == null) { // NOI18N
             rh.copyLibrary(LibraryManager.getDefault().getLibrary("junit_4")); // NOI18N
+        }
+
+        if (h.isSharableProject() && data.getServerLibraryName() != null  && SharabilityUtilities.getLibrary(
+                h.resolveFile(h.getLibrariesLocation()), data.getServerLibraryName()) == null) {
+
+            SharabilityUtilities.createLibrary(
+                h.resolveFile(h.getLibrariesLocation()), data.getServerLibraryName(),
+                data.getServerInstanceID());
         }
     }
     
@@ -624,7 +636,7 @@ public class WebProjectUtilities {
     }
     
     private static AntProjectHelper setupProject(FileObject dirFO, String name, 
-            String serverInstanceID, String j2eeLevel, String librariesDefinition) throws IOException {
+            String serverInstanceID, String j2eeLevel, String librariesDefinition, String serverLibraryName) throws IOException {
         AntProjectHelper h = ProjectGenerator.createProject(dirFO, WebProjectType.TYPE, librariesDefinition);
         Element data = h.getPrimaryConfigurationData(true);
         Document doc = data.getOwnerDocument();
@@ -648,6 +660,16 @@ public class WebProjectUtilities {
         ep.setProperty(WebProjectProperties.DIST_WAR, "${"+WebProjectProperties.DIST_DIR+"}/${" + WebProjectProperties.WAR_NAME + "}"); // NOI18N
         ep.setProperty(WebProjectProperties.DIST_WAR_EAR, "${" + WebProjectProperties.DIST_DIR+"}/${" + WebProjectProperties.WAR_EAR_NAME + "}"); //NOI18N
         
+        Deployment deployment = Deployment.getDefault();
+        String serverType = deployment.getServerID(serverInstanceID);
+        
+        if (h.isSharableProject() && serverLibraryName != null) {
+            String libraryName = SharabilityUtilities.getPrefixedLibraryName(serverLibraryName);
+            ep.setProperty(WebProjectProperties.J2EE_PLATFORM_CLASSPATH, "${libs." + libraryName + ".classpath}"); //NOI18N
+        }
+        ep.setProperty(WebProjectProperties.J2EE_PLATFORM_SHARED,
+                Boolean.toString(h.isSharableProject() && serverLibraryName != null));
+        
         ep.setProperty(WebProjectProperties.JAVAC_CLASSPATH, ""); // NOI18N
         
         ep.setProperty(WebProjectProperties.JSPCOMPILATION_CLASSPATH, "${jspc.classpath}:${javac.classpath}");
@@ -663,8 +685,8 @@ public class WebProjectUtilities {
         
         ep.setProperty(WebProjectProperties.LAUNCH_URL_RELATIVE, ""); // NOI18N
         ep.setProperty(WebProjectProperties.DISPLAY_BROWSER, "true"); // NOI18N
-        Deployment deployment = Deployment.getDefault();
-        ep.setProperty(WebProjectProperties.J2EE_SERVER_TYPE, deployment.getServerID(serverInstanceID));
+
+        ep.setProperty(WebProjectProperties.J2EE_SERVER_TYPE, serverType);
         
         ep.setProperty(WebProjectProperties.JAVAC_DEBUG, "true"); // NOI18N
         ep.setProperty(WebProjectProperties.JAVAC_DEPRECATION, "false"); // NOI18N
@@ -737,8 +759,11 @@ public class WebProjectUtilities {
             Logger.getLogger("global").log(Level.WARNING,
                     "J2EE level:" + j2eeLevel + " not supported by server " + Deployment.getDefault().getServerInstanceDisplayName(serverInstanceID) + " for module type WAR"); // NOI18N
         }
-        String classpath = Utils.toClasspathString(j2eePlatform.getClasspathEntries());
-        ep.setProperty(WebProjectProperties.J2EE_PLATFORM_CLASSPATH, classpath);
+        
+        if (!h.isSharableProject() || serverLibraryName == null) {
+            String classpath = Utils.toClasspathString(j2eePlatform.getClasspathEntries());
+            ep.setProperty(WebProjectProperties.J2EE_PLATFORM_CLASSPATH, classpath);
+        }
         
         // set j2ee.platform.wscompile.classpath
         if (j2eePlatform.isToolSupported(J2eePlatform.TOOL_WSCOMPILE)) {
