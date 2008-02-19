@@ -299,6 +299,18 @@ public class ProxyClassLoader extends ClassLoader implements Util.PackageAccessi
         String pkg = (last >= 0) ? name.substring(0, last).replace('/', '.') : "";
         String path = name.substring(0, last+1);
         
+        Boolean systemPackage = sclPackages.get(pkg);
+        if ((systemPackage == null || systemPackage) && shouldDelegateResource(path, null)) {
+            URL u = systemCL.getResource(name);
+            if (u != null) {
+                if (systemPackage == null) {
+                    sclPackages.put(pkg, true);
+                }
+                return u;
+            }
+            // else try other loaders
+        }
+
         Set<ProxyClassLoader> del = packageCoverage.get(pkg);
 
         if (del == null) {
