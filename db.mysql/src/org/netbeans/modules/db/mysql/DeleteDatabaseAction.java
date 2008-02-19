@@ -40,6 +40,8 @@
 package org.netbeans.modules.db.mysql;
 
 import org.netbeans.api.db.explorer.DatabaseException;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
@@ -95,7 +97,11 @@ public class DeleteDatabaseAction extends CookieAction {
             ServerInstance server = model.getServer();
             String dbname = model.getDbName();
             
-            try {
+            if ( ! confirmDeleteDatabase(dbname) ) {
+                return;
+            }
+            
+            try {                
                 server.dropDatabase(dbname);
                 
                 // Delete all the connections for this database, they
@@ -107,6 +113,18 @@ public class DeleteDatabaseAction extends CookieAction {
                 Utils.displayError("MSG_ErrorDeletingDatabase", dbe);
             }
         }        
+    }
+
+    private boolean confirmDeleteDatabase(String dbname) {
+        String message = NbBundle.getMessage(DeleteDatabaseAction.class,
+                "MSG_ConfirmDeleteDatabase", dbname);
+        
+        NotifyDescriptor ndesc = new NotifyDescriptor.Confirmation(message, 
+                NotifyDescriptor.OK_CANCEL_OPTION);
+        
+        Object result = DialogDisplayer.getDefault().notify(ndesc);
+        
+        return result.equals(NotifyDescriptor.OK_OPTION);
     }
 
     private void deleteConnections(ServerInstance server, String dbname) {
