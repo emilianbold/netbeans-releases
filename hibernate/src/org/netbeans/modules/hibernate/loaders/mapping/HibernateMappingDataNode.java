@@ -22,11 +22,6 @@ public class HibernateMappingDataNode extends DataNode {
         setIconBaseWithExtension(IMAGE_ICON_BASE);
     }
 
-    HibernateMappingDataNode(HibernateMappingDataObject obj, Lookup lookup) {
-        super(obj, Children.LEAF, lookup);
-        setIconBaseWithExtension(IMAGE_ICON_BASE);
-    }
-
 //    /** Creates a property sheet. */
 //    @Override
 //    protected Sheet createSheet() {

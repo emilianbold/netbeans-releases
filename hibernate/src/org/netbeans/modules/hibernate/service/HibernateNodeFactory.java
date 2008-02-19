@@ -75,12 +75,14 @@ public class HibernateNodeFactory implements NodeFactory {
                     if (foc2.isFolder() && foc2.getName().equals("java")) {
                         FileObject[] foc3 = foc2.getChildren();
                         for (FileObject foc4 : foc3) {
-                            if (!foc4.isFolder() && foc4.getNameExt().endsWith("cfg.xml")) {
+                            if (!foc4.isFolder() && (foc4.getNameExt().endsWith("cfg.xml")) ||
+                                    foc4.getNameExt().endsWith("hbm.xml")) {
                                 files.add(foc4);
                             }
                         }
                     }
-                    if (!foc2.isFolder() && foc2.getNameExt().endsWith("cfg.xml")) {
+                    if (!foc2.isFolder() && (foc2.getNameExt().endsWith("cfg.xml")) ||
+                            foc2.getNameExt().endsWith("hbm.xml")) {
                         files.add(foc2);
                     }
                 }

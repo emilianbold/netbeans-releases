@@ -147,8 +147,7 @@ public class HibernateMappingWizard implements WizardDescriptor.InstantiatingIte
             hmo.addMyClass(myClass);
             hmo.save();
             return Collections.singleton(hmo.getPrimaryFile());
-        } catch (Exception e) {
-            System.err.println("Error**************************" + e);
+        } catch (Exception e) {            
             return Collections.EMPTY_SET;
 
         }   
