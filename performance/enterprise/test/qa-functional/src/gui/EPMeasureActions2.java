@@ -39,73 +39,33 @@
  * made subject to such option by the copyright holder.
  */
 
-package gui.actions;
+package gui;
 
-import gui.EPUtilities;
 
-import org.netbeans.jellytools.actions.CloseAllDocumentsAction;
-import org.netbeans.jellytools.nodes.Node;
-import org.netbeans.jellytools.actions.OpenAction;
-
-import org.netbeans.jemmy.operators.ComponentOperator;
+import org.netbeans.junit.NbTestSuite;
+import gui.actions.*;
 
 /**
+ * Measure UI-RESPONSIVENES and WINDOW_OPENING.
  *
- * @author rashid@netbeans.org, mmirilovic@netbeans.org
+ * @author  mmirilovic@netbeans.org, rashid@netbeans.org, mrkam@netbeans.org
  */
-public class SwitchToSchemaView  extends org.netbeans.performance.test.utilities.PerformanceTestCase {
-    
-    XMLSchemaComponentOperator schemaComponentOperator;
-            
-    private static String testSchemaFileName = "fields.xsd";
-    
-    /** Creates a new instance of SwitchSchemaView */
-    public SwitchToSchemaView(String testName) {
-        super(testName);
-        expectedTime = WINDOW_OPEN;
-    }
-    
-    /** Creates a new instance of SwitchSchemaView */
-    public SwitchToSchemaView(String testName, String performanceDataName) {
-        super(testName,performanceDataName);
-        expectedTime = WINDOW_OPEN;
-    }
-    
-    protected void initialize() {
-        log(":: initialize");
-    }
-        
-    public void prepare() {
-        log(":: prepare");
-        Node doc = new Node(EPUtilities.getProcessFilesNode("SOATestProject"), testSchemaFileName);
-        doc.select();
-        new OpenAction().perform(doc);
-        schemaComponentOperator = XMLSchemaComponentOperator.findXMLSchemaComponentOperator(testSchemaFileName);
-        schemaComponentOperator.getDesignButton().pushNoBlock();
-    }
-    
-    public ComponentOperator open() {
-        log(":: open");
-        schemaComponentOperator = XMLSchemaComponentOperator.findXMLSchemaComponentOperator(testSchemaFileName);
-        schemaComponentOperator.getSchemaButton().clickMouse();
-        
-        return new XMLSchemaComponentOperator(testSchemaFileName);
-    }
-    
-    public void close() {
-        log("::close");
-        ((XMLSchemaComponentOperator)testedComponentOperator).close();
-    }
-    
-    @Override
-    protected void shutdown() {
-//        new CloseAllDocumentsAction().performAPI();
-    }
+public class EPMeasureActions2  {
 
-    
-    
-    public static void main(String[] args) {
-        repeat = 3;
-        junit.textui.TestRunner.run(new SwitchToSchemaView("measureTime"));
+    public static NbTestSuite suite() {
+        NbTestSuite suite = new NbTestSuite();
+            
+        suite.addTest(new ValidateSchema("measureTime","Validate Schema"));
+        suite.addTest(new OpenSchemaView("testOpenSchemaView", "Open Schema View")); 
+
+//TODO it's the same as SwitchSchemaView, isn't it ?                                     suite.addTest(new SchemaViewSwitchTest("measureTime", "Schema View Switch"));
+        
+        suite.addTest(new BuildComplexProject("measureTime", "Build Complex Project"));
+        
+        suite.addTest(new SwitchToDesignView("measureTime", "Schema | Switch to Design View"));
+        suite.addTest(new SwitchToSchemaView("measureTime", "Schema | Switch to Schema View"));
+        suite.addTest(new SchemaNavigatorDesignView("measureTime", "Schema Navigator Design View"));
+        return suite;
     }
+    
 }

@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -38,49 +38,30 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.bpel.core.util;
 
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
+package gui;
 
-import org.openide.text.Annotatable;
-import org.openide.text.Annotation;
+
+import org.netbeans.junit.NbTestSuite;
+import gui.actions.*;
 
 /**
- * @author Vladimir Yaroslavskiy
- * @version 2008.02.01
+ * Measure UI-RESPONSIVENES and WINDOW_OPENING.
+ *
+ * @author  mmirilovic@netbeans.org, rashid@netbeans.org, mrkam@netbeans.org
  */
-final class BPELValidationAnnotation extends Annotation implements PropertyChangeListener {
-    
-  public String getAnnotationType() {
-    return "bpel-validation-annotation"; // NOI18N
-  }
-  
-  public String getShortDescription() {
-    return myMessage;
-  }
-  
-  public void show(Annotatable annotatable, String message) {
-    myMessage = message;
-    attach(annotatable);
-    annotatable.addPropertyChangeListener(this);
-  }
-  
-  public void propertyChange( PropertyChangeEvent propertyChangeEvent ) {
-    // Ignore the event which notifies about the number of annotations for
-    // the annotatable object -- we're not really interested
-    if (Annotatable.PROP_ANNOTATION_COUNT.equals(
-            propertyChangeEvent.getPropertyName())) {
-        return;
+public class EPMeasureActions1  {
+
+    public static NbTestSuite suite() {
+        NbTestSuite suite = new NbTestSuite();
+            
+        suite.addTest(new CreateBPELmodule("measureTime", "Create BPEL module"));
+        suite.addTest(new CreateCompositeApplication("measureTime", "Create Composite Application"));
+        suite.addTest(new AddNewWSDLDocument("measureTime", "Add New WSDL Document"));
+        suite.addTest(new AddNewXMLSchema("measureTime", "Add New XML Schema"));
+        suite.addTest(new AddNewXMLDocument("measureTime", "Add New XML Document"));
+        suite.addTest(new AddNewBpelProcess("measureTime", "Add New Bpel Process")); 
+        return suite;
     }
     
-    Annotatable annotatable = (Annotatable) propertyChangeEvent.getSource();
-
-    if (annotatable != null) {
-      annotatable.removePropertyChangeListener(this);
-      detach();
-    }
-  }
-
-  private String myMessage;
 }
