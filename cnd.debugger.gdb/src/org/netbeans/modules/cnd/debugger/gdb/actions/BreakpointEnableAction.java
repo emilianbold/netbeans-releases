@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -41,46 +41,47 @@
 
 package org.netbeans.modules.cnd.debugger.gdb.actions;
 
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
-import org.netbeans.modules.cnd.debugger.gdb.GdbDebugger;
-import org.netbeans.spi.debugger.ActionsProviderSupport;
-import org.netbeans.spi.debugger.ContextProvider;
+import org.openide.util.HelpCtx;
+import org.openide.util.NbBundle;
+import org.openide.util.actions.BooleanStateAction;
+import org.netbeans.modules.cnd.debugger.gdb.breakpoints.GdbBreakpoint;
 
 /**
-* Representation of a debugging session.
-*
-* @author  Gordon Prieur (copied from Jan Jancura's and Marian Petras' JPDA implementation)
-*/
-public abstract class GdbDebuggerActionProvider extends ActionsProviderSupport 
-                implements PropertyChangeListener {
-    
-    private GdbDebugger debugger;
-    
-    private volatile boolean disabled;
-    
-    GdbDebuggerActionProvider(ContextProvider lookupProvider) {
-        debugger = (GdbDebugger) lookupProvider.lookupFirst(null, GdbDebugger.class);
-        debugger.addPropertyChangeListener(GdbDebugger.PROP_STATE, this);
+ * Enables or disables breakpoints.
+ *
+ * @author Martin Entlicher
+ */
+public class BreakpointEnableAction extends BooleanStateAction {
+
+    @Override
+    public boolean isEnabled() {
+        GdbBreakpoint b = BreakpointCustomizeAction.getCurrentLineBreakpoint();
+        if (b != null) {
+            boolean value = b.isEnabled();
+            super.setBooleanState(value);
+            return true;
+        }
+        return false;
     }
-    
-    public void propertyChange(PropertyChangeEvent evt) {
-           checkEnabled(debugger.getState()); 
+
+    public String getName() {
+        return NbBundle.getMessage(BreakpointEnableAction.class, "CTL_enabled");
     }
-    
-    protected abstract void checkEnabled(String debuggerState);
     
     @Override
-    public boolean isEnabled(Object action) {
-        if (!disabled) {
-            checkEnabled(debugger.getState());
+    public void setBooleanState(boolean value) {
+        GdbBreakpoint b = BreakpointCustomizeAction.getCurrentLineBreakpoint();
+        if (b != null) {
+            if (value) {
+                b.enable();
+            } else {
+                b.disable();
+            }
+            super.setBooleanState(value);
         }
-        return super.isEnabled(action);
     }
     
-    GdbDebugger getDebugger() {
-        return debugger;
+    public HelpCtx getHelpCtx() {
+        return null;
     }
-    
-    
 }
