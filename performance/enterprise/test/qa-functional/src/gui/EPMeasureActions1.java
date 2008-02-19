@@ -39,35 +39,29 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.ruby.debugger;
+package gui;
 
-import org.netbeans.api.debugger.DebuggerEngine;
-import org.netbeans.spi.debugger.DebuggerEngineProvider;
 
-public final class RubyDebuggerEngineProvider extends DebuggerEngineProvider {
-    
-    static final String RUBY_LANGUAGE = "Ruby"; // NOI18N
-    
-    private DebuggerEngine.Destructor destructor;
-    
-    public String[] getLanguages() {
-        return new String[] { RUBY_LANGUAGE };
-    }
-    
-    public String getEngineTypeID() {
-        return "RubyDebuggerEngine"; // NOI18N
-    }
-    
-    public Object[] getServices() {
-        return new Object[] {};
-    }
-    
-    public void setDestructor(DebuggerEngine.Destructor destructor) {
-        this.destructor = destructor;
-    }
-    
-    public DebuggerEngine.Destructor getDestructor() {
-        return destructor;
+import org.netbeans.junit.NbTestSuite;
+import gui.actions.*;
+
+/**
+ * Measure UI-RESPONSIVENES and WINDOW_OPENING.
+ *
+ * @author  mmirilovic@netbeans.org, rashid@netbeans.org, mrkam@netbeans.org
+ */
+public class EPMeasureActions1  {
+
+    public static NbTestSuite suite() {
+        NbTestSuite suite = new NbTestSuite();
+            
+        suite.addTest(new CreateBPELmodule("measureTime", "Create BPEL module"));
+        suite.addTest(new CreateCompositeApplication("measureTime", "Create Composite Application"));
+        suite.addTest(new AddNewWSDLDocument("measureTime", "Add New WSDL Document"));
+        suite.addTest(new AddNewXMLSchema("measureTime", "Add New XML Schema"));
+        suite.addTest(new AddNewXMLDocument("measureTime", "Add New XML Document"));
+        suite.addTest(new AddNewBpelProcess("measureTime", "Add New Bpel Process")); 
+        return suite;
     }
     
 }

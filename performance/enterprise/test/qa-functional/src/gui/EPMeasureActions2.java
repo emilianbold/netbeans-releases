@@ -39,35 +39,33 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.ruby.debugger;
+package gui;
 
-import org.netbeans.api.debugger.DebuggerEngine;
-import org.netbeans.spi.debugger.DebuggerEngineProvider;
 
-public final class RubyDebuggerEngineProvider extends DebuggerEngineProvider {
-    
-    static final String RUBY_LANGUAGE = "Ruby"; // NOI18N
-    
-    private DebuggerEngine.Destructor destructor;
-    
-    public String[] getLanguages() {
-        return new String[] { RUBY_LANGUAGE };
-    }
-    
-    public String getEngineTypeID() {
-        return "RubyDebuggerEngine"; // NOI18N
-    }
-    
-    public Object[] getServices() {
-        return new Object[] {};
-    }
-    
-    public void setDestructor(DebuggerEngine.Destructor destructor) {
-        this.destructor = destructor;
-    }
-    
-    public DebuggerEngine.Destructor getDestructor() {
-        return destructor;
+import org.netbeans.junit.NbTestSuite;
+import gui.actions.*;
+
+/**
+ * Measure UI-RESPONSIVENES and WINDOW_OPENING.
+ *
+ * @author  mmirilovic@netbeans.org, rashid@netbeans.org, mrkam@netbeans.org
+ */
+public class EPMeasureActions2  {
+
+    public static NbTestSuite suite() {
+        NbTestSuite suite = new NbTestSuite();
+            
+        suite.addTest(new ValidateSchema("measureTime","Validate Schema"));
+        suite.addTest(new OpenSchemaView("testOpenSchemaView", "Open Schema View")); 
+
+//TODO it's the same as SwitchSchemaView, isn't it ?                                     suite.addTest(new SchemaViewSwitchTest("measureTime", "Schema View Switch"));
+        
+        suite.addTest(new BuildComplexProject("measureTime", "Build Complex Project"));
+        
+        suite.addTest(new SwitchToDesignView("measureTime", "Schema | Switch to Design View"));
+        suite.addTest(new SwitchToSchemaView("measureTime", "Schema | Switch to Schema View"));
+        suite.addTest(new SchemaNavigatorDesignView("measureTime", "Schema Navigator Design View"));
+        return suite;
     }
     
 }

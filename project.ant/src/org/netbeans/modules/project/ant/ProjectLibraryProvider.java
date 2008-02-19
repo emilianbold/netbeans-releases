@@ -924,7 +924,8 @@ public class ProjectLibraryProvider implements ArealLibraryProvider<ProjectLibra
         String[] volumes = LibrariesSupport.getLibraryTypeProvider(lib.getType()).getSupportedVolumeTypes();
         for (String volume : volumes) {
             List<URL> volumeContent = new ArrayList<URL>();
-            for (URL libEntry : lib.getContent(volume)) {
+            for (URL origlibEntry : lib.getContent(volume)) {
+                URL libEntry = origlibEntry;
                 String jarFolder = null;
                 if ("jar".equals(libEntry.getProtocol())) { // NOI18N
                     jarFolder = getJarFolder(libEntry);
@@ -944,13 +945,14 @@ public class ProjectLibraryProvider implements ArealLibraryProvider<ProjectLibra
                     }
                 }
                 URL u;
+                FileObject newFO;
+                String name;
                 if (CollocationQuery.areCollocated(libBaseFolder, FileUtil.toFile(libEntryFO))) {
                     // if the jar/folder is in relation to the library folder (parent+child/same vcs)
                     // don't replicate it but reference the original file.
-                    u = libEntry;
+                    newFO = libEntryFO;
+                    name = FileUtil.getRelativePath(FileUtil.toFileObject(libBaseFolder), newFO);
                 } else {
-                    FileObject newFO;
-                    String name;
                     if (libEntryFO.isFolder()) {
                         newFO = FileChooserAccessory.copyFolderRecursively(libEntryFO, sharedLibFolder);
                         name = sharedLibFolder.getNameExt()+File.separatorChar+newFO.getName()+File.separatorChar;
@@ -959,13 +961,13 @@ public class ProjectLibraryProvider implements ArealLibraryProvider<ProjectLibra
                         newFO = FileUtil.copyFile(libEntryFO, sharedLibFolder, libEntryName);
                         name = sharedLibFolder.getNameExt()+File.separatorChar+newFO.getNameExt();
                     }
-                    u = LibrariesSupport.convertFilePathToURL(name);
-                    if (FileUtil.isArchiveFile(newFO)) {
-                        u = FileUtil.getArchiveRoot(u);
-                    }
-                    if (jarFolder != null) {
-                        u = appendJarFolder(u, jarFolder);
-                    }
+                }
+                u = LibrariesSupport.convertFilePathToURL(name);
+                if (FileUtil.isArchiveFile(newFO)) {
+                    u = FileUtil.getArchiveRoot(u);
+                }
+                if (jarFolder != null) {
+                    u = appendJarFolder(u, jarFolder);
                 }
                 volumeContent.add(u);
             }
