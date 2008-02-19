@@ -84,9 +84,9 @@ import org.openide.filesystems.FileObject;
 public class JaxRsCodeGenerator extends AbstractGenerator {
 
     public static final String REST_CONNECTION = "RestConnection"; //NOI18N
-    public static final String REST_CONNECTION_TEMPLATE = "Templates/WebServices/RestConnection.java"; //NOI18N
+    public static final String REST_CONNECTION_TEMPLATE = "Templates/SaaSServices/RestConnection.java"; //NOI18N
     private static final String COMMENT_END_OF_HTTP_MEHTOD_GET = "TODO return proper representation object";      //NOI18N
-    private static final String GENERIC_REF_CONVERTER_TEMPLATE = "Templates/WebServices/RefConverter.java"; //NOI18N
+    private static final String GENERIC_REF_CONVERTER_TEMPLATE = "Templates/SaaSServices/RefConverter.java"; //NOI18N
     private static final String GENERIC_REF_CONVERTER = "GenericRefConverter"; //NOI18N
     public static final String CONVERTER_SUFFIX = "Converter";      //NOI18N
     public static final String CONVERTER_FOLDER = "converter";      //NOI18N

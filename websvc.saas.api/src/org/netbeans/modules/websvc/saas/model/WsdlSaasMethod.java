@@ -53,11 +53,11 @@ public class WsdlSaasMethod extends SaasMethod {
     WsdlSaasPort parent;
     WsdlPort port;
     WsdlOperation operation;
-    
+
     public WsdlSaasMethod(WsdlSaas saas, Method method) {
         super(saas, method);
     }
-
+    
     public WsdlSaasMethod(WsdlSaasPort port, WsdlOperation operation) {
         super(port.getParentSaas(), null);
         this.parent = port;
@@ -68,7 +68,7 @@ public class WsdlSaasMethod extends SaasMethod {
     public String getName() {
         if (getMethod() != null) {
             return getMethod().getName();
-        }
+    }
         assert operation != null : "Should have non-null operation when filter method does not exist";
         return operation.getName();
     }
@@ -81,27 +81,27 @@ public class WsdlSaasMethod extends SaasMethod {
     public WsdlOperation getWsdlOperation() {
         init();
         return operation;
-    }
-    
+                }
+
     public WsdlPort getWsdlPort() {
         init();
         return port;
-    }
-    
+        }
+
     public JavaMethod getJavaMethod() {
         Operation op = (Operation)getWsdlOperation().getInternalJAXWSOperation();
         return (op != null) ? op.getJavaMethod() : null;
-    }
-    
+                }
+
     private void init() {
         if (port == null || operation == null) {
             assert getMethod() != null : "Should have non-null filter method";
             for (WsdlPort p : getSaas().getWsdlModel().getPorts()) {
                 if (! p.getName().equals(getMethod().getPortName())) {
                     continue;
-                }
+    }
                 port = p;
-                
+    
                 for (WsdlOperation op : port.getOperations()) {
                     if (op.getName().equals(getMethod().getOperationName())) {
                         operation = op;
@@ -112,5 +112,5 @@ public class WsdlSaasMethod extends SaasMethod {
             }
         }
     }
-
+    
 }
