@@ -92,6 +92,7 @@ import org.openide.filesystems.URLMapper;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
+import org.openide.util.WeakListeners;
 
 /**
  * Class that provides JSP parsing support for one web application. It caches
@@ -157,7 +158,7 @@ public class WebAppParseSupport implements WebAppParseProxy, PropertyChangeListe
     /** Creates a new instance of WebAppParseSupport */
     public WebAppParseSupport(JspParserAPI.WebModule wm) {
         this.wm = wm;
-        this.wmRoot = wm.getDocumentBase();
+        wmRoot = wm.getDocumentBase();
         fileSystemListener = new FileSystemListener();
         initOptions(true);
         // register file listener (listen to changes of tld files, web.xml)
@@ -166,9 +167,11 @@ public class WebAppParseSupport implements WebAppParseProxy, PropertyChangeListe
         } catch (FileStateInvalidException ex) {
             Exceptions.printStackTrace(ex);
         }
-        // register class path listener
-        ClassPath.getClassPath(wmRoot, ClassPath.COMPILE).addPropertyChangeListener(this);
-        ClassPath.getClassPath(wmRoot, ClassPath.EXECUTE).addPropertyChangeListener(this);
+        // register weak class path listeners
+        ClassPath compileCP = ClassPath.getClassPath(wmRoot, ClassPath.COMPILE);
+        compileCP.addPropertyChangeListener(WeakListeners.propertyChange(this, compileCP));
+        ClassPath executeCP = ClassPath.getClassPath(wmRoot, ClassPath.EXECUTE);
+        executeCP.addPropertyChangeListener(WeakListeners.propertyChange(this, executeCP));
 
         // request procesor tasks
         RequestProcessor requestProcessor = new RequestProcessor("JSP parser :: Reinit options");
