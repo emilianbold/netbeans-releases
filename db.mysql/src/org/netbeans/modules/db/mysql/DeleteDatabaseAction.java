@@ -93,14 +93,32 @@ public class DeleteDatabaseAction extends CookieAction {
         for ( Node node : activatedNodes ) {
             DatabaseModel model = node.getCookie(DatabaseModel.class);
             ServerInstance server = model.getServer();
+            String dbname = model.getDbName();
             
             try {
-                server.dropDatabase(model.getDbName());
+                server.dropDatabase(dbname);
+                
+                // Delete all the connections for this database, they
+                // are no longer valid
+                deleteConnections(server, dbname);
             } catch ( DatabaseException dbe ) {
                 String msg = NbBundle.getMessage(DeleteDatabaseAction.class,
                         "MSG_ErrorDeletingDatabase", model.getDbName());
                 Utils.displayError("MSG_ErrorDeletingDatabase", dbe);
             }
         }        
+    }
+
+    private void deleteConnections(ServerInstance server, String dbname) {
+        // TODO - this requires API support from DB Explorer
+        /*
+        List<DatabaseConnection> conns = 
+                DatabaseUtils.findDatabaseConnections(
+                    server.getURL(dbname));
+        
+        for ( DatabaseConnection conn : conns ) {
+            ConnectionManager.getDefault().
+        }
+         */
     }
 }

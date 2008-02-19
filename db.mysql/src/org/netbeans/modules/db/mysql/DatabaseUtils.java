@@ -42,6 +42,8 @@ package org.netbeans.modules.db.mysql;
 import java.sql.Connection;
 import java.sql.Driver;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -172,19 +174,42 @@ public class DatabaseUtils {
      * @return the database connection
      */
     static DatabaseConnection findDatabaseConnection(String url, String user) {
+        List<DatabaseConnection> conns =
+                findDatabaseConnections(url);
+        
+        for ( DatabaseConnection conn : conns ) {
+            if ( conn.getUser().equals(user)) {
+                return conn;
+            }
+        }
+        
+        return null;
+    }
+    
+    /** 
+     * Find all registered database connections that match the given URL
+     * (there could be multiple ones, for different users
+     * 
+     * @param host
+     * @param port
+     * @return
+     */
+    static List<DatabaseConnection> findDatabaseConnections(String url) {
+        ArrayList<DatabaseConnection> result =
+                new ArrayList<DatabaseConnection>();
+                
         DatabaseConnection[] connections = 
             ConnectionManager.getDefault().getConnections();
 
         for ( DatabaseConnection conn : connections ) {
             // If there's already a connection registered, we're done
             if ( conn.getDriverClass().equals(MySQLOptions.getDriverClass()) &&
-                 conn.getDatabaseURL().equals(url) && 
-                 conn.getUser().equals(user)) {
-                return conn;
+                 conn.getDatabaseURL().equals(url) ) {
+                result.add(conn);
             }
         }
         
-        return null;
+        return result;
     }
     
     public static String getURL(String host, String port) {
