@@ -44,12 +44,16 @@ package org.netbeans.modules.spring.api.beans.model;
 import java.io.File;
 import java.io.IOException;
 import javax.swing.text.Document;
+import javax.swing.text.Position.Bias;
+import org.netbeans.modules.editor.NbEditorUtilities;
 import org.netbeans.modules.spring.api.Action;
 import org.netbeans.modules.spring.api.beans.ConfigFileGroup;
 import org.netbeans.modules.spring.api.beans.SpringScope;
 import org.netbeans.modules.spring.beans.SpringScopeAccessor;
+import org.netbeans.modules.spring.beans.model.SpringConfigFileModelController.DocumentWrite;
 import org.netbeans.modules.spring.beans.model.SpringConfigModelController;
 import org.openide.filesystems.FileObject;
+import org.openide.text.PositionRef;
 
 /**
  * Encapsulates a model of Spring configuration files.
@@ -98,15 +102,17 @@ public final class SpringConfigModel {
         controller.runWriteAction(action);
     }
 
+    // XXX rename to DocumentAccess.
+    // XXX remove public constructor.
     public static final class WriteContext {
 
         private final SpringBeans springBeans;
-        private final Document document;
+        private final DocumentWrite docWrite;
         private final File file;
 
-        public WriteContext(SpringBeans springBeans, File file, Document document) {
+        public WriteContext(SpringBeans springBeans, File file, DocumentWrite docWrite) {
             this.springBeans = springBeans;
-            this.document = document;
+            this.docWrite = docWrite;
             this.file = file;
         }
 
@@ -115,11 +121,23 @@ public final class SpringConfigModel {
         }
 
         public Document getDocument() {
-            return document;
+            return docWrite.getDocument();
         }
 
         public File getFile() {
             return file;
+        }
+
+        public FileObject getFileObject() {
+            return NbEditorUtilities.getFileObject(docWrite.getDocument());
+        }
+
+        public PositionRef createPositionRef(int offset, Bias bias) {
+            return docWrite.createPositionRef(offset, bias);
+        }
+
+        public void commit() throws IOException {
+            docWrite.commit();
         }
     }
 }

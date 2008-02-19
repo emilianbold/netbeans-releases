@@ -128,6 +128,7 @@ public class EjbJarProjectProperties {
     public static final String J2EE_SERVER_INSTANCE = "j2ee.server.instance"; // NOI18N
     public static final String J2EE_SERVER_TYPE = "j2ee.server.type"; // NOI18N
     public static final String J2EE_PLATFORM_CLASSPATH = "j2ee.platform.classpath"; //NOI18N
+    public static final String J2EE_PLATFORM_SHARED = "j2ee.platform.shared"; //NOI18N    
     public static final String JAVAC_SOURCE = "javac.source"; // NOI18N
     public static final String JAVAC_DEBUG = "javac.debug"; // NOI18N
     public static final String JAVAC_DEPRECATION = "javac.deprecation"; // NOI18N
@@ -325,9 +326,9 @@ public class EjbJarProjectProperties {
         
         // CustomizerRun
         J2EE_SERVER_INSTANCE_MODEL = J2eePlatformUiSupport.createPlatformComboBoxModel( 
-            privateProperties.getProperty( J2EE_SERVER_INSTANCE ));
+            privateProperties.getProperty(J2EE_SERVER_INSTANCE), projectProperties.getProperty(J2EE_PLATFORM));
         J2EE_PLATFORM_MODEL = J2eePlatformUiSupport.createSpecVersionComboBoxModel(
-            projectProperties.getProperty( J2EE_PLATFORM ));
+            projectProperties.getProperty(J2EE_PLATFORM));
     }
     
     public void save() {
@@ -590,8 +591,10 @@ public class EjbJarProjectProperties {
             return;
         }
         ((EjbJarProject)project).registerJ2eePlatformListener(j2eePlatform);
-        String classpath = Utils.toClasspathString(j2eePlatform.getClasspathEntries());
-        privateProps.setProperty(J2EE_PLATFORM_CLASSPATH, classpath);
+        if(!Boolean.parseBoolean(projectProps.getProperty(EjbJarProjectProperties.J2EE_PLATFORM_SHARED))) {
+            String classpath = Utils.toClasspathString(j2eePlatform.getClasspathEntries());
+            privateProps.setProperty(J2EE_PLATFORM_CLASSPATH, classpath);
+        }
 
         // update j2ee.platform.wscompile.classpath
         if (j2eePlatform.isToolSupported(J2eePlatform.TOOL_WSCOMPILE)) {

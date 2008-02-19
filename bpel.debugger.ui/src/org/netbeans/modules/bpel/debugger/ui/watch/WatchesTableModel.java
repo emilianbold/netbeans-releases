@@ -62,18 +62,21 @@ public class WatchesTableModel implements TableModel, Constants {
                     return myHelper.toString(bpelWatch.getValue());
                 }
                 
-                // If the watched expression is a variable, handle in a special
-                // way.
-                if (bpelWatch.getExpression().startsWith("$")) {
-                    final Object value = 
-                            myHelper.getValue(bpelWatch.getExpression());
-                    
-                    if (value != null) {
-                        if (value instanceof Node) {
-                            return myHelper.toString((Node) value);
-                        } else {
-                            return value;
-                        }
+                // If we did not get the value in an ordinary way, it could be 
+                // a variable expression. Check if it starts with a "$", 
+                // prepend if it not and try to fetch the value
+                String expression = bpelWatch.getExpression();
+                if (!expression.startsWith("$")) {
+                    expression = "$" + expression;
+                }
+                
+                final Object value = 
+                        myHelper.getValue(expression);
+                if (value != null) {
+                    if (value instanceof Node) {
+                        return myHelper.toString((Node) value);
+                    } else {
+                        return value;
                     }
                 }
                 

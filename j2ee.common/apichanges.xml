@@ -101,7 +101,23 @@ is the proper place.
     </apidefs>
 
     <!-- ACTUAL CHANGES BEGIN HERE: -->
-
+    <changes>
+        <change id="J2eeServerSharability">
+            <api name="j2ee-utilities"/>
+            <summary>Added common panels and utility class for sharability.</summary>
+            <version major="1" minor="21"/>
+            <date day="18" month="2" year="2008"/>
+            <author login="phejl"/>
+            <compatibility binary="compatible" source="compatible" semantic="compatible" addition="yes"/>
+            <description>
+                <p>
+                    Added sharability support classes.
+                </p>
+            </description>
+            <class package="org.netbeans.modules.j2ee.common.sharability" name="SharabilityUtilities" link="no"/>
+            <class package="org.netbeans.modules.j2ee.common.sharability" name="PanelSharability" link="no"/>
+        </change>
+        
         <change id="J2eeProjectsConstants">
             <api name="j2ee-utilities"/>
             <summary>Removed J2eeProjectsConstants class.</summary>

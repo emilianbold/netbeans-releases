@@ -70,6 +70,8 @@ import org.netbeans.spi.project.ui.support.ProjectChooser;
 import org.netbeans.api.progress.ProgressHandle;
 
 import org.netbeans.modules.j2ee.api.ejbjar.Ear;
+import org.netbeans.modules.j2ee.common.sharability.PanelSharability;
+import org.netbeans.modules.j2ee.common.sharability.SharabilityUtilities;
 import org.netbeans.modules.web.api.webmodule.WebFrameworks;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.project.WebProject;
@@ -98,11 +100,13 @@ public class NewWebProjectWizardIterator implements WizardDescriptor.ProgressIns
 	if (WebFrameworks.getFrameworks().size() > 0)
 	    steps = new String[] {
 		NbBundle.getMessage(NewWebProjectWizardIterator.class, "LBL_NWP1_ProjectTitleName"), //NOI18N
+                //NbBundle.getMessage(NewWebProjectWizardIterator.class, "PanelShareabilityVisual.label"),
 		NbBundle.getMessage(NewWebProjectWizardIterator.class, "LBL_NWP2_Frameworks") //NOI18N
 	    };
 	else
 	    steps = new String[] {
 		NbBundle.getMessage(NewWebProjectWizardIterator.class, "LBL_NWP1_ProjectTitleName"), //NOI18N
+                //NbBundle.getMessage(NewWebProjectWizardIterator.class, "PanelShareabilityVisual.label")
 	    };
 	
         return steps;
@@ -139,14 +143,9 @@ public class NewWebProjectWizardIterator implements WizardDescriptor.ProgressIns
         createData.setJavaPlatformName((String) wiz.getProperty(WizardProperties.JAVA_PLATFORM));
         createData.setSourceLevel((String) wiz.getProperty(WizardProperties.SOURCE_LEVEL));
         
-        String librariesDefinition = (String)wiz.getProperty(WizardProperties.SHARED_LIBRARIES);
-        if (librariesDefinition != null) {
-            if (!librariesDefinition.endsWith(File.separator)) {
-                librariesDefinition += File.separatorChar;
-            }
-            librariesDefinition += SharableLibrariesUtils.DEFAULT_LIBRARIES_FILENAME;
-            createData.setLibrariesDefinition(librariesDefinition);
-        }
+        createData.setLibrariesDefinition(
+                SharabilityUtilities.getLibraryLocation((String) wiz.getProperty(PanelSharability.WIZARD_SHARED_LIBRARIES)));
+        createData.setServerLibraryName((String) wiz.getProperty(PanelSharability.WIZARD_SERVER_LIBRARY));
         
         AntProjectHelper h = WebProjectUtilities.createProject(createData);
         handle.progress(2);
@@ -236,12 +235,14 @@ public class NewWebProjectWizardIterator implements WizardDescriptor.ProgressIns
 	    //standard panels + configurable framework panel
 	    panels = new WizardDescriptor.Panel[] {
 		new PanelConfigureProject(),
+                //new PanelSharability(WizardProperties.PROJECT_DIR, WizardProperties.SERVER_INSTANCE_ID, true),
 		new PanelSupportedFrameworks()
 	    };
 	else
 	    //no framework available, don't show framework panel
 	    panels = new WizardDescriptor.Panel[] {
 		new PanelConfigureProject(),
+                //new PanelSharability(WizardProperties.PROJECT_DIR, WizardProperties.SERVER_INSTANCE_ID, true)
 	    };
         panelsCount = panels.length;
         

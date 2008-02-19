@@ -286,8 +286,14 @@ public class DesignContextControllerImpl2
 
     private void setContextImpl(boolean forceReload) {
         // Copy the context to a new local variable at first.
+        if (mNewContext == null && forceReload) {
+            reloadMapper(new EventObject(new Object()));
+            return;
+        }
+            
         BpelDesignContext newContext = mNewContext;
         //
+        
         if (newContext == null) {
             // do nothing - simple continue to show the old context
             return;

@@ -43,7 +43,7 @@ package org.netbeans.modules.cnd.makeproject;
 
 import java.io.File;
 import java.util.ArrayList;
-import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 import javax.swing.event.ChangeEvent;
@@ -100,7 +100,7 @@ public class MakeSources implements Sources, AntProjectListener {
         ConfigurationDescriptor pd = pdp.getConfigurationDescriptor();
         if (pd != null) {
             MakeConfigurationDescriptor epd = (MakeConfigurationDescriptor) pd;
-            Set<String> set = new HashSet<String>();
+            Set<String> set = new LinkedHashSet<String>();
             
             // Add external folders to sources.
             if (epd.getVersion() < 41) {
@@ -146,14 +146,14 @@ public class MakeSources implements Sources, AntProjectListener {
             }
             
             for (String name : set) {
-                String displayName = name;
-                int index1 = displayName.lastIndexOf(File.separatorChar);
-                if (index1 > 0) {
-                    int index2 = displayName.substring(0, index1).lastIndexOf(File.separatorChar);
-                    if (index2 > 0) {
-                        displayName = "..." + displayName.substring(index2); // NOI18N
-                    }
-                }
+                String displayName = IpeUtils.toRelativePath(epd.getBaseDir(), name);
+//                int index1 = displayName.lastIndexOf(File.separatorChar);
+//                if (index1 > 0) {
+//                    int index2 = displayName.substring(0, index1).lastIndexOf(File.separatorChar);
+//                    if (index2 > 0) {
+//                        displayName = "..." + displayName.substring(index2); // NOI18N
+//                    }
+//                }
                 displayName = FilePathAdaptor.naturalize(displayName);
                 h.addPrincipalSourceRoot(name, displayName, null, null);
                 h.addTypedSourceRoot(name, "generic", displayName, null, null); // NOI18N

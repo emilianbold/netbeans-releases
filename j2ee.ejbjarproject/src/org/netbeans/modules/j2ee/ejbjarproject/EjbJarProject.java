@@ -648,8 +648,10 @@ public class EjbJarProject implements Project, AntProjectListener, FileChangeLis
                     ProjectManager.mutex().writeAccess(new Runnable() {
                         public void run() {
                             EditableProperties ep = helper.getProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH);
-                            String classpath = Utils.toClasspathString(platform.getClasspathEntries());
-                            ep.setProperty(EjbJarProjectProperties.J2EE_PLATFORM_CLASSPATH, classpath);
+                            if (!Boolean.parseBoolean(ep.getProperty(EjbJarProjectProperties.J2EE_PLATFORM_SHARED))) {
+                                String classpath = Utils.toClasspathString(platform.getClasspathEntries());
+                                ep.setProperty(EjbJarProjectProperties.J2EE_PLATFORM_CLASSPATH, classpath);
+                            }
                             helper.putProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH, ep);
                             try {
                                 ProjectManager.getDefault().saveProject(EjbJarProject.this);

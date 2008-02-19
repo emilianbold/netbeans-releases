@@ -61,6 +61,7 @@ import org.netbeans.api.java.platform.PlatformsCustomizer;
 import org.netbeans.modules.java.api.common.ui.PlatformUiSupport;
 import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.modules.j2ee.common.project.classpath.ClassPathSupport;
+import org.netbeans.modules.j2ee.common.sharability.SharabilityUtilities;
 import org.netbeans.modules.j2ee.common.project.ui.ClassPathUiSupport;
 import org.netbeans.modules.web.project.ui.WebLogicalViewProvider;
 import org.netbeans.spi.java.project.support.ui.SharableLibrariesUtils;

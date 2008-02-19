@@ -71,6 +71,8 @@ import org.netbeans.api.project.ProjectManager;
 import org.netbeans.spi.project.support.ant.GeneratedFilesHelper;
 
 import org.netbeans.modules.j2ee.api.ejbjar.Ear;
+import org.netbeans.modules.j2ee.common.sharability.PanelSharability;
+import org.netbeans.modules.j2ee.common.sharability.SharabilityUtilities;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.project.ProjectWebModule;
 import org.netbeans.modules.web.project.api.WebProjectUtilities;
@@ -96,6 +98,7 @@ public class ImportWebProjectWizardIterator implements WizardDescriptor.Progress
     private WizardDescriptor.Panel[] createPanels() {
         return new WizardDescriptor.Panel[] {
             new ImportWebProjectWizardIterator.ThePanel(),
+            //new PanelSharability(WizardProperties.PROJECT_DIR, WizardProperties.SERVER_INSTANCE_ID, false),
             new PanelSourceFolders.Panel()
         };
     }
@@ -103,6 +106,7 @@ public class ImportWebProjectWizardIterator implements WizardDescriptor.Progress
     private String[] createSteps() {
         return new String[] {
             NbBundle.getMessage(ImportWebProjectWizardIterator.class, "LBL_IW_Step1"), //NOI18N
+            //NbBundle.getMessage(ImportWebProjectWizardIterator.class, "PanelShareabilityVisual.label"),            
             NbBundle.getMessage(ImportWebProjectWizardIterator.class, "LBL_IW_Step2") //NOI18N
         };
     }
@@ -184,14 +188,8 @@ public class ImportWebProjectWizardIterator implements WizardDescriptor.Progress
         createData.setSourceLevel((String) wiz.getProperty(WizardProperties.SOURCE_LEVEL));       
         createData.setWebInfFolder(webInf);
         
-        String librariesDefinition = (String)wiz.getProperty(WizardProperties.SHARED_LIBRARIES);
-        if (librariesDefinition != null) {
-            if (!librariesDefinition.endsWith(File.separator)) {
-                librariesDefinition += File.separatorChar;
-            }
-            librariesDefinition += SharableLibrariesUtils.DEFAULT_LIBRARIES_FILENAME;
-            createData.setLibrariesDefinition(librariesDefinition);
-        }
+        createData.setLibrariesDefinition(SharabilityUtilities.getLibraryLocation((String)wiz.getProperty(PanelSharability.WIZARD_SHARED_LIBRARIES)));
+        createData.setServerLibraryName((String) wiz.getProperty(PanelSharability.WIZARD_SERVER_LIBRARY));
         
         WebProjectUtilities.importProject(createData);       
         handle.progress(2);

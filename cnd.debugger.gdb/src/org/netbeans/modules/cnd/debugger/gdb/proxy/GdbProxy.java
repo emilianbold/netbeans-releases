@@ -224,6 +224,10 @@ public class GdbProxy implements GdbMiDefinitions {
         return engine.sendCommand("info proc"); // NOI18N
     }
     
+    public int info_share() {
+        return engine.sendCommand("info share"); // NOI18N
+    }
+    
     public int info_share(CommandBuffer cb) {
         return engine.sendCommand(cb, "info share"); // NOI18N
     }

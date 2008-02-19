@@ -45,8 +45,9 @@ import java.beans.BeanInfo;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import org.netbeans.modules.cnd.api.model.CsmFile;
+import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.api.model.CsmUID;
-import org.netbeans.modules.refactoring.spi.ui.TreeElementFactory;
+import org.netbeans.modules.cnd.refactoring.support.CsmRefactoringUtils;
 import org.netbeans.modules.refactoring.spi.ui.*;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
@@ -60,24 +61,31 @@ import org.openide.loaders.DataObjectNotFoundException;
 public class FileTreeElement implements TreeElement {
 
     private final FileObject fo;
-    private final CsmUID<CsmFile> csmFile;
+    private final CsmUID<CsmProject> csmProject;
+    private final Icon icon;
     FileTreeElement(FileObject fo, CsmFile csmFile) {
         this.fo = fo;
-        this.csmFile = csmFile.getUID();
+        Icon readIcon = null;
+        try {
+            readIcon = new ImageIcon(DataObject.find(fo).getNodeDelegate().getIcon(BeanInfo.ICON_COLOR_16x16));
+        } catch (DataObjectNotFoundException ex) {
+            readIcon = null;
+        }
+        this.icon = readIcon;
+        this.csmProject = CsmRefactoringUtils.getHandler(csmFile.getProject());
     }
 
-
     public TreeElement getParent(boolean isLogical) {
-        CsmFile file = csmFile.getObject();
-        return TreeElementFactory.getTreeElement(file == null ? null : file.getProject());
+        CsmProject prj = csmProject.getObject();
+        if (prj == null) {
+            return null;
+        } else {
+            return TreeElementFactory.getTreeElement(prj);
+        }
     }
 
     public Icon getIcon() {
-        try {
-            return new ImageIcon(DataObject.find(fo).getNodeDelegate().getIcon(BeanInfo.ICON_COLOR_16x16));
-        } catch (DataObjectNotFoundException ex) {
-            return null;
-        }
+        return this.icon;
     }
 
     public String getText(boolean isLogical) {
@@ -85,6 +93,6 @@ public class FileTreeElement implements TreeElement {
     }
 
     public Object getUserObject() {
-        return csmFile.getObject();
+        return fo;
     }
 }

@@ -619,7 +619,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
         }
     
         public CompletionTask createDocumentationTask() {
-            return JavaCompletionProvider.createDocTask(ElementHandle.from(typeHandle));
+            return typeHandle.getKind() == TypeKind.DECLARED ? JavaCompletionProvider.createDocTask(ElementHandle.from(typeHandle)) : null;
         }
 
         protected ImageIcon getIcon(){
@@ -2789,6 +2789,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
         private static ImageIcon icon;
         
         private List<ElementHandle<VariableElement>> fieldHandles;
+        private ElementHandle<TypeElement> parentHandle;
         private String simpleName;
         private List<ParamDesc> params;
         private String sortText;
@@ -2797,6 +2798,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
         private InitializeAllConstructorItem(Iterable<? extends VariableElement> fields, TypeElement parent, int substitutionOffset) {
             super(substitutionOffset);
             this.fieldHandles = new ArrayList<ElementHandle<VariableElement>>();
+            this.parentHandle = ElementHandle.create(parent);
             this.params = new ArrayList<ParamDesc>();
             for (VariableElement ve : fields) {
                 this.fieldHandles.add(ElementHandle.create(ve));
@@ -2883,6 +2885,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
                         copy.toPhase(JavaSource.Phase.PARSED);
                         TreePath tp = copy.getTreeUtilities().pathFor(offset);
                         if (tp.getLeaf().getKind() == Tree.Kind.CLASS) {
+                            TypeElement parent = parentHandle.resolve(copy);
                             ArrayList<VariableElement> fieldElements = new ArrayList<VariableElement>();
                             for (ElementHandle<? extends Element> handle : fieldHandles)
                                 fieldElements.add((VariableElement)handle.resolve(copy));
@@ -2893,7 +2896,13 @@ public abstract class JavaCompletionItem implements CompletionItem {
                                 else
                                     break;
                             }
-                            GeneratorUtils.generateConstructor(copy, tp, fieldElements, null, idx);
+                            
+                            TreeMaker make = copy.getTreeMaker();
+                            ClassTree clazz = (ClassTree) tp.getLeaf();
+                            GeneratorUtilities gu = GeneratorUtilities.get(copy);
+                            ClassTree decl = make.insertClassMember(clazz, idx, gu.createConstructor(parent, fieldElements, null)); //NOI18N
+                            
+                            copy.rewrite(clazz, decl);
                         }
                     }
                 }).commit();

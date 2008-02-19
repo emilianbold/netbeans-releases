@@ -109,7 +109,7 @@ public class CompletionUtilities {
         CsmContext context = CsmOffsetResolver.findContext(file, offset);
         CsmOffsetableDeclaration out = null;
         out = CsmContextUtilities.getFunctionDefinition(context);
-        if (out == null || !CsmContextUtilities.isInFunctionBody(context, offset)) {
+        if (out == null || !CsmContextUtilities.isInFunctionBodyOrInitializerList(context, offset)) {
             out = CsmContextUtilities.getClass(context, false);
         }
         return out;

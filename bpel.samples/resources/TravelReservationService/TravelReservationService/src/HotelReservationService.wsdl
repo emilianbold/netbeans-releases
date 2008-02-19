@@ -72,7 +72,7 @@
         <operation name="hotelReserved">
             <input message="tns:HotelReservedIn"/>
         </operation>
-    </portType> 
+    </portType>
     
     <binding name="HotelReservationSoapBinding" type="tns:HotelReservationPortType">
         <soap:binding style="document" transport="http://schemas.xmlsoap.org/soap/http"/>
@@ -100,7 +100,7 @@
             <input>
                 <soap:body use="literal"/>
             </input>
-        </operation>                
+        </operation>
     </binding>
     
     <service name="HotelReservationSoapService">
@@ -115,6 +115,6 @@
         </plnk:role>
         <plnk:role name="HotelReservationCallbackServiceRole"
                    portType="tns:HotelReservationCallbackPortType">
-        </plnk:role>        
-    </plnk:partnerLinkType>     
+        </plnk:role>
+    </plnk:partnerLinkType>
 </definitions>

@@ -96,6 +96,8 @@
         <plink:role name="purchaseService"
                     portType="tns:purchaseOrderPT"></plink:role>
     </plink:partnerLinkType>
-    <bpws:property name="pocorr" type="xsd:date"/>
-    <bpws:propertyAlias propertyName="tns:pocorr" messageType="tns:POMessage" part="purchaseOrder"/>
+    <bpws:property name="pocorr" type="xsd:int"/>
+    <bpws:propertyAlias propertyName="tns:pocorr" messageType="tns:POMessage" part="purchaseOrder">
+        <bpws:query>/sns:purchaseOrder/sns:orderId</bpws:query>
+    </bpws:propertyAlias>
 </definitions>

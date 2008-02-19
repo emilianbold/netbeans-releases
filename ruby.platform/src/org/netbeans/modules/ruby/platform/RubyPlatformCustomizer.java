@@ -46,7 +46,6 @@ import java.awt.EventQueue;
 import java.io.File;
 import java.util.Locale;
 import java.util.Set;
-import java.util.prefs.Preferences;
 import javax.swing.AbstractListModel;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
@@ -73,7 +72,6 @@ import org.openide.util.RequestProcessor;
 public class RubyPlatformCustomizer extends JPanel {
     
     private static final String LAST_PLATFORM_DIRECTORY = "lastPlatformDirectory"; // NOI18N
-    private static final String FIRST_TIME_KEY = "platform-manager-called-first-time"; // NOI18N
     
     private static String lastSelectedPlatformID;
     
@@ -120,10 +118,8 @@ public class RubyPlatformCustomizer extends JPanel {
         });
 
         // run platform detection is this is the first time
-        Preferences preferences = Util.getPreferences();
-        if (preferences.getBoolean(FIRST_TIME_KEY, true)) {
+        if (Util.isFirstPlatformTouch()) {
             performPlatformDetection();
-            preferences.putBoolean(FIRST_TIME_KEY, false);
         } else {
             setAutoDetecting(false);
         }

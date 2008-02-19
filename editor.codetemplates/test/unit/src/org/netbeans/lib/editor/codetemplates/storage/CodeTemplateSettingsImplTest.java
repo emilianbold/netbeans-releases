@@ -48,10 +48,8 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.editor.settings.CodeTemplateDescription;
-import org.netbeans.api.editor.settings.CodeTemplateSettings;
 import org.netbeans.core.startup.Main;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.editor.settings.storage.EditorTestLookup;
@@ -174,15 +172,11 @@ public class CodeTemplateSettingsImplTest extends NbTestCase {
     
     public void testMimeLookup() {
         MimePath mimePath = MimePath.parse("text/x-type-B");
-        CodeTemplateSettings cts = MimeLookup.getLookup(mimePath).lookup(CodeTemplateSettings.class);
+        CodeTemplateSettingsImpl ctsi = CodeTemplateSettingsImpl.get(mimePath);
+        Map<String, CodeTemplateDescription> map = ctsi.getCodeTemplates();
         
-        assertNotNull("No CodeTemplateSettings in MimeLookup", cts);
-        
-        Collection<CodeTemplateDescription> codeTemplates = cts.getCodeTemplateDescriptions();
-        assertNotNull("CodeTemplates should not be null", codeTemplates);
-        assertEquals("Wrong number of code templates", 2, codeTemplates.size());
-        
-        Map<String, CodeTemplateDescription> map = toMap(codeTemplates);
+        assertNotNull("CodeTemplates should not be null", map);
+        assertEquals("Wrong number of code templates", 2, map.size());
         
         checkCodeTemplate(map, "module1", null, "module1", null);
         checkCodeTemplate(map, "user1", null, "user1", null);

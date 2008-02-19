@@ -44,7 +44,6 @@ package org.netbeans.modules.cnd.debugger.gdb.breakpoints;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.HashMap;
-
 import org.netbeans.api.debugger.Breakpoint;
 import org.netbeans.api.debugger.DebuggerEngine;
 import org.netbeans.api.debugger.DebuggerManager;
@@ -54,9 +53,6 @@ import org.netbeans.spi.debugger.ContextProvider;
 import org.netbeans.api.debugger.Session;
 import org.netbeans.api.debugger.Watch;
 import org.netbeans.modules.cnd.debugger.gdb.GdbDebugger;
-
-import org.netbeans.modules.cnd.debugger.gdb.GdbDebugger;
-import org.openide.util.RequestProcessor;
 
 
 /**
@@ -101,12 +97,8 @@ public class BreakpointsEngineListener extends LazyActionsManagerListener
                 }
             }
         } else if (pname.equals(GdbDebugger.PROP_SHARED_LIB_LOADED)) {
-            RequestProcessor.getDefault().post(new Runnable() {
-                public void run() {
-                   sharedLibLoaded(); 
-                }
-            });
-            
+            assert !Thread.currentThread().getName().equals("GdbReaderRP");
+            sharedLibLoaded();
         }
     }
 
@@ -165,12 +157,18 @@ public class BreakpointsEngineListener extends LazyActionsManagerListener
 	}
     }
     
+    /**
+     * A breakpoint in a shared library would have failed at startup and would have an
+     * invalid validity. Go through all invalid breakpoints and update them. Any that are
+     * in the newly loaded shared library will correctly get set. Others will continue
+     * as invalid.
+     */
     private void sharedLibLoaded() {
         for (Breakpoint bp : DebuggerManager.getDebuggerManager().getBreakpoints()) {
             if (bp.getValidity() == Breakpoint.VALIDITY.INVALID) {
                 BreakpointImpl impl = breakpointToImpl.get(bp);
                 if (impl != null) {
-                    impl.setState(BreakpointImpl.BPSTATE_UNVALIDATED);
+                    impl.setState(BreakpointImpl.BPSTATE_REVALIDATE);
                     impl.update();
                 }
             }

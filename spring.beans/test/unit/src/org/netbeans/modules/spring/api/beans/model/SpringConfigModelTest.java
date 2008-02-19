@@ -54,8 +54,6 @@ import org.netbeans.modules.spring.api.beans.ConfigFileGroup;
 import org.netbeans.modules.spring.api.beans.model.SpringConfigModel.WriteContext;
 import org.netbeans.modules.spring.beans.ConfigFileTestCase;
 import org.netbeans.modules.spring.beans.TestUtils;
-import org.netbeans.modules.xml.text.syntax.SyntaxElement;
-import org.netbeans.modules.xml.text.syntax.XMLSyntaxSupport;
 
 /**
  *
@@ -134,11 +132,23 @@ public class SpringConfigModelTest extends ConfigFileTestCase {
                 int offset = context.getSpringBeans().findBean("foo").getLocation().getOffset();
                 try {
                     String expected = "<bean id='foo'";
-                    assertEquals(expected, context.getDocument().getText(offset, expected.length()));
+                    BaseDocument doc = (BaseDocument)context.getDocument();
+                    assertEquals(expected, doc.getText(offset, expected.length()));
+                    // Poor man's refactoring.
+                    String text = doc.getText(offset, doc.getLength() - offset);
+                    text = text.replace("org.example.Foo", "org.example.Bar");
+                    doc.remove(offset, doc.getLength() - offset);
+                    doc.insertString(offset, text, null);
+                    context.commit();
                 } catch (BadLocationException e) {
+                    fail();
+                } catch (IOException e) {
+                    // XXX temporary: Action.run() needs to throw exceptions.
                     fail();
                 }
             }
         });
+        contents = TestUtils.createXMLConfigText("<bean id='foo' class='org.example.Bar'/>");
+        assertEquals(contents, TestUtils.copyFileToString(configFile));
     }
 }

@@ -80,9 +80,14 @@ final class CodeTemplatesModel {
         for(Iterator i = mimeTypes.iterator(); i.hasNext(); ) {
             String mimeType = (String) i.next();
             
+            // Load the code templates
+            MimePath mimePath = MimePath.parse(mimeType);
+            Map<String, CodeTemplateDescription> abbreviationsMap = 
+                CodeTemplateSettingsImpl.get(mimePath).getCodeTemplates();
+
             // Skip compound mime types (e.g. text/x-ant+xml), they inherit
             // code templates from their base mime type
-            if (isCompoundMimeType(mimeType)) { //NOI18N
+            if (abbreviationsMap.isEmpty() && isCompoundMimeType(mimeType)) {
                 continue;
             }
             
@@ -92,11 +97,6 @@ final class CodeTemplatesModel {
             Collections.sort(languages);
             languageToMimeType.put(language, mimeType);
             
-            // Load the code templates
-            MimePath mimePath = MimePath.parse(mimeType);
-            Map<String, CodeTemplateDescription> abbreviationsMap = 
-                CodeTemplateSettingsImpl.get(mimePath).getCodeTemplates();
-
             // Load the table
             List<Vector<String>> table = new ArrayList<Vector<String>>();
             for(String abbreviation : abbreviationsMap.keySet()) {
@@ -156,6 +156,7 @@ final class CodeTemplatesModel {
             }
             
             // Get the code templates from the model
+            String mimeType = languageToMimeType.get(language);
             Map<String, CodeTemplateDescription> newMap = new HashMap<String, CodeTemplateDescription>();
             for (int idx = 0; idx < tableModel.getRowCount(); idx++) {
                 String abbreviation = tableModel.getAbbreviation(idx);
@@ -164,14 +165,14 @@ final class CodeTemplatesModel {
                     tableModel.getDescription(idx),
                     tableModel.getText(idx),
                     tableModel.getContexts(idx),
-                    tableModel.getUniqueId(idx)
+                    tableModel.getUniqueId(idx),
+                    mimeType
                 );
                 
                 newMap.put(abbreviation, ctd);
             }
             
             // Save the code templates
-            String mimeType = languageToMimeType.get(language);
             MimePath mimePath = MimePath.parse(mimeType);
             CodeTemplateSettingsImpl.get(mimePath).setCodeTemplates(newMap);
         }
