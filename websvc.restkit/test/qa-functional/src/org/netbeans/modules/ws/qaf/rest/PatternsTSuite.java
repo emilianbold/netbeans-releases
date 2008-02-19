@@ -46,6 +46,7 @@ import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jellytools.NbDialogOperator;
 import org.netbeans.jellytools.WizardOperator;
+import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jemmy.operators.JButtonOperator;
 import org.netbeans.jemmy.operators.JComboBoxOperator;
 import org.netbeans.jemmy.operators.JRadioButtonOperator;
@@ -321,7 +322,10 @@ public class PatternsTSuite extends RestTestBase {
      * Make sure all REST services nodes are visible in project log. view
      */
     public void testNodes() {
-        assertEquals("missing nodes?", 20, getRestNode().getChildren().length); //NOI18N
+        Node restNode = getRestNode();
+        assertEquals("missing nodes?", 20, restNode.getChildren().length); //NOI18N
+        restNode.tree().clickOnPath(restNode.getTreePath(), 2);
+        assertTrue("Node not collapsed", restNode.isCollapsed());
     }
 
     private Set<File> createWsFromPatterns(String name, Pattern pattern, MimeType mimeType) {
