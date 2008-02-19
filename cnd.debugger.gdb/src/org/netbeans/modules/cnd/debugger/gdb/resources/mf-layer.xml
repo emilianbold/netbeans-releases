@@ -110,11 +110,26 @@ made subject to such option by the copyright holder.
         </folder>
         
         <folder name="AnnotationTypes">
+            <folder name="BreakpointActions">  <!-- Editor gutter popup menu -->
+                <file name="org-netbeans-modules-cnd-debugger-gdb-actions-BreakpointEnableAction.instance">
+                    <attr name="position" intvalue="150"/>
+                </file>
+                <file name="org-netbeans-modules-cnd-debugger-gdb-actions-BreakpointCustomizeAction.instance">
+                    <attr name="position" intvalue="250"/>
+                </file>
+            </folder>
             <file name="FunctionBreakpoint.xml" url="FunctionBreakpoint.xml"/>
             <file name="DisabledFunctionBreakpoint.xml" url="DisabledFunctionBreakpoint.xml"/>
             <file name="CondFuncBreakpoint.xml" url="CondFuncBreakpoint.xml"/>
             <file name="DisabledCondFuncBreakpoint.xml" url="DisabledCondFuncBreakpoint.xml"/>
             <!-- <file name="PC_anyBP.xml" url="PC_anyBP.xml"/> -->
+        </folder>
+    </folder>
+    
+    <folder name="Actions">
+        <folder name="Debug">
+            <file name="org-netbeans-modules-cnd-debugger-gdb-actions-BreakpointEnableAction.instance"/>
+            <file name="org-netbeans-modules-cnd-debugger-gdb-actions-BreakpointCustomizeAction.instance"/>
         </folder>
     </folder>
     

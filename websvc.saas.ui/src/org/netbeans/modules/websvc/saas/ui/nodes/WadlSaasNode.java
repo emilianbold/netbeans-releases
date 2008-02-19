@@ -47,6 +47,7 @@ import javax.swing.Action;
 import org.netbeans.modules.websvc.saas.model.WadlSaas;
 import org.netbeans.modules.websvc.saas.ui.actions.ViewWadlAction;
 import org.openide.util.actions.SystemAction;
+import org.openide.util.lookup.AbstractLookup;
 import org.openide.util.lookup.InstanceContent;
 
 /**
@@ -60,7 +61,7 @@ public class WadlSaasNode extends SaasNode {
     }
 
     public WadlSaasNode(WadlSaas wadlSaas, InstanceContent content) {
-        super(new WadlSaasNodeChildren(wadlSaas), wadlSaas);
+        super(new WadlSaasNodeChildren(wadlSaas), new AbstractLookup(content), wadlSaas);
         content.add(wadlSaas);
     }
 

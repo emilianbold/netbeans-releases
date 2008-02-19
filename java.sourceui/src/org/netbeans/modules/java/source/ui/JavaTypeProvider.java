@@ -42,13 +42,12 @@
 package org.netbeans.modules.java.source.ui;
 
 import java.io.IOException;
-import org.netbeans.api.java.classpath.ClassPath;
-import org.netbeans.api.java.source.ClasspathInfo;
-import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
 import java.util.logging.Logger;
 import javax.lang.model.element.TypeElement;
 import javax.swing.Icon;
@@ -67,6 +66,7 @@ import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.java.BinaryElementOpen;
 import org.netbeans.modules.java.source.usages.RepositoryUpdater;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
@@ -111,17 +111,6 @@ public class JavaTypeProvider implements TypeProvider {
     
     public JavaTypeProvider() {
         this(null, null);
-//        pathListener = new GlobalPathRegistryListener() {
-//
-//            public void pathsAdded(GlobalPathRegistryEvent event) {
-//                cache = null; cpInfo = null;
-//            }
-//
-//            public void pathsRemoved(GlobalPathRegistryEvent event) {
-//                cache = null; cpInfo = null;
-//            }
-//        };
-//        GlobalPathRegistry.getDefault().addGlobalPathRegistryListener(pathListener);
     }
    
     public JavaTypeProvider(ClasspathInfo cpInfo, TypeElementFinder.Customizer customizer) {
@@ -168,6 +157,15 @@ public class JavaTypeProvider implements TypeProvider {
         long cp, gss, gsb, sfb, gtn, add, sort;
         cp = gss = gsb = sfb = gtn = add = sort = 0;
 
+        Future<Project[]> openProjectsTask = OpenProjects.getDefault().openProjects();
+        try {
+            openProjectsTask.get();
+        } catch (InterruptedException ex) {
+            Exceptions.printStackTrace(ex);
+        } catch (ExecutionException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        
         if (RepositoryUpdater.getDefault().isScanInProgress()) {
             String message = NbBundle.getMessage(JavaTypeProvider.class, "LBL_ScanInProgress_warning");
             res.setMessage(message);
@@ -347,7 +345,7 @@ public class JavaTypeProvider implements TypeProvider {
             }
             add += System.currentTimeMillis() - time;
         }
-
+        
         if ( !isCanceled ) {            
             time = System.currentTimeMillis();
             // Sorting is now done on the Go To Tpe dialog side

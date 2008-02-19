@@ -43,7 +43,7 @@
         <xsd:schema targetNamespace="http://localhost/BluePrint5/AirLineReservation">
             <xsd:import schemaLocation="reservation.xsd" namespace="http://ReservationSystem.org/xsd/reserve"/>
         </xsd:schema>
-    </types>    
+    </types>
     <message name="AirlineReservation">
         <part name="reserveAirlinePart"
               element="ns:reserve"></part>
@@ -99,7 +99,7 @@
               binding="tns:AirlineReservationStatusBinding">
             <soap:address location="http://localhost:12100/wsdl/AirlineStatusService/ServiceLocation"/>
         </port>
-    </service>    
+    </service>
     <plink:partnerLinkType name="AirlineReservationPLinkType">
         <plink:role portType="tns:AirlineReservationPortType"
                     name="reservingRole"></plink:role>
@@ -113,7 +113,7 @@
                         messageType="tns:AirlineReservationStatus">
         <bpws:query>/ns:reserveStatus/ns:reservationID</bpws:query>
     </bpws:propertyAlias>
-    <bpws:property name="air" type="xsd:boolean"/>
+    <bpws:property name="air" type="ns:reserveType"/>
     <bpws:propertyAlias propertyName="tns:air" 
                         messageType="tns:AirlineReservation" 
                         part="reserveAirlinePart"/>

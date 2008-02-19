@@ -53,7 +53,7 @@
     <message name="POCancelMesg">
         <part name="purchaseOrder"
               element="sns:purchaseOrder"></part>
-    </message>    
+    </message>
     <message name="POStatusMesg">
         <part name="status"
               type="xsd:boolean"></part>
@@ -78,13 +78,13 @@
             <fault name="cancelPOFault"
                    message="ns:orderFaultType"></fault>
         </operation>
-    </portType>    
+    </portType>
     <binding name="POConfirmBinding"
              type="tns:POConfirmPortType">
         <soap:binding style="document"
                       transport="http://schemas.xmlsoap.org/soap/http"/>
         <operation name="confirmPO">
-            <soap:operation soapAction="confirmPO"/>            
+            <soap:operation soapAction="confirmPO"/>
             <input name="confirmPO">
                 <soap:body parts="purchaseOrder"
                            use="literal"/>
@@ -136,7 +136,7 @@
     <plink:partnerLinkType name="cancelPOLinkType">
         <plink:role name="cancelPORole"
                     portType="tns:POCancelPortType"></plink:role>
-    </plink:partnerLinkType>    
+    </plink:partnerLinkType>
     <vprop:property name="OrderID"
                    type="xsd:int"/>
     <vprop:propertyAlias part="purchaseOrder"
@@ -148,10 +148,10 @@
                         propertyName="tns:OrderID"
                         messageType="tns:POCancelMesg">
         <vprop:query>/sns:purchaseOrder/sns:orderId</vprop:query>
-    </vprop:propertyAlias>    
+    </vprop:propertyAlias>
     <vprop:propertyAlias part="purchaseOrder"
                         propertyName="tns:OrderID"
                         messageType="ns:POMessage">
         <vprop:query>/sns:purchaseOrder/sns:orderId</vprop:query>
-    </vprop:propertyAlias>      
+    </vprop:propertyAlias>
 </definitions>

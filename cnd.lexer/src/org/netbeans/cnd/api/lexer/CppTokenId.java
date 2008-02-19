@@ -328,9 +328,9 @@ public enum CppTokenId implements TokenId {
         @Override
         protected String mimeType() {
             if (this.preproc) {
-                return "text/x-preprocessor";
+                return CndLexerUtilities.PREPROC_MIME_TYPE;
             } else {
-                return this.cpp ? "text/x-c++" : "text/x-c";
+                return this.cpp ? CndLexerUtilities.CPLUSPLUS_MIME_TYPE : CndLexerUtilities.C_MIME_TYPE;
             }
         }
 

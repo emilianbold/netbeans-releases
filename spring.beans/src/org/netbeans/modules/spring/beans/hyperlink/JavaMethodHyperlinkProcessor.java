@@ -49,7 +49,7 @@ import org.netbeans.modules.spring.beans.editor.SpringXMLConfigEditorUtils.Stati
  *
  * @author Rohan Ranade (Rohan.Ranade@Sun.COM)
  */
-public class JavaMethodHyperlinkProcessor implements HyperlinkProcessor {
+public class JavaMethodHyperlinkProcessor extends HyperlinkProcessor {
 
     private int argCount = -1;
     private SpringXMLConfigEditorUtils.Public publicFlag = SpringXMLConfigEditorUtils.Public.DONT_CARE;
