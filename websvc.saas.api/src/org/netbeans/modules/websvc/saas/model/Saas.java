@@ -62,8 +62,10 @@ public class Saas {
 
     public static enum State { 
         UNINITIALIZED, 
-        RETRIEVED, 
-        READY 
+        INITIALIZING, 
+        RESOLVED,
+        READY
+     
     }
     
     public static final String NS_SAAS = "http://xml.netbeans.org/websvc/saas/services/1.0";
@@ -88,7 +90,7 @@ public class Saas {
     public Saas(String url, String displayName, String description) {
         delegate = new SaasServices();
         delegate.setUrl(url);
-        delegate.setDisplayName(url);
+        delegate.setDisplayName(displayName);
         delegate.setDescription(description);
     }
 
@@ -156,7 +158,7 @@ public class Saas {
     public void toStateReady() {
         RequestProcessor.getDefault().post(new Runnable() {
             public void run() {
-                setState(State.READY);
+                setState(State.RESOLVED);
             }
         });
     }
@@ -221,6 +223,11 @@ public class Saas {
             }
         }
         return saasFolder;
+    }
+    
+    @Override
+    public String toString() {
+        return getDisplayName();
     }
     
     /**

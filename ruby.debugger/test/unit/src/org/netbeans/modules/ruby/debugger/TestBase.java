@@ -73,9 +73,6 @@ import org.rubyforge.debugcommons.RubyDebugEventListener;
 import org.rubyforge.debugcommons.RubyDebuggerException;
 import org.rubyforge.debugcommons.RubyDebuggerProxy;
 
-/**
- * @author Martin Krauskopf
- */
 public abstract class TestBase extends RubyTestBase {
 
     static {

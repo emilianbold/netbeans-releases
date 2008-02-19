@@ -105,7 +105,7 @@ is the proper place.
 
     <changes>
         <change>
-            <summary>SPI refinments</summary>
+            <summary>SPI refinements</summary>
             <version major="1" minor="17"/>
             <date day="14" month="2" year="2008"/>
             <author login="vstejskal"/>

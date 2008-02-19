@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,7 +20,13 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
+ * Contributor(s):
+ *
+ * The Original Software is NetBeans. The Initial Developer of the Original
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
+ * Microsystems, Inc. All Rights Reserved.
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -31,25 +37,20 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
- * Contributor(s):
- * 
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
 package org.netbeans.modules.cnd.editor.filecreation;
 
 import java.util.Enumeration;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.prefs.Preferences;
-import org.netbeans.modules.cnd.loaders.CndAbstractDataLoaderExt;
 import org.openide.loaders.ExtensionList;
 import org.openide.util.NbPreferences;
 
 /**
- *
+ * Settings facade for C/C++ Data Loaders extensions
+ * 
  * @author Sergey Grinev
  */
 public class ExtensionsSettings {
@@ -58,18 +59,27 @@ public class ExtensionsSettings {
     private final ExtensionList defaultExtensionsList;
     private ExtensionList savedExtensionsList;
     
-    private ExtensionsSettings(String name, CndAbstractDataLoaderExt dataLoader) {
-        defaultExtensionsList = dataLoader.getDefaultExtensionList();
+    private ExtensionsSettings(String name, CndHandlableExtensions che) {
+        DEFAULT_EXTENSION_PREFIX = "def-ext-"; //NOI18N
+        defaultExtensionsList = che.getDefaultExtensionList();
         assert defaultExtensionsList.extensions().hasMoreElements();
         this.defaultExtension = defaultExtensionsList.extensions().nextElement();
         this.name = name;
     }
     
-    public static synchronized ExtensionsSettings getInstance(CndAbstractDataLoaderExt dataLoader) {
-        String current = dataLoader.getRepresentationClassName();
+    private ExtensionsSettings(ExtensionsSettings es, String newDefExtPrefix) {
+        DEFAULT_EXTENSION_PREFIX = newDefExtPrefix;
+        this.defaultExtensionsList = es.defaultExtensionsList;
+        this.name = es.name;
+        this.defaultExtension = preferences.get(newDefExtPrefix + name, es.defaultExtension);
+        this.savedExtensionsList = es.savedExtensionsList;
+    }
+    
+    public static synchronized ExtensionsSettings getInstance(CndHandlableExtensions che) {
+        String current = che.getSettingsName();
         ExtensionsSettings es = settingsAccessors.get(current);
         if (es == null) {
-            es = new ExtensionsSettings(current, dataLoader);
+            es = new ExtensionsSettings(current, che);
             settingsAccessors.put(current, es);
         }
         return es;
@@ -77,7 +87,7 @@ public class ExtensionsSettings {
     
     private static final Map<String, ExtensionsSettings> settingsAccessors = new HashMap<String, ExtensionsSettings>();
     private static final Preferences preferences = NbPreferences.forModule(ExtensionsSettings.class);
-    private static final String DEFAULT_EXTENSION_PREFIX = "def-ext-"; //NOI18N
+    private final String DEFAULT_EXTENSION_PREFIX;
     private static final String EXTENSIONS_LIST_PREFIX = "ext-list-"; //NOI18N
     
     public String getDefaultExtension() {
@@ -136,5 +146,8 @@ public class ExtensionsSettings {
         }
         return false;
     }
-    
+
+    ExtensionsSettings getSpecializedInstance(String newDefExtPrefix) {
+        return new ExtensionsSettings(this, newDefExtPrefix);
+    }
 }

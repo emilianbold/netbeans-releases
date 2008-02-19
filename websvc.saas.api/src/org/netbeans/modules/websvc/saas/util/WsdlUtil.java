@@ -85,6 +85,20 @@ public class WsdlUtil {
         }
     }    
 
+    public static void saveWsdlData(WsdlData data) {
+        WsdlDataManager manager = Lookup.getDefault().lookup(WsdlDataManager.class);
+        if (manager != null) {
+            manager.save(data);
+        }
+    }
+
+    public static void refreshWsdlData(WsdlData data) {
+        WsdlDataManager manager = Lookup.getDefault().lookup(WsdlDataManager.class);
+        if (manager != null) {
+            manager.refresh(data);
+        }
+    }
+
     public static boolean isJAXRPCAvailable() {
         return getWebServiceSupportLibDef(false) != null;
     }
@@ -124,5 +138,4 @@ public class WsdlUtil {
             return "";
         }
     }
-
 }
