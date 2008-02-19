@@ -260,13 +260,8 @@ public class HibernateMappingDataObject extends MultiDataObject {//XmlMultiViewD
     }
 
     @Override
-    protected Node createNodeDelegate() {
-        return new HibernateMappingDataNode(this, getLookup());
-    }
-
-    @Override
-    public Lookup getLookup() {
-        return getCookieSet().getLookup();
+    protected Node createNodeDelegate() {           
+        return new HibernateMappingDataNode(this);
     }
 
     // TODO: not supported till I can figure out conflicts between the XmlMultiViewDataObject and completion provider
