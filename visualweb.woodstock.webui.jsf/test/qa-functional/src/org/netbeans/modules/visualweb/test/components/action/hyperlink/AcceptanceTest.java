@@ -298,7 +298,8 @@ public class AcceptanceTest extends RaveTestCase {
 */
         log("Go back to first page");
         prjNav.openWebPage(_projectName, _page1);
-        ComponentUtils.linkWebPages(designer, _page1, _page2, "next");
+        //TODO fix the org.netbeans.modules.visualweb.gravy.navigation.NavigatorOperator.NavigatorChooser class, then uncomment the next line
+        //ComponentUtils.linkWebPages(designer, _page1, _page2, "next");
         
         Util.saveAllAPICall();
         Util.wait(2000);
