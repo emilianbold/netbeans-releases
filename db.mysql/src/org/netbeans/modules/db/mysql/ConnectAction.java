@@ -107,7 +107,9 @@ public class ConnectAction extends CookieAction {
             ConnectionManager.getDefault().
                 showAddConnectionDialogFromEventThread(
                     DatabaseUtils.getJDBCDriver(),
-                    server.getURL(dbname));
+                    server.getURL(dbname),
+                    server.getUser(),
+                    null);
         } else {
             ConnectionManager.getDefault().showConnectionDialog(conn);            
         }      

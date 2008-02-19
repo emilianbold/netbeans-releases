@@ -18,6 +18,7 @@ import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.event.DocumentListener;
 import javax.swing.event.ListDataListener;
+import org.netbeans.api.db.explorer.ConnectionManager;
 import org.netbeans.api.db.explorer.DatabaseException;
 import org.netbeans.modules.db.mysql.*;
 import org.netbeans.modules.db.mysql.SampleManager.Sample;
@@ -151,7 +152,9 @@ public class CreateDatabasePanel extends javax.swing.JPanel {
                 server.grantFullDatabaseRights(dbname, grantUser);
             }
             
-            // TODO - Create database connection            
+            if ( createConnection ) {
+                createConnection(server, dbname, grantUser.getUser());
+            }
         } catch ( DatabaseException ex ) {
             displayCreateFailure(server, ex, dbname, dbCreated);
             return false;
@@ -219,6 +222,18 @@ public class CreateDatabasePanel extends javax.swing.JPanel {
         
         return true;        
     }
+    
+    private static void createConnection(ServerInstance server, String dbname,
+            String grantUser) {
+        ConnectionManager.getDefault().showAddConnectionDialog(
+                DatabaseUtils.getJDBCDriver(),
+                server.getURL(dbname), 
+                grantUser == null || grantUser.equals("") ? 
+                    server.getUser() : 
+                    grantUser,
+                null);
+    }
+
     
 
     /** Creates new form CreateDatabasePanel */
