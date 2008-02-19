@@ -51,7 +51,7 @@ public class IntNodeProp extends PropertySupport.ReadWrite<Integer> {
     private int state;
 
     public IntNodeProp(CodeStyle.Language language, PreviewPreferences preferences, String optionID) {
-        super(optionID, Integer.class, getString("LBL_" + optionID), getString("HINT_" + optionID));
+        super(optionID, Integer.class, getString("LBL_" + optionID), getString("HINT_" + optionID)); // NOI18N
         this.language = language;
         this.optionID = optionID;
         this.preferences = preferences;
@@ -78,7 +78,7 @@ public class IntNodeProp extends PropertySupport.ReadWrite<Integer> {
     @Override
     public String getHtmlDisplayName() {
         if (!isDefaultValue()) {
-            return "<b>" + getDisplayName();
+            return "<b>" + getDisplayName(); // NOI18N
         }
         return null;
     }
