@@ -109,7 +109,7 @@ public class Reformatter implements ReformatTask {
             CompilationUnitTree tree = javacTask.parse(FileObjects.memoryFileObject(text, "")).iterator().next(); //NOI18N
             SourcePositions sp = JavacTrees.instance(ctx).getSourcePositions();
             TokenSequence<JavaTokenId> tokens = TokenHierarchy.create(text, JavaTokenId.language()).tokenSequence(JavaTokenId.language());
-            for (Diff diff : Pretty.reformat(text, new TreePath(tree), sp, tokens, style)) {
+            for (Diff diff : Pretty.reformat(text, tokens, new TreePath(tree), sp, style)) {
                 int start = diff.getStartOffset();
                 int end = diff.getEndOffset();
                 sb.delete(start, end);
@@ -318,15 +318,12 @@ public class Reformatter implements ReformatTask {
         private DanglingElseChecker danglingElseChecker = new DanglingElseChecker();
 
         private Pretty(CompilationInfo info, TreePath path, CodeStyle cs, boolean templateEdit) {
-            this(info, info.getText(), info.getTrees().getSourcePositions(),
-                    path.getLeaf().getKind() == Tree.Kind.COMPILATION_UNIT
-                    ? info.getTokenHierarchy().tokenSequence(JavaTokenId.language())
-                    : info.getTreeUtilities().tokensFor(path.getLeaf()),
-                    path, cs);
+            this(info.getText(), info.getTokenHierarchy().tokenSequence(JavaTokenId.language()),
+                    path, info.getTrees().getSourcePositions(), cs);
             this.templateEdit = templateEdit;
         }
         
-        private Pretty(CompilationInfo info, String text, SourcePositions sp, TokenSequence<JavaTokenId> tokens, TreePath path, CodeStyle cs) {
+        private Pretty(String text, TokenSequence<JavaTokenId> tokens, TreePath path, SourcePositions sp, CodeStyle cs) {
             this.fText = text;
             this.sp = sp;
             this.cs = cs;
@@ -342,13 +339,22 @@ public class Reformatter implements ReformatTask {
             this.afterAnnotation = false;
             this.fieldGroup = false;
             Tree tree = path.getLeaf();
-            this.indent = info != null ? getIndentLevel(info, path) : 0;
+            this.indent = tokens != null ? getIndentLevel(tokens, path) : 0;
             this.col = this.indent;
             this.tokens = tokens;
-            tokens.moveEnd();
-            tokens.movePrevious();
+            if (tree.getKind() == Tree.Kind.COMPILATION_UNIT) {
+                tokens.moveEnd();
+                tokens.movePrevious();
+            } else {
+                tokens.move((int)sp.getEndPosition(path.getCompilationUnit(), tree));
+                tokens.moveNext();
+            }
             this.endPos = tokens.offset();
-            tokens.moveStart();
+            if (tree.getKind() == Tree.Kind.COMPILATION_UNIT) {
+                tokens.moveStart();
+            } else {
+                tokens.move((int)sp.getStartPosition(path.getCompilationUnit(), tree));
+            }
             tokens.moveNext();
         }
 
@@ -367,8 +373,8 @@ public class Reformatter implements ReformatTask {
             return pretty.diffs;
         }
 
-        public static LinkedList<Diff> reformat(String text, TreePath path, SourcePositions sp, TokenSequence<JavaTokenId> tokens, CodeStyle cs) {
-            Pretty pretty = new Pretty(null, text, sp, tokens, path, cs);
+        public static LinkedList<Diff> reformat(String text, TokenSequence<JavaTokenId> tokens, TreePath path, SourcePositions sp, CodeStyle cs) {
+            Pretty pretty = new Pretty(text, tokens, path, sp, cs);
             pretty.scan(path, null);
             tokens.moveEnd();
             tokens.movePrevious();
@@ -381,11 +387,12 @@ public class Reformatter implements ReformatTask {
         public Boolean scan(Tree tree, Void p) {
             int lastEndPos = endPos;
             if (tree != null && tree.getKind() != Tree.Kind.COMPILATION_UNIT) {
-                if (tree instanceof FakeBlock)
-                    endPos = (int)sp.getEndPosition(getCurrentPath().getCompilationUnit(), ((FakeBlock)tree).stat);
-                else
+                if (tree instanceof FakeBlock) {
+                    endPos = Integer.MAX_VALUE;
+                } else {
                     endPos = (int)sp.getEndPosition(getCurrentPath().getCompilationUnit(), tree);
                 }
+            }
             try {
                 return endPos < 0 ? false : tokens.offset() <= endPos ? super.scan(tree, p) : true;
             }
@@ -1028,6 +1035,9 @@ public class Reformatter implements ReformatTask {
                     spaces(spaceBeforeLeftBrace ? 1 : 0);
                     if (node instanceof FakeBlock) {
                         appendToDiff("{"); //NOI18N
+                        lastBlankLines = -1;
+                        lastBlankLinesTokenIndex = -1;
+                        lastBlankLinesDiff = null;
                     } else {
                         accept(LBRACE);
                     }
@@ -1037,8 +1047,10 @@ public class Reformatter implements ReformatTask {
                     newline();
                     if (node instanceof FakeBlock) {
                         indent += indentSize;
-                        String s = "{" + getNewlines(1) + getIndent();
-                        appendToDiff(s); //NOI18N
+                        appendToDiff("{"); //NOI18N
+                        lastBlankLines = -1;
+                        lastBlankLinesTokenIndex = -1;
+                        lastBlankLinesDiff = null;
                     } else {
                         accept(LBRACE);
                         indent += indentSize;
@@ -1050,8 +1062,10 @@ public class Reformatter implements ReformatTask {
                     newline();
                     if (node instanceof FakeBlock) {
                         indent = old + indentSize;
-                        String s = "{" + getNewlines(1) + getIndent();
-                        appendToDiff(s); //NOI18N
+                        appendToDiff("{"); //NOI18N
+                        lastBlankLines = -1;
+                        lastBlankLinesTokenIndex = -1;
+                        lastBlankLinesDiff = null;
                     } else {
                         accept(LBRACE);
                         indent = old + indentSize;
@@ -1062,8 +1076,10 @@ public class Reformatter implements ReformatTask {
                     halfIndent = indent;
                     newline();
                     if (node instanceof FakeBlock) {
-                        String s = "{" + getNewlines(1) + getIndent();
-                        appendToDiff(s);
+                        appendToDiff("{"); //NOI18N
+                        lastBlankLines = -1;
+                        lastBlankLinesTokenIndex = -1;
+                        lastBlankLinesDiff = null;
                     } else {
                         accept(LBRACE);
                     }
@@ -1095,9 +1111,12 @@ public class Reformatter implements ReformatTask {
                 newline();
             indent = halfIndent;
             if (node instanceof FakeBlock) {
-                String s = getNewlines(1) + getIndent() + "}"; //NOI18N
+                blankLines(0);
                 col = indent + 1;
-                appendToDiff(s);
+                diffs.addFirst(new Diff(tokens.offset(), tokens.offset(), "}")); //NOI18N
+                lastBlankLines = -1;
+                lastBlankLinesTokenIndex = -1;
+                lastBlankLinesDiff = null;
             } else {
                 blankLines();
                 Diff diff = diffs.isEmpty() ? null : diffs.getFirst();
@@ -2323,7 +2342,7 @@ public class Reformatter implements ReformatTask {
         }
 
         private void newline() {
-            blankLines(0);
+            blankLines(templateEdit ? ANY_COUNT : 0);
         }
 
         private void blankLines() {
@@ -2331,9 +2350,7 @@ public class Reformatter implements ReformatTask {
         }
 
         private void blankLines(int count) {
-            afterNewline = true;
-            if (templateEdit)
-                count = ANY_COUNT;
+            afterNewline = true;            
             if (count >= 0) {
                 if (lastBlankLinesTokenIndex < 0) {
                     lastBlankLines = count;
@@ -2708,10 +2725,7 @@ public class Reformatter implements ReformatTask {
             return sb.toString();
         }
 
-        private int getIndentLevel(CompilationInfo info, TreePath path) {
-            TokenSequence<JavaTokenId> tokens = info.getTokenHierarchy().tokenSequence(JavaTokenId.language());
-            if (tokens == null)
-                return -1;
+        private int getIndentLevel(TokenSequence<JavaTokenId> tokens, TreePath path) {
             if (path.getLeaf().getKind() == Tree.Kind.COMPILATION_UNIT)
                 return 0;
             int indent = 0;
