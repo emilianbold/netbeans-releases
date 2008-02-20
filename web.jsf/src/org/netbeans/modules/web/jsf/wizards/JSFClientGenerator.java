@@ -1110,8 +1110,19 @@ public class JSFClientGenerator {
                             updateRelatedInCreate.append("\n//update property " + relFieldName + " of entity " + fieldName + "\n" + //mbohm: why doesn't this show
                                                         (isCollection ? "for(" + relTypeReference + " " + relTypeInstanceName + " : " + fieldName + "." + mName + "()){\n" :
                                                             relTypeReference + " " + relTypeInstanceName + "=" + fieldName + "." + mName +"();\n" +
-                                                            "if (" + relTypeInstanceName + " != null) {\n") +
-                                                        relTypeInstanceName + " = em.merge(" + relTypeInstanceName +");\n" +
+                                                            "if (" + relTypeInstanceName + " != null) {\n"));
+                                                            //if 1:1, be sure to orphan the related entity's current related entity
+                            if (multiplicity == JsfForm.REL_TO_ONE && otherSideMultiplicity == JsfForm.REL_TO_ONE){
+                                String relrelInstanceName = "old" + simpleEntityName;
+                                String relrelGetterName = otherName;
+                                updateRelatedInCreate.append(simpleEntityName + " " + relrelInstanceName + " = " + relTypeInstanceName + "." + relrelGetterName + "();\n" + 
+                                        "if (" + relrelInstanceName + " != null) {\n" + 
+                                        relrelInstanceName + " = em.merge(" + relrelInstanceName + ");\n" + 
+                                        relrelInstanceName + ".s" + mName.substring(1) + "(null);\n" + 
+                                        relrelInstanceName + " = em.merge(" + relrelInstanceName + ");\n" + 
+                                        "}\n");                                        
+                            }
+                            updateRelatedInCreate.append(relTypeInstanceName + " = em.merge(" + relTypeInstanceName +");\n" +
                                                         ((otherSideMultiplicity == JsfForm.REL_TO_ONE) ? relTypeInstanceName + ".s" + otherName.substring(1) + "(" + fieldName+ ");\n" :
                                                             relTypeInstanceName + "." + otherName + "().add(" + fieldName +");\n") +
                                                         relTypeInstanceName + " = em.merge(" + relTypeInstanceName +");\n}\n\n");
@@ -1162,7 +1173,18 @@ public class JSFClientGenerator {
                                     + entityReferenceName +".class, " + fieldName + "." + idGetterName[0] + "())." + mName + "();\n");
                                 updateRelatedInEditPost.append("\n//update property " + relFieldName + " of entity " + simpleRelType + "\n" +
                                     relTypeReference + " " + relFieldName + "New = " + fieldName + "." + mName +"();\n" +
-                                    "if(" + relFieldName + "New != null) {\n" +
+                                    "if(" + relFieldName + "New != null) {\n");
+                                if (multiplicity == JsfForm.REL_TO_ONE && otherSideMultiplicity == JsfForm.REL_TO_ONE){
+                                    String relrelInstanceName = "old" + simpleEntityName;
+                                    String relrelGetterName = otherName;
+                                    updateRelatedInEditPost.append(simpleEntityName + " " + relrelInstanceName + " = " + relFieldName + "New." + relrelGetterName + "();\n" + 
+                                            "if (" + relrelInstanceName + " != null) {\n" + 
+                                            relrelInstanceName + " = em.merge(" + relrelInstanceName + ");\n" + 
+                                            relrelInstanceName + ".s" + mName.substring(1) + "(null);\n" + 
+                                            relrelInstanceName + " = em.merge(" + relrelInstanceName + ");\n" + 
+                                            "}\n");
+                                }
+                                updateRelatedInEditPost.append(
                                     ((otherSideMultiplicity == JsfForm.REL_TO_ONE) ? relFieldName + "New.s" + otherName.substring(1) + "(" + fieldName+ ");\n" :
                                         relFieldName + "New." + otherName + "().add(" + fieldName +");\n") +
                                     relFieldName + "New=em.merge(" + relFieldName +"New);\n}\n" +
@@ -1242,6 +1264,12 @@ public class JSFClientGenerator {
 //                                + controllerAccess.getName() + "().setDetail" + simpleRelType 
 //                                + "s(" + fieldName + "." + m.getName() + "());");
 //                    }
+                            
+                            if (otherSideMultiplicity == JsfForm.REL_TO_ONE) {
+                                bodyText = setEntityName + "(" + controllerAccessName + "().get" + simpleRelType + "()." + otherName + "();\nreturn \"" + fieldName + "_detail\";\n";
+                                methodInfo = new MethodInfo("detailSetupFrom" + simpleRelType + "Detail", publicModifier, "java.lang.String", null, null, null, bodyText, null, null);
+                                modifiedClassTree = TreeMakerUtils.addMethod(modifiedClassTree, workingCopy, methodInfo);
+                            }
                             
                             if (multiplicity == JsfForm.REL_TO_MANY) {
                                 setEntityBodyText += "\n" +
@@ -1499,7 +1527,7 @@ public class JSFClientGenerator {
                     bodyText = setFromReqParamMethod + "();\n return \"" + fieldName + "_detail\";";
                     methodInfo = new MethodInfo("detailSetup", publicModifier, "java.lang.String", null, null, null, bodyText, null, null);
                     modifiedClassTree = TreeMakerUtils.addMethod(modifiedClassTree, workingCopy, methodInfo);
-
+                    
                     bodyText = setFromReqParamMethod + "();\n return \"" + fieldName + "_edit\";";
                     methodInfo = new MethodInfo("editSetup", publicModifier, "java.lang.String", null, null, null, bodyText, null, null);
                     modifiedClassTree = TreeMakerUtils.addMethod(modifiedClassTree, workingCopy, methodInfo);  

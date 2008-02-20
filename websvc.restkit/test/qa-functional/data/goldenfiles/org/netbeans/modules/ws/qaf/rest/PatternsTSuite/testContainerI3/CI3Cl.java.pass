@@ -1,7 +1,7 @@
 /*
  *  CI3Cl
  *
- * Created on December 12, 2007, 1:32 AM
+ * Created on February 19, 2008, 7:18 PM
  *
  * To change this template, choose Tools | Template Manager
  * and open the template in the editor.
@@ -27,7 +27,7 @@ import javax.ws.rs.ConsumeMime;
 public class CI3Cl {
     @HttpContext
     private UriInfo context;
-    
+
     /** Creates a new instance of CI3Cl */
     public CI3Cl() {
     }
