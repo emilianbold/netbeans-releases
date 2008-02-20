@@ -162,6 +162,7 @@ public abstract class BreakpointImpl implements PropertyChangeListener {
     }
 
     protected abstract void setRequests();
+    protected abstract void suspend();
 
     /**
      * Called when Fix&Continue is invoked. Reqritten in LineBreakpointImpl.
@@ -180,10 +181,12 @@ public abstract class BreakpointImpl implements PropertyChangeListener {
     }
 
     public void propertyChange(PropertyChangeEvent evt) {
-        if (Breakpoint.PROP_DISPOSED.equals(evt.getPropertyName())) {
+        String pname = evt.getPropertyName();
+        if (pname.equals(Breakpoint.PROP_DISPOSED)) {
             remove();
-        }
-        if (!evt.getPropertyName().equals(GdbBreakpoint.PROP_LINE_NUMBER)) {
+        } else if (pname.equals(GdbBreakpoint.PROP_SUSPEND)) {
+            suspend();
+        } else if (!pname.equals(GdbBreakpoint.PROP_LINE_NUMBER)) {
             update();
         }
     }

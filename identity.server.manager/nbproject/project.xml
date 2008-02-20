@@ -6,6 +6,10 @@
             <code-name-base>org.netbeans.modules.identity.server.manager</code-name-base>
             <module-dependencies>
                 <dependency>
+                    <code-name-base>org.netbeans.modules.j2ee.sun.appsrv81</code-name-base>
+                    <build-prerequisite/>
+                </dependency>
+                <dependency>
                     <code-name-base>org.jdesktop.layout</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>

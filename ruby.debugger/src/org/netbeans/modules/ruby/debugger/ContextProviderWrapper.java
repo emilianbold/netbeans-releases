@@ -54,9 +54,6 @@ import org.netbeans.spi.viewmodel.TableModel;
 import org.netbeans.spi.viewmodel.TableModelFilter;
 import org.netbeans.spi.viewmodel.TreeModel;
 
-/**
- * @author Martin Krauskopf
- */
 public class ContextProviderWrapper {
     
     private ContextProvider contextProvider;
