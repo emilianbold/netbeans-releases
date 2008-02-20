@@ -96,6 +96,7 @@ import org.openide.util.lookup.Lookups;
 
 
 import org.netbeans.modules.j2ee.api.ejbjar.EjbProjectConstants;
+import org.netbeans.modules.j2ee.common.project.ui.ProjectProperties;
 import org.netbeans.modules.j2ee.common.ui.BrokenServerSupport;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.InstanceListener;
@@ -214,11 +215,11 @@ public class EjbJarLogicalViewProvider implements LogicalViewProvider {
     // Private innerclasses ----------------------------------------------------
    
     private static final String[] BREAKABLE_PROPERTIES = new String[] {
-        EjbJarProjectProperties.JAVAC_CLASSPATH,
+        ProjectProperties.JAVAC_CLASSPATH,
         EjbJarProjectProperties.DEBUG_CLASSPATH,
-        EjbJarProjectProperties.RUN_TEST_CLASSPATH, 
+        ProjectProperties.RUN_TEST_CLASSPATH, 
         EjbJarProjectProperties.DEBUG_TEST_CLASSPATH, 
-        EjbJarProjectProperties.JAVAC_TEST_CLASSPATH,
+        ProjectProperties.JAVAC_TEST_CLASSPATH,
     };
 
     public boolean hasBrokenLinks() {
