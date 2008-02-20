@@ -43,16 +43,10 @@ package org.netbeans.modules.compapp.casaeditor.nodes;
 
 import java.awt.Image;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
-import javax.swing.Action;
 import org.netbeans.modules.compapp.casaeditor.model.casa.CasaWrapperModel;
 import org.netbeans.modules.compapp.casaeditor.model.casa.CasaComponent;
 import org.netbeans.modules.compapp.casaeditor.model.casa.CasaServiceEngineServiceUnit;
-import org.netbeans.modules.compapp.casaeditor.nodes.actions.LoadWSDLPortsAction;
-import org.netbeans.modules.compapp.casaeditor.nodes.actions.AddConsumesPinAction;
-import org.netbeans.modules.compapp.casaeditor.nodes.actions.AddProvidesPinAction;
 import org.netbeans.modules.compapp.casaeditor.properties.PropertyUtils;
 import org.openide.nodes.Node;
 import org.openide.nodes.PropertySupport;
@@ -61,16 +55,18 @@ import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 import org.openide.util.actions.SystemAction;
 
+import javax.swing.*;
 import org.netbeans.modules.compapp.casaeditor.Constants;
+import org.netbeans.modules.compapp.casaeditor.model.casa.CasaConsumes;
 import org.netbeans.modules.compapp.casaeditor.model.casa.CasaEndpoint;
-import org.netbeans.modules.compapp.casaeditor.model.casa.CasaEndpointRef;
-import org.netbeans.modules.compapp.casaeditor.model.casa.impl.CasaAttribute;
+import org.netbeans.modules.compapp.casaeditor.model.casa.CasaProvides;
+import org.netbeans.modules.compapp.casaeditor.nodes.actions.GoToSourceAction;
 
 /**
  *
- * @author Josh Sandusky
+ * @author jqian
  */
-public class ServiceUnitNode extends CasaNode {
+public class ServiceUnitProcessNode extends CasaNode {
     
     private static final Image ICON = Utilities.loadImage(
             "org/netbeans/modules/compapp/casaeditor/nodes/resources/ServiceUnitNode.png");     // NOI18N
@@ -78,24 +74,29 @@ public class ServiceUnitNode extends CasaNode {
     private static final String CHILD_ID_PROVIDES_LIST = "ProvidesList";        // NOI18N
     private static final String CHILD_ID_CONSUMES_LIST = "ConsumesList";        // NOI18N
     
+    private String processName;
+    private String filePath;
     
-    public ServiceUnitNode(CasaServiceEngineServiceUnit component, CasaNodeFactory factory) {
-        super(component, new MyChildren(component, factory), factory);
+    public ServiceUnitProcessNode(CasaServiceEngineServiceUnit component, 
+            String processName, String filePath, CasaNodeFactory factory) {
+        super(component, new MyChildren(component, processName, factory), factory);
+        this.processName = processName;
+        this.filePath = filePath;
     }
     
+    public String getProcessName() {
+        return processName;
+    }
+    
+    public String getFilePath() {
+        return filePath;
+    }
     
     @Override
     protected void addCustomActions(List<Action> actions) {
         CasaServiceEngineServiceUnit su = (CasaServiceEngineServiceUnit) getData();
-        if (su == null) {
-            return;
-        }
-        
-        if (su.isInternal()) {
-            actions.add(SystemAction.get(LoadWSDLPortsAction.class));
-        } else {
-            actions.add(SystemAction.get(AddConsumesPinAction.class));
-            actions.add(SystemAction.get(AddProvidesPinAction.class));
+        if (su != null && su.isInternal()) {
+            actions.add(SystemAction.get(GoToSourceAction.class));
         }
     }
 
@@ -103,11 +104,10 @@ public class ServiceUnitNode extends CasaNode {
     public String getName() {
         CasaServiceEngineServiceUnit su = (CasaServiceEngineServiceUnit) getData();
         if (su != null) {
-            return NbBundle.getMessage(getClass(), "LBL_ServiceUnit");      // NOI18N
+            return NbBundle.getMessage(getClass(), "LBL_Process");      // NOI18N
         }
         return super.getName();
     }
-
 
     @Override
     public String getHtmlDisplayName() {
@@ -117,7 +117,7 @@ public class ServiceUnitNode extends CasaNode {
             String decoration = null;
             if (casaSU != null) {
                 decoration = NbBundle.getMessage(WSDLEndpointNode.class, "LBL_NameAttr",        // NOI18N
-                        casaSU.getUnitName());
+                        processName);
             }
             if (decoration == null) {
                 return htmlDisplayName;
@@ -137,55 +137,38 @@ public class ServiceUnitNode extends CasaNode {
         }        
         Sheet.Set identificationProperties =
                 getPropertySet(sheet, PropertyUtils.PropertiesGroups.IDENTIFICATION_SET);
-        
-        PropertyUtils.installServiceUnitNameProperty(
-                identificationProperties, this, casaSU,
-                CasaAttribute.UNIT_NAME.getName(),
-                "serviceUnitName",                                      // NOI18N
-                NbBundle.getMessage(getClass(), "PROP_Name"),           // NOI18N
-                NbBundle.getMessage(getClass(), "PROP_Name"));          // NOI18N
-        
+               
         Node.Property<String> descriptionSupport = new PropertySupport.ReadOnly<String>(
-                "description", // NOI18N
+                "processName", // NOI18N
                 String.class, 
-                NbBundle.getMessage(getClass(), "PROP_Description"),    // NOI18N
+                NbBundle.getMessage(getClass(), "PROP_ProcessName"),    // NOI18N
                 Constants.EMPTY_STRING) {
             public String getValue() {
-                return casaSU.getDescription();
+                return getProcessName();
             }
         };
-        identificationProperties.put(descriptionSupport);
+        identificationProperties.put(descriptionSupport);   
         
-        Sheet.Set targetProperties =
-                getPropertySet(sheet, PropertyUtils.PropertiesGroups.TARGET_SET);
-        Node.Property<String> artifactsZipSupport = new PropertySupport.ReadOnly<String>(
-                "artifactsZip", // NOI18N
+        Node.Property<String> filePathSupport = new PropertySupport.ReadOnly<String>(
+                "filePath", // NOI18N
                 String.class, 
-                NbBundle.getMessage(getClass(), "PROP_ArtifactsZip"),   // NOI18N
+                NbBundle.getMessage(getClass(), "PROP_FilePath"),    // NOI18N
                 Constants.EMPTY_STRING) {
             public String getValue() {
-                return casaSU.getArtifactsZip();
+                return getFilePath();
             }
         };
-        targetProperties.put(artifactsZipSupport);
-        
-        Node.Property<String> componentNameSupport = new PropertySupport.ReadOnly<String>(
-                "componentName", // NOI18N
-                String.class, 
-                NbBundle.getMessage(getClass(), "PROP_ComponentName"),  // NOI18N
-                Constants.EMPTY_STRING) {
-            public String getValue() {
-                return casaSU.getComponentName();
-            }
-        };
-        targetProperties.put(componentNameSupport);
+        identificationProperties.put(filePathSupport);        
     }
 
     
     private static class MyChildren extends CasaNodeChildren {
-        public static final String SEPARATOR = "+";
-        public MyChildren(CasaComponent component, CasaNodeFactory factory) {
-            super(component, factory);
+        
+        private String processName;
+    
+        public MyChildren(CasaComponent component, String processName, CasaNodeFactory factory) {
+            super(component, factory);            
+            this.processName = processName;
         }
         protected Node[] createNodes(Object key) {
             assert key instanceof String;
@@ -195,45 +178,46 @@ public class ServiceUnitNode extends CasaNode {
                 if (model != null) {
                     String keyName = (String) key;
                     if (keyName.equals(CHILD_ID_CONSUMES_LIST)) {
-                        return new Node[] { mNodeFactory.createNode_consumesList(serviceUnit.getConsumes()) };
+                        return new Node[] { mNodeFactory.createNode_consumesList(getConsumeEndpointRefs()) };
                     } else if (keyName.equals(CHILD_ID_PROVIDES_LIST)) {
-                        return new Node[] { mNodeFactory.createNode_providesList(serviceUnit.getProvides()) };
-                    } else {
-                        assert keyName.contains(SEPARATOR);
-                        String processName = keyName.substring(0, keyName.indexOf(SEPARATOR));
-                        String filePath = keyName.substring(keyName.indexOf(SEPARATOR) + 1);
-                        return new Node[] { mNodeFactory.createNode_process(serviceUnit, processName, filePath) };
-                    }
+                        return new Node[] { mNodeFactory.createNode_providesList(getProvideEndpointRefs()) };
+                    } 
                 }
             }
             return null;
         }
         @Override
         public Object getChildKeys(Object data)  {
-            List<String> children = new ArrayList<String>();
-            Set<String> processInfo = getProcessInfo();
-            if (processInfo.size() == 0) {
-                children.add(CHILD_ID_CONSUMES_LIST);
-                children.add(CHILD_ID_PROVIDES_LIST);
-            } else {
-                children.addAll(processInfo);
-            }
+            List<String> children = new ArrayList<String>();           
+            children.add(CHILD_ID_CONSUMES_LIST);
+            children.add(CHILD_ID_PROVIDES_LIST);
             return children;
         }
-        private Set<String> getProcessInfo() {
-            Set<String> ret = new HashSet<String>();
+        private List<CasaConsumes> getConsumeEndpointRefs() {
+            List<CasaConsumes> ret = new ArrayList<CasaConsumes>();
             
-            List<CasaEndpointRef> endpointRefs = new ArrayList<CasaEndpointRef>();
             CasaServiceEngineServiceUnit serviceUnit = (CasaServiceEngineServiceUnit) getData();
             if (serviceUnit != null) {
-                endpointRefs.addAll(serviceUnit.getConsumes());
-                endpointRefs.addAll(serviceUnit.getProvides());
-                for (CasaEndpointRef endpointRef : endpointRefs) {
+                for (CasaConsumes endpointRef : serviceUnit.getConsumes()) {
                     CasaEndpoint endpoint = endpointRef.getEndpoint().get();
-                    String processName = endpoint.getProcessName();
-                    String filePath = endpoint.getFilePath();
-                    if (processName != null && !processName.equals("")) {
-                        ret.add(processName + SEPARATOR + filePath);
+                    String pName = endpoint.getProcessName();
+                    if (pName != null && pName.equals(processName)) {
+                        ret.add(endpointRef);
+                    }
+                }
+            }
+            return ret;
+        }
+        private List<CasaProvides> getProvideEndpointRefs() {
+            List<CasaProvides> ret = new ArrayList<CasaProvides>();
+            
+            CasaServiceEngineServiceUnit serviceUnit = (CasaServiceEngineServiceUnit) getData();
+            if (serviceUnit != null) {
+                for (CasaProvides endpointRef : serviceUnit.getProvides()) {
+                    CasaEndpoint endpoint = endpointRef.getEndpoint().get();
+                    String pName = endpoint.getProcessName();
+                    if (pName != null && pName.equals(processName)) {
+                        ret.add(endpointRef);
                     }
                 }
             }
@@ -253,19 +237,19 @@ public class ServiceUnitNode extends CasaNode {
     
     @Override
     public boolean isEditable(String propertyType) {
-        CasaServiceEngineServiceUnit su = (CasaServiceEngineServiceUnit) getData();
-        if (su != null) {
-            return getModel().isEditable(su, propertyType);
-        }
+//        CasaServiceEngineServiceUnit su = (CasaServiceEngineServiceUnit) getData();
+//        if (su != null) {
+//            return getModel().isEditable(su, propertyType);
+//        }
         return false;
     }
     
     @Override
     public boolean isDeletable() {
-        CasaServiceEngineServiceUnit su = (CasaServiceEngineServiceUnit) getData();
-        if (su != null) {
-            return getModel().isDeletable(su);
-        }
+//        CasaServiceEngineServiceUnit su = (CasaServiceEngineServiceUnit) getData();
+//        if (su != null) {
+//            return getModel().isDeletable(su);
+//        }
         return false;
     }
 }
