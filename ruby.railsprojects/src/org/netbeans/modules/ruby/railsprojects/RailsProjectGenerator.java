@@ -159,7 +159,7 @@ public class RailsProjectGenerator {
         Project p = ProjectManager.getDefault().findProject(dirFO);
         if (railsDb.needExtraConfig()) {
             railsDb.editConfig((RailsProject) p);
-        } else {
+        } else if (platform.isJRuby()) {
             commentOutSocket(dirFO);
         }
 
