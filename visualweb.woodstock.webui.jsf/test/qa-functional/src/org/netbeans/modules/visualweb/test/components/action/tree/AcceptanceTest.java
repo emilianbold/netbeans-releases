@@ -399,9 +399,9 @@ public class AcceptanceTest extends RaveTestCase {
 //        log("Switch to designer");
 //        designer.makeComponentVisible();
 //        TestUtils.wait(10000);
-        
-        log("Create link between page1 to page2, named 'page1'");
-        ComponentUtils.linkWebPages(designer, _page1, _page2, "page2");
+        // TODO fix the ComponentUtils.linkWebPages(), then uncommet next lines
+        //log("Create link between page1 to page2, named 'page1'");
+        //ComponentUtils.linkWebPages(designer, _page1, _page2, "page2");
         
         Util.saveAllAPICall();
         Util.wait(2000);

@@ -359,7 +359,7 @@
             file="${temp.file}" 
             prefix="swdp"/>
         <get
-            src="${glassfish.builds.host}/java/re/javaeesdk/5.0_03/archive/fcs/latest/bundles/"
+            src="${glassfish.builds.host}/java/re/javaeesdk/5.0_04/archive/fcs/latest/bundles/"
             dest="${temp.file}"/>
 	<sjsam-buildnumber
 	    file="${temp.file}" 
@@ -381,7 +381,7 @@
             prefix="wsrp"/>
 
         <get
-            src="${portalpack.builds.host}/portalserver/PortalTooling/updates/nb6/build.txt"
+            src="${portalpack.builds.host}/portalserver/PortalTooling/updates/nb601/build.txt"
             dest="${temp.file}"/>
         <loadfile property="portalpack.build.number"
       	    srcFile="${temp.file}">
@@ -761,6 +761,49 @@ jarsigner.storepass=${jarsigner.storepass}
         </ant>
     </target>
 
+    <target name="build-tools-group">
+        <echo message="BUILDING TOOLS-GROUP ====================================="/>        
+        <ant dir="${nbi.netbeans.dir}/infra/build/groups/tools-group" target="release-all">
+            <property 
+                name="basedir" 
+                value="${nbi.netbeans.dir}/infra/build/groups/tools-group"/>
+            <property 
+                name="environment.properties" 
+                value="${environment.properties}"/>
+            
+            <property
+                name="release.parent.uid"
+                value=""/>
+            <property
+                name="release.parent.version"
+                value=""/>
+            <property
+                name="release.parent.platforms"
+                value=""/>
+        </ant> 
+    </target>
+
+    <target name="build-documentation-group">
+        <echo message="BUILDING DOCUMENTATION-GROUP ==================================="/>
+        <ant dir="${nbi.netbeans.dir}/infra/build/groups/documentation-group" target="release-all">
+            <property 
+                name="basedir" 
+                value="${nbi.netbeans.dir}/infra/build/groups/documentation-group"/>
+            <property 
+                name="environment.properties" 
+                value="${environment.properties}"/>
+            
+            <property
+                name="release.parent.uid"
+                value=""/>
+            <property
+                name="release.parent.version"
+                value=""/>
+            <property
+                name="release.parent.platforms"
+                value=""/>
+        </ant>
+    </target>
 
     <target name="build-nb-base">
         <echo message="BUILDING NB-BASE =========================================="/>
@@ -1873,127 +1916,142 @@ jarsigner.storepass=${jarsigner.storepass}
 	<!-- Java Tools Bundle installer -->
         <create-bundle root="${output.dir}/registry-temp" 
                        platform="windows" 
-                       target="${nb.bundles.output.dir}/java-tools-bundle-preview3-nightly-${build.number}-windows.exe">
+                       target="${nb.bundles.output.dir}/java-tools-bundle-update4-windows.exe">
             <component uid="nb-base" version="${nb.full.version}"/>
             <component uid="nb-javase" version="${nb.full.version}"/>
             <component uid="nb-javaee" version="${nb.full.version}"/>
             <component uid="nb-soa" version="${nb.full.version}"/>
-            <component uid="nb-portalpack" version="2.0.0.0.${portalpack.build.number}"/>
-            <component uid="glassfish" version="2.0.0.${glassfish.milestone.number}.${glassfish.build.number}"/>
+            <component uid="nb-portalpack" version="2.0.0.0.${portalpack.build.number}"/>            
+            <component uid="sjsas" version="9.1.1.${sjsas.milestone.number}.${sjsas.build.number}"/>            
             <component uid="openesb" version="5.0.4.${glassfish.milestone.number}.${openesb.build.number}"/>	                
             <component uid="sjsam" version="5.0.4.${glassfish.milestone.number}.${sjsam.build.number}"/>
 	    <component uid="javaeesdk-samples" version="1.0.0.${javaeesdk-samples.milestone.number}.${javaeesdk-samples.build.number}"/>
             <component uid="javaeesdk-blueprints" version="1.0.0.${javaeesdk-blueprints.milestone.number}.${javaeesdk-blueprints.build.number}"/>
 	    <component uid="javaeesdk-firstcup" version="${javaeesdk-firstcup.macro.number}.${javaeesdk-firstcup.micro.number}.0.${javaeesdk-firstcup.milestone.number}.${javaeesdk-firstcup.build.number}"/>
-	    <component uid="javaeesdk-javadocs" version="1.0.0.0.${javaeesdk-javadocs.build.number}"/>
-	    <component uid="portletcontainer" version="${portletcontainer.macro.number}.${portletcontainer.micro.number}.0.${portletcontainer.milestone.number}.${portletcontainer.build.number}"/>
-	    <component uid="wsrp" version="1.0.0.${wsrp.milestone.number}.${wsrp.build.number}"/>
+	    <!--component uid="javaeesdk-javadocs" version="1.0.0.0.${javaeesdk-javadocs.build.number}"/-->
+	    <component uid="portletcontainer" version="${portletcontainer.macro.number}.${portletcontainer.micro.number}.${portletcontainer.minor.number}.${portletcontainer.milestone.number}.${portletcontainer.build.number}"/>
+	    <!--component uid="wsrp" version="1.0.0.${wsrp.milestone.number}.${wsrp.build.number}"/-->
+	    <bundleProperty name="${welcome.type}" value="java.tools"/>            
+            <bundleProperty name="nbi.overall.license.resource" value="$S{nbi.overall.license.jtb.resource}"/>
         </create-bundle>
         <create-bundle root="${output.dir}/registry-temp" 
                        platform="linux" 
-                       target="${nb.bundles.output.dir}/java-tools-bundle-preview3-nightly-${build.number}-linux.sh">
+                       target="${nb.bundles.output.dir}/java-tools-bundle-update4-linux.sh">
             <component uid="nb-base" version="${nb.full.version}"/>
             <component uid="nb-javase" version="${nb.full.version}"/>
             <component uid="nb-javaee" version="${nb.full.version}"/>
             <component uid="nb-soa" version="${nb.full.version}"/>
-            <component uid="nb-portalpack" version="2.0.0.0.${portalpack.build.number}"/>
-            <component uid="glassfish" version="2.0.0.${glassfish.milestone.number}.${glassfish.build.number}"/>
+            <component uid="nb-portalpack" version="2.0.0.0.${portalpack.build.number}"/>            
+            <component uid="sjsas" version="9.1.1.${sjsas.milestone.number}.${sjsas.build.number}"/> 
             <component uid="openesb" version="5.0.4.${glassfish.milestone.number}.${openesb.build.number}"/>
             <component uid="sjsam" version="5.0.4.${glassfish.milestone.number}.${sjsam.build.number}"/>
 	    <component uid="javaeesdk-samples" version="1.0.0.${javaeesdk-samples.milestone.number}.${javaeesdk-samples.build.number}"/>
             <component uid="javaeesdk-blueprints" version="1.0.0.${javaeesdk-blueprints.milestone.number}.${javaeesdk-blueprints.build.number}"/>
 	    <component uid="javaeesdk-firstcup" version="${javaeesdk-firstcup.macro.number}.${javaeesdk-firstcup.micro.number}.0.${javaeesdk-firstcup.milestone.number}.${javaeesdk-firstcup.build.number}"/>
-	    <component uid="javaeesdk-javadocs" version="1.0.0.0.${javaeesdk-javadocs.build.number}"/>
-	    <component uid="portletcontainer" version="${portletcontainer.macro.number}.${portletcontainer.micro.number}.0.${portletcontainer.milestone.number}.${portletcontainer.build.number}"/>
-	    <component uid="wsrp" version="1.0.0.${wsrp.milestone.number}.${wsrp.build.number}"/>
+	    <!--component uid="javaeesdk-javadocs" version="1.0.0.0.${javaeesdk-javadocs.build.number}"/-->
+	    <component uid="portletcontainer" version="${portletcontainer.macro.number}.${portletcontainer.micro.number}.${portletcontainer.minor.number}.${portletcontainer.milestone.number}.${portletcontainer.build.number}"/>
+	    <!--component uid="wsrp" version="1.0.0.${wsrp.milestone.number}.${wsrp.build.number}"/-->
+	    <bundleProperty name="${welcome.type}" value="java.tools"/>                        
+            <bundleProperty name="nbi.overall.license.resource" value="$S{nbi.overall.license.jtb.resource}"/>
         </create-bundle>
         <create-bundle root="${output.dir}/registry-temp" 
                        platform="solaris-x86" 
-                       target="${nb.bundles.output.dir}/java-tools-bundle-preview3-nightly-${build.number}-solaris-x86.sh">
+                       target="${nb.bundles.output.dir}/java-tools-bundle-update4-solaris-x86.sh">
             <component uid="nb-base" version="${nb.full.version}"/>
             <component uid="nb-javase" version="${nb.full.version}"/>
             <component uid="nb-javaee" version="${nb.full.version}"/>
             <component uid="nb-soa" version="${nb.full.version}"/>            
-            <component uid="nb-portalpack" version="2.0.0.0.${portalpack.build.number}"/>
-            <component uid="glassfish" version="2.0.0.${glassfish.milestone.number}.${glassfish.build.number}"/>
+            <component uid="nb-portalpack" version="2.0.0.0.${portalpack.build.number}"/>            
+            <component uid="sjsas" version="9.1.1.${sjsas.milestone.number}.${sjsas.build.number}"/> 
             <component uid="openesb" version="5.0.4.${glassfish.milestone.number}.${openesb.build.number}"/>            
             <component uid="sjsam" version="5.0.4.${glassfish.milestone.number}.${sjsam.build.number}"/>
 	    <component uid="javaeesdk-samples" version="1.0.0.${javaeesdk-samples.milestone.number}.${javaeesdk-samples.build.number}"/>
             <component uid="javaeesdk-blueprints" version="1.0.0.${javaeesdk-blueprints.milestone.number}.${javaeesdk-blueprints.build.number}"/>
 	    <component uid="javaeesdk-firstcup" version="${javaeesdk-firstcup.macro.number}.${javaeesdk-firstcup.micro.number}.0.${javaeesdk-firstcup.milestone.number}.${javaeesdk-firstcup.build.number}"/>
-	    <component uid="javaeesdk-javadocs" version="1.0.0.0.${javaeesdk-javadocs.build.number}"/>
-	    <component uid="portletcontainer" version="${portletcontainer.macro.number}.${portletcontainer.micro.number}.0.${portletcontainer.milestone.number}.${portletcontainer.build.number}"/>
-	    <component uid="wsrp" version="1.0.0.${wsrp.milestone.number}.${wsrp.build.number}"/>
+	    <!--component uid="javaeesdk-javadocs" version="1.0.0.0.${javaeesdk-javadocs.build.number}"/-->
+	    <component uid="portletcontainer" version="${portletcontainer.macro.number}.${portletcontainer.micro.number}.${portletcontainer.minor.number}.${portletcontainer.milestone.number}.${portletcontainer.build.number}"/>
+	    <!--component uid="wsrp" version="1.0.0.${wsrp.milestone.number}.${wsrp.build.number}"/-->
+	    <bundleProperty name="${welcome.type}" value="java.tools"/>                        
+            <bundleProperty name="nbi.overall.license.resource" value="$S{nbi.overall.license.jtb.resource}"/>
         </create-bundle>
         <create-bundle root="${output.dir}/registry-temp" 
                        platform="solaris-sparc" 
-                       target="${nb.bundles.output.dir}/java-tools-bundle-preview3-nightly-${build.number}-solaris-sparc.sh">
+                       target="${nb.bundles.output.dir}/java-tools-bundle-update4-solaris-sparc.sh">
             <component uid="nb-base" version="${nb.full.version}"/>
             <component uid="nb-javase" version="${nb.full.version}"/>
             <component uid="nb-javaee" version="${nb.full.version}"/>
             <component uid="nb-soa" version="${nb.full.version}"/>
-            <component uid="nb-portalpack" version="2.0.0.0.${portalpack.build.number}"/>
-            <component uid="glassfish" version="2.0.0.${glassfish.milestone.number}.${glassfish.build.number}"/>
+            <component uid="nb-portalpack" version="2.0.0.0.${portalpack.build.number}"/>            
+            <component uid="sjsas" version="9.1.1.${sjsas.milestone.number}.${sjsas.build.number}"/> 
             <component uid="openesb" version="5.0.4.${glassfish.milestone.number}.${openesb.build.number}"/>
             <component uid="sjsam" version="5.0.4.${glassfish.milestone.number}.${sjsam.build.number}"/>
 	    <component uid="javaeesdk-samples" version="1.0.0.${javaeesdk-samples.milestone.number}.${javaeesdk-samples.build.number}"/>
             <component uid="javaeesdk-blueprints" version="1.0.0.${javaeesdk-blueprints.milestone.number}.${javaeesdk-blueprints.build.number}"/>
 	    <component uid="javaeesdk-firstcup" version="${javaeesdk-firstcup.macro.number}.${javaeesdk-firstcup.micro.number}.0.${javaeesdk-firstcup.milestone.number}.${javaeesdk-firstcup.build.number}"/>
-	    <component uid="javaeesdk-javadocs" version="1.0.0.0.${javaeesdk-javadocs.build.number}"/>
-	    <component uid="portletcontainer" version="${portletcontainer.macro.number}.${portletcontainer.micro.number}.0.${portletcontainer.milestone.number}.${portletcontainer.build.number}"/>
-	    <component uid="wsrp" version="1.0.0.${wsrp.milestone.number}.${wsrp.build.number}"/>
+	    <!--component uid="javaeesdk-javadocs" version="1.0.0.0.${javaeesdk-javadocs.build.number}"/-->
+	    <component uid="portletcontainer" version="${portletcontainer.macro.number}.${portletcontainer.micro.number}.${portletcontainer.minor.number}.${portletcontainer.milestone.number}.${portletcontainer.build.number}"/>
+	    <!--component uid="wsrp" version="1.0.0.${wsrp.milestone.number}.${wsrp.build.number}"/-->
+	    <bundleProperty name="${welcome.type}" value="java.tools"/>                        
+            <bundleProperty name="nbi.overall.license.resource" value="$S{nbi.overall.license.jtb.resource}"/>
         </create-bundle>
         <create-bundle root="${output.dir}/registry-temp" 
                        platform="macosx-x86" 
-                       target="${nb.bundles.output.dir}/java-tools-bundle-preview3-nightly-${build.number}-macosx-x86.zip">
+                       target="${nb.bundles.output.dir}/java-tools-bundle-update4-macosx-x86.zip">
             <component uid="nb-base" version="${nb.full.version}"/>
             <component uid="nb-javase" version="${nb.full.version}"/>
             <component uid="nb-javaee" version="${nb.full.version}"/>
             <component uid="nb-soa" version="${nb.full.version}"/>
-            <component uid="nb-portalpack" version="2.0.0.0.${portalpack.build.number}"/>
-            <component uid="glassfish" version="2.0.0.${glassfish.milestone.number}.${glassfish.build.number}"/>
+            <component uid="nb-portalpack" version="2.0.0.0.${portalpack.build.number}"/>            
+            <component uid="sjsas" version="9.1.1.${sjsas.milestone.number}.${sjsas.build.number}"/> 
             <component uid="openesb" version="5.0.4.${glassfish.milestone.number}.${openesb.build.number}"/>
             <component uid="sjsam" version="5.0.4.${glassfish.milestone.number}.${sjsam.build.number}"/>
 	    <component uid="javaeesdk-samples" version="1.0.0.${javaeesdk-samples.milestone.number}.${javaeesdk-samples.build.number}"/>
             <component uid="javaeesdk-blueprints" version="1.0.0.${javaeesdk-blueprints.milestone.number}.${javaeesdk-blueprints.build.number}"/>
 	    <component uid="javaeesdk-firstcup" version="${javaeesdk-firstcup.macro.number}.${javaeesdk-firstcup.micro.number}.0.${javaeesdk-firstcup.milestone.number}.${javaeesdk-firstcup.build.number}"/>
-	    <component uid="javaeesdk-javadocs" version="1.0.0.0.${javaeesdk-javadocs.build.number}"/>
-	    <component uid="portletcontainer" version="${portletcontainer.macro.number}.${portletcontainer.micro.number}.0.${portletcontainer.milestone.number}.${portletcontainer.build.number}"/>
-	    <component uid="wsrp" version="1.0.0.${wsrp.milestone.number}.${wsrp.build.number}"/>
+	    <!--component uid="javaeesdk-javadocs" version="1.0.0.0.${javaeesdk-javadocs.build.number}"/-->
+	    <component uid="portletcontainer" version="${portletcontainer.macro.number}.${portletcontainer.micro.number}.${portletcontainer.minor.number}.${portletcontainer.milestone.number}.${portletcontainer.build.number}"/>
+	    <!--component uid="wsrp" version="1.0.0.${wsrp.milestone.number}.${wsrp.build.number}"/-->
+	    <bundleProperty name="${welcome.type}" value="java.tools"/>                        
+            <bundleProperty name="nbi.overall.license.resource" value="$S{nbi.overall.license.jtb.resource}"/>
         </create-bundle>
         <create-bundle root="${output.dir}/registry-temp" 
                        platform="macosx-ppc" 
-                       target="${nb.bundles.output.dir}/java-tools-bundle-preview3-nightly-${build.number}-macosx-ppc.zip">
+                       target="${nb.bundles.output.dir}/java-tools-bundle-update4-macosx-ppc.zip">
             <component uid="nb-base" version="${nb.full.version}"/>
             <component uid="nb-javase" version="${nb.full.version}"/>
             <component uid="nb-javaee" version="${nb.full.version}"/>
             <component uid="nb-soa" version="${nb.full.version}"/>
-            <component uid="nb-portalpack" version="2.0.0.0.${portalpack.build.number}"/>
-            <component uid="glassfish" version="2.0.0.${glassfish.milestone.number}.${glassfish.build.number}"/>
+            <component uid="nb-portalpack" version="2.0.0.0.${portalpack.build.number}"/>            
+            <component uid="sjsas" version="9.1.1.${sjsas.milestone.number}.${sjsas.build.number}"/>             
             <component uid="openesb" version="5.0.4.${glassfish.milestone.number}.${openesb.build.number}"/>
             <component uid="sjsam" version="5.0.4.${glassfish.milestone.number}.${sjsam.build.number}"/>
 	    <component uid="javaeesdk-samples" version="1.0.0.${javaeesdk-samples.milestone.number}.${javaeesdk-samples.build.number}"/>
             <component uid="javaeesdk-blueprints" version="1.0.0.${javaeesdk-blueprints.milestone.number}.${javaeesdk-blueprints.build.number}"/>
 	    <component uid="javaeesdk-firstcup" version="${javaeesdk-firstcup.macro.number}.${javaeesdk-firstcup.micro.number}.0.${javaeesdk-firstcup.milestone.number}.${javaeesdk-firstcup.build.number}"/>
-	    <component uid="javaeesdk-javadocs" version="1.0.0.0.${javaeesdk-javadocs.build.number}"/>
-	    <component uid="portletcontainer" version="${portletcontainer.macro.number}.${portletcontainer.micro.number}.0.${portletcontainer.milestone.number}.${portletcontainer.build.number}"/>
-	    <component uid="wsrp" version="1.0.0.${wsrp.milestone.number}.${wsrp.build.number}"/>
+	    <!--component uid="javaeesdk-javadocs" version="1.0.0.0.${javaeesdk-javadocs.build.number}"/-->
+	    <component uid="portletcontainer" version="${portletcontainer.macro.number}.${portletcontainer.micro.number}.${portletcontainer.minor.number}.${portletcontainer.milestone.number}.${portletcontainer.build.number}"/>
+	    <!--component uid="wsrp" version="1.0.0.${wsrp.milestone.number}.${wsrp.build.number}"/-->
+	    <bundleProperty name="${welcome.type}" value="java.tools"/>                        
+            <bundleProperty name="nbi.overall.license.resource" value="$S{nbi.overall.license.jtb.resource}"/>
         </create-bundle>
-        <antcall target="zip-to-tgz">
-            <param name="input.file"  value="${nb.bundles.output.dir}/java-tools-bundle-preview3-nightly-${build.number}-macosx-x86.zip"/>
-            <param name="output.file" value="${nb.bundles.output.dir}/java-tools-bundle-preview3-nightly-${build.number}-macosx-x86.tgz"/>
+        <antcall target="zip-to-dmg">
+            <param name="zip.file"  value="${nb.bundles.output.dir}/java-tools-bundle-update4-macosx-x86.zip"/>
+            <param name="dmg.file" value="${nb.bundles.output.dir}/java-tools-bundle-update4-macosx-x86.dmg"/>
+            <param name="dmg.name" value="Java EE 5 Tools Bundle Update 4"/>
         </antcall>
-        <antcall target="zip-to-tgz">
-            <param name="input.file"  value="${nb.bundles.output.dir}/java-tools-bundle-preview3-nightly-${build.number}-macosx-ppc.zip"/>
-            <param name="output.file" value="${nb.bundles.output.dir}/java-tools-bundle-preview3-nightly-${build.number}-macosx-ppc.tgz"/>
-        </antcall>
+        <antcall target="zip-to-dmg">
+            <param name="zip.file"  value="${nb.bundles.output.dir}/java-tools-bundle-update4-macosx-ppc.zip"/>
+            <param name="dmg.file" value="${nb.bundles.output.dir}/java-tools-bundle-update4-macosx-ppc.dmg"/>
+            <param name="dmg.name" value="Java EE 5 Tools Bundle Update 4"/>
+        </antcall>       
 
         <delete>
             <fileset dir="${nb.bundles.output.dir}">
-		<include name="java-tools-bundle-preview3-nightly-${build.number}-macosx*zip"/>
+		<include name="java-tools-bundle-update4-macosx*zip"/>
             </fileset>
         </delete>
     </target>
+
 
     <target name="get-bundled-jvms" if="do.build.jdk">
         <set property="jvm.cache.dir" 
