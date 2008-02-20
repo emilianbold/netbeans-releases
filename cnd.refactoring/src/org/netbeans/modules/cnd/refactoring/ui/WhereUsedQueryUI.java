@@ -40,9 +40,11 @@
  */
 package org.netbeans.modules.cnd.refactoring.ui;
 
+import java.util.Collection;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.cnd.api.model.CsmNamedElement;
 import org.netbeans.modules.cnd.api.model.CsmObject;
+import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.api.model.xref.CsmReference;
 import org.netbeans.modules.cnd.refactoring.api.WhereUsedQueryConstants;
@@ -92,17 +94,16 @@ public class WhereUsedQueryUI implements RefactoringUI {
         // handle parameters defined in panel
         assert panel != null;
         query.putValue(WhereUsedQuery.SEARCH_IN_COMMENTS,panel.isSearchInComments());
-        // TODO: handle selected scope
-        if (panel.getScope()==WhereUsedPanel.Scope.ALL) {
-            // query.getContext().add();
-        } else {
-            // query.getContext().add();
-        }
+        boolean allProjects = (panel.getScope()==WhereUsedPanel.Scope.ALL);
+        Collection<CsmProject> prjs = CsmRefactoringUtils.getRelatedCsmProjects(this.origObject, allProjects);
+        CsmProject[] ar = prjs.toArray(new CsmProject[prjs.size()]);
+        query.getContext().add(ar);
+
         CsmObject refObj = panel.getReferencedObject();
         if (refObj == null) {
             query.setRefactoringSource(Lookup.EMPTY);
         } else {
-            query.setRefactoringSource(Lookups.fixed(refObj, CsmRefactoringUtils.getHandler(refObj)));
+            query.setRefactoringSource(Lookups.singleton(CsmRefactoringUtils.getHandler(refObj)));
         }
         if (panel.isVirtualMethod()) {
             setForMethod();

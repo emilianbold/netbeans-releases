@@ -41,7 +41,18 @@
 
 package org.netbeans.modules.spring.beans.hyperlink;
 
+import java.io.IOException;
+import java.util.List;
+import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.TypeElement;
+import org.netbeans.api.java.source.CompilationController;
+import org.netbeans.api.java.source.ElementUtilities;
+import org.netbeans.api.java.source.JavaSource;
+import org.netbeans.api.java.source.Task;
+import org.netbeans.api.java.source.ui.ElementOpen;
 import org.netbeans.modules.spring.beans.editor.ContextUtilities;
+import org.netbeans.modules.spring.beans.editor.SpringXMLConfigEditorUtils;
+import org.openide.util.Exceptions;
 
 /**
  * Hyperlink Processor for p-namespace stuff. Delegates to beanref processor
@@ -49,32 +60,68 @@ import org.netbeans.modules.spring.beans.editor.ContextUtilities;
  *
  * @author Rohan Ranade (Rohan.Ranade@Sun.COM)
  */
-public class PHyperlinkProcessor implements HyperlinkProcessor {
+public class PHyperlinkProcessor extends HyperlinkProcessor {
 
     private BeansRefHyperlinkProcessor beansRefHyperlinkProcessor
             = new BeansRefHyperlinkProcessor(true);
-    private PropertyHyperlinkProcessor propertyHyperlinkProcessor
-            = new PropertyHyperlinkProcessor();
 
     public PHyperlinkProcessor() {
     }
 
     public void process(HyperlinkEnv env) {
         String attribName = env.getAttribName();
-        if(env.getType() == SpringXMLConfigHyperlinkProvider.Type.ATTRIB_VALUE) {
+        if(env.getType().isValueHyperlink()) {
             if(attribName.endsWith("-ref")) { // NOI18N
                 beansRefHyperlinkProcessor.process(env);
             }
-        } else if(env.getType() == SpringXMLConfigHyperlinkProvider.Type.ATTRIB) {
+        } else if(env.getType().isAttributeHyperlink()) {
             String temp = ContextUtilities.getLocalNameFromTag(attribName);
-            if(temp.endsWith("-ref")) {
+            if(temp.endsWith("-ref")) { // NOI18N
                 temp = temp.substring(0, temp.indexOf("-ref")); // NOI18N
             }
 
-            HyperlinkEnv newEnv = new HyperlinkEnv(env.getDocument(),
-                    env.getCurrentTag(), env.getTagName(), env.getAttribName(), temp, env.getType());
-            propertyHyperlinkProcessor.process(newEnv);
+            final String className = SpringXMLConfigEditorUtils.getBeanClassName(env.getCurrentTag());
+            if(className == null) {
+                return;
+            }
+            
+            JavaSource js = SpringXMLConfigEditorUtils.getJavaSource(env.getDocument());
+            if(js == null) {
+                return;
+            }
+            final String propName = temp;
+            try {
+                js.runUserActionTask(new Task<CompilationController>() {
+
+                    public void run(CompilationController cc) throws Exception {
+                        ElementUtilities eu = cc.getElementUtilities();
+                        TypeElement type = SpringXMLConfigEditorUtils.findClassElementByBinaryName(className, cc);
+                        List<ExecutableElement> properties = SpringXMLConfigEditorUtils.findPropertiesOnType(eu, type.asType(), propName, false, true);
+                        if(properties.size() > 0) {
+                            ElementOpen.open(cc.getClasspathInfo(), properties.get(0));
+                        }
+                    }
+                }, true);
+            } catch (IOException ioe) {
+                Exceptions.printStackTrace(ioe);
+            }
+            
         }
     }
 
+    @Override
+    public int[] getSpan(HyperlinkEnv env) {
+        if(env.getType().isValueHyperlink()) {
+            return super.getSpan(env);
+        }
+        
+        if(env.getType().isAttributeHyperlink()) {
+            int start = env.getToken().getOffset();
+            return new int[] { start, start + env.getToken().getImage().length() };
+        }
+        
+        return null;
+    }
+    
+    
 }

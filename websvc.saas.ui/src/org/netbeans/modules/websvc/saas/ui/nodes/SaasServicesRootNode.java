@@ -40,25 +40,36 @@
 package org.netbeans.modules.websvc.saas.ui.nodes;
 
 import java.awt.Image;
+import java.beans.PropertyChangeEvent;
+import java.util.List;
+import javax.swing.Action;
 import org.netbeans.modules.websvc.saas.model.SaasGroup;
 import org.netbeans.modules.websvc.saas.model.SaasServicesModel;
-import org.netbeans.modules.websvc.saas.model.jaxb.Group;
+import org.netbeans.modules.websvc.saas.ui.actions.AddGroupAction;
+import org.netbeans.modules.websvc.saas.ui.actions.AddServiceAction;
 import org.openide.nodes.AbstractNode;
+import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
+import org.openide.util.actions.SystemAction;
+import org.openide.util.lookup.AbstractLookup;
+import org.openide.util.lookup.InstanceContent;
 
 /**
  *
  * @author nam
  */
 public class SaasServicesRootNode extends AbstractNode {
-    static final SaasGroup PLACE_HOLDER_GROUP = new SaasGroup(null, new Group());
-    private SaasGroup root;
     
     public SaasServicesRootNode() {
-        super(new RootNodeChildren(PLACE_HOLDER_GROUP));
-        root = PLACE_HOLDER_GROUP;
+        this(new RootNodeChildren(SaasServicesModel.getInstance().getInitialRootGroup()), new InstanceContent());
     }
 
+    SaasServicesRootNode(RootNodeChildren children, InstanceContent content) {
+        super(children, new AbstractLookup(content));
+        content.add(SaasServicesModel.getInstance().getInitialRootGroup());
+    }
+    
     @Override
     public String getName() {
         return "rootSaasGroup";
@@ -72,6 +83,14 @@ public class SaasServicesRootNode extends AbstractNode {
     @Override
     public String getShortDescription() {
         return NbBundle.getMessage(SaasServicesRootNode.class, "Web_Services_Desc");
+    }
+
+    @Override
+    public Action[] getActions(boolean context) {
+        List<Action> actions = SaasNode.getActions(getLookup());
+        actions.add(SystemAction.get(AddServiceAction.class));
+        actions.add(SystemAction.get(AddGroupAction.class));
+        return actions.toArray(new Action[actions.size()]);
     }
     
     static final java.awt.Image ICON =
@@ -94,11 +113,38 @@ public class SaasServicesRootNode extends AbstractNode {
         }
         
         @Override
-        protected void addNotify() {
-            if (group == PLACE_HOLDER_GROUP) {
-                group = SaasServicesModel.getInstance().getRootGroup();
+        public void propertyChange(PropertyChangeEvent evt) {
+            if (evt.getSource() == SaasServicesModel.getInstance().getRootGroup() &&
+                SaasServicesModel.getInstance().getState() == SaasServicesModel.State.READY) {
+                updateKeys();
             }
-            super.addNotify();
+            super.propertyChange(evt);
+        }
+    
+        @Override
+        protected void updateKeys() {
+            if (needsWait()) {
+                setKeys(SaasNodeChildren.WAIT_HOLDER);
+                RequestProcessor.getDefault().post(new Runnable() {
+                    public void run() {
+                        SaasServicesModel.getInstance().initRootGroup();
+                    }
+                });
+            } else {
+                super.updateKeys();
+            }
+        }
+        
+        private boolean needsWait() {
+            return SaasServicesModel.getInstance().getState() != SaasServicesModel.State.READY;
+        }
+        
+        @Override
+        protected Node[] createNodes(Object key) {
+            if (needsWait()) {
+                return SaasNodeChildren.getWaitNode();
+            }
+            return super.createNodes(key);
         }
     }
 }

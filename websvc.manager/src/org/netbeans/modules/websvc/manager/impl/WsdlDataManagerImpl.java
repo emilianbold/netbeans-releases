@@ -39,15 +39,34 @@
 
 package org.netbeans.modules.websvc.manager.impl;
 
+import java.io.IOException;
+import org.netbeans.modules.websvc.manager.WebServiceManager;
+import org.netbeans.modules.websvc.manager.WebServicePersistenceManager;
+import org.netbeans.modules.websvc.manager.api.WebServiceDescriptor;
+import org.netbeans.modules.websvc.manager.model.WebServiceData;
 import org.netbeans.modules.websvc.manager.model.WebServiceListModel;
 import org.netbeans.modules.websvc.saas.spi.websvcmgr.WsdlData;
 import org.netbeans.modules.websvc.saas.spi.websvcmgr.WsdlDataManager;
+import org.netbeans.modules.websvc.saas.spi.websvcmgr.WsdlServiceProxyDescriptor;
+import org.openide.util.Exceptions;
 
 /**
  *
  * @author nam
  */
 public class WsdlDataManagerImpl implements WsdlDataManager {
+
+    public void save(WsdlData data) {
+        WebServicePersistenceManager mgr = new WebServicePersistenceManager();
+        WsdlServiceProxyDescriptor desc = data.getJaxWsDescriptor();
+        if (desc instanceof WebServiceDescriptor) {
+            mgr.saveWebServiceDescriptor((WebServiceDescriptor)desc);
+        }
+        desc = data.getJaxRpcDescriptor();
+        if (desc instanceof WebServiceDescriptor) {
+            mgr.saveWebServiceDescriptor((WebServiceDescriptor)desc);
+        }
+    }
 
     public WsdlData getWsdlData(String wsdlUrl, String serviceName, boolean synchronuous) {
         return WebServiceListModel.getInstance().getWebServiceData(wsdlUrl, serviceName, synchronuous);
@@ -66,5 +85,16 @@ public class WsdlDataManagerImpl implements WsdlDataManager {
 
     public WsdlData findWsdlData(String wsdlUrl, String serviceName) {
         return WebServiceListModel.getInstance().findWebServiceData(wsdlUrl, serviceName, true);
+    }
+    
+    public void refresh(WsdlData wsdlData) {
+        if (wsdlData instanceof WebServiceData) {
+            WebServiceData data = (WebServiceData) wsdlData;
+            try {
+                WebServiceManager.getInstance().refreshWebService(data);
+            } catch(IOException e) {
+                Exceptions.printStackTrace(e);
+            }
+        }
     }
 }

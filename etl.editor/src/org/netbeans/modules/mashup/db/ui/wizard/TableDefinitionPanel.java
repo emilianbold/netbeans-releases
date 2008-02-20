@@ -896,6 +896,7 @@ public class TableDefinitionPanel implements ListSelectionListener,
                     lbl.setText(Localizer.parse(nbBundle23));
                     String nbBundle24 = mLoc.t("PRSR001: Not defined for datatype {0}",typeObj);
                     lbl.setToolTipText(Localizer.parse(nbBundle24));
+                    lbl.setDisplayedMnemonic(Localizer.parse(nbBundle24).charAt(0));
                     lbl.setHorizontalAlignment(SwingConstants.CENTER);
                 } else {
                     editor = (JComponent) nullrenderer.getTableCellRendererComponent(aTable, value, isSelected, isSelected, row, column);
@@ -1088,6 +1089,7 @@ public class TableDefinitionPanel implements ListSelectionListener,
         
         String nbBundle26 = mLoc.t("PRSR001: Define table and column definition for this file.");
         JLabel instr = new JLabel(Localizer.parse(nbBundle26));
+        instr.setDisplayedMnemonic(Localizer.parse(nbBundle26).charAt(0));
         instr.setAlignmentX(Component.LEFT_ALIGNMENT);
         layoutPanel = new JPanel(); // Column layout subpanel
         

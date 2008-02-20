@@ -42,6 +42,7 @@
 package org.netbeans.modules.websvc.saas.ui.actions;
 
 import org.netbeans.modules.websvc.saas.model.SaasGroup;
+import org.netbeans.modules.websvc.saas.model.SaasServicesModel;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.actions.RenameAction;
@@ -77,7 +78,9 @@ public class RenameGroupAction extends RenameAction {
             dlg.setInputText(n.getName());
             if (NotifyDescriptor.OK_OPTION.equals(DialogDisplayer.getDefault().notify(dlg))) {
                 try {
-                    group.setName(dlg.getInputText().trim());
+                    String name = dlg.getInputText().trim();
+                    n.setName(name);
+                    SaasServicesModel.getInstance().renameGroup(group, name);
                 } catch (IllegalArgumentException e) {
                     Exceptions.printStackTrace(e);
                 }
