@@ -74,7 +74,6 @@ final class BasicConfVisualPanel extends BasicVisualPanel.NewTemplatePanel {
     
     static final String EXAMPLE_BASE_NAME = "org.yourorghere."; // NOI18N
     
-    private boolean wasLayerUpdated;
     private boolean wasBundleUpdated;
     
     private boolean listenersAttached;
@@ -96,7 +95,9 @@ final class BasicConfVisualPanel extends BasicVisualPanel.NewTemplatePanel {
             layerDL = null;
         } else {
             layerDL = new UIUtil.DocumentAdapter() {
-                public void insertUpdate(DocumentEvent e) { wasLayerUpdated = true; checkLayer(); }
+                public void insertUpdate(DocumentEvent e) {
+                    checkLayer();
+                }
             };
         }
         bundleDL = new UIUtil.DocumentAdapter() {
@@ -126,10 +127,6 @@ final class BasicConfVisualPanel extends BasicVisualPanel.NewTemplatePanel {
                 bundleValue.setText(slashName + "/Bundle.properties"); // NOI18N
                 wasBundleUpdated = false;
             }
-            if (!wasLayerUpdated && !isLibraryWizard()) {
-                layerValue.setText(slashName + "/layer.xml"); // NOI18N
-                wasLayerUpdated = false;
-            }
             if (getData().isNetBeansOrg()) {
                 // Ensure that official naming conventions are respected.
                 String cnbShort = abbreviate(dotName);
@@ -155,7 +152,10 @@ final class BasicConfVisualPanel extends BasicVisualPanel.NewTemplatePanel {
     }
     
     private void checkLayer() {
-        checkEntry(getLayerValue(), "layer", ".xml"); // NOI18N
+        String layerPath = getLayerValue();
+        if (layerPath != null) {
+            checkEntry(layerPath, "layer", ".xml"); // NOI18N
+        }
     }
     
     /** Used for Layer and Bundle entries. */
@@ -192,9 +192,7 @@ final class BasicConfVisualPanel extends BasicVisualPanel.NewTemplatePanel {
         getData().setCodeNameBase(getCodeNameBaseValue());
         getData().setProjectDisplayName(displayNameValue.getText());
         getData().setBundle(getBundleValue());
-        if (!isLibraryWizard()) {
-            getData().setLayer(getLayerValue());
-        }
+        getData().setLayer(getLayerValue());
     }
     
     private String getCodeNameBaseValue() {
@@ -206,7 +204,12 @@ final class BasicConfVisualPanel extends BasicVisualPanel.NewTemplatePanel {
     }
     
     private String getLayerValue() {
-        return layerValue.getText().trim();
+        String v = layerValue.getText().trim();
+        if (v.length() == 0) {
+            return null;
+        } else {
+            return v;
+        }
     }
     
     private boolean cnbIsAlreadyInSuite(String suiteDir, String cnb) {
