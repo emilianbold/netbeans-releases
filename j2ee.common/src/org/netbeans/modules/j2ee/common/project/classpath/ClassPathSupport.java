@@ -794,10 +794,6 @@ public final class ClassPathSupport {
          */
         void storeAdditionalProperties(List<Item> items, String projectXMLElement);
         
-        /**
-         * Initializes additional information to a default state.
-         */
-        void initAdditionalProperties(Item item);
     }
     
 }

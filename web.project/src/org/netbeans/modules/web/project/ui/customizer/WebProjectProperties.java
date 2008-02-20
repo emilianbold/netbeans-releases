@@ -58,6 +58,7 @@ import javax.swing.ListCellRenderer;
 import javax.swing.SwingUtilities;
 
 import javax.swing.table.DefaultTableModel;
+import javax.swing.table.TableCellRenderer;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.PlainDocument;
@@ -210,7 +211,7 @@ public class WebProjectProperties {
     ListCellRenderer CLASS_PATH_LIST_RENDERER;
     ListCellRenderer PLATFORM_LIST_RENDERER;
     ListCellRenderer JAVAC_SOURCE_RENDERER;
-    WebClassPathUi.ClassPathTableCellItemRenderer CLASS_PATH_TABLE_ITEM_RENDERER;
+    TableCellRenderer CLASS_PATH_TABLE_ITEM_RENDERER;
     Document SHARED_LIBRARIES_MODEL;
 
     // CustomizerCompile
@@ -305,8 +306,8 @@ public class WebProjectProperties {
      */
     private void init() {
         
-        CLASS_PATH_LIST_RENDERER = new WebClassPathUi.ClassPathListCellRenderer(evaluator, project.getProjectDirectory());
-        CLASS_PATH_TABLE_ITEM_RENDERER = new WebClassPathUi.ClassPathTableCellItemRenderer(evaluator, project.getProjectDirectory());
+        CLASS_PATH_LIST_RENDERER = ProjectProperties.createClassPathListRendered(evaluator, project.getProjectDirectory());
+        CLASS_PATH_TABLE_ITEM_RENDERER = ProjectProperties.createClassPathTableRendered(evaluator, project.getProjectDirectory());
         
         // CustomizerSources
         SOURCE_ROOTS_MODEL = WebSourceRootsUi.createModel( project.getSourceRoots() );

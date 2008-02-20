@@ -46,10 +46,13 @@ import java.net.URI;
 import java.net.URL;
 import java.util.*;
 import javax.swing.ImageIcon;
+import javax.swing.ListCellRenderer;
+import javax.swing.table.TableCellRenderer;
 import org.netbeans.modules.j2ee.common.project.classpath.ClassPathSupport;
 import org.netbeans.modules.java.api.common.util.CommonProjectUtils;
 import org.netbeans.spi.project.libraries.support.LibrariesSupport;
 import org.netbeans.spi.project.support.ant.EditableProperties;
+import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -94,14 +97,16 @@ public final class ProjectProperties {
     private static String RESOURCE_ICON_BROKEN_BADGE = "org/netbeans/modules/j2ee/common/project/ui/resources/brokenProjectBadge.gif"; //NOI18N
     private static String RESOURCE_ICON_SOURCE_BADGE = "org/netbeans/modules/j2ee/common/project/ui/resources/jarSourceBadge.png"; //NOI18N
     private static String RESOURCE_ICON_JAVADOC_BADGE = "org/netbeans/modules/j2ee/common/project/ui/resources/jarJavadocBadge.png"; //NOI18N
-
-
+    private static String RESOURCE_ICON_CLASSPATH = "org/netbeans/modules/j2ee/common/project/ui/resources/referencedClasspath.gif"; //NOI18N
+        
+        
     public static ImageIcon ICON_JAR = new ImageIcon( Utilities.loadImage( RESOURCE_ICON_JAR ) );
     public static ImageIcon ICON_LIBRARY = new ImageIcon( Utilities.loadImage( RESOURCE_ICON_LIBRARY ) );
     public static ImageIcon ICON_ARTIFACT  = new ImageIcon( Utilities.loadImage( RESOURCE_ICON_ARTIFACT ) );
     public static ImageIcon ICON_BROKEN_BADGE  = new ImageIcon( Utilities.loadImage( RESOURCE_ICON_BROKEN_BADGE ) );
     public static ImageIcon ICON_JAVADOC_BADGE  = new ImageIcon( Utilities.loadImage( RESOURCE_ICON_JAVADOC_BADGE ) );
     public static ImageIcon ICON_SOURCE_BADGE  = new ImageIcon( Utilities.loadImage( RESOURCE_ICON_SOURCE_BADGE ) );
+    public static ImageIcon ICON_CLASSPATH  = new ImageIcon( Utilities.loadImage( RESOURCE_ICON_CLASSPATH ) );
     
     /** Store locations of libraries in the classpath param that have more the one
      * file into the properties in the following format:
@@ -217,4 +222,11 @@ public final class ProjectProperties {
         }
     }
     
+    public static ListCellRenderer createClassPathListRendered(PropertyEvaluator evaluator, FileObject projectFolder) {
+        return new ClassPathListCellRenderer(evaluator, projectFolder);
+    }
+    
+    public static TableCellRenderer createClassPathTableRendered(PropertyEvaluator evaluator, FileObject projectFolder) {
+        return new ClassPathListCellRenderer.ClassPathTableCellRenderer(evaluator, projectFolder);
+    }
 }

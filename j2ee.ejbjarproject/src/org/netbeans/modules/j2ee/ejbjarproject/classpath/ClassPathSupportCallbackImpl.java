@@ -226,8 +226,5 @@ public class ClassPathSupportCallbackImpl implements ClassPathSupport.Callback {
         putIncludedLibraries(items, helper, projectXMLElement);
     }
 
-    public void initAdditionalProperties(Item item) {
-        item.setAdditionalProperty(INCLUDE_IN_DEPLOYMENT, "true"); //NOI18N
-    }
 }
 

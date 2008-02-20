@@ -60,6 +60,7 @@ import javax.swing.ComboBoxModel;
 import javax.swing.DefaultListModel;
 import javax.swing.ListCellRenderer;
 import javax.swing.table.DefaultTableModel;
+import javax.swing.table.TableCellRenderer;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.PlainDocument;
@@ -198,7 +199,7 @@ public class EjbJarProjectProperties {
     ListCellRenderer CLASS_PATH_LIST_RENDERER;
     ListCellRenderer PLATFORM_LIST_RENDERER;
     ListCellRenderer JAVAC_SOURCE_RENDERER;
-    EjbJarClassPathUi.ClassPathTableCellItemRenderer CLASS_PATH_TABLE_ITEM_RENDERER;
+    TableCellRenderer CLASS_PATH_TABLE_ITEM_RENDERER;
     Document SHARED_LIBRARIES_MODEL;
     
     // CustomizerCompile
@@ -270,8 +271,8 @@ public class EjbJarProjectProperties {
      */
     private void init() {
         
-        CLASS_PATH_LIST_RENDERER = new EjbJarClassPathUi.ClassPathListCellRenderer(evaluator, project.getProjectDirectory());
-        CLASS_PATH_TABLE_ITEM_RENDERER = new EjbJarClassPathUi.ClassPathTableCellItemRenderer(evaluator, project.getProjectDirectory());
+        CLASS_PATH_LIST_RENDERER = ProjectProperties.createClassPathListRendered(evaluator, project.getProjectDirectory());
+        CLASS_PATH_TABLE_ITEM_RENDERER = ProjectProperties.createClassPathTableRendered(evaluator, project.getProjectDirectory());
         
         // CustomizerSources
         SOURCE_ROOTS_MODEL = EjbJarSourceRootsUi.createModel( project.getSourceRoots() );
