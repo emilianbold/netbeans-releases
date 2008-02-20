@@ -258,7 +258,12 @@ AtomicLockListener, FoldHierarchyListener {
             
             Object value = evt.getNewValue();
             if( value instanceof Integer ) {
-                setBlinkRate( ((Integer)value).intValue() );
+                int rate = ((Integer)value).intValue();
+                if (rate == -1) {
+                    Integer rateI = (Integer) c.getClientProperty(BaseTextUI.PROP_DEFAULT_CARET_BLINK_RATE);
+                    rate = rateI != null ? rateI : 300;
+                }
+                setBlinkRate(rate);
             }
         }
         updateType();
