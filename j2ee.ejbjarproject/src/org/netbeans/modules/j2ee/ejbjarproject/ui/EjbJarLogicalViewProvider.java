@@ -246,7 +246,6 @@ public class EjbJarLogicalViewProvider implements LogicalViewProvider {
         private Action brokenLinksAction;
         private BrokenServerAction brokenServerAction;
         private boolean broken;
-        private static final String BROKEN_PROJECT_BADGE = "org/netbeans/modules/j2ee/ejbjarproject/ui/resources/brokenProjectBadge.gif"; // NOI18N
         
         // icon badging >>>
         private Set files;
@@ -442,14 +441,14 @@ public class EjbJarLogicalViewProvider implements LogicalViewProvider {
         public Image getMyIcon(int type) {
             Image original = super.getIcon( type );                
             return broken || brokenServerAction.isEnabled() 
-                    ? Utilities.mergeImages(original, Utilities.loadImage(BROKEN_PROJECT_BADGE), 8, 0) 
+                    ? Utilities.mergeImages(original, ProjectProperties.ICON_BROKEN_BADGE.getImage(), 8, 0) 
                     : original;
         }
 
         public Image getMyOpenedIcon(int type) {
             Image original = super.getOpenedIcon(type);                
             return broken || brokenServerAction.isEnabled() 
-                    ? Utilities.mergeImages(original, Utilities.loadImage(BROKEN_PROJECT_BADGE), 8, 0) 
+                    ? Utilities.mergeImages(original, ProjectProperties.ICON_BROKEN_BADGE.getImage(), 8, 0) 
                     : original;
         }            
 
