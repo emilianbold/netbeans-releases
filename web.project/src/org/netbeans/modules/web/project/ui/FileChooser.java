@@ -47,6 +47,7 @@ import javax.swing.*;
 import javax.swing.filechooser.FileFilter;
 import java.io.File;
 import java.awt.*;
+import org.netbeans.modules.j2ee.common.project.ui.UserProjectSettings;
 
 public class FileChooser extends JFileChooser {
 
@@ -135,12 +136,12 @@ public class FileChooser extends JFileChooser {
     }
 
     public static File getLastChooserLocation(String key) {
-        String path = FoldersListSettings.getPreferences().get(FoldersListSettings.LAST_USED_CHOOSER_LOCATIONS+key, null);
+        String path = UserProjectSettings.getPreferences().get(UserProjectSettings.LAST_USED_CHOOSER_LOCATIONS+key, null);
         return path != null ? new File(path) : null;
     }
 
     public static void setLastChooserLocation(String key, File folder) {
-        FoldersListSettings.getPreferences().put(FoldersListSettings.LAST_USED_CHOOSER_LOCATIONS+key, folder.getPath());
+        UserProjectSettings.getPreferences().put(UserProjectSettings.LAST_USED_CHOOSER_LOCATIONS+key, folder.getPath());
     }
 
     public static FileChooser createDirectoryChooser(String key) {
