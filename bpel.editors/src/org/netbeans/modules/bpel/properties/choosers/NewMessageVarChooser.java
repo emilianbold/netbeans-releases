@@ -33,7 +33,6 @@ import org.netbeans.modules.bpel.model.api.Variable;
 import org.netbeans.modules.bpel.model.api.VariableContainer;
 import org.netbeans.modules.bpel.model.spi.FindHelper;
 import org.netbeans.modules.bpel.properties.TypeContainer;
-import org.netbeans.modules.bpel.properties.Util;
 import org.netbeans.modules.soa.ui.form.CustomNodeEditor;
 import org.netbeans.modules.soa.ui.form.valid.DefaultValidator;
 import org.netbeans.modules.bpel.editors.api.ui.valid.ErrorMessagesBundle;
@@ -42,6 +41,7 @@ import org.netbeans.modules.bpel.properties.Constants;
 import org.netbeans.modules.bpel.properties.VirtualVariableContainer;
 import org.netbeans.modules.bpel.properties.ResolverUtility;
 import org.netbeans.modules.bpel.properties.editors.FormBundle;
+import org.netbeans.modules.soa.ui.SoaUiUtil;
 import org.netbeans.modules.soa.ui.form.ChooserLifeCycle;
 import org.netbeans.modules.xml.wsdl.model.Message;
 import org.openide.util.Lookup;
@@ -54,7 +54,7 @@ public class NewMessageVarChooser extends JPanel
         implements ChooserLifeCycle<VirtualVariableContainer>,
         Validator.Provider, CustomNodeEditor.Owner {
     
-    static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = 1L;
     
     private CustomNodeEditor myEditor;
     private DefaultValidator myValidator;
@@ -97,7 +97,7 @@ public class NewMessageVarChooser extends JPanel
             }
         });
         //
-        Util.activateInlineMnemonics(this);
+        SoaUiUtil.activateInlineMnemonics(this);
     }
     
     public boolean initControls() {
@@ -113,8 +113,7 @@ public class NewMessageVarChooser extends JPanel
         }
         //
         // Populate scope combo-box
-        FindHelper helper =
-                (FindHelper)Lookup.getDefault().lookup(FindHelper.class);
+        FindHelper helper = Lookup.getDefault().lookup(FindHelper.class);
         if (helper != null) {
             Iterator<BaseScope> scopeIterator = helper.scopeIterator(myTargetEntity);
             //
@@ -202,8 +201,7 @@ public class NewMessageVarChooser extends JPanel
     }
     
     private Iterator<BaseScope> getScopeIterator() {
-        FindHelper helper =
-                (FindHelper)Lookup.getDefault().lookup(FindHelper.class);
+        FindHelper helper = Lookup.getDefault().lookup(FindHelper.class);
         if (helper != null) {
             Iterator<BaseScope> iterator = helper.scopeIterator(myTargetEntity);
             return iterator;

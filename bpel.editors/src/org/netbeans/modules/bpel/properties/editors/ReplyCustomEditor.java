@@ -27,7 +27,7 @@ import javax.swing.event.ChangeListener;
 import org.netbeans.modules.bpel.model.api.Reply;
 import org.netbeans.modules.bpel.properties.editors.controls.AbstractCustomNodeEditor;
 import org.netbeans.modules.bpel.nodes.ReplyNode;
-import org.netbeans.modules.bpel.properties.Util;
+import org.netbeans.modules.soa.ui.SoaUiUtil;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
@@ -70,7 +70,7 @@ public class ReplyCustomEditor extends AbstractCustomNodeEditor<Reply> {
             }
         });
          //
-        Util.activateInlineMnemonics(this);
+        SoaUiUtil.activateInlineMnemonics(this);
    }
 
     public HelpCtx getHelpCtx() {
