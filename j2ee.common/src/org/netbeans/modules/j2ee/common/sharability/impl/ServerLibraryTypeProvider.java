@@ -70,12 +70,12 @@ public final class ServerLibraryTypeProvider implements LibraryTypeProvider {
     
     private static final String[] VOLUME_TYPES = new String[] {
             VOLUME_CLASSPATH,
-//            VOLUME_WS_COMPILE_CLASSPATH,
-//            VOLUME_WS_GENERATE_CLASSPATH,
-//            VOLUME_WS_IMPORT_CLASSPATH,
-//            VOLUME_WS_INTEROP_CLASSPATH,
-//            VOLUME_WS_JWSDP_CLASSPATH,
-//            VOLUME_APP_CLIENT_CLASSPATH
+            VOLUME_WS_COMPILE_CLASSPATH,
+            VOLUME_WS_GENERATE_CLASSPATH,
+            VOLUME_WS_IMPORT_CLASSPATH,
+            VOLUME_WS_INTEROP_CLASSPATH,
+            VOLUME_WS_JWSDP_CLASSPATH,
+            VOLUME_APP_CLIENT_CLASSPATH
     };
     
     private ServerLibraryTypeProvider() {
