@@ -91,7 +91,7 @@ final class Service {
     
     static Service createService(String codebase,String fileName, InputStream jarIs) throws IOException {
         List<String> list = new ArrayList<String>();
-        BufferedReader reader = new BufferedReader(new InputStreamReader(jarIs));
+        BufferedReader reader = new BufferedReader(new InputStreamReader(jarIs, "UTF-8"));
         String line = null;
         while ((line = reader.readLine())!= null) {
             line = line.trim();
