@@ -545,14 +545,11 @@ class MapperNode implements GraphListener {
         return isGraphExpanded();
     }
     
-    boolean isVisible() {
-        return isVisible(this);
-    }
   //////////////////////////////!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!  
-    private boolean isVisible(MapperNode node) {
-        if (node == getMapper().getRoot()) return true;
-        if (node.getParent().isCollapsed()) return false;
-        return isVisible(node.getParent());
+    private boolean isVisible() {
+        if (this == getMapper().getRoot()) return true;
+        if (getParent().isCollapsed()) return false;
+        return getParent().isVisible();
     }
     
     int getGraphHeight() {
@@ -561,7 +558,7 @@ class MapperNode implements GraphListener {
         int topInset = size / 2;
         int bottomInset = size - topInset;
 
-        return (isVisibleGraph()) 
+        return (isVisibleGraph() && !getGraph().isEmptyOrOneLink()) 
                 ? Math.max(2, graph.getHeight()) * step + size + 2
                 : 0;
     }
@@ -591,9 +588,9 @@ class MapperNode implements GraphListener {
     public boolean mustDrawLine() {
         MapperNode nextNode = getNextVisibleNode(this);
         // graph or nextGraph is not Empty
-        if (this.getGraph() != null && !this.getGraph().isEmpty() ||
+        if (this.getGraph() != null && !this.getGraph().isEmptyOrOneLink() ||
                     (nextNode != null && nextNode.getGraph() != null &&
-                    !nextNode.getGraph().isEmpty() )) 
+                    !nextNode.getGraph().isEmptyOrOneLink() )) 
         {
             return true; 
         }
