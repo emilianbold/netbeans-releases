@@ -59,7 +59,7 @@ public class ResourceNode extends AbstractNode {
         this(resource, new InstanceContent());
     }
 
-    public ResourceNode(WadlSaasResource resource, InstanceContent content) {
+    protected ResourceNode(WadlSaasResource resource, InstanceContent content) {
         super(new ResourceNodeChildren(resource), new AbstractLookup(content));
         this.resource = resource;
         content.add(resource);
@@ -77,14 +77,14 @@ public class ResourceNode extends AbstractNode {
     @Override
     public String getShortDescription() {
         StringBuffer sb = new StringBuffer();
-        sb.append(resource.getSaas().getBaseURL());
-        sb.append('/');
         WadlSaasResource r = resource;
         while (r != null) {
             sb.insert(0, '/');
             sb.insert(0, r.getResource().getPath());
             r = r.getParent();
         }
+        sb.insert(0, '/');
+        sb.insert(0, resource.getSaas().getBaseURL());
         return sb.toString();
     }
     

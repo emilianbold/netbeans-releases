@@ -202,7 +202,7 @@ public class DnDHandler implements DragSourceListener , DragGestureListener, Dro
         
         Transferable tr = dtde.getTransferable();
         
-        
+
         if (tr.isDataFlavorSupported(flowDataFlavor)){
             FPoint p;
             try {
@@ -410,6 +410,7 @@ public class DnDHandler implements DragSourceListener , DragGestureListener, Dro
                 } else if (WebServiceReference.class.isAssignableFrom(repClass)) {
                     entity = designView.getBPELModel().getBuilder().createPartnerLink();
                     entity.setCookie(DnDHandler.class, data);
+                    
                 } else if (DataObject.class.isAssignableFrom(repClass)) {
                     DataObject dataObj = (DataObject) data;
                     String ext = dataObj.getPrimaryFile().getExt();

@@ -215,7 +215,7 @@ public class TypeCastExpression extends ExpressionStateHandler
       }
       
       int max = getExpressionCount();
-      for(int index = 1; index < max; index++)
+      for(int index = 0; index < max; index++)
       {
          proxy = getExpression(index);
          if(proxy != null)
