@@ -48,7 +48,6 @@ import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.editor.settings.AttributesUtilities;
 import org.netbeans.api.editor.settings.EditorStyleConstants;
 import org.netbeans.api.lexer.TokenHierarchy;
-import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.lib.editor.util.swing.DocumentUtilities;
 import org.netbeans.spi.editor.bracesmatching.BracesMatcher;
@@ -298,6 +297,7 @@ public final class MasterMatcher {
     private static void navigateAreas(
         int [] origin, 
         int [] matches,
+        int caretOffset,
         Object caretBias,
         Caret caret,
         boolean select
@@ -322,8 +322,13 @@ public final class MasterMatcher {
             
             if (newDotBackwardIdx != -1) {
                 if (select) {
-                    caret.setDot(origin[0]);
-                    caret.moveDot(matches[2 * newDotBackwardIdx + 1]);
+                    if (caretOffset < origin[1]) {
+                        caret.setDot(origin[0]);
+                        caret.moveDot(matches[2 * newDotBackwardIdx + 1]);
+                    } else {
+                        caret.setDot(origin[1]);
+                        caret.moveDot(matches[2 * newDotBackwardIdx]);
+                    }
                 } else {
                     if (B_BACKWARD.equalsIgnoreCase(caretBias.toString())) {
                         caret.setDot(matches[2 * newDotBackwardIdx + 1]);
@@ -333,8 +338,13 @@ public final class MasterMatcher {
                 }
             } else if (newDotForwardIdx != -1) {
                 if (select) {
-                    caret.setDot(origin[1]);
-                    caret.moveDot(matches[2 * newDotForwardIdx]);
+                    if (caretOffset > origin[0]) {
+                        caret.setDot(origin[1]);
+                        caret.moveDot(matches[2 * newDotForwardIdx]);
+                    } else {
+                        caret.setDot(origin[0]);
+                        caret.moveDot(matches[2 * newDotForwardIdx + 1]);
+                    }
                 } else {
                     if (B_BACKWARD.equalsIgnoreCase(caretBias.toString())) {
                         caret.setDot(matches[2 * newDotForwardIdx + 1]);
@@ -541,7 +551,7 @@ public final class MasterMatcher {
             }
 
             for(Object [] job : navigationJobs) {
-                navigateAreas(origin, matches, caretBias, (Caret) job[0], (Boolean) job[1]);
+                navigateAreas(origin, matches, caretOffset, caretBias, (Caret) job[0], (Boolean) job[1]);
             }
         }
         
