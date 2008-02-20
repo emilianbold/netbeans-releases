@@ -487,10 +487,12 @@ public final class ServiceNodeHandler  {
             }
             return dispName;
         }
+        /* XXX #126577: just throws NPE if you try
         @Override
         public boolean canDestroy() {
             return true;
         }
+         */
         @Override
         public boolean canCopy() {
             return false;
