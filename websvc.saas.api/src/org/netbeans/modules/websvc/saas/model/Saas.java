@@ -47,6 +47,7 @@ import org.netbeans.modules.websvc.saas.model.jaxb.Method;
 import org.netbeans.modules.websvc.saas.model.jaxb.SaasServices;
 import org.netbeans.modules.websvc.saas.model.jaxb.SaasServices.Header;
 import org.netbeans.modules.websvc.saas.model.jaxb.SaasMetadata;
+import org.netbeans.modules.websvc.saas.model.jaxb.SaasMetadata.CodeGen;
 import org.netbeans.modules.websvc.saas.util.SaasUtil;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
@@ -87,11 +88,24 @@ public class Saas {
         this.parentGroup = parentGroup;
     }
     
-    public Saas(String url, String displayName, String description) {
+    public Saas(SaasGroup parent, String url, String displayName, String packageName) {
         delegate = new SaasServices();
         delegate.setUrl(url);
         delegate.setDisplayName(displayName);
-        delegate.setDescription(description);
+        
+        SaasMetadata m = delegate.getSaasMetadata();
+        if (m == null) {
+            m = new SaasMetadata();
+            this.getDelegate().setSaasMetadata(m);
+        }
+        CodeGen cg = m.getCodeGen();
+        if (cg == null) {
+            cg = new CodeGen();
+            m.setCodeGen(cg);
+        }
+        cg.setPackageName(packageName);
+        setParentGroup(parent);
+        computePathFromRoot();
     }
 
     public SaasServices getDelegate() {
@@ -106,6 +120,10 @@ public class Saas {
         this.parentGroup = parentGroup;
     }
 
+    protected void computePathFromRoot() {
+        delegate.getSaasMetadata().setGroup(parentGroup.getPathFromRoot());
+    }
+    
     protected FileObject saasFile;
     public FileObject getSaasFile() throws IOException {
         if (saasFile == null) {
@@ -119,7 +137,7 @@ public class Saas {
         return saasFile;
     }
     
-    public void save() {
+    void save() {
         try {
             SaasUtil.saveSaas(this, getSaasFile());
         } catch(Exception e) {
@@ -131,7 +149,7 @@ public class Saas {
         return userDefined;
     }
     
-    public void setUserDefined(boolean v) {
+    protected void setUserDefined(boolean v) {
         if (userDefined) {
             userDefined = v;
         }
@@ -228,6 +246,11 @@ public class Saas {
     @Override
     public String toString() {
         return getDisplayName();
+    }
+    
+    protected void refresh() {
+        setState(State.INITIALIZING);
+        saasMethods = null;
     }
     
     /**

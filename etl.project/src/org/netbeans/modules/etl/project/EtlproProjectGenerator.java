@@ -63,15 +63,16 @@ public class EtlproProjectGenerator {
     private static final String nbBundle7 = mLoc.t("PRSR001: databases");
     private static final String nbBundle8 = mLoc.t("PRSR001: nbproject");
     private static final String nbBundle9 = mLoc.t("PRSR001: jdbc:axiondb:");
-    private static final String DEFAULT_DOC_BASE_FOLDER = Localizer.parse(nbBundle2); //NOI18N
-    private static final String DEFAULT_SRC_FOLDER = Localizer.parse(nbBundle1); //NOI18N
-    private static final String DEFAULT_RESOURCE_FOLDER = Localizer.parse(nbBundle3); //NOI18N
-    private static final String DEFAULT_BPELASA_FOLDER = Localizer.parse(nbBundle4); //NOI18N
-    private static final String DEFAULT_BUILD_DIR = Localizer.parse(nbBundle5); //NOI18N
-    private static final String DEFAULT_DATA_DIR = Localizer.parse(nbBundle6); //NOI18N
-    private static final String DEFAULT_DATABASES_DIR = Localizer.parse(nbBundle7); //NOI18N
-    private static final String DEFAULT_NBPROJECT_DIR = Localizer.parse(nbBundle8); //NOI18N
-    private static final String DEFAULT_FLATFILE_JDBC_URL_PREFIX = Localizer.parse(nbBundle9);
+    //Trimming the initial spaces
+    private static final String DEFAULT_DOC_BASE_FOLDER = Localizer.parse(nbBundle2).trim(); //NOI18N
+    private static final String DEFAULT_SRC_FOLDER = Localizer.parse(nbBundle1).trim(); //NOI18N
+    private static final String DEFAULT_RESOURCE_FOLDER = Localizer.parse(nbBundle3).trim(); //NOI18N
+    private static final String DEFAULT_BPELASA_FOLDER = Localizer.parse(nbBundle4).trim(); //NOI18N
+    private static final String DEFAULT_BUILD_DIR = Localizer.parse(nbBundle5).trim(); //NOI18N
+    private static final String DEFAULT_DATA_DIR = Localizer.parse(nbBundle6).trim(); //NOI18N
+    private static final String DEFAULT_DATABASES_DIR = Localizer.parse(nbBundle7).trim(); //NOI18N
+    private static final String DEFAULT_NBPROJECT_DIR = Localizer.parse(nbBundle8).trim(); //NOI18N
+    private static final String DEFAULT_FLATFILE_JDBC_URL_PREFIX = Localizer.parse(nbBundle9).trim();
     private static FileObject dbObj = null;
     private static File databases = null;
     private static FileObject data = null;
