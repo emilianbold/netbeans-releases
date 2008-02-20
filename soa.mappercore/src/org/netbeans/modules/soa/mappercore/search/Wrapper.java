@@ -38,8 +38,9 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.bpel.search.impl.ui;
+package org.netbeans.modules.soa.mappercore.search;
 
+import java.awt.Dimension;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
 import java.awt.event.KeyAdapter;
@@ -51,6 +52,7 @@ import java.util.List;
 
 import javax.swing.BoxLayout;
 import javax.swing.BorderFactory;
+import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
@@ -60,8 +62,7 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.text.Position;
 import javax.swing.tree.TreePath;
-
-import static org.netbeans.modules.soa.ui.util.UI.*;
+import org.openide.util.NbBundle;
 
 /**
  * @author Vladimir Yaroslavskiy
@@ -112,6 +113,35 @@ final class Wrapper extends JPanel {
 
     setBorder(BorderFactory.createRaisedBevelBorder());
     label.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 2));
+  }
+
+  // vlv
+  private String i18n(Class clazz, String key) {
+    if (key == null) {
+      return null;
+    }
+    return NbBundle.getMessage(clazz, key);
+  }
+
+  private void setWidth(JComponent component, int width) {
+    setDimension(component, new Dimension(width, component.getPreferredSize().height));
+  }
+
+  private void setDimension(JComponent component, Dimension dimension) {
+    component.setMinimumSize(dimension);
+    component.setPreferredSize(dimension);
+  }
+
+  private boolean isCtrl(int modifiers) {
+    return isModifier(modifiers, KeyEvent.CTRL_MASK);
+  }
+
+  private boolean isAlt(int modifiers) {
+    return isModifier(modifiers, KeyEvent.ALT_MASK);
+  }
+
+  private boolean isModifier(int modifiers, int mask) {
+    return (modifiers & mask) != 0;
   }
 
   private void showPanel() {
