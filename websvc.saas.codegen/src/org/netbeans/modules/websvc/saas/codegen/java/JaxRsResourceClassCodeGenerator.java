@@ -43,7 +43,6 @@ package org.netbeans.modules.websvc.saas.codegen.java;
 import org.netbeans.modules.websvc.saas.model.WadlSaasMethod;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.MethodTree;
-import java.awt.Component;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -61,17 +60,11 @@ import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
-import javax.swing.text.BadLocationException;
-import javax.swing.text.Caret;
-import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.ModificationResult;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.api.progress.ProgressHandle;
-import org.netbeans.api.project.FileOwnerQuery;
-import org.netbeans.api.project.Project;
-import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.websvc.saas.codegen.java.Constants.MimeType;
 import org.netbeans.modules.websvc.saas.codegen.java.model.ParameterInfo;
 import org.netbeans.modules.websvc.saas.codegen.java.model.WadlSaasBean;
@@ -81,64 +74,32 @@ import org.netbeans.modules.websvc.saas.codegen.java.support.Inflector;
 import org.netbeans.modules.websvc.saas.codegen.java.support.JavaSourceHelper;
 import org.netbeans.modules.websvc.saas.codegen.java.support.SourceGroupSupport;
 import org.openide.filesystems.FileObject;
-import org.openide.windows.TopComponent;
 
 /**
  * Code generator for REST services wrapping WSDL-based web service.
  *
  * @author nam
  */
-public class JaxRsCodeGenerator extends AbstractGenerator {
-    protected FileObject targetFile; // resource file target of the drop
-    protected FileObject destDir;
-    protected FileObject wrapperResourceFile;
-    protected Project project;
-    protected WadlSaasBean bean;
-    protected JavaSource wrapperResourceJS;
-    protected JavaSource targetResourceJS;
-    protected JavaSource jaxbOutputWrapperJS;
-    protected String subresourceLocatorName;
-    protected String subresourceLocatorUriTemplate;
+public class JaxRsResourceClassCodeGenerator extends JaxRsCodeGenerator {
+
+    private static final String COMMENT_END_OF_HTTP_MEHTOD_GET = "TODO return proper representation object";      //NOI18N
+    private static final String GENERIC_REF_CONVERTER_TEMPLATE = "Templates/SaaSServices/RefConverter.java"; //NOI18N
+    private static final String GENERIC_REF_CONVERTER = "GenericRefConverter"; //NOI18N
     private Collection<String> existingUriTemplates;
-    private JTextComponent targetComponent;
 
-    public JaxRsCodeGenerator(JTextComponent targetComponent, 
+    public JaxRsResourceClassCodeGenerator(JTextComponent targetComponent, 
             FileObject targetFile, WadlSaasMethod m) throws IOException {
-        this(targetComponent, targetFile, new WadlSaasBean(m));
+        super(targetComponent, targetFile, m);
     }
 
-    private JaxRsCodeGenerator(JTextComponent targetComponent, 
-            FileObject targetFile, WadlSaasBean bean) {
-        this.targetComponent = targetComponent;
-        this.targetFile = targetFile;
-        this.destDir = targetFile.getParent();
-        project = FileOwnerQuery.getOwner(targetFile);
-
-        if (project == null) {
-            throw new IllegalArgumentException(targetFile.getPath() + " is not part of a project.");
-        }
-
-        targetResourceJS = JavaSource.forFileObject(targetFile);
-        String packageName = JavaSourceHelper.getPackageName(targetResourceJS);
-        bean.setPackageName(packageName);
-        bean.setPrivateFieldForQueryParam(true);
-        this.bean = bean;
-        wrapperResourceFile = SourceGroupSupport.findJavaSourceFile(project, bean.getName());
+    @Override
+    public void preGenerate() {
+        JavaSource source = JavaSourceHelper.createJavaSource(
+                REST_CONNECTION_TEMPLATE, destDir, bean.getPackageName(), REST_CONNECTION);
     }
 
-    protected JTextComponent getTargetComponent() {
-        return this.targetComponent;
-    }
-
-    protected FileObject getTargetFile() {
-        return this.targetFile;
-    }
-    
-    protected void preGenerate() {
-        JavaSource source = JavaSourceHelper.createJavaSource(REST_CONNECTION_TEMPLATE, destDir, bean.getPackageName(), REST_CONNECTION);
-    }
-
-    protected String getCustomMethodBody() throws IOException {
+    @Override
+    public String getCustomMethodBody() throws IOException {
         String converterName = getConverterName();
         String paramStr = null;
         StringBuffer sb1 = new StringBuffer();
@@ -160,11 +121,11 @@ public class JaxRsCodeGenerator extends AbstractGenerator {
         String methodBody = "String url = \"" + ((WadlSaasBean) bean).getUrl() + "\";\n";
         methodBody += "        " + converterName + " converter = new " + converterName + "();\n";
         methodBody += "        try {\n";
-        methodBody += "             RestConnection cl = new RestConnection();\n";
         methodBody += "             String[][] params = new String[][]{\n";
         methodBody += "                 " + paramStr + "\n";
         methodBody += "             };\n";
-        methodBody += "             String result = cl.connect(url, params);\n";
+        methodBody += "             RestConnection cl = new RestConnection(url, params);\n";
+        methodBody += "             String result = cl.get();\n";
         methodBody += "             converter.setString(result);\n";
         methodBody += "             return converter;\n";
         methodBody += "        } catch (java.io.IOException ex) {\n";
@@ -174,14 +135,12 @@ public class JaxRsCodeGenerator extends AbstractGenerator {
         return methodBody;
     }
     
+    @Override
     public WadlSaasBean getBean() {
         return bean;
     }
 
-    public boolean showParams() {
-        return wrapperResourceFile == null;
-    }
-
+    @Override
     public Set<FileObject> generate(ProgressHandle pHandle) throws IOException {
         initProgressReporting(pHandle);
 
@@ -206,6 +165,7 @@ public class JaxRsCodeGenerator extends AbstractGenerator {
         return new HashSet<FileObject>(Arrays.asList(result));
     }
 
+    @Override
     protected FileObject generateJaxbOutputWrapper() throws IOException {
         MimeType mimeType = bean.getMimeTypes()[0];
 
@@ -222,6 +182,7 @@ public class JaxRsCodeGenerator extends AbstractGenerator {
         return null;
     }
 
+    @Override
     protected void generateComponentResourceClass() throws IOException {
         if (wrapperResourceFile == null) {
             GenericResourceGenerator delegate = new GenericResourceGenerator(destDir, bean);
@@ -240,6 +201,7 @@ public class JaxRsCodeGenerator extends AbstractGenerator {
         }
     }
 
+    @Override
     protected void addSubresourceLocator() throws IOException {
         ModificationResult result = targetResourceJS.runModificationTask(new AbstractTask<WorkingCopy>() {
 
@@ -287,12 +249,14 @@ public class JaxRsCodeGenerator extends AbstractGenerator {
     /**
      *  Add supporting methods, if any, for GET
      */
+    @Override
     protected void addSupportingMethods() throws IOException {
     }
 
     /**
      *  Return target and generated file objects
      */
+    @Override
     protected void modifyGetMethod() throws IOException {
         ModificationResult result = wrapperResourceJS.runModificationTask(new AbstractTask<WorkingCopy>() {
 
@@ -316,6 +280,7 @@ public class JaxRsCodeGenerator extends AbstractGenerator {
         result.commit();
     }
 
+    @Override
     protected String getOverridingStatements() {
         String text = ""; //NOI18N
         for (ParameterInfo param : bean.getQueryParameters()) {
@@ -326,6 +291,7 @@ public class JaxRsCodeGenerator extends AbstractGenerator {
         return text;
     }
 
+    @Override
     protected JavaSource getOrCreateGenericRefConverter() {
         FileObject converterFolder = getConverterFolder();
         String packageName = SourceGroupSupport.packageForFolder(converterFolder);
@@ -338,6 +304,7 @@ public class JaxRsCodeGenerator extends AbstractGenerator {
         }
     }
 
+    @Override
     protected String getConverterType() throws IOException {
         if (jaxbOutputWrapperJS != null) {
             return JavaSourceHelper.getClassType(jaxbOutputWrapperJS);
@@ -345,6 +312,7 @@ public class JaxRsCodeGenerator extends AbstractGenerator {
         return null;
     }
 
+    @Override
     protected String getConverterName() throws IOException {
         String converterType = getConverterType();
         if (converterType == null) {
@@ -451,6 +419,7 @@ public class JaxRsCodeGenerator extends AbstractGenerator {
         return null;
     }
 
+    @Override
     public String getSubresourceLocatorName() {
         if (subresourceLocatorName == null) {
             String uriTemplate = getSubresourceLocatorUriTemplate();
@@ -464,10 +433,12 @@ public class JaxRsCodeGenerator extends AbstractGenerator {
         return subresourceLocatorName;
     }
 
+    @Override
     public void setSubresourceLocatorName(String name) {
         this.subresourceLocatorName = name;
     }
 
+    @Override
     public String getSubresourceLocatorUriTemplate() {
         if (subresourceLocatorUriTemplate == null) {
             subresourceLocatorUriTemplate = getAvailableUriTemplate();
@@ -480,6 +451,7 @@ public class JaxRsCodeGenerator extends AbstractGenerator {
         return subresourceLocatorUriTemplate;
     }
 
+    @Override
     public void setSubresourceLocatorUriTemplate(String uriTemplate) {
         this.subresourceLocatorUriTemplate = uriTemplate;
     }
@@ -599,6 +571,7 @@ public class JaxRsCodeGenerator extends AbstractGenerator {
         return converterDir;
     }
 
+    @Override
     public Collection<String> getExistingUriTemplates() {
         if (existingUriTemplates == null) {
             existingUriTemplates = JavaSourceHelper.getAnnotationValuesForAllMethods(targetResourceJS, RestConstants.PATH);
@@ -609,12 +582,12 @@ public class JaxRsCodeGenerator extends AbstractGenerator {
 
     private String getAvailableUriTemplate() {
         //TODO: Need to create an unique UriTemplate value.
-        Collection<String> existingUriTemplates = getExistingUriTemplates();
+        Collection<String> existingUriTemplates2 = getExistingUriTemplates();
         int counter = 1;
         String uriTemplate = Inflector.getInstance().camelize(bean.getShortName(), true);
         String temp = uriTemplate;
 
-        while (existingUriTemplates.contains(temp) || existingUriTemplates.contains(temp + "/")) {
+        while (existingUriTemplates2.contains(temp) || existingUriTemplates2.contains(temp + "/")) {
             //NOI18N
             temp = uriTemplate + counter++;
         }
@@ -634,82 +607,5 @@ public class JaxRsCodeGenerator extends AbstractGenerator {
         }
 
         return imports.toArray(new String[imports.size()]);
-    }
-    
-    protected static void insert(String s, JTextComponent target, boolean reformat)
-    throws BadLocationException {
-        Document doc = target.getDocument();
-        if (doc == null)
-            return;
-        
-        if (s == null)
-            s = "";
-        
-        if (doc instanceof BaseDocument)
-            ((BaseDocument)doc).atomicLock();
-        
-        int start = insert(s, target, doc);
-        
-//        if (reformat && start >= 0 && doc instanceof BaseDocument) {  // format the inserted text
-//            BaseDocument d = (BaseDocument) doc;
-//            int end = start + s.length();
-//            Formatter f = d.getFormatter();
-//            
-//            //f.reformat(d, start, end);
-//            f.reformat(d, 0,d.getLength());
-//        }
-        
-//        if (select && start >= 0) { // select the inserted text
-//            Caret caret = target.getCaret();
-//            int current = caret.getDot();
-//            caret.setDot(start);
-//            caret.moveDot(current);
-//            caret.setSelectionVisible(true);
-//        }
-        
-        if (doc instanceof BaseDocument)
-            ((BaseDocument)doc).atomicUnlock();
-        
-        Component c =  target.getParent();
-        //     System.out.println(""+c.getClass().getName());
-        while ((c!=null) && (!(c instanceof TopComponent))){
-            c= c.getParent();
-        }
-        
-        TopComponent tc = (TopComponent)c;
-        try {
-            tc.requestActive();
-        } catch(Exception ex) {
-            //ignore
-        }
-
-    }
-    
-    protected static int insert(String s, JTextComponent target, Document doc)
-    throws BadLocationException {
-        
-        int start = -1;
-        try {
-            //at first, find selected text range
-            Caret caret = target.getCaret();
-            int p0 = Math.min(caret.getDot(), caret.getMark());
-            int p1 = Math.max(caret.getDot(), caret.getMark());
-            doc.remove(p0, p1 - p0);
-            
-            //replace selected text by the inserted one
-            start = caret.getDot();
-            doc.insertString(start, s, null);
-        } catch (BadLocationException ble) {}
-        
-        return start;
-    }
-    
-    protected boolean isInBlock(JTextComponent target) {
-        //TODO - FIX return true if the caret position where code is
-        //going to be inserted is within some block other Class block.
-        Caret caret = target.getCaret();
-        int p0 = Math.min(caret.getDot(), caret.getMark());
-        int p1 = Math.max(caret.getDot(), caret.getMark());
-        return true;
     }
 }

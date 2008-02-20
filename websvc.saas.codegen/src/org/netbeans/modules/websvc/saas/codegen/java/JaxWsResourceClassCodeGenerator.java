@@ -38,76 +38,27 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.websvc.saas.codegen.java;
 
+import org.netbeans.modules.websvc.saas.model.WsdlSaasMethod;
 import java.io.IOException;
-import java.util.Set;
-import org.netbeans.api.progress.ProgressHandle;
+import java.util.Collection;
+import javax.swing.text.JTextComponent;
 import org.openide.filesystems.FileObject;
 
 /**
+ * Code generator for REST services wrapping WSDL-based web service.
  *
- * @author Peter Liu
+ * @author nam
  */
-public abstract class AbstractGenerator {
-    public static final String REST_CONNECTION = "RestConnection"; //NOI18N
-    public static final String REST_CONNECTION_TEMPLATE = "Templates/SaaSServices/RestConnection.java"; //NOI18N
-    public static final String COMMENT_END_OF_HTTP_MEHTOD_GET = "TODO return proper representation object";      //NOI18N
-    public static final String GENERIC_REF_CONVERTER_TEMPLATE = "Templates/SaaSServices/RefConverter.java"; //NOI18N
-    public static final String GENERIC_REF_CONVERTER = "GenericRefConverter"; //NOI18N
-    public static final String CONVERTER_SUFFIX = "Converter";      //NOI18N
-    public static final String CONVERTER_FOLDER = "converter";      //NOI18N
-    public static final String RESOURCE_SUFFIX = "Resource";      //NOI18N
-    
-    private ProgressHandle pHandle;
-    private int totalWorkUnits;
-    private int workUnits;
-    
-    public AbstractGenerator() {
+public class JaxWsResourceClassCodeGenerator extends JaxWsCodeGenerator {
+
+    private Collection<String> existingUriTemplates;
+
+    public JaxWsResourceClassCodeGenerator(JTextComponent targetComponent, 
+            FileObject targetFile, WsdlSaasMethod m) throws IOException {
+        super(targetComponent, targetFile, m);
     }
-    
-    public abstract Set<FileObject> generate(ProgressHandle pHandle) throws IOException;
-    
-    protected void initProgressReporting(ProgressHandle pHandle) {
-        initProgressReporting(pHandle, true);
-    }
-    
-    protected void initProgressReporting(ProgressHandle pHandle, boolean start) {
-        this.pHandle = pHandle;
-        this.totalWorkUnits = getTotalWorkUnits();
-        this.workUnits = 0;
-        
-        if (start) {
-            if (totalWorkUnits > 0) {
-                pHandle.start(totalWorkUnits);
-            } else {
-                pHandle.start();
-            }
-        }
-    }
-    
-    protected void reportProgress(String message) {     
-        if (pHandle != null) {
-            if (totalWorkUnits > 0) {
-                pHandle.progress(message, ++workUnits);
-            } else {
-                pHandle.progress(message);
-            }
-        }
-    }
-    
-    protected void finishProgressReporting() {
-        if (pHandle != null) {
-            pHandle.finish();
-        }
-    }
-    
-    protected int getTotalWorkUnits() {
-        return 0;
-    }
-    
-    protected ProgressHandle getProgressHandle() {
-        return pHandle;
-    }
+
+
 }

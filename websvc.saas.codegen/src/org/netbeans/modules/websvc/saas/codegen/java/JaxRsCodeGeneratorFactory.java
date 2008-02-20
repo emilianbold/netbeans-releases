@@ -38,76 +38,41 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.websvc.saas.codegen.java;
 
 import java.io.IOException;
-import java.util.Set;
-import org.netbeans.api.progress.ProgressHandle;
+import javax.swing.text.JTextComponent;
+import org.netbeans.modules.websvc.saas.codegen.java.support.Util;
+import org.netbeans.modules.websvc.saas.model.WadlSaasMethod;
 import org.openide.filesystems.FileObject;
+import org.openide.loaders.DataObject;
+import org.openide.loaders.DataObjectNotFoundException;
 
 /**
+ * Code generator factory for REST services wrapping WADL-based web service.
  *
- * @author Peter Liu
+ * @author nam
  */
-public abstract class AbstractGenerator {
-    public static final String REST_CONNECTION = "RestConnection"; //NOI18N
-    public static final String REST_CONNECTION_TEMPLATE = "Templates/SaaSServices/RestConnection.java"; //NOI18N
-    public static final String COMMENT_END_OF_HTTP_MEHTOD_GET = "TODO return proper representation object";      //NOI18N
-    public static final String GENERIC_REF_CONVERTER_TEMPLATE = "Templates/SaaSServices/RefConverter.java"; //NOI18N
-    public static final String GENERIC_REF_CONVERTER = "GenericRefConverter"; //NOI18N
-    public static final String CONVERTER_SUFFIX = "Converter";      //NOI18N
-    public static final String CONVERTER_FOLDER = "converter";      //NOI18N
-    public static final String RESOURCE_SUFFIX = "Resource";      //NOI18N
-    
-    private ProgressHandle pHandle;
-    private int totalWorkUnits;
-    private int workUnits;
-    
-    public AbstractGenerator() {
-    }
-    
-    public abstract Set<FileObject> generate(ProgressHandle pHandle) throws IOException;
-    
-    protected void initProgressReporting(ProgressHandle pHandle) {
-        initProgressReporting(pHandle, true);
-    }
-    
-    protected void initProgressReporting(ProgressHandle pHandle, boolean start) {
-        this.pHandle = pHandle;
-        this.totalWorkUnits = getTotalWorkUnits();
-        this.workUnits = 0;
-        
-        if (start) {
-            if (totalWorkUnits > 0) {
-                pHandle.start(totalWorkUnits);
+public class JaxRsCodeGeneratorFactory {
+
+    public static JaxRsCodeGenerator create(JTextComponent targetComponent, 
+            FileObject targetFO, WadlSaasMethod method) throws IOException {
+        JaxRsCodeGenerator codegen = null;
+        try {
+            DataObject d = DataObject.find(targetFO);
+            if(Util.isRestJavaFile(d)) {
+                codegen = new JaxRsResourceClassCodeGenerator(
+                                targetComponent, targetFO, method);
+            } else if(Util.isServlet(d)) {
+                codegen = new JaxRsServletCodeGenerator(
+                                targetComponent, targetFO, method);
             } else {
-                pHandle.start();
+                codegen = new JaxRsJavaClientCodeGenerator(
+                                targetComponent, targetFO, method);
             }
+        } catch (DataObjectNotFoundException ex) {
+            throw new IOException(ex.getMessage());
         }
-    }
-    
-    protected void reportProgress(String message) {     
-        if (pHandle != null) {
-            if (totalWorkUnits > 0) {
-                pHandle.progress(message, ++workUnits);
-            } else {
-                pHandle.progress(message);
-            }
-        }
-    }
-    
-    protected void finishProgressReporting() {
-        if (pHandle != null) {
-            pHandle.finish();
-        }
-    }
-    
-    protected int getTotalWorkUnits() {
-        return 0;
-    }
-    
-    protected ProgressHandle getProgressHandle() {
-        return pHandle;
+        return codegen;
     }
 }
