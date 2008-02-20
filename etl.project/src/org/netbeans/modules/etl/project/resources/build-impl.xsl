@@ -456,8 +456,7 @@ is divided into following sections:
             </target>
              <target name="etl_bulkloader">      
                 <xsl:attribute name="depends">init</xsl:attribute>
-                <echo message="BULK-LOADER" /> 
-                <!--bulk-loader/--> 
+                <bulk-loader/> 
             </target>
             
             <target name="pre-dist">

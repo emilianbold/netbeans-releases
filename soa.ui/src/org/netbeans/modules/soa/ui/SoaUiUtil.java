@@ -49,6 +49,8 @@ import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Collection;
+import javax.swing.AbstractButton;
+import javax.swing.JLabel;
 import javax.swing.RootPaneContainer;
 import javax.swing.SwingUtilities;
 import org.openide.filesystems.FileObject;
@@ -60,6 +62,7 @@ import org.netbeans.modules.xml.api.EncodingUtil;
 import javax.swing.text.Document;
 import javax.swing.text.BadLocationException;
 import org.openide.ErrorManager;
+import org.openide.awt.Mnemonics;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.text.DataEditorSupport;
@@ -352,5 +355,19 @@ public class SoaUiUtil {
         }
         
         return tc;
+    }
+
+    public static void activateInlineMnemonics(Container owner) {
+        for (Component comp : owner.getComponents()) {
+            if (comp instanceof JLabel) {
+                JLabel label = (JLabel)comp;
+                Mnemonics.setLocalizedText(label, label.getText());
+            } else if (comp instanceof AbstractButton) {
+                AbstractButton button = (AbstractButton)comp;
+                Mnemonics.setLocalizedText(button, button.getText());
+            } else if (comp instanceof Container) {
+                activateInlineMnemonics((Container)comp);
+            }
+        }
     }
 }
