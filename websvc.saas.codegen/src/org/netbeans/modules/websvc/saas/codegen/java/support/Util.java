@@ -67,11 +67,14 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.TreeSet;
 import javax.swing.SwingUtilities;
+import javax.swing.text.BadLocationException;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.websvc.api.jaxws.project.GeneratedFilesHelper;
+import org.netbeans.modules.websvc.rest.model.api.RestConstants;
 import org.openide.ErrorManager;
+import org.openide.cookies.EditorCookie;
 import org.openide.cookies.LineCookie;
 import org.openide.cookies.SaveCookie;
 import org.openide.filesystems.FileObject;
@@ -88,7 +91,61 @@ import org.openide.util.Lookup;
  */
 public class Util {
     public static final String TYPE_DOC_ROOT="doc_root"; //NOI18N
+    public static final String AT = "@"; //NOI18N
+    public static final String APATH = AT + RestConstants.PATH_ANNOTATION;      //NOI18N
+    public static final String AGET = AT + RestConstants.GET_ANNOTATION;      //NOI18N
+    public static final String APOST = AT + RestConstants.POST_ANNOTATION;      //NOI18N
+    public static final String APUT = AT + RestConstants.PUT_ANNOTATION;      //NOI18N
+    public static final String ADELETE = AT + RestConstants.DELETE_ANNOTATION;      //NOI18N
+    /*
+     * Check if the primary file of d is a REST Resource
+     */ 
+    public static boolean isRestJavaFile(DataObject d) {
+        try {
+            if (d == null || !"java".equals(d.getPrimaryFile().getExt())) //NOI18N
+            {
+                return false;
+            }
+            EditorCookie ec = d.getCookie(EditorCookie.class);
+            if (ec == null) {
+                return false;
+            }
+            javax.swing.text.Document doc = ec.getDocument();
+            if (doc != null) {
+                String docText = doc.getText(0, doc.getLength());
+
+                return (docText.indexOf(APATH) != -1) ||
+                        (docText.indexOf(AGET) != -1) ||
+                        (docText.indexOf(APOST) != -1) ||
+                        (docText.indexOf(APUT) != -1) ||
+                        (docText.indexOf(ADELETE) != -1);
+            }
+        } catch (BadLocationException ex) {
+        }
+        return false;
+    }
     
+    public static boolean isServlet(DataObject d) {
+        try {
+            if (d == null || !"java".equals(d.getPrimaryFile().getExt())) //NOI18N
+            {
+                return false;
+            }
+            EditorCookie ec = d.getCookie(EditorCookie.class);
+            if (ec == null) {
+                return false;
+            }
+            javax.swing.text.Document doc = ec.getDocument();
+            if (doc != null) {
+                String docText = doc.getText(0, doc.getLength());
+
+                return (docText.indexOf("extends HttpServlet") != -1);
+            }
+        } catch (BadLocationException ex) {
+        }
+        return false;
+    }
+
     /*
      * Changes the text of a JLabel in component from oldLabel to newLabel
      */
@@ -189,7 +246,7 @@ public class Util {
     
     static final String WIZARD_PANEL_CONTENT_DATA = "WizardPanel_contentData"; // NOI18N
     static final String WIZARD_PANEL_CONTENT_SELECTED_INDEX = "WizardPanel_contentSelectedIndex"; //NOI18N;
-    
+
     public static String lowerFirstChar(String name) {
         if (name.length() == 0) return name;
         

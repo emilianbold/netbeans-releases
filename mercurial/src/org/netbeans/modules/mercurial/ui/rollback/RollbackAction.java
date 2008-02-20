@@ -52,7 +52,6 @@ import org.netbeans.modules.mercurial.HgProgressSupport;
 import org.netbeans.modules.mercurial.Mercurial;
 import org.netbeans.modules.mercurial.util.HgCommand;
 import org.netbeans.modules.mercurial.util.HgUtils;
-import org.netbeans.modules.mercurial.util.HgRepositoryContextCache;
 import org.netbeans.modules.mercurial.FileStatusCache;
 import org.netbeans.modules.mercurial.ui.update.ConflictResolvedAction;
 import org.netbeans.modules.mercurial.ui.actions.ContextAction;
@@ -70,7 +69,6 @@ import org.openide.NotifyDescriptor;
 public class RollbackAction extends ContextAction {
     
     private final VCSContext context;
-    private static File pullPath = null;
             
     public RollbackAction(String name, VCSContext context) {
         this.context = context;
@@ -78,18 +76,6 @@ public class RollbackAction extends ContextAction {
     }
     
     public void performAction(ActionEvent e) {
-        if(!HgRepositoryContextCache.hasHistory(context)){
-            HgUtils.outputMercurialTabInRed(
-                    NbBundle.getMessage(RollbackAction.class,
-                    "MSG_ROLLBACK_TITLE")); // NOI18N
-            HgUtils.outputMercurialTabInRed(
-                    NbBundle.getMessage(RollbackAction.class,
-                    "MSG_ROLLBACK_TITLE_SEP")); // NOI18N
-            HgUtils.outputMercurialTab(NbBundle.getMessage(RollbackAction.class, "MSG_NO_ROLLBACK")); // NOI18N
-            HgUtils.outputMercurialTabInRed(NbBundle.getMessage(RollbackAction.class, "MSG_ROLLBACK_DONE")); // NOI18N
-            HgUtils.outputMercurialTab(""); // NOI18N
-            return;
-        }
         rollback(context);
     }
     
@@ -109,7 +95,22 @@ public class RollbackAction extends ContextAction {
                     HgUtils.outputMercurialTabInRed(
                                 NbBundle.getMessage(RollbackAction.class,
                                 "MSG_ROLLBACK_TITLE_SEP")); // NOI18N
+                    HgUtils.outputMercurialTab(
+                                NbBundle.getMessage(StripAction.class,
+                                "MSG_ROLLBACK_INFO_SEP", root.getAbsolutePath())); // NOI18N
+                    int response = JOptionPane.showOptionDialog(null,
+                            NbBundle.getMessage(RollbackAction.class, "MSG_ROLLBACK_CONFIRM_QUERY"), // NOI18N
+                            NbBundle.getMessage(RollbackAction.class, "MSG_ROLLBACK_CONFIRM"), // NOI18N
+                            JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE, null, null, null);
+
+                    if (response == JOptionPane.NO_OPTION) {
+                        HgUtils.outputMercurialTabInRed(
+                                NbBundle.getMessage(RollbackAction.class,
+                                "MSG_ROLLBACK_CANCELED", root.getAbsolutePath())); // NOI18N
+                        return;
+                    }
                     List<String> list = HgCommand.doRollback(root);
+                    
                     
                     if(list != null && !list.isEmpty()){                      
                         //HgUtils.clearOutputMercurialTab();
@@ -121,9 +122,9 @@ public class RollbackAction extends ContextAction {
                         }else{
                             HgUtils.outputMercurialTab(list.get(0));
                             if (HgCommand.hasHistory(root)) {
-                                int response = JOptionPane.showOptionDialog(null,
-                                        NbBundle.getMessage(RollbackAction.class,"MSG_ROLLBACK_CONFIRM_QUERY") ,  // NOI18N
-                                        NbBundle.getMessage(RollbackAction.class,"MSG_ROLLBACK_CONFIRM"), // NOI18N
+                                response = JOptionPane.showOptionDialog(null,
+                                        NbBundle.getMessage(RollbackAction.class,"MSG_ROLLBACK_CONFIRM_UPDATE_QUERY") ,  // NOI18N
+                                        NbBundle.getMessage(RollbackAction.class,"MSG_ROLLBACK_CONFIRM_UPDATE"), // NOI18N
                                         JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE,null, null, null);
                             
                                 if( response == JOptionPane.YES_OPTION){

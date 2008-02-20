@@ -43,12 +43,33 @@ file=$NBCND_RC
 prompt="[Enter] "
 pgm=true
 
-if [ -x /usr/ucb/echo ]
+if [ -x /bin/uname ]
 then
-    # Solaris' echo doesn't support the -n option, so use an alaternate echo
-    ECHO=/usr/ucb/echo
+    sysname=`/bin/uname -s`
+elif [ -x /usr/bin/uname ]
+then
+    sysname=`/usr/bin/uname -s`
+else
+    sysname=`uname -s`
+fi
+
+if [ -x /bin/echo ]
+then
+    ECHO=/bin/echo
+elif [ -x /usr/bin/echo ]
+then
+    ECHO=/usr/bin/echo
 else
     ECHO=echo
+fi
+
+if [ "$sysname" = "Darwin" -o "$sysname" = "SunOS" ]
+then
+    NOPT=
+    ENDOPT="\c"
+else
+    NOPT="-n"
+    ENDOPT=
 fi
 
 while [ -n "$1" ]
@@ -84,9 +105,9 @@ rc=$?
 
 if [ -n "$file" ]
 then
-    echo $rc > "$file"
+    $ECHO $rc > "$file"
 fi
 
-$ECHO -n "$prompt"
+$ECHO $NOPT "$prompt${ENDOPT}"
 read a
 exit $rc
