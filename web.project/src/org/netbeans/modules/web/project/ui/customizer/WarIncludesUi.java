@@ -277,18 +277,10 @@ public class WarIncludesUi {
     
     static class ClassPathCellRenderer extends DefaultTableCellRenderer {
         
-        private static String RESOURCE_ICON_JAR = "org/netbeans/modules/web/project/ui/resources/jar.gif"; //NOI18N
-        private static String RESOURCE_ICON_LIBRARY = "org/netbeans/modules/web/project/ui/resources/libraries.gif"; //NOI18N
-        private static String RESOURCE_ICON_ARTIFACT = "org/netbeans/modules/web/project/ui/resources/projectDependencies.gif"; //NOI18N
         private static String RESOURCE_ICON_CLASSPATH = "org/netbeans/modules/web/project/ui/resources/referencedClasspath.gif"; //NOI18N
-        private static String RESOURCE_ICON_BROKEN_BADGE = "org/netbeans/modules/web/project/ui/resources/brokenProjectBadge.gif"; //NOI18N
         
-        private static ImageIcon ICON_JAR = new ImageIcon( Utilities.loadImage( RESOURCE_ICON_JAR ) );
         private static ImageIcon ICON_FOLDER = null; 
-        private static ImageIcon ICON_LIBRARY = new ImageIcon( Utilities.loadImage( RESOURCE_ICON_LIBRARY ) );
-        private static ImageIcon ICON_ARTIFACT  = new ImageIcon( Utilities.loadImage( RESOURCE_ICON_ARTIFACT ) );
         private static ImageIcon ICON_CLASSPATH  = new ImageIcon( Utilities.loadImage( RESOURCE_ICON_CLASSPATH ) );
-        private static ImageIcon ICON_BROKEN_BADGE  = new ImageIcon( Utilities.loadImage( RESOURCE_ICON_BROKEN_BADGE ) );
         
         private static ImageIcon ICON_BROKEN_JAR;
         private static ImageIcon ICON_BROKEN_LIBRARY;
@@ -354,33 +346,33 @@ public class WarIncludesUi {
                 case ClassPathSupport.Item.TYPE_LIBRARY:
                     if ( item.isBroken() ) {
                         if ( ICON_BROKEN_LIBRARY == null ) {
-                            ICON_BROKEN_LIBRARY = new ImageIcon( Utilities.mergeImages( ICON_LIBRARY.getImage(), ICON_BROKEN_BADGE.getImage(), 7, 7 ) );
+                            ICON_BROKEN_LIBRARY = new ImageIcon( Utilities.mergeImages( ProjectProperties.ICON_LIBRARY.getImage(), ProjectProperties.ICON_BROKEN_BADGE.getImage(), 7, 7 ) );
                         }
                         return ICON_BROKEN_LIBRARY;
                     }
                     else {
-                        return ICON_LIBRARY;
+                        return ProjectProperties.ICON_LIBRARY;
                     }
                 case ClassPathSupport.Item.TYPE_ARTIFACT:
                     if ( item.isBroken() ) {
                         if ( ICON_BROKEN_ARTIFACT == null ) {
-                            ICON_BROKEN_ARTIFACT = new ImageIcon( Utilities.mergeImages( ICON_ARTIFACT.getImage(), ICON_BROKEN_BADGE.getImage(), 7, 7 ) );
+                            ICON_BROKEN_ARTIFACT = new ImageIcon( Utilities.mergeImages( ProjectProperties.ICON_ARTIFACT.getImage(), ProjectProperties.ICON_BROKEN_BADGE.getImage(), 7, 7 ) );
                         }
                         return ICON_BROKEN_ARTIFACT;
                     }
                     else {
-                        return ICON_ARTIFACT;
+                        return ProjectProperties.ICON_ARTIFACT;
                     }
                 case ClassPathSupport.Item.TYPE_JAR:
                     if ( item.isBroken() ) {
                         if ( ICON_BROKEN_JAR == null ) {
-                            ICON_BROKEN_JAR = new ImageIcon( Utilities.mergeImages( ICON_JAR.getImage(), ICON_BROKEN_BADGE.getImage(), 7, 7 ) );
+                            ICON_BROKEN_JAR = new ImageIcon( Utilities.mergeImages( ProjectProperties.ICON_JAR.getImage(), ProjectProperties.ICON_BROKEN_BADGE.getImage(), 7, 7 ) );
                         }
                         return ICON_BROKEN_JAR;
                     }
                     else {
                         File file = item.getResolvedFile();
-                        return file.isDirectory() ? getFolderIcon() : ICON_JAR;
+                        return file.isDirectory() ? getFolderIcon() : ProjectProperties.ICON_JAR;
                     }
                 case ClassPathSupport.Item.TYPE_CLASSPATH:
                     return ICON_CLASSPATH;
