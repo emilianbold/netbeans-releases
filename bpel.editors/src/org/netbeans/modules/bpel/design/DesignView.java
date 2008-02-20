@@ -196,14 +196,6 @@ public class DesignView extends JPanel implements
 
         reloadModel();
         diagramChanged();
-        scrollPane.addScrollListener(new TriScrollPane.ScrollListener() {
-
-            public void viewScrolled(JComponent view) {
-                if (view == consumersView || view == providersView){
-                    processView.repaint();
-                }
-            }
-        });
     }
 
     public DiagramView getConsumersView() {

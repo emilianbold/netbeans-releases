@@ -504,9 +504,13 @@ public class TriScrollPane extends JScrollPane {
             g.setColor(oldColor);
         }
     };
+    
     private ChangeListener myScrollListener  = new ChangeListener() {
-
         public void stateChanged(ChangeEvent e) {
+            if (e.getSource() != getViewport()) {
+                center.repaint();
+            }
+            
             for (ScrollListener l : scrollListeners) {
                 l.viewScrolled(null);
             }
