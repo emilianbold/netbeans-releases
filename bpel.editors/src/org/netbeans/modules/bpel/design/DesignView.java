@@ -89,6 +89,7 @@ import org.netbeans.modules.bpel.design.actions.FindUsagesAction;
 import org.netbeans.modules.bpel.design.actions.GoToLoggingAction;
 import org.netbeans.modules.bpel.design.actions.GoToMapperAction;
 import org.netbeans.modules.bpel.design.actions.GoToSourceAction;
+import org.netbeans.modules.bpel.design.actions.TabToNextComponentAction;
 import org.netbeans.modules.bpel.design.model.PartnerRole;
 import org.netbeans.modules.bpel.nodes.actions.GoToAction;
 import org.netbeans.modules.bpel.nodes.actions.ShowBpelMapperAction;
@@ -202,7 +203,9 @@ public class DesignView extends JPanel implements
         scrollPane.addScrollListener(new TriScrollPane.ScrollListener() {
 
             public void viewScrolled(JComponent view) {
-                //getDecorationManager().repositionComponentsRecursive();
+                if (view == consumersView || view == providersView){
+                    processView.repaint();
+                }
             }
         });
     }
@@ -496,8 +499,8 @@ public class DesignView extends JPanel implements
         am.put("findusages-something", new FindUsagesAction(this)); // NOI18N
 //        am.put("find_next_mex_peer", new CycleMexAction()); // NOI18N
 //        am.put("show_context_menu", new ShowContextMenu()); // NOI18N
-//        am.put("go_next_hierarchy_component", new GoNextHieComponentAction()); // NOI18N
-//        am.put("go_previous_hierarchy_component", new GoPrevHieComponentAction()); // NOI18N
+        am.put("go_next_hierarchy_component", new TabToNextComponentAction(this, true)); // NOI18N
+        am.put("go_previous_hierarchy_component", new TabToNextComponentAction(this, false)); // NOI18N
 //
 //        am.put("go_nearest_right_component", new GoRightNearestComponentAction()); // NOI18N
 //        am.put("go_nearest_left_component", new GoLeftNearestComponentAction()); // NOI18N
@@ -971,6 +974,7 @@ public class DesignView extends JPanel implements
         }
     }
 
+   
     public DnDHandler getDndHandler() {
         return dndHandler;
     }

@@ -29,7 +29,6 @@ import javax.swing.border.EmptyBorder;
 import javax.swing.text.html.HTMLEditorKit;
 
 public class ErrorPanel extends JEditorPane {
-    
     private XsltMapper mapper;
     private boolean installed = false;
     private static final long serialVersionUID = 1;
@@ -45,20 +44,18 @@ public class ErrorPanel extends JEditorPane {
         setBackground(mapper.getBackground());
     }
     
-    
-    
-    
     public void install() {
         if (!installed){
             JComponent parent = (JComponent) mapper.getParent();
             parent.remove(mapper);
             parent.add(this);
-            parent.invalidate();
+            parent.revalidate();
             parent.repaint();
             
             installed = true;
         }
     }
+    
     public void uninstall() {
         if (installed) {
             
@@ -71,24 +68,14 @@ public class ErrorPanel extends JEditorPane {
             installed = false;
         }
     }
+    
     public void setMessage(String message){
-        
-        
         StringBuffer s = new StringBuffer();
         s.append("<html><body><font face=sans-serif size=3 color=#990000>"); // NOI18N
         s.append(message); // NOI18N
         s.append("</font><br><br></body></html>"); // NOI18N
         setText(s.toString());
-        
-        
     }
-    
-    
-    
-    
-    
-    
-    
     
     protected void paintComponent(Graphics g) {
         Graphics2D g2 = (Graphics2D) g.create();

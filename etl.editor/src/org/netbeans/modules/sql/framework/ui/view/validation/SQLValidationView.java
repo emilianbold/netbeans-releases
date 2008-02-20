@@ -50,6 +50,9 @@ import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JPanel;
 import javax.swing.JTextArea;
+import net.java.hulp.i18n.Logger;
+import org.netbeans.modules.etl.logger.Localizer;
+import org.netbeans.modules.etl.logger.LogUtil;
 import org.netbeans.modules.sql.framework.ui.graph.IGraphView;
 import org.netbeans.modules.sql.framework.ui.output.ETLOutputPanel;
 
@@ -68,7 +71,8 @@ public class SQLValidationView extends JPanel implements ETLOutputPanel {
     private JButton refreshButton;
     private ActionListener aListener;
     private JButton[] btn = new JButton[1];
-
+    private static transient final Logger mLogger = LogUtil.getLogger(SQLValidationView.class.getName());
+    private static transient final Localizer mLoc = Localizer.get();
     public SQLValidationView(IGraphView gView) {
         this.graphView = gView;
         initGui();
@@ -80,7 +84,9 @@ public class SQLValidationView extends JPanel implements ETLOutputPanel {
         //add refresh button
         URL url = getClass().getResource("/org/netbeans/modules/sql/framework/ui/resources/images/rerun.png");
         refreshButton = new JButton(new ImageIcon(url));
-        refreshButton.setToolTipText("Refresh");
+        String nbBundle30 = mLoc.t("PRSR001: Refresh");
+        refreshButton.setToolTipText(Localizer.parse(nbBundle30));
+        refreshButton.setMnemonic(Localizer.parse(nbBundle30).charAt(0));
         refreshButton.addActionListener(aListener);
         btn[0] = refreshButton;
         ActionListener aListener = new ActionListener() {

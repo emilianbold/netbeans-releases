@@ -42,19 +42,15 @@
 package org.netbeans.modules.ruby.platform;
 
 import java.util.prefs.Preferences;
-import org.netbeans.api.ruby.platform.RubyPlatform;
 import org.openide.util.NbPreferences;
 
 /**
  * Preferences for Ruby Debugger.
- *
- * @author Martin Krauskopf
  */
 public class DebuggerPreferences {
     
     private static final DebuggerPreferences INSTANCE = new DebuggerPreferences();
     
-    private static final String USE_CLASSIC_DEBUGGER = "use-classic-debugger"; // NOI18N
     private static final String DO_NOT_ASK_AGAIN = "fast-debugger-do-not-ask-again"; // NOI18N
     private static final String IS_FIRST_TIME = "is-called-first-time"; // NOI18N
     
@@ -62,14 +58,6 @@ public class DebuggerPreferences {
     
     public static DebuggerPreferences getInstance() {
         return INSTANCE;
-    }
-    
-    public void setUseClassicDebugger(final RubyPlatform platform, final boolean useClassicDebugger) {
-        getPreferences().putBoolean(USE_CLASSIC_DEBUGGER + platform.getID(), useClassicDebugger);
-    }
-    
-    public boolean isUseClassicDebugger(final RubyPlatform platform) {
-        return getPreferences().getBoolean(USE_CLASSIC_DEBUGGER + platform.getID(), true);
     }
     
     public void setDoNotAskAgain(final boolean doNotAskAgain) {

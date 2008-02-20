@@ -77,7 +77,7 @@ public class WadlSaas extends Saas {
             try {
                 wadlModel = SaasUtil.loadWadl(in);
             } catch(JAXBException ex) {
-                String msg = NbBundle.getMessage(WadlSaas.class, "MSG_ErrorLoadingWadl", getModuleLoader());
+                String msg = NbBundle.getMessage(WadlSaas.class, "MSG_ErrorLoadingWadl", getUrl());
                 IOException ioe = new IOException(msg);
                 ioe.initCause(ex);
             }
@@ -117,7 +117,7 @@ public class WadlSaas extends Saas {
                 public void run() {
                     try {
                         getWadlModel();
-                        setState(State.READY);  
+                        setState(State.RESOLVED);  
                     } catch(IOException ioe) {
                         Exceptions.printStackTrace(ioe);
                     }

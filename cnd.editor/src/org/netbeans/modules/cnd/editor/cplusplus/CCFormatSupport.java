@@ -772,7 +772,10 @@ public class CCFormatSupport extends ExtFormatSupport {
                 case CCTokenContext.DEFAULT_ID:
                     TokenItem swss = findSwitch(token);
                     if (swss != null) {
-                        indent = getTokenIndent(swss) + getShiftWidth();
+                        indent = getTokenIndent(swss);
+                        if (indentCasesFromSwitch()) {
+                            indent += getShiftWidth();
+                        }
                     }
                     break;
                 case CCTokenContext.PUBLIC_ID:
@@ -929,18 +932,39 @@ public class CCFormatSupport extends ExtFormatSupport {
             // and not inside parents and if so then do not indent
             // statement continuation
             if (t != null && tokenEquals(t, CCTokenContext.COMMA, tokenContextPath)) {
-                if (isArrayInitializationBraceBlock(t, null) && !isInsideParens(t, stmtStart)) {
-                    // Eliminate the later effect of statement continuation shifting
-                    indent -= getFormatStatementContinuationIndent();
+                if (isArrayInitializationBraceBlock(t, null) &&
+                    getLeftParen(t, stmtStart)==null) {
+                    return indent;
+                }
+                TokenItem lparen = getLeftParen(t, stmtStart);
+                if (lparen != null){
+                    TokenItem prev = findImportantToken(lparen, null, true, true);
+                    if (prev != null && 
+                        prev.getTokenID().getNumericID() == CCTokenContext.IDENTIFIER_ID){
+                        if (isStatement(stmtStart)) {
+                            if (alignMultilineCallArgs()){
+                                return getVisualColumnOffset(getPosition(lparen, 0))+1;
+                            }
+                        } else {
+                            if (alignMultilineMethodParams()){
+                                return getVisualColumnOffset(getPosition(lparen, 0))+1;
+                            }
+                        }
+                    }
                 }
             } else if (!isStatement(stmtStart)){
-                indent -= getFormatStatementContinuationIndent();
+                return indent;
             }
             indent += getFormatStatementContinuationIndent();
         }
         return indent;
     }
 
+    private void getStatementKind(TokenItem stmtStart, TokenItem t){
+        
+        
+    }
+    
     private boolean isStatement(TokenItem t){
         boolean likeDeclaration = false;
         boolean findLParen = false;
@@ -1238,14 +1262,14 @@ public class CCFormatSupport extends ExtFormatSupport {
      * @return true if there is LPAREN token before the given token
      *  (while respecting paren nesting).
      */
-    private boolean isInsideParens(TokenItem token, TokenItem limitToken) {
+    private TokenItem getLeftParen(TokenItem token, TokenItem limitToken) {
         int depth = 0;
         token = token.getPrevious();
 
         while (token != null && token != limitToken) {
             if (tokenEquals(token, CCTokenContext.LPAREN, tokenContextPath)) {
                 if (--depth < 0) {
-                    return true;
+                    return token;
                 }
 
             } else if (tokenEquals(token, CCTokenContext.RPAREN, tokenContextPath)) {
@@ -1253,7 +1277,7 @@ public class CCFormatSupport extends ExtFormatSupport {
             }
             token = token.getPrevious();
         }
-        return false;
+        return null;
     }
 
     /**
@@ -1336,6 +1360,10 @@ public class CCFormatSupport extends ExtFormatSupport {
         return getCodeStyle().spaceAfterComma();
     }
 
+    public boolean indentCasesFromSwitch() {
+        return getCodeStyle().indentCasesFromSwitch();
+    }
+
     public boolean getFormatNewlineBeforeBrace() {
         return getCodeStyle().getFormatNewlineBeforeBrace() == CodeStyle.BracePlacement.NEW_LINE;
     }
@@ -1350,6 +1378,14 @@ public class CCFormatSupport extends ExtFormatSupport {
 
     private int getFormatStatementContinuationIndent() {
         return getCodeStyle().getFormatStatementContinuationIndent();
+    }
+
+    private boolean alignMultilineCallArgs() {
+        return getCodeStyle().alignMultilineCallArgs();
+    }
+
+    private boolean alignMultilineMethodParams() {
+        return getCodeStyle().alignMultilineMethodParams();
     }
 
     /*   this is fix for bugs: 7980 and 9111. if user enters

@@ -61,7 +61,6 @@ import java.util.regex.Pattern;
 import org.netbeans.api.ruby.platform.RubyPlatform;
 import org.netbeans.api.ruby.platform.RubyPlatformManager;
 import org.netbeans.modules.gsfret.source.usages.ClassIndexManager;
-import org.netbeans.modules.ruby.platform.DebuggerPreferences;
 import org.netbeans.modules.ruby.platform.Util;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -78,8 +77,6 @@ import org.openide.util.Utilities;
  * Class which handles gem interactions - executing gem, installing, uninstalling, etc.
  *
  * @todo Use the new ExecutionService to do process management.
- *
- * @author Tor Norbye
  */
 public final class GemManager {
 
@@ -188,6 +185,13 @@ public final class GemManager {
     }
 
     /** Initialize/creates empty Gem Repository. */
+    public static void initializeRepository(File gemRepo) throws IOException {
+        if (!gemRepo.exists()) {
+            gemRepo.mkdirs();
+        }
+        initializeRepository(FileUtil.toFileObject(gemRepo));
+    }
+    /** Initialize/creates empty Gem Repository. */
     public static void initializeRepository(FileObject gemRepo) throws IOException {
         for (String dir : TOP_LEVEL_REPO_DIRS) {
             gemRepo.createFolder(dir);
@@ -252,10 +256,6 @@ public final class GemManager {
         }
         if (result) {
             storeGemPath(gemPath);
-            DebuggerPreferences prefs = DebuggerPreferences.getInstance();
-            if (!platform.isJRuby() && platform.hasFastDebuggerInstalled()) {
-                prefs.setUseClassicDebugger(platform, false);
-            }
         }
         return result;
     }
@@ -398,8 +398,8 @@ public final class GemManager {
             }
 
             // special hack for fast debugger
-            if (specName.startsWith("ruby-debug-base-")) {
-                boolean forJavaPlaf = specName.endsWith("-java.gemspec");
+            if (specName.startsWith("ruby-debug-base-")) { // NOI18N
+                boolean forJavaPlaf = specName.endsWith("-java.gemspec"); // NOI18N
                 if (platform.isJRuby() && !forJavaPlaf) {
                     continue;
                 }
@@ -422,16 +422,16 @@ public final class GemManager {
         }
         
         if (gemFiles == null) {
-            LOGGER.log(level, "No gems found, gemFiles is null");
+            LOGGER.log(level, "No gems found, gemFiles is null"); // NOI18N
             return;
         }
         
-        LOGGER.log(level, "Found " + gemFiles.size() + " gems.");
+        LOGGER.log(level, "Found " + gemFiles.size() + " gems."); // NOI18N
         for (String key : gemFiles.keySet()) {
             Map<String, File> value = gemFiles.get(key);
-            LOGGER.log(level, key + " has " + (value == null ? "null" : "" + value.size()) + " version(s):");
+            LOGGER.log(level, key + " has " + (value == null ? "null" : "" + value.size()) + " version(s):"); // NOI18N
             for (String version : value.keySet()) {
-                LOGGER.log(level, version + " at " + value.get(version));
+                LOGGER.log(level, version + " at " + value.get(version)); // NOI18N
             }
         }
     }
@@ -721,14 +721,13 @@ public final class GemManager {
      * @param gem Gem description for the gem to be installed. Only the name is relevant.
      * @param parent For asynchronous tasks, provide a parent Component that will have progress dialogs added,
      *   a possible cursor change, etc.
-     * @param progressHandle If the task is not asynchronous, use the given handle for progress notification.
+     * @param rdoc If true, generate rdoc as part of the installation
+     * @param ri If true, generate ri data as part of the installation
+     * @param version If non null, install the specified version rather than the latest remote version
      * @param asynchronous If true, run the gem task asynchronously - returning immediately and running the gem task
      *    in a background thread. A progress bar and message will be displayed (along with the option to view the
      *    gem output). If the exit code is normal, the completion task will be run at the end.
      * @param asyncCompletionTask If asynchronous is true and the gem task completes normally, this task will be run at the end.
-     * @param rdoc If true, generate rdoc as part of the installation
-     * @param ri If true, generate ri data as part of the installation
-     * @param version If non null, install the specified version rather than the latest remote version
      */
     public boolean install(Gem[] gems, Component parent, boolean rdoc, boolean ri,
             String version, boolean includeDeps, boolean asynchronous,
@@ -747,14 +746,41 @@ public final class GemManager {
             return ok;
         }
     }
-    
+
+    /**
+     * Install the given gem.
+     *
+     * @param gem gem file to be installed (e.g. /path/to/rake-0.8.1.gem)
+     * @param parent For asynchronous tasks, provide a parent Component that will have progress dialogs added,
+     *   a possible cursor change, etc.
+     * @param rdoc If true, generate rdoc as part of the installation
+     * @param ri If true, generate ri data as part of the installation
+     * @param asynchronous If true, run the gem task asynchronously - returning immediately and running the gem task
+     *    in a background thread. A progress bar and message will be displayed (along with the option to view the
+     *    gem output). If the exit code is normal, the completion task will be run at the end.
+     * @param asyncCompletionTask If asynchronous is true and the gem task completes normally, this task will be run at the end.
+     */
+    boolean installLocal(File gem, GemPanel parent, boolean rdoc, boolean ri, boolean asynchronous, Runnable asyncCompletionTask) {
+        if (!checkGemHomePermissions()) {
+            return false;
+        }
+        GemRunner gemRunner = new GemRunner(platform);
+        if (asynchronous) {
+            gemRunner.installLocalAsynchronously(gem, rdoc, ri, resetCompletionTask(asyncCompletionTask), parent);
+            return false;
+        } else {
+            boolean ok = gemRunner.installLocal(gem, rdoc, ri);
+            resetLocal();
+            return ok;
+        }
+    }
+
     /**
      * Uninstall the given gem.
      *
      * @param gem Gem description for the gem to be uninstalled. Only the name is relevant.
      * @param parent For asynchronous tasks, provide a parent Component that will have progress dialogs added,
      *   a possible cursor change, etc.
-     * @param progressHandle If the task is not asynchronous, use the given handle for progress notification.
      * @param asynchronous If true, run the gem task asynchronously - returning immediately and running the gem task
      *    in a background thread. A progress bar and message will be displayed (along with the option to view the
      *    gem output). If the exit code is normal, the completion task will be run at the end.
@@ -783,7 +809,6 @@ public final class GemManager {
      *    will be updated.
      * @param parent For asynchronous tasks, provide a parent Component that will have progress dialogs added,
      *   a possible cursor change, etc.
-     * @param progressHandle If the task is not asynchronous, use the given handle for progress notification.
      * @param asynchronous If true, run the gem task asynchronously - returning immediately and running the gem task
      *    in a background thread. A progress bar and message will be displayed (along with the option to view the
      *    gem output). If the exit code is normal, the completion task will be run at the end.
@@ -1081,7 +1106,7 @@ public final class GemManager {
     }
 
     static boolean isValidGemHome(final File gemHomeF) {
-        Parameters.notNull("gemHomeF", gemHomeF);
+        Parameters.notNull("gemHomeF", gemHomeF); // NOI18N
         boolean valid = gemHomeF.isDirectory();
         for (int i = 0; valid && i < TOP_LEVEL_REPO_DIRS.length; i++) {
             String dir = TOP_LEVEL_REPO_DIRS[i];

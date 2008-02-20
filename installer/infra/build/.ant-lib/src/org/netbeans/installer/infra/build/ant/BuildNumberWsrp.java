@@ -136,7 +136,7 @@ public class BuildNumberWsrp extends Task {
      * Pattern for which to look in the input file.
      */
     private static final Pattern PATTERN = Pattern.compile(
-            "wsrp-1_0-beta-bin-b([0-9]+)-([A-Za-z0-9_]+).zip");//NOI18N
+            "wsrp-1_0-fcs-bin-b([0-9]+)-([A-Za-z0-9_]+).zip");//NOI18N
     
     /**
      * Date format used in the input file.

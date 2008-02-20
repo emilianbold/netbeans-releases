@@ -40,7 +40,6 @@
 package org.netbeans.modules.cnd.editor.reformat;
 
 import org.netbeans.api.lexer.Token;
-import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.cnd.api.lexer.CppTokenId;
 
 /**
@@ -54,7 +53,7 @@ class StackEntry {
     private CppTokenId importantKind;
     private boolean likeToFunction = false;
 
-    StackEntry(TokenSequence<CppTokenId> ts) {
+    StackEntry(ExtendedTokenSequence ts) {
         super();
         index = ts.index();
         kind = ts.token().id();
@@ -75,7 +74,7 @@ class StackEntry {
         }
     }
 
-    private void initImportant(TokenSequence<CppTokenId> ts) {
+    private void initImportant(ExtendedTokenSequence ts) {
         int i = ts.index();
         try {
             int paren = 0;
@@ -161,7 +160,6 @@ class StackEntry {
                     case IF: //("if", "keyword-directive"),
                     case ELSE: //("else", "keyword-directive"),
                     case SWITCH: //("switch", "keyword-directive"),
-                    case CASE: //("case", "keyword-directive"),
                     case WHILE: //("while", "keyword-directive"),
                     case DO: //("do", "keyword-directive"),
                     case FOR: //("for", "keyword-directive"),
@@ -198,12 +196,13 @@ class StackEntry {
         return likeToFunction;
     }
 
+    @Override
     public String toString(){
         StringBuilder buf = new StringBuilder(kind.name());
         if (importantKind != null && kind != importantKind){
-            buf.append("("+importantKind.name()+")");
+            buf.append("("+importantKind.name()+")"); // NOI18N
         } else if (likeToFunction) {
-            buf.append("(FUNCTION)");
+            buf.append("(FUNCTION)"); // NOI18N
         }
         return buf.toString();
     }

@@ -10,6 +10,7 @@ import java.awt.Graphics2D;
 import java.awt.Insets;
 import java.awt.Point;
 import java.awt.Rectangle;
+import java.awt.dnd.Autoscroll;
 import java.awt.event.MouseEvent;
 import java.util.Iterator;
 import java.util.List;
@@ -48,8 +49,8 @@ import org.openide.util.NbBundle;
  *
  * @author Alexey
  */
-public abstract class DiagramView extends JPanel {
-
+public abstract class DiagramView extends JPanel implements Autoscroll {
+    
     private DesignView designView;
     private PlaceHolderManager placeholderManager;
     private NameEditor nameEditor;

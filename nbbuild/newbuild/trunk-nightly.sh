@@ -53,7 +53,7 @@ fi
 #
 ###################################################################
 
-if [ ! -z $BUILD_ID ]; then
+if [ -n $BUILD_ID ]; then
     mkdir -p $DIST_SERVER2/${BUILD_ID}
     cp -rp $DIST/*  $DIST_SERVER2/${BUILD_ID}
 fi
@@ -67,7 +67,7 @@ if [ $ERROR_CODE != 0 ]; then
     exit $ERROR_CODE;
 fi
 
-if [ ! -z $BUILD_ID ]; then
+if [ -n $BUILD_ID ]; then
     mkdir -p $DIST_SERVER2/${BUILD_ID}
     cp -rp $DIST/*  $DIST_SERVER2/${BUILD_ID}
     mv $DIST_SERVER2/latest $DIST_SERVER2/latest.old

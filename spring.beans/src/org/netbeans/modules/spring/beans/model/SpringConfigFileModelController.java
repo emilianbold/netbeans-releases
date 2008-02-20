@@ -41,26 +41,21 @@
 
 package org.netbeans.modules.spring.beans.model;
 
-import java.io.BufferedReader;
 import java.io.File;
 import java.util.logging.Logger;
 import org.netbeans.modules.spring.beans.model.ExclusiveAccess.AsyncTask;
 import org.netbeans.modules.spring.beans.model.impl.ConfigFileSpringBeanSource;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.nio.charset.Charset;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
-import javax.swing.text.BadLocationException;
-import javax.swing.text.Document;
-import org.netbeans.api.queries.FileEncodingQuery;
+import javax.swing.text.Position.Bias;
 import org.netbeans.editor.BaseDocument;
-import org.netbeans.modules.spring.api.beans.SpringConstants;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.text.CloneableEditorSupport;
+import org.openide.text.PositionRef;
 import org.openide.util.Exceptions;
 
 /**
@@ -90,19 +85,23 @@ public class SpringConfigFileModelController {
         this.beanSource = beanSource;
     }
 
-    public DocumentRead getDocumentRead() throws IOException {
+    public SpringBeanSource getUpToDateBeanSource() throws IOException {
         assert ExclusiveAccess.getInstance().isCurrentThreadAccess();
-        return new DocumentRead(getFileToMakeUpToDate(), false);
+        FileObject fo = getFileToMakeUpToDate();
+        if (fo != null) {
+            doParse(fo, false);
+        }
+        return beanSource;
     }
 
-    public DocumentWrite getDocumentWrite() throws IOException {
+    public LockedDocument getLockedDocument() throws IOException {
         assert ExclusiveAccess.getInstance().isCurrentThreadAccess();
         FileObject fo = getFileToMakeUpToDate();
         if (fo == null) {
             fo = FileUtil.toFileObject(file);
         }
         if (fo != null) {
-            return new DocumentWrite(fo);
+            return new LockedDocument(fo);
         }
         return null;
     }
@@ -129,6 +128,17 @@ public class SpringConfigFileModelController {
             }
         }
         return fileToParse;
+    }
+
+    private void doParse(FileObject fo, boolean updateTask) throws IOException {
+        assert ExclusiveAccess.getInstance().isCurrentThreadAccess();
+        BaseDocument document = (BaseDocument)getEditorCookie(fo).openDocument();
+        document.readLock();
+        try {
+            doParse(fo, document, updateTask);
+        } finally {
+            document.readUnlock();
+        }
     }
 
     private void doParse(FileObject fo, BaseDocument document, boolean updateTask) throws IOException {
@@ -165,105 +175,67 @@ public class SpringConfigFileModelController {
         }
     }
 
-    private static BaseDocument getAsDocument(FileObject fo) throws IOException {
-        LOGGER.log(Level.FINE, "Creating an ad-hoc document for {0}", fo);
-        StringBuilder builder = new StringBuilder();
-        Charset charset = FileEncodingQuery.getEncoding(fo);
-        BufferedReader reader = new BufferedReader(new InputStreamReader(fo.getInputStream(), charset));
-        try {
-            for (;;) {
-                String line = reader.readLine();
-                if (line != null) {
-                    builder.append(line).append('\n');
-                } else {
-                    break;
-                }
-            }
-        } finally {
-            reader.close();
-        }
-        Class<?> kitClass = CloneableEditorSupport.getEditorKit(SpringConstants.CONFIG_MIME_TYPE).getClass();
-        BaseDocument doc = new BaseDocument(kitClass, false);
-        try {
-            doc.insertString(0, builder.toString(), null);
-        } catch (BadLocationException e) {
-            // Unlikely to happen.
-            LOGGER.log(Level.FINE, null, e);
-        }
-        doc.putProperty(Document.StreamDescriptionProperty, fo);
-        return doc;
-    }
-
-    private static BaseDocument getOrOpenDocument(FileObject fo) throws IOException {
+    private static EditorCookie getEditorCookie(FileObject fo) throws IOException {
         DataObject dataObject = DataObject.find(fo);
-        EditorCookie ec = dataObject.getCookie(EditorCookie.class);
-        if (ec == null) {
-            throw new IOException("File " + fo + " does not have an EditorCookie.");
+        EditorCookie result = dataObject.getCookie(EditorCookie.class);
+        if (result == null) {
+            throw new IllegalStateException("File " + fo + " does not have an EditorCookie.");
         }
-        BaseDocument doc = (BaseDocument)ec.getDocument();
-        if (doc == null) {
-            doc = getAsDocument(fo);
-        }
-        return doc;
+        return result;
     }
 
-    public final class DocumentRead {
-
-        public DocumentRead(FileObject fo, boolean updateTask) throws IOException {
-            if (fo != null) {
-                BaseDocument document = getOrOpenDocument(fo);
-                doParse(fo, document, updateTask);
-            }
-        }
-
-        public SpringBeanSource getBeanSource() throws IOException {
-            return beanSource;
-        }
-    }
-
-    public final class DocumentWrite {
+    public final class LockedDocument {
 
         private final FileObject fo;
-        private final BaseDocument document;
+        private final CloneableEditorSupport editor;
+        final BaseDocument document;
         // Although this class is single-threaded, better to have these thread-safe,
         // since they are guarding the document locking, and that needs to be right
-        // even if when this class is misused.
-        private final AtomicBoolean open = new AtomicBoolean();
-        private final AtomicBoolean closed = new AtomicBoolean();
-        private boolean parsed;
+        // even if when the class is misused.
+        private final AtomicBoolean locked = new AtomicBoolean();
+        private final AtomicBoolean unlocked = new AtomicBoolean();
 
-        public DocumentWrite(FileObject fo) throws IOException {
+        public LockedDocument(FileObject fo) throws IOException {
             this.fo = fo;
-            document = getOrOpenDocument(fo);
+            editor = (CloneableEditorSupport)getEditorCookie(fo);
+            document = (BaseDocument)editor.openDocument();
         }
 
-        public void open() throws IOException {
-            if (!open.getAndSet(true)) {
+        public void lock() throws IOException {
+            if (!locked.getAndSet(true)) {
                 document.atomicLock();
+                boolean success = false;
+                try {
+                    doParse(fo, document, false);
+                    success = true;
+                } finally {
+                    if (!success) {
+                        document.atomicUnlock();
+                    }
+                }
             }
         }
 
-        public void close() {
-            if (open.get() && !closed.getAndSet(true)) {
+        public void unlock() throws IOException {
+            assert locked.get();
+            if (!unlocked.getAndSet(true)) {
                 document.atomicUnlock();
             }
-            // XXX save the document.
         }
 
         public BaseDocument getDocument() {
+            assert locked.get();
             return document;
         }
 
         public SpringBeanSource getBeanSource() throws IOException {
-            assert open.get();
-            // We could have parsed in open(), but that would have made
-            // it harder to handle exceptions. For example, any IOException thrown
-            // during parsing could have caused the document to remain locked.
-            if (!parsed) {
-                parsed = true;
-                doParse(fo, document, false);
-            }
+            assert locked.get();
             return beanSource;
+        }
+
+        public PositionRef createPositionRef(int offset, Bias bias) {
+            assert locked.get();
+            return editor.createPositionRef(offset, bias);
         }
     }
 
@@ -279,8 +251,7 @@ public class SpringConfigFileModelController {
             LOGGER.log(Level.FINE, "Running scheduled update for file {0}", configFile);
             assert ExclusiveAccess.getInstance().isCurrentThreadAccess();
             try {
-                DocumentRead docRead = new DocumentRead(configFile, true);
-                docRead.getBeanSource();
+                doParse(configFile, true);
             } catch (IOException e) {
                 Exceptions.printStackTrace(e);
             }

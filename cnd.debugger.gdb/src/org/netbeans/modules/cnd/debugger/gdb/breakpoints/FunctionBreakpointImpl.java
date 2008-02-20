@@ -87,5 +87,9 @@ public class FunctionBreakpointImpl extends BreakpointImpl {
             }
         }
     }
+    
+    protected void suspend() {
+        //System.err.println("");
+    }
 }
 

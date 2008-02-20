@@ -1,7 +1,7 @@
 /*
  *  CI2Cl
  *
- * Created on December 12, 2007, 1:32 AM
+ * Created on February 19, 2008, 7:18 PM
  *
  * To change this template, choose Tools | Template Manager
  * and open the template in the editor.
@@ -9,6 +9,7 @@
 
 package o.n.m.ws.qaf.rest.patterns;
 
+import java.util.logging.Level;
 import javax.ws.rs.core.HttpContext;
 import javax.ws.rs.core.UriInfo;
 import javax.ws.rs.UriParam;
@@ -27,7 +28,7 @@ import javax.ws.rs.ConsumeMime;
 public class CI2Cl {
     @HttpContext
     private UriInfo context;
-    
+
     /** Creates a new instance of CI2Cl */
     public CI2Cl() {
     }
@@ -35,11 +36,11 @@ public class CI2Cl {
     /**
      * Retrieves representation of an instance of o.n.m.ws.qaf.rest.patterns.CI2Cl
      * @param CI2URI resource URI parameter
-     * @return an instance of java.lang.String
+     * @return an instance of java.util.logging.Level
      */
     @GET
     @ProduceMime("text/plain")
-    public String getText(@UriParam("CI2URI")
+    public Level getText(@UriParam("CI2URI")
     String CI2URI) {
         //TODO return proper representation object
         throw new UnsupportedOperationException();
@@ -54,7 +55,7 @@ public class CI2Cl {
     @PUT
     @ConsumeMime("text/plain")
     public void putText(@UriParam("CI2URI")
-    String CI2URI, String content) {
+    String CI2URI, Level content) {
     }
 
     /**

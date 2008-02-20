@@ -82,9 +82,21 @@ public class SaasGroupNode extends AbstractNode {
         super(new SaasGroupNodeChildren(group), new AbstractLookup(content));
         this.group = group;
         content.add(group);
-        setName(group.getName());
     }    
 
+    @Override
+    public String getName() {
+        return group.getName();
+    }
+    
+    @Override
+    public void setName(String name){
+        if (group.isUserDefined()) {
+            super.setName(name);
+            group.setName(name);
+        }
+    }
+    
     @Override
     public boolean canRename() {
         return group.isUserDefined();
@@ -118,23 +130,10 @@ public class SaasGroupNode extends AbstractNode {
         }
         return Utilities.loadImage("org/netbeans/modules/websvc/saas/resources/folder-open.png");
     }
-    
-    @Override
-    public void setName(String name){
-        if (group.isUserDefined()) {
-            super.setName(name);
-            group.setName(name);
-        }
-    }
-    
+
     @Override
     public Action[] getActions(boolean context) {
-        List<Action> actions = new ArrayList<Action>();
-        for (SaasNodeActionsProvider ext : SaasUtil.getSaasNodeActionsProviders()) {
-            for (Action a : ext.getSaasActions(this.getLookup())) {
-                actions.add(a);
-            }
-        }
+        List<Action> actions = SaasNode.getActions(getLookup());
         actions.add(SystemAction.get(AddServiceAction.class));
         actions.add(SystemAction.get(AddGroupAction.class));
         actions.add(SystemAction.get(DeleteGroupAction.class));

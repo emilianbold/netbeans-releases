@@ -98,7 +98,12 @@ import java.lang.*;
 
 /**
  * An implementation of <code>DataEditorSupport</code> that is
- * <code>XmlMultiViewDataObject</code> specific.
+ * <code>XmlMultiViewDataObject</code> specific.<p/>
+ * 
+ * By default the MIME type of this document is set to <code>"text/xml"</code>, 
+ * if you need another MIME type, for example for providing a code completion
+ * provider registered with that MIME type, you need to set it yourself 
+ * using the {@link setMIMEType(String)} method.<p/>
  *
  * Created on October 5, 2004, 10:46 AM
  * @author mkuchtiak

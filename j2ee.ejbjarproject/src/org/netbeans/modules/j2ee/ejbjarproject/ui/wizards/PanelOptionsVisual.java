@@ -57,7 +57,7 @@ import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeApplication;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.ServerManager;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeApplicationProvider;
-import org.netbeans.modules.j2ee.ejbjarproject.ui.FoldersListSettings;
+import org.netbeans.modules.j2ee.common.project.ui.UserProjectSettings;
 import org.openide.WizardDescriptor;
 import org.openide.util.NbBundle;
 
@@ -81,7 +81,7 @@ public class PanelOptionsVisual extends JPanel {
         initComponents();
         this.panel = panel;
         setJ2eeVersionWarningPanel();
-        initServers(FoldersListSettings.getDefault().getLastUsedServer());
+        initServers(UserProjectSettings.getDefault().getLastUsedServer());
         // preselect the first item in the j2ee spec combo
         if (j2eeSpecComboBox.getModel().getSize() > 0) {
             j2eeSpecComboBox.setSelectedIndex(0);
@@ -287,7 +287,7 @@ public class PanelOptionsVisual extends JPanel {
             String j2ee = getSelectedJ2eeSpec();
             if (j2ee != null) {
                 String warningType = J2eeVersionWarningPanel.findWarningType(j2ee);
-                FoldersListSettings fls = FoldersListSettings.getDefault();
+                UserProjectSettings fls = UserProjectSettings.getDefault();
                 String srcLevel = "1.6"; //NOI18N
                 if (warningType.equals(J2eeVersionWarningPanel.WARN_SET_SOURCE_LEVEL_14) && fls.isAgreedSetSourceLevel14()) {
                     srcLevel = "1.4"; //NOI18N

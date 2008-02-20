@@ -36,25 +36,25 @@
 ==============================================================
 'Module', tokenID=identifier, offset=2246 [47:5/2246-47:11/2252]
 --OWNER:
-    FUNCTION_DEFINITION Disk(int,int,int)  [46:1/2163-49:2/2334] ReferencesTestCase/disk.cc
+    EXPR null text='Module("Disk storage", "generic", type, size, units'
 --RESOLVED TO:
     FUNCTION Module(const char*,const char*,int,int,int)  [54:5/2246-54:92/2333] ReferencesTestCase/module.h
 ==============================================================
 'type', tokenID=identifier, offset=2280 [47:39/2280-47:43/2284]
 --OWNER:
-    FUNCTION_DEFINITION Disk(int,int,int)  [46:1/2163-49:2/2334] ReferencesTestCase/disk.cc
+    EXPR null text='Module("Disk storage", "generic", type, size, units'
 --RESOLVED TO:
     VARIABLE type [46:12/2174-46:20/2182] ReferencesTestCase/disk.cc  TYPE: int TEXT=int  [46:12/2174-46:15/2177]  INIT: null  SCOPE: Disk 
 ==============================================================
 'size', tokenID=identifier, offset=2286 [47:45/2286-47:49/2290]
 --OWNER:
-    FUNCTION_DEFINITION Disk(int,int,int)  [46:1/2163-49:2/2334] ReferencesTestCase/disk.cc
+    EXPR null text='Module("Disk storage", "generic", type, size, units'
 --RESOLVED TO:
     VARIABLE size [46:36/2198-46:44/2206] ReferencesTestCase/disk.cc  TYPE: int TEXT=int  [46:36/2198-46:39/2201]  INIT: null  SCOPE: Disk 
 ==============================================================
 'units', tokenID=identifier, offset=2292 [47:51/2292-47:56/2297]
 --OWNER:
-    FUNCTION_DEFINITION Disk(int,int,int)  [46:1/2163-49:2/2334] ReferencesTestCase/disk.cc
+    EXPR null text='Module("Disk storage", "generic", type, size, units'
 --RESOLVED TO:
     VARIABLE units [46:58/2220-46:67/2229] ReferencesTestCase/disk.cc  TYPE: int TEXT=int  [46:58/2220-46:61/2223]  INIT: null  SCOPE: Disk 
 ==============================================================

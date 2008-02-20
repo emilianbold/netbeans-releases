@@ -27,12 +27,15 @@
  */
 package org.netbeans.modules.websvc.saas.ui.actions;
 
-import java.io.IOException;
+import org.netbeans.modules.websvc.saas.model.Saas;
+import org.netbeans.modules.websvc.saas.model.SaasServicesModel;
+import org.netbeans.modules.websvc.saas.model.WsdlSaas;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 import org.openide.util.actions.NodeAction;
 
 /**
@@ -41,28 +44,53 @@ import org.openide.util.actions.NodeAction;
  * @author quynguyen
  */
 public class RefreshServiceAction extends NodeAction {
+
     protected boolean enable(Node[] nodes) {
-        //TODO:nam
-        return false;
+        if (nodes == null || nodes.length != 1) {
+            return false;
+        }
+        WsdlSaas saas = nodes[0].getLookup().lookup(WsdlSaas.class);
+        return saas != null && saas.getState() != Saas.State.INITIALIZING && saas.getWsdlData() != null;
     }
-    
+
     public org.openide.util.HelpCtx getHelpCtx() {
         return HelpCtx.DEFAULT_HELP;
     }
-    
+
     @Override
     protected String iconResource() {
         return "org/netbeans/modules/websvc/saas/ui/resources/ActionIcon.gif"; // NOI18N
     }
-    
+
     public String getName() {
         return NbBundle.getMessage(RefreshServiceAction.class, "REFRESH");
     }
-    
+
     protected void performAction(Node[] nodes) {
-        //TODO: review original
+        if (nodes == null || nodes.length != 1) {
+            return;
+        }
+        
+        final WsdlSaas saas = nodes[0].getLookup().lookup(WsdlSaas.class);
+        if (saas == null || saas.getUrl() == null) {
+            throw new IllegalArgumentException("Node has no aasociated good Saas");
+        }
+        if (saas.getState() == Saas.State.INITIALIZING) {
+            throw new IllegalStateException("Saas is initializing");
+        }
+
+        String msg = NbBundle.getMessage(RefreshServiceAction.class, "WS_REFRESH");
+        NotifyDescriptor d = new NotifyDescriptor.Confirmation(msg, NotifyDescriptor.YES_NO_OPTION);
+        Object response = DialogDisplayer.getDefault().notify(d);
+        if (null != response && response.equals(NotifyDescriptor.YES_OPTION)) {
+            RequestProcessor.getDefault().post(new Runnable() {
+                public void run() {
+                    SaasServicesModel.getInstance().refreshService(saas);
+                }
+            });
+        }
     }
-    
+
     @Override
     protected boolean asynchronous() {
         return false;

@@ -125,8 +125,8 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
     private static final int            DEBUG_ATTACH = 999;
     
     /* Some breakpoint flags used only on Windows XP (with Cygwin) */
-    public static final int             GDB_TMP_BREAKPOINT = 1;
-    public static final int             GDB_INVISIBLE_BREAKPOINT = 2;
+    public static final int             GDB_TMP_BREAKPOINT = GdbBreakpoint.SUSPEND_ALL + 1;
+    public static final int             GDB_INVISIBLE_BREAKPOINT = GdbBreakpoint.SUSPEND_ALL + 2;
     
     /** ID of GDB Debugger Engine for C */
     public static final String          ENGINE_ID = "netbeans-cnd-GdbSession/C"; // NOI18N
@@ -419,22 +419,6 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
         return programName.toString();
     }
     
-    /** If the type definition contains { ... }, strip it. It will be picked up elsewhere */
-    private String stripFields(String info) {
-        StringBuilder buf = new StringBuilder();
-        int pos1 = info.indexOf('{');
-        int pos2 = GdbUtils.findMatchingCurly(info, pos1);
-        
-        if (pos1 != -1 && pos2 != -1) {
-            buf.append(info.substring(0, pos1).trim());
-            buf.append(info.substring(pos2 + 1).trim());
-        } else {
-            buf.append(info);
-        }
-        
-        return buf.toString();
-    }
-    
     /** Get the gdb version */
     public double getGdbVersion() {
         return gdbVersion;
@@ -447,7 +431,11 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
                 shareToken = gdb.info_share();
                 cb.setID(shareToken);
             } else if (evt.getNewValue().equals(STATE_READY)) {
-                gdb.gdb_set("stop-on-solib-events", "1"); // NOI18N
+                if (Utilities.isWindows()) {
+                    gdb.break_insert("dlopen"); // NOI18N
+                } else {
+                    gdb.gdb_set("stop-on-solib-events", "1"); // NOI18N
+                }
                 if (continueAfterFirstStop) {
                     continueAfterFirstStop = false;
                     setRunning();
@@ -1085,13 +1073,6 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
         firePropertyChange(PROP_STATE, oldState, state);
     }
     
-    private void setStateNoFire(String state) {
-        if (state.equals(this.state)) {
-            return;
-        }
-        this.state = state;
-    }
-    
     public void setStarting() {
         setState(STATE_STARTING);
     }
@@ -1180,20 +1161,31 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
                 setExited();
                 finish(false);
             } else if (reason.equals("breakpoint-hit")) { // NOI18N
-                GdbBreakpoint breakpoint;
                 String tid = map.get("thread-id"); // NOI18N
                 if (tid != null && !tid.equals(currentThreadID)) {
                     currentThreadID = tid;
                 }
-                updateCurrentCallStack();
                 BreakpointImpl impl = getBreakpointList().get(map.get("bkptno")); // NOI18N
-                if (impl != null && (breakpoint = impl.getBreakpoint()) != null) {
-                    fireBreakpointEvent(breakpoint, new GdbBreakpointEvent(
-                            breakpoint, this, GdbBreakpointEvent.CONDITION_NONE, null));
+                if (impl == null) {
+                    String frame = map.get("frame");
+                    if (frame != null && frame.contains("dlopen")) { // NOI18N
+                        dlopenPending = true;
+                        gdb.exec_finish();
+                        return;
+                    }
                 } else {
-                    log.fine("No Breakpoints Found"); // NOI18N
+                    GdbBreakpoint breakpoint = impl.getBreakpoint();
+                    if (breakpoint.getSuspend() == GdbBreakpoint.SUSPEND_NONE) {
+                        fireBreakpointEvent(breakpoint, new GdbBreakpointEvent(
+                                    breakpoint, this, GdbBreakpointEvent.CONDITION_NONE, null));
+                        gdb.exec_continue();
+                    } else {
+                        updateCurrentCallStack();
+                        fireBreakpointEvent(breakpoint, new GdbBreakpointEvent(
+                                    breakpoint, this, GdbBreakpointEvent.CONDITION_NONE, null));
+                        setStopped();
+                    }
                 }
-                setStopped();
                 if (dlopenPending) {
                     dlopenPending = false;
                     checkSharedLibs(false);
@@ -1227,6 +1219,9 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
                     gdb.stack_list_frames();
                     setStopped();
                 }
+            } else if (reason.equals("function-finished") && dlopenPending) { // NOI18N
+                dlopenPending = false;
+                checkSharedLibs(false);
             } else {
                 if (!reason.startsWith("exited")) { // NOI18N
                     gdb.stack_list_frames();
@@ -1252,14 +1247,13 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
      * thread and CommandBuffer.waitForCompletion() doesn't work on that thread.
      */
     private void checkSharedLibs(final boolean continueRunning) {
-        final String last = lastShare;
         RequestProcessor.getDefault().post(new Runnable() {
             public void run() {
                 CommandBuffer cb = new CommandBuffer();
                 gdb.info_share(cb);
                 String share = cb.waitForCompletion();
-                if (share.length() > 0 && !share.equals(last)) {
-                    if (share.length() > last.length()) {
+                if (share.length() > 0 && !share.equals(lastShare)) {
+                    if (share.length() > lastShare.length()) {
                         // dlopened a shared library
                         log.fine("GD.checkSharedLibs: Added a shared library");
                         firePropertyChange(PROP_SHARED_LIB_LOADED, lastShare, share);

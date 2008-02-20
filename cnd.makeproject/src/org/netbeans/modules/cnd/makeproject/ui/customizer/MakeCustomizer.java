@@ -43,7 +43,6 @@ package org.netbeans.modules.cnd.makeproject.ui.customizer;
 
 import org.netbeans.modules.cnd.makeproject.configurations.ui.ProjectPropPanel;
 import java.awt.BorderLayout;
-import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.GridBagConstraints;
@@ -75,6 +74,7 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.ui.CustomizerRoot
 import org.netbeans.modules.cnd.makeproject.api.compilers.BasicCompiler;
 import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
 import org.netbeans.modules.cnd.api.compilers.Tool;
+import org.netbeans.modules.cnd.makeproject.api.configurations.CustomizerNodeProvider;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Folder;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
 import org.netbeans.modules.cnd.makeproject.ui.utils.ConfSelectorPanel;
@@ -598,8 +598,12 @@ public class MakeCustomizer extends javax.swing.JPanel implements HelpCtx.Provid
         descriptions.add(createBuildDescription(project));
         // Add customizer nodes
         if (includeRunDebugDescriptions) {
-            descriptions.add(getAuxDescription("Running")); // NOI18N
-            descriptions.add(getAuxDescription("Debug")); // NOI18N
+            if (!descriptions.addAll(CustomizerRootNodeProvider.getInstance().getCustomizerNodes("Run"))) { // NOI18N
+                descriptions.add(createNotFoundNode("Run")); // NOI18N
+            }
+            if (!descriptions.addAll(CustomizerRootNodeProvider.getInstance().getCustomizerNodes("Debug"))) { // NOI18N
+                descriptions.add(createNotFoundNode("Debug")); // NOI18N
+            }
     //      descriptions.addAll(CustomizerRootNodeProvider.getInstance().getCustomizerNodes(false));
             CustomizerNode advanced = getAdvancedCutomizerNode(descriptions);
             if (advanced != null)
@@ -638,10 +642,10 @@ public class MakeCustomizer extends javax.swing.JPanel implements HelpCtx.Provid
     CustomizerNode getAdvancedCutomizerNode(Vector descriptions) {
 //      Vector advancedNodes = CustomizerRootNodeProvider.getInstance().getCustomizerNodes(true);
         Vector advancedNodes = new Vector();
-        CustomizerNode[] nodes = CustomizerRootNodeProvider.getInstance().getCustomizerNodesAsArray();
-        for (int i = 0; i < nodes.length; i++) {
-            if (!descriptions.contains(nodes[i]))
-                advancedNodes.add(nodes[i]);
+        List<CustomizerNode> nodes = CustomizerRootNodeProvider.getInstance().getCustomizerNodes();
+        for (CustomizerNode node : nodes) {
+            if (!descriptions.contains(node))
+                advancedNodes.add(node);
         }
         if (advancedNodes.size() == 0)
             return null;
@@ -651,14 +655,8 @@ public class MakeCustomizer extends javax.swing.JPanel implements HelpCtx.Provid
                 (CustomizerNode[])advancedNodes.toArray(new CustomizerNode[advancedNodes.size()]));
     }
     
-    private CustomizerNode getAuxDescription(String nodeName) {
-        CustomizerNode node = CustomizerRootNodeProvider.getInstance().getCustomizerNode(nodeName);
-        if (node != null)
-            return node;
-        return new CustomizerNode(
-                nodeName, // NOI18N
-                nodeName + " - not found", // NOI18N
-                null);
+    private CustomizerNode createNotFoundNode(String nodeName) {
+        return new CustomizerNode(nodeName, nodeName + " - not found", null); // NOI18N
     }
     
     private Node createRootNodeItem(Project project, Item item) {

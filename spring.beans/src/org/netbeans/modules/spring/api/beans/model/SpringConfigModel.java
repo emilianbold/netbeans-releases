@@ -44,12 +44,16 @@ package org.netbeans.modules.spring.api.beans.model;
 import java.io.File;
 import java.io.IOException;
 import javax.swing.text.Document;
+import javax.swing.text.Position.Bias;
+import org.netbeans.modules.editor.NbEditorUtilities;
 import org.netbeans.modules.spring.api.Action;
 import org.netbeans.modules.spring.api.beans.ConfigFileGroup;
 import org.netbeans.modules.spring.api.beans.SpringScope;
 import org.netbeans.modules.spring.beans.SpringScopeAccessor;
+import org.netbeans.modules.spring.beans.model.SpringConfigFileModelController.LockedDocument;
 import org.netbeans.modules.spring.beans.model.SpringConfigModelController;
 import org.openide.filesystems.FileObject;
+import org.openide.text.PositionRef;
 
 /**
  * Encapsulates a model of Spring configuration files.
@@ -94,19 +98,20 @@ public final class SpringConfigModel {
         controller.runReadAction(action);
     }
 
-    public void runWriteAction(Action<WriteContext> action) throws IOException {
-        controller.runWriteAction(action);
+    public void runDocumentAction(Action<DocumentAccess> action) throws IOException {
+        controller.runDocumentAction(action);
     }
 
-    public static final class WriteContext {
+    // XXX remove public constructor.
+    public static final class DocumentAccess {
 
         private final SpringBeans springBeans;
-        private final Document document;
+        private final LockedDocument lockedDoc;
         private final File file;
 
-        public WriteContext(SpringBeans springBeans, File file, Document document) {
+        public DocumentAccess(SpringBeans springBeans, File file, LockedDocument lockedDoc) {
             this.springBeans = springBeans;
-            this.document = document;
+            this.lockedDoc = lockedDoc;
             this.file = file;
         }
 
@@ -115,11 +120,19 @@ public final class SpringConfigModel {
         }
 
         public Document getDocument() {
-            return document;
+            return lockedDoc.getDocument();
         }
 
         public File getFile() {
             return file;
+        }
+
+        public FileObject getFileObject() {
+            return NbEditorUtilities.getFileObject(lockedDoc.getDocument());
+        }
+
+        public PositionRef createPositionRef(int offset, Bias bias) {
+            return lockedDoc.createPositionRef(offset, bias);
         }
     }
 }

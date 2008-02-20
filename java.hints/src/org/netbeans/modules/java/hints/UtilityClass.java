@@ -101,102 +101,96 @@ public class UtilityClass extends AbstractHint implements ElementVisitor<Boolean
     public List<ErrorDescription> run(CompilationInfo compilationInfo,
                                       TreePath treePath) {
         stop = false;
-        try {
-            Document doc = compilationInfo.getDocument();
-            
-            if (doc == null) {
-                return null;
-            }
-            
-            Element e = compilationInfo.getTrees().getElement(treePath);
-            if (e == null) {
-                return null;
-            }
-            
-            if (clazz) {
-                if (e.getKind() == ElementKind.ENUM) {
-                    return null;
-                }
-                if (e.getKind() == ElementKind.INTERFACE) {
-                    return null;
-                }
-                if (e.getKind() == ElementKind.ANNOTATION_TYPE) {
-                    return null;
-                }
-                if (e.getKind() == ElementKind.CLASS) {
-                    TypeMirror supr = ((TypeElement)e).getSuperclass();
-                    if (supr == null) {
-                        return null;
-                    }
-                    Element superElem = compilationInfo.getTypes().asElement(supr);
-                    if (superElem instanceof TypeElement) {
-                        Name superName = compilationInfo.getElements().getBinaryName((TypeElement)superElem);
-                        if (superName != null && !superName.contentEquals("java.lang.Object")) {
-                            return null;
-                        }
-                    }
-                }
+        Element e = compilationInfo.getTrees().getElement(treePath);
+        if (e == null) {
+            return null;
+        }
 
-                int cnt = 0;
-                for (Element m : e.getEnclosedElements()) {
-                    if (stop) {
-                        return null;
-                    }
-                    if (m.accept(this, compilationInfo)) {
-                        return null;
-                    }
-                    if (m.getKind() == ElementKind.METHOD || m.getKind() == ElementKind.FIELD) {
-                        cnt++;
-                    }
-                }
-                
-                if (cnt == 0) {
+        if (clazz) {
+            if (e.getKind() == ElementKind.ENUM) {
+                return null;
+            }
+            if (e.getKind() == ElementKind.INTERFACE) {
+                return null;
+            }
+            if (e.getKind() == ElementKind.ANNOTATION_TYPE) {
+                return null;
+            }
+            if (e.getKind() == ElementKind.CLASS) {
+                TypeMirror supr = ((TypeElement)e).getSuperclass();
+                if (supr == null) {
                     return null;
                 }
-                
+                Element superElem = compilationInfo.getTypes().asElement(supr);
+                if (superElem instanceof TypeElement) {
+                    Name superName = compilationInfo.getElements().getBinaryName((TypeElement)superElem);
+                    if (superName != null && !superName.contentEquals("java.lang.Object")) {
+                        return null;
+                    }
+                }
+            }
+
+            int cnt = 0;
+            for (Element m : e.getEnclosedElements()) {
+                if (stop) {
+                    return null;
+                }
+                if (m.accept(this, compilationInfo)) {
+                    return null;
+                }
+                if (m.getKind() == ElementKind.METHOD || m.getKind() == ElementKind.FIELD) {
+                    cnt++;
+                }
+            }
+
+            if (cnt == 0) {
+                return null;
+            }
+
+        } else {
+            if (e.getKind() != ElementKind.CONSTRUCTOR) {
+                return null;
+            }
+            ExecutableElement x = (ExecutableElement)e;
+            for (Element m : x.getEnclosingElement().getEnclosedElements()) {
+                if (stop) {
+                    return null;
+                }
+                if (m.accept(this, compilationInfo)) {
+                    return null;
+                }
+            }
+            if (x.getModifiers().contains(Modifier.PROTECTED) || x.getModifiers().contains(Modifier.PUBLIC)) {
+                // ok
             } else {
-                if (e.getKind() != ElementKind.CONSTRUCTOR) {
-                    return null;
-                }
-                ExecutableElement x = (ExecutableElement)e;
-                for (Element m : x.getEnclosingElement().getEnclosedElements()) {
-                    if (stop) {
-                        return null;
-                    }
-                    if (m.accept(this, compilationInfo)) {
-                        return null;
-                    }
-                }
-                if (x.getModifiers().contains(Modifier.PROTECTED) || x.getModifiers().contains(Modifier.PUBLIC)) {
-                    // ok
-                } else {
-                    return null;
-                }
+                return null;
             }
-            List<Fix> fixes = Collections.<Fix>singletonList(new FixImpl(
-                clazz,
-                TreePathHandle.create(e, compilationInfo),
-                compilationInfo.getFileObject()
-                ));
+        }
+        List<Fix> fixes = Collections.<Fix>singletonList(new FixImpl(
+            clazz,
+            TreePathHandle.create(e, compilationInfo),
+            compilationInfo.getFileObject()
+            ));
 
-            int[] span = Utilities.findIdentifierSpan(treePath, compilationInfo, doc);
+        int[] span = null;
 
-            if (span[0] != (-1) && span[1] != (-1)) {
-                ErrorDescription ed = ErrorDescriptionFactory.createErrorDescription(
-                        getSeverity().toEditorSeverity(),
-                        NbBundle.getMessage(UtilityClass.class, clazz ? "MSG_UtilityClass" : "MSG_PublicConstructor"), // NOI18N
-                        fixes,
-                        doc,
-                        doc.createPosition(span[0]),
-                        doc.createPosition(span[1])
-                        );
-                
-                return Collections.singletonList(ed);
-            }
-        } catch (BadLocationException e) {
-            Exceptions.printStackTrace(e);
-        } catch (IOException e) {
-            Exceptions.printStackTrace(e);
+        switch (treePath.getLeaf().getKind()) {
+            case METHOD: span = compilationInfo.getTreeUtilities().findNameSpan((MethodTree) treePath.getLeaf()); break;
+            case CLASS: span = compilationInfo.getTreeUtilities().findNameSpan((ClassTree) treePath.getLeaf()); break;
+            case VARIABLE: span = compilationInfo.getTreeUtilities().findNameSpan((VariableTree) treePath.getLeaf()); break;
+        }
+
+        if (span != null) {
+            ErrorDescription ed = ErrorDescriptionFactory.createErrorDescription(
+                    getSeverity().toEditorSeverity(),
+                    NbBundle.getMessage(UtilityClass.class, clazz ? "MSG_UtilityClass" : "MSG_PublicConstructor"), // NOI18N
+                    fixes,
+                    compilationInfo.getFileObject(),
+                    span[0],
+                    span[1]
+                    );
+
+            return Collections.singletonList(ed);
         }
         
         return null;

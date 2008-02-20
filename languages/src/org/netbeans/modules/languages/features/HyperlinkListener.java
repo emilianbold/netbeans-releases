@@ -51,6 +51,9 @@ import java.awt.Color;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
+import java.io.File;
+import java.net.URISyntaxException;
+import java.net.URL;
 import javax.swing.text.StyledDocument;
 import javax.swing.JEditorPane;
 import javax.swing.text.AttributeSet;
@@ -58,17 +61,11 @@ import javax.swing.text.SimpleAttributeSet;
 import javax.swing.text.StyleConstants;
 import org.netbeans.api.languages.ASTItem;
 
-import org.netbeans.api.languages.ASTPath;
-import org.netbeans.api.languages.Highlighting;
 import org.netbeans.api.languages.Highlighting.Highlight;
-import org.netbeans.api.languages.ParseException;
 import org.netbeans.api.languages.ASTPath;
-import org.netbeans.api.languages.ASTToken;
-import org.netbeans.api.languages.SyntaxContext;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
-import org.netbeans.api.languages.Context;
 import org.netbeans.api.languages.Context;
 import org.netbeans.api.languages.SyntaxContext;
 import org.netbeans.api.languages.ASTNode;
@@ -89,7 +86,10 @@ import org.netbeans.modules.languages.ParserManagerImpl;
 import org.openide.cookies.EditorCookie;
 import org.openide.cookies.LineCookie;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
+import org.openide.loaders.DataObjectNotFoundException;
+import org.openide.nodes.Node;
 import org.openide.text.Line;
 import org.openide.text.NbDocument;
 
@@ -208,14 +208,53 @@ public class HyperlinkListener implements MouseMotionListener, MouseListener,
                     );
                     runnable = new Runnable () {
                         public void run () {
-                            DatabaseDefinition definition = ((DatabaseUsage) item).getDefinition ();
-                            int definitionOffset = definition.getOffset ();
-                            DataObject dobj = NbEditorUtilities.getDataObject (document);
-                            LineCookie lc = dobj.getCookie (LineCookie.class);
-                            Line.Set lineSet = lc.getLineSet ();
-                            Line line = lineSet.getCurrent (NbDocument.findLineNumber (document, definitionOffset));
-                            int column = NbDocument.findLineColumn (document, definitionOffset);
-                            line.show (Line.SHOW_GOTO, column);
+                            DatabaseDefinition definition = ((DatabaseUsage) item).getDefinition();
+                            int offset = definition.getOffset();
+                            DataObject dobj = null;
+                            StyledDocument docToGo = null;
+                            URL url = definition.getSourceFileUrl();
+                            if (url == null) {
+                                dobj = NbEditorUtilities.getDataObject(document);
+                                docToGo = document;
+                            } else {
+                                File file = null;
+                                try {
+                                    file = new File(url.toURI());
+                                } catch (URISyntaxException ex) {
+                                    ex.printStackTrace();
+                                }
+
+                                if (file != null && file.exists()) {
+                                    /** convert file to an uni absolute pathed file (../ etc will be coverted) */
+                                    file = FileUtil.normalizeFile(file);
+                                    FileObject fobj = FileUtil.toFileObject(file);
+                                    try {
+                                        dobj = DataObject.find(fobj);
+                                    } catch (DataObjectNotFoundException ex) {
+                                        ex.printStackTrace();
+                                    }
+                                    if (dobj != null) {
+                                        Node nodeOfDobj = dobj.getNodeDelegate();
+                                        EditorCookie ec = nodeOfDobj.getCookie(EditorCookie.class);
+                                        try {
+                                            docToGo = ec.openDocument();
+                                        } catch (IOException ex) {
+                                            ex.printStackTrace();
+                                        }
+                                    }
+
+                                }
+                            }
+
+                            if (dobj == null) {
+                                return;
+                            }
+
+                            LineCookie lc = (LineCookie) dobj.getCookie(LineCookie.class);
+                            Line.Set lineSet = lc.getLineSet();
+                            Line line = lineSet.getCurrent(NbDocument.findLineNumber(docToGo, offset));
+                            int column = NbDocument.findLineColumn(docToGo, offset);
+                            line.show(Line.SHOW_GOTO, column);
                         }
                     };
                 }
