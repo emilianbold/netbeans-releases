@@ -63,6 +63,7 @@ public class EtlproProjectGenerator {
     private static final String nbBundle7 = mLoc.t("PRSR001: databases");
     private static final String nbBundle8 = mLoc.t("PRSR001: nbproject");
     private static final String nbBundle9 = mLoc.t("PRSR001: jdbc:axiondb:");
+    //Trimming the initial spaces
     private static final String DEFAULT_DOC_BASE_FOLDER = Localizer.parse(nbBundle2).trim(); //NOI18N
     private static final String DEFAULT_SRC_FOLDER = Localizer.parse(nbBundle1).trim(); //NOI18N
     private static final String DEFAULT_RESOURCE_FOLDER = Localizer.parse(nbBundle3).trim(); //NOI18N
