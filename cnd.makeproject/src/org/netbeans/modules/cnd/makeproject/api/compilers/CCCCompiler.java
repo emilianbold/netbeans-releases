@@ -47,6 +47,8 @@ import java.io.InputStream;
 import java.util.Iterator;
 import java.util.List;
 import org.netbeans.modules.cnd.api.compilers.CompilerSet.CompilerFlavor;
+import org.netbeans.modules.cnd.api.utils.Path;
+import org.netbeans.modules.cnd.settings.CppSettings;
 
 public class CCCCompiler extends BasicCompiler {
     private static File tmpFile = null;
@@ -75,9 +77,13 @@ public class CCCCompiler extends BasicCompiler {
         return ""; // NOI18N
     }
     
-    protected void getSystemIncludesAndDefines(String command, boolean stdout) throws IOException {
+    protected void getSystemIncludesAndDefines(String path, String command, boolean stdout) throws IOException {
             Process process;
-            process = Runtime.getRuntime().exec(command + " " + tmpFile()); // NOI18N
+            if (path == null) {
+                path = ""; // NOI18N
+            }
+            String[] envp = { Path.getPathName() + '=' + path + File.pathSeparatorChar + CppSettings.getDefault().getPath() }; // NOI18N
+            process = Runtime.getRuntime().exec(command + " " + tmpFile(), envp); // NOI18N
             if (stdout)
                 parseCompilerOutput(process.getInputStream());
             else
