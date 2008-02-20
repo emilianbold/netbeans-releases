@@ -57,7 +57,7 @@ made subject to such option by the copyright holder.
 <!--    <bind actionName="adjust-window-top" key="O-U$T"/> -->
     <bind actionName="all-completion-show" key="DO-SPACE"/>
     <bind actionName="all-completion-show" key="DO-BACK_SLASH"/>
-    <bind actionName="annotations-cycling" key="DS-C"/>
+    <bind actionName="annotations-cycling" key="OS-C"/>
     <bind actionName="caret-backward" key="LEFT"/>
     <bind actionName="caret-backward" key="KP_LEFT"/>
     <bind actionName="caret-begin" key="D-HOME"/>
@@ -111,12 +111,8 @@ made subject to such option by the copyright holder.
     <bind actionName="jump-list-last-edit" key="D-Q"/>
     <bind actionName="jump-list-next" key="O-RIGHT"/>
     <bind actionName="jump-list-next" key="O-KP_RIGHT"/>
-    <bind actionName="jump-list-next-component" key="OS-RIGHT"/>
-    <bind actionName="jump-list-next-component" key="OS-KP_RIGHT"/>
     <bind actionName="jump-list-prev" key="O-LEFT"/>
     <bind actionName="jump-list-prev" key="O-KP_LEFT"/>
-    <bind actionName="jump-list-prev-component" key="OS-LEFT"/>
-    <bind actionName="jump-list-prev-component" key="OS-KP_LEFT"/>
     <bind actionName="page-down" key="PAGE_DOWN"/>
     <bind actionName="page-up" key="PAGE_UP"/>
     <bind actionName="paste-formated" key="DS-V"/>
@@ -166,7 +162,6 @@ made subject to such option by the copyright holder.
     <bind actionName="selection-previous-word" key="DS-KP_LEFT"/>
     <bind actionName="selection-up" key="S-UP"/>
     <bind actionName="selection-up" key="S-KP_UP"/>
-    <bind actionName="shift-insert-break" key="S-ENTER"/>
     <bind actionName="shift-line-left" key="OS-LEFT"/>
     <bind actionName="shift-line-left" key="OS-KP_LEFT"/>
     <bind actionName="shift-line-right" key="OS-RIGHT"/>
