@@ -66,9 +66,7 @@ public abstract class SaasNodeChildren<T> extends Children.Keys<T> implements Pr
 
     public void propertyChange(PropertyChangeEvent evt) {
         if (evt.getSource() == saas && evt.getPropertyName().equals(Saas.PROP_STATE)) {
-            if (evt.getNewValue() == Saas.State.RESOLVED) {
-                updateKeys();
-            }
+            updateKeys();
         }
     }
     
