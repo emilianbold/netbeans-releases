@@ -46,7 +46,6 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.lang.reflect.Method;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLClassLoader;
@@ -283,41 +282,16 @@ public class DesignerWebServiceExtImpl implements WebServiceManagerExt {
                                         wsMetadataDesc.getWsType() == WebServiceDescriptor.JAX_WS_TYPE).toArray(new URL[0]), 
                     this.getClass().getClassLoader());
                 
-                String portImplMethod = null;
-                String portImplClassName = null;
-                Class serviceClass = null;
                 
                 // Verify that the port getter method exists in the Service class, otherwise
                 // the code generation in WrapperClientWriter will fail
                 try {
-                    serviceClass = classLoader.loadClass(serviceClassName);
-                }catch (ClassNotFoundException e) {
-                    try {
-                        serviceClassName = wsMetadataDesc.getPackageName() + "." + wsMetadataDesc.getModel().getName(); // NOI18N
-                        serviceClass = classLoader.loadClass(serviceClassName);
-                    }catch (ClassNotFoundException cnfe) {
-                        ErrorManager.getDefault().log(ErrorManager.INFORMATIONAL, "Unable to load service class for port: " + port.getName());
-                        continue;                        
-                    }
-                }
-                
-                try {
-                    portImplMethod = port.getPortGetter();
+                    String portImplMethod = port.getPortGetter();
+                    Class serviceClass = classLoader.loadClass(serviceClassName);
                     serviceClass.getMethod(portImplMethod);
-                }catch (NoSuchMethodException e) {
-                    for (Method method : serviceClass.getMethods()) {
-                        String name = method.getName();
-                        if (name.startsWith("get") && name.toLowerCase().contains(port.getName().toLowerCase())) { // NOI18N
-                            portImplMethod = method.getName();
-                            portImplClassName = method.getReturnType().getName();
-                            break;
-                        }
-                    }
-                    
-                    if (portImplClassName == null) {
-                        ErrorManager.getDefault().log(ErrorManager.INFORMATIONAL, "Unable to find getter method for port: " + port.getName());
-                        continue;
-                    }
+                }catch (Exception ex) {
+                    ErrorManager.getDefault().log(ErrorManager.INFORMATIONAL, "Invalid port: " + port.getName());
+                    continue;
                 }
 
                 // Use reflection to get the proxy class methods; needed because the JAX-WS model is not
@@ -325,19 +299,9 @@ public class DesignerWebServiceExtImpl implements WebServiceManagerExt {
                 Class proxyClass = null;
                 try {
                     proxyClass = classLoader.loadClass(javaName);
-                    portImplClassName = null;
                 }catch (ClassNotFoundException cnfe) {
-                    if (portImplClassName == null) {
-                        ErrorManager.getDefault().log(ErrorManager.INFORMATIONAL, "Could not load class: " + javaName);
-                        continue;                        
-                    }else {
-                        try {
-                            proxyClass = classLoader.loadClass(portImplClassName);
-                        } catch (ClassNotFoundException ex) {
-                            ErrorManager.getDefault().log(ErrorManager.INFORMATIONAL, "Could not load class: " + portImplClassName);
-                            continue;
-                        }
-                    }
+                    ErrorManager.getDefault().log(ErrorManager.INFORMATIONAL, "Could not load class: " + javaName);
+                    continue;
                 }
                 
                 java.lang.reflect.Method[] methods = proxyClass.getDeclaredMethods();
@@ -356,8 +320,6 @@ public class DesignerWebServiceExtImpl implements WebServiceManagerExt {
                 beanWriter.setContainedClassInfo(serviceClassName);
                 beanWriter.addImport(wsMetadataDesc.getPackageName() + ".*");
                 beanWriter.setPort(port);
-                beanWriter.setPortGetterMethod(portImplMethod);
-                beanWriter.setPortClassName(portImplClassName);
                 beanWriter.writeClass();
                 beanWriter.flush();
                 beanWriter.close();

@@ -56,8 +56,8 @@ public class Connection {
     private boolean paintSlash = false;
     private boolean paintDashed = false;
     private boolean paintCircle = false;
-    private FPoint endPoint;
-    private FPoint startPoint;
+    protected FPoint endPoint;
+    protected FPoint startPoint;
     
     private float x1 = 0, y1 = 0;
     private float dx, dy;

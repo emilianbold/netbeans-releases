@@ -114,12 +114,7 @@ public class WsdlMethodNode extends AbstractNode {
     
     @Override
     public Action[] getActions(boolean context) {
-        List<Action> actions = new ArrayList<Action>();
-        for (SaasNodeActionsProvider ext : SaasUtil.getSaasNodeActionsProviders()) {
-            for (Action a : ext.getSaasActions(this.getLookup())) {
-                actions.add(a);
-            }
-        }
+        List<Action> actions = SaasNode.getActions(getLookup());
         //TODO maybe ???
         actions.add(SystemAction.get(TestMethodAction.class));
         return actions.toArray(new Action[actions.size()]);
