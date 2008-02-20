@@ -107,7 +107,9 @@ public class NbWelcomePanel extends ErrorMessagePanel {
         setProperty(WELCOME_TEXT_HEADER_PROPERTY,
                 (type.isJDKBundle() ?
                     DEFAULT_WELCOME_TEXT_HEADER_JDK :
-                    DEFAULT_WELCOME_TEXT_HEADER ));
+                    (type.equals(BundleType.JAVA_TOOLS) ? 
+                           DEFAULT_WELCOME_TEXT_HEADER_JTB : 
+                                   DEFAULT_WELCOME_TEXT_HEADER )));
         
         setProperty(WELCOME_TEXT_DETAILS_PROPERTY,
                 ResourceUtils.getString(NbWelcomePanel.class,
@@ -928,6 +930,9 @@ public class NbWelcomePanel extends ErrorMessagePanel {
     public static final String DEFAULT_WELCOME_TEXT_HEADER_JDK =
             ResourceUtils.getString(NbWelcomePanel.class,
             "NWP.welcome.text.header.jdk"); // NOI18N
+    public static final String DEFAULT_WELCOME_TEXT_HEADER_JTB =
+            ResourceUtils.getString(NbWelcomePanel.class,
+            "NWP.welcome.text.header.jtb"); // NOI18N
     public static final String WELCOME_TEXT_HEADER_APPENDING_PROPERTY =
             "NWP.welcome.text.header"; // NOI18N
     
