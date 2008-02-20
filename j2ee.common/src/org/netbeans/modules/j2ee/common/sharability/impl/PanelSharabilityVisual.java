@@ -318,7 +318,7 @@ public class PanelSharabilityVisual extends javax.swing.JPanel {
             return;
         }
         for (Library lib : SharabilityUtilities.getLibraries(location)) {
-            model.addElement(SharabilityUtilities.getDisplayLibraryName(lib.getName()));
+            model.addElement(lib.getName());
         }
         model.setSelectedItem(preselectedLibraryName);
     }

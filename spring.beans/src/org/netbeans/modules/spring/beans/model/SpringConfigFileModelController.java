@@ -85,19 +85,23 @@ public class SpringConfigFileModelController {
         this.beanSource = beanSource;
     }
 
-    public DocumentRead getDocumentRead() throws IOException {
+    public SpringBeanSource getUpToDateBeanSource() throws IOException {
         assert ExclusiveAccess.getInstance().isCurrentThreadAccess();
-        return new DocumentRead(getFileToMakeUpToDate(), false);
+        FileObject fo = getFileToMakeUpToDate();
+        if (fo != null) {
+            doParse(fo, false);
+        }
+        return beanSource;
     }
 
-    public DocumentWrite getDocumentWrite() throws IOException {
+    public LockedDocument getLockedDocument() throws IOException {
         assert ExclusiveAccess.getInstance().isCurrentThreadAccess();
         FileObject fo = getFileToMakeUpToDate();
         if (fo == null) {
             fo = FileUtil.toFileObject(file);
         }
         if (fo != null) {
-            return new DocumentWrite(fo);
+            return new LockedDocument(fo);
         }
         return null;
     }
@@ -124,6 +128,17 @@ public class SpringConfigFileModelController {
             }
         }
         return fileToParse;
+    }
+
+    private void doParse(FileObject fo, boolean updateTask) throws IOException {
+        assert ExclusiveAccess.getInstance().isCurrentThreadAccess();
+        BaseDocument document = (BaseDocument)getEditorCookie(fo).openDocument();
+        document.readLock();
+        try {
+            doParse(fo, document, updateTask);
+        } finally {
+            document.readUnlock();
+        }
     }
 
     private void doParse(FileObject fo, BaseDocument document, boolean updateTask) throws IOException {
@@ -169,85 +184,58 @@ public class SpringConfigFileModelController {
         return result;
     }
 
-    public final class DocumentRead {
-
-        public DocumentRead(FileObject fo, boolean updateTask) throws IOException {
-            if (fo != null) {
-                BaseDocument document = (BaseDocument)getEditorCookie(fo).openDocument();
-                document.readLock();
-                try {
-                    doParse(fo, document, updateTask);
-                } finally {
-                    document.readUnlock();
-                }
-            }
-        }
-
-        public SpringBeanSource getBeanSource() throws IOException {
-            return beanSource;
-        }
-    }
-
-    // XXX rename to more proper name and remove commit().
-    public final class DocumentWrite {
+    public final class LockedDocument {
 
         private final FileObject fo;
         private final CloneableEditorSupport editor;
-        private final BaseDocument document;
+        final BaseDocument document;
         // Although this class is single-threaded, better to have these thread-safe,
         // since they are guarding the document locking, and that needs to be right
-        // even if when this class is misused.
-        private final AtomicBoolean open = new AtomicBoolean();
-        private final AtomicBoolean closed = new AtomicBoolean();
-        private boolean parsed;
+        // even if when the class is misused.
+        private final AtomicBoolean locked = new AtomicBoolean();
+        private final AtomicBoolean unlocked = new AtomicBoolean();
 
-        public DocumentWrite(FileObject fo) throws IOException {
+        public LockedDocument(FileObject fo) throws IOException {
             this.fo = fo;
             editor = (CloneableEditorSupport)getEditorCookie(fo);
             document = (BaseDocument)editor.openDocument();
         }
 
-        public PositionRef createPositionRef(int offset, Bias bias) {
-            assert open.get();
-            return editor.createPositionRef(offset, bias);
-        }
-
-        public void open() {
-            if (!open.getAndSet(true)) {
+        public void lock() throws IOException {
+            if (!locked.getAndSet(true)) {
                 document.atomicLock();
+                boolean success = false;
+                try {
+                    doParse(fo, document, false);
+                    success = true;
+                } finally {
+                    if (!success) {
+                        document.atomicUnlock();
+                    }
+                }
             }
         }
 
-        public void commit() throws IOException {
-            assert open.get();
-            if (!closed.getAndSet(true)) {
-                document.atomicUnlock();
-                editor.saveDocument();
-            }
-        }
-
-        public void close() throws IOException {
-            assert open.get();
-            if (!closed.getAndSet(true)) {
+        public void unlock() throws IOException {
+            assert locked.get();
+            if (!unlocked.getAndSet(true)) {
                 document.atomicUnlock();
             }
         }
 
         public BaseDocument getDocument() {
-            assert open.get();
+            assert locked.get();
             return document;
         }
 
         public SpringBeanSource getBeanSource() throws IOException {
-            assert open.get();
-            // We could have parsed in open(), but that would have made
-            // it harder to handle exceptions. For example, any IOException thrown
-            // during parsing could have caused the document to remain locked.
-            if (!parsed) {
-                parsed = true;
-                doParse(fo, document, false);
-            }
+            assert locked.get();
             return beanSource;
+        }
+
+        public PositionRef createPositionRef(int offset, Bias bias) {
+            assert locked.get();
+            return editor.createPositionRef(offset, bias);
         }
     }
 
@@ -263,8 +251,7 @@ public class SpringConfigFileModelController {
             LOGGER.log(Level.FINE, "Running scheduled update for file {0}", configFile);
             assert ExclusiveAccess.getInstance().isCurrentThreadAccess();
             try {
-                DocumentRead docRead = new DocumentRead(configFile, true);
-                docRead.getBeanSource();
+                doParse(configFile, true);
             } catch (IOException e) {
                 Exceptions.printStackTrace(e);
             }
