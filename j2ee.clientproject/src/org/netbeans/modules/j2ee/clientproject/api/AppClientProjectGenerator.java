@@ -545,8 +545,7 @@ public class AppClientProjectGenerator {
         ep.setProperty("manifest.file", "${" +AppClientProjectProperties.META_INF + "}/" + MANIFEST_FILE); // NOI18N
         
         if (h.isSharableProject() && serverLibraryName != null) {
-            String libraryName = SharabilityUtilities.getPrefixedLibraryName(serverLibraryName);
-            ep.setProperty(AppClientProjectProperties.J2EE_PLATFORM_CLASSPATH, "${libs." + libraryName + ".classpath}"); //NOI18N
+            ep.setProperty(AppClientProjectProperties.J2EE_PLATFORM_CLASSPATH, "${libs." + serverLibraryName + ".classpath}"); //NOI18N
         }
         ep.setProperty(AppClientProjectProperties.J2EE_PLATFORM_SHARED,
                 Boolean.toString(h.isSharableProject() && serverLibraryName != null));        
