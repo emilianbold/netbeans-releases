@@ -335,11 +335,6 @@ public class ServiceNodeHandlerTest extends  TestBase {
 	printNodes(nodes,buff);
     }
     
-    public void log (String string) {
-	System.out.println(string);
-	super.log(string);
-    }
-
     private Node[] exploreNodes(ServiceNodeHandler.ServiceRootChildren children) throws Exception {
         List<String> events = new ArrayList<String>();
         events.add(SUtil.LOG_COMPUTE_KEYS);
@@ -353,6 +348,7 @@ public class ServiceNodeHandlerTest extends  TestBase {
     
     private static void deleteServiceFolder(NbModuleProject prj) throws IOException {
         FileObject srcDir = prj.getSourceDirectory();
+        // XXX huh?!
         FileObject serviceFo = FileUtil.createData(srcDir,"META-INF/services");
         final FileObject miFo = FileUtil.createData(srcDir,"META-INF");
         miFo.getFileSystem().runAtomicAction(new AtomicAction() {
