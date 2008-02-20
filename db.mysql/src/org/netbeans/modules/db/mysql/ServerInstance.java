@@ -41,6 +41,7 @@
 
 package org.netbeans.modules.db.mysql;
 
+import java.io.File;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -52,7 +53,17 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.api.db.explorer.ConnectionManager;
+import org.netbeans.api.db.explorer.DatabaseConnection;
 import org.netbeans.api.db.explorer.DatabaseException;
+import org.netbeans.modules.db.api.sql.execute.SQLExecuteCookie;
+import org.netbeans.modules.db.api.sql.execute.SQLExecution;
+import org.openide.cookies.CloseCookie;
+import org.openide.cookies.OpenCookie;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.JarFileSystem;
+import org.openide.loaders.DataObject;
+import org.openide.modules.InstalledFileLocator;
 import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
 
@@ -64,6 +75,14 @@ import org.openide.util.NbBundle;
  * @author David Van Couvering
  */
 public class ServerInstance implements Node.Cookie {
+
+    /**
+     *  Enumeration of valid sample database names
+     */
+    public enum SampleName {
+        sample, vir, travel
+    };
+
     private static final Logger LOGGER = Logger.getLogger(ServerInstance.class.getName());
         
     private static ServerInstance DEFAULT;;
@@ -81,6 +100,12 @@ public class ServerInstance implements Node.Cookie {
     // be parameterized (it gets quoted and it is a syntax error to quote it).
     private static final String GRANT_ALL_SQL_1 = "GRANT ALL ON "; // NOI18N
     private static final String GRANT_ALL_SQL_2 = ".* TO ?@?"; // NOI8N
+    
+    // Other static finals
+    private static final String MODULE_JAR_FILE = 
+            "modules/org-netbeans-modules-db-mysql.jar";
+    private static final String RESOURCE_DIR_PATH =
+            "org/netbeans/modules/db/mysql/resources";
 
         
     final AdminConnection adminConn = new AdminConnection();
@@ -113,6 +138,113 @@ public class ServerInstance implements Node.Cookie {
         updateDisplayName();
     }
     
+    public static boolean isSampleName(String name) {
+        SampleName[] samples = SampleName.values();
+        for ( SampleName sample : samples ) {
+            if (sample.toString().equals(name)) {
+                return true;
+            }
+        }
+        
+        return false;
+    }
+    
+    public void createSample(String sampleName) throws DatabaseException {     
+        if ( ! isSampleName(sampleName)) {
+            throw new DatabaseException(NbBundle.getMessage(
+                    ServerInstance.class, 
+                    "MSG_NoSuchSample", sampleName));
+        }
+             
+        DataObject sqlDO = getSQLDataObject(sampleName);
+        
+        try {
+            // Bummer, I have to actually open the file in the editor to get
+            // the sql execute support to work.
+            //
+            // TODO - allow execution without opening the file
+            OpenCookie openCookie = (OpenCookie)sqlDO.getCookie(OpenCookie.class);
+            openCookie.open();
+
+            SQLExecuteCookie sqlCookie = (SQLExecuteCookie)sqlDO.getCookie(
+                    SQLExecuteCookie.class);
+
+            DatabaseConnection dbconn = connectToSampleDb(sampleName);
+
+            sqlCookie.setDatabaseConnection(dbconn);
+            sqlCookie.execute();
+        } catch (Exception e) {
+            DatabaseException dbe = new DatabaseException(
+                    NbBundle.getMessage(ServerInstance.class,
+                        "MSG_ErrorExecutingSampleSQL", sampleName, 
+                        e.getMessage()));
+            dbe.initCause(e);
+            throw dbe;
+        } finally {
+            if ( sqlDO != null ) {
+                CloseCookie closeCookie = 
+                        (CloseCookie)sqlDO.getCookie(CloseCookie.class);
+                
+                if ( closeCookie != null ) {
+                    closeCookie.close();
+                }
+            }
+        }
+
+    }
+    
+    private DatabaseConnection connectToSampleDb(String sampleName) 
+            throws DatabaseException {
+        DatabaseConnection dbconn = 
+                DatabaseUtils.findDatabaseConnection(
+                    getURL(sampleName), 
+                    getUser());
+        
+        if ( dbconn == null ) {
+            throw new DatabaseException(
+                    NbBundle.getMessage(ServerInstance.class,
+                        "MSG_NoConnectionToSampleDB", sampleName));
+        }
+
+        Connection conn = dbconn.getJDBCConnection();
+        try { 
+            if ( conn == null || conn.isClosed() ) {
+                ConnectionManager.getDefault().showConnectionDialog(dbconn);
+            }
+        } catch ( SQLException sqle ) {
+            throw new DatabaseException(sqle);
+        }
+
+        return dbconn;
+    }
+    
+    private DataObject getSQLDataObject(String sampleName) 
+            throws DatabaseException {
+        SQLExecuteCookie sqlCookie = null;
+        
+        try {
+            File jarfile = InstalledFileLocator.getDefault().locate(
+                MODULE_JAR_FILE, null, false); // NOI18N
+    
+            JarFileSystem jarfs = new JarFileSystem();
+
+            jarfs.setJarFile(jarfile);
+
+            String filename = "/create-" + sampleName + ".sql";
+            FileObject sqlFO = jarfs.findResource(RESOURCE_DIR_PATH + filename);
+
+            return DataObject.find(sqlFO);
+        } catch (Exception e) {
+            DatabaseException dbe = new DatabaseException(
+                    NbBundle.getMessage(ServerInstance.class,
+                        "MSG_ErrorLoadingSampleSQL", sampleName, 
+                        e.getMessage()));
+            dbe.initCause(e);
+            throw dbe;
+        }
+    }
+
+
     public String getHost() {
         return options.getHost();
     }

@@ -39,13 +39,3 @@
 
 package org.netbeans.modules.db.mysql;
 
-/**
- * Manages creating sample databases
- * 
- * @author David Van Couvering
- */
-public class SampleManager {
-    /** List of valid sample databases */
-    public enum Sample { sample, vir, travel };
-
-}

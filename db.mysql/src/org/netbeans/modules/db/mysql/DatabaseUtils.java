@@ -173,7 +173,7 @@ public class DatabaseUtils {
      * 
      * @return the database connection
      */
-    static DatabaseConnection findDatabaseConnection(String url, String user) {
+    public static DatabaseConnection findDatabaseConnection(String url, String user) {
         List<DatabaseConnection> conns =
                 findDatabaseConnections(url);
         
@@ -194,7 +194,7 @@ public class DatabaseUtils {
      * @param port
      * @return
      */
-    static List<DatabaseConnection> findDatabaseConnections(String url) {
+    public static List<DatabaseConnection> findDatabaseConnections(String url) {
         ArrayList<DatabaseConnection> result =
                 new ArrayList<DatabaseConnection>();
                 

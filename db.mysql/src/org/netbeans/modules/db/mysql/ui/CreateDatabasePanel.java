@@ -8,20 +8,18 @@ package org.netbeans.modules.db.mysql.ui;
 
 import java.awt.Color;
 import java.awt.Dialog;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.ComboBoxModel;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
-import javax.swing.event.DocumentListener;
 import javax.swing.event.ListDataListener;
 import org.netbeans.api.db.explorer.ConnectionManager;
+import org.netbeans.api.db.explorer.DatabaseConnection;
 import org.netbeans.api.db.explorer.DatabaseException;
 import org.netbeans.modules.db.mysql.*;
-import org.netbeans.modules.db.mysql.SampleManager.Sample;
+import org.netbeans.modules.db.mysql.ServerInstance.SampleName;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -40,31 +38,6 @@ public class CreateDatabasePanel extends javax.swing.JPanel {
     DialogDescriptor descriptor;
     final ServerInstance server;
     private Color nbErrorForeground;
-
-    
-    private DocumentListener docListener = new DocumentListener() {
-        
-        public void removeUpdate(javax.swing.event.DocumentEvent e) {
-            validatePanel();
-        }
-
-        public void insertUpdate(javax.swing.event.DocumentEvent e) {
-            validatePanel();
-        }
-
-        public void changedUpdate(javax.swing.event.DocumentEvent e) {
-            validatePanel();
-        }
-
-    };
-    
-    private ActionListener actionListener = new ActionListener() {
-
-        public void actionPerformed(ActionEvent arg0) {
-            validatePanel();
-        }
-    };
-
 
     private void validatePanel() {
         if (descriptor == null) {
@@ -113,7 +86,7 @@ public class CreateDatabasePanel extends javax.swing.JPanel {
             }
                         
             return createDatabase(panel.getServer(), panel.getDatabaseName(),
-                        panel.getGrantUser(), panel.isCreateConnection());
+                        panel.getGrantUser());
         }
     }
 
@@ -133,8 +106,7 @@ public class CreateDatabasePanel extends javax.swing.JPanel {
      *      to be able to try again).
      */
     private static boolean createDatabase(ServerInstance server,
-            String dbname, DatabaseUser grantUser, 
-            boolean createConnection) {
+            String dbname, DatabaseUser grantUser) {
         
         boolean dbCreated = false;
         try {
@@ -146,14 +118,16 @@ public class CreateDatabasePanel extends javax.swing.JPanel {
             
             dbCreated = true;
             
-            // TODO - Create sample schema and tables
-            
             if ( grantUser != null ) {
                 server.grantFullDatabaseRights(dbname, grantUser);
             }
+               
+            boolean isSample = ServerInstance.isSampleName(dbname);
             
-            if ( createConnection ) {
-                createConnection(server, dbname, grantUser.getUser());
+            createConnection(server, dbname, grantUser.getUser());
+
+            if ( isSample ) {
+                server.createSample(dbname);
             }
         } catch ( DatabaseException ex ) {
             displayCreateFailure(server, ex, dbname, dbCreated);
@@ -162,7 +136,7 @@ public class CreateDatabasePanel extends javax.swing.JPanel {
         
         return true;
     }
-    
+        
     private static void displayCreateFailure(ServerInstance server,
             DatabaseException ex, String dbname, boolean dbCreated) {
         Utils.displayError("CreateDatabasePanel.MSG_CreateFailed", ex);
@@ -223,15 +197,25 @@ public class CreateDatabasePanel extends javax.swing.JPanel {
         return true;        
     }
     
-    private static void createConnection(ServerInstance server, String dbname,
-            String grantUser) {
+    private static void createConnection(
+            ServerInstance server, String dbname, String grantUser) {
+        if ( ! DatabaseUtils.
+                findDatabaseConnections(server.getURL(dbname)).isEmpty()) {
+            return;
+        }
+        
+        String user;
+        
+        if ( grantUser == null || grantUser.equals("")) {
+            user = server.getUser();
+        } else {
+            user = grantUser;
+        }
+        
+        String url = server.getURL(dbname);
+        
         ConnectionManager.getDefault().showAddConnectionDialog(
-                DatabaseUtils.getJDBCDriver(),
-                server.getURL(dbname), 
-                grantUser == null || grantUser.equals("") ? 
-                    server.getUser() : 
-                    grantUser,
-                null);
+                DatabaseUtils.getJDBCDriver(), url, user, null);        
     }
 
     
@@ -248,7 +232,6 @@ public class CreateDatabasePanel extends javax.swing.JPanel {
         initComponents();
         
         comboDatabaseName.setModel(new DatabaseComboModel());
-        comboDatabaseName.addActionListener(actionListener);
         
         comboUsers.setModel(new UsersComboModel(server));
         
@@ -258,21 +241,16 @@ public class CreateDatabasePanel extends javax.swing.JPanel {
         } else {
             comboUsers.setSelectedIndex(0);
             setGrantAccess(false);
-            chkGrantAccess.addActionListener(actionListener);
         }
-        
-        setCreateConnection(true);
-
-        
+                
         setBackground(getBackground());
         messageLabel.setBackground(getBackground());
-        messageLabel.setText(" ");
-        
+        messageLabel.setText(" ");        
     }
 
 
     private String getDatabaseName() {
-        String dbname = (String)comboDatabaseName.getEditor().getItem();
+        String dbname = (String)comboDatabaseName.getSelectedItem();
         if ( dbname != null ) {
             dbname = dbname.trim();
         }
@@ -295,15 +273,7 @@ public class CreateDatabasePanel extends javax.swing.JPanel {
     private boolean isGrantAccess() {
         return chkGrantAccess.isSelected();
     }
-    
-    private void setCreateConnection(boolean create) {
-        chkCreateConnection.setSelected(create);
-    }
-    
-    private boolean isCreateConnection() {
-        return chkCreateConnection.isSelected();
-    }
-    
+        
     private ServerInstance getServer() {
         return server;
     }
@@ -324,75 +294,117 @@ public class CreateDatabasePanel extends javax.swing.JPanel {
         jLabel1 = new javax.swing.JLabel();
         chkGrantAccess = new javax.swing.JCheckBox();
         comboUsers = new javax.swing.JComboBox();
-        chkCreateConnection = new javax.swing.JCheckBox();
 
         messageLabel.setForeground(new java.awt.Color(255, 0, 51));
         messageLabel.setText(org.openide.util.NbBundle.getMessage(CreateDatabasePanel.class, "CreateDatabasePanel.messageLabel.text")); // NOI18N
 
         comboDatabaseName.setEditable(true);
         comboDatabaseName.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
+        comboDatabaseName.addItemListener(new java.awt.event.ItemListener() {
+            public void itemStateChanged(java.awt.event.ItemEvent evt) {
+                comboDatabaseNameItemStateChanged(evt);
+            }
+        });
         comboDatabaseName.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 comboDatabaseNameActionPerformed(evt);
+            }
+        });
+        comboDatabaseName.addFocusListener(new java.awt.event.FocusAdapter() {
+            public void focusLost(java.awt.event.FocusEvent evt) {
+                comboDatabaseNameFocusLost(evt);
+            }
+        });
+        comboDatabaseName.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyTyped(java.awt.event.KeyEvent evt) {
+                comboDatabaseNameKeyTyped(evt);
+            }
+        });
+        comboDatabaseName.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseReleased(java.awt.event.MouseEvent evt) {
+                comboDatabaseNameMouseReleased(evt);
             }
         });
 
         jLabel1.setText(org.openide.util.NbBundle.getMessage(CreateDatabasePanel.class, "CreateDatabasePanel.jLabel1.text")); // NOI18N
 
         chkGrantAccess.setText(org.openide.util.NbBundle.getMessage(CreateDatabasePanel.class, "CreateDatabasePanel.chkGrantAccess.text")); // NOI18N
+        chkGrantAccess.addItemListener(new java.awt.event.ItemListener() {
+            public void itemStateChanged(java.awt.event.ItemEvent evt) {
+                chkGrantAccessItemStateChanged(evt);
+            }
+        });
 
         comboUsers.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
-
-        chkCreateConnection.setText(org.openide.util.NbBundle.getMessage(CreateDatabasePanel.class, "CreateDatabasePanel.chkCreateConnection.text")); // NOI18N
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
-                .add(9, 9, 9)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(messageLabel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 344, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                    .add(chkCreateConnection)
-                    .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING, false)
-                        .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createSequentialGroup()
-                            .add(jLabel1)
-                            .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                            .add(comboDatabaseName, 0, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                        .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createSequentialGroup()
-                            .add(chkGrantAccess)
-                            .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                            .add(comboUsers, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 216, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))))
+                .addContainerGap()
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING, false)
+                    .add(layout.createSequentialGroup()
+                        .add(chkGrantAccess)
+                        .add(18, 18, 18)
+                        .add(comboUsers, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 216, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                    .add(layout.createSequentialGroup()
+                        .add(jLabel1)
+                        .add(18, 18, 18)
+                        .add(comboDatabaseName, 0, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .add(messageLabel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 344, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(layout.createSequentialGroup()
+            .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
                 .addContainerGap(20, Short.MAX_VALUE)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(jLabel1)
                     .add(comboDatabaseName, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .add(9, 9, 9)
-                .add(chkCreateConnection)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(comboUsers, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                    .add(chkGrantAccess))
-                .add(18, 18, 18)
-                .add(messageLabel))
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(chkGrantAccess)
+                    .add(comboUsers, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(messageLabel)
+                .add(22, 22, 22))
         );
 
         messageLabel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(CreateDatabasePanel.class, "CreateDatabasePanel.messageLabel.AccessibleContext.accessibleName")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
 
 private void comboDatabaseNameActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_comboDatabaseNameActionPerformed
-
+    validatePanel();
 }//GEN-LAST:event_comboDatabaseNameActionPerformed
+
+private void comboDatabaseNameItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_comboDatabaseNameItemStateChanged
+    validatePanel();
+}//GEN-LAST:event_comboDatabaseNameItemStateChanged
+
+private void comboDatabaseNameMouseReleased(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_comboDatabaseNameMouseReleased
+
+}//GEN-LAST:event_comboDatabaseNameMouseReleased
+
+private void comboDatabaseNameKeyTyped(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_comboDatabaseNameKeyTyped
+
+}//GEN-LAST:event_comboDatabaseNameKeyTyped
+
+private void comboDatabaseNameFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_comboDatabaseNameFocusLost
+
+}//GEN-LAST:event_comboDatabaseNameFocusLost
+
+private void chkGrantAccessItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_chkGrantAccessItemStateChanged
+    if ( isGrantAccess() ) {
+        comboUsers.setEnabled(true);
+    } else {
+        comboUsers.setEnabled(false);
+    }
+}//GEN-LAST:event_chkGrantAccessItemStateChanged
 
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JCheckBox chkCreateConnection;
     private javax.swing.JCheckBox chkGrantAccess;
     private javax.swing.JComboBox comboDatabaseName;
     private javax.swing.JComboBox comboUsers;
@@ -401,7 +413,7 @@ private void comboDatabaseNameActionPerformed(java.awt.event.ActionEvent evt) {/
     // End of variables declaration//GEN-END:variables
 
     private static class DatabaseComboModel implements ComboBoxModel {
-        static final Sample[] SAMPLES = Sample.values();
+        static final SampleName[] SAMPLES = SampleName.values();
         static final String samplePrefix =
                 NbBundle.getMessage(CreateDatabasePanel.class, 
                     "CreateDatabasePanel.STR_SampleDatabase") + ": ";
