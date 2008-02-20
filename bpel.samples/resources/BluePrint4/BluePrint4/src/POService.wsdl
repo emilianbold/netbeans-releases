@@ -88,7 +88,7 @@
     <service name="purchaseOrderService">
         <port name="purchaseOrderPort"
               binding="tns:purchaseOrderBinding">
-            <soap:address location="http://localhost:12100/wsdl/purchase/PurchaseOrder/Servicelocation/bp4"/>
+            <soap:address location="http://localhost:18181/wsdl/purchase/PurchaseOrder/Servicelocation/bp4"/>
         </port>
     </service>
     
@@ -96,6 +96,10 @@
         <plink:role name="purchaseService"
                     portType="tns:purchaseOrderPT"></plink:role>
     </plink:partnerLinkType>
-    <bpws:property name="clrorla" type="xsd:nonNegativeInteger"/>
-    <bpws:propertyAlias propertyName="tns:clrorla" messageType="tns:POMessage" part="purchaseOrder"/>
+    
+    <bpws:property name="clrorla" type="xsd:int"/>
+    
+    <bpws:propertyAlias propertyName="tns:clrorla" messageType="tns:POMessage" part="purchaseOrder">
+        <bpws:query>/sns:purchaseOrder/sns:orderId</bpws:query>
+    </bpws:propertyAlias>
 </definitions>

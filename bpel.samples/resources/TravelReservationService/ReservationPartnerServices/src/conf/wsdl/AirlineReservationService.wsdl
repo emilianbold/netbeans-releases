@@ -28,24 +28,36 @@
   ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
   THE POSSIBILITY OF SUCH DAMAGE.
 -->
-<definitions xmlns="http://schemas.xmlsoap.org/wsdl/" xmlns:http="http://schemas.xmlsoap.org/wsdl/http/" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:tns="http://www.sun.com/javaone/05/AirlineReservationService" xmlns:ota="http://www.opentravel.org/OTA/2003/05" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" xmlns:plnk="http://docs.oasis-open.org/wsbpel/2.0/plnktype" targetNamespace="http://www.sun.com/javaone/05/AirlineReservationService">
+<definitions xmlns="http://schemas.xmlsoap.org/wsdl/" 
+             xmlns:http="http://schemas.xmlsoap.org/wsdl/http/" 
+             xmlns:xs="http://www.w3.org/2001/XMLSchema" 
+             xmlns:tns="http://www.sun.com/javaone/05/AirlineReservationService" 
+             xmlns:ota="http://www.opentravel.org/OTA/2003/05" 
+             xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" 
+             xmlns:plnk="http://docs.oasis-open.org/wsbpel/2.0/plnktype" 
+             targetNamespace="http://www.sun.com/javaone/05/AirlineReservationService">
     <types>
-        <xs:schema xmlns:s="http://www.w3.org/2001/XMLSchema" xmlns:air="http://www.sun.com/javaone/05/AirlineReservationService" targetNamespace="http://www.sun.com/javaone/05/AirlineReservationService">
+        <xs:schema targetNamespace="http://www.sun.com/javaone/05/AirlineReservationService" xmlns:s="http://www.w3.org/2001/XMLSchema" xmlns:air="http://www.sun.com/javaone/05/AirlineReservationService">
             <xs:import namespace="http://www.opentravel.org/OTA/2003/05" schemaLocation="OTA_TravelItinerary.xsd"/>
         </xs:schema>
     </types>
+
     <message name="ReserveAirlineIn">
         <part name="itinerary" element="ota:TravelItinerary"/>
     </message>
+
     <message name="CancelAirlineIn">
         <part name="itinerary" element="ota:ItineraryRef"/>
     </message>
+
     <message name="CancelAirlineOut">
         <part name="succeeded" element="ota:CancellationStatus"/>
     </message>
+
     <message name="AirlineReservedIn">
         <part name="itinerary" element="ota:TravelItinerary"/>
     </message>
+
     <portType name="AirlineReservationPortType">
         <operation name="reserveAirline">
             <input message="tns:ReserveAirlineIn"/>
@@ -55,11 +67,13 @@
             <output message="tns:CancelAirlineOut"/>
         </operation>
     </portType>
+
     <portType name="AirlineReservationCallbackPortType">
         <operation name="airlineReserved">
             <input message="tns:AirlineReservedIn"/>
         </operation>
     </portType>
+
     <binding name="AirlineReservationSoapBinding" type="tns:AirlineReservationPortType">
         <soap:binding style="document" transport="http://schemas.xmlsoap.org/soap/http"/>
         <operation name="reserveAirline">
@@ -78,6 +92,7 @@
             </output>
         </operation>
     </binding>
+
     <binding name="AirlineReservationCallbackSoapBinding" type="tns:AirlineReservationCallbackPortType">
         <soap:binding style="document" transport="http://schemas.xmlsoap.org/soap/http"/>
         <operation name="airlineReserved">
@@ -85,8 +100,9 @@
             <input>
                 <soap:body use="literal"/>
             </input>
-        </operation>                
+        </operation>
     </binding>
+    
     <wsdl:service xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/" name="AirlineReservationService">
         <wsdl:port name="AirlineReservationPortTypePort" binding="tns:AirlineReservationSoapBinding">
             <soap:address location="http://localhost:8080/webservice/AirlineReservationService"/>
@@ -99,6 +115,6 @@
         </plnk:role>
         <plnk:role name="AirlineReservationCallbackServiceRole"
                    portType="tns:AirlineReservationCallbackPortType">
-        </plnk:role>                
-    </plnk:partnerLinkType>    
+        </plnk:role>
+    </plnk:partnerLinkType>
 </definitions>

@@ -38,6 +38,7 @@
  */
 package org.netbeans.modules.ws.qaf.rest;
 
+import junit.framework.TestSuite;
 import junit.textui.TestRunner;
 import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.EditorOperator;
@@ -52,7 +53,7 @@ import org.netbeans.junit.NbTestSuite;
  */
 public class RestNodeTest extends RestTestBase {
 
-    private static final String[] services = {"ItemResource", "ItemsResource [/items]", "SampleResource [sample]"}; //NOI18N
+    protected static final String[] services = {"ItemResource", "ItemsResource [/items]", "SampleResource [sample]"}; //NOI18N
 
     private static final String addMethod =
             "    @javax.ws.rs.POST\n" + //NOI18N
@@ -82,11 +83,11 @@ public class RestNodeTest extends RestTestBase {
         assertEquals("Some method not shown for " + services[2], 2, //NOI18N
                 getMethodsNode(services[2]).getChildren().length); //NOI18N
         assertEquals("Offending locator for " + services[0], 0, //NOI18N
-                getSubresourceNode(services[0]).getChildren().length); //NOI18N
+                getSubresourcesNode(services[0]).getChildren().length); //NOI18N
         assertEquals("Missing locator for " + services[1], 1, //NOI18N
-                getSubresourceNode(services[1]).getChildren().length); //NOI18N
+                getSubresourcesNode(services[1]).getChildren().length); //NOI18N
         assertEquals("Offending locator for " + services[2], 0, //NOI18N
-                getSubresourceNode(services[2]).getChildren().length); //NOI18N
+                getSubresourcesNode(services[2]).getChildren().length); //NOI18N
     }
 
     /**
@@ -95,7 +96,7 @@ public class RestNodeTest extends RestTestBase {
     public void testOpenOnResource() {
         Node n = getResourceNode(services[2]);
         String open = Bundle.getStringTrimmed("org.openide.actions.Bundle", "Open");
-        n.performPopupActionNoBlock(open);
+        n.performPopupAction(open);
         EditorOperator eo = new EditorOperator(services[2].substring(0, 14));
         assertNotNull(services[2] + " not opened?", eo); //NOI18N
     }
@@ -106,19 +107,19 @@ public class RestNodeTest extends RestTestBase {
     public void testOpenOnMethod() {
         Node n = new Node(getMethodsNode(services[0]), "getXML"); //NOI18N
         String open = Bundle.getStringTrimmed("org.openide.actions.Bundle", "Open");
-        n.performPopupActionNoBlock(open);
+        n.performPopupAction(open);
         EditorOperator eo = new EditorOperator(services[0]);
         assertNotNull(services[0] + " not opened?", eo); //NOI18N
-        assertEquals("wrong line", 40, eo.getLineNumber()); //NOI18N
+        assertEquals("wrong line", 41, eo.getLineNumber()); //NOI18N
     }
 
     /**
      * Test "Open" action on the resource's subresource locator node
      */
     public void testOpenOnLocator() {
-        Node n = new Node(getSubresourceNode(services[1]), "{name}"); //NOI18N
+        Node n = new Node(getSubresourcesNode(services[1]), "{name}"); //NOI18N
         String open = Bundle.getStringTrimmed("org.openide.actions.Bundle", "Open");
-        n.performPopupActionNoBlock(open);
+        n.performPopupAction(open);
         EditorOperator eo = new EditorOperator(services[1].substring(0, 13));
         assertNotNull(services[0] + " not opened?", eo); //NOI18N
         assertEquals("wrong line", 47, eo.getLineNumber()); //NOI18N
@@ -157,8 +158,8 @@ public class RestNodeTest extends RestTestBase {
     }
     
     /** Creates suite from particular test cases. You can define order of testcases here. */
-    public static NbTestSuite suite() {
-        NbTestSuite suite = new NbTestSuite();
+    public static TestSuite suite() {
+        TestSuite suite = new NbTestSuite();
         suite.addTest(new RestNodeTest("testNodesAfterOpen")); //NOI18N
         suite.addTest(new RestNodeTest("testOpenOnResource")); //NOI18N
         suite.addTest(new RestNodeTest("testOpenOnMethod")); //NOI18N
@@ -175,23 +176,37 @@ public class RestNodeTest extends RestTestBase {
         TestRunner.run(suite());
     }
 
-    private Node getResourceNode(String resourceName) {
+    protected Node getResourceNode(String resourceName) {
         Node n = new Node(getRestNode(), resourceName);
-        n.expand();
+        if (n.isCollapsed()) {
+            n.expand();
+        }
         return n;
     }
 
-    private Node getMethodsNode(String resourceName) {
+    protected Node getMethodsNode(String resourceName) {
         String methodsLabel = Bundle.getStringTrimmed("org.netbeans.modules.websvc.rest.nodes.Bundle", "LBL_HttpMethods");
         Node n = new Node(getResourceNode(resourceName), methodsLabel);
-        n.expand();
+        if (n.isCollapsed()) {
+            n.expand();
+        }
         return n;
     }
+    
+    protected Node getMethodNode(Node methodsNode, String methodName) {
+        return new Node(methodsNode, methodName);
+    }
 
-    private Node getSubresourceNode(String resourceName) {
+    protected Node getSubresourcesNode(String resourceName) {
         String subresourceLabel = Bundle.getStringTrimmed("org.netbeans.modules.websvc.rest.nodes.Bundle", "LBL_SubResourceLocators");
         Node n = new Node(getResourceNode(resourceName), subresourceLabel);
-        n.expand();
+        if (n.isCollapsed()) {
+            n.expand();
+        }
         return n;
+    }
+    
+    protected Node getSubresourceNode(Node subresourcesNode, String locatorName) {
+        return new Node(subresourcesNode, locatorName);
     }
 }

@@ -275,15 +275,17 @@ public class FlatfileResulSetPanel extends JPanel implements ActionListener, Pro
         // add refresh button
         URL url = getClass().getResource("/org/netbeans/modules/sql/framework/ui/resources/images/refresh16.png");
         showDataBtn = new JButton(new ImageIcon(url));
-        showDataBtn.setMnemonic('S');
-        showDataBtn.setToolTipText("Show data for selected flat file table node");
+        String nbBundle30 = mLoc.t("PRSR001: Show data for selected flat file table node");
+        showDataBtn.setToolTipText(Localizer.parse(nbBundle30));
+        showDataBtn.setMnemonic(Localizer.parse(nbBundle30).charAt(0));
         showDataBtn.setActionCommand(CMD_SHOW_DATA);
 
         JPanel recordCountPanel = new JPanel();
         recordCountPanel.setBorder(BorderFactory.createEmptyBorder(0, 10, 0, 0));
 
-        JLabel lbl = new JLabel("Limit number of rows");
-        lbl.setDisplayedMnemonic('r');
+        String nbBundle31 = mLoc.t("PRSR001: Limit number of rows");
+        JLabel lbl = new JLabel(Localizer.parse(nbBundle31));
+        lbl.setDisplayedMnemonic(Localizer.parse(nbBundle31).charAt(0));
 
         recordCountPanel.add(lbl);
         recordCount = new JTextField("25", 5);

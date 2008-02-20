@@ -50,6 +50,7 @@ import java.io.File;
 import java.util.*;
 import org.netbeans.modules.mercurial.FileInformation;
 import org.netbeans.modules.mercurial.ui.actions.ContextAction;
+import org.netbeans.modules.mercurial.util.HgUtils;
 import org.netbeans.modules.versioning.spi.VCSContext;
 import org.openide.windows.TopComponent;
 
@@ -92,7 +93,22 @@ public class SearchHistoryAction extends ContextAction {
     public static void openHistory(final VCSContext context, final String title) {
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
-                SearchHistoryTopComponent tc = new SearchHistoryTopComponent(context);
+                if (context == null) return;
+                HgUtils.outputMercurialTabInRed(
+                        NbBundle.getMessage(SearchHistoryAction.class,
+                        "MSG_Log_Title")); // NOI18N
+                HgUtils.outputMercurialTabInRed(
+                        NbBundle.getMessage(SearchHistoryAction.class,
+                        "MSG_Log_Title_Sep")); // NOI18N
+                File[] files = context.getFiles().toArray(new File[0]);
+                HgUtils.outputMercurialTab(
+                        NbBundle.getMessage(SearchHistoryAction.class,
+                        "MSG_LOG_CONTEXT_SEP")); // NOI18N
+                for(File f: files){
+                    HgUtils.outputMercurialTab(f.getAbsolutePath());
+                }
+                HgUtils.outputMercurialTabInRed(""); // NOI18N
+                 SearchHistoryTopComponent tc = new SearchHistoryTopComponent(context);
                 tc.setDisplayName(title);
                 tc.open();
                 tc.requestActive();

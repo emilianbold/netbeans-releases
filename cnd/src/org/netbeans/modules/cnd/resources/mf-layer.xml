@@ -66,11 +66,14 @@ made subject to such option by the copyright holder.
                 <attr name="instanceOf" stringvalue="org.netbeans.spi.options.OptionsPanelController"/>
                 <attr name="position" intvalue="100"/>
             </file>
+            <file name="CndOtherOptionsPanelController.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.cnd.ui.options.CndOtherOptionsPanelController"/>
+                <attr name="instanceOf" stringvalue="org.netbeans.spi.options.OptionsPanelController"/>
+                <attr name="position" intvalue="1000"/>
+            </file>
         </folder>     
         <folder name="PreviewExamples">
             <folder name="text">
-                <file name="x-c++" url="cplusplus/CCExample"/>
-                <file name="x-c" url="cplusplus/CExample"/>
                 <file name="x-fortran" url="fortran/FExample"/>
                 <file name="x-make" url="makefile/MakeExample"/>
 <!--                <file name="sh" url="shell/ShellExample"/> -->

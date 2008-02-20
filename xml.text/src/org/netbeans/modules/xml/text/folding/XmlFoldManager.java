@@ -42,8 +42,6 @@
 package org.netbeans.modules.xml.text.folding;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Stack;
 import javax.swing.event.DocumentEvent;
 import javax.swing.text.BadLocationException;
@@ -51,6 +49,7 @@ import javax.swing.text.Document;
 import org.netbeans.api.editor.fold.Fold;
 import org.netbeans.api.editor.fold.FoldHierarchy;
 import org.netbeans.api.editor.fold.FoldType;
+import org.netbeans.api.editor.fold.FoldUtilities;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.spi.editor.fold.FoldHierarchyTransaction;
 import org.netbeans.spi.editor.fold.FoldManager;
@@ -66,7 +65,7 @@ import org.openide.util.RequestProcessor;
 
 /**
  * This class is an implementation of @see org.netbeans.spi.editor.fold.FoldManager
- * responsible for creating, deleting and updating code folds.
+ * responsible for creating, deleting and updating code folds in XML documents.
  *
  * @author  Ayub Khan
  * @author  Samaresh Panda
@@ -74,17 +73,11 @@ import org.openide.util.RequestProcessor;
 public class XmlFoldManager implements FoldManager {
 
     private FoldOperation operation;
-    private FoldHierarchyTransaction transaction;
-    private List<Fold> myFolds;
     private long dirtyTimeMillis = 0;
     private RequestProcessor.Task SYNCHRONIZER = null;
-    
+   
     public static final int DELAY_SYNCER = 2000;  // milisecs.
     public static final int DELAY_DIRTY = 1000;  // milisecs.
-
-    protected FoldOperation getOperation() {
-        return operation;
-    }
 
     public void init(FoldOperation operation) {
         this.operation = operation;
@@ -94,35 +87,40 @@ public class XmlFoldManager implements FoldManager {
     public void release() {
     }
 
+    protected FoldOperation getOperation() {
+        return operation;
+    }
+      
     public void initFolds(FoldHierarchyTransaction transaction) {
         Document doc = getOperation().getHierarchy().getComponent().getDocument();
         //filtering of the PlainDocument set during the JEditorPane initialization
         if (!(doc instanceof BaseDocument)) {
             return;
         }
-        updateFolds(transaction);
-        this.transaction = transaction;
-            
+        
+        //do not update folds inside initFolds
+        //updateFolds();
+           
         SYNCHRONIZER = RequestProcessor.getDefault().post(
                 new Runnable() {
                     public void run() {
                         if (dirtyIntervalMillis() > DELAY_DIRTY) {
                             unsetDirty();
-                            updateFolds(null);
+                            updateFolds();
                         }
                         SYNCHRONIZER.schedule(DELAY_SYNCER);
                     }
                 }, DELAY_SYNCER);
     }
-    
+   
     public void setDirty() {
         dirtyTimeMillis = System.currentTimeMillis();
     }
-    
+   
     public void unsetDirty() {
         dirtyTimeMillis = 0;
     }
-    
+   
     private long dirtyIntervalMillis() {
         if (dirtyTimeMillis == 0) return 0;
         return System.currentTimeMillis() - dirtyTimeMillis;
@@ -132,7 +130,7 @@ public class XmlFoldManager implements FoldManager {
      * This method parses the XML document using Lexer and creates/recreates
      * the fold hierarchy.
      */
-    private synchronized void updateFolds(FoldHierarchyTransaction transaction) {
+    private synchronized void updateFolds() {
         FoldHierarchy foldHierarchy = getOperation().getHierarchy();
         //lock the document for changes
         getDocument().readLock();
@@ -141,48 +139,64 @@ public class XmlFoldManager implements FoldManager {
             foldHierarchy.lock();
             try {
                 //open new transaction
-                FoldHierarchyTransaction fhTran = (transaction == null) ? getOperation().openTransaction() : transaction;
+                FoldHierarchyTransaction fht = getOperation().openTransaction();
                 try {
-                    BaseDocument basedoc = getDocument();
-                    myFolds = new ArrayList<Fold>();
-                    parseDocument(basedoc, fhTran);
-                } catch (BadLocationException ble) {
-//                    Logger.getLogger(this.getClass().getName()).log(Level.WARNING, 
+                    removeAllFolds(getOperation(), fht, foldHierarchy.getRootFold());
+                    createFolds(fht);
+                } catch (Exception ex) {
+//                    Logger.getLogger(this.getClass().getName()).log(Level.WARNING,
 //                            NbBundle.getMessage(XmlFoldManager.class, "MSG_FOLDS_DISABLED"));
-                    removeAllFolds(fhTran);
-                } catch (IOException iox) {
-//                    Logger.getLogger(this.getClass().getName()).log(Level.WARNING, 
-//                            NbBundle.getMessage(XmlFoldManager.class, "MSG_FOLDS_DISABLED"));
-                    removeAllFolds(fhTran);
                 } finally {
-                    if (transaction == null) {
-                        fhTran.commit(); //the given transaction from initFolds() will be commited by the infr.
-                    }
-                    myFolds.clear();
-                    myFolds = null;//allow garbage collection
+                    fht.commit();
                 }
             } finally {
+                //printFoldHierarchy(foldHierarchy.getRootFold(),"");
                 foldHierarchy.unlock();
             }
         } finally {
             getDocument().readUnlock();
         }
     }
-    
-    private void removeAllFolds(FoldHierarchyTransaction transaction) {
-        for (Fold f : myFolds) {
-            getOperation().removeFromHierarchy(f, transaction);
+   
+    /**
+     * Prints the fold hierarchy.
+     * @param fold
+     * @param tab
+     */
+    private void printFoldHierarchy(Fold fold, String tab) {
+        //System.out.println(tab + fold.getDescription());
+        for(int i=0; i<fold.getFoldCount(); i++) {
+            printFoldHierarchy(fold.getFold(i), tab+"==");
         }
     }
-    
+   
+    /**
+     * Removes all folds from the fold hierarchy except the root fold.
+     * @param operation
+     * @param transaction
+     * @param fold
+     */
+    private void removeAllFolds(FoldOperation operation,
+            FoldHierarchyTransaction transaction, Fold fold) {
+        for(int i=0; i<fold.getFoldCount(); i++) {
+            removeAllFolds(operation, transaction, fold.getFold(i));
+        }
+        if(!FoldUtilities.isRootFold(fold)) {
+            operation.removeFromHierarchy(fold, transaction);
+        }
+    }
+   
     /**
      * Creates a new fold and adds to the fold hierarchy.
      */
     private Fold createFold(FoldType type, String description, boolean collapsed,
-            int startOffset, int endOffset, FoldHierarchyTransaction transaction) 
+            int startOffset, int endOffset, FoldHierarchyTransaction transaction)
                 throws BadLocationException {
         Fold fold = null;
-        if (startOffset >= 0 && endOffset >= 0 && startOffset < endOffset && endOffset <= getDocument().getLength()) {
+        if ( startOffset >= 0 &&
+             endOffset >= 0 &&
+             startOffset < endOffset &&
+             endOffset <= getDocument().getLength() ) {
             fold = getOperation().addToHierarchy(
                     type,
                     description.intern(), //save some memory
@@ -202,8 +216,9 @@ public class XmlFoldManager implements FoldManager {
      * This method parses the document using lexer and creates folds and adds
      * them to the fold hierarchy.
      */
-    private void parseDocument(BaseDocument basedoc, FoldHierarchyTransaction fhTran) 
+    private void createFolds(FoldHierarchyTransaction fhTran)
             throws BadLocationException, IOException {
+        BaseDocument basedoc = getDocument();
         TokenHierarchy tokenHierarchy = TokenHierarchy.get(basedoc);
         TokenSequence<XMLTokenId> tokenSequence = tokenHierarchy.tokenSequence();
         org.netbeans.api.lexer.Token<XMLTokenId> token = tokenSequence.token();
@@ -231,7 +246,7 @@ public class XmlFoldManager implements FoldManager {
                             if(!stack.empty())
                                 stack.pop();
                         } else {
-                            if(!stack.empty()) { 
+                            if(!stack.empty()) {
                                 if(stack.peek().getName().equals(currentNode))
                                     tokenElem = stack.pop();
                             }
@@ -245,7 +260,7 @@ public class XmlFoldManager implements FoldManager {
                                 break;
                             String foldName = "<" + currentNode + ">";
                             Fold f = createFold(XmlFoldTypes.TAG, foldName, false, so, eo, fhTran);
-                            myFolds.add(f);
+                            currentNode = null;
                         }
                     } else {
                         tokenType = TokenType.TOKEN_ELEMENT_START_TAG;
@@ -263,7 +278,7 @@ public class XmlFoldManager implements FoldManager {
                 case BLOCK_COMMENT:
                 {
                     tokenType = TokenType.TOKEN_COMMENT;
-                    if (!(image.startsWith(Token.COMMENT_START.getValue()) && 
+                    if (!(image.startsWith(Token.COMMENT_START.getValue()) &&
                             image.endsWith(Token.COMMENT_END.getValue()))) {
                         if (image.startsWith(Token.COMMENT_START.getValue())) {
                             String foldName = NbBundle.getMessage(XmlFoldManager.class, "LBL_COMMENT"); //NOI18N
@@ -274,7 +289,7 @@ public class XmlFoldManager implements FoldManager {
                             int so = tokenElem.getStartOffset();
                             int eo = currentTokensSize+image.length();
                             Fold f = createFold(XmlFoldTypes.COMMENT, tokenElem.getName(), false, so, eo, fhTran);
-                            myFolds.add(f);
+                            //myFolds.add(f);
                         }
                     }
                     break;
@@ -282,7 +297,7 @@ public class XmlFoldManager implements FoldManager {
                 case CDATA_SECTION:
                 {
                     tokenType = TokenType.TOKEN_CDATA_VAL;
-                    if (!(image.startsWith(Token.CDATA_START.getValue()) && 
+                    if (!(image.startsWith(Token.CDATA_START.getValue()) &&
                             image.endsWith(Token.CDATA_END.getValue()))) {
                         if (image.startsWith(Token.CDATA_START.getValue())) {
                             String foldName = NbBundle.getMessage(XmlFoldManager.class, "LBL_CDATA"); //NOI18N
@@ -293,30 +308,29 @@ public class XmlFoldManager implements FoldManager {
                             int so = tokenElem.getStartOffset();
                             int eo = currentTokensSize+image.length();
                             Fold f = createFold(XmlFoldTypes.CDATA, tokenElem.getName(), false, so, eo, fhTran);
-                            myFolds.add(f);
+                            //myFolds.add(f);
                         }
                     }
                     break;
                 }
-                    
+                   
                 case PI_START:
                 case PI_TARGET:
                 case PI_CONTENT:
                 case PI_END:
                 case ARGUMENT: //attribute of an element
                 case VALUE:
-                case TEXT:                    
+                case TEXT:                   
                 case CHARACTER:
                 case WS:
                 case OPERATOR:
                 case DECLARATION:
                     break; //Do nothing for above case's
-                
+               
                 case ERROR:
                 case EOL:
                 default:
-                    throw new IOException("Invalid token found in document: " +
-                            "Please use the text editor to resolve the issues...");
+                    break;
             }
             currentTokensSize += image.length();
         }
@@ -346,7 +360,7 @@ public class XmlFoldManager implements FoldManager {
 
     public void expandNotify(Fold expandedFold) {
     }
-    
+   
     public boolean isOneLiner(int start, int end) {
         try {
             BaseDocument doc = getDocument();
@@ -356,5 +370,5 @@ public class XmlFoldManager implements FoldManager {
             //Exceptions.printStackTrace(ex);
             return false;
         }
-    }       
+    }      
 }

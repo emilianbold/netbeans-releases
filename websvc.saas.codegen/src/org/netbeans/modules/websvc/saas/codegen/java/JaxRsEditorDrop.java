@@ -91,7 +91,7 @@ public class JaxRsEditorDrop implements ActiveEditorDrop {
         return false;
     }
     
-    private boolean doHandleTransfer(JTextComponent targetComponent) {
+    private boolean doHandleTransfer(final JTextComponent targetComponent) {
         FileObject targetSource = NbEditorUtilities.getFileObject(targetComponent.getDocument());
         Project targetProject = FileOwnerQuery.getOwner(targetSource);
         Method m = method.getWadlMethod();
@@ -106,29 +106,30 @@ public class JaxRsEditorDrop implements ActiveEditorDrop {
         final List<Exception> errors = new ArrayList<Exception>();
        
         final ProgressDialog dialog = new ProgressDialog(
-                NbBundle.getMessage(JaxRsEditorDrop.class, "LBL_RestComponentProgress", 
+                NbBundle.getMessage(JaxRsEditorDrop.class, "LBL_CodeGenProgress", 
                 displayName));
 
         generatorTask = RequestProcessor.getDefault().create(new Runnable() {
             public void run() {
                 try {
-                    JaxRsCodeGenerator codegen = codegen = new JaxRsCodeGenerator(targetFO, method);
+                    JaxRsCodeGenerator codegen = codegen = 
+                        JaxRsCodeGeneratorFactory.create(targetComponent, targetFO, method);
                 
                     WadlSaasBean bean = codegen.getBean();
-                    boolean wrapperResourceExists = codegen.wrapperResourceExists();
+                    boolean showParams = codegen.showParams();
                     List<ParameterInfo> allParams = new ArrayList<ParameterInfo>(bean.getHeaderParameters());
-                    if (! wrapperResourceExists) {
+                    if (showParams) {
                         allParams.addAll(bean.getInputParameters());
                     }
                     JaxRsCodeSetupPanel panel = new JaxRsCodeSetupPanel(
                             codegen.getSubresourceLocatorUriTemplate(),
                             bean.getQualifiedClassName(), 
                             allParams,
-                            wrapperResourceExists);
+                            !showParams);
 
                     DialogDescriptor desc = new DialogDescriptor(panel, 
                             NbBundle.getMessage(JaxRsEditorDrop.class,
-                            "LBL_CustomizeComponent", displayName));
+                            "LBL_CustomizeSaasService", displayName));
                     Object response = DialogDisplayer.getDefault().notify(desc);
                     
                     if (response.equals(NotifyDescriptor.YES_OPTION)) {

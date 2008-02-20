@@ -312,7 +312,7 @@ implements DocumentListener, KeyListener {
         try {
             // First check if there is a caret selection and if so remove it
             Caret caret = component.getCaret();
-            if (caret.isSelectionVisible()) {
+            if (Utilities.isSelectionShowing(caret)) {
                 int removeOffset = component.getSelectionStart();
                 int removeLength = component.getSelectionEnd() - removeOffset;
                 doc.remove(removeOffset, removeLength);

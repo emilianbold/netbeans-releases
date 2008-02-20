@@ -42,13 +42,12 @@
 package org.netbeans.modules.java.source.ui;
 
 import java.io.IOException;
-import org.netbeans.api.java.classpath.ClassPath;
-import org.netbeans.api.java.source.ClasspathInfo;
-import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
 import java.util.logging.Logger;
 import javax.lang.model.element.TypeElement;
 import javax.swing.Icon;
@@ -67,6 +66,7 @@ import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.java.BinaryElementOpen;
 import org.netbeans.modules.java.source.usages.RepositoryUpdater;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
@@ -74,7 +74,6 @@ import org.netbeans.spi.jumpto.type.SearchType;
 import org.netbeans.spi.jumpto.type.TypeProvider;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
-import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 
@@ -111,17 +110,6 @@ public class JavaTypeProvider implements TypeProvider {
     
     public JavaTypeProvider() {
         this(null, null);
-//        pathListener = new GlobalPathRegistryListener() {
-//
-//            public void pathsAdded(GlobalPathRegistryEvent event) {
-//                cache = null; cpInfo = null;
-//            }
-//
-//            public void pathsRemoved(GlobalPathRegistryEvent event) {
-//                cache = null; cpInfo = null;
-//            }
-//        };
-//        GlobalPathRegistry.getDefault().addGlobalPathRegistryListener(pathListener);
     }
    
     public JavaTypeProvider(ClasspathInfo cpInfo, TypeElementFinder.Customizer customizer) {
@@ -168,10 +156,15 @@ public class JavaTypeProvider implements TypeProvider {
         long cp, gss, gsb, sfb, gtn, add, sort;
         cp = gss = gsb = sfb = gtn = add = sort = 0;
 
-        if (RepositoryUpdater.getDefault().isScanInProgress()) {
-            String message = NbBundle.getMessage(JavaTypeProvider.class, "LBL_ScanInProgress_warning");
-            res.setMessage(message);
+        Future<Project[]> openProjectsTask = OpenProjects.getDefault().openProjects();
+        try {
+            openProjectsTask.get();
+        } catch (InterruptedException ex) {
+            LOGGER.fine(ex.getMessage());
+        } catch (ExecutionException ex) {
+            LOGGER.fine(ex.getMessage());
         }
+        
         if (cache == null) {
             Set<CacheItem> sources = null;
 
@@ -291,6 +284,19 @@ public class JavaTypeProvider implements TypeProvider {
 
         ArrayList<JavaTypeDescription> types = new ArrayList<JavaTypeDescription>(cache.size() * 20);
         Set<ElementHandle<TypeElement>> names = null;
+        
+        boolean scanInProgress;
+        do {
+        // is scan in progress? If so, provide a message to user.
+        scanInProgress = RepositoryUpdater.getDefault().isScanInProgress();
+        if (scanInProgress) {
+            // ui message
+            String message = NbBundle.getMessage(JavaTypeProvider.class, "LBL_ScanInProgress_warning");
+            res.setMessage(message);
+        } else {
+            res.setMessage(null);
+        }
+
         for(final CacheItem ci : cache) {
             time = System.currentTimeMillis();
 
@@ -322,7 +328,7 @@ public class JavaTypeProvider implements TypeProvider {
                     }, true);
                     names = n[0];
                 } catch (IOException ex) {
-                    Exceptions.printStackTrace(ex);
+                    LOGGER.fine(ex.getMessage());
                 }
             }
 
@@ -347,7 +353,24 @@ public class JavaTypeProvider implements TypeProvider {
             }
             add += System.currentTimeMillis() - time;
         }
-
+        // nothing found, wait a while and restart the task
+        // again.
+        if (scanInProgress && types.isEmpty()) {
+            if (RepositoryUpdater.getDefault().isScanInProgress()) {
+                try {
+                    Thread.sleep(1000);
+                } catch (InterruptedException ex) {
+                    LOGGER.fine(ex.getMessage());
+                }
+            }
+            res.setMessage(null);
+        } else {
+            // finish the loop, results available
+            scanInProgress = false;
+        }
+        
+        } while (scanInProgress);
+        
         if ( !isCanceled ) {            
             time = System.currentTimeMillis();
             // Sorting is now done on the Go To Tpe dialog side
@@ -356,6 +379,7 @@ public class JavaTypeProvider implements TypeProvider {
             LOGGER.fine("PERF - " + " GSS:  " + gss + " GSB " + gsb + " CP: " + cp + " SFB: " + sfb + " GTN: " + gtn + "  ADD: " + add + "  SORT: " + sort );
             res.addResult(types);
         }
+        
     }
     
     private static boolean isAllUpper( String text ) {

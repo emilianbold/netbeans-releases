@@ -60,9 +60,11 @@ import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.PlatformsCustomizer;
 import org.netbeans.modules.java.api.common.ui.PlatformUiSupport;
 import org.netbeans.api.project.libraries.LibraryManager;
-import org.netbeans.modules.web.project.classpath.ClassPathSupport;
+import org.netbeans.modules.j2ee.common.project.classpath.ClassPathSupport;
+import org.netbeans.modules.j2ee.common.sharability.SharabilityUtilities;
+import org.netbeans.modules.j2ee.common.project.ui.ClassPathUiSupport;
 import org.netbeans.modules.web.project.ui.WebLogicalViewProvider;
-import org.netbeans.modules.web.project.ui.wizards.PanelOptionsVisual;
+import org.netbeans.spi.java.project.support.ui.SharableLibrariesUtils;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.awt.Mnemonics;
 import org.openide.filesystems.FileUtil;
@@ -151,8 +153,7 @@ public class CustomizerLibraries extends JPanel implements HelpCtx.Provider, Lis
         if (!isSharable) {
             sharedLibrariesLabel.setEnabled(false);
             librariesLocation.setEnabled(false);
-//            librariesBrowse.setText("Make Sharable...");
-            librariesBrowse.setEnabled(false);
+            librariesBrowse.setText(NbBundle.getMessage(CustomizerLibraries.class, "LBL_CustomizeLibraries_MakeSharable"));
         } else {
             librariesLocation.setText(uiProperties.getProject().getAntProjectHelper().getLibrariesLocation());
         }
@@ -714,41 +715,63 @@ public class CustomizerLibraries extends JPanel implements HelpCtx.Provider, Lis
     private void librariesBrowseActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_librariesBrowseActionPerformed
         if (!isSharable) {
             
-            List<String> libs = collectLibs(uiProperties.JAVAC_CLASSPATH_MODEL.getDefaultListModel(), new ArrayList<String>());
-            libs = collectLibs(uiProperties.JAVAC_TEST_CLASSPATH_MODEL, libs);
-            libs = collectLibs(uiProperties.RUN_TEST_CLASSPATH_MODEL, libs);
-            boolean result = false; //MakeSharableUtils.showMakeSharableWizard(uiProperties.getProject().getAntProjectHelper(), libs);
+            List<String> libs = new ArrayList<String>();
+            List<String> jars = new ArrayList<String>();
+            collectLibs(uiProperties.JAVAC_CLASSPATH_MODEL.getDefaultListModel(), libs, jars);
+            collectLibs(uiProperties.JAVAC_TEST_CLASSPATH_MODEL, libs, jars);
+            collectLibs(uiProperties.RUN_TEST_CLASSPATH_MODEL, libs, jars);
+            boolean result = SharableLibrariesUtils.showMakeSharableWizard(uiProperties.getProject().getAntProjectHelper(), uiProperties.getProject().getReferenceHelper(), libs, jars);
             if (result) {
                 isSharable = true;
                 sharedLibrariesLabel.setEnabled(true);
                 librariesLocation.setEnabled(true);
                 librariesLocation.setText(uiProperties.getProject().getAntProjectHelper().getLibrariesLocation());
                 Mnemonics.setLocalizedText(librariesBrowse, NbBundle.getMessage(CustomizerLibraries.class, "LBL_CustomizerLibraries_Browse_JButton")); // NOI18N
+                updateJars(uiProperties.JAVAC_CLASSPATH_MODEL.getDefaultListModel());
+                updateJars(uiProperties.JAVAC_TEST_CLASSPATH_MODEL);
+                updateJars(uiProperties.RUN_TEST_CLASSPATH_MODEL);
+                switchLibrary();
             }
         } else {
             File prjLoc = FileUtil.toFile(uiProperties.getProject().getProjectDirectory());
             String s[] = splitPath(librariesLocation.getText().trim());
-            String loc = PanelOptionsVisual.browseForLibraryLication(s[0], this, prjLoc);
+            String loc = SharableLibrariesUtils.browseForLibraryLocation(s[0], this, prjLoc);
             if (loc != null) {
                 librariesLocation.setText(s[1] != null ? loc + File.separator + s[1] :
-                    loc + File.separator + WebProjectProperties.DEFAULT_LIBRARIES_FILENAME);
+                    loc + File.separator + SharableLibrariesUtils.DEFAULT_LIBRARIES_FILENAME);
                 switchLibrary();
             }
         }
     }//GEN-LAST:event_librariesBrowseActionPerformed
 
-    private List<String> collectLibs(DefaultListModel model, List<String> libs) {
+    private void collectLibs(DefaultListModel model, List<String> libs, List<String> jarReferences) { 
         for (int i = 0; i < model.size(); i++) {
             ClassPathSupport.Item item = (ClassPathSupport.Item) model.get(i);
             if (item.getType() == ClassPathSupport.Item.TYPE_LIBRARY) {
                 libs.add(item.getLibrary().getName());
             }
             if (item.getType() == ClassPathSupport.Item.TYPE_JAR) {
-                //TODO
+                if (item.getReference() != null) {
+                    //TODO reference is null for not yet persisted items.
+                    // there seems to be no way to generate a reference string without actually
+                    // creating and writing the property..
+                    jarReferences.add(item.getReference());
+                }
             }
         }
-        return libs;
     }    
+
+    private void updateJars(DefaultListModel model) {
+        for (int i = 0; i < model.size(); i++) {
+            ClassPathSupport.Item item = (ClassPathSupport.Item) model.get(i);
+            if (item.getType() == ClassPathSupport.Item.TYPE_JAR) {
+                if (item.getReference() != null) {
+                    uiProperties.cs.updateJarReference(item);
+                }
+            }
+        }
+        
+    }
     
     private void jCheckBoxBuildSubprojectsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jCheckBoxBuildSubprojectsActionPerformed
         // TODO add your handling code here:

@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -58,7 +58,6 @@ import org.netbeans.jellytools.actions.EditAction;
 import org.netbeans.jellytools.actions.OpenAction;
 import org.netbeans.jellytools.modules.form.ComponentPaletteOperator;
 import org.netbeans.jellytools.modules.web.nodes.WebPagesNode;
-import org.netbeans.jellytools.nodes.SourcePackagesNode;
 import org.netbeans.jemmy.operators.JTableOperator;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.nodes.SourcePackagesNode;
@@ -138,15 +137,19 @@ public class JsfFunctionalTest extends JellyTestCase{
         lop.setProjectName(PROJECT_NAME);
         lop.setProjectLocation(getDataDir().getCanonicalPath());
         lop.next();
+        lop.next();
         NewProjectWizardOperator frameworkStep = new NewProjectWizardOperator();
-        // select JavaServer Faces within Visual Web JavaServer Faces, JavaServer Faces, Struts 1.2.9
+        // select JavaServer Faces
         JTableOperator tableOper = new JTableOperator(frameworkStep);
-        if(tableOper.getRowCount() > 2) {
-            // when Visual Web JSF available
-            tableOper.selectCell(1, 0);
-        } else {
-            tableOper.selectCell(0, 0);
+        boolean found = false;
+        for(int i=0; i<tableOper.getRowCount(); i++) {
+            if(tableOper.getValueAt(i, 1).toString().startsWith("org.netbeans.modules.web.jsf.JSFFrameworkProvider")) { // NOI18N
+                tableOper.selectCell(i, 0);
+                found = true;
+                break;
+            }
         }
+        assertTrue("JavaServer Faces framework not found.", found);
         frameworkStep.finish();
         ProjectSupport.waitScanFinished();
         // Check project contains all needed files.

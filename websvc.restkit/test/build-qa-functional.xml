@@ -43,6 +43,9 @@ made subject to such option by the copyright holder.
 <project name="org.netbeans.modules.websvc.qatests/test-qa-functional" basedir="." default="all">
     
     <property file="../nbproject/private/private.properties"/>
+
+    <!-- turn off jMaki tests for now -->
+    <property name="plugins.jmaki.skip" value="true"/>
     
     <!-- Imports default qa-functional-compiler and runidetest executor.
         jemmy and jellytools jars are on classpath for both. -->
@@ -112,6 +115,7 @@ made subject to such option by the copyright holder.
                 <pathelement location="${netbeans.dest.dir}/platform8/modules/org-openide-loaders.jar"/>
                 <pathelement location="${netbeans.dest.dir}/platform8/modules/org-openide-nodes.jar"/>
                 <pathelement location="${netbeans.dest.dir}/platform8/modules/org-openide-text.jar"/>
+                <pathelement location="${netbeans.dest.dir}/platform8/modules/org-openide-windows.jar"/>
                 <pathelement location="${netbeans.dest.dir}/ide9/modules/org-netbeans-modules-projectapi.jar"/>
             </classpath>
             <compilerarg line="-Xlint -Xlint:-serial"/>
@@ -134,6 +138,46 @@ made subject to such option by the copyright holder.
             </fileset>
         </path>
         <property name="coverage.lib.path" refid="httpunit.libs"/>
+    </target>
+    
+    <!--
+    
+    -->
+    <target name="-init-jmaki">
+        <property name="plugins.jmaki.nbm.dir" value="${java.io.tmpdir}"/>
+        <property name="plugins.jmaki.nbm.name" value="org-netbeans-modules-sun-jmaki.nbm"/>
+        <condition property="plugins.jmaki.nbm.tmp" value="${plugins.jmaki.nbm}" else="${plugins.jmaki.nbm.dir}/${plugins.jmaki.nbm.name}">
+            <and>
+                <isset property="plugins.jmaki.nbm"/>
+                <available file="${plugins.jmaki.nbm}"/>
+            </and>
+        </condition>
+        <condition property="plugins.jmaki.do.download">
+            <and>
+                <not><isset property="plugins.jmaki.skip"/></not>
+                <isfalse value="${plugins.jmaki.skip}"/>
+                <not><available file="${plugins.jmaki.nbm.tmp}"/></not>
+            </and>
+        </condition>
+    </target>
+        
+    <target name="-download-jmaki" if="plugins.jmaki.do.download">
+        <echo message="Going to download ${plugins.jmaki.nbm.name}. If it fails download it from http://ajax.dev.java.net" />
+        <echo message="(and put it into ${java.io.tmpdir})"/>
+        <echo message="or invoke with -Dproxy.host='host' -Dproxy.port='port'" />
+        <get src="https://ajax.dev.java.net/files/documents/3115/86078/org-netbeans-modules-sun-jmaki.nbm" dest="${plugins.jmaki.nbm.tmp}"/>
+    </target>
+
+    <target name="-setup-jmaki-nbm" depends="-init-jmaki, -download-jmaki">
+        <condition property="xtest.userdata|plugins.jmaki.skip" value="true">
+            <istrue value="${plugins.jmaki.skip}"/>
+        </condition>
+        <condition property="xtest.userdata|plugins.jmaki.nbm" value="${plugins.jmaki.nbm.tmp}">
+            <and>
+                <available file="${plugins.jmaki.nbm.tmp}"/>
+                <not><isset property="plugins.jmaki.skip"/></not>
+            </and>
+        </condition>
     </target>
     
     <!-- Run tests on Apache Tomcat server -->
@@ -168,7 +212,7 @@ made subject to such option by the copyright holder.
     </target>
     
     <!-- Override to run tests on more servers at once -->
-    <target name="runidetest-with-appserver" depends="-init-cp-wa, -runidetest-with-glassfish, -runidetest-with-tomcat, -runidetest-with-jboss"/>
+    <target name="runidetest-with-appserver" depends="-init-cp-wa, -setup-jmaki-nbm, -runidetest-with-glassfish, -runidetest-with-tomcat, -runidetest-with-jboss"/>
     
 </project>
 

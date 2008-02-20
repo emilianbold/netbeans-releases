@@ -54,28 +54,24 @@ import java.util.logging.Logger;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
+import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.classpath.GlobalPathRegistry;
+import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.ant.AntBuildExtender;
-import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
-import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.web.project.api.WebPropertyEvaluator;
 import org.netbeans.modules.web.project.jaxws.WebProjectJAXWSClientSupport;
 import org.netbeans.modules.web.project.jaxws.WebProjectJAXWSSupport;
-import org.netbeans.modules.web.project.spi.BrokenLibraryRefFilterProvider;
 import org.netbeans.modules.websvc.api.jaxws.client.JAXWSClientSupport;
 import org.netbeans.modules.websvc.jaxws.api.JAXWSSupport;
 import org.netbeans.modules.websvc.jaxws.spi.JAXWSSupportFactory;
 import org.netbeans.modules.websvc.spi.client.WebServicesClientSupportFactory;
 import org.netbeans.modules.websvc.spi.jaxws.client.JAXWSClientSupportFactory;
-import org.openide.DialogDisplayer;
-import org.openide.NotifyDescriptor;
-import org.openide.util.NbBundle;
 import org.openide.util.WeakListeners;
 import org.openide.util.lookup.Lookups;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.w3c.dom.Text;
-import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileChangeAdapter;
 import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileEvent;
@@ -84,25 +80,22 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.FileAttributeEvent;
-import org.openide.loaders.DataObject;
 import org.openide.util.Lookup;
 import org.openide.util.Mutex;
 import org.openide.util.Utilities;
 import org.openide.util.lookup.Lookups;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.spi.webmodule.WebModuleFactory;
-import org.netbeans.api.java.classpath.ClassPath;
-import org.netbeans.api.java.classpath.GlobalPathRegistry;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ant.AntArtifact;
 import org.netbeans.modules.web.project.classpath.ClassPathProviderImpl;
-import org.netbeans.modules.web.project.classpath.WebProjectClassPathExtender;
 import org.netbeans.modules.web.project.ui.WebLogicalViewProvider;
 import org.netbeans.modules.web.project.ui.customizer.WebProjectProperties;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.netbeans.api.project.ProjectInformation;
-import org.netbeans.modules.j2ee.common.ui.BrokenServerSupport;
+import org.netbeans.modules.j2ee.common.project.classpath.ClassPathExtender;
+import org.netbeans.modules.j2ee.common.project.classpath.ClassPathModifier;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
 import org.netbeans.modules.java.api.common.SourceRoots;
 import org.netbeans.modules.java.api.common.ant.UpdateHelper;
@@ -123,15 +116,20 @@ import org.netbeans.spi.project.ui.support.UILookupMergerSupport;
 import org.netbeans.spi.project.support.ant.ReferenceHelper;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.spi.project.ui.ProjectOpenedHook;
+import org.netbeans.modules.j2ee.common.project.classpath.ClassPathSupport;
+import org.netbeans.modules.j2ee.common.project.classpath.LibrariesLocationUpdater;
+import org.netbeans.modules.j2ee.common.project.ui.ProjectProperties;
+import org.netbeans.modules.j2ee.common.ui.BrokenServerSupport;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.web.api.webmodule.WebProjectConstants;
-import org.netbeans.modules.web.project.classpath.ClassPathSupport;
-import org.netbeans.modules.web.project.classpath.WebProjectClassPathModifier;
+import org.netbeans.modules.web.project.classpath.ClassPathSupportCallbackImpl;
 import org.netbeans.modules.web.project.classpath.WebProjectLibrariesModifierImpl;
 import org.netbeans.modules.web.project.jaxws.WebProjectJAXWSVersionProvider;
 import org.netbeans.modules.web.project.spi.BrokenLibraryRefFilter;
+import org.netbeans.modules.web.project.spi.BrokenLibraryRefFilterProvider;
 import org.netbeans.modules.web.project.ui.customizer.CustomizerProviderImpl;
 import org.netbeans.modules.web.spi.webmodule.WebPrivilegedTemplates;
-import org.netbeans.spi.java.project.support.ui.BrokenReferencesSupport;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.modules.websvc.api.webservices.WebServicesSupport;
 import org.netbeans.modules.websvc.api.client.WebServicesClientSupport;
@@ -139,15 +137,21 @@ import org.netbeans.modules.websvc.api.jaxws.project.WSUtils;
 import org.netbeans.modules.websvc.spi.webservices.WebServicesSupportFactory;
 import org.netbeans.spi.java.project.support.ExtraSourceJavadocSupport;
 import org.netbeans.spi.java.project.support.LookupMergerSupport;
+import org.netbeans.spi.java.project.support.ui.BrokenReferencesSupport;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
+import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileSystem.AtomicAction;
+import org.openide.loaders.DataObject;
 import org.openide.util.Exceptions;
+import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 
 /**
  * Represents one plain Web project.
  * @author Jesse Glick, et al., Pavel Buzek
  */
-public final class WebProject implements Project, AntProjectListener, PropertyChangeListener {
+public final class WebProject implements Project, AntProjectListener {
     
     private static final Logger LOGGER = Logger.getLogger(WebProject.class.getName());
     
@@ -176,11 +180,11 @@ public final class WebProject implements Project, AntProjectListener, PropertyCh
     private final UpdateHelper updateHelper;
     private final UpdateProjectImpl updateProject;
     private final AuxiliaryConfiguration aux;
-    private final WebProjectClassPathExtender classPathExtender;
-    private final WebProjectClassPathModifier cpMod;
+    private final ClassPathExtender classPathExtender;
+    private final ClassPathModifier cpMod;
     private final WebProjectLibrariesModifierImpl libMod;
-    private PropertyChangeListener evalListener;
     private final ClassPathProviderImpl cpProvider;
+    private LibrariesLocationUpdater librariesLocationUpdater;
     
     private AntBuildExtender buildExtender;
             
@@ -317,9 +321,13 @@ public final class WebProject implements Project, AntProjectListener, PropertyCh
         apiWebServicesClientSupport = WebServicesClientSupportFactory.createWebServicesClientSupport (webProjectWebServicesClientSupport);
         apiJAXWSClientSupport = JAXWSClientSupportFactory.createJAXWSClientSupport(jaxWsClientSupport);
         enterpriseResourceSupport = new WebContainerImpl(this, refHelper, helper);
-        cpMod = new WebProjectClassPathModifier(this, this.updateHelper, eval, refHelper);
+        cpMod = new ClassPathModifier(this, this.updateHelper, eval, refHelper,
+            new ClassPathSupportCallbackImpl(helper), createClassPathModifierCallback());
         libMod = new WebProjectLibrariesModifierImpl(this, this.updateHelper, eval, refHelper);
-        classPathExtender = new WebProjectClassPathExtender(cpMod);
+        classPathExtender = new ClassPathExtender(cpMod, ProjectProperties.JAVAC_CLASSPATH, ClassPathSupportCallbackImpl.TAG_WEB_MODULE_LIBRARIES);
+        librariesLocationUpdater = new LibrariesLocationUpdater(this, updateHelper, eval, cpMod.getClassPathSupport(),
+                ProjectProperties.JAVAC_CLASSPATH, WebProjectProperties.TAG_WEB_MODULE_LIBRARIES, 
+                WebProjectProperties.WAR_CONTENT_ADDITIONAL, WebProjectProperties.TAG_WEB_MODULE__ADDITIONAL_LIBRARIES);
         lookup = createLookup(aux, cpProvider);
         helper.addAntProjectListener(this);
         css = new CopyOnSaveSupport();
@@ -327,6 +335,27 @@ public final class WebProject implements Project, AntProjectListener, PropertyCh
         webInfFileWatch = new FileWatch(WebProjectProperties.WEBINF_DIR);
     }
     
+    private ClassPathModifier.Callback createClassPathModifierCallback() {
+        return new ClassPathModifier.Callback() {
+            public String getClassPathProperty(SourceGroup sg, String type) {
+                assert sg != null : "SourceGroup cannot be null";  //NOI18N
+                assert type != null : "Type cannot be null";  //NOI18N
+                final String classPathProperty = getClassPathProvider().getPropertyName (sg, type);
+                if (classPathProperty == null) {
+                    throw new UnsupportedOperationException ("Modification of [" + sg.getRootFolder().getPath() +", " + type + "] is not supported"); //NOI8N
+                }
+                return classPathProperty;
+            }
+
+            public String getElementName(String classpathProperty) {
+                if (ProjectProperties.JAVAC_CLASSPATH.equals(classpathProperty)) {
+                    return ClassPathSupportCallbackImpl.TAG_WEB_MODULE_LIBRARIES;
+                }
+                return null;
+            }
+        };        
+    }
+
     public UpdateProjectImpl getUpdateImplementation() {
         return updateProject;
     }
@@ -346,10 +375,7 @@ public final class WebProject implements Project, AntProjectListener, PropertyCh
     private PropertyEvaluator createEvaluator() {
         // XXX might need to use a custom evaluator to handle active platform substitutions... TBD
         // It is currently safe to not use the UpdateHelper for PropertyEvaluator; UH.getProperties() delegates to APH
-        PropertyEvaluator e = helper.getStandardPropertyEvaluator();
-        evalListener = WeakListeners.propertyChange(this, e);
-        e.addPropertyChangeListener(evalListener);
-        return e;
+        return helper.getStandardPropertyEvaluator();
     }
     
     public PropertyEvaluator evaluator() {
@@ -465,7 +491,7 @@ public final class WebProject implements Project, AntProjectListener, PropertyCh
     }
 
     File getTestClassesDirectory() {
-        String testClassesDir = evaluator().getProperty(WebProjectProperties.BUILD_TEST_CLASSES_DIR);
+        String testClassesDir = evaluator().getProperty(ProjectProperties.BUILD_TEST_CLASSES_DIR);
         if (testClassesDir == null) {
             return null;
         }
@@ -551,8 +577,10 @@ public final class WebProject implements Project, AntProjectListener, PropertyCh
                     ProjectManager.mutex().writeAccess(new Mutex.Action() {
                         public Object run() {
                             EditableProperties ep = helper.getProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH);
-                            String classpath = Utils.toClasspathString(platform.getClasspathEntries());
-                            ep.setProperty(WebProjectProperties.J2EE_PLATFORM_CLASSPATH, classpath);
+                            if (!Boolean.parseBoolean(ep.getProperty(WebProjectProperties.J2EE_PLATFORM_SHARED))) {
+                                String classpath = Utils.toClasspathString(platform.getClasspathEntries());
+                                ep.setProperty(WebProjectProperties.J2EE_PLATFORM_CLASSPATH, classpath);
+                            }
                             helper.putProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH, ep);
                             try {
                                 ProjectManager.getDefault().saveProject(WebProject.this);
@@ -830,9 +858,9 @@ public final class WebProject implements Project, AntProjectListener, PropertyCh
 
             //update lib references in private properties
             ArrayList l = new ArrayList();
-            l.addAll(cpMod.getClassPathSupport().itemsList(props.getProperty(WebProjectProperties.JAVAC_CLASSPATH),  WebProjectProperties.TAG_WEB_MODULE_LIBRARIES));
+            l.addAll(cpMod.getClassPathSupport().itemsList(props.getProperty(ProjectProperties.JAVAC_CLASSPATH),  WebProjectProperties.TAG_WEB_MODULE_LIBRARIES));
             l.addAll(cpMod.getClassPathSupport().itemsList(props.getProperty(WebProjectProperties.WAR_CONTENT_ADDITIONAL),  WebProjectProperties.TAG_WEB_MODULE__ADDITIONAL_LIBRARIES));
-            WebProjectProperties.storeLibrariesLocations(l.iterator(), props, getProjectDirectory());
+            ProjectProperties.storeLibrariesLocations(l.iterator(), props, getProjectDirectory());
 
             //add webinf.dir required by 6.0 projects
             if (props.getProperty(WebProjectProperties.WEBINF_DIR) == null) {
@@ -868,11 +896,11 @@ public final class WebProject implements Project, AntProjectListener, PropertyCh
         private void filterBrokenLibraryRefs() {
             // filter the compilation CP
             EditableProperties props = updateHelper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
-            List<ClassPathSupport.Item> toRemove = filterBrokenLibraryItems(cpMod.getClassPathSupport().itemsList(props.getProperty(WebProjectProperties.JAVAC_CLASSPATH), WebProjectProperties.TAG_WEB_MODULE_LIBRARIES));
+            List<ClassPathSupport.Item> toRemove = filterBrokenLibraryItems(cpMod.getClassPathSupport().itemsList(props.getProperty(ProjectProperties.JAVAC_CLASSPATH), WebProjectProperties.TAG_WEB_MODULE_LIBRARIES));
             if (!toRemove.isEmpty()) {
                 LOGGER.log(Level.FINE, "Will remove broken classpath library references: " + toRemove);
                 try {
-                    cpMod.handleLibraryClassPathItems(toRemove, WebProjectProperties.JAVAC_CLASSPATH, WebProjectProperties.TAG_WEB_MODULE_LIBRARIES, WebProjectClassPathModifier.REMOVE, false);
+                    cpMod.handleLibraryClassPathItems(toRemove, ProjectProperties.JAVAC_CLASSPATH, WebProjectProperties.TAG_WEB_MODULE_LIBRARIES, ClassPathModifier.REMOVE, false);
                 } catch (IOException e) {
                     // should only occur when passing true as the saveProject parameter which we are not doing here
                     Exceptions.printStackTrace(e);
@@ -942,8 +970,8 @@ public final class WebProject implements Project, AntProjectListener, PropertyCh
             }
             
             // unregister the property change listener on the prop evaluator
-            if (evalListener != null) {
-                evaluator().removePropertyChangeListener(evalListener);
+            if (librariesLocationUpdater != null) {
+                librariesLocationUpdater.unregister();
             }
 
             // remove ServiceListener from jaxWsModel            
@@ -1340,24 +1368,6 @@ public final class WebProject implements Project, AntProjectListener, PropertyCh
                 current = newCurrent;
             }
             return current;
-        }
-    }
-    
-    public void propertyChange(PropertyChangeEvent evt) {
-        if (evt.getPropertyName().equals(WebProjectProperties.JAVAC_CLASSPATH) ||
-                evt.getPropertyName().equals(WebProjectProperties.WAR_CONTENT_ADDITIONAL)) {
-            ProjectManager.mutex().postWriteRequest(new Runnable () {
-                public void run() {
-		    if (ProjectManager.getDefault().isValid(((ProjectInformation) getLookup().lookup(ProjectInformation.class)).getProject())) {
-			EditableProperties props = helper.getProperties (AntProjectHelper.PROJECT_PROPERTIES_PATH);    //Reread the properties, PathParser changes them
-			ArrayList l = new ArrayList ();
-			l.addAll(cpMod.getClassPathSupport().itemsList(props.getProperty(WebProjectProperties.JAVAC_CLASSPATH),  WebProjectProperties.TAG_WEB_MODULE_LIBRARIES));
-			l.addAll(cpMod.getClassPathSupport().itemsList(props.getProperty(WebProjectProperties.WAR_CONTENT_ADDITIONAL),  WebProjectProperties.TAG_WEB_MODULE__ADDITIONAL_LIBRARIES));
-			WebProjectProperties.storeLibrariesLocations(l.iterator(), props, getProjectDirectory());
-			helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, props);
-		    }
-                }
-            });
         }
     }
     

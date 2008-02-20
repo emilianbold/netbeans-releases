@@ -17,6 +17,9 @@ import javax.swing.text.Element;
 import javax.swing.text.ElementIterator;
 import javax.swing.text.html.HTMLDocument;
 import javax.swing.text.html.HTMLEditorKit;
+import net.java.hulp.i18n.Logger;
+import org.netbeans.modules.etl.logger.Localizer;
+import org.netbeans.modules.etl.logger.LogUtil;
 
 public final class ChooseTableVisualPanel extends JPanel {
 
@@ -24,7 +27,8 @@ public final class ChooseTableVisualPanel extends JPanel {
     private ChooseTablePanel owner;
     private PatchedHTMLEditorKit ek;
     private int tableNum;
-
+    private static transient final Logger mLogger = LogUtil.getLogger(ChooseTableVisualPanel.class.getName());
+    private static transient final Localizer mLoc = Localizer.get();
     public int getTableNum() {
         return tableNum;
     }
@@ -107,10 +111,10 @@ public final class ChooseTableVisualPanel extends JPanel {
         setMaximumSize(new java.awt.Dimension(450, 300));
         setMinimumSize(new java.awt.Dimension(100, 100));
         setPreferredSize(new java.awt.Dimension(400, 200));
-
-        org.openide.awt.Mnemonics.setLocalizedText(jLabel1, "Choose a Table");
-
-        org.openide.awt.Mnemonics.setLocalizedText(preview, "Preview");
+        String nbBundle30 = mLoc.t("PRSR001: Choose a Table");
+        jLabel1.setDisplayedMnemonic(Localizer.parse(nbBundle30).charAt(0));
+        String nbBundle31 = mLoc.t("PRSR001: Preview");
+        preview.setMnemonic(Localizer.parse(nbBundle31).charAt(0));
         preview.addActionListener(new java.awt.event.ActionListener() {
 
             public void actionPerformed(java.awt.event.ActionEvent evt) {
