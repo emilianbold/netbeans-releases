@@ -89,12 +89,7 @@ public class WsdlPortNode extends AbstractNode {
     
     @Override
     public Action[] getActions(boolean context) {
-        List<Action> actions = new ArrayList<Action>();
-        for (SaasNodeActionsProvider ext : SaasUtil.getSaasNodeActionsProviders()) {
-            for (Action a : ext.getSaasActions(this.getLookup())) {
-                actions.add(a);
-            }
-        }
+        List<Action> actions = SaasNode.getActions(getLookup());
         actions.add(SystemAction.get(ViewWSDLAction.class));
         return actions.toArray(new Action[actions.size()]);
     }
@@ -177,7 +172,7 @@ public class WsdlPortNode extends AbstractNode {
     
     @Override
     public Transferable clipboardCopy() throws IOException {
-        if (port.getParentSaas().getState() != Saas.State.READY) {
+        if (port.getParentSaas().getState() != Saas.State.RESOLVED) {
             port.getParentSaas().toStateReady();
             return super.clipboardCopy();
         }

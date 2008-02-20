@@ -42,8 +42,6 @@
 package org.netbeans.modules.j2ee.common.method.impl;
 
 import java.awt.Component;
-import java.awt.event.ItemEvent;
-import java.awt.event.ItemListener;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
@@ -95,13 +93,6 @@ public final class ParametersPanel extends javax.swing.JPanel {
         TableColumn typeTableColumn = table.getColumnModel().getColumn(COL_TYPE_INDEX);
         typeTableColumn.setCellEditor(new DefaultCellEditor(typeCombo));
 
-        typeCombo.addItemListener(new ItemListener() {
-            public void itemStateChanged(ItemEvent e) {
-                tableModel.setValueAt(e.getItem(), table.getSelectedRow(), COL_TYPE_INDEX);
-                firePropertyChange(SELECTION, null, null);
-            }
-        });
-        
         table.setRowHeight(typeCombo.getPreferredSize().height);
         table.putClientProperty("terminateEditOnFocusLost", Boolean.TRUE); // NOI18N
         

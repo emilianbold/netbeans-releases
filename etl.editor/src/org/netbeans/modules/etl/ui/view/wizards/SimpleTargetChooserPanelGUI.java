@@ -48,6 +48,7 @@ public class SimpleTargetChooserPanelGUI extends javax.swing.JPanel implements A
     /** prefered dimmension of the panels */
     private static final java.awt.Dimension PREF_DIM = new java.awt.Dimension(500, 340);
     String nbBundle20 = mLoc.t("PRSR001: new");
+    String nbBundle28 = mLoc.t("PRSR001: Browse...");
     private final String NEW_FILE_PREFIX = Localizer.parse(nbBundle20); // NOI18N
     private final ListCellRenderer CELL_RENDERER = new GroupCellRenderer();
     private Project project;
@@ -323,6 +324,7 @@ public class SimpleTargetChooserPanelGUI extends javax.swing.JPanel implements A
         jLabel2 = new javax.swing.JLabel();
         folderTextField = new javax.swing.JTextField();
         browseButton = new javax.swing.JButton();
+        browseButton.setMnemonic(Localizer.parse(nbBundle28).charAt(0));
         jLabel4 = new javax.swing.JLabel();
         fileTextField = new javax.swing.JTextField();
         targetSeparator = new javax.swing.JSeparator();
@@ -448,7 +450,7 @@ public class SimpleTargetChooserPanelGUI extends javax.swing.JPanel implements A
         browseButton.setMnemonic(
             Localizer.parse(nbBundle27).charAt(0)
         );
-        String nbBundle28 = mLoc.t("PRSR001: Browse...");
+
         browseButton.setText(
            Localizer.parse(nbBundle28)
         );

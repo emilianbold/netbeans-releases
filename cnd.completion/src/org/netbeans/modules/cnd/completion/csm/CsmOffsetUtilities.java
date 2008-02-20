@@ -48,8 +48,10 @@ import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import java.util.Iterator;
 import org.netbeans.modules.cnd.api.model.CsmFunction;
 import org.netbeans.modules.cnd.api.model.CsmFunctionDefinition;
+import org.netbeans.modules.cnd.api.model.CsmInitializerListContainer;
 import org.netbeans.modules.cnd.api.model.CsmParameter;
 import org.netbeans.modules.cnd.api.model.CsmType;
+import org.netbeans.modules.cnd.api.model.deep.CsmExpression;
 
 /**
  * utilities method for working with offsets of Csm objects
@@ -128,23 +130,33 @@ public class CsmOffsetUtilities {
             }
             // check if offset is before parameters
             Collection<CsmParameter> params = fun.getParameters();
-            if (params.size() > 0) {
+            if(!params.isEmpty()) 
+            {
                 CsmParameter firstParam = params.iterator().next();
                 if (CsmOffsetUtilities.isBeforeObject(firstParam, offset)) {
                     return false;
                 }
-            } else {
-                // check initializer list for constructors
-                
-                // for function definitions check body
-                if (CsmKindUtilities.isFunctionDefinition(fun)) {
-                    CsmFunctionDefinition funDef = (CsmFunctionDefinition)fun;
-                    if (CsmOffsetUtilities.isBeforeObject(funDef.getBody(), offset)) {
+                return true;
+            }
+            // check initializer list for constructors
+            if (CsmKindUtilities.isConstructor(fun)) {
+                Collection<CsmExpression> izers = ((CsmInitializerListContainer) fun).getInitializerList();
+                if (!izers.isEmpty()) {
+                    CsmExpression firstIzer = izers.iterator().next();
+                    if (CsmOffsetUtilities.isBeforeObject(firstIzer, offset)) {
                         return false;
                     }
+                    return true;
                 }
             }
-        }              
+            // for function definitions check body
+            if (CsmKindUtilities.isFunctionDefinition(fun)) {
+                CsmFunctionDefinition funDef = (CsmFunctionDefinition) fun;
+                if (CsmOffsetUtilities.isBeforeObject(funDef.getBody(), offset)) {
+                    return false;
+                }
+            }
+        }
         return inScope;
     }    
 }

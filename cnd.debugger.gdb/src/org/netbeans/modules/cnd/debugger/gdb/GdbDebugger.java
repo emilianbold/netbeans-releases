@@ -125,8 +125,8 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
     private static final int            DEBUG_ATTACH = 999;
     
     /* Some breakpoint flags used only on Windows XP (with Cygwin) */
-    public static final int             GDB_TMP_BREAKPOINT = 1;
-    public static final int             GDB_INVISIBLE_BREAKPOINT = 2;
+    public static final int             GDB_TMP_BREAKPOINT = GdbBreakpoint.SUSPEND_ALL + 1;
+    public static final int             GDB_INVISIBLE_BREAKPOINT = GdbBreakpoint.SUSPEND_ALL + 2;
     
     /** ID of GDB Debugger Engine for C */
     public static final String          ENGINE_ID = "netbeans-cnd-GdbSession/C"; // NOI18N
@@ -417,22 +417,6 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
             }
         }
         return programName.toString();
-    }
-    
-    /** If the type definition contains { ... }, strip it. It will be picked up elsewhere */
-    private String stripFields(String info) {
-        StringBuilder buf = new StringBuilder();
-        int pos1 = info.indexOf('{');
-        int pos2 = GdbUtils.findMatchingCurly(info, pos1);
-        
-        if (pos1 != -1 && pos2 != -1) {
-            buf.append(info.substring(0, pos1).trim());
-            buf.append(info.substring(pos2 + 1).trim());
-        } else {
-            buf.append(info);
-        }
-        
-        return buf.toString();
     }
     
     /** Get the gdb version */
@@ -1089,13 +1073,6 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
         firePropertyChange(PROP_STATE, oldState, state);
     }
     
-    private void setStateNoFire(String state) {
-        if (state.equals(this.state)) {
-            return;
-        }
-        this.state = state;
-    }
-    
     public void setStarting() {
         setState(STATE_STARTING);
     }
@@ -1184,7 +1161,6 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
                 setExited();
                 finish(false);
             } else if (reason.equals("breakpoint-hit")) { // NOI18N
-                GdbBreakpoint breakpoint;
                 String tid = map.get("thread-id"); // NOI18N
                 if (tid != null && !tid.equals(currentThreadID)) {
                     currentThreadID = tid;
@@ -1198,12 +1174,17 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
                         return;
                     }
                 } else {
-                    updateCurrentCallStack();
-                    if ((breakpoint = impl.getBreakpoint()) != null) {
+                    GdbBreakpoint breakpoint = impl.getBreakpoint();
+                    if (breakpoint.getSuspend() == GdbBreakpoint.SUSPEND_NONE) {
                         fireBreakpointEvent(breakpoint, new GdbBreakpointEvent(
-                                breakpoint, this, GdbBreakpointEvent.CONDITION_NONE, null));
+                                    breakpoint, this, GdbBreakpointEvent.CONDITION_NONE, null));
+                        gdb.exec_continue();
+                    } else {
+                        updateCurrentCallStack();
+                        fireBreakpointEvent(breakpoint, new GdbBreakpointEvent(
+                                    breakpoint, this, GdbBreakpointEvent.CONDITION_NONE, null));
+                        setStopped();
                     }
-                    setStopped();
                 }
                 if (dlopenPending) {
                     dlopenPending = false;

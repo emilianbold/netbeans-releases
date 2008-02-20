@@ -120,19 +120,12 @@ public class AddWebServiceDlg extends JPanel  implements ActionListener {
     }
     
     
-    public AddWebServiceDlg() {
-        this(SaasServicesModel.getInstance().getRootGroup());
-    }
-    
-    
     public AddWebServiceDlg(SaasGroup group) {
         initComponents();
         myInitComponents();
         this.group = group;
         jaxRPCAvailable = WsdlUtil.isJAXRPCAvailable();
     }
-
-
     
     private static boolean isValidPackageName(String packageName) {
         if (packageName == null || packageName.length() == 0) { // let jaxws pick package name
@@ -190,7 +183,7 @@ public class AddWebServiceDlg extends JPanel  implements ActionListener {
         
         // Check the package name
         final String packageName = jTxtpackageName.getText().trim();
-        if (!isValidPackageName(packageName)) {
+        if (packageName.length() > 0 && !isValidPackageName(packageName)) {
             setErrorMessage(NbBundle.getMessage(AddWebServiceDlg.class, "INVALID_PACKAGE"));
             addButton.setEnabled(false);
         }else if (jTxtLocalFilename.isEnabled()) {
@@ -486,7 +479,7 @@ public class AddWebServiceDlg extends JPanel  implements ActionListener {
             }
         });
 
-        errorLabel.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/websvc/manager/resources/warning.png"))); // NOI18N
+        errorLabel.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/websvc/saas/ui/resources/warning.png"))); // NOI18N
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
