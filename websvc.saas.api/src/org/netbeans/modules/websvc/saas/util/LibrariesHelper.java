@@ -88,7 +88,7 @@ public class LibrariesHelper {
                     FileObject jarFO = FileUtil.toFileObject(new File(jarFilePath));
                     FileObject destJar = wsClientsSubDir.getFileObject(jarFO.getNameExt());
                     if (destJar == null) {
-                        destJar = FileUtil.copyFile(jarFO, wsClientsSubDir, jarFO.getNameExt());
+                        destJar = FileUtil.copyFile(jarFO, wsClientsSubDir, jarFO.getName());
                     }
                     if (classPath.contains(destJar)) {
                         continue;

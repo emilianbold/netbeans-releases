@@ -48,7 +48,6 @@ import java.util.Enumeration;
 import java.util.List;
 import org.netbeans.modules.websvc.saas.model.jaxb.SaasServices;
 import org.netbeans.modules.websvc.saas.spi.websvcmgr.WsdlData;
-import org.netbeans.modules.websvc.saas.spi.websvcmgr.WsdlServiceProxyDescriptor;
 import org.netbeans.modules.websvc.saas.util.SaasUtil;
 import org.netbeans.modules.websvc.saas.util.WsdlUtil;
 import org.openide.filesystems.FileObject;
@@ -66,7 +65,8 @@ public class SaasServicesModel {
     public static final String PROP_GROUPS = "groups";
     public static final String PROP_SERVICES = "services";
     public static final String ROOT_GROUP = "root";
-    public static final String WEBSVC_HOME = WsdlServiceProxyDescriptor.WEBSVC_HOME;
+    public static final String WEBSVC_HOME = System.getProperty("netbeans.user") + 
+            File.separator + "config" + File.separator + "WebServices"; // NOI18N
     public static final String SERVICE_GROUP_XML = "service-groups.xml";
     private SaasGroup rootGroup;
     private State state = State.UNINITIALIZED;
@@ -104,6 +104,7 @@ public class SaasServicesModel {
             return;
         }
         setState(State.INITIALIZING);
+        loadUserDefinedGroups();
         loadFromDefaultFileSystem();
         loadFromWebServicesHome();
         setState(State.READY);
@@ -257,12 +258,13 @@ public class SaasServicesModel {
      * @param parent
      * @param child
      */
-    public synchronized void addGroup(SaasGroup parent, String groupName) {
+    public synchronized SaasGroup createGroup(SaasGroup parent, String groupName) {
         initRootGroup();
         SaasGroup group = parent.createGroup(groupName);
         parent.addChildGroup(group);
         saveRootGroup();
         fireChange(PROP_GROUPS, parent, null, group);
+        return group;
     }
 
     /**
@@ -315,13 +317,13 @@ public class SaasServicesModel {
         SaasGroup parent = service.getParentGroup();
         parent.removeService(service);
         try {
-            FileObject saasFolder = service.getSaasFolder();
-            if (saasFolder != null) {
-                saasFolder.delete();
-            }
             if (service instanceof WsdlSaas) {
                 WsdlSaas saas = (WsdlSaas) service;
                 WsdlUtil.removeWsdlData(saas.getWsdlData());
+            }
+            FileObject saasFolder = service.getSaasFolder();
+            if (saasFolder != null) {
+                saasFolder.delete();
             }
             fireChange(PROP_SERVICES, parent, service, null);
         } catch (IOException e) {
@@ -348,5 +350,10 @@ public class SaasServicesModel {
     
     public synchronized void refreshService(Saas saas) {
         saas.refresh();
+    }
+    
+    void reset() {
+        rootGroup = null;
+        state = State.UNINITIALIZED;
     }
 }

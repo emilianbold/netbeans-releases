@@ -87,6 +87,7 @@ public class WsdlSaas extends Saas implements PropertyChangeListener {
         return wsData;
     }
 
+    @Override
     protected void refresh() {
         if (wsData == null || getState() == State.INITIALIZING) {
             throw new IllegalStateException("Could not refresh null WSDL data or while it is initializing");
