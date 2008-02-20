@@ -361,7 +361,7 @@ public class Canvas extends MapperPanel implements VertexCanvas,
             }
         }
 
-        if (node.isVisibleGraph()) {
+        if (node.isVisibleGraph() && !node.getGraph().isEmptyOrOneLink()) {
             int size = step - 1;
             int topInset = size / 2;
             int bottomInset = size - topInset;
@@ -801,7 +801,7 @@ public class Canvas extends MapperPanel implements VertexCanvas,
         @Override
         public void doLayout() {
             int step = getStep();
-            
+
             JScrollBar hsb = getHorizontalScrollBar();
             JScrollBar vsb = getVerticalScrollBar();
             JViewport viewport = getViewport();
@@ -810,7 +810,7 @@ public class Canvas extends MapperPanel implements VertexCanvas,
             vsb.setVisible(false);
 
             Insets insets = getInsets();
-            
+
             int graphViewPositionX = getGraphViewPositionX(step);
 
             int x = insets.left;
@@ -943,7 +943,7 @@ public class Canvas extends MapperPanel implements VertexCanvas,
         int graphX1 = oldGraphX - graphW;
         
         int step = getStep();
-        
+
         int w = vertex.getWidth() * step;
         int x1 = vertex.getX() * step;
         int x2 = x1 + w;
