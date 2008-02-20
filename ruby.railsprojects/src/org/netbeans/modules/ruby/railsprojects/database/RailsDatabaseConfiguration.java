@@ -49,18 +49,14 @@ import org.netbeans.modules.ruby.railsprojects.RailsProject;
 public interface RailsDatabaseConfiguration {
 
     /**
-     * @return the name of the database represented by this configuration.
-     */
-    String getDatabase();
-    
-    /**
-     * Checks whether this configuration requires additional config. If the 
-     * method returns true, the client should invoke the {@link editConfig(FileObject)} 
-     * method.
+     * Gets the database parameter passed to the rails command, i.e. the name 
+     * of the Rails database adapter to be used.
      * 
-     * @return true if additional configuration is required, false otherwise.
+     * @return the parameter for the Rails generator or <code>null</code> if
+     * the Rails generator should not be used for generating database configuration
+     * for this.
      */
-    boolean needExtraConfig();
+    String railsGenerationParam();
     
     /**
      * Edits the database config file (database.yml) of the given <code>project</code>

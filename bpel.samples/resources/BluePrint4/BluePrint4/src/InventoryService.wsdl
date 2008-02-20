@@ -95,7 +95,7 @@
     <service name="inventoryService">
         <port name="inventoryServicePort"
               binding="tns:inventoryBinding">
-            <soap:address location="http://localhost:12100/wsdl/inventory/ServiceLocation/bp4"/>
+            <soap:address location="http://localhost:18181/wsdl/inventory/ServiceLocation/bp4"/>
         </port>
     </service>
     

@@ -52,6 +52,7 @@ class StackEntry {
     private CppTokenId kind;
     private CppTokenId importantKind;
     private boolean likeToFunction = false;
+    private boolean likeToArrayInitialization = false;
 
     StackEntry(ExtendedTokenSequence ts) {
         super();
@@ -111,7 +112,7 @@ class StackEntry {
                     case LPAREN: //("(", "separator"),
                     {
                         if (paren == 0) {
-                            // undefined
+                            likeToArrayInitialization = true;
                             return;
                         }
                         paren--;
@@ -121,6 +122,14 @@ class StackEntry {
                     {
                         if (paren == 0 && curly == 0 && triangle == 0) {
                             // undefined
+                            return;
+                        }
+                        break;
+                    }
+                    case EQ: //("=", "operator"),
+                    {
+                        if (paren == 0) {
+                            likeToArrayInitialization = true;
                             return;
                         }
                         break;
@@ -196,6 +205,14 @@ class StackEntry {
         return likeToFunction;
     }
 
+    public boolean isLikeToArrayInitialization() {
+        return likeToArrayInitialization;
+    }
+
+    public void setLikeToArrayInitialization(boolean likeToArrayInitialization) {
+        this.likeToArrayInitialization = likeToArrayInitialization;
+    }
+
     @Override
     public String toString(){
         StringBuilder buf = new StringBuilder(kind.name());
@@ -203,6 +220,8 @@ class StackEntry {
             buf.append("("+importantKind.name()+")"); // NOI18N
         } else if (likeToFunction) {
             buf.append("(FUNCTION)"); // NOI18N
+        } else if (likeToArrayInitialization) {
+            buf.append("(ARRAY_INITIALIZATION)"); // NOI18N
         }
         return buf.toString();
     }

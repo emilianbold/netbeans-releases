@@ -91,13 +91,13 @@
     <service name="AirlineService">
         <port name="AirlineServicePort"
               binding="tns:AirlineReservationBinding">
-            <soap:address location="http://localhost:12100/wsdl/AirlineService/ServiceLocation"/>
+            <soap:address location="http://localhost:18181/wsdl/AirlineService/ServiceLocation"/>
         </port>
     </service>
     <service name="AirlineStatusService">
         <port name="AirlineStatusServicePort"
               binding="tns:AirlineReservationStatusBinding">
-            <soap:address location="http://localhost:12100/wsdl/AirlineStatusService/ServiceLocation"/>
+            <soap:address location="http://localhost:18181/wsdl/AirlineStatusService/ServiceLocation"/>
         </port>
     </service>
     <plink:partnerLinkType name="AirlineReservationPLinkType">

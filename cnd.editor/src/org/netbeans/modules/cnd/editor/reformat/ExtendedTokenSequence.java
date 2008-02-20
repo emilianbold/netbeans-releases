@@ -60,28 +60,41 @@ public class ExtendedTokenSequence {
     }
 
     void replacePrevious(Token<CppTokenId> previous, String space){
-        diffs.addFirst(ts.offset() - previous.length(),
-                       ts.offset(), space);
+        String old = previous.text().toString();
+        if (!old.equals(space) || old.indexOf('\t') >=0){ // NOI18N
+            diffs.addFirst(ts.offset() - previous.length(),
+                           ts.offset(), space);
+        }
     }
 
     /*package local*/ void addBeforeCurrent(String space){
-        diffs.addFirst(ts.offset(),
-                       ts.offset(), space);
+        if (space.length()>0) {
+            diffs.addFirst(ts.offset(),
+                           ts.offset(), space);
+        }
     }
 
     /*package local*/ void replaceCurrent(Token<CppTokenId> current, String space){
-        diffs.addFirst(ts.offset(),
-                       ts.offset() + current.length(), space);
+        String old = current.text().toString();
+        if (!old.equals(space) || old.indexOf('\t') >=0){ // NOI18N
+            diffs.addFirst(ts.offset(),
+                           ts.offset() + current.length(), space);
+        }
     }
 
     /*package local*/ void addAfterCurrent(Token<CppTokenId> current, String space){
-        diffs.addFirst(ts.offset() + current.length(),
-                       ts.offset() + current.length(), space);
+        if (space.length()>0) {
+            diffs.addFirst(ts.offset() + current.length(),
+                           ts.offset() + current.length(), space);
+        }
     }
 
     /*package local*/ void replaceNext(Token<CppTokenId> current, Token<CppTokenId> next, String space){
-        diffs.addFirst(ts.offset()+current.length(),
-                       ts.offset()+current.length()+next.length(), space); // NOI18N
+        String old = next.text().toString();
+        if (!old.equals(space) || old.indexOf('\t') >=0){ // NOI18N
+            diffs.addFirst(ts.offset()+current.length(),
+                           ts.offset()+current.length()+next.length(), space); 
+        }
     }
     
     /*package local*/ Token<CppTokenId> lookNextImportant(){
@@ -204,6 +217,31 @@ public class ExtendedTokenSequence {
                         break;
                     default:
                         return ts.token();
+                }
+            }
+            return null;
+        } finally {
+            ts.moveIndex(index);
+            ts.moveNext();
+        }
+    }
+
+    /*package local*/ Token<CppTokenId> lookPreviousImportant(int i){
+        int index = ts.index();
+        try {
+            while(ts.movePrevious()){
+                switch (ts.token().id()) {
+                    case WHITESPACE:
+                    case NEW_LINE:
+                    case LINE_COMMENT:
+                    case BLOCK_COMMENT:
+                    case PREPROCESSOR_DIRECTIVE:
+                        break;
+                    default:
+                        i--;
+                        if (i <=0 ) {
+                            return ts.token();
+                        }
                 }
             }
             return null;
