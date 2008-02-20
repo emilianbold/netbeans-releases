@@ -40,7 +40,6 @@
  */
 package org.netbeans.modules.websvc.jaxrpc.actions;
 
-
 import com.sun.source.tree.AnnotationTree;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.ExpressionTree;
@@ -96,14 +95,12 @@ import org.netbeans.modules.websvc.jaxrpc.client.wizard.ClientBuilder;
 import org.netbeans.modules.websvc.wsdl.config.PortInformationHandler;
 import org.xml.sax.SAXException;
 
-
 /**
  *
  * @author Peter Williams
  */
 public class JaxrpcInvokeOperationGenerator {
-    
-    
+
     // {0} = service name (as type, e.g. "FooSeWebService")
     // {1} = service name (as variable, e.g. "fooService")
     // {2} = fully qualified service name (as type, e.g. com.service.FooService)
@@ -118,7 +115,7 @@ public class JaxrpcInvokeOperationGenerator {
             "\t'}'\n" +
             //        "'}'\n\n" +
             "return {1};\n";
-    
+    private static final String SERVICE_DELEGATE_METHOD_JSP_TEST = "private {0} {1}() '{'";
     // {0} = service name (as type, e.g. "FooSeWebService")
     // {1} = service name (as variable, e.g. "fooService")
     // {2} = fully qualified service name (as type, e.g. com.service.FooService)
@@ -136,7 +133,6 @@ public class JaxrpcInvokeOperationGenerator {
             "    return {1};\n" +
             "'}'\n" +
             "%>\n";
-    
     // {0} = port name (as variable, e.g. "fooPort")
     // {1} = true port name (e.g. "FooPort")
     // {2} = service delegate name (e.g. "getFooService")
@@ -151,6 +147,7 @@ public class JaxrpcInvokeOperationGenerator {
             "\t'}'\n" +
             //        "'}'\n\n" +
             "return {0};\n";
+    private static final String PORT_DELEGATE_METHOD_JSP_TEST = "private {0} {1}() '{'";
     
     // {0} = port name (as variable, e.g. "fooPort")
     // {1} = true port name (e.g. "FooPort")
@@ -258,14 +255,14 @@ public class JaxrpcInvokeOperationGenerator {
             "    '}' catch(Exception ex) '{'\n" +
             "        java.util.logging.Logger.getLogger({2}.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);\n" +
             "    '}'\n";
-    
+
     private static String varFromName(final String name) {
         if (name.length() > 0) {
             StringBuffer buf = new StringBuffer(name);
-            
+
             // If the first character is uppercase, make it lowercase for the variable name,
             // otherwise, prefix an underscore.
-            if(Character.isUpperCase(buf.charAt(0))) {
+            if (Character.isUpperCase(buf.charAt(0))) {
                 buf.setCharAt(0, Character.toLowerCase(buf.charAt(0)));
             } else {
                 buf.insert(0, '_');
@@ -275,15 +272,15 @@ public class JaxrpcInvokeOperationGenerator {
             return "unknown"; // NOI18N
         }
     }
-    
+
     private static String classFromName(final String name) {
         if (name.length() > 0) {
             StringBuffer result = new StringBuffer(name);
-            
+
             if (result.length() > 0 && !Character.isUpperCase(result.charAt(0))) {
                 result.setCharAt(0, Character.toUpperCase(result.charAt(0)));
             }
-            
+
             return removeDots(result).toString();
         } else {
             return "unknown"; // NOI18N
@@ -298,17 +295,17 @@ public class JaxrpcInvokeOperationGenerator {
         }
         return name;
     }
-    
+
     private static ClientStubDescriptor getStub(DataObject wsdlDobj) {
         ClientStubDescriptor result = null;
         FileObject wsdlFo = wsdlDobj.getPrimaryFile();
-        
+
         WebServicesClientSupport clientSupport = WebServicesClientSupport.getWebServicesClientSupport(wsdlFo);
-        if(clientSupport != null) {
+        if (clientSupport != null) {
             List clients = clientSupport.getServiceClients();
-            for(Iterator iter = clients.iterator(); iter.hasNext(); ) {
+            for (Iterator iter = clients.iterator(); iter.hasNext();) {
                 WsCompileClientEditorSupport.ServiceSettings settings = (WsCompileClientEditorSupport.ServiceSettings) iter.next();
-                if(settings.getServiceName().equals(wsdlFo.getName())) {
+                if (settings.getServiceName().equals(wsdlFo.getName())) {
                     result = settings.getClientStubDescriptor();
                     break;
                 }
@@ -318,45 +315,47 @@ public class JaxrpcInvokeOperationGenerator {
         }
         return result;
     }
-    
+
     private static List<ExecutableElement> getMethods(CompilationController controller, TypeElement classElement) throws IOException {
         List<? extends Element> members = classElement.getEnclosedElements();
         List<ExecutableElement> methods = ElementFilter.methodsIn(members);
         List<ExecutableElement> pMethods = new ArrayList<ExecutableElement>();
-        for (ExecutableElement method:methods) {
+        for (ExecutableElement method : methods) {
             pMethods.add(method);
-            
+
         }
         return pMethods;
     }
-    
+
     private static void parse(FileObject fo, PortInformationHandler handler) throws ParserConfigurationException, SAXException, IOException {
         SAXParserFactory factory = SAXParserFactory.newInstance();
         factory.setNamespaceAware(true);
         SAXParser saxParser = factory.newSAXParser();
         saxParser.parse(fo.getInputStream(), handler);
     }
+
     private static void parse(URL url, PortInformationHandler handler) throws ParserConfigurationException, SAXException, IOException {
         SAXParserFactory factory = SAXParserFactory.newInstance();
         factory.setNamespaceAware(true);
         SAXParser saxParser = factory.newSAXParser();
         saxParser.parse(url.openConnection().getInputStream(), handler);
     }
-    public static void insertMethodCall(final DataObject dataObj, final Node sourceNode, final Node serviceOperationNode){
-        
+
+    public static void insertMethodCall(final DataObject dataObj, final Node sourceNode, final Node serviceOperationNode) {
+
         // First, collect name of method, port, and service:
         Node serviceNode, servicePortNode;
-        
+
         String wsdlName;
         String serviceName, serviceClassName, serviceVarName;
         String servicePortName, servicePortJaxRpcName, servicePortVarName, servicePortTypeName = null;
         String serviceOperationName;
         DataObject wsdlObj = null;
-        
+
         try {
             servicePortNode = serviceOperationNode.getParentNode();
             serviceNode = servicePortNode.getParentNode();
-            
+
             wsdlObj = serviceNode.getLookup().lookup(DataObject.class);
             serviceOperationName = serviceOperationNode.getName();
             servicePortName = servicePortNode.getName();
@@ -365,7 +364,7 @@ public class JaxrpcInvokeOperationGenerator {
             serviceName = serviceNode.getName();
             serviceClassName = classFromName(serviceName);
             serviceVarName = varFromName(serviceName);
-            
+
         } catch (NullPointerException npe) {
             // !PW notify failure to extract service information.
             String message = NbBundle.getMessage(JaxrpcInvokeOperationGenerator.class, "ERR_FailedUnexpectedWebServiceDescriptionPattern"); // NOI18N
@@ -373,18 +372,18 @@ public class JaxrpcInvokeOperationGenerator {
             DialogDisplayer.getDefault().notify(desc);
             return;
         }
-        
+
         EditorCookie ec = dataObj.getCookie(EditorCookie.class);
         JEditorPane pane = ec.getOpenedPanes()[0];
         // Collect up any and all errors for display in case of problem
         ArrayList errors = new ArrayList();
-        
+
         String servicePackageName;
         ServiceInformation serviceInfo = serviceNode.getCookie(ServiceInformation.class);
-        PortInformationHandler portInformation = (PortInformationHandler)serviceInfo.getPortInformation();
+        PortInformationHandler portInformation = (PortInformationHandler) serviceInfo.getPortInformation();
         List portInfoList = null;
         List wsdlLocationsList = serviceInfo.getPortInformation().getImportedSchemas();
-        if (wsdlLocationsList!=null && wsdlLocationsList.size()>0) {
+        if (wsdlLocationsList != null && wsdlLocationsList.size() > 0) {
             PortInformationHandler handler = new PortInformationHandler(portInformation.getTargetNamespace(),
                     portInformation.getServices(),
                     portInformation.getEntirePortList(),
@@ -392,14 +391,15 @@ public class JaxrpcInvokeOperationGenerator {
                     wsdlLocationsList);
             Iterator it = wsdlLocationsList.iterator();
             while (it.hasNext()) {
-                String wsdlLocation = (String)it.next();
+                String wsdlLocation = (String) it.next();
                 try {
-                    if (wsdlLocation.indexOf("/")<0) { //local
+                    if (wsdlLocation.indexOf("/") < 0) { //local
                         dataObj.getPrimaryFile();
                         WebServicesClientSupport clientSupport = WebServicesClientSupport.getWebServicesClientSupport(dataObj.getPrimaryFile());
                         FileObject wsdlFo = clientSupport.getWsdlFolder().getFileObject(wsdlLocation);
-                        if (wsdlFo!=null)
+                        if (wsdlFo != null) {
                             parse(wsdlFo, handler);
+                        }
                     } else { // remote
                         URL wsdlURL = new URL(wsdlLocation);
                         try {
@@ -412,19 +412,19 @@ public class JaxrpcInvokeOperationGenerator {
                             return;
                         }
                     }
-                } catch(ParserConfigurationException ex) {
+                } catch (ParserConfigurationException ex) {
                     ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
                     String mes = NbBundle.getMessage(ClientBuilder.class, "ERR_WsdlParseFailure", ex.getMessage()); // NOI18N
                     NotifyDescriptor desc = new NotifyDescriptor.Message(mes, NotifyDescriptor.Message.ERROR_MESSAGE);
                     DialogDisplayer.getDefault().notify(desc);
-                    //return result;
-                } catch(SAXException ex) {
+                //return result;
+                } catch (SAXException ex) {
                     ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
                     String mes = NbBundle.getMessage(ClientBuilder.class, "ERR_WsdlParseFailure", ex.getMessage()); // NOI18N
                     NotifyDescriptor desc = new NotifyDescriptor.Message(mes, NotifyDescriptor.Message.ERROR_MESSAGE);
                     DialogDisplayer.getDefault().notify(desc);
-                    //return result;
-                } catch(IOException ex) {
+                //return result;
+                } catch (IOException ex) {
                     ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
                     String mes = NbBundle.getMessage(ClientBuilder.class, "ERR_ClientIOError", wsdlLocation, ex.getMessage()); // NOI18N
                     NotifyDescriptor desc = new NotifyDescriptor.Message(mes, NotifyDescriptor.Message.ERROR_MESSAGE);
@@ -437,9 +437,9 @@ public class JaxrpcInvokeOperationGenerator {
         }
         if (serviceInfo != null) {
             servicePackageName = serviceInfo.getServicePackageName();
-            for (Iterator iter = portInfoList.iterator(); iter.hasNext(); ) {
+            for (Iterator iter = portInfoList.iterator(); iter.hasNext();) {
                 PortInformationHandler.PortInfo portInfo = (PortInformationHandler.PortInfo) iter.next();
-                if(servicePortName.equals(portInfo.getPort())) {
+                if (servicePortName.equals(portInfo.getPort())) {
                     servicePortTypeName = classFromName(portInfo.getPortType());
                     break;
                 }
@@ -453,19 +453,19 @@ public class JaxrpcInvokeOperationGenerator {
             servicePortTypeName = servicePortJaxRpcName + "UnknownType"; // NOI18N
             errors.add(NbBundle.getMessage(JaxrpcInvokeOperationGenerator.class, "ERR_CannotLocateWebServiceInterfaces")); // NOI18N
         }
-        
+
         String fqServiceClassName = servicePackageName + "." + serviceClassName;
         String fqPortTypeName = servicePackageName + "." + servicePortTypeName;
-        
+
         String serviceDelegateName = "get" + serviceClassName; //NOI18N
         String portDelegateName = "get" + servicePortJaxRpcName; //NOI18N
         ClientStubDescriptor stubType = getStub(wsdlObj);
         EditorCookie cookie = sourceNode.getCookie(EditorCookie.class);
-        
+
         addProjectReference(wsdlObj, sourceNode);
-        
+
         // including code to JSP
-        if (cookie!=null && "text/x-jsp".equals(cookie.getDocument().getProperty("mimeType"))) { //NOI18N
+        if (cookie != null && "text/x-jsp".equals(cookie.getDocument().getProperty("mimeType"))) { //NOI18N
             if (stubType == null) {
                 //errors.add(NbBundle.getMessage(InvokeOperationAction.class, "ERR_CannotDeterminedStubType", serviceName)); // NOI1N
                 StringBuffer buf = new StringBuffer();
@@ -479,24 +479,38 @@ public class JaxrpcInvokeOperationGenerator {
             final javax.swing.text.StyledDocument document = cookie.getDocument();
             final StringBuffer buf = new StringBuffer();
             if (ClientStubDescriptor.JSR109_CLIENT_STUB.equals(stubType.getName())) {
-                Object [] args = new Object [] { serviceName, serviceVarName, fqServiceClassName, serviceDelegateName};
-                String method1 = MessageFormat.format(SERVICE_DELEGATE_METHOD_JSP, args);
-                args = new Object [] { servicePortVarName, servicePortJaxRpcName, serviceDelegateName, fqPortTypeName, portDelegateName};
-                String method2 = MessageFormat.format(PORT_DELEGATE_METHOD_JSP, args);
-                buf.append("\n"); //NOI18N
-                buf.append(method1);
-                buf.append("\n"); //NOI18N
-                buf.append(method2);
+                try {
+                    String testService = MessageFormat.format(SERVICE_DELEGATE_METHOD_JSP_TEST, new Object[]{fqServiceClassName, serviceDelegateName});
+                    String testString = document.getText(0, document.getLength());
+                    boolean serviceExists = testString.contains(testService);
+                    String testPort = MessageFormat.format(PORT_DELEGATE_METHOD_JSP_TEST, new Object[]{fqPortTypeName, portDelegateName});
+                    boolean portExists = testString.contains(testPort);
+                    if (!serviceExists) {
+                        Object[] args = new Object[]{serviceName, serviceVarName, fqServiceClassName, serviceDelegateName};
+                        String method1 = MessageFormat.format(SERVICE_DELEGATE_METHOD_JSP, args);
+                        buf.append("\n"); //NOI18N
+                        buf.append(method1);
+                    }
+                    if (!portExists) {
+                        Object[] args = new Object[]{servicePortVarName, servicePortJaxRpcName, serviceDelegateName, fqPortTypeName, portDelegateName};
+                        String method2 = MessageFormat.format(PORT_DELEGATE_METHOD_JSP, args);
+                        buf.append("\n");
+                        buf.append(method2);
+                    }
+
+                } catch (BadLocationException ex) {
+                    ErrorManager.getDefault().notify(ex);
+                }
             }
             String invocationBody = "";
             if (ClientStubDescriptor.JSR109_CLIENT_STUB.equals(stubType.getName())) {
                 // create the inserted text
-                Object[] args = new Object [] { serviceOperationName, portDelegateName, fqServiceClassName };
+                Object[] args = new Object[]{serviceOperationName, portDelegateName, fqServiceClassName                };
                 invocationBody = MessageFormat.format(OPERATION_INVOCATION_BODY_JSP, args);
-                
+
             } else if (ClientStubDescriptor.JAXRPC_CLIENT_STUB.equals(stubType.getName())) { // JAXRPC static stub
                 // create the inserted text
-                Object[] args = new Object [] { //serviceOperationName, portDelegateName.getName() };
+                Object[] args = new Object[]{ //serviceOperationName, portDelegateName.getName() };
                     serviceName, serviceVarName, fqServiceClassName,
                     fqServiceClassName + "_Impl", // NOI18N // !PW Note this classname is JAXRPC implementation dependent.
                     servicePortVarName, servicePortJaxRpcName, fqPortTypeName,
@@ -504,10 +518,10 @@ public class JaxrpcInvokeOperationGenerator {
                 };
                 invocationBody = MessageFormat.format(OPERATION_INVOCATION_JAXRPC_BODY_JSP, args);
             }
-            final StringBuffer buf1 =new StringBuffer();
+            final StringBuffer buf1 = new StringBuffer();
             // invocation
             buf1.append("    <%-- start web service invocation --%>\n"); //NOI18N
-            buf1.append("    <h4>"+serviceName+" invocation:</h4>\n"); //NOI18N
+            buf1.append("    <h4>" + serviceName + " invocation:</h4>\n"); //NOI18N
             buf1.append("    <hr/>\n"); //NOI18N
             buf1.append("    <%\n"); //NOI18N
             buf1.append("    // TODO compute web service operation arguments here, e.g.:\n"); //NOI18N
@@ -517,21 +531,26 @@ public class JaxrpcInvokeOperationGenerator {
             buf1.append("    <hr/><%-- end web service invocation--%>\n"); //NOI18N
             // insert 2 parts in one atomic action
             NbDocument.runAtomic(document, new Runnable() {
+
                 public void run() {
                     try {
-                        if (buf.length()>0) {
-                            document.insertString(document.getLength(),buf.toString(),null);
+                        if (buf.length() > 0) {
+                            document.insertString(document.getLength(), buf.toString(), null);
                         }
-                        if (buf1.length()>0) {
+                        if (buf1.length() > 0) {
                             String content = document.getText(0, document.getLength());
                             int pos = content.lastIndexOf("</body>"); //NOI18N
-                            if (pos<0) pos = content.lastIndexOf("</html>"); //NOI18N
-                            if (pos>=0) { //find where line begins
-                                while (pos>0 && content.charAt(pos-1)!='\n' && content.charAt(pos-1)!='\r') {
+                            if (pos < 0) {
+                                pos = content.lastIndexOf("</html>");
+                            } //NOI18N
+                            if (pos >= 0) { //find where line begins
+                                while (pos > 0 && content.charAt(pos - 1) != '\n' && content.charAt(pos - 1) != '\r') {
                                     pos--;
                                 }
-                            } else pos = document.getLength();
-                            document.insertString(pos,buf1.toString(),null);
+                            } else {
+                                pos = document.getLength();
+                            }
+                            document.insertString(pos, buf1.toString(), null);
                         }
                     } catch (javax.swing.text.BadLocationException ex) {
                         ErrorManager.getDefault().notify(ex);
@@ -553,19 +572,19 @@ public class JaxrpcInvokeOperationGenerator {
                 servicePortJaxRpcName,
                 serviceOperationName,
                 errors);
-        
+
     }
-    
+
     private static void addProjectReference(DataObject wsdlDobj, Node sourceNode) {
         if (wsdlDobj != null) {
             Project clientProject = FileOwnerQuery.getOwner(wsdlDobj.getPrimaryFile());
             DataObject dObj = sourceNode.getCookie(DataObject.class);
-            if (dObj!=null) {
+            if (dObj != null) {
                 JaxWsUtils.addProjectReference(clientProject, dObj.getPrimaryFile());
             }
         }
     }
-    
+
     private static void generateJavaClientCode(final DataObject dataObj,
             final ClientStubDescriptor stubType,
             final String iServiceDelegateName,
@@ -577,12 +596,12 @@ public class JaxrpcInvokeOperationGenerator {
             final String iservicePortVarName,
             final String iservicePortJaxRpcName,
             final String iserviceOperationName,
-            final ArrayList ierrors){
-        
+            final ArrayList ierrors) {
+
         EditorCookie ec = dataObj.getCookie(EditorCookie.class);
         JEditorPane pane = ec.getOpenedPanes()[0];
         int caretOffset = pane.getCaretPosition();
-        
+
         // create & format inserted text
         Document document = pane.getDocument();
         IndentEngine eng = IndentEngine.find(document);
@@ -590,15 +609,15 @@ public class JaxrpcInvokeOperationGenerator {
         // find the place where to insert the code
         int targetOffset = caretOffset; // target insertion point
         Writer indentWriter = eng.createWriter(document, targetOffset, textWriter);
-        
+
         String invocationBody = "";
         if (ClientStubDescriptor.JSR109_CLIENT_STUB.equals(stubType.getName())) {
             // create the inserted text
-            Object [] args = new Object [] { iserviceOperationName, iPortDelegateName, ifqServiceClassName };
+            Object[] args = new Object[]{iserviceOperationName, iPortDelegateName, ifqServiceClassName            };
             invocationBody = MessageFormat.format(OPERATION_INVOCATION_BODY, args);
         } else if (ClientStubDescriptor.JAXRPC_CLIENT_STUB.equals(stubType.getName())) { // JAXRPC static stub
             // create the inserted text
-            Object [] args = new Object [] { //serviceOperationName, portDelegateName.getName() };
+            Object[] args = new Object[]{ //serviceOperationName, portDelegateName.getName() };
                 iServiceName, iserviceVarName, ifqServiceClassName,
                 ifqServiceClassName + "_Impl", // NOI18N // !PW Note this classname is JAXRPC implementation dependent.
                 iservicePortVarName, iservicePortJaxRpcName, ifqPortTypeName,
@@ -606,7 +625,7 @@ public class JaxrpcInvokeOperationGenerator {
             };
             invocationBody = MessageFormat.format(OPERATION_INVOCATION_JAXRPC_BODY, args);
         }
-        
+
         String textToInsert = "";
         try {
             indentWriter.write(invocationBody);
@@ -614,17 +633,18 @@ public class JaxrpcInvokeOperationGenerator {
             textToInsert = textWriter.toString();
             document.insertString(targetOffset, textToInsert, null);
         } catch (BadLocationException badLoc) {
-            try{
+            try {
                 document.insertString(targetOffset + 1, textToInsert, null);
-            }catch(BadLocationException e){
+            } catch (BadLocationException e) {
                 ErrorManager.getDefault().notify(e);
             }
-        }catch(IOException e){
+        } catch (IOException e) {
             ErrorManager.getDefault().notify(e);
         }
-        
+
         JavaSource targetSource = JavaSource.forFileObject(dataObj.getPrimaryFile());
         CancellableTask<WorkingCopy> task = new CancellableTask<WorkingCopy>() {
+
             public void run(WorkingCopy workingCopy) throws java.io.IOException {
                 String serviceDelegateName = iServiceDelegateName;
                 String serviceName = iServiceName;
@@ -637,52 +657,49 @@ public class JaxrpcInvokeOperationGenerator {
                 String serviceOperationName = iserviceOperationName;
                 ArrayList errors = new ArrayList();
                 errors.addAll(ierrors);
- 
+
                 workingCopy.toPhase(Phase.ELEMENTS_RESOLVED);
                 TypeElement typeElement = SourceUtils.getPublicTopLevelElement(workingCopy);
-                if (typeElement!=null) {
-                    TreeMaker make  = workingCopy.getTreeMaker();
+                if (typeElement != null) {
+                    TreeMaker make = workingCopy.getTreeMaker();
                     ClassTree javaClass = workingCopy.getTrees().getTree(typeElement);
-                    
+
                     if (stubType == null) {
                         errors.add(NbBundle.getMessage(JaxrpcInvokeOperationGenerator.class, "ERR_CannotDeterminedStubType", serviceName)); // NOI18N
                     } else if (ClientStubDescriptor.JSR109_CLIENT_STUB.equals(stubType.getName())) {        // add service and port delegate methods
                         boolean createServiceDelegate = true;
                         boolean createPortDelegate = true;
-                        
+
                         // find methods
                         List<ExecutableElement> allMethods = getMethods(workingCopy, typeElement);
-                        for(ExecutableElement method:allMethods) {
-                            if(method.getSimpleName().toString().equals(serviceDelegateName) && method.getParameters().size() ==0){
-                                if(method.getReturnType().toString().equals(fqServiceClassName)){
+                        for (ExecutableElement method : allMethods) {
+                            if (method.getSimpleName().toString().equals(serviceDelegateName) && method.getParameters().size() == 0) {
+                                if (method.getReturnType().toString().equals(fqServiceClassName)) {
                                     createServiceDelegate = false;
-                                } 
-                                else{
+                                } else {
                                     serviceDelegateName += "_1";
                                 }
                             }
-                            if (method.getSimpleName().toString().equals(portDelegateName) && method.getParameters().size() == 0) { 
+                            if (method.getSimpleName().toString().equals(portDelegateName) && method.getParameters().size() == 0) {
                                 if (method.getReturnType().toString().equals(fqPortTypeName)) {
                                     createPortDelegate = false;
-                                } 
-                                else {
+                                } else {
                                     portDelegateName += "_1";
                                 }
                             }
                         }
 
 
-                        ClassTree modifiedClass =null;
+                        ClassTree modifiedClass = null;
                         int methodIndex = javaClass.getMembers().size() - 1;
                         if (createServiceDelegate) {
                             // Add service delegate
                             ModifiersTree modifiersTree = make.Modifiers(
                                     Collections.<Modifier>singleton(Modifier.PRIVATE),
-                                    Collections.<AnnotationTree>emptyList()
-                                    );
-                            Object [] args = new Object [] { serviceName, serviceVarName, fqServiceClassName };
+                                    Collections.<AnnotationTree>emptyList());
+                            Object[] args = new Object[]{serviceName, serviceVarName, fqServiceClassName                            };
                             String delegateBody = "{" + MessageFormat.format(SERVICE_DELEGATE_BODY, args) + "}";
-                            MethodTree serviceDelegate = make.Method(  //Not a statement block
+                            MethodTree serviceDelegate = make.Method( //Not a statement block
                                     modifiersTree, // private
                                     serviceDelegateName, // operation name
                                     make.Identifier(fqServiceClassName), // return type
@@ -692,7 +709,7 @@ public class JaxrpcInvokeOperationGenerator {
                                     delegateBody, // body text
                                     null // default value - not applicable here, used by annotations
                                     );
-                            modifiedClass =  make.insertClassMember(javaClass, ++methodIndex, serviceDelegate);
+                            modifiedClass = make.insertClassMember(javaClass, ++methodIndex, serviceDelegate);
                         }
 
 
@@ -700,9 +717,8 @@ public class JaxrpcInvokeOperationGenerator {
                             // Add port delegate
                             ModifiersTree modifiersTree = make.Modifiers(
                                     Collections.<Modifier>singleton(Modifier.PRIVATE),
-                                    Collections.<AnnotationTree>emptyList()
-                                    );
-                            Object [] args = new Object [] { servicePortVarName, servicePortJaxRpcName, serviceDelegateName, fqPortTypeName };
+                                    Collections.<AnnotationTree>emptyList());
+                            Object[] args = new Object[]{servicePortVarName, servicePortJaxRpcName, serviceDelegateName, fqPortTypeName                            };
                             String delegateBody = "{" + MessageFormat.format(PORT_DELEGATE_BODY, args) + "}";
                             MethodTree serviceDelegate = make.Method(
                                     modifiersTree, // public
@@ -714,26 +730,26 @@ public class JaxrpcInvokeOperationGenerator {
                                     delegateBody, // body text
                                     null // default value - not applicable here, used by annotations
                                     );
-                            if(modifiedClass != null){
-                                modifiedClass =  make.insertClassMember(modifiedClass, ++methodIndex, serviceDelegate);
-                            }else{
-                                modifiedClass =  make.insertClassMember(javaClass, +methodIndex, serviceDelegate);
+                            if (modifiedClass != null) {
+                                modifiedClass = make.insertClassMember(modifiedClass, ++methodIndex, serviceDelegate);
+                            } else {
+                                modifiedClass = make.insertClassMember(javaClass, +methodIndex, serviceDelegate);
                             }
-                                
-                            if(modifiedClass != null){
+
+                            if (modifiedClass != null) {
                                 workingCopy.rewrite(javaClass, modifiedClass);
                             }
-                            
+
                         }
                     }
-                    
-                    
+
+
                     if (errors.size() > 0) {
                         // At least one error was encountered during code insertion.  Display the list of messages.
                         StringBuffer buf = new StringBuffer(errors.size() * 100);
                         buf.append(NbBundle.getMessage(JaxrpcInvokeOperationGenerator.class, "ERR_FailedWebServiceInvocationCreation")); // NOI18N
                         buf.append("\n"); // NOI18N
-                        for(Iterator iter = errors.iterator(); iter.hasNext(); ) {
+                        for (Iterator iter = errors.iterator(); iter.hasNext();) {
                             buf.append(iter.next().toString());
                             buf.append("\n"); // NOI18N
                         }
@@ -742,14 +758,14 @@ public class JaxrpcInvokeOperationGenerator {
                     }
                 }
             }
+
             public void cancel() {
             }
         };
-        try{
+        try {
             targetSource.runModificationTask(task).commit();
-        }catch(IOException e){
+        } catch (IOException e) {
             ErrorManager.getDefault().notify(e);
         }
     }
-    
 }
