@@ -2092,7 +2092,10 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                                 com.sun.tools.javac.code.Types.instance(jt.getContext()),
                                 TransTypes.instance(jt.getContext()),
                                 com.sun.tools.javac.util.Name.Table.instance(jt.getContext()), cpInfo);
-                        sa.analyse(trees, jt, fm, active, added);
+                        boolean[] main = new boolean[1];
+                        sa.analyse(trees, jt, fm, active, added, main);
+                        
+                        ExecutableFilesIndex.DEFAULT.setMainClass(root, fo.getURL(), main[0]);
 
                         for (Pair<String,String> s : classNamesToDelete) {
                             sa.delete(s);
@@ -2835,7 +2838,10 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                             continue;
                         }
                         if (sa != null) {
-                            sa.analyse(trees,jt, ClasspathInfoAccessor.getINSTANCE().getFileManager(cpInfo), active, added);
+                            boolean[] main = new boolean[1];
+                            sa.analyse(trees,jt, ClasspathInfoAccessor.getINSTANCE().getFileManager(cpInfo), active, added, main);
+                            
+                            ExecutableFilesIndex.DEFAULT.setMainClass(rootFo.getURL(), activeFile.toURI().toURL(), main[0]);
                         }                                
                         List<Diagnostic> diag = new ArrayList<Diagnostic>();
                         URI u = active.toUri();
