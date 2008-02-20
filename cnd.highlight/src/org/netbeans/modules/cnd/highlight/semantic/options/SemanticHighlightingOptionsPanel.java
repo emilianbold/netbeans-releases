@@ -109,7 +109,14 @@ public class SemanticHighlightingOptionsPanel extends javax.swing.JPanel impleme
         cbSysMacro.setMnemonic(getString("DifferSystemMacros_Mnemonic").charAt(0));
         cbClassFields.setMnemonic(getString("ShowClassFields_Mnemonic").charAt(0));
         cbFunctionNames.setMnemonic(getString("ShowFunctionNames_Mnemonic").charAt(0));
-    }
+
+        cbMarkOccurrences.getAccessibleContext().setAccessibleDescription(getString("EnableMarkOccurrences_AD"));
+        cbKeepMarks.getAccessibleContext().setAccessibleDescription(getString("KeepMarks_AD"));
+        cbMacros.getAccessibleContext().setAccessibleDescription(getString("EnableMacros_AD"));
+        cbSysMacro.getAccessibleContext().setAccessibleDescription(getString("DifferSystemMacros_AD"));
+        cbClassFields.getAccessibleContext().setAccessibleDescription(getString("ShowClassFields_AD"));
+        cbFunctionNames.getAccessibleContext().setAccessibleDescription(getString("ShowFunctionNames_AD"));
+}
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
