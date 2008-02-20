@@ -43,10 +43,8 @@ package org.netbeans.spi.java.project.support.ui;
 import java.awt.Component;
 import java.io.File;
 import java.net.MalformedURLException;
-import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.EventObject;
 import java.util.List;
 import java.util.logging.Logger;
 import javax.swing.Action;
@@ -122,8 +120,8 @@ final class MakeSharableVisualPanel2 extends JPanel {
     }
 
     void storeSettings(WizardDescriptor wiz) {
-        ReferenceHelper helper = (ReferenceHelper) wiz.getProperty(SharableLibrariesUtils.PROP_REFERENCE_HELPER);
-        AntProjectHelper anthelper = (AntProjectHelper) wiz.getProperty(SharableLibrariesUtils.PROP_HELPER);
+        refhelper = (ReferenceHelper) wiz.getProperty(SharableLibrariesUtils.PROP_REFERENCE_HELPER);
+        helper = (AntProjectHelper) wiz.getProperty(SharableLibrariesUtils.PROP_HELPER);
 
         List<Action> actions = new ArrayList<Action>();
         for (int i = 0; i < model.getRowCount(); i++) {
@@ -132,11 +130,11 @@ final class MakeSharableVisualPanel2 extends JPanel {
             if (item instanceof Library) {
                 Library lib = (Library) item;
                 if (ACTION_ABSOLUTE.equals(action)) {
-                    actions.add(new SharableLibrariesUtils.KeepLibraryAtLocation(lib, false, anthelper));
+                    actions.add(new SharableLibrariesUtils.KeepLibraryAtLocation(lib, false, helper));
                 } else if (ACTION_RELATIVE.equals(action)) {
-                    actions.add(new SharableLibrariesUtils.KeepLibraryAtLocation(lib, true, anthelper));
+                    actions.add(new SharableLibrariesUtils.KeepLibraryAtLocation(lib, true, helper));
                 } else if (ACTION_COPY.equals(action)) {
-                    actions.add(new SharableLibrariesUtils.CopyLibraryJars(helper, lib));
+                    actions.add(new SharableLibrariesUtils.CopyLibraryJars(refhelper, lib));
                 } else if (ACTION_USE_LOCAL_LIBRARY.equals(action)) {
                     //do nothing
                 } else {
@@ -146,11 +144,11 @@ final class MakeSharableVisualPanel2 extends JPanel {
                 //file reference
                 String ref = (String) item;
                 if (ACTION_ABSOLUTE.equals(action)) {
-                    actions.add(new SharableLibrariesUtils.KeepJarAtLocation(ref, false, anthelper, helper));
+                    actions.add(new SharableLibrariesUtils.KeepJarAtLocation(ref, false, helper, refhelper));
                 } else if (ACTION_RELATIVE.equals(action)) {
-                    actions.add(new SharableLibrariesUtils.KeepJarAtLocation(ref, true, anthelper, helper));
+                    actions.add(new SharableLibrariesUtils.KeepJarAtLocation(ref, true, helper, refhelper));
                 } else if (ACTION_COPY.equals(action)) {
-                    actions.add(new SharableLibrariesUtils.CopyJars(helper, anthelper, ref));
+                    actions.add(new SharableLibrariesUtils.CopyJars(refhelper, helper, ref));
                 } else {
                     assert false : "no handling defined for action: " + action;
                 }

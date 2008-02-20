@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -97,11 +97,9 @@ public class J2EEValidation extends JellyTestCase {
         //junit.textui.TestRunner.run(new IDEValidation("testMainMenu"));
     }
     
+    @Override
     public void setUp() {
         System.out.println("########  "+getName()+"  #######");
-    }
-    
-    public void tearDown() {
     }
     
     // name of sample web application project
@@ -131,6 +129,7 @@ public class J2EEValidation extends JellyTestCase {
         NewProjectNameLocationStepOperator npnlso = new NewProjectNameLocationStepOperator();
         npnlso.txtProjectName().setText(SAMPLE_WEB_PROJECT_NAME);
         npnlso.txtProjectLocation().setText(System.getProperty("netbeans.user")); // NOI18N
+        npnlso.next();
         npnlso.finish();
         // wait project appear in projects view
         // wait 30 second

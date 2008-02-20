@@ -52,12 +52,14 @@ import javax.swing.Action;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.j2ee.common.project.classpath.ClassPathSupport;
+import org.netbeans.modules.j2ee.common.project.ui.LibrariesNode;
+import org.netbeans.modules.j2ee.common.project.ui.ProjectProperties;
 import org.netbeans.modules.j2ee.ejbjarproject.EjbJarProject;
-import org.netbeans.modules.j2ee.ejbjarproject.classpath.ClassPathSupport;
+import org.netbeans.modules.j2ee.ejbjarproject.classpath.ClassPathSupportCallbackImpl;
 import org.netbeans.modules.j2ee.ejbjarproject.ui.SourceNodeFactory.PreselectPropertiesAction;
 import org.netbeans.modules.j2ee.ejbjarproject.ui.customizer.CustomizerLibraries;
 import org.netbeans.modules.j2ee.ejbjarproject.ui.customizer.EjbJarProjectProperties;
-import org.netbeans.modules.j2ee.ejbjarproject.ui.logicalview.libraries.LibrariesNode;
 import org.netbeans.modules.java.api.common.SourceRoots;
 import org.netbeans.modules.java.api.common.ant.UpdateHelper;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
@@ -96,6 +98,7 @@ public final class LibrariesNodeFactory implements NodeFactory {
         private final PropertyEvaluator evaluator;
         private final UpdateHelper updateHelper;
         private final ReferenceHelper refHelper;
+        private final ClassPathSupport cs;
         
         LibrariesNodeList(EjbJarProject proj) {
             project = proj;
@@ -103,6 +106,8 @@ public final class LibrariesNodeFactory implements NodeFactory {
             evaluator = project.evaluator();
             updateHelper = project.getUpdateHelper();
             refHelper = project.getReferenceHelper();
+            cs = new ClassPathSupport(evaluator, refHelper, updateHelper.getAntProjectHelper(), updateHelper, 
+                    new ClassPathSupportCallbackImpl(updateHelper.getAntProjectHelper()));
         }
         
         public List<String> keys() {
@@ -140,22 +145,20 @@ public final class LibrariesNodeFactory implements NodeFactory {
                     evaluator,
                     updateHelper,
                     refHelper,
-                    EjbJarProjectProperties.JAVAC_CLASSPATH,
-                    new String[] { EjbJarProjectProperties.BUILD_CLASSES_DIR },
+                    ProjectProperties.JAVAC_CLASSPATH,
+                    new String[] { ProjectProperties.BUILD_CLASSES_DIR },
                     "platform.active", //NOI18N
                     EjbJarProjectProperties.J2EE_SERVER_INSTANCE,
                     new Action[] {
-                        LibrariesNode.createAddProjectAction(project, EjbJarProjectProperties.JAVAC_CLASSPATH,
-                                                             ClassPathSupport.ELEMENT_INCLUDED_LIBRARIES),
-                        LibrariesNode.createAddLibraryAction(project, updateHelper.getAntProjectHelper(),
-                                                             EjbJarProjectProperties.JAVAC_CLASSPATH, ClassPathSupport.ELEMENT_INCLUDED_LIBRARIES),
-                        LibrariesNode.createAddFolderAction(project, EjbJarProjectProperties.JAVAC_CLASSPATH,
-                                                            ClassPathSupport.ELEMENT_INCLUDED_LIBRARIES),
+                            LibrariesNode.createAddProjectAction(project, project.getSourceRoots()),
+                            LibrariesNode.createAddLibraryAction(refHelper, project.getSourceRoots(), null),
+                            LibrariesNode.createAddFolderAction(project.getAntProjectHelper(), project.getSourceRoots()),
                         null,
                         new PreselectPropertiesAction(project, "Libraries", CustomizerLibraries.COMPILE), //NOI18N
                     },
-                    ClassPathSupport.ELEMENT_INCLUDED_LIBRARIES
-                );                        
+                    ClassPathSupportCallbackImpl.ELEMENT_INCLUDED_LIBRARIES,
+                    cs
+                );
             } else if (key == TEST_LIBRARIES) {
                 return  new LibrariesNode(
                     NbBundle.getMessage(LibrariesNodeFactory.class,"CTL_TestLibrariesNode"), // NOI18N
@@ -163,22 +166,23 @@ public final class LibrariesNodeFactory implements NodeFactory {
                     evaluator,
                     updateHelper,
                     refHelper,
-                    EjbJarProjectProperties.JAVAC_TEST_CLASSPATH,
+                    ProjectProperties.JAVAC_TEST_CLASSPATH,
                     new String[] {
-                        EjbJarProjectProperties.BUILD_TEST_CLASSES_DIR,
-                        EjbJarProjectProperties.JAVAC_CLASSPATH,
-                        EjbJarProjectProperties.BUILD_CLASSES_DIR,
+                        ProjectProperties.BUILD_TEST_CLASSES_DIR,
+                        ProjectProperties.JAVAC_CLASSPATH,
+                        ProjectProperties.BUILD_CLASSES_DIR,
                     },
                     null,
                     null,
                     new Action[] {
-                        LibrariesNode.createAddProjectAction(project, EjbJarProjectProperties.JAVAC_TEST_CLASSPATH, null),
-                        LibrariesNode.createAddLibraryAction(project, updateHelper.getAntProjectHelper(), EjbJarProjectProperties.JAVAC_TEST_CLASSPATH, null),
-                        LibrariesNode.createAddFolderAction(project, EjbJarProjectProperties.JAVAC_TEST_CLASSPATH, null),
+                        LibrariesNode.createAddProjectAction(project, project.getTestSourceRoots()),
+                        LibrariesNode.createAddLibraryAction(refHelper, project.getTestSourceRoots(), null),
+                        LibrariesNode.createAddFolderAction(project.getAntProjectHelper(), project.getTestSourceRoots()),
                         null,
                         new PreselectPropertiesAction(project, "Libraries", CustomizerLibraries.COMPILE_TESTS), //NOI18N
                     },
-                    null
+                    null,
+                    cs
                     );
             }
             assert false: "No node for key: " + key; // NOI18N

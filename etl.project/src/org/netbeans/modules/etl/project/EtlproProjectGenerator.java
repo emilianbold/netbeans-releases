@@ -40,6 +40,7 @@ import org.netbeans.modules.mashup.tables.wizard.MashupTableWizardIterator;
 import org.netbeans.modules.sql.framework.common.utils.DBExplorerUtil;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
+import org.openide.util.Utilities;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
@@ -50,9 +51,9 @@ import org.w3c.dom.Element;
  * @author Pavel Buzek
  */
 public class EtlproProjectGenerator {
+
     private static transient final Logger mLogger = LogUtil.getLogger(EtlproProjectGenerator.class.getName());
     private static transient final Localizer mLoc = Localizer.get();
-    
     private static final String nbBundle1 = mLoc.t("PRSR001: collaborations");
     private static final String nbBundle2 = mLoc.t("PRSR001: conf");
     private static final String nbBundle3 = mLoc.t("PRSR001: setup");
@@ -62,19 +63,19 @@ public class EtlproProjectGenerator {
     private static final String nbBundle7 = mLoc.t("PRSR001: databases");
     private static final String nbBundle8 = mLoc.t("PRSR001: nbproject");
     private static final String nbBundle9 = mLoc.t("PRSR001: jdbc:axiondb:");
-    private static final String DEFAULT_DOC_BASE_FOLDER = Localizer.parse(nbBundle2); //NOI18N
-    private static final String DEFAULT_SRC_FOLDER = Localizer.parse(nbBundle1); //NOI18N
-    private static final String DEFAULT_RESOURCE_FOLDER = Localizer.parse(nbBundle3); //NOI18N
-    private static final String DEFAULT_BPELASA_FOLDER = Localizer.parse(nbBundle4); //NOI18N
-    private static final String DEFAULT_BUILD_DIR = Localizer.parse(nbBundle5); //NOI18N
-    private static final String DEFAULT_DATA_DIR = Localizer.parse(nbBundle6); //NOI18N
-    private static final String DEFAULT_DATABASES_DIR = Localizer.parse(nbBundle7); //NOI18N
-    private static final String DEFAULT_NBPROJECT_DIR = Localizer.parse(nbBundle8); //NOI18N
-    private static final String DEFAULT_FLATFILE_JDBC_URL_PREFIX = Localizer.parse(nbBundle9);
+    //Trimming the initial spaces
+    private static final String DEFAULT_DOC_BASE_FOLDER = Localizer.parse(nbBundle2).trim(); //NOI18N
+    private static final String DEFAULT_SRC_FOLDER = Localizer.parse(nbBundle1).trim(); //NOI18N
+    private static final String DEFAULT_RESOURCE_FOLDER = Localizer.parse(nbBundle3).trim(); //NOI18N
+    private static final String DEFAULT_BPELASA_FOLDER = Localizer.parse(nbBundle4).trim(); //NOI18N
+    private static final String DEFAULT_BUILD_DIR = Localizer.parse(nbBundle5).trim(); //NOI18N
+    private static final String DEFAULT_DATA_DIR = Localizer.parse(nbBundle6).trim(); //NOI18N
+    private static final String DEFAULT_DATABASES_DIR = Localizer.parse(nbBundle7).trim(); //NOI18N
+    private static final String DEFAULT_NBPROJECT_DIR = Localizer.parse(nbBundle8).trim(); //NOI18N
+    private static final String DEFAULT_FLATFILE_JDBC_URL_PREFIX = Localizer.parse(nbBundle9).trim();
     private static FileObject dbObj = null;
     private static File databases = null;
     private static FileObject data = null;
-    
     public static String PRJ_LOCATION_DIR = "";
 
     private EtlproProjectGenerator() {
@@ -98,7 +99,8 @@ public class EtlproProjectGenerator {
         FileObject fo = FileUtil.toFileObject(rootF);
         assert fo != null : "At least disk roots must be mounted! " + rootF;
         fo.getFileSystem().refresh(false);
-        fo = FileUtil.toFileObject(dir);
+        //fo = FileUtil.toFileObject(dir);
+        fo = FileUtil.toFileObject(new File(dir, ""));
 
         // vlv # 113228
         if (fo == null) {
@@ -108,13 +110,13 @@ public class EtlproProjectGenerator {
         assert fo.getChildren().length == 0 : "Dir must have been empty: " + dir;
         AntProjectHelper h = setupProject(fo, name, j2eeLevel);
         fo.createFolder(DEFAULT_SRC_FOLDER); // NOI18N
-        data = fo.createFolder(DEFAULT_DATA_DIR); // NOI18N      
+        data = fo.createFolder(DEFAULT_DATA_DIR); // NOI18N   
 
         databases = new File(PRJ_LOCATION_DIR + "\\" + DEFAULT_NBPROJECT_DIR + "\\" + "private" + "\\" + DEFAULT_DATABASES_DIR);
         dbObj = FileUtil.createFolder(databases);
         //dbObj.lock();  
-        MashupTableWizardIterator.setProjectInfo(name,PRJ_LOCATION_DIR, true);
-        
+        MashupTableWizardIterator.setProjectInfo(name, PRJ_LOCATION_DIR, true);
+
 
         String dbName = databases.getPath();
         createDefaultDatabase(dbName);
@@ -207,7 +209,7 @@ public class EtlproProjectGenerator {
                     new NotifyDescriptor.Message(Localizer.parse(nbBundle10), NotifyDescriptor.INFORMATION_MESSAGE);
             DialogDisplayer.getDefault().notify(d);
         } else if (f.exists()) {
-            String nbBundle11 = mLoc.t("PRSR001: Database {0} already exists.",name);
+            String nbBundle11 = mLoc.t("PRSR001: Database {0} already exists.", name);
             NotifyDescriptor d =
                     new NotifyDescriptor.Message(Localizer.parse(nbBundle11), NotifyDescriptor.INFORMATION_MESSAGE);
             DialogDisplayer.getDefault().notify(d);
@@ -238,11 +240,21 @@ public class EtlproProjectGenerator {
     }
 
     public static String getDatabasesFolderPath() {
-        return databases.getPath();
+        //return databases.getPath();
+        String path = FileUtil.toFile(dbObj).getAbsolutePath();
+        /*if (Utilities.isWindows()) {
+            path = path.replace("\\", "/"); // NOI18N
+        }*/
+        return path;
     }
-    
+
     public static String getDataFolderPath() {
-        return data.getPath();
+        //return data.getPath();
+        String path = FileUtil.toFile(data).getAbsolutePath();
+        if (Utilities.isWindows()) {
+            path = path.replace("\\", "/"); // NOI18N
+        }
+        return path;
     }
     //Need for Migration - End
 }

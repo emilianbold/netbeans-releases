@@ -31,6 +31,7 @@ import javax.swing.Action;
 
 import javax.swing.JSeparator;
 import net.java.hulp.i18n.Logger;
+import org.openide.filesystems.FileStateInvalidException;
 import org.openide.nodes.*;
 import org.openide.util.*;
 import org.openide.loaders.DataFolder;
@@ -173,24 +174,23 @@ public class EtlproLogicalViewProvider implements LogicalViewProvider {
         IcanproProjectProperties.JAVAC_CLASSPATH,
         IcanproProjectProperties.DEBUG_CLASSPATH,
         IcanproProjectProperties.SRC_DIR,
-   };
-    
-    public static boolean hasBrokenLinks (AntProjectHelper helper, ReferenceHelper resolver){
+    };
+
+    public static boolean hasBrokenLinks(AntProjectHelper helper, ReferenceHelper resolver) {
         return BrokenReferencesSupport.isBroken(helper, resolver, BREAKABLE_PROPERTIES,
-                new String[] {IcanproProjectProperties.JAVA_PLATFORM});
+                new String[]{IcanproProjectProperties.JAVA_PLATFORM});
     }
-    
+
     /** Filter node containin additional features for the J2SE physical
      */
     private final class EtlLogicalViewRootNode extends AbstractNode {
-        
+
         private Action brokenLinksAction;
         private boolean broken;
-        
-        
+
         public EtlLogicalViewRootNode() {
-            super( new EtlproViews.LogicalViewChildren( helper, evaluator, project ), createLookup( project ) );
-            setIconBaseWithExtension( "org/netbeans/modules/etl/project/ui/resources/etlproProjectIcon.gif"); // NOI18N
+            super(new EtlproViews.LogicalViewChildren(helper, evaluator, project), createLookup(project));
+            setIconBaseWithExtension("org/netbeans/modules/etl/project/ui/resources/etlproProjectIcon.gif"); // NOI18N
             setName(ProjectUtils.getInformation(project).getDisplayName());
             if (hasBrokenLinks(helper, resolver)) {
                 broken = true;
@@ -200,11 +200,17 @@ public class EtlproLogicalViewProvider implements LogicalViewProvider {
 
         @Override
         public Action[] getActions(boolean context) {
+            EtlproProject pro = (EtlproProject) project;
+            String prj_locn = pro.getProjectDirectory().getPath();
+            try {
+                prj_locn = pro.getProjectDirectory().getFileSystem().getRoot().toString() + prj_locn;
+            } catch (FileStateInvalidException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+            MashupTableWizardIterator.setProjectInfo(pro.getName(), prj_locn, true);
             if (context) {
                 return super.getActions(true);
             } else {
-                EtlproProject pro = (EtlproProject) project;                
-                MashupTableWizardIterator.setProjectInfo(pro.getName(),EtlproProjectGenerator.PRJ_LOCATION_DIR, true);
                 return getAdditionalActions();
             }
         }
@@ -257,51 +263,54 @@ public class EtlproLogicalViewProvider implements LogicalViewProvider {
             String nbBundle5 = mLoc.t("PRSR001: Generate Schema");
             String nbBundle6 = mLoc.t("PRSR001: Redeploy Project");
             String nbBundle7 = mLoc.t("PRSR001: Deploy Project");
+            String nbBundle10 = mLoc.t("PRSR001: Bulk Loader");
+
 
             return new Action[]{
-                CommonProjectActions.newFileAction(), 
-                null,                
-                ProjectSensitiveActions.projectCommandAction(ActionProvider.COMMAND_BUILD,  Localizer.parse(nbBundle1), null), // NOI18N
-                ProjectSensitiveActions.projectCommandAction(ActionProvider.COMMAND_REBUILD, Localizer.parse(nbBundle2), null), // NOI18N
-                ProjectSensitiveActions.projectCommandAction(ActionProvider.COMMAND_CLEAN, Localizer.parse(nbBundle3), null), // NOI18N
-                null,
-                ProjectSensitiveActions.projectCommandAction(EtlproProject.COMMAND_GENWSDL, Localizer.parse(nbBundle4), null), // NOI18N
-                ProjectSensitiveActions.projectCommandAction(EtlproProject.COMMAND_SCHEMA, Localizer.parse(nbBundle5), null), // NOI18N
-                null,
-                SystemAction.get(NewFlatfileDatabaseWizardAction.class),
-                SystemAction.get(NewFlatfileTableAction.class),              
-                //SystemAction.get(FlatfileDBViewerAction.class),
-                null,
-                ProjectSensitiveActions.projectCommandAction(IcanproConstants.COMMAND_REDEPLOY, Localizer.parse(nbBundle6), null), // NOI18N
-                ProjectSensitiveActions.projectCommandAction(IcanproConstants.COMMAND_DEPLOY, Localizer.parse(nbBundle7), null), // NOI18N
-                null,
-                CommonProjectActions.setAsMainProjectAction(),
-                CommonProjectActions.openSubprojectsAction(),
-                CommonProjectActions.closeProjectAction(),
-                null,
-                CommonProjectActions.renameProjectAction(),
-                CommonProjectActions.moveProjectAction(),
-                CommonProjectActions.copyProjectAction(),
-                CommonProjectActions.deleteProjectAction(),
-                null,
-                SystemAction.get(org.openide.actions.FindAction.class),                
-                addFromLayers(),
-                null,
-                SystemAction.get(org.openide.actions.OpenLocalExplorerAction.class),
-                null,
-                brokenLinksAction,
-                CommonProjectActions.customizeProjectAction(),
-                };
+                        CommonProjectActions.newFileAction(),
+                        null,
+                        ProjectSensitiveActions.projectCommandAction(ActionProvider.COMMAND_BUILD, Localizer.parse(nbBundle1), null), // NOI18N
+                        ProjectSensitiveActions.projectCommandAction(ActionProvider.COMMAND_REBUILD, Localizer.parse(nbBundle2), null), // NOI18N
+                        ProjectSensitiveActions.projectCommandAction(ActionProvider.COMMAND_CLEAN, Localizer.parse(nbBundle3), null), // NOI18N
+                        null,
+                        ProjectSensitiveActions.projectCommandAction(EtlproProject.COMMAND_GENWSDL, Localizer.parse(nbBundle4), null), // NOI18N
+                        ProjectSensitiveActions.projectCommandAction(EtlproProject.COMMAND_SCHEMA, Localizer.parse(nbBundle5), null), // NOI18N
+                        ProjectSensitiveActions.projectCommandAction(EtlproProject.COMMAND_BULK_LOADER, Localizer.parse(nbBundle10), null), // NOI18N
+                        null,
+                        SystemAction.get(NewFlatfileDatabaseWizardAction.class),
+                        SystemAction.get(NewFlatfileTableAction.class),
+                        //SystemAction.get(FlatfileDBViewerAction.class),
+                        null,
+                        ProjectSensitiveActions.projectCommandAction(IcanproConstants.COMMAND_REDEPLOY, Localizer.parse(nbBundle6), null), // NOI18N
+                        ProjectSensitiveActions.projectCommandAction(IcanproConstants.COMMAND_DEPLOY, Localizer.parse(nbBundle7), null), // NOI18N
+                        null,
+                        CommonProjectActions.setAsMainProjectAction(),
+                        CommonProjectActions.openSubprojectsAction(),
+                        CommonProjectActions.closeProjectAction(),
+                        null,
+                        CommonProjectActions.renameProjectAction(),
+                        CommonProjectActions.moveProjectAction(),
+                        CommonProjectActions.copyProjectAction(),
+                        CommonProjectActions.deleteProjectAction(),
+                        null,
+                        SystemAction.get(org.openide.actions.FindAction.class),
+                        addFromLayers(),
+                        null,
+                        SystemAction.get(org.openide.actions.OpenLocalExplorerAction.class),
+                        null,
+                        brokenLinksAction,
+                        CommonProjectActions.customizeProjectAction(),
+                    };
         }
-      
+
         private Action addFromLayers() {
             Action action = null;
             Lookup look = Lookups.forPath("Projects/Actions");
             for (Object next : look.lookupAll(Object.class)) {
                 if (next instanceof Action) {
-                        action = (Action) next;
+                    action = (Action) next;
                 } else if (next instanceof JSeparator) {
-                        action = null;
+                    action = null;
                 }
             }
             return action;
@@ -319,10 +328,10 @@ public class EtlproLogicalViewProvider implements LogicalViewProvider {
             }
 
             public void actionPerformed(ActionEvent e) {
-            /*BrokenReferencesSupport.showCustomizer(helper, resolver, BREAKABLE_PROPERTIES, new String[]{IcanproProjectProperties.JAVA_PLATFORM});
-            if (!hasBrokenLinks(helper, resolver)) {
-            disable();
-            }*/
+                /*BrokenReferencesSupport.showCustomizer(helper, resolver, BREAKABLE_PROPERTIES, new String[]{IcanproProjectProperties.JAVA_PLATFORM});
+                if (!hasBrokenLinks(helper, resolver)) {
+                disable();
+                }*/
             }
 
             public void propertyChange(PropertyChangeEvent evt) {

@@ -135,7 +135,7 @@ public class AppClientProjectProperties {
     public static final String J2EE_SERVER_INSTANCE = "j2ee.server.instance"; // NOI18N
     public static final String J2EE_SERVER_TYPE = "j2ee.server.type"; // NOI18N
     public static final String J2EE_PLATFORM_CLASSPATH = "j2ee.platform.classpath"; //NOI18N
-    
+    public static final String J2EE_PLATFORM_SHARED = "j2ee.platform.shared"; //NOI18N
     
     // Properties stored in the PROJECT.PROPERTIES    
     /** root of external web module sources (full path), ".." if the sources are within project folder */
@@ -704,8 +704,10 @@ public class AppClientProjectProperties {
             return;
         }
         ((AppClientProject)project).registerJ2eePlatformListener(j2eePlatform);
-        String classpath = Utils.toClasspathString(j2eePlatform.getClasspathEntries());
-        privateProps.setProperty(J2EE_PLATFORM_CLASSPATH, classpath);
+        if(!Boolean.parseBoolean(projectProps.getProperty(J2EE_PLATFORM_SHARED))) {        
+            String classpath = Utils.toClasspathString(j2eePlatform.getClasspathEntries());
+            privateProps.setProperty(J2EE_PLATFORM_CLASSPATH, classpath);
+        }
 
         // set j2ee.appclient environment
         File[] accrt = j2eePlatform.getToolClasspathEntries(J2eePlatform.TOOL_APP_CLIENT_RUNTIME);
