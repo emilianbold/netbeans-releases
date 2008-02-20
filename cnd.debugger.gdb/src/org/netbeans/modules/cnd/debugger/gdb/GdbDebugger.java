@@ -1167,7 +1167,7 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
                 }
                 BreakpointImpl impl = getBreakpointList().get(map.get("bkptno")); // NOI18N
                 if (impl == null) {
-                    String frame = map.get("frame");
+                    String frame = map.get("frame"); // NOI18N
                     if (frame != null && frame.contains("dlopen")) { // NOI18N
                         dlopenPending = true;
                         gdb.exec_finish();
