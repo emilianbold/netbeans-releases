@@ -49,6 +49,7 @@ import org.netbeans.modules.cnd.api.model.CsmDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmEnumerator;
 import org.netbeans.modules.cnd.api.model.CsmFunction;
 import org.netbeans.modules.cnd.api.model.CsmFunctionDefinition;
+import org.netbeans.modules.cnd.api.model.CsmInstantiation;
 import org.netbeans.modules.cnd.api.model.CsmMember;
 import org.netbeans.modules.cnd.api.model.CsmMethod;
 import org.netbeans.modules.cnd.api.model.CsmNamespace;
@@ -116,9 +117,12 @@ public class CsmBaseUtilities {
      * @param target
      * @return new CsmObject[] { declaration, definion }
      */
-    public static CsmObject[] getDefinitionDeclaration(CsmObject target) {
+    public static CsmObject[] getDefinitionDeclaration(CsmObject target, boolean unboxInstantiation) {
         CsmObject decl;
         CsmObject def; 
+        if (unboxInstantiation && CsmKindUtilities.isTemplateInstantiation(target)) {
+            target = ((CsmInstantiation)target).getTemplateDeclaration();
+        }
         if (CsmKindUtilities.isVariableDefinition(target)) {
             decl = ((CsmVariableDefinition)target).getDeclaration();
             if (decl == null) {

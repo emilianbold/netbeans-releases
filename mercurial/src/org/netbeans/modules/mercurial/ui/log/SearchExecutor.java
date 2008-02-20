@@ -50,6 +50,7 @@ import java.io.File;
 import org.netbeans.modules.mercurial.HgProgressSupport;
 import org.netbeans.modules.mercurial.Mercurial;
 import org.netbeans.modules.mercurial.util.HgCommand;
+import org.netbeans.modules.mercurial.util.HgUtils;
 
 /**
  * Executes searches in Search History panel.
@@ -85,12 +86,27 @@ class SearchExecutor implements Runnable {
         filterUsername = criteria.getUsername() != null;
         filterMessage = criteria.getCommitMessage() != null;
         
+        if (master.isIncomingSearch()) {
+            HgUtils.outputMercurialTabInRed( NbBundle.getMessage(SearchHistoryAction.class,
+                "MSG_LogIncoming_Title")); // NOI18N
+        }else if (master.isOutSearch()) {
+            HgUtils.outputMercurialTabInRed( NbBundle.getMessage(SearchHistoryAction.class,
+                "MSG_LogOut_Title")); // NOI18N
+        } else {
+            HgUtils.outputMercurialTabInRed( NbBundle.getMessage(SearchHistoryAction.class,
+                "MSG_Log_Title")); // NOI18N
+        }
+        HgUtils.outputMercurialTabInRed( NbBundle.getMessage(SearchHistoryAction.class,
+                "MSG_Log_Title_Sep")); // NOI18N
+        HgUtils.outputMercurialTab( NbBundle.getMessage(SearchHistoryAction.class,
+                "MSG_LOG_EXEC_CONTEXT_SEP")); // NOI18N
         pathToRoot = new HashMap<String, File>(); 
         if (searchingUrl()) {
             String rootPath = Mercurial.getInstance().getTopmostManagedParent(master.getRoots()[0]).toString();
             pathToRoot.put(rootPath, master.getRoots()[0]);
+            HgUtils.outputMercurialTab(rootPath);
         } else {
-            workFiles = new HashMap<String, Set<File>>();
+             workFiles = new HashMap<String, Set<File>>();
             for (File file : master.getRoots()) {
                 String rootPath = Mercurial.getInstance().getTopmostManagedParent(file).toString();
 
@@ -100,8 +116,11 @@ class SearchExecutor implements Runnable {
                     workFiles.put(rootPath, set);
                 }
                 set.add(file);
+                HgUtils.outputMercurialTab(file.getAbsolutePath());
             }
-        }                
+        } 
+        HgUtils.outputMercurialTab(""); // NOI18N
+
     }    
         
     public void run() {

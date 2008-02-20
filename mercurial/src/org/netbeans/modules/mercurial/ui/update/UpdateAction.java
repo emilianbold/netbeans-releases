@@ -74,13 +74,22 @@ public class UpdateAction extends ContextAction {
     }
     
     public void performAction(ActionEvent e) {
-        update(context, null);
+        update(context);
     }
     
-    public static void update(final VCSContext ctx, final String revision){
+    public static void update(final VCSContext ctx){
         final File root = HgUtils.getRootFile(ctx);
         if (root == null) return;
         String repository = root.getAbsolutePath();
+        String rev = null;
+
+        final Update update = new Update(root);
+        if (!update.showDialog()) {
+            return;
+        }
+        rev = update.getSelectionRevision();
+        final boolean doForcedUpdate = update.isForcedUpdateRequested();
+        final String revStr = rev;
         
         RequestProcessor rp = Mercurial.getInstance().getRequestProcessor(repository);
         HgProgressSupport support = new HgProgressSupport() {
@@ -93,7 +102,10 @@ public class UpdateAction extends ContextAction {
                     HgUtils.outputMercurialTabInRed(
                             NbBundle.getMessage(UpdateAction.class,
                             "MSG_UPDATE_TITLE_SEP")); // NOI18N
-                    List<String> list = HgCommand.doUpdateAll(root, false, revision);
+                    HgUtils.outputMercurialTab(
+                                NbBundle.getMessage(UpdateAction.class,
+                                "MSG_UPDATE_INFO_SEP", revStr, root.getAbsolutePath())); // NOI18N
+                    List<String> list = HgCommand.doUpdateAll(root, doForcedUpdate, revStr);
                     
                     if (list != null && !list.isEmpty()){
                         bNoUpdates = HgCommand.isNoUpdates(list.get(0));
@@ -120,6 +132,7 @@ public class UpdateAction extends ContextAction {
                 HgUtils.outputMercurialTabInRed(
                         NbBundle.getMessage(UpdateAction.class,
                         "MSG_UPDATE_DONE")); // NOI18N
+                HgUtils.outputMercurialTab(""); // NOI18N
             }
         };
         support.start(rp, repository, org.openide.util.NbBundle.getMessage(UpdateAction.class, "MSG_Update_Progress")); // NOI18N
