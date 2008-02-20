@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
+ *
  * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,7 +20,13 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
+ * Contributor(s):
+ *
+ * The Original Software is NetBeans. The Initial Developer of the Original
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Microsystems, Inc. All Rights Reserved.
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -31,45 +37,49 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
- * Contributor(s):
- * 
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.soa.mappercore.search;
 
-package org.netbeans.modules.ruby.railsprojects.database;
+import java.awt.Dimension;
 
-import java.util.ArrayList;
-import java.util.List;
+import javax.swing.JComponent;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JTree;
 
 /**
- * A factory for Rails database adapters.
- *
- * @author Erno Mononen
+ * @author Vladimir Yaroslavskiy
+ * @version 2007.10.18
  */
-public class RailsAdapterFactory {
-    
-    private static final List<RailsDatabaseConfiguration> adapters = initAdapters();
+public final class Navigation extends JPanel {
+  
+  public Navigation(JTree tree, JScrollPane scrollPane, JComponent component) {
+    myWrapper = new Wrapper(tree);
+    myScrollPane = scrollPane;
+    myComponent = component;
 
-    /**
-     * Gets all know adapters.
-     * 
-     * @return all know adapters.
-     */
-    public static List<RailsDatabaseConfiguration> getAdapters() {
-        return adapters;
-    }
-    
-    private static List<RailsDatabaseConfiguration> initAdapters() {
-        List<RailsDatabaseConfiguration> result = new  ArrayList<RailsDatabaseConfiguration>();
-        result.add(new StandardRailsAdapter("mysql"));
-        result.add(new StandardRailsAdapter("oracle"));
-        result.add(new PostgreSQLAdapter());
-        result.add(new StandardRailsAdapter("sqlite2"));
-        result.add(new StandardRailsAdapter("sqlite3"));
-        result.add(new JavaDBAdapter());
-        return result;
-    }
-    
+    add(myWrapper);
+    add(myComponent);
+  }
 
+  @Override
+  public boolean isOptimizedDrawingEnabled()
+  {
+    return false;
+  }
+
+  @Override
+  public void doLayout()
+  {
+    Dimension size = myWrapper.getPreferredSize();
+    int x = getWidth() - myScrollPane.getVerticalScrollBar().getPreferredSize().width -
+      size.width - INSET;
+    myWrapper.setBounds(x, INSET, size.width, size.height);
+    myComponent.setBounds(0, 0, getWidth(), getHeight());
+  }
+  
+  private JPanel myWrapper;
+  private JComponent myComponent;
+  private JScrollPane myScrollPane;
+  private static final int INSET = 4;
 }

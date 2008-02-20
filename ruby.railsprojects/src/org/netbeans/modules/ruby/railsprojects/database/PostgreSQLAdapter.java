@@ -36,11 +36,11 @@
  * 
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.ruby.railsprojects.database;
 
 import java.io.IOException;
 import javax.swing.text.BadLocationException;
+import javax.swing.text.Document;
 import org.netbeans.api.ruby.platform.RubyPlatform;
 import org.netbeans.modules.ruby.railsprojects.RailsProject;
 import org.openide.LifecycleManager;
@@ -52,52 +52,57 @@ import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.Exceptions;
 
 /**
- * Represent a Rails database adapter that doesn't require any 
- * extra configuration to be done, except commenting out socket 
- * in case of JRuby.
+ * Takes care of editing database.yml so that it is correctly
+ * generated for PostrgreSQL Rails adapter.
  *
  * @author Erno Mononen
  */
-class StandardRailsAdapter implements RailsDatabaseConfiguration {
-    
-    private final String database;
+class PostgreSQLAdapter implements RailsDatabaseConfiguration {
 
-    StandardRailsAdapter(String database) {
-        this.database = database;
+    PostgreSQLAdapter() {
     }
 
     public String railsGenerationParam() {
-        return database;
+        return "postgresql";
     }
 
     public void editConfig(RailsProject project) {
         RubyPlatform platform = RubyPlatform.platformFor(project);
         if (platform.isJRuby()) {
-            // JRuby doesn't support socket
-            commentOutSocket(project.getProjectDirectory());
+            // only need extra config when using JRuby
+            uncommentTcpIpConfig(project.getProjectDirectory());
         }
     }
-
-     /**
-      * Tries to comment out the socket syntax from database.yml. 
-      */ 
-    private static void commentOutSocket(FileObject dir) {
+    
+    /**
+     * Uncomments host and port entries that rails generates
+     * to database.yml but leaves commented out by default.
+     */
+    private static void uncommentTcpIpConfig(FileObject dir) {
         FileObject fo = dir.getFileObject("config/database.yml"); // NOI18N
         if (fo != null) {
             try {
                 DataObject dobj = DataObject.find(fo);
                 EditorCookie ec = dobj.getCookie(EditorCookie.class);
                 if (ec != null) {
-                    javax.swing.text.Document doc = ec.openDocument();
+                    Document doc = ec.openDocument();
                     String text = doc.getText(0, doc.getLength());
-                    int offset = text.indexOf("socket:"); // NOI18N
-                    if (offset == -1) {
-                        // Rails didn't do anything to this file
+                    int hostOffset = text.indexOf("#host:"); // NOI18N
+                    if (hostOffset == -1) {
+                        // nothing to uncomment
                         return;
                     }
+                    doc.remove(hostOffset, 1);
+                    text = doc.getText(0, doc.getLength());
+                    int portOffset = text.indexOf("#port:"); // NOI18N
+                    if (portOffset != -1) {
+                        doc.remove(portOffset, 1);
+                        text = doc.getText(0, doc.getLength());
+                    }
+                    
                     // Determine indent
                     int indent = 0;
-                    for (int i = offset-1; i >= 0; i--) {
+                    for (int i = hostOffset-1; i >= 0; i--) {
                         if (text.charAt(i) == '\n') {
                             break;
                         } else {
@@ -106,19 +111,11 @@ class StandardRailsAdapter implements RailsDatabaseConfiguration {
                     }
 
                     StringBuilder sb = new StringBuilder();
-                    sb.append("# JRuby doesn't support socket:\n"); //NOI18N
-                    boolean addLocalHost = text.indexOf("host:") == -1; //NOI18N
-                    if (addLocalHost) {
-                        for (int i = 0; i < indent; i++) {
-                            sb.append(" ");
-                        }
-                        sb.append("host: localhost\n"); //NOI18N
-                    }
+                    sb.append("# (Automatically uncommented by the IDE - JRuby doesn't support socket)\n");//NOI18N
                     for (int i = 0; i < indent; i++) {
                         sb.append(" ");
                     }
-                    sb.append("#");
-                    doc.insertString(offset, sb.toString(), null);
+                    doc.insertString(hostOffset, sb.toString(), null);
                     SaveCookie sc = dobj.getCookie(SaveCookie.class);
                     if (sc != null) {
                         sc.save();
@@ -135,6 +132,6 @@ class StandardRailsAdapter implements RailsDatabaseConfiguration {
             }
         }
     }
-    
+
 
 }

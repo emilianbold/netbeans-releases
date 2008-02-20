@@ -47,7 +47,6 @@ import java.awt.Insets;
 import java.awt.Dimension;
 import java.awt.event.KeyEvent;
 import java.awt.event.InputEvent;
-import javax.swing.KeyStroke;
 import javax.swing.UIManager;
 import java.util.Map;
 import java.util.HashMap;
@@ -165,7 +164,7 @@ public class SettingsDefaults {
 
     public static final Float defaultLineHeightCorrection = new Float(1.0f);
 
-    public static final Integer defaultTextLeftMarginWidth = new Integer(2);
+    public static final Integer defaultTextLeftMarginWidth = new Integer(0);
     public static final Insets defaultMargin = new Insets(0, 0, 0, 0);
     public static final Insets defaultScrollJumpInsets = new Insets(-5, -10, -5, -30);
     public static final Insets defaultScrollFindInsets = new Insets(-10, -10, -10, -10);
