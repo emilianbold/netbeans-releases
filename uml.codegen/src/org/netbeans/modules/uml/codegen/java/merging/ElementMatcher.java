@@ -287,6 +287,17 @@ public class ElementMatcher {
     }
 
 
+    public static boolean isMarkedByOthers(IElement elem) 
+    {
+        String NETBEANS_MARKER = "//GEN-BEGIN:";
+        String com = getDescriptorValue(elem.getNode(), "Comment");
+        if (com != null && com.contains(NETBEANS_MARKER)) 
+        {
+            return true;
+        }
+        return false;
+    }
+
     public static boolean isMarked(IElement elem) 
     {
         return isMarked(elem.getNode());
@@ -335,7 +346,12 @@ public class ElementMatcher {
 
     public static String getMarkerValue(Node elemNode, String markerValueName) 
     {
- 	String query = "./TokenDescriptors/TDescriptor[@type=\"Marker-"+markerValueName+"\"]";
+        return getDescriptorValue(elemNode, "Marker-"+markerValueName);
+    }
+ 
+    public static String getDescriptorValue(Node elemNode, String valueName) 
+    {
+ 	String query = "./TokenDescriptors/TDescriptor[@type=\""+valueName+"\"]";
 	Node tdnode = XMLManip.selectSingleNode(elemNode, query);
 	if (tdnode !=  null) 
 	{

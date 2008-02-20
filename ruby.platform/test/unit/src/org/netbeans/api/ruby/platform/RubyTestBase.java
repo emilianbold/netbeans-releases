@@ -196,14 +196,20 @@ public abstract class RubyTestBase extends NbTestCase {
         }
         FileObject fo = FileUtil.toFileObject(wholeInputFile);
         assertNotNull(fo);
-
         return fo;
     }
 
-    private File touch(final File directory, final String binary) throws IOException {
-        File binaryF = new File(directory, binary);
-        binaryF.createNewFile();
-        return binaryF;
+    
+    protected FileObject touch(final String dir, final String path) throws IOException {
+        return touch(new File(dir), path);
+    }
+
+    protected FileObject touch(final File dir, final String binary) throws IOException {
+        if (!dir.isDirectory()) {
+            assertTrue("success to create " + dir, dir.mkdirs());
+        }
+        FileObject dirFO = FileUtil.toFileObject(FileUtil.normalizeFile(dir));
+        return FileUtil.createData(dirFO, binary);
     }
 
     /** Copy-pasted from APISupport. */

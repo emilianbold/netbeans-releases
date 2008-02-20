@@ -175,6 +175,9 @@ public class ClientOptionsPanel implements TemplateWizard.Panel, ChangeListener 
         } else if( gui.getCreatedFile() != null && new File( gui.getCreatedFile()).exists()) {
             templateWizard.putProperty(WPEM, NbBundle.getMessage(ClientOptionsPanel.class, "ERR_File_AlreadyExists", gui.getTargetName() + ".java")); // NOI18N
             return false;
+        } else if( "".equals(gui.getTargetName())) {
+            templateWizard.putProperty(WPEM, NbBundle.getMessage(ClientOptionsPanel.class, "ERR_File_NoClassName")); // NOI18N
+            return false;
         } else if( !Utilities.isJavaIdentifier( gui.getTargetName())) {
             templateWizard.putProperty(WPEM, NbBundle.getMessage(ClientOptionsPanel.class, "ERR_File_InvalidClassName")); // NOI18N
             return false;

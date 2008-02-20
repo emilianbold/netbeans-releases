@@ -64,7 +64,7 @@ public class RailsAdapterFactory {
         List<RailsDatabaseConfiguration> result = new  ArrayList<RailsDatabaseConfiguration>();
         result.add(new StandardRailsAdapter("mysql"));
         result.add(new StandardRailsAdapter("oracle"));
-        result.add(new StandardRailsAdapter("postgresql"));
+        result.add(new PostgreSQLAdapter());
         result.add(new StandardRailsAdapter("sqlite2"));
         result.add(new StandardRailsAdapter("sqlite3"));
         result.add(new JavaDBAdapter());

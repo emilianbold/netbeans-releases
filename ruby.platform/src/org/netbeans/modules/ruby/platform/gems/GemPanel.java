@@ -73,7 +73,6 @@ import javax.swing.event.ListSelectionListener;
 import javax.swing.filechooser.FileFilter;
 import org.netbeans.api.options.OptionsDisplayer;
 import org.netbeans.api.ruby.platform.RubyPlatform;
-import org.netbeans.api.ruby.platform.RubyPlatformManager;
 import org.netbeans.modules.ruby.platform.PlatformComponentFactory;
 import org.netbeans.modules.ruby.platform.RubyPlatformCustomizer;
 import org.netbeans.modules.ruby.platform.Util;
@@ -98,7 +97,7 @@ public final class GemPanel extends JPanel implements Runnable {
     
     private static final String LAST_GEM_DIRECTORY = "lastLocalGemDirectory"; // NOI18N
 
-    private static final String LAST_PLATFORM_ID = "gemPanellastPlatformID"; // NOI18N
+    private static final String LAST_PLATFORM_ID = "gemPanelLastPlatformID"; // NOI18N
 
     static enum TabIndex { UPDATED, INSTALLED, NEW; }
     
@@ -114,16 +113,8 @@ public final class GemPanel extends JPanel implements Runnable {
     
     public GemPanel(String availableFilter) {
         initComponents();
-
-        RubyPlatform platform = null;
-        String lastPlatformID = Util.getPreferences().get(LAST_PLATFORM_ID, null);
-        if (lastPlatformID != null) {
-            platform = RubyPlatformManager.getPlatformByID(lastPlatformID);
-        }
-        if (platform == null) {
-            platform = RubyPlatformManager.getDefaultPlatform();
-        }
-        platforms.setSelectedItem(platform);
+        Util.preselectPlatform(platforms, LAST_PLATFORM_ID);
+        
         RubyPlatform selPlatform = getSelectedPlatform();
         if (selPlatform != null) {
             this.gemManager = selPlatform.getGemManager();

@@ -137,6 +137,19 @@ public abstract class NbCsmResultItem extends CsmResultItem{
         }
         
     }
+
+    public final static class NbFileLocalFunctionResultItem extends FileLocalFunctionResultItem {
+        
+        public NbFileLocalFunctionResultItem(CsmFunction fun, CsmCompletionExpression substituteExp, int priority) {
+            super(fun, substituteExp, priority);
+        }        
+
+        @Override
+        protected CsmPaintComponent.ConstructorPaintComponent createPaintComponent() {
+            return new NbCsmPaintComponent.NbFileLocalFunctionPaintComponent();
+        }
+        
+    }
     
     public final static class NbGlobalFunctionResultItem extends GlobalFunctionResultItem {
         

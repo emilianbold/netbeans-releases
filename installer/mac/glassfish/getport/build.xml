@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="getport" default="build" basedir=".">
+	<target name="clean">
+		<delete dir="build"/>
+		<delete dir="dist"/>
+        </target>
+
+        <target name="build" depends="clean,jar"/>
+
+        <target name="jar" depends="clean">
+		<mkdir dir="build"/>
+		<javac 
+            		srcdir="src" 
+            		destdir="build"
+            		debug="true"/>
+		<mkdir dir="dist"/>
+		<mkdir dir="build/META-INF"/>
+
+		<echo file="build/META-INF/MANIFEST.MF">Manifest-Version: 1.0
+Main-Class: org.netbeans.installer.mac.utils.GetAvailablePort</echo>
+		<jar destfile="dist/getport.jar"
+		     basedir="build"
+		     compress="true"
+		     manifest="build/META-INF/MANIFEST.MF"/>
+        </target>
+</project>
