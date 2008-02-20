@@ -111,7 +111,7 @@ public class RailsProjectGenerator {
             ExecutionDescriptor desc = null;
             String displayName = NbBundle.getMessage(RailsProjectGenerator.class, "GenerateRails");
 
-            String railsDbArg = railsDb.needExtraConfig() ? null : "--database=" + railsDb.getDatabase();
+            String railsDbArg = railsDb.railsGenerationParam() == null ? null : "--database=" + railsDb.railsGenerationParam();
             File pwd = data.getDir().getParentFile();
             if (runThroughRuby) {
                 desc = new ExecutionDescriptor(platform, displayName, pwd, rails);
@@ -157,12 +157,7 @@ public class RailsProjectGenerator {
         RakeProjectHelper h = createProject(dirFO, platform, data); //NOI18N
         
         Project p = ProjectManager.getDefault().findProject(dirFO);
-        if (railsDb.needExtraConfig()) {
-            railsDb.editConfig((RailsProject) p);
-        } else if (platform.isJRuby()) {
-            commentOutSocket(dirFO);
-        }
-
+        railsDb.editConfig((RailsProject) p);
         
         ProjectManager.getDefault().saveProject(p);
         
@@ -193,64 +188,6 @@ public class RailsProjectGenerator {
         return h;
     }
     
-    // JRuby doesn't support the socket syntax in database.yml, so try to edit it
-    // out
-    private static void commentOutSocket(FileObject dir) {
-        FileObject fo = dir.getFileObject("config/database.yml"); // NOI18N
-        if (fo != null) {
-            try {
-                DataObject dobj = DataObject.find(fo);
-                EditorCookie ec = dobj.getCookie(EditorCookie.class);
-                if (ec != null) {
-                    javax.swing.text.Document doc = ec.openDocument();
-                    String text = doc.getText(0, doc.getLength());
-                    int offset = text.indexOf("socket:"); // NOI18N
-                    if (offset == -1) {
-                        // Rails didn't do anything to this file
-                        return;
-                    }
-                    // Determine indent
-                    int indent = 0;
-                    for (int i = offset-1; i >= 0; i--) {
-                        if (text.charAt(i) == '\n') {
-                            break;
-                        } else {
-                            indent++;
-                        }
-                    }
-
-                    StringBuilder sb = new StringBuilder();
-                    sb.append("# JRuby doesn't support socket:\n");
-                    boolean addLocalHost = text.indexOf("host:") == -1;
-                    if (addLocalHost) {
-                        for (int i = 0; i < indent; i++) {
-                            sb.append(" ");
-                        }
-                        sb.append("host: localhost\n");
-                    }
-                    for (int i = 0; i < indent; i++) {
-                        sb.append(" ");
-                    }
-                    sb.append("#");
-                    doc.insertString(offset, sb.toString(), null);
-                    SaveCookie sc = dobj.getCookie(SaveCookie.class);
-                    if (sc != null) {
-                        sc.save();
-                    } else {
-                        LifecycleManager.getDefault().saveAll();
-                    }
-                }
-            } catch (BadLocationException ble) {
-                Exceptions.printStackTrace(ble);
-            } catch (DataObjectNotFoundException dnfe) {
-                Exceptions.printStackTrace(dnfe);
-            } catch (IOException ioe) {
-                Exceptions.printStackTrace(ioe);
-            }
-        }
-    }
-    
-
 //    public static RakeProjectHelper createProject(final File dir, final String name,
 //                                                  final File[] sourceFolders, final File[] testFolders, final String manifestFile) throws IOException {
 //        assert sourceFolders != null && testFolders != null: "Package roots can't be null";   //NOI18N

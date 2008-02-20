@@ -890,27 +890,16 @@ public class Reformatter implements ReformatTask {
         @Override
         public Boolean visitAnnotation(AnnotationTree node, Void p) {
             accept(AT);
-            int old = indent;
-            indent += continuationIndentSize;
             scan(node.getAnnotationType(), p);
             List<? extends ExpressionTree> args = node.getArguments();
             spaces(cs.spaceBeforeAnnotationParen() ? 1 : 0);
             accept(LPAREN);
             if (args != null && !args.isEmpty()) {
                 spaces(cs.spaceWithinAnnotationParens() ? 1 : 0);
-                for (Iterator<? extends ExpressionTree> it = args.iterator(); it.hasNext();) {
-                    ExpressionTree arg = it.next();
-                    scan(arg, p);
-                    if (it.hasNext()) {
-                        spaces(cs.spaceBeforeComma() ? 1 : 0);
-                        accept(COMMA);
-                        spaces(cs.spaceAfterComma() ? 1 : 0);
-                    }
-                }
+                wrapList(cs.wrapAnnotationArgs(), cs.alignMultilineAnnotationArgs(), args);
                 spaces(cs.spaceWithinAnnotationParens() ? 1 : 0);
             }
             accept(RPAREN);
-            indent = old;
             return true;
         }
 

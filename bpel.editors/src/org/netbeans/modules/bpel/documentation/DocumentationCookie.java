@@ -282,6 +282,7 @@ public class DocumentationCookie implements ReportCookie {
   private boolean skipElement(BpelEntity entity) {
     return
       entity instanceof Import ||
+      entity instanceof Process ||
       entity instanceof CorrelationSet ||
       entity instanceof CorrelationSetContainer ||
       entity instanceof CorrelationContainer ||
