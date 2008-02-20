@@ -1308,6 +1308,15 @@ public class XPathModelImpl implements XPathModel {
 //System.out.println("VISIT coreOperation: " + coreOperation);
             myWasFunctionOrOperation = true; // vlv
             visitChildren(coreOperation);
+            //
+            // Warn the Union operator "|" isn't supported by the runtime
+            if (mValidationContext != null && 
+                    coreOperation.getOperationType() == CoreOperationType.OP_UNION) {
+                mValidationContext.addResultItem(mRootXPathExpression, 
+                        ResultType.WARNING, 
+                        XPathProblem.RUNTIME_NOT_SUPPORT_OPERATION, 
+                        CoreOperationType.OP_UNION.getMetadata().getName());
+            }
         }
 
         @Override
