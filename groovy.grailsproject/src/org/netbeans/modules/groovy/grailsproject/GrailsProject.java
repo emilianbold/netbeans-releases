@@ -46,6 +46,7 @@ import org.netbeans.modules.groovy.grailsproject.ui.GrailsLogicalViewProvider;
 import org.netbeans.modules.groovy.grailsproject.ui.GrailsProjectCustomizerProvider;
 import java.awt.Image;
 import java.beans.PropertyChangeListener;
+import java.io.File;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import org.netbeans.api.project.Project;
@@ -60,6 +61,13 @@ import org.openide.filesystems.FileUtil;
 import org.openide.util.Lookup;
 import org.openide.util.Utilities;
 import org.openide.util.lookup.Lookups;
+import org.openidex.search.SearchInfo;
+import org.openidex.search.SearchInfoFactory;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 
 /**
  *
@@ -75,6 +83,7 @@ public final class GrailsProject implements Project {
     private SourceRoots testRoots;
 
     private Lookup lookup;
+    private final Logger LOG = Logger.getLogger(GrailsProject.class.getName());
 
     public GrailsProject(FileObject projectDir, ProjectState projectState) {
         this.projectDir = projectDir;
@@ -98,12 +107,51 @@ public final class GrailsProject implements Project {
                 new GrailsProjectCustomizerProvider(this),
                 new GrailsProjectDeleteImplementation(this),
                 new GrailsProjectEncodingQueryImpl(),
+                getSearchInfo(projectDir),
                 // new TemplatesImpl(),
                 logicalView, //Logical view of project implementation
                 cpProvider
             );
         }
         return lookup;
+    }
+    
+    SearchInfo getSearchInfo(FileObject projectDir) {
+        
+        // LOG.setLevel(Level.FINEST);
+        
+        assert projectDir != null;
+        
+        String[] dirlist =  {   "test",
+                                "src",
+                                "grails-app",
+                                "scripts" } ;
+        
+        List<FileObject> foList = new ArrayList<FileObject>();
+        
+        String basedir = FileUtil.getFileDisplayName(projectDir) + File.separatorChar;
+        LOG.log(Level.FINEST, "basedir = " + basedir);    
+        
+        for (String dir : dirlist) {
+            LOG.log(Level.FINEST, "dir = " + dir);
+            File f = new File(basedir + dir);
+            if (f != null) {
+                if (f.isDirectory()) {
+                    foList.add(FileUtil.toFileObject(f));
+                }
+
+            } else {
+                LOG.log(Level.FINEST, "Problem creating file = " + basedir + dir);
+            }
+        }
+        
+        LOG.log(Level.FINEST, "foList: " + foList);
+        
+        FileObject[] folder = foList.toArray(new FileObject[foList.size()]);
+        
+        assert folder.length == foList.size();
+        
+        return SearchInfoFactory.createSearchInfo(folder, true, null);                                         
     }
 
     public synchronized SourceRoots getSourceRoots() {        
