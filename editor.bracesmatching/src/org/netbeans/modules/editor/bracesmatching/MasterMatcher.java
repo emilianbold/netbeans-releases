@@ -637,13 +637,13 @@ public final class MasterMatcher {
                         if (LOG.isLoggable(Level.WARNING)) {
                             LOG.warning("Invalid BracesMatcher implementation, " + //NOI18N
                                 "findOrigin() should return nothing or offset pairs. " + //NOI18N
-                                "Offending BracesMatcher: " + matcher); //NOI18N
+                                "Offending BracesMatcher: " + matcher[0]); //NOI18N
                         }
                         origin = null;
                     } else if (origin[0] < 0 || origin[1] > document.getLength() || origin[0] > origin[1]) {
                         if (LOG.isLoggable(Level.WARNING)) {
                             LOG.warning("Invalid origin offsets [" + origin[0] + ", " + origin[1] + "]. " + //NOI18N
-                                "Offending BracesMatcher: " + matcher); //NOI18N
+                                "Offending BracesMatcher: " + matcher[0]); //NOI18N
                         }
                         origin = null;
                     } else {
@@ -655,7 +655,7 @@ public final class MasterMatcher {
                                         "caretOffset = " + caretOffset + //NOI18N
                                         ", lookahead = " + lookahead + //NOI18N
                                         ", searching backwards. " + //NOI18N
-                                        "Offending BracesMatcher: " + matcher); //NOI18N
+                                        "Offending BracesMatcher: " + matcher[0]); //NOI18N
                                 }
                                 origin = null;
                             }
@@ -667,7 +667,7 @@ public final class MasterMatcher {
                                         "caretOffset = " + caretOffset + //NOI18N
                                         ", lookahead = " + lookahead + //NOI18N
                                         ", searching forward. " + //NOI18N
-                                        "Offending BracesMatcher: " + matcher); //NOI18N
+                                        "Offending BracesMatcher: " + matcher[0]); //NOI18N
                                 }
                                 origin = null;
                             }
