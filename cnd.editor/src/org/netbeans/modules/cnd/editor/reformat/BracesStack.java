@@ -65,6 +65,14 @@ class BracesStack {
                 stack.pop();
             }
         }
+        if (!(entry.getImportantKind() != null ||
+              entry.isLikeToArrayInitialization() ||
+              entry.isLikeToArrayInitialization())) {
+            if (peek() != null && peek().isLikeToArrayInitialization()){
+                // this is two dimensiomal arry initialization
+                entry.setLikeToArrayInitialization(true);
+            }
+        }
         stack.push(entry);
         System.out.println("push: "+toString()); // NOI18N
     }

@@ -590,8 +590,14 @@ public class GlyphGutter extends JComponent implements Annotations.AnnotationsLi
             lineCnt = 1;
         }
 
-        repaint();
-        checkSize();
+        // This method is called from the same thread as doc.insertString/remove() is done.
+        // Ensure the following runs in EDT.
+        Utilities.runInEventDispatchThread(new Runnable() {
+            public void run() {
+                repaint();
+                checkSize();
+            }
+        });
     }
 
     /** Check whether it is not necessary to resize the gutter */

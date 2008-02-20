@@ -222,9 +222,11 @@ public final class Palette {
         menu.add(new Item(this, new Handler(CoreFunctionType.FUNC_POSITION)));
         menu.add(new Item(this, new Handler(CoreFunctionType.FUNC_LAST)));
         menu.add(new Item(this, new Handler(CoreFunctionType.FUNC_COUNT)));
-        menu.add(new Item(this, new Handler(CoreOperationType.OP_UNION)));
-        menu.add(new Item(this, new Handler(CoreFunctionType.FUNC_ID)));
-        menu.add(new Item(this, new Handler(CoreFunctionType.FUNC_KEY)));
+        //
+        // The following functions are not supported by the runtime
+        // menu.add(new Item(this, new Handler(CoreOperationType.OP_UNION)));
+        // menu.add(new Item(this, new Handler(CoreFunctionType.FUNC_ID)));
+        // menu.add(new Item(this, new Handler(CoreFunctionType.FUNC_KEY)));
 
         return menu;
     }
@@ -241,7 +243,9 @@ public final class Palette {
         menu.add(new Item(this, new Handler(CoreFunctionType.FUNC_SUM)));
         menu.add(new Item(this, new Handler(CoreFunctionType.FUNC_FLOOR)));
         menu.add(new Item(this, new Handler(CoreFunctionType.FUNC_CEILING)));
-        menu.add(new Item(this, new Handler(CoreFunctionType.FUNC_FORMAT_NUMBER)));
+        //
+        // Isn't supported by the runtime
+        // menu.add(new Item(this, new Handler(CoreFunctionType.FUNC_FORMAT_NUMBER)));
 
         return menu;
     }
@@ -267,7 +271,10 @@ public final class Palette {
         menu.setIcon(icon(Palette.class, "bpel")); // NOI18N
 
         menu.add(new Item(this, new Handler(BpelXPathExtFunctionMetadata.DO_XSL_TRANSFORM_METADATA)));
-        menu.add(new Item(this, new Handler(BpelXPathExtFunctionMetadata.GET_VARIABLE_PROPERTY_METADATA)));
+        //
+        // Isn't supported by the runtime
+        // menu.add(new Item(this, new Handler(BpelXPathExtFunctionMetadata.GET_VARIABLE_PROPERTY_METADATA)));
+        //
         menu.add(new Item(this, new WrapServiceRefHandler(BpelXPathCustomFunction.WRAP_WITH_SERVICE_REF_METADATA)));
         menu.add(new Item(this, new Handler(BpelXPathExtFunctionMetadata.DO_MARSHAL_METADATA)));
         menu.add(new Item(this, new Handler(BpelXPathExtFunctionMetadata.DO_UNMARSHAL_METADATA)));

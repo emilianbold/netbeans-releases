@@ -588,7 +588,7 @@ public class RightTree extends MapperPanel implements
 
             Graph graph = node.getGraph();
 
-            if (graph != null && !graph.isEmpty()) {
+            if (graph != null && !graph.isEmptyOrOneLink()) {
                 int cy = y0 + node.getContentCenterY();
                 int cx = width / 2;
                 g2.setColor(Color.WHITE);
@@ -625,7 +625,7 @@ public class RightTree extends MapperPanel implements
 
                 if (Math.abs(cy - y) <= 8) {
                     Graph graph = node.getGraph();
-                    if (graph != null) {
+                    if (graph != null && !graph.isEmptyOrOneLink()) {
                         getMapper().setExpandedGraphState(node.getTreePath(),
                                 !node.isGraphExpanded());
                         getLinkTool().done();
@@ -855,17 +855,21 @@ public class RightTree extends MapperPanel implements
     }
 
     private class PressRightCollapseGraph extends AbstractAction {
-
         public void actionPerformed(ActionEvent event) {
             Mapper mapper = RightTree.this.getMapper();
             TreePath treePath = getSelectionModel().getSelectedPath();
-            MapperNode node = mapper.getNode(treePath, true);
-            if (treePath != null && node.isGraphExpanded()) {
-                mapper.setExpandedGraphState(treePath, false);
-                getLinkTool().done();
+            if (treePath != null) {
+                MapperNode node = mapper.getNode(treePath, true);
+                Graph graph = node.getGraph();
+                if (graph != null && !graph.isEmptyOrOneLink() 
+                        && node.isGraphExpanded()) 
+                {
+                    mapper.setExpandedGraphState(treePath, false);
+                    getLinkTool().done();
+                }
             }
         }
-    }
+    }    
 
     private class AutoScrollDown extends AbstractAction {
 

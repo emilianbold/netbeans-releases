@@ -48,10 +48,12 @@ import javax.swing.JButton;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.libraries.LibraryManager;
+import org.netbeans.modules.j2ee.common.project.classpath.ClassPathSupport;
+import org.netbeans.modules.j2ee.common.project.ui.ProjectProperties;
 import org.netbeans.modules.java.api.common.ant.UpdateHelper;
 import org.netbeans.modules.java.api.common.ant.UpdateImplementation;
 import org.netbeans.modules.web.project.api.WebProjectUtilities;
-import org.netbeans.modules.web.project.classpath.ClassPathSupport;
+import org.netbeans.modules.web.project.classpath.ClassPathSupportCallbackImpl;
 import org.netbeans.modules.web.project.ui.customizer.WebProjectProperties;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
@@ -182,13 +184,13 @@ public class UpdateProjectImpl implements UpdateImplementation {
             props.put("conf.dir","${source.root}/conf"); //NOI18N
             props.put("jspcompilation.classpath", "${jspc.classpath}:${javac.classpath}");
             
-            props.setProperty(WebProjectProperties.JAVAC_TEST_CLASSPATH, new String[] {
+            props.setProperty(ProjectProperties.JAVAC_TEST_CLASSPATH, new String[] {
                 "${javac.classpath}:", // NOI18N
                 "${build.classes.dir}:", // NOI18N
                 "${libs.junit.classpath}:", // NOI18N
                 "${libs.junit_4.classpath}", // NOI18N
             });
-            props.setProperty(WebProjectProperties.RUN_TEST_CLASSPATH, new String[] {
+            props.setProperty(ProjectProperties.RUN_TEST_CLASSPATH, new String[] {
                 "${javac.test.classpath}:", // NOI18N
                 "${build.test.classes.dir}", // NOI18N
             });
@@ -208,8 +210,8 @@ public class UpdateProjectImpl implements UpdateImplementation {
             //remove jsp20 and servlet24 libraries
             ReferenceHelper refHelper = new ReferenceHelper(helper, cfg, helper.getStandardPropertyEvaluator());
             ClassPathSupport cs = new ClassPathSupport(helper.getStandardPropertyEvaluator(), refHelper, helper,
-                    updateHelper, WebProjectProperties.WELL_KNOWN_PATHS, WebProjectProperties.ANT_ARTIFACT_PREFIX);
-            Iterator items = cs.itemsIterator((String)props.get( WebProjectProperties.JAVAC_CLASSPATH ), ClassPathSupport.TAG_WEB_MODULE_LIBRARIES);
+                    updateHelper, new ClassPathSupportCallbackImpl(helper));
+            Iterator items = cs.itemsIterator((String)props.get( ProjectProperties.JAVAC_CLASSPATH ), ClassPathSupportCallbackImpl.TAG_WEB_MODULE_LIBRARIES);
             ArrayList cpItems = new ArrayList();
             while(items.hasNext()) {
                 ClassPathSupport.Item cpti = (ClassPathSupport.Item)items.next();
@@ -223,8 +225,8 @@ public class UpdateProjectImpl implements UpdateImplementation {
                     }
                 }
             }
-            String[] javac_cp = cs.encodeToStrings(cpItems.iterator(), ClassPathSupport.TAG_WEB_MODULE_LIBRARIES );
-            props.setProperty( WebProjectProperties.JAVAC_CLASSPATH, javac_cp );
+            String[] javac_cp = cs.encodeToStrings(cpItems, ClassPathSupportCallbackImpl.TAG_WEB_MODULE_LIBRARIES );
+            props.setProperty( ProjectProperties.JAVAC_CLASSPATH, javac_cp );
         }
         
         if (putProps) {
