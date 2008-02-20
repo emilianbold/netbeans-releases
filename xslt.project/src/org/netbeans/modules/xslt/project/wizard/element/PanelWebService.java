@@ -67,7 +67,12 @@ import static org.netbeans.modules.soa.ui.util.UI.*;
 final class PanelWebService<T> extends Panel<T> {
     
   PanelWebService(Project project, Panel<T> parent) {
+    this(project, parent, null);
+  }
+
+  PanelWebService(Project project, Panel<T> parent, String alternativeLabel) {
     super(project, parent);
+    myFileLabelString = alternativeLabel;
   }
 
   @Override
@@ -99,7 +104,11 @@ final class PanelWebService<T> extends Panel<T> {
     c.weightx = 0.0;
     c.fill = GridBagConstraints.NONE;
     c.insets = new Insets(TINY_INSET, 0, TINY_INSET, 0);
-    myFileLabel = createLabel(i18n("LBL_Web_Service_File")); // NOI18N
+    if (myFileLabelString == null) {
+        myFileLabelString = i18n("LBL_Web_Service_File");
+    }
+    myFileLabel = createLabel(myFileLabelString); // NOI18N
+    a11y(myFileLabel, "ACSN_LBL_Web_Service_File", "ACSD_LBL_Web_Service_File");
     panel.add(myFileLabel, c);
 
     // wsdl
@@ -165,6 +174,7 @@ final class PanelWebService<T> extends Panel<T> {
     return ((ProjectWSDL) myWSDL.getSelectedItem()).getFile();
   }
 
+  private String myFileLabelString;
   private JButton myBrowse;
   private JComboBox myWSDL;
   private JLabel myFileLabel;
