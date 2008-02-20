@@ -96,6 +96,7 @@ import org.netbeans.spi.java.project.support.ui.PackageView;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
+import org.netbeans.modules.j2ee.common.project.ui.ProjectProperties;
 import org.netbeans.modules.j2ee.common.ui.BrokenDatasourceSupport;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
@@ -235,11 +236,11 @@ public class WebLogicalViewProvider implements LogicalViewProvider {
     // Private innerclasses ----------------------------------------------------
 
     private static final String[] BREAKABLE_PROPERTIES = new String[] {
-        WebProjectProperties.JAVAC_CLASSPATH,
+        ProjectProperties.JAVAC_CLASSPATH,
         WebProjectProperties.DEBUG_CLASSPATH,
-        WebProjectProperties.RUN_TEST_CLASSPATH, 
+        ProjectProperties.RUN_TEST_CLASSPATH, 
         WebProjectProperties.DEBUG_TEST_CLASSPATH, 
-        WebProjectProperties.JAVAC_TEST_CLASSPATH,
+        ProjectProperties.JAVAC_TEST_CLASSPATH,
         WebProjectProperties.WAR_CONTENT_ADDITIONAL,
         WebProjectProperties.WEB_DOCBASE_DIR
     };
