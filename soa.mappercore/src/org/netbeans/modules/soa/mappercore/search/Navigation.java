@@ -38,7 +38,7 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.bpel.search.impl.ui;
+package org.netbeans.modules.soa.mappercore.search;
 
 import java.awt.Dimension;
 
@@ -51,9 +51,9 @@ import javax.swing.JTree;
  * @author Vladimir Yaroslavskiy
  * @version 2007.10.18
  */
-final class Navigation extends JPanel {
+public final class Navigation extends JPanel {
   
-  Navigation(JTree tree, JScrollPane scrollPane, JComponent component) {
+  public Navigation(JTree tree, JScrollPane scrollPane, JComponent component) {
     myWrapper = new Wrapper(tree);
     myScrollPane = scrollPane;
     myComponent = component;
