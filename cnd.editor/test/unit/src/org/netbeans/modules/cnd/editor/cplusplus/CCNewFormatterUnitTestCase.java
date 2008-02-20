@@ -60,9 +60,14 @@ public class CCNewFormatterUnitTestCase extends CCFormatterBaseUnitTestCase {
 	}
     }
 
+    private void setDefaultsOptions(){
+        EditorOptions.resetToDefault(CodeStyle.getDefault(CodeStyle.Language.CPP));
+    }
+    
     // -------- Reformat tests -----------
     
     public void testReformatMultiLineSystemOutPrintln() {
+        setDefaultsOptions();
         setLoadDocumentText(
                 "void m() {\n"
                 + "    printf(\n"
@@ -80,6 +85,7 @@ public class CCNewFormatterUnitTestCase extends CCFormatterBaseUnitTestCase {
     }
 
     public void testReformatMultiLineSystemOutPrintln2() {
+        setDefaultsOptions();
         EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
                 put(EditorOptions.newLineBeforeBraceDeclaration, 
                 CodeStyle.BracePlacement.SAME_LINE.name());
@@ -105,6 +111,7 @@ public class CCNewFormatterUnitTestCase extends CCFormatterBaseUnitTestCase {
     }
     
 //    public void testReformatMultiLineClassDeclaration() {
+//        setDefaultsOptions();
 //        setLoadDocumentText(
 //                "public class C\n"
 //                + ": public Runnable {\n"
@@ -128,6 +135,7 @@ public class CCNewFormatterUnitTestCase extends CCFormatterBaseUnitTestCase {
      * @see http://www.netbeans.org/issues/show_bug.cgi?id6065
      */
     public void testReformatNewOnTwoLines() {
+        setDefaultsOptions();
         setLoadDocumentText(
                 "javax::swing::JPanel* panel =\n" +
                 "new java::swing::JPanel();");
@@ -142,6 +150,7 @@ public class CCNewFormatterUnitTestCase extends CCFormatterBaseUnitTestCase {
      * @see http://www.netbeans.org/issues/show_bug.cgi?id=23508
      */
     public void testReformatTernaryConditionalOperator() {
+        setDefaultsOptions();
         setLoadDocumentText(
                 "something = (someComplicatedExpression != null) ?\n" +
                 "(aComplexCalculation) :\n" +
@@ -159,6 +168,7 @@ public class CCNewFormatterUnitTestCase extends CCFormatterBaseUnitTestCase {
      * @see http://www.netbeans.org/issues/show_bug.cgi?id=47069
      */
     public void testReformatArrayInitializerWithNewline() {
+        setDefaultsOptions();
         setLoadDocumentText(
                 "int[] foo = new int[] {1, 2, 3};");
         reformat();
@@ -171,6 +181,7 @@ public class CCNewFormatterUnitTestCase extends CCFormatterBaseUnitTestCase {
      * @see http://www.netbeans.org/issues/show_bug.cgi?id=48926
      */
     public void testReformatNewlineBracesToNormalOnes() {
+        setDefaultsOptions();
         setLoadDocumentText(
                 "try\n" +
                 "{\n" +
@@ -195,6 +206,7 @@ public class CCNewFormatterUnitTestCase extends CCFormatterBaseUnitTestCase {
      * @see http://www.netbeans.org/issues/show_bug.cgi?id=49450
      */
     public void testReformatMultilineConstructor() {
+        setDefaultsOptions();
         EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
                 put(EditorOptions.newLineBeforeBraceClass, 
                 CodeStyle.BracePlacement.SAME_LINE.name());
@@ -236,6 +248,7 @@ public class CCNewFormatterUnitTestCase extends CCFormatterBaseUnitTestCase {
      * @see http://www.netbeans.org/issues/show_bug.cgi?id=49450
      */
     public void testReformatMultilineConstructor2() {
+        setDefaultsOptions();
         setLoadDocumentText(
                 "class Test {\n" +
                 "Test(int one,\n" +
@@ -264,6 +277,7 @@ public class CCNewFormatterUnitTestCase extends CCFormatterBaseUnitTestCase {
      * @see http://www.netbeans.org/issues/show_bug.cgi?id=50523
      */
     public void testReformatIfElseWithoutBrackets() {
+        setDefaultsOptions();
         setLoadDocumentText(
                 "if (count == 0)\n" +
                 "return 0.0f;\n" +
@@ -282,6 +296,7 @@ public class CCNewFormatterUnitTestCase extends CCFormatterBaseUnitTestCase {
      * @see http://www.netbeans.org/issues/show_bug.cgi?id=97544
      */
     public void testReformatSimpleClass() {
+        setDefaultsOptions();
         EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
                 put(EditorOptions.newLineBeforeBraceClass, 
                 CodeStyle.BracePlacement.SAME_LINE.name());
@@ -319,6 +334,7 @@ public class CCNewFormatterUnitTestCase extends CCFormatterBaseUnitTestCase {
      * @see http://www.netbeans.org/issues/show_bug.cgi?id=97544
      */
     public void testReformatSimpleClass2() {
+        setDefaultsOptions();
         setLoadDocumentText(
             "class C {\n" +
             "protected:\n" +
@@ -348,6 +364,7 @@ public class CCNewFormatterUnitTestCase extends CCFormatterBaseUnitTestCase {
      * @see http://www.netbeans.org/issues/show_bug.cgi?id=98475
      */
     public void testReformatForWithoutBraces() {
+        setDefaultsOptions();
         setLoadDocumentText(
             "for (i = 0; i < MAXBUCKET; i++) {\n" +
 	    "for (j = 0; j < MAXBUCKET; j++)\n" +
@@ -376,6 +393,7 @@ public class CCNewFormatterUnitTestCase extends CCFormatterBaseUnitTestCase {
      * @see http://www.netbeans.org/issues/show_bug.cgi?id=100665
      */
     public void testReformatPreprocessorsDirectives() {
+        setDefaultsOptions();
         EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
                 put(EditorOptions.newLineBeforeBraceDeclaration, 
                 CodeStyle.BracePlacement.SAME_LINE.name());
@@ -411,6 +429,7 @@ public class CCNewFormatterUnitTestCase extends CCFormatterBaseUnitTestCase {
      * @see http://www.netbeans.org/issues/show_bug.cgi?id=100665
      */
     public void testReformatPreprocessorsDirectives2() {
+        setDefaultsOptions();
         setLoadDocumentText(
             "main() {\n" +
             "#define AAA 1\n" +
@@ -438,6 +457,7 @@ public class CCNewFormatterUnitTestCase extends CCFormatterBaseUnitTestCase {
 //     * @see http://www.netbeans.org/issues/show_bug.cgi?id=115628
 //     */
 //    public void testReformatFunctionArguments() {
+//        setDefaultsOptions();
 //        setLoadDocumentText(
 //            "z = myfoo(a,\n" +
 //            "b,\n" +
@@ -454,6 +474,7 @@ public class CCNewFormatterUnitTestCase extends CCFormatterBaseUnitTestCase {
      * @see http://www.netbeans.org/issues/show_bug.cgi?id=91173
      */
     public void testReformatConstructorInitializer() {
+        setDefaultsOptions();
         EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
                 put(EditorOptions.newLineBeforeBraceDeclaration, 
                 CodeStyle.BracePlacement.SAME_LINE.name());
@@ -481,6 +502,7 @@ public class CCNewFormatterUnitTestCase extends CCFormatterBaseUnitTestCase {
      * @see http://www.netbeans.org/issues/show_bug.cgi?id=91173
      */
     public void testReformatConstructorInitializer2() {
+        setDefaultsOptions();
         setLoadDocumentText(
             "Cpu::Cpu(int type, int architecture, int units) :\n" +
             "Module(\"CPU\", \"generic\", type, architecture, units) {\n" +
@@ -500,6 +522,7 @@ public class CCNewFormatterUnitTestCase extends CCFormatterBaseUnitTestCase {
      * @see http://www.netbeans.org/issues/show_bug.cgi?id=91173
      */
     public void testReformatMultilineMainDefinition() {
+        setDefaultsOptions();
         EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
                 put(EditorOptions.newLineBeforeBraceDeclaration, 
                 CodeStyle.BracePlacement.SAME_LINE.name());
@@ -527,6 +550,7 @@ public class CCNewFormatterUnitTestCase extends CCFormatterBaseUnitTestCase {
      * @see http://www.netbeans.org/issues/show_bug.cgi?id=91173
      */
     public void testReformatMultilineMainDefinition2() {
+        setDefaultsOptions();
         setLoadDocumentText(
             "int\n" +
             "main(int argc, char** argv) {\n" +
@@ -546,6 +570,7 @@ public class CCNewFormatterUnitTestCase extends CCFormatterBaseUnitTestCase {
 //     * @see http://www.netbeans.org/issues/show_bug.cgi?id=91561
 //     */
 //    public void testReformatUnbalancedBraces() {
+//        setDefaultsOptions();
 //        setLoadDocumentText(
 //            "void foo() {\n" +
 //            "#if A\n" +
@@ -568,8 +593,9 @@ public class CCNewFormatterUnitTestCase extends CCFormatterBaseUnitTestCase {
 //    }
 
     public void testIdentInnerEnum() {
+        setDefaultsOptions();
         EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
-                put(EditorOptions.newLineBeforeBraceDeclaration, 
+                put(EditorOptions.newLineBeforeBraceClass, 
                 CodeStyle.BracePlacement.SAME_LINE.name());
         try {
             setLoadDocumentText(
@@ -595,9 +621,9 @@ public class CCNewFormatterUnitTestCase extends CCFormatterBaseUnitTestCase {
                 "#ifndef D\n" +
                 "    friend class Ndb;\n" +
                 "#endif\n" +
-                "    \n" +
+                "\n" +
                 "public:\n" +
-                "    \n" +
+                "\n" +
                 "    enum AbortOption {\n" +
                 "#ifndef D\n" +
                 "        AbortOnError=::AbortOnError,\n" +
@@ -609,12 +635,13 @@ public class CCNewFormatterUnitTestCase extends CCFormatterBaseUnitTestCase {
             );
         } finally {
             EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
-                    put(EditorOptions.newLineBeforeBraceDeclaration, 
+                    put(EditorOptions.newLineBeforeBraceClass, 
                     CodeStyle.BracePlacement.NEW_LINE.name());
         }
     }
 
     public void testIdentInnerEnum2() {
+        setDefaultsOptions();
         setLoadDocumentText(
             "class NdbTransaction {\n" +
             "#ifndef D\n" +
@@ -639,9 +666,9 @@ public class CCNewFormatterUnitTestCase extends CCFormatterBaseUnitTestCase {
             "#ifndef D\n" +
             "    friend class Ndb;\n" +
             "#endif\n" +
-            "    \n" +
+            "\n" +
             "public:\n" +
-            "    \n" +
+            "\n" +
             "    enum AbortOption\n" +
             "    {\n" +
             "#ifndef D\n" +
@@ -655,6 +682,7 @@ public class CCNewFormatterUnitTestCase extends CCFormatterBaseUnitTestCase {
     }
 
     public void testTemplate() {
+        setDefaultsOptions();
         EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
                 put(EditorOptions.newLineBeforeBraceDeclaration, 
                 CodeStyle.BracePlacement.SAME_LINE.name());
@@ -680,7 +708,7 @@ public class CCNewFormatterUnitTestCase extends CCFormatterBaseUnitTestCase {
                 "    KeyTable2(ArrayPool<U>& pool) :\n" +
                 "    DLHashTable2<T, U>(pool) {\n" +
                 "    }\n" +
-                "    \n" +
+                "\n" +
                 "    bool find(Ptr<T>& ptr, const T& rec) const {\n" +
                 "        return DLHashTable2<T, U>::find(ptr, rec);\n" +
                 "    }\n" +
@@ -694,6 +722,7 @@ public class CCNewFormatterUnitTestCase extends CCFormatterBaseUnitTestCase {
     }
 
     public void testTemplate2() {
+        setDefaultsOptions();
         setLoadDocumentText(
             "template <class T, class U>\n" +
             "class KeyTable2 : public DLHashTable2<T, U> {\n" +
@@ -717,7 +746,7 @@ public class CCNewFormatterUnitTestCase extends CCFormatterBaseUnitTestCase {
             "    DLHashTable2<T, U>(pool)\n" +
             "    {\n" +
             "    }\n" +
-            "    \n" +
+            "\n" +
             "    bool find(Ptr<T>& ptr, const T& rec) const\n" +
             "    {\n" +
             "        return DLHashTable2<T, U>::find(ptr, rec);\n" +
@@ -727,6 +756,7 @@ public class CCNewFormatterUnitTestCase extends CCFormatterBaseUnitTestCase {
     }
     
     public void testIdentPreprocessorElase() {
+        setDefaultsOptions();
         setLoadDocumentText(
             "#if defined(USE_MB)\n" +
             "if (use_mb(cs)) {\n" +
@@ -749,6 +779,7 @@ public class CCNewFormatterUnitTestCase extends CCFormatterBaseUnitTestCase {
     };
     
     public void testIdentDefine() {
+        setDefaultsOptions();
         setLoadDocumentText(
             "int\n" +
             "main() {\n" +
@@ -769,13 +800,14 @@ public class CCNewFormatterUnitTestCase extends CCFormatterBaseUnitTestCase {
             "#define X \\\n" +
             "        a+\\\n" +
             "        b+ \\\n" +
-            "        c\n" +
+            "        c \n" +
             "    z++;\n" +
             "}\n"
         );
     };
 
     public void testIdentMultyLineMain() {
+        setDefaultsOptions();
         EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
                 put(EditorOptions.newLineBeforeBraceDeclaration, 
                 CodeStyle.BracePlacement.SAME_LINE.name());
@@ -803,6 +835,7 @@ public class CCNewFormatterUnitTestCase extends CCFormatterBaseUnitTestCase {
     };
 
     public void testIdentMultyLineMain2() {
+        setDefaultsOptions();
         setLoadDocumentText(
             "long z;\n" +
             "int\n" +
@@ -822,6 +855,7 @@ public class CCNewFormatterUnitTestCase extends CCFormatterBaseUnitTestCase {
     };
     
     public void testIdentMultyConstructor() {
+        setDefaultsOptions();
         EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
                 put(EditorOptions.newLineBeforeBraceDeclaration, 
                 CodeStyle.BracePlacement.SAME_LINE.name());
@@ -836,8 +870,8 @@ public class CCNewFormatterUnitTestCase extends CCFormatterBaseUnitTestCase {
             reformat();
             assertDocumentText("Incorrect identing multyline constructor",
                 "Log_event::Log_event(uint flags_arg, bool using_trans)\n" +
-                ":log_pos(0), temp_buf(0), exec_time(0), flags(flags_arg), thd(thd_arg) {\n" +
-                "    server_id=thd->server_id;\n" +
+                ": log_pos(0), temp_buf(0), exec_time(0), flags(flags_arg), thd(thd_arg) {\n" +
+                "    server_id = thd->server_id;\n" +
                 "}\n"
             );
         } finally {
@@ -848,26 +882,35 @@ public class CCNewFormatterUnitTestCase extends CCFormatterBaseUnitTestCase {
     };
 
     public void testIdentMultyConstructor2() {
-        setLoadDocumentText(
-            "Log_event::Log_event(const char* buf,\n" +
-            "        const Format_description_log_event* description_event)\n" +
-            "        :temp_buf(0), cache_stmt(0)\n" +
-            "        {\n" +
-            "                server_id=thd->server_id;\n" +
-            "        }\n"
+        setDefaultsOptions();
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
+                putBoolean(EditorOptions.spaceAfterColon, false);
+        try {
+            setLoadDocumentText(
+                "Log_event::Log_event(const char* buf,\n" +
+                "        const Format_description_log_event* description_event)\n" +
+                "        :temp_buf(0), cache_stmt(0)\n" +
+                "        {\n" +
+                "                server_id=thd->server_id;\n" +
+                "        }\n"
+                );
+            reformat();
+            assertDocumentText("Incorrect identing multyline constructor",
+                "Log_event::Log_event(const char* buf,\n" +
+                "        const Format_description_log_event* description_event)\n" +
+                ":temp_buf(0), cache_stmt(0)\n" +
+                "{\n" +
+                "    server_id = thd->server_id;\n" +
+                "}\n"
             );
-        reformat();
-        assertDocumentText("Incorrect identing multyline constructor",
-            "Log_event::Log_event(const char* buf,\n" +
-            "        const Format_description_log_event* description_event)\n" +
-            ":temp_buf(0), cache_stmt(0)\n" +
-            "{\n" +
-            "    server_id=thd->server_id;\n" +
-            "}\n"
-        );
+        } finally {
+            EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
+                putBoolean(EditorOptions.spaceAfterColon, true);
+        }
     };
 
     public void testIdentDefineBrace() {
+        setDefaultsOptions();
         setLoadDocumentText(
             "#define BRACE {\n" +
             "int main() {\n" +
@@ -887,6 +930,7 @@ public class CCNewFormatterUnitTestCase extends CCFormatterBaseUnitTestCase {
     };
     
     public void testIdentDefineBrace2() {
+        setDefaultsOptions();
         setLoadDocumentText(
             "#define BRACE }\n" +
             "int main() {\n" +
@@ -906,6 +950,7 @@ public class CCNewFormatterUnitTestCase extends CCFormatterBaseUnitTestCase {
     };
 
 //    public void testIdentMultyConstructor3() {
+//        setDefaultsOptions();
 //        setLoadDocumentText(
 //            "Query_log_event::Query_log_event(THD* thd_arg, const char* query_arg,\n" +
 //            "        ulong query_length, bool using_trans,\n" +
@@ -957,6 +1002,7 @@ public class CCNewFormatterUnitTestCase extends CCFormatterBaseUnitTestCase {
 //    };
     
     public void testMacroDefineWithBrace() {
+        setDefaultsOptions();
         setLoadDocumentText(
             "#define SOME_IF(a, b) if ((a) > (b)) { /* do something */ }\n"
             );
@@ -967,6 +1013,7 @@ public class CCNewFormatterUnitTestCase extends CCFormatterBaseUnitTestCase {
     };
 
     public void testMacroDefineWithBrace1() {
+        setDefaultsOptions();
         setLoadDocumentText(
             "\n"+
             "#define SOME_IF(a, b) if ((a) > (b)) { /* do something */ }\n"
@@ -979,6 +1026,7 @@ public class CCNewFormatterUnitTestCase extends CCFormatterBaseUnitTestCase {
     };
     
     public void testMacroDefineWithBrace2() {
+        setDefaultsOptions();
         EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
                 put(EditorOptions.newLineBeforeBrace, 
                 CodeStyle.BracePlacement.NEW_LINE.name());
@@ -996,6 +1044,7 @@ public class CCNewFormatterUnitTestCase extends CCFormatterBaseUnitTestCase {
     }
 
     public void testMacroDefineWithBrace3() {
+        setDefaultsOptions();
         EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
                 put(EditorOptions.newLineBeforeBrace, 
                 CodeStyle.BracePlacement.NEW_LINE.name());
@@ -1015,6 +1064,7 @@ public class CCNewFormatterUnitTestCase extends CCFormatterBaseUnitTestCase {
     }
 
     public void testMacroDefineWithParen() {
+        setDefaultsOptions();
         EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
                 put(EditorOptions.newLineBeforeBraceDeclaration, 
                 CodeStyle.BracePlacement.SAME_LINE.name());
@@ -1042,6 +1092,7 @@ public class CCNewFormatterUnitTestCase extends CCFormatterBaseUnitTestCase {
     }
 
     public void testMacroDefineWithParen11() {
+        setDefaultsOptions();
         setLoadDocumentText(
                 "#include <stdio.h>\n" +
                 "#define M(x) puts(#x)\n" +
@@ -1061,8 +1112,11 @@ public class CCNewFormatterUnitTestCase extends CCFormatterBaseUnitTestCase {
     }
 
     public void testMacroDefineWithParen2() {
+        setDefaultsOptions();
         EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
                 putBoolean(EditorOptions.spaceBeforeMethodCallParen, true);
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
+                putBoolean(EditorOptions.spaceBeforeMethodDeclParen, true);
         EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
                 put(EditorOptions.newLineBeforeBraceDeclaration, 
                 CodeStyle.BracePlacement.SAME_LINE.name());
@@ -1086,12 +1140,15 @@ public class CCNewFormatterUnitTestCase extends CCFormatterBaseUnitTestCase {
             EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
                     putBoolean(EditorOptions.spaceBeforeMethodCallParen, false);
             EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
+                    putBoolean(EditorOptions.spaceBeforeMethodDeclParen, false);
+            EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
                     put(EditorOptions.newLineBeforeBraceDeclaration, 
                     CodeStyle.BracePlacement.NEW_LINE.name());
         }
     }
 
     public void testMacroDefineWithParen21() {
+        setDefaultsOptions();
         EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
                 putBoolean(EditorOptions.spaceBeforeMethodCallParen, true);
         try {
@@ -1106,7 +1163,7 @@ public class CCNewFormatterUnitTestCase extends CCFormatterBaseUnitTestCase {
             assertDocumentText("Incorrect formatting for macro define with paren",
                     "#include <stdio.h>\n" +
                     "#define M(x) puts(#x)\n" +
-                    "int main ()\n" +
+                    "int main()\n" +
                     "{\n" +
                     "    M (\"test\");\n" +
                     "    return 0;\n" +
@@ -1118,6 +1175,7 @@ public class CCNewFormatterUnitTestCase extends CCFormatterBaseUnitTestCase {
     }
 
     public void testSwitchFormatting() {
+        setDefaultsOptions();
         setLoadDocumentText(
                 "switch (GetTypeID()) {\n" +
                 "case FAST:\n" +
