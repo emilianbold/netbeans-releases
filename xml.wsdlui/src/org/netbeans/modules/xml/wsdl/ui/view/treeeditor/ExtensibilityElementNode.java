@@ -229,12 +229,14 @@ public class ExtensibilityElementNode<T extends ExtensibilityElement> extends WS
             
             try {
                 ElementProperties elemProps = PropertyModelFactory.getInstance().getElementProperties(mQName);
-                for (GroupedProperty gProp : elemProps.getGroupedProperty()) {
-                    String groupedNames = gProp.getGroupedAttributeNames();
-                    String[] splits = groupedNames.split(" ");
-                    String groupDisplayName = gProp.getDisplayName();
-                    for (String split : splits) {
-                        groupNameMap.put(split, groupDisplayName);
+                if (elemProps != null) {
+                    for (GroupedProperty gProp : elemProps.getGroupedProperty()) {
+                        String groupedNames = gProp.getGroupedAttributeNames();
+                        String[] splits = groupedNames.split(" ");
+                        String groupDisplayName = gProp.getDisplayName();
+                        for (String split : splits) {
+                            groupNameMap.put(split, groupDisplayName);
+                        }
                     }
                 }
 
