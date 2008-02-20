@@ -40,8 +40,8 @@ package org.netbeans.modules.ruby.railsprojects.database;
 
 import java.io.IOException;
 import javax.swing.text.BadLocationException;
+import javax.swing.text.Document;
 import org.netbeans.api.ruby.platform.RubyPlatform;
-import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.ruby.railsprojects.RailsProject;
 import org.openide.LifecycleManager;
 import org.openide.cookies.EditorCookie;
@@ -55,53 +55,65 @@ import org.openide.util.Exceptions;
  *
  * @author Erno Mononen
  */
-class JavaDBAdapter implements RailsDatabaseConfiguration {
+class PostgreSQLAdapter implements RailsDatabaseConfiguration {
 
-    JavaDBAdapter() {
+    PostgreSQLAdapter() {
     }
 
     public String railsGenerationParam() {
-        return "javadb";
+        return "postgresql";
     }
 
     public void editConfig(RailsProject project) {
-        FileObject fo = project.getProjectDirectory().getFileObject("config/database.yml"); // NOI18N
         RubyPlatform platform = RubyPlatform.platformFor(project);
+        if (platform.isJRuby()) {
+            // only need extra config when using JRuby
+            uncommentTcpIpConfig(project.getProjectDirectory());
+        }
+    }
+    
+    /**
+     * Uncomments host and port entries that rails generates
+     * to database.yml but leaves commented out by default.
+     */
+    private static void uncommentTcpIpConfig(FileObject dir) {
+        FileObject fo = dir.getFileObject("config/database.yml"); // NOI18N
         if (fo != null) {
-            BaseDocument bdoc = null;
             try {
                 DataObject dobj = DataObject.find(fo);
                 EditorCookie ec = dobj.getCookie(EditorCookie.class);
                 if (ec != null) {
-                    javax.swing.text.Document doc = ec.openDocument();
-                    // Replace contents wholesale
-                    if (doc instanceof BaseDocument) {
-                        bdoc = (BaseDocument) doc;
-                        bdoc.atomicLock();
+                    Document doc = ec.openDocument();
+                    String text = doc.getText(0, doc.getLength());
+                    int hostOffset = text.indexOf("#host:"); // NOI18N
+                    if (hostOffset == -1) {
+                        // nothing to uncomment
+                        return;
+                    }
+                    doc.remove(hostOffset, 1);
+                    text = doc.getText(0, doc.getLength());
+                    int portOffset = text.indexOf("#port:"); // NOI18N
+                    if (portOffset != -1) {
+                        doc.remove(portOffset, 1);
+                        text = doc.getText(0, doc.getLength());
+                    }
+                    
+                    // Determine indent
+                    int indent = 0;
+                    for (int i = hostOffset-1; i >= 0; i--) {
+                        if (text.charAt(i) == '\n') {
+                            break;
+                        } else {
+                            indent++;
+                        }
                     }
 
-                    doc.remove(0, doc.getLength());
-                    String insert =
-                            "# JavaDB Setup\n" +
-                            "#\n" +
-                            "# You may need to copy derby.jar into\n" +
-                            "#  TODO: location " +  platform.getLib() + "\n" +
-                            "# With Java SE 6 and later this is not necessary.\n" +
-                            "development:\n" + // NOI18N
-                            "  adapter: derby\n" + // NOI18N
-                            "  database: db/development.db\n" + // NOI18N
-                            "\n" + // NOI18N
-                            "# Warning: The database defined as 'test' will be erased and\n" +
-                            "# re-generated from your development database when you run 'rake'.\n" +
-                            "# Do not set this db to the same as development or production.\n" +
-                            "test:\n" + // NOI18N
-                            "  adapter: derby\n" + // NOI18N
-                            "  database: db/test.db\n" + // NOI18N
-                            "\n" + // NOI18N
-                            "production:\n" + // NOI18N
-                            "  adapter: derby\n" + // NOI18N
-                            "  database: db/production.db\n"; // NOI18N
-                    doc.insertString(0, insert, null);
+                    StringBuilder sb = new StringBuilder();
+                    sb.append("# (Automatically uncommented by the IDE - JRuby doesn't support socket)\n");//NOI18N
+                    for (int i = 0; i < indent; i++) {
+                        sb.append(" ");
+                    }
+                    doc.insertString(hostOffset, sb.toString(), null);
                     SaveCookie sc = dobj.getCookie(SaveCookie.class);
                     if (sc != null) {
                         sc.save();
@@ -115,12 +127,9 @@ class JavaDBAdapter implements RailsDatabaseConfiguration {
                 Exceptions.printStackTrace(dnfe);
             } catch (IOException ioe) {
                 Exceptions.printStackTrace(ioe);
-            } finally {
-                if (bdoc != null) {
-                    bdoc.atomicUnlock();
-                }
             }
         }
     }
+
 
 }

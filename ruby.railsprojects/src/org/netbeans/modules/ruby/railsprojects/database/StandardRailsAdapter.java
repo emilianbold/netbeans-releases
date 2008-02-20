@@ -39,7 +39,17 @@
 
 package org.netbeans.modules.ruby.railsprojects.database;
 
+import java.io.IOException;
+import javax.swing.text.BadLocationException;
+import org.netbeans.api.ruby.platform.RubyPlatform;
 import org.netbeans.modules.ruby.railsprojects.RailsProject;
+import org.openide.LifecycleManager;
+import org.openide.cookies.EditorCookie;
+import org.openide.cookies.SaveCookie;
+import org.openide.filesystems.FileObject;
+import org.openide.loaders.DataObject;
+import org.openide.loaders.DataObjectNotFoundException;
+import org.openide.util.Exceptions;
 
 /**
  * Represent a Rails database adapter that doesn't require any 
@@ -55,16 +65,73 @@ class StandardRailsAdapter implements RailsDatabaseConfiguration {
         this.database = database;
     }
 
-    public String getDatabase() {
+    public String railsGenerationParam() {
         return database;
     }
 
-    public boolean needExtraConfig() {
-        return false;
+    public void editConfig(RailsProject project) {
+        RubyPlatform platform = RubyPlatform.platformFor(project);
+        if (platform.isJRuby()) {
+            commentOutSocket(project.getProjectDirectory());
+        }
     }
 
-    public void editConfig(RailsProject project) {
-        throw new UnsupportedOperationException("Not supported."); //NOI18N
+     // JRuby doesn't support the socket syntax in database.yml, so try to edit it
+    // out
+    private static void commentOutSocket(FileObject dir) {
+        FileObject fo = dir.getFileObject("config/database.yml"); // NOI18N
+        if (fo != null) {
+            try {
+                DataObject dobj = DataObject.find(fo);
+                EditorCookie ec = dobj.getCookie(EditorCookie.class);
+                if (ec != null) {
+                    javax.swing.text.Document doc = ec.openDocument();
+                    String text = doc.getText(0, doc.getLength());
+                    int offset = text.indexOf("socket:"); // NOI18N
+                    if (offset == -1) {
+                        // Rails didn't do anything to this file
+                        return;
+                    }
+                    // Determine indent
+                    int indent = 0;
+                    for (int i = offset-1; i >= 0; i--) {
+                        if (text.charAt(i) == '\n') {
+                            break;
+                        } else {
+                            indent++;
+                        }
+                    }
+
+                    StringBuilder sb = new StringBuilder();
+                    sb.append("# JRuby doesn't support socket:\n");
+                    boolean addLocalHost = text.indexOf("host:") == -1;
+                    if (addLocalHost) {
+                        for (int i = 0; i < indent; i++) {
+                            sb.append(" ");
+                        }
+                        sb.append("host: localhost\n");
+                    }
+                    for (int i = 0; i < indent; i++) {
+                        sb.append(" ");
+                    }
+                    sb.append("#");
+                    doc.insertString(offset, sb.toString(), null);
+                    SaveCookie sc = dobj.getCookie(SaveCookie.class);
+                    if (sc != null) {
+                        sc.save();
+                    } else {
+                        LifecycleManager.getDefault().saveAll();
+                    }
+                }
+            } catch (BadLocationException ble) {
+                Exceptions.printStackTrace(ble);
+            } catch (DataObjectNotFoundException dnfe) {
+                Exceptions.printStackTrace(dnfe);
+            } catch (IOException ioe) {
+                Exceptions.printStackTrace(ioe);
+            }
+        }
     }
+    
 
 }
