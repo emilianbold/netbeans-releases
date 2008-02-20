@@ -38,7 +38,7 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.mercurial.ui.update;
+package org.netbeans.modules.mercurial.ui.rollback;
 
 import java.awt.Dialog;
 import java.beans.PropertyChangeEvent;
@@ -53,37 +53,34 @@ import java.io.File;
  *
  * @author Padraig O'Briain
  */
-public class RevertModifications implements PropertyChangeListener {
+public class Backout implements PropertyChangeListener {
 
-    private RevertModificationsPanel panel;
+    private BackoutPanel panel;
     private JButton okButton;
     private JButton cancelButton;
+    private File repository;
     
-    /** Creates a new instance of RevertModifications */
-    public RevertModifications(File repository, File[] files) {
-        this (repository, files, null);
+    /** Creates a new instance of Backout */
+    public Backout(File repository) {
+        this (repository, null);
     }
 
-    public RevertModifications(File repository, File[] files, String defaultRevision) {
-        panel = new RevertModificationsPanel(repository, files);
+    public Backout(File repository, String defaultRevision) {
+        this.repository = repository;
+        panel = new BackoutPanel(repository);
         okButton = new JButton();
-        org.openide.awt.Mnemonics.setLocalizedText(okButton, org.openide.util.NbBundle.getMessage(RevertModifications.class, "CTL_RevertForm_Action_Revert")); // NOI18N
-        okButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(RevertModifications.class, "ACSD_RevertForm_Action_Revert")); // NOI18N
-        okButton.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(RevertModifications.class, "ACSN_RevertForm_Action_Revert")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(okButton, org.openide.util.NbBundle.getMessage(Backout.class, "CTL_BackoutForm_Action_Backout")); // NOI18N
+        okButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(Backout.class, "ACSD_BackoutForm_Action_Backout")); // NOI18N
+        okButton.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(Backout.class, "ACSN_BackoutForm_Action_Backout")); // NOI18N
         cancelButton = new JButton();
-        org.openide.awt.Mnemonics.setLocalizedText(cancelButton, org.openide.util.NbBundle.getMessage(RevertModifications.class, "CTL_RevertForm_Action_Cancel")); // NOI18N
-        cancelButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(RevertModifications.class, "ACSD_RevertForm_Action_Cancel")); // NOI18N
-        cancelButton.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(RevertModifications.class, "ACSN_RevertForm_Action_Cancel")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(cancelButton, org.openide.util.NbBundle.getMessage(Backout.class, "CTL_BackoutForm_Action_Cancel")); // NOI18N
+        cancelButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(Backout.class, "ACSD_BackoutForm_Action_Cancel")); // NOI18N
+        cancelButton.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(Backout.class, "ACSN_BackoutForm_Action_Cancel")); // NOI18N
     } 
     
     public boolean showDialog() {
-        File[] revertFiles = panel.getRevertFiles();
         DialogDescriptor dialogDescriptor;
-        if (revertFiles.length == 1) {
-            dialogDescriptor = new DialogDescriptor(panel, org.openide.util.NbBundle.getMessage(RevertModifications.class, "CTL_RevertDialog", revertFiles[0].getName())); // NOI18N
-        } else {
-            dialogDescriptor = new DialogDescriptor(panel, org.openide.util.NbBundle.getMessage(RevertModifications.class, "CTL_MultiRevertDialog")); // NOI18N 
-        }
+        dialogDescriptor = new DialogDescriptor(panel, org.openide.util.NbBundle.getMessage(Backout.class, "CTL_BackoutDialog", repository.getName())); // NOI18N
         dialogDescriptor.setOptions(new Object[] {okButton, cancelButton});
         
         dialogDescriptor.setModal(true);
@@ -91,11 +88,7 @@ public class RevertModifications implements PropertyChangeListener {
         dialogDescriptor.setValid(false);
         
         Dialog dialog = DialogDisplayer.getDefault().createDialog(dialogDescriptor);     
-        if (revertFiles.length == 1) {
-            dialog.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(RevertModifications.class, "ACSD_RevertDialog", revertFiles[0].getName())); // NOI18N
-        } else {
-            dialog.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(RevertModifications.class, "ACSD_MultiRevertDialog")); // NOI18N
-        }
+        dialog.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(Backout.class, "ACSD_BackoutDialog", repository.getName())); // NOI18N
         dialog.setVisible(true);
         dialog.setResizable(false);
         boolean ret = dialogDescriptor.getValue() == okButton;
@@ -113,10 +106,12 @@ public class RevertModifications implements PropertyChangeListener {
         if (panel == null) return null;
         return panel.getSelectedRevision();
     }
-    
-    public boolean isBackupRequested() {
-        if (panel == null) return false;
-        return panel.isBackupRequested();
+    public String getCommitMessage() {
+        if (panel == null) return null;
+        return panel.getCommitMessage();
     }
-
+    public boolean isMergeRequested() {
+        if (panel == null) return false;
+        return panel.isMergeRequested();
+    }
 }

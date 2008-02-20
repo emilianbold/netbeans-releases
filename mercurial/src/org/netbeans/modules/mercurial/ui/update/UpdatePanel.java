@@ -49,7 +49,6 @@ import javax.swing.ComboBoxModel;
 import javax.swing.DefaultComboBoxModel;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.api.progress.ProgressHandle;
-import org.netbeans.modules.mercurial.HgModuleConfig;
 import org.openide.util.RequestProcessor;
 import org.openide.util.NbBundle;
 import org.netbeans.modules.mercurial.util.HgCommand;
@@ -58,31 +57,21 @@ import org.netbeans.modules.mercurial.util.HgCommand;
  *
  * @author  Padraig O'Briain
  */
-public class RevertModificationsPanel extends javax.swing.JPanel {
+public class UpdatePanel extends javax.swing.JPanel {
 
     private File                            repository;
-    private File[]                          revertFiles;
     private RequestProcessor.Task           refreshViewTask;
+    private static final RequestProcessor   rp = new RequestProcessor("MercurialUpdate", 1);  // NOI18N
     private Thread                          refreshViewThread;
-    private static final RequestProcessor   rp = new RequestProcessor("MercurialRevert", 1);  // NOI18N
 
     private static final int HG_REVERT_TARGET_LIMIT = 100;
 
     /** Creates new form ReverModificationsPanel */
-     public RevertModificationsPanel(File repo, File[] files) {
+     public UpdatePanel(File repo) {
         repository = repo;
-        revertFiles = files;
         refreshViewTask = rp.create(new RefreshViewTask());
         initComponents();
         refreshViewTask.schedule(0);
-    }
-
-    public File[] getRevertFiles() {
-        return revertFiles;
-    }
-    
-    public boolean isBackupRequested() {
-        return doBackupChxBox.isSelected();
     }
 
     public String getSelectedRevision() {
@@ -98,6 +87,10 @@ public class RevertModificationsPanel extends javax.swing.JPanel {
         return revStr;
     }
 
+    public boolean isForcedUpdateRequested() {
+        return forcedUpdateChxBox.isSelected();
+    }
+
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
@@ -111,20 +104,20 @@ public class RevertModificationsPanel extends javax.swing.JPanel {
         jLabel1 = new javax.swing.JLabel();
         jLabel2 = new javax.swing.JLabel();
         jPanel1 = new javax.swing.JPanel();
-        doBackupChxBox = new javax.swing.JCheckBox();
+        forcedUpdateChxBox = new javax.swing.JCheckBox();
 
         revisionsLabel.setLabelFor(revisionsComboBox);
-        org.openide.awt.Mnemonics.setLocalizedText(revisionsLabel, org.openide.util.NbBundle.getMessage(RevertModificationsPanel.class, "RevertModificationsPanel.revisionsLabel.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(revisionsLabel, org.openide.util.NbBundle.getMessage(UpdatePanel.class, "UpdatePanel.revisionsLabel.text")); // NOI18N
 
-        jLabel1.setFont(new java.awt.Font("Dialog", 1, 11)); // NOI18N
-        org.openide.awt.Mnemonics.setLocalizedText(jLabel1, org.openide.util.NbBundle.getMessage(RevertModificationsPanel.class, "RevertModificationsPanel.infoLabel.text")); // NOI18N
+        jLabel1.setFont(new java.awt.Font("Dialog", 1, 11));
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel1, org.openide.util.NbBundle.getMessage(UpdatePanel.class, "UpdatePanel.infoLabel.text")); // NOI18N
 
         jLabel2.setForeground(new java.awt.Color(153, 153, 153));
-        org.openide.awt.Mnemonics.setLocalizedText(jLabel2, org.openide.util.NbBundle.getMessage(RevertModificationsPanel.class, "RevertModificationsPanel.infoLabel2.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel2, org.openide.util.NbBundle.getMessage(UpdatePanel.class, "UpdatePanel.infoLabel2.text")); // NOI18N
 
-        jPanel1.setBorder(javax.swing.BorderFactory.createTitledBorder("Options"));
+        jPanel1.setBorder(javax.swing.BorderFactory.createTitledBorder(org.openide.util.NbBundle.getMessage(UpdatePanel.class, "UpdatePanel.jPanel1.border.title"))); // NOI18N
 
-        org.openide.awt.Mnemonics.setLocalizedText(doBackupChxBox, org.openide.util.NbBundle.getMessage(RevertModificationsPanel.class, "RevertModificationsPanel.doBackupChxBox.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(forcedUpdateChxBox, org.openide.util.NbBundle.getMessage(UpdatePanel.class, "UpdatePanel.forcedUpdateChxBox.text")); // NOI18N
 
         org.jdesktop.layout.GroupLayout jPanel1Layout = new org.jdesktop.layout.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
@@ -132,13 +125,13 @@ public class RevertModificationsPanel extends javax.swing.JPanel {
             jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(jPanel1Layout.createSequentialGroup()
                 .addContainerGap()
-                .add(doBackupChxBox)
-                .addContainerGap(57, Short.MAX_VALUE))
+                .add(forcedUpdateChxBox)
+                .addContainerGap(25, Short.MAX_VALUE))
         );
         jPanel1Layout.setVerticalGroup(
             jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(jPanel1Layout.createSequentialGroup()
-                .add(doBackupChxBox)
+                .add(forcedUpdateChxBox)
                 .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
@@ -147,18 +140,16 @@ public class RevertModificationsPanel extends javax.swing.JPanel {
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
-                    .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createSequentialGroup()
-                        .add(47, 47, 47)
+                .addContainerGap()
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(jPanel1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .add(jLabel2)
+                    .add(jLabel1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 355, Short.MAX_VALUE)
+                    .add(layout.createSequentialGroup()
+                        .add(36, 36, 36)
                         .add(revisionsLabel)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(revisionsComboBox, 0, 176, Short.MAX_VALUE))
-                    .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createSequentialGroup()
-                        .addContainerGap()
-                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(jLabel2)
-                            .add(jLabel1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 356, Short.MAX_VALUE)
-                            .add(jPanel1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))))
+                        .add(revisionsComboBox, 0, 174, Short.MAX_VALUE)))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -170,10 +161,10 @@ public class RevertModificationsPanel extends javax.swing.JPanel {
                 .add(29, 29, 29)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(revisionsLabel)
-                    .add(revisionsComboBox, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                    .add(revisionsComboBox, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 16, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
                 .add(jPanel1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addContainerGap(15, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
     
@@ -183,11 +174,8 @@ public class RevertModificationsPanel extends javax.swing.JPanel {
      */
     private void setupModels() {
         // XXX attach Cancelable hook
-        final ProgressHandle ph = ProgressHandleFactory.createHandle(NbBundle.getMessage(RevertModificationsPanel.class, "MSG_Refreshing_Revert_Versions")); // NOI18N
+        final ProgressHandle ph = ProgressHandleFactory.createHandle(NbBundle.getMessage(RevertModificationsPanel.class, "MSG_Refreshing_Update_Versions")); // NOI18N
         try {
-            boolean doBackup = HgModuleConfig.getDefault().getBackupOnRevertModifications();
-            doBackupChxBox.setSelected(doBackup);
-
             Set<String>  initialRevsSet = new LinkedHashSet<String>();
             initialRevsSet.add(NbBundle.getMessage(RevertModificationsPanel.class, "MSG_Fetching_Revisions")); // NOI18N
             ComboBoxModel targetsModel = new DefaultComboBoxModel(new Vector<String>(initialRevsSet));
@@ -208,7 +196,7 @@ public class RevertModificationsPanel extends javax.swing.JPanel {
     }
 
     private void refreshRevisions() {
-        java.util.List<String> targetRevsList = HgCommand.getRevisionsForFile(repository, revertFiles, HG_REVERT_TARGET_LIMIT); 
+        java.util.List<String> targetRevsList = HgCommand.getRevisions(repository, HG_REVERT_TARGET_LIMIT);
 
         Set<String>  targetRevsSet = new LinkedHashSet<String>();
 
@@ -239,7 +227,7 @@ public class RevertModificationsPanel extends javax.swing.JPanel {
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JCheckBox doBackupChxBox;
+    private javax.swing.JCheckBox forcedUpdateChxBox;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JPanel jPanel1;
