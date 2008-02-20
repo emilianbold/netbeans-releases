@@ -270,6 +270,10 @@ public abstract class Instantiation {
             return ((CsmFunction)template).isInline();
         }
 
+        public boolean isOperator() {
+            return ((CsmFunction)template).isOperator();
+        }
+        
         public CharSequence getSignature() {
             return ((CsmFunction)template).getSignature();
         }
@@ -291,6 +295,10 @@ public abstract class Instantiation {
             return ((CsmFunction)template).getDefinition();
         }
 
+        public CsmFunction getDeclaration() {
+            return ((CsmFunction)template).getDeclaration();
+        }
+        
         public CharSequence getDeclarationText() {
             return ((CsmFunction)template).getDeclarationText();
         }
@@ -544,6 +552,10 @@ public abstract class Instantiation {
             return methodRef.isAbstract();
         }
 
+        public boolean isOperator() {
+            return methodRef.isOperator();
+        }
+
         public CsmCompoundStatement getBody() {
             return ((CsmFunctionDefinition)methodRef).getBody();
         }
@@ -551,7 +563,7 @@ public abstract class Instantiation {
         public CsmFunction getDeclaration() {
             return ((CsmFunctionDefinition)methodRef).getDeclaration();
         }
-
+        
         public CsmOffsetableDeclaration getTemplateDeclaration() {
             return methodRef;
         }

@@ -298,17 +298,11 @@ public class CsmKindUtilities {
     }   
 
     /*
-     * checks if object is operatir
+     * checks if object is function operator
      */
     public static boolean isOperator(CsmObject obj) {
-        // Fix me.
-        if (isDeclaration(obj)) {
-            CsmDeclaration.Kind kind = ((CsmDeclaration)obj).getKind();
-            if (kind == CsmDeclaration.Kind.FUNCTION ||
-                kind == CsmDeclaration.Kind.FUNCTION_DEFINITION) {
-                String name = ((CsmDeclaration)obj).getName().toString();
-                return name != null && name.startsWith("operator "); // NOI18N
-            }
+        if (isFunction(obj)) {
+            return ((CsmFunction)obj).isOperator();
         }
         return false;
     }   
