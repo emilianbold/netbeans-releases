@@ -70,11 +70,11 @@ then
     chmod a+x $ant_bin
   fi
 
-  admin_port    = `getPort 4848`
-  instance_port = `getPort 8080`
-  orb_port      = `getPort 3700`
-  imq_port      = `getPort 7676`
-  https_port    = `getPort 8181`
+  admin_port=`getPort 4848`
+  instance_port=`getPort 8080`
+  orb_port=`getPort 3700`
+  imq_port=`getPort 7676`
+  https_port=`getPort 8181`
 
   $ant_bin -f setup.xml -Dadmin.port=$admin_port -Dinstance.port=$instance_port -Dorb.port=$orb_port -Dimq.port=$imq_port -Dhttps.port=$https_port
 else
