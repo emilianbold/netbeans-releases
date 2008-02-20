@@ -8,7 +8,24 @@
                 <attr name="instanceOf" stringvalue="org.netbeans.spi.options.OptionsPanelController"/>
                 <attr name="position" intvalue="400"/>
             </file>
+            <folder name="FormatterPreviewExamples">
+                <attr name="position" intvalue="2000"/>
+                <file name="SAMPLE_Spaces.cpp" url="resources/cplusplus/SAMPLE_Spaces.cpp"/>
+                <file name="SAMPLE_Spaces.c" url="resources/cplusplus/SAMPLE_Spaces.c"/>
+                <file name="SAMPLE_BlankLines.cpp" url="resources/cplusplus/SAMPLE_BlankLines.cpp"/>
+                <file name="SAMPLE_BlankLines.c" url="resources/cplusplus/SAMPLE_BlankLines.c"/>
+                <file name="SAMPLE_AlignBraces.cpp" url="resources/cplusplus/SAMPLE_AlignBraces.cpp"/>
+                <file name="SAMPLE_AlignBraces.c" url="resources/cplusplus/SAMPLE_AlignBraces.c"/>
+                <file name="SAMPLE_TabsIndents.cpp" url="resources/cplusplus/SAMPLE_TabsIndents.cpp"/>
+                <file name="SAMPLE_TabsIndents.c" url="resources/cplusplus/SAMPLE_TabsIndents.c"/>
+            </folder>     
         </folder>     
+        <folder name="PreviewExamples">
+            <folder name="text">
+                <file name="x-c++" url="resources/cplusplus/CCExample"/>
+                <file name="x-c" url="resources/cplusplus/CExample"/>
+            </folder>
+        </folder>
     </folder>
 
     <folder name="Editors">

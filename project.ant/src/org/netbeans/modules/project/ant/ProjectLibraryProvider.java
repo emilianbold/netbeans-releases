@@ -951,7 +951,7 @@ public class ProjectLibraryProvider implements ArealLibraryProvider<ProjectLibra
                     // if the jar/folder is in relation to the library folder (parent+child/same vcs)
                     // don't replicate it but reference the original file.
                     newFO = libEntryFO;
-                    name = FileUtil.getRelativePath(FileUtil.toFileObject(libBaseFolder), newFO);
+                    name = PropertyUtils.relativizeFile(libBaseFolder, FileUtil.toFile(newFO));
                 } else {
                     if (libEntryFO.isFolder()) {
                         newFO = FileChooserAccessory.copyFolderRecursively(libEntryFO, sharedLibFolder);

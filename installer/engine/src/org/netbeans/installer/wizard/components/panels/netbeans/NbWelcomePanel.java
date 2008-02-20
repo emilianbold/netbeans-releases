@@ -107,7 +107,9 @@ public class NbWelcomePanel extends ErrorMessagePanel {
         setProperty(WELCOME_TEXT_HEADER_PROPERTY,
                 (type.isJDKBundle() ?
                     DEFAULT_WELCOME_TEXT_HEADER_JDK :
-                    DEFAULT_WELCOME_TEXT_HEADER ));
+                    (type.equals(BundleType.JAVA_TOOLS) ? 
+                           DEFAULT_WELCOME_TEXT_HEADER_JTB : 
+                                   DEFAULT_WELCOME_TEXT_HEADER )));
         
         setProperty(WELCOME_TEXT_DETAILS_PROPERTY,
                 ResourceUtils.getString(NbWelcomePanel.class,
@@ -651,7 +653,8 @@ public class NbWelcomePanel extends ErrorMessagePanel {
             NbiTextPane separatorPane =  new NbiTextPane();
             BundleType type = BundleType.getType(
                     System.getProperty(WELCOME_PAGE_TYPE_PROPERTY));
-            if(!type.equals(BundleType.JAVAEE) && !type.equals(BundleType.JAVAEE_JDK)) {
+            if(!type.equals(BundleType.JAVAEE) && !type.equals(BundleType.JAVAEE_JDK) && 
+                    !type.equals(BundleType.JAVA_TOOLS)) {
                 add(scrollPane, new GridBagConstraints(
                         1, dy++,                           // x, y
                         4, 1,                              // width, height
@@ -778,7 +781,8 @@ public class NbWelcomePanel extends ErrorMessagePanel {
                 customizeButton.setOpaque(false);
             }
             
-            if(type.equals(BundleType.CUSTOMIZE) || type.equals(BundleType.CUSTOMIZE_JDK)) {
+            if(type.equals(BundleType.CUSTOMIZE) || type.equals(BundleType.CUSTOMIZE_JDK) ||
+                    type.equals(BundleType.JAVA_TOOLS)) {
                 customizeButton.setVisible(true);
             } else {
                 customizeButton.setVisible(false);
@@ -853,7 +857,8 @@ public class NbWelcomePanel extends ErrorMessagePanel {
         JAVAME_JDK("javame.jdk"),
         RUBY_JDK("ruby.jdk"),
         CND_JDK("cnd.jdk"),
-        CUSTOMIZE_JDK("customize.jdk");
+        CUSTOMIZE_JDK("customize.jdk"),
+        JAVA_TOOLS("java.tools");
         
         private String name;
         private BundleType(String s) {
@@ -925,6 +930,9 @@ public class NbWelcomePanel extends ErrorMessagePanel {
     public static final String DEFAULT_WELCOME_TEXT_HEADER_JDK =
             ResourceUtils.getString(NbWelcomePanel.class,
             "NWP.welcome.text.header.jdk"); // NOI18N
+    public static final String DEFAULT_WELCOME_TEXT_HEADER_JTB =
+            ResourceUtils.getString(NbWelcomePanel.class,
+            "NWP.welcome.text.header.jtb"); // NOI18N
     public static final String WELCOME_TEXT_HEADER_APPENDING_PROPERTY =
             "NWP.welcome.text.header"; // NOI18N
     

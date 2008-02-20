@@ -125,8 +125,8 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
     private static final int            DEBUG_ATTACH = 999;
     
     /* Some breakpoint flags used only on Windows XP (with Cygwin) */
-    public static final int             GDB_TMP_BREAKPOINT = 1;
-    public static final int             GDB_INVISIBLE_BREAKPOINT = 2;
+    public static final int             GDB_TMP_BREAKPOINT = GdbBreakpoint.SUSPEND_ALL + 1;
+    public static final int             GDB_INVISIBLE_BREAKPOINT = GdbBreakpoint.SUSPEND_ALL + 2;
     
     /** ID of GDB Debugger Engine for C */
     public static final String          ENGINE_ID = "netbeans-cnd-GdbSession/C"; // NOI18N
@@ -417,22 +417,6 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
             }
         }
         return programName.toString();
-    }
-    
-    /** If the type definition contains { ... }, strip it. It will be picked up elsewhere */
-    private String stripFields(String info) {
-        StringBuilder buf = new StringBuilder();
-        int pos1 = info.indexOf('{');
-        int pos2 = GdbUtils.findMatchingCurly(info, pos1);
-        
-        if (pos1 != -1 && pos2 != -1) {
-            buf.append(info.substring(0, pos1).trim());
-            buf.append(info.substring(pos2 + 1).trim());
-        } else {
-            buf.append(info);
-        }
-        
-        return buf.toString();
     }
     
     /** Get the gdb version */

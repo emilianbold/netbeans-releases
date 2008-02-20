@@ -91,13 +91,13 @@
     <service name="CarService">
         <port name="CarServicePort"
               binding="tns:CarReservationBinding">
-            <soap:address location="http://localhost:12100/wsdl/CarService/ServiceLocation"/>
+            <soap:address location="http://localhost:18181/wsdl/CarService/ServiceLocation"/>
         </port>
     </service>
     <service name="CarStatusService">
         <port name="CarStatusServicePort"
               binding="tns:CarReservationStatusBinding">
-            <soap:address location="http://localhost:12100/wsdl/CarStatusService/ServiceLocation"/>
+            <soap:address location="http://localhost:18181/wsdl/CarStatusService/ServiceLocation"/>
         </port>
     </service>
     

@@ -1,7 +1,7 @@
 /*
  *  CcCI1Cl
  *
- * Created on December 12, 2007, 1:31 AM
+ * Created on February 19, 2008, 7:17 PM
  *
  * To change this template, choose Tools | Template Manager
  * and open the template in the editor.
@@ -17,6 +17,7 @@ import javax.ws.rs.PUT;
 import javax.ws.rs.ProduceMime;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.ConsumeMime;
+import org.codehaus.jettison.json.JSONString;
 
 /**
  * REST Web Service
@@ -27,7 +28,7 @@ import javax.ws.rs.ConsumeMime;
 public class CcCI1Cl {
     @HttpContext
     private UriInfo context;
-    
+
     /** Creates a new instance of CcCI1Cl */
     public CcCI1Cl() {
     }
@@ -35,11 +36,11 @@ public class CcCI1Cl {
     /**
      * Retrieves representation of an instance of o.n.m.ws.qaf.rest.patterns.CcCI1Cl
      * @param CcCI1URI resource URI parameter
-     * @return an instance of java.lang.String
+     * @return an instance of org.codehaus.jettison.json.JSONString
      */
     @GET
     @ProduceMime("application/json")
-    public String getJson(@UriParam("CcCI1URI")
+    public JSONString getJson(@UriParam("CcCI1URI")
     String CcCI1URI) {
         //TODO return proper representation object
         throw new UnsupportedOperationException();
@@ -54,7 +55,7 @@ public class CcCI1Cl {
     @PUT
     @ConsumeMime("application/json")
     public void putJson(@UriParam("CcCI1URI")
-    String CcCI1URI, String content) {
+    String CcCI1URI, JSONString content) {
     }
 
     /**
