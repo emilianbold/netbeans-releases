@@ -56,8 +56,6 @@ import org.rubyforge.debugcommons.RubyDebuggerException;
 
 /**
  * Provides actions for adding and removing Ruby breakpoints.
- *
- * @author Martin Krauskopf
  */
 public final class RubyBreakpointActionProvider extends ActionsProviderSupport
         implements PropertyChangeListener {

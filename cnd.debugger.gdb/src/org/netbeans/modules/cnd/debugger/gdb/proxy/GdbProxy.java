@@ -56,6 +56,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.openide.util.Utilities;
 import org.netbeans.modules.cnd.debugger.gdb.GdbDebugger;
+import org.netbeans.modules.cnd.debugger.gdb.breakpoints.GdbBreakpoint;
 import org.netbeans.modules.cnd.debugger.gdb.utils.CommandBuffer;
 import org.netbeans.modules.cnd.debugger.gdb.utils.GdbUtils;
 
@@ -385,6 +386,11 @@ public class GdbProxy implements GdbMiDefinitions {
             name = name.substring(1);
         } else if (Utilities.getOperatingSystem() == Utilities.OS_MAC) {
             cmd.append("-l 1 "); // NOI18N - Always use 1st choice
+        }
+        if (flags == GdbBreakpoint.SUSPEND_EVENT_THREAD) {
+            // FIXME - Does the Mac support -p?
+            int tnum = 3; // FIXME - test and replace with real tnum if this works...
+            cmd.append("-p " + tnum + " "); // NOI18N
         }
         cmd.append(name);
         return engine.sendCommand(cmd.toString());

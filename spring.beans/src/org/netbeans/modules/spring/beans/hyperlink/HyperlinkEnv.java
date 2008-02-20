@@ -38,11 +38,14 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.spring.beans.hyperlink;
 
 import javax.swing.text.Document;
-import org.netbeans.modules.spring.beans.hyperlink.SpringXMLConfigHyperlinkProvider.Type;
+import org.netbeans.editor.TokenItem;
+import org.netbeans.modules.spring.beans.editor.ContextUtilities;
+import org.netbeans.modules.spring.beans.editor.DocumentContext;
+import org.netbeans.modules.spring.beans.editor.EditorContextFactory;
+import org.netbeans.modules.xml.text.syntax.SyntaxElement;
 import org.netbeans.modules.xml.text.syntax.dom.Tag;
 
 /**
@@ -50,32 +53,56 @@ import org.netbeans.modules.xml.text.syntax.dom.Tag;
  * @author Rohan Ranade (Rohan.Ranade@Sun.COM)
  */
 public final class HyperlinkEnv {
-    
+
     private Document document;
-    private Tag currentTag;
-    private String tagName;
+    private SyntaxElement currentTag;
     private String attribName;
     private String valueString;
-    private Type type;
+    private int offset;
+    private TokenItem token;
+    private DocumentContext documentContext;
 
-    /**
-     * Holds environment information for a hyperlink situation
-     * 
-     * @param document document on which hyperlink invoked
-     * @param currentTag tag where hyperlink was invoked
-     * @param tagName name of the tag
-     * @param attribName attribute name
-     * @param valueString value of attribute
-     * @param type type of hyperlink
-     */
-    public HyperlinkEnv(Document document, Tag currentTag, String tagName, 
-            String attribName, String valueString, Type type) {
+    public static enum Type {
+
+        ATTRIB_VALUE,
+        ATTRIB,
+        TEXT,
+        NONE;
+
+        public boolean isValueHyperlink() {
+            return this == Type.ATTRIB_VALUE;
+        }
+
+        public boolean isAttributeHyperlink() {
+            return this == Type.ATTRIB;
+        }
+    };
+
+    private Type type = Type.NONE;
+                  
+    public HyperlinkEnv(Document document, int offset) {
         this.document = document;
-        this.currentTag = currentTag;
-        this.tagName = tagName;
-        this.attribName = attribName;
-        this.valueString = valueString;
-        this.type = type;
+        this.offset = offset;
+        this.documentContext = EditorContextFactory.getDocumentContext(document, offset);
+        if(documentContext.isValid()) {
+            currentTag = documentContext.getCurrentElement();
+            attribName = ContextUtilities.getAttributeTokenImage(documentContext);
+            token = documentContext.getCurrentToken();
+            
+            if (ContextUtilities.isValueToken(documentContext.getCurrentToken())) {
+                type = Type.ATTRIB_VALUE;
+                currentTag = (Tag) documentContext.getCurrentElement();
+                attribName = ContextUtilities.getAttributeTokenImage(documentContext);
+                token = documentContext.getCurrentToken();
+                valueString = token.getImage();
+                valueString = valueString.substring(1, valueString.length() - 1); // Strip quotes
+            } else if (ContextUtilities.isAttributeToken(documentContext.getCurrentToken())) {
+                type = Type.ATTRIB;
+                currentTag = (Tag) documentContext.getCurrentElement();
+                token = documentContext.getCurrentToken();
+                attribName = token.getImage();
+            }
+        }
     }
 
     public String getAttribName() {
@@ -83,7 +110,7 @@ public final class HyperlinkEnv {
     }
 
     public Tag getCurrentTag() {
-        return currentTag;
+        return currentTag instanceof Tag ? (Tag) currentTag : null;
     }
 
     public Document getDocument() {
@@ -91,7 +118,7 @@ public final class HyperlinkEnv {
     }
 
     public String getTagName() {
-        return tagName;
+        return getCurrentTag() != null ? getCurrentTag().getTagName() : null;
     }
 
     public String getValueString() {
@@ -100,5 +127,17 @@ public final class HyperlinkEnv {
 
     public Type getType() {
         return type;
+    }
+
+    public TokenItem getToken() {
+        return token;
+    }
+
+    public int getOffset() {
+        return offset;
+    }
+    
+    public DocumentContext getDocumentContext() {
+        return this.documentContext;
     }
 }

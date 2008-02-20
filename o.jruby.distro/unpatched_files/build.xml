@@ -305,6 +305,10 @@
       <arg value="actionwebservice"/>
       -->
       <arg value="rails"/>
+      <!-- Ruby Debugger -->
+      <arg value="ruby-debug-base"/>
+      <arg value="ruby-debug-ide"/>
+      <!-- other params -->
       <arg value="--env-shebang"/>
       <arg value="--no-rdoc"/>
       <arg value="--no-ri"/>

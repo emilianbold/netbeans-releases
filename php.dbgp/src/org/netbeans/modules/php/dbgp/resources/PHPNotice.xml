@@ -46,7 +46,7 @@ made subject to such option by the copyright holder.
          "http://www.netbeans.org/dtds/annotation-type-1_1.dtd">
 <type name="PHPNotice"
      description_key="HINT_Notice"
-     localizing_bundle="Bundle"
+     localizing_bundle="org.netbeans.modules.php.dbgp.resources.Bundle"
      visible="true" 
      glyph="nbresloc:/org/netbeans/modules/php/dbgp/resources/notice-glyph.gif"
      waveunderline="#c0c000"

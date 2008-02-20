@@ -430,6 +430,7 @@ public class GroupByView extends JPanel implements EnhancedCustomPropertyEditor 
 
         JPanel mainPanel = new JPanel();
         mainPanel.setLayout(new BorderLayout());
+        String nbBundle1 = mLoc.t("PRSR001: Available Group By Columns");
         mainPanel.setBorder(BorderFactory.createCompoundBorder(BorderFactory.createTitledBorder("Available Group By Columns"),
                 BorderFactory.createEmptyBorder(4, 4, 4, 4)));
         this.add(mainPanel, c);
@@ -448,7 +449,9 @@ public class GroupByView extends JPanel implements EnhancedCustomPropertyEditor 
         mainPanel.add(addButtonPanel, BorderLayout.SOUTH);
 
         // add button
-        JButton addButton = new JButton("Add Column/Expression");
+        String nbBundle30 = mLoc.t("PRSR001: Add Column/Expression");
+        JButton addButton = new JButton(Localizer.parse(nbBundle30));
+        addButton.setMnemonic(Localizer.parse(nbBundle30).charAt(0));
         addButton.setToolTipText("<html> <table border=0 cellspacing=0 cellpadding=0 ><tr> <td>When target column is added, <br>the mapped expression/column <br>will be used in group by clause</td></tr></table>");
         addButton.setActionCommand("ADD");
         addButton.addActionListener(aListener);
@@ -470,7 +473,9 @@ public class GroupByView extends JPanel implements EnhancedCustomPropertyEditor 
         orderOrRemoveSelectedColumn.add(removeButtonPanel, BorderLayout.SOUTH);
 
         // remove selected column button
-        JButton removeButton = new JButton("Remove");
+        String nbBundle31 = mLoc.t("PRSR001: Remove");
+        JButton removeButton = new JButton(Localizer.parse(nbBundle31));
+        removeButton.setMnemonic(Localizer.parse(nbBundle31).charAt(0));
         removeButton.setActionCommand("REMOVE");
         removeButton.addActionListener(aListener);
         removeButtonPanel.add(removeButton);
@@ -497,7 +502,9 @@ public class GroupByView extends JPanel implements EnhancedCustomPropertyEditor 
         havingPanel.add(havingText);
 
         // having button
-        JButton havingButton = new JButton("Having...");
+        String nbBundle32 = mLoc.t("PRSR001: Having...");
+        JButton havingButton = new JButton(Localizer.parse(nbBundle32));
+        havingButton.setMnemonic(Localizer.parse(nbBundle32).charAt(0));
         havingButton.setActionCommand("Having");
         havingButton.addActionListener(aListener);
         havingPanel.add(havingButton);

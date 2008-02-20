@@ -129,6 +129,7 @@ public class ETLCollaborationWizardNamePanel extends JPanel implements WizardDes
         // Text field label.
         String nbBundle1 = mLoc.t("PRSR001: New Collaboration Name:");
         JLabel header = new JLabel(Localizer.parse(nbBundle1));
+        header.setDisplayedMnemonic(Localizer.parse(nbBundle1).charAt(0));
         gbc = new GridBagConstraints();
         gbc.gridx = 0;
         gbc.gridy = 1;

@@ -61,9 +61,6 @@ import org.openide.text.Line;
 import org.openide.text.NbDocument;
 import org.openide.windows.TopComponent;
 
-/**
- * @author Martin Krauskopf
- */
 public final class EditorUtil {
     
     private static DebuggerAnnotation[] currentLineDA;
