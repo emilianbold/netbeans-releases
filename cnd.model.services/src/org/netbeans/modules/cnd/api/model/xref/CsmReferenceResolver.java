@@ -115,7 +115,7 @@ public abstract class CsmReferenceResolver {
         // default implementation
         CsmObject target = ref.getReferencedObject();
         assert target != null;
-        CsmObject[] decDef = CsmBaseUtilities.getDefinitionDeclaration(target);
+        CsmObject[] decDef = CsmBaseUtilities.getDefinitionDeclaration(target, true);
         CsmObject targetDecl = decDef[0];
         CsmObject targetDef = decDef[1];        
         return getReferenceKind(ref, targetDecl, targetDef);
