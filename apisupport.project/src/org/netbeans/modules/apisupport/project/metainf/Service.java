@@ -106,6 +106,7 @@ final class Service {
         List <Service> services = new ArrayList<Service>();
         try {
             JarFile jar = new JarFile(jarFile);
+            try {
             Attributes attrs = jar.getManifest().getMainAttributes();
             String codebase  = attrs.getValue("OpenIDE-Module"); // NOI18N
             Enumeration /*JarEntry*/entries =  jar.entries();
@@ -122,6 +123,9 @@ final class Service {
                         }
                     }
                 }
+            }
+            } finally {
+                jar.close();
             }
         } catch (IOException ioe) {
             ErrorManager.getDefault().notify(ErrorManager.ERROR,ioe);
