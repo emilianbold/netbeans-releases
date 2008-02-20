@@ -148,7 +148,7 @@ public class SettingsDefaults {
     public static final Coloring defaultStatusBarBoldColoring
     = new Coloring(defaultFont, defaultStatusBarBoldForeColor, defaultStatusBarBoldBackColor);
 
-    public static final Integer defaultCaretBlinkRate = new Integer(300);
+    public static final Integer defaultCaretBlinkRate = new Integer(-1);
     public static final Integer defaultTabSize = new Integer(8);
     public static final Integer defaultSpacesPerTab = new Integer(4);
     public static final Integer defaultShiftWidth = new Integer(4); // usually

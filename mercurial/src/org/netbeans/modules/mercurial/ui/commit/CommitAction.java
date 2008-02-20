@@ -313,7 +313,8 @@ public class CommitAction extends ContextAction {
         commit.setEnabled(enabled && containsCommitable(table));
     }
     
-    private static void performCommit(String message, Map<HgFileNode, CommitOptions> commitFiles, VCSContext ctx, HgProgressSupport support, String prjName) {
+    private static void performCommit(String message, Map<HgFileNode, CommitOptions> commitFiles, 
+            VCSContext ctx, HgProgressSupport support, String prjName) {
         FileStatusCache cache = Mercurial.getInstance().getFileStatusCache();
         final File repository = HgUtils.getRootFile(ctx);
         List<File> addCandidates = new ArrayList<File>();
@@ -356,6 +357,7 @@ public class CommitAction extends ContextAction {
             HgUtils.outputMercurialTabInRed(
                     NbBundle.getMessage(CommitAction.class,
                     "MSG_COMMIT_TITLE_SEP")); // NOI18N
+            HgUtils.outputMercurialTab(message); // NOI18N
             if (addCandidates.size() > 0 ) {
                 HgCommand.doAdd(repository, addCandidates);
                 for (File f : addCandidates) {
