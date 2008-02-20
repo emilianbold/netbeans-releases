@@ -79,19 +79,20 @@ public class SpringFindUsagesPlugin implements RefactoringPlugin {
     }
    
     public Problem prepare(RefactoringElementsBag refactoringElementsBag) {
-        Object element = springBeansWhereUsed.getRefactoringSource().lookup(Object.class);
+        Object element = springBeansWhereUsed.getRefactoringSource().lookup(TreePathHandle.class);
 
         if (element instanceof TreePathHandle) {
             treePathHandle = (TreePathHandle) element;
             if (treePathHandle != null && treePathHandle.getKind() == Kind.CLASS) {
-                FileObject fo = treePathHandle.getFileObject();
-                SpringScope scope = SpringScope.getSpringScope(fo);
-                Project project = FileOwnerQuery.getOwner(fo);
-                if (project != null) {
+                SpringScope scope = SpringScope.getSpringScope(treePathHandle.getFileObject());
+                if (scope != null) {
                     CompilationInfo info = getCompilationInfo(springBeansWhereUsed, treePathHandle.getFileObject());
                     if (info != null) {
                         try {                            
                             TypeElement type = (TypeElement) treePathHandle.resolveElement(info);
+                            if (type == null) {
+                                return null;
+                            }
                             String fqnc = type.getQualifiedName().toString();
                             for (Occurrences.Occurrence item : Occurrences.getJavaClassOccurrences(fqnc, scope)) {
                                 refactoringElementsBag.add(springBeansWhereUsed, SpringRefactoringElement.create(item));

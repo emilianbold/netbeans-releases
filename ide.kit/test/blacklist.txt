@@ -9,4 +9,5 @@ org.netbeans.modules.cnd.makeproject.api.DefaultProjectActionHandler
 org.netbeans.modules.cnd.makeproject.runprofiles.RunProfileNodeProvider
 org.netbeans.modules.cnd.makeproject.runprofiles.RunProfileNodeProvider$RunProfileCustomizerNode
 org.netbeans.modules.cnd.makeproject.MakeProjectModule$L
+org.netbeans.modules.cnd.makeproject.MakeProjectModule
 
