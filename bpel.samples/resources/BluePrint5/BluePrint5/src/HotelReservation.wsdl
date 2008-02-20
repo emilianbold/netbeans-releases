@@ -92,13 +92,13 @@
     <service name="HotelService">
         <port name="HotelServicePort"
               binding="tns:HotelReservationBinding">
-            <soap:address location="http://localhost:12100/wsdl/HotelService/ServiceLocation"/>
+            <soap:address location="http://localhost:18181/wsdl/HotelService/ServiceLocation"/>
         </port>
     </service>
     <service name="HotelStatusService">
         <port name="HotelStatusServicePort"
               binding="tns:HotelReservationStatusBinding">
-            <soap:address location="http://localhost:12100/wsdl/HotelStatusService/ServiceLocation"/>
+            <soap:address location="http://localhost:18181/wsdl/HotelStatusService/ServiceLocation"/>
         </port>
     </service>
     <plink:partnerLinkType name="HotelReservationPLinkType">
