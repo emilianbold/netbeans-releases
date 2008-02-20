@@ -195,12 +195,15 @@ public class ValidationTableView extends JPanel {
                 int type = ((Integer) value).intValue();
                 if (type == ValidationInfo.VALIDATION_WARNING) {
                     label = new JLabel(warningImg);
+                    label.setDisplayedMnemonic('W');
                     label.setToolTipText("Warning");
                 } else if (type == ValidationInfo.VALIDATION_INFO) {
                     label = new JLabel(infoImg);
+                    label.setDisplayedMnemonic('I');
                     label.setToolTipText("Information");
                 } else {
                     label = new JLabel(errorImg);
+                    label.setDisplayedMnemonic('E');
                     label.setToolTipText("Error");
                 }
                 return label;

@@ -72,6 +72,9 @@ import org.rubyforge.debugcommons.RubyDebuggerProxy;
  */
 public final class RubyDebugger implements RubyDebuggerImplementation {
     
+    /** For unit tests. */
+    static boolean FORCE_CLASSIC;
+    
     private static final String PATH_TO_CLASSIC_DEBUG_DIR;
     
     static {
@@ -113,7 +116,6 @@ public final class RubyDebugger implements RubyDebuggerImplementation {
      */
     static Process startDebugging(final ExecutionDescriptor descriptor)
             throws IOException, RubyDebuggerException {
-        DebuggerPreferences prefs = DebuggerPreferences.getInstance();
         final RubyPlatform platform = descriptor.getPlatform();
         boolean jrubySet = platform.isJRuby();
 
@@ -151,7 +153,7 @@ public final class RubyDebugger implements RubyDebuggerImplementation {
         int timeout = Integer.getInteger("org.netbeans.modules.ruby.debugger.timeout", 15); // NOI18N
         Util.finest("Using timeout: " + timeout + 's'); // NOI18N
         String interpreter = platform.getInterpreter();
-        if (prefs.isUseClassicDebugger(platform)) {
+        if (!platform.hasFastDebuggerInstalled() || FORCE_CLASSIC) {
             Util.LOGGER.fine("Running classic(slow) debugger...");
             proxy = RubyDebuggerFactory.startClassicDebugger(debugDesc,
                     PATH_TO_CLASSIC_DEBUG_DIR, interpreter, timeout);
@@ -195,17 +197,11 @@ public final class RubyDebugger implements RubyDebuggerImplementation {
             Util.offerToInstallFastDebugger(platform);
         }
         
-        if (fastDebuggerRequired && prefs.isUseClassicDebugger(platform)
-                && !Util.ensureRubyDebuggerIsPresent(platform, true, "RubyDebugger.wrong.fast.debugger.required")) {
+        if (fastDebuggerRequired && !Util.ensureRubyDebuggerIsPresent(platform, true, "RubyDebugger.wrong.fast.debugger.required")) {
             return false;
         }
 
-        if (!jrubySet && !platform.hasFastDebuggerInstalled() && !Util.offerToInstallFastDebugger(platform)) {
-            // user really wants classic debugger, ensure it
-            prefs.setUseClassicDebugger(platform, true);
-        }
-
-        if (!prefs.isUseClassicDebugger(platform)) {
+        if (platform.hasFastDebuggerInstalled()) {
             if (!Util.ensureRubyDebuggerIsPresent(platform, true, "RubyDebugger.requiredMessage")) { // NOI18N
                 return false;
             }
