@@ -72,26 +72,11 @@ public class WsdlSaas extends Saas implements PropertyChangeListener {
     }
 
     public WsdlSaas(SaasGroup parentGroup, String displayName, String url, String packageName) {
-        this(parentGroup, new SaasServices());
+        super(parentGroup, url, displayName, packageName);
         getDelegate().setType(NS_WSDL);
-        getDelegate().setDisplayName(displayName);
-        getDelegate().setUrl(url);
-        SaasMetadata m = delegate.getSaasMetadata();
-        if (m == null) {
-            m = new SaasMetadata();
-            this.getDelegate().setSaasMetadata(m);
-        }
-        m.setGroup(parentGroup.getPathFromRoot());
-        CodeGen cg = m.getCodeGen();
-        if (cg == null) {
-            cg = new CodeGen();
-            m.setCodeGen(cg);
-        }
-        cg.setPackageName(packageName);
-        setParentGroup(parentGroup);
     }
     
-    public void setWsdlData(WsdlData data) {
+    protected void setWsdlData(WsdlData data) {
         wsData = data;
     }
     
@@ -102,10 +87,12 @@ public class WsdlSaas extends Saas implements PropertyChangeListener {
         return wsData;
     }
 
-    public void refresh() {
+    protected void refresh() {
         if (wsData == null || getState() == State.INITIALIZING) {
             throw new IllegalStateException("Could not refresh null WSDL data or while it is initializing");
         }
+        super.refresh();
+        ports = null;
         WsdlUtil.refreshWsdlData(wsData);
     }
     

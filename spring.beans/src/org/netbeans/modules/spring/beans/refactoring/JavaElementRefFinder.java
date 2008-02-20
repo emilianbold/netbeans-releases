@@ -47,7 +47,7 @@ import javax.swing.text.Position.Bias;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.spring.api.beans.model.Location;
 import org.netbeans.modules.spring.api.beans.model.SpringBean;
-import org.netbeans.modules.spring.api.beans.model.SpringConfigModel.WriteContext;
+import org.netbeans.modules.spring.api.beans.model.SpringConfigModel.DocumentAccess;
 import org.netbeans.modules.spring.beans.refactoring.Occurrences.Occurrence;
 import org.netbeans.modules.xml.text.syntax.XMLSyntaxSupport;
 import org.openide.filesystems.FileObject;
@@ -60,17 +60,17 @@ import org.openide.text.PositionRef;
  */
 public class JavaElementRefFinder {
 
-    private final WriteContext context;
+    private final DocumentAccess docAccess;
     private final XMLSyntaxSupport syntaxSupport;
 
-    public JavaElementRefFinder(WriteContext context) {
-        this.context = context;
-        BaseDocument document = (BaseDocument)context.getDocument();
+    public JavaElementRefFinder(DocumentAccess docAccess) {
+        this.docAccess = docAccess;
+        BaseDocument document = (BaseDocument)docAccess.getDocument();
         syntaxSupport = (XMLSyntaxSupport)document.getSyntaxSupport();
     }
 
     public void addOccurrences(Matcher matcher, List<Occurrence> result) throws BadLocationException {
-        List<SpringBean> beans = context.getSpringBeans().getBeans(context.getFile());
+        List<SpringBean> beans = docAccess.getSpringBeans().getBeans(docAccess.getFile());
         for (SpringBean bean : beans) {
             String className = bean.getClassName();
             if (className != null) {
@@ -78,7 +78,7 @@ public class JavaElementRefFinder {
                 if (matched == null) {
                     continue;
                 }
-                Occurrence occurrence = createOccurrence(matched, bean, context.getFileObject());
+                Occurrence occurrence = createOccurrence(matched, bean, docAccess.getFileObject());
                 if (occurrence != null) {
                     result.add(occurrence);
                 }
@@ -105,8 +105,8 @@ public class JavaElementRefFinder {
         if (index == -1) {
             return null;
         }
-        PositionRef startRef = context.createPositionRef(foundOffset + index, Bias.Forward);
-        PositionRef endRef = context.createPositionRef(foundOffset + index + matched.length(), Bias.Backward);
+        PositionRef startRef = docAccess.createPositionRef(foundOffset + index, Bias.Forward);
+        PositionRef endRef = docAccess.createPositionRef(foundOffset + index + matched.length(), Bias.Backward);
         return new JavaElementRefOccurrence(matched, fo, new PositionBounds(startRef, endRef));
     }
 

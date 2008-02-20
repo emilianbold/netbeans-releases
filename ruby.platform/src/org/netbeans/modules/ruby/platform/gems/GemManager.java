@@ -61,7 +61,6 @@ import java.util.regex.Pattern;
 import org.netbeans.api.ruby.platform.RubyPlatform;
 import org.netbeans.api.ruby.platform.RubyPlatformManager;
 import org.netbeans.modules.gsfret.source.usages.ClassIndexManager;
-import org.netbeans.modules.ruby.platform.DebuggerPreferences;
 import org.netbeans.modules.ruby.platform.Util;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -257,10 +256,6 @@ public final class GemManager {
         }
         if (result) {
             storeGemPath(gemPath);
-            DebuggerPreferences prefs = DebuggerPreferences.getInstance();
-            if (!platform.isJRuby() && platform.hasFastDebuggerInstalled()) {
-                prefs.setUseClassicDebugger(platform, false);
-            }
         }
         return result;
     }

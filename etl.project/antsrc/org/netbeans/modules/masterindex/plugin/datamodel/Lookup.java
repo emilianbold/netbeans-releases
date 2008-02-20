@@ -260,10 +260,6 @@ public class Lookup {
             //FileInputStream fis = new FileInputStream("D:/temp/eviewconfig/objectdef.xml");
             FileInputStream fis = new FileInputStream("D:/temp/forMANISH/objectdef.xml");
             Lookup l = createLookup(fis);
-
-            System.out.println("ChildIndexMap : " + l.childIndex.toString());
-            System.out.println("LookupMap : " + l.lookupMap.toString());
-
         } catch (FileNotFoundException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();

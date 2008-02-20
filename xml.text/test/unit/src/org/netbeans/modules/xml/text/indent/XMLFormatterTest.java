@@ -42,39 +42,14 @@
 package org.netbeans.modules.xml.text.indent;
 
 import java.io.BufferedReader;
-import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileReader;
-import javax.swing.JTextArea;
 import junit.framework.*;
 import java.io.IOException;
-import java.io.Writer;
-import java.util.regex.Pattern;
-import javax.swing.event.DocumentEvent;
-import javax.swing.text.AbstractDocument.DefaultDocumentEvent;
-import javax.swing.text.AttributeSet;
-import javax.swing.text.BadLocationException;
-import javax.swing.text.Document;
-import javax.swing.text.JTextComponent;
 import org.netbeans.editor.BaseDocument;
-import org.netbeans.editor.BaseKit;
-import org.netbeans.editor.EditorUI;
-import org.netbeans.editor.Syntax;
-import org.netbeans.editor.SyntaxSupport;
-import org.netbeans.editor.TokenID;
-import org.netbeans.editor.TokenItem;
-import org.netbeans.editor.ext.ExtFormatter;
-import org.netbeans.editor.Utilities;
-import org.netbeans.editor.ext.AbstractFormatLayer;
-import org.netbeans.editor.ext.FormatSupport;
-import org.netbeans.editor.ext.FormatWriter;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.xml.text.syntax.XMLKit;
-import org.netbeans.modules.xml.text.syntax.XMLSyntaxSupport;
 
-import org.openide.ErrorManager;
-import org.openide.util.NbBundle;
-import org.openide.util.RequestProcessor;
 
 /**
  *
