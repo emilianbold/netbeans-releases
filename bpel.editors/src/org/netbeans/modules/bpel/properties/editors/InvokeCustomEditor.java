@@ -66,6 +66,9 @@ public class InvokeCustomEditor extends AbstractCustomNodeEditor<Invoke> {
         tabbedPane.addTab(NbBundle.getMessage(
                 FormBundle.class, "LBL_Correlations_Tab"), correlationPanel); // NOI18N
         //
+        getAccessibleContext().setAccessibleDescription(
+                NbBundle.getMessage(FormBundle.class, "ACSD_LBL_Invoke_Editor")); // NOI18N
+        //
         tabbedPane.addChangeListener(new ChangeListener() {
             public void stateChanged(ChangeEvent e) {
                 fireHelpContextChange();
