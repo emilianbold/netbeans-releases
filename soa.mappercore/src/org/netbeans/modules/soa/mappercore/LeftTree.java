@@ -134,6 +134,9 @@ public class LeftTree extends JTree implements
         iMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_RIGHT, KeyEvent.CTRL_DOWN_MASK),
                 "press-right-control");
         aMap.put("press-right-control", new RightControlAction());
+        iMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_F10, KeyEvent.SHIFT_DOWN_MASK), "show-popupMenu");
+        iMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_CONTEXT_MENU, 0), "show-popupMenu");
+        aMap.put("show-popupMenu", new ShowPopupMenuAction());
     }
     
     public void registrAction(MapperKeyboardAction action) {
@@ -494,5 +497,29 @@ public class LeftTree extends JTree implements
             path = mapper.getRightTreePathForLink(link);
             mapper.getSelectionModel().setSelected(path, link);    
         }
+    }
+    
+    private class ShowPopupMenuAction extends AbstractAction {
+        public void actionPerformed(ActionEvent e) {
+            LeftTree tree = LeftTree.this;
+            TreePath path = tree.getSelectionPath();
+            if (path == null) { return; }
+            
+            int row = tree.getRowForPath(path);
+            if (row < 0) { return; }
+            
+            Rectangle rect = tree.getRowBounds(row);
+            Object lastComp = path.getLastPathComponent();
+            if (lastComp == null) { return; }
+            
+            JPopupMenu popup = tree.mapper.getContext().
+                    getLeftPopupMenu(tree.mapper.getModel(),
+                    lastComp);
+                   
+            if (popup != null) {
+                popup.show(tree, rect.x, rect.y);
+            }  
+        }
+        
     }
 }
