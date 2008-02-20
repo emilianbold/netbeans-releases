@@ -91,6 +91,7 @@ final class PanelService<T> extends Panel<T> {
 
     myOperation.createPanel(panel, c);
     mainPanel.add(panel, cc);
+    mainPanel.getAccessibleContext().setAccessibleDescription(i18n("ACSD_LBL_NewRRService3"));   
   }
 
   private Panel<T> myOperation;
