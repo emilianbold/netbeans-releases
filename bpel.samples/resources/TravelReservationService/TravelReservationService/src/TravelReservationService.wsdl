@@ -45,7 +45,7 @@
     <import namespace="http://www.sun.com/javaone/05/HotelReservationService" location="HotelReservationService.wsdl"/>
     <import namespace="http://www.sun.com/javaone/05/AirlineReservationService" location="AirlineReservationService.wsdl"/>
     <import namespace="http://www.sun.com/javaone/05/VehicleReservationService" location="VehicleReservationService.wsdl"/>
-    
+
     <types>
         <xs:schema xmlns="http://www.opentravel.org/OTA/2003/05"
                    targetNamespace="http://www.sun.com/javaone/05/TravelReservationService" xmlns:s="http://www.w3.org/2001/XMLSchema"  >
@@ -53,17 +53,19 @@
             <xs:element name="itineraryFault" type="xs:string"/>
         </xs:schema>
     </types>
-    
+
     <message name="ItineraryIn">
         <part name="itinerary" element="ota:TravelItinerary"/>
     </message>
+
     <message name="ItineraryOut">
         <part name="itinerary" element="ota:TravelItinerary"/>
     </message>
+
     <message name="ItineraryFault">
         <part name="faultMessage" element="tns:itineraryFault"/>
     </message>
-    
+
     <portType name="TravelReservationPortType">
         <operation name="buildItinerary">
             <input message="tns:ItineraryIn"/>
@@ -71,7 +73,7 @@
             <fault name="itineraryProblem" message="tns:ItineraryFault"/>
         </operation>
     </portType>
-    
+
     <binding name="TravelReservationSoapBinding" type="tns:TravelReservationPortType">
         <soap:binding style="document" transport="http://schemas.xmlsoap.org/soap/http"/>
         <operation name="buildItinerary">
@@ -87,7 +89,7 @@
             </fault>
         </operation>
     </binding>
-    
+
     <service name="TravelReservationSoapService">
         <port name="TravelReservationSoapHttpPort" binding="tns:TravelReservationSoapBinding">
             <soap:address location="http://localhost:18181/TravelReservationService/buildItinerary"/>
@@ -102,58 +104,58 @@
             <soap:address location="http://localhost:18181/TravelReservationService/vehicleReserved"/>
         </port>
     </service>
-    
+
     <bpws:property name="ItineraryRefId" type="xs:string"/>
-    
+
     <bpws:propertyAlias 
         propertyName="tres:ItineraryRefId"
         messageType="tres:ItineraryIn"
         part="itinerary">
         <bpws:query>/ota:TravelItinerary/ota:ItineraryRef/ota:UniqueID</bpws:query>
     </bpws:propertyAlias>
-    
+
     <bpws:propertyAlias 
         propertyName="tres:ItineraryRefId"
         messageType="ares:AirlineReservedIn"
         part="itinerary">
         <bpws:query>/ota:TravelItinerary/ota:ItineraryRef/ota:UniqueID</bpws:query>
     </bpws:propertyAlias>
-    
+
     <bpws:propertyAlias 
         propertyName="tres:ItineraryRefId"
         messageType="ares:ReserveAirlineIn"
         part="itinerary">
         <bpws:query>/ota:TravelItinerary/ota:ItineraryRef/ota:UniqueID</bpws:query>
     </bpws:propertyAlias>
-    
+
     <bpws:propertyAlias 
         propertyName="tres:ItineraryRefId"
         messageType="vres:VehicleReservedIn"
         part="itinerary">
         <bpws:query>/ota:TravelItinerary/ota:ItineraryRef/ota:UniqueID</bpws:query>
     </bpws:propertyAlias>
-    
+
     <bpws:propertyAlias 
         propertyName="tres:ItineraryRefId"
         messageType="vres:ReserveVehicleIn"
         part="itinerary">
         <bpws:query>/ota:TravelItinerary/ota:ItineraryRef/ota:UniqueID</bpws:query>
     </bpws:propertyAlias>
-    
+
     <bpws:propertyAlias 
         propertyName="tres:ItineraryRefId"
         messageType="hres:HotelReservedIn"
         part="itinerary">
         <bpws:query>/ota:TravelItinerary/ota:ItineraryRef/ota:UniqueID</bpws:query>
     </bpws:propertyAlias>
-    
+
     <bpws:propertyAlias 
         propertyName="tres:ItineraryRefId"
         messageType="hres:ReserveHotelIn"
         part="itinerary">
         <bpws:query>/ota:TravelItinerary/ota:ItineraryRef/ota:UniqueID</bpws:query>
     </bpws:propertyAlias>
-    
+
     <plnk:partnerLinkType name="TravelReservationPartnerLinkType">
         <plnk:role name="TravelReservationServiceRole" 
                    portType="tres:TravelReservationPortType">

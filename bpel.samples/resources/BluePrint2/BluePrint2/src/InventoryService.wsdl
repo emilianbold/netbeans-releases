@@ -98,14 +98,14 @@
     <service name="inventoryCallbackService">
         <port name="inventoryCallbackServicePort"
               binding="tns:inventoryCallbackBinding">
-            <soap:address location="http://localhost:12100/wsdl/inventory/inventoryCallbackServiceLocation/bp2"/>
+            <soap:address location="http://localhost:18181/wsdl/inventory/inventoryCallbackServiceLocation/bp2"/>
         </port>
     </service>
     
     <service name="inventoryService">
         <port name="inventoryServicePort"
               binding="tns:inventoryBinding">
-            <soap:address location="http://localhost:12100/wsdl/inventory/ServiceLocation/bp2"/>
+            <soap:address location="http://localhost:18181/wsdl/inventory/ServiceLocation/bp2"/>
         </port>
     </service>
     

@@ -38,39 +38,40 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
+package org.netbeans.modules.etl.project.anttasks;
 
-package org.netbeans.modules.cnd.api.model;
-
-import java.util.Collection;
-import java.util.EventObject;
-import java.util.Map;
-
+import org.netbeans.modules.etlbulkloader.packager.ETLBLPackager;
+import org.apache.tools.ant.Task;
+import org.apache.tools.ant.Project;
+import net.java.hulp.i18n.Logger;
+import org.netbeans.modules.etl.logger.Localizer;
+import org.netbeans.modules.etl.logger.LogUtil;
 /**
- * Event for model change notifications
- * @author Vladimir Kvashin 
+ *
+ * @author Manish
  */
-public abstract class CsmChangeEvent extends EventObject {
+public class ETLBulkLoader extends Task {
 
-    protected CsmChangeEvent(Object source) {
-        super(source);
+     private static transient final Logger mLogger = LogUtil.getLogger(ETLBulkLoader.class.getName());
+     private static transient final Localizer mLoc = Localizer.get();
+    
+    public void execute() {
+        Project p = this.getProject();
+        String projhome = null;
+	if (p != null) {
+	   projhome = p.getProperty("basedir");
+        }
+        mLogger.infoNoloc(mLoc.t("eTL Bulk Loader Packaging Begins ..."));
+        ETLBLPackager packager = new ETLBLPackager(projhome);
+        packager.createExecutablePackage();
+        mLogger.infoNoloc(mLoc.t("eTL Bulk Loader Packaging Ends."));
     }
 
-    public abstract Collection<CsmFile> getNewFiles();
-
-    public abstract Collection<CsmFile> getRemovedFiles();
-
-    public abstract Collection<CsmFile> getChangedFiles();
-
-    public abstract Collection<CsmOffsetableDeclaration> getNewDeclarations();
-    
-    public abstract Collection<CsmOffsetableDeclaration> getRemovedDeclarations();
-    
-    public abstract Map<CsmOffsetableDeclaration,CsmOffsetableDeclaration> getChangedDeclarations();
-    
-    public abstract Collection<CsmProject> getChangedProjects();
-    
-    public abstract Collection<CsmNamespace> getNewNamespaces();
-    
-    public abstract Collection<CsmNamespace> getRemovedNamespaces();
+    /**
+     * @param args the command line arguments
+     */
+    public static void main(String[] args) {        
+        ETLBulkLoader loader = new ETLBulkLoader();
+        loader.execute();
+    }
 }
-
