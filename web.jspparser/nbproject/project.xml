@@ -158,9 +158,12 @@ made subject to such option by the copyright holder.
                     </test-dependency>
                 </test-type>
             </test-dependencies>
-            <public-packages>
+            <friend-packages>
+                <friend>org.netbeans.modules.web.core</friend>
+                <friend>org.netbeans.modules.web.core.syntax</friend>
+                <friend>org.netbeans.modules.web.project</friend>
                 <package>org.netbeans.modules.web.jsps.parserapi</package>
-            </public-packages>
+            </friend-packages>
             <extra-compilation-unit>
                 <package-root>extsrc</package-root>
                 <classpath>${module.classpath}:${cluster}/${module.jar}:${extsrc.cp.extra}</classpath>

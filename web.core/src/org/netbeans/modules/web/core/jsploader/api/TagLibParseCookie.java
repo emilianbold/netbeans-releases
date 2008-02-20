@@ -41,20 +41,37 @@
 
 package org.netbeans.modules.web.core.jsploader.api;
 
-import org.netbeans.modules.web.jsps.parserapi.JspParserAPI;
-
-/**
- *
- * @author Petr Pisl
- */
-
 /**
  * Defines cookie which supports parsing of jsp file.
  * Note: Do not implement this cookie, use the factory only.
  * (The same contract like for window system API interfaces, you as
  * provider can later add methods to it, the client is not implementor).
+ * @author Petr Pisl, Tomas Mysik
  */
 public interface TagLibParseCookie extends org.openide.nodes.Node.Cookie {
-    public JspParserAPI.JspOpenInfo getCachedOpenInfo(boolean preferCurrent, boolean useEditor);
-}
+    /**
+     * Get data important for opening the page in the editor, e.g. whether the page is in classic
+     * or XML syntax, or what is the file encoding.
+     * @since 1.30
+     */
+    public OpenInfo getOpenInfo(boolean preferCurrent, boolean useEditor);
 
+    /**
+     * Interface representing data important for opening the page in the editor, e.g. whether the page is in classic
+     * or XML syntax, or what is the file encoding. Implementations of this interface are returned by
+     * {@link TagLibParseCookie#getCachedOpenInfo TagLibParseCookie.getCachedOpenInfo()}.
+     * @since 1.30
+     */
+    static interface OpenInfo {
+        /**
+         * Check whether the file is in XML encoding.
+         * @return <code>true</code> if the page is in XML syntax, <code>false</code> otherwise.
+         */
+        boolean isXmlSyntax();
+        /**
+         * Get the encoding of the file.
+         * @return encoding of the file.
+         */
+        String getEncoding();
+    }
+}

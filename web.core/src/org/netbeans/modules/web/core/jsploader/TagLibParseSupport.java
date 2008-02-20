@@ -271,6 +271,10 @@ public class TagLibParseSupport implements org.openide.nodes.Node.Cookie, TagLib
         }
     }
     
+    public OpenInfo getOpenInfo(boolean preferCurrent, boolean useEditor) {
+        return new OpenInfoImpl(getCachedOpenInfo(preferCurrent, useEditor));
+    }
+    
     public JspParserAPI.ParseResult getCachedParseResult(boolean successfulOnly, boolean preferCurrent) {
         return getCachedParseResult(successfulOnly, preferCurrent, false);
     }
@@ -442,5 +446,39 @@ public class TagLibParseSupport implements org.openide.nodes.Node.Cookie, TagLib
         }
 
     }
+    
+    static final class OpenInfoImpl implements OpenInfo {
+        private final JspParserAPI.JspOpenInfo delegate;
 
+        OpenInfoImpl(JspParserAPI.JspOpenInfo delegate) {
+            this.delegate = delegate;
+        }
+
+        @Override
+        public String toString() {
+            StringBuilder sb = new StringBuilder();
+            sb.append("JspParserAPI.JspOpenInfo delegate[");
+            sb.append(delegate.toString());
+            sb.append("]");
+            return sb.toString();
+        }
+
+        public boolean isXmlSyntax() {
+            return delegate.isXmlSyntax();
+        }
+
+        @Override
+        public int hashCode() {
+            return delegate.hashCode();
+        }
+
+        public String getEncoding() {
+            return delegate.getEncoding();
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            return delegate.equals(o);
+        }
+    }
 }
