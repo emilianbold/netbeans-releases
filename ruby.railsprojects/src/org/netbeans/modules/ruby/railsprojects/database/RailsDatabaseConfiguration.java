@@ -9,7 +9,7 @@
  * "License"). You may not use this file except in compliance with the
  * License. You can obtain a copy of the License at
  * http://www.netbeans.org/cddl-gplv2.html
- * or nbbuild/licenses/CDDL-GPL-2-CP. See the License for then
+ * or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
@@ -37,12 +37,40 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.editor.filecreation;
+package org.netbeans.modules.ruby.railsprojects.database;
+
+import org.netbeans.modules.ruby.railsprojects.RailsProject;
 
 /**
+ * Handles the database configuration for a Rails project.
  *
- * @author Sergey Grinev
+ * @author Erno Mononen
  */
-public interface ExtensionSettingsProvider {
-    ExtensionsSettings getExtensionSettings();
+public interface RailsDatabaseConfiguration {
+
+    /**
+     * @return the name of the database represented by this configuration.
+     */
+    String getDatabase();
+    
+    /**
+     * Checks whether this configuration requires additional config. If the 
+     * method returns true, the client should invoke the {@link editConfig(FileObject)} 
+     * method.
+     * 
+     * @return true if additional configuration is required, false otherwise.
+     */
+    boolean needExtraConfig();
+    
+    /**
+     * Edits the database config file (database.yml) of the given <code>project</code>
+     * as required by this configuration, and in case of JDBC connections, 
+     * possibly adds a reference to the required 
+     * driver jar files to the properties of the <code>project</code>.
+     * 
+     * @param projectDir the project whose <code>database.yml</code> is 
+     * to be edited.
+     */
+    void editConfig(RailsProject project);
+    
 }

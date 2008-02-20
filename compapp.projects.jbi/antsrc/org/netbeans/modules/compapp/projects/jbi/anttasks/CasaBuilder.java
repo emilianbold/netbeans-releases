@@ -274,6 +274,10 @@ public class CasaBuilder {
 
         // 1. "Copy" SE and BC SUs from jbi document over
         List<String> componentIDs = new ArrayList<String>();
+
+        if (jbiDocument == null) {
+          return casaSUs;
+        }
         NodeList jbiSUs =
                 jbiDocument.getElementsByTagName(JBI_SERVICE_UNIT_ELEM_NAME);
         for (int i = 0; i < jbiSUs.getLength(); i++) {
@@ -655,6 +659,10 @@ public class CasaBuilder {
     private Element createConnections(Document jbiDocument) {
 
         Element casaConnections = newCasaDocument.createElement(CASA_CONNECTIONS_ELEM_NAME);
+
+        if (jbiDocument == null) {
+          return casaConnections;
+        }
 
         // 1. Copy jbi:connections from jbi document over.
         NodeList jbiConnections =
@@ -1318,6 +1326,10 @@ public class CasaBuilder {
         // Loop through all jbiServiceUnits/$suName/jbi.xml, create a 
         // newSUEndpoints list
         List<Endpoint> newSUEndpoints = new ArrayList<Endpoint>();
+
+        if (jbiDocument == null) {
+          return new ArrayList<Endpoint>();
+        }
         NodeList jbiSUs = jbiDocument.getElementsByTagName(JBI_SERVICE_UNIT_ELEM_NAME);
         for (int i = 0; i < jbiSUs.getLength(); i++) {
             Element jbiSU = (Element) jbiSUs.item(i);

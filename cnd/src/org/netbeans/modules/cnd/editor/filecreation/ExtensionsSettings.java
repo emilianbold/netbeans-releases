@@ -45,7 +45,6 @@ import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.prefs.Preferences;
-import org.netbeans.modules.cnd.loaders.CndAbstractDataLoaderExt;
 import org.openide.loaders.ExtensionList;
 import org.openide.util.NbPreferences;
 
@@ -60,9 +59,9 @@ public class ExtensionsSettings {
     private final ExtensionList defaultExtensionsList;
     private ExtensionList savedExtensionsList;
     
-    private ExtensionsSettings(String name, CndAbstractDataLoaderExt dataLoader) {
+    private ExtensionsSettings(String name, CndHandlableExtensions che) {
         DEFAULT_EXTENSION_PREFIX = "def-ext-"; //NOI18N
-        defaultExtensionsList = dataLoader.getDefaultExtensionList();
+        defaultExtensionsList = che.getDefaultExtensionList();
         assert defaultExtensionsList.extensions().hasMoreElements();
         this.defaultExtension = defaultExtensionsList.extensions().nextElement();
         this.name = name;
@@ -76,11 +75,11 @@ public class ExtensionsSettings {
         this.savedExtensionsList = es.savedExtensionsList;
     }
     
-    public static synchronized ExtensionsSettings getInstance(CndAbstractDataLoaderExt dataLoader) {
-        String current = dataLoader.getRepresentationClassName();
+    public static synchronized ExtensionsSettings getInstance(CndHandlableExtensions che) {
+        String current = che.getSettingsName();
         ExtensionsSettings es = settingsAccessors.get(current);
         if (es == null) {
-            es = new ExtensionsSettings(current, dataLoader);
+            es = new ExtensionsSettings(current, che);
             settingsAccessors.put(current, es);
         }
         return es;

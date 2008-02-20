@@ -344,7 +344,7 @@ public final class LibrariesNode extends AbstractNode {
             if (platformProperty!=null && projectDir !=null && projectDir.isValid() && !projectDir.isVirtual()) {
                 result.add (new Key());
             }
-            if (j2eePlatformProperty != null) {
+            if (j2eePlatformProperty != null && !Boolean.parseBoolean(projectSharedProps.getProperty(EjbJarProjectProperties.J2EE_PLATFORM_SHARED))) {
                 result.add(new Key(true));
             }
             //XXX: Workaround: Remove this when there will be API for listening on nonexistent files

@@ -62,7 +62,7 @@ import org.netbeans.modules.websvc.saas.codegen.java.support.Inflector;
  */
 public class WadlSaasBean extends GenericResourceBean {
 
-    private static final String RESOURCE_TEMPLATE = "Templates/WebServices/WrapperResource.java"; //NOI18N
+    private static final String RESOURCE_TEMPLATE = "Templates/SaaSServices/WrapperResource.java"; //NOI18N
     private String outputWrapperName;
     private String wrapperPackageName;
     private List<ParameterInfo> queryParams;
@@ -70,7 +70,7 @@ public class WadlSaasBean extends GenericResourceBean {
     private WadlSaasMethod m;
     private List<ParameterInfo> inputParams;
     
-    public WadlSaasBean(WadlSaasMethod m) {
+    public WadlSaasBean(WadlSaasMethod m)  throws IOException {
         super(deriveResourceName(m.getName()), null, 
                 deriveUriTemplate(m.getName()), new MimeType[]{MimeType.XML}, 
                 new String[]{"java.lang.String"},       //NOI18N
@@ -83,13 +83,6 @@ public class WadlSaasBean extends GenericResourceBean {
         try {
             Resource[] rArray = m.getResourcePath();
             Resource currResource = rArray[rArray.length-1];
-            //TODO - Issue in compiling, See below
-            //An exception has occurred in the compiler (1.5.0_13). Please file a bug 
-            //at the Java Developer Connection (http://java.sun.com/webapps/bugreport)  
-            //after checking the Bug Parade for duplicates. Include your program and the 
-            //following diagnostic in your report.  Thank you.
-            //com.sun.tools.javac.code.Symbol$CompletionFailure: file 
-            //javax/xml/bind/annotation/XmlAccessorType.class not found
             String url2 = "";//m.getSaas().getWadlModel().getResources().getBase();
             for(Resource r:rArray) {
                 url2 += "/"+r.getPath();
@@ -97,16 +90,15 @@ public class WadlSaasBean extends GenericResourceBean {
             this.url = url2;
             
             findParams(inputParams, currResource.getParam());
-            //TODO - Issue in compiling 
-//            Request req = m.getWadlMethod().getRequest();
-//            findParams(inputParams, req.getParam());
-//            Response response = m.getWadlMethod().getResponse();
-//            findMediaType(response, mimeTypes);
+            Request req = m.getWadlMethod().getRequest();
+            findParams(inputParams, req.getParam());
+            Response response = m.getWadlMethod().getResponse();
+            findMediaType(response, mimeTypes);
 
             if(mimeTypes.size() > 0)
                 this.setMimeTypes(mimeTypes.toArray(new MimeType[mimeTypes.size()]));
         } catch (Exception ex) {
-            //throw new IOException(ex.getMessage());
+            throw new IOException(ex.getMessage());
         } 
     }
 

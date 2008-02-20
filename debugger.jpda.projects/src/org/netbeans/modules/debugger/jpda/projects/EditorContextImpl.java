@@ -1468,11 +1468,13 @@ public class EditorContextImpl extends EditorContext {
                                    final TreePathScanner<R,D> visitor, final D context,
                                    final SourcePathProvider sp) {
         JavaSource js = null;
-        try {
-            FileObject fo = URLMapper.findFileObject(new URL(url));
-            js = JavaSource.forFileObject(fo);
-        } catch (MalformedURLException ex) {
-            ErrorManager.getDefault().notify(ErrorManager.WARNING, ex);
+        if (url != null) {
+            try {
+                FileObject fo = URLMapper.findFileObject(new URL(url));
+                js = JavaSource.forFileObject(fo);
+            } catch (MalformedURLException ex) {
+                ErrorManager.getDefault().notify(ErrorManager.WARNING, ex);
+            }
         }
         if (js == null) {
             js = getJavaSource(sp);

@@ -42,51 +42,62 @@
 package org.netbeans.modules.cnd.refactoring.support;
 
 import javax.swing.Icon;
-import org.netbeans.modules.cnd.api.model.CsmObject;
+import org.netbeans.modules.cnd.api.model.CsmOffsetable;
 import org.netbeans.modules.cnd.api.model.CsmUID;
 import org.netbeans.modules.cnd.modelutil.CsmImageLoader;
 import org.openide.filesystems.FileObject;
 
-
 /**
- * wrapper object for csm object to be stored in index collection
+ * This wrapper is used to create composition of scopes which is 
+ * remembered once and is not affected by the following changes in code
+ * based on ElementGrip from java refactoring
  * @author Vladimir Voskresensky
  */
-public final class CsmObjectBox {
-
-    private CsmUID<CsmObject> delegateElementHandle;
+public final class ElementGrip {
+    private CsmUID<CsmOffsetable> thisObject;
     private String toString;
     private FileObject fileObject;
     private Icon icon;
-
+    private ElementGrip parent;
+    private boolean parentInited;
+    
     /**
      * Creates a new instance of ElementGrip
      */
-    public CsmObjectBox(CsmObject object) {
-        this.delegateElementHandle = CsmRefactoringUtils.getHandler(object);
+    public ElementGrip(CsmOffsetable object) {
+        this.thisObject = CsmRefactoringUtils.getHandler(object);
         this.toString = CsmRefactoringUtils.getHtml(object);
         this.fileObject = CsmRefactoringUtils.getFileObject(object);
         this.icon = CsmImageLoader.getIcon(object);
     }
-
+    
     public Icon getIcon() {
         return icon;
     }
-
+    
     @Override
     public String toString() {
         return toString;
     }
 
-    public CsmObjectBox getParent() {
-        return CsmObjectBoxFactory.getDefault().getParent(this);
+    /*package*/ void initParent() {
+        if (!parentInited) {
+            parent = ElementGripFactory.getDefault().getParent(this);
+            parentInited = true;
+        }
     }
-
+    
+    public ElementGrip getParent() {
+        initParent();
+        return parent;
+    }
+    
     public FileObject getFileObject() {
         return fileObject;
     }
-
-    public CsmUID<CsmObject> getHandle() {
-        return delegateElementHandle;
+    
+    public CsmOffsetable getResolved() {
+        return thisObject.getObject();
     }
+    
 }

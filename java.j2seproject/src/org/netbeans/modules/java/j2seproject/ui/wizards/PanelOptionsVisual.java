@@ -181,9 +181,8 @@ public class PanelOptionsVisual extends SettingsPanel implements ActionListener,
 
         mainClassTextField.setText("com.myapp.Main");
 
-        sharableProject.setMnemonic('P');
         sharableProject.setSelected(true);
-        sharableProject.setText(org.openide.util.NbBundle.getMessage(PanelOptionsVisual.class, "LBL_PanelOptions_SharableProject_Checkbox")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(sharableProject, org.openide.util.NbBundle.getMessage(PanelOptionsVisual.class, "LBL_PanelOptions_SharableProject_Checkbox")); // NOI18N
         sharableProject.setMargin(new java.awt.Insets(0, 0, 0, 0));
         sharableProject.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -191,10 +190,10 @@ public class PanelOptionsVisual extends SettingsPanel implements ActionListener,
             }
         });
 
-        jLabel1.setText(org.openide.util.NbBundle.getMessage(PanelOptionsVisual.class, "LBL_PanelOptions_Location_Label")); // NOI18N
+        jLabel1.setLabelFor(librariesLocation);
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel1, org.openide.util.NbBundle.getMessage(PanelOptionsVisual.class, "LBL_PanelOptions_Location_Label")); // NOI18N
 
-        browseLibraries.setMnemonic('B');
-        browseLibraries.setText(org.openide.util.NbBundle.getMessage(PanelOptionsVisual.class, "LBL_PanelOptions_Browse_Button")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(browseLibraries, org.openide.util.NbBundle.getMessage(PanelOptionsVisual.class, "LBL_PanelOptions_Browse_Button")); // NOI18N
         browseLibraries.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 browseLibrariesActionPerformed(evt);
@@ -244,6 +243,8 @@ public class PanelOptionsVisual extends SettingsPanel implements ActionListener,
         createMainCheckBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getBundle(PanelOptionsVisual.class).getString("ACSD_createMainCheckBox")); // NOI18N
         mainClassTextField.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getBundle(PanelOptionsVisual.class).getString("ASCN_mainClassTextFiled")); // NOI18N
         mainClassTextField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getBundle(PanelOptionsVisual.class).getString("ASCD_mainClassTextFiled")); // NOI18N
+        sharableProject.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(PanelOptionsVisual.class, "ACSD_sharableProject")); // NOI18N
+        browseLibraries.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(PanelOptionsVisual.class, "ACSD_browseLibraries")); // NOI18N
 
         getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(PanelOptionsVisual.class, "ACSN_PanelOptionsVisual")); // NOI18N
         getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(PanelOptionsVisual.class, "ACSD_PanelOptionsVisual")); // NOI18N
@@ -276,19 +277,20 @@ public class PanelOptionsVisual extends SettingsPanel implements ActionListener,
     
     boolean valid(WizardDescriptor settings) {
         
-        // TODO: check whether libraries file is property file and is collocated
         if (sharableProject.isSelected()) {
             String location = librariesLocation.getText();
-            if (new File(location).isAbsolute()) {
-                settings.putProperty( "WizardPanel_errorMessage", // NOI18N
-                    NbBundle.getMessage(PanelOptionsVisual.class, "WARN_PanelOptionsVisual.absolutePath"));
-                
-            } else {
-                File projectLoc = FileUtil.normalizeFile(new File(projectLocation));
-                File libLoc = PropertyUtils.resolveFile(projectLoc, location);
-                if (!CollocationQuery.areCollocated(projectLoc, libLoc)) {
+            if (projectLocation != null) {
+                if (new File(location).isAbsolute()) {
                     settings.putProperty( "WizardPanel_errorMessage", // NOI18N
-                        NbBundle.getMessage(PanelOptionsVisual.class, "WARN_PanelOptionsVisual.relativePath")); 
+                        NbBundle.getMessage(PanelOptionsVisual.class, "WARN_PanelOptionsVisual.absolutePath"));
+                
+                } else {
+                    File projectLoc = FileUtil.normalizeFile(new File(projectLocation));
+                    File libLoc = PropertyUtils.resolveFile(projectLoc, location);
+                    if (!CollocationQuery.areCollocated(projectLoc, libLoc)) {
+                        settings.putProperty( "WizardPanel_errorMessage", // NOI18N
+                            NbBundle.getMessage(PanelOptionsVisual.class, "WARN_PanelOptionsVisual.relativePath")); 
+                    }
                 }
             }
         }
@@ -306,7 +308,6 @@ public class PanelOptionsVisual extends SettingsPanel implements ActionListener,
     }
     
     void read (WizardDescriptor d) {
-        //TODO:
     }
     
     void validate (WizardDescriptor d) throws WizardValidationException {
