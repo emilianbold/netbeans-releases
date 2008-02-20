@@ -52,6 +52,8 @@ import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.Exceptions;
 
 /**
+ * Takes care of editing database.yml so that it is correctly
+ * generated for PostrgreSQL Rails adapter.
  *
  * @author Erno Mononen
  */

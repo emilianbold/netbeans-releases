@@ -49,8 +49,11 @@ import org.netbeans.modules.ruby.railsprojects.RailsProject;
 public interface RailsDatabaseConfiguration {
 
     /**
+     * Gets the database parameter passed to the rails command, i.e. the name 
+     * of the Rails database adapter to be used.
+     * 
      * @return the parameter for the Rails generator or <code>null</code> if
-     * the Rails generator should not be used for generating datbase configuration
+     * the Rails generator should not be used for generating database configuration
      * for this.
      */
     String railsGenerationParam();

@@ -53,7 +53,8 @@ import org.openide.util.Exceptions;
 
 /**
  * Represent a Rails database adapter that doesn't require any 
- * extra configuration to be done.
+ * extra configuration to be done, except commenting out socket 
+ * in case of JRuby.
  *
  * @author Erno Mononen
  */
@@ -72,12 +73,14 @@ class StandardRailsAdapter implements RailsDatabaseConfiguration {
     public void editConfig(RailsProject project) {
         RubyPlatform platform = RubyPlatform.platformFor(project);
         if (platform.isJRuby()) {
+            // JRuby doesn't support socket
             commentOutSocket(project.getProjectDirectory());
         }
     }
 
-     // JRuby doesn't support the socket syntax in database.yml, so try to edit it
-    // out
+     /**
+      * Tries to comment out the socket syntax from database.yml. 
+      */ 
     private static void commentOutSocket(FileObject dir) {
         FileObject fo = dir.getFileObject("config/database.yml"); // NOI18N
         if (fo != null) {
@@ -103,13 +106,13 @@ class StandardRailsAdapter implements RailsDatabaseConfiguration {
                     }
 
                     StringBuilder sb = new StringBuilder();
-                    sb.append("# JRuby doesn't support socket:\n");
-                    boolean addLocalHost = text.indexOf("host:") == -1;
+                    sb.append("# JRuby doesn't support socket:\n"); //NOI18N
+                    boolean addLocalHost = text.indexOf("host:") == -1; //NOI18N
                     if (addLocalHost) {
                         for (int i = 0; i < indent; i++) {
                             sb.append(" ");
                         }
-                        sb.append("host: localhost\n");
+                        sb.append("host: localhost\n"); //NOI18N
                     }
                     for (int i = 0; i < indent; i++) {
                         sb.append(" ");
