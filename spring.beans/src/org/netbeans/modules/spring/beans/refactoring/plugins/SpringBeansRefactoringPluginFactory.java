@@ -66,7 +66,7 @@ public class SpringBeansRefactoringPluginFactory implements RefactoringPluginFac
         
         if (refactoring instanceof WhereUsedQuery) {
             if (handle != null) {
-                return new SpringBeansRefactoringFindUsagesPlugin((WhereUsedQuery) refactoring);
+                return new SpringFindUsagesPlugin((WhereUsedQuery) refactoring);
             }
         } else if (refactoring instanceof RenameRefactoring) {
             return new SpringRenamePlugin((RenameRefactoring)refactoring);

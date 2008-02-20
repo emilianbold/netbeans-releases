@@ -386,7 +386,12 @@ public class XMLDataObject extends MultiDataObject {
     private static class XMLEditorSupport extends DataEditorSupport implements OpenCookie, EditorCookie.Observable, PrintCookie, CloseCookie {
         public XMLEditorSupport (XMLDataObject obj) {
             super (obj, new XMLEditorEnv (obj));
-            setMIMEType ("text/xml"); // NOI18N
+            //when undelying fileobject has a mimetype defined,
+            //don't enforce text/xml on the editor document.
+            //be conservative and apply the new behaviour only when the mimetype is xml like..
+            if (obj.getPrimaryFile().getMIMEType().indexOf("xml") == -1) { // NOI18N
+                setMIMEType ("text/xml"); // NOI18N
+            }
         }
         class Save implements SaveCookie {
             public void save () throws IOException {

@@ -52,9 +52,14 @@ import javax.swing.Action;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.j2ee.common.project.classpath.ClassPathSupport;
+import org.netbeans.modules.j2ee.common.project.ui.LibrariesNode;
+import org.netbeans.modules.j2ee.common.project.ui.ProjectProperties;
 import org.netbeans.modules.java.api.common.SourceRoots;
 import org.netbeans.modules.java.api.common.ant.UpdateHelper;
 import org.netbeans.modules.web.project.WebProject;
+import org.netbeans.modules.web.project.WebProjectUtil;
+import org.netbeans.modules.web.project.classpath.ClassPathSupportCallbackImpl;
 import org.netbeans.modules.web.project.ui.customizer.CustomizerLibraries;
 import org.netbeans.modules.web.project.ui.customizer.WebProjectProperties;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
@@ -92,6 +97,7 @@ public final class LibrariesNodeFactory implements NodeFactory {
         private final PropertyEvaluator evaluator;
         private final UpdateHelper helper;
         private final ReferenceHelper resolver;
+        private final ClassPathSupport cs;
         
         LibrariesNodeList(WebProject proj) {
             project = proj;
@@ -101,6 +107,8 @@ public final class LibrariesNodeFactory implements NodeFactory {
             evaluator = project.evaluator();
             helper = project.getUpdateHelper();
             resolver = project.getReferenceHelper();
+            cs = new ClassPathSupport(evaluator, resolver, helper.getAntProjectHelper(), helper, 
+                    new ClassPathSupportCallbackImpl(helper.getAntProjectHelper()));
         }
         
         public List<String> keys() {
@@ -139,18 +147,20 @@ public final class LibrariesNodeFactory implements NodeFactory {
                         evaluator,
                         helper,
                         resolver,
-                        WebProjectProperties.JAVAC_CLASSPATH,
-                        new String[] {WebProjectProperties.BUILD_CLASSES_DIR},
+                        ProjectProperties.JAVAC_CLASSPATH,
+                        new String[] {ProjectProperties.BUILD_CLASSES_DIR},
                         "platform.active", // NOI18N
-                        WebProjectProperties.J2EE_SERVER_INSTANCE, 
+                        WebProjectProperties.J2EE_SERVER_INSTANCE,
+                        WebProjectProperties.J2EE_PLATFORM_CLASSPATH,
                         new Action[] {
-                            LibrariesNode.createAddProjectAction(project, true),
-                            LibrariesNode.createAddLibraryAction(project, true),
-                            LibrariesNode.createAddFolderAction(project, true),
+                            LibrariesNode.createAddProjectAction(project, project.getSourceRoots()),
+                            LibrariesNode.createAddLibraryAction(resolver, project.getSourceRoots(), WebProjectUtil.getFilter(project)),
+                            LibrariesNode.createAddFolderAction(project.getAntProjectHelper(), project.getSourceRoots()),
                             null,
                             new SourceNodeFactory.PreselectPropertiesAction(project, "Libraries", CustomizerLibraries.COMPILE), // NOI18N
                         },
-                        WebProjectProperties.TAG_WEB_MODULE_LIBRARIES
+                        WebProjectProperties.TAG_WEB_MODULE_LIBRARIES,
+                        cs
                     );
             } else if (key == TEST_LIBRARIES) {
                 return  
@@ -160,22 +170,24 @@ public final class LibrariesNodeFactory implements NodeFactory {
                         evaluator,
                         helper,
                         resolver,
-                        WebProjectProperties.JAVAC_TEST_CLASSPATH,
+                        ProjectProperties.JAVAC_TEST_CLASSPATH,
                         new String[] {
-                            WebProjectProperties.BUILD_TEST_CLASSES_DIR,
-                            WebProjectProperties.JAVAC_CLASSPATH,
-                            WebProjectProperties.BUILD_CLASSES_DIR,
+                            ProjectProperties.BUILD_TEST_CLASSES_DIR,
+                            ProjectProperties.JAVAC_CLASSPATH,
+                            ProjectProperties.BUILD_CLASSES_DIR,
                         },
+                        null,
                         null,
                         null,
                         new Action[] {
-                            LibrariesNode.createAddProjectAction(project, false),
-                            LibrariesNode.createAddLibraryAction(project, false),
-                            LibrariesNode.createAddFolderAction(project, false),
+                            LibrariesNode.createAddProjectAction(project, project.getTestSourceRoots()),
+                            LibrariesNode.createAddLibraryAction(resolver, project.getTestSourceRoots(), WebProjectUtil.getFilter(project)),
+                            LibrariesNode.createAddFolderAction(project.getAntProjectHelper(), project.getTestSourceRoots()),
                             null,
                             new SourceNodeFactory.PreselectPropertiesAction(project, "Libraries", CustomizerLibraries.COMPILE_TESTS), // NOI18N
                         },
-                        null
+                        null,
+                        cs
                     );
             }
             assert false: "No node for key: " + key;

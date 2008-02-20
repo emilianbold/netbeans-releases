@@ -77,12 +77,11 @@ public class CollabPropertiesAction extends GraphAction {
         this.putValue(Action.SMALL_ICON, new ImageIcon(propertiesUrl));
 
         //action tooltip
-        String nbBundle2 = mLoc.t("PRSR001: Collaboration Properties");
+        String nbBundle2 = mLoc.t("PRSR001: Collaboration Properties (Cntl-P)");
         this.putValue(Action.SHORT_DESCRIPTION,Localizer.parse(nbBundle2));
 
-        // Acceleratot Cntl-Shift-P
-        this.putValue(Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke('P', InputEvent.CTRL_MASK
-                                                                    + InputEvent.SHIFT_DOWN_MASK));
+        // Acceleratot Cntl-P
+        this.putValue(Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke('P', InputEvent.CTRL_MASK));
 
     }
 

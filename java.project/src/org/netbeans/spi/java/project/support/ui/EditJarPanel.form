@@ -35,7 +35,7 @@
                           <Component id="btnJavadoc" alignment="0" min="-2" max="-2" attributes="0"/>
                       </Group>
                   </Group>
-                  <Component id="txtJar" pref="407" max="32767" attributes="0"/>
+                  <Component id="txtJar" pref="425" max="32767" attributes="0"/>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
           </Group>
@@ -91,6 +91,11 @@
           <ResourceString bundle="org/netbeans/spi/java/project/support/ui/Bundle.properties" key="EditJarPanel.lblJavadoc.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
       </Properties>
+      <AccessibilityProperties>
+        <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/spi/java/project/support/ui/Bundle.properties" key="ACSD_lblJavadoc" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+      </AccessibilityProperties>
     </Component>
     <Component class="javax.swing.JTextField" name="txtJavadoc">
     </Component>
@@ -100,6 +105,11 @@
           <ResourceString bundle="org/netbeans/spi/java/project/support/ui/Bundle.properties" key="EditJarPanel.btnJavadoc.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
       </Properties>
+      <AccessibilityProperties>
+        <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/spi/java/project/support/ui/Bundle.properties" key="ACSD_btnJavadoc" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+      </AccessibilityProperties>
       <Events>
         <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="btnJavadocActionPerformed"/>
       </Events>
@@ -113,6 +123,11 @@
           <ResourceString bundle="org/netbeans/spi/java/project/support/ui/Bundle.properties" key="EditJarPanel.lblSource.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
       </Properties>
+      <AccessibilityProperties>
+        <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/spi/java/project/support/ui/Bundle.properties" key="ACSD_lblSource" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+      </AccessibilityProperties>
     </Component>
     <Component class="javax.swing.JTextField" name="txtSource">
     </Component>
@@ -122,6 +137,11 @@
           <ResourceString bundle="org/netbeans/spi/java/project/support/ui/Bundle.properties" key="EditJarPanel.btnSource.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
       </Properties>
+      <AccessibilityProperties>
+        <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/spi/java/project/support/ui/Bundle.properties" key="ACSD_btnSource" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+      </AccessibilityProperties>
       <Events>
         <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="btnSourceActionPerformed"/>
       </Events>
