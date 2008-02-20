@@ -271,7 +271,9 @@ public class DocumentationCookie implements ReportCookie {
     if (skipElement(entity)) {
       return;
     }
-    fillElement(entity, section);
+    if ( !(object instanceof Process)) {
+      fillElement(entity, section);
+    }
     List children = entity.getChildren();
 
     for (Object child : children) {
@@ -282,7 +284,6 @@ public class DocumentationCookie implements ReportCookie {
   private boolean skipElement(BpelEntity entity) {
     return
       entity instanceof Import ||
-      entity instanceof Process ||
       entity instanceof CorrelationSet ||
       entity instanceof CorrelationSetContainer ||
       entity instanceof CorrelationContainer ||
