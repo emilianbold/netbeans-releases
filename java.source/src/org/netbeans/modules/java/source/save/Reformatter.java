@@ -2702,9 +2702,9 @@ public class Reformatter implements ReformatTask {
             StringBuilder sb = new StringBuilder(); 
             int col = 0;
             if (!expandTabToSpaces) {
-                while (((col + tabSize) &~ (tabSize - 1)) <= indent) {
+                while (col + tabSize <= indent) {
                     sb.append('\t'); //NOI18N
-                    col = col + tabSize & ~(tabSize - 1);
+                    col += tabSize;
                 }
             }
             while (col < indent) {
