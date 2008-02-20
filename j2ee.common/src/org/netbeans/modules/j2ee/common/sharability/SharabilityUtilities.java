@@ -124,15 +124,15 @@ public final class SharabilityUtilities {
         if (platform == null) {
             throw new IOException("Server instance does not exist"); // NOI18N
         }
-//        return createLibrary(location, libraryName,
-//                platform.getClasspathEntries(),
-//                platform.getToolClasspathEntries(J2eePlatform.TOOL_WSCOMPILE),
-//                platform.getToolClasspathEntries(J2eePlatform.TOOL_WSGEN),
-//                platform.getToolClasspathEntries(J2eePlatform.TOOL_WSIMPORT),
-//                platform.getToolClasspathEntries(J2eePlatform.TOOL_WSIT),
-//                platform.getToolClasspathEntries(J2eePlatform.TOOL_JWSDP),
-//                platform.getToolClasspathEntries(J2eePlatform.TOOL_APP_CLIENT_RUNTIME));
-        return createLibrary(location, libraryName, platform.getClasspathEntries());        
+        return createLibrary(location, libraryName,
+                platform.getClasspathEntries(),
+                platform.getToolClasspathEntries(J2eePlatform.TOOL_WSCOMPILE),
+                platform.getToolClasspathEntries(J2eePlatform.TOOL_WSGEN),
+                platform.getToolClasspathEntries(J2eePlatform.TOOL_WSIMPORT),
+                platform.getToolClasspathEntries(J2eePlatform.TOOL_WSIT),
+                platform.getToolClasspathEntries(J2eePlatform.TOOL_JWSDP),
+                platform.getToolClasspathEntries(J2eePlatform.TOOL_APP_CLIENT_RUNTIME));
+//        return createLibrary(location, libraryName, platform.getClasspathEntries());        
     }
 
     private static Library createLibrary(File location, String libraryName, File[] files) throws IOException {
