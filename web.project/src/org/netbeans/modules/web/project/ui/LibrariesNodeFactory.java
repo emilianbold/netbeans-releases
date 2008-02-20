@@ -150,7 +150,8 @@ public final class LibrariesNodeFactory implements NodeFactory {
                         ProjectProperties.JAVAC_CLASSPATH,
                         new String[] {ProjectProperties.BUILD_CLASSES_DIR},
                         "platform.active", // NOI18N
-                        WebProjectProperties.J2EE_SERVER_INSTANCE, 
+                        WebProjectProperties.J2EE_SERVER_INSTANCE,
+                        WebProjectProperties.J2EE_PLATFORM_CLASSPATH,
                         new Action[] {
                             LibrariesNode.createAddProjectAction(project, project.getSourceRoots()),
                             LibrariesNode.createAddLibraryAction(resolver, project.getSourceRoots(), WebProjectUtil.getFilter(project)),
@@ -175,6 +176,7 @@ public final class LibrariesNodeFactory implements NodeFactory {
                             ProjectProperties.JAVAC_CLASSPATH,
                             ProjectProperties.BUILD_CLASSES_DIR,
                         },
+                        null,
                         null,
                         null,
                         new Action[] {

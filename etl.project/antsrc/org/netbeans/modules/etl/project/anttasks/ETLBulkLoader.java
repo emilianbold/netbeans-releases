@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -38,33 +38,40 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
+package org.netbeans.modules.etl.project.anttasks;
 
-package org.netbeans.modules.spring.beans.refactoring.plugins;
-
-import com.sun.source.tree.*;
-import com.sun.source.util.TreePathScanner;
-import javax.lang.model.element.*;
-import org.netbeans.api.java.source.TreeMaker;
-import org.netbeans.api.java.source.WorkingCopy;
-
+import org.netbeans.modules.etlbulkloader.packager.ETLBLPackager;
+import org.apache.tools.ant.Task;
+import org.apache.tools.ant.Project;
+import net.java.hulp.i18n.Logger;
+import org.netbeans.modules.etl.logger.Localizer;
+import org.netbeans.modules.etl.logger.LogUtil;
 /**
  *
- * @author John Baker
+ * @author Manish
  */
-public class RefactoringVisitor extends TreePathScanner<Tree, Element> {
-    /**
-     * 
-     */
-    protected WorkingCopy workingCopy;
-    /**
-     * 
-     */
-    protected TreeMaker make;
+public class ETLBulkLoader extends Task {
+
+     private static transient final Logger mLogger = LogUtil.getLogger(ETLBulkLoader.class.getName());
+     private static transient final Localizer mLoc = Localizer.get();
     
-    
-    public RefactoringVisitor(WorkingCopy workingCopy) {
-        super();
-        this.workingCopy = workingCopy;
-        this.make = workingCopy.getTreeMaker();
-    }                  
+    public void execute() {
+        Project p = this.getProject();
+        String projhome = null;
+	if (p != null) {
+	   projhome = p.getProperty("basedir");
+        }
+        mLogger.infoNoloc(mLoc.t("eTL Bulk Loader Packaging Begins ..."));
+        ETLBLPackager packager = new ETLBLPackager(projhome);
+        packager.createExecutablePackage();
+        mLogger.infoNoloc(mLoc.t("eTL Bulk Loader Packaging Ends."));
+    }
+
+    /**
+     * @param args the command line arguments
+     */
+    public static void main(String[] args) {        
+        ETLBulkLoader loader = new ETLBulkLoader();
+        loader.execute();
+    }
 }

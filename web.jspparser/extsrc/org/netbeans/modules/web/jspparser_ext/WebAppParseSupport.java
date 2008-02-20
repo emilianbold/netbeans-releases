@@ -64,6 +64,7 @@ import javax.servlet.ServletContext;
 import javax.servlet.jsp.tagext.TagLibraryInfo;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.ErrorManager;
@@ -125,6 +126,7 @@ public class WebAppParseSupport implements WebAppParseProxy, PropertyChangeListe
     
     private final JspParserAPI.WebModule wm;
     final FileObject wmRoot;
+    final FileObject webInf;
     private final FileSystemListener fileSystemListener;
     
     OptionsImpl editorOptions;
@@ -152,11 +154,13 @@ public class WebAppParseSupport implements WebAppParseProxy, PropertyChangeListe
     public WebAppParseSupport(JspParserAPI.WebModule wm) {
         this.wm = wm;
         wmRoot = wm.getDocumentBase();
+        webInf = wm.getWebInf();
         fileSystemListener = new FileSystemListener();
         initOptions(true);
         // register file listener (listen to changes of tld files, web.xml)
         try {
-            wm.getDocumentBase().getFileSystem().addFileChangeListener(fileSystemListener);
+            FileSystem fs = wm.getDocumentBase().getFileSystem();
+            fs.addFileChangeListener(FileUtil.weakFileChangeListener(fileSystemListener, fs));
         } catch (FileStateInvalidException ex) {
             Exceptions.printStackTrace(ex);
         }
@@ -826,7 +830,8 @@ System.out.println("--------ENDSTACK------");        */
             String ext = fe.getFile().getExt();
             if (ext.equals("tld") || name.equals("web.xml")) { // NOI18N
                 FileObject fo = fe.getFile();
-                if (FileUtil.isParentOf(wmRoot, fo)) {
+                if (FileUtil.isParentOf(wmRoot, fo)
+                        || (FileUtil.isParentOf(webInf, fo))) {
                     if (LOG.isLoggable(Level.FINE)) {
                         LOG.fine("File " + fo + " has changed, reinitCaches() called");
                     }

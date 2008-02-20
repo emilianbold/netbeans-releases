@@ -68,7 +68,7 @@ public interface XPathModel extends XPathSchemaContextHolder {
     void discardResolvedStatus();
     
     /**
-     * Tries to resolve all external references: variable, schema elements 
+     * Tries resolving all external references: variable, schema elements 
      * and attributes. Assigns schema contexts for all context holders.
      * 
      * Only the model's root expression is processed here. 

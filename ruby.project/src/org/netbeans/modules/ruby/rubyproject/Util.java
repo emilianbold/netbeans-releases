@@ -47,8 +47,10 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
+import javax.swing.JComboBox;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
+import org.netbeans.modules.ruby.platform.PlatformComponentFactory;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.netbeans.modules.ruby.spi.project.support.rake.RakeProjectHelper;
 import org.netbeans.modules.ruby.spi.project.support.rake.PropertyEvaluator;
@@ -64,9 +66,12 @@ import org.w3c.dom.Text;
  * Miscellaneous helper methods.
  * @author Jesse Glick, David Konecny
  */
-public class Util {
-    
-    private Util() {}
+public final class Util {
+
+    private static final String LAST_PLATFORM_ID = "projectPanelLastPlatformID"; // NOI18N
+
+    private Util() {
+    }
     
     // XXX XML methods copied from ant/project... make a general API of these instead?
     
@@ -267,4 +272,12 @@ public class Util {
 //        return FreeformProjectGenerator.getAntScript(accessor.getHelper(), accessor.getEvaluator());
 //    }
     
+    public static void preselectWizardPlatform(final JComboBox platforms) {
+        org.netbeans.modules.ruby.platform.Util.preselectPlatform(platforms, LAST_PLATFORM_ID);
+    }
+
+    public static void storeWizardPlatform(JComboBox platforms) {
+        org.netbeans.modules.ruby.platform.Util.getPreferences().put(
+                LAST_PLATFORM_ID, PlatformComponentFactory.getPlatform(platforms).getID());
+    }
 }
