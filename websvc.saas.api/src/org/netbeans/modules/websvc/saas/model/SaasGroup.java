@@ -39,7 +39,6 @@
 
 package org.netbeans.modules.websvc.saas.model;
 
-import java.io.IOException;
 import org.netbeans.modules.websvc.saas.model.jaxb.Group;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -55,6 +54,7 @@ import org.openide.util.NbBundle;
  * @author nam
  */
 public class SaasGroup {
+    public static final String PROP_GROUP_NAME = "groupName";
 
     private final Group delegate;
     private final SaasGroup parent;
@@ -145,8 +145,18 @@ public class SaasGroup {
         if (message != null) {
             throw new IllegalArgumentException(message);
         }
+        
         delegate.setName(value);
-        SaasServicesModel.getInstance().saveRootGroup();
+        resetAllServicesGroupPath();
+    }
+    
+    private void resetAllServicesGroupPath() {
+        for (Saas s : getServices()) {
+            s.computePathFromRoot();
+        }
+        for (SaasGroup g : getChildrenGroups()) {
+            g.resetAllServicesGroupPath();
+        }
     }
 
     public String getName() {
@@ -185,7 +195,7 @@ public class SaasGroup {
      * Caller is responsible for persisting changes.
      * @param group saas group to remove
      */
-    public boolean removeChildGroup(SaasGroup group) {
+    protected boolean removeChildGroup(SaasGroup group) {
         if (! group.canRemove()) {
             return false;
         }
@@ -200,7 +210,10 @@ public class SaasGroup {
             for (Saas saas : child.getServices()) {
                 removeService(saas);
                 try {
-                    saas.getSaasFile().delete();
+                    FileObject saasFile = saas.getSaasFile();
+                    if (saasFile != null) {
+                        saasFile.delete();
+                    }
                 } catch(Exception e) {
                     Exceptions.printStackTrace(e);
                 }
@@ -208,12 +221,19 @@ public class SaasGroup {
             for (SaasGroup c : child.getChildrenGroups()) {
                 _removeChildGroup(c);
             }
+            getDelegate().getGroup().remove(child.getDelegate());
+            children.remove(child.getName());
         }
     }
     
     public boolean canRemove() {
-        if (isUserDefined()) {
+        if (! isUserDefined()) {
             return false;
+        }
+        for (Saas s : getServices()) {
+            if (! s.isUserDefined()) {
+                return false;
+            }
         }
         for (SaasGroup child : getChildrenGroups()) {
             if (! child.canRemove()) {
@@ -229,7 +249,7 @@ public class SaasGroup {
      * 
      * @param group saas group to add
      */
-    public void addChildGroup(SaasGroup group) {
+    protected void addChildGroup(SaasGroup group) {
         getChildrenGroups();
         children.put(group.getName(), group);
         getDelegate().getGroup().add(group.getDelegate());
@@ -261,7 +281,7 @@ public class SaasGroup {
      * @param name
      * @return created group
      */
-    public SaasGroup createGroup(String name) {
+    protected SaasGroup createGroup(String name) {
         Group g = new Group();
         g.setName(name);
         SaasGroup child = new SaasGroup(this, g);

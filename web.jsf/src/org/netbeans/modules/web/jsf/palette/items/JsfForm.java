@@ -120,6 +120,7 @@ public final class JsfForm implements ActiveEditorDrop {
         "<h:outputText value=\"{0} ({4}):\"/>\n <h:inputText id=\"{2}\" value=\"#'{'{1}.{2}}\" title=\"{0}\" >\n <f:convertDateTime type=\"{3}\" pattern=\"{4}\" />\n</h:inputText>\n",
         //relationship *ToOne - use combo box, in FORM_TYPE_NEW display only if not pre set
         "<h:outputText value=\"{0}:\" rendered=\"#'{'{1}.{2} == null}\"/>\n <h:selectOneMenu id=\"{2}\" value=\"#'{'{1}.{2}}\" title=\"{0}\" rendered=\"#'{'{1}.{2} == null}\">\n <f:selectItems value=\"#'{'{3}.{2}s'}'\"/>\n </h:selectOneMenu>\n",
+        "<h:outputText value=\"{0}:\"/>\n <h:commandLink action=\"#'{'{2}.detailSetupFrom{3}Detail}\" value=\"#'{'{1}.{2}}\" />\n"
     };
     
     private String variable = "";
@@ -463,7 +464,9 @@ public final class JsfForm implements ActiveEditorDrop {
                         //param 3 - temporal, param 4 - date/time format
                         stringBuffer.append(MessageFormat.format(ITEM [5], new Object [] {name, variable, propName, temporal, getDateTimeFormat(temporal)}));
                     }
-                } else if ((formType == FORM_TYPE_DETAIL && isRelationship == REL_TO_ONE) || isRelationship == REL_NONE) {
+                } else if (formType == FORM_TYPE_DETAIL && isRelationship == REL_TO_ONE) {
+                    stringBuffer.append(MessageFormat.format(ITEM [7], new Object [] {name, variable, propName, bean.getSimpleName()}));
+                } else if (isRelationship == REL_NONE) {
                     //normal field (input or output text)
                     stringBuffer.append(MessageFormat.format(ITEM [formType], new Object [] {name, variable, propName}));
                 } else if (isRelationship == REL_TO_ONE) {
