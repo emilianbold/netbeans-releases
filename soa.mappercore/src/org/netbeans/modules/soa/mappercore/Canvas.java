@@ -359,7 +359,7 @@ public class Canvas extends MapperPanel implements VertexCanvas,
             }
         }
 
-        if (node.isVisibleGraph()) {
+        if (node.isVisibleGraph() && !node.getGraph().isEmptyOrOneLink()) {
             int size = step - 1;
             int topInset = size / 2;
             int bottomInset = size - topInset;
@@ -402,7 +402,7 @@ public class Canvas extends MapperPanel implements VertexCanvas,
         }
 
         if (graph != null && nodeIsSelected == selectedFilter) {
-            if (node.isGraphExpanded()) {
+            if (node.isVisibleGraph()) {
                 graph.paintLinks(g2, node.getTreePath(), rendererContext,
                         graphY);
             } else {
