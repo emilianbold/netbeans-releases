@@ -30,19 +30,18 @@ package org.netbeans.modules.websvc.saas.util;
 
 import java.io.File;
 import java.io.FileFilter;
-import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
-import java.nio.channels.FileChannel;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 import java.util.jar.Manifest;
 import org.netbeans.junit.MockServices;
 import org.netbeans.modules.websvc.saas.model.SaasServicesModel;
-import org.netbeans.modules.websvc.saas.spi.websvcmgr.WsdlServiceProxyDescriptor;
+import org.netbeans.modules.websvc.saas.model.SaasServicesModelTest;
+import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.LocalFileSystem;
@@ -65,11 +64,12 @@ public class SetupUtil {
     private static final String JAXWS_LIB_PROPERTY = "libs.jaxws21.classpath";
     
     public static void commonSetUp(File workingDir) throws Exception {
-        File testuserdir = new File(workingDir,"testuser");
+        File testuserdir = new File(workingDir.getParentFile(), "testuser");
         System.getProperties().setProperty("netbeans.user", testuserdir.getAbsolutePath());
-        SaasServicesModel.getWebServiceHome();
+        SaasServicesModelTest.resetSaasServicesModel();
+        FileObject websvcHome = SaasServicesModel.getWebServiceHome();
+        File userconfig = FileUtil.toFile(websvcHome.getParent());
         MainFS fs = new MainFS();
-        File userconfig = new File(testuserdir, "config");
         fs.setConfigRootDir(userconfig);
         TestRepository.defaultFileSystem = fs;
         

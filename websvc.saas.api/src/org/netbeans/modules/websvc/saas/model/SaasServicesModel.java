@@ -290,7 +290,7 @@ public class SaasServicesModel {
      * @param url URL pointing to a WSDL or WADL
      * @param packageName package name used in codegen; if null, value will be derived.
      */
-    public synchronized void addWsdlService(SaasGroup parent, String displayName, String url, String packageName) {
+    public synchronized WsdlSaas createWsdlService(SaasGroup parent, String displayName, String url, String packageName) {
         initRootGroup();
         WsdlSaas service = new WsdlSaas(parent, displayName, url, packageName);
         service.setUserDefined(true);
@@ -302,10 +302,11 @@ public class SaasServicesModel {
         parent.addService(service);
         service.save();
         fireChange(PROP_SERVICES, parent, null, service);
+        return service;
     }
 
-    public void addWsdlService(SaasGroup parent, String url, String packageName) {
-        addWsdlService(parent, WsdlUtil.getServiceDirName(url), url, packageName);
+    public WsdlSaas createWsdlService(SaasGroup parent, String url, String packageName) {
+        return createWsdlService(parent, WsdlUtil.getServiceDirName(url), url, packageName);
     }
 
     /**

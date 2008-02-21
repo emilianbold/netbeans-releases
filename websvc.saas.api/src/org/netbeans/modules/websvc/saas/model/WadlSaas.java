@@ -111,21 +111,29 @@ public class WadlSaas extends Saas {
     }
     
     @Override
-    public void toStateReady() {
+    public void toStateReady(boolean synchronous) {
         if (wadlModel == null) {
-            RequestProcessor.getDefault().post(new Runnable() {
-                public void run() {
-                    try {
-                        getWadlModel();
-                        setState(State.RESOLVED);  
-                    } catch(IOException ioe) {
-                        Exceptions.printStackTrace(ioe);
+            if (synchronous) {
+                toStateReady();
+            } else {
+                RequestProcessor.getDefault().post(new Runnable() {
+                    public void run() {
+                        toStateReady();
                     }
-                }
-            });
+                });
+            }
         }
     }
     
+    private void toStateReady() {
+        try {
+            getWadlModel();
+            setState(State.RESOLVED);
+        } catch (IOException ioe) {
+            Exceptions.printStackTrace(ioe);
+        }
+    }
+
     /**
      * Returns either a list of resources defined by associated WADL model or
      * a list of filtered resource methods.

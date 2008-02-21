@@ -384,7 +384,7 @@ public class AddWebServiceDlg extends JPanel  implements ActionListener {
         dialog = null;
         
         // Run the add W/S asynchronously
-        SaasServicesModel.getInstance().addWsdlService(group, wsdl, packageName);
+        SaasServicesModel.getInstance().createWsdlService(group, wsdl, packageName);
     }    
     
     public void actionPerformed(ActionEvent evt) {

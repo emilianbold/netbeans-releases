@@ -40,6 +40,7 @@
 package org.netbeans.modules.websvc.saas.model;
 
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.websvc.saas.spi.websvcmgr.WsdlData;
 import org.netbeans.modules.websvc.saas.util.SetupUtil;
 
 /**
@@ -47,6 +48,14 @@ import org.netbeans.modules.websvc.saas.util.SetupUtil;
  * @author nam
  */
 public class SaasServicesModelTest extends NbTestCase {
+    
+    public static void resetSaasServicesModel() {
+        SaasServicesModel.getInstance().reset();
+    }
+    
+    public static void setWsdlData(WsdlSaas saas, WsdlData data) {
+        saas.setWsdlData(data);
+    }
     
     public SaasServicesModelTest(String testName) {
         super(testName);
