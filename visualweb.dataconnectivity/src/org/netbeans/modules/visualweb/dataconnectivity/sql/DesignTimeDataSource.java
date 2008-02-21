@@ -301,7 +301,7 @@ public class DesignTimeDataSource implements DataSource, ContextPersistance, Run
                     throw se;
                 }
 
-            return new DesignTimeConnection(this, conn);
+                designtimeConnection = new DesignTimeConnection(this, conn);
 
         } catch (Exception e) {
             if (e instanceof SQLException) {
