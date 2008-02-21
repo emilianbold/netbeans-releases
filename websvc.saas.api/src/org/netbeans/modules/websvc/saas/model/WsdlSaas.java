@@ -167,8 +167,8 @@ public class WsdlSaas extends Saas implements PropertyChangeListener {
             }
         } else if (property.equals("compiled")) {
             if (Boolean.TRUE.equals(newValue)) {
-                WsdlUtil.saveWsdlData(getWsdlData());
                 setState(State.READY);
+                WsdlUtil.saveWsdlData(getWsdlData());
             } else {
                 setState(State.UNINITIALIZED);
             }
