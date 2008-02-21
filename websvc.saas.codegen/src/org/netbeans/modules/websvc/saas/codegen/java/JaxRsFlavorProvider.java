@@ -57,14 +57,16 @@ public class JaxRsFlavorProvider implements ConsumerFlavorProvider {
 
     public Transferable addDataFlavors(Transferable transferable) {
         try {
-            Object data = transferable.getTransferData(ConsumerFlavorProvider.WADL_METHOD_FLAVOR);
-            if (data instanceof WadlSaasMethod) {
-                WadlSaasMethod method = (WadlSaasMethod) data;
-                ExTransferable t = ExTransferable.create(transferable);
-                JaxRsEditorDrop editorDrop = new JaxRsEditorDrop(method);
-                ActiveEditorDropTransferable s = new ActiveEditorDropTransferable(editorDrop);
-                t.put(s);
-                return t;
+            if (transferable.isDataFlavorSupported(ConsumerFlavorProvider.WADL_METHOD_FLAVOR)) {
+                Object data = transferable.getTransferData(ConsumerFlavorProvider.WADL_METHOD_FLAVOR);
+                if (data instanceof WadlSaasMethod) {
+                    WadlSaasMethod method = (WadlSaasMethod) data;
+                    ExTransferable t = ExTransferable.create(transferable);
+                    JaxRsEditorDrop editorDrop = new JaxRsEditorDrop(method);
+                    ActiveEditorDropTransferable s = new ActiveEditorDropTransferable(editorDrop);
+                    t.put(s);
+                    return t;
+                }
             }
         } catch (Exception ex) {
             Exceptions.printStackTrace(ex);
