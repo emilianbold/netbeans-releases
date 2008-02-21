@@ -93,7 +93,7 @@ public class HibernateCatalog implements CatalogReader, CatalogDescriptor,
             return MAPPING_DTD_URL;
         }
         
-        throw new IllegalArgumentException("Unsupported publicId requesting the system id");
+        return null;
     }
 
     public String resolveURI(String name) {
@@ -139,6 +139,6 @@ public class HibernateCatalog implements CatalogReader, CatalogDescriptor,
             return new org.xml.sax.InputSource(MAPPING_DTD_URL);
         }
         
-        throw new IllegalArgumentException("Cannot resolve public Id=" + publicId);
+        return null;
     }
 }
