@@ -46,6 +46,7 @@ import org.netbeans.modules.versioning.util.DialogBoundsPreserver;
 import org.netbeans.modules.versioning.spi.VCSContext;
 import org.netbeans.modules.versioning.util.Utils;
 import org.netbeans.modules.mercurial.Mercurial;
+import org.netbeans.modules.mercurial.OutputLogger;
 import org.netbeans.modules.mercurial.FileStatusCache;
 import org.netbeans.modules.mercurial.FileInformation;
 import org.netbeans.modules.mercurial.HgFileNode;
@@ -105,11 +106,13 @@ public class CommitAction extends ContextAction {
     public void performAction(ActionEvent e) {
         final File root = HgUtils.getRootFile(context);
         if (root == null) {
-            HgUtils.outputMercurialTabInRed( NbBundle.getMessage(CommitAction.class,"MSG_COMMIT_TITLE")); // NOI18N
-            HgUtils.outputMercurialTabInRed( NbBundle.getMessage(CommitAction.class,"MSG_COMMIT_TITLE_SEP")); // NOI18N
-            HgUtils.outputMercurialTabInRed(
+            OutputLogger logger = OutputLogger.getLogger(Mercurial.MERCURIAL_OUTPUT_TAB_TITLE);
+            logger.outputInRed( NbBundle.getMessage(CommitAction.class,"MSG_COMMIT_TITLE")); // NOI18N
+            logger.outputInRed( NbBundle.getMessage(CommitAction.class,"MSG_COMMIT_TITLE_SEP")); // NOI18N
+            logger.outputInRed(
                     NbBundle.getMessage(CommitAction.class, "MSG_COMMIT_NOT_SUPPORTED_INVIEW_INFO")); // NOI18N
-            HgUtils.outputMercurialTab(""); // NOI18N
+            logger.output(""); // NOI18N
+            logger.closeLog();
             JOptionPane.showMessageDialog(null,
                     NbBundle.getMessage(CommitAction.class, "MSG_COMMIT_NOT_SUPPORTED_INVIEW"),// NOI18N
                     NbBundle.getMessage(CommitAction.class, "MSG_COMMIT_NOT_SUPPORTED_INVIEW_TITLE"),// NOI18N
@@ -230,7 +233,8 @@ public class CommitAction extends ContextAction {
             RequestProcessor rp = Mercurial.getInstance().getRequestProcessor(repository.getAbsolutePath());
             HgProgressSupport support = new HgProgressSupport() {
                 public void perform() {
-                    performCommit(message, commitFiles, ctx, this, prjName);
+                    OutputLogger logger = getLogger();
+                    performCommit(message, commitFiles, ctx, this, prjName, logger);
                 }
             };
             support.start(rp, repository.getAbsolutePath(), org.openide.util.NbBundle.getMessage(CommitAction.class, "LBL_Commit_Progress")); // NOI18N
@@ -314,7 +318,7 @@ public class CommitAction extends ContextAction {
     }
     
     private static void performCommit(String message, Map<HgFileNode, CommitOptions> commitFiles, 
-            VCSContext ctx, HgProgressSupport support, String prjName) {
+            VCSContext ctx, HgProgressSupport support, String prjName, OutputLogger logger) {
         FileStatusCache cache = Mercurial.getInstance().getFileStatusCache();
         final File repository = HgUtils.getRootFile(ctx);
         List<File> addCandidates = new ArrayList<File>();
@@ -351,41 +355,41 @@ public class CommitAction extends ContextAction {
         }
         
         try {
-            HgUtils.outputMercurialTabInRed(
+            logger.outputInRed(
                     NbBundle.getMessage(CommitAction.class,
                     "MSG_COMMIT_TITLE")); // NOI18N
-            HgUtils.outputMercurialTabInRed(
+            logger.outputInRed(
                     NbBundle.getMessage(CommitAction.class,
                     "MSG_COMMIT_TITLE_SEP")); // NOI18N
-            HgUtils.outputMercurialTab(message); // NOI18N
+            logger.output(message); // NOI18N
             if (addCandidates.size() > 0 ) {
-                HgCommand.doAdd(repository, addCandidates);
+                HgCommand.doAdd(repository, addCandidates, logger);
                 for (File f : addCandidates) {
-                    HgUtils.outputMercurialTab("hg add " + f.getName()); //NOI18N
+                    logger.output("hg add " + f.getName()); //NOI18N
                 }
             }
-            HgCommand.doCommit(repository, commitCandidates, message);
+            HgCommand.doCommit(repository, commitCandidates, message, logger);
             HgRepositoryContextCache.setHasHistory(ctx);
 
             if (commitCandidates.size() == 1) {
-                HgUtils.outputMercurialTab(
+                logger.output(
                         NbBundle.getMessage(CommitAction.class,
                         "MSG_COMMIT_INIT_SEP_ONE", commitCandidates.size(), prjName)); // NOI18N
             } else {
-                HgUtils.outputMercurialTab(
+                logger.output(
                         NbBundle.getMessage(CommitAction.class,
                         "MSG_COMMIT_INIT_SEP", commitCandidates.size(), prjName)); // NOI18N
             }
             for (File f : commitCandidates) {
-                HgUtils.outputMercurialTab("\t" + f.getAbsolutePath()); // NOI18N
+                logger.output("\t" + f.getAbsolutePath()); // NOI18N
             }
         } catch (HgException ex) {
             NotifyDescriptor.Exception e = new NotifyDescriptor.Exception(ex);
             DialogDisplayer.getDefault().notifyLater(e);
         } finally {
             cache.refreshCached(ctx);
-            HgUtils.outputMercurialTabInRed(NbBundle.getMessage(CommitAction.class, "MSG_COMMIT_DONE")); // NOI18N
-            HgUtils.outputMercurialTab(""); // NOI18N
+            logger.outputInRed(NbBundle.getMessage(CommitAction.class, "MSG_COMMIT_DONE")); // NOI18N
+            logger.output(""); // NOI18N
         }
     }
 }

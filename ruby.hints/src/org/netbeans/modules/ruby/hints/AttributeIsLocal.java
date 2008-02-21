@@ -40,9 +40,9 @@ import org.jruby.ast.MethodDefNode;
 import org.jruby.ast.Node;
 import org.jruby.ast.NodeTypes;
 import org.jruby.ast.types.INameNode;
-import org.netbeans.api.gsf.CompilationInfo;
-import org.netbeans.api.gsf.EditRegions;
-import org.netbeans.api.gsf.OffsetRange;
+import org.netbeans.fpi.gsf.CompilationInfo;
+import org.netbeans.fpi.gsf.EditRegions;
+import org.netbeans.fpi.gsf.OffsetRange;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.ruby.AstPath;
 import org.netbeans.modules.ruby.AstUtilities;
@@ -87,7 +87,7 @@ public class AttributeIsLocal implements AstRule {
     private Set<String> attributeNames;
 
     public boolean appliesTo(CompilationInfo info) {
-        RubyParseResult rpr = (RubyParseResult)info.getParserResult();
+        RubyParseResult rpr = AstUtilities.getParseResult(info);
         AnalysisResult ar = rpr.getStructure();
         this.attributes = ar.getAttributes();
 

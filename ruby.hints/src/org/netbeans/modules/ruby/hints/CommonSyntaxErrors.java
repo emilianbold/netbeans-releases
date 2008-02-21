@@ -32,9 +32,9 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import javax.swing.text.BadLocationException;
-import org.netbeans.api.gsf.CompilationInfo;
-import org.netbeans.api.gsf.Error;
-import org.netbeans.api.gsf.OffsetRange;
+import org.netbeans.fpi.gsf.CompilationInfo;
+import org.netbeans.fpi.gsf.Error;
+import org.netbeans.fpi.gsf.OffsetRange;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
 import org.netbeans.modules.ruby.hints.spi.Description;
@@ -44,6 +44,7 @@ import org.netbeans.modules.ruby.hints.spi.Fix;
 import org.netbeans.modules.ruby.hints.spi.HintSeverity;
 import org.netbeans.modules.ruby.hints.spi.PreviewableFix;
 import org.netbeans.modules.ruby.hints.spi.RuleContext;
+import org.netbeans.modules.ruby.lexer.LexUtilities;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
@@ -65,12 +66,16 @@ public class CommonSyntaxErrors implements ErrorRule {
         // See if it's a "begin"
         try {
             // TODO - if we get many codes, switch on these here!
-            BaseDocument doc = (BaseDocument) info.getDocument();
-            int offset = error.getStartPosition().getOffset();
-            if ((offset < doc.getLength()-"begin".length()) && // NOI18N
-                    "begin".equals(doc.getText(offset, "begin".length()))) { // NOI18N
-                OffsetRange range = new OffsetRange(offset-1, offset+"=begin".length());
-                Fix fix = new FixDocIndent(info, offset-1);
+            BaseDocument doc = context.doc;
+            int astOffset = error.getStartPosition();
+            int lexOffset = LexUtilities.getLexerOffset(info, astOffset);
+            if (lexOffset == -1) {
+                return;
+            }
+            if ((lexOffset < doc.getLength()-"begin".length()) && // NOI18N
+                    "begin".equals(doc.getText(lexOffset, "begin".length()))) { // NOI18N
+                OffsetRange range = new OffsetRange(lexOffset-1, lexOffset+"=begin".length());
+                Fix fix = new FixDocIndent(info, lexOffset-1);
                 List<Fix> fixList = Collections.singletonList(fix);
                 String displayName = NbBundle.getMessage(CommonSyntaxErrors.class, "DontIndentDocs");
                 Description desc = new Description(this, displayName, info.getFileObject(), range, fixList, 500);
@@ -78,8 +83,6 @@ public class CommonSyntaxErrors implements ErrorRule {
             }
         } catch (BadLocationException ex) {
             Exceptions.printStackTrace(ex);
-        } catch (IOException ioe) {
-            Exceptions.printStackTrace(ioe);
         }
     }
 

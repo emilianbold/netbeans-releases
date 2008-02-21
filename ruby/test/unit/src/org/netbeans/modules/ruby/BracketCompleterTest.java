@@ -45,8 +45,8 @@ import java.util.List;
 import javax.swing.JTextArea;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Caret;
-import org.netbeans.api.gsf.CompilationInfo;
-import org.netbeans.api.gsf.OffsetRange;
+import org.netbeans.fpi.gsf.CompilationInfo;
+import org.netbeans.fpi.gsf.OffsetRange;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
 import org.netbeans.lib.editor.util.swing.DocumentUtilities;
@@ -132,7 +132,7 @@ public class BracketCompleterTest extends RubyTestBase {
             int endPos = startPos+1;
 
             //ParserResult result = parse(fo);
-            formatter.reindent(doc, startPos, endPos, null);
+            formatter.reindent(doc, startPos, endPos);
             int indent = LexUtilities.getLineIndent(doc, insertOffset+1);
 
             //bc.afterBreak(doc, insertOffset, caret);
