@@ -79,7 +79,7 @@ public class CSSFormatter implements Formatter {
 //            editorFormatter.indentLock();
         try {
             int indentLevel = IndentUtils.indentLevelSize(document);
-            int lastLine = Utilities.getLineOffset(bdoc, endOffset);
+            int lastLine = Utilities.getLineOffset(bdoc, bdoc.getLength());
             int indents[] = new int[lastLine + 1];
             int indentShift[] = new int[lastLine + 1];
             boolean formattableLines[] = new boolean[lastLine + 1];
@@ -94,7 +94,7 @@ public class CSSFormatter implements Formatter {
 
             for (LanguagePath languagePath : (Set<LanguagePath>) th.languagePaths()) {
                 if (languagePath.innerLanguage() == CSSTokenId.language()) {
-                    for (TokenSequence ts : (List<TokenSequence>) th.tokenSequenceList(languagePath, startOffset, endOffset)) {
+                    for (TokenSequence ts : (List<TokenSequence>) th.tokenSequenceList(languagePath, 0, bdoc.getLength())) {
                         TextBounds tsBounds = findTokenSequenceBounds(bdoc, ts);
                         
                         if (tsBounds.getAbsoluteEnd() < startOffset || tsBounds.getAbsoluteStart() > endOffset){
@@ -252,7 +252,8 @@ public class CSSFormatter implements Formatter {
                         return new Token[]{t, t2};
                     }
                 }
-
+                
+                break;
             }
 
         }

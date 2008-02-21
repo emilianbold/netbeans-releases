@@ -168,6 +168,7 @@ public class JoinMainPanel extends JPanel {
             
             String nbBundle1 = mLoc.t("PRSR001: Select which tables you would like to join.");
             JLabel joinLabel = new JLabel(Localizer.parse(nbBundle1));
+            joinLabel.getAccessibleContext().setAccessibleName(Localizer.parse(nbBundle1));
 
             labelPnl.add(joinLabel, BorderLayout.NORTH);
             labelPnl.add(new JSeparator(), BorderLayout.SOUTH);
