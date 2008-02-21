@@ -306,9 +306,6 @@ public final class ModuleSystem {
      */
     final void deployTestModule(File jar) throws IOException {
         if (! jar.isAbsolute()) throw new IOException("Absolute paths only please"); // NOI18N
-        
-        Stamps.getModulesJARs().discardCaches();
-        
         mgr.mutexPrivileged().enterWriteAccess();
         ev.log(Events.START_DEPLOY_TEST_MODULE, jar);
         // For now, just print to stderr directly; could also go thru Events.

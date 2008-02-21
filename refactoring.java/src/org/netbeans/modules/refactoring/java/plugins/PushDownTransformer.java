@@ -41,6 +41,7 @@
 
 package org.netbeans.modules.refactoring.java.plugins;
 
+import javax.lang.model.util.Types;
 import org.netbeans.modules.refactoring.java.spi.RefactoringVisitor;
 import com.sun.source.tree.*;
 import com.sun.source.util.TreePath;
@@ -130,7 +131,8 @@ public class PushDownTransformer extends RefactoringVisitor {
         } else {
             //target type
             TypeMirror tm = el.asType();
-            if (workingCopy.getTypes().isSubtype(tm, p.asType())) {
+            Types types = workingCopy.getTypes();
+            if (types.isSubtype(types.erasure(tm), types.erasure(p.asType()))) {
                 for (int i = 0; i<members.length; i++) {
                     Element member = members[i].getElementHandle().resolve(workingCopy);
                     if (members[i].getGroup()==MemberInfo.Group.IMPLEMENTS) {

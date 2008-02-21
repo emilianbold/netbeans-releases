@@ -108,7 +108,7 @@ public class ViewWSDLAction extends NodeAction {
         if (saas == null) {
             throw new IllegalArgumentException("No nodes assoaciated WsdlSaas in lookup.");
         }
-        if (saas.getState() != Saas.State.RESOLVED) {
+        if (saas.getState() != Saas.State.RESOLVED && saas.getState() != Saas.State.READY) {
             throw new IllegalStateException("WsdlSaas is not in resolved state.");
         }
 

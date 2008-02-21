@@ -96,9 +96,13 @@ public class WebProjectDeployment extends org.netbeans.performance.test.utilitie
         
         log("App server started in "+(stop-start)+" ms");
         
-        new ProjectsTabOperator().invoke();
-        VWPUtilities.buildproject(targetProject);
+        ProjectsTabOperator.invoke();
+        VWPUtilities.verifyAndResolveMissingWebServer(targetProject, asName);
         VWPUtilities.waitForPendingBackgroundTasks();
+        
+        VWPUtilities.buildproject(targetProject);        
+        VWPUtilities.waitForPendingBackgroundTasks();
+        
     }
     
     public void prepare() {

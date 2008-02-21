@@ -41,7 +41,7 @@
 
 package org.netbeans.modules.ruby.hints.spi;
 
-import org.netbeans.api.gsf.CompilationInfo;
+import org.netbeans.fpi.gsf.CompilationInfo;
 
 /** Represents a rule to be run on the source.
  * Only contains the basic identification and UI properties of the rule. 

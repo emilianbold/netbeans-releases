@@ -910,17 +910,11 @@ public final class OpenProjectList {
             try {
                 ProjectOpenedTrampoline.DEFAULT.projectOpened(hook);
             } catch (RuntimeException e) {
-                boolean throwIt = false;
-                assert throwIt = true;
-                if (throwIt) { throw e; }
                 LOGGER.log(Level.WARNING, null, e);
                 // Do not try to call its close hook if its open hook already failed:
                 INSTANCE.openProjects.remove(p);
                 INSTANCE.removeModuleInfo(p);
             } catch (Error e) {
-                boolean throwIt = false;
-                assert throwIt = true;
-                if (throwIt) { throw e; }
                 LOGGER.log(Level.WARNING, null, e);
                 INSTANCE.openProjects.remove(p);
                 INSTANCE.removeModuleInfo(p);
@@ -935,14 +929,8 @@ public final class OpenProjectList {
             try {
                 ProjectOpenedTrampoline.DEFAULT.projectClosed(hook);
             } catch (RuntimeException e) {
-                boolean throwIt = false;
-                assert throwIt = true;
-                if (throwIt) { throw e; }
                 LOGGER.log(Level.WARNING, null, e);
             } catch (Error e) {
-                boolean throwIt = false;
-                assert throwIt = true;
-                if (throwIt) { throw e; }
                 LOGGER.log(Level.WARNING, null, e);
             }
         }

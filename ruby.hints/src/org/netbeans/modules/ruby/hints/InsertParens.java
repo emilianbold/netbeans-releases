@@ -32,9 +32,9 @@ import java.util.List;
 import java.util.Set;
 import org.jruby.ast.Node;
 import org.jruby.lexer.yacc.ISourcePosition;
-import org.netbeans.api.gsf.CompilationInfo;
-import org.netbeans.api.gsf.Error;
-import org.netbeans.api.gsf.OffsetRange;
+import org.netbeans.fpi.gsf.CompilationInfo;
+import org.netbeans.fpi.gsf.Error;
+import org.netbeans.fpi.gsf.OffsetRange;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.ruby.AstPath;
 import org.netbeans.modules.ruby.AstUtilities;
@@ -76,8 +76,8 @@ public class InsertParens implements ErrorRule {
 
         Node root = AstUtilities.getRoot(info);
         if (root != null) {
-            int offset = error.getStartPosition().getOffset();
-            AstPath path = new AstPath(root, offset);
+            int astOffset = error.getStartPosition();
+            AstPath path = new AstPath(root, astOffset);
             Node node = path.leaf();
             if (node != null) {
                 OffsetRange range = AstUtilities.getRange(node);
@@ -90,7 +90,7 @@ public class InsertParens implements ErrorRule {
                     callNode = node;
                 }
                 if (callNode != null) {
-                    Fix fix = new InsertParenFix(info, offset, callNode);
+                    Fix fix = new InsertParenFix(info, callNode);
                     List<Fix> fixList = Collections.singletonList(fix);
                     range = LexUtilities.getLexerOffsets(info, range);
                     if (range != OffsetRange.NONE) {
@@ -122,12 +122,10 @@ public class InsertParens implements ErrorRule {
     private static class InsertParenFix implements PreviewableFix {
 
         private final CompilationInfo info;
-        private final int offset;
         private final Node node;
 
-        InsertParenFix(CompilationInfo info, int offset, Node node) {
+        InsertParenFix(CompilationInfo info, Node node) {
             this.info = info;
-            this.offset = offset;
             this.node = node;
         }
 
@@ -150,7 +148,11 @@ public class InsertParens implements ErrorRule {
 
             // Insert parentheses
             assert AstUtilities.isCall(node);
-            OffsetRange range = AstUtilities.getCallRange(node);
+            OffsetRange astRange = AstUtilities.getCallRange(node);
+            OffsetRange range = LexUtilities.getLexerOffsets(info, astRange);
+            if (range == OffsetRange.NONE) {
+                return edits;
+            }
             int insertPos = range.getEnd();
             // Check if I should remove a space; e.g. replace "foo arg" with "foo(arg"
             if (Character.isWhitespace(doc.getText(insertPos, 1).charAt(0))) {

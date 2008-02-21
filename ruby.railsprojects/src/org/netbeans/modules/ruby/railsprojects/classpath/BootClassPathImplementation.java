@@ -42,9 +42,9 @@ package org.netbeans.modules.ruby.railsprojects.classpath;
 
 import java.beans.PropertyChangeEvent;
 import org.netbeans.api.ruby.platform.RubyInstallation;
-import org.netbeans.spi.gsfpath.classpath.ClassPathImplementation;
-import org.netbeans.spi.gsfpath.classpath.PathResourceImplementation;
-import org.netbeans.spi.gsfpath.classpath.support.ClassPathSupport;
+import org.netbeans.sfpi.gsfpath.classpath.ClassPathImplementation;
+import org.netbeans.sfpi.gsfpath.classpath.PathResourceImplementation;
+import org.netbeans.sfpi.gsfpath.classpath.support.ClassPathSupport;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.File;
@@ -62,6 +62,7 @@ import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 import org.netbeans.api.ruby.platform.RubyPlatform;
 import org.netbeans.api.ruby.platform.RubyPlatformProvider;
+import org.netbeans.modules.gsf.LanguageRegistry;
 import org.netbeans.modules.ruby.platform.gems.GemManager;
 import org.netbeans.modules.ruby.railsprojects.RailsProjectUtil;
 import org.netbeans.modules.ruby.spi.project.support.rake.PropertyEvaluator;
@@ -225,6 +226,11 @@ final class BootClassPathImplementation implements ClassPathImplementation, Prop
 
                     result.add(ClassPathSupport.createResource(url));
                 }
+            }
+            
+            // Additional libraries - such as the JavaScript ones
+            for (URL url : LanguageRegistry.getInstance().getLibraryUrls()) {
+                result.add(ClassPathSupport.createResource(url));
             }
             
             resourcesCache = Collections.unmodifiableList (result);
