@@ -229,7 +229,7 @@ public class GroupByView extends JPanel implements EnhancedCustomPropertyEditor 
             ConditionBuilderView builderView = ConditionBuilderUtil.getHavingConditionBuilderView(targetTable, editor);
 
             DialogDescriptor dd = new DialogDescriptor(builderView, "Having Condition", true, NotifyDescriptor.OK_CANCEL_OPTION, null, null);
-
+            
             if (DialogDisplayer.getDefault().notify(dd) == NotifyDescriptor.OK_OPTION) {
                 SQLCondition cond = (SQLCondition) builderView.getPropertyValue();
                 if (cond != null) {

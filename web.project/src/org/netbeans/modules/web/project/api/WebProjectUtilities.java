@@ -666,8 +666,19 @@ public class WebProjectUtilities {
         String serverType = deployment.getServerID(serverInstanceID);
         
         if (h.isSharableProject() && serverLibraryName != null) {
-            String libraryName = SharabilityUtilities.getPrefixedLibraryName(serverLibraryName);
-            ep.setProperty(WebProjectProperties.J2EE_PLATFORM_CLASSPATH, "${libs." + libraryName + ".classpath}"); //NOI18N
+            // TODO constants
+            ep.setProperty(WebProjectProperties.J2EE_PLATFORM_CLASSPATH,
+                    "${libs." + serverLibraryName + "." + "classpath" + "}"); //NOI18N
+            ep.setProperty(WebServicesConstants.J2EE_PLATFORM_WSCOMPILE_CLASSPATH,
+                        "${libs." + serverLibraryName + "." + "wscompile" + "}"); //NOI18N
+            ep.setProperty(WebServicesConstants.J2EE_PLATFORM_WSIMPORT_CLASSPATH,
+                        "${libs." + serverLibraryName + "." + "wsimport" + "}"); //NOI18N
+            ep.setProperty(WebServicesConstants.J2EE_PLATFORM_WSGEN_CLASSPATH,
+                        "${libs." + serverLibraryName + "." + "wsgenerate" + "}"); //NOI18N
+            ep.setProperty(WebServicesConstants.J2EE_PLATFORM_WSIT_CLASSPATH, 
+                        "${libs." + serverLibraryName + "." + "wsinterop" + "}"); //NOI18N
+            ep.setProperty(WebServicesConstants.J2EE_PLATFORM_JWSDP_CLASSPATH, 
+                        "${libs." + serverLibraryName + "." + "wsjwsdp" + "}"); //NOI18N
         }
         ep.setProperty(WebProjectProperties.J2EE_PLATFORM_SHARED,
                 Boolean.toString(h.isSharableProject() && serverLibraryName != null));
@@ -764,27 +775,39 @@ public class WebProjectUtilities {
         if (!h.isSharableProject() || serverLibraryName == null) {
             String classpath = Utils.toClasspathString(j2eePlatform.getClasspathEntries());
             ep.setProperty(WebProjectProperties.J2EE_PLATFORM_CLASSPATH, classpath);
-        }
-        
-        // set j2ee.platform.wscompile.classpath
-        if (j2eePlatform.isToolSupported(J2eePlatform.TOOL_WSCOMPILE)) {
-            File[] wsClasspath = j2eePlatform.getToolClasspathEntries(J2eePlatform.TOOL_WSCOMPILE);
-            ep.setProperty(WebServicesConstants.J2EE_PLATFORM_WSCOMPILE_CLASSPATH,
-                    Utils.toClasspathString(wsClasspath));
-        }
-        
-        // set j2ee.platform.wsimport.classpath
-        if (j2eePlatform.isToolSupported(J2eePlatform.TOOL_WSIMPORT)) {
-            File[] wsClasspath = j2eePlatform.getToolClasspathEntries(J2eePlatform.TOOL_WSIMPORT);
-            ep.setProperty(WebServicesConstants.J2EE_PLATFORM_WSIMPORT_CLASSPATH,
-                    Utils.toClasspathString(wsClasspath));
-        }
-        
-        // set j2ee.platform.wsgen.classpath
-        if (j2eePlatform.isToolSupported(J2eePlatform.TOOL_WSGEN)) {
-            File[] wsClasspath = j2eePlatform.getToolClasspathEntries(J2eePlatform.TOOL_WSGEN);
-            ep.setProperty(WebServicesConstants.J2EE_PLATFORM_WSGEN_CLASSPATH,
-                    Utils.toClasspathString(wsClasspath));
+
+            // set j2ee.platform.wscompile.classpath
+            if (j2eePlatform.isToolSupported(J2eePlatform.TOOL_WSCOMPILE)) {
+                File[] wsClasspath = j2eePlatform.getToolClasspathEntries(J2eePlatform.TOOL_WSCOMPILE);
+                ep.setProperty(WebServicesConstants.J2EE_PLATFORM_WSCOMPILE_CLASSPATH,
+                        Utils.toClasspathString(wsClasspath));
+            }
+
+            // set j2ee.platform.wsimport.classpath
+            if (j2eePlatform.isToolSupported(J2eePlatform.TOOL_WSIMPORT)) {
+                File[] wsClasspath = j2eePlatform.getToolClasspathEntries(J2eePlatform.TOOL_WSIMPORT);
+                ep.setProperty(WebServicesConstants.J2EE_PLATFORM_WSIMPORT_CLASSPATH,
+                        Utils.toClasspathString(wsClasspath));
+            }
+
+            // set j2ee.platform.wsgen.classpath
+            if (j2eePlatform.isToolSupported(J2eePlatform.TOOL_WSGEN)) {
+                File[] wsClasspath = j2eePlatform.getToolClasspathEntries(J2eePlatform.TOOL_WSGEN);
+                ep.setProperty(WebServicesConstants.J2EE_PLATFORM_WSGEN_CLASSPATH,
+                        Utils.toClasspathString(wsClasspath));
+            }
+            
+            if (j2eePlatform.isToolSupported(J2eePlatform.TOOL_WSIT)) {
+                File[] wsClasspath = j2eePlatform.getToolClasspathEntries(J2eePlatform.TOOL_WSIT);
+                ep.setProperty(WebServicesConstants.J2EE_PLATFORM_WSIT_CLASSPATH, 
+                        Utils.toClasspathString(wsClasspath));
+            }
+
+            if (j2eePlatform.isToolSupported(J2eePlatform.TOOL_JWSDP)) {
+                File[] wsClasspath = j2eePlatform.getToolClasspathEntries(J2eePlatform.TOOL_JWSDP);
+                ep.setProperty(WebServicesConstants.J2EE_PLATFORM_JWSDP_CLASSPATH, 
+                        Utils.toClasspathString(wsClasspath));
+            }           
         }
         
         // set j2ee.platform.jsr109 support

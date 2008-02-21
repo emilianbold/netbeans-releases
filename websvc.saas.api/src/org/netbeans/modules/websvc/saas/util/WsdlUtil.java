@@ -70,10 +70,10 @@ public class WsdlUtil {
         return null;
     }
     
-    public static WsdlData getWsdlDataAsynchronously(String url, String serviceName) {
+    public static WsdlData getWsdlData(String url, String serviceName, boolean synchronous) {
         WsdlDataManager manager = Lookup.getDefault().lookup(WsdlDataManager.class);
         if (manager != null) {
-            return manager.getWsdlData(url, serviceName, false);
+            return manager.getWsdlData(url, serviceName, synchronous);
         } 
         return null;
     }

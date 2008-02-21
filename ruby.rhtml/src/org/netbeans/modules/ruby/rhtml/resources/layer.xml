@@ -92,9 +92,6 @@
                     <attr name="instanceOf" stringvalue="org.netbeans.api.lexer.Language"/>
                 </file>
 
-<!--
-                <file name="org-netbeans-modules-gsfret-editor-semantic-HighlightsLayerFactoryImpl.instance" />
--->
                 <attr name="createDataObject" boolvalue="false"/>
                 <file name="language.nbs" url="RHTML.nbs">
                     <attr name="icon" stringvalue="org/netbeans/modules/ruby/rhtml/resources/rhtml16.gif"/>
@@ -216,56 +213,12 @@
         <folder name="application">
             <folder name="x-httpd-eruby">
                 <attr name="displayName" stringvalue="RHTML"/>
-                <!-- Use Schliemann instead of the custom GSF editor kit -->
                 <attr name="useCustomEditorKit" boolvalue="true"/>
                 
                 <file name="language.instance">
-                    <attr name="instanceOf" stringvalue="org.netbeans.api.gsf.GsfLanguage"/>
+                    <attr name="instanceOf" stringvalue="org.netbeans.fpi.gsf.GsfLanguage"/>
                     <attr name="instanceClass" stringvalue="org.netbeans.modules.ruby.rhtml.RhtmlLanguage"/>
                 </file>
-                
-                <file name="parser.instance">
-                    <attr name="instanceOf" stringvalue="org.netbeans.api.gsf.Parser"/>
-                    <attr name="instanceClass" stringvalue="org.netbeans.modules.ruby.rhtml.RhtmlParser"/>
-                </file>
-
-                <file name="renamer.instance">
-                    <attr name="instanceOf" stringvalue="org.netbeans.api.gsf.InstantRenamer"/>
-                    <attr name="instanceClass" stringvalue="org.netbeans.modules.ruby.RenameHandler"/>
-                </file>
-
-                <file name="completion.instance">
-                    <attr name="instanceOf" stringvalue="org.netbeans.api.gsf.Completable"/>
-                    <attr name="instanceClass" stringvalue="org.netbeans.modules.ruby.rhtml.RhtmlCompleter"/>
-                </file>
-                
-                <file name="declarationfinder.instance">
-                    <attr name="instanceOf" stringvalue="org.netbeans.api.gsf.DeclarationFinder"/>
-                    <attr name="instanceClass" stringvalue="org.netbeans.modules.ruby.rhtml.RhtmlFinder"/>
-                </file>
-                
-                <file name="bracket.instance">
-                    <attr name="instanceOf" stringvalue="org.netbeans.api.gsf.BracketCompletion"/>
-                    <attr name="instanceClass" stringvalue="org.netbeans.modules.ruby.BracketCompleter"/>
-                </file>
-                
-                <!--
-                Navigator handled by Schliemann
-                <file name="structure.instance">
-                    <attr name="instanceOf" stringvalue="org.netbeans.api.gsf.StructureScanner"/>
-                    <attr name="instanceClass" stringvalue="org.netbeans.modules.ruby.StructureAnalyzer"/>
-                </file>
-
-                Don't index rhtml files - there's usually nothing interesting (new classes, methods) there
-                <file name="indexer.instance">
-                    <attr name="instanceOf" stringvalue="org.netbeans.api.gsf.Indexer"/>
-                    <attr name="instanceClass" stringvalue="org.netbeans.modules.ruby.RubyIndexer"/>
-                </file>
-                <folder name="extensions">
-                    <file name="rhtml"/>
-                    <file name="erb"/>
-                </folder>
-                -->
             </folder>
         </folder>
     </folder>

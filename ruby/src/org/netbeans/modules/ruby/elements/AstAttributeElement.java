@@ -6,8 +6,8 @@ import org.jruby.ast.Node;
 
 import org.jruby.ast.SymbolNode;
 import org.jruby.ast.types.INameNode;
-import org.netbeans.api.gsf.ElementKind;
-import org.netbeans.api.gsf.Modifier;
+import org.netbeans.fpi.gsf.ElementKind;
+import org.netbeans.fpi.gsf.Modifier;
 
 
 public class AstAttributeElement extends AstElement {

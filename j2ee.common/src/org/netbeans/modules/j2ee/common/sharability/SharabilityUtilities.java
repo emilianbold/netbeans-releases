@@ -50,6 +50,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.project.libraries.LibraryManager;
+import org.netbeans.modules.j2ee.common.sharability.impl.ServerLibraryTypeProvider;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
 import org.netbeans.spi.project.libraries.support.LibrariesSupport;
@@ -68,8 +69,6 @@ public final class SharabilityUtilities {
     public static final String DEFAULT_LIBRARIES_FILENAME = "nblibraries.properties";
 
     private static final Logger LOGGER = Logger.getLogger(SharabilityUtilities.class.getName());
-
-    private static final String LIBRARY_PREFIX = "javaee_"; //NOI18N
 
     private SharabilityUtilities() {
         super();
@@ -96,7 +95,7 @@ public final class SharabilityUtilities {
 
         LibraryManager manager = LibraryManager.forLocation(URLMapper.findURL(
                 libraries, URLMapper.EXTERNAL));
-        return manager.getLibrary(LIBRARY_PREFIX + libraryName);
+        return manager.getLibrary(libraryName);
     }
 
     public static Library[] getLibraries(File location) {
@@ -111,7 +110,7 @@ public final class SharabilityUtilities {
                 libraries, URLMapper.EXTERNAL));
         List<Library> ret = new  ArrayList<Library>();
         for (Library lib : manager.getLibraries()) {
-            if (lib.getName().startsWith(LIBRARY_PREFIX)) {
+            if (lib.getType().equals(ServerLibraryTypeProvider.LIBRARY_TYPE)) {
                 ret.add(lib);
             }
         }
@@ -125,10 +124,19 @@ public final class SharabilityUtilities {
         if (platform == null) {
             throw new IOException("Server instance does not exist"); // NOI18N
         }
-        return createLibrary(location, libraryName, platform.getClasspathEntries());
+        return createLibrary(location, libraryName,
+                platform.getClasspathEntries(),
+                platform.getToolClasspathEntries(J2eePlatform.TOOL_WSCOMPILE),
+                platform.getToolClasspathEntries(J2eePlatform.TOOL_WSGEN),
+                platform.getToolClasspathEntries(J2eePlatform.TOOL_WSIMPORT),
+                platform.getToolClasspathEntries(J2eePlatform.TOOL_WSIT),
+                platform.getToolClasspathEntries(J2eePlatform.TOOL_JWSDP));
     }
 
-    public static Library createLibrary(File location, String libraryName, File[] files) throws IOException {
+    private static Library createLibrary(File location, String libraryName,
+            File[] platformFiles, File[] wsCompileFiles, File[] wsGenerateFiles,
+            File[] wsImportFiles, File[] wsInteropFiles, File[] wsJwsdpFiles) throws IOException {
+
         Parameters.notNull("location", location); // NOI18N
 
         FileObject libraries = FileUtil.toFileObject(FileUtil.normalizeFile(location));
@@ -140,28 +148,81 @@ public final class SharabilityUtilities {
 
         LibraryManager manager = LibraryManager.forLocation(url);
         Map<String, List<URL>> content = new HashMap<String, List<URL>>();
-        List<URL> classpath = new  ArrayList<URL>();
-        content.put("classpath", classpath); // NOI18N
 
         FileObject baseFolder = libraries.getParent();
         String folderName = getFolderName(baseFolder, libraryName);
         FileObject jarFolder = FileUtil.createFolder(baseFolder, folderName);
 
         Map<String, Integer> usedNames = new  HashMap<String, Integer>();
+        Map<File, String> copied = new  HashMap<File, String>();
+
+        List<URL> contentItem = new ArrayList<URL>();
+        content.put(ServerLibraryTypeProvider.VOLUME_CLASSPATH, contentItem); // NOI18N
+        copyFiles(copied, usedNames, jarFolder, folderName, platformFiles, contentItem);
+
+        contentItem = new  ArrayList<URL>();
+        content.put(ServerLibraryTypeProvider.VOLUME_WS_COMPILE_CLASSPATH, contentItem);
+        copyFiles(copied, usedNames, jarFolder, folderName, wsCompileFiles, contentItem);
+
+        contentItem = new  ArrayList<URL>();
+        content.put(ServerLibraryTypeProvider.VOLUME_WS_GENERATE_CLASSPATH, contentItem);
+        copyFiles(copied, usedNames, jarFolder, folderName, wsGenerateFiles, contentItem);
+
+        contentItem = new  ArrayList<URL>();
+        content.put(ServerLibraryTypeProvider.VOLUME_WS_IMPORT_CLASSPATH, contentItem);
+        copyFiles(copied, usedNames, jarFolder, folderName, wsImportFiles, contentItem);
+
+        contentItem = new  ArrayList<URL>();
+        content.put(ServerLibraryTypeProvider.VOLUME_WS_INTEROP_CLASSPATH, contentItem);
+        copyFiles(copied, usedNames, jarFolder, folderName, wsInteropFiles, contentItem);
+
+        contentItem = new  ArrayList<URL>();
+        content.put(ServerLibraryTypeProvider.VOLUME_WS_JWSDP_CLASSPATH, contentItem);
+        copyFiles(copied, usedNames, jarFolder, folderName, wsJwsdpFiles, contentItem);
+
+        return manager.createLibrary(ServerLibraryTypeProvider.LIBRARY_TYPE, libraryName, content); // NOI18N
+    }
+
+    private static void copyFiles(Map<File, String> copied, Map<String, Integer> usedNames, FileObject jarFolder, String folderName, File[] files, List<URL> content) throws IOException {
+        if (files == null) {
+            return;
+        }
+
         for (File jarFile : files) {
-            FileObject jarObject = FileUtil.toFileObject(FileUtil.normalizeFile(jarFile));
+            File normalized = FileUtil.normalizeFile(jarFile);
+            FileObject jarObject = FileUtil.toFileObject(normalized);
             if (jarObject != null) {
-                String name = jarObject.getName() + getEntrySuffix(jarObject.getNameExt(), usedNames);
-                FileUtil.copyFile(jarObject, jarFolder, name, jarObject.getExt());
+                if (!copied.containsKey(normalized)) {
+                    String name = jarObject.getName() + getEntrySuffix(jarObject.getNameExt(), usedNames);
+                    if (jarObject.isFolder()) {
+                        FileObject folder = FileUtil.createFolder(jarFolder, name);
+                        copyFolder(jarObject, folder);
+                    } else {
+                        FileUtil.copyFile(jarObject, jarFolder, name, jarObject.getExt());
+                    }
+                    copied.put(normalized, jarObject.getNameExt().replace(jarObject.getName(), name));
+                }
                 URL u = LibrariesSupport.convertFilePathToURL(folderName
-                        + File.separator + jarObject.getNameExt().replace(jarObject.getName(), name));
-                classpath.add(u);
+                        + File.separator + copied.get(normalized));
+                content.add(u);
             } else {
                 LOGGER.log(Level.INFO, "Could not find " + jarFile); // NOI18N
             }
         }
+    }
 
-        return manager.createLibrary("j2se", LIBRARY_PREFIX + libraryName, content); // NOI18N
+    private static void copyFolder(FileObject source, FileObject dest) throws IOException {
+        assert source.isFolder() : "Source is not a folder"; // NOI18N
+        assert dest.isFolder() : "Source is not a folder"; // NOI18N
+
+        for (FileObject child : source.getChildren()) {
+            if (child.isFolder()) {
+                FileObject created = FileUtil.createFolder(dest, child.getNameExt());
+                copyFolder(child, created);
+            } else {
+                FileUtil.copyFile(child, dest, child.getName(), child.getExt());
+            }
+        }
     }
 
     private static String getEntrySuffix(String realName, Map<String, Integer> usages) {
@@ -177,19 +238,6 @@ public final class SharabilityUtilities {
             return ""; // NOI18N
         }
         return "-" + value.toString();
-    }
-
-    public static String getDisplayLibraryName(String name) {
-        Parameters.notNull("name", name); // NOI18N
-        if (!name.startsWith(LIBRARY_PREFIX)) { // NOI18N
-            return null;
-        }
-        return name.substring(LIBRARY_PREFIX.length());
-    }
-
-    public static String getPrefixedLibraryName(String name) {
-        Parameters.notNull("name", name); // NOI18N
-        return LIBRARY_PREFIX + name;
     }
 
     private static String getFolderName(FileObject baseFolder, String libraryName) {
