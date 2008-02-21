@@ -88,7 +88,7 @@ public final class NewSpringXMLConfigWizardIterator implements WizardDescriptor.
 
             panels = new WizardDescriptor.Panel[]{
                 targetChooser,
-                new BeansConfigNamespacesWizardPanel(),
+                new SpringXMLConfigNamespacesPanel(),
             };
             String[] steps = createSteps();
             for (int i = 0; i < panels.length; i++) {
@@ -127,7 +127,7 @@ public final class NewSpringXMLConfigWizardIterator implements WizardDescriptor.
 
             public void run() throws IOException {
                 createdFile[0] = targetFolder.createData(targetName, Templates.getTemplate(wizard).getExt());
-                String[] incNamespaces = (String[]) wizard.getProperty(BeansConfigNamespacesWizardPanel.INCLUDED_NAMESPACES);
+                String[] incNamespaces = (String[]) wizard.getProperty(SpringXMLConfigNamespacesPanel.INCLUDED_NAMESPACES);
                 generateFileContents(createdFile[0], incNamespaces);
             }
         });
