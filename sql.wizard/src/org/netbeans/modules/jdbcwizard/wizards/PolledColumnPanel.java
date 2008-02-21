@@ -69,7 +69,7 @@ public class PolledColumnPanel extends JPanel implements JDBCTableColumnDisplaya
             this.setDefaultRenderer(Boolean.class, new MyBooleanRenderer());
             final JTableHeader header = this.getTableHeader();
             header.setReorderingAllowed(false);
-            header.setResizingAllowed(false);
+            header.setResizingAllowed(true);
         }
     }
 
@@ -488,7 +488,7 @@ public class PolledColumnPanel extends JPanel implements JDBCTableColumnDisplaya
         this.metaDataTColumn.setModel(myMod);
         // set checkbox column size
         final TableColumn column = this.metaDataTColumn.getColumnModel().getColumn(0);
-        column.setResizable(false);
+        column.setResizable(true);
         column.setMinWidth(40);
         column.setPreferredWidth(80);
         column.setMaxWidth(120);
@@ -506,7 +506,7 @@ public class PolledColumnPanel extends JPanel implements JDBCTableColumnDisplaya
         this.setMaximumSize(new Dimension(150, 150));
         // set checkbox column size
         final TableColumn column = this.metaDataTColumn.getColumnModel().getColumn(0);
-        column.setResizable(false);
+        column.setResizable(true);
         column.setMinWidth(40);
         column.setPreferredWidth(80);
         column.setMaxWidth(120);
