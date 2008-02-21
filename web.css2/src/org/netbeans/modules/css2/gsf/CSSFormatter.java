@@ -252,7 +252,8 @@ public class CSSFormatter implements Formatter {
                         return new Token[]{t, t2};
                     }
                 }
-
+                
+                break;
             }
 
         }

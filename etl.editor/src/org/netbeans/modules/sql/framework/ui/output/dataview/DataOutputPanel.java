@@ -296,6 +296,7 @@ public abstract class DataOutputPanel extends JPanel implements ETLOutputPanel {
 
         String nbBundle8 = mLoc.t("PRSR001: Total Rows:");
         JLabel totalRowsNameLabel = new JLabel(Localizer.parse(nbBundle8));
+        totalRowsNameLabel.getAccessibleContext().setAccessibleName(Localizer.parse(nbBundle8));
         totalRowsNameLabel.setBorder(BorderFactory.createEmptyBorder(0, 5, 0, 8));
         toolbar.add(totalRowsNameLabel);
         totalRowsLabel = new JLabel();
@@ -663,14 +664,18 @@ public abstract class DataOutputPanel extends JPanel implements ETLOutputPanel {
         GridBagConstraints c = new GridBagConstraints();
         panel.setLayout(gl);
 
-        JLabel label = new JLabel("Field Name");
+        String nbBundle52 = mLoc.t("PRSR001: Field Name");
+        JLabel label = new JLabel(Localizer.parse(nbBundle52));
+        label.getAccessibleContext().setAccessibleName(Localizer.parse(nbBundle52));
         label.setForeground(Color.RED);
         c.weightx = 0.35;
         c.gridwidth = GridBagConstraints.RELATIVE;
         c.fill = GridBagConstraints.HORIZONTAL;
         panel.add(label, c);
 
-        label = new JLabel("Field Value");
+        String nbBundle53 = mLoc.t("PRSR001: Field Value");
+        label = new JLabel(Localizer.parse(nbBundle53));
+        label.getAccessibleContext().setAccessibleName(Localizer.parse(nbBundle53));
         label.setForeground(Color.RED);
         c.weightx = 0.65;
         c.gridwidth = GridBagConstraints.REMAINDER;
