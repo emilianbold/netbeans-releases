@@ -131,14 +131,14 @@ public class HibernateCfgDataObject extends XmlMultiViewDataObject {
                 try {
                     newConfiguration = HibernateConfiguration.createGraph(is);
                 } catch (RuntimeException ex) { // must catch RTE (thrown by schema2beans when document is not valid)
-                    ErrorManager.getDefault().notify(org.openide.ErrorManager.INFORMATIONAL, ex);
+                    //ErrorManager.getDefault().notify(org.openide.ErrorManager.INFORMATIONAL, ex);
                     return false;
                 }
                 if (newConfiguration != null) {
                     try {
                         configuration.merge(newConfiguration, BaseBean.MERGE_UPDATE);
                     } catch (IllegalArgumentException iae) {
-                        ErrorManager.getDefault().notify(org.openide.ErrorManager.INFORMATIONAL, iae);
+                        //ErrorManager.getDefault().notify(org.openide.ErrorManager.INFORMATIONAL, iae);
                         return false;
                     }
                 }

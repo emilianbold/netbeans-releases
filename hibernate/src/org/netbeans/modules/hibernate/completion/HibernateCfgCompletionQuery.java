@@ -92,6 +92,9 @@ public class HibernateCfgCompletionQuery extends AsyncCompletionQuery {
             case TAG:
                 HibernateCfgCompletionManager.getDefault().completeElements(resultSet, context);
                 break;
+            case VALUE:
+                HibernateCfgCompletionManager.getDefault().completeValues(resultSet, context);
+                break;
             }
 
         

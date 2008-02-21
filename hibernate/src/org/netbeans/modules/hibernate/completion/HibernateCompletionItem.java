@@ -57,19 +57,12 @@ import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import javax.swing.text.Position;
 import org.netbeans.api.editor.EditorRegistry;
-import org.netbeans.api.java.project.JavaProjectConstants;
-import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.Task;
-import org.netbeans.api.project.FileOwnerQuery;
-import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ProjectUtils;
-import org.netbeans.api.project.SourceGroup;
 import org.netbeans.editor.BaseDocument;
-import org.netbeans.modules.editor.NbEditorUtilities;
 import org.netbeans.spi.editor.completion.CompletionDocumentation;
 import org.netbeans.spi.editor.completion.CompletionItem;
 import org.netbeans.spi.editor.completion.CompletionResultSet;
@@ -77,7 +70,6 @@ import org.netbeans.spi.editor.completion.CompletionTask;
 import org.netbeans.spi.editor.completion.support.AsyncCompletionQuery;
 import org.netbeans.spi.editor.completion.support.AsyncCompletionTask;
 import org.netbeans.spi.editor.completion.support.CompletionUtilities;
-import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
 import org.openide.util.Utilities;
 
@@ -85,41 +77,111 @@ import org.openide.util.Utilities;
  *
  * @author Dongmei Cao
  */
-public abstract class HibernateMappingCompletionItem implements CompletionItem {
+public abstract class HibernateCompletionItem implements CompletionItem {
 
-    public static HibernateMappingCompletionItem createAttribValueItem(int substitutionOffset, String displayText, String docText) {
+    /**
+     * Creates items for completing static attribute values
+     * 
+     * @param substitutionOffset
+     * @param displayText
+     * @param docText
+     * @return
+     */
+    public static HibernateCompletionItem createAttribValueItem(int substitutionOffset, String displayText, String docText) {
         return new AttribValueItem(substitutionOffset, displayText, docText);
     }
 
-    public static HibernateMappingCompletionItem createPackageItem(int substitutionOffset, String packageName,
+    /**
+     * Creates items for completing package names
+     * 
+     * @param substitutionOffset
+     * @param packageName
+     * @param deprecated
+     * @return
+     */
+    public static HibernateCompletionItem createPackageItem(int substitutionOffset, String packageName,
             boolean deprecated) {
         return new PackageItem(substitutionOffset, packageName, deprecated);
     }
 
-    public static HibernateMappingCompletionItem createTypeItem(int substitutionOffset, TypeElement elem, ElementHandle<TypeElement> elemHandle,
+    /**
+     * Creates items for completing 
+     * 
+     * @param substitutionOffset
+     * @param elem
+     * @param elemHandle
+     * @param deprecated
+     * @param smartItem
+     * @return
+     */
+          
+    public static HibernateCompletionItem createTypeItem(int substitutionOffset, TypeElement elem, ElementHandle<TypeElement> elemHandle,
             boolean deprecated, boolean smartItem) {
         return new ClassItem(substitutionOffset, elem, elemHandle, deprecated, smartItem);
     }
 
-    public static HibernateMappingCompletionItem createClassPropertyItem(int substitutionOffset, VariableElement variableElem, ElementHandle<VariableElement> elemHandle, boolean deprecated) {
+    /**
+     * Creates items for completing class properties/fields
+     * 
+     * @param substitutionOffset
+     * @param variableElem
+     * @param elemHandle
+     * @param deprecated
+     * @return
+     */
+    public static HibernateCompletionItem createClassPropertyItem(int substitutionOffset, VariableElement variableElem, ElementHandle<VariableElement> elemHandle, boolean deprecated) {
         return new ClassPropertyItem(substitutionOffset, variableElem, elemHandle, deprecated);
     }
 
-    public static HibernateMappingCompletionItem createDatabaseTableItem(int substitutionOffset, String name) {
+    /**
+     * Creates items for completing database table names
+     * 
+     * @param substitutionOffset
+     * @param name
+     * @return
+     */
+    public static HibernateCompletionItem createDatabaseTableItem(int substitutionOffset, String name) {
         return new DatabaseTableItem(substitutionOffset, name);
     }
 
-    public static HibernateMappingCompletionItem createDatabaseColumnItem(int substitutionOffset, String name, boolean pk) {
+    /**
+     * Creates items for completing database table column names
+     * 
+     * @param substitutionOffset
+     * @param name
+     * @param pk
+     * @return
+     */
+    public static HibernateCompletionItem createDatabaseColumnItem(int substitutionOffset, String name, boolean pk) {
         return new DatabaseColumnItem(substitutionOffset, name, pk);
     }
-    
-    public static HibernateMappingCompletionItem createCascadeStyleItem(int substitutionOffset, String displayText, String docText) {
+
+    /**
+     * Creates items for completing database cascade styles
+     * 
+     * @param substitutionOffset
+     * @param displayText
+     * @param docText
+     * @return
+     */
+    public static HibernateCompletionItem createCascadeStyleItem(int substitutionOffset, String displayText, String docText) {
         return new CascadeStyleItem(substitutionOffset, displayText, docText);
     }
-    
+
+    /**
+     * Creates items for completing Hibernate mapping files
+     * 
+     * @param substitutionOffset
+     * @param displayText
+     * @return
+     */
+    public static HibernateCompletionItem createHbMappingFileItem(int substitutionOffset, String displayText) {
+        return new HbMappingFileItem(substitutionOffset, displayText);
+    }
+
     protected int substitutionOffset;
 
-    protected HibernateMappingCompletionItem(int substitutionOffset) {
+    protected HibernateCompletionItem(int substitutionOffset) {
         this.substitutionOffset = substitutionOffset;
     }
 
@@ -146,7 +208,7 @@ public abstract class HibernateMappingCompletionItem implements CompletionItem {
             doc.remove(offset, len);
             doc.insertString(position.getOffset(), text.toString(), null);
         } catch (BadLocationException ble) {
-        // nothing can be done to update
+            // nothing can be done to update
         } finally {
             doc.atomicUnlock();
         }
@@ -157,7 +219,6 @@ public abstract class HibernateMappingCompletionItem implements CompletionItem {
     }
 
     public void processKeyEvent(KeyEvent evt) {
-
     }
 
     public int getPreferredWidth(Graphics g, Font defaultFont) {
@@ -202,7 +263,7 @@ public abstract class HibernateMappingCompletionItem implements CompletionItem {
      * Heavily derived from Java Editor module's JavaCompletionItem class
      * 
      */
-    private static class ClassPropertyItem extends HibernateMappingCompletionItem {
+    private static class ClassPropertyItem extends HibernateCompletionItem {
 
         private static final String FIELD_ICON = "org/netbeans/modules/editor/resources/completion/field_16.png"; //NOI18N
         private ElementHandle<VariableElement> elemHandle;
@@ -260,7 +321,7 @@ public abstract class HibernateMappingCompletionItem implements CompletionItem {
                                 if (element == null) {
                                     return;
                                 }
-                                HibernateMappingCompletionDocumentation doc = HibernateMappingCompletionDocumentation.createJavaDoc(cc, element);
+                                HibernateCompletionDocumentation doc = HibernateCompletionDocumentation.createJavaDoc(cc, element);
                                 resultSet.setDocumentation(doc);
                             }
                         }, false);
@@ -284,7 +345,7 @@ public abstract class HibernateMappingCompletionItem implements CompletionItem {
      * Heavily derived from Java Editor module's JavaCompletionItem class
      * 
      */
-    private static class ClassItem extends HibernateMappingCompletionItem {
+    private static class ClassItem extends HibernateCompletionItem {
 
         private static final String CLASS = "org/netbeans/modules/editor/resources/completion/class_16.png"; //NOI18N
         private static final String CLASS_COLOR = "<font color=#560000>"; //NOI18N
@@ -396,7 +457,7 @@ public abstract class HibernateMappingCompletionItem implements CompletionItem {
                                 if (element == null) {
                                     return;
                                 }
-                                HibernateMappingCompletionDocumentation doc = HibernateMappingCompletionDocumentation.createJavaDoc(cc, element);
+                                HibernateCompletionDocumentation doc = HibernateCompletionDocumentation.createJavaDoc(cc, element);
                                 resultSet.setDocumentation(doc);
                             }
                         }, false);
@@ -409,7 +470,7 @@ public abstract class HibernateMappingCompletionItem implements CompletionItem {
         }
     }
 
-    private static class PackageItem extends HibernateMappingCompletionItem {
+    private static class PackageItem extends HibernateCompletionItem {
 
         private static final String PACKAGE = "org/netbeans/modules/java/editor/resources/package.gif"; // NOI18N
         private static final String PACKAGE_COLOR = "<font color=#005600>"; //NOI18N
@@ -480,7 +541,7 @@ public abstract class HibernateMappingCompletionItem implements CompletionItem {
         }
     }
 
-    private static class AttribValueItem extends HibernateMappingCompletionItem {
+    private static class AttribValueItem extends HibernateCompletionItem {
 
         private String displayText;
         private String docText;
@@ -515,7 +576,7 @@ public abstract class HibernateMappingCompletionItem implements CompletionItem {
                 @Override
                 protected void query(CompletionResultSet resultSet, Document doc, int caretOffset) {
                     if (docText != null) {
-                        CompletionDocumentation documentation = HibernateMappingCompletionDocumentation.getAttribValueDoc(docText);
+                        CompletionDocumentation documentation = HibernateCompletionDocumentation.getAttribValueDoc(docText);
                         resultSet.setDocumentation(documentation);
                     }
                     resultSet.finish();
@@ -524,7 +585,7 @@ public abstract class HibernateMappingCompletionItem implements CompletionItem {
         }
     }
 
-    private static class DatabaseTableItem extends HibernateMappingCompletionItem {
+    private static class DatabaseTableItem extends HibernateCompletionItem {
 
         private static final String TABLE_ICON = "org/netbeans/modules/hibernate/resources/completion/table.gif"; //NOI18N
         private String displayText;
@@ -556,8 +617,8 @@ public abstract class HibernateMappingCompletionItem implements CompletionItem {
             return new ImageIcon(Utilities.loadImage(TABLE_ICON));
         }
     }
-    
-    private static class DatabaseColumnItem extends HibernateMappingCompletionItem {
+
+    private static class DatabaseColumnItem extends HibernateCompletionItem {
 
         private static final String COLUMN_ICON = "org/netbeans/modules/hibernate/resources/completion/column.gif"; //NOI18N
         private static final String PK_COLUMN_ICON = "org/netbeans/modules/hibernate/resources/completion/columnPrimary.gif"; //NOI18N
@@ -571,10 +632,11 @@ public abstract class HibernateMappingCompletionItem implements CompletionItem {
         }
 
         public int getSortPriority() {
-            if( pk )
+            if (pk) {
                 return 1;
-            else
+            } else {
                 return 5;
+            }
         }
 
         public CharSequence getSortText() {
@@ -592,14 +654,15 @@ public abstract class HibernateMappingCompletionItem implements CompletionItem {
 
         @Override
         protected ImageIcon getIcon() {
-            if( pk )
+            if (pk) {
                 return new ImageIcon(Utilities.loadImage(PK_COLUMN_ICON));
-            else
+            } else {
                 return new ImageIcon(Utilities.loadImage(COLUMN_ICON));
+            }
         }
     }
-    
-        private static class CascadeStyleItem extends HibernateMappingCompletionItem {
+
+    private static class CascadeStyleItem extends HibernateCompletionItem {
 
         private String displayText;
         private String docText;
@@ -626,7 +689,7 @@ public abstract class HibernateMappingCompletionItem implements CompletionItem {
         protected String getLeftHtmlText() {
             return displayText;
         }
-        
+
         @Override
         public void processKeyEvent(KeyEvent evt) {
             if (evt.getID() == KeyEvent.KEY_TYPED) {
@@ -648,12 +711,45 @@ public abstract class HibernateMappingCompletionItem implements CompletionItem {
                 @Override
                 protected void query(CompletionResultSet resultSet, Document doc, int caretOffset) {
                     if (docText != null) {
-                        CompletionDocumentation documentation = HibernateMappingCompletionDocumentation.getAttribValueDoc(docText);
+                        CompletionDocumentation documentation = HibernateCompletionDocumentation.getAttribValueDoc(docText);
                         resultSet.setDocumentation(documentation);
                     }
                     resultSet.finish();
                 }
             });
+        }
+    }
+
+    private static class HbMappingFileItem extends HibernateCompletionItem {
+
+        private static final String HB_MAPPING_ICON = "org/netbeans/modules/hibernate/resources/hibernateMapping.gif"; //NOI18N
+        private String displayText;
+
+        public HbMappingFileItem(int substitutionOffset, String displayText) {
+            super(substitutionOffset);
+            this.displayText = displayText;
+        }
+
+        public int getSortPriority() {
+            return 100;
+        }
+
+        public CharSequence getSortText() {
+            return displayText;
+        }
+
+        public CharSequence getInsertPrefix() {
+            return displayText;
+        }
+
+        @Override
+        protected String getLeftHtmlText() {
+            return displayText;
+        }
+
+        @Override
+        protected ImageIcon getIcon() {
+            return new ImageIcon(Utilities.loadImage(HB_MAPPING_ICON));
         }
     }
 

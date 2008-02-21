@@ -52,13 +52,13 @@ import org.netbeans.spi.editor.completion.CompletionDocumentation;
  *
  * 
  */
-public abstract class HibernateMappingCompletionDocumentation implements CompletionDocumentation {
+public abstract class HibernateCompletionDocumentation implements CompletionDocumentation {
 
-    public static HibernateMappingCompletionDocumentation getAttribValueDoc(String text) {
+    public static HibernateCompletionDocumentation getAttribValueDoc(String text) {
         return new AttribValueDoc(text);
     }
     
-     public static HibernateMappingCompletionDocumentation createJavaDoc(CompilationController cc, Element element) {
+     public static HibernateCompletionDocumentation createJavaDoc(CompilationController cc, Element element) {
         return new JavaElementDoc(ElementJavadoc.create(cc, element));
     }
     
@@ -76,7 +76,7 @@ public abstract class HibernateMappingCompletionDocumentation implements Complet
     
     
     
-    private static class AttribValueDoc extends HibernateMappingCompletionDocumentation {
+    private static class AttribValueDoc extends HibernateCompletionDocumentation {
 
         private String text;
 
@@ -89,7 +89,7 @@ public abstract class HibernateMappingCompletionDocumentation implements Complet
         }
     }
     
-    private static class JavaElementDoc extends HibernateMappingCompletionDocumentation {
+    private static class JavaElementDoc extends HibernateCompletionDocumentation {
 
         private ElementJavadoc elementJavadoc;
 
