@@ -44,16 +44,16 @@ package org.netbeans.modules.ruby;
 import java.util.List;
 import junit.framework.TestCase;
 import org.jruby.ast.Node;
-import org.netbeans.api.gsf.CompilationInfo;
-import org.netbeans.api.gsf.ElementHandle;
-import org.netbeans.api.gsf.OccurrencesFinder;
-import org.netbeans.api.gsf.OffsetRange;
-import org.netbeans.api.gsf.ParseListener;
-import org.netbeans.api.gsf.ParserFile;
-import org.netbeans.api.gsf.ParserResult;
-import org.netbeans.api.gsf.PositionManager;
-import org.netbeans.api.gsf.SemanticAnalyzer;
-import org.netbeans.api.gsf.SourceFileReader;
+import org.netbeans.fpi.gsf.CompilationInfo;
+import org.netbeans.fpi.gsf.ElementHandle;
+import org.netbeans.fpi.gsf.OccurrencesFinder;
+import org.netbeans.fpi.gsf.OffsetRange;
+import org.netbeans.fpi.gsf.ParseListener;
+import org.netbeans.fpi.gsf.ParserFile;
+import org.netbeans.fpi.gsf.ParserResult;
+import org.netbeans.fpi.gsf.PositionManager;
+import org.netbeans.fpi.gsf.SemanticAnalyzer;
+import org.netbeans.fpi.gsf.SourceFileReader;
 import org.netbeans.modules.ruby.RubyParser.Sanitize;
 
 /**
@@ -96,7 +96,7 @@ public class RubyParserTest extends RubyTestBase {
         
         // Ensure that we find the node we're looking for
         if (nodeName != null) {
-            RubyParseResult rpr = (RubyParseResult)info.getParserResult();
+            RubyParseResult rpr = AstUtilities.getParseResult(info);
             OffsetRange range = rpr.getSanitizedRange();
             if (range.containsInclusive(caretOffset)) {
                 caretOffset = range.getStart();

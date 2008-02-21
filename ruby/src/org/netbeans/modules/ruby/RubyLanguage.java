@@ -40,11 +40,19 @@
  */
 package org.netbeans.modules.ruby;
 
-import org.netbeans.api.gsf.GsfLanguage;
+import java.util.Collection;
+import java.util.Collections;
+import org.netbeans.fpi.gsf.GsfLanguage;
 import org.netbeans.api.lexer.Language;
 import org.netbeans.modules.ruby.lexer.RubyTokenId;
 
 
+/*
+ * Language/lexing configuration for Ruby
+ *
+ * @author Tor Norbye
+ */
+import org.openide.filesystems.FileObject;
 /*
  * Language/lexing configuration for Ruby
  *
@@ -64,5 +72,9 @@ public class RubyLanguage implements GsfLanguage {
 
     public Language getLexerLanguage() {
         return RubyTokenId.language();
+    }
+
+    public Collection<FileObject> getCoreLibraries() {
+        return Collections.emptyList();
     }
 }

@@ -49,13 +49,13 @@ import java.util.regex.Pattern;
 
 import javax.swing.text.BadLocationException;
 
-import org.netbeans.api.gsf.CancellableTask;
-import org.netbeans.api.gsf.CompilationInfo;
-import org.netbeans.api.gsf.DeclarationFinder.DeclarationLocation;
-import org.netbeans.api.gsf.Index.SearchScope;
-import org.netbeans.api.gsf.NameKind;
-import org.netbeans.api.gsf.SourceModel;
-import org.netbeans.api.gsf.SourceModelFactory;
+import org.netbeans.fpi.gsf.CancellableTask;
+import org.netbeans.fpi.gsf.CompilationInfo;
+import org.netbeans.fpi.gsf.DeclarationFinder.DeclarationLocation;
+import org.netbeans.fpi.gsf.Index.SearchScope;
+import org.netbeans.fpi.gsf.NameKind;
+import org.netbeans.fpi.gsf.SourceModel;
+import org.netbeans.fpi.gsf.SourceModelFactory;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.ruby.platform.RubyInstallation;
@@ -64,6 +64,7 @@ import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
 import org.netbeans.modules.ruby.AstUtilities;
 import org.netbeans.modules.ruby.RubyIndex;
+import org.netbeans.modules.ruby.RubyMimeResolver;
 import org.netbeans.modules.ruby.RubyUtils;
 import org.netbeans.modules.ruby.elements.IndexedClass;
 import org.netbeans.modules.ruby.platform.gems.GemManager;
@@ -418,7 +419,7 @@ public class GotoTest implements TestLocator {
                         // to pick a corresponding test method!
                         // MethodDefNode method = AstUtilities.findMethodAtOffset(root, endOffset);
                         if (cls != null) {
-                            RubyIndex index = RubyIndex.get(info.getIndex());
+                            RubyIndex index = RubyIndex.get(info.getIndex(RubyMimeResolver.RUBY_MIME_TYPE));
 
                             if (index != null) {
                                 String className = AstUtilities.getClassOrModuleName(cls);

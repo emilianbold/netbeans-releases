@@ -25,15 +25,15 @@
             </folder>
             <folder name="Web">
                 <file name="FacebookAuthenticator.java" 
-                      url="/org/netbeans/modules/websvc/saas/services/facebook/resources/desktop/FacebookAuthenticator.template">
+                      url="/org/netbeans/modules/websvc/saas/services/facebook/resources/web/FacebookAuthenticator.template">
                     <attr name="position" intvalue="0"/>
                 </file>
                 <file name="FacebookLogin.java" 
-                      url="/org/netbeans/modules/websvc/saas/services/facebook/resources/desktop/FacebookLogin.template">
+                      url="/org/netbeans/modules/websvc/saas/services/facebook/resources/web/FacebookLogin.template">
                     <attr name="position" intvalue="0"/>
                 </file>
                 <file name="FacebookCallback.java" 
-                      url="/org/netbeans/modules/websvc/saas/services/facebook/resources/desktop/FacebookCallback.template">
+                      url="/org/netbeans/modules/websvc/saas/services/facebook/resources/web/FacebookCallback.template">
                     <attr name="position" intvalue="0"/>
                 </file>
             </folder>

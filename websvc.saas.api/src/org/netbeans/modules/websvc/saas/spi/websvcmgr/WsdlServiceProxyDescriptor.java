@@ -51,8 +51,19 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlService;
+import org.netbeans.modules.websvc.saas.model.SaasServicesModel;
 
 /**
+ * **** NOTE **** (nam):
+ * 
+ * This is legacy class from webservice manager.  The main data here
+ * are JarEntry attributes which should be stored in //saas-metadata/codegen.
+ * #add/getConsumerData is also important and harder to translate into 
+ * saas-services.xml.
+ * 
+ * Try to avoid additional dependencies on this, as this will eventually go
+ * away.
+ * 
  * Metadata descriptor that contains the information for a single web service.
  * This metadata is associated (one-to-one) with a proxy jar.
  * 
@@ -61,16 +72,14 @@ import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlService;
 public class WsdlServiceProxyDescriptor {
     public static final int JAX_RPC_TYPE = 0;
     public static final int JAX_WS_TYPE = 1;
-    public static final String WEBSVC_HOME = System.getProperty("netbeans.user") + 
-            File.separator + "config" + File.separator + "WebServices"; // NOI18N
-    
+    public static final String WEBSVC_HOME = SaasServicesModel.WEBSVC_HOME;
     
     private String name;
     private String packageName;
     private int wsType;
     private String wsdl;
     private String xmlDescriptor;
-    private WsdlService model;
+    transient private WsdlService model;
     private List<JarEntry> jars;
     private Map<String, Object> consumerData;
     

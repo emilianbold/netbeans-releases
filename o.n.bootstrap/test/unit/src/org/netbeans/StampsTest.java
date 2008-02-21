@@ -138,8 +138,7 @@ public class StampsTest extends NbTestCase {
         
         CountingSecurityManager.assertCounts("Just two accesses to cache", 2);
         assertEquals("Stamps are the same", stamp, newStamp2);
-        
-    }
+    }        
 
     public void testWriteToCache() throws Exception {
         final Stamps s = Stamps.getModulesJARs();
@@ -178,6 +177,11 @@ public class StampsTest extends NbTestCase {
         assertEquals("10 bytes stream", 10, is.available());
         is.close();
         bb.clear();
+
+        s.discardCaches();
+        
+        assertNull(s.asByteBuffer("mycache.dat"));
+        assertNull(s.asStream("mycache.dat"));
     }
     
     public void testAppendToCache() throws Exception {

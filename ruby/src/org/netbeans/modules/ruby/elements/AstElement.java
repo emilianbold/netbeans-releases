@@ -64,11 +64,11 @@ import org.jruby.ast.Node;
 import org.jruby.ast.NodeTypes;
 import org.jruby.ast.SClassNode;
 import org.jruby.ast.SymbolNode;
-import org.netbeans.api.gsf.Element;
-import org.netbeans.api.gsf.ElementKind;
-import org.netbeans.api.gsf.ElementKind;
-import org.netbeans.api.gsf.Modifier;
-import org.netbeans.api.gsf.Modifier;
+import org.netbeans.modules.ruby.elements.Element;
+import org.netbeans.fpi.gsf.ElementKind;
+import org.netbeans.fpi.gsf.ElementKind;
+import org.netbeans.fpi.gsf.Modifier;
+import org.netbeans.fpi.gsf.Modifier;
 
 
 /**
