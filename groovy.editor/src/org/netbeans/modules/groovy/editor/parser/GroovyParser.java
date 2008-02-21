@@ -662,7 +662,7 @@ public class GroovyParser implements Parser {
         return null;
     }
 
-    private static class GroovyElementHandle extends ElementHandle {
+    private static class GroovyElementHandle implements ElementHandle {
         private final ASTNode root;
         private final Element object;
         private final FileObject fileObject;
@@ -686,27 +686,22 @@ public class GroovyParser implements Parser {
             return fileObject;
         }
 
-        @Override
         public String getMimeType() {
             return "text/x-groovy";
         }
 
-        @Override
         public String getName() {
             return object.getName();
         }
 
-        @Override
         public String getIn() {
             return object.getIn();
         }
 
-        @Override
         public ElementKind getKind() {
             return object.getKind();
         }
 
-        @Override
         public Set<Modifier> getModifiers() {
             return object.getModifiers();
         }

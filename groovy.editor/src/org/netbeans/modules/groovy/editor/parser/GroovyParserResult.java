@@ -69,11 +69,6 @@ public class GroovyParserResult extends ParserResult {
         this.ast = ast;
     }
 
-    @Override
-    public ElementHandle getRoot() {
-        return GroovyParser.createHandle(this, rootElement);
-    }
-
     public AstRootElement getRootElement() {
         return rootElement;
     }
