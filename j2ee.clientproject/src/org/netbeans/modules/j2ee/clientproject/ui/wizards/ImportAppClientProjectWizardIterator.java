@@ -77,14 +77,14 @@ public class ImportAppClientProjectWizardIterator implements WizardDescriptor.Pr
     // Make sure list of steps is accurate.
     private static final String[] STEPS = new String[]{
         NbBundle.getMessage(ImportAppClientProjectWizardIterator.class, "LBL_IW_ImportTitle"), //NOI18N
-        //NbBundle.getMessage(NewAppClientProjectWizardIterator.class, "PanelShareabilityVisual.label"),
+        NbBundle.getMessage(NewAppClientProjectWizardIterator.class, "PanelShareabilityVisual.label"),
         NbBundle.getMessage(ImportAppClientProjectWizardIterator.class, "LAB_ConfigureSourceRoots") //NOI18N
     };
     
     private WizardDescriptor.Panel[] createPanels() {
         return new WizardDescriptor.Panel[] {
             new ImportLocation(),
-            //new PanelSharability(WizardProperties.PROJECT_DIR, WizardProperties.SERVER_INSTANCE_ID, true),
+            new PanelSharability(WizardProperties.PROJECT_DIR, WizardProperties.SERVER_INSTANCE_ID, true),
             new PanelSourceFolders.Panel()
         };
     }

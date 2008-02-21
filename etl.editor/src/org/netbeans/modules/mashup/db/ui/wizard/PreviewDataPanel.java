@@ -351,8 +351,10 @@ public class PreviewDataPanel extends JPanel implements ActionListener {
 
         JPanel recordCountPanel = new JPanel();
         recordCountPanel.setBorder(BorderFactory.createEmptyBorder(0, 10, 0, 0));
-
-        JLabel lbl = new JLabel("Limit rows:");
+        
+        String nbBundle50 = mLoc.t("PRSR001: Limit rows:");
+        JLabel lbl = new JLabel(Localizer.parse(nbBundle50));
+        lbl.getAccessibleContext().setAccessibleName(Localizer.parse(nbBundle50));
         lbl.setDisplayedMnemonic('l');
         recordCountPanel.add(lbl);
         recordCount = new JTextField("25", 5);
@@ -368,6 +370,7 @@ public class PreviewDataPanel extends JPanel implements ActionListener {
 
         String nbBundle40 = mLoc.t("PRSR001: Total rows:");
         JLabel totalRowsNameLabel = new JLabel(Localizer.parse(nbBundle40));
+        totalRowsNameLabel.getAccessibleContext().setAccessibleName(Localizer.parse(nbBundle40));
         totalRowsNameLabel.setDisplayedMnemonic(Localizer.parse(nbBundle40).charAt(0));
         totalRowsNameLabel.setBorder(BorderFactory.createEmptyBorder(0, 10, 0, 0));
         totalRowsPanel.add(totalRowsNameLabel);
