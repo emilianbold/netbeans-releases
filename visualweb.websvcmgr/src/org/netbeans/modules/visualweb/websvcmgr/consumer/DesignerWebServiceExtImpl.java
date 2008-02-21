@@ -69,7 +69,6 @@ import org.netbeans.modules.websvc.manager.api.WebServiceDescriptor;
 import org.netbeans.modules.websvc.manager.spi.WebServiceManagerExt;
 import org.netbeans.modules.websvc.manager.util.ManagerUtil;
 import org.netbeans.modules.websvc.saas.spi.websvcmgr.WsdlServiceProxyDescriptor.JarEntry;
-import org.netbeans.modules.websvc.saas.util.WsdlUtil;
 import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
@@ -396,27 +395,7 @@ public class DesignerWebServiceExtImpl implements WebServiceManagerExt {
         
         return result;
     }
-    
-    public Action[] getWebServicesRootActions(Node node) {
-        return EMPTY_ACTIONS;
-    }
 
-    public Action[] getGroupActions(Node node) {
-        return EMPTY_ACTIONS;
-    }
-
-    public Action[] getWebServiceActions(Node node) {
-        return EMPTY_ACTIONS;
-    }
-
-    public Action[] getPortActions(Node node) {
-        return EMPTY_ACTIONS;
-    }
-
-    public Action[] getMethodActions(Node node) {
-        return EMPTY_ACTIONS;
-    }
-    
     private void copyIcons(File dtSourceDir){
         
         /**
