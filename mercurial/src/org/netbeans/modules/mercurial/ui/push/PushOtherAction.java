@@ -127,7 +127,7 @@ public class PushOtherAction extends ContextAction implements PropertyChangeList
         RequestProcessor rp = Mercurial.getInstance().getRequestProcessor(root);
         HgProgressSupport support = new HgProgressSupport() {
             public void perform() { 
-               PushAction.performPush(root, pushPath, fromPrjName, toPrjName); 
+               PushAction.performPush(root, pushPath, fromPrjName, toPrjName, this.getLogger()); 
             } 
         };
 

@@ -94,12 +94,14 @@ public class WhereUsedPanel extends JPanel implements CustomRefactoringPanel {
 
     private final transient ChangeListener parent;
     private String name;
+    private Scope defaultScope;
     /** Creates new form WhereUsedPanel */
     public WhereUsedPanel(String name, CsmObject csmObject,ChangeListener parent) {
         setName(NbBundle.getMessage(WhereUsedPanel.class, "LBL_WhereUsed")); // NOI18N
         this.origObject = csmObject;
         this.parent = parent;
         this.name = name;
+        this.defaultScope = Scope.CURRENT;
         initComponents();
     }
     
@@ -109,8 +111,12 @@ public class WhereUsedPanel extends JPanel implements CustomRefactoringPanel {
     }
     
     public Scope getScope() {
-        if (scope.getSelectedIndex()==1)
+        if (scope.getItemCount() == 0) {
+            return defaultScope;
+        }
+        if (scope.getSelectedIndex() == 1) {
             return Scope.CURRENT;
+        }
         return Scope.ALL;
     }
     
@@ -141,18 +147,24 @@ public class WhereUsedPanel extends JPanel implements CustomRefactoringPanel {
         }
         initFields();
 
-        Project p = CsmRefactoringUtils.getContextProject(this.origObject);
         final JLabel currentProject;
         final JLabel allProjects;
-        if (p!=null) {
-            ProjectInformation pi = ProjectUtils.getInformation(p);
-            currentProject = new JLabel(pi.getDisplayName(), pi.getIcon(), SwingConstants.LEFT);
-            allProjects = new JLabel(NbBundle.getMessage(WhereUsedPanel.class,"LBL_AllProjects"), pi.getIcon(), SwingConstants.LEFT); // NOI18N
+        if (!CsmKindUtilities.isLocalVariable(this.refObject)) {
+            Project p = CsmRefactoringUtils.getContextProject(this.origObject);
+            if (p!=null) {
+                ProjectInformation pi = ProjectUtils.getInformation(p);
+                currentProject = new JLabel(pi.getDisplayName(), pi.getIcon(), SwingConstants.LEFT);
+                allProjects = new JLabel(NbBundle.getMessage(WhereUsedPanel.class, "LBL_AllProjects"), pi.getIcon(), SwingConstants.LEFT); // NOI18N
+            } else {
+                defaultScope = Scope.ALL;
+                currentProject = null;
+                allProjects = null;
+            }
         } else {
+            defaultScope = Scope.CURRENT;
             currentProject = null;
             allProjects = null;
         }
-        
         
         final String labelText;
         String _isBaseClassText = null;
@@ -475,6 +487,8 @@ searchInComments.addItemListener(new java.awt.event.ItemListener() {
 
     add(commentsPanel, java.awt.BorderLayout.NORTH);
 
+    scopeLabel.setDisplayedMnemonic(org.openide.util.NbBundle.getMessage(WhereUsedPanel.class, "LBL_Scope_MNEM").charAt(0));
+    scopeLabel.setLabelFor(scope);
     scopeLabel.setText(org.openide.util.NbBundle.getMessage(WhereUsedPanel.class, "LBL_Scope")); // NOI18N
 
     scope.addActionListener(new java.awt.event.ActionListener() {
@@ -491,7 +505,7 @@ searchInComments.addItemListener(new java.awt.event.ItemListener() {
             .addContainerGap()
             .add(scopeLabel)
             .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-            .add(scope, 0, 287, Short.MAX_VALUE)
+            .add(scope, 0, 283, Short.MAX_VALUE)
             .addContainerGap())
     );
     scopePanelLayout.setVerticalGroup(

@@ -26,6 +26,7 @@ import java.awt.Point;
 import java.awt.Shape;
 import java.awt.Stroke;
 import java.awt.geom.GeneralPath;
+import javax.swing.JComponent;
 import javax.swing.tree.TreePath;
 import org.netbeans.modules.soa.mappercore.Canvas;
 import org.netbeans.modules.soa.mappercore.CanvasRendererContext;
@@ -179,8 +180,17 @@ public class Link implements GraphItem {
         }
         
         if (target instanceof Graph) {
-            return ((Graph) target).getTargetPinPoint(
-                    rendererContext.getGraphX(), graphY, step);
+            if (getGraph().isEmptyOrOneLink()) {
+                JComponent tree = rendererContext.getRightTree();
+                int h = tree.getFontMetrics(tree.getFont()).getHeight();
+                h = Math.max(h, 16) + 4;
+                int size = step - 1;
+                int topInset = size / 2 + 1;
+                return new Point(Integer.MAX_VALUE, graphY + h / 2 - topInset); 
+            } else {
+                return ((Graph) target).getTargetPinPoint(
+                        rendererContext.getGraphX(), graphY, step);
+            }
         }
         
         return null;

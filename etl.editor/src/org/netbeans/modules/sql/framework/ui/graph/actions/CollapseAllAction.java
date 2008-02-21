@@ -41,11 +41,13 @@
 package org.netbeans.modules.sql.framework.ui.graph.actions;
 
 import java.awt.event.ActionEvent;
+import java.awt.event.InputEvent;
 import java.net.URL;
 
 import javax.swing.Action;
 import javax.swing.ImageIcon;
 
+import javax.swing.KeyStroke;
 import net.java.hulp.i18n.Logger;
 import org.netbeans.modules.etl.logger.Localizer;
 import org.netbeans.modules.etl.logger.LogUtil;
@@ -70,8 +72,10 @@ public class CollapseAllAction extends GraphAction {
         this.putValue(Action.SMALL_ICON, new ImageIcon(collapseAllImgUrl));
 
         //action tooltip
-        String nbBundle1 = mLoc.t("PRSR001: Collapse All Graph Objects");
+        String nbBundle1 = mLoc.t("PRSR001: Collapse All Graph Objects (Cntl-C)");
         this.putValue(Action.SHORT_DESCRIPTION, Localizer.parse(nbBundle1));
+       // Acceleratot Cntl-C
+        this.putValue(Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke('C', InputEvent.CTRL_MASK ));
     }
 
     /**

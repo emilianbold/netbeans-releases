@@ -25,6 +25,7 @@ import org.netbeans.modules.xml.xpath.ext.LocationStep;
 import org.netbeans.modules.xml.schema.model.GlobalAttribute;
 import org.netbeans.modules.xml.schema.model.GlobalElement;
 import org.netbeans.modules.xml.schema.model.GlobalType;
+import org.netbeans.modules.xml.schema.model.SimpleType;
 import org.netbeans.modules.xml.schema.model.LocalAttribute;
 import org.netbeans.modules.xml.schema.model.SchemaComponent;
 import org.netbeans.modules.xml.schema.model.TypeContainer;
@@ -86,6 +87,7 @@ public class PathValidatorVisitor extends XPathModelTracerVisitor {
         GlobalType propType = null;
         //
         WSDLComponent comp = myContext.getWsdlContext();
+
         if (comp instanceof PropertyAlias) {
             PropertyAlias pa = (PropertyAlias)comp;
             propType = getPropertyType(pa);
@@ -104,14 +106,22 @@ public class PathValidatorVisitor extends XPathModelTracerVisitor {
                 GlobalType gType = lastStepTypes.iterator().next();
                 //
                 // Check if the type of the last element of the XPath
-                if (!propType.equals(gType)) {
+                if ( !propType.equals(gType)) {
                     // Error. The type of the last XPath element differ from the type
                     // of the correlaton property.
-                    myContext.addResultItem(ResultType.ERROR, 
-                            "QUERY_INCONSISTENT_TYPE",
-                            propType.getName()); // NOI18N
+                    myContext.addResultItem(ResultType.ERROR, "QUERY_INCONSISTENT_TYPE", propType.getName()); // NOI18N
                 }
-            } else {
+                else {
+                // # 83335 vlv
+//System.out.println();
+//System.out.println("TYPE IS: " + gType.getClass().getName());
+//System.out.println();
+                  if ( !(gType instanceof SimpleType)) {
+                    myContext.addResultItem(ResultType.ERROR, "TYPE_MUST_BE_SIMPLE"); // NOI18N
+                  }
+                }
+            } 
+            else {
                 boolean hasConsistentType = false; 
                 for (GlobalType gType : lastStepTypes) {
                     if (propType.equals(gType)) {
@@ -353,5 +363,4 @@ public class PathValidatorVisitor extends XPathModelTracerVisitor {
             return result;
         }
     }
- 
 }

@@ -35,7 +35,6 @@ public class RightTreeEventHandler extends AbstractMapperEventHandler {
     private MouseEvent initialEvent = null;
     private TreePath initialPath = null;
     private Graph initialTargetGraph = null;
-    private AutoScrollSelectionRightTree autoScrollSelection;
 
     /** Creates a new instance of RightTreeEventHandler */
     public RightTreeEventHandler(RightTree rightTree) {

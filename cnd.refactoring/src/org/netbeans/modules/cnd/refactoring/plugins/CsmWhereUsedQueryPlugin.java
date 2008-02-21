@@ -77,20 +77,13 @@ public class CsmWhereUsedQueryPlugin extends CsmRefactoringPlugin {
     }
     
     public Problem prepare(final RefactoringElementsBag elements) {
-        CsmObject referencedObject = refactoring.getRefactoringSource().lookup(CsmObject.class);
+        CsmUID referencedObjectUID = refactoring.getRefactoringSource().lookup(CsmUID.class);
+        CsmObject referencedObject = referencedObjectUID == null ? null : (CsmObject) referencedObjectUID.getObject();
         if (referencedObject == null) {
             return null;
         }
-        if (referencedObject instanceof CsmValidable) {
-            if (!((CsmValidable)referencedObject).isValid()) {
-                return new Problem(true, NbBundle.getMessage(CsmWhereUsedQueryPlugin.class, "MSG_InvalidObjectNothingToFind")); // NOI18N
-            }
-        }
-        CsmFile startFile = getCsmFile(startReferenceObject);
-        if (startFile == null || !startFile.isValid()) {
-            return new Problem(true, NbBundle.getMessage(CsmWhereUsedQueryPlugin.class, "MSG_InvalidObjectNothingToFind")); // NOI18N
-        }        
-        Collection<CsmFile> files = getRelevantFiles(startFile, referencedObject);
+        CsmFile startFile = getCsmFile(startReferenceObject);     
+        Collection<CsmFile> files = getRelevantFiles(startFile, referencedObject, refactoring);
         fireProgressListenerStart(ProgressEvent.START, files.size());
         processQuery(referencedObject, elements, files);
         fireProgressListenerStop();
@@ -105,16 +98,21 @@ public class CsmWhereUsedQueryPlugin extends CsmRefactoringPlugin {
     @Override
     public Problem preCheck() {
         CsmUID uid = refactoring.getRefactoringSource().lookup(CsmUID.class);    
+        Problem invalidContext = new Problem(true, NbBundle.getMessage(CsmWhereUsedQueryPlugin.class, "MSG_InvalidObjectNothingToFind")); // NOI18N;
         if (uid == null) {
+            CsmFile startFile = getCsmFile(startReferenceObject);
+            if (startFile == null || !startFile.isValid()) {
+                return invalidContext;
+            }              
             return super.preCheck();
         }
         CsmObject referencedObject = (CsmObject) uid.getObject();
         if (referencedObject == null) {
-            return new Problem(true, NbBundle.getMessage(CsmWhereUsedQueryPlugin.class, "MSG_InvalidObjectNothingToFind")); // NOI18N
+            return invalidContext;
         }
-        if (referencedObject instanceof CsmValidable) {
+        if (CsmKindUtilities.isValidable(referencedObject)) {
             if (!((CsmValidable)referencedObject).isValid()) {
-                return new Problem(true, NbBundle.getMessage(CsmWhereUsedQueryPlugin.class, "MSG_InvalidObjectNothingToFind")); // NOI18N
+                return invalidContext;
             }
         }
         return super.preCheck();

@@ -42,13 +42,13 @@
 package org.netbeans.modules.ruby;
 
 import java.util.Map;
-import org.netbeans.api.gsf.CompilationInfo;
+import org.netbeans.fpi.gsf.CompilationInfo;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
-import org.netbeans.api.gsf.ColoringAttributes;
-import org.netbeans.api.gsf.CompilationInfo;
-import org.netbeans.api.gsf.OffsetRange;
+import org.netbeans.fpi.gsf.ColoringAttributes;
+import org.netbeans.fpi.gsf.CompilationInfo;
+import org.netbeans.fpi.gsf.OffsetRange;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
 

@@ -40,21 +40,130 @@
  */
 package org.netbeans.modules.spring.beans.hyperlink;
 
+import java.io.IOException;
+import java.util.List;
+import java.util.StringTokenizer;
+import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.TypeElement;
+import javax.lang.model.type.TypeKind;
+import javax.lang.model.type.TypeMirror;
+import org.netbeans.api.java.source.CompilationController;
+import org.netbeans.api.java.source.ElementUtilities;
+import org.netbeans.api.java.source.JavaSource;
+import org.netbeans.api.java.source.Task;
+import org.netbeans.api.java.source.ui.ElementOpen;
+import org.netbeans.editor.TokenItem;
+import org.netbeans.modules.spring.beans.editor.BeanClassFinder;
 import org.netbeans.modules.spring.beans.editor.SpringXMLConfigEditorUtils;
+import org.openide.util.Exceptions;
 
 /**
  *
  * @author Rohan Ranade (Rohan.Ranade@Sun.COM)
  */
-public class PropertyHyperlinkProcessor implements HyperlinkProcessor {
+public class PropertyHyperlinkProcessor extends HyperlinkProcessor {
 
     public PropertyHyperlinkProcessor() {
     }
 
     public void process(HyperlinkEnv env) {
-        String methodName = SpringXMLConfigEditorUtils.getBeanPropertySetterName(env.getValueString());
-        String className = SpringXMLConfigEditorUtils.getBeanClassName(env.getCurrentTag());
-        SpringXMLConfigEditorUtils.openMethodInEditor(env.getDocument(), className, methodName, 1,
-                SpringXMLConfigEditorUtils.Public.DONT_CARE, SpringXMLConfigEditorUtils.Static.NO);
+        try {
+            final String className = new BeanClassFinder(
+                                SpringXMLConfigEditorUtils.getBean(env.getCurrentTag()), 
+                                env.getDocument()).findImplementationClass();
+            if (className == null) {
+                return;
+            }
+
+            final String propChain = getPropertyChainUptoPosition(env);
+            if (propChain == null || propChain.equals("")) { // NOI18N
+                return;
+            }
+
+            JavaSource js = SpringXMLConfigEditorUtils.getJavaSource(env.getDocument());
+            if (js == null) {
+                return;
+            }
+
+            final int dotIndex = propChain.lastIndexOf(".");
+            js.runUserActionTask(new Task<CompilationController>() {
+
+                public void run(CompilationController cc) throws Exception {
+                    TypeElement te = SpringXMLConfigEditorUtils.findClassElementByBinaryName(className, cc);
+                    if (te == null) {
+                        return;
+                    }
+                    TypeMirror startType = te.asType();
+                    ElementUtilities eu = cc.getElementUtilities();
+
+                    // property chain
+                    if (dotIndex != -1) {
+                        String getterChain = propChain.substring(0, dotIndex);
+                        StringTokenizer tokenizer = new StringTokenizer(getterChain, "."); // NOI18N
+                        while (tokenizer.hasMoreTokens() && startType != null) {
+                            String propertyName = tokenizer.nextToken();
+                            List<ExecutableElement> elements = SpringXMLConfigEditorUtils.findPropertiesOnType(eu, startType, propertyName, true, false);
+
+                            // no matching element found
+                            if (elements.size() == 0) {
+                                startType = null;
+                                break;
+                            }
+
+                            TypeMirror retType = elements.get(0).getReturnType();
+                            if (retType.getKind() == TypeKind.DECLARED) {
+                                startType = retType;
+                                break;
+                            } else {
+                                startType = null;
+                            }
+                        }
+                    }
+
+                    if (startType == null) {
+                        return;
+                    }
+
+                    String setterProp = propChain.substring(dotIndex + 1);
+                    List<ExecutableElement> setterMethods = SpringXMLConfigEditorUtils.findPropertiesOnType(eu, startType, setterProp, false, true);
+                    if (setterMethods.size() > 0) {
+                        ElementOpen.open(cc.getClasspathInfo(), setterMethods.get(0));
+                    }
+                }
+            }, true);
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+    }
+
+    @Override
+    public int[] getSpan(HyperlinkEnv env) {
+        TokenItem tok = env.getToken();
+        int addOffset = tok.getOffset() + 1;
+        
+        String propChain = getPropertyChainUptoPosition(env);
+        if(propChain == null || propChain.equals("")) { // NOI18N
+            return null;
+        }
+        
+        int endPos = tok.getOffset() + propChain.length() + 1;
+        int startPos = propChain.lastIndexOf("."); // NOI18N
+        startPos = (startPos == -1) ? 0 : ++startPos;
+        startPos += addOffset;
+        
+        return new int[] { startPos, endPos };
+    }
+
+    private String getPropertyChainUptoPosition(HyperlinkEnv env) {
+        TokenItem tok = env.getToken();
+        int relOffset = env.getOffset() - tok.getOffset() - 1;
+        
+        int endPos = env.getValueString().indexOf(".", relOffset); // NOI18N
+        // no . after the current pos, return full string
+        if(endPos == -1) {
+            return env.getValueString();
+        } else {
+            return env.getValueString().substring(0, endPos);
+        }
     }
 }

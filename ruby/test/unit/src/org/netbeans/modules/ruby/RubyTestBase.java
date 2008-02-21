@@ -58,21 +58,24 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.prefs.Preferences;
+import javax.swing.Action;
 import javax.swing.text.Document;
 import org.jruby.ast.Node;
-import org.netbeans.api.gsf.ParseListener;
-import org.netbeans.api.gsf.ParserFile;
-import org.netbeans.api.gsf.ParserResult;
+import org.netbeans.fpi.gsf.ParseListener;
+import org.netbeans.fpi.gsf.ParserFile;
+import org.netbeans.fpi.gsf.ParserResult;
+import org.netbeans.fpi.gsf.TranslatedSource;
 import org.netbeans.api.ruby.platform.RubyInstallation;
 import org.netbeans.api.ruby.platform.TestUtil;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.gsf.DefaultLanguage;
+import org.netbeans.modules.gsf.LanguageRegistry;
 import org.netbeans.modules.ruby.lexer.RubyTokenId;
 import org.netbeans.modules.ruby.options.CodeStyle;
 import org.netbeans.modules.ruby.options.FmtOptions;
-import org.netbeans.spi.gsf.DefaultParseListener;
-import org.netbeans.spi.gsf.DefaultParserFile;
-import org.netbeans.spi.gsf.DefaultParserFile;
+import org.netbeans.sfpi.gsf.DefaultParseListener;
+import org.netbeans.sfpi.gsf.DefaultParserFile;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
@@ -114,11 +117,24 @@ public abstract class RubyTestBase extends org.netbeans.api.ruby.platform.RubyTe
         catch (Exception ex){
             fail(ex.toString());
         }
-        RubyParser.Context context = new RubyParser.Context(file, listener, sequence, caretOffset);
+TranslatedSource translatedSource = null; // TODO            
+        RubyParser.Context context = new RubyParser.Context(file, listener, sequence, caretOffset, translatedSource);
         ParserResult result = parser.parseBuffer(context, RubyParser.Sanitize.NEVER);
         return result;
     }
 
+    protected void initializeRegistry() {
+        LanguageRegistry registry = LanguageRegistry.getInstance();
+        List<Action> actions = Collections.emptyList();
+        if (!LanguageRegistry.getInstance().isSupported(RubyInstallation.RUBY_MIME_TYPE)) {
+            List<String> extensions = Collections.singletonList("rb");
+            org.netbeans.modules.gsf.Language dl = new DefaultLanguage("Ruby", "org/netbeans/modules/ruby/jrubydoc.png", "text/x-ruby", extensions, actions, new RubyLanguage(), new RubyParser(), new CodeCompleter(), new RenameHandler(), new DeclarationFinder(), new Formatter(), new BracketCompleter(), new RubyIndexer(), new StructureAnalyzer(), null, false);
+            List<org.netbeans.modules.gsf.Language> languages = new ArrayList<org.netbeans.modules.gsf.Language>();
+            languages.add(dl);
+            registry.addLanguages(languages);
+        }
+    }
+    
     protected Node getRootNode(String relFilePath) {
         FileObject fileObject = getTestFile(relFilePath);
         ParserResult result = parse(fileObject);
