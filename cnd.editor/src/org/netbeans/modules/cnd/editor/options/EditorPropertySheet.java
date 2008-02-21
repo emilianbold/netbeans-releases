@@ -347,14 +347,14 @@ public class EditorPropertySheet extends javax.swing.JPanel implements ActionLis
                 Preferences toSave = EditorOptions.getPreferences(language, style);
                 try {
                     for (String key : preferences.keys()) {
-                            Object def = EditorOptions.getDefault(language, key, defaultStyles.get(language));
-                            if (def instanceof Boolean) {
-                                toSave.putBoolean(key, preferences.getBoolean(key, (Boolean) def));
-                            } else if (def instanceof Integer) {
-                                toSave.putInt(key, preferences.getInt(key, (Integer) def));
-                            } else {
-                                toSave.put(key, preferences.get(key, (String) def));
-                            }
+                        Object def = EditorOptions.getDefault(language, key, defaultStyles.get(language));
+                        if (def instanceof Boolean) {
+                            toSave.putBoolean(key, preferences.getBoolean(key, (Boolean) def));
+                        } else if (def instanceof Integer) {
+                            toSave.putInt(key, preferences.getInt(key, (Integer) def));
+                        } else {
+                            toSave.put(key, preferences.get(key, (String) def));
+                        }
                     }
                 } catch (BackingStoreException ex) {
                     Exceptions.printStackTrace(ex);
@@ -540,6 +540,7 @@ public class EditorPropertySheet extends javax.swing.JPanel implements ActionLis
 
         setLayout(new java.awt.GridBagLayout());
 
+        jLabel2.setLabelFor(languagesComboBox);
         org.openide.awt.Mnemonics.setLocalizedText(jLabel2, org.openide.util.NbBundle.getMessage(EditorPropertySheet.class, "EditorPropertySheet.jLabel2.text")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -561,6 +562,7 @@ public class EditorPropertySheet extends javax.swing.JPanel implements ActionLis
         oprionsPanel.setBorder(javax.swing.BorderFactory.createEmptyBorder(1, 1, 1, 1));
         oprionsPanel.setLayout(new java.awt.GridBagLayout());
 
+        jLabel1.setLabelFor(styleComboBox);
         org.openide.awt.Mnemonics.setLocalizedText(jLabel1, org.openide.util.NbBundle.getMessage(EditorPropertySheet.class, "LBL_Style_Name")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;

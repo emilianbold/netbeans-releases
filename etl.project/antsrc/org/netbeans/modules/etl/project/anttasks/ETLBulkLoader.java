@@ -38,25 +38,40 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.web.jsf.navigation.graph.actions;
+package org.netbeans.modules.etl.project.anttasks;
 
-import java.awt.event.ActionEvent;
-import javax.swing.AbstractAction;
-import javax.swing.JOptionPane;
-
+import org.netbeans.modules.etlbulkloader.packager.ETLBLPackager;
+import org.apache.tools.ant.Task;
+import org.apache.tools.ant.Project;
+import net.java.hulp.i18n.Logger;
+import org.netbeans.modules.etl.logger.Localizer;
+import org.netbeans.modules.etl.logger.LogUtil;
 /**
  *
- * @author joelle
+ * @author Manish
  */
-public class TestAction extends AbstractAction {
-    private final String actionName;
-    public TestAction(String actionName) {
-        super();
-        this.actionName = actionName;
-    }    
+public class ETLBulkLoader extends Task {
+
+     private static transient final Logger mLogger = LogUtil.getLogger(ETLBulkLoader.class.getName());
+     private static transient final Localizer mLoc = Localizer.get();
     
-    public void actionPerformed(ActionEvent e) {
-        JOptionPane.showMessageDialog(null, "Action: <" + actionName + "> has been invoked");
+    public void execute() {
+        Project p = this.getProject();
+        String projhome = null;
+	if (p != null) {
+	   projhome = p.getProperty("basedir");
+        }
+        mLogger.infoNoloc(mLoc.t("eTL Bulk Loader Packaging Begins ..."));
+        ETLBLPackager packager = new ETLBLPackager(projhome);
+        packager.createExecutablePackage();
+        mLogger.infoNoloc(mLoc.t("eTL Bulk Loader Packaging Ends."));
     }
-    
+
+    /**
+     * @param args the command line arguments
+     */
+    public static void main(String[] args) {        
+        ETLBulkLoader loader = new ETLBulkLoader();
+        loader.execute();
+    }
 }

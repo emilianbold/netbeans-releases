@@ -467,8 +467,7 @@ public class EjbJarProjectGenerator {
         ep.setProperty(EjbJarProjectProperties.J2EE_SERVER_TYPE, deployment.getServerID(serverInstanceID));
         
         if (h.isSharableProject() && serverLibraryName != null) {
-            String libraryName = SharabilityUtilities.getPrefixedLibraryName(serverLibraryName);
-            ep.setProperty(EjbJarProjectProperties.J2EE_PLATFORM_CLASSPATH, "${libs." + libraryName + ".classpath}"); //NOI18N
+            ep.setProperty(EjbJarProjectProperties.J2EE_PLATFORM_CLASSPATH, "${libs." + serverLibraryName + ".classpath}"); //NOI18N
         }
         ep.setProperty(EjbJarProjectProperties.J2EE_PLATFORM_SHARED,
                 Boolean.toString(h.isSharableProject() && serverLibraryName != null));        

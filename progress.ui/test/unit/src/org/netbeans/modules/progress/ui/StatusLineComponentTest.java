@@ -20,15 +20,15 @@ public class StatusLineComponentTest extends TestCase {
     }
     
     public void testGetBarString() {
-        double percentage = 0.0;
         long estimatedCompletion = -1;
-        String result = StatusLineComponent.getBarString(percentage,
-                                                         estimatedCompletion);
-        assertEquals("0.0%", result);
+
+        double percentage = 0.0;
+        String result = StatusLineComponent.getBarString(percentage, estimatedCompletion);
+        assertEquals("0%", result);
         
-        percentage = 0.5;
+        percentage = 0.49;
         result = StatusLineComponent.getBarString(percentage, estimatedCompletion);
-        assertEquals("0.50%", result);
+        assertEquals("0%", result);
         
         percentage = 1.0;
         result = StatusLineComponent.getBarString(percentage, estimatedCompletion);
@@ -40,7 +40,14 @@ public class StatusLineComponentTest extends TestCase {
         
         percentage = 99.33;
         result = StatusLineComponent.getBarString(percentage, estimatedCompletion);
-        assertEquals("99.33%", result);
-    }
+        assertEquals("99%", result);
 
+        percentage = 99.51;
+        result = StatusLineComponent.getBarString(percentage, estimatedCompletion);
+        assertEquals("100%", result);
+
+        percentage = 100.1;
+        result = StatusLineComponent.getBarString(percentage, estimatedCompletion);
+        assertEquals("100%", result);
+    }
 }
