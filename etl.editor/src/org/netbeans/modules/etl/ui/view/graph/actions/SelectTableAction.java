@@ -76,11 +76,11 @@ public class SelectTableAction extends GraphAction {
         this.putValue(Action.SMALL_ICON, new ImageIcon(selTableImgUrl));
 
         //action tooltip
-        String nbBundle2 = mLoc.t("PRSR001: Select Source And Target Tables");
+        String nbBundle2 = mLoc.t("PRSR001: Select Source And Target Tables (Cntl-S)");
         this.putValue(Action.SHORT_DESCRIPTION, Localizer.parse(nbBundle2));
 
-        // Acceleratot Cntl-Shift-S
-        this.putValue(Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke('S', InputEvent.CTRL_MASK + InputEvent.SHIFT_DOWN_MASK));
+        // Acceleratot Cntl-S
+        this.putValue(Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke('S', InputEvent.CTRL_MASK ));
     }
 
     /**

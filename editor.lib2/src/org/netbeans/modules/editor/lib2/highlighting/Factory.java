@@ -97,7 +97,7 @@ public class Factory implements HighlightsLayerFactory {
 
         layers.add(HighlightsLayer.create(
             CaretBasedBlockHighlighting.TextSelectionHighlighting.LAYER_TYPE_ID,
-            ZOrder.SHOW_OFF_RACK.forPosition(400), 
+            ZOrder.SHOW_OFF_RACK.forPosition(500), 
             true, 
             new CaretBasedBlockHighlighting.TextSelectionHighlighting(context.getComponent()))
         );

@@ -116,11 +116,12 @@ public class HgUtils {
     
     // IGNORE SUPPORT HG: following file patterns are added to {Hg repos}/.hgignore and Hg will ignore any files
     // that match these patterns, reporting "I"status for them // NOI18N
-    private static final String [] HG_IGNORE_FILES = { "\\.orig$", "\\.orig\\..*$", "\\.chg\\..*$", "\\.rej$"}; // NOI18N
+    private static final String [] HG_IGNORE_FILES = { "\\.orig$", "\\.orig\\..*$", "\\.chg\\..*$", "\\.rej$", "\\.conflict\\~$"}; // NOI18N
     private static final String HG_IGNORE_ORIG_FILES = "\\.orig$"; // NOI18N
     private static final String HG_IGNORE_ORIG_ANY_FILES = "\\.orig\\..*$"; // NOI18N
     private static final String HG_IGNORE_CHG_ANY_FILES = "\\.chg\\..*$"; // NOI18N
     private static final String HG_IGNORE_REJ_ANY_FILES = "\\.rej$"; // NOI18N
+    private static final String HG_IGNORE_CONFLICT_ANY_FILES = "\\.conflict\\~$"; // NOI18N
     
     private static final String FILENAME_HGIGNORE = ".hgignore"; // NOI18N
 
@@ -388,7 +389,7 @@ public class HgUtils {
         }
     }
     
-    private static int HG_NUM_PATTERNS_TO_CHECK = 4;
+    private static int HG_NUM_PATTERNS_TO_CHECK = 5;
     private static void addToExistingIgnoredFile(File hgignoreFile) {
         if(hgignoreFile == null || !hgignoreFile.exists() || !hgignoreFile.canWrite()) return;
         File tempFile = null;
@@ -398,6 +399,7 @@ public class HgUtils {
         boolean bOrigPresent = false;
         boolean bChgAnyPresent = false;
         boolean bRejAnyPresent = false;
+        boolean bConflictAnyPresent = false;
         
         // If new patterns are added to HG_IGNORE_FILES, following code needs to
         // check for these new patterns
@@ -420,6 +422,8 @@ public class HgUtils {
                     bChgAnyPresent = true;
                 }else if (!bRejAnyPresent && line.equals(HG_IGNORE_REJ_ANY_FILES)){
                     bRejAnyPresent = true;
+                }else if (!bConflictAnyPresent && line.equals(HG_IGNORE_CONFLICT_ANY_FILES)){
+                    bConflictAnyPresent = true;
                 }
                 pw.println(line);
                 pw.flush();
@@ -441,6 +445,10 @@ public class HgUtils {
                 pw.println(HG_IGNORE_REJ_ANY_FILES );
                 pw.flush();
             }     
+            if (!bConflictAnyPresent) {
+                pw.println(HG_IGNORE_CONFLICT_ANY_FILES );
+                pw.flush();
+            }     
             
         } catch (IOException ex) {
             // Ignore
@@ -449,7 +457,8 @@ public class HgUtils {
                 if(pw != null) pw.close();
                 if(br != null) br.close();
 
-                boolean bAnyAdditions = !bOrigAnyPresent || !bOrigPresent  || !bChgAnyPresent || !bRejAnyPresent;               
+                boolean bAnyAdditions = !bOrigAnyPresent || !bOrigPresent  || 
+                        !bChgAnyPresent || !bRejAnyPresent || !bConflictAnyPresent;               
                 if(bAnyAdditions){
                     if (!confirmDialog(HgUtils.class, "MSG_IGNORE_FILES_TITLE", "MSG_IGNORE_FILES")) { // NOI18N 
                         tempFile.delete();

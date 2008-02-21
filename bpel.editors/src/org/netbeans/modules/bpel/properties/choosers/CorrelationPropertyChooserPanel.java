@@ -34,13 +34,13 @@ import org.netbeans.modules.bpel.nodes.ReloadableChildren;
 import org.netbeans.modules.soa.ui.ExtendedLookup;
 import org.netbeans.modules.bpel.properties.NodeUtils;
 import org.netbeans.modules.bpel.properties.PropertyNodeFactory;
-import org.netbeans.modules.bpel.properties.Util;
 import org.netbeans.modules.bpel.properties.editors.FormBundle;
 import org.netbeans.modules.bpel.properties.editors.controls.AbstractTreeChooserPanel;
 import org.netbeans.modules.soa.ui.nodes.NodesTreeParams;
 import org.netbeans.modules.soa.ui.form.Reusable;
 import org.netbeans.modules.bpel.properties.editors.controls.filter.ChildTypeFilter;
 import org.netbeans.modules.bpel.properties.editors.nodes.factory.PropertyChooserNodeFactory;
+import org.netbeans.modules.soa.ui.SoaUiUtil;
 import org.netbeans.modules.xml.wsdl.model.extensions.bpel.CorrelationProperty;
 import org.openide.explorer.view.BeanTreeView;
 import org.openide.nodes.Children;
@@ -78,7 +78,7 @@ public class CorrelationPropertyChooserPanel
         //
         chbShowImportedOnly.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                BpelModel model = (BpelModel)getLookup().lookup(BpelModel.class);
+                BpelModel model = getLookup().lookup(BpelModel.class);
                 Process process = model.getProcess();
                 BpelNode soughtNode = NodeUtils.findFirstNode(
                         process, getExplorerManager().getRootContext());
@@ -92,13 +92,13 @@ public class CorrelationPropertyChooserPanel
         //
         super.createContent();
         //
-        Util.activateInlineMnemonics(this);
+        SoaUiUtil.activateInlineMnemonics(this);
     }
     
     protected Node constructRootNode() {
         Node result = null;
         //
-        BpelModel model = (BpelModel)getLookup().lookup(BpelModel.class);
+        BpelModel model = getLookup().lookup(BpelModel.class);
         Process process = model.getProcess();
         PropertyChooserNodeFactory factory =
                 new PropertyChooserNodeFactory(
@@ -114,8 +114,7 @@ public class CorrelationPropertyChooserPanel
         List lookupObjects = new ArrayList();
         //
         // Create the default tree parameters if not any is specified
-        NodesTreeParams treeParams =
-                (NodesTreeParams)lookup.lookup(NodesTreeParams.class);
+        NodesTreeParams treeParams = lookup.lookup(NodesTreeParams.class);
         if (treeParams == null) {
             // Set default Chooser Params
             treeParams = new NodesTreeParams();

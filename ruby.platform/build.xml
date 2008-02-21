@@ -83,7 +83,7 @@ made subject to such option by the copyright holder.
         </chmod>
         -->
 
-        <unzip dest="${cluster}" src="release/preindexed.zip"/>
+        <unzip dest="${cluster}/../" src="release/preindexed.zip"/>
         <unzip dest="${cluster}" src="release/preindexed-native.zip"/>
     </target>
 

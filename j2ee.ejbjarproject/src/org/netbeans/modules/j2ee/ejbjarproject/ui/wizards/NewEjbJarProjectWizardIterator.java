@@ -54,10 +54,10 @@ import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.j2ee.api.ejbjar.Ear;
+import org.netbeans.modules.j2ee.common.project.ui.UserProjectSettings;
 import org.netbeans.modules.j2ee.common.sharability.PanelSharability;
 import org.netbeans.modules.j2ee.common.sharability.SharabilityUtilities;
 import org.netbeans.modules.j2ee.ejbjarproject.EjbJarProject;
-import org.netbeans.modules.j2ee.ejbjarproject.ui.FoldersListSettings;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 
 import org.openide.WizardDescriptor;
@@ -81,13 +81,13 @@ public class NewEjbJarProjectWizardIterator implements WizardDescriptor.Progress
     // Make sure list of steps is accurate.
     private static final String[] STEPS = new String[] {
         NbBundle.getBundle("org/netbeans/modules/j2ee/ejbjarproject/ui/wizards/Bundle").getString("LBL_NWP1_ProjectTitleName"), //NOI18N
-        //NbBundle.getMessage(NewEjbJarProjectWizardIterator.class, "PanelShareabilityVisual.label")
+        NbBundle.getMessage(NewEjbJarProjectWizardIterator.class, "PanelShareabilityVisual.label")
     };
 
     private WizardDescriptor.Panel[] createPanels() {
         return new WizardDescriptor.Panel[] {
             new PanelConfigureProject(),
-            //new PanelSharability(WizardProperties.PROJECT_DIR, WizardProperties.SERVER_INSTANCE_ID, true)
+            new PanelSharability(WizardProperties.PROJECT_DIR, WizardProperties.SERVER_INSTANCE_ID, true)
         };
     }
 
@@ -128,7 +128,7 @@ public class NewEjbJarProjectWizardIterator implements WizardDescriptor.Progress
         }
         
         // remember last used server
-    	FoldersListSettings.getDefault().setLastUsedServer(serverInstanceID);
+    	UserProjectSettings.getDefault().setLastUsedServer(serverInstanceID);
         
         // downgrade the Java platform or src level to 1.4        
         String platformName = (String)wiz.getProperty(WizardProperties.JAVA_PLATFORM);

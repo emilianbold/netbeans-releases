@@ -184,14 +184,9 @@ public abstract class BreakpointImpl implements PropertyChangeListener {
         String pname = evt.getPropertyName();
         if (pname.equals(Breakpoint.PROP_DISPOSED)) {
             remove();
-        } else if (pname.equals(GdbBreakpoint.PROP_SUSPEND)) {
-            if (evt.getOldValue() instanceof Integer && evt.getNewValue() instanceof Integer) {
-                Integer oldValue = (Integer) evt.getOldValue();
-                Integer newValue = (Integer) evt.getNewValue();
-                if (newValue != oldValue && newValue.intValue() == GdbBreakpoint.SUSPEND_EVENT_THREAD) {
-                    suspend();
-                }
-            }
+        }
+        if (pname.equals(GdbBreakpoint.PROP_SUSPEND)) {
+            suspend();
         } else if (!pname.equals(GdbBreakpoint.PROP_LINE_NUMBER)) {
             update();
         }

@@ -66,7 +66,7 @@ public class MacroUsagesTest extends SemanticHighlightingTestBase {
         performTest(source, source + ".dat", source + ".err"); // NOI18N
     }
 
-    protected List<? extends CsmOffsetable> getBlocks(FileImpl testFile) {
+    protected List<? extends CsmOffsetable> getBlocks(FileImpl testFile,int offset) {
         return SemanticHighlighter.getMacroBlocks(testFile);
     }
 }

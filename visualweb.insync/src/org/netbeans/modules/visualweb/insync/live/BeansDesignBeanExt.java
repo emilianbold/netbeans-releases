@@ -60,12 +60,19 @@ public class BeansDesignBeanExt extends BeansDesignBean implements DesignBeanExt
         super(unit, beanInfo, liveBeanInfo, parent, instance, bean);
     }
 
-    public Type[] getTypeParameters() throws ClassNotFoundException { 
-        List<Type> typeList = new ArrayList<Type>();
-        for(String typeParamName : bean.getTypeParameterNames()) {
-            Class type = ClassUtil.getClass(typeParamName);
-            typeList.add(type);
+    public Type[] getTypeParameters() throws ClassNotFoundException {
+        // Ensure that the Project ClassLoader is set as the context classloader. 
+        ClassLoader oldContextClassLoader = Thread.currentThread().getContextClassLoader();
+        try {
+            Thread.currentThread().setContextClassLoader(unit.getBeansUnit().getClassLoader());
+            List<Type> typeList = new ArrayList<Type>();
+            for(String typeParamName : bean.getTypeParameterNames()) {
+                Class type = ClassUtil.getClass(typeParamName);
+                typeList.add(type);
+            }
+            return typeList.toArray(new Type[0]);
+        } finally {
+            Thread.currentThread().setContextClassLoader(oldContextClassLoader);
         }
-        return typeList.toArray(new Type[0]);
     }
 }
