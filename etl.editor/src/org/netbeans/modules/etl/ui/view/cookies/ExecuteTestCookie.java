@@ -61,7 +61,6 @@ import org.netbeans.modules.sql.framework.ui.output.SQLLogView;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.nodes.Node;
-import org.openide.util.NbBundle;
 import com.sun.etl.engine.ETLEngine;
 import com.sun.etl.engine.ETLEngineExecEvent;
 import com.sun.etl.engine.ETLEngineListener;
