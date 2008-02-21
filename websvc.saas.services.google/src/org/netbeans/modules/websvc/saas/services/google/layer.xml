@@ -16,6 +16,7 @@
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.websvc.saas.services.google.Bundle"/>
             <file name="GoogleAccounts.xml" url="/org/netbeans/modules/websvc/saas/services/google/resources/GoogleAccounts.xml"/>
             <file name="GoogleAdSenseForContent.xml" url="/org/netbeans/modules/websvc/saas/services/google/resources/GoogleAdSenseForContent.xml"/>
+            <file name="GoogleAdSenseForSearch.xml" url="/org/netbeans/modules/websvc/saas/services/google/resources/GoogleAdSenseForSearch.xml"/>
             <file name="GoogleGeocoder.xml" url="/org/netbeans/modules/websvc/saas/services/google/resources/GoogleGeocoder.xml"/>
             <file name="GoogleMap.xml" url="/org/netbeans/modules/websvc/saas/services/google/resources/GoogleMap.xml"/>
         </folder>

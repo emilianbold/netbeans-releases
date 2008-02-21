@@ -92,6 +92,11 @@ public class CasaNodeFactory {
         return new ProvidesListNode(data, this);
     }
     
+    public CasaNode createNode_process(CasaServiceEngineServiceUnit data, 
+            String processName, String filePath) {
+        return new ServiceUnitProcessNode(data, processName, filePath, this);
+    }
+    
     public CasaNode createNode_suList(List<CasaServiceEngineServiceUnit> data) {
         return new ServiceEnginesNode(data, this);
     }

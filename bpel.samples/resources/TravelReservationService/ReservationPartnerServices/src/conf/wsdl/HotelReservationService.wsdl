@@ -34,18 +34,23 @@
             <xs:import namespace="http://www.opentravel.org/OTA/2003/05" schemaLocation="OTA_TravelItinerary.xsd"/>
         </xs:schema>
     </types>
+
     <message name="ReserveHotelIn">
         <part name="itinerary" element="ota:TravelItinerary"/>
     </message>
+    
     <message name="CancelHotelIn">
         <part name="itinerary" element="ota:ItineraryRef"/>
     </message>
+    
     <message name="CancelHotelOut">
         <part name="succeeded" element="ota:CancellationStatus"/>
     </message>
+    
     <message name="HotelReservedIn">
         <part name="itinerary" element="ota:TravelItinerary"/>
     </message>
+
     <portType name="HotelReservationPortType">
         <operation name="reserveHotel">
             <input message="tns:ReserveHotelIn"/>
@@ -55,11 +60,13 @@
             <output message="tns:CancelHotelOut"/>
         </operation>
     </portType>
+
     <portType name="HotelReservationCallbackPortType">
         <operation name="hotelReserved">
             <input message="tns:HotelReservedIn"/>
         </operation>
     </portType>
+
     <binding name="HotelReservationSoapBinding" type="tns:HotelReservationPortType">
         <soap:binding style="document" transport="http://schemas.xmlsoap.org/soap/http"/>
         <operation name="reserveHotel">
@@ -78,6 +85,7 @@
             </output>
         </operation>
     </binding>
+
     <binding name="HotelReservationCallbackSoapBinding" type="tns:HotelReservationCallbackPortType">
         <soap:binding style="document" transport="http://schemas.xmlsoap.org/soap/http"/>
         <operation name="hotelReserved">
@@ -87,6 +95,7 @@
             </input>
         </operation>
     </binding>
+
     <wsdl:service xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/" name="HotelReservationService">
         <wsdl:port name="HotelReservationPortTypePort" binding="tns:HotelReservationSoapBinding">
             <soap:address location="http://localhost:8080/webservice/HotelReservationService"/>

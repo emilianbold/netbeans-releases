@@ -56,6 +56,9 @@ import org.netbeans.modules.cnd.editor.reformat.Reformatter.Diff;
             storage.remove();
             storage.addFirst(diff);
             storage.addFirst(top);
+        } else  if (top != null && top.getStartOffset()==start){
+            storage.remove();
+            storage.addFirst(diff);
         } else {
             storage.addFirst(diff);
         }
@@ -66,6 +69,13 @@ import org.netbeans.modules.cnd.editor.reformat.Reformatter.Diff;
             return null;
         }
         return storage.getFirst();
+
+    }
+    /*package local*/ Diff getBeforeFirst(){
+        if (storage.size() < 2){
+            return null;
+        }
+        return storage.get(1);
     }
 
     /*package local*/ LinkedList<Diff> getStorage(){
