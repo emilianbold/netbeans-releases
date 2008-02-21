@@ -94,6 +94,7 @@ public class TargetConditionValidationHandler implements ValidationHandler {
             String nbBundle1 = mLoc.t("PRSR001: Target Join Condition...");
             title = Localizer.parse(nbBundle1);
             dd = new DialogDescriptor(conditionView, title, true, NotifyDescriptor.OK_CANCEL_OPTION, null, null);
+            
         } else {
             String nbBundle2 = mLoc.t("PRSR001: Outer Filter Condition...");
             title = Localizer.parse(nbBundle2);

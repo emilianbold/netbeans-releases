@@ -60,6 +60,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.Dimension;
 import org.netbeans.modules.mercurial.HgException;
+import org.netbeans.modules.mercurial.HgModuleConfig;
 import org.netbeans.modules.mercurial.Mercurial;
 import org.netbeans.modules.mercurial.ui.diff.DiffSetupSource;
 import org.netbeans.modules.mercurial.ui.diff.Setup;
@@ -126,6 +127,10 @@ class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.P
 
     boolean isOutSearch() {
         return bOutSearch;
+    }
+
+    boolean isShowMerges() {
+        return showMergesChkBox.isSelected();
     }
 
     
@@ -206,6 +211,9 @@ class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.P
         
         getActionMap().put("jumpNext", nextAction); // NOI18N
         getActionMap().put("jumpPrev", prevAction); // NOI18N
+        
+        showMergesChkBox.setSelected(HgModuleConfig.getDefault().getShowHistoryMerges());
+        showMergesChkBox.setOpaque(false);
     }
 
     public void actionPerformed(ActionEvent e) {
@@ -421,6 +429,8 @@ class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.P
         jSeparator2 = new javax.swing.JSeparator();
         bNext = new javax.swing.JButton();
         bPrev = new javax.swing.JButton();
+        jSeparator3 = new javax.swing.JToolBar.Separator();
+        showMergesChkBox = new javax.swing.JCheckBox();
         resultsPanel = new javax.swing.JPanel();
 
         setBorder(javax.swing.BorderFactory.createEmptyBorder(8, 8, 0, 8));
@@ -489,6 +499,20 @@ class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.P
         bPrev.getAccessibleContext().setAccessibleName("null");
         bPrev.getAccessibleContext().setAccessibleDescription("null");
 
+        jToolBar1.add(jSeparator3);
+
+        showMergesChkBox.setSelected(true);
+        org.openide.awt.Mnemonics.setLocalizedText(showMergesChkBox, org.openide.util.NbBundle.getMessage(SearchHistoryPanel.class, "MSG_SHOW_MERGE")); // NOI18N
+        showMergesChkBox.setFocusable(false);
+        showMergesChkBox.setHorizontalTextPosition(javax.swing.SwingConstants.RIGHT);
+        showMergesChkBox.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
+        showMergesChkBox.addChangeListener(new javax.swing.event.ChangeListener() {
+            public void stateChanged(javax.swing.event.ChangeEvent evt) {
+                showMergesChkBoxStateChanged(evt);
+            }
+        });
+        jToolBar1.add(showMergesChkBox);
+
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridy = 3;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
@@ -511,6 +535,10 @@ class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.P
     private void onViewToggle(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_onViewToggle
         refreshComponents(true);
     }//GEN-LAST:event_onViewToggle
+
+private void showMergesChkBoxStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_showMergesChkBoxStateChanged
+        HgModuleConfig.getDefault().setShowHistoryMerges( showMergesChkBox.isSelected());
+}//GEN-LAST:event_showMergesChkBoxStateChanged
 
     public void insertUpdate(DocumentEvent e) {
         validateUserInput();
@@ -545,9 +573,11 @@ class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.P
     private javax.swing.ButtonGroup buttonGroup1;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JSeparator jSeparator2;
+    private javax.swing.JToolBar.Separator jSeparator3;
     private javax.swing.JToolBar jToolBar1;
     private javax.swing.JPanel resultsPanel;
     private javax.swing.JPanel searchCriteriaPanel;
+    private javax.swing.JCheckBox showMergesChkBox;
     private javax.swing.JToggleButton tbDiff;
     private javax.swing.JToggleButton tbSummary;
     // End of variables declaration//GEN-END:variables

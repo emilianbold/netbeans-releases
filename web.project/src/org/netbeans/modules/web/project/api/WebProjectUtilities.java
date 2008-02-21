@@ -670,15 +670,15 @@ public class WebProjectUtilities {
             ep.setProperty(WebProjectProperties.J2EE_PLATFORM_CLASSPATH,
                     "${libs." + serverLibraryName + "." + "classpath" + "}"); //NOI18N
             ep.setProperty(WebServicesConstants.J2EE_PLATFORM_WSCOMPILE_CLASSPATH,
-                        "${libs." + serverLibraryName + "." + "wscompile" + "}");
+                        "${libs." + serverLibraryName + "." + "wscompile" + "}"); //NOI18N
             ep.setProperty(WebServicesConstants.J2EE_PLATFORM_WSIMPORT_CLASSPATH,
-                        "${libs." + serverLibraryName + "." + "wsimport" + "}");
+                        "${libs." + serverLibraryName + "." + "wsimport" + "}"); //NOI18N
             ep.setProperty(WebServicesConstants.J2EE_PLATFORM_WSGEN_CLASSPATH,
-                        "${libs." + serverLibraryName + "." + "wsgenerate" + "}");
+                        "${libs." + serverLibraryName + "." + "wsgenerate" + "}"); //NOI18N
             ep.setProperty(WebServicesConstants.J2EE_PLATFORM_WSIT_CLASSPATH, 
-                        "${libs." + serverLibraryName + "." + "wsinterop" + "}");
+                        "${libs." + serverLibraryName + "." + "wsinterop" + "}"); //NOI18N
             ep.setProperty(WebServicesConstants.J2EE_PLATFORM_JWSDP_CLASSPATH, 
-                        "${libs." + serverLibraryName + "." + "wsjwsdp" + "}");
+                        "${libs." + serverLibraryName + "." + "wsjwsdp" + "}"); //NOI18N
         }
         ep.setProperty(WebProjectProperties.J2EE_PLATFORM_SHARED,
                 Boolean.toString(h.isSharableProject() && serverLibraryName != null));

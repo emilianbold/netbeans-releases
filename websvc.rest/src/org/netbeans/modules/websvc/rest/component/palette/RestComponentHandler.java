@@ -98,8 +98,7 @@ public class RestComponentHandler implements ActiveEditorDrop {
         Lookup pItem = RestPaletteFactory.getCurrentPaletteItem();
         final Node n = pItem.lookup(Node.class);
         if(n == null) {
-            Logger.getLogger(getClass().getName()).log(Level.INFO, "handleTransfer", 
-                new IOException(NbBundle.getMessage(RestComponentHandler.class, 
+            Exceptions.printStackTrace(new IOException(NbBundle.getMessage(RestComponentHandler.class, 
                     "LBL_RestComponentNodeNull")));
             return false;
         }
@@ -114,8 +113,7 @@ public class RestComponentHandler implements ActiveEditorDrop {
                     }
                 }
                 if(data == null) {
-                    Logger.getLogger(getClass().getName()).log(Level.INFO, 
-                        "handleTransfer", new IOException(
+                    Exceptions.printStackTrace(new IOException(
                             NbBundle.getMessage(RestComponentHandler.class, 
                                 "LBL_RestComponentNotFound", n.getName())));
                     return false;
@@ -125,14 +123,12 @@ public class RestComponentHandler implements ActiveEditorDrop {
             }
         }
         if(data.getService() == null) {
-            Logger.getLogger(getClass().getName()).log(Level.INFO, "handleTransfer", 
-                new IOException(NbBundle.getMessage(RestComponentHandler.class, 
+            Exceptions.printStackTrace(new IOException(NbBundle.getMessage(RestComponentHandler.class, 
                     "LBL_RestComponentServiceNotFound", n.getName())));
             return false;
         }
         if(data.getService().getMethods() == null || data.getService().getMethods().size() == 0) {
-            Logger.getLogger(getClass().getName()).log(Level.INFO, "handleTransfer", 
-                new IOException(NbBundle.getMessage(RestComponentHandler.class, 
+            Exceptions.printStackTrace(new IOException(NbBundle.getMessage(RestComponentHandler.class, 
                     "LBL_RestComponentMethodNotFound", n.getName())));
             return false;
         }
@@ -195,9 +191,7 @@ public class RestComponentHandler implements ActiveEditorDrop {
         dialog.open();
 
         if (errors.size() > 0) {
-            for (Exception e : errors) {
-                Logger.getLogger(getClass().getName()).log(Level.INFO, "handleTransfer", e);
-            }
+            Exceptions.printStackTrace(errors.get(0));
             return false;
         }
         return true;

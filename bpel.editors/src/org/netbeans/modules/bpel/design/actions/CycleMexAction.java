@@ -8,7 +8,7 @@ import java.awt.event.ActionEvent;
 import javax.swing.Action;
 import org.netbeans.modules.bpel.design.DesignView;
 import org.netbeans.modules.bpel.design.model.patterns.Pattern;
-import org.netbeans.modules.bpel.nodes.actions.ActionType;
+import org.netbeans.modules.bpel.editors.api.nodes.actions.ActionType;
 import org.netbeans.modules.bpel.nodes.actions.BpelNodeAction;
 import org.openide.nodes.Node;
 

@@ -2,7 +2,7 @@
 <!--
 DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
-Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
 
 
 The contents of this file are subject to the terms of either the GNU
@@ -26,7 +26,7 @@ your own identifying information:
 Contributor(s):
 
 The Original Software is NetBeans. The Initial Developer of the Original
-Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
 Microsystems, Inc. All Rights Reserved.
 
 If you wish your version of this file to be governed by only the CDDL
@@ -57,4 +57,5 @@ See http://wiki.netbeans.info/wiki/view/DevFaqLogicalKeybindings for action name
     -->
     <bind actionName="ruby-reflow-paragraph" key="DS-P"/>
     <bind actionName="run-focused-spec" key="OS-F6"/>
+    <bind actionName="debug-focused-test" key="OS-F5"/>
 </bindings>

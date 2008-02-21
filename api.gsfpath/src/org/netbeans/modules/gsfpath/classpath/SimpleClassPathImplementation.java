@@ -48,8 +48,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 
-import org.netbeans.spi.gsfpath.classpath.ClassPathImplementation;
-import org.netbeans.spi.gsfpath.classpath.PathResourceImplementation;
+import org.netbeans.sfpi.gsfpath.classpath.ClassPathImplementation;
+import org.netbeans.sfpi.gsfpath.classpath.PathResourceImplementation;
 
 
 public class SimpleClassPathImplementation implements ClassPathImplementation {
