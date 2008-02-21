@@ -45,6 +45,7 @@ import java.util.*;
 import java.util.List;
 
 import org.netbeans.modules.cnd.api.model.*;
+import org.netbeans.modules.cnd.api.model.CsmFunction.OperatorKind;
 import org.netbeans.modules.cnd.api.model.deep.CsmCompoundStatement;
 import antlr.collections.AST;
 import java.io.DataInput;
@@ -69,6 +70,8 @@ import org.netbeans.modules.cnd.utils.cache.CharSequenceKey;
  */
 public class FunctionImpl<T> extends OffsetableDeclarationBase<T> 
         implements CsmFunction<T>, Disposable, RawNamable, CsmTemplate {
+    
+    private static final String OPERATOR = "operator"; // NOI18N;
     
     private static final CharSequence NULL = CharSequenceKey.create("<null>"); // NOI18N
     private CharSequence name;
@@ -156,7 +159,7 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
         if( name == null ) {
             name = NULL; // just to avoid NPE
         }
-        if (name.toString().startsWith("operator")) { // NOI18N
+        if (name.toString().startsWith(OPERATOR)) { // NOI18N
             setFlags(FLAGS_OPERATOR, true);
         }
         if (register) {
@@ -569,6 +572,19 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
     
     public boolean isOperator() {
         return hasFlags(FLAGS_OPERATOR);
+    }
+    
+    public OperatorKind getOperatorKind() {
+        OperatorKind out = OperatorKind.NONE;
+        if (isOperator()) {
+            String strName = getName().toString();
+            int start = strName.indexOf(OPERATOR);
+            assert start >= 0 : "must have word \"operator\" in name";
+            start += OPERATOR.length();
+            String signText = strName.substring(start).trim();
+            out = OperatorKind.getKindByImage(signText);
+        }
+        return out;                
     }
     
     public Collection<CsmScopeElement> getScopeElements() {
