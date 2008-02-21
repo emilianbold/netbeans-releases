@@ -65,6 +65,7 @@ public final class HibernateCfgCompletionManager {
     private static final String MAPPING_TAG = "mapping";
     private static final String RESOURCE_ATTRIB = "resource";
     private static final String NAME_ATTRIB = "name";
+    
     private static Map<String, Completor> completors = new HashMap<String, Completor>();
 
     private HibernateCfgCompletionManager() {
@@ -192,22 +193,29 @@ public final class HibernateCfgCompletionManager {
         } else {
             return;
         }
-
+        
         String propName = HibernateCompletionEditorUtil.getHbPropertyName(propTag);
-        if (propName.equals(Environment.DIALECT)) {
-            int caretOffset = context.getCaretOffset();
-            String typedChars = context.getTypedPrefix();
-
-            for (int i = 0; i < HibernateCfgProperties.dialects.length; i++) {
-                if (HibernateCfgProperties.dialects[i].startsWith(typedChars.trim())) {
-                    HibernateCompletionItem item = HibernateCompletionItem.createAttribValueItem(caretOffset - typedChars.length(),
-                            HibernateCfgProperties.dialects[i], null);
+        int caretOffset = context.getCaretOffset();
+        String typedChars = context.getTypedPrefix();
+        
+        Object possibleValue = HibernateCfgProperties.getPossiblePropertyValue(propName);
+        
+        if (possibleValue instanceof String[]) {
+            
+            // Add the values in the String[] as completion items
+            String[] values = (String[])possibleValue;
+            
+            for (int i = 0; i < values.length; i++) {
+                if (values[i].startsWith(typedChars.trim())
+                        || values[i].startsWith( "org.hibernate.dialect." + typedChars.trim()) ) { // NOI18N
+                    HibernateCompletionItem item = 
+                            HibernateCompletionItem.createHbPropertyValueItem(caretOffset, values[i]);
                     resultSet.addItem(item);
                 }
             }
 
-            resultSet.setAnchorOffset(context.getCurrentToken().getOffset() + 1);
-        }
+            resultSet.setAnchorOffset(context.getCurrentToken().getPrevious().getOffset() + 1);
+        } 
     }
 
     public void completeAttributes(CompletionResultSet resultSet, CompletionContext context) {
@@ -287,9 +295,10 @@ public final class HibernateCfgCompletionManager {
             List<HibernateCompletionItem> results = new ArrayList<HibernateCompletionItem>();
             int caretOffset = context.getCaretOffset();
             String typedChars = context.getTypedPrefix();
-
+            
             for (int i = 0; i < itemTextAndDocs.length; i += 2) {
-                if (itemTextAndDocs[i].startsWith(typedChars.trim())) {
+                if (itemTextAndDocs[i].startsWith(typedChars.trim()) 
+                        || itemTextAndDocs[i].startsWith( "hibernate." + typedChars.trim()) ) { // NOI18N
                     HibernateCompletionItem item = HibernateCompletionItem.createAttribValueItem(caretOffset - typedChars.length(),
                             itemTextAndDocs[i], itemTextAndDocs[i + 1]);
                     results.add(item);

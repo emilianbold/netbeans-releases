@@ -54,6 +54,7 @@ import org.netbeans.modules.xml.text.syntax.dom.EndTag;
 import org.netbeans.modules.xml.text.syntax.dom.StartTag;
 import org.netbeans.modules.xml.text.syntax.dom.Tag;
 import org.w3c.dom.Node;
+import org.w3c.dom.Text;
 
 /**
  * Tracks context information for a code completion scenario
@@ -109,6 +110,13 @@ public class CompletionContext {
                     completionType = CompletionType.VALUE;
                     break;
                 }
+                if (chars != null && !chars.startsWith("<") &&
+                        token.getPrevious().getImage().trim().equals(">")) { // NOI18N
+
+                    completionType = CompletionType.VALUE;
+                    typedChars = "";
+                    break;
+                }
                 if (chars != null && !chars.equals("<") &&
                         token.getPrevious().getImage().trim().equals(">")) { // NOI18N
                     completionType = CompletionType.NONE;
@@ -153,11 +161,27 @@ public class CompletionContext {
                         completionType = CompletionType.NONE;
                         break;
                     }
+                    if (token != null &&
+                            token.getImage().trim().startsWith("</")) {
+                        typedChars = "";
+                        completionType = CompletionType.VALUE;
+                        break;
+                    }
                     if (element.getElementOffset() + 1 != this.caretOffset) {
                         StartTag tag = (StartTag) element;
                         typedChars = tag.getTagName();
                     }
                 }
+                
+                if (element instanceof Text) {
+                    if (token != null &&
+                            token.getImage().trim().startsWith("</")) {
+                        typedChars = token.getPrevious().getImage().trim();
+                        completionType = CompletionType.VALUE;
+                        break;
+                    }
+                }
+                
                 if (lastTypedChar == '>') {
                     completionType = CompletionType.VALUE;
                     break;

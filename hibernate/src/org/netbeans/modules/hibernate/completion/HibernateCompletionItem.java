@@ -114,7 +114,6 @@ public abstract class HibernateCompletionItem implements CompletionItem {
      * @param smartItem
      * @return
      */
-          
     public static HibernateCompletionItem createTypeItem(int substitutionOffset, TypeElement elem, ElementHandle<TypeElement> elemHandle,
             boolean deprecated, boolean smartItem) {
         return new ClassItem(substitutionOffset, elem, elemHandle, deprecated, smartItem);
@@ -179,6 +178,18 @@ public abstract class HibernateCompletionItem implements CompletionItem {
         return new HbMappingFileItem(substitutionOffset, displayText);
     }
 
+    /**
+     * Creates items for completing certain Hibernate properties
+     * 
+     * @param substitutionOffset
+     * @param displayText
+     * @return
+     */
+    public static HibernateCompletionItem createHbPropertyValueItem(int substitutionOffset, String displayText) {
+        return new HbPropertyValueItem(substitutionOffset, displayText);
+    }
+
+    
     protected int substitutionOffset;
 
     protected HibernateCompletionItem(int substitutionOffset) {
@@ -208,7 +219,7 @@ public abstract class HibernateCompletionItem implements CompletionItem {
             doc.remove(offset, len);
             doc.insertString(position.getOffset(), text.toString(), null);
         } catch (BadLocationException ble) {
-            // nothing can be done to update
+        // nothing can be done to update
         } finally {
             doc.atomicUnlock();
         }
@@ -750,6 +761,44 @@ public abstract class HibernateCompletionItem implements CompletionItem {
         @Override
         protected ImageIcon getIcon() {
             return new ImageIcon(Utilities.loadImage(HB_MAPPING_ICON));
+        }
+    }
+
+    private static class HbPropertyValueItem extends HibernateCompletionItem {
+
+        private String displayText;
+
+        public HbPropertyValueItem(int substitutionOffset, String displayText) {
+            super(substitutionOffset);
+            this.displayText = displayText;
+        }
+
+        public int getSortPriority() {
+            if(displayText.startsWith("--")) // NOI18N
+                // The entry such as "--Enter your custom class--" should be the last 
+                return 101;
+            else if(displayText.equals("true")) // NOI18N
+                // Want the "true" always to be the first
+                return 98;
+            else if(displayText.equals("false")) // NOI18N
+                // Want the "false" always to be the second
+                return 99;
+            else
+                // Everything else can be order alphabetically
+                return 100;
+        }
+
+        public CharSequence getSortText() {
+            return displayText;
+        }
+
+        public CharSequence getInsertPrefix() {
+            return displayText;
+        }
+
+        @Override
+        protected String getLeftHtmlText() {
+            return displayText;
         }
     }
 
