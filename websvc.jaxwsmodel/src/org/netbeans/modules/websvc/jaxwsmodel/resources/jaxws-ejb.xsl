@@ -83,38 +83,39 @@ made subject to such option by the copyright holder.
             </xsl:if>
             <xsl:for-each select="/jaxws:jax-ws/jaxws:services/jaxws:service">
                 <xsl:if test="not(jaxws:wsdl-url)">
-                    <xsl:variable name="wsname" select="@name"/>
+                    <xsl:variable name="wsname" select="@name"/>                    
                     <xsl:variable name="seiclass" select="jaxws:implementation-class"/>
                     <target name="wsgen-{$wsname}" depends="wsgen-init, -do-compile">
-                    <xsl:choose>
-                         <xsl:when test="$jaxwsversion = 'jaxws21lib'">
-                             <wsgen
-                                 xendorsed="true"
-                                 fork="true"
-                                 destdir="${{build.generated.dir}}/wsgen/binaries"
-                                 sourcedestdir="${{build.generated.dir}}/wsgen/service"
-                                 resourcedestdir="${{build.generated.dir}}/wsgen/service"
-                                 keep="false"
-                                 genwsdl="true"
-                                 sei="{$seiclass}">
-                                 <classpath path="${{java.home}}/../lib/tools.jar:${{classes.dir}}:${{j2ee.platform.wsgen.classpath}}:${{javac.classpath}}"/>
-                                 <jvmarg value="-Djava.endorsed.dirs=${{jaxws.endorsed.dir}}"/>
-                             </wsgen>
-                         </xsl:when>
-                         <xsl:otherwise>
-                             <wsgen
-                                 fork="true"
-                                 destdir="${{build.generated.dir}}/wsgen/binaries"
-                                 sourcedestdir="${{build.generated.dir}}/wsgen/service"
-                                 resourcedestdir="${{build.generated.dir}}/wsgen/service"
-                                 keep="false"
-                                 genwsdl="true"
-                                 sei="{$seiclass}">
-                                 <classpath path="${{java.home}}/../lib/tools.jar:${{classes.dir}}:${{j2ee.platform.wsgen.classpath}}:${{javac.classpath}}"/>
-                                 <jvmarg value="-Djava.endorsed.dirs=${{jaxws.endorsed.dir}}"/>
-                             </wsgen>                            
-                        </xsl:otherwise>
-                    </xsl:choose>
+                        <mkdir dir="${{build.generated.dir}}/wsgen/service/{$wsname}/"/>
+                        <xsl:choose>
+                             <xsl:when test="$jaxwsversion = 'jaxws21lib'">
+                                 <wsgen
+                                     xendorsed="true"
+                                     fork="true"
+                                     destdir="${{build.generated.dir}}/wsgen/binaries"
+                                     sourcedestdir="${{build.generated.dir}}/wsgen/service/{$wsname}/"
+                                     resourcedestdir="${{build.generated.dir}}/wsgen/service"
+                                     keep="false"
+                                     genwsdl="true"
+                                     sei="{$seiclass}">
+                                     <classpath path="${{java.home}}/../lib/tools.jar:${{classes.dir}}:${{j2ee.platform.wsgen.classpath}}:${{javac.classpath}}"/>
+                                     <jvmarg value="-Djava.endorsed.dirs=${{jaxws.endorsed.dir}}"/>
+                                 </wsgen>
+                             </xsl:when>
+                             <xsl:otherwise>
+                                 <wsgen
+                                     fork="true"
+                                     destdir="${{build.generated.dir}}/wsgen/binaries"
+                                     sourcedestdir="${{build.generated.dir}}/wsgen/service"
+                                     resourcedestdir="${{build.generated.dir}}/wsgen/service/{$wsname}/"
+                                     keep="false"
+                                     genwsdl="true"
+                                     sei="{$seiclass}">
+                                     <classpath path="${{java.home}}/../lib/tools.jar:${{classes.dir}}:${{j2ee.platform.wsgen.classpath}}:${{javac.classpath}}"/>
+                                     <jvmarg value="-Djava.endorsed.dirs=${{jaxws.endorsed.dir}}"/>
+                                 </wsgen>                            
+                            </xsl:otherwise>
+                        </xsl:choose>
                     </target>
                 </xsl:if>
             </xsl:for-each>

@@ -55,19 +55,19 @@ import org.netbeans.modules.xml.text.syntax.XMLSyntaxSupport;
 public class AttributeValueFinder {
 
     private final XMLSyntaxSupport syntaxSupport;
-    private final String attrName;
     private final int start;
 
     private int foundOffset = -1;
     private String foundValue;
 
-    public AttributeValueFinder(XMLSyntaxSupport syntaxSupport, String attrName, int start) {
+    public AttributeValueFinder(XMLSyntaxSupport syntaxSupport, int start) {
         this.syntaxSupport = syntaxSupport;
-        this.attrName = attrName;
         this.start = start;
     }
 
-    public boolean find() throws BadLocationException {
+    public boolean find(String attrName) throws BadLocationException {
+        foundOffset = -1;
+        foundValue = null;
         BaseDocument doc = syntaxSupport.getDocument();
         TokenItem item = syntaxSupport.getTokenChain(start, Math.min(start + 1, doc.getLength()));
         if (item == null || item.getTokenID() != XMLDefaultTokenContext.TAG) {
@@ -97,7 +97,7 @@ public class AttributeValueFinder {
         return foundOffset;
     }
 
-    public String getFoundValue() {
+    public String getValue() {
         return foundValue;
     }
 }

@@ -95,11 +95,6 @@ public class CsmRefactoringElementImpl extends
     public PositionBounds getPosition() {
         return bounds;
     }
-
-    @Override
-    public void openInEditor() {
-        CsmUtilities.openSource((CsmOffsetable)elem);
-    }
     
     public static RefactoringElementImplementation create(CsmReference ref,boolean nameInBold) {
         CsmFile csmFile = ref.getContainingFile();

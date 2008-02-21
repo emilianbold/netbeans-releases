@@ -43,11 +43,12 @@ package org.netbeans.modules.ruby;
 import org.jruby.ast.Node;
 import org.jruby.ast.RootNode;
 import org.jruby.parser.RubyParserResult;
-import org.netbeans.api.gsf.Element;
-import org.netbeans.api.gsf.OffsetRange;
-import org.netbeans.api.gsf.ParserFile;
-import org.netbeans.api.gsf.ParserResult;
-import org.netbeans.api.gsf.annotations.NonNull;
+import org.netbeans.fpi.gsf.ElementHandle;
+import org.netbeans.modules.ruby.elements.Element;
+import org.netbeans.fpi.gsf.OffsetRange;
+import org.netbeans.fpi.gsf.ParserFile;
+import org.netbeans.fpi.gsf.ParserResult;
+import org.netbeans.fpi.gsf.annotations.NonNull;
 import org.netbeans.modules.ruby.elements.AstRootElement;
 
 
@@ -68,9 +69,9 @@ public class RubyParseResult extends ParserResult {
     private RubyParserResult jrubyResult;
     private boolean commentsAdded;
 
-    public RubyParseResult(ParserFile file, AstRootElement rootElement, AstTreeNode ast, Node root,
+    public RubyParseResult(RubyParser parser, ParserFile file, AstRootElement rootElement, AstTreeNode ast, Node root,
         RootNode realRoot, RubyParserResult jrubyResult) {
-        super(file);
+        super(parser, file, RubyMimeResolver.RUBY_MIME_TYPE);
         this.rootElement = rootElement;
         this.ast = ast;
         this.root = root;
@@ -87,8 +88,8 @@ public class RubyParseResult extends ParserResult {
     }
 
     @Override
-    public Element getRoot() {
-        return rootElement;
+    public ElementHandle getRoot() {
+        return RubyParser.createHandle(this, rootElement);
     }
 
     /** The root node of the AST produced by the parser.

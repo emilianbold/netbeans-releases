@@ -47,17 +47,17 @@ import javax.swing.text.JTextComponent;
 public class PreviousCamelCasePosition extends AbstractCamelCasePosition {
     public static final String previousCamelCasePosition = "previous-camel-case-position"; //NOI18N
 
-    public PreviousCamelCasePosition(Action originalAction, Language language) {
-        this(previousCamelCasePosition, originalAction, language);
+    public PreviousCamelCasePosition(Action originalAction) {
+        this(previousCamelCasePosition, originalAction);
     }
 
-    protected PreviousCamelCasePosition(String name, Action originalAction, Language language) {
-        super(name, originalAction, language);
+    protected PreviousCamelCasePosition(String name, Action originalAction) {
+        super(name, originalAction);
     }
 
     @Override
     protected int newOffset(JTextComponent textComponent) {
-        return CamelCaseOperations.previousCamelCasePosition(textComponent, language);
+        return CamelCaseOperations.previousCamelCasePosition(textComponent);
     }
 
     @Override

@@ -61,7 +61,8 @@ public class CustomSaasNodeChildren extends SaasNodeChildren<SaasMethod> {
     
     @Override
     protected void updateKeys() {
-        if (getSaas().getState() == Saas.State.READY) {
+        if (getSaas().getState() == Saas.State.RESOLVED ||
+            getSaas().getState() == Saas.State.READY) {
             setKeys(getSaas().getMethods());
         } else {
             java.util.List<SaasMethod> emptyList = Collections.emptyList();

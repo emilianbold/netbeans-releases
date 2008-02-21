@@ -40,8 +40,8 @@
  */
 package org.netbeans.modules.gsf;
 
-import org.netbeans.api.gsf.ElementKind;
-import org.netbeans.api.gsf.HtmlFormatter;
+import org.netbeans.fpi.gsf.ElementKind;
+import org.netbeans.fpi.gsf.HtmlFormatter;
 
 
 /**

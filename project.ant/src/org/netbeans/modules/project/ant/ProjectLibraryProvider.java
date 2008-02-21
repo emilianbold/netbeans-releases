@@ -52,6 +52,7 @@ import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.api.project.ui.OpenProjects;
+import org.netbeans.api.queries.CollocationQuery;
 import org.netbeans.api.queries.SharabilityQuery;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.netbeans.spi.project.libraries.ArealLibraryProvider;
@@ -923,7 +924,8 @@ public class ProjectLibraryProvider implements ArealLibraryProvider<ProjectLibra
         String[] volumes = LibrariesSupport.getLibraryTypeProvider(lib.getType()).getSupportedVolumeTypes();
         for (String volume : volumes) {
             List<URL> volumeContent = new ArrayList<URL>();
-            for (URL libEntry : lib.getContent(volume)) {
+            for (URL origlibEntry : lib.getContent(volume)) {
+                URL libEntry = origlibEntry;
                 String jarFolder = null;
                 if ("jar".equals(libEntry.getProtocol())) { // NOI18N
                     jarFolder = getJarFolder(libEntry);
@@ -942,17 +944,25 @@ public class ProjectLibraryProvider implements ArealLibraryProvider<ProjectLibra
                         continue;
                     }
                 }
+                URL u;
                 FileObject newFO;
                 String name;
-                if (libEntryFO.isFolder()) {
-                    newFO = FileChooserAccessory.copyFolderRecursively(libEntryFO, sharedLibFolder);
-                    name = sharedLibFolder.getNameExt()+File.separatorChar+newFO.getName()+File.separatorChar;
+                if (CollocationQuery.areCollocated(libBaseFolder, FileUtil.toFile(libEntryFO))) {
+                    // if the jar/folder is in relation to the library folder (parent+child/same vcs)
+                    // don't replicate it but reference the original file.
+                    newFO = libEntryFO;
+                    name = PropertyUtils.relativizeFile(libBaseFolder, FileUtil.toFile(newFO));
                 } else {
-                    String libEntryName = getUniqueName(sharedLibFolder, libEntryFO.getName(), libEntryFO.getExt());
-                    newFO = FileUtil.copyFile(libEntryFO, sharedLibFolder, libEntryName);
-                    name = sharedLibFolder.getNameExt()+File.separatorChar+newFO.getNameExt();
+                    if (libEntryFO.isFolder()) {
+                        newFO = FileChooserAccessory.copyFolderRecursively(libEntryFO, sharedLibFolder);
+                        name = sharedLibFolder.getNameExt()+File.separatorChar+newFO.getName()+File.separatorChar;
+                    } else {
+                        String libEntryName = getUniqueName(sharedLibFolder, libEntryFO.getName(), libEntryFO.getExt());
+                        newFO = FileUtil.copyFile(libEntryFO, sharedLibFolder, libEntryName);
+                        name = sharedLibFolder.getNameExt()+File.separatorChar+newFO.getNameExt();
+                    }
                 }
-                URL u = LibrariesSupport.convertFilePathToURL(name);
+                u = LibrariesSupport.convertFilePathToURL(name);
                 if (FileUtil.isArchiveFile(newFO)) {
                     u = FileUtil.getArchiveRoot(u);
                 }

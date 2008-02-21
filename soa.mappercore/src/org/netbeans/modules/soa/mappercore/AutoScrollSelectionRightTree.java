@@ -25,9 +25,11 @@ public class AutoScrollSelectionRightTree implements MapperSelectionListener {
 
     public void mapperSelectionChanged(MapperSelectionEvent event) {
         TreePath treePath = rightTree.getSelectionModel().getSelectedPath();
-        if (treePath == currentPath) return; 
+        if (treePath == currentPath) { return; }
         
         currentPath = treePath;
+        if (treePath == null) { return; }
+        
         MapperNode node = rightTree.getMapper().getNode(treePath, true);
         int h = node.getContentHeight();
         int y = node.getContentCenterY();

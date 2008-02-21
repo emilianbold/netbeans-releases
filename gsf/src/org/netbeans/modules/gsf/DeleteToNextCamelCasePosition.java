@@ -34,8 +34,8 @@ import javax.swing.text.JTextComponent;
 public final class DeleteToNextCamelCasePosition extends SelectNextCamelCasePosition {
     public static final String deleteNextCamelCasePosition = "delete-next-camel-case-position"; //NOI18N
 
-    public DeleteToNextCamelCasePosition(Action originalAction, Language language) {
-        super(deleteNextCamelCasePosition, originalAction, language);
+    public DeleteToNextCamelCasePosition(Action originalAction) {
+        super(deleteNextCamelCasePosition, originalAction);
     }
 
     @Override

@@ -62,6 +62,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.api.queries.FileEncodingQuery;
+import org.netbeans.modules.j2ee.common.project.ui.ProjectProperties;
 import org.netbeans.modules.j2ee.common.sharability.SharabilityUtilities;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
@@ -336,7 +337,7 @@ public class EjbJarProjectGenerator {
             try {
                 EjbJar root = DDProvider.getDefault().getDDRoot(ejbJarXml);
                 boolean writeDD = false;
-                if (new BigDecimal(EjbJar.VERSION_2_0).equals(root.getVersion()) && j2eeLevel.equals(EjbJarProjectProperties.J2EE_1_4)) { // NOI18N
+                if (new BigDecimal(EjbJar.VERSION_2_0).equals(root.getVersion()) && j2eeLevel.equals(ProjectProperties.J2EE_1_4)) { // NOI18N
                     root.setVersion(new BigDecimal(EjbJar.VERSION_2_1));
                     writeDD = true;
                 }
@@ -451,7 +452,7 @@ public class EjbJarProjectGenerator {
         ep.setProperty(EjbJarProjectProperties.JAVAC_SOURCE, sourceLevel); //NOI18N
         ep.setProperty(EjbJarProjectProperties.JAVAC_TARGET, sourceLevel); //NOI18N
         
-        ep.setProperty(EjbJarProjectProperties.JAVAC_CLASSPATH, "");
+        ep.setProperty(ProjectProperties.JAVAC_CLASSPATH, "");
         
         ep.setProperty(EjbJarProjectProperties.DIST_DIR, "dist");
         ep.setProperty(EjbJarProjectProperties.DIST_JAR, "${"+EjbJarProjectProperties.DIST_DIR+"}/" + "${" + EjbJarProjectProperties.JAR_NAME + "}");
@@ -466,8 +467,19 @@ public class EjbJarProjectGenerator {
         ep.setProperty(EjbJarProjectProperties.J2EE_SERVER_TYPE, deployment.getServerID(serverInstanceID));
         
         if (h.isSharableProject() && serverLibraryName != null) {
-            String libraryName = SharabilityUtilities.getPrefixedLibraryName(serverLibraryName);
-            ep.setProperty(EjbJarProjectProperties.J2EE_PLATFORM_CLASSPATH, "${libs." + libraryName + ".classpath}"); //NOI18N
+            // TODO constants
+            ep.setProperty(EjbJarProjectProperties.J2EE_PLATFORM_CLASSPATH,
+                    "${libs." + serverLibraryName + "." + "classpath" + "}"); //NOI18N
+            ep.setProperty(WebServicesConstants.J2EE_PLATFORM_WSCOMPILE_CLASSPATH,
+                        "${libs." + serverLibraryName + "." + "wscompile" + "}"); //NOI18N
+            ep.setProperty(WebServicesConstants.J2EE_PLATFORM_WSIMPORT_CLASSPATH,
+                        "${libs." + serverLibraryName + "." + "wsimport" + "}"); //NOI18N
+            ep.setProperty(WebServicesConstants.J2EE_PLATFORM_WSGEN_CLASSPATH,
+                        "${libs." + serverLibraryName + "." + "wsgenerate" + "}"); //NOI18N
+            ep.setProperty(WebServicesConstants.J2EE_PLATFORM_WSIT_CLASSPATH, 
+                        "${libs." + serverLibraryName + "." + "wsinterop" + "}"); //NOI18N
+            ep.setProperty(WebServicesConstants.J2EE_PLATFORM_JWSDP_CLASSPATH, 
+                        "${libs." + serverLibraryName + "." + "wsjwsdp" + "}"); //NOI18N
         }
         ep.setProperty(EjbJarProjectProperties.J2EE_PLATFORM_SHARED,
                 Boolean.toString(h.isSharableProject() && serverLibraryName != null));        
@@ -475,13 +487,13 @@ public class EjbJarProjectGenerator {
         ep.setProperty(EjbJarProjectProperties.JAVAC_DEBUG, "true");
         ep.setProperty(EjbJarProjectProperties.JAVAC_DEPRECATION, "false");
         
-        ep.setProperty(EjbJarProjectProperties.JAVAC_TEST_CLASSPATH, new String[] {
+        ep.setProperty(ProjectProperties.JAVAC_TEST_CLASSPATH, new String[] {
             "${javac.classpath}:", // NOI18N
             "${build.classes.dir}:", // NOI18N
             "${libs.junit.classpath}:", // NOI18N
             "${libs.junit_4.classpath}", // NOI18N
         });
-        ep.setProperty(EjbJarProjectProperties.RUN_TEST_CLASSPATH, new String[] {
+        ep.setProperty(ProjectProperties.RUN_TEST_CLASSPATH, new String[] {
             "${javac.test.classpath}:", // NOI18N
             "${build.test.classes.dir}", // NOI18N
         });
@@ -490,15 +502,15 @@ public class EjbJarProjectGenerator {
         });
         
         ep.setProperty(EjbJarProjectProperties.BUILD_DIR, DEFAULT_BUILD_DIR);
-        ep.setProperty(EjbJarProjectProperties.BUILD_TEST_CLASSES_DIR, "${build.dir}/test/classes"); // NOI18N
+        ep.setProperty(ProjectProperties.BUILD_TEST_CLASSES_DIR, "${build.dir}/test/classes"); // NOI18N
         ep.setProperty(EjbJarProjectProperties.BUILD_TEST_RESULTS_DIR, "${build.dir}/test/results"); // NOI18N
         ep.setProperty(EjbJarProjectProperties.BUILD_GENERATED_DIR, "${"+EjbJarProjectProperties.BUILD_DIR+"}/generated");
-        ep.setProperty(EjbJarProjectProperties.BUILD_CLASSES_DIR, "${"+EjbJarProjectProperties.BUILD_DIR+"}/jar");
+        ep.setProperty(ProjectProperties.BUILD_CLASSES_DIR, "${"+EjbJarProjectProperties.BUILD_DIR+"}/jar");
         ep.setProperty(EjbJarProjectProperties.BUILD_EAR_CLASSES_DIR, "${"+EjbJarProjectProperties.BUILD_DIR+"}/jar");
         ep.setProperty(EjbJarProjectProperties.BUILD_CLASSES_EXCLUDES, "**/*.java,**/*.form,**/.nbattrs");
         ep.setProperty(EjbJarProjectProperties.DIST_JAVADOC_DIR, "${"+EjbJarProjectProperties.DIST_DIR+"}/javadoc");
         ep.setProperty(EjbJarProjectProperties.JAVA_PLATFORM, "default_platform");
-        ep.setProperty(EjbJarProjectProperties.DEBUG_CLASSPATH, "${"+EjbJarProjectProperties.JAVAC_CLASSPATH+"}:${"+EjbJarProjectProperties.BUILD_CLASSES_DIR+"}");
+        ep.setProperty(EjbJarProjectProperties.DEBUG_CLASSPATH, "${"+ProjectProperties.JAVAC_CLASSPATH+"}:${"+ProjectProperties.BUILD_CLASSES_DIR+"}");
         ep.setProperty(EjbJarProjectProperties.JAVADOC_PRIVATE, "false"); // NOI18N
         ep.setProperty(EjbJarProjectProperties.JAVADOC_NO_TREE, "false"); // NOI18N
         ep.setProperty(EjbJarProjectProperties.JAVADOC_USE, "true"); // NOI18N
@@ -544,13 +556,39 @@ public class EjbJarProjectGenerator {
         if (!h.isSharableProject() || serverLibraryName == null) {
             String classpath = Utils.toClasspathString(j2eePlatform.getClasspathEntries());
             ep.setProperty(EjbJarProjectProperties.J2EE_PLATFORM_CLASSPATH, classpath);
-        }
         
-        // set j2ee.platform.wscompile.classpath
-        if (j2eePlatform.isToolSupported(J2eePlatform.TOOL_WSCOMPILE)) {
-            File[] wsClasspath = j2eePlatform.getToolClasspathEntries(J2eePlatform.TOOL_WSCOMPILE);
-            ep.setProperty(WebServicesConstants.J2EE_PLATFORM_WSCOMPILE_CLASSPATH,
-                    Utils.toClasspathString(wsClasspath));
+            // set j2ee.platform.wscompile.classpath
+            if (j2eePlatform.isToolSupported(J2eePlatform.TOOL_WSCOMPILE)) {
+                File[] wsClasspath = j2eePlatform.getToolClasspathEntries(J2eePlatform.TOOL_WSCOMPILE);
+                ep.setProperty(WebServicesConstants.J2EE_PLATFORM_WSCOMPILE_CLASSPATH,
+                        Utils.toClasspathString(wsClasspath));
+            }
+
+            // set j2ee.platform.wsimport.classpath
+            if (j2eePlatform.isToolSupported(J2eePlatform.TOOL_WSIMPORT)) {
+                File[] wsClasspath = j2eePlatform.getToolClasspathEntries(J2eePlatform.TOOL_WSIMPORT);
+                ep.setProperty(WebServicesConstants.J2EE_PLATFORM_WSIMPORT_CLASSPATH,
+                        Utils.toClasspathString(wsClasspath));
+            }
+
+            // set j2ee.platform.wsgen.classpath
+            if (j2eePlatform.isToolSupported(J2eePlatform.TOOL_WSGEN)) {
+                File[] wsClasspath = j2eePlatform.getToolClasspathEntries(J2eePlatform.TOOL_WSGEN);
+                ep.setProperty(WebServicesConstants.J2EE_PLATFORM_WSGEN_CLASSPATH,
+                        Utils.toClasspathString(wsClasspath));
+            }
+            
+            if (j2eePlatform.isToolSupported(J2eePlatform.TOOL_WSIT)) {
+                File[] wsClasspath = j2eePlatform.getToolClasspathEntries(J2eePlatform.TOOL_WSIT);
+                ep.setProperty(WebServicesConstants.J2EE_PLATFORM_WSIT_CLASSPATH, 
+                        Utils.toClasspathString(wsClasspath));
+            }
+
+            if (j2eePlatform.isToolSupported(J2eePlatform.TOOL_JWSDP)) {
+                File[] wsClasspath = j2eePlatform.getToolClasspathEntries(J2eePlatform.TOOL_JWSDP);
+                ep.setProperty(WebServicesConstants.J2EE_PLATFORM_JWSDP_CLASSPATH, 
+                        Utils.toClasspathString(wsClasspath));
+            }            
         }
         
         // ant deployment support

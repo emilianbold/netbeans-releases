@@ -41,10 +41,10 @@
 
 package org.netbeans.modules.php.editor.completion;
 
-import org.netbeans.api.gsf.CompilationInfo;
-import org.netbeans.api.gsf.Completable.QueryType;
-import org.netbeans.api.gsf.HtmlFormatter;
-import org.netbeans.api.gsf.NameKind;
+import org.netbeans.fpi.gsf.CompilationInfo;
+import org.netbeans.fpi.gsf.Completable.QueryType;
+import org.netbeans.fpi.gsf.HtmlFormatter;
+import org.netbeans.fpi.gsf.NameKind;
 import org.netbeans.modules.php.model.SourceElement;
 
 /**

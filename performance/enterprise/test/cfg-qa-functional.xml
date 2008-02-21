@@ -60,7 +60,23 @@ made subject to such option by the copyright holder.
              executor="ide_performance" name="UI responsiveness - Actions" >
         <testset dir="qa-functional/src">
             <patternset>
-                <include name="gui/EPMeasureActions.class"/>
+                <include name="gui/EPMeasureActions1.class"/>
+            </patternset>
+        </testset>
+    </testbag>
+    <testbag testattribs="all or ui_responsiveness or actions" prio="2"
+             executor="ide_performance" name="UI responsiveness - Actions" >
+        <testset dir="qa-functional/src">
+            <patternset>
+                <include name="gui/EPMeasureActions2.class"/>
+            </patternset>
+        </testset>
+    </testbag>
+    <testbag testattribs="all or ui_responsiveness or actions" prio="2"
+             executor="ide_performance" name="UI responsiveness - Actions" >
+        <testset dir="qa-functional/src">
+            <patternset>
+                <include name="gui/EPMeasureActions3.class"/>
             </patternset>
         </testset>
     </testbag>
@@ -86,7 +102,23 @@ made subject to such option by the copyright holder.
              executor="ide_performance" name="UI responsiveness - Actions" >
         <testset dir="qa-functional/src">
             <patternset>
-                <include name="gui/EPMeasureActions.class"/>
+                <include name="gui/EPMeasureActions1.class"/>
+            </patternset>
+        </testset>
+    </testbag>
+    <testbag testattribs="(all or ui_responsiveness or actions) and NOT once" prio="5"
+             executor="ide_performance" name="UI responsiveness - Actions" >
+        <testset dir="qa-functional/src">
+            <patternset>
+                <include name="gui/EPMeasureActions2.class"/>
+            </patternset>
+        </testset>
+    </testbag>
+    <testbag testattribs="(all or ui_responsiveness or actions) and NOT once" prio="5"
+             executor="ide_performance" name="UI responsiveness - Actions" >
+        <testset dir="qa-functional/src">
+            <patternset>
+                <include name="gui/EPMeasureActions3.class"/>
             </patternset>
         </testset>
     </testbag>
@@ -112,7 +144,23 @@ made subject to such option by the copyright holder.
              executor="ide_performance" name="UI responsiveness - Actions" >
         <testset dir="qa-functional/src">
             <patternset>
-                <include name="gui/EPMeasureActions.class"/>
+                <include name="gui/EPMeasureActions1.class"/>
+            </patternset>
+        </testset>
+    </testbag>
+    <testbag testattribs="(all or ui_responsiveness or actions) and NOT once" prio="8"
+             executor="ide_performance" name="UI responsiveness - Actions" >
+        <testset dir="qa-functional/src">
+            <patternset>
+                <include name="gui/EPMeasureActions2.class"/>
+            </patternset>
+        </testset>
+    </testbag>
+    <testbag testattribs="(all or ui_responsiveness or actions) and NOT once" prio="8"
+             executor="ide_performance" name="UI responsiveness - Actions" >
+        <testset dir="qa-functional/src">
+            <patternset>
+                <include name="gui/EPMeasureActions3.class"/>
             </patternset>
         </testset>
     </testbag>

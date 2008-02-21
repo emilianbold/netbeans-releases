@@ -70,10 +70,10 @@ public class WsdlUtil {
         return null;
     }
     
-    public static WsdlData getWsdlDataAsynchronously(String url, String serviceName) {
+    public static WsdlData getWsdlData(String url, String serviceName, boolean synchronous) {
         WsdlDataManager manager = Lookup.getDefault().lookup(WsdlDataManager.class);
         if (manager != null) {
-            return manager.getWsdlData(url, serviceName, false);
+            return manager.getWsdlData(url, serviceName, synchronous);
         } 
         return null;
     }
@@ -84,6 +84,20 @@ public class WsdlUtil {
             manager.removeWsdlData(data.getOriginalWsdlUrl(), data.getName());
         }
     }    
+
+    public static void saveWsdlData(WsdlData data) {
+        WsdlDataManager manager = Lookup.getDefault().lookup(WsdlDataManager.class);
+        if (manager != null) {
+            manager.save(data);
+        }
+    }
+
+    public static void refreshWsdlData(WsdlData data) {
+        WsdlDataManager manager = Lookup.getDefault().lookup(WsdlDataManager.class);
+        if (manager != null) {
+            manager.refresh(data);
+        }
+    }
 
     public static boolean isJAXRPCAvailable() {
         return getWebServiceSupportLibDef(false) != null;
@@ -124,5 +138,4 @@ public class WsdlUtil {
             return "";
         }
     }
-
 }
