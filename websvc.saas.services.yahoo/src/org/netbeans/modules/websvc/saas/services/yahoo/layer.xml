@@ -6,7 +6,7 @@
         <folder name="WebServices">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.websvc.saas.services.yahoo.Bundle"/>
             <file name="profile.properties" url="/org/netbeans/modules/websvc/saas/services/yahoo/resources/profile.properties">
-                <attr name="position" intvalue="0"/>
+                <attr name="position" intvalue="80"/>
             </file>
         </folder>
     </folder>

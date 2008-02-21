@@ -6,7 +6,7 @@
         <folder name="WebServices">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.websvc.saas.services.youtube.Bundle"/>
             <file name="profile.properties" url="/org/netbeans/modules/websvc/saas/services/youtube/resources/profile.properties">
-                <attr name="position" intvalue="0"/>
+                <attr name="position" intvalue="90"/>
             </file>
         </folder>
     </folder>

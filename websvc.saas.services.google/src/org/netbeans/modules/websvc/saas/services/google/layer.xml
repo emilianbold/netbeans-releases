@@ -6,7 +6,7 @@
         <folder name="WebServices">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.websvc.saas.services.google.Bundle"/>
             <file name="profile.properties" url="/org/netbeans/modules/websvc/saas/services/google/resources/profile.properties">
-                <attr name="position" intvalue="0"/>
+                <attr name="position" intvalue="50"/>
             </file>
         </folder>
     </folder>
