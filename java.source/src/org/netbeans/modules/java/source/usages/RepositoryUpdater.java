@@ -1893,7 +1893,7 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                 } else {
                     if (TasklistSettings.isTasklistEnabled()) {
                         //excluded file, make sure any errors attached to it are deleted:
-                        errorBadgesToRefresh.addAll(TaskCache.getDefault().dumpErrors(root, child.toURL(), child, Collections.<Diagnostic>emptyList()));
+                        errorBadgesToRefresh.addAll(TaskCache.getDefault().dumpErrors(root, child.toURI().toURL(), child, Collections.<Diagnostic>emptyList()));
                     }
                 }
             }
