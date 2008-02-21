@@ -75,31 +75,35 @@ public class VersionsCache {
     public File getFileRevision(File base, String revision) throws IOException {
         if(revision.equals("-1")) return null; // NOI18N
         
+        File repository = Mercurial.getInstance().getTopmostManagedParent(base);
+        OutputLogger logger = OutputLogger.getLogger(repository.getAbsolutePath());
         if (Setup.REVISION_BASE.equals(revision)) {
             try {
                 File tempFile = File.createTempFile("tmp", "-" + base.getName()); //NOI18N
-                File repository = Mercurial.getInstance().getTopmostManagedParent(base);
-                HgCommand.doCat(repository, base, tempFile);
+                HgCommand.doCat(repository, base, tempFile, logger);
                 if (tempFile.length() == 0) return null;
                 return tempFile;
             } catch (HgException e) {
                 IOException ioe = new IOException();
                 ioe.initCause(e);
                 throw ioe;
+            } finally {
+                logger.closeLog();
             }
         } else if (Setup.REVISION_CURRENT.equals(revision)) {
             return base;
         } else {
             try {
                 File tempFile = File.createTempFile("tmp", "-" + base.getName()); //NOI18N
-                File repository = Mercurial.getInstance().getTopmostManagedParent(base);
-                HgCommand.doCat(repository, base, tempFile, revision);
+                HgCommand.doCat(repository, base, tempFile, revision, logger);
                 if (tempFile.length() == 0) return null;
                 return tempFile;
             } catch (HgException e) {
                 IOException ioe = new IOException();
                 ioe.initCause(e);
                 throw ioe;
+            } finally {
+                logger.closeLog();
             }
         }
     }

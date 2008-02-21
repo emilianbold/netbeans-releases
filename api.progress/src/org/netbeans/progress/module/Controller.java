@@ -87,7 +87,10 @@ public /* final - because of tests */ class Controller implements Runnable, Acti
     
     /** Creates a new instance of Controller */
     public Controller(ProgressUIWorker comp) {
+        this();
         component = comp;
+    }
+    protected Controller() {
         model = new TaskModel();
         eventQueue = new ArrayList<ProgressEvent>();
         dispatchRunning = false;
@@ -97,27 +100,38 @@ public /* final - because of tests */ class Controller implements Runnable, Acti
 
     public static synchronized Controller getDefault() {
         if (defaultInstance == null) {
-            ProgressUIWorkerProvider prov = Lookup.getDefault().lookup(ProgressUIWorkerProvider.class);
-            if (prov == null) {
-                Logger.getLogger(Controller.class.getName()).log(Level.CONFIG, "Using fallback trivial progress implementation");
-                prov = new TrivialProgressUIWorkerProvider();
-            }
-            ProgressUIWorkerWithModel component = prov.getDefaultWorker();
-            defaultInstance = new Controller(component);
-            component.setModel(defaultInstance.getModel());
+            defaultInstance = new Controller();
         }
         return defaultInstance;
     }
     
     // to be called on the default instance only..
     Component getVisualComponent() {
+        if (component == null) {
+            getProgressUIWorker();
+        }
         if (component instanceof Component) {
             return (Component)component;
         }
         return null;
     }
     
-    
+    ProgressUIWorker getProgressUIWorker()
+    {
+        if (component == null)
+        {
+            ProgressUIWorkerProvider prov = Lookup.getDefault().lookup(ProgressUIWorkerProvider.class);
+            if (prov == null) {
+                Logger.getLogger(Controller.class.getName()).log(Level.CONFIG, "Using fallback trivial progress implementation");
+                prov = new TrivialProgressUIWorkerProvider();
+            }
+            ProgressUIWorkerWithModel prgUIWorker = prov.getDefaultWorker();
+            prgUIWorker.setModel(defaultInstance.getModel());
+            component = prgUIWorker;
+        }
+        return component;
+    }
+
     public TaskModel getModel() {
         return model;
     }
@@ -314,6 +328,9 @@ public /* final - because of tests */ class Controller implements Runnable, Acti
         InternalHandle selected = model.getSelectedHandle();
         selected = selected == null ? oldSelected : selected;
         Iterator<ProgressEvent> it = map.values().iterator();
+        if (component == null) {
+            getProgressUIWorker();
+        }
         while (it.hasNext()) {
             ProgressEvent event = it.next();
             if (selected == event.getSource()) {
