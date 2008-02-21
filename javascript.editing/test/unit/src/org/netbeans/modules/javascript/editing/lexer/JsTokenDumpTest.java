@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -39,33 +39,28 @@
  * made subject to such option by the copyright holder.
  */
 
-package gui;
+package org.netbeans.modules.javascript.editing.lexer;
 
-
-import org.netbeans.junit.NbTestSuite;
-import gui.actions.*;
-import gui.setup.EnterpriseSetupTest;
+import org.netbeans.junit.NbTestCase;
+import org.netbeans.lib.lexer.test.LexerTestUtilities;
 
 /**
- * Measure UI-RESPONSIVENES and WINDOW_OPENING.
- *
- * @author  mmirilovic@netbeans.org, rashid@netbeans.org, mrkam@netbeans.org
+ * Test tokens dump of JavaScript code input. Based on the Ruby one.
  */
-public class EPMeasureActions1  {
-
-    public static NbTestSuite suite() {
-        NbTestSuite suite = new NbTestSuite();
-            
-        // It seems that there is a problem with Application Server unavailability in Runtime tab
-        suite.addTest(new EnterpriseSetupTest("closeAllModal"));
-
-        suite.addTest(new CreateBPELmodule("measureTime", "Create BPEL module"));
-        suite.addTest(new CreateCompositeApplication("measureTime", "Create Composite Application"));
-        suite.addTest(new AddNewWSDLDocument("measureTime", "Add New WSDL Document"));
-        suite.addTest(new AddNewXMLSchema("measureTime", "Add New XML Schema"));
-        suite.addTest(new AddNewXMLDocument("measureTime", "Add New XML Document"));
-        suite.addTest(new AddNewBpelProcess("measureTime", "Add New Bpel Process")); 
-        return suite;
+public class JsTokenDumpTest extends NbTestCase {
+    
+    public JsTokenDumpTest(String testName) {
+        super(testName);
     }
     
+    @Override
+    protected void setUp() throws java.lang.Exception {
+        // Set-up testing environment
+        LexerTestUtilities.setTesting(true);
+    }
+
+    public void testInput() throws Exception {
+        LexerTestUtilities.checkTokenDump(this, "testfiles/testInput.js.txt",
+                JsTokenId.language());
+    }
 }

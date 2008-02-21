@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -39,33 +39,57 @@
  * made subject to such option by the copyright holder.
  */
 
-package gui;
+package org.netbeans.modules.javascript.editing;
 
-
-import org.netbeans.junit.NbTestSuite;
-import gui.actions.*;
-import gui.setup.EnterpriseSetupTest;
+import java.util.Arrays;
+import java.util.List;
+import org.netbeans.fpi.gsf.CompilationInfo;
 
 /**
- * Measure UI-RESPONSIVENES and WINDOW_OPENING.
  *
- * @author  mmirilovic@netbeans.org, rashid@netbeans.org, mrkam@netbeans.org
+ * @author Martin Adamek
  */
-public class EPMeasureActions1  {
+public class JsCommentFormatterTest extends JsTestBase {
 
-    public static NbTestSuite suite() {
-        NbTestSuite suite = new NbTestSuite();
-            
-        // It seems that there is a problem with Application Server unavailability in Runtime tab
-        suite.addTest(new EnterpriseSetupTest("closeAllModal"));
+    public JsCommentFormatterTest(String testName) {
+        super(testName);
+    }
+    
+    public void testGetSummary() throws Exception {
+        JsCommentFormatter jsComment = new JsCommentFormatter(getComments());
+        String summary = jsComment.getSummary();
+        
+        String expected = 
+                "Applies bla bla bla bla\n" +
+                "foo foo bar bar";
+        assertEquals(expected, summary);
+    }
+    
+    public void testTags() throws Exception {
+        JsCommentFormatter jsComment = new JsCommentFormatter(getComments());
+        
+        List<String> tags = jsComment.getParams();
+        List<String> expected = Arrays.asList(
+                "{Mixed} el The bla bla bla",
+                "{Object/Array} values The bla bla bloo (i.e. {0}) or an\n" +
+                "object (i.e. {foo: 'bar'})",
+                "{Boolean} returnElement (optional) true to return a Axt.Element (defaults to blii)"
+                );
+        
+        assertEquals(expected, tags);
 
-        suite.addTest(new CreateBPELmodule("measureTime", "Create BPEL module"));
-        suite.addTest(new CreateCompositeApplication("measureTime", "Create Composite Application"));
-        suite.addTest(new AddNewWSDLDocument("measureTime", "Add New WSDL Document"));
-        suite.addTest(new AddNewXMLSchema("measureTime", "Add New XML Schema"));
-        suite.addTest(new AddNewXMLDocument("measureTime", "Add New XML Document"));
-        suite.addTest(new AddNewBpelProcess("measureTime", "Add New Bpel Process")); 
-        return suite;
+        String returnTag = jsComment.getReturn();
+        String expectedReturn = "{HTMLElement/Axt.Element} The new node or Alement";
+        assertEquals(expectedReturn, returnTag);
+
+        
+    }
+
+    private List<String> getComments() throws Exception {
+        CompilationInfo info = getInfo("testfiles/types2.js");
+        String caretLine = "    insertBeeefore: func^tion(el, values, returnElement){";
+        FunctionAstElement element = ElementUtilitiesTest.getFunctionAstElement(info, caretLine);
+        return ElementUtilities.getComments(info, element);
     }
     
 }
