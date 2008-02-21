@@ -159,7 +159,7 @@ import org.openide.util.Utilities;
  *
  * @author Tomas Zezula
  */
-public class RepositoryUpdater implements PropertyChangeListener, FileChangeListener {
+public class RepositoryUpdater implements PropertyChangeListener, FileChangeListener, ClassPathRootsListener.ClassPathRootsChangedListener {
         
     private static final Logger LOGGER = Logger.getLogger(RepositoryUpdater.class.getName());
     private static final Set<String> warnedIgnoredRoots = Collections.synchronizedSet(new HashSet<String>());
@@ -271,46 +271,7 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
         if (ClassPath.PROP_ROOTS.equals(evt.getPropertyName())) {
             if (evt.getSource() == this.cp) {
                 submitBatch();
-            } else {
-                ClassPath changedCp = (ClassPath) evt.getSource();
-                assert changedCp != null;
-                if (LOGGER.isLoggable(Level.FINER))
-                    LOGGER.log(Level.FINER, "modified roots changedCp={0}", changedCp.toString());
-
-                URL root = classPath2Root.get(changedCp);
-        
-        if (root != null) {
-            List<URL> oldDeps = this.deps.get(root);
-            if (oldDeps != null) {
-                final FileObject rootFo = URLMapper.findFileObject(root);
-                if (rootFo != null) {
-                    final ClassPath bootPath = ClassPath.getClassPath(rootFo, ClassPath.BOOT);
-                    final ClassPath compilePath = ClassPath.getClassPath(rootFo, ClassPath.COMPILE);
-                            final ClassPath[] pathsToResolve = new ClassPath[] {bootPath,compilePath};
-                            final List<URL> newDeps = new LinkedList<URL> ();
-                            for (int i=0; i< pathsToResolve.length; i++) {
-                        final ClassPath pathToResolve = pathsToResolve[i];
-                        if (pathToResolve != null) {
-                            for (ClassPath.Entry entry : pathToResolve.entries()) {
-                                final URL url = entry.getURL();
-                                final URL[] sourceRoots = RepositoryUpdater.this.cpImpl.getSourceRootForBinaryRoot(url, pathToResolve, false);
-                                if (sourceRoots != null) {
-                                    for (URL sourceRoot : sourceRoots) {
-                                                if (!sourceRoot.equals (root)) {
-                                                    newDeps.add (sourceRoot);
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                    this.deps.put(root, newDeps);
-                }
             }
-            submit(Work.filterChange(Collections.singletonList(root), false));
-        }
-            }
-            return ;
         }
         
         if (   GlobalSourcePath.PROP_INCLUDES.equals(evt.getPropertyName())
@@ -329,6 +290,56 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
         }
         
         
+    }
+    
+    public void rootsChanged(Collection<ClassPath> changedCp) {
+        assert changedCp != null;
+        if (LOGGER.isLoggable(Level.FINER)) {
+            LOGGER.log(Level.FINER, "modified roots changedCp={0}", changedCp.toString());
+        }
+        
+        List<URL> roots = new LinkedList<URL>();
+
+        for (ClassPath cp : changedCp) {
+            URL root = classPath2Root.get(cp);
+
+            if (root != null) {
+                List<URL> oldDeps = this.deps.get(root);
+                if (oldDeps != null) {
+                    final FileObject rootFo = URLMapper.findFileObject(root);
+                    if (rootFo != null) {
+                        final ClassPath bootPath = ClassPath.getClassPath(rootFo, ClassPath.BOOT);
+                        final ClassPath compilePath = ClassPath.getClassPath(rootFo, ClassPath.COMPILE);
+                        final ClassPath[] pathsToResolve = new ClassPath[]{bootPath, compilePath};
+                        final List<URL> newDeps = new LinkedList<URL>();
+                        for (int i = 0; i < pathsToResolve.length; i++) {
+                            final ClassPath pathToResolve = pathsToResolve[i];
+                            if (pathToResolve != null) {
+                                for (ClassPath.Entry entry : pathToResolve.entries()) {
+                                    final URL url = entry.getURL();
+                                    final URL[] sourceRoots = RepositoryUpdater.this.cpImpl.getSourceRootForBinaryRoot(url, pathToResolve, false);
+                                    if (sourceRoots != null) {
+                                        for (URL sourceRoot : sourceRoots) {
+                                            if (!sourceRoot.equals(root)) {
+                                                newDeps.add(sourceRoot);
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                        this.deps.put(root, newDeps);
+                    }
+                }
+
+                roots.add(root);
+            }
+        }
+
+        if (LOGGER.isLoggable(Level.FINER)) {
+            LOGGER.log(Level.FINER, "roots for filter change={0}", roots.toString());
+        }
+        submit(Work.filterChange(roots, false));
     }
     
     private void submitBatch () {
@@ -693,7 +704,7 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
     
     private void registerClassPath(URL root, ClassPath cp, ClasspathInfo.PathKind kind) {
         if (!classPath2Root.containsKey(cp)) {
-            ClassPathRootsListener.getDefault().addPropertyChangeListener(cp, kind != ClasspathInfo.PathKind.SOURCE, RepositoryUpdater.this);
+            ClassPathRootsListener.getDefault().addClassPathRootsListener(cp, kind != ClasspathInfo.PathKind.SOURCE, RepositoryUpdater.this);
             classPath2Root.put(cp, root);
         }
     }
@@ -3235,5 +3246,5 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                     "clean all *.dump files in that directory."); // NOI18N
         }
     }
-    
+
 }
