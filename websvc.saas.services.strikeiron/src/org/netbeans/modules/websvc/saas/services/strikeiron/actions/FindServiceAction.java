@@ -106,7 +106,7 @@ public class FindServiceAction extends NodeAction {
                 String url = service.getUrl();
                 String name = service.getServiceName();
                 if (WsdlUtil.findWsdlData(url, name) == null) {
-                    SaasServicesModel.getInstance().addWsdlService(group, name, url, service.getPackageName());
+                    SaasServicesModel.getInstance().createWsdlService(group, name, url, service.getPackageName());
                 }
             }
         }

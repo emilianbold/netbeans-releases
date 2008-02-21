@@ -43,11 +43,11 @@ package org.netbeans.modules.php.editor.completion;
 import java.util.List;
 import java.util.Set;
 
-import org.netbeans.api.gsf.CompletionProposal;
-import org.netbeans.api.gsf.Element;
-import org.netbeans.api.gsf.ElementKind;
-import org.netbeans.api.gsf.HtmlFormatter;
-import org.netbeans.api.gsf.Modifier;
+import org.netbeans.fpi.gsf.CompletionProposal;
+import org.netbeans.fpi.gsf.Element;
+import org.netbeans.fpi.gsf.ElementKind;
+import org.netbeans.fpi.gsf.HtmlFormatter;
+import org.netbeans.fpi.gsf.Modifier;
 
 
 /**
@@ -63,14 +63,14 @@ abstract class CompletionItem implements CompletionProposal {
     
 
     /* (non-Javadoc)
-     * @see org.netbeans.api.gsf.CompletionProposal#getAnchorOffset()
+     * @see org.netbeans.fpi.gsf.CompletionProposal#getAnchorOffset()
      */
     public int getAnchorOffset() {
         return myOffset;
     }
     
     /* (non-Javadoc)
-     * @see org.netbeans.api.gsf.CompletionProposal#getElement()
+     * @see org.netbeans.fpi.gsf.CompletionProposal#getElement()
      */
     public Element getElement() {
         // TODO Auto-generated method stub
@@ -99,7 +99,7 @@ abstract class CompletionItem implements CompletionProposal {
     }
     
     /* (non-Javadoc)
-     * @see org.netbeans.api.gsf.CompletionProposal#getInsertParams()
+     * @see org.netbeans.fpi.gsf.CompletionProposal#getInsertParams()
      */
     public String getCustomInsertTemplate() {
         // TODO Auto-generated method stub
@@ -107,7 +107,7 @@ abstract class CompletionItem implements CompletionProposal {
     }
     
     /* (non-Javadoc)
-     * @see org.netbeans.api.gsf.CompletionProposal#getInsertParams()
+     * @see org.netbeans.fpi.gsf.CompletionProposal#getInsertParams()
      */
     public List<String> getInsertParams() {
         // TODO Auto-generated method stub
@@ -115,7 +115,7 @@ abstract class CompletionItem implements CompletionProposal {
     }
     
     /* (non-Javadoc)
-     * @see org.netbeans.api.gsf.CompletionProposal#getParamListDelimiters()
+     * @see org.netbeans.fpi.gsf.CompletionProposal#getParamListDelimiters()
      */
     public String[] getParamListDelimiters() {
         return new String[] { "(" , ")" };
@@ -123,7 +123,7 @@ abstract class CompletionItem implements CompletionProposal {
     
 
     /* (non-Javadoc)
-     * @see org.netbeans.api.gsf.CompletionProposal#getSortText()
+     * @see org.netbeans.fpi.gsf.CompletionProposal#getSortText()
      */
     public String getSortText() {
         return getName();

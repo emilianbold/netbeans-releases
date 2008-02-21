@@ -40,6 +40,7 @@
 package org.netbeans.modules.websvc.saas.model;
 
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.websvc.saas.spi.websvcmgr.WsdlData;
 import org.netbeans.modules.websvc.saas.util.SetupUtil;
 
 /**
@@ -47,6 +48,14 @@ import org.netbeans.modules.websvc.saas.util.SetupUtil;
  * @author nam
  */
 public class SaasServicesModelTest extends NbTestCase {
+    
+    public static void resetSaasServicesModel() {
+        SaasServicesModel.getInstance().reset();
+    }
+    
+    public static void setWsdlData(WsdlSaas saas, WsdlData data) {
+        saas.setWsdlData(data);
+    }
     
     public SaasServicesModelTest(String testName) {
         super(testName);
@@ -76,16 +85,27 @@ public class SaasServicesModelTest extends NbTestCase {
         SetupUtil.commonTearDown();
     }
     
-    /*public void testAddGroup() {
+    public void testAddGroup() {
         System.out.println("addGroup");
-        SaasGroup child = null;
-        SaasServicesModel instance = new SaasServicesModel();
-        instance.addGroup(child);
-        // TODO review the generated test code and remove the default call to fail.
-        fail("The test case is a prototype.");
+        SaasServicesModel instance = SaasServicesModel.getInstance();
+        instance.createGroup(instance.getRootGroup(), "groupA");
+        SaasGroup added = instance.getRootGroup().getChildGroup("groupA");
+        assertEquals("groupA", added.getName());
+        instance.createGroup(added, "child1");
+        SaasGroup child2 = instance.createGroup(added, "child2");
+        instance.createGroup(child2, "grandChild");
+        
+        instance.reset();
+        instance.initRootGroup();
+        
+        SaasGroup reloaded = instance.getRootGroup().getChildGroup("groupA");
+        assertEquals("groupA", reloaded.getName());
+        assertEquals(2, reloaded.getChildrenGroups().size());
+        assertEquals("child1", reloaded.getChildGroup("child1").getName());
+        assertEquals("grandChild", reloaded.getChildGroup("child2").getChildGroup("grandChild").getName());
     }
 
-    public void testRemoveGroup() {
+    /*public void testRemoveGroup() {
         System.out.println("removeGroup");
         SaasGroup child = null;
         SaasServicesModel instance = new SaasServicesModel();

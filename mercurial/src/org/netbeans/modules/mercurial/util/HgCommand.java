@@ -42,8 +42,6 @@
 package org.netbeans.modules.mercurial.util;
 
 import java.awt.EventQueue;
-import java.awt.EventQueue;
-import java.awt.EventQueue;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.FileWriter;
@@ -63,7 +61,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import org.netbeans.api.options.OptionsDisplayer;
-import org.netbeans.modules.mercurial.ui.log.HgLogMessage;
 import org.openide.util.NbBundle;
 import org.netbeans.modules.mercurial.FileInformation;
 import org.netbeans.modules.mercurial.FileStatus;
@@ -72,7 +69,6 @@ import org.netbeans.modules.mercurial.Mercurial;
 import org.netbeans.api.queries.SharabilityQuery;
 import org.netbeans.modules.mercurial.HgModuleConfig;
 import org.netbeans.modules.mercurial.config.HgConfigFiles;
-import org.netbeans.modules.mercurial.ui.log.HgLogMessage;
 import org.netbeans.modules.mercurial.ui.log.HgLogMessage;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -198,6 +194,16 @@ public class HgCommand {
     private static final String HG_PUSH_CMD = "push"; // NOI18N
     private static final String HG_UNBUNDLE_CMD = "unbundle"; // NOI18N
     private static final String HG_ROLLBACK_CMD = "rollback"; // NOI18N
+    private static final String HG_BACKOUT_CMD = "backout"; // NOI18N
+    private static final String HG_BACKOUT_MERGE_CMD = "--merge"; // NOI18N
+    private static final String HG_BACKOUT_COMMIT_MSG_CMD = "-m"; // NOI18N
+    private static final String HG_BACKOUT_REV_CMD = "-r"; // NOI18N
+ 
+    private static final String HG_STRIP_CMD = "strip"; // NOI18N
+    private static final String HG_STRIP_EXT_CMD = "extensions.mq="; // NOI18N
+    private static final String HG_STRIP_NOBACKUP_CMD = "-n"; // NOI18N
+    private static final String HG_STRIP_FORCE_MULTIHEAD_CMD = "-f"; // NOI18N
+
     private static final String HG_VERSION_CMD = "version"; // NOI18N
     private static final String HG_INCOMING_CMD = "incoming"; // NOI18N
     private static final String HG_OUTGOING_CMD = "outgoing"; // NOI18N
@@ -241,6 +247,9 @@ public class HgCommand {
     private static final String HG_ABORT_NO_DEFAULT_PUSH_ERR = "abort: repository default-push not found!"; // NOI18N
     private static final String HG_ABORT_NO_DEFAULT_ERR = "abort: repository default not found!"; // NOI18N
     private static final String HG_ABORT_POSSIBLE_PROXY_ERR = "abort: error: node name or service name not known"; // NOI18N
+    private static final String HG_ABORT_UNCOMMITTED_CHANGES_ERR = "abort: outstanding uncommitted changes"; // NOI18N
+    private static final String HG_BACKOUT_MERGE_NEEDED_ERR = "(use \"backout --merge\" if you want to auto-merge)";    
+    private static final String HG_ABORT_BACKOUT_MERGE_CSET_ERR = "abort: cannot back out a merge changeset without --parent"; // NOI18N"
     
     private static final String HG_NO_CHANGE_NEEDED_ERR = "no change needed"; // NOI18N
     private static final String HG_NO_ROLLBACK_ERR = "no rollback information available"; // NOI18N
@@ -248,7 +257,11 @@ public class HgCommand {
     private static final String HG_NO_VIEW_ERR = "hg: unknown command 'view'"; // NOI18N
     private static final String HG_HGK_NOT_FOUND_ERR = "sh: hgk: not found"; // NOI18N
     private static final String HG_NO_SUCH_FILE_ERR = "No such file"; // NOI18N
-    
+
+    private static final String HG_NO_REV_STRIP_ERR = "abort: unknown revision"; // NOI18N
+    private static final String HG_LOCAL_CHANGES_STRIP_ERR = "abort: local changes found"; // NOI18N
+    private static final String HG_MULTIPLE_HEADS_STRIP_ERR = "no rollback information available"; // NOI18N
+
     private static final char HG_STATUS_CODE_MODIFIED = 'M' + ' ';    // NOI18N // STATUS_VERSIONED_MODIFIEDLOCALLY
     private static final char HG_STATUS_CODE_ADDED = 'A' + ' ';      // NOI18N // STATUS_VERSIONED_ADDEDLOCALLY
     private static final char HG_STATUS_CODE_REMOVED = 'R' + ' ';   // NOI18N  // STATUS_VERSIONED_REMOVEDLOCALLY - still tracked, hg update will recover, hg commit
@@ -363,7 +376,74 @@ public class HgCommand {
         
         return list;
     }
+    public static List<String> doBackout(File repository, String revision, 
+            boolean doMerge, String commitMsg) throws HgException {
+        if (repository == null ) return null;
+        List<String> env = new ArrayList<String>();
+        List<String> command = new ArrayList<String>();
+
+        command.add(getHgCommand());
+        command.add(HG_BACKOUT_CMD);
+        if(doMerge){
+            command.add(HG_BACKOUT_MERGE_CMD);
+            env.add(HG_MERGE_ENV);
+        }
+
+        if (commitMsg != null && !commitMsg.equals("")) { // NOI18N
+            command.add(HG_BACKOUT_COMMIT_MSG_CMD);
+            command.add(commitMsg);
+        } else {
+            command.add(HG_BACKOUT_COMMIT_MSG_CMD);
+            command.add(NbBundle.getMessage(HgCommand.class, "MSG_BACKOUT_MERGE_COMMIT_MSG", revision));  // NOI18N          
+        }
+
+        command.add(HG_OPT_REPOSITORY);
+        command.add(repository.getAbsolutePath());
+        if (revision != null){
+            command.add(HG_BACKOUT_REV_CMD);            
+            command.add(revision);
+        }
+        
+        List<String> list;
+        if(doMerge){
+            list = execEnv(command, env);
+        }else{
+            list = exec(command);            
+        }
+        if (list.isEmpty())
+            handleError(command, list, NbBundle.getMessage(HgCommand.class, "MSG_BACKOUT_FAILED"));
+        
+        return list;
+    }
     
+    public static List<String> doStrip(File repository, String revision, 
+            boolean doForceMultiHead, boolean doBackup) throws HgException {
+        if (repository == null ) return null;
+        List<String> command = new ArrayList<String>();
+
+        command.add(getHgCommand());
+        command.add(HG_CONFIG_OPTION_CMD);
+        command.add(HG_STRIP_EXT_CMD);
+        command.add(HG_STRIP_CMD);
+        if(doForceMultiHead){
+            command.add(HG_STRIP_FORCE_MULTIHEAD_CMD);
+        }
+        if(!doBackup){
+            command.add(HG_STRIP_NOBACKUP_CMD);
+        }
+        command.add(HG_OPT_REPOSITORY);
+        command.add(repository.getAbsolutePath());
+        if (revision != null){
+            command.add(revision);
+        }
+
+        List<String> list = exec(command);
+        if (list.isEmpty())
+            handleError(command, list, NbBundle.getMessage(HgCommand.class, "MSG_STRIP_FAILED"));
+        
+        return list;
+    }
+
     /**
      * Return the version of hg, e.g. "0.9.3". // NOI18N
      *
@@ -1608,10 +1688,10 @@ public class HgCommand {
      * @return void
      * @throws org.netbeans.modules.mercurial.HgException
      */
-    public static void doRevert(File repository, List<File> revertFiles, String revision)  throws HgException {
+    public static void doRevert(File repository, List<File> revertFiles, 
+            String revision, boolean doBackup)  throws HgException {
         if (repository == null) return;
         if (revertFiles.size() == 0) return;
-        boolean doBackup = HgModuleConfig.getDefault().getBackupOnRevertModifications();
         
         List<String> command = new ArrayList<String>();
 
@@ -2587,6 +2667,10 @@ public class HgCommand {
     public static boolean isMergeNeededMsg(String msg) {
         return msg.indexOf(HG_MERGE_NEEDED_ERR) > -1;                       // NOI18N
     }
+
+    public static boolean isBackoutMergeNeededMsg(String msg) {
+        return msg.indexOf(HG_BACKOUT_MERGE_NEEDED_ERR) > -1;                       // NOI18N
+    }
     
     public static boolean isMergeConflictMsg(String msg) {
         if(Utilities.isWindows() ) {   
@@ -2687,6 +2771,21 @@ public class HgCommand {
     
     public static boolean isNoRollbackPossible(String msg) {
         return msg.indexOf(HG_NO_ROLLBACK_ERR) > -1;                                   // NOI18N
+    }
+    public static boolean isNoRevStrip(String msg) {
+        return msg.indexOf(HG_NO_REV_STRIP_ERR) > -1;                                   // NOI18N
+    }
+    public static boolean isLocalChangesStrip(String msg) {
+        return msg.indexOf(HG_LOCAL_CHANGES_STRIP_ERR) > -1;                                   // NOI18N
+    }
+    public static boolean isMultipleHeadsStrip(String msg) {
+        return msg.indexOf(HG_MULTIPLE_HEADS_STRIP_ERR) > -1;                                   // NOI18N
+    }
+    public static boolean isUncommittedChangesBackout(String msg) {
+        return msg.indexOf(HG_ABORT_UNCOMMITTED_CHANGES_ERR) > -1;                                   // NOI18N
+    }
+    public static boolean isMergeChangesetBackout(String msg) {
+        return msg.indexOf(HG_ABORT_BACKOUT_MERGE_CSET_ERR) > -1;                                   // NOI18N
     }
     
     public static boolean isNoUpdates(String msg) {

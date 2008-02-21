@@ -45,13 +45,10 @@ import java.awt.Component;
 import java.awt.event.ActionListener;
 import java.io.File;
 import java.text.MessageFormat;
-import java.util.ArrayList;
-import java.util.List;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.ListCellRenderer;
-import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentListener;
 import org.netbeans.api.project.Project;
@@ -209,6 +206,7 @@ public class SimpleTargetChooserPanelGUI extends javax.swing.JPanel implements A
     }
     
         
+    @Override
     public java.awt.Dimension getPreferredSize() {
         return PREF_DIM;
     }

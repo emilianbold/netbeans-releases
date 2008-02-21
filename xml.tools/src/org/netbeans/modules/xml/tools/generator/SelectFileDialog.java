@@ -119,7 +119,7 @@ public final class SelectFileDialog {
                             }
 
                             try {
-                                folder.createData (newName, ext);
+                                folder.createData (newName, ext);                                
                             } catch (IOException exc) {
                                 NotifyDescriptor desc = new NotifyDescriptor.Message
                                     (NbBundle.getMessage(SelectFileDialog.class, "MSG_cannot_create_data", newName + "." + ext), NotifyDescriptor.WARNING_MESSAGE);

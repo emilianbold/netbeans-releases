@@ -82,7 +82,7 @@ public class RestModuleInstall extends ModuleInstall {
      *
      */
     public void restored() {
-        TopComponent.getRegistry().removePropertyChangeListener(listener);
+        /*TopComponent.getRegistry().removePropertyChangeListener(listener);
         
         listener = new RestPaletteListener();        
         TopComponent.getRegistry().addPropertyChangeListener(listener);
@@ -91,10 +91,10 @@ public class RestModuleInstall extends ModuleInstall {
             FileObject restCompFolder = RestPaletteFactory.getRestComponentsFolder();
             restCompFolder.addFileChangeListener(listener);
         } catch (IOException ex) {
-        }
+        }*/
     }
     
-    public static PaletteController getPaletteController() {
+    /*public static PaletteController getPaletteController() {
         return listener.getController();
-    }
+    }*/
 }
