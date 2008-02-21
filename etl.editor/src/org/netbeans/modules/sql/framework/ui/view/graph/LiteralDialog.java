@@ -417,6 +417,7 @@ public class LiteralDialog extends JDialog implements ActionListener {
 
         String nbBundle10 = mLoc.t("PRSR001: Type:");
         JLabel typeLabel = new JLabel(Localizer.parse(nbBundle10)); //NOI18N
+        typeLabel.getAccessibleContext().setAccessibleName(Localizer.parse(nbBundle10));
         gridBag.setConstraints(typeLabel, constraints);
         formPanel.add(typeLabel);
 
@@ -434,6 +435,7 @@ public class LiteralDialog extends JDialog implements ActionListener {
 
         String nbBundle11 = mLoc.t("PRSR001: Value:");
         JLabel valueLabel = new JLabel(Localizer.parse(nbBundle11)); //NOI18N
+        valueLabel.getAccessibleContext().setAccessibleName(Localizer.parse(nbBundle11));
         gridBag.setConstraints(valueLabel, constraints);
         formPanel.add(valueLabel);
 
