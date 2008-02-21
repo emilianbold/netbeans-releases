@@ -83,14 +83,14 @@ public class NewAppClientProjectWizardIterator implements WizardDescriptor.Progr
     private WizardDescriptor.Panel[] createPanels() {
         return new WizardDescriptor.Panel[] {
             new PanelConfigureProject(),
-            //new PanelSharability(WizardProperties.PROJECT_DIR, WizardProperties.SERVER_INSTANCE_ID, true)
+            new PanelSharability(WizardProperties.PROJECT_DIR, WizardProperties.SERVER_INSTANCE_ID, true)
         };
     }
     
     private String[] createSteps() {
         return new String[] {
             NbBundle.getMessage(NewAppClientProjectWizardIterator.class,"LAB_ConfigureProject"),
-            //NbBundle.getMessage(NewAppClientProjectWizardIterator.class, "PanelShareabilityVisual.label")
+            NbBundle.getMessage(NewAppClientProjectWizardIterator.class, "PanelShareabilityVisual.label")
         };
     }
     
