@@ -61,32 +61,42 @@
                 </folder>
                 
                 <file name="language.instance">
-                    <attr name="instanceOf" stringvalue="org.netbeans.api.gsf.GsfLanguage"/>
+                    <attr name="instanceOf" stringvalue="org.netbeans.fpi.gsf.GsfLanguage"/>
                     <attr name="instanceClass" stringvalue="org.netbeans.modules.groovy.editor.GroovyLanguage"/>
                 </file>
                 
                 <file name="parser.instance">
-                    <attr name="instanceOf" stringvalue="org.netbeans.api.gsf.Parser"/>
+                    <attr name="instanceOf" stringvalue="org.netbeans.fpi.gsf.Parser"/>
                     <attr name="instanceClass" stringvalue="org.netbeans.modules.groovy.editor.parser.GroovyParser"/>
                 </file>
                 
                 <file name="formatter.instance">
-                    <attr name="instanceOf" stringvalue="org.netbeans.api.gsf.Formatter"/>
+                    <attr name="instanceOf" stringvalue="org.netbeans.fpi.gsf.Formatter"/>
                     <attr name="instanceClass" stringvalue="org.netbeans.modules.groovy.editor.Formatter"/>
                 </file>
 
                 <file name="bracket.instance">
-                    <attr name="instanceOf" stringvalue="org.netbeans.api.gsf.BracketCompletion"/>
+                    <attr name="instanceOf" stringvalue="org.netbeans.fpi.gsf.BracketCompletion"/>
                     <attr name="instanceClass" stringvalue="org.netbeans.modules.groovy.editor.BracketCompleter"/>
                 </file>
                 
                 <file name="completion.instance">
-                    <attr name="instanceOf" stringvalue="org.netbeans.api.gsf.Completable"/>
+                    <attr name="instanceOf" stringvalue="org.netbeans.fpi.gsf.Completable"/>
                     <attr name="instanceClass" stringvalue="org.netbeans.modules.groovy.editor.CodeCompleter"/>
                 </file>
                 
+                <file name="semantic.instance">
+                    <attr name="instanceOf" stringvalue="org.netbeans.fpi.gsf.SemanticAnalyzer"/>
+                    <attr name="instanceClass" stringvalue="org.netbeans.modules.groovy.editor.parser.GroovySemanticAnalyzer"/>
+                </file>
+                
+                <file name="occurrences.instance">
+                    <attr name="instanceOf" stringvalue="org.netbeans.fpi.gsf.OccurrencesFinder"/>
+                    <attr name="instanceClass" stringvalue="org.netbeans.modules.groovy.editor.parser.GroovyOccurrencesFinder"/>
+                </file>
+                
                 <file name="structure.instance">
-                    <attr name="instanceOf" stringvalue="org.netbeans.api.gsf.StructureScanner"/>
+                    <attr name="instanceOf" stringvalue="org.netbeans.fpi.gsf.StructureScanner"/>
                     <attr name="instanceClass" stringvalue="org.netbeans.modules.groovy.editor.StructureAnalyzer"/>
                 </file>
                 

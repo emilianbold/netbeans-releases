@@ -388,17 +388,6 @@ public class GroovyParser implements Parser {
         }
     }
 
-    public SemanticAnalyzer getSemanticAnalysisTask() {
-        return new GroovySemanticAnalyzer();
-    }
-
-    public OccurrencesFinder getMarkOccurrencesTask(int caretPosition) {
-        GroovyOccurrencesFinder finder = new GroovyOccurrencesFinder();
-        finder.setCaretPosition(caretPosition);
-
-        return finder;
-    }
-
     public static ElementHandle createHandle(CompilationInfo info, final Element object) {
         if (object instanceof KeywordElement || object instanceof CommentElement) {
             // Not tied to an AST - just pass it around
