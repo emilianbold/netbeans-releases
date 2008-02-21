@@ -79,7 +79,7 @@ public class WsdlServiceProxyDescriptor {
     private int wsType;
     private String wsdl;
     private String xmlDescriptor;
-    private WsdlService model;
+    transient private WsdlService model;
     private List<JarEntry> jars;
     private Map<String, Object> consumerData;
     
