@@ -47,11 +47,12 @@
             importType="http://schemas.xmlsoap.org/wsdl/"/>
     
     <partnerLinks>
-        <partnerLink name="partnerLinkA" 
-                     partnerLinkType="wsdlNS:AsyncPartnerLinkType" 
-                     myRole="serviceProvider" 
-                     partnerRole="serviceRequestor"/>
         <documentation>The partner link defines the interaction between the BPEL process and the client who sends an input message and later receives the result.</documentation>
+        <partnerLink
+            name="partnerLinkA" 
+            partnerLinkType="wsdlNS:AsyncPartnerLinkType" 
+            myRole="serviceProvider" 
+            partnerRole="serviceRequestor"/>
     </partnerLinks>
     
     <variables>

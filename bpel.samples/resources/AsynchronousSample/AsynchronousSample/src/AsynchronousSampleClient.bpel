@@ -73,13 +73,14 @@
         <variable name="partnerOutputVar" messageType="partnerNS:responseMessage"/>
     </variables>
     
-    <correlationSet name="correlator" properties="wsdlNS:correlatorProp">
+    <correlationSets>
         <documentation>
             BPEL runtime uses correlation sets to route messages to the right process instance.
             Correlation set is made up of one or more property values. Properties in turn are defined in a WSDL file and get their value through property aliases (also defined in WSDL). Property aliases are the rules that tell the BPEL runtime how to map data from a message into a property value.
         </documentation>
-    </correlationSet>
-    
+        <correlationSet name="correlator" properties="wsdlNS:correlatorProp"/>
+    </correlationSets>
+
     <sequence>
         <receive 
             name="start"
