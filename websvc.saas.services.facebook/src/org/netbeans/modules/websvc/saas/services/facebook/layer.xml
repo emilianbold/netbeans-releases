@@ -6,7 +6,7 @@
         <folder name="WebServices">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.websvc.saas.services.facebook.Bundle"/>
             <file name="profile.properties" url="/org/netbeans/modules/websvc/saas/services/facebook/resources/profile.properties">
-                <attr name="position" intvalue="30"/>
+                <attr name="position" intvalue="3330"/>
             </file>
         </folder>
     </folder>
