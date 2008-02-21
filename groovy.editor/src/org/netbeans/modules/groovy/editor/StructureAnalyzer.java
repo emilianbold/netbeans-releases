@@ -59,6 +59,8 @@ import org.netbeans.api.gsf.HtmlFormatter;
 import org.netbeans.api.gsf.OffsetRange;
 import org.netbeans.api.gsf.StructureItem;
 import org.netbeans.api.gsf.StructureScanner;
+import org.netbeans.api.lexer.Token;
+import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
 import org.netbeans.modules.groovy.editor.elements.AstClassElement;
@@ -67,6 +69,8 @@ import org.netbeans.modules.groovy.editor.elements.AstFieldElement;
 import org.netbeans.modules.groovy.editor.elements.AstMethodElement;
 import org.netbeans.modules.groovy.editor.parser.GroovyParserResult;
 import org.openide.util.Exceptions;
+import org.netbeans.modules.groovy.editor.lexer.LexUtilities;
+import org.netbeans.modules.groovy.editor.lexer.GroovyTokenId;
 
 /**
  * @author Martin Adamek
@@ -217,6 +221,45 @@ public class StructureAnalyzer implements StructureScanner {
 
         try {
             BaseDocument doc = (BaseDocument)info.getDocument();
+            
+            List<OffsetRange> commentfolds = new ArrayList<OffsetRange>();
+            
+            TokenSequence<?> ts = LexUtilities.getGroovyTokenSequence(doc, 1);
+            
+            int importStart = 0;
+            int importEnd   = 0;
+            
+            while (ts.moveNext()) {
+                Token t = ts.token();
+                if (t.id() == GroovyTokenId.LITERAL_import) {
+                    int offset = ts.offset();
+                    if (importStart == 0) {
+                        importStart = offset;
+                    }
+                    importEnd = offset;
+                } else if (t.id() == GroovyTokenId.BLOCK_COMMENT) {
+                    // does this Block comment (GSF_BLOCK_COMMENT) span
+                    // multiple lines? E.g. includes \n ?
+                    StringBuffer sb = new StringBuffer(t.text());
+                    
+                    if(sb.indexOf("\n") != -1) {
+                        int offset = ts.offset();
+                        OffsetRange blockRange = new OffsetRange(offset, offset + t.length());
+                        commentfolds.add(blockRange);
+                    }
+                }
+            }
+            
+            importEnd = Utilities.getRowEnd(doc, importEnd);
+            
+            // see GsfFoldManager.addTree() for suitable blocknames.
+            
+            List<OffsetRange> importfolds = new ArrayList<OffsetRange>();
+            OffsetRange range = new OffsetRange(importStart, importEnd);
+            importfolds.add(range);
+            
+            folds.put("imports", importfolds); // NOI18N
+            folds.put("comments", commentfolds); // NOI18N
 
             addFolds(doc, analysisResult.getElements(), folds, codefolds);
         } catch (Exception ex) {
