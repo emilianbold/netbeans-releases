@@ -37,7 +37,7 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.j2ee.common.sharability.impl;
+package org.netbeans.modules.j2ee.deployment.impl.sharability;
 
 import java.beans.Customizer;
 import org.netbeans.spi.project.libraries.LibraryImplementation;

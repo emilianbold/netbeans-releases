@@ -4,7 +4,7 @@
  * Created on February 11, 2008, 9:33 AM
  */
 
-package org.netbeans.modules.j2ee.common.sharability.impl;
+package org.netbeans.modules.j2ee.common.project.ui;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -21,8 +21,8 @@ import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import org.netbeans.api.project.libraries.Library;
-import org.netbeans.modules.j2ee.common.sharability.PanelSharability;
-import org.netbeans.modules.j2ee.common.sharability.SharabilityUtilities;
+import org.netbeans.modules.j2ee.common.project.ui.PanelSharability;
+import org.netbeans.modules.j2ee.common.SharabilityUtility;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 import org.netbeans.spi.java.project.support.ui.SharableLibrariesUtils;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
@@ -34,7 +34,7 @@ import org.openide.util.NbBundle;
  *
  * @author  Petr Hejl
  */
-public class PanelSharabilityVisual extends javax.swing.JPanel {
+final class PanelSharabilityVisual extends javax.swing.JPanel {
 
     private final ChangeSupport changeSupport = new ChangeSupport(this);
 
@@ -313,11 +313,11 @@ public class PanelSharabilityVisual extends javax.swing.JPanel {
         // FIXME how to do this cleanly ?
         File location = FileUtil.normalizeFile(
                 PropertyUtils.resolveFile(projectLocation,
-                currentLibrariesLocation + File.separator + SharabilityUtilities.DEFAULT_LIBRARIES_FILENAME));
+                currentLibrariesLocation + File.separator + SharabilityUtility.DEFAULT_LIBRARIES_FILENAME));
         if (location == null || !location.exists()) {
             return;
         }
-        for (Library lib : SharabilityUtilities.getLibraries(location)) {
+        for (Library lib : SharabilityUtility.getSharedServerLibraries(location)) {
             model.addElement(lib.getName());
         }
         model.setSelectedItem(preselectedLibraryName);

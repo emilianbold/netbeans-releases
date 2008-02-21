@@ -83,8 +83,8 @@ import org.netbeans.api.queries.FileEncodingQuery;
 
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
 import org.netbeans.modules.j2ee.common.FileSearchUtility;
+import org.netbeans.modules.j2ee.common.SharabilityUtility;
 import org.netbeans.modules.j2ee.common.project.ui.ProjectProperties;
-import org.netbeans.modules.j2ee.common.sharability.SharabilityUtilities;
 import org.netbeans.modules.j2ee.dd.api.web.DDProvider;
 import org.netbeans.modules.j2ee.dd.api.web.WebApp;
 import org.netbeans.modules.j2ee.dd.api.web.WelcomeFileList;
@@ -608,10 +608,10 @@ public class WebProjectUtilities {
             rh.copyLibrary(LibraryManager.getDefault().getLibrary("junit_4")); // NOI18N
         }
 
-        if (h.isSharableProject() && data.getServerLibraryName() != null  && SharabilityUtilities.getLibrary(
+        if (h.isSharableProject() && data.getServerLibraryName() != null  && SharabilityUtility.findSharedServerLibrary(
                 h.resolveFile(h.getLibrariesLocation()), data.getServerLibraryName()) == null) {
 
-            SharabilityUtilities.createLibrary(
+            SharabilityUtility.createLibrary(
                 h.resolveFile(h.getLibrariesLocation()), data.getServerLibraryName(),
                 data.getServerInstanceID());
         }

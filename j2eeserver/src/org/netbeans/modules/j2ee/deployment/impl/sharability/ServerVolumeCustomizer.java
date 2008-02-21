@@ -39,7 +39,7 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.j2ee.common.sharability.impl;
+package org.netbeans.modules.j2ee.deployment.impl.sharability;
 
 import java.awt.Color;
 import java.awt.Component;
