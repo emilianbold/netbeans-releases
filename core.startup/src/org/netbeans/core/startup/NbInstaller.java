@@ -488,12 +488,6 @@ final class NbInstaller extends ModuleInstaller {
      * If a module has no declared layer, does nothing.
      */
     private void loadLayers(List<Module> modules, boolean load) {
-        if (
-            ModuleLayeredFileSystem.getUserModuleLayer().isLayersOK() &&
-            ModuleLayeredFileSystem.getInstallationModuleLayer().isLayersOK()
-        ) {
-            return;
-        }
         ev.log(load ? Events.LOAD_LAYERS : Events.UNLOAD_LAYERS, modules);
         // #23609: dependent modules should be able to override:
         modules = new ArrayList<Module>(modules);

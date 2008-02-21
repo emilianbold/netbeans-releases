@@ -1043,6 +1043,8 @@ run - start application for testing.
 
 run-jnlp - executes your JNLP application (currently from local files)
 
+test - run all module unit tests.
+
 testuserdir-delete - deletes just the testing user directory (if not currently in use).
 
 CONTENTS OF YOUR manifest.mf

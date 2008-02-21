@@ -285,6 +285,7 @@ public class FlatfileResulSetPanel extends JPanel implements ActionListener, Pro
 
         String nbBundle31 = mLoc.t("PRSR001: Limit number of rows");
         JLabel lbl = new JLabel(Localizer.parse(nbBundle31));
+        lbl.getAccessibleContext().setAccessibleName(Localizer.parse(nbBundle31));
         lbl.setDisplayedMnemonic(Localizer.parse(nbBundle31).charAt(0));
 
         recordCountPanel.add(lbl);
@@ -298,7 +299,9 @@ public class FlatfileResulSetPanel extends JPanel implements ActionListener, Pro
         fl.setAlignment(FlowLayout.LEFT);
         totalRowsPanel.setLayout(fl);
 
-        JLabel totalRowsNameLabel = new JLabel("Total rows:");
+        String nbBundle51 = mLoc.t("PRSR001: Total rows:");
+        JLabel totalRowsNameLabel = new JLabel(Localizer.parse(nbBundle51));
+        totalRowsNameLabel.getAccessibleContext().setAccessibleName(Localizer.parse(nbBundle51));
         totalRowsNameLabel.setBorder(BorderFactory.createEmptyBorder(0, 100, 0, 8));
         totalRowsPanel.add(totalRowsNameLabel);
 

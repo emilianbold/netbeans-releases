@@ -18,12 +18,14 @@
  */
 package org.netbeans.modules.bpel.nodes.actions;
 
+import org.netbeans.modules.bpel.editors.api.nodes.actions.*;
+import org.netbeans.modules.bpel.nodes.BpelNode;
+import org.netbeans.modules.bpel.editors.api.nodes.actions.ActionType;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Callable;
 import org.netbeans.modules.bpel.model.api.BpelEntity;
 import org.netbeans.modules.bpel.model.api.BpelModel;
-import org.netbeans.modules.bpel.nodes.BpelNode;
 import org.netbeans.modules.xml.xam.ui.XAMUtils;
 import org.openide.ErrorManager;
 import org.openide.nodes.Node;
@@ -35,15 +37,13 @@ import org.openide.util.actions.NodeAction;
  * @author Vitaly Bychkov
  *
  */
-public abstract class BpelNodeAction extends NodeAction {
+public abstract class BpelNodeAction extends NodeAction implements BpelNodeTypedAction {
 
     public BpelNodeAction() {
         name = getBundleName();
     }
 
     protected abstract String getBundleName();
-    
-    public abstract ActionType getType();
     
     protected abstract void performAction(BpelEntity[] bpelEntities);
     

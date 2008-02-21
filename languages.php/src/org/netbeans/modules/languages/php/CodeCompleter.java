@@ -51,15 +51,15 @@ import java.util.Set;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 
-import org.netbeans.api.gsf.CompilationInfo;
-import org.netbeans.api.gsf.Completable;
-import org.netbeans.api.gsf.CompletionProposal;
-import org.netbeans.api.gsf.Element;
-import org.netbeans.api.gsf.ElementHandle;
-import org.netbeans.api.gsf.HtmlFormatter;
-import org.netbeans.api.gsf.NameKind;
-import org.netbeans.api.gsf.ParameterInfo;
-import org.netbeans.api.gsf.ParserResult;
+import org.netbeans.fpi.gsf.CompilationInfo;
+import org.netbeans.fpi.gsf.Completable;
+import org.netbeans.fpi.gsf.CompletionProposal;
+import org.netbeans.fpi.gsf.Element;
+import org.netbeans.fpi.gsf.ElementHandle;
+import org.netbeans.fpi.gsf.HtmlFormatter;
+import org.netbeans.fpi.gsf.NameKind;
+import org.netbeans.fpi.gsf.ParameterInfo;
+import org.netbeans.fpi.gsf.ParserResult;
 import org.netbeans.modules.languages.php.lang.Operators;
 import org.netbeans.modules.php.editor.TokenUtils;
 import org.netbeans.modules.php.editor.completion.CodeTemplateProvider;
@@ -81,7 +81,7 @@ import org.openide.util.Lookup;
 public class CodeCompleter implements Completable {
     
     /* (non-Javadoc)
-     * @see org.netbeans.api.gsf.Completable#complete(org.netbeans.api.gsf.CompilationInfo, int, java.lang.String, org.netbeans.api.gsf.NameKind, org.netbeans.api.gsf.Completable.QueryType, boolean, org.netbeans.api.gsf.HtmlFormatter)
+     * @see org.netbeans.fpi.gsf.Completable#complete(org.netbeans.fpi.gsf.CompilationInfo, int, java.lang.String, org.netbeans.fpi.gsf.NameKind, org.netbeans.fpi.gsf.Completable.QueryType, boolean, org.netbeans.fpi.gsf.HtmlFormatter)
      */
     public List<CompletionProposal> complete( CompilationInfo info,
             int caretOffset, String prefix, NameKind kind, QueryType queryType,
@@ -108,7 +108,7 @@ public class CodeCompleter implements Completable {
    }
     
     /* (non-Javadoc)
-     * @see org.netbeans.api.gsf.Completable#document(org.netbeans.api.gsf.CompilationInfo, org.netbeans.api.gsf.Element)
+     * @see org.netbeans.fpi.gsf.Completable#document(org.netbeans.fpi.gsf.CompilationInfo, org.netbeans.fpi.gsf.Element)
      */
     public String document( CompilationInfo info, Element element ) {
         if(element instanceof DocumentableElement) {
@@ -122,13 +122,13 @@ public class CodeCompleter implements Completable {
     }
 
     /* (non-Javadoc)
-     * @see org.netbeans.api.gsf.Completable#getApplicableTemplates(org.netbeans.api.gsf.CompilationInfo, int, int)
+     * @see org.netbeans.fpi.gsf.Completable#getApplicableTemplates(org.netbeans.fpi.gsf.CompilationInfo, int, int)
      */
     
     /**
      * Returns the set of the applicable templates for a given text selection.
      * 
-     * @param info {@link org.netbeans.api.gsf.CompilationInfo} about context of
+     * @param info {@link org.netbeans.fpi.gsf.CompilationInfo} about context of
      * the given text selection. 
      * @param start the start offset of the selection.
      * @param end the end offset of the selection, or -1 if there is no 
@@ -161,7 +161,7 @@ public class CodeCompleter implements Completable {
         
 
     /* (non-Javadoc)
-     * @see org.netbeans.api.gsf.Completable#getPrefix(org.netbeans.api.gsf.CompilationInfo, int, boolean)
+     * @see org.netbeans.fpi.gsf.Completable#getPrefix(org.netbeans.fpi.gsf.CompilationInfo, int, boolean)
      */
     public String getPrefix( CompilationInfo info, int caretOffset,
             boolean upToOffset )
@@ -180,7 +180,7 @@ public class CodeCompleter implements Completable {
     }
 
     /* (non-Javadoc)
-     * @see org.netbeans.api.gsf.Completable#resolveTemplateVariable(java.lang.String, org.netbeans.api.gsf.CompilationInfo, int, java.lang.String, java.util.Map)
+     * @see org.netbeans.fpi.gsf.Completable#resolveTemplateVariable(java.lang.String, org.netbeans.fpi.gsf.CompilationInfo, int, java.lang.String, java.util.Map)
      */
     public String resolveTemplateVariable( String variable,
             CompilationInfo info, int caretOffset, String name, Map parameters )
@@ -208,7 +208,7 @@ public class CodeCompleter implements Completable {
      * @return a <code>ParameterInfo</code> instance with actual info about 
      * a parameter specified by the <code>caretOffset</code> if it is possible,
      * otherwise <code>ParameterInfo.NONE</code>.
-     * @see org.netbeans.api.gsf.Completable#parameters(org.netbeans.api.gsf.CompilationInfo, int, org.netbeans.api.gsf.CompletionProposal)
+     * @see org.netbeans.fpi.gsf.Completable#parameters(org.netbeans.fpi.gsf.CompilationInfo, int, org.netbeans.fpi.gsf.CompletionProposal)
      */
     public ParameterInfo parameters( CompilationInfo info, int caretOffset, 
             CompletionProposal proposal ) 

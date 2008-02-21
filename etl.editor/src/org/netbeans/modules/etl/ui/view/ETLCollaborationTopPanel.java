@@ -282,6 +282,7 @@ public class ETLCollaborationTopPanel extends JPanel implements ZoomSupport, Ext
     public void editDBModel() {
         String nbBundle7 = mLoc.t("PRSR001: Modify design-time database properties for this session.");
         JLabel panelTitle = new JLabel(Localizer.parse(nbBundle7));
+        panelTitle.getAccessibleContext().setAccessibleName(Localizer.parse(nbBundle7));
         panelTitle.setDisplayedMnemonic(Localizer.parse(nbBundle7).charAt(0));
         panelTitle.setFont(panelTitle.getFont().deriveFont(Font.BOLD));
         panelTitle.setFocusable(false);
