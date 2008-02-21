@@ -46,9 +46,9 @@ import java.util.*;
 import javax.swing.JComponent;
 import javax.swing.event.*;
 import org.netbeans.modules.gsfpath.platform.InstallerRegistry;
-import org.netbeans.spi.gsfpath.platform.CustomPlatformInstall;
-import org.netbeans.spi.gsfpath.platform.GeneralPlatformInstall;
-import org.netbeans.spi.gsfpath.platform.PlatformInstall;
+import org.netbeans.sfpi.gsfpath.platform.CustomPlatformInstall;
+import org.netbeans.sfpi.gsfpath.platform.GeneralPlatformInstall;
+import org.netbeans.sfpi.gsfpath.platform.PlatformInstall;
 
 import org.openide.loaders.*;
 import org.openide.util.NbBundle;

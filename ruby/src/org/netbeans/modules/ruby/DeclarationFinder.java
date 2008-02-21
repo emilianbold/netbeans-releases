@@ -83,13 +83,12 @@ import org.jruby.ast.StrNode;
 import org.jruby.ast.SymbolNode;
 import org.jruby.ast.VCallNode;
 import org.jruby.ast.types.INameNode;
-import org.netbeans.api.gsf.CompilationInfo;
-import org.netbeans.api.gsf.DeclarationFinder.DeclarationLocation;
-import org.netbeans.api.gsf.Element;
-import org.netbeans.modules.ruby.lexer.RubyTokenId;
-import org.netbeans.api.gsf.HtmlFormatter;
-import org.netbeans.api.gsf.NameKind;
-import org.netbeans.api.gsf.OffsetRange;
+import org.netbeans.fpi.gsf.CompilationInfo;
+import org.netbeans.fpi.gsf.DeclarationFinder.DeclarationLocation;
+import org.netbeans.fpi.gsf.ElementHandle;
+import org.netbeans.fpi.gsf.HtmlFormatter;
+import org.netbeans.fpi.gsf.NameKind;
+import org.netbeans.fpi.gsf.OffsetRange;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenId;
@@ -101,7 +100,6 @@ import org.netbeans.modules.ruby.elements.IndexedClass;
 import org.netbeans.modules.ruby.elements.IndexedElement;
 import org.netbeans.modules.ruby.elements.IndexedField;
 import org.netbeans.modules.ruby.elements.IndexedMethod;
-import org.netbeans.modules.ruby.lexer.LexUtilities;
 import org.netbeans.modules.ruby.lexer.LexUtilities;
 import org.netbeans.modules.ruby.lexer.Call;
 import org.netbeans.modules.ruby.lexer.RubyCommentTokenId;
@@ -126,7 +124,7 @@ import org.openide.util.NbBundle;
  * 
  * @author Tor Norbye
  */
-public class DeclarationFinder implements org.netbeans.api.gsf.DeclarationFinder {
+public class DeclarationFinder implements org.netbeans.fpi.gsf.DeclarationFinder {
     private static final boolean CHOOSE_ONE_DECLARATION = Boolean.getBoolean("ruby.choose_one_decl");
     
     /** An increasing number; I will be using this number modulo the  */
@@ -273,7 +271,7 @@ public class DeclarationFinder implements org.netbeans.api.gsf.DeclarationFinder
                 // No parse tree - try to just use the syntax info to do a simple index lookup
                 // for methods and classes
                 String text = doc.getText(range.getStart(), range.getLength());
-                RubyIndex index = RubyIndex.get(info.getIndex());
+                RubyIndex index = RubyIndex.get(info.getIndex(RubyMimeResolver.RUBY_MIME_TYPE));
 
                 if ((index == null) || (text.length() == 0)) {
                     return DeclarationLocation.NONE;
@@ -312,7 +310,7 @@ public class DeclarationFinder implements org.netbeans.api.gsf.DeclarationFinder
                 return DeclarationLocation.NONE;
             }
 
-            RubyIndex index = RubyIndex.get(info.getIndex());
+            RubyIndex index = RubyIndex.get(info.getIndex(RubyMimeResolver.RUBY_MIME_TYPE));
 
             int tokenOffset = lexOffset;
 
@@ -1032,7 +1030,7 @@ public class DeclarationFinder implements org.netbeans.api.gsf.DeclarationFinder
                 Node node = AstUtilities.getForeignNode(com, null);
 
                 DeclarationLocation loc = new DeclarationLocation(com.getFile().getFileObject(),
-                    node.getPosition().getStartOffset(), com);
+                    node.getPosition().getStartOffset(), RubyParser.createHandle(info, com));
                 
                 if (!CHOOSE_ONE_DECLARATION && classes.size() > 1) {
                     // Could the :nodoc: alternatives: if there is only one nodoc'ed alternative
@@ -1045,7 +1043,7 @@ public class DeclarationFinder implements org.netbeans.api.gsf.DeclarationFinder
                     }
                     if (not_nodoced >= 2) {
                         for (final IndexedClass clz : classes) {
-                            loc.addAlternative(new RubyAltLocation(clz, clz == candidate));
+                            loc.addAlternative(new RubyAltLocation(clz, clz == candidate, info));
                         }
                     }
                 }
@@ -1076,7 +1074,7 @@ public class DeclarationFinder implements org.netbeans.api.gsf.DeclarationFinder
                 int nodeOffset = node != null ? node.getPosition().getStartOffset() : 0;
                 
                 DeclarationLocation loc = new DeclarationLocation(
-                    fileObject, nodeOffset, candidate);
+                    fileObject, nodeOffset, RubyParser.createHandle(info, candidate));
 
                 if (!CHOOSE_ONE_DECLARATION && methods.size() > 1) {
                     // Could the :nodoc: alternatives: if there is only one nodoc'ed alternative
@@ -1089,7 +1087,7 @@ public class DeclarationFinder implements org.netbeans.api.gsf.DeclarationFinder
                     }
                     if (not_nodoced >= 2) {
                         for (final IndexedMethod mtd : methods) {
-                            loc.addAlternative(new RubyAltLocation(mtd, mtd == candidate));
+                            loc.addAlternative(new RubyAltLocation(mtd, mtd == candidate, info));
                         }
                     }
                 }
@@ -1132,7 +1130,7 @@ public class DeclarationFinder implements org.netbeans.api.gsf.DeclarationFinder
                 // No parse tree - try to just use the syntax info to do a simple index lookup
                 // for methods and classes
                 String text = doc.getText(range.getStart(), range.getLength());
-                RubyIndex index = RubyIndex.get(info.getIndex());
+                RubyIndex index = RubyIndex.get(info.getIndex(RubyMimeResolver.RUBY_MIME_TYPE));
 
                 if ((index == null) || (text.length() == 0)) {
                     return null;
@@ -1160,7 +1158,7 @@ public class DeclarationFinder implements org.netbeans.api.gsf.DeclarationFinder
                 return null;
             }
 
-            RubyIndex index = RubyIndex.get(info.getIndex());
+            RubyIndex index = RubyIndex.get(info.getIndex(RubyMimeResolver.RUBY_MIME_TYPE));
 
             TokenHierarchy<Document> th = TokenHierarchy.get(doc);
 
@@ -1270,7 +1268,8 @@ public class DeclarationFinder implements org.netbeans.api.gsf.DeclarationFinder
 
     private DeclarationLocation getLocation(CompilationInfo info, Node node) {
         AstElement element = AstElement.create(node);
-        return new DeclarationLocation(null, LexUtilities.getLexerOffset(info, node.getPosition().getStartOffset()), element);
+        return new DeclarationLocation(null, LexUtilities.getLexerOffset(info, node.getPosition().getStartOffset()), 
+                RubyParser.createHandle(info, element));
     }
 
     private DeclarationLocation findRDocMethod(CompilationInfo info, Document doc, int astOffset, int lexOffset, 
@@ -1354,7 +1353,7 @@ public class DeclarationFinder implements org.netbeans.api.gsf.DeclarationFinder
         Node closest = root;
         int astOffset = 0;
         int lexOffset = 0;
-        RubyIndex index = RubyIndex.get(info.getIndex());
+        RubyIndex index = RubyIndex.get(info.getIndex(RubyMimeResolver.RUBY_MIME_TYPE));
 
         if (root == null) {
             return DeclarationLocation.NONE;
@@ -2081,7 +2080,7 @@ public class DeclarationFinder implements org.netbeans.api.gsf.DeclarationFinder
 
             if (node != null) {
                 return new DeclarationLocation(field.getFile().getFileObject(),
-                    node.getPosition().getStartOffset(), field);
+                    node.getPosition().getStartOffset(), RubyParser.createHandle(info, field));
             }
         }
 
@@ -2176,10 +2175,14 @@ public class DeclarationFinder implements org.netbeans.api.gsf.DeclarationFinder
         private IndexedElement element;
         private boolean isPreferred;
         private String cachedDisplayItem;
+        private CompilationInfo info;
         
-        RubyAltLocation(IndexedElement element, boolean isPreferred) {
+        RubyAltLocation(IndexedElement element, boolean isPreferred, CompilationInfo info) {
             this.element = element;
             this.isPreferred = isPreferred;
+            // TODO - get rid of this field; it's only temporarily needed during my transition
+            // to ElementHandles
+            this.info = info;
         }
 
         public String getDisplayHtml(HtmlFormatter formatter) {
@@ -2316,13 +2319,13 @@ public class DeclarationFinder implements org.netbeans.api.gsf.DeclarationFinder
             Node node = AstUtilities.getForeignNode(element, null);
             int lineOffset = node != null ? node.getPosition().getStartOffset() : -1;
             DeclarationLocation loc = new DeclarationLocation(element.getFileObject(),
-                lineOffset, element);
+                lineOffset, RubyParser.createHandle(info, element));
 
             return loc;
         }
 
-        public Element getElement() {
-            return element;
+        public ElementHandle getElement() {
+            return RubyParser.createHandle(info, element);
         }
 
         public int compareTo(AlternativeLocation alternative) {

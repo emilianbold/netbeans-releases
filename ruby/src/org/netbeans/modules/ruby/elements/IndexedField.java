@@ -27,9 +27,9 @@
  */
 package org.netbeans.modules.ruby.elements;
 
-import org.netbeans.api.gsf.ElementKind;
+import org.netbeans.fpi.gsf.ElementKind;
 
-import org.netbeans.api.gsf.ElementKind;
+import org.netbeans.fpi.gsf.ElementKind;
 import org.netbeans.modules.ruby.RubyIndex;
 
 

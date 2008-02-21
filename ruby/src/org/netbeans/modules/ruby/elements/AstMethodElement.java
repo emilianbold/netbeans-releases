@@ -9,8 +9,8 @@ import org.jruby.ast.DefnNode;
 import org.jruby.ast.DefsNode;
 import org.jruby.ast.MethodDefNode;
 import org.jruby.ast.Node;
-import org.netbeans.api.gsf.ElementKind;
-import org.netbeans.api.gsf.Modifier;
+import org.netbeans.fpi.gsf.ElementKind;
+import org.netbeans.fpi.gsf.Modifier;
 import org.netbeans.modules.ruby.AstUtilities;
 
 

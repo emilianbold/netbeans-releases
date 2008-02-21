@@ -45,11 +45,11 @@ import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 import java.util.Map;
 import java.util.WeakHashMap;
-import org.netbeans.api.gsfpath.classpath.ClassPath;
+import org.netbeans.fpi.gsfpath.classpath.ClassPath;
 import org.netbeans.api.ruby.platform.RubyPlatform;
 import org.netbeans.api.ruby.platform.RubyPlatformManager;
-import org.netbeans.spi.gsfpath.classpath.ClassPathProvider;
-import org.netbeans.spi.gsfpath.classpath.support.ClassPathSupport;
+import org.netbeans.sfpi.gsfpath.classpath.ClassPathProvider;
+import org.netbeans.sfpi.gsfpath.classpath.support.ClassPathSupport;
 import org.openide.filesystems.FileObject;
 
 /**

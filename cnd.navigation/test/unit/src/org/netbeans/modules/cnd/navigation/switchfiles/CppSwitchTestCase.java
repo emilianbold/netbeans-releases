@@ -62,7 +62,7 @@ public class CppSwitchTestCase extends TraceModelTestBase {
         performTest("", source + ".dat", source + ".err"); // NOI18N
     }
 
-    protected @Override void postTest(String[] args) {
+    protected @Override void postTest(String[] args, Object... params) {
         CsmProject project = getCsmProject();
         Collection<CsmFile> files = project.getAllFiles();
         assert files.size() > 0;
