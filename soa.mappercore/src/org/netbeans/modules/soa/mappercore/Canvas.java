@@ -948,6 +948,8 @@ public class Canvas extends MapperPanel implements VertexCanvas,
         int x1 = vertex.getX() * step;
         int x2 = x1 + w;
         
+        x1 -= 2 * step;
+        x2 += 2 * step;
         
         if (x2 > graphX2) {
             graphX2 = x2;

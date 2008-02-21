@@ -3,13 +3,9 @@
 Document 0
 Delete:  source : <TESTURL>/003_add_test_data.rb
 
-Indexed:
-
-Not Indexed:
 
 
 Document 1
-Delete:
 Indexed:
   class : AddTestData
   class-ig : addtestdata
@@ -17,7 +13,6 @@ Indexed:
   fqn : AddTestData
   method : down|DOCUMENTED|STATIC|
   method : up|STATIC|
-  source : <TESTURL>/003_add_test_data.rb
 
 Not Indexed:
   attrs : |DOCUMENTED|;10

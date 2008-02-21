@@ -42,11 +42,13 @@ package org.netbeans.modules.spring.beans.hyperlink;
 
 import javax.swing.text.Document;
 import org.netbeans.editor.TokenItem;
+import org.netbeans.modules.editor.NbEditorUtilities;
 import org.netbeans.modules.spring.beans.editor.ContextUtilities;
 import org.netbeans.modules.spring.beans.editor.DocumentContext;
 import org.netbeans.modules.spring.beans.editor.EditorContextFactory;
 import org.netbeans.modules.xml.text.syntax.SyntaxElement;
 import org.netbeans.modules.xml.text.syntax.dom.Tag;
+import org.openide.filesystems.FileObject;
 
 /**
  *
@@ -139,5 +141,9 @@ public final class HyperlinkEnv {
     
     public DocumentContext getDocumentContext() {
         return this.documentContext;
+    }
+    
+    public FileObject getFile() {
+        return NbEditorUtilities.getFileObject(document);
     }
 }

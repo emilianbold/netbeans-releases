@@ -44,8 +44,8 @@ package org.netbeans.napi.gsfret.source;
 import java.net.URL;
 import java.util.*;
 
-import org.netbeans.api.gsfpath.classpath.ClassPath;
-import org.netbeans.api.gsfpath.classpath.GlobalPathRegistry;
+import org.netbeans.fpi.gsfpath.classpath.ClassPath;
+import org.netbeans.fpi.gsfpath.classpath.GlobalPathRegistry;
 import org.netbeans.modules.gsfret.source.usages.RepositoryUpdater;
 
 

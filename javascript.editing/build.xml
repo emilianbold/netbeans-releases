@@ -24,8 +24,8 @@
     <target name="release" depends="init">
         <!-- Generated Ruby files for core libraries, used by code completion
              etc. See the extractsigs project for details. -->
-        <unzip dest="${cluster}" src="release/jsstubs.sipp"/>
-        <unzip dest="${cluster}" src="release/js-domstubs.sipp"/>
+        <unzip dest="${cluster}" src="release/jsstubs.zip"/>
+        <unzip dest="${cluster}" src="release/js-domstubs.zip"/>
 
         <!-- Don't make the files read-only since this is probably going
              to create headaches for Auto Update! My thought here was that
@@ -40,8 +40,8 @@
         </chmod>
         -->
 
-        <unzip dest="${cluster}/../" src="release/preindexed.sipp"/>
-        <unzip dest="${cluster}" src="release/preindexed-native.sipp"/>
+        <unzip dest="${cluster}/../" src="release/preindexed.zip"/>
+        <unzip dest="${cluster}" src="release/preindexed-native.zip"/>
     </target>
 
 </project>

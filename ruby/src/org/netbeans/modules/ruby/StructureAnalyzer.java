@@ -74,15 +74,15 @@ import org.jruby.ast.types.INameNode;
 import org.jruby.lexer.yacc.ISourcePosition;
 import org.jruby.parser.RubyParserResult;
 import org.jruby.util.ByteList;
-import org.netbeans.api.gsf.CompilationInfo;
-import org.netbeans.api.gsf.Element;
-import org.netbeans.api.gsf.ElementHandle;
-import org.netbeans.api.gsf.ElementKind;
-import org.netbeans.api.gsf.HtmlFormatter;
-import org.netbeans.api.gsf.Modifier;
-import org.netbeans.api.gsf.OffsetRange;
-import org.netbeans.api.gsf.StructureItem;
-import org.netbeans.api.gsf.StructureScanner;
+import org.netbeans.fpi.gsf.CompilationInfo;
+import org.netbeans.modules.ruby.elements.Element;
+import org.netbeans.fpi.gsf.ElementHandle;
+import org.netbeans.fpi.gsf.ElementKind;
+import org.netbeans.fpi.gsf.HtmlFormatter;
+import org.netbeans.fpi.gsf.Modifier;
+import org.netbeans.fpi.gsf.OffsetRange;
+import org.netbeans.fpi.gsf.StructureItem;
+import org.netbeans.fpi.gsf.StructureScanner;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
 import org.netbeans.modules.ruby.elements.AstAttributeElement;
@@ -127,7 +127,7 @@ public class StructureAnalyzer implements StructureScanner {
     }
 
     public List<?extends StructureItem> scan(CompilationInfo info, HtmlFormatter formatter) {
-        this.result = (RubyParseResult)info.getParserResult();
+        this.result = AstUtilities.getParseResult(info);
         this.formatter = formatter;
 
         AnalysisResult ar = result.getStructure();
@@ -302,7 +302,7 @@ public class StructureAnalyzer implements StructureScanner {
             return Collections.emptyMap();
         }
 
-        RubyParseResult rpr = (RubyParseResult)info.getParserResult();
+        RubyParseResult rpr = AstUtilities.getParseResult(info);
         AnalysisResult analysisResult = rpr.getStructure();
 
         Map<String,List<OffsetRange>> folds = new HashMap<String,List<OffsetRange>>();
@@ -852,8 +852,8 @@ public class StructureAnalyzer implements StructureScanner {
             return formatter.getText();
         }
 
-        public ElementHandle<?extends Element> getElementHandle() {
-            return info.getParser().createHandle(info, node);
+        public ElementHandle getElementHandle() {
+            return RubyParser.createHandle(info, node);
         }
 
         public ElementKind getKind() {
