@@ -89,6 +89,16 @@ public class JaxwsOperationInfo {
         this.categoryName = m.getSaas().getParentGroup().getName();
         this.serviceName = m.getSaas().getDefaultServiceName();
         this.project = project;
+
+        method.getSaas().toStateReady(true);
+
+        this.webServiceData = method.getSaas().getWsdlData();
+        this.portName = method.getWsdlPort().getName();
+        this.operationName = method.getWsdlOperation().getName();
+        this.wsdlUrl = method.getSaas().getUrl();
+        this.service = method.getSaas().getWsdlModel();
+        this.port = method.getWsdlPort();
+        this.operation = method.getWsdlOperation();
     }
 
     public String getCategoryName() {
@@ -117,17 +127,6 @@ public class JaxwsOperationInfo {
     }
 
     public void initWsdlModelInfo() {
-        if (webServiceData != null) return;
-        
-        method.getSaas().toStateReady(true);
-
-        webServiceData = method.getSaas().getWsdlData();
-        portName = method.getWsdlPort().getName();
-        operationName = method.getWsdlOperation().getName();
-        wsdlUrl = method.getSaas().getWsdlData().getWsdlFile();
-        service = method.getSaas().getWsdlModel();
-        port = method.getWsdlPort();
-        operation = method.getWsdlOperation();
         LibrariesHelper.addDefaultJaxWsClientJars(project, null, method.getSaas());
     }
 
