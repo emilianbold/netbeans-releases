@@ -82,17 +82,16 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
     
     private final CharSequence[] rawName;
     
-    /** see comments to isConst() */
-    private final boolean _const;
-
     private boolean template;
     private List<CsmTemplateParameter> templateParams = Collections.emptyList();
     
     private CharSequence templateSuffix;
     protected CharSequence classTemplateSuffix;
     
-    private static final byte FLAGS_VOID_PARMLIST = 1;
-    private static final byte FLAGS_STATIC = 2;
+    private static final byte FLAGS_VOID_PARMLIST = 1 << 0;
+    private static final byte FLAGS_STATIC = 1 << 1;
+    private static final byte FLAGS_CONST = 1 << 2;
+    private static final byte FLAGS_OPERATOR = 1 << 3;
     private byte flags;
     
     public FunctionImpl(AST ast, CsmFile file, CsmScope scope) {
@@ -136,7 +135,8 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
         
         RepositoryUtils.hang(this); // "hang" now and then "put" in "register()"
 	
-        _const = initConst(ast);
+        boolean _const = initConst(ast);
+        setFlags(FLAGS_CONST, _const);
         returnType = initReturnType(ast, scope);
         initTemplate(ast);
         
@@ -155,6 +155,9 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
         
         if( name == null ) {
             name = NULL; // just to avoid NPE
+        }
+        if (name.toString().startsWith("operator")) { // NOI18N
+            setFlags(FLAGS_OPERATOR, true);
         }
         if (register) {
             registerInProject();
@@ -565,7 +568,7 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
     }
     
     public boolean isOperator() {
-        return getName() != null && getName().toString().startsWith("operator "); // NOI18N
+        return hasFlags(FLAGS_OPERATOR);
     }
     
     public Collection<CsmScopeElement> getScopeElements() {
@@ -642,7 +645,7 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
      * Therefor it's moved here as a protected method.
      */
     protected boolean isConst() {
-        return _const;
+        return hasFlags(FLAGS_CONST);
     }
     
     private CsmScope _getScope() {
@@ -681,7 +684,6 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
         UIDObjectFactory factory = UIDObjectFactory.getDefaultFactory();
         factory.writeUIDCollection(this.parameters, output, false);
         PersistentUtils.writeStrings(this.rawName, output);
-        output.writeBoolean(this._const);
         
         // not null UID
         assert !CHECK_SCOPE || this.scopeUID != null;
@@ -705,7 +707,6 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
         UIDObjectFactory factory = UIDObjectFactory.getDefaultFactory();
         this.parameters = factory.readUIDCollection(new ArrayList<CsmUID<CsmParameter>>(), input);
         this.rawName = PersistentUtils.readStrings(input, NameCache.getManager());
-        this._const = input.readBoolean();
         
         this.scopeUID = UIDObjectFactory.getDefaultFactory().readUID(input);
         // not null UID
