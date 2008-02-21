@@ -40,11 +40,17 @@
  */
 package org.netbeans.modules.groovy.editor;
 
+import java.io.File;
 import java.io.IOException;
-import org.netbeans.api.gsf.Index;
-import org.netbeans.api.gsf.Indexer;
-import org.netbeans.api.gsf.ParserFile;
-import org.netbeans.api.gsf.ParserResult;
+import java.util.Collections;
+import java.util.List;
+import org.netbeans.fpi.gsf.Index;
+import org.netbeans.fpi.gsf.IndexDocument;
+import org.netbeans.fpi.gsf.IndexDocumentFactory;
+import org.netbeans.fpi.gsf.Indexer;
+import org.netbeans.fpi.gsf.ParserFile;
+import org.netbeans.fpi.gsf.ParserResult;
+import org.openide.filesystems.FileObject;
 
 /**
  * @author Martin Adamek
@@ -56,6 +62,26 @@ public class GroovyIndexer implements Indexer {
     }
 
     public void updateIndex(Index index, ParserResult result) throws IOException {
+    }
+
+    public List<IndexDocument> index(ParserResult result, IndexDocumentFactory factory) throws IOException {
+        return Collections.<IndexDocument>emptyList();
+    }
+
+    public String getPersistentUrl(File file) {
+        return "";
+    }
+
+    public String getIndexVersion() {
+        return "0.1";
+    }
+
+    public String getIndexerName() {
+        return "groovy";
+    }
+
+    public FileObject getPreindexedDb() {
+        return null;
     }
     
 }

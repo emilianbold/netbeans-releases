@@ -47,17 +47,16 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.Caret;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
-import org.netbeans.api.gsf.CompilationInfo;
-import org.netbeans.api.gsf.EditorOptions;
-import org.netbeans.modules.groovy.editor.lexer.GroovyTokenId;
-import org.netbeans.api.gsf.OffsetRange;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
-import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
+import org.netbeans.fpi.gsf.BracketCompletion;
+import org.netbeans.fpi.gsf.CompilationInfo;
+import org.netbeans.fpi.gsf.EditorOptions;
+import org.netbeans.fpi.gsf.OffsetRange;
 import org.netbeans.modules.groovy.editor.lexer.GroovyTokenId;
 import org.netbeans.modules.groovy.editor.lexer.LexUtilities;
 
@@ -66,7 +65,7 @@ import org.netbeans.modules.groovy.editor.lexer.LexUtilities;
  * @author Tor Norbye
  * @author Martin Adamek
  */
-public class BracketCompleter implements org.netbeans.api.gsf.BracketCompletion {
+public class BracketCompleter implements BracketCompletion {
     /** When true, automatically reflows comments that are being edited according to the rdoc
      * conventions as well as the right hand side margin
      */

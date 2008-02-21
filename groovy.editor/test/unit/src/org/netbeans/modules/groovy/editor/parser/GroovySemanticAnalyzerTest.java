@@ -42,11 +42,11 @@
 package org.netbeans.modules.groovy.editor.parser;
 
 import java.io.IOException;
-import org.netbeans.api.gsf.CompilationInfo;
 import org.netbeans.modules.groovy.editor.test.GroovyTestBase;
 import org.openide.filesystems.FileObject;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.fpi.gsf.CompilationInfo;
 
 /**
  *

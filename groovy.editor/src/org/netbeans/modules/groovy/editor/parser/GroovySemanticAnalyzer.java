@@ -55,11 +55,11 @@ import org.codehaus.groovy.ast.expr.PropertyExpression;
 import org.codehaus.groovy.ast.Variable;
 import org.codehaus.groovy.ast.expr.VariableExpression;
 import org.codehaus.groovy.ast.ConstructorNode;
-import org.netbeans.api.gsf.ColoringAttributes;
-import org.netbeans.api.gsf.CompilationInfo;
-import org.netbeans.api.gsf.OffsetRange;
-import org.netbeans.api.gsf.SemanticAnalyzer;
 import org.netbeans.editor.BaseDocument;
+import org.netbeans.fpi.gsf.ColoringAttributes;
+import org.netbeans.fpi.gsf.CompilationInfo;
+import org.netbeans.fpi.gsf.OffsetRange;
+import org.netbeans.fpi.gsf.SemanticAnalyzer;
 import org.netbeans.modules.groovy.editor.AstPath;
 import org.netbeans.modules.groovy.editor.AstUtilities;
 import org.netbeans.modules.groovy.editor.lexer.LexUtilities;
@@ -103,6 +103,11 @@ public class GroovySemanticAnalyzer implements SemanticAnalyzer {
             return;
         }
 
+        GroovyParserResult parserResult = AstUtilities.getParseResult(info);
+        if (parserResult == null) {
+            return;
+        }
+
         ASTNode root = AstUtilities.getRoot(info);
 
         if (root == null) {
@@ -126,7 +131,7 @@ public class GroovySemanticAnalyzer implements SemanticAnalyzer {
         }
 
         if (highlights.size() > 0) {
-            if (info.getPositionManager().isTranslatingSource()) {
+            if (parserResult.getTranslatedSource() != null) {
                 Map<OffsetRange, ColoringAttributes> translated = new HashMap<OffsetRange,ColoringAttributes>(2*highlights.size());
                 for (Map.Entry<OffsetRange,ColoringAttributes> entry : highlights.entrySet()) {
                     OffsetRange range = LexUtilities.getLexerOffsets(info, entry.getKey());

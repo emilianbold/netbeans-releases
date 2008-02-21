@@ -50,8 +50,8 @@ import org.codehaus.groovy.ast.ClassNode;
 import org.codehaus.groovy.ast.FieldNode;
 import org.codehaus.groovy.ast.MethodNode;
 import org.codehaus.groovy.ast.ModuleNode;
-import org.netbeans.api.gsf.ParserResult;
 import org.netbeans.editor.BaseDocument;
+import org.netbeans.fpi.gsf.ParserResult;
 import org.openide.util.Enumerations;
 
 

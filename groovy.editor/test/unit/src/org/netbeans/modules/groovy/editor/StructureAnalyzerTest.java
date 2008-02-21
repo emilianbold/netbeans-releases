@@ -48,11 +48,11 @@ import java.util.Map;
 import java.util.ArrayList;
 import java.util.Comparator;
 import javax.swing.text.Document;
-import org.netbeans.api.gsf.CompilationInfo;
-import org.netbeans.api.gsf.ElementKind;
-import org.netbeans.api.gsf.HtmlFormatter;
-import org.netbeans.api.gsf.OffsetRange;
-import org.netbeans.api.gsf.StructureItem;
+import org.netbeans.fpi.gsf.CompilationInfo;
+import org.netbeans.fpi.gsf.ElementKind;
+import org.netbeans.fpi.gsf.HtmlFormatter;
+import org.netbeans.fpi.gsf.OffsetRange;
+import org.netbeans.fpi.gsf.StructureItem;
 import org.netbeans.modules.groovy.editor.test.GroovyTestBase;
 
 /**

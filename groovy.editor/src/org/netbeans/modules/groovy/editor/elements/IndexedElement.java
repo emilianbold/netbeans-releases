@@ -44,16 +44,13 @@ import java.io.IOException;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.Set;
-
 import javax.swing.text.Document;
-
-import org.netbeans.api.gsf.Modifier;
-import org.netbeans.api.gsf.ParserFile;
+import org.netbeans.fpi.gsf.Modifier;
+import org.netbeans.fpi.gsf.ParserFile;
 import org.netbeans.modules.groovy.editor.AstUtilities;
 import org.netbeans.modules.groovy.editor.GroovyIndex;
-import org.netbeans.spi.gsf.DefaultParserFile;
+import org.netbeans.sfpi.gsf.DefaultParserFile;
 import org.openide.filesystems.FileObject;
-
 
 /**
  * A program element coming from the persistent index.

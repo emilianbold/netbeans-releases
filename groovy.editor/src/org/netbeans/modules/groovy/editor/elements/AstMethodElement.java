@@ -9,8 +9,8 @@ import org.codehaus.groovy.ast.ASTNode;
 import org.codehaus.groovy.ast.ConstructorNode;
 import org.codehaus.groovy.ast.MethodNode;
 import org.codehaus.groovy.ast.Parameter;
-import org.netbeans.api.gsf.ElementKind;
-import org.netbeans.api.gsf.Modifier;
+import org.netbeans.fpi.gsf.ElementKind;
+import org.netbeans.fpi.gsf.Modifier;
 
 public class AstMethodElement extends AstElement implements MethodElement {
     private List<String> parameters;

@@ -43,23 +43,20 @@ package org.netbeans.modules.groovy.editor.lexer;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
-import org.netbeans.api.gsf.CompilationInfo;
-
-import org.netbeans.modules.groovy.editor.lexer.GroovyTokenId;
-import org.netbeans.api.gsf.OffsetRange;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
-import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
+import org.netbeans.fpi.gsf.CompilationInfo;
+import org.netbeans.fpi.gsf.OffsetRange;
+import org.netbeans.fpi.gsf.ParserResult;
+import org.netbeans.fpi.gsf.TranslatedSource;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
-import org.openide.util.Exceptions;
 import org.openide.util.Exceptions;
 
 
@@ -96,20 +93,36 @@ public class LexUtilities {
 
     /** For a possibly generated offset in an AST, return the corresponding lexing/true document offset */
     public static int getLexerOffset(CompilationInfo info, int astOffset) {
-        return info.getPositionManager().getLexicalOffset(info.getParserResult(), astOffset);
+        ParserResult result = info.getEmbeddedResult("text/x-groovy", 0);
+        if (result != null) {
+            TranslatedSource ts = result.getTranslatedSource();
+            if (ts != null) {
+                return ts.getLexicalOffset(astOffset);
+            }
+        }
+        
+        return astOffset;
     }
     
     public static OffsetRange getLexerOffsets(CompilationInfo info, OffsetRange astRange) {
-        int rangeStart = astRange.getStart();
-        int start = info.getPositionManager().getLexicalOffset(info.getParserResult(), rangeStart);
-        if (start == rangeStart) {
-            return astRange;
-        } else if (start == -1) {
-            return OffsetRange.NONE;
-        } else {
-            // Assumes the translated range maintains size
-            return new OffsetRange(start, start+astRange.getLength());
+        ParserResult result = info.getEmbeddedResult("text/x-groovy", 0);
+        if (result != null) {
+            TranslatedSource ts = result.getTranslatedSource();
+            if (ts != null) {
+                int rangeStart = astRange.getStart();
+                int start = ts.getLexicalOffset(rangeStart);
+                if (start == rangeStart) {
+                    return astRange;
+                } else if (start == -1) {
+                    return OffsetRange.NONE;
+                } else {
+                    // Assumes the translated range maintains size
+                    return new OffsetRange(start, start+astRange.getLength());
+                }
+            }
         }
+
+        return astRange;
     }
     
     /** Find the ruby token sequence (in case it's embedded in something else at the top level */

@@ -41,12 +41,16 @@
 
 package org.netbeans.modules.groovy.gsp;
 
-import org.netbeans.api.gsf.GsfLanguage;
+import java.util.Collection;
+import java.util.Collections;
 import org.netbeans.api.lexer.Language;
+import org.netbeans.fpi.gsf.GsfLanguage;
 import org.netbeans.modules.groovy.editor.GroovyUtils;
 import org.netbeans.modules.groovy.gsp.lexer.api.GspTokenId;
+import org.openide.filesystems.FileObject;
 
 public class GspLanguage implements GsfLanguage {
+
     public GspLanguage() {
     }
 
@@ -60,5 +64,9 @@ public class GspLanguage implements GsfLanguage {
 
     public Language getLexerLanguage() {
         return GspTokenId.language();
+    }
+
+    public Collection<FileObject> getCoreLibraries() {
+        return Collections.<FileObject>emptyList();
     }
 }

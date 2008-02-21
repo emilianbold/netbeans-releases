@@ -41,10 +41,11 @@
 
 package org.netbeans.modules.groovy.editor.parser;
 
-import org.netbeans.api.gsf.Element;
-import org.netbeans.api.gsf.OffsetRange;
-import org.netbeans.api.gsf.ParserResult;
-import org.netbeans.api.gsf.PositionManager;
+import org.netbeans.fpi.gsf.CompilationInfo;
+import org.netbeans.fpi.gsf.ElementHandle;
+import org.netbeans.fpi.gsf.OffsetRange;
+import org.netbeans.fpi.gsf.ParserResult;
+import org.netbeans.fpi.gsf.PositionManager;
 
 /**
  *
@@ -52,7 +53,7 @@ import org.netbeans.api.gsf.PositionManager;
  */
 public class GroovyPositionManager implements PositionManager {
 
-    public OffsetRange getOffsetRange(Element file, Element object) {
+    public OffsetRange getOffsetRange(CompilationInfo info, ElementHandle object) {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 

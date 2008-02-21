@@ -41,10 +41,19 @@
 
 package org.netbeans.modules.groovy.editor;
 
-import org.netbeans.api.gsf.GsfLanguage;
+import java.util.Collection;
+import java.util.Collections;
 import org.netbeans.api.lexer.Language;
+import org.netbeans.fpi.gsf.GsfLanguage;
 import org.netbeans.modules.groovy.editor.lexer.GroovyTokenId;
 
+/*
+ * Language/lexing configuration for Groovy
+ *
+ * @author Tor Norbye
+ * @author Martin Adamek
+ */
+import org.openide.filesystems.FileObject;
 /*
  * Language/lexing configuration for Groovy
  *
@@ -66,6 +75,10 @@ public class GroovyLanguage implements GsfLanguage {
 
     public Language getLexerLanguage() {
         return GroovyTokenId.language();
+    }
+
+    public Collection<FileObject> getCoreLibraries() {
+        return Collections.<FileObject>emptyList();
     }
     
 }

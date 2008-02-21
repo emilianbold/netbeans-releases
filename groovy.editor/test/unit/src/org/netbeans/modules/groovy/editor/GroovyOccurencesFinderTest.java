@@ -47,11 +47,11 @@ import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.netbeans.api.gsf.ColoringAttributes;
-import org.netbeans.api.gsf.CompilationInfo;
-import org.netbeans.api.gsf.OffsetRange;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
+import org.netbeans.fpi.gsf.ColoringAttributes;
+import org.netbeans.fpi.gsf.CompilationInfo;
+import org.netbeans.fpi.gsf.OffsetRange;
 import org.netbeans.modules.groovy.editor.parser.GroovyOccurrencesFinder;
 import org.netbeans.modules.groovy.editor.test.GroovyTestBase;
 

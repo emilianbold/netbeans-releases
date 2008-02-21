@@ -41,9 +41,7 @@
 package org.netbeans.modules.groovy.editor.elements;
 
 import java.util.Set;
-
-import org.netbeans.api.gsf.Element;
-
+import org.netbeans.fpi.gsf.Element;
 
 /**
  *

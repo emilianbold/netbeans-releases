@@ -53,16 +53,16 @@ import org.codehaus.groovy.ast.ClassNode;
 import org.codehaus.groovy.ast.FieldNode;
 import org.codehaus.groovy.ast.MethodNode;
 import org.codehaus.groovy.ast.expr.ClosureExpression;
-import org.netbeans.api.gsf.CompilationInfo;
-import org.netbeans.api.gsf.ElementKind;
-import org.netbeans.api.gsf.HtmlFormatter;
-import org.netbeans.api.gsf.OffsetRange;
-import org.netbeans.api.gsf.StructureItem;
-import org.netbeans.api.gsf.StructureScanner;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
+import org.netbeans.fpi.gsf.CompilationInfo;
+import org.netbeans.fpi.gsf.ElementKind;
+import org.netbeans.fpi.gsf.HtmlFormatter;
+import org.netbeans.fpi.gsf.OffsetRange;
+import org.netbeans.fpi.gsf.StructureItem;
+import org.netbeans.fpi.gsf.StructureScanner;
 import org.netbeans.modules.groovy.editor.elements.AstClassElement;
 import org.netbeans.modules.groovy.editor.elements.AstElement;
 import org.netbeans.modules.groovy.editor.elements.AstFieldElement;
@@ -212,7 +212,7 @@ public class StructureAnalyzer implements StructureScanner {
             return Collections.emptyMap();
         }
 
-        GroovyParserResult rpr = (GroovyParserResult)info.getParserResult();
+        GroovyParserResult rpr = AstUtilities.getParseResult(info);
         AnalysisResult analysisResult = rpr.getStructure();
 
         Map<String,List<OffsetRange>> folds = new HashMap<String,List<OffsetRange>>();

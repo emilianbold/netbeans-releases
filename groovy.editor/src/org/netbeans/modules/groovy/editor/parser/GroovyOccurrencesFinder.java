@@ -45,19 +45,17 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import org.codehaus.groovy.ast.ASTNode;
-import org.codehaus.groovy.ast.FieldNode;
 import org.codehaus.groovy.ast.MethodNode;
 import org.codehaus.groovy.ast.ModuleNode;
 import org.codehaus.groovy.ast.Parameter;
 import org.codehaus.groovy.ast.Variable;
-import org.netbeans.api.gsf.ColoringAttributes;
-import org.netbeans.api.gsf.CompilationInfo;
-import org.netbeans.api.gsf.OccurrencesFinder;
-import org.netbeans.api.gsf.OffsetRange;
 import org.netbeans.editor.BaseDocument;
+import org.netbeans.fpi.gsf.ColoringAttributes;
+import org.netbeans.fpi.gsf.CompilationInfo;
+import org.netbeans.fpi.gsf.OccurrencesFinder;
+import org.netbeans.fpi.gsf.OffsetRange;
 import org.netbeans.modules.groovy.editor.AstPath;
 import org.netbeans.modules.groovy.editor.AstUtilities;
 import org.netbeans.modules.groovy.editor.elements.AstRootElement;
@@ -98,6 +96,11 @@ public class GroovyOccurrencesFinder implements OccurrencesFinder {
             return;
         }
 
+        GroovyParserResult parseResult = (GroovyParserResult)info.getEmbeddedResult("text/x-groovy", 0);
+        if (parseResult == null) {
+            return;
+        }
+        
         ASTNode root = AstUtilities.getRoot(info);
 
         if (root == null) {
@@ -127,8 +130,7 @@ public class GroovyOccurrencesFinder implements OccurrencesFinder {
             
             if (closest instanceof Variable) {
                 String name = ((Variable)closest).getName();
-                GroovyParserResult parseResult = (GroovyParserResult)info.getParserResult();
-                AstRootElement astRootElement = (AstRootElement)parseResult.getRoot();
+                AstRootElement astRootElement = parseResult.getRootElement();
                 ModuleNode moduleNode = (ModuleNode)astRootElement.getNode();
                 ASTNode scope = AstUtilities.findVariableScope((Variable)closest, path, moduleNode);
                 
@@ -143,7 +145,7 @@ public class GroovyOccurrencesFinder implements OccurrencesFinder {
         }
 
         if (highlights.size() > 0) {
-            if (info.getPositionManager().isTranslatingSource()) {
+            if (parseResult.getTranslatedSource() != null) {
                 Map<OffsetRange, ColoringAttributes> translated = new HashMap<OffsetRange,ColoringAttributes>(2*highlights.size());
                 for (Map.Entry<OffsetRange,ColoringAttributes> entry : highlights.entrySet()) {
                     OffsetRange range = LexUtilities.getLexerOffsets(info, entry.getKey());

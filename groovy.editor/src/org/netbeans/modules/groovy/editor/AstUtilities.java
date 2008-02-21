@@ -59,9 +59,6 @@ import org.codehaus.groovy.ast.Parameter;
 import org.codehaus.groovy.ast.Variable;
 import org.codehaus.groovy.ast.expr.DeclarationExpression;
 import org.codehaus.groovy.ast.ConstructorNode;
-import org.netbeans.api.gsf.CompilationInfo;
-import org.netbeans.api.gsf.OffsetRange;
-import org.netbeans.api.gsf.ParserResult;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.groovy.editor.parser.GroovyParserResult;
 import org.openide.cookies.EditorCookie;
@@ -70,11 +67,14 @@ import org.openide.loaders.DataObject;
 import org.openide.util.Exceptions;
 import org.codehaus.groovy.ast.expr.Expression;
 import org.codehaus.groovy.ast.expr.VariableExpression;
-import org.codehaus.groovy.ast.stmt.ExpressionStatement;
 import org.codehaus.groovy.control.SourceUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.editor.Utilities;
+import org.netbeans.fpi.gsf.CompilationInfo;
+import org.netbeans.fpi.gsf.OffsetRange;
+import org.netbeans.fpi.gsf.ParserResult;
+import org.netbeans.fpi.gsf.TranslatedSource;
 
 /**
  *
@@ -85,7 +85,15 @@ public class AstUtilities {
     
 
     public static int getAstOffset(CompilationInfo info, int lexOffset) {
-        return info.getPositionManager().getAstOffset(info.getParserResult(), lexOffset);
+        ParserResult result = info.getEmbeddedResult("text/x-groovy", 0);
+        if (result != null) {
+            TranslatedSource ts = result.getTranslatedSource();
+            if (ts != null) {
+                return ts.getAstOffset(lexOffset);
+            }
+        }
+              
+        return lexOffset;
     }
 
     public static BaseDocument getBaseDocument(FileObject fileObject, boolean forceOpen) {
@@ -130,9 +138,19 @@ public class AstUtilities {
         return null;
     }
 
+    public static GroovyParserResult getParseResult(CompilationInfo info) {
+        ParserResult result = info.getEmbeddedResult("text/x-groovy", 0);
+
+        if (result == null) {
+            return null;
+        } else {
+            return ((GroovyParserResult)result);
+        }
+    }
+
     // TODO use this from all the various places that have this inlined...
     public static ASTNode getRoot(CompilationInfo info) {
-        ParserResult result = info.getParserResult();
+        ParserResult result = info.getEmbeddedResult("text/x-groovy", 0);
 
         if (result == null) {
             return null;

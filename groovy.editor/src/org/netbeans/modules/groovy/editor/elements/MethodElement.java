@@ -41,9 +41,7 @@
 package org.netbeans.modules.groovy.editor.elements;
 
 import java.util.List;
-
-import org.netbeans.api.gsf.Element;
-
+import org.netbeans.fpi.gsf.Element;
 
 /**
  * RubyElements that correspond to methods will implement this interface

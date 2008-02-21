@@ -47,9 +47,9 @@ import java.util.List;
 import java.util.Set;
 import org.codehaus.groovy.ast.ASTNode;
 import org.codehaus.groovy.ast.MethodNode;
-import org.netbeans.api.gsf.Element;
-import org.netbeans.api.gsf.ElementKind;
-import org.netbeans.api.gsf.Modifier;
+import org.netbeans.fpi.gsf.Element;
+import org.netbeans.fpi.gsf.ElementKind;
+import org.netbeans.fpi.gsf.Modifier;
 
 /**
  *

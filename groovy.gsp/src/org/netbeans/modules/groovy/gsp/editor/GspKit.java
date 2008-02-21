@@ -58,8 +58,8 @@ import org.netbeans.lib.editor.util.CharSequenceUtilities;
 import org.netbeans.lib.editor.util.swing.DocumentUtilities;
 import org.netbeans.editor.Utilities;
 import org.netbeans.editor.ext.ExtKit.ExtDefaultKeyTypedAction;
-import org.netbeans.modules.editor.html.HTMLKit;
 import org.netbeans.modules.editor.gsfret.InstantRenameAction;
+import org.netbeans.modules.editor.html.HTMLKit;
 import org.netbeans.modules.groovy.editor.lexer.GroovyTokenId;
 import org.netbeans.modules.groovy.editor.lexer.LexUtilities;
 import org.netbeans.modules.gsf.DeleteToNextCamelCasePosition;
@@ -155,38 +155,17 @@ public class GspKit extends HTMLKit {
     @Override
     protected Action[] createActions() {
         Action[] superActions = super.createActions();
-        if (defaultKeyActionIndex == -1 || 
-                (defaultKeyActionIndex < superActions.length && 
-                 !(superActions[defaultKeyActionIndex] instanceof ExtDefaultKeyTypedAction))) {
-            for (int i = 0; i < superActions.length; i++) {
-                Action action = superActions[i];
-                if (action instanceof ExtDefaultKeyTypedAction) {
-                    defaultKeyActionIndex = i;
-                }
-
-                // This code assumes that HTML hasn't provided custom implementations of insert break
-                // and ext delete
-                assert !(action instanceof InsertBreakAction && action.getClass() != InsertBreakAction.class);
-                assert !(action instanceof ExtDeleteCharAction && action.getClass() != ExtDeleteCharAction.class);
-            }
-        }
-
-        assert defaultKeyActionIndex != -1;
-        superActions[defaultKeyActionIndex] = new GspDefaultKeyTypedAction((ExtDefaultKeyTypedAction)superActions[defaultKeyActionIndex]);
         
         return TextAction.augmentList(superActions, new Action[] {
             // TODO - also register a Tab key action which tabs out of <% %> if the caret is near the end
-            new GspInsertBreakAction(), 
-            new GspDeleteCharAction(deletePrevCharAction, false),
-            new GspToggleCommentAction(),
-            new SelectCodeElementAction(selectNextElementAction, true),
-            new SelectCodeElementAction(selectPreviousElementAction, false),
-            new NextCamelCasePosition(GsfEditorKitFactory.findAction(superActions, nextWordAction), language),
-            new PreviousCamelCasePosition(GsfEditorKitFactory.findAction(superActions, previousWordAction), language),
-            new SelectNextCamelCasePosition(GsfEditorKitFactory.findAction(superActions, selectionNextWordAction), language),
-            new SelectPreviousCamelCasePosition(GsfEditorKitFactory.findAction(superActions, selectionPreviousWordAction), language),
-            new DeleteToNextCamelCasePosition(GsfEditorKitFactory.findAction(superActions, removeNextWordAction), language),
-            new DeleteToPreviousCamelCasePosition(GsfEditorKitFactory.findAction(superActions, removePreviousWordAction), language),
+            new SelectCodeElementAction(SelectCodeElementAction.selectNextElementAction, true),
+            new SelectCodeElementAction(SelectCodeElementAction.selectPreviousElementAction, false),
+            new NextCamelCasePosition(GsfEditorKitFactory.findAction(superActions, nextWordAction)),
+            new PreviousCamelCasePosition(GsfEditorKitFactory.findAction(superActions, previousWordAction)),
+            new SelectNextCamelCasePosition(GsfEditorKitFactory.findAction(superActions, selectionNextWordAction)),
+            new SelectPreviousCamelCasePosition(GsfEditorKitFactory.findAction(superActions, selectionPreviousWordAction)),
+            new DeleteToNextCamelCasePosition(GsfEditorKitFactory.findAction(superActions, removeNextWordAction)),
+            new DeleteToPreviousCamelCasePosition(GsfEditorKitFactory.findAction(superActions, removePreviousWordAction)),
             new InstantRenameAction(),
          });
     }
@@ -499,13 +478,6 @@ public class GspKit extends HTMLKit {
     @Override
     public Object clone() {
         return new GspKit();
-    }
-    
-    @Override
-    protected void initDocument(Document doc) {
-        super.initDocument(doc);
-
-        doc.putProperty(org.netbeans.api.lexer.Language.class, GspTokenId.language());
     }
     
     private static Token<?> getToken(BaseDocument doc, int offset, boolean checkEmbedded) {
