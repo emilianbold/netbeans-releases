@@ -51,6 +51,7 @@ import org.netbeans.fpi.gsf.OffsetRange;
 import org.netbeans.fpi.gsf.ParserResult;
 import org.netbeans.fpi.gsf.PositionManager;
 import org.netbeans.modules.ruby.elements.AstElement;
+import org.netbeans.modules.ruby.elements.RubyElement;
 
 
 /**
@@ -65,7 +66,7 @@ public class RubyPositionManager implements PositionManager {
     }
 
     public OffsetRange getOffsetRange(CompilationInfo info, ElementHandle objectHandle) {
-        Element object = RubyParser.resolveHandle(info, objectHandle);
+        RubyElement object = RubyParser.resolveHandle(info, objectHandle);
         if (object instanceof AstElement) {
             Node target = ((AstElement)object).getNode();
             ISourcePosition pos = target.getPosition();

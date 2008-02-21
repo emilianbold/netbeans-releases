@@ -64,7 +64,9 @@ import org.netbeans.fpi.gsf.Modifier;
 import org.netbeans.napi.gsfret.source.UiUtils;
 import org.netbeans.modules.gsf.GsfHtmlFormatter;
 import org.netbeans.modules.gsfret.navigation.Icons;
+import org.openide.awt.StatusDisplayer;
 import org.openide.filesystems.FileObject;
+import org.openide.util.NbBundle;
 
 /**
  * This file is originally from Retouche, the Java Support 
@@ -171,7 +173,12 @@ public class DeclarationPopup extends JPanel implements FocusListener {
         
         if (desc != null) {
             DeclarationLocation location = desc.getLocation();
-            UiUtils.open(location.getFileObject(), location.getOffset());
+            if (location == DeclarationLocation.NONE) {
+                StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(DeclarationPopup.class, "InvalidLoc"));
+                Toolkit.getDefaultToolkit().beep();
+            } else {
+                UiUtils.open(location.getFileObject(), location.getOffset());
+            }
         }
         
         PopupUtil.hidePopup();
