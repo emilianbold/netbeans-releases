@@ -696,6 +696,7 @@ public abstract class DataOutputPanel extends JPanel implements ETLOutputPanel {
 
         DialogDescriptor desc = new DialogDescriptor(panel, "Enter the Values");
         Dialog dialog = DialogDisplayer.getDefault().createDialog(desc);
+        dialog.getAccessibleContext().setAccessibleDescription("This is the dialog which helps user input records into database");
         dialog.setModal(true);
         dialog.pack();
         dialog.setVisible(true);

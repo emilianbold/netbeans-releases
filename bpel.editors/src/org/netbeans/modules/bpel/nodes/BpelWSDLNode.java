@@ -18,6 +18,7 @@
  */
 package org.netbeans.modules.bpel.nodes;
 
+import org.netbeans.modules.bpel.nodes.BpelNode;
 import javax.swing.Action;
 import org.netbeans.modules.bpel.nodes.synchronizer.ModelSynchronizer;
 import org.netbeans.modules.bpel.nodes.synchronizer.SynchronisationListener;

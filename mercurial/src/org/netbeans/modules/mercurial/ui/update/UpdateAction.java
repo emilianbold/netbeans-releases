@@ -45,6 +45,7 @@ import java.util.List;
 import org.netbeans.modules.mercurial.HgException;
 import org.netbeans.modules.mercurial.HgProgressSupport;
 import org.netbeans.modules.mercurial.Mercurial;
+import org.netbeans.modules.mercurial.OutputLogger;
 import org.netbeans.modules.mercurial.util.HgUtils;
 import org.netbeans.modules.mercurial.ui.actions.ContextAction;
 import org.netbeans.modules.versioning.spi.VCSContext;
@@ -95,23 +96,24 @@ public class UpdateAction extends ContextAction {
         HgProgressSupport support = new HgProgressSupport() {
             public void perform() {
                 boolean bNoUpdates = true;
+                OutputLogger logger = getLogger();
                 try {
-                    HgUtils.outputMercurialTabInRed(
+                    logger.outputInRed(
                             NbBundle.getMessage(UpdateAction.class,
                             "MSG_UPDATE_TITLE")); // NOI18N
-                    HgUtils.outputMercurialTabInRed(
+                    logger.outputInRed(
                             NbBundle.getMessage(UpdateAction.class,
                             "MSG_UPDATE_TITLE_SEP")); // NOI18N
-                    HgUtils.outputMercurialTab(
+                    logger.output(
                                 NbBundle.getMessage(UpdateAction.class,
                                 "MSG_UPDATE_INFO_SEP", revStr, root.getAbsolutePath())); // NOI18N
                     List<String> list = HgCommand.doUpdateAll(root, doForcedUpdate, revStr);
                     
                     if (list != null && !list.isEmpty()){
                         bNoUpdates = HgCommand.isNoUpdates(list.get(0));
-                        //HgUtils.clearOutputMercurialTab();
-                        HgUtils.outputMercurialTab(list);
-                        HgUtils.outputMercurialTab(""); // NOI18N
+                        //logger.clearOutput();
+                        logger.output(list);
+                        logger.output(""); // NOI18N
                     }  
                     // refresh filesystem to take account of changes
                     FileObject rootObj = FileUtil.toFileObject(root);
@@ -129,10 +131,10 @@ public class UpdateAction extends ContextAction {
                 if(!bNoUpdates)
                     HgUtils.forceStatusRefreshProject(ctx);
 
-                HgUtils.outputMercurialTabInRed(
+                logger.outputInRed(
                         NbBundle.getMessage(UpdateAction.class,
                         "MSG_UPDATE_DONE")); // NOI18N
-                HgUtils.outputMercurialTab(""); // NOI18N
+                logger.output(""); // NOI18N
             }
         };
         support.start(rp, repository, org.openide.util.NbBundle.getMessage(UpdateAction.class, "MSG_Update_Progress")); // NOI18N
