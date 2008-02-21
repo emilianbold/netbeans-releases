@@ -86,7 +86,7 @@ public class ProxyLookup extends Lookup {
     }
 
     @Override
-    public String toString() {
+    public synchronized String toString() {
         return "ProxyLookup(class=" + getClass() + ")->" + Arrays.asList(getData().getLookups(false)); // NOI18N
     }
 
