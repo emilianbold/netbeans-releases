@@ -72,7 +72,7 @@ import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.websvc.api.jaxws.project.GeneratedFilesHelper;
-import org.netbeans.modules.websvc.rest.model.api.RestConstants;
+import org.netbeans.modules.websvc.saas.codegen.java.Constants;
 import org.openide.ErrorManager;
 import org.openide.cookies.EditorCookie;
 import org.openide.cookies.LineCookie;
@@ -92,11 +92,11 @@ import org.openide.util.Lookup;
 public class Util {
     public static final String TYPE_DOC_ROOT="doc_root"; //NOI18N
     public static final String AT = "@"; //NOI18N
-    public static final String APATH = AT + RestConstants.PATH_ANNOTATION;      //NOI18N
-    public static final String AGET = AT + RestConstants.GET_ANNOTATION;      //NOI18N
-    public static final String APOST = AT + RestConstants.POST_ANNOTATION;      //NOI18N
-    public static final String APUT = AT + RestConstants.PUT_ANNOTATION;      //NOI18N
-    public static final String ADELETE = AT + RestConstants.DELETE_ANNOTATION;      //NOI18N
+    public static final String APATH = AT + Constants.PATH_ANNOTATION;      //NOI18N
+    public static final String AGET = AT + Constants.GET_ANNOTATION;      //NOI18N
+    public static final String APOST = AT + Constants.POST_ANNOTATION;      //NOI18N
+    public static final String APUT = AT + Constants.PUT_ANNOTATION;      //NOI18N
+    public static final String ADELETE = AT + Constants.DELETE_ANNOTATION;      //NOI18N
     /*
      * Check if the primary file of d is a REST Resource
      */ 
