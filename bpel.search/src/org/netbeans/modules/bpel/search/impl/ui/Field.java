@@ -57,9 +57,9 @@ import javax.swing.SwingUtilities;
  * @author Vladimir Yaroslavskiy
  * @version 2006.12.22
  */
-public final class TextField {
+final class Field {
 
-  public TextField(String items) {
+  Field(String items) {
     myItems = new ArrayList<String>();
     createUIComponent();
     setItems(items);
