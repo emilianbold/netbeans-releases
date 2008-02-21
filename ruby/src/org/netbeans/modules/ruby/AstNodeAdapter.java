@@ -56,7 +56,7 @@ import org.jruby.ast.ModuleNode;
 import org.jruby.ast.NewlineNode;
 import org.jruby.ast.Node;
 import org.jruby.ast.types.INameNode;
-import org.netbeans.api.gsf.ParserResult;
+import org.netbeans.fpi.gsf.ParserResult;
 import org.openide.util.Enumerations;
 
 

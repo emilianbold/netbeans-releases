@@ -30,8 +30,8 @@ package org.netbeans.modules.ruby.rhtml;
 
 import java.io.IOException;
 import javax.swing.text.Document;
-import org.netbeans.api.gsf.CompilationInfo;
-import org.netbeans.api.gsf.OffsetRange;
+import org.netbeans.fpi.gsf.CompilationInfo;
+import org.netbeans.fpi.gsf.OffsetRange;
 import org.netbeans.modules.ruby.DeclarationFinder;
 import org.openide.util.Exceptions;
 

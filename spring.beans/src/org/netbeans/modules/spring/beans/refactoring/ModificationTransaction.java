@@ -66,6 +66,6 @@ public class ModificationTransaction implements Transaction {
     }
 
     public void rollback() {
-        throw new UnsupportedOperationException("Not supported yet.");
+        // XXX not implemented yet.
     }
 }

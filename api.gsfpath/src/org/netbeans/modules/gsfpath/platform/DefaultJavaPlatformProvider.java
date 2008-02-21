@@ -40,7 +40,7 @@
  */
 package org.netbeans.modules.gsfpath.platform;
 
-import org.netbeans.api.gsfpath.platform.JavaPlatform;
+import org.netbeans.fpi.gsfpath.platform.JavaPlatform;
 import org.openide.filesystems.*;
 import org.openide.cookies.InstanceCookie;
 import org.openide.ErrorManager;
@@ -55,7 +55,7 @@ import org.openide.util.Lookup;
 
 public class DefaultJavaPlatformProvider implements JavaPlatformProvider, FileChangeListener {
 
-    private static final String PLATFORM_STORAGE = "Services/Platforms/org-netbeans-api-gsfpath-Platform";  //NOI18N
+    private static final String PLATFORM_STORAGE = "Services/Platforms/org-netbeans-fpi-gsfpath-Platform";  //NOI18N
 
     private final PropertyChangeSupport pcs = new PropertyChangeSupport(this);
     private FileObject storage;

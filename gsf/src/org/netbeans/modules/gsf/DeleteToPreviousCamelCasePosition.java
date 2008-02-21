@@ -48,9 +48,9 @@ import javax.swing.text.JTextComponent;
 public final class DeleteToPreviousCamelCasePosition extends SelectPreviousCamelCasePosition {
     public static final String deletePreviousCamelCasePosition = "delete-previous-camel-case-position"; //NOI18N
 
-    public DeleteToPreviousCamelCasePosition(Action originalAction, Language language) {
+    public DeleteToPreviousCamelCasePosition(Action originalAction) {
         // XXX Why does this get called so many times?        
-        super(deletePreviousCamelCasePosition, originalAction, language);
+        super(deletePreviousCamelCasePosition, originalAction);
     }
     @Override
     protected void moveToNewOffset(JTextComponent textComponent, int offset) {

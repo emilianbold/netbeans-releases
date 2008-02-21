@@ -63,9 +63,9 @@ import org.jruby.ast.types.INameNode;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.editor.settings.FontColorSettings;
-import org.netbeans.api.gsf.ElementKind;
-import org.netbeans.api.gsfpath.classpath.ClassPath;
-import org.netbeans.api.gsfpath.classpath.GlobalPathRegistry;
+import org.netbeans.fpi.gsf.ElementKind;
+import org.netbeans.fpi.gsfpath.classpath.ClassPath;
+import org.netbeans.fpi.gsfpath.classpath.GlobalPathRegistry;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenId;
@@ -80,6 +80,8 @@ import org.netbeans.napi.gsfret.source.CompilationInfo;
 import org.netbeans.napi.gsfret.source.Source;
 import org.netbeans.napi.gsfret.source.SourceUtils;
 import org.netbeans.editor.BaseDocument;
+import org.netbeans.modules.gsf.Language;
+import org.netbeans.modules.gsf.LanguageRegistry;
 import org.netbeans.modules.ruby.AstUtilities;
 import org.netbeans.modules.ruby.RubyIndex;
 import org.netbeans.modules.ruby.RubyMimeResolver;
@@ -87,7 +89,7 @@ import org.netbeans.modules.ruby.RubyUtils;
 import org.netbeans.modules.ruby.elements.IndexedMethod;
 import org.netbeans.modules.ruby.lexer.RubyTokenId;
 import org.netbeans.modules.ruby.rubyproject.RubyProject;
-import org.netbeans.spi.gsfpath.classpath.support.ClassPathSupport;
+import org.netbeans.sfpi.gsfpath.classpath.support.ClassPathSupport;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -223,7 +225,7 @@ public class RetoucheUtils {
 
     /** Return the most distant method in the hierarchy that is overriding the given method, or null */
     public static IndexedMethod getOverridingMethod(RubyElementCtx element, CompilationInfo info) {
-        RubyIndex index = RubyIndex.get(info.getIndex());
+        RubyIndex index = RubyIndex.get(info.getIndex(RubyMimeResolver.RUBY_MIME_TYPE));
         String fqn = AstUtilities.getFqnName(element.getPath());
 
         return index.getOverridingMethod(fqn, element.getName());

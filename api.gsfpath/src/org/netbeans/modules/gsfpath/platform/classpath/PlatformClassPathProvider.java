@@ -43,14 +43,14 @@ package org.netbeans.modules.gsfpath.platform.classpath;
 
 
 import java.util.Collections;
-import org.netbeans.spi.gsfpath.classpath.support.ClassPathSupport;
+import org.netbeans.sfpi.gsfpath.classpath.support.ClassPathSupport;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.netbeans.api.gsfpath.classpath.ClassPath;
-import org.netbeans.spi.gsfpath.classpath.ClassPathProvider;
-import org.netbeans.api.gsfpath.platform.JavaPlatform;
-import org.netbeans.api.gsfpath.platform.JavaPlatformManager;
-import org.netbeans.spi.gsfpath.classpath.PathResourceImplementation;
+import org.netbeans.fpi.gsfpath.classpath.ClassPath;
+import org.netbeans.sfpi.gsfpath.classpath.ClassPathProvider;
+import org.netbeans.fpi.gsfpath.platform.JavaPlatform;
+import org.netbeans.fpi.gsfpath.platform.JavaPlatformManager;
+import org.netbeans.sfpi.gsfpath.classpath.PathResourceImplementation;
 
 
 public class PlatformClassPathProvider implements ClassPathProvider {

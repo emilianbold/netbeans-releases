@@ -29,7 +29,7 @@ package org.netbeans.modules.ruby.hints.infrastructure;
 
 import java.util.ArrayList;
 import java.util.List;
-import org.netbeans.api.gsf.CompilationInfo;
+import org.netbeans.fpi.gsf.CompilationInfo;
 import org.netbeans.modules.ruby.hints.options.HintsAdvancedOption;
 import org.netbeans.modules.ruby.hints.options.HintsSettings;
 import org.netbeans.modules.ruby.hints.spi.Rule;
