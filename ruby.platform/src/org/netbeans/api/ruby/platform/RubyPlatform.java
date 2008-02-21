@@ -48,7 +48,7 @@ import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JButton;
-import org.netbeans.api.gsf.annotations.CheckForNull;
+import org.netbeans.fpi.gsf.annotations.CheckForNull;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.ruby.platform.Util;

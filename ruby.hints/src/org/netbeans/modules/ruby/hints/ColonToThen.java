@@ -50,8 +50,8 @@ import javax.swing.text.BadLocationException;
 import org.jruby.ast.Node;
 import org.jruby.ast.NodeTypes;
 import org.jruby.ast.WhenNode;
-import org.netbeans.api.gsf.CompilationInfo;
-import org.netbeans.api.gsf.OffsetRange;
+import org.netbeans.fpi.gsf.CompilationInfo;
+import org.netbeans.fpi.gsf.OffsetRange;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
@@ -71,6 +71,11 @@ import org.openide.util.NbBundle;
 
 /**
  * Convert "when foo : bar" to "when foo then bar" as required by Ruby 1.9
+ * @todo This is not particular to when/case - the following is also illegal in 1.9
+ *   if true: puts "True!"
+ *   end
+ * @todo Add a reference link to the wiki page with more information about the quickfix and 
+ *   references
  * 
  * @author Tor Norbye
  */

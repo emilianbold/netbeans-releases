@@ -43,7 +43,7 @@ package org.netbeans.modules.ruby.hints.spi;
 
 import java.util.List;
 import java.util.Set;
-import org.netbeans.api.gsf.Error;
+import org.netbeans.fpi.gsf.Error;
 
 /** 
  * Represents a rule to be run on the java source in case the compiler 
