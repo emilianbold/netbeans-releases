@@ -264,7 +264,7 @@ public class TagLibParseSupport implements org.openide.nodes.Node.Cookie, TagLib
             }
             JspParserAPI.JspOpenInfo info = (JspParserAPI.JspOpenInfo)jspOpenInfoRef.get(timestamp);
             if (info == null) {
-                info = JspParserFactory.getJspParser().getJspOpenInfo(jspFile, JspParserAccess.getJspParserWM (getWebModule (jspFile)), useEditor);
+                info = JspParserFactory.getJspParser().getJspOpenInfo(jspFile, getWebModule(jspFile), useEditor);
                 jspOpenInfoRef.put(info, timestamp);
             }
             return info;
@@ -358,7 +358,7 @@ public class TagLibParseSupport implements org.openide.nodes.Node.Cookie, TagLib
                 
                 getJSPColoringData(false).parsingStarted();
                 
-                locResult = parser.analyzePage(jspFile, JspParserAccess.getJspParserWM (getWebModule (jspFile)), JspParserAPI.ERROR_IGNORE);
+                locResult = parser.analyzePage(jspFile, getWebModule(jspFile), JspParserAPI.ERROR_IGNORE);
                 assert locResult != null;
                 
                 synchronized (TagLibParseSupport.this.parseResultLock) {
