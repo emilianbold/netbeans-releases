@@ -433,7 +433,7 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
         RequestProcessor rp = Mercurial.getInstance().getRequestProcessor(root);
         HgProgressSupport support = new HgProgressSupport() {
             public void perform() {                 
-                RevertModificationsAction.performRevert(root, revStr, file, doBackup);
+                RevertModificationsAction.performRevert(root, revStr, file, doBackup, this.getLogger());
             }
         };
         support.start(rp, root.getAbsolutePath(), NbBundle.getMessage(AnnotationBar.class, "MSG_Revert_Progress")); // NOI18N
