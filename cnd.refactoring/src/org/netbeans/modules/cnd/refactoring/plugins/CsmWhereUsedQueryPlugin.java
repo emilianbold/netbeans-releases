@@ -110,7 +110,7 @@ public class CsmWhereUsedQueryPlugin extends CsmRefactoringPlugin {
         if (referencedObject == null) {
             return invalidContext;
         }
-        if (referencedObject instanceof CsmValidable) {
+        if (CsmKindUtilities.isValidable(referencedObject)) {
             if (!((CsmValidable)referencedObject).isValid()) {
                 return invalidContext;
             }

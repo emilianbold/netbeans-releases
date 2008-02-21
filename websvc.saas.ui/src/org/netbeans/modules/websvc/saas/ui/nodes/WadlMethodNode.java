@@ -141,8 +141,9 @@ public class WadlMethodNode extends AbstractNode {
 
     @Override
     public Transferable clipboardCopy() throws IOException {
-        if (method.getSaas().getState() != Saas.State.RESOLVED) {
-            method.getSaas().toStateReady();
+        if (method.getSaas().getState() != Saas.State.RESOLVED &&
+            method.getSaas().getState() != Saas.State.READY) {
+            method.getSaas().toStateReady(false);
             return super.clipboardCopy();
         }
         return SaasTransferable.addFlavors(transferable);

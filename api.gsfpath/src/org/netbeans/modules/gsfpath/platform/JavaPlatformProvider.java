@@ -40,7 +40,7 @@
  */
 package org.netbeans.modules.gsfpath.platform;
 
-import org.netbeans.api.gsfpath.platform.JavaPlatform;
+import org.netbeans.fpi.gsfpath.platform.JavaPlatform;
 
 import java.beans.PropertyChangeListener;
 

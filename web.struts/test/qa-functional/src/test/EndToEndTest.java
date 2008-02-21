@@ -148,6 +148,7 @@ public class EndToEndTest extends JellyTestCase {
         lop.setProjectName(PROJECT_NAME);
         lop.setProjectLocation(getDataDir().getCanonicalPath());
         lop.next();
+        lop.next();
         NewProjectWizardOperator frameworkStep = new NewProjectWizardOperator();
         // select Struts
         JTableOperator tableOper = new JTableOperator(frameworkStep);

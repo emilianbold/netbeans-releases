@@ -27,7 +27,7 @@ import javax.swing.event.ChangeListener;
 import org.netbeans.modules.bpel.model.api.Receive;
 import org.netbeans.modules.bpel.properties.editors.controls.AbstractCustomNodeEditor;
 import org.netbeans.modules.bpel.nodes.ReceiveNode;
-import org.netbeans.modules.bpel.properties.Util;
+import org.netbeans.modules.soa.ui.SoaUiUtil;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
@@ -64,13 +64,16 @@ public class ReceiveCustomEditor extends AbstractCustomNodeEditor<Receive> {
         tabbedPane.addTab(NbBundle.getMessage(
                 FormBundle.class, "LBL_Correlations_Tab"), correlationPanel); // NOI18N
         //
+        getAccessibleContext().setAccessibleDescription(
+                NbBundle.getMessage(FormBundle.class, "ACSD_LBL_Receive_Editor")); // NOI18N
+        //
         tabbedPane.addChangeListener(new ChangeListener() {
             public void stateChanged(ChangeEvent e) {
                 fireHelpContextChange();
             }
         });
         //
-        Util.activateInlineMnemonics(this);
+        SoaUiUtil.activateInlineMnemonics(this);
     }
     
     public HelpCtx getHelpCtx() {

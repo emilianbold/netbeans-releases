@@ -44,6 +44,9 @@ import java.io.File;
 import java.util.Map;
 import java.util.logging.Logger;
 import java.util.prefs.Preferences;
+import javax.swing.JComboBox;
+import org.netbeans.api.ruby.platform.RubyPlatform;
+import org.netbeans.api.ruby.platform.RubyPlatformManager;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.util.NbBundle;
@@ -168,6 +171,16 @@ public final class Util {
             }
         }
         return null;
+    }
+
+    public static void preselectPlatform(final JComboBox platforms, final String preferencePlatformIDKey) {
+        String lastPlatformID = Util.getPreferences().get(preferencePlatformIDKey, null);
+        if (lastPlatformID != null) {
+            RubyPlatform platform = RubyPlatformManager.getPlatformByID(lastPlatformID);
+            if (platform != null) {
+                platforms.setSelectedItem(platform);
+            }
+        }
     }
 
     public static void notifyLocalized(Class aClass, String resName, int type, Object... params) {

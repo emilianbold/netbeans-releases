@@ -193,6 +193,7 @@ public class EViewDesignTime extends Task {
 
     public void execute() {        
         ChooseLocationDialog dialog = new ChooseLocationDialog(new JFrame(), true);
+        dialog.getAccessibleContext().setAccessibleDescription("This dialog helps user to locate object.xml and database name");
         dialog.setVisible(true);
         TargetDBSchemaGenerator dbgen = TargetDBSchemaGenerator.getTargetDBSchemaGenerator();
         objDefn = dialog.getObjectDefinition(); 

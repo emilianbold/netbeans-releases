@@ -56,11 +56,11 @@ import javax.swing.ImageIcon;
 import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.ListModel;
-import org.netbeans.api.gsf.DeclarationFinder.AlternativeLocation;
-import org.netbeans.api.gsf.DeclarationFinder.DeclarationLocation;
-import org.netbeans.api.gsf.Element;
-import org.netbeans.api.gsf.ElementKind;
-import org.netbeans.api.gsf.Modifier;
+import org.netbeans.fpi.gsf.DeclarationFinder.AlternativeLocation;
+import org.netbeans.fpi.gsf.DeclarationFinder.DeclarationLocation;
+import org.netbeans.fpi.gsf.ElementHandle;
+import org.netbeans.fpi.gsf.ElementKind;
+import org.netbeans.fpi.gsf.Modifier;
 import org.netbeans.napi.gsfret.source.UiUtils;
 import org.netbeans.modules.gsf.GsfHtmlFormatter;
 import org.netbeans.modules.gsfret.navigation.Icons;
@@ -199,7 +199,7 @@ public class DeclarationPopup extends JPanel implements FocusListener {
             
             if (value instanceof AlternativeLocation) {
                 AlternativeLocation desc = (AlternativeLocation) value;
-                Element e = desc.getElement();
+                ElementHandle e = desc.getElement();
                 ImageIcon icon = Icons.getElementIcon(e.getKind(), e.getModifiers());
                 setIcon(icon);
                 
