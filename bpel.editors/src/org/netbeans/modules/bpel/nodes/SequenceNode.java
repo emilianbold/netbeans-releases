@@ -18,6 +18,7 @@
  */
 package org.netbeans.modules.bpel.nodes;
 
+import org.netbeans.modules.bpel.nodes.BpelNode;
 import org.netbeans.modules.bpel.model.api.Sequence;
 import org.netbeans.modules.bpel.nodes.children.ActivityNodeChildren;
 import org.netbeans.modules.bpel.properties.Constants;

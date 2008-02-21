@@ -220,56 +220,86 @@ public final class NavigationHistoryBackAction extends TextAction implements Con
     }
 
     /* package */ static void show(NavigationHistory.Waypoint wpt) {
-        final URL url = wpt.getUrl();
         final int offset = wpt.getOffset();
-        if (url == null || offset < 0) {
+        if (offset < 0) {
             return;
         }
         
-        FileObject f = URLMapper.findFileObject(url);
+        Lookup lookup = findLookupFor(wpt);
+        if (lookup != null) {
+            final EditorCookie editorCookie = lookup.lookup(EditorCookie.class);
+            final LineCookie lineCookie = lookup.lookup(LineCookie.class);
+            Document doc = null;
+
+            if (editorCookie != null && lineCookie != null) {
+                try {
+                    doc = editorCookie.openDocument();
+                } catch (IOException ioe) {
+                    LOG.log(Level.WARNING, "Can't open document", ioe); //NOI18N
+                }
+            }
+
+            if (doc instanceof BaseDocument) {
+                final boolean worked[] = new boolean [1];
+                final BaseDocument baseDoc = (BaseDocument) doc;
+                doc.render(new Runnable() {
+                    public void run() {
+                        Element lineRoot = baseDoc.getParagraphElement(0).getParentElement();
+                        int lineIndex = lineRoot.getElementIndex(offset);
+
+                        if (lineIndex != -1) {
+                            Element lineElement = lineRoot.getElement(lineIndex);
+                            int column = offset - lineElement.getStartOffset();
+
+                            Line line = lineCookie.getLineSet().getCurrent(lineIndex);
+                            if (line != null) {
+                                line.show(Line.SHOW_REUSE, column);
+                                worked[0] = true;
+                            }
+                        }
+                    }
+                });
+                if (worked[0]) {
+                    return;
+                }
+            }
+        }
+        
+        // lookup didn't work try simple navigation in the text component
+        JTextComponent component = wpt.getComponent();
+        if (component != null) {
+            component.setCaretPosition(offset);
+            component.requestFocusInWindow();
+        }
+    }
+    
+    private static Lookup findLookupFor(NavigationHistory.Waypoint wpt) {
+        // try component first
+        JTextComponent component = wpt.getComponent();
+        if (component != null) {
+            for (java.awt.Component c = component; c != null; c = c.getParent()) {
+                if (c instanceof Lookup.Provider) {
+                    Lookup lookup = ((Lookup.Provider)c).getLookup ();
+                    if (lookup != null) {
+                        return lookup;
+                    }
+                }
+            }
+        }
+
+        // now try DataObject
+        URL url = wpt.getUrl();
+        FileObject f = url == null ? null : URLMapper.findFileObject(url);
+        
         if (f != null) {
-            DataObject d = null;
-            
             try {
-                d = DataObject.find(f);
+                return DataObject.find(f).getLookup();
             } catch (DataObjectNotFoundException e) {
                 LOG.log(Level.WARNING, "Can't get DataObject for " + f, e); //NOI18N
             }
-            
-            if (d != null) {
-                final EditorCookie editorCookie = d.getLookup().lookup(EditorCookie.class);
-                final LineCookie lineCookie = d.getLookup().lookup(LineCookie.class);
-                Document doc = null;
-                
-                if (editorCookie != null && lineCookie != null) {
-                    try {
-                        doc = editorCookie.openDocument();
-                    } catch (IOException ioe) {
-                        LOG.log(Level.WARNING, "Can't open document", ioe); //NOI18N
-                    }
-                }
-
-                if (doc instanceof BaseDocument) {
-                    final BaseDocument baseDoc = (BaseDocument) doc;
-                    doc.render(new Runnable() {
-                        public void run() {
-                            Element lineRoot = baseDoc.getParagraphElement(0).getParentElement();
-                            int lineIndex = lineRoot.getElementIndex(offset);
-
-                            if (lineIndex != -1) {
-                                Element lineElement = lineRoot.getElement(lineIndex);
-                                int column = offset - lineElement.getStartOffset();
-
-                                Line line = lineCookie.getLineSet().getCurrent(lineIndex);
-                                if (line != null) {
-                                    line.show(Line.SHOW_REUSE, column);
-                                }
-                            }
-                        }
-                    });
-                }                
-            }
         }
+        
+        return null;
     }
     
     /* package */ static String getWaypointName(NavigationHistory.Waypoint wpt) {
@@ -295,6 +325,6 @@ public final class NavigationHistoryBackAction extends TextAction implements Con
                 return panes[0];
             }
         }
-        return null;
+        return lookup.lookup(JTextComponent.class);
     }
 }
