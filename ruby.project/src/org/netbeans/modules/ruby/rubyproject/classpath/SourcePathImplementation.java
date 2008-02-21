@@ -52,9 +52,9 @@ import java.net.URL;
 import org.netbeans.modules.ruby.rubyproject.SourceRoots;
 import org.netbeans.modules.ruby.spi.project.support.rake.PropertyEvaluator;
 import org.netbeans.modules.ruby.spi.project.support.rake.RakeProjectHelper;
-import org.netbeans.spi.gsfpath.classpath.ClassPathImplementation;
-import org.netbeans.spi.gsfpath.classpath.PathResourceImplementation;
-import org.netbeans.spi.gsfpath.classpath.support.ClassPathSupport;
+import org.netbeans.sfpi.gsfpath.classpath.ClassPathImplementation;
+import org.netbeans.sfpi.gsfpath.classpath.PathResourceImplementation;
+import org.netbeans.sfpi.gsfpath.classpath.support.ClassPathSupport;
 import org.openide.ErrorManager;
 
 /**

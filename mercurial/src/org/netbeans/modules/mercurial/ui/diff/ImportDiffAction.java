@@ -50,6 +50,7 @@ import java.util.List;
 import org.netbeans.modules.mercurial.HgException;
 import org.netbeans.modules.mercurial.HgProgressSupport;
 import org.netbeans.modules.mercurial.Mercurial;
+import org.netbeans.modules.mercurial.OutputLogger;
 import org.netbeans.modules.mercurial.HgModuleConfig;
 import org.netbeans.modules.mercurial.util.HgUtils;
 import org.netbeans.modules.mercurial.util.HgRepositoryContextCache;
@@ -107,7 +108,8 @@ public class ImportDiffAction extends ContextAction {
                 RequestProcessor rp = Mercurial.getInstance().getRequestProcessor(root.getAbsolutePath());
                 HgProgressSupport support = new HgProgressSupport() {
                     public void perform() {
-                        performImport(root, patchFile);
+                        OutputLogger logger = getLogger();
+                        performImport(root, patchFile, logger);
                     }
                 };
                 support.start(rp, root.getAbsolutePath(), org.openide.util.NbBundle.getMessage(ImportDiffAction.class, "LBL_ImportDiff_Progress")); // NOI18N
@@ -115,25 +117,25 @@ public class ImportDiffAction extends ContextAction {
         }
     }
 
-    private static void performImport(File repository, File patchFile) {
+    private static void performImport(File repository, File patchFile, OutputLogger logger) {
     try {
-        HgUtils.outputMercurialTabInRed(
+        logger.outputInRed(
                 NbBundle.getMessage(ImportDiffAction.class,
                 "MSG_IMPORT_TITLE")); // NOI18N
-        HgUtils.outputMercurialTabInRed(
+        logger.outputInRed(
                 NbBundle.getMessage(ImportDiffAction.class,
                 "MSG_IMPORT_TITLE_SEP")); // NOI18N
 
-        List<String> list = HgCommand.doImport(repository, patchFile);
+        List<String> list = HgCommand.doImport(repository, patchFile, logger);
         Mercurial.getInstance().changesetChanged(repository);
-        HgUtils.outputMercurialTab(list); // NOI18N
+        logger.output(list); // NOI18N
 
         } catch (HgException ex) {
             NotifyDescriptor.Exception e = new NotifyDescriptor.Exception(ex);
             DialogDisplayer.getDefault().notifyLater(e);
         } finally {
-            HgUtils.outputMercurialTabInRed(NbBundle.getMessage(ImportDiffAction.class, "MSG_IMPORT_DONE")); // NOI18N
-            HgUtils.outputMercurialTab(""); // NOI18N
+            logger.outputInRed(NbBundle.getMessage(ImportDiffAction.class, "MSG_IMPORT_DONE")); // NOI18N
+            logger.output(""); // NOI18N
         }
     }
 }

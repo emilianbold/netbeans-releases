@@ -48,6 +48,7 @@ import javax.swing.InputMap;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
 import javax.swing.JViewport;
 import javax.swing.KeyStroke;
@@ -150,6 +151,12 @@ public class RightTree extends MapperPanel implements
 
         iMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_RIGHT, KeyEvent.SHIFT_DOWN_MASK), "auto-scroll-right");
         aMap.put("auto-scroll-right", new AutoScrollRight());
+        
+        iMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_F10, KeyEvent.SHIFT_DOWN_MASK), "show-popupMenu");
+        iMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_CONTEXT_MENU, 0), "show-popupMenu");
+        aMap.put("show-popupMenu", new ShowPopupMenuAction());
+        
+        
     }
 
     public void registrAction(MapperKeyboardAction action) {
@@ -983,6 +990,30 @@ public class RightTree extends MapperPanel implements
                     viewSize.width - extentSize.width - offset);
             
             viewport.setViewPosition(viewPosition);
+        }
+    }
+    
+    private class ShowPopupMenuAction extends AbstractAction {
+        public void actionPerformed(ActionEvent e) {
+            RightTree tree = RightTree.this;
+            MapperContext context = tree.getContext();
+            MapperModel model = tree.getMapperModel();
+            if (context == null || model == null) { return; }
+
+            TreePath treePath = tree.getSelectionModel().getSelectedPath();
+            if (treePath == null) { return; }
+
+            MapperNode node = tree.getMapper().getNode(treePath, true);
+            if (node == null) { return; }
+            
+            Object value = treePath.getLastPathComponent();
+            if (value == null) { return; }
+            
+            JPopupMenu menu = context.getRightPopupMenu(model, value);
+            if (menu != null) {
+                menu.show(tree, 0, node.yToView(node.getContentCenterY()
+                        - node.getContentHeight() / 2));
+            }
         }
     }
 }

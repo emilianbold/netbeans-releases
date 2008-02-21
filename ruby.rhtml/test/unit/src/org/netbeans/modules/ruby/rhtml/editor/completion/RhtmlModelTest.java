@@ -45,7 +45,7 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.nio.CharBuffer;
-import org.netbeans.api.gsf.CompilationInfo;
+import org.netbeans.fpi.gsf.CompilationInfo;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.junit.NbTestCase;
@@ -107,7 +107,7 @@ public class RhtmlModelTest extends RubyTestBase {
         CompilationInfo info = getInfo(rubyFo);
         assertNotNull(info);
         assertNotNull(AstUtilities.getRoot(info));
-        assertTrue(info.getDiagnostics().size() == 0);
+        assertTrue(info.getErrors().size() == 0);
     }
 
     private static String readFile(NbTestCase test, File f) throws Exception {

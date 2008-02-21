@@ -40,8 +40,8 @@
  */
 package org.netbeans.modules.ruby.elements;
 
-import org.netbeans.api.gsf.Element;
-import org.netbeans.api.gsf.Element;
+import org.netbeans.modules.ruby.elements.Element;
+import org.netbeans.modules.ruby.elements.Element;
 
 
 /**

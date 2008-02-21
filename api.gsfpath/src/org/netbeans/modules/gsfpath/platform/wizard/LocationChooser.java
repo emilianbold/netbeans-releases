@@ -66,7 +66,7 @@ import javax.swing.filechooser.FileFilter;
 import javax.swing.filechooser.FileSystemView;
 import javax.swing.filechooser.FileView;
 import org.netbeans.modules.gsfpath.platform.PlatformSettings;
-import org.netbeans.spi.gsfpath.platform.PlatformInstall;
+import org.netbeans.sfpi.gsfpath.platform.PlatformInstall;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;

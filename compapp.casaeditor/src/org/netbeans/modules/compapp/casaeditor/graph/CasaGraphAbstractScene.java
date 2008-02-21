@@ -147,7 +147,18 @@ public abstract class CasaGraphAbstractScene<N, E, P> extends ObjectScene {
         removeObject(node);
         detachNodeWidget(node, widget);
     }
-    
+
+    /**
+     * refresh a node annotations, e.g., bagdes and labels
+     * @param node
+     */
+    public final void refreshNode(N node) {
+        assert node != null;
+        assert nodes.contains(node);
+        Widget widget = findWidget(node);
+        refreshWidgetBadge(node, widget);
+    }
+
     /**
      * Returns a collection of all nodes registered in the graph model.
      * @return the collection of all nodes registered in the graph model
@@ -533,8 +544,14 @@ public abstract class CasaGraphAbstractScene<N, E, P> extends ObjectScene {
      * visually selected. This method can be used to update external state.
      */
     protected abstract void fireSelectionChanged();
-    
-    
+
+    /**
+     * This methos is used to refresh the dynamic status of a widget, e.g., badge or
+     * annotation information not stored in the wrapper model
+     * @param widget the widget to be refreshed
+     */
+    protected abstract void refreshWidgetBadge(N node, Widget widget);
+
     public void userSelectionSuggested(Set<?> suggestedSelectedObjects, boolean invertSelection) {
         super.userSelectionSuggested(suggestedSelectedObjects, invertSelection);
         fireSelectionChanged();

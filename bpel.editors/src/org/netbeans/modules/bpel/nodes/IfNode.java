@@ -18,6 +18,7 @@
  */
 package org.netbeans.modules.bpel.nodes;
 
+import org.netbeans.modules.bpel.nodes.BpelNode;
 import java.util.ArrayList;
 import java.util.List;
 import org.netbeans.modules.bpel.editors.api.nodes.NodeType;
@@ -27,7 +28,7 @@ import org.netbeans.modules.bpel.model.api.Else;
 import org.netbeans.modules.bpel.model.api.If;
 import org.netbeans.modules.bpel.model.api.NamedElement;
 import org.netbeans.modules.bpel.properties.Constants;
-import org.netbeans.modules.bpel.nodes.actions.ActionType;
+import org.netbeans.modules.bpel.editors.api.nodes.actions.ActionType;
 import org.netbeans.modules.bpel.properties.props.PropertyUtils;
 import org.openide.nodes.Children;
 import org.openide.nodes.Sheet;

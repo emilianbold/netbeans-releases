@@ -48,8 +48,7 @@ import org.jruby.ast.Node;
 import org.jruby.ast.NodeTypes;
 import org.jruby.ast.SClassNode;
 import org.jruby.ast.SymbolNode;
-import org.netbeans.api.gsf.Element;
-import org.netbeans.api.gsf.ElementKind;
+import org.netbeans.fpi.gsf.ElementKind;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.napi.gsfret.source.CompilationInfo;
 import org.netbeans.editor.BaseDocument;
@@ -58,9 +57,11 @@ import org.netbeans.modules.ruby.AstPath;
 import org.netbeans.modules.ruby.AstPath;
 import org.netbeans.modules.ruby.AstUtilities;
 import org.netbeans.modules.ruby.RubyIndex;
+import org.netbeans.modules.ruby.RubyMimeResolver;
 import org.netbeans.modules.ruby.RubyUtils;
 import org.netbeans.modules.ruby.TypeAnalyzer;
 import org.netbeans.modules.ruby.elements.AstElement;
+import org.netbeans.modules.ruby.elements.Element;
 import org.netbeans.modules.ruby.elements.IndexedElement;
 import org.netbeans.modules.ruby.elements.IndexedMethod;
 import org.netbeans.modules.ruby.lexer.Call;
@@ -396,7 +397,7 @@ public class RubyElementCtx {
                     }
                 } else if (call == Call.LOCAL) {
                     // Look in the index to see which method it's coming from... 
-                    RubyIndex index = RubyIndex.get(info.getIndex());
+                    RubyIndex index = RubyIndex.get(info.getIndex(RubyMimeResolver.RUBY_MIME_TYPE));
                     String fqn = AstUtilities.getFqnName(getPath());
 
                     if ((fqn == null) || (fqn.length() == 0)) {
