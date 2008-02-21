@@ -34,18 +34,11 @@
  * 
  * Contributor(s):
  * 
- * Portions Copyrighted 2007 Sun Microsystems, Inc.
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.ruby.hints;
+package org.netbeans.modules.javascript.hints;
 
-import java.util.List;
-import org.openide.filesystems.FileObject;
-
-/**
- *
- * @author tor
- */
 public class AccidentalAssignmentTest extends HintTestBase {
     
     public AccidentalAssignmentTest(String testName) {
@@ -53,37 +46,18 @@ public class AccidentalAssignmentTest extends HintTestBase {
     }            
 
     public void testHint1() throws Exception {
-        findHints(this, new AccidentalAssignment(), "testfiles/accidental_assignments.rb", null);
-    }
-    
-    public void testHint2() throws Exception {
-        findHints(this, new AccidentalAssignment(), "testfiles/accidental_assignments2.rb", null);
-    }
-    
-    public void testAccidentalAssignments() throws Exception {
-        List<FileObject> files = getBigSourceFiles();
-        for (FileObject f : files) {
-            findHints(this, new AccidentalAssignment(), f, null);
-        }
+        findHints(this, new AccidentalAssignment(), "testfiles/prototype.js", null);
     }
 
-    public void testApplyAccidentalAssignment1() throws Exception {
-        applyHint(this, new AccidentalAssignment(), "testfiles/accidental_assignments.rb",
-                "puts \"equal\" if fo^o = bar", "Convert assignment");
+    public void testFix1() throws Exception {
+        applyHint(this, new AccidentalAssignment(), "testfiles/prototype.js", "if (m^atch = source.match(pattern)) {", "Convert assignment");
     }
 
-    public void testApplyAccidentalAssignment2() throws Exception {
-        applyHint(this, new AccidentalAssignment(), "testfiles/accidental_assignments.rb",
-                "if (foo = ba^r)", "Convert assignment");
+    public void testFix2() throws Exception {
+        applyHint(this, new AccidentalAssignment(), "testfiles/prototype.js", "if (m^atch = source.match(pattern)) {", "Add extra");
     }
 
-    public void testApplyAccidentalAssignment3() throws Exception {
-        applyHint(this, new AccidentalAssignment(), "testfiles/accidental_assignments.rb",
-                "if foo = ba^r # comment", "Convert assignment");
-    }
-
-    public void testApplyAccidentalAssignment4() throws Exception {
-        applyHint(this, new AccidentalAssignment(), "testfiles/accidental_assignments2.rb",
-                "if args.si^ze = 2", "Convert assignment");
+    public void testFix3() throws Exception {
+        applyHint(this, new AccidentalAssignment(), "testfiles/prototype.js", "if (r^esult = !!(iterator || Prototype.K)(value, index))", "Add extra");
     }
 }

@@ -25,13 +25,12 @@
  *
  * Portions Copyrighted 2007 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.ruby.hints;
+package org.netbeans.modules.javascript.hints;
 
 import java.util.Collections;
 import org.netbeans.fpi.gsf.OffsetRange;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
-import org.netbeans.modules.ruby.RubyTestBase;
 import java.util.Map;
 import org.netbeans.fpi.gsf.CompilationInfo;
 import java.util.ArrayList;
@@ -43,23 +42,23 @@ import java.util.Map;
 import java.util.Set;
 import java.util.prefs.Preferences;
 import javax.swing.text.Document;
-import org.jruby.ast.Node;
+import org.mozilla.javascript.Node;
 import org.netbeans.fpi.gsf.CompilationInfo;
 import org.netbeans.fpi.gsf.OffsetRange;
-import org.netbeans.api.ruby.platform.TestUtil;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.modules.ruby.AstUtilities;
-import org.netbeans.modules.ruby.hints.options.HintsSettings;
-import org.netbeans.modules.ruby.hints.spi.AstRule;
-import org.netbeans.modules.ruby.hints.infrastructure.RubyHintsProvider;
-import org.netbeans.modules.ruby.hints.infrastructure.RulesManager;
-import org.netbeans.modules.ruby.hints.spi.ErrorRule;
-import org.netbeans.modules.ruby.hints.spi.HintSeverity;
-import org.netbeans.modules.ruby.hints.spi.Rule;
-import org.netbeans.modules.ruby.hints.spi.SelectionRule;
-import org.netbeans.modules.ruby.hints.spi.UserConfigurableRule;
+import org.netbeans.modules.javascript.editing.AstUtilities;
+import org.netbeans.modules.javascript.editing.JsTestBase;
+import org.netbeans.modules.javascript.hints.options.HintsSettings;
+import org.netbeans.modules.javascript.hints.spi.AstRule;
+import org.netbeans.modules.javascript.hints.infrastructure.JsHintsProvider;
+import org.netbeans.modules.javascript.hints.infrastructure.RulesManager;
+import org.netbeans.modules.javascript.hints.spi.ErrorRule;
+import org.netbeans.modules.javascript.hints.spi.HintSeverity;
+import org.netbeans.modules.javascript.hints.spi.Rule;
+import org.netbeans.modules.javascript.hints.spi.SelectionRule;
+import org.netbeans.modules.javascript.hints.spi.UserConfigurableRule;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.editor.hints.Fix;
 import org.netbeans.spi.editor.hints.LazyFixList;
@@ -71,7 +70,7 @@ import org.openide.filesystems.FileUtil;
  *
  * @author Tor Norbye
  */
-public abstract class HintTestBase extends RubyTestBase {
+public abstract class HintTestBase extends JsTestBase {
 
     public HintTestBase(String testName) {
         super(testName);
@@ -86,26 +85,26 @@ public abstract class HintTestBase extends RubyTestBase {
         "lib/ruby/1.8/cgi.rb",
         "lib/ruby/1.8/net/imap.rb",
          // Biggest files in Rails
-        "lib/ruby/gems/1.8/gems/activerecord-2.0.2/test/associations_test.rb",
-        "lib/ruby/gems/1.8/gems/actionmailer-2.0.2/lib/action_mailer/vendor/text-format-0.6.3/text/format.rb",
-        "lib/ruby/gems/1.8/gems/actionpack-2.0.2/test/controller/routing_test.rb",
-        "lib/ruby/gems/1.8/gems/activerecord-2.0.2/lib/active_record/associations.rb",
-        "lib/ruby/gems/1.8/gems/activerecord-2.0.2/lib/active_record/base.rb",
-        "lib/ruby/gems/1.8/gems/actionpack-2.0.2/test/template/date_helper_test.rb",
+        "lib/ruby/gems/1.8/gems/activerecord-1.15.5/test/associations_test.rb",
+        "lib/ruby/gems/1.8/gems/actionmailer-1.3.5/lib/action_mailer/vendor/text/format.rb",
+        "lib/ruby/gems/1.8/gems/actionpack-1.13.5/test/controller/routing_test.rb",
+        "lib/ruby/gems/1.8/gems/activerecord-1.15.5/lib/active_record/associations.rb",
+        "lib/ruby/gems/1.8/gems/activerecord-1.15.5/lib/active_record/base.rb",
+        "lib/ruby/gems/1.8/gems/actionpack-1.13.5/test/template/date_helper_test.rb",
     };
     
-    protected List<FileObject> getBigSourceFiles() {
-        FileObject jruby = TestUtil.getXTestJRubyHomeFO();
-        
-        List<FileObject> files = new ArrayList<FileObject>();
-        for (String relative : JRUBY_BIG_FILES) {
-            FileObject f = jruby.getFileObject(relative);
-            assertNotNull(relative, f);
-            files.add(f);
-        }
-        
-        return files;
-    }
+//    protected List<FileObject> getBigSourceFiles() {
+//        FileObject jruby = TestUtil.getXTestJRubyHomeFO();
+//        
+//        List<FileObject> files = new ArrayList<FileObject>();
+//        for (String relative : JRUBY_BIG_FILES) {
+//            FileObject f = jruby.getFileObject(relative);
+//            assertNotNull(relative, f);
+//            files.add(f);
+//        }
+//        
+//        return files;
+//    }
 
     private String annotate(BaseDocument doc, List<ErrorDescription> result, int caretOffset) throws Exception {
         Map<OffsetRange, List<ErrorDescription>> posToDesc = new HashMap<OffsetRange, List<ErrorDescription>>();
@@ -248,7 +247,7 @@ public abstract class HintTestBase extends RubyTestBase {
             caretOffset = lineOffset + caretDelta;
         }
 
-        RubyHintsProvider provider = new RubyHintsProvider();
+        JsHintsProvider provider = new JsHintsProvider();
 
         List<ErrorDescription> result = new ArrayList<ErrorDescription>();
         if (hint instanceof ErrorRule) {
@@ -299,57 +298,57 @@ public abstract class HintTestBase extends RubyTestBase {
         return new ComputedHints(info, result, caretOffset);
     }
 
-    protected void assertNoJRubyMatches(Rule hint, Set<String> exceptions) throws Exception {
-        List<FileObject> files = findJRubyRubyFiles();
-        assertTrue(files.size() > 0);
-        
-        Set<String> fails = new HashSet<String>();
-        for (FileObject fileObject : files) {
-            ComputedHints r = getHints(this, hint, null, fileObject, null);
-            CompilationInfo info = r.info;
-            List<ErrorDescription> result = r.hints;
-            int caretOffset = r.caretOffset;
-            if (hint.getDefaultSeverity() == HintSeverity.CURRENT_LINE_WARNING && hint instanceof AstRule) {
-                result = new ArrayList<ErrorDescription>(result);
-                Set<Integer> nodeTypes = ((AstRule)hint).getKinds();
-                Node root = AstUtilities.getRoot(info);
-                List<Node> nodes = new ArrayList<Node>();
-                int[] nodeIds = new int[nodeTypes.size()];
-                int index = 0;
-                for (int id : nodeTypes) {
-                    nodeIds[index++] = id;
-                }
-                AstUtilities.addNodesByType(root, nodeIds, nodes);
-                BaseDocument doc = (BaseDocument) info.getDocument();
-                for (Node n : nodes) {
-                    int start = AstUtilities.getRange(n).getStart();
-                    int lineStart = Utilities.getRowFirstNonWhite(doc, start);
-                    int lineEnd = Utilities.getRowEnd(doc, start);
-                    String first = doc.getText(lineStart, start-lineStart); 
-                    String last = doc.getText(start, lineEnd-start);
-                    if (first.indexOf("^") == -1 && last.indexOf("^") == -1) {
-                        String caretLine = first + "^" + last;
-                        ComputedHints r2 = getHints(this, hint, null, fileObject, caretLine);
-                        result.addAll(r.hints);
-                    }
-                }
-            }
-
-            String annotatedSource = annotate((BaseDocument)info.getDocument(), result, caretOffset);
-            
-            if (annotatedSource.length() > 0) {
-                // Check if there's an exception
-                String name = fileObject.getNameExt();
-                if (exceptions.contains(name)) {
-                    continue;
-                }
-                
-                fails.add(fileObject.getNameExt());
-            }
-        }
-        
-        assertTrue(fails.toString(), fails.size() == 0);
-    }
+//    protected void assertNoJRubyMatches(Rule hint, Set<String> exceptions) throws Exception {
+//        List<FileObject> files = findJRubyRubyFiles();
+//        assertTrue(files.size() > 0);
+//        
+//        Set<String> fails = new HashSet<String>();
+//        for (FileObject fileObject : files) {
+//            ComputedHints r = getHints(this, hint, null, fileObject, null);
+//            CompilationInfo info = r.info;
+//            List<ErrorDescription> result = r.hints;
+//            int caretOffset = r.caretOffset;
+//            if (hint.getDefaultSeverity() == HintSeverity.CURRENT_LINE_WARNING && hint instanceof AstRule) {
+//                result = new ArrayList<ErrorDescription>(result);
+//                Set<Integer> nodeTypes = ((AstRule)hint).getKinds();
+//                Node root = AstUtilities.getRoot(info);
+//                List<Node> nodes = new ArrayList<Node>();
+//                int[] nodeIds = new int[nodeTypes.size()];
+//                int index = 0;
+//                for (int id : nodeTypes) {
+//                    nodeIds[index++] = id;
+//                }
+//                AstUtilities.addNodesByType(root, nodeIds, nodes);
+//                BaseDocument doc = (BaseDocument) info.getDocument();
+//                for (Node n : nodes) {
+//                    int start = AstUtilities.getRange(n).getStart();
+//                    int lineStart = Utilities.getRowFirstNonWhite(doc, start);
+//                    int lineEnd = Utilities.getRowEnd(doc, start);
+//                    String first = doc.getText(lineStart, start-lineStart); 
+//                    String last = doc.getText(start, lineEnd-start);
+//                    if (first.indexOf("^") == -1 && last.indexOf("^") == -1) {
+//                        String caretLine = first + "^" + last;
+//                        ComputedHints r2 = getHints(this, hint, null, fileObject, caretLine);
+//                        result.addAll(r.hints);
+//                    }
+//                }
+//            }
+//
+//            String annotatedSource = annotate((BaseDocument)info.getDocument(), result, caretOffset);
+//            
+//            if (annotatedSource.length() > 0) {
+//                // Check if there's an exception
+//                String name = fileObject.getNameExt();
+//                if (exceptions.contains(name)) {
+//                    continue;
+//                }
+//                
+//                fails.add(fileObject.getNameExt());
+//            }
+//        }
+//        
+//        assertTrue(fails.toString(), fails.size() == 0);
+//    }
     
     // TODO - rename to "checkHints"
     protected void findHints(NbTestCase test, Rule hint, String relFilePath, String caretLine) throws Exception {
@@ -392,6 +391,10 @@ public abstract class HintTestBase extends RubyTestBase {
         findHints(test, hint, null, fileObject, caretLine);
     }
     
+    protected String getGoldenFileSuffix() {
+        return "";
+    }
+    
     // TODO - rename to "checkHints"
     protected void findHints(NbTestCase test, Rule hint, String relFilePath, FileObject fileObject, String caretLine) throws Exception {
         ComputedHints r = getHints(test, hint, relFilePath, fileObject, caretLine);
@@ -402,9 +405,9 @@ public abstract class HintTestBase extends RubyTestBase {
         String annotatedSource = annotate((BaseDocument)info.getDocument(), result, caretOffset);
 
         if (fileObject != null) {
-            assertDescriptionMatches(fileObject, annotatedSource, true, ".hints");
+            assertDescriptionMatches(fileObject, annotatedSource, true, getGoldenFileSuffix() + ".hints");
         } else {
-            assertDescriptionMatches(relFilePath, annotatedSource, true, ".hints");
+            assertDescriptionMatches(relFilePath, annotatedSource, true, getGoldenFileSuffix() + ".hints");
         }
     }
 
@@ -441,12 +444,12 @@ public abstract class HintTestBase extends RubyTestBase {
 
     protected void applyHint(NbTestCase test, Rule hint, String relFilePath,
             String caretLine, String fixDesc) throws Exception {
-        initializeRegistry();
         ComputedHints r = getHints(test, hint, relFilePath, null, caretLine);
         CompilationInfo info = r.info;
         
         Fix fix = findApplicableFix(r, fixDesc);
         assertNotNull(fix);
+        
         fix.implement();
         
         Document doc = info.getDocument();
@@ -455,23 +458,23 @@ public abstract class HintTestBase extends RubyTestBase {
         assertDescriptionMatches(relFilePath, fixed, true, ".fixed");
     }
     
-    public void ensureRegistered(AstRule hint) throws Exception {
-        Map<Integer, List<AstRule>> hints = RulesManager.getInstance().getHints();
-        Set<Integer> kinds = hint.getKinds();
-        for (int nodeType : kinds) {
-            List<AstRule> rules = hints.get(nodeType);
-            assertNotNull(rules);
-            boolean found = false;
-            for (AstRule rule : rules) {
-                if (rule instanceof BlockVarReuse) {
-                    found  = true;
-                    break;
-                }
-            }
-            
-            assertTrue(found);
-        }
-    }
+//    public void ensureRegistered(AstRule hint) throws Exception {
+//        Map<Integer, List<AstRule>> hints = RulesManager.getInstance().getHints();
+//        Set<Integer> kinds = hint.getKinds();
+//        for (int nodeType : kinds) {
+//            List<AstRule> rules = hints.get(nodeType);
+//            assertNotNull(rules);
+//            boolean found = false;
+//            for (AstRule rule : rules) {
+//                if (rule instanceof BlockVarReuse) {
+//                    found  = true;
+//                    break;
+//                }
+//            }
+//            
+//            assertTrue(found);
+//        }
+//    }
 
     private Fix findApplicableFix(ComputedHints r, String text) {
         boolean substringMatch = true;

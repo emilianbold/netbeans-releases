@@ -34,56 +34,44 @@
  * 
  * Contributor(s):
  * 
- * Portions Copyrighted 2007 Sun Microsystems, Inc.
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.ruby.hints;
+package org.netbeans.modules.javascript.hints;
 
-import java.util.List;
-import org.openide.filesystems.FileObject;
+import org.netbeans.modules.javascript.hints.infrastructure.RulesManager;
+import org.netbeans.modules.javascript.hints.spi.HintSeverity;
 
 /**
  *
  * @author tor
  */
-public class AccidentalAssignmentTest extends HintTestBase {
+public class StrictWarningTest extends HintTestBase {
     
-    public AccidentalAssignmentTest(String testName) {
+    public StrictWarningTest(String testName) {
         super(testName);
     }            
+    
+    private String goldenfileSuffix;
 
-    public void testHint1() throws Exception {
-        findHints(this, new AccidentalAssignment(), "testfiles/accidental_assignments.rb", null);
-    }
-    
-    public void testHint2() throws Exception {
-        findHints(this, new AccidentalAssignment(), "testfiles/accidental_assignments2.rb", null);
-    }
-    
-    public void testAccidentalAssignments() throws Exception {
-        List<FileObject> files = getBigSourceFiles();
-        for (FileObject f : files) {
-            findHints(this, new AccidentalAssignment(), f, null);
+    public void testStrict() throws Exception {
+        // Add builtin wrappers for strict warnings
+        for (String key : RulesManager.KNOWN_STRICT_ERROR_KEYS) {
+            goldenfileSuffix = "." + key;
+            StrictWarning rule = new StrictWarning(key);
+            if ("msg.reserved.keyword".equals(key)) {
+                rule.setDefaultSeverity(HintSeverity.ERROR);
+            }
+            findHints(this, rule, "testfiles/prototype.js", null);
         }
     }
-
-    public void testApplyAccidentalAssignment1() throws Exception {
-        applyHint(this, new AccidentalAssignment(), "testfiles/accidental_assignments.rb",
-                "puts \"equal\" if fo^o = bar", "Convert assignment");
+    
+    public void testReservedKeyword() throws Exception {
+        findHints(this, new StrictWarning("msg.reserved.keyword"), "testfiles/reserved.js", null);
     }
 
-    public void testApplyAccidentalAssignment2() throws Exception {
-        applyHint(this, new AccidentalAssignment(), "testfiles/accidental_assignments.rb",
-                "if (foo = ba^r)", "Convert assignment");
-    }
-
-    public void testApplyAccidentalAssignment3() throws Exception {
-        applyHint(this, new AccidentalAssignment(), "testfiles/accidental_assignments.rb",
-                "if foo = ba^r # comment", "Convert assignment");
-    }
-
-    public void testApplyAccidentalAssignment4() throws Exception {
-        applyHint(this, new AccidentalAssignment(), "testfiles/accidental_assignments2.rb",
-                "if args.si^ze = 2", "Convert assignment");
+    @Override
+    protected String getGoldenFileSuffix() {
+        return goldenfileSuffix;
     }
 }
