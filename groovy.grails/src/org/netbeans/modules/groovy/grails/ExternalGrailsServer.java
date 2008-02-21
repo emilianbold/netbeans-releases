@@ -42,6 +42,7 @@ import java.util.logging.Level;
 import java.io.File;
 import org.netbeans.modules.groovy.grails.settings.Settings;
 import org.openide.util.Utilities;
+import org.openide.filesystems.FileUtil;
 
 /**
  *
@@ -110,10 +111,13 @@ public class ExternalGrailsServer implements GrailsServer{
     
     public Process runCommand(Project prj, String cmd, InputOutput io, String dirName) {
         
+        // LOG.setLevel(Level.FINEST);
+        
         this.prj = prj;
         
         if(prj != null) {
-            cwdName = File.separator + prj.getProjectDirectory().getPath();
+            cwdName = FileUtil.getFileDisplayName(prj.getProjectDirectory());
+            LOG.log(Level.FINEST, "Current working dir: " + cwdName);
             }
         
     
