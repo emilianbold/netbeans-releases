@@ -50,11 +50,7 @@
 package  org.netbeans.modules.visualweb.test.components.util;
 
 
-import java.io.File;
-
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import org.netbeans.modules.visualweb.gravy.*;
+import java.io.ByteArrayInputStream;
 import org.netbeans.modules.visualweb.gravy.ProjectNavigatorOperator;
 import org.netbeans.modules.visualweb.gravy.dataconnectivity.ServerNavigatorOperator;
 import org.netbeans.modules.visualweb.gravy.designer.DesignerPaneOperator;
@@ -63,10 +59,8 @@ import org.netbeans.modules.visualweb.gravy.properties.SheetTableOperator;
 import org.netbeans.modules.visualweb.gravy.toolbox.PaletteContainerOperator;
 import org.netbeans.modules.visualweb.gravy.model.IDE;
 import java.awt.event.KeyEvent;
-import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.IOException;
-import java.io.OutputStreamWriter;
-import java.io.StringBufferInputStream;
 import java.util.Properties;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -84,6 +78,12 @@ import javax.swing.JComboBox;
 import javax.swing.tree.TreePath;
 import org.netbeans.jemmy.JemmyException;
 import org.netbeans.jemmy.TimeoutExpiredException;
+import org.netbeans.modules.visualweb.gravy.Bundle;
+import org.netbeans.modules.visualweb.gravy.EditorOperator;
+import org.netbeans.modules.visualweb.gravy.NbDialogOperator;
+import org.netbeans.modules.visualweb.gravy.RaveWindowOperator;
+import org.netbeans.modules.visualweb.gravy.TestUtils;
+import org.netbeans.modules.visualweb.gravy.Util;
 
 /**
  *
@@ -121,7 +121,7 @@ public class ComponentUtils {
     public static Properties parseProperties(String src) {
         Properties properties =  new Properties();
         try {
-            properties.load(new StringBufferInputStream(src));
+            properties.load(new ByteArrayInputStream(src.getBytes("ISO-8859-1")));
         } catch (IOException ex) {
             new JemmyException("Properties parsing error:\n"+src);
         }
