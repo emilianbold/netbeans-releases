@@ -92,17 +92,14 @@ public interface ElementHandle {
             this.url = url;
         }
 
-        @Override
         public FileObject getFileObject() {
             return null;
         }
         
-        @Override
         public String getMimeType() {
             return null;
         }
 
-        @Override
         public boolean signatureEquals(ElementHandle handle) {
             if (handle instanceof UrlHandle) {
                 return url.equals(((UrlHandle)handle).url);
