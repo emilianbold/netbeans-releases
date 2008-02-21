@@ -93,22 +93,6 @@ public final class ConfigFileManager {
     }
 
     /**
-     * Returns the config file group (if any) which contains the given config file.
-     *
-     * @param  file a file; never null.
-     * @return the config file group or null.
-     */
-    public ConfigFileGroup getConfigFileGroupFor(File file) {
-        Parameters.notNull("file", file);
-        for (ConfigFileGroup group : getConfigFileGroups()) {
-            if (group.containsFile(file)) {
-                return group;
-            }
-        }
-        return null;
-    }
-
-    /**
      * Modifies the list of config file groups. This method needs to be called
      * under {@code mutex()} write access.
      *

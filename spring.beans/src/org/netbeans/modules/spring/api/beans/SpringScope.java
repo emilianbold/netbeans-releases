@@ -175,11 +175,12 @@ public final class SpringScope {
     }
 
     private SpringConfigModel getGroupConfigModel(File configFile) {
-        ConfigFileGroup group = configFileManager.getConfigFileGroupFor(configFile);
-        if (group == null) {
-            return null;
+        for (ConfigFileGroup group : configFileManager.getConfigFileGroups()) {
+            if (group.containsFile(configFile)) {
+                return getGroupConfigModel(group);
+            }
         }
-        return getGroupConfigModel(group);
+        return null;
     }
 
     private SpringConfigModel getGroupConfigModel(ConfigFileGroup group) {
