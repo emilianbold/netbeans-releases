@@ -44,11 +44,11 @@ package org.netbeans.modules.cnd.makeproject.api.compilers;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import org.netbeans.modules.cnd.api.compilers.CompilerSet.CompilerFlavor;
 import org.netbeans.modules.cnd.api.utils.Path;
-import org.netbeans.modules.cnd.settings.CppSettings;
 
 public class CCCCompiler extends BasicCompiler {
     private static File tmpFile = null;
@@ -82,8 +82,19 @@ public class CCCCompiler extends BasicCompiler {
             if (path == null) {
                 path = ""; // NOI18N
             }
-            String[] envp = { Path.getPathName() + '=' + path + File.pathSeparatorChar + CppSettings.getDefault().getPath() }; // NOI18N
-            process = Runtime.getRuntime().exec(command + " " + tmpFile(), envp); // NOI18N
+            ArrayList<String> envp = new ArrayList<String>();
+            for (String key : System.getenv().keySet()) {
+                String value = System.getenv().get(key);
+                if (key.equals(Path.getPathName())) {
+                    envp.add(Path.getPathName() + "=" + path + File.pathSeparatorChar + value); // NOI18N
+                }
+                else {
+                    String entry = key + "=" + (value != null ? value : ""); // NOI18N
+                    envp.add(entry);
+                }
+            }
+            //String[] envp = { Path.getPathName() + '=' + path + File.pathSeparatorChar + CppSettings.getDefault().getPath() }; // NOI18N
+            process = Runtime.getRuntime().exec(command + " " + tmpFile(), (String[])envp.toArray(new String[envp.size()])); // NOI18N
             if (stdout)
                 parseCompilerOutput(process.getInputStream());
             else
