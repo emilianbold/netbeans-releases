@@ -40,8 +40,8 @@ import org.jruby.ast.Node;
 import org.jruby.ast.NodeTypes;
 import org.jruby.ast.NodeTypes;
 import org.jruby.lexer.yacc.ISourcePosition;
-import org.netbeans.api.gsf.CompilationInfo;
-import org.netbeans.api.gsf.OffsetRange;
+import org.netbeans.fpi.gsf.CompilationInfo;
+import org.netbeans.fpi.gsf.OffsetRange;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
@@ -107,13 +107,12 @@ public class ExpandSameLineDef implements AstRule {
         Node node = context.node;
         AstPath path = context.path;
         CompilationInfo info = context.compilationInfo;
+        BaseDocument doc = context.doc;
 
         // Look for use of deprecated fields
         if (node.nodeId == NodeTypes.DEFNNODE || node.nodeId == NodeTypes.DEFSNODE || node.nodeId == NodeTypes.CLASSNODE) {
             ISourcePosition pos = node.getPosition();
             try {
-                BaseDocument doc = (BaseDocument)info.getDocument();
-                
                 if (doc == null) {
                     // Run on a file that was just closed
                     return;
@@ -140,11 +139,7 @@ public class ExpandSameLineDef implements AstRule {
                     // on the same line only produces a single suggestion for the outer block
                     return;
                 }
-            }
-            catch (BadLocationException ex){
-                Exceptions.printStackTrace(ex);
-            }
-            catch (IOException ex){
+            } catch (BadLocationException ex){
                 Exceptions.printStackTrace(ex);
             }
         }

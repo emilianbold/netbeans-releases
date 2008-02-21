@@ -40,7 +40,7 @@
  */
 package org.netbeans.modules.ruby;
 
-import org.netbeans.api.gsf.ParserResult.AstTreeNode;
+import org.netbeans.fpi.gsf.ParserResult.AstTreeNode;
 import org.netbeans.modules.ruby.elements.CommentElement;
 import java.io.IOException;
 import java.io.Reader;
@@ -48,6 +48,7 @@ import java.io.StringReader;
 import java.util.Iterator;
 import java.util.List;
 
+import java.util.Set;
 import javax.swing.text.BadLocationException;
 
 import org.jruby.ast.Node;
@@ -59,28 +60,29 @@ import org.jruby.lexer.yacc.SyntaxException;
 import org.jruby.parser.DefaultRubyParser;
 import org.jruby.parser.RubyParserConfiguration;
 import org.jruby.parser.RubyParserResult;
-import org.netbeans.api.gsf.CompilationInfo;
-import org.netbeans.api.gsf.Element;
-import org.netbeans.api.gsf.Element;
-import org.netbeans.api.gsf.ElementHandle;
-import org.netbeans.api.gsf.Error;
-import org.netbeans.api.gsf.OffsetRange;
-import org.netbeans.api.gsf.ParseEvent;
-import org.netbeans.api.gsf.ParseListener;
-import org.netbeans.api.gsf.Parser;
-import org.netbeans.api.gsf.ParserFile;
-import org.netbeans.api.gsf.ParserResult;
-import org.netbeans.api.gsf.PositionManager;
-import org.netbeans.api.gsf.SemanticAnalyzer;
-import org.netbeans.api.gsf.Severity;
-import org.netbeans.api.gsf.Severity;
-import org.netbeans.api.gsf.SourceFileReader;
+import org.netbeans.fpi.gsf.CompilationInfo;
+import org.netbeans.modules.ruby.elements.Element;
+import org.netbeans.modules.ruby.elements.Element;
+import org.netbeans.fpi.gsf.ElementHandle;
+import org.netbeans.fpi.gsf.ElementKind;
+import org.netbeans.fpi.gsf.Error;
+import org.netbeans.fpi.gsf.Modifier;
+import org.netbeans.fpi.gsf.OffsetRange;
+import org.netbeans.fpi.gsf.ParseEvent;
+import org.netbeans.fpi.gsf.ParseListener;
+import org.netbeans.fpi.gsf.Parser;
+import org.netbeans.fpi.gsf.ParserFile;
+import org.netbeans.fpi.gsf.ParserResult;
+import org.netbeans.fpi.gsf.PositionManager;
+import org.netbeans.fpi.gsf.Severity;
+import org.netbeans.fpi.gsf.Severity;
+import org.netbeans.fpi.gsf.SourceFileReader;
+import org.netbeans.fpi.gsf.TranslatedSource;
 import org.netbeans.modules.ruby.elements.AstElement;
 import org.netbeans.modules.ruby.elements.AstRootElement;
 import org.netbeans.modules.ruby.elements.IndexedElement;
 import org.netbeans.modules.ruby.elements.KeywordElement;
-import org.netbeans.spi.gsf.DefaultError;
-import org.netbeans.spi.gsf.DefaultPosition;
+import org.netbeans.sfpi.gsf.DefaultError;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
@@ -102,7 +104,7 @@ import org.openide.util.NbBundle;
  * 
  * @author Tor Norbye
  */
-public class RubyParser implements Parser {
+public final class RubyParser implements Parser {
     private final PositionManager positions = createPositionManager();
 
     /**
@@ -122,8 +124,11 @@ public class RubyParser implements Parser {
     /** Parse the given set of files, and notify the parse listener for each transition
      * (compilation results are attached to the events )
      */
-    public void parseFiles(List<ParserFile> files, ParseListener listener, SourceFileReader reader) {
-        for (ParserFile file : files) {
+    public void parseFiles(Parser.Job job) {
+        ParseListener listener = job.listener;
+        SourceFileReader reader = job.reader;
+        
+        for (ParserFile file : job.files) {
             ParseEvent beginEvent = new ParseEvent(ParseEvent.Kind.PARSE, file, null);
             listener.started(beginEvent);
             
@@ -133,7 +138,10 @@ public class RubyParser implements Parser {
                 CharSequence buffer = reader.read(file);
                 String source = asString(buffer);
                 int caretOffset = reader.getCaretOffset(file);
-                Context context = new Context(file, listener, source, caretOffset);
+                if (caretOffset != -1 && job.translatedSource != null) {
+                    caretOffset = job.translatedSource.getAstOffset(caretOffset);
+                }
+                Context context = new Context(file, listener, source, caretOffset, job.translatedSource);
                 result = parseBuffer(context, Sanitize.NONE);
             } catch (IOException ioe) {
                 listener.exception(ioe);
@@ -431,7 +439,7 @@ public class RubyParser implements Parser {
         
         Error error =
             new DefaultError(key, description, details, context.file.getFileObject(),
-                new DefaultPosition(offset), new DefaultPosition(offset), severity);
+                offset, offset, severity);
         context.listener.error(error);
 
         if (sanitizing == Sanitize.NONE) {
@@ -559,26 +567,15 @@ public class RubyParser implements Parser {
     
     protected RubyParseResult createParseResult(ParserFile file, AstRootElement rootElement, AstTreeNode ast, Node root,
         RootNode realRoot, RubyParserResult jrubyResult) {
-        return new RubyParseResult(file, rootElement, ast, root, realRoot, jrubyResult);
+        return new RubyParseResult(this, file, rootElement, ast, root, realRoot, jrubyResult);
     }
     
     public PositionManager getPositionManager() {
         return positions;
     }
 
-    public SemanticAnalyzer getSemanticAnalysisTask() {
-        return new SemanticAnalysis();
-    }
-
-    public org.netbeans.api.gsf.OccurrencesFinder getMarkOccurrencesTask(int caretPosition) {
-        OccurrencesFinder finder = new OccurrencesFinder();
-        finder.setCaretPosition(caretPosition);
-
-        return finder;
-    }
-
     @SuppressWarnings("unchecked")
-    public <T extends Element> ElementHandle<T> createHandle(CompilationInfo info, final T object) {
+    public static ElementHandle createHandle(CompilationInfo info, final Element object) {
         if (object instanceof KeywordElement || object instanceof CommentElement) {
             // Not tied to an AST - just pass it around
             return new RubyElementHandle(null, object, info.getFileObject());
@@ -598,15 +595,13 @@ public class RubyParser implements Parser {
             return null;
         }
 
-        ParserResult result = info.getParserResult();
+// XXX Gotta fix this
+if (info == null) {
+    return null;
+}        
+        RubyParseResult result = AstUtilities.getParseResult(info);
 
         if (result == null) {
-            return null;
-        }
-
-        ParserResult.AstTreeNode ast = result.getAst();
-
-        if (ast == null) {
             return null;
         }
 
@@ -616,18 +611,21 @@ public class RubyParser implements Parser {
     }
 
     @SuppressWarnings("unchecked")
-    public <T extends Element> T resolveHandle(CompilationInfo info, ElementHandle<T> handle) {
-        if (handle instanceof ElementHandle.UrlHandle) {
-            return (T)handle;
-        }
+    public static ElementHandle createHandle(ParserResult result, final AstElement object) {
+        Node root = AstUtilities.getRoot(result);
 
+        return new RubyElementHandle(root, object, result.getFile().getFileObject());
+    }
+    
+    @SuppressWarnings("unchecked")
+    public static Element resolveHandle(CompilationInfo info, ElementHandle handle) {
         RubyElementHandle h = (RubyElementHandle)handle;
         Node oldRoot = h.root;
         Node oldNode;
 
         if (h.object instanceof KeywordElement || h.object instanceof IndexedElement || h.object instanceof CommentElement) {
             // Not tied to a tree
-            return (T)h.object;
+            return h.object;
         }
 
         if (h.object instanceof AstElement) {
@@ -647,13 +645,13 @@ public class RubyParser implements Parser {
         if (newNode != null) {
             Element co = AstElement.create(newNode);
 
-            return (T)co;
+            return co;
         }
 
         return null;
     }
 
-    private Node find(Node oldRoot, Node oldObject, Node newRoot) {
+    private static Node find(Node oldRoot, Node oldObject, Node newRoot) {
         // Walk down the tree to locate oldObject, and in the process, pick the same child for newRoot
         @SuppressWarnings("unchecked")
         List<?extends Node> oldChildren = oldRoot.childNodes();
@@ -690,12 +688,12 @@ public class RubyParser implements Parser {
         return null;
     }
 
-    private static class RubyElementHandle<T extends Element> extends ElementHandle<T> {
+    private static class RubyElementHandle extends ElementHandle {
         private final Node root;
-        private final T object;
+        private final Element object;
         private final FileObject fileObject;
 
-        private RubyElementHandle(Node root, T object, FileObject fileObject) {
+        private RubyElementHandle(Node root, Element object, FileObject fileObject) {
             this.root = root;
             this.object = object;
             this.fileObject = fileObject;
@@ -713,7 +711,32 @@ public class RubyParser implements Parser {
 
             return fileObject;
         }
+        
+        @Override
+        public String getMimeType() {
+            return RubyMimeResolver.RUBY_MIME_TYPE;
         }
+
+        @Override
+        public String getName() {
+            return object.getName();
+        }
+
+        @Override
+        public String getIn() {
+            return object.getIn();
+        }
+
+        @Override
+        public ElementKind getKind() {
+            return object.getKind();
+        }
+
+        @Override
+        public Set<Modifier> getModifiers() {
+            return object.getModifiers();
+        }
+    }
 
     /** Attempts to sanitize the input buffer */
     public static enum Sanitize {
@@ -749,13 +772,14 @@ public class RubyParser implements Parser {
         private String sanitizedContents;
         private int caretOffset;
         private Sanitize sanitized = Sanitize.NONE;
+        private TranslatedSource translatedSource;
         
-        public Context(ParserFile parserFile, ParseListener listener, String source, int caretOffset) {
+        public Context(ParserFile parserFile, ParseListener listener, String source, int caretOffset, TranslatedSource translatedSource) {
             this.file = parserFile;
             this.listener = listener;
             this.source = source;
             this.caretOffset = caretOffset;
-
+            this.translatedSource = translatedSource;
         }
         
         @Override

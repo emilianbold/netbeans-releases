@@ -1,0 +1,6 @@
+org.netbeans.modules.ruby.rubyproject.ProjectClassPathProvider
+#position=100
+org.netbeans.modules.ruby.rubyproject.BootClassPathProvider
+#position=10005
+
+

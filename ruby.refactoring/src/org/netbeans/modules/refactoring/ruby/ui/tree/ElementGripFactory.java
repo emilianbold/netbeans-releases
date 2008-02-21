@@ -45,7 +45,7 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.WeakHashMap;
 import javax.swing.Icon;
-import org.netbeans.api.gsf.OffsetRange;
+import org.netbeans.fpi.gsf.OffsetRange;
 import org.netbeans.napi.gsfret.source.CompilationInfo;
 import org.netbeans.modules.refactoring.ruby.RubyElementCtx;
 import org.openide.filesystems.FileObject;

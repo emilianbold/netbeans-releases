@@ -928,7 +928,7 @@ public final class RakeProjectHelper {
     /**
      * Create a basic implementation of {@link RakeArtifact} which assumes everything of interest
      * is in a fixed location under a standard Ant-based project.
-     * @param type the type of artifact, e.g. <a href="@JAVA/PROJECT@/org/netbeans/api/gsfpath/project/JavaProjectConstants.html#ARTIFACT_TYPE_JAR"><code>JavaProjectConstants.ARTIFACT_TYPE_JAR</code></a>
+     * @param type the type of artifact, e.g. <a href="@JAVA/PROJECT@/org/netbeans/fpi/gsfpath/project/JavaProjectConstants.html#ARTIFACT_TYPE_JAR"><code>JavaProjectConstants.ARTIFACT_TYPE_JAR</code></a>
      * @param locationProperty an Ant property name giving the project-relative
      *                         location of the artifact, e.g. <samp>dist.jar</samp>
      * @param eval a way to evaluate the location property (e.g. {@link #getStandardPropertyEvaluator})

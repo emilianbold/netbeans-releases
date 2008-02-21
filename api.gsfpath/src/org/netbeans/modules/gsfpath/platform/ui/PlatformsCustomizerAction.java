@@ -54,7 +54,7 @@ public class PlatformsCustomizerAction extends CallableSystemAction {
     }
 
     public void performAction() {
-        org.netbeans.api.gsfpath.platform.PlatformsCustomizer.showCustomizer(null);
+        org.netbeans.fpi.gsfpath.platform.PlatformsCustomizer.showCustomizer(null);
     }
 
     public String getName() {
