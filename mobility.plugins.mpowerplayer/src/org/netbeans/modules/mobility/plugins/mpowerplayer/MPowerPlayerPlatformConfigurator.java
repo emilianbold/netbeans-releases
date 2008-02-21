@@ -65,45 +65,17 @@ public final class MPowerPlayerPlatformConfigurator implements CustomCLDCPlatfor
     private static final String RUN_COMMAND = "run.command"; //NOI18N
     private static final String DEBUG_COMMAND = "debug.command"; //NOI18N
     private static final String TYPE = "CUSTOM"; //NOI18N
-    private static final String HEIGHT_SCREEN = "height.screen"; //NOI18N
-    private static final String WIDTH_SCREEN = "width.screen"; //NOI18N
-    private static final String BIT_DEPTH_SCREEN = "bitDepth.screen"; //NOI18N
-    private static final String COLOR_SCREEN = "color.screen"; //NOI18N
-    private static final String TOUCH_SCREEN = "touch.screen";//NOI18N
     private static final String CHECK_FOLDER = "check.folder"; //NOI18N
+    private static final String DEVICES = "devices"; //NOI18N
     private static final String JAVADOCS_FOLDER = "javadoc.folder"; //NOI18N
     private static final String MAJOR_CHECK_FOLDER = "majorCheck.folder"; //NOI18N
     private static final String OS_SUPPORTED = "os.supported"; //NOI18N
     
-    private final String srcPath = ""; //not available for MPowerPlayer
-    private final String displayName;
-    private String docPath;
-    private String preverifyCommand;
-    private String runCommand;
-    private String debugCommand;
-    private int heightScreen;
-    private int widthScreen;
-    private int bitDepthScreen;
-    private boolean colorScreen;
-    private boolean touchScreen;
+    
     private Properties apiSettings;
     private List<CLDCPlatformDescriptor.Device> devices;
 
-    public MPowerPlayerPlatformConfigurator() {
-        this.displayName = NbBundle.getMessage(MPowerPlayerPlatformConfigurator.class, DISPLY_NAME);
-    }
-
     private List<CLDCPlatformDescriptor.Profile> createAPISettings() {
-
-        runCommand = apiSettings.getProperty(RUN_COMMAND);
-        debugCommand = apiSettings.getProperty(DEBUG_COMMAND);
-        preverifyCommand = apiSettings.getProperty(PREVERIFY_COMMAND);
-        heightScreen = Integer.parseInt(apiSettings.getProperty(HEIGHT_SCREEN));
-        widthScreen = Integer.parseInt(apiSettings.getProperty(WIDTH_SCREEN));
-        bitDepthScreen = Integer.parseInt(apiSettings.getProperty(BIT_DEPTH_SCREEN));
-        colorScreen = Boolean.getBoolean(apiSettings.getProperty(COLOR_SCREEN));
-        touchScreen = Boolean.getBoolean(apiSettings.getProperty(TOUCH_SCREEN));
-
         String allProperties = apiSettings.getProperty(CONFIGURATIONS) + "," + apiSettings.getProperty(PROFILES) + "," + apiSettings.getProperty(OPTIONAL); //NOI18N
         StringTokenizer propertiesTokenizer = new StringTokenizer(allProperties, ","); //NOI18N 
 
@@ -159,13 +131,15 @@ public final class MPowerPlayerPlatformConfigurator implements CustomCLDCPlatfor
         String folderCheck = apiSettings.getProperty(CHECK_FOLDER);
         String osSupported = apiSettings.getProperty(OS_SUPPORTED);
         String osName = (String) System.getProperties().get("os.name"); //NOI18N
-        if (!osSupported.equalsIgnoreCase(osName))
+        if (!osSupported.equalsIgnoreCase(osName)) {
             return false;
-        if (folderCheck == null)
-            throw new IllegalArgumentException("Null folder platform check"); //NOI18N
+        }
+        if (folderCheck == null) {
+            throw new IllegalArgumentException("Null folder platform check");
+        } //NOI18N
         if (file.isDirectory()) {
             if (file.listFiles(new JarFilenameFilter()).length == 4 && file.listFiles(new PlatformFileFilter()).length == 1) {
-                File preverifier = new File(file.getPath() + folderCheck); 
+                File preverifier = new File(file.getPath() + folderCheck);
                 if (preverifier.exists()) {
                     return true;
                 }
@@ -175,26 +149,46 @@ public final class MPowerPlayerPlatformConfigurator implements CustomCLDCPlatfor
     }
 
     public CLDCPlatformDescriptor getPlatform(File file) {
-        if (!isPossiblePlatform(file))
+        if (!isPossiblePlatform(file)) {
             return null;
+        }
+        
         String home = file.getAbsolutePath();
         String javadocFolder = apiSettings.getProperty(JAVADOCS_FOLDER);
-        if (javadocFolder == null)
+        String srcPath = ""; //not available for MPowerPlayer
+        String runCommand = apiSettings.getProperty(RUN_COMMAND);
+        String debugCommand = apiSettings.getProperty(DEBUG_COMMAND);
+        String preverifyCommand = apiSettings.getProperty(PREVERIFY_COMMAND);
+        String displayName = NbBundle.getMessage(MPowerPlayerPlatformConfigurator.class, DISPLY_NAME);
+        if (javadocFolder == null) {
             throw new IllegalArgumentException("null javadocs folder"); //NOI18N
-        this.docPath = home + javadocFolder; 
+        } 
+        String docPath = home + javadocFolder;
 
-        if (devices == null) {
-            devices = Collections.singletonList(
+        String allProperties = apiSettings.getProperty(DEVICES);
+        StringTokenizer propertiesTokenizer = new StringTokenizer(allProperties, ","); //NOI18N 
+        devices = new ArrayList<CLDCPlatformDescriptor.Device>();
+
+            while (propertiesTokenizer.hasMoreTokens()) {
+                 String token = propertiesTokenizer.nextToken().trim();
+                 devices.add(
                     new CLDCPlatformDescriptor.Device(
-                    this.displayName,
-                    NbBundle.getMessage(MPowerPlayerPlatformConfigurator.class, DESCRIPTION),
-                    Collections.EMPTY_LIST,
-                    createAPISettings(),
-                    new CLDCPlatformDescriptor.Screen(widthScreen, heightScreen, bitDepthScreen, colorScreen, touchScreen)));
-        }
-
-        return new CLDCPlatformDescriptor(this.displayName, home, TYPE,
-                this.srcPath, this.docPath, this.preverifyCommand, this.runCommand, this.debugCommand, this.devices);
+                        apiSettings.getProperty(token + ".name"), //NOI18N
+                        NbBundle.getMessage(MPowerPlayerPlatformConfigurator.class, DESCRIPTION),
+                        Collections.EMPTY_LIST,
+                        createAPISettings(),
+                        new CLDCPlatformDescriptor.Screen(
+                            Integer.valueOf(apiSettings.getProperty(token + ".screen.width").trim()), //NOI18N
+                            Integer.valueOf(apiSettings.getProperty(token + ".screen.height").trim()), //NOI18N
+                            Integer.valueOf(apiSettings.getProperty(token + ".screen.bitDepth").trim()), //NOI18N
+                            Integer.valueOf(apiSettings.getProperty(token + ".screen.color").trim()) == 1 ? Boolean.TRUE : Boolean.FALSE, //NOI18N
+                            Integer.valueOf(apiSettings.getProperty(token + ".screen.touch").trim()) == 1 ? Boolean.TRUE : Boolean.FALSE //NOI18N
+                        )
+                    )
+                 );
+            }           
+        return new CLDCPlatformDescriptor(displayName, home, TYPE,
+                   srcPath, docPath, preverifyCommand, runCommand, debugCommand, devices);
     }
 
     public String getRegistryProviderName() {
@@ -212,7 +206,7 @@ public final class MPowerPlayerPlatformConfigurator implements CustomCLDCPlatfor
 
         public boolean accept(File file) {
             String majorCheckFolder = apiSettings.getProperty(MAJOR_CHECK_FOLDER);
-            return (file.getName().equalsIgnoreCase(majorCheckFolder) && file.isDirectory()); 
+            return (file.getName().equalsIgnoreCase(majorCheckFolder) && file.isDirectory());
         }
     }
 }
