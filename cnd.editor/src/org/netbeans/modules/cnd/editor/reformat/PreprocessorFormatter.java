@@ -143,11 +143,7 @@ public class PreprocessorFormatter {
     private void indentBefore(Token<CppTokenId> previous, String spaces) {
         Diff diff = diffs.getFirst();
         if (diff != null && diff.getEndOffset() == ts.offset()) {
-            if (diff.getText().startsWith("\n")) { // NOI18N
-                diff.setText("\n"+spaces); // NOI18N
-            } else {
-                diff.setText(spaces);
-            }
+            diff.replaceSpaces(spaces);
         } else if (previous != null && previous.id() == WHITESPACE) {
             if (!spaces.equals(previous.text().toString())){
                 ts.replacePrevious(previous, spaces);

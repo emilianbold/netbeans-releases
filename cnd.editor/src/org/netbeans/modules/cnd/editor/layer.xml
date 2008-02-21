@@ -9,6 +9,7 @@
                 <attr name="position" intvalue="400"/>
             </file>
             <folder name="FormatterPreviewExamples">
+                <attr name="position" intvalue="2000"/>
                 <file name="SAMPLE_Spaces.cpp" url="resources/cplusplus/SAMPLE_Spaces.cpp"/>
                 <file name="SAMPLE_Spaces.c" url="resources/cplusplus/SAMPLE_Spaces.c"/>
                 <file name="SAMPLE_BlankLines.cpp" url="resources/cplusplus/SAMPLE_BlankLines.cpp"/>

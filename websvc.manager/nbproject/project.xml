@@ -309,6 +309,7 @@ made subject to such option by the copyright holder.
                 <friend>org.netbeans.modules.websvc.rest</friend>
                 <friend>org.netbeans.modules.websvc.saas.api</friend>
                 <friend>org.netbeans.modules.websvc.saas.ui</friend>
+                <friend>org.netbeans.modules.websvc.saas.codegen</friend>
                 <package>org.netbeans.modules.websvc.manager.api</package>
                 <package>org.netbeans.modules.websvc.manager.model</package>
                 <package>org.netbeans.modules.websvc.manager.spi</package>

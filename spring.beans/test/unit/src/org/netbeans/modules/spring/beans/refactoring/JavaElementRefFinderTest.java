@@ -48,7 +48,7 @@ import javax.swing.text.BadLocationException;
 import org.netbeans.modules.spring.api.Action;
 import org.netbeans.modules.spring.api.beans.ConfigFileGroup;
 import org.netbeans.modules.spring.api.beans.model.SpringConfigModel;
-import org.netbeans.modules.spring.api.beans.model.SpringConfigModel.WriteContext;
+import org.netbeans.modules.spring.api.beans.model.SpringConfigModel.DocumentAccess;
 import org.netbeans.modules.spring.beans.ConfigFileTestCase;
 import org.netbeans.modules.spring.beans.TestUtils;
 import org.netbeans.modules.spring.beans.refactoring.Occurrences.JavaClassRefMatcher;
@@ -72,9 +72,9 @@ public class JavaElementRefFinderTest extends ConfigFileTestCase {
         TestUtils.copyStringToFile(contents, configFile);
         ConfigFileGroup group = ConfigFileGroup.create(Collections.singletonList(configFile));
         SpringConfigModel model = new SpringConfigModel(group);
-        model.runWriteAction(new Action<WriteContext>() {
-            public void run(WriteContext context) {
-                JavaElementRefFinder finder = new JavaElementRefFinder(context);
+        model.runDocumentAction(new Action<DocumentAccess>() {
+            public void run(DocumentAccess docAccess) {
+                JavaElementRefFinder finder = new JavaElementRefFinder(docAccess);
                 List<Occurrence> occurrences = new ArrayList<Occurrence>();
                 // Test class.
                 try {
@@ -102,9 +102,9 @@ public class JavaElementRefFinderTest extends ConfigFileTestCase {
         TestUtils.copyStringToFile(contents, configFile);
         ConfigFileGroup group = ConfigFileGroup.create(Collections.singletonList(configFile));
         SpringConfigModel model = new SpringConfigModel(group);
-        model.runWriteAction(new Action<WriteContext>() {
-            public void run(WriteContext context) {
-                JavaElementRefFinder finder = new JavaElementRefFinder(context);
+        model.runDocumentAction(new Action<DocumentAccess>() {
+            public void run(DocumentAccess docAccess) {
+                JavaElementRefFinder finder = new JavaElementRefFinder(docAccess);
                 List<Occurrence> occurrences = new ArrayList<Occurrence>();
                 // Test non-recursive.
                 try {

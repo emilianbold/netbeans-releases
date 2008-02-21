@@ -43,6 +43,7 @@ package org.netbeans.modules.websvc.saas.codegen.java;
 import org.netbeans.modules.websvc.saas.model.WadlSaasMethod;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.MethodTree;
+import java.awt.Component;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -60,12 +61,17 @@ import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.Caret;
+import javax.swing.text.Document;
+import javax.swing.text.JTextComponent;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.ModificationResult;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
+import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.websvc.saas.codegen.java.Constants.MimeType;
 import org.netbeans.modules.websvc.saas.codegen.java.model.ParameterInfo;
 import org.netbeans.modules.websvc.saas.codegen.java.model.WadlSaasBean;
@@ -74,6 +80,7 @@ import org.netbeans.modules.websvc.saas.codegen.java.support.Inflector;
 import org.netbeans.modules.websvc.saas.codegen.java.support.JavaSourceHelper;
 import org.netbeans.modules.websvc.saas.codegen.java.support.SourceGroupSupport;
 import org.openide.filesystems.FileObject;
+import org.openide.windows.TopComponent;
 
 /**
  * Code generator for REST services wrapping WSDL-based web service.
@@ -81,15 +88,6 @@ import org.openide.filesystems.FileObject;
  * @author nam
  */
 public class JaxRsCodeGenerator extends AbstractGenerator {
-
-    public static final String REST_CONNECTION = "RestConnection"; //NOI18N
-    public static final String REST_CONNECTION_TEMPLATE = "Templates/SaaSServices/RestConnection.java"; //NOI18N
-    private static final String COMMENT_END_OF_HTTP_MEHTOD_GET = "TODO return proper representation object";      //NOI18N
-    private static final String GENERIC_REF_CONVERTER_TEMPLATE = "Templates/SaaSServices/RefConverter.java"; //NOI18N
-    private static final String GENERIC_REF_CONVERTER = "GenericRefConverter"; //NOI18N
-    public static final String CONVERTER_SUFFIX = "Converter";      //NOI18N
-    public static final String CONVERTER_FOLDER = "converter";      //NOI18N
-    public static final String RESOURCE_SUFFIX = "Resource";      //NOI18N
     protected FileObject targetFile; // resource file target of the drop
     protected FileObject destDir;
     protected FileObject wrapperResourceFile;
@@ -101,12 +99,16 @@ public class JaxRsCodeGenerator extends AbstractGenerator {
     protected String subresourceLocatorName;
     protected String subresourceLocatorUriTemplate;
     private Collection<String> existingUriTemplates;
+    private JTextComponent targetComponent;
 
-    public JaxRsCodeGenerator(FileObject targetFile, WadlSaasMethod m) throws IOException {
-        this(targetFile, new WadlSaasBean(m));
+    public JaxRsCodeGenerator(JTextComponent targetComponent, 
+            FileObject targetFile, WadlSaasMethod m) throws IOException {
+        this(targetComponent, targetFile, new WadlSaasBean(m));
     }
 
-    private JaxRsCodeGenerator(FileObject targetFile, WadlSaasBean bean) {
+    private JaxRsCodeGenerator(JTextComponent targetComponent, 
+            FileObject targetFile, WadlSaasBean bean) {
+        this.targetComponent = targetComponent;
         this.targetFile = targetFile;
         this.destDir = targetFile.getParent();
         project = FileOwnerQuery.getOwner(targetFile);
@@ -123,6 +125,14 @@ public class JaxRsCodeGenerator extends AbstractGenerator {
         wrapperResourceFile = SourceGroupSupport.findJavaSourceFile(project, bean.getName());
     }
 
+    protected JTextComponent getTargetComponent() {
+        return this.targetComponent;
+    }
+
+    protected FileObject getTargetFile() {
+        return this.targetFile;
+    }
+    
     protected void preGenerate() {
         JavaSource source = JavaSourceHelper.createJavaSource(REST_CONNECTION_TEMPLATE, destDir, bean.getPackageName(), REST_CONNECTION);
     }
@@ -167,8 +177,8 @@ public class JaxRsCodeGenerator extends AbstractGenerator {
         return bean;
     }
 
-    public boolean wrapperResourceExists() {
-        return wrapperResourceFile != null;
+    public boolean showParams() {
+        return wrapperResourceFile == null;
     }
 
     public Set<FileObject> generate(ProgressHandle pHandle) throws IOException {
@@ -623,5 +633,82 @@ public class JaxRsCodeGenerator extends AbstractGenerator {
         }
 
         return imports.toArray(new String[imports.size()]);
+    }
+    
+    protected static void insert(String s, JTextComponent target, boolean reformat)
+    throws BadLocationException {
+        Document doc = target.getDocument();
+        if (doc == null)
+            return;
+        
+        if (s == null)
+            s = "";
+        
+        if (doc instanceof BaseDocument)
+            ((BaseDocument)doc).atomicLock();
+        
+        int start = insert(s, target, doc);
+        
+//        if (reformat && start >= 0 && doc instanceof BaseDocument) {  // format the inserted text
+//            BaseDocument d = (BaseDocument) doc;
+//            int end = start + s.length();
+//            Formatter f = d.getFormatter();
+//            
+//            //f.reformat(d, start, end);
+//            f.reformat(d, 0,d.getLength());
+//        }
+        
+//        if (select && start >= 0) { // select the inserted text
+//            Caret caret = target.getCaret();
+//            int current = caret.getDot();
+//            caret.setDot(start);
+//            caret.moveDot(current);
+//            caret.setSelectionVisible(true);
+//        }
+        
+        if (doc instanceof BaseDocument)
+            ((BaseDocument)doc).atomicUnlock();
+        
+        Component c =  target.getParent();
+        //     System.out.println(""+c.getClass().getName());
+        while ((c!=null) && (!(c instanceof TopComponent))){
+            c= c.getParent();
+        }
+        
+        TopComponent tc = (TopComponent)c;
+        try {
+            tc.requestActive();
+        } catch(Exception ex) {
+            //ignore
+        }
+
+    }
+    
+    protected static int insert(String s, JTextComponent target, Document doc)
+    throws BadLocationException {
+        
+        int start = -1;
+        try {
+            //at first, find selected text range
+            Caret caret = target.getCaret();
+            int p0 = Math.min(caret.getDot(), caret.getMark());
+            int p1 = Math.max(caret.getDot(), caret.getMark());
+            doc.remove(p0, p1 - p0);
+            
+            //replace selected text by the inserted one
+            start = caret.getDot();
+            doc.insertString(start, s, null);
+        } catch (BadLocationException ble) {}
+        
+        return start;
+    }
+    
+    protected boolean isInBlock(JTextComponent target) {
+        //TODO - FIX return true if the caret position where code is
+        //going to be inserted is within some block other Class block.
+        Caret caret = target.getCaret();
+        int p0 = Math.min(caret.getDot(), caret.getMark());
+        int p1 = Math.max(caret.getDot(), caret.getMark());
+        return true;
     }
 }

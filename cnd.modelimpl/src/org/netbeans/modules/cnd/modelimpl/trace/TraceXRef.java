@@ -162,7 +162,7 @@ public class TraceXRef extends TraceModel {
                 }
                 
                 ReferenceRepositoryImpl xRefRepository = new ReferenceRepositoryImpl();
-                CsmObject[] decDef = CsmBaseUtilities.getDefinitionDeclaration(object);
+                CsmObject[] decDef = CsmBaseUtilities.getDefinitionDeclaration(object, true);
                 CsmObject decl = decDef[0];
                 CsmObject def = decDef[1];                
                 Collection<CsmReference> refs = xRefRepository.getReferences(decl, getProject(), true);
@@ -254,7 +254,7 @@ public class TraceXRef extends TraceModel {
     
     public static void traceRefs(Collection<CsmReference> out, CsmObject target, PrintStream streamOut) {
         assert target != null;
-        CsmObject[] decDef = CsmBaseUtilities.getDefinitionDeclaration(target);
+        CsmObject[] decDef = CsmBaseUtilities.getDefinitionDeclaration(target, true);
         CsmObject decl = decDef[0];
         CsmObject def = decDef[1];        
         assert decl != null;

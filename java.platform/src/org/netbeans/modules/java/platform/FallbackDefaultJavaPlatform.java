@@ -125,7 +125,7 @@ public class FallbackDefaultJavaPlatform extends JavaPlatform {
     }
 
     public Specification getSpecification() {
-        return new Specification("J2SE", Dependency.JAVA_SPEC); // NOI18N
+        return new Specification(/*J2SEPlatformImpl.PLATFORM_J2SE*/"j2se", Dependency.JAVA_SPEC); // NOI18N
     }
 
     public Collection<FileObject> getInstallFolders() {

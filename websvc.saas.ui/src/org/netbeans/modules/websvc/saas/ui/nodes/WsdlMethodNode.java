@@ -287,8 +287,10 @@ public class WsdlMethodNode extends AbstractNode {
             method.getSaas().getState() != Saas.State.READY) {
             method.getSaas().toStateReady(false);
             return super.clipboardCopy();
+        } else {
+            return SaasTransferable.addFlavors(transferable);
         }
-        return SaasTransferable.addFlavors(transferable);
+        
     }
    
 }
