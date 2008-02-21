@@ -1,7 +1,7 @@
 /*
  *  CI1CClass
  *
- * Created on December 12, 2007, 1:32 AM
+ * Created on February 19, 2008, 7:17 PM
  *
  * To change this template, choose Tools | Template Manager
  * and open the template in the editor.
@@ -17,6 +17,7 @@ import javax.ws.rs.GET;
 import javax.ws.rs.ProduceMime;
 import javax.ws.rs.POST;
 import javax.ws.rs.ConsumeMime;
+import org.codehaus.jettison.json.JSONObject;
 
 /**
  * REST Web Service
@@ -28,18 +29,18 @@ import javax.ws.rs.ConsumeMime;
 public class CI1CClass {
     @HttpContext
     private UriInfo context;
-    
+
     /** Creates a new instance of CI1CClass */
     public CI1CClass() {
     }
 
     /**
      * Retrieves representation of an instance of o.n.m.ws.qaf.rest.patterns.CI1CClass
-     * @return an instance of java.lang.String
+     * @return an instance of org.codehaus.jettison.json.JSONObject
      */
     @GET
     @ProduceMime("application/json")
-    public String getJson() {
+    public JSONObject getJson() {
         //TODO return proper representation object
         throw new UnsupportedOperationException();
     }
@@ -52,7 +53,7 @@ public class CI1CClass {
     @POST
     @ConsumeMime("application/json")
     @ProduceMime("application/json")
-    public Response postJson(String content) {
+    public Response postJson(JSONObject content) {
         //TODO
         return Response.created(context.getAbsolutePath()).build();
     }

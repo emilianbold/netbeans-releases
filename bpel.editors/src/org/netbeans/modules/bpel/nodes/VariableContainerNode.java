@@ -28,7 +28,7 @@ import org.netbeans.modules.bpel.editors.api.nodes.NodeType;
 import org.netbeans.modules.bpel.nodes.actions.AddVariableAddAction;
 import org.netbeans.modules.bpel.properties.PropertyNodeFactory;
 import org.netbeans.modules.bpel.properties.editors.controls.filter.NodeChildFilter;
-import org.netbeans.modules.bpel.nodes.actions.ActionType;
+import org.netbeans.modules.bpel.editors.api.nodes.actions.ActionType;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.util.Lookup;

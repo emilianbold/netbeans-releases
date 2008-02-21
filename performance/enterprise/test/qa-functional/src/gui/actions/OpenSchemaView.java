@@ -86,7 +86,7 @@ public class OpenSchemaView extends org.netbeans.performance.test.utilities.Perf
         schemaName = "fields";
         doMeasurement();
     }
-    
+
     public void prepare() {
         log(":: prepare");
     }

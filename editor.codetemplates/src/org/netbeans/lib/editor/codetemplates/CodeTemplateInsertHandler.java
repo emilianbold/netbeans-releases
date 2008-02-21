@@ -312,7 +312,7 @@ implements DocumentListener, KeyListener {
         try {
             // First check if there is a caret selection and if so remove it
             Caret caret = component.getCaret();
-            if (caret.isSelectionVisible()) {
+            if (Utilities.isSelectionShowing(caret)) {
                 int removeOffset = component.getSelectionStart();
                 int removeLength = component.getSelectionEnd() - removeOffset;
                 doc.remove(removeOffset, removeLength);
@@ -443,7 +443,7 @@ implements DocumentListener, KeyListener {
         checkNotifyParameterUpdate();
 
         activeMasterIndex++;
-        if (activeMasterIndex == editableMasters.size()) { 
+        if (activeMasterIndex >= editableMasters.size()) { 
             forceCaretPosition();
             release();
             if (completionInvoke) {
@@ -613,10 +613,12 @@ implements DocumentListener, KeyListener {
     
     private void tabUpdate() {
         updateLastRegionBounds();
-        SyncDocumentRegion active = getActiveMasterImpl().getRegion();
-        component.select(active.getFirstRegionStartOffset(),
-                active.getFirstRegionEndOffset());
-        
+        CodeTemplateParameterImpl activeMasterImpl = getActiveMasterImpl();
+        if (activeMasterImpl != null) {
+            SyncDocumentRegion active = activeMasterImpl.getRegion();
+            component.select(active.getFirstRegionStartOffset(),
+                    active.getFirstRegionEndOffset());
+        }
         // Repaint the selected blocks according to the current master
         requestRepaint();
     }

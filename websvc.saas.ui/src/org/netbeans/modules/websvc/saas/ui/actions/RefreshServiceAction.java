@@ -28,6 +28,7 @@
 package org.netbeans.modules.websvc.saas.ui.actions;
 
 import org.netbeans.modules.websvc.saas.model.Saas;
+import org.netbeans.modules.websvc.saas.model.SaasServicesModel;
 import org.netbeans.modules.websvc.saas.model.WsdlSaas;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -49,7 +50,7 @@ public class RefreshServiceAction extends NodeAction {
             return false;
         }
         WsdlSaas saas = nodes[0].getLookup().lookup(WsdlSaas.class);
-        return saas != null && saas.getWsdlData() != null && saas.getState() != Saas.State.INITIALIZING;
+        return saas != null && saas.getState() != Saas.State.INITIALIZING && saas.getWsdlData() != null;
     }
 
     public org.openide.util.HelpCtx getHelpCtx() {
@@ -84,7 +85,7 @@ public class RefreshServiceAction extends NodeAction {
         if (null != response && response.equals(NotifyDescriptor.YES_OPTION)) {
             RequestProcessor.getDefault().post(new Runnable() {
                 public void run() {
-                    saas.refresh();
+                    SaasServicesModel.getInstance().refreshService(saas);
                 }
             });
         }

@@ -17,10 +17,12 @@ package org.netbeans.modules.etl.ui.view.graph.actions;
 
 import org.netbeans.modules.sql.framework.model.SQLDBTable;
 import java.awt.event.ActionEvent;
+import java.awt.event.InputEvent;
 import java.net.URL;
 import javax.swing.Action;
 import java.util.Iterator;
 import javax.swing.ImageIcon;
+import javax.swing.KeyStroke;
 import net.java.hulp.i18n.Logger;
 import org.netbeans.modules.etl.logger.Localizer;
 import org.netbeans.modules.etl.logger.LogUtil;
@@ -52,8 +54,10 @@ public class RemountCollaborationAction extends GraphAction {
         this.putValue(Action.SMALL_ICON, new ImageIcon(remountImgUrl));
 
         //action tooltip
-        String nbBundle2 = mLoc.t("PRSR001: Drops and re-creates all the tables.");
+        String nbBundle2 = mLoc.t("PRSR001: Drops and re-creates all the tables. (Cntl-M)");
         this.putValue(Action.SHORT_DESCRIPTION,Localizer.parse(nbBundle2));
+        // Acceleratot Cntl-M
+        this.putValue(Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke('M', InputEvent.CTRL_MASK ));
     }
 
     /**

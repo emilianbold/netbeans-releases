@@ -50,6 +50,7 @@ import java.util.List;
 import org.netbeans.modules.mercurial.HgException;
 import org.netbeans.modules.mercurial.HgProgressSupport;
 import org.netbeans.modules.mercurial.Mercurial;
+import org.netbeans.modules.mercurial.OutputLogger;
 import org.netbeans.modules.mercurial.HgModuleConfig;
 import org.netbeans.modules.mercurial.util.HgUtils;
 import org.netbeans.modules.mercurial.util.HgCommand;
@@ -104,29 +105,30 @@ public class ExportDiffAction extends ContextAction {
         RequestProcessor rp = Mercurial.getInstance().getRequestProcessor(root.getAbsolutePath());
         HgProgressSupport support = new HgProgressSupport() {
             public void perform() {
-                performExport(root, revStr, outputFileName);
+                OutputLogger logger = getLogger();
+                performExport(root, revStr, outputFileName, logger);
             }
         };
         support.start(rp, root.getAbsolutePath(), org.openide.util.NbBundle.getMessage(ExportDiffAction.class, "LBL_ExportDiff_Progress")); // NOI18N
     }
 
-    private static void performExport(File repository, String revStr, String outputFileName) {
+    private static void performExport(File repository, String revStr, String outputFileName, OutputLogger logger) {
     try {
-        HgUtils.outputMercurialTabInRed(
+        logger.outputInRed(
                 NbBundle.getMessage(ExportDiffAction.class,
                 "MSG_EXPORT_TITLE")); // NOI18N
-        HgUtils.outputMercurialTabInRed(
+        logger.outputInRed(
                 NbBundle.getMessage(ExportDiffAction.class,
                 "MSG_EXPORT_TITLE_SEP")); // NOI18N
         
         if (NbBundle.getMessage(ExportDiffAction.class,
                 "MSG_Revision_Default").startsWith(revStr)) {
-            HgUtils.outputMercurialTab(
+            logger.output(
                     NbBundle.getMessage(ExportDiffAction.class,
                     "MSG_EXPORT_NOTHING")); // NOI18N
         } else {
-            List<String> list = HgCommand.doExport(repository, revStr, outputFileName);
-            HgUtils.outputMercurialTab(list); // NOI18N
+            List<String> list = HgCommand.doExport(repository, revStr, outputFileName, logger);
+            logger.output(list); // NOI18N
             if (!list.isEmpty() && list.size() > 1) {
                 File outFile = new File(list.get(1));
                 if (outFile != null && outFile.canRead()) {
@@ -138,8 +140,8 @@ public class ExportDiffAction extends ContextAction {
             NotifyDescriptor.Exception e = new NotifyDescriptor.Exception(ex);
             DialogDisplayer.getDefault().notifyLater(e);
         } finally {
-            HgUtils.outputMercurialTabInRed(NbBundle.getMessage(ExportDiffAction.class, "MSG_EXPORT_DONE")); // NOI18N
-            HgUtils.outputMercurialTab(""); // NOI18N
+            logger.outputInRed(NbBundle.getMessage(ExportDiffAction.class, "MSG_EXPORT_DONE")); // NOI18N
+            logger.output(""); // NOI18N
         }
     }
 }

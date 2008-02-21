@@ -3,7 +3,7 @@
     <type>org.netbeans.modules.apisupport.project</type>
     <configuration>
         <data xmlns="http://www.netbeans.org/ns/nb-module-project/2">
-            <code-name-base>org.netbeans.api.gsf</code-name-base>
+            <code-name-base>org.netbeans.fpi.gsf</code-name-base>
             <module-dependencies>
                 <dependency>
                     <code-name-base>org.netbeans.modules.lexer</code-name-base>
@@ -102,11 +102,17 @@
                 <friend>org.netbeans.modules.erlang.platform</friend>
                 <friend>org.netbeans.modules.javafx.dataloader</friend>
                 <friend>org.netbeans.modules.spellchecker.bindings.ruby</friend>
-                <package>org.netbeans.api.gsf</package>
-                <package>org.netbeans.api.gsf.annotations</package>
-                <package>org.netbeans.api.gsf</package>
-                <package>org.netbeans.spi.gsf.descriptors</package>
-                <package>org.netbeans.spi.gsf</package>
+                <friend>org.netbeans.modules.javascript.editing</friend>
+                <friend>org.netbeans.modules.javascript.hints</friend>
+                <friend>org.netbeans.modules.javascript.refactoring</friend>
+                <friend>org.netbeans.modules.css2</friend>
+                <friend>org.netbeans.modules.html.editor</friend>
+                <friend>org.netbeans.modules.web.core.syntax</friend>
+                <package>org.netbeans.fpi.gsf</package>
+                <package>org.netbeans.fpi.gsf.annotations</package>
+                <package>org.netbeans.fpi.gsf</package>
+                <package>org.netbeans.sfpi.gsf.descriptors</package>
+                <package>org.netbeans.sfpi.gsf</package>
             </friend-packages>
         </data>
     </configuration>

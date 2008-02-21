@@ -23,13 +23,13 @@ import java.lang.reflect.Constructor;
 import javax.swing.JPanel;
 import org.netbeans.modules.soa.ui.form.CustomNodeEditor;
 import org.netbeans.modules.bpel.nodes.BpelNode;
-import org.netbeans.modules.bpel.properties.Util;
+import org.netbeans.modules.soa.ui.SoaUiUtil;
 import org.openide.ErrorManager;
 import org.openide.util.HelpCtx;
 
 public class SimpleCustomEditor<T> extends AbstractCustomNodeEditor<T> {
 
-    static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = 1L;
 
     private JPanel mainPanel;
     private Class<? extends JPanel> mainPanelClass;
@@ -84,7 +84,7 @@ public class SimpleCustomEditor<T> extends AbstractCustomNodeEditor<T> {
             this.add(mainPanel, BorderLayout.CENTER);
         }
         //
-        Util.activateInlineMnemonics(this);
+        SoaUiUtil.activateInlineMnemonics(this);
     }
     
     public JPanel getMainPanel() {

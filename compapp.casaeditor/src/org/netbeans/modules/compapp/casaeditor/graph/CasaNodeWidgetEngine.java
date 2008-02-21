@@ -303,7 +303,7 @@ public class CasaNodeWidgetEngine extends CasaNodeWidget
             LabelWidget groupTitleWidget = new LabelWidget(getScene(), "<" + processName + ">");
             groupTitleWidget.setOpaque(true);
             groupTitleWidget.setAlignment(Alignment.RIGHT);
-            groupTitleWidget.setBackground(Color.green);
+//            groupTitleWidget.setBackground(Color.green);
             groupTitleWidget.setFont(getScene().getDefaultFont().deriveFont(Font.BOLD));
 
             addChild(leftEmptyWidget);
