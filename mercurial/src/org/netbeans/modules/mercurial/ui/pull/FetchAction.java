@@ -88,8 +88,7 @@ public class FetchAction extends ContextAction {
         
         RequestProcessor rp = Mercurial.getInstance().getRequestProcessor(root);
         HgProgressSupport support = new HgProgressSupport() {
-            OutputLogger logger = getLogger();
-            public void perform() { performFetch(root, logger); } };
+            public void perform() { performFetch(root, this.getLogger()); } };
 
         support.start(rp, root.getAbsolutePath(), org.openide.util.NbBundle.getMessage(FetchAction.class, "MSG_FETCH_PROGRESS")); // NOI18N
     }
