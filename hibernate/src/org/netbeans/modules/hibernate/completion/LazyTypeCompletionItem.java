@@ -63,7 +63,7 @@ import org.openide.util.Exceptions;
  * 
  * @author Rohan Ranade (Rohan.Ranade@Sun.COM), Dongmei Cao
  */
-public class LazyTypeCompletionItem extends HibernateMappingCompletionItem implements LazyCompletionItem {
+public class LazyTypeCompletionItem extends HibernateCompletionItem implements LazyCompletionItem {
 
     public static LazyTypeCompletionItem create(int substitutionOffset, ElementHandle<TypeElement> eh, JavaSource javaSource) {
         return new LazyTypeCompletionItem(substitutionOffset, eh, javaSource);
@@ -72,7 +72,7 @@ public class LazyTypeCompletionItem extends HibernateMappingCompletionItem imple
     private ElementHandle<TypeElement> eh;
     private JavaSource javaSource;
     private String name;
-    private HibernateMappingCompletionItem delegate;
+    private HibernateCompletionItem delegate;
     private String simpleName;
     private String pkgName;
     private int prefWidth = -1;
@@ -86,7 +86,7 @@ public class LazyTypeCompletionItem extends HibernateMappingCompletionItem imple
         int idx = name.lastIndexOf('.'); //NOI18N
         this.simpleName = idx > -1 ? name.substring(idx + 1) : name;
         this.pkgName = idx > -1 ? name.substring(0, idx) : ""; //NOI18N
-        this.sortText = this.simpleName + HibernateMappingCompletionItem.getImportanceLevel(this.pkgName) + "#" + this.pkgName; // NOI18N
+        this.sortText = this.simpleName + HibernateCompletionItem.getImportanceLevel(this.pkgName) + "#" + this.pkgName; // NOI18N
     }
 
     public boolean accept() {
@@ -97,7 +97,7 @@ public class LazyTypeCompletionItem extends HibernateMappingCompletionItem imple
                         cc.toPhase(Phase.ELEMENTS_RESOLVED);
                         TypeElement e = eh.resolve(cc);
                         if (e != null && isAccessibleClass(e)) {
-                            delegate = HibernateMappingCompletionItem.createTypeItem(substitutionOffset,
+                            delegate = HibernateCompletionItem.createTypeItem(substitutionOffset,
                                         e, eh, cc.getElements().isDeprecated(e), true);
                         }
                         eh = null;
