@@ -569,7 +569,9 @@ public final class EncapsulateFieldRefactoringPlugin extends JavaRefactoringPlug
                                 desc.refactoring.getSetterName(),
                                 desc.refactoring.getMethodModifiers());
                     }
-                    rewrite(node, nct);
+                    if (nct != null) {
+                        rewrite(node, nct);
+                    }
                 }
             }
             return scan(node.getMembers(), field);

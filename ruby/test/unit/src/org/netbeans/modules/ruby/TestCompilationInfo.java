@@ -29,22 +29,29 @@ package org.netbeans.modules.ruby;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Map;
 import javax.swing.text.Document;
-import org.netbeans.api.gsf.CompilationInfo;
-import org.netbeans.api.gsf.Error;
-import org.netbeans.api.gsf.Index;
-import org.netbeans.api.gsf.ParseEvent;
-import org.netbeans.api.gsf.ParseListener;
-import org.netbeans.api.gsf.ParserFile;
-import org.netbeans.api.gsf.ParserResult;
-import org.netbeans.api.gsf.SourceFileReader;
+import org.netbeans.fpi.gsf.CompilationInfo;
+import org.netbeans.fpi.gsf.Error;
+import org.netbeans.fpi.gsf.Index;
+import org.netbeans.fpi.gsf.ParseEvent;
+import org.netbeans.fpi.gsf.ParseListener;
+import org.netbeans.fpi.gsf.ParserFile;
+import org.netbeans.fpi.gsf.ParserResult;
+import org.netbeans.fpi.gsf.TranslatedSource;
 import org.netbeans.napi.gsfret.source.ClasspathInfo;
 import org.netbeans.napi.gsfret.source.Source;
 import org.netbeans.editor.BaseDocument;
-import org.netbeans.spi.gsf.DefaultParserFile;
+import org.netbeans.modules.gsf.Language;
+import org.netbeans.modules.gsf.LanguageRegistry;
+import org.netbeans.sfpi.gsf.DefaultParserFile;
 import org.openide.filesystems.FileObject;
+import org.openide.util.Exceptions;
 
 /**
  *
@@ -54,7 +61,6 @@ class TestCompilationInfo extends CompilationInfo {
     private final String text;
     private Document doc;
     private Source source;
-    private ParserResult result;
     private int caretOffset = -1;
     private RubyTestBase test;
     
@@ -64,7 +70,6 @@ class TestCompilationInfo extends CompilationInfo {
         this.text = text;
         assert text != null;
         this.doc = doc;
-        setParser(new RubyParser());
         if (fileObject != null) {
             //source = Source.forFileObject(fileObject);
             ClasspathInfo cpInfo = ClasspathInfo.create(fileObject);
@@ -84,10 +89,10 @@ class TestCompilationInfo extends CompilationInfo {
         return source;
     }
 
-    public Index getIndex() {
+    public Index getIndex(String mimeType) {
         ClasspathInfo cpi = source.getClasspathInfo();
         if (cpi != null) {
-            return cpi.getClassIndex();
+            return cpi.getClassIndex(mimeType);
         }
         
         return null;
@@ -98,36 +103,44 @@ class TestCompilationInfo extends CompilationInfo {
         return this.doc;
     }
     
-    @Override
-    public ParserResult getParserResult() {
-        ParserResult r = super.getParserResult();
-        if (r == null) {
-            r = result;
-        }
-        if (r == null) {
-            final ParserResult[] resultHolder = new ParserResult[1];
+    private Map<String,ParserResult> embeddedResults = new HashMap<String,ParserResult>();
+    
+    public void addEmbeddingResult(String mimeType, ParserResult result) {
+        embeddedResults.put(mimeType, result);
+    }
 
+    @Override
+    public Collection<? extends ParserResult> getEmbeddedResults(String mimeType) {
+        ParserResult result = getEmbeddedResult(mimeType, 0);
+        if (result != null) {
+            return Collections.singletonList(result);
+        } else {
+            return Collections.emptyList();
+        }
+    }
+    
+    @Override
+    public ParserResult getEmbeddedResult(String embeddedMimeType, int offset) {
+        assert embeddedMimeType.equals(RubyMimeResolver.RUBY_MIME_TYPE);
+        
+        if (embeddedResults.size() == 0) {
+            final List<Error> errors = new ArrayList<Error>();
             ParseListener listener =
                 new ParseListener() {
+
                     public void started(ParseEvent e) {
-                        //ParserTaskImpl.this.listener.started(e);
+                        errors.clear();
                     }
-                    
-                    public void error(Error e) {
-                        //ParserTaskImpl.this.listener.error(e);
-                        TestCompilationInfo.this.addError(e);
+
+                    public void error(Error error) {
+                        errors.add(error);
                     }
-                    
-                    public void exception(Exception e) {
-                        //ParserTaskImpl.this.listener.exception(e);
+
+                    public void exception(Exception exception) {
+                        Exceptions.printStackTrace(exception);
                     }
-                    
+
                     public void finished(ParseEvent e) {
-                        // TODO - check state
-                        if (e.getKind() == ParseEvent.Kind.PARSE) {
-                            resultHolder[0] = e.getResult();
-                        }
-                        //ParserTaskImpl.this.listener.finished(e);
                     }
                 };
             
@@ -135,13 +148,36 @@ class TestCompilationInfo extends CompilationInfo {
             ParserFile file = new DefaultParserFile(getFileObject(), null, false);
             sourceFiles.add(file);
             
-            RubyParser.Context context = new RubyParser.Context(file, listener, text, caretOffset);
+TranslatedSource translatedSource = null; // TODO            
+            RubyParser.Context context = new RubyParser.Context(file, listener, text, caretOffset, translatedSource);
             RubyParser parser = new RubyParser();
-            setPositionManager(parser.getPositionManager());
-            ParserResult pr = parser.parseBuffer(context, RubyParser.Sanitize.NONE);
-            r = result = pr;
+            ParserResult parserResult = ((RubyParser)parser).parseBuffer(context, RubyParser.Sanitize.NONE);
+            for (Error error : errors) {
+                parserResult.addError(error);
+            }
+            embeddedResults.put(RubyMimeResolver.RUBY_MIME_TYPE, parserResult);
         }
         
-        return r;
+        return embeddedResults.get(embeddedMimeType);
     }
+
+    @Override
+    public List<Error> getErrors() {
+        // Force initialization
+        getEmbeddedResult(RubyMimeResolver.RUBY_MIME_TYPE, 0);
+
+        List<Error> errors = new ArrayList<Error>();
+        for (ParserResult result : embeddedResults.values()) {
+            errors.addAll(result.getDiagnostics());
+        }
+
+        return errors;
+    }
+//    
+//    @Override
+//    public void setParserResult(final ParserResult parserResult) {
+//        parserResult = parserResult;
+//        
+//        embeddedResults.put(getFileObject().getMIMEType(), parserResult);
+//    }
 }

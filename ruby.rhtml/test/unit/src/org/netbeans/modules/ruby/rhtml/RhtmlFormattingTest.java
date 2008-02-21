@@ -31,11 +31,10 @@ import javax.swing.JEditorPane;
 import org.netbeans.api.ruby.platform.RubyInstallation;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.BaseKit;
+import org.netbeans.fpi.gsf.CompilationInfo;
 import org.netbeans.modules.ruby.Formatter;
 import org.netbeans.modules.ruby.IndentPrefs;
 import org.openide.filesystems.FileObject;
-
-import org.netbeans.api.gsf.ParserResult;
 
 /**
  *
@@ -67,9 +66,9 @@ public class RhtmlFormattingTest extends RhtmlTestBase {
         // work (see RhtmlTestBase) because GsfIndentTask needs to find the RubyLanguage
         // and the system file system doesn't seem to include it
 
-        //ParserResult result = parse(fo);
-        ParserResult result = null;
-        formatter.reformat(doc, startPos, endPos, result);
+        //CompilationInfo info = getInfo(fileObject);
+        CompilationInfo info = null;
+        formatter.reformat(doc, startPos, endPos, info);
 
         formatted = doc.getText(0, doc.getLength());
         

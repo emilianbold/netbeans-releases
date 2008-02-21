@@ -84,10 +84,10 @@ import org.jruby.ast.VCallNode;
 import org.jruby.ast.YieldNode;
 import org.jruby.ast.types.INameNode;
 import org.jruby.lexer.yacc.ISourcePosition;
-import org.netbeans.api.gsf.ColoringAttributes;
-import org.netbeans.api.gsf.CompilationInfo;
+import org.netbeans.fpi.gsf.ColoringAttributes;
+import org.netbeans.fpi.gsf.CompilationInfo;
 import org.netbeans.modules.ruby.lexer.RubyTokenId;
-import org.netbeans.api.gsf.OffsetRange;
+import org.netbeans.fpi.gsf.OffsetRange;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
@@ -108,7 +108,7 @@ import org.openide.util.Exceptions;
  *
  * @author Tor Norbye
  */
-public class OccurrencesFinder implements org.netbeans.api.gsf.OccurrencesFinder {
+public class OccurrencesFinder implements org.netbeans.fpi.gsf.OccurrencesFinder {
     private boolean cancelled;
     private int caretPosition;
     private Map<OffsetRange, ColoringAttributes> occurrences;
@@ -142,16 +142,18 @@ public class OccurrencesFinder implements org.netbeans.api.gsf.OccurrencesFinder
             return;
         }
 
-        Node root = AstUtilities.getRoot(info);
+        RubyParseResult rpr = AstUtilities.getParseResult(info);
+        if (rpr == null) {
+            return;
+        }
 
+        Node root = rpr.getRootNode();
         if (root == null) {
             return;
         }
 
         Map<OffsetRange, ColoringAttributes> highlights =
             new HashMap<OffsetRange, ColoringAttributes>(100);
-
-        RubyParseResult rpr = (RubyParseResult)info.getParserResult();
 
         int astOffset = AstUtilities.getAstOffset(info, caretPosition);
         if (astOffset == -1) {
@@ -457,7 +459,7 @@ public class OccurrencesFinder implements org.netbeans.api.gsf.OccurrencesFinder
         }
 
         if (highlights.size() > 0) {
-            if (info.getPositionManager().isTranslatingSource()) {
+            if (rpr.getTranslatedSource() != null) {
                 Map<OffsetRange, ColoringAttributes> translated = new HashMap<OffsetRange,ColoringAttributes>(2*highlights.size());
                 for (Map.Entry<OffsetRange,ColoringAttributes> entry : highlights.entrySet()) {
                     OffsetRange range = LexUtilities.getLexerOffsets(info, entry.getKey());
@@ -515,19 +517,22 @@ public class OccurrencesFinder implements org.netbeans.api.gsf.OccurrencesFinder
                 BaseDocument doc = (BaseDocument)info.getDocument();
                 ISourcePosition pos = last.getPosition();
 
-                if (Utilities.getRowStart(doc, pos.getStartOffset()) != Utilities.getRowStart(doc,
-                            pos.getEndOffset())) {
-                    // Highlight the first line - where the nonwhitespace is
-                    int begin = Utilities.getRowFirstNonWhite(doc, pos.getStartOffset());
-                    int end = Utilities.getRowLastNonWhite(doc, pos.getStartOffset());
+                OffsetRange lexRange = LexUtilities.getLexerOffsets(info, new OffsetRange(pos.getStartOffset(), pos.getEndOffset()));
+                if (lexRange != OffsetRange.NONE) {
+                    if (Utilities.getRowStart(doc, lexRange.getStart()) != Utilities.getRowStart(doc,
+                                lexRange.getEnd())) {
+                        // Highlight the first line - where the nonwhitespace is
+                        int begin = Utilities.getRowFirstNonWhite(doc, lexRange.getStart());
+                        int end = Utilities.getRowLastNonWhite(doc, lexRange.getStart());
 
-                    if ((begin != -1) && (end != -1)) {
-                        OffsetRange range = new OffsetRange(begin, end + 1);
+                        if ((begin != -1) && (end != -1)) {
+                            OffsetRange range = new OffsetRange(begin, end + 1);
+                            highlights.put(range, ColoringAttributes.MARK_OCCURRENCES);
+                        }
+                    } else {
+                        OffsetRange range = AstUtilities.getRange(last);
                         highlights.put(range, ColoringAttributes.MARK_OCCURRENCES);
                     }
-                } else {
-                    OffsetRange range = AstUtilities.getRange(last);
-                    highlights.put(range, ColoringAttributes.MARK_OCCURRENCES);
                 }
             } catch (BadLocationException ble) {
                 Exceptions.printStackTrace(ble);
@@ -541,20 +546,24 @@ public class OccurrencesFinder implements org.netbeans.api.gsf.OccurrencesFinder
     private void highlightExitPoints(Node node, Map<OffsetRange, ColoringAttributes> highlights,
         CompilationInfo info) {
         if (node.nodeId == NodeTypes.RETURNNODE) {
-            OffsetRange range = AstUtilities.getRange(node);
+            OffsetRange astRange = AstUtilities.getRange(node);
             try {
                 BaseDocument doc = (BaseDocument)info.getDocument();
-                int lineStart = Utilities.getRowStart(doc, range.getStart());
-                int endLineStart = Utilities.getRowStart(doc, range.getEnd());
-                if (lineStart != endLineStart) {
-                    range = new OffsetRange(range.getStart(), Utilities.getRowEnd(doc, range.getStart()));
+                OffsetRange lexRange = LexUtilities.getLexerOffsets(info, astRange);
+                if (lexRange != OffsetRange.NONE) {
+                    int lineStart = Utilities.getRowStart(doc, lexRange.getStart());
+                    int endLineStart = Utilities.getRowStart(doc, lexRange.getEnd());
+                    if (lineStart != endLineStart) {
+                        lexRange = new OffsetRange(lexRange.getStart(), Utilities.getRowEnd(doc, lexRange.getStart()));
+                        astRange = AstUtilities.getAstOffsets(info, lexRange);
+                    }
                 }
             } catch (BadLocationException ble) {
                 Exceptions.printStackTrace(ble);
             } catch (IOException ioe) {
                 Exceptions.printStackTrace(ioe);
             }
-            highlights.put(range, ColoringAttributes.MARK_OCCURRENCES);
+            highlights.put(astRange, ColoringAttributes.MARK_OCCURRENCES);
         } else if (node.nodeId == NodeTypes.YIELDNODE) {
             // Workaround JRuby AST position error
             /* Yield in the following code has the wrong offsets in JRuby
@@ -564,15 +573,8 @@ public class OccurrencesFinder implements org.netbeans.api.gsf.OccurrencesFinder
                 raise Cyclic.new("topological sort failed: #{component.inspect}")
               end
              */
-            try {
-                OffsetRange range = AstUtilities.getYieldNodeRange((YieldNode)node, 
-                        (BaseDocument)info.getDocument());
-                if (range != OffsetRange.NONE) {
-                    highlights.put(range, ColoringAttributes.MARK_OCCURRENCES);
-                }
-            } catch (IOException ioe) {
-                Exceptions.printStackTrace(ioe);
-            }
+            OffsetRange range = AstUtilities.getRange(node);
+            highlights.put(range, ColoringAttributes.MARK_OCCURRENCES);
         } else if (node instanceof MethodDefNode || node instanceof ClassNode ||
                 node instanceof SClassNode || node instanceof ModuleNode) {
             // Don't go into sub methods, classes, etc

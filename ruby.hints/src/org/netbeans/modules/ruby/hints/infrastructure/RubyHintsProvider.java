@@ -29,6 +29,7 @@ package org.netbeans.modules.ruby.hints.infrastructure;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -38,13 +39,15 @@ import java.util.Map;
 import java.util.Map.Entry;
 import org.jruby.ast.Node;
 import org.jruby.ast.NodeTypes;
-import org.netbeans.api.gsf.CompilationInfo;
-import org.netbeans.api.gsf.Error;
-import org.netbeans.api.gsf.HintsProvider;
-import org.netbeans.api.gsf.OffsetRange;
+import org.netbeans.fpi.gsf.CompilationInfo;
+import org.netbeans.fpi.gsf.Error;
+import org.netbeans.fpi.gsf.HintsProvider;
+import org.netbeans.fpi.gsf.OffsetRange;
+import org.netbeans.fpi.gsf.ParserResult;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.ruby.AstPath;
 import org.netbeans.modules.ruby.AstUtilities;
+import org.netbeans.modules.ruby.RubyMimeResolver;
 import org.netbeans.modules.ruby.hints.options.HintsSettings;
 import org.netbeans.modules.ruby.hints.spi.AstRule;
 import org.netbeans.modules.ruby.hints.spi.Description;
@@ -94,7 +97,15 @@ public class RubyHintsProvider implements HintsProvider {
             Exceptions.printStackTrace(ex);
         }
 
-        List<Error> errors = info.getDiagnostics();
+        Collection<? extends ParserResult> embeddedResults = info.getEmbeddedResults(RubyMimeResolver.RUBY_MIME_TYPE);
+        if (embeddedResults.size() == 0) {
+            return Collections.emptyList();
+        }
+
+        assert embeddedResults.size() == 1; // I don't create multiple discontiguous ruby sections
+        ParserResult parserResult = embeddedResults.iterator().next();
+
+        List<Error> errors = parserResult.getDiagnostics();
         if (errors == null || errors.size() == 0) {
             return Collections.emptyList();
         }

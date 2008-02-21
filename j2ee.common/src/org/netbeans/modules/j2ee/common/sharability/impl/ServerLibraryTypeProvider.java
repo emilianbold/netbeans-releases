@@ -66,16 +66,16 @@ public final class ServerLibraryTypeProvider implements LibraryTypeProvider {
     
     public static final String VOLUME_WS_JWSDP_CLASSPATH = "wsjwsdp";
     
-    public static final String VOLUME_APP_CLIENT_CLASSPATH = "appclient";
+    // This is runtime only
+    //public static final String VOLUME_APP_CLIENT_CLASSPATH = "appclient";
     
     private static final String[] VOLUME_TYPES = new String[] {
             VOLUME_CLASSPATH,
-//            VOLUME_WS_COMPILE_CLASSPATH,
-//            VOLUME_WS_GENERATE_CLASSPATH,
-//            VOLUME_WS_IMPORT_CLASSPATH,
-//            VOLUME_WS_INTEROP_CLASSPATH,
-//            VOLUME_WS_JWSDP_CLASSPATH,
-//            VOLUME_APP_CLIENT_CLASSPATH
+            VOLUME_WS_COMPILE_CLASSPATH,
+            VOLUME_WS_GENERATE_CLASSPATH,
+            VOLUME_WS_IMPORT_CLASSPATH,
+            VOLUME_WS_INTEROP_CLASSPATH,
+            VOLUME_WS_JWSDP_CLASSPATH
     };
     
     private ServerLibraryTypeProvider() {

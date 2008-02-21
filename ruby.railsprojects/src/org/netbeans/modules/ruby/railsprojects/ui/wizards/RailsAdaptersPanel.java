@@ -206,7 +206,7 @@ public class RailsAdaptersPanel extends SettingsPanel {
 
             RailsDatabaseConfiguration dbConf = (RailsDatabaseConfiguration) value;
 
-            setText(dbConf.getDatabase());
+            setText(dbConf.railsGenerationParam());
             setForeground(isSelected ? list.getSelectionForeground() : list.getForeground());
             setBackground(isSelected ? list.getSelectionBackground() : list.getBackground());
 
