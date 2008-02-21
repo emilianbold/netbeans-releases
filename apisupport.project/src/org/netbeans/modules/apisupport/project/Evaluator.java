@@ -625,6 +625,7 @@ final class Evaluator implements PropertyEvaluator, PropertyChangeListener, AntP
         Element data = project.getPrimaryConfigurationData();
         Element moduleDependencies = Util.findElement(data,
             "module-dependencies", NbModuleProjectType.NAMESPACE_SHARED); // NOI18N
+        assert moduleDependencies != null : "Malformed metadata in " + project;
         StringBuffer cp = new StringBuffer();
         for (Element dep : Util.findSubElements(moduleDependencies)) {
             if (Util.findElement(dep, "compile-dependency", // NOI18N

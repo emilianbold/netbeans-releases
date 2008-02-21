@@ -49,6 +49,7 @@ import java.util.*;
 import java.io.File;
 import org.netbeans.modules.mercurial.HgProgressSupport;
 import org.netbeans.modules.mercurial.Mercurial;
+import org.netbeans.modules.mercurial.OutputLogger;
 import org.netbeans.modules.mercurial.util.HgCommand;
 import org.netbeans.modules.mercurial.util.HgUtils;
 
@@ -86,25 +87,26 @@ class SearchExecutor implements Runnable {
         filterUsername = criteria.getUsername() != null;
         filterMessage = criteria.getCommitMessage() != null;
         
+        OutputLogger logger = OutputLogger.getLogger(Mercurial.MERCURIAL_OUTPUT_TAB_TITLE);
         if (master.isIncomingSearch()) {
-            HgUtils.outputMercurialTabInRed( NbBundle.getMessage(SearchHistoryAction.class,
+            logger.outputInRed( NbBundle.getMessage(SearchHistoryAction.class,
                 "MSG_LogIncoming_Title")); // NOI18N
         }else if (master.isOutSearch()) {
-            HgUtils.outputMercurialTabInRed( NbBundle.getMessage(SearchHistoryAction.class,
+            logger.outputInRed( NbBundle.getMessage(SearchHistoryAction.class,
                 "MSG_LogOut_Title")); // NOI18N
         } else {
-            HgUtils.outputMercurialTabInRed( NbBundle.getMessage(SearchHistoryAction.class,
+            logger.outputInRed( NbBundle.getMessage(SearchHistoryAction.class,
                 "MSG_Log_Title")); // NOI18N
         }
-        HgUtils.outputMercurialTabInRed( NbBundle.getMessage(SearchHistoryAction.class,
+        logger.outputInRed( NbBundle.getMessage(SearchHistoryAction.class,
                 "MSG_Log_Title_Sep")); // NOI18N
-        HgUtils.outputMercurialTab( NbBundle.getMessage(SearchHistoryAction.class,
+        logger.output( NbBundle.getMessage(SearchHistoryAction.class,
                 "MSG_LOG_EXEC_CONTEXT_SEP")); // NOI18N
         pathToRoot = new HashMap<String, File>(); 
         if (searchingUrl()) {
             String rootPath = Mercurial.getInstance().getTopmostManagedParent(master.getRoots()[0]).toString();
             pathToRoot.put(rootPath, master.getRoots()[0]);
-            HgUtils.outputMercurialTab(rootPath);
+            logger.output(rootPath);
         } else {
              workFiles = new HashMap<String, Set<File>>();
             for (File file : master.getRoots()) {
@@ -116,10 +118,10 @@ class SearchExecutor implements Runnable {
                     workFiles.put(rootPath, set);
                 }
                 set.add(file);
-                HgUtils.outputMercurialTab(file.getAbsolutePath());
+                logger.output(file.getAbsolutePath());
             }
         } 
-        HgUtils.outputMercurialTab(""); // NOI18N
+        logger.output(""); // NOI18N
 
     }    
         

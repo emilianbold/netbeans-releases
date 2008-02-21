@@ -18,8 +18,9 @@
  */
 package org.netbeans.modules.bpel.nodes;
 
+import org.netbeans.modules.bpel.nodes.BpelNode;
 import org.netbeans.modules.bpel.editors.api.nodes.NodeType;
-import org.netbeans.modules.bpel.nodes.actions.ActionType;
+import org.netbeans.modules.bpel.editors.api.nodes.actions.ActionType;
 import org.netbeans.modules.bpel.nodes.synchronizer.ModelSynchronizer;
 import org.netbeans.modules.bpel.nodes.synchronizer.SynchronisationListener;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;

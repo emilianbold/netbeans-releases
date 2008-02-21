@@ -18,6 +18,7 @@
  */
 package org.netbeans.modules.bpel.nodes;
 
+import org.netbeans.modules.bpel.nodes.BpelNode;
 import org.openide.nodes.Sheet;
 import org.openide.util.Lookup;
 
