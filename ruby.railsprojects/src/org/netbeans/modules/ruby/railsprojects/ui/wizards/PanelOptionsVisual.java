@@ -48,18 +48,20 @@ import org.netbeans.api.ruby.platform.RubyPlatform;
 import org.netbeans.modules.ruby.platform.PlatformComponentFactory;
 import org.netbeans.modules.ruby.platform.RubyPlatformCustomizer;
 import org.netbeans.modules.ruby.railsprojects.server.RailsServerManager;
+import org.netbeans.modules.ruby.rubyproject.Util;
 import org.openide.WizardDescriptor;
 import org.openide.WizardValidationException;
 
 public class PanelOptionsVisual extends SettingsPanel implements PropertyChangeListener {
     
 //    private static boolean lastMainClassCheck = true; // XXX Store somewhere
-    
+
     private PanelConfigureProject panel;
 //    private boolean valid;
     
     public PanelOptionsVisual(PanelConfigureProject panel, int type) {
         initComponents();
+        Util.preselectWizardPlatform(platforms);
 
         PlatformComponentFactory.addPlatformChangeListener(platforms, new PlatformComponentFactory.PlatformChangeListener() {
             public void platformChanged() {
@@ -107,6 +109,11 @@ public class PanelOptionsVisual extends SettingsPanel implements PropertyChangeL
         //    }
         //    
         //});
+    }
+
+    public @Override void removeNotify() {
+        Util.storeWizardPlatform(platforms);
+        super.removeNotify();
     }
 
     private void initWarCheckBox() {

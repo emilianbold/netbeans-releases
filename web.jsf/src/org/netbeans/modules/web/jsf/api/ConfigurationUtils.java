@@ -87,7 +87,12 @@ public class ConfigurationUtils {
             Map<FileObject,WeakReference<JSFConfigModel>> configModelsRef = editable ? configModelsEditable : configModelsNonEditable;
             WeakReference<JSFConfigModel> configModelRef = configModelsRef.get(confFile);
             if (configModelRef != null) {
-                return configModelRef.get();
+                configModel = configModelRef.get();
+                if (configModel != null) {
+                    return configModel;
+                }
+
+                configModelsRef.remove(confFile);
             }
 
             try {

@@ -151,7 +151,6 @@ public class DesignView extends JPanel implements
         super();
 
         zoomManager = new ZoomManager(this);
-        navigationTools = new NavigationTools(this);
         rightStripe = new RightStripe(this);
 
         setBackground(new Color(0xFCFAF5));
@@ -163,18 +162,15 @@ public class DesignView extends JPanel implements
 
         overlayView = new OverlayPanel(this);
 
-
-        this.add(overlayView, 0);
-
         consumersView = new PartnerlinksView(this, PartnerRole.CONSUMER);
         providersView = new PartnerlinksView(this, PartnerRole.PROVIDER);
         processView = new ProcessView(this);
-
-
-        scrollPane = new TriScrollPane(processView, consumersView, providersView);
-        this.add(scrollPane, 1);
-
-
+ 
+        navigationTools = new NavigationTools(this);
+ 
+        scrollPane = new TriScrollPane(processView, consumersView, 
+                providersView, navigationTools, overlayView);
+        this.add(scrollPane, 0);
 
         dndHandler = new DnDHandler(this);
 
@@ -200,14 +196,6 @@ public class DesignView extends JPanel implements
 
         reloadModel();
         diagramChanged();
-        scrollPane.addScrollListener(new TriScrollPane.ScrollListener() {
-
-            public void viewScrolled(JComponent view) {
-                if (view == consumersView || view == providersView){
-                    processView.repaint();
-                }
-            }
-        });
     }
 
     public DiagramView getConsumersView() {

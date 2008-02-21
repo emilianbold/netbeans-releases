@@ -32,8 +32,8 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.List;
-import org.netbeans.spi.gsfpath.classpath.ClassPathImplementation;
-import org.netbeans.spi.gsfpath.classpath.PathResourceImplementation;
+import org.netbeans.sfpi.gsfpath.classpath.ClassPathImplementation;
+import org.netbeans.sfpi.gsfpath.classpath.PathResourceImplementation;
 
 /**
  * Implementation which lets you merge a set of ClassPathImplementations

@@ -41,31 +41,26 @@
 
 package org.netbeans.modules.ruby;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
-import javax.swing.Action;
 import javax.swing.JTextArea;
 import javax.swing.text.Caret;
 import org.jruby.ast.Node;
-import org.netbeans.api.gsf.CompilationInfo;
-import org.netbeans.api.gsf.Completable.QueryType;
-import org.netbeans.api.gsf.CompletionProposal;
-import org.netbeans.api.gsf.ElementKind;
-import org.netbeans.api.gsf.HtmlFormatter;
-import org.netbeans.api.gsf.NameKind;
+import org.netbeans.fpi.gsf.CompilationInfo;
+import org.netbeans.fpi.gsf.Completable.QueryType;
+import org.netbeans.fpi.gsf.CompletionProposal;
+import org.netbeans.fpi.gsf.ElementKind;
+import org.netbeans.fpi.gsf.HtmlFormatter;
+import org.netbeans.fpi.gsf.NameKind;
 import org.netbeans.napi.gsfret.source.Source;
-import org.netbeans.api.ruby.platform.RubyInstallation;
 import org.netbeans.api.ruby.platform.RubyPlatform;
 import org.netbeans.api.ruby.platform.RubyPlatformManager;
 import org.netbeans.api.ruby.platform.TestUtil;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
-import org.netbeans.modules.gsf.DefaultLanguage;
 import org.netbeans.modules.gsf.Language;
 import org.netbeans.modules.gsf.LanguageRegistry;
-import org.netbeans.modules.gsfret.source.usages.Index;
 import org.netbeans.modules.ruby.elements.IndexedMethod;
 import org.openide.filesystems.FileObject;
 
@@ -182,29 +177,20 @@ public class CodeCompleterTest extends RubyTestBase {
         System.setProperty("netbeans.user", getWorkDirPath());
         FileObject jrubyHome = TestUtil.getXTestJRubyHomeFO();
         assertNotNull(jrubyHome);
-        FileObject clusterLoc = jrubyHome.getParent().getFileObject("preindexed");
-        Index.setClusterLoc(clusterLoc);
-        LanguageRegistry registry = LanguageRegistry.getInstance();
-        List<Action> actions = Collections.emptyList();
-        if (!LanguageRegistry.getInstance().isSupported(RubyInstallation.RUBY_MIME_TYPE)) {
-            List<String> extensions = Collections.singletonList("rb");
-            Language dl = new DefaultLanguage("Ruby", "org/netbeans/modules/ruby/jrubydoc.png", "text/x-ruby", extensions, 
-                    actions, new RubyLanguage(), 
-                    new RubyParser(), new CodeCompleter(), new RenameHandler(), new DeclarationFinder(), 
-                    new Formatter(), new BracketCompleter(), new RubyIndexer(), new StructureAnalyzer(), null, false);
-            List<Language> languages = new ArrayList<Language>();
-            languages.add(dl);
-            registry.addLanguages(languages);
-        }
+        FileObject preindexed = jrubyHome.getParent().getFileObject("preindexed");
+        RubyIndexer.setPreindexedDb(preindexed);
+        initializeRegistry();
         // Force classpath initialization
         RubyPlatform platform = RubyPlatformManager.getDefaultPlatform();
         platform.getGemManager().getNonGemLoadPath();
-        org.netbeans.modules.gsfret.source.usages.ClassIndexManager.getDefault().getBootIndices();
+        Language language = LanguageRegistry.getInstance().getLanguageByMimeType(RubyMimeResolver.RUBY_MIME_TYPE);
+        org.netbeans.modules.gsfret.source.usages.ClassIndexManager.get(language).getBootIndices();
         
         CompilationInfo ci = getInfo(file);
         String text = ci.getText();
         assertNotNull(text);
-        assertNotNull(ci.getParserResult());
+        assertNotNull(AstUtilities.getParseResult(ci));
+        assertEquals(0, ci.getErrors().size());
         
         int caretOffset = -1;
         if (caretLine != null) {
@@ -478,24 +464,14 @@ public class CodeCompleterTest extends RubyTestBase {
         System.setProperty("netbeans.user", getWorkDirPath());
         FileObject jrubyHome = TestUtil.getXTestJRubyHomeFO();
         assertNotNull(jrubyHome);
-        FileObject clusterLoc = jrubyHome.getParent().getFileObject("preindexed");
-        Index.setClusterLoc(clusterLoc);
-        LanguageRegistry registry = LanguageRegistry.getInstance();
-        List<Action> actions = Collections.emptyList();
-        if (!LanguageRegistry.getInstance().isSupported(RubyInstallation.RUBY_MIME_TYPE)) {
-            List<String> extensions = Collections.singletonList("rb");
-            Language dl = new DefaultLanguage("Ruby", "org/netbeans/modules/ruby/jrubydoc.png", "text/x-ruby", extensions, 
-                    actions, new RubyLanguage(), 
-                    new RubyParser(), new CodeCompleter(), new RenameHandler(), new DeclarationFinder(), 
-                    new Formatter(), new BracketCompleter(), new RubyIndexer(), new StructureAnalyzer(), null, false);
-            List<Language> languages = new ArrayList<Language>();
-            languages.add(dl);
-            registry.addLanguages(languages);
-        }
+        FileObject preindexed = jrubyHome.getParent().getFileObject("preindexed");
+        RubyIndexer.setPreindexedDb(preindexed);
+        initializeRegistry();
         // Force classpath initialization
         RubyPlatform platform = RubyPlatformManager.getDefaultPlatform();
         platform.getGemManager().getNonGemLoadPath();
-        org.netbeans.modules.gsfret.source.usages.ClassIndexManager.getDefault().getBootIndices();
+        Language language = LanguageRegistry.getInstance().getLanguageByMimeType(RubyMimeResolver.RUBY_MIME_TYPE);
+        org.netbeans.modules.gsfret.source.usages.ClassIndexManager.get(language).getBootIndices();
 
         CodeCompleter cc = new CodeCompleter();
         TestCompilationInfo info = getInfo(file);
@@ -515,9 +491,7 @@ public class CodeCompleterTest extends RubyTestBase {
         info.setCaretOffset(caretOffset);
 
         assertNotNull(text);
-        assertNotNull(info.getParserResult());
-
-        
+        assertNotNull(AstUtilities.getParseResult(info));
         Source js = Source.forFileObject(info.getFileObject());
         assertNotNull(js);
         //ci.getIndex();
@@ -530,7 +504,7 @@ public class CodeCompleterTest extends RubyTestBase {
         int[] anchorOffsetHolder = new int[1];
         int lexOffset = caretOffset;
         int astOffset = caretOffset;
-        boolean ok = cc.computeMethodCall(info, lexOffset, astOffset, methodHolder, paramIndexHolder, anchorOffsetHolder, null);
+        boolean ok = CodeCompleter.computeMethodCall(info, lexOffset, astOffset, methodHolder, paramIndexHolder, anchorOffsetHolder, null);
 
         if (expectSuccess) {
             assertTrue(ok);

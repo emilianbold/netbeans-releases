@@ -60,7 +60,6 @@
         <ant dir="../websvc.saas.services.yahoo"/>
         <ant dir="../websvc.saas.services.youtube"/>
         <ant dir="../websvc.saas.services.zillow"/>
-        <ant dir="../websvc.components.strikeiron" target="clean"/>
     </target>
 
     <target name="all-saas-clean">

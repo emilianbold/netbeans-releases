@@ -44,9 +44,9 @@ import java.util.Set;
 
 import javax.swing.ImageIcon;
 
-import org.netbeans.api.gsf.ElementKind;
-import org.netbeans.api.gsf.HtmlFormatter;
-import org.netbeans.api.gsf.Modifier;
+import org.netbeans.fpi.gsf.ElementKind;
+import org.netbeans.fpi.gsf.HtmlFormatter;
+import org.netbeans.fpi.gsf.Modifier;
 
 
 /**
@@ -99,7 +99,7 @@ class VariableItem extends CompletionItem {
     }
 
     /* (non-Javadoc)
-     * @see org.netbeans.api.gsf.CompletionProposal#getIcon()
+     * @see org.netbeans.fpi.gsf.CompletionProposal#getIcon()
      */
     public ImageIcon getIcon() {
         // TODO Auto-generated method stub
@@ -107,21 +107,21 @@ class VariableItem extends CompletionItem {
     }
 
     /* (non-Javadoc)
-     * @see org.netbeans.api.gsf.CompletionProposal#getInsertPrefix()
+     * @see org.netbeans.fpi.gsf.CompletionProposal#getInsertPrefix()
      */
     public String getInsertPrefix() {
         return myVariable;
     }
 
     /* (non-Javadoc)
-     * @see org.netbeans.api.gsf.CompletionProposal#getKind()
+     * @see org.netbeans.fpi.gsf.CompletionProposal#getKind()
      */
     public ElementKind getKind() {
         return ElementKind.VARIABLE;
     }
 
     /* (non-Javadoc)
-     * @see org.netbeans.api.gsf.CompletionProposal#getLhsHtml()
+     * @see org.netbeans.fpi.gsf.CompletionProposal#getLhsHtml()
      */
     public String getLhsHtml() {
         ElementKind kind = getKind();
@@ -136,7 +136,7 @@ class VariableItem extends CompletionItem {
     }
 
     /* (non-Javadoc)
-     * @see org.netbeans.api.gsf.CompletionProposal#getModifiers()
+     * @see org.netbeans.fpi.gsf.CompletionProposal#getModifiers()
      */
     public Set<Modifier> getModifiers() {
         // TODO Auto-generated method stub
@@ -144,14 +144,14 @@ class VariableItem extends CompletionItem {
     }
 
     /* (non-Javadoc)
-     * @see org.netbeans.api.gsf.CompletionProposal#getName()
+     * @see org.netbeans.fpi.gsf.CompletionProposal#getName()
      */
     public String getName() {
         return myVariable;
     }
 
     /* (non-Javadoc)
-     * @see org.netbeans.api.gsf.CompletionProposal#getRhsHtml()
+     * @see org.netbeans.fpi.gsf.CompletionProposal#getRhsHtml()
      */
     public String getRhsHtml() {
         getFormatter().reset();
@@ -162,7 +162,7 @@ class VariableItem extends CompletionItem {
 
 
     /* (non-Javadoc)
-     * @see org.netbeans.api.gsf.CompletionProposal#isSmart()
+     * @see org.netbeans.fpi.gsf.CompletionProposal#isSmart()
      */
     public boolean isSmart() {
         return !isPredefined;

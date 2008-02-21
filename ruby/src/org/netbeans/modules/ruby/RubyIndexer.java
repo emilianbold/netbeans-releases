@@ -40,7 +40,9 @@
  */
 package org.netbeans.modules.ruby;
 
+import java.io.File;
 import java.io.IOException;
+import java.net.MalformedURLException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -64,14 +66,16 @@ import org.jruby.ast.SelfNode;
 import org.jruby.ast.StrNode;
 import org.jruby.ast.types.INameNode;
 import org.jruby.util.ByteList;
-import org.netbeans.api.gsf.Element;
-import org.netbeans.api.gsf.ElementKind;
-import org.netbeans.api.gsf.Index;
-import org.netbeans.api.gsf.Indexer;
-import org.netbeans.api.gsf.Modifier;
-import org.netbeans.api.gsf.ParserFile;
-import org.netbeans.api.gsf.ParserResult;
+import org.netbeans.modules.ruby.elements.Element;
+import org.netbeans.fpi.gsf.ElementKind;
+import org.netbeans.fpi.gsf.Index;
+import org.netbeans.fpi.gsf.Indexer;
+import org.netbeans.fpi.gsf.Modifier;
+import org.netbeans.fpi.gsf.ParserFile;
+import org.netbeans.fpi.gsf.ParserResult;
 import org.netbeans.editor.BaseDocument;
+import org.netbeans.fpi.gsf.IndexDocument;
+import org.netbeans.fpi.gsf.IndexDocumentFactory;
 import org.netbeans.modules.ruby.StructureAnalyzer.AnalysisResult;
 import org.netbeans.modules.ruby.elements.AstElement;
 import org.netbeans.modules.ruby.elements.ClassElement;
@@ -80,6 +84,8 @@ import org.netbeans.modules.ruby.elements.IndexedElement;
 import org.netbeans.modules.ruby.elements.IndexedMethod;
 import org.netbeans.modules.ruby.elements.ModuleElement;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
+import org.openide.modules.InstalledFileLocator;
 import org.openide.util.Exceptions;
 
 
@@ -91,19 +97,19 @@ import org.openide.util.Exceptions;
  * @todo Index migration and model files specially to extract database information that
  *   I can use to build dynamic model object attributes
  * @todo Index require_gem separately?
+ * @todo Remove the FILENAME url since it's maintained elsewhere (in infrastructure) now!
  *
  * @author Tor Norbye
  */
 public class RubyIndexer implements Indexer {
     //private static final boolean INDEX_UNDOCUMENTED = Boolean.getBoolean("ruby.index.undocumented");
     private static final boolean INDEX_UNDOCUMENTED = true;
-    static final boolean PREINDEXING = Boolean.getBoolean("gsf.preindexing");
+    public static final boolean PREINDEXING = Boolean.getBoolean("gsf.preindexing");
     
     // Class/Module Document
     static final String FIELD_EXTENDS_NAME = "extends"; //NOI18N
     static final String FIELD_FQN_NAME = "fqn"; //NOI18N
     static final String FIELD_IN = "in"; //NOI18N
-    static final String FIELD_FILENAME = "source"; // NOI18N
     static final String FIELD_CLASS_NAME = "class"; //NOI18N
     static final String FIELD_CASE_INSENSITIVE_CLASS_NAME = "class-ig"; //NOI18N
     static final String FIELD_REQUIRE = "require"; //NOI18N
@@ -207,13 +213,25 @@ public class RubyIndexer implements Indexer {
     public RubyIndexer() {
     }
 
-    public void updateIndex(Index index, ParserResult result)
-        throws IOException {
+    public String getPersistentUrl(File file) {
+        String url;
+        try {
+            url = file.toURI().toURL().toExternalForm();
+            // Make relative URLs for urls in the libraries
+            return RubyIndex.getPreindexUrl(url);
+        } catch (MalformedURLException ex) {
+            Exceptions.printStackTrace(ex);
+            return file.getPath();
+        }
+
+    }
+    
+    public List<IndexDocument> index(ParserResult result, IndexDocumentFactory factory) throws IOException {
         Node root = AstUtilities.getRoot(result);
         RubyParseResult r = (RubyParseResult)result;
 
         if (root == null) {
-            return;
+            return null;
         }
 
         // I used to suppress indexing files that have had automatic cleanup to
@@ -226,8 +244,10 @@ public class RubyIndexer implements Indexer {
         //     return;
         //  }
 
-        TreeAnalyzer analyzer = new TreeAnalyzer(index, r);
+        TreeAnalyzer analyzer = new TreeAnalyzer(r, factory);
         analyzer.analyze();
+        
+        return analyzer.getDocuments();
     }
 
     public boolean isIndexable(ParserFile file) {
@@ -236,7 +256,7 @@ public class RubyIndexer implements Indexer {
     }
     
     public String getIndexVersion() {
-        return "6.100"; // NOI18N
+        return "6.102"; // NOI18N
     }
 
     public String getIndexerName() {
@@ -260,18 +280,19 @@ public class RubyIndexer implements Indexer {
         private String requires;
         private final RubyParseResult result;
         private final BaseDocument doc;
-        private final Index index;
         private int docMode;
+        private IndexDocumentFactory factory;
+        private List<IndexDocument> documents = new ArrayList<IndexDocument>();
         
-        private TreeAnalyzer(Index index, RubyParseResult result) {
-            this.index = index;
+        private TreeAnalyzer(RubyParseResult result, IndexDocumentFactory factory) {
             this.result = result;
             this.file = result.getFile();
+            this.factory = factory;
 
             FileObject fo = file.getFileObject();
 
             if (fo != null) {
-                this.doc = AstUtilities.getBaseDocument(fo, true);
+                this.doc = NbUtilities.getBaseDocument(fo, true);
             } else {
                 this.doc = null;
             }
@@ -284,6 +305,7 @@ public class RubyIndexer implements Indexer {
             } catch (IOException ioe) {
                 Exceptions.printStackTrace(ioe);
             }
+           
         }
 
         private String getRequireString(Set<String> requireSet) {
@@ -322,22 +344,12 @@ public class RubyIndexer implements Indexer {
 
             return null;
         }
+        
+        List<IndexDocument> getDocuments() {
+            return documents;
+        }
 
         public void analyze() throws IOException {
-            // Delete old contents of this file - iff we're dealing with a user source file
-            if (!file.isPlatform()) {
-                Set<Map<String, String>> indexedList = Collections.emptySet();
-                Set<Map<String, String>> notIndexedList = Collections.emptySet();
-                Map<String, String> toDelete = new HashMap<String, String>();
-                toDelete.put(FIELD_FILENAME, url);
-
-                try {
-                    index.gsfStore(indexedList, notIndexedList, toDelete);
-                } catch (IOException ioe) {
-                    Exceptions.printStackTrace(ioe);
-                }
-            }
-            
             String fileName = file.getNameExt();
             // DB migration?
             if (Character.isDigit(fileName.charAt(0)) && fileName.matches("^\\d\\d\\d_.*")) { // NOI18N
@@ -401,35 +413,13 @@ public class RubyIndexer implements Indexer {
 
             if ((structure == null) || (structure.size() == 0)) {
                 if (requires != null) {
-                    // It's just a requires-file... but we SHOULD index these such
-                    // that they show up in require-completion (and more importantly,
-                    // "master" files that require secondary files establish important
-                    // relationships here for my transitive require statement closure
-                    Set<Map<String, String>> indexedList = new HashSet<Map<String, String>>();
-                    Set<Map<String, String>> notIndexedList = new HashSet<Map<String, String>>();
-
-                    // Add indexed info
-                    Map<String, String> indexed = new HashMap<String, String>();
-                    indexedList.add(indexed);
-
-                    Map<String, String> notIndexed = new HashMap<String, String>();
-                    notIndexedList.add(notIndexed);
-
+                    IndexDocument document = factory.createDocument(3);
+                    documents.add(document);
                     if (requires != null) {
-                        notIndexed.put(FIELD_REQUIRES, requires);
+                        document.addPair(FIELD_REQUIRES, requires, false);
                     }
 
-                    addRequire(indexed);
-
-                    // Indexed so we can locate these documents when deleting/updating
-                    indexed.put(FIELD_FILENAME, url);
-
-                    try {
-                        Map<String, String> toDelete = Collections.emptyMap();
-                        index.gsfStore(indexedList, notIndexedList, toDelete);
-                    } catch (IOException ioe) {
-                        Exceptions.printStackTrace(ioe);
-                    }
+                    addRequire(document);
                 }
 
                 return;
@@ -454,51 +444,39 @@ public class RubyIndexer implements Indexer {
             Set<String> requireSet = new HashSet<String>();
             scan(root, includeSet, requireSet);
 
-            Set<Map<String, String>> indexedList = new HashSet<Map<String, String>>();
-            Set<Map<String, String>> notIndexedList = new HashSet<Map<String, String>>();
-
-            // Add indexed info
-            Map<String, String> indexed = new HashMap<String, String>();
-            indexedList.add(indexed);
-
-            Map<String, String> notIndexed = new HashMap<String, String>();
-            notIndexedList.add(notIndexed);
+            IndexDocument document = factory.createDocument(40); // TODO - measure!
+            documents.add(document);
 
             // TODO:
             //addIncluded(indexed);
             String r = getRequireString(requireSet);
             if (r != null) {
-                notIndexed.put(FIELD_REQUIRES, r);
+                document.addPair(FIELD_REQUIRES, r, false);
             }
 
-            addRequire(indexed);
+            addRequire(document);
 
             String includes = getIncludedString(includeSet);
 
             if (includes != null) {
-                notIndexed.put(FIELD_INCLUDES, includes);
+                document.addPair(FIELD_INCLUDES, includes, false);
             }
 
             int flags = 0;
-            notIndexed.put(FIELD_CLASS_ATTRS, IndexedElement.flagToString(flags));
+            document.addPair(FIELD_CLASS_ATTRS, IndexedElement.flagToString(flags), false);
 
             String clz = "TableDefinition";
             String classIn = "ActiveRecord::ConnectionAdapters";
             String classFqn = classIn + "::" + clz;
             String clzNoCase = clz.toLowerCase();
             
-            indexed.put(FIELD_FQN_NAME, classFqn);
-            indexed.put(FIELD_CASE_INSENSITIVE_CLASS_NAME, clzNoCase);
-            indexed.put(FIELD_CLASS_NAME, clz);
-            notIndexed.put(FIELD_IN, classIn);
-
-            // Indexed so we can locate these documents when deleting/updating
-            indexed.put(FIELD_FILENAME, url);
+            document.addPair(FIELD_FQN_NAME, classFqn, true);
+            document.addPair(FIELD_CASE_INSENSITIVE_CLASS_NAME, clzNoCase, true);
+            document.addPair(FIELD_CLASS_NAME, clz, true);
+            document.addPair(FIELD_IN, classIn, false);
 
             // Insert methods:
             for (String type : new String[] { "string", "text", "integer", "float", "decimal", "datetime", "timestamp", "time", "date", "binary", "boolean" }) { // NOI18N
-                Map<String, String> ru = new HashMap<String, String>();
-
                 Set<Modifier> modifiers = EnumSet.of(Modifier.PUBLIC);
 
                 int mflags = getModifiersFlag(modifiers);
@@ -511,17 +489,8 @@ public class RubyIndexer implements Indexer {
 
                 String signature = sb.toString();
 
-                ru.put(FIELD_METHOD_NAME, signature);
-                indexedList.add(ru);
+                document.addPair(FIELD_METHOD_NAME, signature, true);
             }
-            
-            try {
-                Map<String, String> toDelete = Collections.emptyMap();
-                index.gsfStore(indexedList, notIndexedList, toDelete);
-            } catch (IOException ioe) {
-                Exceptions.printStackTrace(ioe);
-            }
-            
         }
 
         private void handleRailsBase(String classIn) {
@@ -541,91 +510,54 @@ public class RubyIndexer implements Indexer {
             if (root == null) {
                 return;
             }
+            
+            IndexDocument document = factory.createDocument(40); // TODO Measure
+            documents.add(document);
 
             Set<String> includeSet = new HashSet<String>();
             Set<String> requireSet = new HashSet<String>();
             scan(root, includeSet, requireSet);
 
-            Set<Map<String, String>> indexedList = new HashSet<Map<String, String>>();
-            Set<Map<String, String>> notIndexedList = new HashSet<Map<String, String>>();
-
-            // Add indexed info
-            Map<String, String> indexed = new HashMap<String, String>();
-            indexedList.add(indexed);
-
-            Map<String, String> notIndexed = new HashMap<String, String>();
-            notIndexedList.add(notIndexed);
-
             // TODO:
             //addIncluded(indexed);
             String r = getRequireString(requireSet);
             if (r != null) {
-                notIndexed.put(FIELD_REQUIRES, r);
+                document.addPair(FIELD_REQUIRES, r, false);
             }
 
-            addRequire(indexed);
+            addRequire(document);
 
             String includes = getIncludedString(includeSet);
 
             if (includes != null) {
-                notIndexed.put(FIELD_INCLUDES, includes);
+                document.addPair(FIELD_INCLUDES, includes, false);
             }
 
             int flags = 0;
-            notIndexed.put(FIELD_CLASS_ATTRS, IndexedElement.flagToString(flags));
+            document.addPair(FIELD_CLASS_ATTRS, IndexedElement.flagToString(flags), false);
 
-
-            indexed.put(FIELD_FQN_NAME, classFqn);
-            indexed.put(FIELD_CASE_INSENSITIVE_CLASS_NAME, clzNoCase);
-            indexed.put(FIELD_CLASS_NAME, clz);
-            notIndexed.put(FIELD_IN, classIn);
-
-            // Indexed so we can locate these documents when deleting/updating
-            indexed.put(FIELD_FILENAME, url);
-
-            try {
-                Map<String, String> toDelete = Collections.emptyMap();
-                index.gsfStore(indexedList, notIndexedList, toDelete);
-            } catch (IOException ioe) {
-                Exceptions.printStackTrace(ioe);
-            }
+            document.addPair(FIELD_FQN_NAME, classFqn, true);
+            document.addPair(FIELD_CASE_INSENSITIVE_CLASS_NAME, clzNoCase, true);
+            document.addPair(FIELD_CLASS_NAME, clz, true);
+            document.addPair(FIELD_IN, classIn, false);
         }
 
         /** Add an entry for a class which provides the given includes */
         private void addClassIncludes(String className, String fqn, String in, int flags, String includes) {
-            //Set<String> includeSet = new HashSet<String>();
-        
-            Set<Map<String, String>> indexedList = new HashSet<Map<String, String>>();
-            Set<Map<String, String>> notIndexedList = new HashSet<Map<String, String>>();
-
-            // Add indexed info
-            Map<String, String> indexed = new HashMap<String, String>();
-            indexedList.add(indexed);
-
-            Map<String, String> notIndexed = new HashMap<String, String>();
-            notIndexedList.add(notIndexed);
+            IndexDocument document = factory.createDocument(10);
+            documents.add(document);
 
             if (includes != null) {
-                notIndexed.put(FIELD_INCLUDES, includes);
+                document.addPair(FIELD_INCLUDES, includes, false);
             }
 
-            notIndexed.put(FIELD_CLASS_ATTRS, IndexedElement.flagToString(flags));
+            document.addPair(FIELD_CLASS_ATTRS, IndexedElement.flagToString(flags), false);
 
-            indexed.put(FIELD_FQN_NAME, fqn);
-            indexed.put(FIELD_CASE_INSENSITIVE_CLASS_NAME, className.toLowerCase());
-            indexed.put(FIELD_CLASS_NAME, className);
+            document.addPair(FIELD_FQN_NAME, fqn, true);
+            document.addPair(FIELD_CASE_INSENSITIVE_CLASS_NAME, className.toLowerCase(), true);
+            document.addPair(FIELD_CLASS_NAME, className, true);
             if (in != null) {
-                notIndexed.put(FIELD_IN, in);
-            }
-            
-            // Indexed so we can locate these documents when deleting/updating
-            indexed.put(FIELD_FILENAME, url);
-
-            try {
-                Map<String, String> toDelete = Collections.emptyMap();
-                index.gsfStore(indexedList, notIndexedList, toDelete);
-            } catch (IOException ioe) {
-                Exceptions.printStackTrace(ioe);
+                document.addPair(FIELD_IN, in, false);
             }
         }
         
@@ -687,32 +619,16 @@ public class RubyIndexer implements Indexer {
             
             if (items.size() > 0) {
                 for (Map.Entry<String,List<String>> entry : items.entrySet()) {
-                    Set<Map<String, String>> indexedList = new HashSet<Map<String, String>>();
-                    Set<Map<String, String>> notIndexedList = new HashSet<Map<String, String>>();
-                    Map<String, String> indexed = new HashMap<String, String>();
-                    indexedList.add(indexed);
-                    Map<String, String> notIndexed = new HashMap<String, String>();
-                    notIndexedList.add(notIndexed);
-
-                    // Indexed so we can locate these documents when deleting/updating
-                    indexed.put(FIELD_FILENAME, url);
-
+                    IndexDocument document = factory.createDocument(40); // TODO Measure
+                    documents.add(document);
+                    
                     String tableName = entry.getKey();
-                    indexed.put(FIELD_DB_TABLE, tableName);
-                    notIndexed.put(FIELD_DB_VERSION, version);
+                    document.addPair(FIELD_DB_TABLE, tableName, true);
+                    document.addPair(FIELD_DB_VERSION, version, false);
                     
                     List<String> columns = entry.getValue();
                     for (String column : columns) {
-                        Map<String, String> ru = new HashMap<String, String>();
-                        notIndexedList.add(ru);
-                        ru.put(FIELD_DB_COLUMN, column);
-                    }
-
-                    try {
-                        Map<String, String> toDelete = Collections.emptyMap();
-                        index.gsfStore(indexedList, notIndexedList, toDelete);
-                    } catch (IOException ioe) {
-                        Exceptions.printStackTrace(ioe);
+                        document.addPair(FIELD_DB_COLUMN, column, false);
                     }
                 }
             }
@@ -878,6 +794,7 @@ public class RubyIndexer implements Indexer {
                             }
 
                             child = (Node)childNodes.get(1);
+                            @SuppressWarnings("unchecked")
                             List<Node> args = child.childNodes();
                             for (Node n : args) {
                                 if (n.nodeId == NodeTypes.SYMBOLNODE || n.nodeId == NodeTypes.STRNODE) {
@@ -1115,16 +1032,7 @@ public class RubyIndexer implements Indexer {
                 }
 
 
-                // Add a document
-                Set<Map<String, String>> indexedList = new HashSet<Map<String, String>>();
-                Set<Map<String, String>> notIndexedList = new HashSet<Map<String, String>>();
-
-                // Add indexed info
-                Map<String, String> indexed = new HashMap<String, String>();
-                indexedList.add(indexed);
-
-                Map<String, String> notIndexed = new HashMap<String, String>();
-                notIndexedList.add(notIndexed);
+                IndexDocument document = factory.createDocument(40); // TODO Measure
 
                 String fqn;
 
@@ -1157,14 +1065,14 @@ public class RubyIndexer implements Indexer {
                         }
 
                         if (superClass != null) {
-                            indexed.put(FIELD_EXTENDS_NAME, superClass);
+                            document.addPair(FIELD_EXTENDS_NAME, superClass, true);
                         }
                     }
 
                     String includes = getIncludedString(classElement.getIncludes());
 
                     if (includes != null) {
-                        notIndexed.put(FIELD_INCLUDES, includes);
+                        document.addPair(FIELD_INCLUDES, includes, false);
                     }
                 } else {
                     assert element.getKind() == ElementKind.MODULE;
@@ -1175,7 +1083,7 @@ public class RubyIndexer implements Indexer {
                     String extendWith = moduleElement.getExtendWith();
 
                     if (extendWith != null) {
-                        notIndexed.put(FIELD_EXTEND_WITH, extendWith);
+                        document.addPair(FIELD_EXTEND_WITH, extendWith, false);
                     }
 
                     flags |= IndexedClass.MODULE;
@@ -1205,7 +1113,7 @@ public class RubyIndexer implements Indexer {
                     attributes.append(";");
                     attributes.append(Integer.toString(documentSize));
                 }
-                notIndexed.put(FIELD_CLASS_ATTRS, attributes.toString());
+                document.addPair(FIELD_CLASS_ATTRS, attributes.toString(), false);
 
                 /* Don't prune modules without documentation because
                  * this may be an existing module that we're defining
@@ -1218,24 +1126,21 @@ public class RubyIndexer implements Indexer {
                     return;
                 }
 
-                indexed.put(FIELD_FQN_NAME, fqn);
-                indexed.put(FIELD_CASE_INSENSITIVE_CLASS_NAME, name.toLowerCase());
-                indexed.put(FIELD_CLASS_NAME, name);
+                document.addPair(FIELD_FQN_NAME, fqn, true);
+                document.addPair(FIELD_CASE_INSENSITIVE_CLASS_NAME, name.toLowerCase(), true);
+                document.addPair(FIELD_CLASS_NAME, name, true);
 
                 if (in != null) {
-                    notIndexed.put(FIELD_IN, in);
+                    document.addPair(FIELD_IN, in, false);
                 }
 
-                addRequire(indexed);
+                addRequire(document);
 
                 // TODO:
                 //addIncluded(indexed);
                 if (requires != null) {
-                    notIndexed.put(FIELD_REQUIRES, requires);
+                    document.addPair(FIELD_REQUIRES, requires, false);
                 }
-
-                // Indexed so we can locate these documents when deleting/updating
-                indexed.put(FIELD_FILENAME, url);
 
                 // Add the fields, etc.. Recursively add the children classes or modules if any
                 for (AstElement child : element.getChildren()) {
@@ -1250,7 +1155,7 @@ public class RubyIndexer implements Indexer {
                                 switch (grandChild.getKind()) {
                                 case CONSTRUCTOR:
                                 case METHOD: {
-                                    indexMethod(grandChild, indexedList, notIndexedList, false, nodoc);
+                                    indexMethod(grandChild, document, false, nodoc);
 
                                     break;
                                 }
@@ -1263,19 +1168,19 @@ public class RubyIndexer implements Indexer {
                                 }
 
                                 case FIELD: {
-                                    indexField(grandChild, indexedList, notIndexedList, nodoc);
+                                    indexField(grandChild, document, nodoc);
 
                                     break;
                                 }
 
                                 case ATTRIBUTE: {
-                                    indexAttribute(grandChild, indexedList, notIndexedList, nodoc);
+                                    indexAttribute(grandChild, document, nodoc);
 
                                     break;
                                 }
 
                                 case CONSTANT: {
-                                    indexConstant(grandChild, indexedList, notIndexedList, nodoc);
+                                    indexConstant(grandChild, document, nodoc);
 
                                     break;
                                 }
@@ -1290,91 +1195,66 @@ public class RubyIndexer implements Indexer {
 
                     case CONSTRUCTOR:
                     case METHOD: {
-                        indexMethod(child, indexedList, notIndexedList, false, nodoc);
+                        indexMethod(child, document, false, nodoc);
 
                         break;
                     }
 
                     case FIELD: {
-                        indexField(child, indexedList, notIndexedList, nodoc);
+                        indexField(child, document, nodoc);
 
                         break;
                     }
 
                     case ATTRIBUTE: {
-                        indexAttribute(child, indexedList, notIndexedList, nodoc);
+                        indexAttribute(child, document, nodoc);
 
                         break;
                     }
 
                     case CONSTANT: {
-                        indexConstant(child, indexedList, notIndexedList, nodoc);
+                        indexConstant(child, document, nodoc);
 
                         break;
                     }
                     }
                 }
 
-                Map<String, String> toDelete = Collections.emptyMap();
-                index.gsfStore(indexedList, notIndexedList, toDelete);
-            } catch (IOException ioe) {
-                Exceptions.printStackTrace(ioe);
+                documents.add(document);
             } finally {
                 docMode = previousDocMode;
             }
         }
 
         private void analyzeTopLevelMethods(List<? extends AstElement> children) {
-            // Add a document
-            Set<Map<String, String>> indexedList = new HashSet<Map<String, String>>();
-            Set<Map<String, String>> notIndexedList = new HashSet<Map<String, String>>();
-
-            // Add indexed info
-            Map<String, String> indexed = new HashMap<String, String>();
-            indexedList.add(indexed);
-
-            Map<String, String> notIndexed = new HashMap<String, String>();
-            notIndexedList.add(notIndexed);
+            IndexDocument document = factory.createDocument(40); // TODO Measure
+            documents.add(document);
 
             String name = "Object";
             String in = null;
             String fqn = "Object";
 
             int flags = 0;
-            notIndexed.put(FIELD_CLASS_ATTRS, IndexedElement.flagToString(flags));
-            indexed.put(FIELD_FQN_NAME, fqn);
-            indexed.put(FIELD_CASE_INSENSITIVE_CLASS_NAME, name.toLowerCase());
-            indexed.put(FIELD_CLASS_NAME, name);
-            addRequire(indexed);
+            document.addPair(FIELD_CLASS_ATTRS, IndexedElement.flagToString(flags), false);
+            document.addPair(FIELD_FQN_NAME, fqn, true);
+            document.addPair(FIELD_CASE_INSENSITIVE_CLASS_NAME, name.toLowerCase(), true);
+            document.addPair(FIELD_CLASS_NAME, name, true);
+            addRequire(document);
             if (requires != null) {
-                notIndexed.put(FIELD_REQUIRES, requires);
+                document.addPair(FIELD_REQUIRES, requires, false);
             }
-
-            // Indexed so we can locate these documents when deleting/updating
-            indexed.put(FIELD_FILENAME, url);
 
             // TODO - find a way to combine all these methods (from this file) into a single item
             
             // Add the fields, etc.. Recursively add the children classes or modules if any
             for (AstElement child : children) {
                 assert child.getKind() == ElementKind.CONSTRUCTOR || child.getKind() == ElementKind.METHOD;
-                indexMethod(child, indexedList, notIndexedList, true, false);
+                indexMethod(child, document, true, false);
                 // XXX what about fields, constants, attributes?
-            }
-
-            try {
-                Map<String, String> toDelete = Collections.emptyMap();
-                index.gsfStore(indexedList, notIndexedList, toDelete);
-            } catch (IOException ioe) {
-                Exceptions.printStackTrace(ioe);
             }
         }
         
-        private void indexMethod(AstElement child, Set<Map<String, String>> indexedList,
-            Set<Map<String, String>> notIndexedList, boolean topLevel, boolean nodoc) {
-            Map<String, String> ru;
-            ru = new HashMap<String, String>();
-
+        private void indexMethod(AstElement child, IndexDocument document, boolean topLevel, boolean nodoc) {
             MethodDefNode childNode = (MethodDefNode)child.getNode();
             String signature = AstUtilities.getDefSignature(childNode);
             Set<Modifier> modifiers = child.getModifiers();
@@ -1411,7 +1291,7 @@ public class RubyIndexer implements Indexer {
                 }
             }
 
-            ru.put(FIELD_METHOD_NAME, signature);
+            document.addPair(FIELD_METHOD_NAME, signature, true);
 
             // Storing a lowercase method name is kinda pointless in
             // Ruby because the convention is to use all lowercase characters
@@ -1420,9 +1300,6 @@ public class RubyIndexer implements Indexer {
             //ru.put(FIELD_CASE_INSENSITIVE_METHOD_NAME, name.toLowerCase());
             if (child.getName().equals("initialize")) {
                 // Create static method alias "new"; rdoc also seems to do this
-                Map<String, String> ru2;
-                ru2 = new HashMap<String, String>();
-                indexedList.add(ru2);
 
                 // Change signature
                 // TODO - don't do this for methods annotated :notnew: 
@@ -1441,19 +1318,11 @@ public class RubyIndexer implements Indexer {
                         signature = (signature.substring(0, attributeIndex+1) + first) + second + signature.substring(attributeIndex+3);
                     }
                 }
-                ru2.put(FIELD_METHOD_NAME, signature);
+                document.addPair(FIELD_METHOD_NAME, signature, true);
             }
-
-            indexedList.add(ru);
         }
 
-        private void indexAttribute(AstElement child, Set<Map<String, String>> indexedList,
-            Set<Map<String, String>> notIndexedList, boolean nodoc) {
-            Map<String, String> ru;
-            ru = new HashMap<String, String>();
-            indexedList.add(ru);
-
-            
+        private void indexAttribute(AstElement child, IndexDocument document, boolean nodoc) {
             String attribute = child.getName();
 
             boolean isDocumented = isDocumented(child.getNode());
@@ -1470,30 +1339,20 @@ public class RubyIndexer implements Indexer {
                 attribute = attribute + (";" + first) + second;
             }
             
-            ru.put(FIELD_ATTRIBUTE_NAME, attribute);
+            document.addPair(FIELD_ATTRIBUTE_NAME, attribute, true);
         }
 
-        private void indexConstant(AstElement child, Set<Map<String, String>> indexedList,
-            Set<Map<String, String>> notIndexedList, boolean nodoc) {
-            Map<String, String> ru;
-            ru = new HashMap<String, String>();
-            indexedList.add(ru);
-
+        private void indexConstant(AstElement child, IndexDocument document, boolean nodoc) {
             int flags = 0; // TODO
             if (nodoc) {
                 flags |= IndexedElement.NODOC;
             }
 
             // TODO - add the RHS on the right
-            ru.put(FIELD_CONSTANT_NAME, child.getName());
+            document.addPair(FIELD_CONSTANT_NAME, child.getName(), true);
         }
 
-        private void indexField(AstElement child, Set<Map<String, String>> indexedList,
-            Set<Map<String, String>> notIndexedList, boolean nodoc) {
-            Map<String, String> ru;
-            ru = new HashMap<String, String>();
-            indexedList.add(ru);
-
+        private void indexField(AstElement child, IndexDocument document, boolean nodoc) {
             String signature = child.getName();
             int flags = getModifiersFlag(child.getModifiers());
             if (nodoc) {
@@ -1509,7 +1368,7 @@ public class RubyIndexer implements Indexer {
             }
 
             // TODO - gather documentation on fields? naeh
-            ru.put(FIELD_FIELD_NAME, signature);
+            document.addPair(FIELD_FIELD_NAME, signature, true);
         }
 
         private int getDocumentSize(Node node) {
@@ -1542,7 +1401,7 @@ public class RubyIndexer implements Indexer {
             return false;
         }
 
-        private void addRequire(Map<String, String> ru) {
+        private void addRequire(IndexDocument document) {
             // Don't generate "require" clauses for anything in generated ruby;
             // these classes are all built in and do not require any includes
             // (besides, the file names are bogus - they are just derived from
@@ -1561,9 +1420,29 @@ public class RubyIndexer implements Indexer {
             if (relative != null) {
                 if (relative.endsWith(".rb")) { // NOI18N
                     relative = relative.substring(0, relative.length() - 3);
-                    ru.put(FIELD_REQUIRE, relative);
+                    document.addPair(FIELD_REQUIRE, relative, true);
                 }
             }
         }
+    }
+
+    private static FileObject preindexedDb;
+
+    
+    /** For testing only */
+    public static void setPreindexedDb(FileObject preindexedDb) {
+        RubyIndexer.preindexedDb = preindexedDb;
+    }
+    
+    public FileObject getPreindexedDb() {
+        if (preindexedDb == null) {
+            File preindexed = InstalledFileLocator.getDefault().locate(
+                    "preindexed", "org.netbeans.modules.ruby", false); // NOI18N
+            if (preindexed == null || !preindexed.isDirectory()) {
+                throw new RuntimeException("Can't locate preindexed directory. Installation might be damaged"); // NOI18N
+            }
+            preindexedDb = FileUtil.toFileObject(preindexed);
+        }
+        return preindexedDb;
     }
 }

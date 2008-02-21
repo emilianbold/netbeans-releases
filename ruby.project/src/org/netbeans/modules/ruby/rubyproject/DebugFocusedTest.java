@@ -45,7 +45,7 @@ import javax.swing.AbstractAction;
 import javax.swing.text.JTextComponent;
 import org.netbeans.modules.ruby.NbUtilities;
 import org.openide.util.NbBundle;
-import org.netbeans.api.gsf.EditorAction;
+import org.netbeans.fpi.gsf.EditorAction;
 
 /**
  * Debug the current focused test or spec (test under caret)

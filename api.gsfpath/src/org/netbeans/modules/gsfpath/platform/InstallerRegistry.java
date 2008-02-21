@@ -44,13 +44,13 @@ package org.netbeans.modules.gsfpath.platform;
 import java.io.IOException;
 import java.lang.ref.*;
 import java.util.*;
-import org.netbeans.spi.gsfpath.platform.CustomPlatformInstall;
-import org.netbeans.spi.gsfpath.platform.GeneralPlatformInstall;
+import org.netbeans.sfpi.gsfpath.platform.CustomPlatformInstall;
+import org.netbeans.sfpi.gsfpath.platform.GeneralPlatformInstall;
 
 import org.openide.cookies.InstanceCookie;
 import org.openide.filesystems.*;
 import org.openide.loaders.*;
-import org.netbeans.spi.gsfpath.platform.PlatformInstall;
+import org.netbeans.sfpi.gsfpath.platform.PlatformInstall;
 import org.openide.util.NbCollections;
 
 /**
@@ -60,7 +60,7 @@ import org.openide.util.NbCollections;
  * @author Svata Dedic
  */
 public class InstallerRegistry {
-    static final String INSTALLER_REGISTRY_FOLDER = "org-netbeans-api-gsfpath/platform/installers"; // NOI18N
+    static final String INSTALLER_REGISTRY_FOLDER = "org-netbeans-fpi-gsfpath/platform/installers"; // NOI18N
     
     static Reference<InstallerRegistry> defaultInstance = new WeakReference<InstallerRegistry>(null);
     

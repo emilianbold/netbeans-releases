@@ -61,7 +61,7 @@ import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreeModel;
-import org.netbeans.api.gsf.CompilationInfo;
+import org.netbeans.fpi.gsf.CompilationInfo;
 import org.netbeans.modules.ruby.hints.options.HintsSettings;
 import org.openide.cookies.InstanceCookie;
 import org.openide.filesystems.FileObject;

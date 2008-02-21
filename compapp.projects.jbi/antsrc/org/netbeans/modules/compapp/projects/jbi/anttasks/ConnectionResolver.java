@@ -436,18 +436,18 @@ public class ConnectionResolver implements CasaConstants {
                     Connection con = new Connection(c, p);
                     
                     if (!isInConnectionList(connectionList, con)) {
-                    // update bc's connection list..
-                    String cBcName = endpointID2BCName.get(cID);
-                    if (cBcName != null) {
-                        addConnection(con, true, cBcName);
-                    }
-                    String pBcName = endpointID2BCName.get(pID);
-                    if (pBcName != null) {
-                        addConnection(con, false, pBcName);
-                    }
+                        // update bc's connection list..
+                        String cBcName = endpointID2BCName.get(cID);
+                        if (cBcName != null) {
+                            addConnection(con, true, cBcName);
+                        }
+                        String pBcName = endpointID2BCName.get(pID);
+                        if (pBcName != null) {
+                            addConnection(con, false, pBcName);
+                        }
                     
-                    if (cBcName == null && pBcName == null) {
-                        addConnection(con);
+                        if (cBcName == null && pBcName == null) {
+                            addConnection(con);
                         }
                     }
                 }
