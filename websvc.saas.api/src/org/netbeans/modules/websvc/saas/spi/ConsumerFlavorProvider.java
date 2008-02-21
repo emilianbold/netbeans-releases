@@ -44,7 +44,7 @@ import org.openide.nodes.Node;
  */
 public interface ConsumerFlavorProvider {
     
-    public static final DataFlavor WSDL_SERVICE_FLAVOR = new DataFlavor(WsdlSaas.class, "SaaS WSDL Port"); //NOI18N
+    public static final DataFlavor WSDL_SERVICE_FLAVOR = new DataFlavor(WsdlSaas.class, "SaaS WSDL Service"); //NOI18N
     public static final DataFlavor WSDL_SERVICE_NODE_FLAVOR = new DataFlavor(Node.class, "SaaS WSDL Service Node"); //NOI18N
     public static final DataFlavor PORT_FLAVOR = new DataFlavor(WsdlSaasPort.class, "SaaS WSDL Port"); //NOI18N
     public static final DataFlavor PORT_NODE_FLAVOR = new DataFlavor(Node.class, "SaaS WSDL Port Node"); //NOI18N

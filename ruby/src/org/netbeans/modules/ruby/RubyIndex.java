@@ -43,7 +43,6 @@ package org.netbeans.modules.ruby;
 import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -57,10 +56,10 @@ import java.util.Set;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
 
-import org.netbeans.api.gsf.Index;
+import org.netbeans.fpi.gsf.Index;
 import org.netbeans.modules.ruby.elements.IndexedField;
-import static org.netbeans.api.gsf.Index.*;
-import org.netbeans.api.gsf.NameKind;
+import static org.netbeans.fpi.gsf.Index.*;
+import org.netbeans.fpi.gsf.NameKind;
 import org.netbeans.api.ruby.platform.RubyPlatform;
 import org.netbeans.api.ruby.platform.RubyPlatformManager;
 import org.netbeans.modules.ruby.elements.IndexedClass;
@@ -79,6 +78,7 @@ import org.openide.util.Exceptions;
  * @todo Store signature attributes for methods: private/protected?, documented?, returntype?
  * @todo When there are multiple method/field definitions, pick access level from one which sets it
  * @todo I do case-sensitive startsWith filtering here which is probably not good
+ * @todo Abort when search list .size() > N
  * 
  * @author Tor Norbye
  */
@@ -109,7 +109,7 @@ public final class RubyIndex {
 
     private boolean search(String key, String name, NameKind kind, Set<SearchResult> result) {
         try {
-            index.gsfSearch(key, name, kind, ALL_SCOPE, result);
+            index.search(key, name, kind, ALL_SCOPE, result, null);
 
             return true;
         } catch (IOException ioe) {
@@ -122,7 +122,7 @@ public final class RubyIndex {
     private boolean search(String key, String name, NameKind kind, Set<SearchResult> result,
         Set<SearchScope> scope) {
         try {
-            index.gsfSearch(key, name, kind, scope, result);
+            index.search(key, name, kind, scope, result, null);
 
             return true;
         } catch (IOException ioe) {
@@ -544,8 +544,9 @@ public final class RubyIndex {
         } else if ((module != null) && (module.length() > 0)) {
             clz = module + "::" + clz;
         }
-
-        String fileUrl = map.getValue(RubyIndexer.FIELD_FILENAME);
+        
+        String fileUrl = map.getPersistentUrl();
+        
         String fqn = map.getValue(RubyIndexer.FIELD_FQN_NAME);
         String require = map.getValue(RubyIndexer.FIELD_REQUIRE);
 
@@ -582,7 +583,8 @@ public final class RubyIndex {
             clz = module + "::" + clz;
         }
 
-        String fileUrl = map.getValue(RubyIndexer.FIELD_FILENAME);
+        String fileUrl = map.getPersistentUrl();
+
         String fqn = map.getValue(RubyIndexer.FIELD_FQN_NAME);
         String require = map.getValue(RubyIndexer.FIELD_REQUIRE);
 
@@ -612,7 +614,7 @@ public final class RubyIndex {
 
         // TODO - how do I determine -which- file to associate with the file?
         // Perhaps the one that defines initialize() ?
-        String fileUrl = map.getValue(RubyIndexer.FIELD_FILENAME);
+        String fileUrl = map.getPersistentUrl();
 
         if (clz == null) {
             clz = map.getValue(RubyIndexer.FIELD_CLASS_NAME);
@@ -1103,7 +1105,8 @@ public final class RubyIndex {
 
             String version = map.getValue(RubyIndexer.FIELD_DB_VERSION);
             assert tableName.equals(map.getValue(RubyIndexer.FIELD_DB_TABLE));
-            String fileUrl = map.getValue(RubyIndexer.FIELD_FILENAME);
+            String fileUrl = map.getPersistentUrl();
+            
             TableDefinition def = new TableDefinition(tableName, version, fileUrl);
             tableDefs.add(def);
             String[] columns = map.getValues(RubyIndexer.FIELD_DB_COLUMN);
@@ -1672,7 +1675,7 @@ public final class RubyIndex {
 
         // TODO Prune methods to fit my scheme - later make lucene index smarter about how to prune its index search
         for (SearchResult map : result) {
-            String file = map.getValue(RubyIndexer.FIELD_FILENAME);
+            String file = map.getPersistentUrl();
 
             if (file != null) {
                 return file;

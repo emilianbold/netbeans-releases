@@ -48,10 +48,10 @@ import java.util.Set;
 import java.util.StringTokenizer;
 import javax.swing.ImageIcon;
 
-import org.netbeans.api.gsf.Element;
-import org.netbeans.api.gsf.ElementKind;
-import org.netbeans.api.gsf.HtmlFormatter;
-import org.netbeans.api.gsf.Modifier;
+import org.netbeans.fpi.gsf.Element;
+import org.netbeans.fpi.gsf.ElementKind;
+import org.netbeans.fpi.gsf.HtmlFormatter;
+import org.netbeans.fpi.gsf.Modifier;
 import org.netbeans.modules.php.doc.FunctionDoc;
 
 /**
@@ -78,7 +78,7 @@ class BuiltinMethodItem extends CompletionItem {
 
 
     /* (non-Javadoc)
-     * @see org.netbeans.api.gsf.CompletionProposal#getIcon()
+     * @see org.netbeans.fpi.gsf.CompletionProposal#getIcon()
      */
     public ImageIcon getIcon() {
         // TODO An Icon for User Defined Method is required.
@@ -86,7 +86,7 @@ class BuiltinMethodItem extends CompletionItem {
     }
 
     /* (non-Javadoc)
-     * @see org.netbeans.api.gsf.CompletionProposal#getInsertParams()
+     * @see org.netbeans.fpi.gsf.CompletionProposal#getInsertParams()
      */
     @Override
     public List<String> getInsertParams() {
@@ -110,21 +110,21 @@ class BuiltinMethodItem extends CompletionItem {
     }
 
     /* (non-Javadoc)
-     * @see org.netbeans.api.gsf.CompletionProposal#getInsertPrefix()
+     * @see org.netbeans.fpi.gsf.CompletionProposal#getInsertPrefix()
      */
     public String getInsertPrefix() {
         return myFunction.getName();
     }
 
     /* (non-Javadoc)
-     * @see org.netbeans.api.gsf.CompletionProposal#getKind()
+     * @see org.netbeans.fpi.gsf.CompletionProposal#getKind()
      */
     public ElementKind getKind() {
         return ElementKind.METHOD;
     }
 
     /* (non-Javadoc)
-     * @see org.netbeans.api.gsf.CompletionProposal#getLhsHtml()
+     * @see org.netbeans.fpi.gsf.CompletionProposal#getLhsHtml()
      */
     public String getLhsHtml() {
         HtmlFormatter formatter = getFormatter();
@@ -159,7 +159,7 @@ class BuiltinMethodItem extends CompletionItem {
     }
 
     /* (non-Javadoc)
-     * @see org.netbeans.api.gsf.CompletionProposal#getModifiers()
+     * @see org.netbeans.fpi.gsf.CompletionProposal#getModifiers()
      */
     public Set<Modifier> getModifiers() {
         // TODO Auto-generated method stub
@@ -167,21 +167,21 @@ class BuiltinMethodItem extends CompletionItem {
     }
 
     /* (non-Javadoc)
-     * @see org.netbeans.api.gsf.CompletionProposal#getName()
+     * @see org.netbeans.fpi.gsf.CompletionProposal#getName()
      */
     public String getName() {
         return myFunction.getName();
     }
 
     /* (non-Javadoc)
-     * @see org.netbeans.api.gsf.CompletionProposal#getRhsHtml()
+     * @see org.netbeans.fpi.gsf.CompletionProposal#getRhsHtml()
      */
     public String getRhsHtml() {
         return myFunction.getReturnType();
     }
 
     /* (non-Javadoc)
-     * @see org.netbeans.api.gsf.CompletionProposal#isSmart()
+     * @see org.netbeans.fpi.gsf.CompletionProposal#isSmart()
      */
     public boolean isSmart() {
         return true;
@@ -237,7 +237,7 @@ class BuiltinMethodItem extends CompletionItem {
     }
 
     /* (non-Javadoc)
-     * @see org.netbeans.api.gsf.CompletionProposal#getElement()
+     * @see org.netbeans.fpi.gsf.CompletionProposal#getElement()
      */
     @Override
     public Element getElement() {
