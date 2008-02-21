@@ -18,6 +18,7 @@
  */
 package org.netbeans.modules.bpel.nodes;
 
+import org.netbeans.modules.bpel.nodes.BpelNode;
 import java.util.List;
 import org.netbeans.modules.bpel.editors.api.nodes.NodeType;
 import org.openide.nodes.Children;
