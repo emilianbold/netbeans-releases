@@ -285,14 +285,6 @@ implements LookupListener {
         StartLog.logEnd("setURLs"); // NOI18N
     }
     
-    /** Layers are OK when its cache is OK.
-     * 
-     * @return true if layers are already OK
-     */
-    public boolean isLayersOK() {
-        return Stamps.getModulesJARs().exists(manager.cacheLocation());
-    }
-    
     /** Adds few URLs.
      */
     public void addURLs(Collection<URL> urls) throws Exception {
