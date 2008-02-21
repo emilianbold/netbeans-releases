@@ -3,18 +3,13 @@
 Document 0
 Delete:  source : <TESTURL>/action_controller.rb
 
-Indexed:
-
-Not Indexed:
 
 
 Document 1
-Delete:
 Indexed:
   class : Base
   class-ig : base
   fqn : ActionController::Base
-  source : <TESTURL>/action_controller.rb
 
 Not Indexed:
   attrs : |CLASS|

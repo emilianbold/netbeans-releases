@@ -336,9 +336,13 @@ public class XPathTreeCompiler implements Compiler {
         case 27: return CoreFunctionType.FUNC_ROUND;
         //
         // WRONG Functions
-        case 28: return CoreFunctionType.FUNC_NULL;
-        case 29: return CoreFunctionType.FUNC_KEY;
-        case 30: return CoreFunctionType.FUNC_FORMAT_NUMBER;
+// COMMENTED BECAUSE THE RUNTIME DOESN'T SUPPORT THEM!
+//        case 28: return CoreFunctionType.FUNC_NULL;
+//        case 29: return CoreFunctionType.FUNC_KEY;
+//        case 30: return CoreFunctionType.FUNC_FORMAT_NUMBER;
+        case 28: 
+        case 29: 
+        case 30: return null;
         }
         //
         assert true : "Unknown Core Function";

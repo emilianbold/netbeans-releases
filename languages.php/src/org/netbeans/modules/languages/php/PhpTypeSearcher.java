@@ -43,11 +43,11 @@ package org.netbeans.modules.languages.php;
 /*import java.util.EnumSet;
 import java.util.Set;
 
-import org.netbeans.api.gsf.Index;
-import org.netbeans.api.gsf.NameKind;
-import org.netbeans.api.gsf.TypeSearcher;
-import org.netbeans.api.gsf.Index.SearchScope;
-import org.netbeans.api.gsf.TypeSearcher.GsfTypeDescriptor;*/
+import org.netbeans.fpi.gsf.Index;
+import org.netbeans.fpi.gsf.NameKind;
+import org.netbeans.fpi.gsf.TypeSearcher;
+import org.netbeans.fpi.gsf.Index.SearchScope;
+import org.netbeans.fpi.gsf.TypeSearcher.GsfTypeDescriptor;*/
 
 
 /**
@@ -57,7 +57,7 @@ import org.netbeans.api.gsf.TypeSearcher.GsfTypeDescriptor;*/
 public class PhpTypeSearcher {//implements TypeSearcher {
 
     /* (non-Javadoc)
-     * @see org.netbeans.api.gsf.TypeSearcher#getDeclaredTypes(org.netbeans.api.gsf.Index, java.lang.String, org.netbeans.api.gsf.NameKind, java.util.EnumSet, org.netbeans.api.gsf.TypeSearcher.Helper)
+     * @see org.netbeans.fpi.gsf.TypeSearcher#getDeclaredTypes(org.netbeans.fpi.gsf.Index, java.lang.String, org.netbeans.fpi.gsf.NameKind, java.util.EnumSet, org.netbeans.fpi.gsf.TypeSearcher.Helper)
      */
     /*public Set<? extends GsfTypeDescriptor> getDeclaredTypes( Index index,
             String textForQuery, NameKind kind, EnumSet<SearchScope> scope,

@@ -43,6 +43,7 @@ import java.io.IOException;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Collections;
+import org.netbeans.modules.websvc.saas.model.jaxb.Group;
 import org.netbeans.modules.websvc.saas.model.jaxb.Method;
 import org.netbeans.modules.websvc.saas.model.jaxb.SaasServices;
 import org.netbeans.modules.websvc.saas.model.jaxb.SaasServices.Header;
@@ -173,12 +174,16 @@ public class Saas {
      * Asynchronous call to transition Saas to READY state; mainly for UI usage
      * Sub-class need to completely override as needed, without calling super().
      */
-    public void toStateReady() {
-        RequestProcessor.getDefault().post(new Runnable() {
-            public void run() {
-                setState(State.RESOLVED);
-            }
-        });
+    public void toStateReady(boolean synchronous) {
+        if (synchronous) {
+            setState(state);
+        } else {
+            RequestProcessor.getDefault().post(new Runnable() {
+                public void run() {
+                    setState(State.RESOLVED);
+                }
+            });
+        }
     }
     
     public FileObject getModuleJar() {

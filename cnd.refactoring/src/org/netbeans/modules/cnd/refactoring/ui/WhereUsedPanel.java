@@ -487,6 +487,8 @@ searchInComments.addItemListener(new java.awt.event.ItemListener() {
 
     add(commentsPanel, java.awt.BorderLayout.NORTH);
 
+    scopeLabel.setDisplayedMnemonic(org.openide.util.NbBundle.getMessage(WhereUsedPanel.class, "LBL_Scope_MNEM").charAt(0));
+    scopeLabel.setLabelFor(scope);
     scopeLabel.setText(org.openide.util.NbBundle.getMessage(WhereUsedPanel.class, "LBL_Scope")); // NOI18N
 
     scope.addActionListener(new java.awt.event.ActionListener() {
@@ -503,7 +505,7 @@ searchInComments.addItemListener(new java.awt.event.ItemListener() {
             .addContainerGap()
             .add(scopeLabel)
             .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-            .add(scope, 0, 287, Short.MAX_VALUE)
+            .add(scope, 0, 283, Short.MAX_VALUE)
             .addContainerGap())
     );
     scopePanelLayout.setVerticalGroup(

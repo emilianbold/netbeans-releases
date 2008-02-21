@@ -49,8 +49,6 @@ import org.jruby.ast.ClassVarAsgnNode;
 import org.jruby.ast.ClassVarDeclNode;
 import org.jruby.ast.ClassVarNode;
 import org.jruby.ast.Colon2Node;
-import org.jruby.ast.ConstDeclNode;
-import org.jruby.ast.ConstNode;
 import org.jruby.ast.GlobalAsgnNode;
 import org.jruby.ast.GlobalVarNode;
 import org.jruby.ast.InstAsgnNode;
@@ -59,11 +57,10 @@ import org.jruby.ast.MethodDefNode;
 import org.jruby.ast.Node;
 import org.jruby.ast.SymbolNode;
 import org.jruby.ast.types.INameNode;
-import org.netbeans.api.gsf.CancellableTask;
-import org.netbeans.api.gsf.Element;
-import org.netbeans.api.gsf.ElementKind;
-import org.netbeans.api.gsf.Error;
-import org.netbeans.api.gsf.Severity;
+import org.netbeans.fpi.gsf.CancellableTask;
+import org.netbeans.fpi.gsf.ElementKind;
+import org.netbeans.fpi.gsf.Error;
+import org.netbeans.fpi.gsf.Severity;
 import org.netbeans.napi.gsfret.source.ClasspathInfo;
 import org.netbeans.napi.gsfret.source.CompilationController;
 import org.netbeans.napi.gsfret.source.ModificationResult.Difference;
@@ -82,7 +79,6 @@ import org.netbeans.modules.ruby.StructureAnalyzer.AnalysisResult;
 import org.netbeans.modules.ruby.elements.AstElement;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.loaders.DataObject;
 import org.openide.text.CloneableEditorSupport;
 import org.openide.util.Exceptions;
 import org.openide.util.Exceptions;
@@ -102,9 +98,9 @@ import org.jruby.ast.LocalVarNode;
 import org.jruby.ast.ModuleNode;
 import org.jruby.ast.NodeTypes;
 import org.jruby.ast.SClassNode;
-import org.netbeans.api.gsf.CancellableTask;
-import org.netbeans.api.gsf.ElementKind;
-import org.netbeans.api.gsf.OffsetRange;
+import org.netbeans.fpi.gsf.CancellableTask;
+import org.netbeans.fpi.gsf.ElementKind;
+import org.netbeans.fpi.gsf.OffsetRange;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenId;
@@ -126,9 +122,8 @@ import org.netbeans.modules.ruby.RubyUtils;
 import org.openide.filesystems.FileObject;
 import org.netbeans.modules.refactoring.spi.RefactoringElementsBag;
 import org.netbeans.modules.ruby.RubyParseResult;
-import org.netbeans.modules.ruby.StructureAnalyzer;
+import org.netbeans.modules.ruby.elements.Element;
 import org.netbeans.modules.ruby.lexer.LexUtilities;
-import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.text.PositionRef;
 import org.openide.util.NbBundle;
 
@@ -179,7 +174,7 @@ public class RenameRefactoringPlugin extends RubyRefactoringPlugin {
                         co.toPhase(org.netbeans.napi.gsfret.source.Phase.RESOLVED);
                         org.jruby.ast.Node root = AstUtilities.getRoot(co);
                         if (root != null) {
-                            RubyParseResult rpr = (RubyParseResult)co.getParserResult();
+                            RubyParseResult rpr = AstUtilities.getParseResult(co);
                             if (rpr != null) {
                                 AnalysisResult ar = rpr.getStructure();
                                 List<? extends AstElement> els = ar.getElements();
@@ -809,7 +804,7 @@ public class RenameRefactoringPlugin extends RubyRefactoringPlugin {
                     int start = 0;
                     int end = 0;
                     String desc = NbBundle.getMessage(RenameRefactoringPlugin.class, "ParseErrorFile", oldName);
-                    List<Error> errors = workingCopy.getDiagnostics();
+                    List<Error> errors = workingCopy.getErrors();
                     if (errors.size() > 0) {
                         for (Error e : errors) {
                             if (e.getSeverity() == Severity.ERROR) {
@@ -828,7 +823,7 @@ public class RenameRefactoringPlugin extends RubyRefactoringPlugin {
                         }
 
                         desc = desc + "; " + errorMsg;
-                        start = error.getStartPosition().getOffset();
+                        start = error.getStartPosition();
                         start = LexUtilities.getLexerOffset(workingCopy, start);
                         if (start == -1) {
                             start = 0;
@@ -1040,7 +1035,6 @@ public class RenameRefactoringPlugin extends RubyRefactoringPlugin {
                 // I don't want to pick up the ArgumentNode under def foo that corresponds to the
                 // "foo" method name!
                 if (((ArgumentNode)node).getName().equals(name)) {
-                    RubyElementCtx matchCtx = new RubyElementCtx(fileCtx, node);
                     rename(node, name, null, getString("RenameParam"));
                 }
                 break;
@@ -1048,14 +1042,12 @@ public class RenameRefactoringPlugin extends RubyRefactoringPlugin {
 //            } else if (node instanceof AliasNode) { 
 //                AliasNode an = (AliasNode)node;
 //                if (an.getNewName().equals(name) || an.getOldName().equals(name)) {
-//                    RubyElementCtx matchCtx = new RubyElementCtx(fileCtx, node);
 //                    elements.add(refactoring, WhereUsedElement.create(matchCtx));
 //                }
 //                break;
             case NodeTypes.LOCALVARNODE:
             case NodeTypes.LOCALASGNNODE:
                 if (((INameNode)node).getName().equals(name)) {
-                    RubyElementCtx matchCtx = new RubyElementCtx(fileCtx, node);
                     rename(node, name, null, getString("UpdateLocalvar"));
                 }
                 break;
@@ -1065,14 +1057,12 @@ public class RenameRefactoringPlugin extends RubyRefactoringPlugin {
                     // Found a method call match
                     // TODO - make a node on the same line
                     // TODO - check arity - see OccurrencesFinder
-                    RubyElementCtx matchCtx = new RubyElementCtx(fileCtx, node);
                     rename(node, name, null, getString("UpdateDynvar"));
                  }                 
                  break;
             case NodeTypes.SYMBOLNODE:
                 // XXX Can I have symbols to local variables? Try it!!!
                 if (((SymbolNode)node).getName().equals(name)) {
-                    RubyElementCtx matchCtx = new RubyElementCtx(fileCtx, node);
                     rename(node, name, null, getString("UpdateSymbol"));
                 }
                 break;

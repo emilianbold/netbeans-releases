@@ -40,8 +40,8 @@
  */
 package org.netbeans.modules.gsfpath.classpath;
 
-import org.netbeans.api.gsfpath.classpath.ClassPath;
-import org.netbeans.spi.gsfpath.classpath.ClassPathImplementation;
+import org.netbeans.fpi.gsfpath.classpath.ClassPath;
+import org.netbeans.sfpi.gsfpath.classpath.ClassPathImplementation;
 
 
 public abstract class ClassPathAccessor {

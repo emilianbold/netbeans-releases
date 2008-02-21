@@ -51,6 +51,7 @@ import javax.swing.event.DocumentListener;
 import javax.swing.event.DocumentEvent;
 import org.netbeans.modules.ruby.platform.PlatformComponentFactory;
 import org.netbeans.modules.ruby.platform.RubyPlatformCustomizer;
+import org.netbeans.modules.ruby.rubyproject.Util;
 import org.openide.WizardDescriptor;
 import org.openide.WizardValidationException;
 import org.openide.util.NbBundle;
@@ -65,6 +66,7 @@ public final class PanelOptionsVisual extends SettingsPanel implements ActionLis
     
     public PanelOptionsVisual(PanelConfigureProject panel, int type) {
         initComponents();
+        Util.preselectWizardPlatform(platforms);
         this.panel = panel;
         fireChangeEvent();
         
@@ -109,6 +111,11 @@ public final class PanelOptionsVisual extends SettingsPanel implements ActionLis
         });
     }
 
+    public @Override void removeNotify() {
+        Util.storeWizardPlatform(platforms);
+        super.removeNotify();
+    }
+    
     public void actionPerformed( ActionEvent e ) {        
         if ( e.getSource() == createMainCheckBox ) {
             lastMainClassCheck = createMainCheckBox.isSelected();
@@ -237,8 +244,6 @@ public final class PanelOptionsVisual extends SettingsPanel implements ActionLis
     }
     
     void read(WizardDescriptor d) {
-        // XXX
-//        RubyInstallation.getInstance().addPropertyChangeListener(this);
     }
     
     void validate (WizardDescriptor d) throws WizardValidationException {
@@ -248,11 +253,11 @@ public final class PanelOptionsVisual extends SettingsPanel implements ActionLis
     void store( WizardDescriptor d ) {
         d.putProperty( /*XXX Define somewhere */ "setAsMain", setAsMainCheckBox.isSelected() && setAsMainCheckBox.isVisible() ? Boolean.TRUE : Boolean.FALSE ); // NOI18N
         d.putProperty( /*XXX Define somewhere */ "mainClass", createMainCheckBox.isSelected() && createMainCheckBox.isVisible() ? mainClassTextField.getText() : null ); // NOI18N
-        d.putProperty("platform", platforms.getModel().getSelectedItem());
+        d.putProperty("platform", PlatformComponentFactory.getPlatform(platforms));
         // XXX
 //        RubyInstallation.getInstance().removePropertyChangeListener(this);
     }
-    
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JCheckBox createMainCheckBox;
     private javax.swing.JTextField mainClassTextField;
