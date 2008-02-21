@@ -83,7 +83,10 @@ public class WadlSaasBean extends GenericResourceBean {
         try {
             Resource[] rArray = m.getResourcePath();
             Resource currResource = rArray[rArray.length-1];
-            String url2 = "";//m.getSaas().getWadlModel().getResources().getBase();
+            String url2 = m.getSaas().getWadlModel().getResources().getBase();
+            if(url2 != null && url2.length() > 1 && url2.endsWith("/")) {
+                url2 = url2.substring(0, url2.length()-1);
+            }
             for(Resource r:rArray) {
                 url2 += "/"+r.getPath();
             }

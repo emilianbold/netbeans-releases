@@ -28,9 +28,9 @@
   ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
   THE POSSIBILITY OF SUCH DAMAGE.
 -->
-<definitions targetNamespace="http://localhost:12100/wsdl/purchase/PurchaseOrderStatus/bp4"
+<definitions targetNamespace="http://localhost:18181/wsdl/purchase/PurchaseOrderStatus/bp4"
              name="POStatus"
-             xmlns:tns="http://localhost:12100/wsdl/purchase/PurchaseOrderStatus/bp4"
+             xmlns:tns="http://localhost:18181/wsdl/purchase/PurchaseOrderStatus/bp4"
              xmlns:vprop="http://docs.oasis-open.org/wsbpel/2.0/varprop"
              xmlns:xsd="http://www.w3.org/2001/XMLSchema"
              xmlns="http://schemas.xmlsoap.org/wsdl/"
@@ -42,7 +42,7 @@
     <import namespace="http://manufacturing.org/wsdl/purchase/bp4"
             location="POService.wsdl"></import>
     <types>
-        <xsd:schema targetNamespace="http://localhost:12100/wsdl/purchase/PurchaseOrderStatus/bp4">
+        <xsd:schema targetNamespace="http://localhost:18181/wsdl/purchase/PurchaseOrderStatus/bp4">
             <xsd:import schemaLocation="purchaseOrder.xsd" namespace="http://manufacturing.org/xsd/purchase"/>
         </xsd:schema>
     </types>
@@ -122,11 +122,11 @@
     <service name="POStatusService">
         <port name="POConfirmPort"
               binding="tns:POConfirmBinding">
-              <soap:address location="http://localhost:12100/wsdl/purchase/PurchaseOrderStatus/Servicelocation/confirm/bp4"/>
+              <soap:address location="http://localhost:18181/wsdl/purchase/PurchaseOrderStatus/Servicelocation/confirm/bp4"/>
         </port>
         <port name="POCancelPort"
               binding="tns:POCancelBinding">
-              <soap:address location="http://localhost:12100/wsdl/purchase/PurchaseOrderStatus/Servicelocation/cancel/bp4"/>
+              <soap:address location="http://localhost:18181/wsdl/purchase/PurchaseOrderStatus/Servicelocation/cancel/bp4"/>
         </port>
     </service>
     <plink:partnerLinkType name="confirmPOLinkType">

@@ -117,17 +117,32 @@ public final class JbiProject implements Project, AntProjectListener, ProjectPro
     /**
      * DOCUMENT ME!
      */
-    public static final String MODULE_INSTALL_NAME = "modules/org-netbeans-modules-compapp-projects-jbi.jar"; // NOI18N
+    //public static final String MODULE_INSTALL_NAME = "modules/org-netbeans-modules-compapp-projects-jbi.jar"; // NOI18N
+    public static final String JAVA_MODULE_INSTALL_NAME = "modules/org-netbeans-modules-junit.jar"; // NOI18N
+    public static final String ENTERPRISE_MODULE_INSTALL_NAME = "modules/org-netbeans-modules-j2ee-sun-appsrv.jar"; // NOI18N
+    public static final String XML_MODULE_INSTALL_NAME = "modules/org-netbeans-modules-xml-wsdl-extensions.jar"; // NOI18N
+    public static final String IDE_MODULE_INSTALL_NAME = "modules/org-netbeans-modules-xml-wsdl-model.jar"; // NOI18N
+    public static final String SOA_MODULE_INSTALL_NAME = "modules/org-netbeans-modules-compapp-projects-jbi.jar"; // NOI18N
     
     /**
      * DOCUMENT ME!
      */
-    public static final String MODULE_INSTALL_CBN = "org.netbeans.modules.compapp.projects.jbi"; // NOI18N
+    //public static final String MODULE_INSTALL_CBN = "org.netbeans.modules.compapp.projects.jbi"; // NOI18N
+    public static final String JAVA_MODULE_INSTALL_CBN = "org.netbeans.modules.junit"; // NOI18N
+    public static final String ENTERPRISE_MODULE_INSTALL_CBN = "org.netbeans.modules.j2ee.sun.api"; // NOI18N
+    public static final String XML_MODULE_INSTALL_CBN = "org.netbeans.modules.xml.wsdl.model.extensions"; // NOI18N
+    public static final String IDE_MODULE_INSTALL_CBN = "org.netbeans.modules.xml.wsdl.model"; // NOI18N
+    public static final String SOA_MODULE_INSTALL_CBN = "org.netbeans.modules.compapp.projects.jbi"; // NOI18N
     
     /**
      * DOCUMENT ME!
      */
-    public static final String MODULE_INSTALL_DIR = "module.install.dir"; // NOI18N
+    //public static final String MODULE_INSTALL_DIR = "module.install.dir"; // NOI18N
+    public static final String JAVA_MODULE_INSTALL_DIR = "java.module.install.dir"; // NOI18N
+    public static final String ENTERPRISE_MODULE_INSTALL_DIR = "enterprise.module.install.dir"; // NOI18N
+    public static final String XML_MODULE_INSTALL_DIR = "xml.module.install.dir"; // NOI18N
+    public static final String IDE_MODULE_INSTALL_DIR = "ide.module.install.dir"; // NOI18N
+    public static final String SOA_MODULE_INSTALL_DIR = "soa.module.install.dir"; // NOI18N
     
     public static final String COMPONENT_INFO_FILE_NAME = "ComponentInformation.xml"; // NOI18N    
     public static final String BINDING_COMPONENT_INFO_FILE_NAME = "BindingComponentInformation.xml"; // NOI18N    
@@ -671,10 +686,36 @@ public final class JbiProject implements Project, AntProjectListener, ProjectPro
                     privateEP.setProperty(
                             "netbeans.user", System.getProperty("netbeans.user")); // NOI18N
                     
-                    File f = InstalledFileLocator.getDefault().locate(
-                            MODULE_INSTALL_NAME, MODULE_INSTALL_CBN, false);                    
+                    InstalledFileLocator installedFileLocator = InstalledFileLocator.getDefault();
+                    
+                    File f = installedFileLocator.locate(
+                            SOA_MODULE_INSTALL_NAME, SOA_MODULE_INSTALL_CBN, false);                    
                     if (f != null) {
-                        privateEP.setProperty(MODULE_INSTALL_DIR, f.getParentFile().getPath());
+                        privateEP.setProperty(SOA_MODULE_INSTALL_DIR, f.getParentFile().getPath());
+                    }
+                    
+                    f = installedFileLocator.locate(
+                            JAVA_MODULE_INSTALL_NAME, JAVA_MODULE_INSTALL_CBN, false);                    
+                    if (f != null) {
+                        privateEP.setProperty(JAVA_MODULE_INSTALL_DIR, f.getParentFile().getPath());
+                    }
+                    
+                    f = installedFileLocator.locate(
+                            XML_MODULE_INSTALL_NAME, XML_MODULE_INSTALL_CBN, false);                    
+                    if (f != null) {
+                        privateEP.setProperty(XML_MODULE_INSTALL_DIR, f.getParentFile().getPath());
+                    }
+                    
+                    f = installedFileLocator.locate(
+                            IDE_MODULE_INSTALL_NAME, IDE_MODULE_INSTALL_CBN, false);                    
+                    if (f != null) {
+                        privateEP.setProperty(IDE_MODULE_INSTALL_DIR, f.getParentFile().getPath());
+                    }
+                    
+                    f = installedFileLocator.locate(
+                            ENTERPRISE_MODULE_INSTALL_NAME, ENTERPRISE_MODULE_INSTALL_CBN, false);                    
+                    if (f != null) {
+                        privateEP.setProperty(ENTERPRISE_MODULE_INSTALL_DIR, f.getParentFile().getPath());
                     }
                     
                     helper.putProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH, privateEP);

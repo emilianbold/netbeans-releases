@@ -560,6 +560,20 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
         return signature;
     }
     
+    public CsmFunction getDeclaration() {
+        return this;
+    }
+    
+    public boolean isOperator() {
+        return getName() != null && getName().toString().startsWith("operator "); // NOI18N
+    }
+    
+    public Collection<CsmScopeElement> getScopeElements() {
+        Collection<CsmScopeElement> l = new ArrayList<CsmScopeElement>();
+        l.addAll(getParameters());
+        return l;
+    }
+    
     private String createSignature() {
         // TODO: this fake implementation for Deimos only!
         // we should resolve parameter types and provide
@@ -681,12 +695,6 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
             output.writeUTF(this.templateSuffix.toString());
         }
         PersistentUtils.writeTemplateParameters(templateParams, output);
-    }
-
-    public Collection<CsmScopeElement> getScopeElements() {
-        Collection<CsmScopeElement> l = new ArrayList<CsmScopeElement>();
-        l.addAll(getParameters());
-        return l;
     }
 
     public FunctionImpl(DataInput input) throws IOException {

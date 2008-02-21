@@ -58,6 +58,11 @@ public interface CsmFunction<T> extends CsmOffsetableDeclaration<T>, CsmScope {
      */
     CsmFunctionDefinition getDefinition();
 
+    /** Returns this function declaration */
+    CsmFunction getDeclaration();
+    
+    boolean isOperator();
+    
     /**
      * Returns true if this class is template, otherwise false.
      * If isTemplate() returns true, this class is an instance of CsmTemplate
