@@ -51,15 +51,15 @@ import org.netbeans.jellytools.modules.j2ee.nodes.J2eeServerNode;
 import org.netbeans.junit.NbTestSuite;
 import org.netbeans.junit.ide.ProjectSupport;
 import org.netbeans.modules.visualweb.gravy.Action;
-import org.netbeans.modules.visualweb.gravy.DocumentOutlineOperator;
 import org.netbeans.modules.visualweb.gravy.EditorOperator;
 import org.netbeans.modules.visualweb.gravy.RaveTestCase;
 import org.netbeans.modules.visualweb.gravy.TestUtils;
 import org.netbeans.modules.visualweb.gravy.Util;
 import org.netbeans.modules.visualweb.gravy.properties.SheetTableOperator;
 import org.netbeans.modules.visualweb.test.components.util.ComponentUtils;
-
 import org.netbeans.modules.visualweb.test.components.util.PaletteHelper;
+
+import static org.netbeans.modules.visualweb.test.components.util.ComponentUtils.selectForm1Component;
 import static org.netbeans.modules.visualweb.gravy.designer.DesignerPaneOperator.switchToDesignerPane;
 import static org.netbeans.modules.visualweb.gravy.designer.DesignerPaneOperator.switchToJSPSource;
 
@@ -181,7 +181,7 @@ public class CompositeComponentsTest extends RaveTestCase {
     public void testMenu() {
         // Add Menu component
         PaletteHelper.COMPOSITE.addComponent("Menu", 50, 50, null);
-        selectComponent("menu1");
+        selectForm1Component("menu1");
         SheetTableOperator sheet = new SheetTableOperator();
         sheet.setTextValue("id", "testMenu");
         sheet.setCheckBoxValue("visible", "true");
@@ -190,7 +190,8 @@ public class CompositeComponentsTest extends RaveTestCase {
         switchToJSPSource();
         assertEditorContains(getEditorOperator("Page1"), new String[]{
                     "<webuijsf:menu ",
-                    " id=\"menu1\""
+                    " id=\"testMenu\"",
+                    " visible=\"true\""
                 });
         switchToDesignerPane();
         deployProject(projectName);
@@ -238,12 +239,6 @@ public class CompositeComponentsTest extends RaveTestCase {
         }
     }
 
-    private void selectComponent(String name) {
-        DocumentOutlineOperator doo = new DocumentOutlineOperator(Util.getMainWindow());
-        doo.getStructTreeOperator();
-        doo.selectComponent(name);
-    }
-    
     private static final String UNDEPLOY_AND_DEPLOY = Bundle.getStringTrimmed(
             "org.netbeans.modules.web.project.ui.Bundle",
             "LBL_RedeployAction_Name");
