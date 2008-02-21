@@ -212,8 +212,16 @@ public final class UI {
   }
 
   public static void a11y(Component component, String a11y) {
-    component.getAccessibleContext().setAccessibleName(a11y);
-    component.getAccessibleContext().setAccessibleDescription(a11y);
+      a11y(component, a11y, a11y);
+  }
+
+  public static void a11y(Component component, String a11yN, String a11yD) {
+    if (a11yN != null) {  
+        component.getAccessibleContext().setAccessibleName(a11yN);
+    }
+    if (a11yD != null) {
+        component.getAccessibleContext().setAccessibleDescription(a11yD);
+    }
   }
 
   public static String i18n(Class clazz, String key) {

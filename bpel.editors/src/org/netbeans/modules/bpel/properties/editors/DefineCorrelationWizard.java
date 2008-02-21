@@ -657,14 +657,17 @@ public class DefineCorrelationWizard implements WizardProperties {
                     String messagePattern = NbBundle.getMessage(ComboBoxRenderer.class, "LBL_ComboBox_Item_Name_Pattern");
                     Object[] messageValues = new Object[] {itemText, ((BpelEntity) value).getElementType().getSimpleName()};
                     if (itemText == null) {
-                        if (value instanceof OnMessage) {
-                            OnMessageActivityComplexName compositeName = 
-                                new OnMessageActivityComplexName((OnMessage) value);
-                            String pickName = compositeName.getPickName(),
-                                   operationName = compositeName.getOperationName();
-                            itemText = compositeName.getActivitySimpleName();
-                            messagePattern = NbBundle.getMessage(ComboBoxRenderer.class, "LBL_ComboBox_OnMessage_Name_Pattern");
-                            messageValues = new Object[] {itemText, pickName, operationName};
+                        if ((value instanceof OnMessage) || (value instanceof OnEvent)) {
+                            BpelEntityComplexName compositeName = (value instanceof OnMessage) ?
+                                new OnMessageComplexName((OnMessage) value) :
+                                new OnEventComplexName((OnEvent) value);
+                            String relatedObjName = compositeName.getMiddleName(),
+                                   operationName = compositeName.getLastName();
+                            itemText = compositeName.getFirstName();
+                            messagePattern = NbBundle.getMessage(ComboBoxRenderer.class, 
+                                (value instanceof OnMessage) ? "LBL_ComboBox_OnMessage_Name_Pattern" : 
+                                "LBL_ComboBox_OnEvent_Name_Pattern");
+                            messageValues = new Object[] {itemText, relatedObjName, operationName};
                         }
                     }
                     ((JLabel) component).setText(MessageFormat.format(messagePattern, messageValues));
@@ -697,7 +700,8 @@ public class DefineCorrelationWizard implements WizardProperties {
                 CorrelationMapperTreeNode topLeftTreeNode = buildCorrelationTree(leftBpelEntity,
                     NbBundle.getMessage(WizardDefineCorrelationPanel.class, 
                     leftBpelEntity instanceof OnMessage ? "LBL_Mapper_Tree_OnMessage_Name_Pattern" : 
-                                                          "LBL_Mapper_Tree_Top_Node_Name_Pattern"));
+                    leftBpelEntity instanceof OnEvent ? "LBL_Mapper_Tree_OnEvent_Name_Pattern" : 
+                    "LBL_Mapper_Tree_Top_Node_Name_Pattern"));
                 leftTreeModel.buildCorrelationMapperTree(topLeftTreeNode);
                 isMapperChanged = true;
             }
@@ -706,7 +710,8 @@ public class DefineCorrelationWizard implements WizardProperties {
                 CorrelationMapperTreeNode topRightTreeNode = buildCorrelationTree(rightBpelEntity,
                     NbBundle.getMessage(WizardDefineCorrelationPanel.class, 
                     rightBpelEntity instanceof OnMessage ? "LBL_Mapper_Tree_OnMessage_Name_Pattern" : 
-                                                           "LBL_Mapper_Tree_Top_Node_Name_Pattern"));
+                    rightBpelEntity instanceof OnEvent ? "LBL_Mapper_Tree_OnEvent_Name_Pattern" : 
+                    "LBL_Mapper_Tree_Top_Node_Name_Pattern"));
                 rightTreeModel.buildCorrelationMapperTree(topRightTreeNode);
                 isMapperChanged = true;
             }
@@ -977,17 +982,21 @@ public class DefineCorrelationWizard implements WizardProperties {
         
         private String getUniqueCorrelationSetName(BaseScope scopeEntity) {
             String baseCorrelationSetName = CORRELATION_SET_NAME_PREFIX;
-            if (mainBpelEntity instanceof OnMessage) {
-                OnMessageActivityComplexName compositeName = 
-                    new OnMessageActivityComplexName((OnMessage) mainBpelEntity);
+            if ((mainBpelEntity instanceof OnMessage) || (mainBpelEntity instanceof OnEvent)) {
+                BpelEntityComplexName compositeName = (mainBpelEntity instanceof OnMessage) ?
+                    new OnMessageComplexName((OnMessage) mainBpelEntity) :
+                    new OnEventComplexName((OnEvent) mainBpelEntity);
                 String 
-                    activityName = compositeName.getActivitySimpleName(),
-                    pickName = compositeName.getPickName(),
-                    operationName = compositeName.getOperationName();
+                    entityName = compositeName.getFirstName(),
+                    relatedObjName = compositeName.getMiddleName(),
+                    operationName = compositeName.getLastName();
                 String
-                    namePattern = NbBundle.getMessage(DefineCorrelationWizard.class, "LBL_Correlation_Set_Name_OnMessage_Pattern");
+                    namePattern = NbBundle.getMessage(DefineCorrelationWizard.class, 
+                    (mainBpelEntity instanceof OnMessage) ? 
+                    "LBL_Correlation_Set_Name_OnMessage_Pattern" :
+                    "LBL_Correlation_Set_Name_OnEvent_Pattern");
                     baseCorrelationSetName += MessageFormat.format(namePattern, 
-                        new Object[] {activityName, pickName, operationName});
+                        new Object[] {entityName, relatedObjName, operationName});
             } else {
                 baseCorrelationSetName += 
                     mainBpelEntity.getAttribute(BpelAttributes.NAME);
@@ -1574,13 +1583,14 @@ public class DefineCorrelationWizard implements WizardProperties {
                 Object[] patternValues = new Object[0]; 
                 try {
                     if (userObj instanceof BpelEntity) {
-                        if (userObj instanceof OnMessage) {
-                            OnMessageActivityComplexName compositeName = 
-                                new OnMessageActivityComplexName((OnMessage) userObj);
-                            userObjectName = compositeName.getActivitySimpleName();
-                            String pickName = compositeName.getPickName(),
-                                   operationName = compositeName.getOperationName();
-                            patternValues = new Object[] {userObjectName, pickName, operationName};
+                        if ((userObj instanceof OnMessage) || (userObj instanceof OnEvent)) {
+                            BpelEntityComplexName compositeName = (userObj instanceof OnMessage) ?
+                                new OnMessageComplexName((OnMessage) userObj) :
+                                new OnEventComplexName((OnEvent) userObj);
+                            userObjectName = compositeName.getFirstName();
+                            String relatedObjName = compositeName.getMiddleName(), // pickName or partnerLinkName
+                                   operationName = compositeName.getLastName();
+                            patternValues = new Object[] {userObjectName, relatedObjName, operationName};
                         } else {
                             userObjectName = ((BpelEntity) userObj).getAttribute(BpelAttributes.NAME);
                             patternValues = new Object[] {userObjectName, ((BpelEntity) userObj).getElementType().getSimpleName()};
@@ -2175,17 +2185,45 @@ class WizardUtils implements WizardConstants {
     }
 }
 //============================================================================//
-class OnMessageActivityComplexName {
-    private String activitySimpleName = "", pickName = "", operationName = "";
+interface BpelEntityComplexName {
+    String getFirstName();
+    String getMiddleName();
+    String getLastName();
+}
+//============================================================================//
+class OnMessageComplexName implements BpelEntityComplexName {
+    private String simpleName = "", pickName = "", operationName = "";
 
-    public OnMessageActivityComplexName(OnMessage onMessageEntity) {
-        activitySimpleName = ((BpelEntity) onMessageEntity).getElementType().getSimpleName();
+    public OnMessageComplexName(OnMessage onMessageEntity) {
+        simpleName = ((BpelEntity) onMessageEntity).getElementType().getSimpleName();
         pickName = ((BpelEntity) onMessageEntity).getParent().getAttribute(BpelAttributes.NAME);
         operationName = ((BpelEntity) onMessageEntity).getAttribute(BpelAttributes.OPERATION);
     }
-    public String getActivitySimpleName() {return activitySimpleName;}
+    public String getSimpleName() {return simpleName;}
     public String getOperationName() {return operationName;}
     public String getPickName() {return pickName;}
+
+    public String getFirstName() {return getSimpleName();}
+    public String getMiddleName() {return getPickName();}
+    public String getLastName() {return getOperationName();}
+}
+//============================================================================//
+class OnEventComplexName implements BpelEntityComplexName {
+    private String simpleName = "", partnerLinkName = "", operationName = "";
+
+    public OnEventComplexName(OnEvent onEventEntity) {
+        simpleName = ((BpelEntity) onEventEntity).getElementType().getSimpleName();
+        partnerLinkName = ((BpelEntity) onEventEntity).getAttribute(
+            BpelAttributes.PARTNER_LINK);
+        operationName = ((BpelEntity) onEventEntity).getAttribute(BpelAttributes.OPERATION);
+    }
+    public String getSimpleName() {return simpleName;}
+    public String getOperationName() {return operationName;}
+    public String getPartnerLinkName() {return partnerLinkName;}
+    
+    public String getFirstName() {return getSimpleName();}
+    public String getMiddleName() {return getPartnerLinkName();}
+    public String getLastName() {return getOperationName();}
 }
 //============================================================================//
 interface WizardConstants {

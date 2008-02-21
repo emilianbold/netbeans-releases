@@ -50,8 +50,6 @@
         <ant dir="../websvc.restapi"/>
         <ant dir="../websvc.rest"/>
         <ant dir="../websvc.rest.samples"/>
-        <ant dir="../websvc.components.strikeiron"/>
-        <ant dir="../websvc.components.google"/>
         <antcall target="netbeans"/>
     </target>
 
@@ -60,7 +58,6 @@
         <ant dir="../websvc.restlib" target="nbm"/>
         <ant dir="../websvc.rest" target="nbm"/>
         <ant dir="../websvc.rest.samples" target="nbm"/>
-        <ant dir="../websvc.components.google" target="nbm"/>
         <antcall target="nbm"/>
         <copy todir="nbms" flatten="true">
             <fileset dir="..">
@@ -75,8 +72,6 @@
         <ant dir="../websvc.restapi" target="clean"/>
         <ant dir="../websvc.rest" target="clean"/>
         <ant dir="../websvc.rest.samples" target="clean"/>
-        <ant dir="../websvc.components.strikeiron" target="clean"/>
-        <ant dir="../websvc.components.google" target="clean"/>
         <antcall target="clean"/>
         <delete dir="nbms"/>
     </target>
@@ -86,7 +81,6 @@
         <ant dir="../websvc.restlib" target="clean"/>
         <ant dir="../websvc.rest" target="clean"/>
         <ant dir="../websvc.rest.samples" target="clean"/>
-        <ant dir="../websvc.components.google" target="clean"/>
         <antcall target="clean"/>
     </target>
 </project>
