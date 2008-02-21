@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -57,7 +57,6 @@ import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.netbeans.fpi.gsf.EditorAction;
 import org.netbeans.api.project.Project;
-import org.netbeans.api.ruby.platform.RubyInstallation;
 import org.netbeans.api.ruby.platform.RubyPlatform;
 import org.netbeans.modules.ruby.AstUtilities;
 import org.netbeans.modules.ruby.platform.RubyExecution;
@@ -86,7 +85,7 @@ public class RunFocusedTest extends AbstractAction implements EditorAction {
     }
 
     public String getActionName() {
-        return "run-focused-spec";
+        return "run-focused-spec"; // NOI18N
     }
 
     public Class getShortDescriptionBundleClass() {
@@ -123,7 +122,7 @@ public class RunFocusedTest extends AbstractAction implements EditorAction {
 
                 try {
                     RSpecSupport rspec = new RSpecSupport(project);
-                    if (rspec.isRSpecInstalled() && rspec.isSpecFile(file)) {
+                    if (rspec.isRSpecInstalled() && RSpecSupport.isSpecFile(file)) {
                         int line = Utilities.getLineOffset(doc, offset);
                         if (line >= 0) {
                             // TODO - compute line number of surrounding "spec" ? Or can spec find it on its own?
@@ -189,7 +188,7 @@ public class RunFocusedTest extends AbstractAction implements EditorAction {
 
         List<String> additionalArgs = new ArrayList<String>();
 
-        additionalArgs.add("-n");
+        additionalArgs.add("-n"); // NOI18N
         additionalArgs.add(testName);
 
         if ((parameters != null) && (parameters.length > 0)) {
