@@ -221,13 +221,17 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
         if (elm != null) {
             TypeMirror typeMirror = elm.asType();
             TypeKind kind = typeMirror.getKind();
-            if (kind != TypeKind.EXECUTABLE) {
-                Assert2.error(arg0, "noSuchMethod", elm.getSimpleName().toString(), elm.getEnclosingElement().getSimpleName().toString());
+            if (kind == TypeKind.ERROR) { // In case of error type resolution we do not know parameter types
+                elm = null;
+            } else {
+                if (kind != TypeKind.EXECUTABLE) {
+                    Assert2.error(arg0, "noSuchMethod", elm.getSimpleName().toString(), elm.getEnclosingElement().getSimpleName().toString());
+                }
+                ExecutableElement methodElement = (ExecutableElement) elm;
+                ExecutableType execTypeMirror = (ExecutableType) typeMirror;
+                paramTypes = execTypeMirror.getParameterTypes();
+                isStatic = methodElement.getModifiers().contains(Modifier.STATIC);
             }
-            ExecutableElement methodElement = (ExecutableElement) elm;
-            ExecutableType execTypeMirror = (ExecutableType) typeMirror;
-            paramTypes = execTypeMirror.getParameterTypes();
-            isStatic = methodElement.getModifiers().contains(Modifier.STATIC);
         }
         
         List<? extends ExpressionTree> args = arg0.getArguments();
