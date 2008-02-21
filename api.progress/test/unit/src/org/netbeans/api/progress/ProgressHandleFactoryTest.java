@@ -121,11 +121,17 @@ public class ProgressHandleFactoryTest extends TestCase {
             UIDefaults uidef = UIManager.getDefaults();
             synchronized (uidef) {
                 blocking = true;
-                try {
-                    Thread.sleep(blockingTime);
-                } catch (InterruptedException ex) {
-                }
+                sleep();
             }
+        }
+        synchronized void sleep() {
+            try {
+                wait(blockingTime);
+            } catch (InterruptedException ex) {
+            }
+        }
+        synchronized void wakeup() {
+            notify();
         }
         volatile public boolean blocking = false;
         private int blockingTime;
@@ -144,7 +150,6 @@ public class ProgressHandleFactoryTest extends TestCase {
             try {
                 Thread.sleep(10);
             } catch (InterruptedException ex) {
-                Exceptions.printStackTrace(ex);
             }
         }
 
@@ -153,6 +158,7 @@ public class ProgressHandleFactoryTest extends TestCase {
         long elapsed = System.currentTimeMillis() - start;
         assertTrue("Possible deadlock detected, ProgressUIWorkerProvider is creating UI outside AWT thread.", elapsed < blockingTime);
         pHandle.finish();
+        blocker.wakeup();
     }
 
      private static class TestCancel implements Cancellable {
