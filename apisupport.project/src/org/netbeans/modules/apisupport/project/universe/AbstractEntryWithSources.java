@@ -130,6 +130,7 @@ abstract class AbstractEntryWithSources extends AbstractEntry {
         Element data = project.getPrimaryConfigurationData();
         Element moduleDependencies = Util.findElement(data,
             "module-dependencies", NbModuleProjectType.NAMESPACE_SHARED); // NOI18N
+        assert moduleDependencies != null : "Malformed metadata in " + project;
         for (Element dep : Util.findSubElements(moduleDependencies)) {
             if (Util.findElement(dep, "run-dependency", // NOI18N
                     NbModuleProjectType.NAMESPACE_SHARED) == null) {
