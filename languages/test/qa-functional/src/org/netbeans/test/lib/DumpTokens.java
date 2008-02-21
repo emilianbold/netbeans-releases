@@ -107,7 +107,7 @@ public class DumpTokens {
                 ts = th.tokenSequence();
             }
             roundCount++;
-            if (roundCount > 10){
+            if (roundCount > 50){
                 throw new AssertionError("IMPOSSIBLE TO GET TOKEN HIERARCHY " +roundCount+ "times");
             }
             try {

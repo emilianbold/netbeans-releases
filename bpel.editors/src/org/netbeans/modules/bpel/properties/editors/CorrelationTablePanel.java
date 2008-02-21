@@ -313,6 +313,9 @@ public class CorrelationTablePanel extends BaseTablePanel
         // tableView.setPreferredSize(new Dimension(400, 200));
         //
         setTableView(tableView);
+
+        getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(FormBundle.class,"ACSN_LBL_Correlations_Tab")); // NOI18N
+        getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FormBundle.class,"ACSD_LBL_Correlations_Tab")); // NOI18N
     }
 
     @Override

@@ -45,9 +45,9 @@ import java.io.File;
 import java.net.URL;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
+import org.netbeans.modules.j2ee.common.project.ui.ProjectProperties;
 import org.netbeans.modules.j2ee.ejbjarproject.EjbJarProject;
 import org.netbeans.modules.j2ee.ejbjarproject.test.TestBase;
-import org.netbeans.modules.j2ee.ejbjarproject.ui.customizer.EjbJarProjectProperties;
 import org.netbeans.spi.java.queries.SourceForBinaryQueryImplementation;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.openide.filesystems.FileUtil;
@@ -73,7 +73,7 @@ public class CompiledSourceForBinaryQueryTest extends TestBase {
     }
     
     public void testSourceRootsFoundForNonExistingBinaryRootIssue65733() throws Exception {
-        File buildClassesDir  = helper.resolveFile(helper.getStandardPropertyEvaluator().getProperty(EjbJarProjectProperties.BUILD_CLASSES_DIR));
+        File buildClassesDir  = helper.resolveFile(helper.getStandardPropertyEvaluator().getProperty(ProjectProperties.BUILD_CLASSES_DIR));
         // the file must not exist
         assertFalse("Cannot test, the project should be cleaned first!", buildClassesDir .exists());
         URL buildClassesDirURL = new URL(buildClassesDir.toURL().toExternalForm() + "/");

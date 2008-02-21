@@ -43,6 +43,9 @@ package org.netbeans.modules.web.jsf.api;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.WeakHashMap;
+import java.util.Map;
+import java.lang.ref.WeakReference;
 import org.netbeans.modules.j2ee.dd.api.web.DDProvider;
 import org.netbeans.modules.j2ee.dd.api.web.Servlet;
 import org.netbeans.modules.j2ee.dd.api.web.ServletMapping;
@@ -66,6 +69,11 @@ import org.openide.util.Exceptions;
  */
 public class ConfigurationUtils {
     
+    // We can override equals() and hashcode() methods here for accepting 2 keys in HashMap
+    // However due to the performance issue and clear codes, use 2 HashMap here will be better
+    private static WeakHashMap<FileObject, WeakReference<JSFConfigModel>> configModelsEditable = new WeakHashMap();
+    private static WeakHashMap<FileObject, WeakReference<JSFConfigModel>> configModelsNonEditable = new WeakHashMap();
+
     /**
      * This methods returns the model source for the faces config file.
      * @param confFile - the faces config file
@@ -73,12 +81,24 @@ public class ConfigurationUtils {
      * @return The ModelSource for the configuration file. If the file is not faces config file
      * or a version which is not handled, then returns null. 
      */
-    public static JSFConfigModel getConfigModel(FileObject confFile, boolean editable) {
+    public static synchronized JSFConfigModel getConfigModel(FileObject confFile, boolean editable) {
         JSFConfigModel configModel = null;
         if (confFile != null && confFile.isValid()) {
+            Map<FileObject,WeakReference<JSFConfigModel>> configModelsRef = editable ? configModelsEditable : configModelsNonEditable;
+            WeakReference<JSFConfigModel> configModelRef = configModelsRef.get(confFile);
+            if (configModelRef != null) {
+                configModel = configModelRef.get();
+                if (configModel != null) {
+                    return configModel;
+                }
+
+                configModelsRef.remove(confFile);
+            }
+
             try {
                 ModelSource modelSource = Utilities.createModelSource(confFile,editable);
                 configModel = JSFConfigModelFactory.getInstance().getModel(modelSource);
+                configModelsRef.put(confFile, new WeakReference<JSFConfigModel>(configModel));
             } catch (CatalogModelException ex) {
                 java.util.logging.Logger.getLogger("global").log(java.util.logging.Level.SEVERE,
                         ex.getMessage(), ex);

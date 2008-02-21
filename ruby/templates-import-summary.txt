@@ -2,8 +2,6 @@
 IMPORT SUMMARY - Ruby.tmbundle
 ------------------------------
 
-
-
 The following snippets were skipped because they were all
 assigned to the same tab trigger:
 [eac-] : each_cons(..) { |group| .. }, each_char { |chr| .. }
