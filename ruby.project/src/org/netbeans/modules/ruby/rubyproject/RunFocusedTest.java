@@ -55,7 +55,7 @@ import org.netbeans.modules.ruby.NbUtilities;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
-import org.netbeans.api.gsf.EditorAction;
+import org.netbeans.fpi.gsf.EditorAction;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.ruby.platform.RubyInstallation;
 import org.netbeans.api.ruby.platform.RubyPlatform;

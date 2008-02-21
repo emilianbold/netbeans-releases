@@ -41,7 +41,7 @@ package org.netbeans.modules.ruby.hints.spi;
 
 import java.util.List;
 import java.util.Map;
-import org.netbeans.api.gsf.CompilationInfo;
+import org.netbeans.fpi.gsf.CompilationInfo;
 
 /**
  * Represents a rule to be run on text selection

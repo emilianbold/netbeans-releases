@@ -43,7 +43,10 @@ package org.netbeans.modules.compapp.casaeditor.nodes;
 
 import java.awt.Image;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
+import javax.swing.Action;
 import org.netbeans.modules.compapp.casaeditor.model.casa.CasaWrapperModel;
 import org.netbeans.modules.compapp.casaeditor.model.casa.CasaComponent;
 import org.netbeans.modules.compapp.casaeditor.model.casa.CasaServiceEngineServiceUnit;
@@ -58,8 +61,9 @@ import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 import org.openide.util.actions.SystemAction;
 
-import javax.swing.*;
 import org.netbeans.modules.compapp.casaeditor.Constants;
+import org.netbeans.modules.compapp.casaeditor.model.casa.CasaEndpoint;
+import org.netbeans.modules.compapp.casaeditor.model.casa.CasaEndpointRef;
 import org.netbeans.modules.compapp.casaeditor.model.casa.impl.CasaAttribute;
 
 /**
@@ -80,6 +84,7 @@ public class ServiceUnitNode extends CasaNode {
     }
     
     
+    @Override
     protected void addCustomActions(List<Action> actions) {
         CasaServiceEngineServiceUnit su = (CasaServiceEngineServiceUnit) getData();
         if (su == null) {
@@ -124,6 +129,7 @@ public class ServiceUnitNode extends CasaNode {
         }
     }
 
+    @Override
     protected void setupPropertySheet(Sheet sheet) {
         final CasaServiceEngineServiceUnit casaSU = (CasaServiceEngineServiceUnit) getData();
         if (casaSU == null) {
@@ -177,6 +183,7 @@ public class ServiceUnitNode extends CasaNode {
 
     
     private static class MyChildren extends CasaNodeChildren {
+        public static final String SEPARATOR = "+";
         public MyChildren(CasaComponent component, CasaNodeFactory factory) {
             super(component, factory);
         }
@@ -191,27 +198,60 @@ public class ServiceUnitNode extends CasaNode {
                         return new Node[] { mNodeFactory.createNode_consumesList(serviceUnit.getConsumes()) };
                     } else if (keyName.equals(CHILD_ID_PROVIDES_LIST)) {
                         return new Node[] { mNodeFactory.createNode_providesList(serviceUnit.getProvides()) };
+                    } else {
+                        assert keyName.contains(SEPARATOR);
+                        String processName = keyName.substring(0, keyName.indexOf(SEPARATOR));
+                        String filePath = keyName.substring(keyName.indexOf(SEPARATOR) + 1);
+                        return new Node[] { mNodeFactory.createNode_process(serviceUnit, processName, filePath) };
                     }
                 }
             }
             return null;
         }
+        @Override
         public Object getChildKeys(Object data)  {
             List<String> children = new ArrayList<String>();
-            children.add(CHILD_ID_CONSUMES_LIST);
-            children.add(CHILD_ID_PROVIDES_LIST);
+            Set<String> processInfo = getProcessInfo();
+            if (processInfo.size() == 0) {
+                children.add(CHILD_ID_CONSUMES_LIST);
+                children.add(CHILD_ID_PROVIDES_LIST);
+            } else {
+                children.addAll(processInfo);
+            }
             return children;
+        }
+        private Set<String> getProcessInfo() {
+            Set<String> ret = new HashSet<String>();
+            
+            List<CasaEndpointRef> endpointRefs = new ArrayList<CasaEndpointRef>();
+            CasaServiceEngineServiceUnit serviceUnit = (CasaServiceEngineServiceUnit) getData();
+            if (serviceUnit != null) {
+                endpointRefs.addAll(serviceUnit.getConsumes());
+                endpointRefs.addAll(serviceUnit.getProvides());
+                for (CasaEndpointRef endpointRef : endpointRefs) {
+                    CasaEndpoint endpoint = endpointRef.getEndpoint().get();
+                    String processName = endpoint.getProcessName();
+                    String filePath = endpoint.getFilePath();
+                    if (processName != null && !processName.equals("")) {
+                        ret.add(processName + SEPARATOR + filePath);
+                    }
+                }
+            }
+            return ret;
         }
     }
     
+    @Override
     public Image getIcon(int type) {
         return ICON;
     }
     
+    @Override
     public Image getOpenedIcon(int type) {
         return ICON;
     }
     
+    @Override
     public boolean isEditable(String propertyType) {
         CasaServiceEngineServiceUnit su = (CasaServiceEngineServiceUnit) getData();
         if (su != null) {
@@ -220,6 +260,7 @@ public class ServiceUnitNode extends CasaNode {
         return false;
     }
     
+    @Override
     public boolean isDeletable() {
         CasaServiceEngineServiceUnit su = (CasaServiceEngineServiceUnit) getData();
         if (su != null) {

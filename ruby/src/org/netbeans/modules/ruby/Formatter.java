@@ -44,18 +44,16 @@ import java.util.ArrayList;
 import java.util.List;
 
 import javax.swing.text.BadLocationException;
-import javax.swing.text.Caret;
 import javax.swing.text.Document;
 
-import org.netbeans.modules.ruby.lexer.RubyTokenId;
-import org.netbeans.api.gsf.OffsetRange;
-import org.netbeans.api.gsf.ParserResult;
+import org.netbeans.fpi.gsf.OffsetRange;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
+import org.netbeans.fpi.gsf.CompilationInfo;
 import org.netbeans.modules.ruby.lexer.LexUtilities;
 import org.netbeans.modules.ruby.lexer.RubyTokenId;
 import org.netbeans.modules.ruby.options.CodeStyle;
@@ -89,7 +87,7 @@ end
  *
  * @author Tor Norbye
  */
-public class Formatter implements org.netbeans.api.gsf.Formatter {
+public class Formatter implements org.netbeans.fpi.gsf.Formatter {
     private boolean isRhtmlDocument;
     private final CodeStyle codeStyle;
     private int rightMarginOverride = -1;
@@ -104,13 +102,18 @@ public class Formatter implements org.netbeans.api.gsf.Formatter {
         this.rightMarginOverride = rightMarginOverride;
     }
     
-    public void reindent(Document document, int startOffset, int endOffset, ParserResult result) {
-        // Make sure we're not reindenting HTML content
-        reindent(document, startOffset, endOffset, result, true);
+
+    public boolean needsParserResult() {
+        return false;
     }
 
-    public void reformat(Document document, int startOffset, int endOffset, ParserResult result) {
-        reindent(document, startOffset, endOffset, result, false);
+    public void reindent(Document document, int startOffset, int endOffset) {
+        // Make sure we're not reindenting HTML content
+        reindent(document, startOffset, endOffset, null, true);
+    }
+
+    public void reformat(Document document, int startOffset, int endOffset, CompilationInfo info) {
+        reindent(document, startOffset, endOffset, info, false);
     }
     
     public int indentSize() {
@@ -455,7 +458,7 @@ public class Formatter implements org.netbeans.api.gsf.Formatter {
         return false;
     }
 
-    private void reindent(Document document, int startOffset, int endOffset, ParserResult result,
+    private void reindent(Document document, int startOffset, int endOffset, CompilationInfo info,
         boolean indentOnly) {
         isRhtmlDocument = RubyUtils.isRhtmlDocument(document);
         
@@ -504,7 +507,7 @@ public class Formatter implements org.netbeans.api.gsf.Formatter {
             boolean includeEnd = endOffset == doc.getLength() || indentOnly;
             
             // TODO - remove initialbalance etc.
-            computeIndents(doc, initialIndent, initialOffset, endOffset, result, 
+            computeIndents(doc, initialIndent, initialOffset, endOffset, info, 
                     offsets, indents, indentEmptyLines, includeEnd, indentOnly);
             
             try {
@@ -563,7 +566,7 @@ public class Formatter implements org.netbeans.api.gsf.Formatter {
         }
     }
 
-    public void computeIndents(BaseDocument doc, int initialIndent, int startOffset, int endOffset, ParserResult result,
+    public void computeIndents(BaseDocument doc, int initialIndent, int startOffset, int endOffset, CompilationInfo info,
             List<Integer> offsets,
             List<Integer> indents,
             boolean indentEmptyLines, boolean includeEnd, boolean indentOnly
