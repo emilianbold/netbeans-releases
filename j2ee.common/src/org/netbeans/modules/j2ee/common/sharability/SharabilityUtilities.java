@@ -130,14 +130,12 @@ public final class SharabilityUtilities {
                 platform.getToolClasspathEntries(J2eePlatform.TOOL_WSGEN),
                 platform.getToolClasspathEntries(J2eePlatform.TOOL_WSIMPORT),
                 platform.getToolClasspathEntries(J2eePlatform.TOOL_WSIT),
-                platform.getToolClasspathEntries(J2eePlatform.TOOL_JWSDP),
-                platform.getToolClasspathEntries(J2eePlatform.TOOL_APP_CLIENT_RUNTIME));
+                platform.getToolClasspathEntries(J2eePlatform.TOOL_JWSDP));
     }
 
     private static Library createLibrary(File location, String libraryName,
             File[] platformFiles, File[] wsCompileFiles, File[] wsGenerateFiles,
-            File[] wsImportFiles, File[] wsInteropFiles, File[] wsJwsdpFiles,
-            File[] appClientFiles) throws IOException {
+            File[] wsImportFiles, File[] wsInteropFiles, File[] wsJwsdpFiles) throws IOException {
 
         Parameters.notNull("location", location); // NOI18N
 
@@ -181,10 +179,6 @@ public final class SharabilityUtilities {
         contentItem = new  ArrayList<URL>();
         content.put(ServerLibraryTypeProvider.VOLUME_WS_JWSDP_CLASSPATH, contentItem);
         copyFiles(copied, usedNames, jarFolder, folderName, wsJwsdpFiles, contentItem);
-
-        contentItem = new  ArrayList<URL>();
-        content.put(ServerLibraryTypeProvider.VOLUME_APP_CLIENT_CLASSPATH, contentItem);
-        copyFiles(copied, usedNames, jarFolder, folderName, appClientFiles, contentItem);
 
         return manager.createLibrary(ServerLibraryTypeProvider.LIBRARY_TYPE, libraryName, content); // NOI18N
     }
