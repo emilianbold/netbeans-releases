@@ -41,7 +41,7 @@
 
 package org.netbeans.modules.php.editor.completion;
 
-import org.netbeans.api.gsf.CompilationInfo;
+import org.netbeans.fpi.gsf.CompilationInfo;
 
 /**
  * Container to store info about context of the template.

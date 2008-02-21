@@ -24,7 +24,7 @@
                     </run-dependency>
                 </dependency>
                 <dependency>
-                    <code-name-base>org.netbeans.api.gsf</code-name-base>
+                    <code-name-base>org.netbeans.fpi.gsf</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
@@ -183,12 +183,12 @@
                         <test/>
                     </test-dependency>
                     <test-dependency>
-                        <code-name-base>org.netbeans.api.gsf</code-name-base>
+                        <code-name-base>org.netbeans.fpi.gsf</code-name-base>
                         <recursive/>
                         <compile-dependency/>
                     </test-dependency>
                     <test-dependency>
-                        <code-name-base>org.netbeans.api.gsfpath</code-name-base>
+                        <code-name-base>org.netbeans.fpi.gsfpath</code-name-base>
                         <recursive/>
                         <compile-dependency/>
                     </test-dependency>

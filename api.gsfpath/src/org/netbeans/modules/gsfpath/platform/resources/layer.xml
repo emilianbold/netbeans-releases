@@ -42,7 +42,7 @@ made subject to such option by the copyright holder.
 -->
 <!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.1//EN" "http://www.netbeans.org/dtds/filesystem-1_1.dtd">
 <filesystem>
-    <folder name="org-netbeans-api-gsfpath">
+    <folder name="org-netbeans-fpi-gsfpath">
         <!-- Platform - related area -->
         <folder name="platform">
             <folder name="installers">
@@ -53,7 +53,7 @@ made subject to such option by the copyright holder.
     <folder name="Services">
         <folder name="Platforms">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.gsfpath.platform.resources.Bundle"/>
-            <folder name="org-netbeans-api-gsfpath-Platform">
+            <folder name="org-netbeans-fpi-gsfpath-Platform">
                 <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/gsfpath/platform/resources/platformList.gif"/>
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.gsfpath.platform.resources.Bundle"/>
             </folder>
@@ -65,7 +65,7 @@ made subject to such option by the copyright holder.
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.gsfpath.platform.resources.Bundle"/>
             <folder name="Platforms">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.gsfpath.platform.resources.Bundle"/>
-                <folder name="org-netbeans-api-gsfpath-Platform">
+                <folder name="org-netbeans-fpi-gsfpath-Platform">
                     <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.gsfpath.platform.resources.Bundle"/>
                     <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/gsfpath/platform/resources/templates/javaplatform.html"/>
                 </folder>

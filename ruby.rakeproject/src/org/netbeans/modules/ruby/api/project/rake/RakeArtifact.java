@@ -89,7 +89,7 @@ public abstract class RakeArtifact {
      * <p>
      * Particular type identifiers should be agreed upon between
      * providers and clients.
-     * For example, <a href="@JAVA/PROJECT@/org/netbeans/api/gsfpath/project/JavaProjectConstants.html#ARTIFACT_TYPE_JAR"><code>JavaProjectConstants.ARTIFACT_TYPE_JAR</code></a>
+     * For example, <a href="@JAVA/PROJECT@/org/netbeans/fpi/gsfpath/project/JavaProjectConstants.html#ARTIFACT_TYPE_JAR"><code>JavaProjectConstants.ARTIFACT_TYPE_JAR</code></a>
      * is defined for JAR outputs.
      * Others may be defined as needed; for example, tag library JARs,
      * WARs, EJB JARs, deployment descriptor fragments, etc.

@@ -55,7 +55,7 @@ import javax.swing.text.StyleConstants;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.editor.settings.FontColorSettings;
-import org.netbeans.api.gsf.Element;
+import org.netbeans.modules.ruby.elements.Element;
 import org.netbeans.modules.ruby.lexer.RubyTokenId;
 import org.netbeans.api.lexer.Language;
 import org.netbeans.api.lexer.Token;

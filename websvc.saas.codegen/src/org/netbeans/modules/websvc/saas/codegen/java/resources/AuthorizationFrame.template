@@ -1,12 +1,14 @@
-<#assign licenseFirst = "/*">
-<#assign licensePrefix = " * ">
-<#assign licenseLast = " */">
-<#include "../Licenses/license-${project.license}.txt">
+/*
+ * HttpBasicAuthenticator.java
+ *
+ * Created on __DATE__, __TIME__
+ *
+ * To change this template, choose Tools | Template Manager
+ * and open the template in the editor.
+ */
 
-<#if package?? && package != "">
-package ${package};
+package Templates.Classes;
 
-</#if>
 import java.awt.Desktop;
 import java.io.IOException;
 import java.net.URISyntaxException;
@@ -17,7 +19,7 @@ import javax.swing.text.html.HTMLEditorKit;
 
 /**
  *
- * @author  ${user}
+ * @author  __USER__
  */
 public class AuthorizationFrame extends javax.swing.JFrame {
 

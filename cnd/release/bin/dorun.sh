@@ -42,7 +42,26 @@
 file=$NBCND_RC
 prompt="[Enter] "
 pgm=true
-sysname=`/usr/bin/uname -s`
+
+if [ -x /bin/uname ]
+then
+    sysname=`/bin/uname -s`
+elif [ -x /usr/bin/uname ]
+then
+    sysname=`/usr/bin/uname -s`
+else
+    sysname=`uname -s`
+fi
+
+if [ -x /bin/echo ]
+then
+    ECHO=/bin/echo
+elif [ -x /usr/bin/echo ]
+then
+    ECHO=/usr/bin/echo
+else
+    ECHO=echo
+fi
 
 if [ "$sysname" = "Darwin" -o "$sysname" = "SunOS" ]
 then
@@ -86,9 +105,9 @@ rc=$?
 
 if [ -n "$file" ]
 then
-    echo $rc > "$file"
+    $ECHO $rc > "$file"
 fi
 
-/bin/echo $NOPT "$prompt${ENDOPT}"
+$ECHO $NOPT "$prompt${ENDOPT}"
 read a
 exit $rc

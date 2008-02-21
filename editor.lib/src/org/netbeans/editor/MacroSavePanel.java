@@ -56,8 +56,8 @@ import javax.swing.JList;
 import javax.swing.JButton;
 import javax.swing.ListCellRenderer;
 import javax.swing.KeyStroke;
-import javax.swing.border.*;
 import java.util.*;
+import org.openide.awt.Mnemonics;
 import org.openide.util.NbBundle;
 
 /** The component for displaying and editing just recorded macro.
@@ -78,9 +78,6 @@ public class MacroSavePanel extends javax.swing.JPanel {
         this.kitClass = kitClass;
         initComponents ();
         
-        nameLabel.setDisplayedMnemonic(bundle.getString("MSP_Name_Mnemonic").charAt(0)); // NOI18N
-        macroLabel.setDisplayedMnemonic(bundle.getString("MSP_Macro_Mnemonic").charAt(0)); // NOI18N
-        bindingLabel.setDisplayedMnemonic(bundle.getString("MSP_Keys_Mnemonic").charAt(0)); // NOI18N
         nameField.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_MSP_Name")); // NOI18N
         macroField.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_MSP_Macro")); // NOI18N
         bindingList.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_MSP_Keys")); // NOI18N
@@ -99,7 +96,7 @@ public class MacroSavePanel extends javax.swing.JPanel {
 	return pref;
     }
     
-    // <editor-fold defaultstate="collapsed" desc=" Generated Code ">//GEN-BEGIN:initComponents
+    // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
         java.awt.GridBagConstraints gridBagConstraints;
 
@@ -115,27 +112,26 @@ public class MacroSavePanel extends javax.swing.JPanel {
         addButton = new javax.swing.JButton();
         removeButton = new javax.swing.JButton();
 
+        setBorder(javax.swing.BorderFactory.createEmptyBorder(12, 12, 11, 11));
         setLayout(new java.awt.GridBagLayout());
 
-        setBorder(javax.swing.BorderFactory.createEmptyBorder(12, 12, 11, 11));
         macroPanel.setLayout(new java.awt.GridBagLayout());
 
         nameLabel.setLabelFor(nameField);
-        nameLabel.setText(bundle.getString( "MSP_Name"));
+        org.openide.awt.Mnemonics.setLocalizedText(nameLabel, bundle.getString( "MSP_Name"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 12);
         macroPanel.add(nameLabel, gridBagConstraints);
 
         macroLabel.setLabelFor(macroField);
-        macroLabel.setText(bundle.getString( "MSP_Macro"));
+        org.openide.awt.Mnemonics.setLocalizedText(macroLabel, bundle.getString( "MSP_Macro"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(5, 0, 0, 12);
         macroPanel.add(macroLabel, gridBagConstraints);
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 0;
@@ -143,7 +139,6 @@ public class MacroSavePanel extends javax.swing.JPanel {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.weightx = 1.0;
         macroPanel.add(nameField, gridBagConstraints);
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 1;
@@ -161,7 +156,7 @@ public class MacroSavePanel extends javax.swing.JPanel {
         bindingPanel.setLayout(new java.awt.GridBagLayout());
 
         bindingLabel.setLabelFor(bindingList);
-        bindingLabel.setText(bundle.getString("MSP_Keys"));
+        org.openide.awt.Mnemonics.setLocalizedText(bindingLabel, bundle.getString("MSP_Keys"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 2, 0);
@@ -180,15 +175,13 @@ public class MacroSavePanel extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 12);
         bindingPanel.add(bindingScrollPane, gridBagConstraints);
 
-        addButton.setMnemonic(bundle.getString("MSP_Add_Mnemonic").charAt(0));
-        addButton.setText(bundle.getString("MSP_Add"));
+        org.openide.awt.Mnemonics.setLocalizedText(addButton, bundle.getString("MSP_Add"));
         addButton.setToolTipText(bundle.getString("MSP_AddToolTip"));
         addButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 addBindingActionPerformed(evt);
             }
         });
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 1;
@@ -197,8 +190,7 @@ public class MacroSavePanel extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 5, 0);
         bindingPanel.add(addButton, gridBagConstraints);
 
-        removeButton.setMnemonic(bundle.getString("MSP_Remove_Mnemonic").charAt(0));
-        removeButton.setText(bundle.getString("MSP_Remove"));
+        org.openide.awt.Mnemonics.setLocalizedText(removeButton, bundle.getString("MSP_Remove"));
         removeButton.setToolTipText(bundle.getString( "MSP_RemoveToolTip"));
         removeButton.setEnabled(false);
         removeButton.addActionListener(new java.awt.event.ActionListener() {
@@ -206,7 +198,6 @@ public class MacroSavePanel extends javax.swing.JPanel {
                 removeBindingActionPerformed(evt);
             }
         });
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 2;
@@ -223,7 +214,6 @@ public class MacroSavePanel extends javax.swing.JPanel {
         gridBagConstraints.weighty = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(12, 0, 0, 0);
         add(bindingPanel, gridBagConstraints);
-
     }// </editor-fold>//GEN-END:initComponents
 
     private void removeBindingActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_removeBindingActionPerformed
@@ -320,7 +310,7 @@ public class MacroSavePanel extends javax.swing.JPanel {
         Dialog dial;
 
         JButton[] buttons = { new JButton(bundle.getString("MSP_ok")),  // NOI18N
-                              new JButton(bundle.getString("MSP_clear")), // NOI18N
+                              new JButton(), // NOI18N
                               new JButton(bundle.getString("MSP_cancel"))}; // NOI18N
 
         KeyStroke[] retVal = null;
@@ -329,8 +319,8 @@ public class MacroSavePanel extends javax.swing.JPanel {
         KeySequenceRequester() {
             ((JButton)buttons[0]).getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_MSP_ok")); // NOI18N
             ((JButton)buttons[1]).getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_MSP_clear")); // NOI18N
+            Mnemonics.setLocalizedText((JButton)buttons[1], bundle.getString("MSP_clear"));
             ((JButton)buttons[2]).getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_MSP_cancel")); // NOI18N
-            ((JButton)buttons[1]).setMnemonic(bundle.getString("MSP_clear_Mnemonic").charAt (0)); // NOI18N
             ((JButton)buttons[0]).setEnabled( false ); // default initial state
 
             // Prepare KeySequence input dialog
