@@ -147,7 +147,7 @@ public final class Find extends SearchControlPanel {
     }
 
     void release() {
-      mySearchEngine.release();
+      mySearchEngine.removeSearchListeners();
     }
 
     public String getDisplayName() {

@@ -266,7 +266,9 @@ public class NbModuleProjectGenerator {
                     createProjectXML(dirFO, cnb, NbModuleProvider.NETBEANS_ORG);
                     createManifest(dirFO, cnb, bundlePath, layerPath);
                     createBundle(dirFO, bundlePath, name);
-                    createLayerInSrc(dirFO, layerPath);
+                    if (layerPath != null) {
+                        createLayerInSrc(dirFO, layerPath);
+                    }
                     createEmptyTestDir(dirFO);
                     createInitialProperties(dirFO);
                     ModuleList.refresh();
