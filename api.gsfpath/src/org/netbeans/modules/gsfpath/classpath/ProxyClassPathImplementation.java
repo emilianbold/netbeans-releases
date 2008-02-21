@@ -40,8 +40,8 @@
  */
 package org.netbeans.modules.gsfpath.classpath;
 
-import org.netbeans.spi.gsfpath.classpath.ClassPathImplementation;
-import org.netbeans.spi.gsfpath.classpath.PathResourceImplementation;
+import org.netbeans.sfpi.gsfpath.classpath.ClassPathImplementation;
+import org.netbeans.sfpi.gsfpath.classpath.PathResourceImplementation;
 
 import java.util.List;
 import java.util.ArrayList;

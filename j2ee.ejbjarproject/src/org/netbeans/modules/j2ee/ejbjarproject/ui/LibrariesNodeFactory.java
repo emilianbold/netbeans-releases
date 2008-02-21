@@ -149,6 +149,7 @@ public final class LibrariesNodeFactory implements NodeFactory {
                     new String[] { ProjectProperties.BUILD_CLASSES_DIR },
                     "platform.active", //NOI18N
                     EjbJarProjectProperties.J2EE_SERVER_INSTANCE,
+                    EjbJarProjectProperties.J2EE_PLATFORM_CLASSPATH,
                     new Action[] {
                             LibrariesNode.createAddProjectAction(project, project.getSourceRoots()),
                             LibrariesNode.createAddLibraryAction(refHelper, project.getSourceRoots(), null),
@@ -172,6 +173,7 @@ public final class LibrariesNodeFactory implements NodeFactory {
                         ProjectProperties.JAVAC_CLASSPATH,
                         ProjectProperties.BUILD_CLASSES_DIR,
                     },
+                    null,
                     null,
                     null,
                     new Action[] {

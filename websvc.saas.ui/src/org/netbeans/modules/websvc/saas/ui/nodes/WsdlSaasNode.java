@@ -173,8 +173,9 @@ public class WsdlSaasNode extends SaasNode {
     
     @Override
     public Transferable clipboardCopy() throws IOException {
-        if (getSaas().getState() != Saas.State.RESOLVED) {
-            getSaas().toStateReady();
+        if (getSaas().getState() != Saas.State.RESOLVED &&
+            getSaas().getState() != Saas.State.READY) {
+            getSaas().toStateReady(false);
             return super.clipboardCopy();
         }
         return SaasTransferable.addFlavors(transferable);

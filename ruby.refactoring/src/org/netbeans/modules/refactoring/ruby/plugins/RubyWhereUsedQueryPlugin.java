@@ -49,18 +49,9 @@ import javax.swing.Icon;
 import javax.swing.text.Document;
 import org.jruby.ast.AliasNode;
 import org.jruby.ast.ArgumentNode;
-import org.jruby.ast.ClassVarAsgnNode;
-import org.jruby.ast.ClassVarDeclNode;
-import org.jruby.ast.ClassVarNode;
 import org.jruby.ast.Colon2Node;
-import org.jruby.ast.ConstDeclNode;
-import org.jruby.ast.ConstNode;
 import org.jruby.ast.DAsgnNode;
 import org.jruby.ast.DVarNode;
-import org.jruby.ast.GlobalAsgnNode;
-import org.jruby.ast.GlobalVarNode;
-import org.jruby.ast.InstAsgnNode;
-import org.jruby.ast.InstVarNode;
 import org.jruby.ast.LocalAsgnNode;
 import org.jruby.ast.LocalVarNode;
 import org.jruby.ast.MethodDefNode;
@@ -68,13 +59,12 @@ import org.jruby.ast.Node;
 import org.jruby.ast.NodeTypes;
 import org.jruby.ast.SymbolNode;
 import org.jruby.ast.types.INameNode;
-import org.netbeans.api.gsf.CancellableTask;
-import org.netbeans.api.gsf.Element;
-import org.netbeans.api.gsf.ElementKind;
-import org.netbeans.api.gsf.Error;
-import org.netbeans.api.gsf.Modifier;
-import org.netbeans.api.gsf.OffsetRange;
-import org.netbeans.api.gsf.Severity;
+import org.netbeans.fpi.gsf.CancellableTask;
+import org.netbeans.fpi.gsf.ElementKind;
+import org.netbeans.fpi.gsf.Error;
+import org.netbeans.fpi.gsf.Modifier;
+import org.netbeans.fpi.gsf.OffsetRange;
+import org.netbeans.fpi.gsf.Severity;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenId;
@@ -97,11 +87,12 @@ import org.netbeans.modules.refactoring.spi.RefactoringElementsBag;
 import org.netbeans.modules.ruby.AstPath;
 import org.netbeans.modules.ruby.AstUtilities;
 import org.netbeans.modules.ruby.RubyIndex;
+import org.netbeans.modules.ruby.RubyMimeResolver;
 import org.netbeans.modules.ruby.elements.AstElement;
+import org.netbeans.modules.ruby.elements.Element;
 import org.netbeans.modules.ruby.elements.IndexedClass;
 import org.netbeans.modules.ruby.lexer.LexUtilities;
 import org.openide.filesystems.FileObject;
-import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 /**
@@ -188,7 +179,7 @@ public class RubyWhereUsedQueryPlugin extends RubyRefactoringPlugin {
                     String name = tph.getName();
                 
                     // Find overrides of the class
-                    RubyIndex index = RubyIndex.get(info.getIndex());
+                    RubyIndex index = RubyIndex.get(info.getIndex(RubyMimeResolver.RUBY_MIME_TYPE));
                     String fqn = AstUtilities.getFqnName(tph.getPath());
                     Set<IndexedClass> classes = index.getSubClasses(null, fqn, name, isFindDirectSubclassesOnly());
 
@@ -371,7 +362,7 @@ public class RubyWhereUsedQueryPlugin extends RubyRefactoringPlugin {
                     int start = 0;
                     int end = 0;
                     String desc = "Parse error in file which contains " + targetName + " reference - skipping it"; 
-                    List<Error> errors = compiler.getDiagnostics();
+                    List<Error> errors = compiler.getErrors();
                     if (errors.size() > 0) {
                         for (Error e : errors) {
                             if (e.getSeverity() == Severity.ERROR) {
@@ -390,7 +381,7 @@ public class RubyWhereUsedQueryPlugin extends RubyRefactoringPlugin {
                         }
 
                         desc = desc + "; " + errorMsg;
-                        start = error.getStartPosition().getOffset();
+                        start = error.getStartPosition();
                         start = LexUtilities.getLexerOffset(compiler, start);
                         if (start == -1) {
                             start = 0;

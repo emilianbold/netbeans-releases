@@ -42,7 +42,7 @@ package org.netbeans.modules.ruby.elements;
 
 import java.util.Set;
 
-import org.netbeans.api.gsf.Element;
+import org.netbeans.modules.ruby.elements.Element;
 
 
 /**

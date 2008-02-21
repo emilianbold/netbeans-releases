@@ -42,9 +42,9 @@ package org.netbeans.modules.languages.php;
 
 import java.util.Set;
 
-import org.netbeans.api.gsf.CompilationInfo;
-import org.netbeans.api.gsf.InstantRenamer;
-import org.netbeans.api.gsf.OffsetRange;
+import org.netbeans.fpi.gsf.CompilationInfo;
+import org.netbeans.fpi.gsf.InstantRenamer;
+import org.netbeans.fpi.gsf.OffsetRange;
 
 
 /**
@@ -54,7 +54,7 @@ import org.netbeans.api.gsf.OffsetRange;
 public class RenameHandler implements InstantRenamer {
 
     /* (non-Javadoc)
-     * @see org.netbeans.api.gsf.InstantRenamer#getRenameRegions(org.netbeans.api.gsf.CompilationInfo, int)
+     * @see org.netbeans.fpi.gsf.InstantRenamer#getRenameRegions(org.netbeans.fpi.gsf.CompilationInfo, int)
      */
     public Set<OffsetRange> getRenameRegions( CompilationInfo info,
             int caretOffset )
@@ -64,7 +64,7 @@ public class RenameHandler implements InstantRenamer {
     }
 
     /* (non-Javadoc)
-     * @see org.netbeans.api.gsf.InstantRenamer#isRenameAllowed(org.netbeans.api.gsf.CompilationInfo, int, java.lang.String[])
+     * @see org.netbeans.fpi.gsf.InstantRenamer#isRenameAllowed(org.netbeans.fpi.gsf.CompilationInfo, int, java.lang.String[])
      */
     public boolean isRenameAllowed( CompilationInfo info, int caretOffset,
             String[] explanationRetValue )

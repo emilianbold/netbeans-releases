@@ -47,8 +47,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import org.netbeans.api.gsf.CompletionProposal;
-import org.netbeans.api.gsf.HtmlFormatter;
+import org.netbeans.fpi.gsf.CompletionProposal;
+import org.netbeans.fpi.gsf.HtmlFormatter;
 import org.netbeans.modules.languages.php.lang.PseudoVariables;
 import org.netbeans.modules.php.editor.completion.VariableItem.VarTypes;
 import org.netbeans.modules.php.model.ClassBody;

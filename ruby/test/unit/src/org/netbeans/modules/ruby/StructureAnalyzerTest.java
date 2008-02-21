@@ -45,15 +45,15 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import org.netbeans.api.gsf.CompilationInfo;
+import org.netbeans.fpi.gsf.CompilationInfo;
 import java.util.ArrayList;
 import java.util.Comparator;
 import javax.swing.text.Document;
-import org.netbeans.api.gsf.CompilationInfo;
-import org.netbeans.api.gsf.ElementKind;
-import org.netbeans.api.gsf.HtmlFormatter;
-import org.netbeans.api.gsf.OffsetRange;
-import org.netbeans.api.gsf.StructureItem;
+import org.netbeans.fpi.gsf.CompilationInfo;
+import org.netbeans.fpi.gsf.ElementKind;
+import org.netbeans.fpi.gsf.HtmlFormatter;
+import org.netbeans.fpi.gsf.OffsetRange;
+import org.netbeans.fpi.gsf.StructureItem;
 import org.netbeans.modules.ruby.elements.AstAttributeElement;
 import org.netbeans.modules.ruby.elements.AstClassElement;
 
@@ -224,8 +224,8 @@ public class StructureAnalyzerTest extends RubyTestBase {
     
     private void checkAttributes(String relFilePath) throws Exception {
         CompilationInfo info = getInfo(relFilePath);
-        RubyParseResult rbr = (RubyParseResult)info.getParserResult();
-        StructureAnalyzer.AnalysisResult ar = rbr.getStructure();
+        RubyParseResult rpr = AstUtilities.getParseResult(info);
+        StructureAnalyzer.AnalysisResult ar = rpr.getStructure();
         Map<AstClassElement, Set<AstAttributeElement>> attributes = ar.getAttributes();
         
         StringBuilder sb = new StringBuilder();

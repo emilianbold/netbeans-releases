@@ -51,12 +51,14 @@ import java.util.regex.Pattern;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import org.jruby.ast.Node;
-import org.netbeans.api.gsf.Element;
-import org.netbeans.api.gsf.Index;
-import org.netbeans.api.gsf.Index.SearchScope;
-import org.netbeans.api.gsf.NameKind;
-import org.netbeans.api.gsf.TypeSearcher;
-import org.netbeans.api.gsf.TypeSearcher.GsfTypeDescriptor;
+import org.netbeans.fpi.gsf.CompilationInfo;
+import org.netbeans.fpi.gsf.ElementHandle;
+import org.netbeans.modules.ruby.elements.Element;
+import org.netbeans.fpi.gsf.Index;
+import org.netbeans.fpi.gsf.Index.SearchScope;
+import org.netbeans.fpi.gsf.NameKind;
+import org.netbeans.fpi.gsf.TypeSearcher;
+import org.netbeans.fpi.gsf.TypeSearcher.GsfTypeDescriptor;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
@@ -220,6 +222,7 @@ public class RubyTypeSearcher implements TypeSearcher {
     
     private class RubyTypeDescriptor extends GsfTypeDescriptor {
         private final IndexedElement element;
+        private final ElementHandle handle;
         private String projectName;
         private Icon projectIcon;
         private final Helper helper;
@@ -229,6 +232,10 @@ public class RubyTypeSearcher implements TypeSearcher {
         public RubyTypeDescriptor(IndexedElement element, Helper helper) {
             this.element = element;
             this.helper = helper;
+            
+            // XXX I should get away from this
+CompilationInfo info = null;            
+            handle = RubyParser.createHandle(info, element);
         }
 
         public Icon getIcon() {
@@ -238,7 +245,8 @@ public class RubyTypeSearcher implements TypeSearcher {
             //if (isLibrary) {
             //    return new ImageIcon(org.openide.util.Utilities.loadImage(RUBY_KEYWORD));
             //}
-            return helper.getIcon(element);
+            //return helper.getIcon(element);
+            return helper.getIcon(handle);
         }
 
         public String getTypeName() {
@@ -315,7 +323,8 @@ public class RubyTypeSearcher implements TypeSearcher {
                 return;
             }
             
-            helper.open(fileObject, element);
+            //helper.open(fileObject, element);
+            helper.open(fileObject, handle);
         }
 
         public String getContextName() {
@@ -346,8 +355,8 @@ public class RubyTypeSearcher implements TypeSearcher {
             }
         }
 
-        public Element getElement() {
-            return element;
+        public ElementHandle getElement() {
+            return handle;
         }
 
         public int getOffset() {
@@ -364,4 +373,7 @@ public class RubyTypeSearcher implements TypeSearcher {
 
     }
 
+    public String getMimetype() {
+        return RubyMimeResolver.RUBY_MIME_TYPE;
+    }
 }

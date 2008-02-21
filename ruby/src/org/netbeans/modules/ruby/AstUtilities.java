@@ -59,14 +59,12 @@ import org.jruby.ast.ArgsCatNode;
 import org.jruby.ast.ArgsNode;
 import org.jruby.ast.ArgumentNode;
 import org.jruby.ast.AssignableNode;
-import org.jruby.ast.AttrAssignNode;
 import org.jruby.ast.CallNode;
 import org.jruby.ast.ClassNode;
 import org.jruby.ast.Colon2Node;
 import org.jruby.ast.Colon3Node;
 import org.jruby.ast.ConstNode;
 import org.jruby.ast.FCallNode;
-import org.jruby.ast.IArgumentNode;
 import org.jruby.ast.IScopingNode;
 import org.jruby.ast.ListNode;
 import org.jruby.ast.LocalAsgnNode;
@@ -82,26 +80,26 @@ import org.jruby.ast.YieldNode;
 import org.jruby.ast.types.INameNode;
 import org.jruby.lexer.yacc.ISourcePosition;
 import org.jruby.util.ByteList;
-import org.netbeans.api.gsf.CancellableTask;
-import org.netbeans.api.gsf.CompilationInfo;
-import org.netbeans.api.gsf.Modifier;
-import org.netbeans.api.gsf.NameKind;
-import org.netbeans.api.gsf.OffsetRange;
-import org.netbeans.api.gsf.ParserFile;
-import org.netbeans.api.gsf.ParserResult;
-import org.netbeans.api.gsf.SourceFileReader;
-import org.netbeans.api.gsf.SourceModel;
-import org.netbeans.api.gsf.SourceModelFactory;
+import org.netbeans.fpi.gsf.CancellableTask;
+import org.netbeans.fpi.gsf.CompilationInfo;
+import org.netbeans.fpi.gsf.Modifier;
+import org.netbeans.fpi.gsf.NameKind;
+import org.netbeans.fpi.gsf.OffsetRange;
+import org.netbeans.fpi.gsf.Parser;
+import org.netbeans.fpi.gsf.ParserFile;
+import org.netbeans.fpi.gsf.ParserResult;
+import org.netbeans.fpi.gsf.SourceFileReader;
+import org.netbeans.fpi.gsf.SourceModel;
+import org.netbeans.fpi.gsf.SourceModelFactory;
+import org.netbeans.fpi.gsf.TranslatedSource;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
 import org.netbeans.modules.ruby.elements.IndexedElement;
 import org.netbeans.modules.ruby.elements.IndexedField;
 import org.netbeans.modules.ruby.elements.IndexedMethod;
 import org.netbeans.modules.ruby.lexer.LexUtilities;
-import org.netbeans.spi.gsf.DefaultParseListener;
-import org.openide.cookies.EditorCookie;
+import org.netbeans.sfpi.gsf.DefaultParseListener;
 import org.openide.filesystems.FileObject;
-import org.openide.loaders.DataObject;
 import org.openide.util.Exceptions;
 
 
@@ -123,68 +121,39 @@ public class AstUtilities {
     private static final boolean INCLUDE_DEFS_PREFIX = false;
 
     public static int getAstOffset(CompilationInfo info, int lexOffset) {
-        return info.getPositionManager().getAstOffset(info.getParserResult(), lexOffset);
-        
-    }
-
-    public static OffsetRange getAstOffsets(CompilationInfo info, OffsetRange lexicalRange) {
-        int rangeStart = lexicalRange.getStart();
-        int start = info.getPositionManager().getAstOffset(info.getParserResult(), rangeStart);
-        if (start == rangeStart) {
-            return lexicalRange;
-        } else if (start == -1) {
-            return OffsetRange.NONE;
-        } else {
-            // Assumes the translated range maintains size
-            return new OffsetRange(start, start+lexicalRange.getLength());
+        ParserResult result = info.getEmbeddedResult(RubyMimeResolver.RUBY_MIME_TYPE, 0);
+        if (result != null) {
+            TranslatedSource ts = result.getTranslatedSource();
+            if (ts != null) {
+                return ts.getAstOffset(lexOffset);
+            }
         }
+              
+        return lexOffset;
+    }
+    
+    public static OffsetRange getAstOffsets(CompilationInfo info, OffsetRange lexicalRange) {
+        ParserResult result = info.getEmbeddedResult(RubyMimeResolver.RUBY_MIME_TYPE, 0);
+        if (result != null) {
+            TranslatedSource ts = result.getTranslatedSource();
+            if (ts != null) {
+                int rangeStart = lexicalRange.getStart();
+                int start = ts.getAstOffset(rangeStart);
+                if (start == rangeStart) {
+                    return lexicalRange;
+                } else if (start == -1) {
+                    return OffsetRange.NONE;
+                } else {
+                    // Assumes the translated range maintains size
+                    return new OffsetRange(start, start+lexicalRange.getLength());
+                }
+            }
+        }
+        return lexicalRange;
     }
     
     /** This is a utility class only, not instantiatiable */
     private AstUtilities() {
-    }
-
-    /** Move to a generic (non-AST-oriented) utility class? */
-    public static BaseDocument getBaseDocument(FileObject fileObject, boolean forceOpen) {
-        DataObject dobj;
-
-        try {
-            dobj = DataObject.find(fileObject);
-
-            EditorCookie ec = dobj.getCookie(EditorCookie.class);
-
-            if (ec == null) {
-                throw new IOException("Can't open " + fileObject.getNameExt());
-            }
-
-            Document document;
-
-            if (forceOpen) {
-                document = ec.openDocument();
-            } else {
-                document = ec.getDocument();
-            }
-
-            if (document instanceof BaseDocument) {
-                return ((BaseDocument)document);
-            } else {
-                // Must be testsuite execution
-                try {
-                    Class c = Class.forName("org.netbeans.modules.ruby.RubyTestBase");
-                    if (c != null) {
-                        @SuppressWarnings("unchecked")
-                        java.lang.reflect.Method m = c.getMethod("getDocumentFor", new Class[] { FileObject.class });
-                        return (BaseDocument) m.invoke(null, (Object[])new FileObject[] { fileObject });
-                    }
-                } catch (Exception ex) {
-                    Exceptions.printStackTrace(ex);
-                }
-            }
-        } catch (IOException ioe) {
-            Exceptions.printStackTrace(ioe);
-        }
-
-        return null;
     }
 
     /**
@@ -347,7 +316,10 @@ public class AstUtilities {
             };
 
         DefaultParseListener listener = new DefaultParseListener();
-        new RubyParser().parseFiles(files, listener, reader);
+        // TODO - embedding model?
+TranslatedSource translatedSource = null; // TODO - determine this here?                
+        Parser.Job job = new Parser.Job(files, listener, reader, translatedSource);
+        new RubyParser().parseFiles(job);
 
         ParserResult result = listener.getParserResult();
 
@@ -372,8 +344,8 @@ public class AstUtilities {
         Node node = AstUtilities.findBySignature(root, signature);
 
         // Special handling for "new" - these are synthesized from "initialize" methods
-        if ((node == null) && "new".equals(o.getName())) {
-            signature = signature.replaceFirst("new", "initialize");
+        if ((node == null) && "new".equals(o.getName())) { // NOI18N
+            signature = signature.replaceFirst("new", "initialize"); //NOI18N
             node = AstUtilities.findBySignature(root, signature);
         }
 
@@ -591,6 +563,10 @@ public class AstUtilities {
         for (Node curr : path) {
             if (curr.nodeId == NodeTypes.DEFNNODE || curr.nodeId == NodeTypes.DEFSNODE) {
                 return (MethodDefNode)curr;
+            }
+            if (curr.nodeId == NodeTypes.CLASSNODE || curr.nodeId == NodeTypes.SCLASSNODE ||
+                    curr.nodeId == NodeTypes.MODULENODE) {
+                break;
             }
         }
 
@@ -1112,50 +1088,6 @@ public class AstUtilities {
     }
     
     /**
-     * Get the range of a YieldNode. This is a workaround for offset problems
-     * in the JRuby AST.
-     * 
-     * This is tracked by JRuby bug 1435:
-     *   http://jira.codehaus.org/browse/JRUBY-1435
-     * 
-     * @param node The YieldNode whose offset range we want
-     * @param doc The BaseDocument for the code containing the yield node
-     * @return The offset range of the yield node
-     */
-    public static OffsetRange getYieldNodeRange(YieldNode node, BaseDocument doc) {
-        /* Yield in the following code has the wrong offsets in JRuby
-          if component.size == 1
-            yield component.first
-          else
-            raise Cyclic.new("topological sort failed: #{component.inspect}")
-          end
-         */
-        try {
-            ISourcePosition pos = node.getPosition();
-
-            int offset = pos.getStartOffset();
-            int lineStart = Utilities.getRowStart(doc, offset);
-            int lineLength = Utilities.getRowEnd(doc, offset) - lineStart;
-            String text = doc.getText(lineStart, lineLength);
-            int index = text.indexOf("yield"); // NOI18N
-
-            if ((index == -1) || (text.charAt(offset - lineStart) == 'y')) {
-                // The positions might be correct
-                return AstUtilities.getRange(node);
-            } else {
-                // Correct position
-                OffsetRange range =
-                    new OffsetRange(lineStart + index, lineStart + index + "yield".length()); // NOI18N
-                return range;
-            }
-        } catch (BadLocationException ble) {
-            Exceptions.printStackTrace(ble);
-        }
-
-        return OffsetRange.NONE;
-    }
-
-    /**
      * Return a range that matches the lvalue for an assignment. The node must be namable.
      */
     public static OffsetRange getLValueRange(AssignableNode node) {
@@ -1433,9 +1365,9 @@ public class AstUtilities {
 
             if ("attr".equals(name) || "attr_reader".equals(name) || // NOI18N
                     "attr_accessor".equals(name) || "attr_writer".equals(name) || // NOI18N
-                                                                                      // Rails: Special definitions which builds methods that have actual fields
-                                                                                      // backing the attribute. Important to include these since they're
-                                                                                      // used for key Rails members like headers, session, etc.
+                  // Rails: Special definitions which builds methods that have actual fields
+                  // backing the attribute. Important to include these since they're
+                  // used for key Rails members like headers, session, etc.
                     "attr_internal".equals(name) || "attr_internal_reader".equals(name) ||
                     "attr_internal_writer".equals(name) || // NOI18N
                     "attr_internal_accessor".equals(name)) { // NOI18N
@@ -1471,9 +1403,22 @@ public class AstUtilities {
         return new SymbolNode[0];
     }
 
-    // TODO use this from all the various places that have this inlined...
+    public static RubyParseResult getParseResult(CompilationInfo info) {
+        ParserResult result = info.getEmbeddedResult(RubyMimeResolver.RUBY_MIME_TYPE, 0);
+
+        if (result == null) {
+            return null;
+        } else {
+            return ((RubyParseResult)result);
+        }
+    }
+
     public static Node getRoot(CompilationInfo info) {
-        ParserResult result = info.getParserResult();
+        return getRoot(info, RubyMimeResolver.RUBY_MIME_TYPE);
+    }
+
+    public static Node getRoot(CompilationInfo info, String mimeType) {
+        ParserResult result = info.getEmbeddedResult(mimeType, 0);
 
         if (result == null) {
             return null;
@@ -1487,17 +1432,7 @@ public class AstUtilities {
 
         RubyParseResult result = (RubyParseResult)r;
 
-        // TODO - just call result.getRoot()
-        // but I might have to compensate for the new RootNode behavior in JRuby
-        ParserResult.AstTreeNode ast = result.getAst();
-
-        if (ast == null) {
-            return null;
-        }
-
-        Node root = (Node)ast.getAstNode();
-
-        return root;
+        return result.getRootNode();
     }
 
     /**
