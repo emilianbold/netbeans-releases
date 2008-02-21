@@ -309,7 +309,7 @@ public final class CompletionManager {
                 js.runUserActionTask(new Task<CompilationController>() {
 
                     public void run(CompilationController cc) throws Exception {
-                        String className = SpringXMLConfigEditorUtils.getBeanClassName(context.getTag());
+                        String className = new BeanClassFinder(context.getTag(), context.getDocument()).findImplementationClass();
                         if (className == null) {
                             return;
                         }
