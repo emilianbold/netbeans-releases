@@ -52,26 +52,64 @@ public interface TagLibParseCookie extends org.openide.nodes.Node.Cookie {
     /**
      * Get data important for opening the page in the editor, e.g. whether the page is in classic
      * or XML syntax, or what is the file encoding.
-     * @since 1.30
+     * @param preferCurrent <code>true</code> if the returned value should be actual and not from a cache.
+     * @param useEditor <code>true</code> if the returned value should be taken from editor and from the disk.
+     * @return {@link OpenInfo} instance.
+     * @since 2.0
      */
     public OpenInfo getOpenInfo(boolean preferCurrent, boolean useEditor);
 
     /**
-     * Interface representing data important for opening the page in the editor, e.g. whether the page is in classic
+     * Class representing data important for opening the page in the editor, e.g. whether the page is in classic
      * or XML syntax, or what is the file encoding. Implementations of this interface are returned by
      * {@link TagLibParseCookie#getCachedOpenInfo TagLibParseCookie.getCachedOpenInfo()}.
-     * @since 1.30
+     * @since 2.0
      */
-    static interface OpenInfo {
+    public static final class OpenInfo {
+        private final boolean xmlSyntax;
+        private final String encoding;
+
+        private OpenInfo(boolean xmlSyntax, String encoding) {
+            this.xmlSyntax = xmlSyntax;
+            this.encoding = encoding;
+        }
+
+        /**
+         * Factory method for creating new {@link OpenInfo} instance.
+         * @param xmlSyntax <code>true</code> if the page is in XML syntax, <code>false</code> otherwise.
+         * @param encoding page encoding.
+         * @return new {@link OpenInfo} instance.
+         */
+        public static OpenInfo create(boolean xmlSyntax, String encoding) {
+            return new OpenInfo(xmlSyntax, encoding);
+        }
+
         /**
          * Check whether the file is in XML encoding.
          * @return <code>true</code> if the page is in XML syntax, <code>false</code> otherwise.
          */
-        boolean isXmlSyntax();
+        public boolean isXmlSyntax() {
+            return xmlSyntax;
+        }
+
         /**
          * Get the encoding of the file.
          * @return encoding of the file.
          */
-        String getEncoding();
+        public String getEncoding() {
+            return encoding;
+        }
+
+        @Override
+        public String toString() {
+            StringBuilder sb = new StringBuilder();
+            sb.append(OpenInfo.class.getName());
+            sb.append("[xmlSyntax: ");
+            sb.append(xmlSyntax);
+            sb.append(", encoding: ");
+            sb.append(encoding);
+            sb.append("]");
+            return sb.toString();
+        }
     }
 }
