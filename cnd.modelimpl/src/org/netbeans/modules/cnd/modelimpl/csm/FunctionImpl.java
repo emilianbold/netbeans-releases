@@ -82,7 +82,6 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
     
     private final CharSequence[] rawName;
     
-    private boolean template;
     private List<CsmTemplateParameter> templateParams = Collections.emptyList();
     
     private CharSequence templateSuffix;
@@ -92,6 +91,7 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
     private static final byte FLAGS_STATIC = 1 << 1;
     private static final byte FLAGS_CONST = 1 << 2;
     private static final byte FLAGS_OPERATOR = 1 << 3;
+    private static final byte FLAGS_TEMPLATE = 1 << 4;
     private byte flags;
     
     public FunctionImpl(AST ast, CsmFile file, CsmScope scope) {
@@ -275,7 +275,7 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
                 }
             }
         }
-        this.template = _template;
+        setFlags(FLAGS_TEMPLATE, _template);
         if (_template) {
             this.templateParams = TemplateUtils.getTemplateParameters(node.getFirstChild(), this);
         }
@@ -396,7 +396,7 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
     
     @Override
     public CharSequence getUniqueNameWithoutPrefix() {
-        return getQualifiedName().toString() + (template ? templateSuffix : "") + getSignature().toString().substring(getName().length());
+        return getQualifiedName().toString() + (isTemplate() ? templateSuffix : "") + getSignature().toString().substring(getName().length());
     }
     
     public Kind getKind() {
@@ -479,7 +479,7 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
      * @return flag indicated if function is template
      */
     public boolean isTemplate() {
-        return template;
+        return hasFlags(FLAGS_TEMPLATE);
     }
     
     /**
@@ -692,8 +692,7 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
         PersistentUtils.writeUTF(this.signature, output);
         output.writeByte(flags);
         output.writeUTF(this.getScopeSuffix().toString());
-        output.writeBoolean(this.template);
-        if (this.template) {
+        if (isTemplate()) {
             output.writeUTF(this.templateSuffix.toString());
         }
         PersistentUtils.writeTemplateParameters(templateParams, output);
@@ -719,8 +718,7 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
         }
         this.flags = input.readByte();
         this.classTemplateSuffix = NameCache.getManager().getString(input.readUTF());
-        this.template = input.readBoolean();
-        if (this.template) {
+        if (isTemplate()) {
             this.templateSuffix = NameCache.getManager().getString(input.readUTF());
         }
         this.templateParams = PersistentUtils.readTemplateParameters(input);
