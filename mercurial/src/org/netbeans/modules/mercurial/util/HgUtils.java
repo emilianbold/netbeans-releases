@@ -741,6 +741,9 @@ itor tabs #66700).
         File [] files = context.getRootFiles().toArray(new File[context.getRootFiles().size()]);
 
         for (File file : files) {
+            /* We may be committing a LocallyDeleted file */
+            if (!file.exists()) file = file.getParentFile();
+
             Project p = FileOwnerQuery.getOwner(FileUtil.toFileObject(file));
             if (p != null) {
                 return p;

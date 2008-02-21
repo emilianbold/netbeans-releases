@@ -2262,7 +2262,31 @@ public class HgCommand {
     
     /**
      * Remove the specified file from the mercurial Repository
-     * mercurial hg commit.
+     *
+     * @param File repository of the mercurial repository's root directory
+     * @param List<Files> of files to be added to hg
+     * @param f path to be removed from the repository
+     * @throws org.netbeans.modules.mercurial.HgException
+     */
+    public static void doRemove(File repository, List<File> removeFiles, OutputLogger logger)  throws HgException {
+        List<String> command = new ArrayList<String>();
+
+        command.add(getHgCommand());
+        command.add(HG_REMOVE_CMD);
+        command.add(HG_OPT_REPOSITORY);
+        command.add(repository.getAbsolutePath());
+        command.add(HG_REMOVE_FLAG_FORCE_CMD);
+        for(File f: removeFiles){
+            command.add(f.getAbsolutePath());
+        }
+
+        List<String> list = exec(command);
+        if (!list.isEmpty() && isErrorAlreadyTracked(list.get(0)))
+            handleError(command, list, NbBundle.getMessage(HgCommand.class, "MSG_ALREADY_TRACKED"), logger);
+    }
+    
+    /**
+     * Remove the specified files from the mercurial Repository
      *
      * @param File repository of the mercurial repository's root directory
      * @param f path to be removed from the repository
@@ -2283,6 +2307,8 @@ public class HgCommand {
             handleError(command, list, NbBundle.getMessage(HgCommand.class, "MSG_ALREADY_TRACKED"), logger);
     }
     
+    /**
+     * Export the diffs for the specified revision to the specified output file
     /**
      * Export the diffs for the specified revision to the specified output file
      *
