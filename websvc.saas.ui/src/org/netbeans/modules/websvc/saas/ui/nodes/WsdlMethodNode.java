@@ -283,11 +283,14 @@ public class WsdlMethodNode extends AbstractNode {
     
     @Override
     public Transferable clipboardCopy() throws IOException {
-        if (method.getSaas().getState() != Saas.State.RESOLVED) {
+        if (method.getSaas().getState() == Saas.State.READY ||
+                method.getSaas().getState() == Saas.State.RESOLVED) {
+            return SaasTransferable.addFlavors(transferable);
+        } else {
             method.getSaas().toStateReady();
             return super.clipboardCopy();
         }
-        return SaasTransferable.addFlavors(transferable);
+        
     }
    
 }
