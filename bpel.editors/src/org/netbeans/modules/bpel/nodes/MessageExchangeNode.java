@@ -18,8 +18,9 @@
  */
 package org.netbeans.modules.bpel.nodes;
 
+import org.netbeans.modules.bpel.nodes.BpelNode;
 import javax.swing.Action;
-import org.netbeans.modules.bpel.nodes.actions.ActionType;
+import org.netbeans.modules.bpel.editors.api.nodes.actions.ActionType;
 import org.netbeans.modules.bpel.nodes.actions.DeleteMessageExchangeAction;
 import org.netbeans.modules.bpel.properties.Constants;
 import org.netbeans.modules.bpel.editors.api.nodes.NodeType;

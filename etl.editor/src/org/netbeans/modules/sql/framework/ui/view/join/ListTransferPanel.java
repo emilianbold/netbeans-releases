@@ -675,7 +675,6 @@ public class ListTransferPanel extends JPanel implements ActionListener, ListSel
             mLogger.errorNoloc(mLoc.t("PRSR191: Error Occured while adding the table {0}to model, which user has added using more table dialog", tableName), ex);
             NotifyDescriptor d = new NotifyDescriptor.Message("Table " + tableName + " which was added using more table dialog, can not be added to the model.", NotifyDescriptor.ERROR_MESSAGE);
             DialogDisplayer.getDefault().notify(d);
-
             return false;
         }
 
