@@ -344,7 +344,7 @@ public class ParserConfigurationPanel extends javax.swing.JPanel implements Help
 
         buttonGroup1.add(manualButton);
         manualButton.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/makeproject/ui/wizards/Bundle").getString("ParserManualConfiguration_MN").charAt(0));
-        org.openide.awt.Mnemonics.setLocalizedText(manualButton, bundle.getString("ParserManualConfiguration")); // NOI18N
+        manualButton.setText(bundle.getString("ParserManualConfiguration")); // NOI18N
         manualButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
         manualButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -360,7 +360,7 @@ public class ParserConfigurationPanel extends javax.swing.JPanel implements Help
 
         buttonGroup1.add(automaticButton);
         automaticButton.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/makeproject/ui/wizards/Bundle").getString("ParserAutomaticConfiguration_MN").charAt(0));
-        org.openide.awt.Mnemonics.setLocalizedText(automaticButton, bundle.getString("ParserAutomaticConfiguration")); // NOI18N
+        automaticButton.setText(bundle.getString("ParserAutomaticConfiguration")); // NOI18N
         automaticButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
         automaticButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -388,7 +388,7 @@ public class ParserConfigurationPanel extends javax.swing.JPanel implements Help
 
         configurationLabel.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/makeproject/ui/wizards/Bundle").getString("ConfigurationLevelLabel_MN").charAt(0));
         configurationLabel.setLabelFor(configurationComboBox);
-        org.openide.awt.Mnemonics.setLocalizedText(configurationLabel, bundle.getString("ConfigurationLevelLabel")); // NOI18N
+        configurationLabel.setText(bundle.getString("ConfigurationLevelLabel")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
@@ -397,7 +397,7 @@ public class ParserConfigurationPanel extends javax.swing.JPanel implements Help
 
         librariesLabel.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/makeproject/ui/wizards/Bundle").getString("AdditionalLibrariesLabel_MN").charAt(0));
         librariesLabel.setLabelFor(librariesTextField);
-        org.openide.awt.Mnemonics.setLocalizedText(librariesLabel, bundle.getString("AdditionalLibrariesLabel")); // NOI18N
+        librariesLabel.setText(bundle.getString("AdditionalLibrariesLabel")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
@@ -412,7 +412,7 @@ public class ParserConfigurationPanel extends javax.swing.JPanel implements Help
         discoveryPanel.add(librariesTextField, gridBagConstraints);
 
         additionalLibrariesButton.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/makeproject/ui/wizards/Bundle").getString("LIBRARY_EDIT_BUTTON_MN").charAt(0));
-        org.openide.awt.Mnemonics.setLocalizedText(additionalLibrariesButton, bundle.getString("LIBRARY_EDIT_BUTTON_TXT")); // NOI18N
+        additionalLibrariesButton.setText(bundle.getString("LIBRARY_EDIT_BUTTON_TXT")); // NOI18N
         additionalLibrariesButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 additionalLibrariesButtonActionPerformed(evt);
