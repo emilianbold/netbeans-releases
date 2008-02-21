@@ -184,6 +184,11 @@ public class Installer extends ModuleInstall {
                 return ConnectStatus.NO_SERVER;
             }
             
+            // Issue 127994 - driver sometimes silently returns null (??)
+            if ( conn == null ) {
+                return ConnectStatus.NO_SERVER;
+            }
+            
             try { 
                 conn.close();
             } catch (SQLException sqle) {
