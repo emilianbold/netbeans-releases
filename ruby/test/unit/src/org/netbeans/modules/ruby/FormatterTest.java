@@ -44,7 +44,7 @@ package org.netbeans.modules.ruby;
 import java.util.List;
 import javax.swing.JTextArea;
 import javax.swing.text.Caret;
-import org.netbeans.api.gsf.ParserResult;
+import org.netbeans.fpi.gsf.ParserResult;
 import org.netbeans.api.ruby.platform.RubyInstallation;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
@@ -86,9 +86,7 @@ public class FormatterTest extends RubyTestBase {
             endPos = doc.getLength();
         }
         
-        //ParserResult result = parse(fo);
-        ParserResult result = null;
-        formatter.reindent(doc, startPos, endPos, result);
+        formatter.reindent(doc, startPos, endPos);
 
         String formatted = doc.getText(0, doc.getLength());
         assertEquals(reformatted, formatted);
@@ -104,7 +102,7 @@ public class FormatterTest extends RubyTestBase {
         Formatter formatter = new Formatter();
         IndentPrefs preferences = new IndentPrefs(2,2);
 
-        formatter.reindent(doc, 0, doc.getLength(), null);
+        formatter.reindent(doc, 0, doc.getLength());
         String after = doc.getText(0, doc.getLength());
         assertEquals(before, after);
     }
@@ -135,8 +133,7 @@ public class FormatterTest extends RubyTestBase {
             int endPos = startPos;
 
             //ParserResult result = parse(fo);
-            ParserResult result = null;
-            formatter.reindent(doc, startPos, endPos, result);
+            formatter.reindent(doc, startPos, endPos);
 
             String formatted = doc.getText(0, doc.getLength());
             assertEquals(reformatted, formatted);
@@ -206,10 +203,8 @@ if (fo.getName().equals("httputils") && fo.getParent().getName().equals("webrick
             // check that we end up at indentation level 0
             BaseDocument doc = getDocument(fo);
             
-            ParserResult result =  null;// parse(fo);
-
             try {
-                formatter.reindent(doc, 0, doc.getLength(), result);
+                formatter.reindent(doc, 0, doc.getLength());
             } catch (Exception ex) {
                 System.err.println("Exception processing " + FileUtil.getFileDisplayName(fo));
                 fail(ex.toString());
@@ -232,7 +227,7 @@ if (fo.getName().equals("httputils") && fo.getParent().getName().equals("webrick
                     if (indentation != 0) {
                         // Make sure the file actually compiles - we might be picking up some testfiles in the
                         // JRuby tree which don't actually pass
-                        result = parse(fo);
+                        ParserResult result = parse(fo);
                         RubyParseResult rpr = (RubyParseResult)result;
                         
                         if (rpr.getRootNode() == null) {

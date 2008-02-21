@@ -55,14 +55,15 @@ import javax.swing.text.Position;
 import org.jruby.ast.MethodDefNode;
 import org.jruby.ast.Node;
 import org.jruby.ast.NodeTypes;
-import org.netbeans.api.gsf.CompilationInfo;
-import org.netbeans.api.gsf.OffsetRange;
+import org.netbeans.fpi.gsf.CompilationInfo;
+import org.netbeans.fpi.gsf.OffsetRange;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
 import org.netbeans.modules.ruby.AstPath;
 import org.netbeans.modules.ruby.AstUtilities;
 import org.netbeans.modules.ruby.NbUtilities;
 import org.netbeans.modules.ruby.RubyIndex;
+import org.netbeans.modules.ruby.RubyMimeResolver;
 import org.netbeans.modules.ruby.hints.spi.EditList;
 import org.netbeans.modules.ruby.hints.spi.PreviewableFix;
 import org.netbeans.modules.ruby.lexer.LexUtilities;
@@ -167,7 +168,7 @@ class IntroduceFix implements PreviewableFix {
         }
 
         String guessedName = AstUtilities.guessName(info, lexRange, astRange);
-        RubyIndex index = RubyIndex.get(info.getIndex());
+        RubyIndex index = RubyIndex.get(info.getIndex(RubyMimeResolver.RUBY_MIME_TYPE));
         AstPath startPath = new AstPath(AstUtilities.getRoot(info), astRange.getStart());
         List<OffsetRange> duplicates = null;
 

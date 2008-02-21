@@ -45,9 +45,9 @@ import java.util.Collections;
 import java.util.Set;
 import javax.swing.Icon;
 import javax.swing.text.Position.Bias;
-import org.netbeans.api.gsf.Modifier;
+import org.netbeans.fpi.gsf.Modifier;
 
-import org.netbeans.api.gsf.OffsetRange;
+import org.netbeans.fpi.gsf.OffsetRange;
 import org.netbeans.napi.gsfret.source.CompilationInfo;
 import org.netbeans.napi.gsfret.source.UiUtils;
 import org.netbeans.editor.BaseDocument;
@@ -120,7 +120,7 @@ public class WhereUsedElement extends SimpleRefactoringElementImplementation {
         assert range != OffsetRange.NONE;
 
         range = LexUtilities.getLexerOffsets(info, range);
-        assert range != OffsetRange.NONE;
+        assert range != OffsetRange.NONE : tree;
         
         Set<Modifier> modifiers = Collections.emptySet();
         if (tree.getElement() != null) {
@@ -176,7 +176,16 @@ public class WhereUsedElement extends SimpleRefactoringElementImplementation {
         }
 
         StringBuilder sb = new StringBuilder();
-        sb.append(RetoucheUtils.getHtml(content.subSequence(sta, start).toString()));
+        if (start < sta) {
+            System.out.println("Problem!");
+            start = sta;
+        }
+        if (en < end) {
+            System.out.println("Problem!");
+            en = end;
+        }
+        final CharSequence subSequence = content.subSequence(sta, start);
+        sb.append(RetoucheUtils.getHtml(subSequence.toString()));
         sb.append("<b>"); // NOI18N
         sb.append(content.subSequence(start, end));
         sb.append("</b>"); // NOI18N

@@ -217,6 +217,7 @@ public class BrowseFolders extends javax.swing.JPanel implements ExplorerManager
 
         dialogDescriptor.setClosingOptions( new Object[] { options[ 0 ], options[ 1 ] } );
         Dialog dialog = DialogDisplayer.getDefault().createDialog( dialogDescriptor );
+        dialog.getAccessibleContext().setAccessibleDescription("This is the dialog which enables user to browse folders");
         dialog.setVisible(true);
 
         return optionsListener.getResult();

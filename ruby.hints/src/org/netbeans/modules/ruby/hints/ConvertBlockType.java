@@ -41,8 +41,8 @@ import org.jruby.ast.Node;
 import org.jruby.ast.NodeTypes;
 import org.jruby.ast.YieldNode;
 import org.jruby.lexer.yacc.ISourcePosition;
-import org.netbeans.api.gsf.CompilationInfo;
-import org.netbeans.api.gsf.OffsetRange;
+import org.netbeans.fpi.gsf.CompilationInfo;
+import org.netbeans.fpi.gsf.OffsetRange;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
@@ -85,12 +85,12 @@ public class ConvertBlockType implements AstRule {
         Node node = context.node;
         CompilationInfo info = context.compilationInfo;
         int caretOffset = context.caretOffset;
+        BaseDocument doc = context.doc;
         
         assert (node.nodeId == NodeTypes.ITERNODE);
         try {
             int astOffset = node.getPosition().getStartOffset();
             int lexOffset = LexUtilities.getLexerOffset(info, astOffset);
-            BaseDocument doc = (BaseDocument) info.getDocument();
             if (lexOffset == -1 || lexOffset > doc.getLength() - 1) {
                 return;
             }
@@ -180,8 +180,6 @@ public class ConvertBlockType implements AstRule {
                 result.add(desc);
             }
         } catch (BadLocationException ex) {
-            Exceptions.printStackTrace(ex);
-        } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
         }
     }
@@ -386,20 +384,6 @@ public class ConvertBlockType implements AstRule {
             int min = Integer.MAX_VALUE;
             while (true) {
                 int start = node.getPosition().getStartOffset();
-                if (node.nodeId == NodeTypes.YIELDNODE) {
-                    // Yieldnodes sometimes have the wrong offsets - see testHintFix19
-                    // as well as highlightExitPoints in OccurrencesFinder for more
-                    try {
-                        OffsetRange range = AstUtilities.getYieldNodeRange((YieldNode)node, 
-                                (BaseDocument)info.getDocument());
-                        if (range != OffsetRange.NONE) {
-                            start = range.getStart();
-                        }
-                    } catch (IOException ioe) {
-                        Exceptions.printStackTrace(ioe);
-                    }
-                }
-
                 if (start < min) {
                     min = start;
                 }

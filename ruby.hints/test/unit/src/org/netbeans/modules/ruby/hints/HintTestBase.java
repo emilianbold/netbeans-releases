@@ -28,12 +28,12 @@
 package org.netbeans.modules.ruby.hints;
 
 import java.util.Collections;
-import org.netbeans.api.gsf.OffsetRange;
+import org.netbeans.fpi.gsf.OffsetRange;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
 import org.netbeans.modules.ruby.RubyTestBase;
 import java.util.Map;
-import org.netbeans.api.gsf.CompilationInfo;
+import org.netbeans.fpi.gsf.CompilationInfo;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -44,8 +44,8 @@ import java.util.Set;
 import java.util.prefs.Preferences;
 import javax.swing.text.Document;
 import org.jruby.ast.Node;
-import org.netbeans.api.gsf.CompilationInfo;
-import org.netbeans.api.gsf.OffsetRange;
+import org.netbeans.fpi.gsf.CompilationInfo;
+import org.netbeans.fpi.gsf.OffsetRange;
 import org.netbeans.api.ruby.platform.TestUtil;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
@@ -232,7 +232,7 @@ public abstract class HintTestBase extends RubyTestBase {
             }
             assertNotNull("Unexpected parse error in test case " + 
                     FileUtil.getFileDisplayName(info.getFileObject()) + "\nErrors = " + 
-                    info.getDiagnostics(), root);
+                    info.getErrors(), root);
         }
 
         String text = info.getText();

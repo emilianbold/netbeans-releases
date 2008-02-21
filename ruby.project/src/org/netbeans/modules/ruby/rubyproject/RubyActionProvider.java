@@ -56,7 +56,7 @@ import java.util.Set;
 import javax.swing.JButton;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-import org.netbeans.api.gsf.DeclarationFinder.DeclarationLocation;
+import org.netbeans.fpi.gsf.DeclarationFinder.DeclarationLocation;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.ruby.platform.execution.ExecutionDescriptor;
