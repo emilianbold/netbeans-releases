@@ -52,7 +52,7 @@ made subject to such option by the copyright holder.
     "**/*Hid.*"
 -->
 
-<mconfig name="openide unit test config">
+<mconfig name="core.kit unit test config">
 
     <testbag testattribs="sheet" executor="code" name="property sheet blinking tests">
         <testset dir="unit/src">
