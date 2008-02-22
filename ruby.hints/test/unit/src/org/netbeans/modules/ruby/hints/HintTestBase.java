@@ -441,12 +441,12 @@ public abstract class HintTestBase extends RubyTestBase {
 
     protected void applyHint(NbTestCase test, Rule hint, String relFilePath,
             String caretLine, String fixDesc) throws Exception {
+        initializeRegistry();
         ComputedHints r = getHints(test, hint, relFilePath, null, caretLine);
         CompilationInfo info = r.info;
         
         Fix fix = findApplicableFix(r, fixDesc);
         assertNotNull(fix);
-        
         fix.implement();
         
         Document doc = info.getDocument();

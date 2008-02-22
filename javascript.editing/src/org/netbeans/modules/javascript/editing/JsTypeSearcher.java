@@ -51,7 +51,6 @@ import java.util.regex.Pattern;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import org.mozilla.javascript.Node;
-import org.netbeans.fpi.gsf.CompilationInfo;
 import org.netbeans.fpi.gsf.ElementHandle;
 import org.netbeans.fpi.gsf.Index;
 import org.netbeans.fpi.gsf.Index.SearchScope;
@@ -222,7 +221,6 @@ public class JsTypeSearcher implements TypeSearcher {
 
     private class JsTypeDescriptor extends GsfTypeDescriptor {
         private final IndexedFunction element;
-        private final ElementHandle handle;
         private String projectName;
         private Icon projectIcon;
         private final Helper helper;
@@ -232,10 +230,6 @@ public class JsTypeSearcher implements TypeSearcher {
         public JsTypeDescriptor(IndexedFunction element, Helper helper) {
             this.element = element;
             this.helper = helper;
-            
-            // XXX I should get away from this
-CompilationInfo info = null;            
-            handle = JsParser.createHandle(info, element);
         }
 
         public Icon getIcon() {
@@ -245,8 +239,7 @@ CompilationInfo info = null;
             //if (isLibrary) {
             //    return new ImageIcon(org.openide.util.Utilities.loadImage(Js_KEYWORD));
             //}
-            //return helper.getIcon(element);
-            return helper.getIcon(handle);
+            return helper.getIcon(element);
         }
 
         public String getTypeName() {
@@ -325,8 +318,7 @@ CompilationInfo info = null;
                 return;
             }
             
-            //helper.open(fileObject, element);
-            helper.open(fileObject, handle);
+            helper.open(fileObject, element);
         }
 
         public String getContextName() {
@@ -359,7 +351,7 @@ CompilationInfo info = null;
         }
 
         public ElementHandle getElement() {
-            return handle;
+            return element;
         }
 
         public int getOffset() {

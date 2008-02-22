@@ -199,6 +199,7 @@ public class CompilationInfo extends org.netbeans.fpi.gsf.CompilationInfo {
     
     public void addEmbeddingResult(String mimeType, ParserResult result) {
         embeddedResults.put(mimeType, result);
+        result.setInfo(this);
     }
 
     @Override
