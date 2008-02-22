@@ -960,11 +960,6 @@ public class CCFormatSupport extends ExtFormatSupport {
         return indent;
     }
 
-    private void getStatementKind(TokenItem stmtStart, TokenItem t){
-        
-        
-    }
-    
     private boolean isStatement(TokenItem t){
         boolean likeDeclaration = false;
         boolean findLParen = false;
