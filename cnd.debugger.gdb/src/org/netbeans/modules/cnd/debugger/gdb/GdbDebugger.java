@@ -67,6 +67,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.modules.cnd.debugger.gdb.breakpoints.BreakpointImpl;
 import org.netbeans.modules.cnd.debugger.gdb.breakpoints.GdbBreakpoint;
+import org.netbeans.modules.cnd.debugger.gdb.disassembly.Disassembly;
 import org.netbeans.modules.cnd.debugger.gdb.event.GdbBreakpointEvent;
 import org.netbeans.modules.cnd.debugger.gdb.expr.Expression;
 import org.netbeans.modules.cnd.debugger.gdb.profiles.GdbProfile;
@@ -135,6 +136,9 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
     /** ID of GDB Debugger SessionProvider */
     public static final String          SESSION_PROVIDER_ID = "netbeans-cnd-GdbSessionProvider"; // NOI18N
     
+    /** Dis update */
+    public static final String          DIS_UPDATE = "dis_update"; // NOI18N
+    
     private GdbProxy gdb;
     private ContextProvider lookupProvider;
     private String state = STATE_NONE;
@@ -167,6 +171,7 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
     private boolean dlopenPending;
     private String lastShare;
     private int shareToken;
+    private final Disassembly disassembly;
         
     public GdbDebugger(ContextProvider lookupProvider) {
         this.lookupProvider = lookupProvider;
@@ -186,6 +191,7 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
                     "GdbEngineProvider must be used to start GdbDebugger!"); // NOI18N
         }
         threadsViewInit();
+        disassembly = new Disassembly(this);
     }
     
     public ContextProvider getLookup() {
@@ -594,6 +600,7 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
             setState(STATE_NONE);
             programPID = 0;
             gdbEngineProvider.getDestructor().killEngine();
+            Disassembly.close();
             GdbTimer.getTimer("Step").reset(); // NOI18N
         }
     }
@@ -699,6 +706,8 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
             if (cb != null) {
                 cb.done();
             }
+        } else if (msg.startsWith(Disassembly.RESPONSE_HEADER)) { // NOI18N
+            disassembly.update(msg);
         } else if (msg.equals("^done") && getState().equals(STATE_SILENT_STOP)) { // NOI18N
             log.fine("GD.resultRecord[" + token + "]: Got \"^done\" in silent stop");
             setRunning();
@@ -759,6 +768,10 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
                 log.warning("Unexpected gdb error: " + msg);
             }
         }
+    }
+    
+    public void fireDisUpdate() {
+        firePropertyChange(DIS_UPDATE, 0, 1);
     }
     
     /** Handle gdb responses starting with '*' */
@@ -996,7 +1009,7 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
             }
             if (killcmd.size() > 0) {
                 killcmd.add("-s"); // NOI18N
-                killcmd.add(Integer.toString(signal));
+                killcmd.add((Utilities.isMac() && signal == 2) ? "TRAP" : Integer.toString(signal));
                 killcmd.add(Long.toString(pid));
                 ProcessBuilder pb = new ProcessBuilder(killcmd);
                 try {
@@ -1036,6 +1049,13 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
     public void stepOver() {
         setState(STATE_RUNNING);
         gdb.exec_next();
+    }
+    
+    /**
+     */
+    public void stepI() {
+        setState(STATE_RUNNING);
+        gdb.exec_instruction();
     }
     
     /**
@@ -1850,5 +1870,9 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
     
     public boolean isCplusPlus() {
         return cplusplus;
+    }
+
+    public Disassembly getDisassembly() {
+        return disassembly;
     }
 }
