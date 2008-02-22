@@ -493,7 +493,7 @@ public final class J2eePlatform {
         Map<FileObject, String> copied = new  HashMap<FileObject, String>();
 
         List<URL> contentItem = new ArrayList<URL>();
-        content.put(ServerLibraryTypeProvider.VOLUME_CLASSPATH, contentItem); // NOI18N
+        content.put(ServerLibraryTypeProvider.VOLUME_CLASSPATH, contentItem);
         copyFiles(copied, usedNames, jarFolder, folderName,
                 getVolumeContent(this, J2eeLibraryTypeProvider.VOLUME_TYPE_CLASSPATH), contentItem);
 
@@ -522,9 +522,15 @@ public final class J2eePlatform {
         copyFiles(copied, usedNames, jarFolder, folderName,
                 getToolClasspathEntries(TOOL_JWSDP), contentItem);
 
-        // TODO javadoc and sources
-        // getVolumeContent(this, J2eeLibraryTypeProvider.VOLUME_TYPE_JAVADOC)
-        // getVolumeContent(this, J2eeLibraryTypeProvider.VOLUME_TYPE_SRC)
+        contentItem = new ArrayList<URL>();
+        content.put(ServerLibraryTypeProvider.VOLUME_JAVADOC, contentItem);
+        copyFiles(copied, usedNames, jarFolder, folderName,
+                getVolumeContent(this, J2eeLibraryTypeProvider.VOLUME_TYPE_JAVADOC), contentItem);
+
+        contentItem = new ArrayList<URL>();
+        content.put(ServerLibraryTypeProvider.VOLUME_SOURCE, contentItem);
+        copyFiles(copied, usedNames, jarFolder, folderName,
+                getVolumeContent(this, J2eeLibraryTypeProvider.VOLUME_TYPE_SRC), contentItem);
 
         return manager.createLibrary(ServerLibraryTypeProvider.LIBRARY_TYPE, libraryName, content); // NOI18N
     }
@@ -587,7 +593,9 @@ public final class J2eePlatform {
             }
             URL u = LibrariesSupport.convertFilePathToURL(folderName
                     + File.separator + copied.get(jarObject));
-            content.add(u);
+            if (!content.contains(u)) {
+                content.add(u);
+            }
         }
     }
 

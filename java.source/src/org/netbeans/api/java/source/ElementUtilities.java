@@ -506,14 +506,19 @@ public final class ElementUtilities {
             }
         }
         Types types = JavacTypes.instance(ctx);
+        DeclaredType implType = (DeclaredType)impl.asType();
         for (TypeMirror t : types.directSupertypes(element.asType())) {
             for (ExecutableElement ee : findUnimplementedMethods(impl, (TypeElement) ((DeclaredType) t).asElement())) {
                 //check if "the same" method has already been added:
                 boolean exists = false;
+                ExecutableType eeType = (ExecutableType)types.asMemberOf(implType, ee);
                 for (ExecutableElement existing : undef) {
-                    if (info.getElements().overrides(existing, ee, impl)) {
-                        exists = true;
-                        break;
+                    if (existing.getSimpleName().contentEquals(ee.getSimpleName())) {
+                        ExecutableType existingType = (ExecutableType)types.asMemberOf(implType, existing);
+                        if (types.isSubsignature(eeType, existingType)) {
+                            exists = true;
+                            break;
+                        }
                     }
                 }
                 if (!exists) {

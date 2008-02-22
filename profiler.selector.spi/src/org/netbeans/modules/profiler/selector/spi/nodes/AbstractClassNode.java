@@ -22,7 +22,6 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * Contributor(s):
- *
  * The Original Software is NetBeans. The Initial Developer of the Original
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
@@ -39,44 +38,55 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.spring.beans.wizards;
+package org.netbeans.modules.profiler.selector.spi.nodes;
 
-import javax.swing.event.ChangeListener;
-import org.openide.WizardDescriptor;
-import org.openide.util.HelpCtx;
+import org.netbeans.api.java.source.ClasspathInfo;
+import org.netbeans.api.java.source.ElementHandle;
+import org.netbeans.modules.profiler.selector.spi.nodes.ContainerNode;
+import javax.lang.model.element.NestingKind;
+import javax.lang.model.element.TypeElement;
+import javax.swing.Icon;
 
-public class BeansConfigNamespacesWizardPanel implements WizardDescriptor.Panel {
 
-    public static final String INCLUDED_NAMESPACES = "includedNamespaces"; // NOI18N
+/**
+ *
+ * @author Jaroslav Bachorik
+ */
+public abstract class AbstractClassNode extends ContainerNode {
+    //~ Instance fields ----------------------------------------------------------------------------------------------------------
 
-    private SpringXMLConfigNamespacesVisual component;
+    private ClasspathInfo cpInfo;
+    private ElementHandle<TypeElement> classHandle;
+    private boolean anonymous;
 
-    public SpringXMLConfigNamespacesVisual getComponent() {
-        if (component == null) {
-            component = new SpringXMLConfigNamespacesVisual();
-        }
-        return component;
+    //~ Constructors -------------------------------------------------------------------------------------------------------------
+
+    /** Creates a new instance of AbstractClassNode */
+    public AbstractClassNode(ClasspathInfo cpInfo, Icon icon, TypeElement classElement, ContainerNode parent) {
+        this(cpInfo, icon, classElement, classElement.getSimpleName().toString(), parent);
+        this.cpInfo = cpInfo;
+        this.classHandle = ElementHandle.create(classElement);
+        this.anonymous = classElement.getNestingKind().compareTo(NestingKind.ANONYMOUS) == 0;
     }
 
-    public HelpCtx getHelp() {
-        return new HelpCtx(BeansConfigNamespacesWizardPanel.class);
+    public AbstractClassNode(ClasspathInfo cpInfo, Icon icon, TypeElement classElement, String className, ContainerNode parent) {
+        super(className, icon, parent);
+        this.cpInfo = cpInfo;
+        this.classHandle = ElementHandle.create(classElement);
+        this.anonymous = classElement.getNestingKind().compareTo(NestingKind.ANONYMOUS) == 0;
     }
 
-    public boolean isValid() {
-        return true;
+    //~ Methods ------------------------------------------------------------------------------------------------------------------
+
+    public boolean isAnonymous() {
+        return anonymous;
     }
 
-    public final void addChangeListener(ChangeListener l) {
+    public ElementHandle<TypeElement> getClassHandle() {
+        return classHandle;
     }
 
-    public final void removeChangeListener(ChangeListener l) {
-    }
-
-    public void readSettings(Object settings) {
-    }
-
-    public void storeSettings(Object settings) {
-        WizardDescriptor wd = (WizardDescriptor) settings;
-        wd.putProperty(INCLUDED_NAMESPACES, getComponent().getIncludedNamespaces());
+    public ClasspathInfo getCpInfo() {
+        return cpInfo;
     }
 }
