@@ -222,5 +222,9 @@ public class LocalsTreeModel implements TreeModel {
     
     static class Dummy {
         // Empty, stub class
+        
+        public String toString() {
+            return "";
+        }
     }
 }
