@@ -3,7 +3,7 @@ package org.netbeans.modules.groovy.editor.elements;
 import java.util.Set;
 import org.codehaus.groovy.ast.ASTNode;
 import org.codehaus.groovy.ast.ClassNode;
-import org.netbeans.fpi.gsf.ElementKind;
+import org.netbeans.modules.gsf.api.ElementKind;
 
 public class AstClassElement extends AstElement implements ClassElement {
     private String fqn;

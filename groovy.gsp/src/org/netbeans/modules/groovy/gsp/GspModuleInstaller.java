@@ -70,7 +70,7 @@ public class GspModuleInstaller extends ModuleInstall {
             Object mm = meth.invoke(moduleSystem, new Object[0]);
             Method moduleMeth = mm.getClass().getMethod("get", new Class[]{String.class}); //NOI18N
 
-            Object gsfapi = moduleMeth.invoke(mm, "org.netbeans.api.gsf"); //NOI18N
+            Object gsfapi = moduleMeth.invoke(mm, "org.netbeans.modules.gsf.api"); //NOI18N
             modifyFriends(gsfapi);
 
             Object gsf = moduleMeth.invoke(mm, "org.netbeans.modules.gsf"); //NOI18N

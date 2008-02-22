@@ -50,9 +50,9 @@ package org.netbeans.modules.groovy.editor.elements;
 
 import java.util.Collections;
 import java.util.Set;
-import org.netbeans.fpi.gsf.Element;
-import org.netbeans.fpi.gsf.ElementKind;
-import org.netbeans.fpi.gsf.Modifier;
+import org.netbeans.modules.gsf.api.Element;
+import org.netbeans.modules.gsf.api.ElementKind;
+import org.netbeans.modules.gsf.api.Modifier;
 
 public class CommentElement implements Element {
 

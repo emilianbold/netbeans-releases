@@ -51,8 +51,8 @@ import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
-import org.netbeans.fpi.gsf.CompilationInfo;
-import org.netbeans.fpi.gsf.OffsetRange;
+import org.netbeans.modules.gsf.api.CompilationInfo;
+import org.netbeans.modules.gsf.api.OffsetRange;
 import org.netbeans.modules.groovy.editor.lexer.GroovyTokenId;
 import org.netbeans.modules.groovy.editor.lexer.LexUtilities;
 import org.netbeans.modules.groovy.editor.options.CodeStyle;
@@ -70,7 +70,7 @@ import org.openide.util.Exceptions;
  * @author Martin Adamek
  * @author Gopalakrishnan Sankaran
  */
-public class Formatter implements org.netbeans.fpi.gsf.Formatter {
+public class Formatter implements org.netbeans.modules.gsf.api.Formatter {
     private boolean isGspDocument;
     private CodeStyle codeStyle;
     private int rightMarginOverride = -1;

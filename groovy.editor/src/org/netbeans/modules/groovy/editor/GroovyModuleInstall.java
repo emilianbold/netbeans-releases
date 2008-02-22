@@ -67,7 +67,7 @@ public class GroovyModuleInstall extends ModuleInstall {
             meth = moduleSystem.getClass().getMethod("getManager", new Class[0]); //NOI18N
             Object mm = meth.invoke(moduleSystem, new Object[0]);
             Method moduleMeth = mm.getClass().getMethod("get", new Class[]{String.class}); //NOI18N
-            Object gsfapi = moduleMeth.invoke(mm, "org.netbeans.api.gsf"); //NOI18N
+            Object gsfapi = moduleMeth.invoke(mm, "org.netbeans.modules.gsf.api"); //NOI18N
             if (gsfapi != null) {
                 Field frField = gsfapi.getClass().getSuperclass().getDeclaredField("friendNames"); //NOI18N
                 frField.setAccessible(true);

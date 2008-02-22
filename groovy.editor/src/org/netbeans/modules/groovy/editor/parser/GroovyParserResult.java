@@ -41,12 +41,12 @@
 
 package org.netbeans.modules.groovy.editor.parser;
 
-import org.netbeans.fpi.gsf.ElementHandle;
-import org.netbeans.fpi.gsf.OffsetRange;
-import org.netbeans.fpi.gsf.ParserFile;
-import org.netbeans.fpi.gsf.ParserResult;
-import org.netbeans.fpi.gsf.ParserResult.AstTreeNode;
-import org.netbeans.fpi.gsf.annotations.NonNull;
+import org.netbeans.modules.gsf.api.ElementHandle;
+import org.netbeans.modules.gsf.api.OffsetRange;
+import org.netbeans.modules.gsf.api.ParserFile;
+import org.netbeans.modules.gsf.api.ParserResult;
+import org.netbeans.modules.gsf.api.ParserResult.AstTreeNode;
+import org.netbeans.modules.gsf.api.annotations.NonNull;
 import org.netbeans.modules.groovy.editor.StructureAnalyzer;
 import org.netbeans.modules.groovy.editor.elements.AstRootElement;
 

@@ -44,7 +44,7 @@ package org.netbeans.modules.groovy.editor;
 import java.util.Collection;
 import java.util.Collections;
 import org.netbeans.api.lexer.Language;
-import org.netbeans.fpi.gsf.GsfLanguage;
+import org.netbeans.modules.gsf.api.GsfLanguage;
 import org.netbeans.modules.groovy.editor.lexer.GroovyTokenId;
 
 /*

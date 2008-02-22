@@ -71,10 +71,10 @@ import org.codehaus.groovy.control.SourceUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.editor.Utilities;
-import org.netbeans.fpi.gsf.CompilationInfo;
-import org.netbeans.fpi.gsf.OffsetRange;
-import org.netbeans.fpi.gsf.ParserResult;
-import org.netbeans.fpi.gsf.TranslatedSource;
+import org.netbeans.modules.gsf.api.CompilationInfo;
+import org.netbeans.modules.gsf.api.OffsetRange;
+import org.netbeans.modules.gsf.api.ParserResult;
+import org.netbeans.modules.gsf.api.TranslatedSource;
 
 /**
  *

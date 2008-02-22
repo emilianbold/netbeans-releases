@@ -44,12 +44,12 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
-import org.netbeans.fpi.gsf.Index;
-import org.netbeans.fpi.gsf.IndexDocument;
-import org.netbeans.fpi.gsf.IndexDocumentFactory;
-import org.netbeans.fpi.gsf.Indexer;
-import org.netbeans.fpi.gsf.ParserFile;
-import org.netbeans.fpi.gsf.ParserResult;
+import org.netbeans.modules.gsf.api.Index;
+import org.netbeans.modules.gsf.api.IndexDocument;
+import org.netbeans.modules.gsf.api.IndexDocumentFactory;
+import org.netbeans.modules.gsf.api.Indexer;
+import org.netbeans.modules.gsf.api.ParserFile;
+import org.netbeans.modules.gsf.api.ParserResult;
 import org.openide.filesystems.FileObject;
 
 /**

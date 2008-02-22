@@ -46,7 +46,7 @@ import org.netbeans.modules.groovy.editor.test.GroovyTestBase;
 import org.openide.filesystems.FileObject;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.netbeans.fpi.gsf.CompilationInfo;
+import org.netbeans.modules.gsf.api.CompilationInfo;
 
 /**
  *
