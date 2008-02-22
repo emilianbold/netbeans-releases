@@ -21,6 +21,12 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  * 
+ * Contributor(s):
+ * 
+ * The Original Software is NetBeans. The Initial Developer of the Original
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Microsystems, Inc. All Rights Reserved.
+ * 
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -31,30 +37,24 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
- * Contributor(s):
- * 
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.websvc.saas.codegen.java;
 
-package org.netbeans.modules.websvc.saas.model;
-
-import org.netbeans.modules.websvc.saas.model.jaxb.Method;
-import org.netbeans.modules.websvc.saas.model.jaxb.SaasServices;
+import org.netbeans.modules.websvc.saas.model.CustomSaasMethod;
+import java.io.IOException;
+import javax.swing.text.JTextComponent;
+import org.openide.filesystems.FileObject;
 
 /**
- * Typing purpose
+ * Code generator for REST services wrapping WSDL-based web service.
+ *
  * @author nam
  */
-public class CustomSaas extends Saas {
+public class CustomResourceClassCodeGenerator extends CustomCodeGenerator {
+    
+    public CustomResourceClassCodeGenerator(JTextComponent targetComponent, 
+            FileObject targetFile, CustomSaasMethod m) throws IOException {
+        super(targetComponent, targetFile, m);
+    }
 
-    public CustomSaas(SaasGroup parentGroup, SaasServices services) {
-        super(parentGroup, services);
-    }
-    
-    @Override
-    protected CustomSaasMethod createSaasMethod(Method method) {
-        return new CustomSaasMethod(this, method);
-    }
-    
 }

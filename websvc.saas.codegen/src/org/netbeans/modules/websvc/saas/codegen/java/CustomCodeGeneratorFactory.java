@@ -21,6 +21,12 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  * 
+ * Contributor(s):
+ * 
+ * The Original Software is NetBeans. The Initial Developer of the Original
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Microsystems, Inc. All Rights Reserved.
+ * 
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -31,30 +37,42 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
- * Contributor(s):
- * 
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.websvc.saas.codegen.java;
 
-package org.netbeans.modules.websvc.saas.model;
-
-import org.netbeans.modules.websvc.saas.model.jaxb.Method;
-import org.netbeans.modules.websvc.saas.model.jaxb.SaasServices;
+import java.io.IOException;
+import javax.swing.text.JTextComponent;
+import org.netbeans.modules.websvc.saas.codegen.java.support.Util;
+import org.netbeans.modules.websvc.saas.model.CustomSaasMethod;
+import org.openide.filesystems.FileObject;
+import org.openide.loaders.DataObject;
+import org.openide.loaders.DataObjectNotFoundException;
 
 /**
- * Typing purpose
+ * Code generator factory for REST services wrapping WADL-based web service.
+ *
  * @author nam
  */
-public class CustomSaas extends Saas {
+public class CustomCodeGeneratorFactory {
 
-    public CustomSaas(SaasGroup parentGroup, SaasServices services) {
-        super(parentGroup, services);
+    public static CustomCodeGenerator create(JTextComponent targetComponent, 
+            FileObject targetFO, CustomSaasMethod method) throws IOException {
+        CustomCodeGenerator codegen = null;
+        try {
+            DataObject d = DataObject.find(targetFO);
+            if(Util.isRestJavaFile(d)) {
+                codegen = new CustomResourceClassCodeGenerator(
+                                targetComponent, targetFO, method);
+            } else if(Util.isServlet(d)) {
+                codegen = new CustomServletCodeGenerator(
+                                targetComponent, targetFO, method);
+            } else {
+                codegen = new CustomJavaClientCodeGenerator(
+                                targetComponent, targetFO, method);
+            }
+        } catch (DataObjectNotFoundException ex) {
+            throw new IOException(ex.getMessage());
+        }
+        return codegen;
     }
-    
-    @Override
-    protected CustomSaasMethod createSaasMethod(Method method) {
-        return new CustomSaasMethod(this, method);
-    }
-    
 }

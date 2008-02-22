@@ -40,42 +40,74 @@
  */
 package org.netbeans.modules.websvc.saas.codegen.java;
 
-import org.netbeans.modules.websvc.saas.model.WadlSaasMethod;
+import org.netbeans.modules.websvc.saas.model.CustomSaasMethod;
+import com.sun.source.tree.MethodTree;
 import java.io.IOException;
-import java.util.Collection;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.java.source.JavaSource;
-import org.netbeans.api.project.Project;
+import org.netbeans.api.java.source.ModificationResult;
+import org.netbeans.api.java.source.WorkingCopy;
+import org.netbeans.api.progress.ProgressHandle;
+import org.netbeans.modules.websvc.saas.codegen.java.Constants.MimeType;
 import org.netbeans.modules.websvc.saas.codegen.java.model.ParameterInfo;
-import org.netbeans.modules.websvc.saas.codegen.java.model.WadlSaasBean;
+import org.netbeans.modules.websvc.saas.codegen.java.model.CustomSaasBean;
+import org.netbeans.modules.websvc.saas.codegen.java.support.AbstractTask;
 import org.netbeans.modules.websvc.saas.codegen.java.support.JavaSourceHelper;
 import org.openide.filesystems.FileObject;
 
 /**
- * Code generator for REST services wrapping WSDL-based web service.
+ * Code generator for Accessing Saas services.
  *
  * @author nam
  */
-public class JaxRsCodeGenerator extends SaasCodeGenerator {
+public class CustomServletCodeGenerator extends CustomCodeGenerator {
 
-    public JaxRsCodeGenerator(JTextComponent targetComponent, 
-            FileObject targetFile, WadlSaasMethod m) throws IOException {
-        super(targetComponent, targetFile, new WadlSaasBean(m));
+    public CustomServletCodeGenerator(JTextComponent targetComponent,
+            FileObject targetFile, CustomSaasMethod m) throws IOException {
+        super(targetComponent, targetFile, m);
     }
     
     @Override
-    public WadlSaasBean getBean() {
-        return (WadlSaasBean )bean;
+    public Set<FileObject> generate(ProgressHandle pHandle) throws IOException {
+        initProgressReporting(pHandle);
+
+        preGenerate();
+        insertSaasServiceAccessCode();
+        
+        finishProgressReporting();
+
+        return new HashSet<FileObject>(Collections.EMPTY_LIST);
     }
-    
+
+    /**
+     *  Return target and generated file objects
+     */
+    protected void insertSaasServiceAccessCode() throws IOException {
+        JavaSource targetFileJS = JavaSource.forFileObject(getTargetFile());
+        ModificationResult result = targetFileJS.runModificationTask(new AbstractTask<WorkingCopy>() {
+
+            public void run(WorkingCopy copy) throws IOException {
+                copy.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
+                
+                String methodBody = "{" + getOverridingStatements(); //NOI18N
+                methodBody += getCustomMethodBody();
+
+                methodBody += "}"; //NOI18N
+                for(MimeType mime:bean.getMimeTypes()) {
+                    MethodTree methodTree = JavaSourceHelper.getMethodByName(copy, bean.getGetMethodName(mime));
+                    JavaSourceHelper.replaceMethodBody(copy, methodTree, methodBody);
+                }
+            }
+        });
+        result.commit();
+    }
+
     @Override
-    protected void preGenerate() {
-        JavaSourceHelper.createJavaSource(REST_CONNECTION_TEMPLATE, getTargetFolder(), bean.getPackageName(), REST_CONNECTION);
-    }
-    
     protected String getCustomMethodBody() throws IOException {
-        String converterName = getConverterName();
         String paramStr = null;
         StringBuffer sb1 = new StringBuffer();
         List<ParameterInfo> params = bean.getInputParameters();
@@ -93,21 +125,22 @@ public class JaxRsCodeGenerator extends SaasCodeGenerator {
             paramStr = paramStr.substring(0, paramStr.length() - 1);
         }
         
-        String methodBody = "String url = \"" + ((WadlSaasBean) bean).getUrl() + "\";\n";
-        methodBody += "        " + converterName + " converter = new " + converterName + "();\n";
+        String methodBody = "String url = \"" + ((CustomSaasBean) bean).getUrl() + "\";\n";
         methodBody += "        try {\n";
         methodBody += "             String[][] params = new String[][]{\n";
         methodBody += "                 " + paramStr + "\n";
         methodBody += "             };\n";
         methodBody += "             RestConnection cl = new RestConnection(url, params);\n";
         methodBody += "             String result = cl.get();\n";
-        methodBody += "             converter.setString(result);\n";
-        methodBody += "             return converter;\n";
         methodBody += "        } catch (java.io.IOException ex) {\n";
-        methodBody += "             throw new WebApplicationException(ex);\n";
+        methodBody += "             ex.printStackTrace();\n";
         methodBody += "        }\n }";
        
         return methodBody;
     }
-
+    
+    @Override
+    public boolean showParams() {
+        return getWrapperResourceFile() != null;
+    }
 }

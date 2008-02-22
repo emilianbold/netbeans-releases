@@ -39,56 +39,84 @@
 
 package org.netbeans.modules.websvc.saas.ui.nodes;
 
-import java.util.Collections;
-import org.netbeans.modules.websvc.saas.model.CustomSaas;
+import java.awt.Image;
+import java.awt.datatransfer.Transferable;
+import java.io.IOException;
+import java.util.List;
+import java.util.Set;
+import javax.swing.Action;
 import org.netbeans.modules.websvc.saas.model.CustomSaasMethod;
 import org.netbeans.modules.websvc.saas.model.Saas;
 import org.netbeans.modules.websvc.saas.model.SaasMethod;
-import org.openide.nodes.Node;
+import org.netbeans.modules.websvc.saas.model.WadlSaasMethod;
+import org.netbeans.modules.websvc.saas.util.SaasTransferable;
+import org.netbeans.modules.websvc.saas.util.SaasUtil;
+import org.openide.nodes.AbstractNode;
+import org.openide.nodes.Children;
+import org.openide.util.datatransfer.ExTransferable;
+import org.openide.util.lookup.AbstractLookup;
+import org.openide.util.lookup.InstanceContent;
 
 /**
  *
  * @author nam
  */
-public class CustomSaasNodeChildren extends SaasNodeChildren<SaasMethod> {
-    public CustomSaasNodeChildren(CustomSaas saas) {
-        super(saas);
+public class CustomMethodNode extends AbstractNode {
+    
+    private CustomSaasMethod method;
+    private Transferable transferable;
+    
+    public CustomMethodNode(CustomSaasMethod method) {
+        this(method, new InstanceContent());
+    }
+
+    public CustomMethodNode(CustomSaasMethod method, InstanceContent content) {
+        super(Children.LEAF, new AbstractLookup(content));
+        this.method = method;
+        content.add(method);
+        transferable = ExTransferable.create(
+            new SaasTransferable<SaasMethod>(method, SaasTransferable.CUSTOM_METHOD_FLAVORS));
     }
 
     @Override
-    public CustomSaas getSaas() {
-        return (CustomSaas) super.getSaas();
+    public String getDisplayName() {
+        return method.getName();
     }
     
     @Override
-    protected void updateKeys() {
-        if (getSaas().getState() == Saas.State.READY) {
-            setKeys(getSaas().getMethods());
-        } else {
-            java.util.List<SaasMethod> emptyList = Collections.emptyList();
-            setKeys(emptyList);
-        }
+    public String getShortDescription() {
+        return method.getDocumentation();
+    }
+    
+    private static final java.awt.Image ICON =
+            org.openide.util.Utilities.loadImage( "org/netbeans/modules/websvc/saas/ui/resources/method.png" ); //NOI18N
+    
+    @Override
+    public java.awt.Image getIcon(int type) {
+        return ICON;
     }
     
     @Override
-    protected void addNotify() {
-        super.addNotify();
-        updateKeys();
+    public Image getOpenedIcon(int type){
+        return getIcon( type);
+    }
+    
+    @Override
+    public Action[] getActions(boolean context) {
+        List<Action> actions = SaasNode.getActions(getLookup());
+        //TODO maybe ???
+        //actions.add(SystemAction.get(TestMethodAction.class));
+        return actions.toArray(new Action[actions.size()]);
     }
 
     @Override
-    protected void removeNotify() {
-        java.util.List<SaasMethod> emptyList = Collections.emptyList();
-        setKeys(emptyList);
-        super.removeNotify();
-    }
-
-    @Override
-    protected Node[] createNodes(SaasMethod key) {
-        if (needsWaiting()) {
-            return getWaitNode();
+    public Transferable clipboardCopy() throws IOException {
+        if (method.getSaas().getState() != Saas.State.RESOLVED &&
+            method.getSaas().getState() != Saas.State.READY) {
+            method.getSaas().toStateReady(false);
+            return super.clipboardCopy();
         }
-        return new Node[] { new CustomMethodNode((CustomSaasMethod) key) };
+        return SaasTransferable.addFlavors(transferable);
     }
-
+    
 }
