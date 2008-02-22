@@ -172,6 +172,10 @@ class J2SEActionProvider implements ActionProvider {
 
     private Sources src;
     private List<FileObject> roots;
+    
+    // Used only from unit tests to suppress detection of top level classes. If value
+    // is different from null it will be returned instead.
+    String unitTestingSupport_fixClasses;
 
     public J2SEActionProvider(J2SEProject project, UpdateHelper updateHelper) {
 
@@ -391,37 +395,11 @@ class J2SEActionProvider implements ActionProvider {
         else if ( command.equals( JavaProjectConstants.COMMAND_DEBUG_FIX ) ) {
             FileObject[] files = findSources( context );
             String path = null;
-            final String[] classes = { "" };
+            String classes = "";    //NOI18N
             if (files != null) {
                 path = FileUtil.getRelativePath(getRoot(project.getSourceRoots().getRoots(),files[0]), files[0]);
                 targetNames = new String[] {"debug-fix"}; // NOI18N
-                JavaSource js = JavaSource.forFileObject(files[0]);
-                if (js != null) {
-                    try {
-                        js.runUserActionTask(new org.netbeans.api.java.source.Task<CompilationController>() {
-                            public void run(CompilationController ci) throws Exception {
-                                if (ci.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED).compareTo(JavaSource.Phase.ELEMENTS_RESOLVED) < 0) {
-                                    ErrorManager.getDefault().log(ErrorManager.WARNING,
-                                            "Unable to resolve "+ci.getFileObject()+" to phase "+JavaSource.Phase.RESOLVED+", current phase = "+ci.getPhase()+
-                                            "\nDiagnostics = "+ci.getDiagnostics()+
-                                            "\nFree memory = "+Runtime.getRuntime().freeMemory());
-                                    return;
-                                }
-                                List<? extends TypeElement> types = ci.getTopLevelElements();
-                                if (types.size() > 0) {
-                                    for (TypeElement type : types) {
-                                        if (classes[0].length() > 0) {
-                                            classes[0] = classes[0] + " ";            // NOI18N
-                                        }
-                                        classes[0] = classes[0] + type.getQualifiedName().toString().replace('.', '/') + "*.class";  // NOI18N
-                                    }
-                                }
-                            }
-                        }, true);
-                    } catch (java.io.IOException ioex) {
-                        Exceptions.printStackTrace(ioex);
-                    }
-                }
+                classes = getTopLevelClasses(files[0]);
             } else {
                 files = findTestSources(context, false);
                 path = FileUtil.getRelativePath(getRoot(project.getTestSourceRoots().getRoots(),files[0]), files[0]);
@@ -432,7 +410,7 @@ class J2SEActionProvider implements ActionProvider {
                 path = path.substring(0, path.length() - 5);
             }
             p.setProperty("fix.includes", path); // NOI18N
-            p.setProperty("fix.classes", classes[0]); // NOI18N
+            p.setProperty("fix.classes", classes); // NOI18N
         }
         else if (command.equals (COMMAND_RUN) || command.equals(COMMAND_DEBUG) || command.equals(COMMAND_DEBUG_STEP_INTO)) {
             String config = project.evaluator().getProperty(J2SEConfigurationProvider.PROP_CONFIG);
@@ -506,8 +484,10 @@ class J2SEActionProvider implements ActionProvider {
                     clazz = clazz.substring(0, clazz.length() - 5);
                 }
                 clazz = clazz.replace('/','.');
+                final boolean hasMainClassFromTest = MainClassChooser.unitTestingSupport_hasMainMethodResult == null ? false :
+                    MainClassChooser.unitTestingSupport_hasMainMethodResult.booleanValue();
                 final Collection<ElementHandle<TypeElement>> mainClasses = J2SEProjectUtil.getMainMethods (file);
-                if (mainClasses.isEmpty()) {
+                if (!hasMainClassFromTest && mainClasses.isEmpty()) {
                     if (AppletSupport.isApplet(file)) {
 
                         EditableProperties ep = updateHelper.getProperties (AntProjectHelper.PROJECT_PROPERTIES_PATH);
@@ -552,15 +532,17 @@ class J2SEActionProvider implements ActionProvider {
                         return null;
                     }
                 } else {
-                    if (mainClasses.size() == 1) {
-                        //Just one main class
-                        clazz = mainClasses.iterator().next().getBinaryName();
-                    }
-                    else {
-                        //Several main classes, let the user choose
-                        clazz = showMainClassWarning(file, mainClasses);
-                        if (clazz == null) {
-                            return null;
+                    if (!hasMainClassFromTest) {                    
+                        if (mainClasses.size() == 1) {
+                            //Just one main class
+                            clazz = mainClasses.iterator().next().getBinaryName();
+                        }
+                        else {
+                            //Several main classes, let the user choose
+                            clazz = showMainClassWarning(file, mainClasses);
+                            if (clazz == null) {
+                                return null;
+                            }
                         }
                     }
                     if (command.equals (COMMAND_RUN_SINGLE)) {
@@ -736,6 +718,49 @@ class J2SEActionProvider implements ActionProvider {
 
     private static final Pattern SRCDIRJAVA = Pattern.compile("\\.java$"); // NOI18N
     private static final String SUBST = "Test.java"; // NOI18N
+    
+    
+    /**
+     * Lists all top level classes in a String, classes are separated by space (" ")
+     * Used by debuger fix and continue (list of files to fix)
+     * @param file for which the top level classes should be found
+     * @return list of top levels
+     */
+    private String getTopLevelClasses (final FileObject file) {
+        assert file != null;
+        if (unitTestingSupport_fixClasses != null) {
+            return unitTestingSupport_fixClasses;
+        }
+        final String[] classes = new String[] {""}; //NOI18N
+        JavaSource js = JavaSource.forFileObject(file);
+        if (js != null) {
+            try {
+                js.runUserActionTask(new org.netbeans.api.java.source.Task<CompilationController>() {
+                    public void run(CompilationController ci) throws Exception {
+                        if (ci.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED).compareTo(JavaSource.Phase.ELEMENTS_RESOLVED) < 0) {
+                            ErrorManager.getDefault().log(ErrorManager.WARNING,
+                                    "Unable to resolve "+ci.getFileObject()+" to phase "+JavaSource.Phase.RESOLVED+", current phase = "+ci.getPhase()+
+                                    "\nDiagnostics = "+ci.getDiagnostics()+
+                                    "\nFree memory = "+Runtime.getRuntime().freeMemory());
+                            return;
+                        }
+                        List<? extends TypeElement> types = ci.getTopLevelElements();
+                        if (types.size() > 0) {
+                            for (TypeElement type : types) {
+                                if (classes[0].length() > 0) {
+                                    classes[0] = classes[0] + " ";            // NOI18N
+                                }
+                                classes[0] = classes[0] + type.getQualifiedName().toString().replace('.', '/') + "*.class";  // NOI18N
+                            }
+                        }
+                    }
+                }, true);
+            } catch (java.io.IOException ioex) {
+                Exceptions.printStackTrace(ioex);
+            }
+        }
+        return classes[0];
+    }
 
     /** Find selected sources, the sources has to be under single source root,
      *  @param context the lookup in which files should be found
