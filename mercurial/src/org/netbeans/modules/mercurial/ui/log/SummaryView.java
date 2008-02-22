@@ -437,7 +437,7 @@ class SummaryView implements MouseListener, ComponentListener, MouseMotionListen
                 revertFiles.add(event.getFile());
             }
             RevertModificationsAction.performRevert(
-                        root, revision.getLog().getRevision(), revertFiles, doBackup);
+                        root, revision.getLog().getRevision(), revertFiles, doBackup, progress.getLogger());
             revertFiles.clear();
         }
         
@@ -467,7 +467,7 @@ class SummaryView implements MouseListener, ComponentListener, MouseMotionListen
                 if(revEvents != null && !revEvents.isEmpty()){
                     // Assuming all files in a given repository reverting to same revision
                     RevertModificationsAction.performRevert(
-                        root, revEvents.get(0).getLogInfoHeader().getLog().getRevision(), revertFiles, doBackup);
+                        root, revEvents.get(0).getLogInfoHeader().getLog().getRevision(), revertFiles, doBackup, progress.getLogger());
                 }
             }                       
         }

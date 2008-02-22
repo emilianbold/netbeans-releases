@@ -1,0 +1,90 @@
+
+
+Document 0
+Delete:  source : <TESTURL>/SpryEffects.js
+
+
+
+Document 1
+Indexed:
+  func : AnimatedElement;Spry.Effect;element;27354;;
+  func : Animator;Spry.Effect;options;11154;;
+  func : AppearFade;Spry.Effect;element,options;27675;;
+  func : Blind;Spry.Effect;element,options;;;
+  func : Cluster;Spry.Effect;;24071;;
+  func : ClusteredEffect;Spry.Effect;effect,kind;23791;;
+  func : Color;Spry.Effect;element,startColor,stopColor,options;21463;;
+  func : DropOut;Spry.Effect;element,options;;;
+  func : Fold;Spry.Effect;element,options;;;
+  func : GrowShrink;Spry.Effect;element,options;;;
+  func : Highlight;Spry.Effect;element,options;;;
+  func : Move;Spry.Effect;element,fromPos,toPos,options;14485;;
+  func : MoveSlide;Spry.Effect;element,fromPos,toPos,options;15796;;
+  func : Opacity;Spry.Effect;element,startOpacity,stopOpacity,options;20272;;
+  func : Position;Spry.Effect.Utils;;;;
+  func : PositionedRectangle;Spry.Effect.Utils;;;;
+  func : Puff;Spry.Effect;element,options;;;
+  func : Pulsate;Spry.Effect;element,options;;;
+  func : Rectangle;Spry.Effect.Utils;;;;
+  func : Registry;Spry.Effect;;1868;;
+  func : Shake;Spry.Effect;element,options;;;
+  func : Size;Spry.Effect;element,fromRect,toRect,options;17367;;
+  func : Slide;Spry.Effect;element,options;;;
+  func : Squish;Spry.Effect;element,options;;;
+  func : addNextEffect;Spry.Effect.Cluster;effect;;;
+  func : addParallelEffect;Spry.Effect.Cluster;effect;;;
+  func : animate;Spry.Effect.Animator;position;;;
+  func : animate;Spry.Effect.Color;position;;;
+  func : animate;Spry.Effect.Move;position;;;
+  func : animate;Spry.Effect.MoveSlide;position;;;
+  func : animate;Spry.Effect.Opacity;position;;;
+  func : animate;Spry.Effect.Size;position;;;
+  func : camelize;Spry.Effect.Utils;stringToCamelize;;;
+  func : cancel;Spry.Effect.Animator;;;;
+  func : cancel;Spry.Effect.Cluster;;;;
+  func : cleanWhitespace;Spry.Effect;element;;;
+  func : doToggle;Spry.Effect.Animator;;;;
+  func : doToggle;Spry.Effect.Cluster;;;;
+  func : drawEffect;Spry.Effect.Animator;;;;
+  func : effectsAreTheSame;Spry.Effect.Registry;effectA,effectB;;;
+  func : enforceVisible;Spry.Effect;element;;;
+  func : finishHighlight;;element,effect;;;
+  func : getDimensions;Spry.Effect;element;;;
+  func : getElapsedMilliseconds;Spry.Effect.Animator;;;;
+  func : getElement;Spry.Effect;ele;7438;;
+  func : getFirstChildElement;Spry.Effect.Utils;node;;;
+  func : getIndexOfElement;Spry.Effect.Registry;element;;;
+  func : getNextEffect;Spry.Effect.Cluster;;;;
+  func : getOffsetPosition;Spry.Effect;element;;;
+  func : getPercentValue;Spry.Effect.Utils;value;;;
+  func : getPixelValue;Spry.Effect.Utils;value;;;
+  func : getRegisteredEffect;Spry.Effect.Registry;element,effect;;;
+  func : getStyleProp;Spry.Effect;element,prop;;;
+  func : hexToInt;Spry.Effect.Utils;hexStr;;;
+  func : intToHex;Spry.Effect.Utils;integerNum;;;
+  func : isPercentValue;Spry.Effect.Utils;value;;;
+  func : makeClipping;Spry.Effect;element;;;
+  func : makePositioned;Spry.Effect;element;;;
+  func : optionsAreIdentical;Spry.Effect.Utils;optionsA,optionsB;;;
+  func : reset;Spry.Effect.Cluster;;;;
+  func : reset;Spry.Effect.Color;;;;
+  func : reset;Spry.Effect.Move;;;;
+  func : reset;Spry.Effect.MoveSlide;;;;
+  func : reset;Spry.Effect.Opacity;;;;
+  func : reset;Spry.Effect.Size;;;;
+  func : resetIndex;Spry.Effect.Cluster;;;;
+  func : rgb;Spry.Effect.Utils;redInt,greenInt,blueInt;;;
+  func : setOptions;Spry.Effect.Animator;options;;;
+  func : setStyleProp;Spry.Effect;element,prop,value;;;
+  func : setToggle;Spry.Effect.Cluster;doToggle;;;
+  func : setupHighlight;;element,effect;;;
+  func : start;Spry.Effect.Animator;queue;;;
+  func : start;Spry.Effect.Cluster;;;;
+  func : startNextEffect;Spry.Effect.Cluster;;;;
+  func : stop;Spry.Effect.Animator;;;;
+  global : Spry
+  global : SpryRegistry
+  global : compositeColorHex
+  global : dimensions
+
+Not Indexed:

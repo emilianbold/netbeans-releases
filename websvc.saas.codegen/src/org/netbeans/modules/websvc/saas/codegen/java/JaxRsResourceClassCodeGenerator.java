@@ -68,7 +68,6 @@ import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.modules.websvc.saas.codegen.java.Constants.MimeType;
 import org.netbeans.modules.websvc.saas.codegen.java.model.ParameterInfo;
 import org.netbeans.modules.websvc.saas.codegen.java.model.WadlSaasBean;
-import org.netbeans.modules.websvc.rest.model.api.RestConstants;
 import org.netbeans.modules.websvc.saas.codegen.java.support.AbstractTask;
 import org.netbeans.modules.websvc.saas.codegen.java.support.Inflector;
 import org.netbeans.modules.websvc.saas.codegen.java.support.JavaSourceHelper;
@@ -210,7 +209,7 @@ public class JaxRsResourceClassCodeGenerator extends JaxRsCodeGenerator {
                 JavaSourceHelper.addImports(copy, getSubresourceLocatorImports());
 
                 ClassTree tree = JavaSourceHelper.getTopLevelClassTree(copy);
-                String[] annotations = new String[]{RestConstants.PATH_ANNOTATION};
+                String[] annotations = new String[]{Constants.PATH_ANNOTATION};
                 Object[] annotationAttrs = new Object[]{getSubresourceLocatorUriTemplate()};
                 boolean addTryFinallyBlock = false;
 
@@ -393,7 +392,7 @@ public class JaxRsResourceClassCodeGenerator extends JaxRsCodeGenerator {
             for (VariableElement ve : method.getParameters()) {
                 List<? extends AnnotationMirror> annotations = ve.getAnnotationMirrors();
                 for (AnnotationMirror m : annotations) {
-                    if (JavaSourceHelper.isOfAnnotationType(m, RestConstants.URI_PARAM_ANNOTATION)) {
+                    if (JavaSourceHelper.isOfAnnotationType(m, Constants.URI_PARAM_ANNOTATION)) {
                         Collection<? extends AnnotationValue> values = m.getElementValues().values();
                         for (AnnotationValue av : values) {
                             if (av.getValue() instanceof String) {
@@ -574,7 +573,7 @@ public class JaxRsResourceClassCodeGenerator extends JaxRsCodeGenerator {
     @Override
     public Collection<String> getExistingUriTemplates() {
         if (existingUriTemplates == null) {
-            existingUriTemplates = JavaSourceHelper.getAnnotationValuesForAllMethods(targetResourceJS, RestConstants.PATH);
+            existingUriTemplates = JavaSourceHelper.getAnnotationValuesForAllMethods(targetResourceJS, Constants.PATH);
         }
 
         return existingUriTemplates;
