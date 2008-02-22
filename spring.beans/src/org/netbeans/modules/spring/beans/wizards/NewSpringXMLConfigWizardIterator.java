@@ -76,7 +76,7 @@ import org.openide.filesystems.FileUtil;
 import org.openide.text.CloneableEditorSupport;
 import org.openide.util.Exceptions;
 
-public final class NewSpringXMLConfigWizardIterator implements WizardDescriptor.InstantiatingIterator {
+public final class NewSpringXMLConfigWizardIterator implements WizardDescriptor.AsynchronousInstantiatingIterator {
 
     private int index;
     private WizardDescriptor wizard;
@@ -162,7 +162,12 @@ public final class NewSpringXMLConfigWizardIterator implements WizardDescriptor.
         
         manager.mutex().postWriteRequest(new Runnable() {
             public void run() {
-                manager.putConfigFileGroups(newGroups);
+                try {
+                    manager.putConfigFileGroups(newGroups);
+                    manager.save();
+                } catch (IOException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
             }
         });
     }
