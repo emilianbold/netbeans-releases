@@ -87,7 +87,7 @@
     <service name="reservationService">
         <port name="reservationServicePort"
               binding="tns:reservationBinding">
-            <soap:address location="http://localhost:12100/wsdl/ReservationService/ServiceLocation"/>
+            <soap:address location="http://localhost:18181/wsdl/ReservationService/ServiceLocation"/>
         </port>
     </service>
     <plink:partnerLinkType name="reservationPLinkType">

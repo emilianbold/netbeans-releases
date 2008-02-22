@@ -48,6 +48,7 @@
     <target name="all-saas">
         <antcall target="netbeans"/>
         <ant dir="../websvc.saas.ui"/>
+        <ant dir="../websvc.restkit" target="all-rest"/>
         <ant dir="../websvc.saas.codegen"/>
         <ant dir="../websvc.saas.services.amazon"/>
         <ant dir="../websvc.saas.services.delicious"/>

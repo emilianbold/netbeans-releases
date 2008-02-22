@@ -67,18 +67,25 @@ public class FunctionBreakpointImpl extends BreakpointImpl {
     }
     
     protected void setRequests() {
+        String st = getState();
         if (getDebugger().getState().equals(GdbDebugger.STATE_RUNNING)) {
             getDebugger().setSilentStop();
         }
-        if (getState().equals(BPSTATE_UNVALIDATED)) {
+        if (st.equals(BPSTATE_UNVALIDATED)) {
             setState(BPSTATE_VALIDATION_PENDING);
             functionName = breakpoint.getFunctionName();
-            int token = getDebugger().getGdbProxy().break_insert(functionName);
+            int token;
+            if (getBreakpoint().getSuspend() == GdbBreakpoint.SUSPEND_THREAD) {
+                token = getDebugger().getGdbProxy().break_insert(GdbBreakpoint.SUSPEND_THREAD,
+                        functionName, getBreakpoint().getThreadID());
+            } else {
+                token = getDebugger().getGdbProxy().break_insert(functionName);
+            }
             getDebugger().addPendingBreakpoint(token, this);
         } else {
-            if (getState().equals(BPSTATE_DELETION_PENDING)) {
+            if (st.equals(BPSTATE_DELETION_PENDING)) {
                 getDebugger().getGdbProxy().break_delete(getBreakpointNumber());
-	    } else if (getState().equals(BPSTATE_VALIDATED)) {
+	    } else if (st.equals(BPSTATE_VALIDATED)) {
                 if (breakpoint.isEnabled()) {
                     getDebugger().getGdbProxy().break_enable(getBreakpointNumber());
                 } else {

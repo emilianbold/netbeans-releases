@@ -1,0 +1,28 @@
+  evalResponse: function() {
+                ------------
+HINT:Anonymous function does not always return a value (click on "function" to see exits)
+FIX:Show more information about this warning
+  hasClassName: function(element, className) {
+                ------------------------------
+HINT:Anonymous function does not always return a value (click on "function" to see exits)
+FIX:Show more information about this warning
+  addClassName: function(element, className) {
+                ------------------------------
+HINT:Anonymous function does not always return a value (click on "function" to see exits)
+FIX:Show more information about this warning
+  removeClassName: function(element, className) {
+                   ------------------------------
+HINT:Anonymous function does not always return a value (click on "function" to see exits)
+FIX:Show more information about this warning
+  toggleClassName: function(element, className) {
+                   ------------------------------
+HINT:Anonymous function does not always return a value (click on "function" to see exits)
+FIX:Show more information about this warning
+  parseExpression: function() {
+                   ------------
+HINT:Anonymous function does not always return a value (click on "function" to see exits)
+FIX:Show more information about this warning
+  overlap: function(mode, element) {
+           -------------------------
+HINT:Anonymous function does not always return a value (click on "function" to see exits)
+FIX:Show more information about this warning

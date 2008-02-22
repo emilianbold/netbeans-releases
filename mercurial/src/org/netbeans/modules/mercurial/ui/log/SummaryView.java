@@ -65,6 +65,7 @@ import java.util.List;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.modules.mercurial.ExceptionHandler;
 import org.netbeans.modules.mercurial.HgException;
+import org.netbeans.modules.mercurial.HgModuleConfig;
 import org.netbeans.modules.mercurial.HgProgressSupport;
 import org.netbeans.modules.mercurial.Mercurial;
 import org.netbeans.modules.mercurial.VersionsCache;
@@ -428,6 +429,7 @@ class SummaryView implements MouseListener, ComponentListener, MouseMotionListen
 
     private static void revertImpl(SearchHistoryPanel master, RepositoryRevision[] revisions, RepositoryRevision.Event[] events, HgProgressSupport progress) {
         List<File> revertFiles = new ArrayList<File>();
+        boolean doBackup = HgModuleConfig.getDefault().getBackupOnRevertModifications();
         for (RepositoryRevision revision : revisions) {
             File root = new File(revision.getRepositoryRootUrl());
             for(RepositoryRevision.Event event: revision.getEvents()){
@@ -435,7 +437,7 @@ class SummaryView implements MouseListener, ComponentListener, MouseMotionListen
                 revertFiles.add(event.getFile());
             }
             RevertModificationsAction.performRevert(
-                        root, revision.getLog().getRevision(), revertFiles);
+                        root, revision.getLog().getRevision(), revertFiles, doBackup, progress.getLogger());
             revertFiles.clear();
         }
         
@@ -465,7 +467,7 @@ class SummaryView implements MouseListener, ComponentListener, MouseMotionListen
                 if(revEvents != null && !revEvents.isEmpty()){
                     // Assuming all files in a given repository reverting to same revision
                     RevertModificationsAction.performRevert(
-                        root, revEvents.get(0).getLogInfoHeader().getLog().getRevision(), revertFiles);
+                        root, revEvents.get(0).getLogInfoHeader().getLog().getRevision(), revertFiles, doBackup, progress.getLogger());
                 }
             }                       
         }

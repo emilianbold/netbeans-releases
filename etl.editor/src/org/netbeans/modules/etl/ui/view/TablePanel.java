@@ -86,6 +86,9 @@ import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 
 import com.sun.sql.framework.exception.BaseException;
+import net.java.hulp.i18n.Logger;
+import org.netbeans.modules.etl.logger.Localizer;
+import org.netbeans.modules.etl.logger.LogUtil;
 import org.netbeans.modules.sql.framework.model.DatabaseModel;
 
 /**
@@ -95,6 +98,8 @@ import org.netbeans.modules.sql.framework.model.DatabaseModel;
  * @version $Revision$
  */
 public class TablePanel extends JPanel {
+    private static transient final Logger mLogger = LogUtil.getLogger(TablePanel.class.getName());
+    private static transient final Localizer mLoc = Localizer.get();
 
     class ActionAdapter implements ActionListener {
 
@@ -686,6 +691,7 @@ public class TablePanel extends JPanel {
         DialogDescriptor dd = new DialogDescriptor(this, title);
 
         Dialog dlg = DialogDisplayer.getDefault().createDialog(dd);
+        dlg.getAccessibleContext().setAccessibleDescription("This is the dialog to add Input/Output Runtime arguments");
         dlg.setSize(450, 400);
         dlg.setVisible(true);
 
@@ -874,11 +880,15 @@ public class TablePanel extends JPanel {
 
         ActionAdapter aAdapter = new ActionAdapter();
 
-        JButton addColumnButton = new JButton("Add");
+        String nbBundle1 = mLoc.t("PRSR001: Add");
+        JButton addColumnButton = new JButton(Localizer.parse(nbBundle1));
         addColumnButton.setActionCommand("Add");
+        addColumnButton.setMnemonic(Localizer.parse(nbBundle1).charAt(0));
         addColumnButton.addActionListener(aAdapter);
-        JButton removeColumnButton = new JButton("Remove");
+        String nbBundle2 = mLoc.t("PRSR001: Remove");
+        JButton removeColumnButton = new JButton(Localizer.parse(nbBundle2));
         removeColumnButton.setActionCommand("Remove");
+        removeColumnButton.setMnemonic(Localizer.parse(nbBundle2).charAt(0));
         removeColumnButton.addActionListener(aAdapter);
 
         tableButtonPanel.add(addColumnButton);

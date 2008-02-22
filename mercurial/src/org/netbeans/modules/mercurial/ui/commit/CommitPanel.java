@@ -147,6 +147,8 @@ public class CommitPanel extends javax.swing.JPanel implements PreferenceChangeL
         messageTextArea.setWrapStyleWord(true);
         messageTextArea.setMinimumSize(new java.awt.Dimension(100, 18));
         jScrollPane1.setViewportView(messageTextArea);
+        messageTextArea.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(CommitPanel.class, "ACSN_CommitForm_Message")); // NOI18N
+        messageTextArea.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CommitPanel.class, "ACSD_CommitForm_Message")); // NOI18N
 
         org.openide.awt.Mnemonics.setLocalizedText(filesLabel, org.openide.util.NbBundle.getMessage(CommitPanel.class, "CTL_CommitForm_FilesToCommit")); // NOI18N
 
@@ -160,7 +162,7 @@ public class CommitPanel extends javax.swing.JPanel implements PreferenceChangeL
         );
         filesPanelLayout.setVerticalGroup(
             filesPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(0, 203, Short.MAX_VALUE)
+            .add(0, 196, Short.MAX_VALUE)
         );
 
         recentLink.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/mercurial/resources/icons/recent_messages.png"))); // NOI18N
@@ -177,7 +179,7 @@ public class CommitPanel extends javax.swing.JPanel implements PreferenceChangeL
                     .add(org.jdesktop.layout.GroupLayout.LEADING, jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 626, Short.MAX_VALUE)
                     .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createSequentialGroup()
                         .add(jLabel1)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 509, Short.MAX_VALUE)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 508, Short.MAX_VALUE)
                         .add(recentLink))
                     .add(org.jdesktop.layout.GroupLayout.LEADING, filesLabel)
                     .add(org.jdesktop.layout.GroupLayout.LEADING, jLabel2))
@@ -195,11 +197,14 @@ public class CommitPanel extends javax.swing.JPanel implements PreferenceChangeL
                 .add(15, 15, 15)
                 .add(filesLabel)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(filesPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 203, Short.MAX_VALUE)
+                .add(filesPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 196, Short.MAX_VALUE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(jLabel2)
                 .addContainerGap())
         );
+
+        getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(CommitPanel.class, "ACSN_CommitDialog")); // NOI18N
+        getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CommitPanel.class, "ACSD_CommitDialog")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
     
     ListenersSupport listenerSupport = new ListenersSupport(this);

@@ -40,7 +40,7 @@
 package org.netbeans.modules.ruby.hints.spi;
 
 import org.jruby.ast.Node;
-import org.netbeans.api.gsf.CompilationInfo;
+import org.netbeans.fpi.gsf.CompilationInfo;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.ruby.AstPath;
 

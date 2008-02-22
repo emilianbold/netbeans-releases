@@ -63,8 +63,8 @@ import java.util.Locale;
 import java.util.Set;
 import javax.swing.JComponent;
 import javax.swing.UIManager;
-import org.netbeans.api.gsfpath.platform.JavaPlatform;
-import org.netbeans.api.gsfpath.platform.JavaPlatformManager;
+import org.netbeans.fpi.gsfpath.platform.JavaPlatform;
+import org.netbeans.fpi.gsfpath.platform.JavaPlatformManager;
 import org.netbeans.modules.gsfpath.platform.wizard.PlatformInstallIterator;
 import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
@@ -88,8 +88,8 @@ import org.openide.util.NbBundle;
  */
 public class PlatformsCustomizer extends javax.swing.JPanel implements PropertyChangeListener, VetoableChangeListener, ExplorerManager.Provider {
 
-    private static final String TEMPLATE = "Templates/Services/Platforms/org-netbeans-api-gsfpath-Platform/javaplatform.xml";  //NOI18N
-    private static final String STORAGE = "Services/Platforms/org-netbeans-api-gsfpath-Platform";  //NOI18N   
+    private static final String TEMPLATE = "Templates/Services/Platforms/org-netbeans-fpi-gsfpath-Platform/javaplatform.xml";  //NOI18N
+    private static final String STORAGE = "Services/Platforms/org-netbeans-fpi-gsfpath-Platform";  //NOI18N   
 
     private PlatformCategoriesChildren children;
     private ExplorerManager manager;

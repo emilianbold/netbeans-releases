@@ -78,6 +78,8 @@ import org.openide.util.NbBundle;
  */
 public class AddWebServiceDlg extends JPanel  implements ActionListener {
     
+    public static final String DEFAULT_PACKAGE_HOLDER = NbBundle.getMessage(AddWebServiceDlg.class, "MSG_ClickToOverride"); // NOI18N
+
     private DialogDescriptor dlg = null;
     private String addString =  NbBundle.getMessage(AddWebServiceDlg.class, "Add");
     private String cancelString =  NbBundle.getMessage(AddWebServiceDlg.class, "CANCEL");
@@ -120,19 +122,12 @@ public class AddWebServiceDlg extends JPanel  implements ActionListener {
     }
     
     
-    public AddWebServiceDlg() {
-        this(SaasServicesModel.getInstance().getRootGroup());
-    }
-    
-    
     public AddWebServiceDlg(SaasGroup group) {
         initComponents();
         myInitComponents();
         this.group = group;
         jaxRPCAvailable = WsdlUtil.isJAXRPCAvailable();
     }
-
-
     
     private static boolean isValidPackageName(String packageName) {
         if (packageName == null || packageName.length() == 0) { // let jaxws pick package name
@@ -190,7 +185,8 @@ public class AddWebServiceDlg extends JPanel  implements ActionListener {
         
         // Check the package name
         final String packageName = jTxtpackageName.getText().trim();
-        if (!isValidPackageName(packageName)) {
+        boolean defaultPackage = DEFAULT_PACKAGE_HOLDER.equals(packageName) || packageName.length() == 0;
+        if (!defaultPackage && !isValidPackageName(packageName)) {
             setErrorMessage(NbBundle.getMessage(AddWebServiceDlg.class, "INVALID_PACKAGE"));
             addButton.setEnabled(false);
         }else if (jTxtLocalFilename.isEnabled()) {
@@ -284,10 +280,10 @@ public class AddWebServiceDlg extends JPanel  implements ActionListener {
         
         setDefaults();
         
-        jTxtpackageName.setText(NbBundle.getMessage(AddWebServiceDlg.class, "MSG_ClickToOverride")); // NOI18N
+        jTxtpackageName.setText(DEFAULT_PACKAGE_HOLDER);
         jTxtpackageName.setForeground(Color.GRAY);
     }
-        
+    
     public void displayDialog(){
         
         dlg = new DialogDescriptor(this, NbBundle.getMessage(AddWebServiceDlg.class, "ADD_WEB_SERVICE"),
@@ -391,7 +387,7 @@ public class AddWebServiceDlg extends JPanel  implements ActionListener {
         dialog = null;
         
         // Run the add W/S asynchronously
-        SaasServicesModel.getInstance().addWsdlService(group, wsdl, packageName);
+        SaasServicesModel.getInstance().createWsdlService(group, wsdl, packageName);
     }    
     
     public void actionPerformed(ActionEvent evt) {
@@ -486,7 +482,7 @@ public class AddWebServiceDlg extends JPanel  implements ActionListener {
             }
         });
 
-        errorLabel.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/websvc/manager/resources/warning.png"))); // NOI18N
+        errorLabel.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/websvc/saas/ui/resources/warning.png"))); // NOI18N
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);

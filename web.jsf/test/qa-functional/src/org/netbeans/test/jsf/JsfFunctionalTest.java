@@ -58,7 +58,6 @@ import org.netbeans.jellytools.actions.EditAction;
 import org.netbeans.jellytools.actions.OpenAction;
 import org.netbeans.jellytools.modules.form.ComponentPaletteOperator;
 import org.netbeans.jellytools.modules.web.nodes.WebPagesNode;
-import org.netbeans.jellytools.nodes.SourcePackagesNode;
 import org.netbeans.jemmy.operators.JTableOperator;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.nodes.SourcePackagesNode;
@@ -137,6 +136,7 @@ public class JsfFunctionalTest extends JellyTestCase{
         NewWebProjectNameLocationStepOperator lop = new NewWebProjectNameLocationStepOperator();
         lop.setProjectName(PROJECT_NAME);
         lop.setProjectLocation(getDataDir().getCanonicalPath());
+        lop.next();
         lop.next();
         NewProjectWizardOperator frameworkStep = new NewProjectWizardOperator();
         // select JavaServer Faces

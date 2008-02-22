@@ -182,6 +182,10 @@ made subject to such option by the copyright holder.
     <taskdef name="insert-module-all-targets" classname="org.netbeans.nbbuild.InsertModuleAllTargets" classpath="nbantext.jar"/>
     <property name="verify.checkout" value="true"/> 
     <insert-module-all-targets checkModules="${verify.checkout}"/>
+    <property environment="env"/>
+    <condition property="run.env.display" value="${env.NBDISPLAY}" else="${env.DISPLAY}">
+	<isset property="env.NBDISPLAY"/>
+    </condition>
   </target>
   
   <target name="all-installer" description="Dummy target for build system compatibility"/>
@@ -1308,6 +1312,7 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
       <arg file="${test.user.dir}"/>
       <arg line="${tryme.args}"/>
       <arg line="${tryme.debug.args}" />
+      <env key="DISPLAY" value="${run.env.display}"/>
     </exec>
   </target>
   
@@ -1806,6 +1811,11 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
       <input name="ide" >
         <jars dir="${netbeans.dest.dir}" >
           <include name="${nb.cluster.ide.dir}/**/*.jar" />
+        </jars>
+      </input>
+      <input name="gsf" >
+        <jars dir="${netbeans.dest.dir}" >
+          <include name="${nb.cluster.gsf.dir}/**/*.jar" />
         </jars>
       </input>
       <input name="java" >

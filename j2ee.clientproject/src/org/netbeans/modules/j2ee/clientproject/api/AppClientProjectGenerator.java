@@ -61,7 +61,7 @@ import org.netbeans.modules.j2ee.clientproject.AppClientProjectType;
 import org.netbeans.modules.j2ee.clientproject.AppClientProvider;
 import org.netbeans.modules.j2ee.clientproject.Utils;
 import org.netbeans.modules.j2ee.clientproject.ui.customizer.AppClientProjectProperties;
-import org.netbeans.modules.j2ee.common.sharability.SharabilityUtilities;
+import org.netbeans.modules.j2ee.common.SharabilityUtility;
 import org.netbeans.modules.j2ee.dd.api.client.AppClient;
 import org.netbeans.modules.j2ee.dd.api.client.DDProvider;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.AntDeploymentHelper;
@@ -356,10 +356,10 @@ public class AppClientProjectGenerator {
             rh.copyLibrary(LibraryManager.getDefault().getLibrary("junit_4")); // NOI18N
         }
 
-        if (h.isSharableProject() && serverlibraryName != null  && SharabilityUtilities.getLibrary(
+        if (h.isSharableProject() && serverlibraryName != null  && SharabilityUtility.findSharedServerLibrary(
                 h.resolveFile(h.getLibrariesLocation()), serverlibraryName) == null) {
 
-            SharabilityUtilities.createLibrary(
+            SharabilityUtility.createLibrary(
                 h.resolveFile(h.getLibrariesLocation()), serverlibraryName, serverInstanceId);
         }
     }
@@ -545,8 +545,12 @@ public class AppClientProjectGenerator {
         ep.setProperty("manifest.file", "${" +AppClientProjectProperties.META_INF + "}/" + MANIFEST_FILE); // NOI18N
         
         if (h.isSharableProject() && serverLibraryName != null) {
-            String libraryName = SharabilityUtilities.getPrefixedLibraryName(serverLibraryName);
-            ep.setProperty(AppClientProjectProperties.J2EE_PLATFORM_CLASSPATH, "${libs." + libraryName + ".classpath}"); //NOI18N
+            ep.setProperty(AppClientProjectProperties.J2EE_PLATFORM_CLASSPATH,
+                    "${libs." + serverLibraryName + "." + "classpath" + "}"); //NOI18N
+            ep.setProperty(WebServicesClientConstants.J2EE_PLATFORM_WSCOMPILE_CLASSPATH,
+                        "${libs." + serverLibraryName + "." + "wscompile" + "}"); //NOI18N
+            ep.setProperty(WebServicesClientConstants.J2EE_PLATFORM_WSIMPORT_CLASSPATH,
+                        "${libs." + serverLibraryName + "." + "wsimport" + "}"); //NOI18N
         }
         ep.setProperty(AppClientProjectProperties.J2EE_PLATFORM_SHARED,
                 Boolean.toString(h.isSharableProject() && serverLibraryName != null));        
@@ -562,9 +566,13 @@ public class AppClientProjectGenerator {
         
         //private.properties
         ep = h.getProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH);
+        
+        // XXX this seems to be used in runtime only so, not part of sharable server
         // set j2ee.appclient environment
         File[] accrt = j2eePlatform.getToolClasspathEntries(J2eePlatform.TOOL_APP_CLIENT_RUNTIME);
         ep.setProperty(AppClientProjectProperties.APPCLIENT_TOOL_RUNTIME, Utils.toClasspathString(accrt));
+        
+        
         String acMain = j2eePlatform.getToolProperty(J2eePlatform.TOOL_APP_CLIENT_RUNTIME, J2eePlatform.TOOL_PROP_MAIN_CLASS);
         if (acMain != null) {
             ep.setProperty(AppClientProjectProperties.APPCLIENT_TOOL_MAINCLASS, acMain);
@@ -585,20 +593,20 @@ public class AppClientProjectGenerator {
             // set j2ee.platform.classpath
             String classpath = Utils.toClasspathString(j2eePlatform.getClasspathEntries());
             ep.setProperty(AppClientProjectProperties.J2EE_PLATFORM_CLASSPATH, classpath);
-        }
         
-        // set j2ee.platform.wscompile.classpath
-        if (j2eePlatform.isToolSupported(J2eePlatform.TOOL_WSCOMPILE)) {
-            File[] wsClasspath = j2eePlatform.getToolClasspathEntries(J2eePlatform.TOOL_WSCOMPILE);
-            ep.setProperty(WebServicesClientConstants.J2EE_PLATFORM_WSCOMPILE_CLASSPATH,
-                    Utils.toClasspathString(wsClasspath));
-        }
-        
-        // set j2ee.platform.wsimport.classpath
-        if (j2eePlatform.isToolSupported(J2eePlatform.TOOL_WSIMPORT)) {
-            File[] wsClasspath = j2eePlatform.getToolClasspathEntries(J2eePlatform.TOOL_WSIMPORT);
-            ep.setProperty(WebServicesClientConstants.J2EE_PLATFORM_WSIMPORT_CLASSPATH,
-                    Utils.toClasspathString(wsClasspath));
+            // set j2ee.platform.wscompile.classpath
+            if (j2eePlatform.isToolSupported(J2eePlatform.TOOL_WSCOMPILE)) {
+                File[] wsClasspath = j2eePlatform.getToolClasspathEntries(J2eePlatform.TOOL_WSCOMPILE);
+                ep.setProperty(WebServicesClientConstants.J2EE_PLATFORM_WSCOMPILE_CLASSPATH,
+                        Utils.toClasspathString(wsClasspath));
+            }
+
+            // set j2ee.platform.wsimport.classpath
+            if (j2eePlatform.isToolSupported(J2eePlatform.TOOL_WSIMPORT)) {
+                File[] wsClasspath = j2eePlatform.getToolClasspathEntries(J2eePlatform.TOOL_WSIMPORT);
+                ep.setProperty(WebServicesClientConstants.J2EE_PLATFORM_WSIMPORT_CLASSPATH,
+                        Utils.toClasspathString(wsClasspath));
+            }
         }
         //WORKAROUND for --retrieve option in asadmin deploy command
         //works only for local domains

@@ -53,9 +53,9 @@ import javax.swing.text.JTextComponent;
 
 import org.jruby.ast.NewlineNode;
 import org.jruby.ast.Node;
-import org.netbeans.api.gsf.CompilationInfo;
-import org.netbeans.api.gsf.EditorOptions;
-import org.netbeans.api.gsf.OffsetRange;
+import org.netbeans.fpi.gsf.CompilationInfo;
+import org.netbeans.fpi.gsf.EditorOptions;
+import org.netbeans.fpi.gsf.OffsetRange;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenId;
@@ -112,7 +112,7 @@ import org.openide.util.Exceptions;
  *
  * @author Tor Norbye
  */
-public class BracketCompleter implements org.netbeans.api.gsf.BracketCompletion {
+public class BracketCompleter implements org.netbeans.fpi.gsf.BracketCompletion {
     /** When true, automatically reflows comments that are being edited according to the rdoc
      * conventions as well as the right hand side margin
      */
@@ -619,9 +619,9 @@ public class BracketCompleter implements org.netbeans.api.gsf.BracketCompletion 
                                 firstChar == '{' || firstChar == '[' || firstChar == '/') &&
                                 lastChar == matching(firstChar))) {
                             doc.remove(end-1, 1);
-                            doc.insertString(end-1, ""+matching(ch), null);
+                            doc.insertString(end-1, Character.toString(matching(ch)), null);
                             doc.remove(start, 1);
-                            doc.insertString(start, ""+ch, null);
+                            doc.insertString(start, Character.toString(ch), null);
                             target.getCaret().setDot(end);
                         } else {
                             // No, insert around
