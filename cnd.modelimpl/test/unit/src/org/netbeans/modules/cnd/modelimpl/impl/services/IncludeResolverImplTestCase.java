@@ -83,17 +83,17 @@ public class IncludeResolverImplTestCase extends TraceModelTestBase {
         super(testName);
     }
     
-    public void testIncludeResolverInMainCC() throws Exception {
-        performTest("main.cc", 1, 1); // NOI18N
-    }
-
-    public void testIncludeResolverInLocalCC() throws Exception {
-        performTest("local.cc", 1, 1); // NOI18N
-    }
-
-    public void testIncludeResolverInHeader2H() throws Exception {
-        performTest("header2.h", 1, 1); // NOI18N
-    }
+//    public void testIncludeResolverInMainCC() throws Exception {
+//        performTest("main.cc", 1, 1); // NOI18N
+//    }
+//
+//    public void testIncludeResolverInLocalCC() throws Exception {
+//        performTest("local.cc", 1, 1); // NOI18N
+//    }
+//
+//    public void testIncludeResolverInHeader2H() throws Exception {
+//        performTest("header2.h", 1, 1); // NOI18N
+//    }
 
     public void testIncludeResolverInMainCCOnLocalVar() throws Exception {
         performTest("main.cc", 1, 1, "local.cc", 2, 8); // NOI18N
