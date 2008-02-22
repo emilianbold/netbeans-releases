@@ -37,72 +37,72 @@
 -- However, if you add GPL Version 2 code and therefore, elected the GPL
 -- Version 2 license, then the option applies only if the new code is
 -- made subject to such option by the copyright holder.
-CREATE TABLE CUSTOMER (
-   CUSTOMER_ID INTEGER PRIMARY KEY NOT NULL,
-   DISCOUNT_CODE CHARACTER(1) NOT NULL,
-   ZIP VARCHAR(10) NOT NULL,
-   NAME VARCHAR(30),
-   ADDRESSLINE1 VARCHAR(30),
-   ADDRESSLINE2 VARCHAR(30),
-   CITY VARCHAR(25),
-   STATE CHARACTER(2),
-   PHONE CHARACTER(12),
-   FAX CHARACTER(12),
-   EMAIL VARCHAR(40),
-   CREDIT_LIMIT INTEGER ) ;
+CREATE TABLE customer (
+   customer_id INTEGER PRIMARY KEY NOT NULL,
+   discount_code CHARACTER(1) NOT NULL,
+   zip VARCHAR(10) NOT NULL,
+   name VARCHAR(30),
+   addressline1 VARCHAR(30),
+   addressline2 VARCHAR(30),
+   city VARCHAR(25),
+   state CHARACTER(2),
+   phone CHARACTER(12),
+   fax CHARACTER(12),
+   email VARCHAR(40),
+   credit_limit INTEGER ) ;
 
 
 
-INSERT INTO CUSTOMER
+INSERT INTO customer
 values(
 1,'N','33015','JumboCom','111 E. Las Olas Blvd','Suite 51','Fort Lauderdale','FL','305-777-4632','305-777-4635','jumbocom@gmail.com',100000
 );
-INSERT INTO CUSTOMER
+INSERT INTO customer
 values(
 
 2,'M','33055','Livermore Enterprises','9754 Main Street','P.O. Box 567','Miami','FL','305-456-8888','305-456-8889','www.tsoftt.com',50000
 );
-INSERT INTO CUSTOMER
+INSERT INTO customer
 values(
 25,'M','75200','Oak Computers','8989 Qume Drive','Suite 9897','Houston','TX','214-999-1234','214-999-5432','www.oakc.com',25000
 );
-INSERT INTO CUSTOMER
+INSERT INTO customer
 values(
 3,'L','12347','Nano Apple','8585 Murray Drive','P.O. Box 456','Alanta','GA','555-275-9900','555-275-9911','www.nanoapple.net',90000
 );
-INSERT INTO CUSTOMER
+INSERT INTO customer
 values(
 36,'H','94401','HostProCom','65653 El Camino','Suite 2323','San Mateo','CA','650-456-8876','650-456-1120','www.hostprocom.net',65000
 );
-INSERT INTO CUSTOMER
+INSERT INTO customer
 values(
 106,'L','95035','CentralComp','829 Flex Drive','Suite 853','San Jose','CA','408-987-1256','408-987-1277','www.centralcomp.com',26500
 );
-INSERT INTO CUSTOMER
+INSERT INTO customer
 values(
 149,'L','95117','Golden Valley Computers','4381 Kelly Ave','Suite 77','Santa Clara','CA','408-432-6868','408-432-6899','www.gvc.net',70000
 );
-INSERT INTO CUSTOMER
+INSERT INTO customer
 values(
-863,'N','94401','Top Network Systems','456 4th Street','Suite 45','Redwood City','CA','650-345-5656','650-345-4433','www.hpsys.net',25000
+863,'N','94401','Top Network Systems','456 4th Street','Suite 45','Redwood city','CA','650-345-5656','650-345-4433','www.hpsys.net',25000
 );
-INSERT INTO CUSTOMER
+INSERT INTO customer
 values(
 777,'L','48128','West Valley Inc.','88 North Drive','Building C','Dearborn','MI','313-563-9900','313-563-9911','www.westv.com',100000
 );
-INSERT INTO CUSTOMER
+INSERT INTO customer
 values(
 753,'H','48128','Ford Motor Co','2267 Michigan Ave','Building 21','Dearborn','MI','313-787-2100','313-787-3100','www.parts@ford.com',5000000
 );
-INSERT INTO CUSTOMER
+INSERT INTO customer
 values(
 722,'N','48124','Big Car Parts','52963 Outer Dr','Suite 35','Detroit','MI','313-788-7682','313-788-7600','www.sparts.com',50000
 );
-INSERT INTO CUSTOMER
+INSERT INTO customer
 values(
-409,'L','10095','New Media Productions','4400 22nd Street','Suite 562','New York','NY','212-222-5656','212-222-5600','www.nymedia.com',10000
+409,'L','10095','New Media productions','4400 22nd Street','Suite 562','New York','NY','212-222-5656','212-222-5600','www.nymedia.com',10000
 );
-INSERT INTO CUSTOMER
+INSERT INTO customer
 values(
 410,'M','10096','Yankee Computer Repair','9653 33rd Ave','Floor 4','New York','NY','212-535-7000','212-535-7100','www.nycomp@repair.com',25000
 );
@@ -112,14 +112,14 @@ values(
 
 
 
-CREATE TABLE DISCOUNT_CODE (
-   DISCOUNT_CODE CHARACTER(1) PRIMARY KEY  NOT NULL,
-   RATE DECIMAL(4,2) ) ;
+CREATE TABLE discount_code (
+   discount_code CHARACTER(1) PRIMARY KEY  NOT NULL,
+   rate DECIMAL(4,2) ) ;
 
 
 
-INSERT INTO DISCOUNT_CODE (
-DISCOUNT_CODE, RATE )
+INSERT INTO discount_code (
+discount_code, rate )
 VALUES
 
 ('H',16),
@@ -134,24 +134,24 @@ VALUES
 
 
 
-CREATE TABLE MANUFACTURER (
-   MANUFACTURER_ID INTEGER PRIMARY KEY  NOT NULL,
-   NAME VARCHAR(30),
-   ADDRESSLINE1 VARCHAR(30),
-   ADDRESSLINE2 VARCHAR(30),
-   CITY VARCHAR(25),
-   STATE CHARACTER(2),
-   ZIP CHARACTER(10),
-   PHONE VARCHAR(12),
-   FAX VARCHAR(12),
-   EMAIL VARCHAR(40),
-   REP VARCHAR(30)
+CREATE TABLE manufacturer (
+   manufacturer_id INTEGER PRIMARY KEY  NOT NULL,
+   name VARCHAR(30),
+   addressline1 VARCHAR(30),
+   addressline2 VARCHAR(30),
+   city VARCHAR(25),
+   state CHARACTER(2),
+   zip CHARACTER(10),
+   phone VARCHAR(12),
+   fax VARCHAR(12),
+   email VARCHAR(40),
+   rep VARCHAR(30)
     ) ;
 
 
 
-INSERT INTO MANUFACTURER (
-MANUFACTURER_ID, NAME, ADDRESSLINE1, ADDRESSLINE2, CITY, STATE, ZIP, PHONE, FAX, EMAIL, 
+INSERT INTO manufacturer (
+manufacturer_id, name, addressline1, addressline2, city, state, zip, phone, fax, email, 
 REP )
 VALUES
 
@@ -169,7 +169,7 @@ VALUES
 (19948494,'Computer Cables & More','5632 Michigam Ave',' ','Dearborn','MI','48127','313-555-6654','313-555-6600','www.cbl.more.net','Sam Frank'),
 (19971233,'BMC','5960 Inglewood drive','Building R5','Pleasanton','CA','94588','408-321-8800','408-321-8811','www.paul@bmc.com','Paul Cruz'),
 (19980198,'Rico Enterprises','76342 26th Ave','Suite 450','New York','NY','10044','212-766-7531','212-766-7500','www.rico@aol.com','Fred Lewis'),
-(19960022,'Dobs Computer Products','6593 Garcia Way','Floor 2','Albuqerque','NM','87119','505-999-2121','505-999-2100','www.dobs@aol.com','Tom Goglia'),
+(19960022,'Dobs Computer products','6593 Garcia Way','Floor 2','Albuqerque','NM','87119','505-999-2121','505-999-2100','www.dobs@aol.com','Tom Goglia'),
 (19986542,'Zetsoft','795 Stone Road','Suite 4','Tombstone','AZ','85638','602-545-9823','602-545-9800','www.zetasoft.com','Hugh Klein'),
 (19977346,'Hitachi','284 Smith Road','Suite 7','San Mateo','CA','94403','650-765-7878','650-329-8494','www.smith.com','Frank Smith'),
 (19977347,'World Savings','56 Broadway','Floor 12','Oakland','CA','98123','510-683-9725','510-683-9510','www.wsl.com','Tom Brown'),
@@ -191,16 +191,16 @@ VALUES
 
 
 
-CREATE TABLE MICRO_MARKET (
-   ZIP_CODE VARCHAR(10) PRIMARY KEY  NOT NULL,
-   RADIUS FLOAT(26),
-   AREA_LENGTH DOUBLE PRECISION,
-   AREA_WIDTH DOUBLE PRECISION ) ;
+CREATE TABLE micro_market (
+   zip_code VARCHAR(10) PRIMARY KEY  NOT NULL,
+   radius FLOAT(26),
+   area_length DOUBLE PRECISION,
+   area_width DOUBLE PRECISION ) ;
 
 
 
-INSERT INTO MICRO_MARKET (
-ZIP_CODE, RADIUS, AREA_LENGTH, AREA_WIDTH )
+INSERT INTO micro_market (
+zip_code, radius, area_length, area_width )
 VALUES
 
 ('95051',2.5559E2,6.89856E2,4.78479E2),
@@ -222,21 +222,21 @@ VALUES
 
 
 
-CREATE TABLE PURCHASE_ORDER (
-   ORDER_NUM INTEGER PRIMARY KEY  NOT NULL,
-   CUSTOMER_ID INTEGER NOT NULL,
-   PRODUCT_ID INTEGER NOT NULL,
-   QUANTITY SMALLINT,
-   SHIPPING_COST DECIMAL(12,2),
-   SALES_DATE DATE,
-   SHIPPING_DATE DATE,
-   FREIGHT_COMPANY VARCHAR(30) ) ;
+CREATE TABLE purchase_order (
+   order_num INTEGER PRIMARY KEY  NOT NULL,
+   customer_id INTEGER NOT NULL,
+   product_id INTEGER NOT NULL,
+   quantity SMALLINT,
+   shipping_cost DECIMAL(12,2),
+   sales_date DATE,
+   shipping_date DATE,
+   freight_company VARCHAR(30) ) ;
 
 
 
-INSERT INTO PURCHASE_ORDER (
-ORDER_NUM, CUSTOMER_ID,  PRODUCT_ID, QUANTITY, SHIPPING_COST, 
-SALES_DATE, SHIPPING_DATE,  FREIGHT_COMPANY )
+INSERT INTO purchase_order (
+order_num, customer_id,  product_id, quantity, shipping_cost, 
+sales_date, shipping_date,  freight_company )
 VALUES
 
 (10398001,1,980001,10,449,CURRENT_DATE,CURRENT_DATE,'Poney Express'),
@@ -260,15 +260,15 @@ VALUES
 
 
 
-CREATE TABLE PRODUCT_CODE (
-   PROD_CODE CHARACTER(2) PRIMARY KEY  NOT NULL,
-   DISCOUNT_CODE CHARACTER(1) NOT NULL,
-   DESCRIPTION VARCHAR(10) ) ;
+CREATE TABLE product_code (
+   prod_code CHARACTER(2) PRIMARY KEY  NOT NULL,
+   discount_code CHARACTER(1) NOT NULL,
+   description VARCHAR(10) ) ;
 
 
 
-INSERT INTO PRODUCT_CODE (
-PROD_CODE, DISCOUNT_CODE, DESCRIPTION )
+INSERT INTO product_code (
+prod_code, discount_code, description )
 VALUES
 
 ('SW','M','Software'),
@@ -283,24 +283,24 @@ VALUES
 
 
 
-CREATE TABLE PRODUCT (
-   PRODUCT_ID INTEGER PRIMARY KEY  NOT NULL,
-   MANUFACTURER_ID INTEGER NOT NULL,
-   PRODUCT_CODE CHARACTER(2) NOT NULL,
-   PURCHASE_COST DECIMAL(12,2),
-   QUANTITY_ON_HAND INTEGER,
-   MARKUP DECIMAL(4,2),
-   AVAILABLE VARCHAR(5) ,
-   DESCRIPTION VARCHAR(50) ) ;
+CREATE TABLE product (
+   product_id INTEGER PRIMARY KEY  NOT NULL,
+   manufacturer_id INTEGER NOT NULL,
+   product_code CHARACTER(2) NOT NULL,
+   purchase_cost DECIMAL(12,2),
+   quantity_on_hand INTEGER,
+   markup DECIMAL(4,2),
+   available VARCHAR(5) ,
+   description VARCHAR(50) ) ;
 
 
 
-INSERT INTO PRODUCT (
-PRODUCT_ID, MANUFACTURER_ID, PRODUCT_CODE, PURCHASE_COST, QUANTITY_ON_HAND, MARKUP, 
-AVAILABLE, DESCRIPTION )
+INSERT INTO product (
+product_id, manufacturer_id, product_code, purchase_cost, quantity_on_hand, markup, 
+available, description )
 VALUES
 
-(980001,19985678,'SW',1095,800000,8.25,'TRUE','Identity Server'),
+(980001,19985678,'SW',1095,800000,8.25,'TRUE','identity Server'),
 (980005,19986982,'SW',11500.99,500,55.25,'TRUE','Accounting Application'),
 (980025,19974892,'HW',2095.99,3000,15.75,'TRUE','1Ghz Sun Blade Computer'),
 (980030,19986196,'FW',59.95,250,40,'TRUE','10Gb Ram'),
@@ -309,7 +309,7 @@ VALUES
 (985510,19984899,'HW',595,800,5.75,'TRUE','24 inch Digital Monitor'),
 (988765,19965794,'HW',10.95,25,9.75,'TRUE','104-Key Keyboard'),
 (986420,19955656,'SW',49.95,0,5.25,'FALSE','Directory Server'),
-(986712,19989719,'HW',69.95,1000,10.5,'TRUE','512X IDE DVD-ROM'),
+(986712,19989719,'HW',69.95,1000,10.5,'TRUE','512X idE DVD-ROM'),
 (975789,19977775,'BK',29.98,25,5,'TRUE','Learn Solaris 10'),
 (971266,19948494,'CB',25.95,500,30,'TRUE','Network Cable'),
 (980601,19971233,'HW',2000.95,2000,25,'TRUE','300Mhz Pentium Computer'),
@@ -333,32 +333,32 @@ VALUES
 ;
 
 
-ALTER TABLE PRODUCT ADD CONSTRAINT FOREIGNKEY_MANUFACTURER_ID FOREIGN KEY ( 
-MANUFACTURER_ID )
-        REFERENCES MANUFACTURER ( MANUFACTURER_ID ) ON UPDATE no action ON DELETE 
+ALTER TABLE product ADD CONSTRAINT FOREIGNKEY_manufacturer_id FOREIGN KEY ( 
+manufacturer_id )
+        REFERENCES manufacturer ( manufacturer_id ) ON UPDATE no action ON DELETE 
 no action;
 
-ALTER TABLE PRODUCT ADD CONSTRAINT FOREIGNKEY_PRODUCT_CODE FOREIGN KEY ( 
-PRODUCT_CODE )
-        REFERENCES PRODUCT_CODE ( PROD_CODE ) ON UPDATE no action ON 
+ALTER TABLE product ADD CONSTRAINT FOREIGNKEY_product_code FOREIGN KEY ( 
+product_code )
+        REFERENCES product_code ( prod_code ) ON UPDATE no action ON 
 DELETE no action;
 
-ALTER TABLE CUSTOMER ADD CONSTRAINT FOREIGNKEY_DISCOUNT_CODE FOREIGN KEY 
-( DISCOUNT_CODE )
-        REFERENCES DISCOUNT_CODE ( DISCOUNT_CODE ) ON UPDATE no action 
+ALTER TABLE customer ADD CONSTRAINT FOREIGNKEY_discount_code FOREIGN KEY 
+( discount_code )
+        REFERENCES discount_code ( discount_code ) ON UPDATE no action 
 ON DELETE no action;
 
-ALTER TABLE CUSTOMER ADD CONSTRAINT FOREIGNKEY_ZIP FOREIGN KEY ( ZIP )
-        REFERENCES MICRO_MARKET ( ZIP_CODE ) ON UPDATE no action ON 
+ALTER TABLE customer ADD CONSTRAINT FOREIGNKEY_zip FOREIGN KEY ( zip )
+        REFERENCES micro_market ( zip_code ) ON UPDATE no action ON 
 DELETE no action;
 
-ALTER TABLE PURCHASE_ORDER ADD CONSTRAINT FOREIGNKEY_CUSTOMER_ID FOREIGN KEY ( 
-CUSTOMER_ID )
-        REFERENCES CUSTOMER ( CUSTOMER_ID ) ON UPDATE no action ON 
+ALTER TABLE purchase_order ADD CONSTRAINT FOREIGNKEY_customer_id FOREIGN KEY ( 
+customer_id )
+        REFERENCES customer ( customer_id ) ON UPDATE no action ON 
 DELETE no action;
 
-ALTER TABLE PURCHASE_ORDER ADD CONSTRAINT FOREIGNKEY_PRODUCT_ID FOREIGN KEY ( 
-PRODUCT_ID )
-        REFERENCES PRODUCT ( PRODUCT_ID ) ON UPDATE no action ON DELETE 
+ALTER TABLE purchase_order ADD CONSTRAINT FOREIGNKEY_product_id FOREIGN KEY ( 
+product_id )
+        REFERENCES product ( product_id ) ON UPDATE no action ON DELETE 
 no action;
 
