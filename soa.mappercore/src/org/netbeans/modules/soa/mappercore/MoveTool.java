@@ -160,8 +160,8 @@ public class MoveTool extends AbstractMapperDnDTool {
             int graphX = canvas.toGraph(point.x - delta.x);
             if (dtde.getDropAction() == DnDConstants.ACTION_COPY || graphSubSet.getGraph() == null) {
                 graphSubSet = model.copy(node.getTreePath(), graphSubSet,
-                        (graphX + step / 2) / step,
-                        Math.max(0, (graphY + step / 2) / step));
+                        (int) (Math.round(((double) (graphX)) / step)),
+                        Math.max(0, (int) (Math.round(((double) (graphY)) / step))));
             } else {
                 model.move(node.getTreePath(), graphSubSet,
                         (int) (Math.round(((double) (graphX)) / step)),

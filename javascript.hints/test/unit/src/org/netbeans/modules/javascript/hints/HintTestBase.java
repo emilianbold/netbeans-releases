@@ -28,11 +28,11 @@
 package org.netbeans.modules.javascript.hints;
 
 import java.util.Collections;
-import org.netbeans.fpi.gsf.OffsetRange;
+import org.netbeans.modules.gsf.api.OffsetRange;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
 import java.util.Map;
-import org.netbeans.fpi.gsf.CompilationInfo;
+import org.netbeans.modules.gsf.api.CompilationInfo;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -43,8 +43,8 @@ import java.util.Set;
 import java.util.prefs.Preferences;
 import javax.swing.text.Document;
 import org.mozilla.javascript.Node;
-import org.netbeans.fpi.gsf.CompilationInfo;
-import org.netbeans.fpi.gsf.OffsetRange;
+import org.netbeans.modules.gsf.api.CompilationInfo;
+import org.netbeans.modules.gsf.api.OffsetRange;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
 import org.netbeans.junit.NbTestCase;
