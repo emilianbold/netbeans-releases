@@ -97,7 +97,7 @@ public class JavadocForBinaryQueryImpl implements JavadocForBinaryQueryImplement
                     List<URL> result = new ArrayList<URL>();
                     for (URL u : lib.getContent(ServerLibraryTypeProvider.VOLUME_JAVADOC)) {
                         u = LibrariesSupport.resolveLibraryEntryURL(lib.getManager().getLocation(), u);
-                        result.add (getIndexFolder(u));
+                        result.add(getIndexFolder(u));
                     }
                     this.cachedRoots = result.toArray(new URL[result.size()]);
                 }
