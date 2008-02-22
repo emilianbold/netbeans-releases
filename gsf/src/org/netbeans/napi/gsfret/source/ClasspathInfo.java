@@ -44,15 +44,18 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.EventListenerList;
-import org.netbeans.api.gsfpath.classpath.ClassPath;
-import org.netbeans.api.gsfpath.platform.JavaPlatformManager;
-import org.netbeans.napi.gsfret.source.ClassIndex;
+import org.netbeans.modules.gsfpath.api.classpath.ClassPath;
+import org.netbeans.modules.gsfpath.api.platform.JavaPlatformManager;
+import org.netbeans.modules.gsf.Language;
+import org.netbeans.modules.gsf.LanguageRegistry;
 import org.netbeans.modules.gsfret.source.CacheClassPath;
 import org.netbeans.modules.gsfret.source.usages.ClasspathInfoAccessor;
-import org.netbeans.spi.gsfpath.classpath.support.ClassPathSupport;
+import org.netbeans.modules.gsfpath.spi.classpath.support.ClassPathSupport;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -82,7 +85,6 @@ public final class ClasspathInfo {
     }    
     
 //    private final CachingArchiveProvider archiveProvider;
-    
     private final ClassPath srcClassPath;
     private final ClassPath bootClassPath;
     private final ClassPath compileClassPath;
@@ -96,9 +98,9 @@ public final class ClasspathInfo {
     private final Object/*JavaFileFilterImplementation*/ filter;
     //private JavaFileManager fileManager;
     private EventListenerList listenerList =  null;
-    private ClassIndex usagesQuery;
+    private List<ClassIndex> usagesQuery;
     
-    /** Creates a new instance of ClasspathInfo (private use the fatctory methods) */
+    /** Creates a new instance of ClasspathInfo (private use the factory methods) */
     private ClasspathInfo(/*CachingArchiveProvider archiveProvider,*/ ClassPath bootCp, ClassPath compileCp, ClassPath srcCp,
         Object/*JavaFileFilterImplementation*/ filter, boolean backgroundCompilation, boolean ignoreExcludes) {
         assert /*archiveProvider != null &&*/ bootCp != null && compileCp != null;
@@ -124,6 +126,7 @@ public final class ClasspathInfo {
         this.filter = filter;
     }
     
+    @Override
     public String toString() {
         return "ClasspathInfo boot:[" + cachedBootClassPath + "],compile:[" + cachedCompileClassPath + "],src:[" + srcClassPath + "]";  //NOI18N
     }
@@ -233,14 +236,30 @@ public final class ClasspathInfo {
     }
     
     
-    public synchronized ClassIndex getClassIndex () {
-        if ( usagesQuery == null ) {
-            usagesQuery = new ClassIndex (
-                    this.bootClassPath,
-                    this.compileClassPath,
-                    this.srcClassPath);
+    public synchronized ClassIndex getClassIndex(String mimeType) {
+        if (usagesQuery == null) {
+            usagesQuery = new ArrayList<ClassIndex>(8);
+        } else {
+            for (int i = 0; i < usagesQuery.size(); i++) {
+                ClassIndex ci = usagesQuery.get(i);
+                if (ci.getLanguage().getMimeType().equals(mimeType)) {
+                    return ci;
+                }
+            }
         }
-        return usagesQuery;
+
+        Language language = LanguageRegistry.getInstance().getLanguageByMimeType(mimeType);
+        assert language != null : mimeType;
+        
+        ClassIndex ci = new ClassIndex (
+                language,
+                this.bootClassPath,
+                this.compileClassPath,
+                this.srcClassPath);
+
+        usagesQuery.add(ci);
+        
+        return ci;
     }
     
     // Package private methods -------------------------------------------------

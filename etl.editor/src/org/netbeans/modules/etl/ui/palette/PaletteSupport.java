@@ -103,7 +103,7 @@ public class PaletteSupport {
          * @return
          */
         public Action[] getImportActions() {
-            return null;
+           return new Action[0];
         }
 
         /**
@@ -111,7 +111,7 @@ public class PaletteSupport {
          * @return
          */
         public Action[] getCustomPaletteActions() {
-            return null;
+            return new Action[0];
         }
 
         /**
@@ -120,7 +120,7 @@ public class PaletteSupport {
          * @return
          */
         public Action[] getCustomCategoryActions(Lookup lookup) {
-            return null;
+            return new Action[0];
         }
 
         /**
@@ -129,7 +129,7 @@ public class PaletteSupport {
          * @return
          */
         public Action[] getCustomItemActions(Lookup lookup) {
-            return null;
+            return new Action[0];
         }
 
         /**
@@ -155,6 +155,11 @@ public class PaletteSupport {
             }
         }
 
+        public static String getSHORT_DESCRIPTION() {
+            return SHORT_DESCRIPTION;
+        }
+
+        
         public Object getValue(String key) {
             throw new UnsupportedOperationException("Not supported yet.");
         }

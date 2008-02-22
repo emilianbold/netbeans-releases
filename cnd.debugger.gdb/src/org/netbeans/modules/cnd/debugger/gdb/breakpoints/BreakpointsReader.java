@@ -56,7 +56,7 @@ public class BreakpointsReader implements Properties.Reader {
         };
     }
     
-    public Object read (String typeID, Properties properties) {
+    public Object read(String typeID, Properties properties) {
         GdbBreakpoint b = null;
         // Read both LineBreakpoint and LineBreakpoint$LineBreakpointComparable
         if (typeID.equals(LineBreakpoint.class.getName()) ||
@@ -72,11 +72,17 @@ public class BreakpointsReader implements Properties.Reader {
                     FunctionBreakpoint.PROP_BREAKPOINT_TYPE, FunctionBreakpoint.TYPE_FUNCTION_ENTRY));
             b = fb;
         }
+        if (typeID.equals (AddressBreakpoint.class.getName()) ||
+                        typeID.equals(AddressBreakpoint.class.getName() + "$AddressBreakpointComparable")) { // NOI18N
+            AddressBreakpoint ab = AddressBreakpoint.create(properties.getString(AddressBreakpoint.PROP_ADDRESS_VALUE, "")); // NOI18N
+            b = ab;
+        }
         
         b.setCondition(properties.getString(GdbBreakpoint.PROP_CONDITION, "")); // NOI18N
         b.setPrintText(properties.getString(GdbBreakpoint.PROP_PRINT_TEXT, "")); // NOI18N
         b.setGroupName(properties.getString(GdbBreakpoint.PROP_GROUP_NAME, "")); // NOI18N
-        b.setSuspend(properties.getInt(GdbBreakpoint.PROP_SUSPEND, GdbBreakpoint.SUSPEND_ALL));
+        b.setSuspend(properties.getInt(GdbBreakpoint.PROP_SUSPEND, GdbBreakpoint.SUSPEND_ALL),
+                properties.getString(GdbBreakpoint.PROP_THREAD_ID, "1")); // NOI18N
         
         if (properties.getBoolean(GdbBreakpoint.PROP_ENABLED, true)) {
             b.enable();
@@ -91,6 +97,7 @@ public class BreakpointsReader implements Properties.Reader {
         properties.setString(GdbBreakpoint.PROP_PRINT_TEXT, b.getPrintText());
         properties.setString(GdbBreakpoint.PROP_GROUP_NAME, b.getGroupName());
         properties.setInt(GdbBreakpoint.PROP_SUSPEND, b.getSuspend());
+        properties.setString(GdbBreakpoint.PROP_THREAD_ID, b.getThreadID());
         properties.setBoolean(GdbBreakpoint.PROP_ENABLED, b.isEnabled());
         properties.setString(GdbBreakpoint.PROP_CONDITION, b.getCondition());
         
@@ -102,6 +109,9 @@ public class BreakpointsReader implements Properties.Reader {
             FunctionBreakpoint fb = (FunctionBreakpoint) object;
             properties.setString(FunctionBreakpoint.PROP_FUNCTION_NAME, fb.getFunctionName());
             properties.setInt(FunctionBreakpoint.PROP_BREAKPOINT_TYPE, fb.getBreakpointType());
+        } else if (object instanceof AddressBreakpoint) {
+            AddressBreakpoint fb = (AddressBreakpoint) object;
+            properties.setString(AddressBreakpoint.PROP_ADDRESS_VALUE, fb.getAddress());
         }
     }
 }

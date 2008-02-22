@@ -396,6 +396,7 @@ public final class WebProject implements Project, AntProjectListener {
 
     private Lookup createLookup(AuxiliaryConfiguration aux, ClassPathProviderImpl cpProvider) {
         SubprojectProvider spp = refHelper.createSubprojectProvider();
+        final WebSources webSources = new WebSources(this.helper, evaluator(), getSourceRoots(), getTestSourceRoots());
         Lookup base = Lookups.fixed(new Object[] {            
             new Info(),
             aux,
@@ -416,7 +417,8 @@ public final class WebProject implements Project, AntProjectListener {
             UILookupMergerSupport.createProjectOpenHookMerger(new ProjectOpenedHookImpl()),
             QuerySupport.createUnitTestForSourceQuery(getSourceRoots(), getTestSourceRoots()),
             QuerySupport.createSourceLevelQuery(evaluator()),
-            new WebSources (this.helper, evaluator(), getSourceRoots(), getTestSourceRoots()),
+            webSources,
+            new GsfClassPathProviderImpl (helper, evaluator(), webSources),
             QuerySupport.createSharabilityQuery(helper, evaluator(), getSourceRoots(), getTestSourceRoots(),
                     WebProjectProperties.WEB_DOCBASE_DIR),
             new RecommendedTemplatesImpl(),
@@ -822,6 +824,12 @@ public final class WebProject implements Project, AntProjectListener {
             GlobalPathRegistry.getDefault().register(ClassPath.SOURCE, cpProvider.getProjectClassPaths(ClassPath.SOURCE));
             GlobalPathRegistry.getDefault().register(ClassPath.COMPILE, cpProvider.getProjectClassPaths(ClassPath.COMPILE));
             
+            GsfClassPathProviderImpl gsfCpProvider = getLookup().lookup(GsfClassPathProviderImpl.class);
+            if (gsfCpProvider != null) {
+                org.netbeans.modules.gsfpath.api.classpath.GlobalPathRegistry.getDefault().register(org.netbeans.modules.gsfpath.api.classpath.ClassPath.BOOT, gsfCpProvider.getProjectClassPaths(org.netbeans.modules.gsfpath.api.classpath.ClassPath.BOOT));
+                org.netbeans.modules.gsfpath.api.classpath.GlobalPathRegistry.getDefault().register(org.netbeans.modules.gsfpath.api.classpath.ClassPath.SOURCE, gsfCpProvider.getProjectClassPaths(org.netbeans.modules.gsfpath.api.classpath.ClassPath.SOURCE));
+            }
+                    
             // initialize the server configuration
             // it MUST BE called AFTER classpaths are registered to GlobalPathRegistry!
             // DDProvider (used here) needs classpath set correctly when resolving Java Extents for annotations
@@ -958,6 +966,14 @@ public final class WebProject implements Project, AntProjectListener {
         }
         
         protected void projectClosed() {
+            // unregister project's classpaths to GlobalPathRegistry
+            GsfClassPathProviderImpl gsfCpProvider = lookup.lookup(GsfClassPathProviderImpl.class);
+            if (gsfCpProvider != null) {
+                //org.netbeans.modules.gsfpath.api.classpath.GlobalPathRegistry.getDefault().unregister(org.netbeans.modules.gsfpath.api.classpath.ClassPath.BOOT, gsfCpProvider.getProjectClassPaths(org.netbeans.modules.gsfpath.api.classpath.ClassPath.BOOT));
+                org.netbeans.modules.gsfpath.api.classpath.GlobalPathRegistry.getDefault().unregister(org.netbeans.modules.gsfpath.api.classpath.ClassPath.SOURCE, gsfCpProvider.getProjectClassPaths(org.netbeans.modules.gsfpath.api.classpath.ClassPath.SOURCE));
+                //org.netbeans.modules.gsfpath.api.classpath.GlobalPathRegistry.getDefault().unregister(org.netbeans.modules.gsfpath.api.classpath.ClassPath.COMPILE, gsfCpProvider.getProjectClassPaths(org.netbeans.modules.gsfpath.api.classpath.ClassPath.COMPILE));
+            }
+
             webPagesFileWatch.reset();
             webInfFileWatch.reset();
 

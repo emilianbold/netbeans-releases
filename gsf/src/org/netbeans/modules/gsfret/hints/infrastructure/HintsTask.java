@@ -42,7 +42,10 @@ package org.netbeans.modules.gsfret.hints.infrastructure;
 
 import java.util.ArrayList;
 import java.util.List;
-import org.netbeans.api.gsf.HintsProvider;
+import java.util.Set;
+import org.netbeans.modules.gsf.api.HintsProvider;
+import org.netbeans.modules.gsf.Language;
+import org.netbeans.modules.gsf.LanguageRegistry;
 import org.netbeans.napi.gsfret.source.CompilationInfo;
 import org.netbeans.modules.gsfret.editor.semantic.ScanningCancellableTask;
 import org.netbeans.spi.editor.hints.ErrorDescription;
@@ -59,18 +62,26 @@ public class HintsTask extends ScanningCancellableTask<CompilationInfo> {
     }
     
     public void run(CompilationInfo info) throws Exception {
-        HintsProvider provider = info.getLanguage().getHintsProvider();
-
-        if (provider == null) {
-            return;
-        }
-        
         List<ErrorDescription> result = new ArrayList<ErrorDescription>();
-        
-        provider.computeHints(info, result);
-        
-        if (isCancelled()) {
-            return;
+
+        Set<String> mimeTypes = info.getEmbeddedMimeTypes();
+        for (String mimeType : mimeTypes) {
+            Language language = LanguageRegistry.getInstance().getLanguageByMimeType(mimeType);
+            if (language == null) {
+                continue;
+            }
+            
+            HintsProvider provider = language.getHintsProvider();
+
+            if (provider == null) {
+                return;
+            }
+
+            provider.computeHints(info, result);
+
+            if (isCancelled()) {
+                return;
+            }
         }
         
         HintsController.setErrors(info.getFileObject(), HintsTask.class.getName(), result);

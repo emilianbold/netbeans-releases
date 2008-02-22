@@ -52,7 +52,7 @@ import org.openide.util.Exceptions;
 
 import java.io.IOException;
 import javax.swing.text.Document;
-import org.netbeans.api.gsfpath.classpath.ClassPath;
+import org.netbeans.modules.gsfpath.api.classpath.ClassPath;
 import org.netbeans.napi.gsfret.source.Source;
 import org.netbeans.modules.gsfret.source.usages.RepositoryUpdater;
 import org.openide.filesystems.FileObject;
@@ -146,7 +146,7 @@ public class ActivatedDocumentListener implements PropertyChangeListener {
         lastValidFile = activeFile;
         
         //TimesCollector.getDefault().select(activeFile);
-        SourceAccessor.INSTANCE.revalidate(activeJS);
+        SourceAccessor.getINSTANCE().revalidate(activeJS);
     }
 
     /**Set to switch off compilation, useful in tests.

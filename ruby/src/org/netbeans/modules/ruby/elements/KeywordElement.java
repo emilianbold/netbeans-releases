@@ -40,20 +40,14 @@
  */
 package org.netbeans.modules.ruby.elements;
 
-import java.util.Collections;
-import java.util.Set;
-
-import org.netbeans.api.gsf.Element;
-import org.netbeans.api.gsf.ElementKind;
-import org.netbeans.api.gsf.Modifier;
-
+import org.netbeans.modules.gsf.api.ElementKind;
 
 /**
  * Element describing a Ruby keyword
  *
  * @author Tor Norbye
  */
-public class KeywordElement implements Element {
+public class KeywordElement extends RubyElement {
     private final String name;
 
     /** Creates a new instance of DefaultComKeyword */
@@ -67,13 +61,5 @@ public class KeywordElement implements Element {
 
     public ElementKind getKind() {
         return ElementKind.KEYWORD;
-    }
-
-    public Set<Modifier> getModifiers() {
-        return Collections.emptySet();
-    }
-
-    public String getIn() {
-        return null;
     }
 }

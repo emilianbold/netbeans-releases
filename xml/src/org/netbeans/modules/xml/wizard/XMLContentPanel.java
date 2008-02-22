@@ -35,8 +35,17 @@ public class XMLContentPanel extends AbstractPanel {
     public XMLContentPanel(boolean value) {
         visible = value;
         initComponents(); 
+        initAccessibility();
         
-    } 
+    }
+
+    private void initAccessibility() {
+        Util util = Util.THIS;
+        getAccessibleContext().setAccessibleDescription(titleLabel.getText());
+        attributes.setMnemonic(util.getChar("XMLContentPanel.attributes.mne"));
+        elements.setMnemonic(util.getChar("XMLContentPanel.elements.mne"));
+        
+    }
      
     /** This method is called from within the constructor to
      * initialize the form.
@@ -66,7 +75,7 @@ public class XMLContentPanel extends AbstractPanel {
         rootElementComboBox = new javax.swing.JComboBox();
         rootElementComboBox.setVisible(visible);
 
-        setName("XML Model Generation Options"); // NOI18N
+        setName(org.openide.util.NbBundle.getMessage(XMLContentPanel.class, "PROP_xml_content_panel_name")); // NOI18N
 
         titleLabel.setText(org.openide.util.NbBundle.getMessage(XMLContentPanel.class, "XMLContentPanel.titleLabel.text")); // NOI18N
 
@@ -113,7 +122,7 @@ public class XMLContentPanel extends AbstractPanel {
                     .add(layout.createSequentialGroup()
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                             .add(layout.createSequentialGroup()
-                                .add(attributes, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                .add(attributes, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 191, Short.MAX_VALUE)
                                 .add(523, 523, 523))
                             .add(layout.createSequentialGroup()
                                 .add(elements, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 187, Short.MAX_VALUE)
@@ -121,37 +130,37 @@ public class XMLContentPanel extends AbstractPanel {
                             .add(layout.createSequentialGroup()
                                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                                     .add(layout.createSequentialGroup()
-                                        .add(jLabel7, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                        .add(jLabel7, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 79, Short.MAX_VALUE)
                                         .add(46, 46, 46))
                                     .add(layout.createSequentialGroup()
-                                        .add(jLabel5, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                        .add(jLabel5, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 95, Short.MAX_VALUE)
                                         .add(30, 30, 30))
-                                    .add(jLabel3, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                                    .add(jLabel3, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 125, Short.MAX_VALUE))
                                 .add(7, 7, 7)
                                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                                     .add(layout.createSequentialGroup()
                                         .add(17, 17, 17)
-                                        .add(rootElementComboBox, 0, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                        .add(rootElementComboBox, 0, 65, Short.MAX_VALUE)
                                         .add(500, 500, 500))
                                     .add(layout.createSequentialGroup()
                                         .add(42, 42, 42)
                                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                                            .add(depthSpinner)
-                                            .add(occurSpinner))
+                                            .add(depthSpinner, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 62, Short.MAX_VALUE)
+                                            .add(occurSpinner, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 62, Short.MAX_VALUE))
                                         .add(66, 66, 66)
                                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                                             .add(layout.createSequentialGroup()
-                                                .add(jLabel4, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                                .add(jLabel4, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 398, Short.MAX_VALUE)
                                                 .add(14, 14, 14))
-                                            .add(jLabel6, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))))
+                                            .add(jLabel6, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 412, Short.MAX_VALUE)))))
                             .add(layout.createSequentialGroup()
-                                .add(titleLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                .add(titleLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 373, Short.MAX_VALUE)
                                 .add(341, 341, 341))
                             .add(layout.createSequentialGroup()
-                                .add(jLabel1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                .add(jLabel1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 91, Short.MAX_VALUE)
                                 .add(623, 623, 623))
                             .add(layout.createSequentialGroup()
-                                .add(jLabel2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                .add(jLabel2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 113, Short.MAX_VALUE)
                                 .add(601, 601, 601)))
                         .add(12, 12, 12))))
         );
@@ -189,6 +198,11 @@ public class XMLContentPanel extends AbstractPanel {
                     .add(jLabel6))
                 .addContainerGap(72, Short.MAX_VALUE))
         );
+
+        attributes.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(XMLContentPanel.class, "XMLContentPanel.attributes.text")); // NOI18N
+        attributes.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(XMLContentPanel.class, "XMLContentPanel.attributes.text")); // NOI18N
+        elements.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(XMLContentPanel.class, "XMLContentPanel.elements.text")); // NOI18N
+        elements.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(XMLContentPanel.class, "XMLContentPanel.elements.text")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
 
     private void attributesActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_attributesActionPerformed

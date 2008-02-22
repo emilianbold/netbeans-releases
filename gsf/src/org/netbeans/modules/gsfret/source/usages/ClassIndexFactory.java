@@ -41,7 +41,8 @@
 
 package org.netbeans.modules.gsfret.source.usages;
 
-import org.netbeans.api.gsfpath.classpath.ClassPath;
+import org.netbeans.modules.gsfpath.api.classpath.ClassPath;
+import org.netbeans.modules.gsf.Language;
 import org.netbeans.napi.gsfret.source.ClassIndex;
 
 /**
@@ -56,6 +57,6 @@ import org.netbeans.napi.gsfret.source.ClassIndex;
 
 public interface ClassIndexFactory {
 
-	public ClassIndex create(final ClassPath bootPath, final ClassPath classPath, final ClassPath sourcePath);
+	public ClassIndex create(final Language language, final ClassPath bootPath, final ClassPath classPath, final ClassPath sourcePath);
 	
 }

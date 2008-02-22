@@ -81,9 +81,9 @@ public class LineBreakpointImpl extends BreakpointImpl {
             lineNumber = breakpoint.getLineNumber();
             String path = getDebugger().getBestPath(breakpoint.getPath());
             int token;
-            if (getBreakpoint().getSuspend() == GdbBreakpoint.SUSPEND_EVENT_THREAD) {
-                token = getDebugger().getGdbProxy().break_insert(GdbBreakpoint.SUSPEND_EVENT_THREAD,
-                        path + ':' + lineNumber);
+            if (getBreakpoint().getSuspend() == GdbBreakpoint.SUSPEND_THREAD) {
+                token = getDebugger().getGdbProxy().break_insert(GdbBreakpoint.SUSPEND_THREAD,
+                        path + ':' + lineNumber, getBreakpoint().getThreadID());
             } else {
                 token = getDebugger().getGdbProxy().break_insert(path + ':' + lineNumber);
             }
@@ -99,12 +99,6 @@ public class LineBreakpointImpl extends BreakpointImpl {
                 }
             }
 	}
-    }
-    
-    protected void suspend() {
-        if (getBreakpoint().getSuspend() != GdbBreakpoint.SUSPEND_NONE) {
-            //System.err.println("");
-        }
     }
 }
 

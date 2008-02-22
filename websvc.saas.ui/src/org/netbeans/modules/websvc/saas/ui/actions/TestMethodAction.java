@@ -82,10 +82,17 @@ public class TestMethodAction extends NodeAction {
     protected void performAction(org.openide.nodes.Node[] nodes) {
         if (nodes != null && nodes.length == 1) {
             WsdlSaasMethod method = nodes[0].getLookup().lookup(WsdlSaasMethod.class);
-            if (method != null && method.getSaas().getState() == Saas.State.READY &&
-                    method.getJavaMethod() != null) {
-                TestWebServiceMethodDlg testDialog = new TestWebServiceMethodDlg(method);
-                testDialog.displayDialog();
+            if (method != null) {
+                if (method.getSaas().getState() == Saas.State.READY) {
+                    if (method.getJavaMethod() != null) {
+                        TestWebServiceMethodDlg testDialog = new TestWebServiceMethodDlg(method);
+                        testDialog.displayDialog();
+                    } else {
+                        throw new IllegalArgumentException("Could not get javaMethod for operation "+method);
+                    }
+                } else {
+                    method.getSaas().toStateReady(false);
+                }
             }
         }
     }
