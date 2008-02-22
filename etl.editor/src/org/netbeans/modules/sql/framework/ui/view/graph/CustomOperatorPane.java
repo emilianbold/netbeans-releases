@@ -208,7 +208,9 @@ public class CustomOperatorPane extends JPanel {
                 GridBagConstraints.WEST,
                 GridBagConstraints.HORIZONTAL,
                 new Insets(5, 5, 5, 5), 0, 0));
-        JButton addButton = new JButton("Add");
+        String nbBundle4 = mLoc.t("PRSR001: Add");
+        JButton addButton = new JButton(Localizer.parse(nbBundle4));
+        addButton.getAccessibleContext().setAccessibleName(Localizer.parse(nbBundle4));
         this.add(addButton,
                 new GridBagConstraints(0, 1, 1, 1, 0.0, 0.0,
                 GridBagConstraints.WEST,

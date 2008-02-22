@@ -25,7 +25,7 @@
         </chmod>
         -->
 
-        <unzip dest="${cluster}/../" src="external/preindexed.zip"/>
+        <unzip dest="${cluster}" src="external/preindexed.zip"/>
         <unzip dest="${cluster}" src="external/preindexed-native.zip"/>
     </target>
 
