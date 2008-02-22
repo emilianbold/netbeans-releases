@@ -211,7 +211,7 @@ public class JsAnalyzerTest extends JsTestBase {
     private void checkImports(String relFilePath) throws Exception {
         CompilationInfo info = getInfo(relFilePath);
         JsParseResult result = AstUtilities.getParseResult(info);
-        AnalysisResult analysisResult = JsAnalyzer.analyze(result);
+        AnalysisResult analysisResult = JsAnalyzer.analyze(result, info);
         List<String> imports = analysisResult.getImports();
         if (imports.size() > 1) {
             Collections.sort(imports);

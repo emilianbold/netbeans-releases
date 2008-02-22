@@ -1,0 +1,10 @@
+    for(var i = 0, length = arguments.length; i < length; i++) {
+                   -------------------------
+HINT:TypeError: redeclaration of var i.
+FIX:Show more information about this warning
+HINT:TypeError: redeclaration of var length.
+FIX:Show more information about this warning
+    for (var i = 0, values = []; i < length; i++) {
+                    -----------
+HINT:TypeError: redeclaration of var values.
+FIX:Show more information about this warning

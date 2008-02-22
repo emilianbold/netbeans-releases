@@ -58,13 +58,17 @@ public class WsdlDataManagerImpl implements WsdlDataManager {
 
     public void save(WsdlData data) {
         WebServicePersistenceManager mgr = new WebServicePersistenceManager();
-        WsdlServiceProxyDescriptor desc = data.getJaxWsDescriptor();
-        if (desc instanceof WebServiceDescriptor) {
-            mgr.saveWebServiceDescriptor((WebServiceDescriptor)desc);
-        }
-        desc = data.getJaxRpcDescriptor();
-        if (desc instanceof WebServiceDescriptor) {
-            mgr.saveWebServiceDescriptor((WebServiceDescriptor)desc);
+        try {
+            WsdlServiceProxyDescriptor desc = data.getJaxWsDescriptor();
+            if (desc instanceof WebServiceDescriptor) {
+                mgr.saveWebServiceDescriptor((WebServiceDescriptor)desc);
+            }
+            desc = data.getJaxRpcDescriptor();
+            if (desc instanceof WebServiceDescriptor) {
+                mgr.saveWebServiceDescriptor((WebServiceDescriptor)desc);
+            }
+        } catch(Exception ex) {
+            mgr.save();
         }
     }
 

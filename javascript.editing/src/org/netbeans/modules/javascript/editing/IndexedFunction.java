@@ -61,7 +61,7 @@ import org.openide.util.Exceptions;
  *
  * @author Tor Norbye
  */
-public class IndexedFunction implements FunctionElement {
+public class IndexedFunction extends JsElement implements FunctionElement {
     private ElementKind kind;
     protected String signature;
     private String[] args;
@@ -95,11 +95,13 @@ public class IndexedFunction implements FunctionElement {
         return index;
     }
 
+    @Override
     public String getName() {
         return name;
     }
 
 
+    @Override
     public String getIn() {
         return in;
     }
@@ -177,10 +179,12 @@ public class IndexedFunction implements FunctionElement {
         return false;
     }
 
+    @Override
     public ElementKind getKind() {
         return kind;
     }
 
+    @Override
     public Set<Modifier> getModifiers() {
         return Collections.emptySet();
     }
@@ -209,6 +213,7 @@ public class IndexedFunction implements FunctionElement {
         return new DefaultParserFile(getFileObject(), null, platform);
     }
 
+    @Override
     public FileObject getFileObject() {
         if ((fileObject == null) && (fileUrl != null)) {
             fileObject = JsIndex.getFileObject(fileUrl);
