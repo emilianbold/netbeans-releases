@@ -60,6 +60,7 @@ import org.openide.filesystems.FileUtil;
 import org.netbeans.modules.j2ee.deployment.common.api.J2eeLibraryTypeProvider;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.J2eePlatformImpl;
 import org.netbeans.spi.project.libraries.LibraryImplementation;
+import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
@@ -681,6 +682,31 @@ public class PlatformImpl extends J2eePlatformImpl {
                 sb.append(" -Dorg.xml.sax.driver=com.sun.org.apache.xerces.internal.parsers.SAXParser"); // NOI18N
                 sb.append(" -Djava.util.logging.manager=com.sun.enterprise.server.logging.ACCLogManager"); // NOI18N
                 return sb.toString();
+            }
+            if (J2eePlatform.TOOL_PROP_CLIENT_JAR_LOCATION.equals(propertyName)) {
+                File exFile = new File(root, "lib/javaee.jar"); // NOI18N
+                FileObject location = FileUtil.toFileObject(FileUtil.normalizeFile(new File(dmProps.getLocation())));
+                if (location == null) {
+                    return null;
+                }
+                FileObject domain = location.getFileObject(
+                        dmProps.getInstanceProperties().getProperty(DeploymentManagerProperties.DOMAIN_ATTR));
+                if (domain == null) {
+                    return null;
+                }
+
+                if (exFile.exists()) {
+                    FileObject copyLocation = domain.getFileObject("generated/xml/j2ee-modules"); // NOI18N
+                    if (copyLocation != null) {
+                        return FileUtil.toFile(copyLocation).getAbsolutePath();
+                    }
+                } else {
+                    FileObject copyLocation = domain.getFileObject("applications/j2ee-modules"); // NOI18N
+                    if (copyLocation != null) {
+                        return FileUtil.toFile(copyLocation).getAbsolutePath();
+                    }
+                }
+                return null;
             }
             if ("j2ee.appclient.args".equals(propertyName)) { // NOI18N
                 return "-configxml " + quotedString(new File(dmProps.getLocation(), dmProps.getDomainName() + "/config/sun-acc.xml").getAbsolutePath()); // NOI18N
