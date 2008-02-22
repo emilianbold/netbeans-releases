@@ -279,11 +279,6 @@ public class MakeListOfNBM extends Task {
             }
         }
         track.write();
-        String moduleName = this.getProject().getProperty("module.name"); //NOI18N
-        if (moduleName == null) {
-            // external module?
-            return;
-        }
     }
 
     private void updateFileSetForLorB(FileSet fs) {
