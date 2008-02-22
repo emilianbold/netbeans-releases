@@ -30,7 +30,7 @@ package org.netbeans.modules.gsf;
 import java.util.List;
 import javax.swing.text.BadLocationException;
 import org.netbeans.api.editor.mimelookup.MimePath;
-import org.netbeans.fpi.gsf.Formatter;
+import org.netbeans.modules.gsf.api.Formatter;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.editor.indent.spi.Context;
 import org.netbeans.modules.editor.indent.spi.ExtraLock;
