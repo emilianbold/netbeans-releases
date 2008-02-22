@@ -615,18 +615,7 @@ public final class HibernateMappingCompletionManager {
             int caretOffset = context.getCaretOffset();
             String typedChars = context.getTypedPrefix();
 
-            // TODO: call Vadiraj's API to get the database tables
-            // For now: hard code them so that I can test my completor
-            List<String> tableNames = new ArrayList<String>();
-            tableNames.add("PERSON");
-            tableNames.add("TRIP");
-            tableNames.add("TRIPTYPE");
-            tableNames.add("FLIGHT");
-            tableNames.add("HOTEL");
-            tableNames.add("CARRENTAL");
-            tableNames.add("VALIDATION_TABLE");
-
-            tableNames = getDatabaseTableNamesFromProject(context);
+            List<String> tableNames = getDatabaseTableNamesFromProject(context);
             
             for (String tableName : tableNames) {
                 HibernateCompletionItem item = HibernateCompletionItem.createDatabaseTableItem(
