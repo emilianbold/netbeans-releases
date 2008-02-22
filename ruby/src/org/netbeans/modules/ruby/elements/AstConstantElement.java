@@ -1,14 +1,15 @@
 package org.netbeans.modules.ruby.elements;
 
 import org.jruby.ast.ConstDeclNode;
+import org.netbeans.fpi.gsf.CompilationInfo;
 import org.netbeans.fpi.gsf.ElementKind;
 
 
 public class AstConstantElement extends AstElement {
     private ConstDeclNode constNode;
 
-    public AstConstantElement(ConstDeclNode node) {
-        super(node);
+    public AstConstantElement(CompilationInfo info, ConstDeclNode node) {
+        super(info, node);
         this.constNode = node;
     }
 

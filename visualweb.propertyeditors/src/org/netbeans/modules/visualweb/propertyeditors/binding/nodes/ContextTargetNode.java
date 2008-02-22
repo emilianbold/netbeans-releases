@@ -47,6 +47,8 @@ import com.sun.rave.designtime.DesignBean;
 import com.sun.rave.designtime.DesignContext;
 import com.sun.rave.designtime.faces.FacesDesignContext;
 import org.netbeans.modules.visualweb.propertyeditors.binding.BindingTargetNode;
+import com.sun.data.provider.DataProvider;
+import javax.sql.RowSet;
 
 public class ContextTargetNode extends BindingTargetNode {
     public ContextTargetNode(BindingTargetNode parent, DesignContext context) {
@@ -61,7 +63,12 @@ public class ContextTargetNode extends BindingTargetNode {
     public boolean lazyLoad() {
         DesignBean[] kids = getDesignContext().getRootContainer().getChildBeans();
         for (int i = 0; kids != null && i < kids.length; i++) {
-            super.add(_createTargetNode(this, kids[i], null, kids[i].getInstance()));
+            // Do not show the data provider in the object binding dialog.
+            // We have explicit data provider binding dialog
+            if (!DataProvider.class.isAssignableFrom(kids[i].getInstance().getClass())
+                    && !RowSet.class.isAssignableFrom(kids[i].getInstance().getClass())) {
+                super.add(_createTargetNode(this, kids[i], null, kids[i].getInstance()));
+            }
         }
         return true;
     }

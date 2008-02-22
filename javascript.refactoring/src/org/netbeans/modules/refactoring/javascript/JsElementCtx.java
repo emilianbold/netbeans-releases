@@ -107,14 +107,14 @@ public class JsElementCtx {
                 break;
             }
         }
-        Element element = AstElement.getElement(leaf);
+        Element element = AstElement.getElement(info, leaf);
 
         initialize(root, leaf, element, info.getFileObject(), info);
     }
 
     /** Create a new element holder representing the given node in the same context as the given existing context */
     public JsElementCtx(JsElementCtx ctx, Node node) {
-        Element element = AstElement.getElement(node);
+        Element element = AstElement.getElement(info, node);
 
         initialize(ctx.getRoot(), node, element, ctx.getFileObject(), ctx.getInfo());
     }
@@ -124,7 +124,7 @@ public class JsElementCtx {
         Node node = AstUtilities.getForeignNode(element, rootRet);
         Node root = rootRet[0];
 
-        Element e = AstElement.getElement(node);
+        Element e = AstElement.getElement(info, node);
 
         FileObject fo = element.getFileObject();
         document = RetoucheUtils.getDocument(null, fo);

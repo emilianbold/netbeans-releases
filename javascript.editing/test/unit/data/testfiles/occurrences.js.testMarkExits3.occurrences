@@ -1,0 +1,6 @@
+|>MARK_OCCURRENCES:<|Object.extend(Object, {
+      if (object === undefined) |>MARK_OCCURRENCES:return 'undefined'<|;
+      if (object === null) |>MARK_OCCURRENCES:return 'null'<|;
+      |>MARK_OCCURRENCES:return object.inspect ? object.inspect() : object.toString()<|;
+      if (e instanceof RangeError) |>MARK_OCCURRENCES:return '...'<|;
+      |>MARK_OCCURRENCES:throw e<|;

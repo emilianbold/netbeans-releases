@@ -229,6 +229,7 @@ made subject to such option by the copyright holder.
                 </dependency>
                 <dependency>
                     <code-name-base>org.netbeans.modules.websvc.jaxrpc16</code-name-base>
+                    <build-prerequisite/>
                     <run-dependency>
                         <release-version>1</release-version>
                         <specification-version>1.4</specification-version>

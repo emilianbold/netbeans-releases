@@ -21,14 +21,14 @@ testmodule() {
 
 if [ "$action" = "build" ]; then
 #    hg fetch http://hg.netbeans.org/main || exit 1
-    hg pull http://hg.netbeans.org/main || exit 1
-    if [ `hg heads --template '{node|short}\n' | wc -l` = 1 ]
-    then
-       hg up || exit 6
-    else
-       hg merge || exit 7
-       hg ci -m 'Automated merge' || exit 8
-    fi
+#    hg pull http://hg.netbeans.org/main || exit 1
+#    if [ `hg heads --template '{node|short}\n' | wc -l` = 1 ]
+#    then
+#       hg up || exit 6
+#    else
+#       hg merge || exit 7
+#       hg ci -m 'Automated merge' || exit 8
+#    fi
 
     ant -f nbbuild/build.xml build || exit 2
     ant -f nbbuild/build.xml commit-validation # || exit 3

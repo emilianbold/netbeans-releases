@@ -41,12 +41,11 @@
 
 package org.netbeans.modules.web.jsps.parserapi;
 
-import java.beans.PropertyChangeListener;
-import java.io.File;
 import java.io.IOException;
 import java.net.URLClassLoader;
 import java.util.Map;
 
+import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.openide.filesystems.FileObject;
 
 import org.netbeans.modules.web.jspparser.ContextUtil;
@@ -58,56 +57,6 @@ import org.netbeans.modules.web.jspparser.ContextUtil;
  */
 public interface JspParserAPI {
 
-    public static abstract class WebModule {
-
-        /**
-         * Property name that denotes the libraries of the web module. A PropertyChangeEvent with this property is fired if
-         * the list of libraries changes, or if the timestamp of any of these libraries changes.
-         * @deprecated use classpath API to obtain classpath for document base folder
-         */
-        public static final String PROP_LIBRARIES = "libraries"; // NOI18N
-        
-        /**
-         * Property name that denotes the package root directories of the web module. A PropertyChangeEvent with this property is fired if
-         * the list of package roots changes, or if the timestamp of any of the files contained in these package roots changes.
-         * @deprecated use classpath API to obtain classpath for document base folder
-         */
-        public static final String PROP_PACKAGE_ROOTS = "package_roots"; // NOI18N
-        
-        /** Returns the document base directory of the web module.
-         * May return null if we are parsing a tag file that is outside a web module
-         * (that will be packaged into a tag library).
-         */
-        public abstract FileObject getDocumentBase();
-        
-        
-        /** This method returns the entries, which are needed for parsing jsp files, but are
-         *  not directly included in the project (as library). For example there are taglibraries
-         *  which are offered by the target server(J2EE Platform), so the project has these entries
-         *  on the classpath, but they are not defined by the project. It can return null.   
-         */
-        public abstract File[] getExtraClasspathEntries();
-        
-        /** Returns InputStream for the file open in editor or null
-         * if the file is not open.
-         */
-        public abstract java.io.InputStream getEditorInputStream (FileObject fo);
-        
-        public abstract void addPropertyChangeListener(PropertyChangeListener l);
-        
-        public abstract void removePropertyChangeListener(PropertyChangeListener l);
-        
-        // XXX needs to be abstract, WEB-INF can be located anywhere
-        public FileObject getWebInf() {
-            FileObject webInfFO = null;
-            FileObject documentBase = getDocumentBase();
-            if (documentBase != null) {
-                webInfFO = documentBase.getFileObject("WEB-INF");
-            }
-            return webInfFO;
-        };
-    }
-    
     /** Mode in which some errors (such as error parsing a tag library) are ignored. */
     public static final int ERROR_IGNORE = 1;
     /** Mode in which some errors (such as error parsing a tag library) are reported, 

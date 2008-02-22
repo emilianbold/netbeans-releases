@@ -62,8 +62,8 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.api.queries.FileEncodingQuery;
+import org.netbeans.modules.j2ee.common.SharabilityUtility;
 import org.netbeans.modules.j2ee.common.project.ui.ProjectProperties;
-import org.netbeans.modules.j2ee.common.sharability.SharabilityUtilities;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.ProjectGenerator;
@@ -370,10 +370,10 @@ public class EjbJarProjectGenerator {
             rh.copyLibrary(LibraryManager.getDefault().getLibrary("junit_4")); // NOI18N
         }
 
-        if (h.isSharableProject() && serverlibraryName != null  && SharabilityUtilities.getLibrary(
+        if (h.isSharableProject() && serverlibraryName != null  && SharabilityUtility.findSharedServerLibrary(
                 h.resolveFile(h.getLibrariesLocation()), serverlibraryName) == null) {
 
-            SharabilityUtilities.createLibrary(
+            SharabilityUtility.createLibrary(
                 h.resolveFile(h.getLibrariesLocation()), serverlibraryName, serverInstanceId);
         }
     }
