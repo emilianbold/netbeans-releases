@@ -78,6 +78,7 @@ public class RubyPlatformCustomizer extends JPanel {
     public static void showCustomizer() {
         RubyPlatformCustomizer customizer = new RubyPlatformCustomizer();
         JButton closeButton = new JButton();
+        closeButton.getAccessibleContext().setAccessibleDescription(getMessage("RubyPlatformCustomizer.closeButton.AccessibleContext.accessibleName"));
         Mnemonics.setLocalizedText(closeButton,
                 NbBundle.getMessage(RubyPlatformCustomizer.class, "CTL_Close"));
         DialogDescriptor descriptor = new DialogDescriptor(
@@ -96,6 +97,8 @@ public class RubyPlatformCustomizer extends JPanel {
 
     public RubyPlatformCustomizer() {
         initComponents();
+        getAccessibleContext().setAccessibleName(getMessage("RubyPlatformCustomizer.AccessibleContext.accessibleName"));
+        getAccessibleContext().setAccessibleDescription(getMessage("RubyPlatformCustomizer.AccessibleContext.accessibleDescription"));
         refreshPlatformList();
         gemPathList.addListSelectionListener(new ListSelectionListener() {
             public void valueChanged(ListSelectionEvent e) {
@@ -280,6 +283,8 @@ public class RubyPlatformCustomizer extends JPanel {
 
         platformsList.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
         platformsListSP.setViewportView(platformsList);
+        platformsList.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(RubyPlatformCustomizer.class, "RubyPlatformCustomizer.platformsList.AccessibleContext.accessibleName")); // NOI18N
+        platformsList.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(RubyPlatformCustomizer.class, "RubyPlatformCustomizer.platformsList.AccessibleContext.accessibleDescription")); // NOI18N
 
         org.openide.awt.Mnemonics.setLocalizedText(addButton, org.openide.util.NbBundle.getMessage(RubyPlatformCustomizer.class, "RubyPlatformCustomizer.addButton.text")); // NOI18N
         addButton.addActionListener(new java.awt.event.ActionListener() {
@@ -319,6 +324,7 @@ public class RubyPlatformCustomizer extends JPanel {
             }
         });
 
+        gemPath.setLabelFor(gemPathList);
         org.openide.awt.Mnemonics.setLocalizedText(gemPath, org.openide.util.NbBundle.getMessage(RubyPlatformCustomizer.class, "RubyPlatformCustomizer.gemPath.text")); // NOI18N
 
         plfInterpreter.setLabelFor(plfInterpreterValue);
@@ -332,6 +338,8 @@ public class RubyPlatformCustomizer extends JPanel {
         plfNameValue.setEditable(false);
 
         gemPathSP.setViewportView(gemPathList);
+        gemPathList.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(RubyPlatformCustomizer.class, "RubyPlatformCustomizer.gemPathList.AccessibleContext.accessibleName")); // NOI18N
+        gemPathList.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(RubyPlatformCustomizer.class, "RubyPlatformCustomizer.gemPathList.AccessibleContext.accessibleDescription")); // NOI18N
 
         org.openide.awt.Mnemonics.setLocalizedText(addGemPath, org.openide.util.NbBundle.getMessage(RubyPlatformCustomizer.class, "RubyPlatformCustomizer.addGemPath.text")); // NOI18N
         addGemPath.addActionListener(new java.awt.event.ActionListener() {
@@ -407,6 +415,14 @@ public class RubyPlatformCustomizer extends JPanel {
                     .add(gemToolValue, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
         );
 
+        gemToolValue.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(RubyPlatformCustomizer.class, "RubyPlatformCustomizer.gemToolValue.AccessibleContext.accessibleDescription")); // NOI18N
+        gemHomeValue.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(RubyPlatformCustomizer.class, "RubyPlatformCustomizer.gemHomeValue.AccessibleContext.accessibleDescription")); // NOI18N
+        browseGemHome.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(RubyPlatformCustomizer.class, "RubyPlatformCustomizer.browseGemHome.AccessibleContext.accessibleDescription")); // NOI18N
+        plfInterpreterValue.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(RubyPlatformCustomizer.class, "RubyPlatformCustomizer.plfInterpreterValue.AccessibleContext.accessibleDescription")); // NOI18N
+        plfNameValue.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(RubyPlatformCustomizer.class, "RubyPlatformCustomizer.plfNameValue.AccessibleContext.accessibleDescription")); // NOI18N
+        addGemPath.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(RubyPlatformCustomizer.class, "RubyPlatformCustomizer.addGemPath.AccessibleContext.accessibleDescription")); // NOI18N
+        removeGemPath.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(RubyPlatformCustomizer.class, "RubyPlatformCustomizer.removeGemPath.AccessibleContext.accessibleDescription")); // NOI18N
+
         org.openide.awt.Mnemonics.setLocalizedText(autoDetectLabel, org.openide.util.NbBundle.getMessage(RubyPlatformCustomizer.class, "RubyPlatformCustomizer.autoDetectLabel.text")); // NOI18N
         progressPanel.add(autoDetectLabel);
 
@@ -457,6 +473,8 @@ public class RubyPlatformCustomizer extends JPanel {
                 .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
+        installFastDebugger.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(RubyPlatformCustomizer.class, "RubyPlatformCustomizer.installFastDebugger.AccessibleContext.accessibleDescription")); // NOI18N
+
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -504,6 +522,9 @@ public class RubyPlatformCustomizer extends JPanel {
 
         layout.linkSize(new java.awt.Component[] {addButton, autoDetectButton, progressPanel, removeButton}, org.jdesktop.layout.GroupLayout.VERTICAL);
 
+        addButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(RubyPlatformCustomizer.class, "RubyPlatformCustomizer.addButton.AccessibleContext.accessibleDescription")); // NOI18N
+        removeButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(RubyPlatformCustomizer.class, "RubyPlatformCustomizer.removeButton.AccessibleContext.accessibleDescription")); // NOI18N
+        autoDetectButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(RubyPlatformCustomizer.class, "RubyPlatformCustomizer.autoDetectButton.AccessibleContext.accessibleDescription")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
 
     private PlatformComponentFactory.RubyPlatformListModel getPlafListModel() {
