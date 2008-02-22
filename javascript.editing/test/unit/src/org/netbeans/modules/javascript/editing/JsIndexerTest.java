@@ -47,9 +47,9 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import org.netbeans.fpi.gsf.CompilationInfo;
-import org.netbeans.fpi.gsf.IndexDocument;
-import org.netbeans.fpi.gsf.IndexDocumentFactory;
+import org.netbeans.modules.gsf.api.CompilationInfo;
+import org.netbeans.modules.gsf.api.IndexDocument;
+import org.netbeans.modules.gsf.api.IndexDocumentFactory;
 
 /**
  * @author Tor Norbye

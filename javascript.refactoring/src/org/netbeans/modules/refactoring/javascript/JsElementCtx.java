@@ -32,7 +32,7 @@ import java.util.Iterator;
 
 import org.mozilla.javascript.Node;
 import org.mozilla.javascript.Token;
-import org.netbeans.fpi.gsf.ElementKind;
+import org.netbeans.modules.gsf.api.ElementKind;
 import org.netbeans.napi.gsfret.source.CompilationInfo;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.javascript.editing.AstPath;

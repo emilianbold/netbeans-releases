@@ -42,7 +42,7 @@ package org.netbeans.modules.css2.gsf;
 
 import java.util.Collection;
 import java.util.Collections;
-import org.netbeans.fpi.gsf.GsfLanguage;
+import org.netbeans.modules.gsf.api.GsfLanguage;
 import org.netbeans.api.lexer.Language;
 import org.netbeans.modules.css2.lexer.api.CSSTokenId;
 

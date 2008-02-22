@@ -41,18 +41,18 @@
 package org.netbeans.modules.gsf;
 
 import javax.swing.Action;
-import org.netbeans.fpi.gsf.*;
-import org.netbeans.fpi.gsf.Completable;
-import org.netbeans.fpi.gsf.DeclarationFinder;
-import org.netbeans.fpi.gsf.InstantRenamer;
-import org.netbeans.fpi.gsf.Parser;
-import org.netbeans.fpi.gsf.GsfLanguage;
-import org.netbeans.fpi.gsf.annotations.CheckForNull;
-import org.netbeans.fpi.gsf.annotations.NonNull;
-import org.netbeans.fpi.gsf.BracketCompletion;
-import org.netbeans.fpi.gsf.Formatter;
-import org.netbeans.fpi.gsf.Indexer;
-import org.netbeans.fpi.gsf.StructureScanner;
+import org.netbeans.modules.gsf.api.*;
+import org.netbeans.modules.gsf.api.Completable;
+import org.netbeans.modules.gsf.api.DeclarationFinder;
+import org.netbeans.modules.gsf.api.InstantRenamer;
+import org.netbeans.modules.gsf.api.Parser;
+import org.netbeans.modules.gsf.api.GsfLanguage;
+import org.netbeans.modules.gsf.api.annotations.CheckForNull;
+import org.netbeans.modules.gsf.api.annotations.NonNull;
+import org.netbeans.modules.gsf.api.BracketCompletion;
+import org.netbeans.modules.gsf.api.Formatter;
+import org.netbeans.modules.gsf.api.Indexer;
+import org.netbeans.modules.gsf.api.StructureScanner;
 //import org.netbeans.spi.palette.PaletteController;
 import org.netbeans.modules.gsfret.editor.semantic.ColoringManager;
 
