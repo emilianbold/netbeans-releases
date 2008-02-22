@@ -19,15 +19,15 @@ Use is subject to license terms.  *-->
     module project's Project Properties dialog box.</p>
     
     <p>However, for JAX-WS web services, the <tt>wsimport</tt> tool is run
-    as part of the build process. For JAX-RPC web services, support for
-     which is provided by the "JAX-RPC Web Services" plugin,
-      available from the Plugins manager, it is the <tt>wscompile</tt> tool
-     that is run, instead.</p>
+    as part of the build process. For JAX-RPC web services, the <tt>wscompile</tt> tool
+     that is run, instead. (JAX-RPC support is intended for legacy systems only. 
+     To develop JAX-RPC servces, install the "JAX-RPC Web Services" plugin,
+      available from the Plugins manager.</p>
    
 
     <p><b>To build the web service:</b></p>
     <ol>
-        <li>Do one of the following to build the web service:
+        <li>Do one of the following:
         <ul>
             <li>If the module within which the web service is implemented
             is part of a J2EE application, make sure the J2EE application 
@@ -37,10 +37,9 @@ Use is subject to license terms.  *-->
             module without building the other modules in the J2EE application, right-click 
             the project's node in the Projects window and choose Build Project.</li>
         </ul></li>
-        <li>Analyze the result and, if necessary, do the following:
-        <ul><li>For JAX-RPC web services, customize the <tt>wscompile</tt> tool's features in
-            the Project Properties dialog box, depending on your needs.
-        </ul>
+        <li>Analyze the result and, if necessary, change the Build-&gt;compiler 
+        settings in the Project Properties dialog box.
+        </li>
     </ol>
 
 
