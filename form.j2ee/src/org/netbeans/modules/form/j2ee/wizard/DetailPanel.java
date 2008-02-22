@@ -357,6 +357,8 @@ public class DetailPanel implements WizardDescriptor.Panel {
         tableChoice.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(DetailPanel.class, "LBL_DetailTable_ACSD")); // NOI18N
         tableCombo.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(DetailPanel.class, "LBL_DetailTable_ACSN")); // NOI18N
         tableCombo.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(DetailPanel.class, "LBL_DetailTable_ACSD")); // NOI18N
+
+        masterPanel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(DetailPanel.class, "TITLE_DetailPanel")); // NOI18N
     }
 
     // Code for dispatching events from components to event handlers.

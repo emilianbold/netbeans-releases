@@ -29,6 +29,7 @@ public class ProcessView extends DiagramView {
 
         // vlv: print
         putClientProperty(java.awt.print.Printable.class, CoreUtil.getProcessName(designView.getBPELModel()));
+        putClientProperty(java.lang.Integer.class, new Integer(1));
     }
 
     @Override
@@ -105,5 +106,4 @@ public class ProcessView extends DiagramView {
         }
         return findElementInPattern(pattern, x, y);
     }
-    
 }
