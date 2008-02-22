@@ -181,6 +181,12 @@ public final class J2eePlatform {
     public static final String TOOL_PROP_JVM_OPTS           = "jvm.opts";       // NOI18N
 
     /**
+     * Tool property constant for application client jar location.
+     * @since 1.40
+     */
+    public static final String TOOL_PROP_CLIENT_JAR_LOCATION = "client.jar.location";       // NOI18N
+
+    /**
      * Constant for the distribution archive client property. Some of the tool
      * property values may refer to this property.
      * @since 1.16
