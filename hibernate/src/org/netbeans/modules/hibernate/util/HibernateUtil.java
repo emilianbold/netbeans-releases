@@ -40,6 +40,7 @@
 package org.netbeans.modules.hibernate.util;
 
 
+import java.sql.SQLException;
 import java.util.ArrayList;
 
 import java.util.Enumeration;
@@ -165,6 +166,25 @@ public class HibernateUtil {
             }
         }
         return mappingFiles;
+    }
+
+    public static ArrayList<String> getColumnsForTable(String tableName, HibernateConfiguration hibernateConfiguration) {
+        ArrayList<String> columnNames = new ArrayList<String>();
+        
+        try {
+            java.sql.Connection connection = getJDBCConnection(hibernateConfiguration);
+            java.sql.Statement stmt = connection.createStatement();
+            java.sql.ResultSet rs = stmt.executeQuery("SELECT * FROM " + tableName);
+            java.sql.ResultSetMetaData rsMetadata = rs.getMetaData();
+            for (int i = 1; i <= rsMetadata.getColumnCount(); i++) {
+                columnNames.add(rsMetadata.getColumnName(i));
+            }
+
+        } catch (SQLException sQLException) {
+            Exceptions.printStackTrace(sQLException);
+        }
+
+        return columnNames;
     }
     
     
