@@ -57,8 +57,8 @@ import org.netbeans.modules.j2ee.api.ejbjar.Ear;
 import org.netbeans.modules.j2ee.clientproject.AppClientProject;
 import org.netbeans.modules.j2ee.clientproject.api.AppClientProjectGenerator;
 import org.netbeans.modules.j2ee.clientproject.ui.FoldersListSettings;
-import org.netbeans.modules.j2ee.common.sharability.PanelSharability;
-import org.netbeans.modules.j2ee.common.sharability.SharabilityUtilities;
+import org.netbeans.modules.j2ee.common.project.ui.PanelSharability;
+import org.netbeans.modules.j2ee.common.SharabilityUtility;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.ui.support.ProjectChooser;
 import org.openide.WizardDescriptor;
@@ -116,7 +116,7 @@ public class NewAppClientProjectWizardIterator implements WizardDescriptor.Progr
         String j2eeLevel = (String) wiz.getProperty(WizardProperties.J2EE_LEVEL);
         
         String librariesDefinition =
-                SharabilityUtilities.getLibraryLocation((String) wiz.getProperty(PanelSharability.WIZARD_SHARED_LIBRARIES));
+                SharabilityUtility.getLibraryLocation((String) wiz.getProperty(PanelSharability.WIZARD_SHARED_LIBRARIES));
         String serverLibraryName = (String) wiz.getProperty(PanelSharability.WIZARD_SERVER_LIBRARY);
         
         AntProjectHelper h = AppClientProjectGenerator.createProject(dirF, name,

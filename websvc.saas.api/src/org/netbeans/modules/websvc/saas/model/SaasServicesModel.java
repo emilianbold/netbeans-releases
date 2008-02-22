@@ -68,6 +68,8 @@ public class SaasServicesModel {
     public static final String WEBSVC_HOME = System.getProperty("netbeans.user") + 
             File.separator + "config" + File.separator + "WebServices"; // NOI18N
     public static final String SERVICE_GROUP_XML = "service-groups.xml";
+    public static final String PROFILE_PROPERTIES_FILE = "profile.properties";
+    
     private SaasGroup rootGroup;
     private State state = State.UNINITIALIZED;
     private PropertyChangeSupport pps = new PropertyChangeSupport(this);
@@ -135,6 +137,9 @@ public class SaasServicesModel {
                 FileObject groupFolder = en.nextElement();
                 for (FileObject fo : groupFolder.getChildren()) {
                     if (fo.isFolder()) {
+                        continue;
+                    }
+                    if (PROFILE_PROPERTIES_FILE.equals(fo.getNameExt())) {
                         continue;
                     }
                     loadSaasServiceFile(fo, false);

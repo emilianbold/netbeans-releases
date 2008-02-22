@@ -65,6 +65,7 @@ public abstract class ParserResult {
 //    protected EmbeddingModel model;
     protected TranslatedSource translatedSource;
     private String mimeType;
+    private CompilationInfo info;
     
     /** Creates a new instance of ParserResult */
     public ParserResult(Parser parser, ParserFile file, String mimeType) {
@@ -133,9 +134,6 @@ public abstract class ParserResult {
         errors.add(message);
     }
 
-    // Todo: Rename to getRootObject
-    public abstract ElementHandle getRoot();
-
     /** AST tree - optional; for debugging only */
     public abstract AstTreeNode getAst();
 
@@ -149,5 +147,13 @@ public abstract class ParserResult {
     
     public ParserFile getFile() {
         return file;
+    }
+
+    public CompilationInfo getInfo() {
+        return info;
+    }
+
+    public void setInfo(CompilationInfo info) {
+        this.info = info;
     }
 }

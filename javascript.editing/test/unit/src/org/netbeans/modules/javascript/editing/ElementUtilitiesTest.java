@@ -95,7 +95,7 @@ public class ElementUtilitiesTest extends JsTestBase {
         }
         
         FunctionNode functionNode = AstUtilities.findMethodAtOffset(root, caretOffset);
-        return (FunctionAstElement) AstElement.getElement(functionNode);
+        return (FunctionAstElement) AstElement.getElement(info, functionNode);
     }
     
 }
