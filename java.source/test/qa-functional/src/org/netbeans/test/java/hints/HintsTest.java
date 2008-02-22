@@ -29,7 +29,11 @@ package org.netbeans.test.java.hints;
 
 import junit.textui.TestRunner;
 import org.netbeans.jellytools.EditorOperator;
+import org.netbeans.jellytools.OptionsOperator;
 import org.netbeans.jemmy.EventTool;
+import org.netbeans.jemmy.operators.JSplitPaneOperator;
+import org.netbeans.jemmy.operators.JTabbedPaneOperator;
+import org.netbeans.jemmy.operators.JTreeOperator;
 
 /**
  *
@@ -191,6 +195,7 @@ public class HintsTest extends HintsTestCase {
     
     public void testAddLocal() {
         String file = "addHint";
+        setInPlaceCreation(true);
         openSourceFile("org.netbeans.test.java.hints.HintsTest", file);
         editor = new EditorOperator(file);
         editor.setCaretPosition(13,1);

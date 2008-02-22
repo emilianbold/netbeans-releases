@@ -112,10 +112,11 @@
         <variable name="HotelReservedIn" messageType="hres:HotelReservedIn"/>
     </variables>
 
-    <correlationSet name="ItineraryCorrelator" properties="tres:ItineraryRefId">
+    <correlationSets>
         <documentation>BPEL runtime uses correlation sets to route messages to the right process instance. Correlation set is made up of one or more property values. Properties in turn are defined in a WSDL file and get their value through property aliases (also defined in WSDL). Property aliases are the rules that tell the BPEL runtime how to map data from a message into a property value.</documentation>
-    </correlationSet>
-    
+        <correlationSet name="ItineraryCorrelator" properties="tres:ItineraryRefId"/>
+    </correlationSets>
+
     <sequence name="Main">
         <receive
             name="ReceiveItinerary" 
@@ -125,9 +126,10 @@
             createInstance="yes" 
             variable="ItineraryIn">
             <documentation>The process waits for the incoming message to arrive.</documentation>
-            <correlation set="ItineraryCorrelator" initiate="yes">
+            <correlations>
                 <documentation>Correlation set is initiated with the data received in this activity. The defined correlation set is associated with several activities of the process.</documentation>
-            </correlation>
+                <correlation set="ItineraryCorrelator" initiate="yes"/>
+            </correlations>
         </receive>
 
         <assign name="CopyItineraryIn">

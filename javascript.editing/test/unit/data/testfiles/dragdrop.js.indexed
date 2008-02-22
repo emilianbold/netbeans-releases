@@ -1,0 +1,77 @@
+
+
+Document 0
+Delete:  source : <TESTURL>/dragdrop.js
+
+
+
+Document 1
+Indexed:
+  func : _cacheObserverCallbacks;Draggables;;;;
+  func : _constructIndex;Sortable;node;26516;;
+  func : _findChildrenElement;Sortable;element,containerTag;25563;;
+  func : _findRootElement;Sortable;element;;;
+  func : _getWindowScroll;Draggable;w;;;
+  func : _tree;Sortable;element,options,parent;;;
+  func : activate;Draggables;draggable;;;
+  func : activate;Droppables;drop;;;
+  func : add;Droppables;element;;;
+  func : addObserver;Draggables;observer;;;
+  func : create;Sortable;element;;;
+  func : currentDelta;Draggable;;;;
+  func : deactivate;Draggables;;;;
+  func : deactivate;Droppables;drop;;;
+  func : destroy;Draggable;;;;
+  func : destroy;Sortable;element;;;
+  func : draw;Draggable;point;;;
+  func : endDrag;Draggable;event;;;
+  func : endDrag;Draggables;event;;;
+  func : findChildren;Element;element,only,recursive,tagName;;;
+  func : findDeepestChild;Droppables;drops;;;
+  func : findElements;Sortable;element,options;21004;;
+  func : findTreeElements;Sortable;element,options;;;
+  func : finishDrag;Draggable;event,success;;;
+  func : fire;Droppables;event,element;;;
+  func : initDrag;Draggable;event;;;
+  func : initialize;Draggable;element;;;
+  func : initialize;SortableObserver;element,observer;;;
+  func : isAffected;Droppables;point,element,drop;;;
+  func : isContained;Droppables;element,drop;;;
+  func : isParent;Element;child,element;28370;;
+  func : keyPress;Draggable;event;;;
+  func : keyPress;Draggables;event;;;
+  func : mark;Sortable;dropon,position;;;
+  func : notify;Draggables;eventName,draggable,event;;;
+  func : offsetSize;Element;element,type;;;
+  func : onEmptyHover;Sortable;element,dropon,overlap;;;
+  func : onEnd;SortableObserver;;;;
+  func : onHover;Sortable;element,dropon,overlap;;;
+  func : onStart;SortableObserver;;;;
+  func : options;Sortable;element;;;
+  func : register;Draggables;draggable;;;
+  func : remove;Droppables;element;;;
+  func : removeObserver;Draggables;element;;;
+  func : reset;Droppables;;;;
+  func : reverteffect;options_for_draggable;element;;;
+  func : scroll;Draggable;;;;
+  func : sequence;Sortable;element;;;
+  func : serialize;Sortable;element;;;
+  func : setSequence;Sortable;element,new_sequence;;;
+  func : show;Droppables;point,element;;;
+  func : startDrag;Draggable;event;;;
+  func : startScrolling;Draggable;speed;;;
+  func : stopScrolling;Draggable;;;;
+  func : tree;Sortable;element;;;
+  func : unmark;Sortable;;;;
+  func : unregister;Draggables;draggable;;;
+  func : updateDrag;Draggable;event,pointer;;;
+  func : updateDrag;Draggables;event;;;
+  global : Draggable
+  global : Draggables
+  global : Droppables
+  global : Sortable
+  global : SortableObserver
+  global : deepest
+  global : i
+
+Not Indexed:

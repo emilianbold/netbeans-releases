@@ -284,6 +284,7 @@ public class GroupPanel extends JPanel {
         JButton upButton = new JButton(new ImageIcon(UP_IMG_URL));
         String nbBundle30 = mLoc.t("PRSR001: UP");
         upButton.setActionCommand(Localizer.parse(nbBundle30));
+        upButton.getAccessibleContext().setAccessibleName(Localizer.parse(nbBundle30));
         upButton.setMnemonic(Localizer.parse(nbBundle30).charAt(0));
 
         c.gridwidth = GridBagConstraints.REMAINDER;
@@ -294,6 +295,7 @@ public class GroupPanel extends JPanel {
         JButton downButton = new JButton(new ImageIcon(DOWN_IMG_URL));
         String nbBundle31 = mLoc.t("PRSR001: UP");
         downButton.setActionCommand(Localizer.parse(nbBundle31));
+        downButton.getAccessibleContext().setAccessibleName(Localizer.parse(nbBundle31));
         downButton.setMnemonic(Localizer.parse(nbBundle31).charAt(0));
 
         c.gridwidth = GridBagConstraints.REMAINDER;

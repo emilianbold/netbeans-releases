@@ -44,6 +44,10 @@
                     <attr name="instanceClass" stringvalue="org.netbeans.modules.css2.gsf.CSSCompletion"/>
                 </file>
                 
+                <file name="bracket.instance">
+                    <attr name="instanceOf" stringvalue="org.netbeans.fpi.gsf.BracketCompletion"/>
+                    <attr name="instanceClass" stringvalue="org.netbeans.modules.css2.gsf.CssBracketCompleter"/>
+                </file>
                 
                 <!--<file name="renamer.instance">
                     <attr name="instanceOf" stringvalue="org.netbeans.fpi.gsf.InstantRenamer"/>
@@ -54,12 +58,6 @@
                     <attr name="instanceOf" stringvalue="org.netbeans.fpi.gsf.DeclarationFinder"/>
                     <attr name="instanceClass" stringvalue="org.netbeans.modules.ruby.DeclarationFinder"/>
                 </file>
-                
-                <file name="bracket.instance">
-                    <attr name="instanceOf" stringvalue="org.netbeans.fpi.gsf.BracketCompletion"/>
-                    <attr name="instanceClass" stringvalue="org.netbeans.modules.ruby.BracketCompleter"/>
-                </file>
-                
                 
                 <file name="indexer.instance">
                     <attr name="instanceOf" stringvalue="org.netbeans.fpi.gsf.Indexer"/>

@@ -48,7 +48,8 @@
     <target name="all-saas">
         <antcall target="netbeans"/>
         <ant dir="../websvc.saas.ui"/>
-        <ant dir="../websvc.restkit" target="all-rest"/>
+        <ant dir="../websvc.manager"/>
+        <ant dir="../visualweb.websvcmgr"/>
         <ant dir="../websvc.saas.codegen"/>
         <ant dir="../websvc.saas.services.amazon"/>
         <ant dir="../websvc.saas.services.delicious"/>
@@ -60,6 +61,7 @@
         <ant dir="../websvc.saas.services.yahoo"/>
         <ant dir="../websvc.saas.services.youtube"/>
         <ant dir="../websvc.saas.services.zillow"/>
+        <ant dir="../websvc.restkit" target="all-rest"/>
     </target>
 
     <target name="all-saas-clean">

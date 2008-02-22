@@ -79,7 +79,7 @@
         <group name="Amazon"/>
         <code-gen packageName="org.netbeans.saas.services.amazon">
             <artifacts targets="java">
-                <artifact requires="true" type="java"
+                <artifact id="AmazonS3Item" type="template"
                     url="Templates/WebServices/AmazonS3ItemResource.java"/>
             </artifacts>
         </code-gen>
@@ -90,7 +90,7 @@
     </saas-metadata>
     
     <methods>
-        <method name="generateAmazonS3ItemCode">
+        <method name="generateAmazonS3ItemCode" href="AmazonS3Item">
             <documentation>
                 Allows a developer to generate code to access Amazon S3 Bucket Item
             </documentation>

@@ -1,0 +1,13 @@
+
+
+Document 0
+Delete:  source : <TESTURL>/simple.js
+
+
+
+Document 1
+Indexed:
+  func : method1;;;0;;
+  func : method2;;;39;;
+
+Not Indexed:

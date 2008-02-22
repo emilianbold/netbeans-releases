@@ -361,6 +361,8 @@ made subject to such option by the copyright holder.
                 <mapper type="glob" from="build.test.unit.work.dir" to="nbjunit.workdir"/>
             </propertyset>
         </propertyset>
+        
+        <available file="${test.unit.src.dir}" type="dir" property="exists.test.unit.src.dir"/>
     </target>
 
     <target name="test-build" depends="jar,test-dep-build,do-test-build,test-build-datajar"/>
@@ -376,7 +378,7 @@ made subject to such option by the copyright holder.
       <subant buildpath="${modules.sorted}" target="do-test-build" />
     </target>
 
-    <target name="do-test-build" depends="init,test-init">
+    <target name="do-test-build" depends="init,test-init" if="exists.test.unit.src.dir">
         <fail >
          Missing test dependency 
           Runtime classpath: ${test.unit.runtime.cp}
@@ -468,7 +470,7 @@ made subject to such option by the copyright holder.
         </copy>
     </target>
 
-    <target name="test" depends="init,test-init,test-build">
+    <target name="test" depends="init,test-init,test-build" if="exists.test.unit.src.dir">
         <mkdir dir="${build.test.unit.results.dir}"/>
         <junit showoutput="true" fork="true" failureproperty="tests.failed" errorproperty="tests.failed" filtertrace="${test.filter.trace}" tempdir="${build.test.unit.results.dir}">
             <batchtest todir="${build.test.unit.results.dir}">

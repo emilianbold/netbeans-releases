@@ -42,9 +42,9 @@ public class AmazonS3BucketsResource {
     
     private static final String S3_URL = "http://" + HOST + "/";
     
-    private String accessKey = "04KK4AENM7FWVT06RF82";
+    private String accessKey = "";
    
-    private String secretAccessKey = "5ErlY2f/TuijDabdpr2F267SHYOmDJDaDsHqF4Bb";
+    private String secretAccessKey = "";
 
     /**
      * Retrieves representation of an instance of demo.BucketsResource

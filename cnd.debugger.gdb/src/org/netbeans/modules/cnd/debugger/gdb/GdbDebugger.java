@@ -108,7 +108,6 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
     public static final String          PROP_STATE = "state"; // NOI18N
     public static final String          PROP_CURRENT_THREAD = "currentThread"; // NOI18N
     public static final String          PROP_CURRENT_CALL_STACK_FRAME = "currentCallStackFrame"; // NOI18N
-    public static final String          PROP_SUSPEND = "suspend"; // NOI18N
     public static final String          PROP_KILLTERM = "killTerm"; // NOI18N
     public static final String          PROP_SHARED_LIB_LOADED = "sharedLibLoaded"; // NOI18N
 
@@ -155,7 +154,7 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
     private static Map<String, TypeInfo> ticache = new HashMap<String, TypeInfo>();
     private static Logger log = Logger.getLogger("gdb.logger"); // NOI18N
     private int currentToken = 0;
-    private String currentThreadID = "0"; // NOI18N
+    private String currentThreadID = "1"; // NOI18N
     private static final String[] emptyThreadsList = new String[0];
     private String[] threadsList = emptyThreadsList;
     private Timer startupTimer = null;
@@ -348,7 +347,7 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
             return rundir + '/' + path;
         }
     }
-
+    
     public String[] getThreadsList() {
         if (state.equals(STATE_STOPPED)) {
             if (threadsList == emptyThreadsList) {
@@ -998,7 +997,7 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
             }
             if (killcmd.size() > 0) {
                 killcmd.add("-s"); // NOI18N
-                killcmd.add(Integer.toString(signal));
+                killcmd.add((Utilities.isMac() && signal == 2) ? "TRAP" : Integer.toString(signal));
                 killcmd.add(Long.toString(pid));
                 ProcessBuilder pb = new ProcessBuilder(killcmd);
                 try {
@@ -1099,23 +1098,6 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
     
     public void setExited() {
         setState(STATE_EXITED);
-    }
-    
-    /**
-     * Gets value of suspend property.
-     *
-     * @return value of suspend property
-     */
-    public int getSuspend() {
-        return 0;
-    }
-    
-    /**
-     * Sets value of suspend property.
-     *
-     * @param s a new value of suspend property
-     */
-    public void setSuspend(int s) {
     }
     
     public Boolean evaluateIn(Expression expression, final Object frame) {
