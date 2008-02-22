@@ -61,7 +61,7 @@ public class PlatformValidator {
     public boolean isDescriminatorPresent(File loc, String serverVersion) {
         boolean retVal = ServerLocationManager.isGoodAppServerLocation(loc);
         if (retVal) {
-            File sipDescriminator = new File(loc, "lib/sip-stack.jar"); //NOI18N
+            File sipDescriminator = new File(loc, "lib/comms-appserv-rt.jar"); //NOI18N
             if(serverVersion.equals(SAILFIN_V1)){
                 if (!sipDescriminator.exists() || !sipDescriminator.isFile()) { //NOI18N
                    return false;
@@ -99,4 +99,17 @@ public class PlatformValidator {
         }
         return serverType;
     }
+    
+    public String getServerVersionByName(String serverName){
+        String serverVersion = null;
+        if(serverName.equals(NbBundle.getMessage(Installer.class, "LBL_GlassFishV1"))){
+            serverVersion = GLASSFISH_V1;
+        }else if(serverName.equals(NbBundle.getMessage(Installer.class, "LBL_GlassFishV2"))){
+            serverVersion = GLASSFISH_V2;
+        }else if(serverName.equals(NbBundle.getMessage(Installer.class, "LBL_JavaEEPlusSIP"))){
+            serverVersion = SAILFIN_V1;
+        }
+        return serverVersion;
+    }
+
 }

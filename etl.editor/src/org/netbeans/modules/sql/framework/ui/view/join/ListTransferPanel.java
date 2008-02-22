@@ -202,6 +202,7 @@ public class ListTransferPanel extends JPanel implements ActionListener, ListSel
         JPanel searchPanel = new JPanel();
         searchPanel.setLayout(new BorderLayout());
         srcLabel = new JLabel(srcLabelStr);
+        srcLabel.getAccessibleContext().setAccessibleName(srcLabelStr);
         srcLabel.setLabelFor(sourceList);
 
         searchPanel.add(srcLabel, BorderLayout.NORTH);
@@ -257,6 +258,7 @@ public class ListTransferPanel extends JPanel implements ActionListener, ListSel
 
         JPanel destPanel = new JPanel();
         destLabel = new JLabel(destLabelStr);
+        destLabel.getAccessibleContext().setAccessibleName(destLabelStr);
         // destLabel.setDisplayedMnemonic('o');
         destLabel.setLabelFor(destList);
 
@@ -675,7 +677,6 @@ public class ListTransferPanel extends JPanel implements ActionListener, ListSel
             mLogger.errorNoloc(mLoc.t("PRSR191: Error Occured while adding the table {0}to model, which user has added using more table dialog", tableName), ex);
             NotifyDescriptor d = new NotifyDescriptor.Message("Table " + tableName + " which was added using more table dialog, can not be added to the model.", NotifyDescriptor.ERROR_MESSAGE);
             DialogDisplayer.getDefault().notify(d);
-
             return false;
         }
 

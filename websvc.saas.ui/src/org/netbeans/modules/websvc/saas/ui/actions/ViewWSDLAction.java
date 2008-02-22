@@ -69,7 +69,8 @@ public class ViewWSDLAction extends NodeAction {
     protected boolean enable(Node[] nodes) {
         WsdlSaas saas = getWsdlSaas(nodes);
         if (saas != null) {
-            return saas.getState() == Saas.State.RESOLVED;
+            return saas.getState() == Saas.State.RETRIEVED ||
+                   saas.getState() == Saas.State.READY;
         }
         return false;
     }
@@ -108,8 +109,9 @@ public class ViewWSDLAction extends NodeAction {
         if (saas == null) {
             throw new IllegalArgumentException("No nodes assoaciated WsdlSaas in lookup.");
         }
-        if (saas.getState() != Saas.State.RESOLVED) {
-            throw new IllegalStateException("WsdlSaas is not in resolved state.");
+        if (saas.getState() != Saas.State.RETRIEVED && 
+            saas.getState() != Saas.State.READY) {
+            throw new IllegalStateException("Unexpected state: " + saas.getState());
         }
 
         String location = saas.getWsdlData().getWsdlFile();

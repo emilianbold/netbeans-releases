@@ -42,16 +42,12 @@
 package org.netbeans.core.windows.view.ui.slides;
 
 import java.awt.Component;
-import java.awt.Graphics2D;
-import java.awt.GraphicsConfiguration;
-import java.awt.GraphicsEnvironment;
 import java.awt.Image;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.Shape;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.image.BufferedImage;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -60,16 +56,18 @@ import javax.swing.Action;
 import javax.swing.DefaultSingleSelectionModel;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
-import javax.swing.JLabel;
 import javax.swing.SingleSelectionModel;
 import javax.swing.event.ChangeListener;
 import org.netbeans.core.windows.Constants;
 import org.netbeans.core.windows.WindowManagerImpl;
 import org.netbeans.core.windows.actions.ActionUtils;
 import org.netbeans.core.windows.view.ui.Tabbed;
+import org.netbeans.swing.tabcontrol.DefaultTabDataModel;
+import org.netbeans.core.windows.view.dnd.DragAndDropFeedbackVisualizer;
 import org.netbeans.swing.tabcontrol.SlideBarDataModel;
 import org.netbeans.swing.tabcontrol.TabData;
 import org.netbeans.swing.tabcontrol.TabDataModel;
+import org.netbeans.swing.tabcontrol.TabbedContainer;
 import org.openide.util.ChangeSupport;
 import org.openide.windows.TopComponent;
 
@@ -333,30 +331,42 @@ public final class TabbedSlideAdapter implements Tabbed {
     public Image createImageOfTab(int tabIndex) {
         TabData dt = slideBar.getModel().getTab(tabIndex);
         if (dt.getComponent() instanceof TopComponent) {
+            DefaultTabDataModel tempModel = new DefaultTabDataModel( new TabData[] { dt } );
+            TabbedContainer temp = new TabbedContainer( tempModel, TabbedContainer.TYPE_VIEW );
+            temp.setSize( 300,300 );
             
-            JLabel lbl = new JLabel(dt.getText());
-            int width = lbl.getFontMetrics(lbl.getFont()).stringWidth(dt.getText());
-            int height = lbl.getFontMetrics(lbl.getFont()).getHeight();
-            Image img = ((TopComponent)dt.getComponent()).getIcon();
-            lbl.setIcon(new ImageIcon(img));
-            width = width + (img.getWidth(null) == -1 ? 16 : img.getWidth(null)) + 6;
-            height = Math.max(height + 5, img.getHeight(null) == -1 ? 21 : 5 + img.getHeight(null));
-        
-            GraphicsConfiguration config = GraphicsEnvironment.getLocalGraphicsEnvironment()
-                        .getDefaultScreenDevice().getDefaultConfiguration();
-    
-            
-            BufferedImage image = config.createCompatibleImage(width, height);
-            Graphics2D g = image.createGraphics();
-            g.setColor(lbl.getForeground());
-            g.setFont(lbl.getFont());
-            g.drawImage(img, 0, 0, null);
-            g.drawString(dt.getText(), 18, height / 2);
-            
-            return image;
+            return temp.createImageOfTab(0);
         }
         
         return null;
+    }
+    
+    public DragAndDropFeedbackVisualizer getDragAndDropFeedbackVisualizer( int tabIndex ) {
+        slideBar.getSelectionModel().setSelectedIndex(tabIndex);
+        return new DragAndDropFeedbackVisualizer( this, tabIndex );
+//        TabData dt = slideBar.getModel().getTab(tabIndex);
+//        if (dt.getComponent() instanceof TopComponent) {
+//            DefaultTabDataModel tempModel = new DefaultTabDataModel( new TabData[] { dt } );
+//            TabbedContainer temp = new TabbedContainer( tempModel, TabbedContainer.TYPE_VIEW );
+//JWindow w = new JWindow();
+//w.setBounds(-2000, -2000, 300, 300);
+//w.getContentPane().add( temp );     
+//w.setVisible(true);       
+////temp.setSize( 300,300 );
+////temp.setLocation( -10000,-10000);
+////temp.setVisible(true);
+////temp.invalidate();
+////temp.revalidate();
+////temp.repaint();
+////            temp.updateUI();
+////temp.getSelectionModel().setSelectedIndex(0);
+//            
+//    Window drag = temp.createDragWindow(0);
+////    w.dispose();
+//return drag;
+//        }
+//        
+//        return null;
     }
     
     /** Add action for disabling slide */

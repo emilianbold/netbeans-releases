@@ -112,6 +112,7 @@ public abstract class ETLWizard {
             final WizardDescriptor desc = getDescriptor();
             final Dialog dlg = DialogDisplayer.getDefault().createDialog(desc);
             dlg.setTitle(getDialogTitle());
+            dlg.getAccessibleContext().setAccessibleDescription("This is the ETL Collaboration Definition Wizard");
             dlg.setPreferredSize(new Dimension(575, 425));
 
             if (context != null && desc != null) {

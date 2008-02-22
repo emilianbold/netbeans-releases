@@ -149,11 +149,6 @@ public class KeyStoreRepositoryTest extends NbTestCase {
         bean.setKeyStoreFile(bean.getKeyStoreFile());
     }
     
-    public void testWarmUp() {
-        Thread check=new Thread(new KeyStoreRepositoryWarmUp());
-        check.start();
-    }
-    
     
     public void testAlias() throws IOException {
         Date date;

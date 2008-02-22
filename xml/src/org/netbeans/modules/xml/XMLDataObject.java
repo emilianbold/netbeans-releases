@@ -100,8 +100,15 @@ public final class XMLDataObject extends org.openide.loaders.XMLDataObject
         CookieSet set = getCookieSet();
         set.add (cookieManager = new DataObjectCookieManager (this, set));
         sync = new XMLSyncSupport(this);
+        String mimetype = fo.getMIMEType();
+        //when undelying fileobject has a mimetype defined,
+        //don't enforce text/xml on the editor document.
+        //be conservative and apply the new behaviour only when the mimetype is xml like..
+        if (fo.getMIMEType().indexOf("xml") == -1) { // NOI18N
+            mimetype = XMLKit.MIME_TYPE;
+        }
         TextEditorSupport.TextEditorSupportFactory editorFactory =
-            TextEditorSupport.findEditorSupportFactory (this, XMLKit.MIME_TYPE);
+            TextEditorSupport.findEditorSupportFactory (this, mimetype);
         editorFactory.registerCookies (set);
         CookieSet.Factory viewCookieFactory = new ViewCookieFactory();
         set.add (ViewCookie.class, viewCookieFactory);

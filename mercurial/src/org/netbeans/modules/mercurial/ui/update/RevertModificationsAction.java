@@ -47,6 +47,7 @@ import javax.swing.*;
 import java.awt.event.ActionEvent;
 import org.netbeans.modules.versioning.spi.VCSContext;
 import org.netbeans.modules.mercurial.Mercurial;
+import org.netbeans.modules.mercurial.OutputLogger;
 import org.netbeans.modules.mercurial.FileStatusCache;
 import org.netbeans.modules.mercurial.FileInformation;
 import org.netbeans.modules.mercurial.util.HgUtils;
@@ -60,7 +61,6 @@ import org.openide.util.NbBundle;
 import org.netbeans.modules.mercurial.util.HgCommand;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.netbeans.modules.mercurial.util.HgRepositoryContextCache;
 
 /**
  * Reverts local changes.
@@ -92,11 +92,12 @@ public class RevertModificationsAction extends ContextAction {
         }
         rev = revertModifications.getSelectionRevision();
         final String revStr = rev;
+        final boolean doBackup = revertModifications.isBackupRequested();
 
         RequestProcessor rp = Mercurial.getInstance().getRequestProcessor(repository);
         HgProgressSupport support = new HgProgressSupport() {
             public void perform() {
-                performRevert(repository, revStr, files);
+                performRevert(repository, revStr, files, doBackup, this.getLogger());
             }
         };
         support.start(rp, repository.getAbsolutePath(), org.openide.util.NbBundle.getMessage(UpdateAction.class, "MSG_Revert_Progress")); // NOI18N
@@ -104,52 +105,53 @@ public class RevertModificationsAction extends ContextAction {
         return;
     }
 
-    public static void performRevert(File repository, String revStr, File file) {
+    public static void performRevert(File repository, String revStr, File file, boolean doBackup, OutputLogger logger) {
         List<File> revertFiles = new ArrayList<File>();
         revertFiles.add(file);        
 
-        performRevert(repository, revStr, revertFiles);
+        performRevert(repository, revStr, revertFiles, doBackup, logger);
     }
     
-    public static void performRevert(File repository, String revStr, File[] files) {
+    public static void performRevert(File repository, String revStr, File[] files, boolean doBackup, OutputLogger logger) {
         List<File> revertFiles = new ArrayList<File>();
         for (File file : files) {
             revertFiles.add(file);
         }
-        performRevert(repository, revStr, revertFiles);
+        performRevert(repository, revStr, revertFiles, doBackup, logger);
     }
     
-    public static void performRevert(File repository, String revStr, List<File> revertFiles) {
+    public static void performRevert(File repository, String revStr, List<File> revertFiles, boolean doBackup, OutputLogger logger) {
         try{
-            HgUtils.outputMercurialTabInRed(
+            logger.outputInRed(
                     NbBundle.getMessage(RevertModificationsAction.class,
                     "MSG_REVERT_TITLE")); // NOI18N
-            HgUtils.outputMercurialTabInRed(
+            logger.outputInRed(
                     NbBundle.getMessage(RevertModificationsAction.class,
                     "MSG_REVERT_TITLE_SEP")); // NOI18N
             
+            // revStr == null => no -r REV in hg revert command
             // No revisions to revert too
-            if (NbBundle.getMessage(RevertModificationsAction.class,
+            if (revStr != null && NbBundle.getMessage(RevertModificationsAction.class,
                     "MSG_Revision_Default").startsWith(revStr)) {
-                HgUtils.outputMercurialTab(
+                logger.output(
                         NbBundle.getMessage(RevertModificationsAction.class,
                         "MSG_REVERT_NOTHING")); // NOI18N
-                HgUtils.outputMercurialTabInRed(
+                logger.outputInRed(
                         NbBundle.getMessage(RevertModificationsAction.class,
                         "MSG_REVERT_DONE")); // NOI18N
-                HgUtils.outputMercurialTabInRed(""); // NOI18N
+                logger.outputInRed(""); // NOI18N
                 return;
             }
             
-            HgUtils.outputMercurialTab(
+            logger.output(
                     NbBundle.getMessage(RevertModificationsAction.class,
                     "MSG_REVERT_REVISION_STR", revStr)); // NOI18N
             for (File file : revertFiles) {
-                HgUtils.outputMercurialTab(file.getAbsolutePath());
+                logger.output(file.getAbsolutePath());
             }
-            HgUtils.outputMercurialTab(""); // NOI18N
+            logger.output(""); // NOI18N
 
-            HgCommand.doRevert(repository, revertFiles, revStr);
+            HgCommand.doRevert(repository, revertFiles, revStr, doBackup, logger);
             FileStatusCache cache = Mercurial.getInstance().getFileStatusCache();
             File[] conflictFiles = cache.listFiles(revertFiles.toArray(new File[0]), FileInformation.STATUS_VERSIONED_CONFLICT);
             if (conflictFiles.length != 0) {
@@ -174,10 +176,10 @@ public class RevertModificationsAction extends ContextAction {
             rootObj.getFileSystem().refresh(true);
         } catch (java.lang.Exception exc) {
         }
-        HgUtils.outputMercurialTabInRed(
+        logger.outputInRed(
                 NbBundle.getMessage(RevertModificationsAction.class,
                 "MSG_REVERT_DONE")); // NOI18N
-        HgUtils.outputMercurialTabInRed(""); // NOI18N
+        logger.outputInRed(""); // NOI18N
  
     }
 
