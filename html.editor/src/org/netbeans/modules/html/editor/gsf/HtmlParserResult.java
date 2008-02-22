@@ -105,10 +105,4 @@ public class HtmlParserResult extends ParserResult {
     public AstTreeNode getAst() {
         return  null;
     }
-
-    @Override
-    public ElementHandle getRoot() {
-        return null;
-    }
-
 }
