@@ -53,6 +53,7 @@ import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.ui.ElementOpen;
 import org.netbeans.editor.TokenItem;
+import org.netbeans.modules.spring.beans.editor.BeanClassFinder;
 import org.netbeans.modules.spring.beans.editor.SpringXMLConfigEditorUtils;
 import org.openide.util.Exceptions;
 
@@ -67,7 +68,9 @@ public class PropertyHyperlinkProcessor extends HyperlinkProcessor {
 
     public void process(HyperlinkEnv env) {
         try {
-            final String className = SpringXMLConfigEditorUtils.getBeanClassName(env.getCurrentTag());
+            final String className = new BeanClassFinder(
+                                SpringXMLConfigEditorUtils.getBean(env.getCurrentTag()), 
+                                env.getDocument()).findImplementationClass();
             if (className == null) {
                 return;
             }

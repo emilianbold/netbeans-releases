@@ -678,7 +678,7 @@ public class SunDeploymentManager implements Constants, DeploymentManager, SunDe
                             
                             String l1 =  domainLocationAsReturnedByTheServer.getCanonicalPath();
                             
-                            if (l1.equals(domainDir)==false){ //not the same location, so let's make sure we do not reutrn an invalid target
+                            if (l1.equals(domainDir)==false){ //not the same location, so let's make sure we do not return an invalid target
                                 
                                 return null;
                             }

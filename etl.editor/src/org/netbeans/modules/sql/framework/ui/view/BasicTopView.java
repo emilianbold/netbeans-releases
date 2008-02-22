@@ -560,11 +560,12 @@ public abstract class BasicTopView extends JPanel implements IGraphViewContainer
         // Create a Dialog that defers decision-making on whether to close the dialog to
         // an ActionListener.
         DialogDescriptor dd = new DialogDescriptor(cView, title, true, NotifyDescriptor.OK_CANCEL_OPTION, null, null);
-
+        
         // Pushes closing logic to ActionListener impl
         dd.setClosingOptions(new Object[0]);
 
         Dialog dlg = DialogDisplayer.getDefault().createDialog(dd);
+        dlg.getAccessibleContext().setAccessibleDescription("This dialog does Condition Validation");
         ActionListener dlgListener = new ConditionValidator.DataValidation(gNode, table, cView, dlg, sqlModel);
         dd.setButtonListener(dlgListener);
 
@@ -616,6 +617,7 @@ public abstract class BasicTopView extends JPanel implements IGraphViewContainer
         dd.setClosingOptions(new Object[0]);
 
         Dialog dlg = DialogDisplayer.getDefault().createDialog(dd);
+        dlg.getAccessibleContext().setAccessibleDescription("This dialog filters data based on condition specified");
         ActionListener dlgListener = new ConditionValidator.ExtractionFilter(gNode, table, cView, dlg, sqlModel);
         dd.setButtonListener(dlgListener);
 
@@ -691,6 +693,7 @@ public abstract class BasicTopView extends JPanel implements IGraphViewContainer
         dd.setClosingOptions(new Object[0]);
 
         Dialog dlg = DialogDisplayer.getDefault().createDialog(dd);
+        dlg.getAccessibleContext().setAccessibleDescription("This dialog helps user specify TargetJoinCondition");
         ActionListener dlgListener = new ConditionValidator.TargetJoinConditioon(gNode, table, cView, dlg, sqlModel);
         dd.setButtonListener(dlgListener);
 
@@ -712,6 +715,7 @@ public abstract class BasicTopView extends JPanel implements IGraphViewContainer
         dd.setClosingOptions(new Object[0]);
 
         Dialog dlg = DialogDisplayer.getDefault().createDialog(dd);
+        dlg.getAccessibleContext().setAccessibleDescription("This dialog lets user configure outer filter condition for target table");
         ActionListener dlgListener = new ConditionValidator.TargetFilterCondition(gNode, table, cView, dlg, sqlModel);
         dd.setButtonListener(dlgListener);
 

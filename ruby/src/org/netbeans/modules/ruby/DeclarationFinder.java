@@ -1030,7 +1030,7 @@ public class DeclarationFinder implements org.netbeans.fpi.gsf.DeclarationFinder
                 Node node = AstUtilities.getForeignNode(com, null);
 
                 DeclarationLocation loc = new DeclarationLocation(com.getFile().getFileObject(),
-                    node.getPosition().getStartOffset(), RubyParser.createHandle(info, com));
+                    node.getPosition().getStartOffset(), com);
                 
                 if (!CHOOSE_ONE_DECLARATION && classes.size() > 1) {
                     // Could the :nodoc: alternatives: if there is only one nodoc'ed alternative
@@ -1043,7 +1043,7 @@ public class DeclarationFinder implements org.netbeans.fpi.gsf.DeclarationFinder
                     }
                     if (not_nodoced >= 2) {
                         for (final IndexedClass clz : classes) {
-                            loc.addAlternative(new RubyAltLocation(clz, clz == candidate, info));
+                            loc.addAlternative(new RubyAltLocation(clz, clz == candidate));
                         }
                     }
                 }
@@ -1074,7 +1074,7 @@ public class DeclarationFinder implements org.netbeans.fpi.gsf.DeclarationFinder
                 int nodeOffset = node != null ? node.getPosition().getStartOffset() : 0;
                 
                 DeclarationLocation loc = new DeclarationLocation(
-                    fileObject, nodeOffset, RubyParser.createHandle(info, candidate));
+                    fileObject, nodeOffset, candidate);
 
                 if (!CHOOSE_ONE_DECLARATION && methods.size() > 1) {
                     // Could the :nodoc: alternatives: if there is only one nodoc'ed alternative
@@ -1087,7 +1087,7 @@ public class DeclarationFinder implements org.netbeans.fpi.gsf.DeclarationFinder
                     }
                     if (not_nodoced >= 2) {
                         for (final IndexedMethod mtd : methods) {
-                            loc.addAlternative(new RubyAltLocation(mtd, mtd == candidate, info));
+                            loc.addAlternative(new RubyAltLocation(mtd, mtd == candidate));
                         }
                     }
                 }
@@ -1267,9 +1267,9 @@ public class DeclarationFinder implements org.netbeans.fpi.gsf.DeclarationFinder
     }
 
     private DeclarationLocation getLocation(CompilationInfo info, Node node) {
-        AstElement element = AstElement.create(node);
+        AstElement element = AstElement.create(info, node);
         return new DeclarationLocation(null, LexUtilities.getLexerOffset(info, node.getPosition().getStartOffset()), 
-                RubyParser.createHandle(info, element));
+                element);
     }
 
     private DeclarationLocation findRDocMethod(CompilationInfo info, Document doc, int astOffset, int lexOffset, 
@@ -2080,7 +2080,7 @@ public class DeclarationFinder implements org.netbeans.fpi.gsf.DeclarationFinder
 
             if (node != null) {
                 return new DeclarationLocation(field.getFile().getFileObject(),
-                    node.getPosition().getStartOffset(), RubyParser.createHandle(info, field));
+                    node.getPosition().getStartOffset(), field);
             }
         }
 
@@ -2175,14 +2175,10 @@ public class DeclarationFinder implements org.netbeans.fpi.gsf.DeclarationFinder
         private IndexedElement element;
         private boolean isPreferred;
         private String cachedDisplayItem;
-        private CompilationInfo info;
         
-        RubyAltLocation(IndexedElement element, boolean isPreferred, CompilationInfo info) {
+        RubyAltLocation(IndexedElement element, boolean isPreferred) {
             this.element = element;
             this.isPreferred = isPreferred;
-            // TODO - get rid of this field; it's only temporarily needed during my transition
-            // to ElementHandles
-            this.info = info;
         }
 
         public String getDisplayHtml(HtmlFormatter formatter) {
@@ -2319,13 +2315,13 @@ public class DeclarationFinder implements org.netbeans.fpi.gsf.DeclarationFinder
             Node node = AstUtilities.getForeignNode(element, null);
             int lineOffset = node != null ? node.getPosition().getStartOffset() : -1;
             DeclarationLocation loc = new DeclarationLocation(element.getFileObject(),
-                lineOffset, RubyParser.createHandle(info, element));
+                lineOffset, element);
 
             return loc;
         }
 
         public ElementHandle getElement() {
-            return RubyParser.createHandle(info, element);
+            return element;
         }
 
         public int compareTo(AlternativeLocation alternative) {

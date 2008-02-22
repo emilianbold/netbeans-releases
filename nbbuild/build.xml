@@ -1813,6 +1813,11 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
           <include name="${nb.cluster.ide.dir}/**/*.jar" />
         </jars>
       </input>
+      <input name="gsf" >
+        <jars dir="${netbeans.dest.dir}" >
+          <include name="${nb.cluster.gsf.dir}/**/*.jar" />
+        </jars>
+      </input>
       <input name="java" >
         <jars dir="${netbeans.dest.dir}" >
           <include name="${nb.cluster.java.dir}/**/*.jar" />
