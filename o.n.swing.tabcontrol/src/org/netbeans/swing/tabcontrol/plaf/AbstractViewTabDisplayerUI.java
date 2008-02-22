@@ -128,6 +128,7 @@ public abstract class AbstractViewTabDisplayerUI extends TabDisplayerUI {
         displayer.setLayout(null);
     }
 
+    @Override
     public void installUI(JComponent c) {
         super.installUI(c);
         ToolTipManager.sharedInstance().registerComponent(displayer);
@@ -231,6 +232,7 @@ public abstract class AbstractViewTabDisplayerUI extends TabDisplayerUI {
         return controlButtons;
     }
 
+    @Override
     public void uninstallUI(JComponent c) {
         super.uninstallUI(c);
         ToolTipManager.sharedInstance().unregisterComponent(displayer);
@@ -254,6 +256,7 @@ public abstract class AbstractViewTabDisplayerUI extends TabDisplayerUI {
         return new Controller();
     }
 
+    @Override
     public void paint(Graphics g, JComponent c) {
 
         ColorUtil.setupAntialiasing(g);
@@ -464,6 +467,7 @@ public abstract class AbstractViewTabDisplayerUI extends TabDisplayerUI {
     }
 
     /** Paints the rectangle occupied by a tab into an image and returns the result */
+    @Override
     public Image createImageOfTab(int index) {
         TabData td = displayer.getModel().getTab(index);
         
@@ -473,10 +477,7 @@ public abstract class AbstractViewTabDisplayerUI extends TabDisplayerUI {
         width = width + td.getIcon().getIconWidth() + 6;
         height = Math.max(height, td.getIcon().getIconHeight()) + 5;
         
-        GraphicsConfiguration config = GraphicsEnvironment.getLocalGraphicsEnvironment()
-                                        .getDefaultScreenDevice().getDefaultConfiguration();
-        
-        BufferedImage image = config.createCompatibleImage(width, height);
+        BufferedImage image = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
         Graphics2D g = image.createGraphics();
         g.setColor(lbl.getForeground());
         g.setFont(lbl.getFont());
@@ -609,6 +610,7 @@ public abstract class AbstractViewTabDisplayerUI extends TabDisplayerUI {
             return false;
         }
 
+        @Override
         public void mousePressed(MouseEvent e) {
             Point p = e.getPoint();
             int i = getLayoutModel().indexOfPoint(p.x, p.y);
@@ -635,6 +637,7 @@ public abstract class AbstractViewTabDisplayerUI extends TabDisplayerUI {
             }
         }
 
+        @Override
         public void mouseClicked (MouseEvent e) {
             if (e.getClickCount() >= 2 && !e.isPopupTrigger()) {
                 Point p = e.getPoint();
@@ -656,6 +659,7 @@ public abstract class AbstractViewTabDisplayerUI extends TabDisplayerUI {
             }
         }
 
+        @Override
         public void mouseReleased(MouseEvent e) {
             // close button must not be active when selection change was
             // triggered by mouse press

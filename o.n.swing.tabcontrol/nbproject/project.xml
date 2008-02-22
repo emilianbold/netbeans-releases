@@ -76,7 +76,6 @@ made subject to such option by the copyright holder.
                 <package>org.netbeans.swing.tabcontrol</package>
                 <package>org.netbeans.swing.tabcontrol.event</package>
                 <package>org.netbeans.swing.tabcontrol.plaf</package>
-                <package>org.netbeans.swing.transparency</package>
             </public-packages>
         </data>
     </configuration>
