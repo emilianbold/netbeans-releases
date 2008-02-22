@@ -582,7 +582,7 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider{
             info.toPhase(Phase.ELEMENTS_RESOLVED);
             org.jruby.ast.Node root = AstUtilities.getRoot(info);
             if (root != null) {
-                Element element = AstElement.create(root);
+                Element element = AstElement.create(info, root);
                 RubyElementCtx fileCtx = new RubyElementCtx(root, root, element, info.getFileObject(), info);
                 ui = createRefactoringUI(fileCtx, info);
             }

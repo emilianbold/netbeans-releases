@@ -42,6 +42,7 @@
 package org.netbeans.modules.ruby.elements;
 
 import java.util.Set;
+import org.netbeans.fpi.gsf.ElementHandle;
 import org.netbeans.fpi.gsf.ElementKind;
 import org.netbeans.fpi.gsf.Modifier;
 
@@ -49,7 +50,7 @@ import org.netbeans.fpi.gsf.Modifier;
  *
  * @author Tor Norbye
  */
-public interface Element {
+public interface Element extends ElementHandle {
     String getName();
     String getIn();
     ElementKind getKind();

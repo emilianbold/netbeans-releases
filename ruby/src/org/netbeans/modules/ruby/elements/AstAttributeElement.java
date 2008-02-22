@@ -6,6 +6,7 @@ import org.jruby.ast.Node;
 
 import org.jruby.ast.SymbolNode;
 import org.jruby.ast.types.INameNode;
+import org.netbeans.fpi.gsf.CompilationInfo;
 import org.netbeans.fpi.gsf.ElementKind;
 import org.netbeans.fpi.gsf.Modifier;
 
@@ -14,8 +15,8 @@ public class AstAttributeElement extends AstElement {
     SymbolNode symbolNode;
     Node creationNode;
 
-    public AstAttributeElement(SymbolNode node, Node creationNode) {
-        super(node);
+    public AstAttributeElement(CompilationInfo info, SymbolNode node, Node creationNode) {
+        super(info, node);
         this.symbolNode = node;
         this.creationNode = creationNode;
     }
@@ -24,8 +25,8 @@ public class AstAttributeElement extends AstElement {
         if (creationNode == null || !(creationNode instanceof INameNode)) {
             return false;
         } else {
-            String name = ((INameNode)creationNode).getName();
-            return name.indexOf("writer") == -1 && name.indexOf("accessor") == -1; // NOI18N
+            String n = ((INameNode)creationNode).getName();
+            return n.indexOf("writer") == -1 && n.indexOf("accessor") == -1; // NOI18N
         }
     }
     

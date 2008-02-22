@@ -41,16 +41,12 @@
 package org.netbeans.modules.ruby;
 
 import org.netbeans.fpi.gsf.ParserResult.AstTreeNode;
-import org.netbeans.modules.ruby.elements.CommentElement;
 import java.io.IOException;
 import java.io.Reader;
 import java.io.StringReader;
 import java.util.Iterator;
 import java.util.List;
-
-import java.util.Set;
 import javax.swing.text.BadLocationException;
-
 import org.jruby.ast.Node;
 import org.jruby.ast.RootNode;
 import org.jruby.common.IRubyWarnings;
@@ -62,11 +58,8 @@ import org.jruby.parser.RubyParserConfiguration;
 import org.jruby.parser.RubyParserResult;
 import org.netbeans.fpi.gsf.CompilationInfo;
 import org.netbeans.modules.ruby.elements.Element;
-import org.netbeans.modules.ruby.elements.Element;
 import org.netbeans.fpi.gsf.ElementHandle;
-import org.netbeans.fpi.gsf.ElementKind;
 import org.netbeans.fpi.gsf.Error;
-import org.netbeans.fpi.gsf.Modifier;
 import org.netbeans.fpi.gsf.OffsetRange;
 import org.netbeans.fpi.gsf.ParseEvent;
 import org.netbeans.fpi.gsf.ParseListener;
@@ -75,15 +68,11 @@ import org.netbeans.fpi.gsf.ParserFile;
 import org.netbeans.fpi.gsf.ParserResult;
 import org.netbeans.fpi.gsf.PositionManager;
 import org.netbeans.fpi.gsf.Severity;
-import org.netbeans.fpi.gsf.Severity;
 import org.netbeans.fpi.gsf.SourceFileReader;
 import org.netbeans.fpi.gsf.TranslatedSource;
 import org.netbeans.modules.ruby.elements.AstElement;
-import org.netbeans.modules.ruby.elements.AstRootElement;
-import org.netbeans.modules.ruby.elements.IndexedElement;
-import org.netbeans.modules.ruby.elements.KeywordElement;
+import org.netbeans.modules.ruby.elements.RubyElement;
 import org.netbeans.sfpi.gsf.DefaultError;
-import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
@@ -357,7 +346,7 @@ public final class RubyParser implements Parser {
 
         switch (sanitizing) {
         case NEVER:
-            return createParseResult(context.file, null, null, null, null, null);
+            return createParseResult(context.file, null, null, null, null);
 
         case NONE:
 
@@ -415,7 +404,7 @@ public final class RubyParser implements Parser {
         case MISSING_END:
         default:
             // We're out of tricks - just return the failed parse result
-            return createParseResult(context.file, null, null, null, null, null);
+            return createParseResult(context.file, null, null, null, null);
         }
     }
 
@@ -554,9 +543,8 @@ public final class RubyParser implements Parser {
 
         if (root != null) {
             context.sanitized = sanitizing;
-            AstRootElement rootElement = new AstRootElement(context.file.getFileObject(), root, result);
             AstNodeAdapter ast = new AstNodeAdapter(null, root);
-            RubyParseResult r = createParseResult(context.file, rootElement, ast, root, realRoot, result);
+            RubyParseResult r = createParseResult(context.file, ast, root, realRoot, result);
             r.setSanitized(context.sanitized, context.sanitizedRange, context.sanitizedContents);
             r.setSource(source);
             return r;
@@ -565,9 +553,9 @@ public final class RubyParser implements Parser {
         }
     }
     
-    protected RubyParseResult createParseResult(ParserFile file, AstRootElement rootElement, AstTreeNode ast, Node root,
+    protected RubyParseResult createParseResult(ParserFile file, AstTreeNode ast, Node root,
         RootNode realRoot, RubyParserResult jrubyResult) {
-        return new RubyParseResult(this, file, rootElement, ast, root, realRoot, jrubyResult);
+        return new RubyParseResult(this, file, ast, root, realRoot, jrubyResult);
     }
     
     public PositionManager getPositionManager() {
@@ -575,77 +563,31 @@ public final class RubyParser implements Parser {
     }
 
     @SuppressWarnings("unchecked")
-    public static ElementHandle createHandle(CompilationInfo info, final Element object) {
-        if (object instanceof KeywordElement || object instanceof CommentElement) {
-            // Not tied to an AST - just pass it around
-            return new RubyElementHandle(null, object, info.getFileObject());
-        }
+    public static RubyElement resolveHandle(CompilationInfo info, ElementHandle handle) {
+        if (handle instanceof AstElement) {
+            AstElement element = (AstElement)handle;
+            CompilationInfo oldInfo = element.getInfo();
+            if (oldInfo == info) {
+                return element;
+            }
+            Node oldNode = element.getNode(); // XXX Make it work for DefaultComObjects...
+            Node oldRoot = AstUtilities.getRoot(oldInfo);
+            
+            Node newRoot = AstUtilities.getRoot(info);
+            if (newRoot == null) {
+                return null;
+            }
 
-        // TODO - check for Ruby
-        if (object instanceof IndexedElement) {
-            // Probably a function in a "foreign" file (not parsed from AST),
-            // such as a signature returned from the index of the Ruby libraries.
-// TODO - make sure this is infrequent! getFileObject is expensive!            
-// Alternatively, do this in a delayed fashion - e.g. pass in null and in getFileObject
-// look up from index            
-            return new RubyElementHandle(null, object, ((IndexedElement)object).getFileObject());
-        }
+            // Find newNode
+            Node newNode = find(oldRoot, oldNode, newRoot);
 
-        if (!(object instanceof AstElement)) {
-            return null;
-        }
+            if (newNode != null) {
+                AstElement co = AstElement.create(info, newNode);
 
-// XXX Gotta fix this
-if (info == null) {
-    return null;
-}        
-        RubyParseResult result = AstUtilities.getParseResult(info);
-
-        if (result == null) {
-            return null;
-        }
-
-        Node root = AstUtilities.getRoot(info);
-
-        return new RubyElementHandle(root, object, info.getFileObject());
-    }
-
-    @SuppressWarnings("unchecked")
-    public static ElementHandle createHandle(ParserResult result, final AstElement object) {
-        Node root = AstUtilities.getRoot(result);
-
-        return new RubyElementHandle(root, object, result.getFile().getFileObject());
-    }
-    
-    @SuppressWarnings("unchecked")
-    public static Element resolveHandle(CompilationInfo info, ElementHandle handle) {
-        RubyElementHandle h = (RubyElementHandle)handle;
-        Node oldRoot = h.root;
-        Node oldNode;
-
-        if (h.object instanceof KeywordElement || h.object instanceof IndexedElement || h.object instanceof CommentElement) {
-            // Not tied to a tree
-            return h.object;
-        }
-
-        if (h.object instanceof AstElement) {
-            oldNode = ((AstElement)h.object).getNode(); // XXX Make it work for DefaultComObjects...
-        } else {
-            return null;
-        }
-
-        Node newRoot = AstUtilities.getRoot(info);
-        if (newRoot == null) {
-            return null;
-        }
-
-        // Find newNode
-        Node newNode = find(oldRoot, oldNode, newRoot);
-
-        if (newNode != null) {
-            Element co = AstElement.create(newNode);
-
-            return co;
+                return co;
+            }
+        } else if (handle instanceof RubyElement) {
+            return (RubyElement)handle;
         }
 
         return null;
@@ -686,56 +628,6 @@ if (info == null) {
         }
 
         return null;
-    }
-
-    private static class RubyElementHandle extends ElementHandle {
-        private final Node root;
-        private final Element object;
-        private final FileObject fileObject;
-
-        private RubyElementHandle(Node root, Element object, FileObject fileObject) {
-            this.root = root;
-            this.object = object;
-            this.fileObject = fileObject;
-        }
-
-        public boolean signatureEquals(ElementHandle handle) {
-            // XXX TODO
-            return false;
-        }
-
-        public FileObject getFileObject() {
-            if (object instanceof IndexedElement) {
-                return ((IndexedElement)object).getFileObject();
-            }
-
-            return fileObject;
-        }
-        
-        @Override
-        public String getMimeType() {
-            return RubyMimeResolver.RUBY_MIME_TYPE;
-        }
-
-        @Override
-        public String getName() {
-            return object.getName();
-        }
-
-        @Override
-        public String getIn() {
-            return object.getIn();
-        }
-
-        @Override
-        public ElementKind getKind() {
-            return object.getKind();
-        }
-
-        @Override
-        public Set<Modifier> getModifiers() {
-            return object.getModifiers();
-        }
     }
 
     /** Attempts to sanitize the input buffer */

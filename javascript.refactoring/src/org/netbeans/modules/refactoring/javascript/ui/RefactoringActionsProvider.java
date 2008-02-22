@@ -578,7 +578,7 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider{
             info.toPhase(Phase.ELEMENTS_RESOLVED);
             org.mozilla.javascript.Node root = AstUtilities.getRoot(info);
             if (root != null) {
-                Element element = AstElement.getElement(root);
+                Element element = AstElement.getElement(info, root);
                 JsElementCtx fileCtx = new JsElementCtx(root, root, element, info.getFileObject(), info);
                 ui = createRefactoringUI(fileCtx, info);
             }

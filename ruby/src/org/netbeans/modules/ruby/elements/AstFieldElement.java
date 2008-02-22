@@ -8,14 +8,14 @@ import org.jruby.ast.ClassVarDeclNode;
 import org.jruby.ast.ClassVarNode;
 import org.jruby.ast.Node;
 import org.jruby.ast.types.INameNode;
-import org.netbeans.modules.ruby.elements.Element;
+import org.netbeans.fpi.gsf.CompilationInfo;
 import org.netbeans.fpi.gsf.ElementKind;
 import org.netbeans.fpi.gsf.Modifier;
 
 
 public class AstFieldElement extends AstElement {
-    public AstFieldElement(Node node) {
-        super(node);
+    public AstFieldElement(CompilationInfo info, Node node) {
+        super(info, node);
     }
 
     @Override
