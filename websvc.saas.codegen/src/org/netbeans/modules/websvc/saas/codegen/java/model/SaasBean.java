@@ -55,11 +55,12 @@ import org.netbeans.modules.websvc.saas.codegen.java.support.Inflector;
  */
 public abstract class SaasBean extends GenericResourceBean {
 
-    private static final String RESOURCE_TEMPLATE = "Templates/WebServices/WrapperResource.java"; //NOI18N
+    public static final String RESOURCE_TEMPLATE = "Templates/WebServices/WrapperResource.java"; //NOI18N
     private String outputWrapperName;
     private String wrapperPackageName;
     private List<ParameterInfo> inputParams;
     private List<ParameterInfo> queryParams;
+    private String resourceTemplate;
 
     public SaasBean(String name, String packageName, String uriTemplate, MimeType[] mediaTypes, String[] representationTypes, HttpMethodType[] methodTypes) {
         super(name, packageName, uriTemplate, mediaTypes, representationTypes, methodTypes);
@@ -145,6 +146,11 @@ public abstract class SaasBean extends GenericResourceBean {
     }
 
     public String getResourceClassTemplate() {
-        return RESOURCE_TEMPLATE;
+        return resourceTemplate;
     }
+    
+    public void setResourceClassTemplate(String template) {
+        this.resourceTemplate = template;
+    }
+
 }
