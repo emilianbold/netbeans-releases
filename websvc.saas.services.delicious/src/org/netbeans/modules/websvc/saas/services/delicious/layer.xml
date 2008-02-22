@@ -44,22 +44,11 @@
 <!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.1//EN" "http://www.netbeans.org/dtds/filesystem-1_1.dtd">
 <filesystem>
     
-    <folder name="Templates">
-        <folder name="WebServices">
-            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.websvc.saas.services.delicious.Bundle"/>
-            <file name="profile.properties" url="/org/netbeans/modules/websvc/saas/services/delicious/resources/profile.properties">
-                <attr name="position" intvalue="3320"/>
-            </file>
-        </folder>
-    </folder>
-    
     <folder name="SaasServices">
         <folder name="Delicious">
-            <attr name="position" intvalue="20"/>
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.websvc.saas.services.delicious.Bundle"/>
-            <file name="Delicious.xml" url="/org/netbeans/modules/websvc/saas/services/delicious/resources/Delicious.xml">
-               <attr name="position" intvalue="20"/>
-            </file>
+            <file name="profile.properties" url="/org/netbeans/modules/websvc/saas/services/delicious/resources/profile.properties"/>
+            <file name="Delicious.xml" url="/org/netbeans/modules/websvc/saas/services/delicious/resources/Delicious.xml"/>
         </folder>
     </folder>
     
