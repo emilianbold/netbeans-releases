@@ -41,11 +41,14 @@ package org.netbeans.modules.project.ui;
 
 import java.awt.EventQueue;
 import java.beans.PropertyChangeEvent;
+import java.lang.ref.WeakReference;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.EventObject;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
+import junit.framework.AssertionFailedError;
+import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.junit.MockServices;
 import org.netbeans.junit.NbTestCase;
@@ -117,6 +120,30 @@ public class ProjectsRootNodePhysicalViewTest extends NbTestCase {
     }
 
     public void testBehaviourOfProjectsLogicNode() throws InterruptedException {
+        Node n = doBehaviourOfProjectsNode();
+        
+        Project p = n.getLookup().lookup(Project.class);
+        assertNotNull("Project is in the node", p);
+        
+        WeakReference<Project> ref = new WeakReference<Project>(p);
+        p = null;
+        
+        // keep just parent
+        n = n.getParentNode();
+        
+        try {
+            assertGC("Cannot be garbage collected while open", ref);
+            throw new IllegalStateException("Cannot be GCed");
+        } catch (AssertionFailedError ok) {
+            // ok
+        }
+        
+        OpenProjectList.getDefault().close(new Project[] { ref.get() }, true);
+        
+        assertGC("Can be garbage collected when closed", ref);
+    } 
+    
+    private Node doBehaviourOfProjectsNode() throws InterruptedException {
         Node view = new ProjectsRootNode(ProjectsRootNode.PHYSICAL_VIEW);
         L listener = new L();
         view.addNodeListener(listener);
@@ -148,6 +175,9 @@ public class ProjectsRootNodePhysicalViewTest extends NbTestCase {
         }
         
         listener.assertEvents("Goal is to receive no events at all", 0);
+        
+        
+        return view.getChildren().getNodes()[0];
     }
     
     private static class L implements NodeListener {
