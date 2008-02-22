@@ -31,7 +31,7 @@ if [ "$action" = "build" ]; then
 #    fi
 
     ant -f nbbuild/build.xml build || exit 2
-    ant -f nbbuild/build.xml commit-validation # || exit 3
+    ant -f nbbuild/build.xml commit-validation || exit 3
     ant -f nbbuild/build.xml commit-validation-junit-format # || exit 3
     testmodule openide.util  || exit 4
     testmodule openide.modules || exit 4
@@ -43,6 +43,7 @@ if [ "$action" = "build" ]; then
     testmodule openide.dialogs || exit 4
     testmodule openide.awt || exit 4
     testmodule openide.windows || exit 4
+    testmodule core.startup # || exit 4
 #    testmodule openide.io || exit 4
     if [ `hg out --template '{node|short}\n' http://hg.netbeans.org/main | wc -l` > 0 ]; then
         echo No outgoing changes
