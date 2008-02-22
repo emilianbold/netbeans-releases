@@ -64,7 +64,7 @@ public class SaasMethod {
         return method;
     }
 
-    public Output getOutput() {
+    protected Output getOutput() {
         return method.getOutput();
     }
 
@@ -72,17 +72,15 @@ public class SaasMethod {
         return method.getName();
     }
 
-    public Input getInput() {
+    protected Input getInput() {
         return method.getInput();
     }
 
-    public String getHref() {
+    protected String getHref() {
         return method.getHref();
     }
 
     public String getDocumentation() {
         return method.getDocumentation();
     }
-
-    
 }

@@ -48,10 +48,10 @@ import java.util.Set;
 import javax.swing.ImageIcon;
 
 import javax.swing.text.Document;
-import org.netbeans.fpi.gsf.Element;
-import org.netbeans.fpi.gsf.ElementKind;
-import org.netbeans.fpi.gsf.HtmlFormatter;
-import org.netbeans.fpi.gsf.Modifier;
+import org.netbeans.modules.gsf.api.Element;
+import org.netbeans.modules.gsf.api.ElementKind;
+import org.netbeans.modules.gsf.api.HtmlFormatter;
+import org.netbeans.modules.gsf.api.Modifier;
 import org.netbeans.modules.php.editor.TokenUtils;
 import org.netbeans.modules.php.model.FormalParameter;
 import org.netbeans.modules.php.model.FunctionDeclaration;
@@ -78,7 +78,7 @@ class UserDefinedMethodItem extends CompletionItem {
 
 
     /* (non-Javadoc)
-     * @see org.netbeans.fpi.gsf.CompletionProposal#getIcon()
+     * @see org.netbeans.modules.gsf.api.CompletionProposal#getIcon()
      */
     public ImageIcon getIcon() {
         // TODO An Icon for User Defined Method is required.
@@ -86,7 +86,7 @@ class UserDefinedMethodItem extends CompletionItem {
     }
 
     /* (non-Javadoc)
-     * @see org.netbeans.fpi.gsf.CompletionProposal#getInsertParams()
+     * @see org.netbeans.modules.gsf.api.CompletionProposal#getInsertParams()
      */
     @Override
     public List<String> getInsertParams() {
@@ -101,21 +101,21 @@ class UserDefinedMethodItem extends CompletionItem {
     }
 
     /* (non-Javadoc)
-     * @see org.netbeans.fpi.gsf.CompletionProposal#getInsertPrefix()
+     * @see org.netbeans.modules.gsf.api.CompletionProposal#getInsertPrefix()
      */
     public String getInsertPrefix() {
         return myFunction.getName();
     }
 
     /* (non-Javadoc)
-     * @see org.netbeans.fpi.gsf.CompletionProposal#getKind()
+     * @see org.netbeans.modules.gsf.api.CompletionProposal#getKind()
      */
     public ElementKind getKind() {
         return ElementKind.METHOD;
     }
 
     /* (non-Javadoc)
-     * @see org.netbeans.fpi.gsf.CompletionProposal#getLhsHtml()
+     * @see org.netbeans.modules.gsf.api.CompletionProposal#getLhsHtml()
      */
     public String getLhsHtml() {
         HtmlFormatter formatter = getFormatter();
@@ -140,7 +140,7 @@ class UserDefinedMethodItem extends CompletionItem {
     }
 
     /* (non-Javadoc)
-     * @see org.netbeans.fpi.gsf.CompletionProposal#getModifiers()
+     * @see org.netbeans.modules.gsf.api.CompletionProposal#getModifiers()
      */
     public Set<Modifier> getModifiers() {
         // TODO Auto-generated method stub
@@ -148,14 +148,14 @@ class UserDefinedMethodItem extends CompletionItem {
     }
 
     /* (non-Javadoc)
-     * @see org.netbeans.fpi.gsf.CompletionProposal#getName()
+     * @see org.netbeans.modules.gsf.api.CompletionProposal#getName()
      */
     public String getName() {
         return myFunction.getName();
     }
 
     /* (non-Javadoc)
-     * @see org.netbeans.fpi.gsf.CompletionProposal#getRhsHtml()
+     * @see org.netbeans.modules.gsf.api.CompletionProposal#getRhsHtml()
      */
     public String getRhsHtml() {
         // TODO If it is possible then a text explained the return type 
@@ -164,7 +164,7 @@ class UserDefinedMethodItem extends CompletionItem {
     }
 
     /* (non-Javadoc)
-     * @see org.netbeans.fpi.gsf.CompletionProposal#isSmart()
+     * @see org.netbeans.modules.gsf.api.CompletionProposal#isSmart()
      */
     public boolean isSmart() {
         return true;
@@ -212,7 +212,7 @@ class UserDefinedMethodItem extends CompletionItem {
     }
 
     /* (non-Javadoc)
-     * @see org.netbeans.fpi.gsf.CompletionProposal#getElement()
+     * @see org.netbeans.modules.gsf.api.CompletionProposal#getElement()
      */
     @Override
     public Element getElement() {

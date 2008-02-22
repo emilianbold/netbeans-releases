@@ -59,10 +59,10 @@ import org.jruby.ast.MethodDefNode;
 import org.jruby.ast.Node;
 import org.jruby.ast.NodeTypes;
 import org.jruby.ast.types.INameNode;
-import org.netbeans.fpi.gsf.ColoringAttributes;
-import org.netbeans.fpi.gsf.CompilationInfo;
-import org.netbeans.fpi.gsf.OffsetRange;
-import org.netbeans.fpi.gsf.SemanticAnalyzer;
+import org.netbeans.modules.gsf.api.ColoringAttributes;
+import org.netbeans.modules.gsf.api.CompilationInfo;
+import org.netbeans.modules.gsf.api.OffsetRange;
+import org.netbeans.modules.gsf.api.SemanticAnalyzer;
 import org.netbeans.modules.ruby.lexer.LexUtilities;
 
 

@@ -32,7 +32,7 @@
                     </run-dependency>
                 </dependency>
                 <dependency>
-                    <code-name-base>org.netbeans.fpi.gsf</code-name-base>
+                    <code-name-base>org.netbeans.modules.gsf.api</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
@@ -41,7 +41,7 @@
                     </run-dependency>
                 </dependency>
                 <dependency>
-                    <code-name-base>org.netbeans.fpi.gsfpath</code-name-base>
+                    <code-name-base>org.netbeans.modules.gsfpath.api</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
@@ -237,12 +237,12 @@
                 <test-type>
                     <name>unit</name>
                     <test-dependency>
-                        <code-name-base>org.netbeans.fpi.gsf</code-name-base>
+                        <code-name-base>org.netbeans.modules.gsf.api</code-name-base>
                         <recursive/>
                         <compile-dependency/>
                     </test-dependency>
                     <test-dependency>
-                        <code-name-base>org.netbeans.fpi.gsfpath</code-name-base>
+                        <code-name-base>org.netbeans.modules.gsfpath.api</code-name-base>
                         <recursive/>
                         <compile-dependency/>
                     </test-dependency>

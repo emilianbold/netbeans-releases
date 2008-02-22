@@ -72,7 +72,7 @@ import org.openide.util.NbBundle;
  */
 public class NewNbModuleWizardIterator implements WizardDescriptor.AsynchronousInstantiatingIterator<WizardDescriptor> {
     
-    /** Either standalone module, suite component or NB CVS module. */
+    /** Either standalone module, suite component or NB.org module. */
     static final int TYPE_MODULE = 1;
     
     /** Suite wizard. */
@@ -111,7 +111,7 @@ public class NewNbModuleWizardIterator implements WizardDescriptor.AsynchronousI
     
     /**
      * Returns wizard for creating NetBeans module in general - i.e. either
-     * standalone module, suite component or NB CVS module.
+     * standalone module, suite component or NB.org module.
      */
     public static NewNbModuleWizardIterator createModuleIterator() {
         return new NewNbModuleWizardIterator(TYPE_MODULE);
@@ -166,7 +166,7 @@ public class NewNbModuleWizardIterator implements WizardDescriptor.AsynchronousI
             case NewNbModuleWizardIterator.TYPE_SUITE_COMPONENT:
                 ModuleUISettings.getDefault().setNewModuleCounter(data.getModuleCounter());
                 if (data.isNetBeansOrg()) {
-                    // create module within the netbeans.org CVS tree
+                    // create module within the netbeans.org source tree
                     NbModuleProjectGenerator.createNetBeansOrgModule(projectFolder,
                             data.getCodeNameBase(), data.getProjectDisplayName(),
                             data.getBundle(), data.getLayer());

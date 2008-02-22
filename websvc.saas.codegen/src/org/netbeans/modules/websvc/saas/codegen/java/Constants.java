@@ -198,10 +198,10 @@ public class Constants {
     }
     
     public enum HttpMethodType {
-        GET("get", "GET"),   //NOI18N
-        PUT("put", "PUT"), //NOI18N
-        POST("post", "POST"), //NOI18N
-        DELETE("delete", "DELETE"); //NOI18N
+        GET("get", Constants.GET), 
+        PUT("put", Constants.PUT),
+        POST("post", Constants.POST),
+        DELETE("delete", Constants.DELETE);
         
         private String prefix; 
         private String annotationType;
