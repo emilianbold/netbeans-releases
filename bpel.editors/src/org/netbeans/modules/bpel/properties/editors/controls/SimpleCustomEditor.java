@@ -82,6 +82,8 @@ public class SimpleCustomEditor<T> extends AbstractCustomNodeEditor<T> {
         //
         if (mainPanel != null) {
             this.add(mainPanel, BorderLayout.CENTER);
+            // The accessibleContext is derived from the main child panel.
+            accessibleContext = mainPanel.getAccessibleContext();
         }
         //
         SoaUiUtil.activateInlineMnemonics(this);
