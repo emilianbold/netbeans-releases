@@ -608,22 +608,15 @@ public class AppClientProjectGenerator {
                         Utils.toClasspathString(wsClasspath));
             }
         }
-        //WORKAROUND for --retrieve option in asadmin deploy command
-        //works only for local domains
-        //see also http://www.netbeans.org/issues/show_bug.cgi?id=82929
-        if ("J2EE".equals(deployment.getServerID(serverInstanceID))) { // NOI18N
-            File asRoot = j2eePlatform.getPlatformRoots()[0];
-            File exFile = new File(asRoot, "lib/javaee.jar"); // NOI18N
-            InstanceProperties ip = InstanceProperties.getInstanceProperties(serverInstanceID);
-            if (exFile.exists()) {
-                ep.setProperty("wa.copy.client.jar.from", // NOI18N
-                        new File(ip.getProperty("LOCATION"), ip.getProperty("DOMAIN") + "/generated/xml/j2ee-modules").getAbsolutePath()); // NOI18N
-            } else {
-                ep.setProperty("wa.copy.client.jar.from", // NOI18N
-                        new File(ip.getProperty("LOCATION"), ip.getProperty("DOMAIN") + "/applications/j2ee-modules").getAbsolutePath()); // NOI18N
-            }
+
+        // WORKAROUND for --retrieve option in asadmin deploy command
+        // works only for local domains
+        // see also http://www.netbeans.org/issues/show_bug.cgi?id=82929
+        String copyProperty = j2eePlatform.getToolProperty(J2eePlatform.TOOL_APP_CLIENT_RUNTIME, J2eePlatform.TOOL_PROP_CLIENT_JAR_LOCATION);
+        if (copyProperty != null) {
+            ep.setProperty(AppClientProjectProperties.APPCLIENT_TOOL_CLIENT_JAR, copyProperty);
         } else {
-            ep.remove("wa.copy.client.jar.from"); // NOI18N
+            ep.remove(AppClientProjectProperties.APPCLIENT_TOOL_CLIENT_JAR);
         }
         
         // ant deployment support
