@@ -404,7 +404,7 @@ public class JsWhereUsedQueryPlugin extends JsRefactoringPlugin {
                 return;
             }
             
-            Element element = AstElement.getElement(root);
+            Element element = AstElement.getElement(compiler, root);
             Node node = searchCtx.getNode();
             JsElementCtx fileCtx = new JsElementCtx(root, node, element, compiler.getFileObject(), compiler);
 
