@@ -84,6 +84,8 @@ var INSTALL_NOTES_LABEL      = "Installation Instructions";
 var INSTALL_NOTES_LINK       = "http://www.netbeans.org/community/releases/60/install.html";
 var LICENSE_NOTICE_LINK      = "http://www.netbeans.org/about/legal/product-licences.html";
 
+var ARCHIVE_BUILDS_LINK      = "http://www.netbeans.info/downloads/dev.php";
+var DEVELOPMENT_BUILDS_LINK  = "http://bits.netbeans.org/download/trunk/nightly/latest/";
 
 // TRANSLATE NOTE: change download*.gif to download*_<locale>.gif
 var DOWNLOAD_BUTTON_NORMAL    = "img/download.gif";

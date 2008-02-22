@@ -160,5 +160,8 @@ public class WsdlSaasBean extends SaasBean {
     public JaxwsOperationInfo lastOperationInfo() {
         return getOperationInfos()[getOperationInfos().length-1];
     }
-    
+
+    public String getResourceClassTemplate() {
+        return RESOURCE_TEMPLATE;
+    }
 }
