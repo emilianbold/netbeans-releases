@@ -9,8 +9,9 @@ import org.jruby.ast.DefnNode;
 import org.jruby.ast.DefsNode;
 import org.jruby.ast.MethodDefNode;
 import org.jruby.ast.Node;
-import org.netbeans.api.gsf.ElementKind;
-import org.netbeans.api.gsf.Modifier;
+import org.netbeans.fpi.gsf.CompilationInfo;
+import org.netbeans.fpi.gsf.ElementKind;
+import org.netbeans.fpi.gsf.Modifier;
 import org.netbeans.modules.ruby.AstUtilities;
 
 
@@ -18,8 +19,8 @@ public class AstMethodElement extends AstElement implements MethodElement {
     private List<String> parameters;
     private Modifier access = Modifier.PUBLIC;
 
-    public AstMethodElement(Node node) {
-        super(node);
+    public AstMethodElement(CompilationInfo info, Node node) {
+        super(info, node);
     }
 
     @SuppressWarnings("unchecked")

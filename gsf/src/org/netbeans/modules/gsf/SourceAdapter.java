@@ -42,9 +42,9 @@
 package org.netbeans.modules.gsf;
 
 import java.io.IOException;
-import org.netbeans.api.gsf.CancellableTask;
-import org.netbeans.api.gsf.CompilationInfo;
-import org.netbeans.api.gsf.SourceModel;
+import org.netbeans.fpi.gsf.CancellableTask;
+import org.netbeans.fpi.gsf.CompilationInfo;
+import org.netbeans.fpi.gsf.SourceModel;
 import org.netbeans.napi.gsfret.source.CompilationController;
 import org.netbeans.napi.gsfret.source.Phase;
 import org.netbeans.napi.gsfret.source.Source;

@@ -435,6 +435,7 @@ public class JoinViewGraphNode extends BasicCanvasArea {
         String nbBundle6 = mLoc.t("PRSR001: Select columns to display for this table.");
         String dlgLabel = Localizer.parse(nbBundle6);
         JLabel lbl = new JLabel(dlgLabel);
+        lbl.getAccessibleContext().setAccessibleName(dlgLabel);
         lbl.setFont(lbl.getFont().deriveFont(Font.BOLD));
         panel.add(lbl, gbc);
 

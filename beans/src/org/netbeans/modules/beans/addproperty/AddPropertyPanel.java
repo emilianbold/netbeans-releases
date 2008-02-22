@@ -284,25 +284,28 @@ public class AddPropertyPanel extends javax.swing.JPanel {
         previewEditorPane = new javax.swing.JEditorPane();
         errorLabel = new javax.swing.JLabel();
 
-        nameLabel.setText(org.openide.util.NbBundle.getMessage(AddPropertyPanel.class, "AddPropertyPanel.nameLabel.text")); // NOI18N
+        nameLabel.setLabelFor(nameTextField);
+        org.openide.awt.Mnemonics.setLocalizedText(nameLabel, org.openide.util.NbBundle.getMessage(AddPropertyPanel.class, "AddPropertyPanel.nameLabel.text")); // NOI18N
 
         nameTextField.setText(org.openide.util.NbBundle.getMessage(AddPropertyPanel.class, "AddPropertyPanel.nameTextField.text")); // NOI18N
 
-        equalsLabel.setText(org.openide.util.NbBundle.getMessage(AddPropertyPanel.class, "AddPropertyPanel.equalsLabel.text")); // NOI18N
+        equalsLabel.setLabelFor(initializerTextField);
+        org.openide.awt.Mnemonics.setLocalizedText(equalsLabel, org.openide.util.NbBundle.getMessage(AddPropertyPanel.class, "AddPropertyPanel.equalsLabel.text")); // NOI18N
 
-        semicolonLabel.setText(org.openide.util.NbBundle.getMessage(AddPropertyPanel.class, "AddPropertyPanel.semicolonLabel.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(semicolonLabel, org.openide.util.NbBundle.getMessage(AddPropertyPanel.class, "AddPropertyPanel.semicolonLabel.text")); // NOI18N
 
-        typeLabel.setText(org.openide.util.NbBundle.getMessage(AddPropertyPanel.class, "AddPropertyPanel.typeLabel.text")); // NOI18N
+        typeLabel.setLabelFor(typeComboBox);
+        org.openide.awt.Mnemonics.setLocalizedText(typeLabel, org.openide.util.NbBundle.getMessage(AddPropertyPanel.class, "AddPropertyPanel.typeLabel.text")); // NOI18N
 
         typeComboBox.setEditable(true);
-        typeComboBox.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "String", "int", "boolean", "long", "double", "long", "char", "short", "float" }));
+        typeComboBox.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "String", "int", "boolean", "long", "double", "byte", "char", "short", "float" }));
         typeComboBox.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 typeComboBoxActionPerformed(evt);
             }
         });
 
-        browseTypeButton.setText(org.openide.util.NbBundle.getMessage(AddPropertyPanel.class, "AddPropertyPanel.browseTypeButton.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(browseTypeButton, org.openide.util.NbBundle.getMessage(AddPropertyPanel.class, "AddPropertyPanel.browseTypeButton.text")); // NOI18N
         browseTypeButton.setToolTipText(org.openide.util.NbBundle.getMessage(AddPropertyPanel.class, "AddPropertyPanel.browseTypeButton.toolTipText")); // NOI18N
         browseTypeButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -312,7 +315,7 @@ public class AddPropertyPanel extends javax.swing.JPanel {
 
         accessGroup.add(privateRadioButton);
         privateRadioButton.setSelected(true);
-        privateRadioButton.setText(org.openide.util.NbBundle.getMessage(AddPropertyPanel.class, "AddPropertyPanel.privateRadioButton.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(privateRadioButton, org.openide.util.NbBundle.getMessage(AddPropertyPanel.class, "AddPropertyPanel.privateRadioButton.text")); // NOI18N
         privateRadioButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 privateRadioButtonActionPerformed(evt);
@@ -320,7 +323,7 @@ public class AddPropertyPanel extends javax.swing.JPanel {
         });
 
         accessGroup.add(packageRadioButton);
-        packageRadioButton.setText(org.openide.util.NbBundle.getMessage(AddPropertyPanel.class, "AddPropertyPanel.packageRadioButton.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(packageRadioButton, org.openide.util.NbBundle.getMessage(AddPropertyPanel.class, "AddPropertyPanel.packageRadioButton.text")); // NOI18N
         packageRadioButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 packageRadioButtonActionPerformed(evt);
@@ -328,7 +331,8 @@ public class AddPropertyPanel extends javax.swing.JPanel {
         });
 
         accessGroup.add(protectedRadioButton);
-        protectedRadioButton.setText(org.openide.util.NbBundle.getMessage(AddPropertyPanel.class, "AddPropertyPanel.protectedRadioButton.text")); // NOI18N
+        protectedRadioButton.setSelected(true);
+        org.openide.awt.Mnemonics.setLocalizedText(protectedRadioButton, org.openide.util.NbBundle.getMessage(AddPropertyPanel.class, "AddPropertyPanel.protectedRadioButton.text")); // NOI18N
         protectedRadioButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 protectedRadioButtonActionPerformed(evt);
@@ -336,21 +340,21 @@ public class AddPropertyPanel extends javax.swing.JPanel {
         });
 
         accessGroup.add(publicRadioButton);
-        publicRadioButton.setText(org.openide.util.NbBundle.getMessage(AddPropertyPanel.class, "AddPropertyPanel.publicRadioButton.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(publicRadioButton, org.openide.util.NbBundle.getMessage(AddPropertyPanel.class, "AddPropertyPanel.publicRadioButton.text")); // NOI18N
         publicRadioButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 publicRadioButtonActionPerformed(evt);
             }
         });
 
-        staticCheckBox.setText(org.openide.util.NbBundle.getMessage(AddPropertyPanel.class, "AddPropertyPanel.staticCheckBox.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(staticCheckBox, org.openide.util.NbBundle.getMessage(AddPropertyPanel.class, "AddPropertyPanel.staticCheckBox.text")); // NOI18N
         staticCheckBox.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 staticCheckBoxActionPerformed(evt);
             }
         });
 
-        finalCheckBox.setText(org.openide.util.NbBundle.getMessage(AddPropertyPanel.class, "AddPropertyPanel.finalCheckBox.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(finalCheckBox, org.openide.util.NbBundle.getMessage(AddPropertyPanel.class, "AddPropertyPanel.finalCheckBox.text")); // NOI18N
         finalCheckBox.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 finalCheckBoxActionPerformed(evt);
@@ -359,7 +363,7 @@ public class AddPropertyPanel extends javax.swing.JPanel {
 
         getterSetterGroup.add(generateGetterAndSetterRadioButton);
         generateGetterAndSetterRadioButton.setSelected(true);
-        generateGetterAndSetterRadioButton.setText(org.openide.util.NbBundle.getMessage(AddPropertyPanel.class, "AddPropertyPanel.generateGetterAndSetterRadioButton.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(generateGetterAndSetterRadioButton, org.openide.util.NbBundle.getMessage(AddPropertyPanel.class, "AddPropertyPanel.generateGetterAndSetterRadioButton.text")); // NOI18N
         generateGetterAndSetterRadioButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 generateGetterAndSetterRadioButtonActionPerformed(evt);
@@ -367,7 +371,7 @@ public class AddPropertyPanel extends javax.swing.JPanel {
         });
 
         getterSetterGroup.add(generateGetterRadioButton);
-        generateGetterRadioButton.setText(org.openide.util.NbBundle.getMessage(AddPropertyPanel.class, "AddPropertyPanel.generateGetterRadioButton.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(generateGetterRadioButton, org.openide.util.NbBundle.getMessage(AddPropertyPanel.class, "AddPropertyPanel.generateGetterRadioButton.text")); // NOI18N
         generateGetterRadioButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 generateGetterRadioButtonActionPerformed(evt);
@@ -375,7 +379,7 @@ public class AddPropertyPanel extends javax.swing.JPanel {
         });
 
         getterSetterGroup.add(generateSetterRadioButton);
-        generateSetterRadioButton.setText(org.openide.util.NbBundle.getMessage(AddPropertyPanel.class, "AddPropertyPanel.generateSetterRadioButton.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(generateSetterRadioButton, org.openide.util.NbBundle.getMessage(AddPropertyPanel.class, "AddPropertyPanel.generateSetterRadioButton.text")); // NOI18N
         generateSetterRadioButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 generateSetterRadioButtonActionPerformed(evt);
@@ -383,14 +387,14 @@ public class AddPropertyPanel extends javax.swing.JPanel {
         });
 
         generateJavadocCheckBox.setSelected(true);
-        generateJavadocCheckBox.setText(org.openide.util.NbBundle.getMessage(AddPropertyPanel.class, "AddPropertyPanel.generateJavadocCheckBox.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(generateJavadocCheckBox, org.openide.util.NbBundle.getMessage(AddPropertyPanel.class, "AddPropertyPanel.generateJavadocCheckBox.text")); // NOI18N
         generateJavadocCheckBox.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 generateJavadocCheckBoxActionPerformed(evt);
             }
         });
 
-        boundCheckBox.setText(org.openide.util.NbBundle.getMessage(AddPropertyPanel.class, "AddPropertyPanel.boundCheckBox.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(boundCheckBox, org.openide.util.NbBundle.getMessage(AddPropertyPanel.class, "AddPropertyPanel.boundCheckBox.text")); // NOI18N
         boundCheckBox.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 boundCheckBoxActionPerformed(evt);
@@ -399,7 +403,7 @@ public class AddPropertyPanel extends javax.swing.JPanel {
 
         propNameTextField.setText(org.openide.util.NbBundle.getMessage(AddPropertyPanel.class, "AddPropertyPanel.propNameTextField.text")); // NOI18N
 
-        vetoableCheckBox.setText(org.openide.util.NbBundle.getMessage(AddPropertyPanel.class, "AddPropertyPanel.vetoableCheckBox.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(vetoableCheckBox, org.openide.util.NbBundle.getMessage(AddPropertyPanel.class, "AddPropertyPanel.vetoableCheckBox.text")); // NOI18N
         vetoableCheckBox.setEnabled(false);
         vetoableCheckBox.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -407,28 +411,28 @@ public class AddPropertyPanel extends javax.swing.JPanel {
             }
         });
 
-        indexedCheckBox.setText(org.openide.util.NbBundle.getMessage(AddPropertyPanel.class, "AddPropertyPanel.indexedCheckBox.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(indexedCheckBox, org.openide.util.NbBundle.getMessage(AddPropertyPanel.class, "AddPropertyPanel.indexedCheckBox.text")); // NOI18N
         indexedCheckBox.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 indexedCheckBoxActionPerformed(evt);
             }
         });
 
-        generatePropertyChangeSupportCheckBox.setText(org.openide.util.NbBundle.getMessage(AddPropertyPanel.class, "AddPropertyPanel.generatePropertyChangeSupportCheckBox.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(generatePropertyChangeSupportCheckBox, org.openide.util.NbBundle.getMessage(AddPropertyPanel.class, "AddPropertyPanel.generatePropertyChangeSupportCheckBox.text")); // NOI18N
         generatePropertyChangeSupportCheckBox.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 generatePropertyChangeSupportCheckBoxActionPerformed(evt);
             }
         });
 
-        generateVetoablePropertyChangeSupportCheckBox.setText(org.openide.util.NbBundle.getMessage(AddPropertyPanel.class, "AddPropertyPanel.generateVetoablePropertyChangeSupportCheckBox.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(generateVetoablePropertyChangeSupportCheckBox, org.openide.util.NbBundle.getMessage(AddPropertyPanel.class, "AddPropertyPanel.generateVetoablePropertyChangeSupportCheckBox.text")); // NOI18N
         generateVetoablePropertyChangeSupportCheckBox.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 generateVetoablePropertyChangeSupportCheckBoxActionPerformed(evt);
             }
         });
 
-        previewLabel.setText(org.openide.util.NbBundle.getMessage(AddPropertyPanel.class, "AddPropertyPanel.previewLabel.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(previewLabel, org.openide.util.NbBundle.getMessage(AddPropertyPanel.class, "AddPropertyPanel.previewLabel.text")); // NOI18N
 
         previewEditorPane.setContentType(org.openide.util.NbBundle.getMessage(AddPropertyPanel.class, "AddPropertyPanel.previewEditorPane.contentType")); // NOI18N
         previewEditorPane.setEditable(false);
@@ -437,7 +441,7 @@ public class AddPropertyPanel extends javax.swing.JPanel {
         previewScrollPane.setViewportView(previewEditorPane);
 
         errorLabel.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/beans/resources/error-glyph.gif"))); // NOI18N
-        errorLabel.setText(org.openide.util.NbBundle.getBundle(AddPropertyPanel.class).getString("AddPropertyPanel.errorLabel.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(errorLabel, org.openide.util.NbBundle.getBundle(AddPropertyPanel.class).getString("AddPropertyPanel.errorLabel.text")); // NOI18N
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
@@ -471,7 +475,7 @@ public class AddPropertyPanel extends javax.swing.JPanel {
                                     .add(layout.createSequentialGroup()
                                         .add(boundCheckBox)
                                         .add(35, 35, 35)
-                                        .add(propNameTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 524, Short.MAX_VALUE)
+                                        .add(propNameTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 546, Short.MAX_VALUE)
                                         .add(27, 27, 27))
                                     .add(layout.createSequentialGroup()
                                         .add(21, 21, 21)
@@ -497,7 +501,7 @@ public class AddPropertyPanel extends javax.swing.JPanel {
                                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                                 .add(equalsLabel)
                                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                                .add(initializerTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 374, Short.MAX_VALUE)
+                                .add(initializerTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 396, Short.MAX_VALUE)
                                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                                 .add(semicolonLabel))))
                     .add(layout.createSequentialGroup()
@@ -506,13 +510,13 @@ public class AddPropertyPanel extends javax.swing.JPanel {
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                             .add(errorLabel)
-                            .add(previewScrollPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 651, Short.MAX_VALUE))))
+                            .add(previewScrollPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 673, Short.MAX_VALUE))))
                 .addContainerGap())
         );
 
-        layout.linkSize(new java.awt.Component[] {nameLabel, previewLabel, typeLabel}, org.jdesktop.layout.GroupLayout.HORIZONTAL);
-
         layout.linkSize(new java.awt.Component[] {finalCheckBox, packageRadioButton, privateRadioButton, protectedRadioButton, publicRadioButton, staticCheckBox}, org.jdesktop.layout.GroupLayout.HORIZONTAL);
+
+        layout.linkSize(new java.awt.Component[] {nameLabel, previewLabel, typeLabel}, org.jdesktop.layout.GroupLayout.HORIZONTAL);
 
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -567,6 +571,9 @@ public class AddPropertyPanel extends javax.swing.JPanel {
                 .add(errorLabel)
                 .add(17, 17, 17))
         );
+
+        getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(AddPropertyPanel.class, "AddPropertyPanel.AccessibleContext.accessibleName")); // NOI18N
+        getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(AddPropertyPanel.class, "AddPropertyPanel.AccessibleContext.accessibleDescription")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
     private void finalCheckBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_finalCheckBoxActionPerformed
         generateGetterAndSetterRadioButton.setEnabled(!finalCheckBox.isSelected());

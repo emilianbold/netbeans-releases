@@ -34,12 +34,12 @@ import javax.swing.text.JTextComponent;
 public class SelectNextCamelCasePosition extends NextCamelCasePosition {
     public static final String selectNextCamelCasePosition = "select-next-camel-case-position"; //NOI18N
 
-    public SelectNextCamelCasePosition(Action originalAction, Language language) {
-        this(selectNextCamelCasePosition, originalAction, language);
+    public SelectNextCamelCasePosition(Action originalAction) {
+        this(selectNextCamelCasePosition, originalAction);
     }
 
-    protected SelectNextCamelCasePosition(String name, Action originalAction, Language language) {
-        super(name, originalAction, language);
+    protected SelectNextCamelCasePosition(String name, Action originalAction) {
+        super(name, originalAction);
     }
 
     @Override

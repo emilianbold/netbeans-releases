@@ -1,7 +1,7 @@
 Manifest-Version: 1.0
-OpenIDE-Module: org.netbeans.api.gsf/1
+OpenIDE-Module: org.netbeans.fpi.gsf/1
 OpenIDE-Module-Implementation-Version: 1
-OpenIDE-Module-Localizing-Bundle: org/netbeans/api/gsf/Bundle.properties
-OpenIDE-Module-Specification-Version: 0.43
+OpenIDE-Module-Localizing-Bundle: org/netbeans/fpi/gsf/Bundle.properties
+OpenIDE-Module-Specification-Version: 1.00
 AutoUpdate-Show-In-Client: false
 

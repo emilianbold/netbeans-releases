@@ -44,11 +44,14 @@ import java.util.List;
 
 import org.jruby.ast.Node;
 import org.jruby.lexer.yacc.ISourcePosition;
-import org.netbeans.api.gsf.Element;
-import org.netbeans.api.gsf.OffsetRange;
-import org.netbeans.api.gsf.ParserResult;
-import org.netbeans.api.gsf.PositionManager;
+import org.netbeans.fpi.gsf.CompilationInfo;
+import org.netbeans.fpi.gsf.ElementHandle;
+import org.netbeans.modules.ruby.elements.Element;
+import org.netbeans.fpi.gsf.OffsetRange;
+import org.netbeans.fpi.gsf.ParserResult;
+import org.netbeans.fpi.gsf.PositionManager;
 import org.netbeans.modules.ruby.elements.AstElement;
+import org.netbeans.modules.ruby.elements.RubyElement;
 
 
 /**
@@ -62,7 +65,8 @@ public class RubyPositionManager implements PositionManager {
     public RubyPositionManager() {
     }
 
-    public OffsetRange getOffsetRange(Element file, Element object) {
+    public OffsetRange getOffsetRange(CompilationInfo info, ElementHandle objectHandle) {
+        RubyElement object = RubyParser.resolveHandle(info, objectHandle);
         if (object instanceof AstElement) {
             Node target = ((AstElement)object).getNode();
             ISourcePosition pos = target.getPosition();

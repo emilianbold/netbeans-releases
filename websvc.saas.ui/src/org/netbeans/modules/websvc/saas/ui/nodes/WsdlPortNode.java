@@ -172,8 +172,8 @@ public class WsdlPortNode extends AbstractNode {
     
     @Override
     public Transferable clipboardCopy() throws IOException {
-        if (port.getParentSaas().getState() != Saas.State.RESOLVED) {
-            port.getParentSaas().toStateReady();
+        if (port.getParentSaas().getState() != Saas.State.READY) {
+            port.getParentSaas().toStateReady(false);
             return super.clipboardCopy();
         }
         return SaasTransferable.addFlavors(transferable);

@@ -205,6 +205,27 @@ public class Reformatter implements ReformatTask {
         public void setText(String text) {
             this.text = text;
         }
+        
+        public void replaceSpaces(String space){
+            int i = text.lastIndexOf('\n'); // NOI18N
+            if (i >= 0) {
+                text = text.substring(0, i + 1)+space;
+            } else {
+                text = space; // NOI18N
+            }
+        }
+
+        public boolean hasNewLine(){
+            return text.lastIndexOf('\n') >= 0; // NOI18N
+        }
+
+        public int spaceLength() {
+            int i = text.lastIndexOf('\n'); // NOI18N
+            if (i >= 0) {
+                return text.length()-i+1;
+            }
+            return text.length();
+        }
 
         @Override
         public String toString() {

@@ -246,7 +246,7 @@ public class NbModuleProjectGenerator {
     }
     
     /**
-     * Generates NetBeans Module within the netbeans.org CVS tree.
+     * Generates NetBeans Module within the netbeans.org source tree.
      */
     public static void createNetBeansOrgModule(final File projectDir, final String cnb,
             final String name, final String bundlePath, final String layerPath) throws IOException {
@@ -266,7 +266,9 @@ public class NbModuleProjectGenerator {
                     createProjectXML(dirFO, cnb, NbModuleProvider.NETBEANS_ORG);
                     createManifest(dirFO, cnb, bundlePath, layerPath);
                     createBundle(dirFO, bundlePath, name);
-                    createLayerInSrc(dirFO, layerPath);
+                    if (layerPath != null) {
+                        createLayerInSrc(dirFO, layerPath);
+                    }
                     createEmptyTestDir(dirFO);
                     createInitialProperties(dirFO);
                     ModuleList.refresh();

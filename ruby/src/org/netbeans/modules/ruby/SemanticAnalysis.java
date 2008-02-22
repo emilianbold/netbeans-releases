@@ -59,10 +59,10 @@ import org.jruby.ast.MethodDefNode;
 import org.jruby.ast.Node;
 import org.jruby.ast.NodeTypes;
 import org.jruby.ast.types.INameNode;
-import org.netbeans.api.gsf.ColoringAttributes;
-import org.netbeans.api.gsf.CompilationInfo;
-import org.netbeans.api.gsf.OffsetRange;
-import org.netbeans.api.gsf.SemanticAnalyzer;
+import org.netbeans.fpi.gsf.ColoringAttributes;
+import org.netbeans.fpi.gsf.CompilationInfo;
+import org.netbeans.fpi.gsf.OffsetRange;
+import org.netbeans.fpi.gsf.SemanticAnalyzer;
 import org.netbeans.modules.ruby.lexer.LexUtilities;
 
 
@@ -111,8 +111,12 @@ public class SemanticAnalysis implements SemanticAnalyzer {
             return;
         }
 
-        Node root = AstUtilities.getRoot(info);
+        RubyParseResult rpr = AstUtilities.getParseResult(info);
+        if (rpr == null) {
+            return;
+        }
 
+        Node root = rpr.getRootNode();
         if (root == null) {
             return;
         }
@@ -130,7 +134,7 @@ public class SemanticAnalysis implements SemanticAnalyzer {
         }
 
         if (highlights.size() > 0) {
-            if (info.getPositionManager().isTranslatingSource()) {
+            if (rpr.getTranslatedSource() != null) {
                 Map<OffsetRange, ColoringAttributes> translated = new HashMap<OffsetRange,ColoringAttributes>(2*highlights.size());
                 for (Map.Entry<OffsetRange,ColoringAttributes> entry : highlights.entrySet()) {
                     OffsetRange range = LexUtilities.getLexerOffsets(info, entry.getKey());

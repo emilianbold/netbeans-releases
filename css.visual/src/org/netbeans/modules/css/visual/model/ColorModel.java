@@ -47,7 +47,7 @@
 
 package org.netbeans.modules.css.visual.model;
 
-import org.netbeans.modules.css.model.CssRuleContent;
+import org.netbeans.modules.css2.editor.model.CssRuleContent;
 import java.awt.Color;
 import java.util.HashMap;
 import java.util.Iterator;
