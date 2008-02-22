@@ -187,7 +187,9 @@ public abstract class CsmResultItem
 
     public int getPreferredWidth(Graphics g, Font defaultFont) {
         Component renderComponent = getPaintComponent(false);
-        return renderComponent.getPreferredSize().width;
+        renderComponent.setFont(defaultFont);
+        int width = renderComponent.getPreferredSize().width;
+        return width;
     }
 
     public void render(Graphics g, Font defaultFont, Color defaultColor,
