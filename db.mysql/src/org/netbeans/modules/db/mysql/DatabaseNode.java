@@ -40,9 +40,12 @@
 package org.netbeans.modules.db.mysql;
 
 import javax.swing.Action;
+import org.netbeans.api.db.explorer.DatabaseException;
+import org.openide.actions.DeleteAction;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
+import org.openide.util.NbBundle;
 import org.openide.util.actions.SystemAction;
 
 /**
@@ -73,9 +76,46 @@ class DatabaseNode extends AbstractNode {
         } else {
             return new SystemAction[] {
                 SystemAction.get(ConnectAction.class),
-                SystemAction.get(DeleteDatabaseAction.class)
+                SystemAction.get(DeleteAction.class)
             };
         }
+    }
+    
+    @Override
+    public boolean canDestroy() {
+        return true;
+    }
+    
+    @Override
+    public void destroy() {
+        ServerInstance server = model.getServer();
+        String dbname = model.getDbName();
+
+        try {                
+            server.dropDatabase(dbname);
+
+            // Delete all the connections for this database, they
+            // are no longer valid
+            deleteConnections(server, dbname);
+        } catch ( DatabaseException dbe ) {
+            String msg = NbBundle.getMessage(DatabaseNode.class,
+                    "MSG_ErrorDeletingDatabase", model.getDbName());
+            Utils.displayError(msg, dbe);
+        }
+
+    }
+    
+    private void deleteConnections(ServerInstance server, String dbname) {
+        // TODO - this requires API support from DB Explorer
+        /*
+        List<DatabaseConnection> conns = 
+                DatabaseUtils.findDatabaseConnections(
+                    server.getURL(dbname));
+        
+        for ( DatabaseConnection conn : conns ) {
+            ConnectionManager.getDefault().
+        }
+         */
     }
 
     @Override

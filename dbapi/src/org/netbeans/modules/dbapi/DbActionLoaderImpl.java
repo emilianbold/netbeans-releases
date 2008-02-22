@@ -39,36 +39,40 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.db.explorer;
+package org.netbeans.modules.dbapi;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Iterator;
 import java.util.List;
-import javax.swing.event.ChangeListener;
-import org.openide.nodes.Node;
+import javax.swing.Action;
+import org.netbeans.modules.db.api.explorer.ActionProvider;
+import org.netbeans.modules.db.explorer.DbActionLoader;
+import org.openide.util.lookup.Lookups;
 
 /**
- * Loads nodes registered into the dbapi module.  This provides a new
- * non-public API that allows other modules add nodes to the Databases
- * node (such as a node to manage a local database server).
- * 
+ * Loads actions from all registered action providers and delivers them to
+ * the caller of getAllActions().
+ *  
  * @author David Van Couvering
  */
-public interface DbNodeLoader {
-    /**
-     * Get all the registered nodes
-     */
-    public List<Node> getAllNodes();
+public class DbActionLoaderImpl implements DbActionLoader {
     
-    /** 
-     * Listen on state changes to this loader.  A state change indicates
-     * that the consumer should reload the nodes by calling getAllNodes()
-     * 
-     * @param listener the listener to be added
-     * @see #getAllNodes()
+            /** 
+     * Not private because used in the tests.
      */
-    public void addChangeListener(ChangeListener listener);
+    static final String ACTION_PROVIDER_PATH = "Databases/ActionProviders"; // NOI18N
 
-    /**
-     * @see #removeChangeListener(ChangeListener)
-     */
-    public void removeChangeListener(ChangeListener listener);    
+    public List<Action> getAllActions() {
+        List<Action> actions = new ArrayList<Action>();
+        Collection providers = Lookups.forPath(ACTION_PROVIDER_PATH).
+                lookupAll(ActionProvider.class);
+        
+        for (Iterator i = providers.iterator(); i.hasNext();) {
+            ActionProvider provider = (ActionProvider)i.next();
+            actions.addAll(provider.getActions());
+        }
+        
+        return actions;
+    }
 }

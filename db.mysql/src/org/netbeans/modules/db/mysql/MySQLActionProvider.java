@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- *
+ * 
  * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
- *
+ * 
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,13 +20,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
+ * 
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -37,38 +31,49 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ * 
+ * Contributor(s):
+ * 
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.db.explorer;
+package org.netbeans.modules.db.mysql;
 
+import java.util.ArrayList;
 import java.util.List;
-import javax.swing.event.ChangeListener;
-import org.openide.nodes.Node;
+import javax.swing.Action;
+import org.netbeans.modules.db.api.explorer.ActionProvider;
+import org.openide.util.actions.SystemAction;
 
 /**
- * Loads nodes registered into the dbapi module.  This provides a new
- * non-public API that allows other modules add nodes to the Databases
- * node (such as a node to manage a local database server).
+ * Provides the actions for this module to be registered under the
+ * Databases node in the DB Explorer
  * 
  * @author David Van Couvering
  */
-public interface DbNodeLoader {
-    /**
-     * Get all the registered nodes
-     */
-    public List<Node> getAllNodes();
-    
-    /** 
-     * Listen on state changes to this loader.  A state change indicates
-     * that the consumer should reload the nodes by calling getAllNodes()
-     * 
-     * @param listener the listener to be added
-     * @see #getAllNodes()
-     */
-    public void addChangeListener(ChangeListener listener);
+public class MySQLActionProvider implements ActionProvider {
 
-    /**
-     * @see #removeChangeListener(ChangeListener)
-     */
-    public void removeChangeListener(ChangeListener listener);    
+    private static final MySQLActionProvider DEFAULT = new MySQLActionProvider();
+    private final ArrayList<Action> actions = new ArrayList<Action>();
+    private static final ArrayList<Action> emptyActions = new ArrayList<Action>();
+    
+    static MySQLActionProvider getDefault() {
+        return DEFAULT;
+    }
+    
+    private MySQLActionProvider() {
+        // Right now only one server, although this may (likely) change
+        actions.add(SystemAction.get(RegisterServerAction.class));
+    }
+
+    public List<Action> getActions() {
+        // If we're registered, then don't provide the action
+        // to register the server...
+        if ( ServerNodeProvider.getDefault().isRegistered()){
+            return emptyActions;
+        } else {
+            return actions;
+        }
+    } 
+    
 }

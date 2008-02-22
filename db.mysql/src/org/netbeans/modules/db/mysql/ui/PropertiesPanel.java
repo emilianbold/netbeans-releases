@@ -12,7 +12,10 @@ import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.event.DocumentListener;
 import org.netbeans.api.db.explorer.DatabaseException;
-import org.netbeans.modules.db.mysql.*;
+import org.netbeans.modules.db.mysql.MySQLOptions;
+import org.netbeans.modules.db.mysql.ServerInstance;
+import org.netbeans.modules.db.mysql.ServerNodeProvider;
+import org.netbeans.modules.db.mysql.Utils;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.util.NbBundle;
@@ -95,6 +98,9 @@ public class PropertiesPanel extends javax.swing.JPanel {
             server.setUser(panel.getUser());
             server.setPassword(panel.getPassword());
             server.setSavePassword(panel.getSavePassword());
+
+            // Register the node provider in case it isn't currently registered
+            ServerNodeProvider.getDefault().setRegistered(true);
             
             try {
                 server.connect();
@@ -124,11 +130,25 @@ public class PropertiesPanel extends javax.swing.JPanel {
         txtUser.getDocument().addDocumentListener(docListener);
         txtHost.getDocument().addDocumentListener(docListener);
         
-        txtUser.setText(server.getUser());
-        txtPassword.setText(server.getPassword());
-        txtHost.setText(server.getHost());
-        txtPort.setText(server.getPort());
+        String user = server.getUser();
+        if ( user == null || user.equals("") ) {
+            user = MySQLOptions.getDefaultAdminUser();
+        }
+        txtUser.setText(user);
         
+        String host = server.getHost();
+        if ( host == null || host.equals("")) {
+            host = MySQLOptions.getDefaultHost();
+        }
+        txtHost.setText(host);
+        
+        String port = server.getPort();
+        if ( port == null || port.equals("")) {
+            port = MySQLOptions.getDefaultPort();
+        }
+        txtPort.setText(port);
+        
+        txtPassword.setText(server.getPassword());        
         chkSavePassword.setSelected(server.isSavePassword());
     }
 
@@ -217,9 +237,9 @@ public class PropertiesPanel extends javax.swing.JPanel {
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                             .add(txtPassword, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 216, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                             .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING, false)
-                                .add(txtPort, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                                 .add(txtHost, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 216, Short.MAX_VALUE)
-                                .add(txtUser))))
+                                .add(txtUser)
+                                .add(txtPort))))
                     .add(layout.createSequentialGroup()
                         .add(52, 52, 52)
                         .add(chkSavePassword))

@@ -284,23 +284,31 @@ public class MySQLOptions {
         putProperty(PROP_CONN_REGISTERED, registered);
     }
 
-    public boolean getConnectionRegistered() {
+    public boolean isConnectionRegistered() {
         return getBooleanProperty(PROP_CONN_REGISTERED);
     }
     
     public void setProviderRegistered(boolean registered) {
+        // If the user is unregistering the provider and it was
+        // previously registered, mark it as removed so we don't keep
+        // trying to auto-register it - very annoying.
+        if ( isProviderRegistered() && ! registered ) {
+            setProviderRemoved(true);
+        } else if ( registered ) {
+            setProviderRemoved(false);
+        }
         putProperty(PROP_PROVIDER_REGISTERED, registered);
     }
     
-    public boolean getProviderRegistered() {
+    public boolean isProviderRegistered() {
         return getBooleanProperty(PROP_PROVIDER_REGISTERED);
     }
     
-    public void setProviderRemoved(boolean removed) {
+    private void setProviderRemoved(boolean removed) {
         putProperty(PROP_PROVIDER_REMOVED, removed);
     }
     
-    public boolean getProviderRemoved() {
+    public boolean isProviderRemoved() {
         return getBooleanProperty(PROP_PROVIDER_REMOVED);
     }
 

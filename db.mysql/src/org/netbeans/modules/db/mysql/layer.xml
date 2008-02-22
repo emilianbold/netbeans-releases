@@ -49,5 +49,11 @@ made subject to such option by the copyright holder.
                 <attr name="instanceOf" stringvalue="org.netbeans.modules.db.api.explorer.NodeProvider"/>
             </file>
         </folder>
+        <folder name="ActionProviders">
+            <file name="MySQLActionProvider.instance">
+                <attr name="instanceCreate" methodvalue="org.netbeans.modules.db.mysql.MySQLActionProvider.getDefault"/>
+                <attr name="instanceOf" stringvalue="org.netbeans.modules.db.api.explorer.ActionProvider"/>
+            </file>
+        </folder>
     </folder>
 </filesystem>

@@ -39,15 +39,13 @@
 
 package org.netbeans.modules.db.mysql;
 
-import java.beans.PropertyChangeEvent;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import org.netbeans.modules.db.api.explorer.NodeProvider;
 import org.openide.nodes.Node;
-import org.openide.nodes.NodeEvent;
-import org.openide.nodes.NodeListener;
-import org.openide.nodes.NodeMemberEvent;
-import org.openide.nodes.NodeReorderEvent;
 
 /**
  * Provides a node for working with a local MySQL Server instance
@@ -56,12 +54,14 @@ import org.openide.nodes.NodeReorderEvent;
  */
 public class ServerNodeProvider implements NodeProvider {
 
-    private static ServerNodeProvider DEFAULT = new ServerNodeProvider();
-    private static MySQLOptions options = MySQLOptions.getDefault();
-    ArrayList<Node> nodes = new ArrayList<Node>();
+    private static final ServerNodeProvider DEFAULT = new ServerNodeProvider();
+    private static final MySQLOptions options = MySQLOptions.getDefault();
+    private final ArrayList<Node> nodes = new ArrayList<Node>();
     private static final ArrayList<Node> emptyNodeList = new ArrayList<Node>();
+    private final CopyOnWriteArrayList<ChangeListener> listeners = 
+            new CopyOnWriteArrayList<ChangeListener>();
     
-    static ServerNodeProvider getDefault() {
+    public static ServerNodeProvider getDefault() {
         return DEFAULT;
     }
     
@@ -71,38 +71,37 @@ public class ServerNodeProvider implements NodeProvider {
     }
 
     public List<Node> getNodes() {
-        if ( options.getProviderRegistered() ) {
+         if ( options.isProviderRegistered() ) {
             return nodes;
         } else {
             return emptyNodeList;
         }
     } 
     
-    static class ServerNodeListener implements NodeListener {
-
-        public void childrenAdded(NodeMemberEvent ev) {
+    public synchronized void setRegistered(boolean registered) {
+        boolean old = options.isProviderRegistered();
+        if ( registered != old ) {
+            options.setProviderRegistered(registered);
+            notifyChange();
         }
-
-        public void childrenRemoved(NodeMemberEvent ev) {
-        }
-
-        public void childrenReordered(NodeReorderEvent ev) {
-        }
-
-        public void nodeDestroyed(NodeEvent ev) {
-            options.setProviderRemoved(true);
-        }
-
-        public void propertyChange(PropertyChangeEvent arg0) {
-        }
-        
     }
 
-    public void register() {
-        if ( options.getProviderRegistered() ) {
-            return;
+    synchronized boolean isRegistered() {
+        return options.isProviderRegistered();
+    }
+    
+    void notifyChange() {
+        ChangeEvent evt = new ChangeEvent(this);
+        for ( ChangeListener listener : listeners ) {
+            listener.stateChanged(evt);
         }
-        
-        options.setProviderRegistered(true);
+    }
+
+    public void addChangeListener(ChangeListener listener) {
+        listeners.add(listener);
+    }
+
+    public void removeChangeListener(ChangeListener listener) {
+        listeners.remove(listener);
     }
 }

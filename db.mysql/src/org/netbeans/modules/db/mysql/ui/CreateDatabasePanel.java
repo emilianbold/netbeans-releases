@@ -9,6 +9,7 @@ package org.netbeans.modules.db.mysql.ui;
 import java.awt.Color;
 import java.awt.Dialog;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.ComboBoxModel;
@@ -122,12 +123,11 @@ public class CreateDatabasePanel extends javax.swing.JPanel {
                 server.grantFullDatabaseRights(dbname, grantUser);
             }
                
-            boolean isSample = ServerInstance.isSampleName(dbname);
+            DatabaseConnection dbconn = 
+                    createConnection(server, dbname, grantUser.getUser());
             
-            createConnection(server, dbname, grantUser.getUser());
-
-            if ( isSample ) {
-                server.createSample(dbname);
+            if ( dbconn != null && ServerInstance.isSampleName(dbname) ) {
+                server.createSample(dbname, dbconn);
             }
         } catch ( DatabaseException ex ) {
             displayCreateFailure(server, ex, dbname, dbCreated);
@@ -197,11 +197,14 @@ public class CreateDatabasePanel extends javax.swing.JPanel {
         return true;        
     }
     
-    private static void createConnection(
+    private static DatabaseConnection createConnection(
             ServerInstance server, String dbname, String grantUser) {
-        if ( ! DatabaseUtils.
-                findDatabaseConnections(server.getURL(dbname)).isEmpty()) {
-            return;
+        
+        List<DatabaseConnection> conns = DatabaseUtils.
+                findDatabaseConnections(server.getURL(dbname));
+        if ( ! conns.isEmpty() ) {
+            // We already have a connection, no need to create one
+            return conns.get(0);
         }
         
         String user;
@@ -214,7 +217,8 @@ public class CreateDatabasePanel extends javax.swing.JPanel {
         
         String url = server.getURL(dbname);
         
-        ConnectionManager.getDefault().showAddConnectionDialog(
+        return ConnectionManager.getDefault().
+            showAddConnectionDialogFromEventThread(
                 DatabaseUtils.getJDBCDriver(), url, user, null);        
     }
 

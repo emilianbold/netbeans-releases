@@ -57,5 +57,18 @@ public interface NodeProvider {
     /**
      * @return the list of nodes that this node provider is providing
      */
-    public List<Node> getNodes();    
+    public List<Node> getNodes(); 
+    
+    /**
+     * Listen to state changes on this provider, which would require the
+     * consumer to call getNodes() to get a new list of nodes
+     * 
+     * @param listener
+     */
+    public void addChangeListener(ChangeListener listener);
+    
+    /** 
+     * @see #addChangeListener(ChangeListener)
+     */
+    public void removeChangeListener(ChangeListener listener);
 }

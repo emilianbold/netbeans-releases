@@ -29,9 +29,9 @@
                       <Group type="103" groupAlignment="0" attributes="0">
                           <Component id="txtPassword" min="-2" pref="216" max="-2" attributes="0"/>
                           <Group type="103" alignment="0" groupAlignment="0" max="-2" attributes="0">
-                              <Component id="txtPort" alignment="0" min="-2" max="-2" attributes="0"/>
                               <Component id="txtHost" alignment="0" pref="216" max="32767" attributes="1"/>
                               <Component id="txtUser" alignment="0" max="32767" attributes="1"/>
+                              <Component id="txtPort" alignment="0" max="32767" attributes="1"/>
                           </Group>
                       </Group>
                   </Group>

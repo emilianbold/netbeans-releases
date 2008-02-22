@@ -48,6 +48,7 @@ import javax.swing.Action;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.db.explorer.DatabaseException;
+import org.openide.actions.DeleteAction;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
@@ -119,9 +120,20 @@ class ServerNode extends AbstractNode implements ChangeListener {
             return new SystemAction[] {
                 SystemAction.get(CreateDatabaseAction.class),
                 SystemAction.get(RefreshAction.class),
+                SystemAction.get(DeleteAction.class),
                 SystemAction.get(PropertiesAction.class)
             };
         }
+    }
+    
+    @Override
+    public boolean canDestroy() {
+        return true;
+    }
+    
+    @Override
+    public void destroy() {
+       ServerNodeProvider.getDefault().setRegistered(false);
     }
             
     private static class ChildFactory 

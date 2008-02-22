@@ -149,7 +149,8 @@ public class ServerInstance implements Node.Cookie {
         return false;
     }
     
-    public void createSample(String sampleName) throws DatabaseException {     
+    public void createSample(String sampleName, DatabaseConnection dbconn) 
+            throws DatabaseException {     
         if ( ! isSampleName(sampleName)) {
             throw new DatabaseException(NbBundle.getMessage(
                     ServerInstance.class, 
@@ -159,17 +160,15 @@ public class ServerInstance implements Node.Cookie {
         DataObject sqlDO = getSQLDataObject(sampleName);
         
         try {
-            // Bummer, I have to actually open the file in the editor to get
-            // the sql execute support to work.
-            //
-            // TODO - allow execution without opening the file
+            if ( ! DatabaseUtils.ensureConnected(dbconn) ) {
+                return;
+            } 
+            
             OpenCookie openCookie = (OpenCookie)sqlDO.getCookie(OpenCookie.class);
             openCookie.open();
 
             SQLExecuteCookie sqlCookie = (SQLExecuteCookie)sqlDO.getCookie(
                     SQLExecuteCookie.class);
-
-            DatabaseConnection dbconn = connectToSampleDb(sampleName);
 
             sqlCookie.setDatabaseConnection(dbconn);
             sqlCookie.execute();
@@ -192,32 +191,7 @@ public class ServerInstance implements Node.Cookie {
         }
 
     }
-    
-    private DatabaseConnection connectToSampleDb(String sampleName) 
-            throws DatabaseException {
-        DatabaseConnection dbconn = 
-                DatabaseUtils.findDatabaseConnection(
-                    getURL(sampleName), 
-                    getUser());
         
-        if ( dbconn == null ) {
-            throw new DatabaseException(
-                    NbBundle.getMessage(ServerInstance.class,
-                        "MSG_NoConnectionToSampleDB", sampleName));
-        }
-
-        Connection conn = dbconn.getJDBCConnection();
-        try { 
-            if ( conn == null || conn.isClosed() ) {
-                ConnectionManager.getDefault().showConnectionDialog(dbconn);
-            }
-        } catch ( SQLException sqle ) {
-            throw new DatabaseException(sqle);
-        }
-
-        return dbconn;
-    }
-    
     private DataObject getSQLDataObject(String sampleName) 
             throws DatabaseException {
         SQLExecuteCookie sqlCookie = null;
@@ -270,19 +244,19 @@ public class ServerInstance implements Node.Cookie {
     }
 
     public String getPassword() {
-        if ( isSavePassword() ) {
-            return options.getAdminPassword();
-        } else {
+        if ( adminPassword != null ) {
             return adminPassword;
+        } else{
+            return options.getAdminPassword();
         }
     }
 
     public void setPassword(String adminPassword) {
+        this.adminPassword = adminPassword == null ? "" : adminPassword;
+
         if ( isSavePassword() ) {
             options.setAdminPassword(adminPassword);
-        } else {
-            this.adminPassword = adminPassword;
-        }
+        } 
     }
     
     public boolean isSavePassword() {

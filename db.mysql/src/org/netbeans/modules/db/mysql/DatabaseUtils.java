@@ -52,6 +52,7 @@ import org.netbeans.api.db.explorer.DatabaseConnection;
 import org.netbeans.api.db.explorer.DatabaseException;
 import org.netbeans.api.db.explorer.JDBCDriver;
 import org.netbeans.api.db.explorer.JDBCDriverManager;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 /**
@@ -229,5 +230,65 @@ public class DatabaseUtils {
         }
         
         return url.toString();
+    }
+
+    static boolean ensureConnected(DatabaseConnection dbconn) {
+        try {
+            Connection conn = dbconn.getJDBCConnection();
+            if ( conn == null || conn.isClosed() ) {
+                ConnectionManager.getDefault().showConnectionDialog(dbconn);
+            }
+
+            conn = dbconn.getJDBCConnection();
+            
+            if ( conn == null || conn.isClosed() ) {
+                return false;
+            }
+
+            return true;
+        } catch ( SQLException e ) {
+            Exceptions.printStackTrace(e);
+            return false;
+        }
+    }
+    
+    public static class URLParser {
+        private static final String MYSQL_PROTOCOL = "jdbc:mysql://";
+        private String host;
+        private String port;
+                
+        private final String url;
+        public URLParser(String url) {
+            assert(url != null && url.startsWith(MYSQL_PROTOCOL));
+            
+            this.url = url.replaceFirst(MYSQL_PROTOCOL, "");
+        }
+        
+        public String getHost() {
+            if ( host == null ) {
+                if ( url.indexOf(":") >= 0 ) {
+                    host = url.split(":")[0];
+                } else {
+                   host = url.split("/")[0]; 
+                }
+            }
+            
+            return host;
+        }
+        
+        public String getPort() {
+            if ( port == null ) {
+                if ( url.indexOf(":") >= 0 ) {
+                    port = url.split(":")[1];
+                    if ( url.indexOf("/") >= 0) {
+                        port = url.split("/")[0];
+                    }
+                } else {
+                   port = "";
+                }
+            }
+            
+            return port;            
+        }
     }
 }

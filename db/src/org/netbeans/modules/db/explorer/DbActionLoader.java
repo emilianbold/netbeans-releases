@@ -42,33 +42,21 @@
 package org.netbeans.modules.db.explorer;
 
 import java.util.List;
-import javax.swing.event.ChangeListener;
-import org.openide.nodes.Node;
+import javax.swing.Action;
 
 /**
- * Loads nodes registered into the dbapi module.  This provides a new
- * non-public API that allows other modules add nodes to the Databases
- * node (such as a node to manage a local database server).
+ * Loads actions registered into the dbapi module.  This provides a new
+ * non-public API that allows other modules add actions to the Databases
+ * node.
+ * 
+ * For now you can only add actions to the top-level node ("Databases").  
+ * Future implementations may allow for registering actions at any node level.
  * 
  * @author David Van Couvering
  */
-public interface DbNodeLoader {
+public interface DbActionLoader {
     /**
-     * Get all the registered nodes
+     * Get all the registered actions
      */
-    public List<Node> getAllNodes();
-    
-    /** 
-     * Listen on state changes to this loader.  A state change indicates
-     * that the consumer should reload the nodes by calling getAllNodes()
-     * 
-     * @param listener the listener to be added
-     * @see #getAllNodes()
-     */
-    public void addChangeListener(ChangeListener listener);
-
-    /**
-     * @see #removeChangeListener(ChangeListener)
-     */
-    public void removeChangeListener(ChangeListener listener);    
+    public List<Action> getAllActions();
 }
