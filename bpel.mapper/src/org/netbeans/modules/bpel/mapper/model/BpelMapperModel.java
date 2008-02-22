@@ -682,8 +682,8 @@ public class BpelMapperModel implements MapperModel, MapperTcContext.Provider {
             // is going to be deleted, but to its descendant node. 
             // If a node is deleted, then all branch of its children 
             // is also deleted. 
-            if (tPath != null || leftNodePath.isDescendant(tPath)) {
-                graph.removeLink(link);
+            if (tPath != null && leftNodePath.isDescendant(tPath)) {
+                link.disconnect();
             }
         }
     }
