@@ -42,7 +42,6 @@
 package org.netbeans.modules.spring.beans.ui.customizer;
 
 import java.io.File;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -479,6 +478,11 @@ private void removeGroupButtonActionPerformed(java.awt.event.ActionEvent evt) {/
 }//GEN-LAST:event_removeGroupButtonActionPerformed
 
 private void addGroupFilesButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addGroupFilesButtonActionPerformed
+        if (files.size() == 0) {
+            String message = NbBundle.getMessage(SpringCustomizerPanel.class, "LBL_NoFilesAdded");
+            DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(message, NotifyDescriptor.ERROR_MESSAGE));
+            return;
+        }
         Set<File> alreadySelectedFiles = new HashSet<File>(groups.get(currentGroupIndex).getFiles());
         SelectConfigFilesPanel panel = SelectConfigFilesPanel.create(files, alreadySelectedFiles, fileDisplayName);
         if (panel.open()) {
