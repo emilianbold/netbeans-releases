@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
+ *
  * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,7 +20,13 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
+ * Contributor(s):
+ *
+ * The Original Software is NetBeans. The Initial Developer of the Original
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Microsystems, Inc. All Rights Reserved.
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -31,73 +37,24 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
- * Contributor(s):
- * 
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.db.mysql;
+package org.netbeans.modules.db.api.explorer;
 
-import org.openide.nodes.AbstractNode;
-import org.openide.nodes.Children;
-import org.openide.util.actions.SystemAction;
+import java.util.List;
+import javax.swing.Action;
 
 /**
- *
- * @author David
+ * Interface allowing modules to add actions to the Database Explorer
+ * under the Databases node in the Services tab.  
+ * <p>
+ * Register a ActionProvider under "Databases/ActionProviders" in the layer file.
+ * </p>
+ * @author David Van Couvering
  */
-class MySQLServerNode extends AbstractNode {
-    private static final MySQLServerNode DEFAULT = new MySQLServerNode();
-    private MySQLOptions options = MySQLOptions.getDefault();
-    
-    // I'd like a less generic icon, but this is what we have for now...
-    private static final String ICON_BASE = "org/netbeans/modules/db/mysql/resources/database.gif";
-    
-    public static MySQLServerNode getDefault() {
-        return DEFAULT;
-    }
-    
-    private MySQLServerNode() {
-        // No node children at this time, maybe later... 
-        super(new Children.Array());
-        this.setIconBaseWithExtension(ICON_BASE);
-    }
-    
-    @Override
-    public String getDisplayName() {
-       return "MySQL (" + options.getHost() + ":" + options.getPort() + ")"; // NO18N
-    }
-   
-    @Override
-    public SystemAction[] getActions() {
-        // TODO - create actions, one at a time...
-        return new SystemAction[] {};
-    }
-    
-    @Override
-    public boolean canCopy() {
-        return false;
-    }
-    
-    @Override
-    public boolean canCut() {
-        return false;
-    }
-    
-    @Override
-    public boolean canRename() {
-        return false;
-    }
-    
-    @Override
-    public boolean canDestroy() {
-        return true;
-    }
-    
-    @Override
-    public SystemAction getDefaultAction() {
-        return null;
-    }
-    
+public interface ActionProvider {
+    /**
+     * @return the list of actions provided
+     */
+    public List<Action> getActions();    
 }
