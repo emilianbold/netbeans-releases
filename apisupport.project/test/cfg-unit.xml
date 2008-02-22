@@ -50,7 +50,7 @@ made subject to such option by the copyright holder.
                 <exclude name="**/ServiceNodeHandlerTest.class"/>
                 <!-- XXX #107995: random failures -->
                 <exclude name="**/SuiteCustomizerModuleListTest.class"/>
-                <!-- XXX Following test might need CVS repository. Double check them: -->
+                <!-- XXX Following test might need source repository. Double check them: -->
                 <exclude name="**/BrandingSupportTest.class"/>
                 <exclude name="**/GlobalSourceForBinaryImplTest.class"/>
                 <exclude name="**/LayerUtilsTest.class"/>
@@ -58,7 +58,7 @@ made subject to such option by the copyright holder.
                 <exclude name="**/ModuleLogicalViewTest.class"/>
                 <exclude name="**/NbPlatformTest.class"/>
                 <exclude name="**/WritableXMLFileSystemTest.class"/>
-                <!-- Tests which very likely needs access to CVS: -->
+                <!-- Tests which very likely needs access to nb.org sources: -->
                 <exclude name="**/AccessibilityQueryImplTest.class"/>
                 <exclude name="**/AntArtifactProviderImplTest.class"/>
                 <exclude name="**/AvoidModuleListInProjectConstructorTest.class"/>
@@ -78,12 +78,12 @@ made subject to such option by the copyright holder.
                 <exclude name="**/UnitTestForSourceQueryImplTest.class"/>
                 <exclude name="**/UpdateTrackingFileOwnerQueryTest.class"/>
                 <exclude name="**/UtilTest.class"/>
-                <!-- Tests which definitely needs access to CVS: -->
-                <!-- Move above test into this section once they are checked for real need of presence of CVS tree. -->
+                <!-- Tests which definitely needs access to nb.org sources: -->
+                <!-- Move above test into this section once they are checked for real need of presence of source tree. -->
             </patternset>
         </testset>
     </testbag>
-    <testbag testattribs="stable-cvs" executor="unit-executor" name="apisupport/project">
+    <testbag testattribs="stable-sources" executor="unit-executor" name="apisupport/project">
         <testset dir="unit/src">
             <patternset>
                 <include name="**/*Test.class"/>

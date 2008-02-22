@@ -744,7 +744,7 @@ public class RenameRefactoringPlugin extends JsRefactoringPlugin {
             Node root = AstUtilities.getRoot(workingCopy);
             if (root != null) {
                 
-                Element element = AstElement.getElement(root);
+                Element element = AstElement.getElement(workingCopy, root);
                 Node node = searchCtx.getNode();
                 
                 JsElementCtx fileCtx = new JsElementCtx(root, node, element, workingCopy.getFileObject(), workingCopy);

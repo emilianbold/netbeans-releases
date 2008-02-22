@@ -219,6 +219,14 @@ public class Reformatter implements ReformatTask {
             return text.lastIndexOf('\n') >= 0; // NOI18N
         }
 
+        public int spaceLength() {
+            int i = text.lastIndexOf('\n'); // NOI18N
+            if (i >= 0) {
+                return text.length()-i+1;
+            }
+            return text.length();
+        }
+
         @Override
         public String toString() {
             return "Diff<" + start + "," + end + ">:" + text; //NOI18N

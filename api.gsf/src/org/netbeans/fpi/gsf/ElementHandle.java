@@ -50,25 +50,25 @@ import org.openide.filesystems.FileObject;
  *
  * @author Tor Norbye
  */
-public abstract class ElementHandle {
+public interface ElementHandle {
     /** 
      * Return the FileObject associated with this handle, or null
      * if the file is unknown or in a parse tree (in which case the
      * file object is the same as the file object in the CompilationInfo
      * for the root of the parse tree.
      */
-    public abstract FileObject getFileObject(); // TODO rip out, don't need it now that I have the ParserResult
+    FileObject getFileObject();
     
     /**
      * The mime type associated with this element. This is typically
      * used to identify the type of element in embedded scenarios.
      */
-    public abstract String getMimeType();
+    String getMimeType();
 
-    public abstract String getName();
-    public abstract String getIn();
-    public abstract ElementKind getKind();
-    public abstract Set<Modifier> getModifiers();
+    String getName();
+    String getIn();
+    ElementKind getKind();
+    Set<Modifier> getModifiers();
     
     /** 
      * Tests if the handle has the same signature as the parameter.
@@ -79,30 +79,27 @@ public abstract class ElementHandle {
      * @return true if the handles resolve into the same {@link Element}s
      * in the same {@link javax.tools.JavaCompiler} task.
      */
-    public abstract boolean signatureEquals (final ElementHandle handle);
+    boolean signatureEquals (final ElementHandle handle);
 
     /** 
      * A special handle which holds URL. Can be used to handle documentation
      * requests etc.
      */
-    public static class UrlHandle extends ElementHandle {
+    public static class UrlHandle implements ElementHandle {
         private String url;
 
         public UrlHandle(String url) {
             this.url = url;
         }
 
-        @Override
         public FileObject getFileObject() {
             return null;
         }
         
-        @Override
         public String getMimeType() {
             return null;
         }
 
-        @Override
         public boolean signatureEquals(ElementHandle handle) {
             if (handle instanceof UrlHandle) {
                 return url.equals(((UrlHandle)handle).url);
