@@ -64,6 +64,17 @@ public class ConfigurableRailsAdapter implements RailsDatabaseConfiguration {
     private final String password;
     private final String database;
 
+    /**
+     * Creates a new instance of ConfigurableRailsAdapter.
+     * 
+     * @param delegate the configuration representing the original configuration.
+     * @param userName the user name to be put into the generated configuration,
+     * i.e. value for the <code>username:</code> attribute.
+     * @param password the user name to be put into the generated configuration,
+     * i.e. value for the <code>password:</code> attribute.
+     * @param database the name of the database to be put into the generated configuration, 
+     * i.e. value for the <code>database:</code> attribute.
+     */
     public ConfigurableRailsAdapter(RailsDatabaseConfiguration delegate, String userName, String password, String database) {
         this.delegate = delegate;
         this.userName = userName;
