@@ -45,13 +45,13 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
-import org.netbeans.modules.web.jsps.parserapi.JspParserAPI.WebModule;
 
 import org.netbeans.modules.web.jsps.parserapi.JspParserAPI;
 import org.netbeans.modules.web.jsps.parserapi.JspParserFactory;
 import org.openide.filesystems.FileObject;
 
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.web.api.webmodule.WebModule;
 
 /**
  * @author pj97932
