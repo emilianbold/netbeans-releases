@@ -40,12 +40,12 @@ package org.netbeans.modules.css2.gsf;
 
 import java.util.HashMap;
 import java.util.Map;
-import org.netbeans.fpi.gsf.ColoringAttributes;
-import org.netbeans.fpi.gsf.CompilationInfo;
-import org.netbeans.fpi.gsf.OffsetRange;
-import org.netbeans.fpi.gsf.ParserResult;
-import org.netbeans.fpi.gsf.SemanticAnalyzer;
-import org.netbeans.fpi.gsf.TranslatedSource;
+import org.netbeans.modules.gsf.api.ColoringAttributes;
+import org.netbeans.modules.gsf.api.CompilationInfo;
+import org.netbeans.modules.gsf.api.OffsetRange;
+import org.netbeans.modules.gsf.api.ParserResult;
+import org.netbeans.modules.gsf.api.SemanticAnalyzer;
+import org.netbeans.modules.gsf.api.TranslatedSource;
 import org.netbeans.modules.css2.editor.Css;
 import org.netbeans.modules.css2.parser.CSSParserTreeConstants;
 import org.netbeans.modules.css2.parser.NodeVisitor;

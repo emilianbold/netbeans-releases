@@ -180,6 +180,8 @@ public class PrepareIDEForEnterpriseComplexMeasurements extends JellyTestCase {
             ProjectSupport.waitScanFinished();
             ProjectSupport.openProject(projectsLocation + "TravelReservationServiceApplication");
             ProjectSupport.waitScanFinished();
+            // TODO: Remove this workaround: closing all modals
+            closeAllModal();
         }catch(Exception exc){
             test_failed = true;
             fail(exc);

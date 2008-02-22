@@ -41,7 +41,7 @@ package org.netbeans.modules.css2.gsf;
 
 import java.util.ArrayList;
 import java.util.List;
-import org.netbeans.fpi.gsf.CompilationInfo;
+import org.netbeans.modules.gsf.api.CompilationInfo;
 
 /**
  * hack :-)

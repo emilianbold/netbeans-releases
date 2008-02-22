@@ -40,6 +40,8 @@
 package org.netbeans.modules.websvc.saas.model;
 
 import org.netbeans.modules.websvc.saas.model.jaxb.Method;
+import org.netbeans.modules.websvc.saas.model.jaxb.Method.Input;
+import org.netbeans.modules.websvc.saas.model.jaxb.Method.Output;
 
 /**
  *
@@ -49,6 +51,21 @@ public class CustomSaasMethod extends SaasMethod {
     
     public CustomSaasMethod(Saas saas, Method method) {
         super(saas, method);
+    }
+
+    @Override
+    public String getHref() {
+        return super.getHref();
+    }
+
+    @Override
+    public Input getInput() {
+        return super.getInput();
+    }
+
+    @Override
+    public Output getOutput() {
+        return super.getOutput();
     }
 
 }

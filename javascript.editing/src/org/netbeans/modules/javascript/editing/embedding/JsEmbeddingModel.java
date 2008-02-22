@@ -44,8 +44,8 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 import javax.swing.text.Document;
-import org.netbeans.fpi.gsf.EmbeddingModel;
-import org.netbeans.fpi.gsf.TranslatedSource;
+import org.netbeans.modules.gsf.api.EmbeddingModel;
+import org.netbeans.modules.gsf.api.TranslatedSource;
 import org.netbeans.modules.javascript.editing.JsMimeResolver;
 
 /**
