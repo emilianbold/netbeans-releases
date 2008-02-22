@@ -121,14 +121,14 @@ public class HibernateMappingDataObject extends XmlMultiViewDataObject {
                 try {
                     newMapping = HibernateMapping.createGraph(is);
                 } catch (RuntimeException ex) { // must catch RTE (thrown by schema2beans when document is not valid)
-                    ErrorManager.getDefault().notify(org.openide.ErrorManager.INFORMATIONAL, ex);
+                    //ErrorManager.getDefault().notify(org.openide.ErrorManager.INFORMATIONAL, ex);
                     return false;
                 }
                 if (newMapping != null) {
                     try {
                         mapping.merge(newMapping, BaseBean.MERGE_UPDATE);
                     } catch (IllegalArgumentException iae) {
-                        ErrorManager.getDefault().notify(org.openide.ErrorManager.INFORMATIONAL, iae);
+                        //ErrorManager.getDefault().notify(org.openide.ErrorManager.INFORMATIONAL, iae);
                         return false;
                     }
                 }
