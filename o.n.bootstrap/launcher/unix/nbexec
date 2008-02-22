@@ -41,6 +41,12 @@
 
 PRG=$0
 
+# Check DISPLAY variable
+if [ "no$DISPLAY" = "no" ]; then
+    echo "$0: ERROR: environment variable DISPLAY is not set"
+    exit 2
+fi
+
 resolve_symlink () {
     file="$1"
     while [ -h "$file" ]; do
