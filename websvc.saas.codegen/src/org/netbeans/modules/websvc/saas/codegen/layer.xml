@@ -5,16 +5,16 @@
         <folder name="SaaSServices">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.websvc.saas.codegen.Bundle"/>
             <file name="RestConnection.java" url="/org/netbeans/modules/websvc/saas/codegen/java/resources/RestConnection.template">
-                <attr name="position" intvalue="0"/>
+                <attr name="position" intvalue="5010"/>
             </file>
             <file name="GenericResource.java" url="/org/netbeans/modules/websvc/saas/codegen/java/resources/GenericResource.template">
-                <attr name="position" intvalue="0"/>
+                <attr name="position" intvalue="5020"/>
             </file>
             <file name="WrapperResource.java" url="/org/netbeans/modules/websvc/saas/codegen/java/resources/WrapperResource.template">
-                <attr name="position" intvalue="0"/>
+                <attr name="position" intvalue="5030"/>
             </file>
             <file name="RefConverter.java" url="/org/netbeans/modules/websvc/saas/codegen/java/resources/RefConverter.template">
-                <attr name="position" intvalue="0"/>
+                <attr name="position" intvalue="5040"/>
             </file>
         </folder>
     </folder>

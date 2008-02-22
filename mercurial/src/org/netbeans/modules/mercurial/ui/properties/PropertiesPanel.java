@@ -106,7 +106,7 @@ public class PropertiesPanel extends javax.swing.JPanel implements PreferenceCha
         jLabel1 = new javax.swing.JLabel();
         propsPanel = new javax.swing.JPanel();
         jScrollPane1 = new javax.swing.JScrollPane();
-        jLabel3 = new javax.swing.JLabel();
+        labelForTable = new javax.swing.JLabel();
 
         jLabel1.setLabelFor(txtAreaValue);
         org.openide.awt.Mnemonics.setLocalizedText(jLabel1, org.openide.util.NbBundle.getMessage(PropertiesPanel.class, "PropertiesPanel.jLabel1.text")); // NOI18N
@@ -125,8 +125,9 @@ public class PropertiesPanel extends javax.swing.JPanel implements PreferenceCha
         txtAreaValue.setColumns(20);
         txtAreaValue.setRows(1);
         jScrollPane1.setViewportView(txtAreaValue);
+        txtAreaValue.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(PropertiesPanel.class, "ACSD_txtAreaValue")); // NOI18N
 
-        org.openide.awt.Mnemonics.setLocalizedText(jLabel3, org.openide.util.NbBundle.getMessage(PropertiesPanel.class, "jLabel3.txt")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(labelForTable, org.openide.util.NbBundle.getMessage(PropertiesPanel.class, "jLabel3.txt")); // NOI18N
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
@@ -136,7 +137,7 @@ public class PropertiesPanel extends javax.swing.JPanel implements PreferenceCha
                 .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
                     .add(org.jdesktop.layout.GroupLayout.LEADING, jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 460, Short.MAX_VALUE)
-                    .add(org.jdesktop.layout.GroupLayout.LEADING, jLabel3)
+                    .add(org.jdesktop.layout.GroupLayout.LEADING, labelForTable)
                     .add(org.jdesktop.layout.GroupLayout.LEADING, jLabel1)
                     .add(org.jdesktop.layout.GroupLayout.LEADING, propsPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addContainerGap())
@@ -145,7 +146,7 @@ public class PropertiesPanel extends javax.swing.JPanel implements PreferenceCha
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
                 .addContainerGap()
-                .add(jLabel3)
+                .add(labelForTable)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(propsPanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .add(22, 22, 22)
@@ -159,8 +160,8 @@ public class PropertiesPanel extends javax.swing.JPanel implements PreferenceCha
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JLabel jLabel1;
-    private javax.swing.JLabel jLabel3;
     private javax.swing.JScrollPane jScrollPane1;
+    public javax.swing.JLabel labelForTable;
     public javax.swing.JPanel propsPanel;
     final javax.swing.JTextArea txtAreaValue = new javax.swing.JTextArea();
     // End of variables declaration//GEN-END:variables

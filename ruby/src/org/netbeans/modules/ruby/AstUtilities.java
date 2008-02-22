@@ -76,7 +76,6 @@ import org.jruby.ast.SClassNode;
 import org.jruby.ast.StrNode;
 import org.jruby.ast.SymbolNode;
 import org.jruby.ast.VCallNode;
-import org.jruby.ast.YieldNode;
 import org.jruby.ast.types.INameNode;
 import org.jruby.lexer.yacc.ISourcePosition;
 import org.jruby.util.ByteList;

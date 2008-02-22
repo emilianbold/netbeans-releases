@@ -107,6 +107,7 @@ class TestCompilationInfo extends CompilationInfo {
     
     public void addEmbeddingResult(String mimeType, ParserResult result) {
         embeddedResults.put(mimeType, result);
+        result.setInfo(this);
     }
 
     @Override

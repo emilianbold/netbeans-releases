@@ -44,30 +44,15 @@ import java.awt.Image;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.List;
-import java.util.List;
-import java.util.Set;
 import java.util.Set;
 
-import org.jruby.ast.ArgumentNode;
-import org.jruby.ast.ClassNode;
-import org.jruby.ast.ClassVarDeclNode;
-import org.jruby.ast.ClassVarNode;
 import org.jruby.ast.ConstDeclNode;
 import org.jruby.ast.ConstNode;
-import org.jruby.ast.InstAsgnNode;
-import org.jruby.ast.InstVarNode;
-import org.jruby.ast.MethodDefNode;
-import org.jruby.ast.ModuleNode;
-import org.jruby.ast.Node;
 import org.jruby.ast.Node;
 import org.jruby.ast.NodeTypes;
-import org.jruby.ast.SClassNode;
 import org.jruby.ast.SymbolNode;
-import org.netbeans.modules.ruby.elements.Element;
+import org.netbeans.fpi.gsf.CompilationInfo;
 import org.netbeans.fpi.gsf.ElementKind;
-import org.netbeans.fpi.gsf.ElementKind;
-import org.netbeans.fpi.gsf.Modifier;
 import org.netbeans.fpi.gsf.Modifier;
 
 
@@ -78,13 +63,15 @@ import org.netbeans.fpi.gsf.Modifier;
  */
 public abstract class AstElement extends RubyElement {
     protected Node node;
+    protected CompilationInfo info;
     protected ArrayList<AstElement> children;
     protected String name;
     private String in;
     protected Set<Modifier> modifiers;
 
-    public AstElement(Node node) {
+    public AstElement(CompilationInfo info, Node node) {
         super();
+        this.info = info;
         this.node = node;
     }
 
@@ -135,32 +122,33 @@ public abstract class AstElement extends RubyElement {
         children.add(child);
     }
 
-    public static AstElement create(Node node) {
+    public static AstElement create(CompilationInfo info, Node node) {
         switch (node.nodeId) {
         case NodeTypes.DEFNNODE:
         case NodeTypes.DEFSNODE:
-            return new AstMethodElement(node);
+            return new AstMethodElement(info, node);
         case NodeTypes.CLASSNODE:
         case NodeTypes.SCLASSNODE:
-            return new AstClassElement(node);
+            return new AstClassElement(info, node);
         case NodeTypes.MODULENODE:
-            return new AstModuleElement(node);
+            return new AstModuleElement(info, node);
         case NodeTypes.CONSTNODE:
-            return new AstVariableElement(node, ((ConstNode)node).getName());
+            return new AstVariableElement(info, node, ((ConstNode)node).getName());
         case NodeTypes.CLASSVARNODE:
         case NodeTypes.CLASSVARDECLNODE:
         case NodeTypes.INSTASGNNODE:
         case NodeTypes.INSTVARNODE:
-            return new AstFieldElement(node);
+            return new AstFieldElement(info, node);
         case NodeTypes.CONSTDECLNODE:
-            return new AstConstantElement((ConstDeclNode)node);
+            return new AstConstantElement(info, (ConstDeclNode)node);
         case NodeTypes.SYMBOLNODE:
-            return new AstAttributeElement((SymbolNode)node, null);
+            return new AstAttributeElement(info, (SymbolNode)node, null);
         default:
             return null;
         }
     }
 
+    @Override
     public String toString() {
         String clz = getClass().getName();
 
@@ -171,6 +159,7 @@ public abstract class AstElement extends RubyElement {
         return null;
     }
 
+    @Override
     public String getIn() {
         // TODO - compute signature via AstUtilities
         return in;
@@ -180,11 +169,17 @@ public abstract class AstElement extends RubyElement {
         this.in = in;
     }
 
+    @Override
     public ElementKind getKind() {
         return ElementKind.OTHER;
     }
 
+    @Override
     public Set<Modifier> getModifiers() {
         return Collections.emptySet();
+    }
+
+    public CompilationInfo getInfo() {
+        return info;
     }
 }
