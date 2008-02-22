@@ -22,7 +22,6 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * Contributor(s):
- *
  * The Original Software is NetBeans. The Initial Developer of the Original
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
@@ -39,47 +38,65 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.web.project.parser;
+package org.netbeans.modules.profiler.selector.ui;
 
-import java.io.File;
-import org.netbeans.modules.web.jsps.parserapi.JspParserAPI;
-import org.openide.filesystems.FileObject;
-import java.beans.PropertyChangeListener;
-import org.netbeans.modules.web.api.webmodule.WebModule;
+import org.netbeans.api.progress.ProgressHandle;
+import org.netbeans.api.progress.ProgressHandleFactory;
+import org.openide.util.Cancellable;
+
 
 /**
  *
- * @author Martin Grebac
+ * @author Jaroslav Bachorik
  */
-public class ParserWebModule extends JspParserAPI.WebModule {
+public interface ProgressDisplayer {
+    //~ Inner Interfaces ---------------------------------------------------------------------------------------------------------
 
-    private WebModule module;
-
-    /** Creates a new instance of ParserWebModule */
-    public ParserWebModule(WebModule wm) {
-        module = wm;
+    public static interface ProgressController extends Cancellable {
     }
 
-    /** Returns the document base directory of the web module.
-     * May return null if we are parsing a tag file that is outside a web module
-     * (that will be packaged into a tag library).
-     */
-    public FileObject getDocumentBase() {
-        return module.getDocumentBase();
-    }
+    //~ Static fields/initializers -----------------------------------------------------------------------------------------------
 
-    /** Returns InputStream for the file open in editor or null
-     * if the file is not open.
-     */
-    public java.io.InputStream getEditorInputStream (FileObject fo) {
-        return null;
-    }
+    public static final ProgressDisplayer DEFAULT = new ProgressDisplayer() {
+        ProgressHandle ph = null;
 
-    public void addPropertyChangeListener(PropertyChangeListener l) {}
+        public synchronized void showProgress(String message) {
+            ph = ProgressHandleFactory.createHandle(message);
+            ph.start();
+        }
 
-    public void removePropertyChangeListener(PropertyChangeListener l) {}
+        public synchronized void showProgress(String message, ProgressController controller) {
+            ph = ProgressHandleFactory.createHandle(message, controller);
+            ph.start();
+        }
 
-    public File[] getExtraClasspathEntries() {
-        return null;
-    }
+        public synchronized void showProgress(String caption, String message, ProgressController controller) {
+            ph = ProgressHandleFactory.createHandle(message, controller);
+            ph.start();
+        }
+
+        public synchronized boolean isOpened() {
+            return ph != null;
+        }
+
+        public synchronized void close() {
+            if (ph != null) {
+                ph.finish();
+                ph = null;
+            }
+        }
+    };
+
+
+    //~ Methods ------------------------------------------------------------------------------------------------------------------
+
+    public boolean isOpened();
+
+    public void close();
+
+    public void showProgress(String message);
+
+    public void showProgress(String message, ProgressController controller);
+
+    public void showProgress(String caption, String message, ProgressController controller);
 }
