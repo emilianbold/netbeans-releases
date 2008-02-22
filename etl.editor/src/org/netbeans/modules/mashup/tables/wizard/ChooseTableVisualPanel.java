@@ -112,8 +112,10 @@ public final class ChooseTableVisualPanel extends JPanel {
         setMinimumSize(new java.awt.Dimension(100, 100));
         setPreferredSize(new java.awt.Dimension(400, 200));
         String nbBundle30 = mLoc.t("PRSR001: Choose a Table");
+        jLabel1.getAccessibleContext().setAccessibleName(Localizer.parse(nbBundle30));
         jLabel1.setDisplayedMnemonic(Localizer.parse(nbBundle30).charAt(0));
         String nbBundle31 = mLoc.t("PRSR001: Preview");
+        preview.getAccessibleContext().setAccessibleName(Localizer.parse(nbBundle31));
         preview.setMnemonic(Localizer.parse(nbBundle31).charAt(0));
         preview.addActionListener(new java.awt.event.ActionListener() {
 

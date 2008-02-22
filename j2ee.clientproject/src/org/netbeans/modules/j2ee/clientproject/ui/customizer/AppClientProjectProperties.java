@@ -707,11 +707,30 @@ public class AppClientProjectProperties {
         if(!Boolean.parseBoolean(projectProps.getProperty(J2EE_PLATFORM_SHARED))) {        
             String classpath = Utils.toClasspathString(j2eePlatform.getClasspathEntries());
             privateProps.setProperty(J2EE_PLATFORM_CLASSPATH, classpath);
+            
+            // update j2ee.platform.wsimport.classpath
+            if (j2eePlatform.isToolSupported(J2eePlatform.TOOL_WSIMPORT)) {
+                File[] wsClasspath = j2eePlatform.getToolClasspathEntries(J2eePlatform.TOOL_WSIMPORT);
+                privateProps.setProperty(WebServicesClientConstants.J2EE_PLATFORM_WSIMPORT_CLASSPATH, 
+                        Utils.toClasspathString(wsClasspath));
+            } else {
+                privateProps.remove(WebServicesClientConstants.J2EE_PLATFORM_WSIMPORT_CLASSPATH);
+            }      
+            // update j2ee.platform.wscompile.classpath
+            if (j2eePlatform.isToolSupported(J2eePlatform.TOOL_WSCOMPILE)) {
+                File[] wsClasspath = j2eePlatform.getToolClasspathEntries(J2eePlatform.TOOL_WSCOMPILE);
+                privateProps.setProperty(WebServicesClientConstants.J2EE_PLATFORM_WSCOMPILE_CLASSPATH, 
+                        Utils.toClasspathString(wsClasspath));
+            } else {
+                privateProps.remove(WebServicesClientConstants.J2EE_PLATFORM_WSCOMPILE_CLASSPATH);
+            }            
         }
 
+        // XXX this seems to be used in runtime only so, not part of sharable server        
         // set j2ee.appclient environment
         File[] accrt = j2eePlatform.getToolClasspathEntries(J2eePlatform.TOOL_APP_CLIENT_RUNTIME);
         privateProps.setProperty(APPCLIENT_TOOL_RUNTIME, Utils.toClasspathString(accrt));
+        
         String jvmOpts = j2eePlatform.getToolProperty(J2eePlatform.TOOL_APP_CLIENT_RUNTIME, J2eePlatform.TOOL_PROP_JVM_OPTS);
         if (jvmOpts != null) {
             privateProps.setProperty(APPCLIENT_TOOL_JVMOPTS, jvmOpts);
@@ -736,22 +755,6 @@ public class AppClientProjectProperties {
                 projectProps.remove(APPCLIENT_MAINCLASS_ARGS);
             }
             projectProps.put(CLIENT_NAME, mainClassArgs);
-        }
-        // update j2ee.platform.wsimport.classpath
-        if (j2eePlatform.isToolSupported(J2eePlatform.TOOL_WSIMPORT)) {
-            File[] wsClasspath = j2eePlatform.getToolClasspathEntries(J2eePlatform.TOOL_WSIMPORT);
-            privateProps.setProperty(WebServicesClientConstants.J2EE_PLATFORM_WSIMPORT_CLASSPATH, 
-                    Utils.toClasspathString(wsClasspath));
-        } else {
-            privateProps.remove(WebServicesClientConstants.J2EE_PLATFORM_WSIMPORT_CLASSPATH);
-        }      
-        // update j2ee.platform.wscompile.classpath
-        if (j2eePlatform.isToolSupported(J2eePlatform.TOOL_WSCOMPILE)) {
-            File[] wsClasspath = j2eePlatform.getToolClasspathEntries(J2eePlatform.TOOL_WSCOMPILE);
-            privateProps.setProperty(WebServicesClientConstants.J2EE_PLATFORM_WSCOMPILE_CLASSPATH, 
-                    Utils.toClasspathString(wsClasspath));
-        } else {
-            privateProps.remove(WebServicesClientConstants.J2EE_PLATFORM_WSCOMPILE_CLASSPATH);
         }
         
         // update j2ee.server.type

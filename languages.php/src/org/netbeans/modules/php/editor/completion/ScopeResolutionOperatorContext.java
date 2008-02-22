@@ -44,6 +44,7 @@ package org.netbeans.modules.php.editor.completion;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import org.netbeans.fpi.gsf.CompletionProposal;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.gsf.CompletionProposal;

@@ -82,12 +82,6 @@ public class JaxRsServletCodeGenerator extends JaxRsCodeGenerator {
 
         return new HashSet<FileObject>(Collections.EMPTY_LIST);
     }
-    
-
-    @Override
-    protected void preGenerate() {
-        JavaSourceHelper.createJavaSource(REST_CONNECTION_TEMPLATE, destDir, bean.getPackageName(), REST_CONNECTION);
-    }
 
     /**
      *  Return target and generated file objects
@@ -139,7 +133,7 @@ public class JaxRsServletCodeGenerator extends JaxRsCodeGenerator {
         methodBody += "             RestConnection cl = new RestConnection(url, params);\n";
         methodBody += "             String result = cl.get();\n";
         methodBody += "        } catch (java.io.IOException ex) {\n";
-        methodBody += "             throw new WebApplicationException(ex);\n";
+        methodBody += "             ex.printStackTrace();\n";
         methodBody += "        }\n }";
        
         return methodBody;
@@ -147,6 +141,6 @@ public class JaxRsServletCodeGenerator extends JaxRsCodeGenerator {
     
     @Override
     public boolean showParams() {
-        return wrapperResourceFile != null;
+        return getWrapperResourceFile() != null;
     }
 }

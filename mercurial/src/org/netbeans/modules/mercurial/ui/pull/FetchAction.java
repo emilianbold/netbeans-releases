@@ -43,6 +43,7 @@ package org.netbeans.modules.mercurial.ui.pull;
 import org.netbeans.modules.mercurial.ui.view.*;
 import org.netbeans.modules.versioning.spi.VCSContext;
 import org.netbeans.modules.mercurial.Mercurial;
+import org.netbeans.modules.mercurial.OutputLogger;
 import org.netbeans.modules.mercurial.HgException;
 import org.netbeans.modules.mercurial.util.HgCommand;
 import org.netbeans.modules.mercurial.util.HgUtils;
@@ -87,31 +88,31 @@ public class FetchAction extends ContextAction {
         
         RequestProcessor rp = Mercurial.getInstance().getRequestProcessor(root);
         HgProgressSupport support = new HgProgressSupport() {
-            public void perform() { performFetch(root); } };
+            public void perform() { performFetch(root, this.getLogger()); } };
 
         support.start(rp, root.getAbsolutePath(), org.openide.util.NbBundle.getMessage(FetchAction.class, "MSG_FETCH_PROGRESS")); // NOI18N
     }
 
-    static void performFetch(File root) {
+    static void performFetch(File root, OutputLogger logger) {
         try {
-            HgUtils.outputMercurialTabInRed(NbBundle.getMessage(FetchAction.class, "MSG_FETCH_TITLE")); // NOI18N
-            HgUtils.outputMercurialTabInRed(NbBundle.getMessage(FetchAction.class, "MSG_FETCH_TITLE_SEP")); // NOI18N
+            logger.outputInRed(NbBundle.getMessage(FetchAction.class, "MSG_FETCH_TITLE")); // NOI18N
+            logger.outputInRed(NbBundle.getMessage(FetchAction.class, "MSG_FETCH_TITLE_SEP")); // NOI18N
             
-            HgUtils.outputMercurialTabInRed(NbBundle.getMessage(FetchAction.class, 
+            logger.outputInRed(NbBundle.getMessage(FetchAction.class, 
                     "MSG_FETCH_LAUNCH_INFO", root.getAbsolutePath())); // NOI18N
             
             List<String> list;
-            list = HgCommand.doFetch(root);
+            list = HgCommand.doFetch(root, logger);
             
             if (list != null && !list.isEmpty()) {
-                HgUtils.outputMercurialTab(HgUtils.replaceHttpPassword(list));
+                logger.output(HgUtils.replaceHttpPassword(list));
             }
         } catch (HgException ex) {
             NotifyDescriptor.Exception e = new NotifyDescriptor.Exception(ex);
             DialogDisplayer.getDefault().notifyLater(e);
         }finally{
-            HgUtils.outputMercurialTabInRed(NbBundle.getMessage(FetchAction.class, "MSG_FETCH_DONE")); // NOI18N
-            HgUtils.outputMercurialTab(""); // NOI18N
+            logger.outputInRed(NbBundle.getMessage(FetchAction.class, "MSG_FETCH_DONE")); // NOI18N
+            logger.output(""); // NOI18N
         }
     }
 
