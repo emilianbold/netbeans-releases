@@ -40,9 +40,8 @@
  */
 package org.netbeans.modules.websvc.saas.codegen.java;
 
-import org.netbeans.modules.websvc.saas.model.WsdlSaasMethod;
+import org.netbeans.modules.websvc.saas.model.CustomSaasMethod;
 import java.io.IOException;
-import java.util.Collection;
 import javax.swing.text.JTextComponent;
 import org.openide.filesystems.FileObject;
 
@@ -51,12 +50,11 @@ import org.openide.filesystems.FileObject;
  *
  * @author nam
  */
-public class JaxWsResourceClassCodeGenerator extends JaxWsCodeGenerator {
+public class CustomResourceClassCodeGenerator extends CustomCodeGenerator {
     
-    public JaxWsResourceClassCodeGenerator(JTextComponent targetComponent, 
-            FileObject targetFile, WsdlSaasMethod m) throws IOException {
+    public CustomResourceClassCodeGenerator(JTextComponent targetComponent, 
+            FileObject targetFile, CustomSaasMethod m) throws IOException {
         super(targetComponent, targetFile, m);
     }
-
 
 }

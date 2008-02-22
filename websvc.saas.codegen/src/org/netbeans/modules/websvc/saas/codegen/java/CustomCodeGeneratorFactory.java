@@ -40,23 +40,39 @@
  */
 package org.netbeans.modules.websvc.saas.codegen.java;
 
-import org.netbeans.modules.websvc.saas.model.WsdlSaasMethod;
 import java.io.IOException;
-import java.util.Collection;
 import javax.swing.text.JTextComponent;
+import org.netbeans.modules.websvc.saas.codegen.java.support.Util;
+import org.netbeans.modules.websvc.saas.model.CustomSaasMethod;
 import org.openide.filesystems.FileObject;
+import org.openide.loaders.DataObject;
+import org.openide.loaders.DataObjectNotFoundException;
 
 /**
- * Code generator for REST services wrapping WSDL-based web service.
+ * Code generator factory for REST services wrapping WADL-based web service.
  *
  * @author nam
  */
-public class JaxWsResourceClassCodeGenerator extends JaxWsCodeGenerator {
-    
-    public JaxWsResourceClassCodeGenerator(JTextComponent targetComponent, 
-            FileObject targetFile, WsdlSaasMethod m) throws IOException {
-        super(targetComponent, targetFile, m);
+public class CustomCodeGeneratorFactory {
+
+    public static CustomCodeGenerator create(JTextComponent targetComponent, 
+            FileObject targetFO, CustomSaasMethod method) throws IOException {
+        CustomCodeGenerator codegen = null;
+        try {
+            DataObject d = DataObject.find(targetFO);
+            if(Util.isRestJavaFile(d)) {
+                codegen = new CustomResourceClassCodeGenerator(
+                                targetComponent, targetFO, method);
+            } else if(Util.isServlet(d)) {
+                codegen = new CustomServletCodeGenerator(
+                                targetComponent, targetFO, method);
+            } else {
+                codegen = new CustomJavaClientCodeGenerator(
+                                targetComponent, targetFO, method);
+            }
+        } catch (DataObjectNotFoundException ex) {
+            throw new IOException(ex.getMessage());
+        }
+        return codegen;
     }
-
-
 }
