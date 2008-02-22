@@ -49,6 +49,7 @@ import java.net.URL;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -70,6 +71,7 @@ import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.java.queries.UnitTestForSourceQuery;
 import org.netbeans.api.java.source.CompilationController;
+import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.ui.ScanDialog;
 import org.netbeans.api.project.ProjectInformation;
@@ -504,8 +506,8 @@ class J2SEActionProvider implements ActionProvider {
                     clazz = clazz.substring(0, clazz.length() - 5);
                 }
                 clazz = clazz.replace('/','.');
-
-                if (!J2SEProjectUtil.hasMainMethod (file)) {
+                final Collection<ElementHandle<TypeElement>> mainClasses = J2SEProjectUtil.getMainMethods (file);
+                if (mainClasses.isEmpty()) {
                     if (AppletSupport.isApplet(file)) {
 
                         EditableProperties ep = updateHelper.getProperties (AntProjectHelper.PROJECT_PROPERTIES_PATH);
@@ -550,6 +552,17 @@ class J2SEActionProvider implements ActionProvider {
                         return null;
                     }
                 } else {
+                    if (mainClasses.size() == 1) {
+                        //Just one main class
+                        clazz = mainClasses.iterator().next().getBinaryName();
+                    }
+                    else {
+                        //Several main classes, let the user choose
+                        clazz = showMainClassWarning(file, mainClasses);
+                        if (clazz == null) {
+                            return null;
+                        }
+                    }
                     if (command.equals (COMMAND_RUN_SINGLE)) {
                         p.setProperty("run.class", clazz); // NOI18N
                         String[] targets = targetsFromConfig.get(command);
@@ -936,6 +949,41 @@ class J2SEActionProvider implements ActionProvider {
         dlg.dispose();
 
         return canceled;
+    }
+    
+    private String showMainClassWarning (final FileObject file, final Collection<ElementHandle<TypeElement>> mainClasses) {
+        assert mainClasses != null;
+        String mainClass = null;
+        final JButton okButton = new JButton (NbBundle.getMessage (MainClassWarning.class, "LBL_MainClassWarning_ChooseMainClass_OK")); // NOI18N
+        okButton.getAccessibleContext().setAccessibleDescription (NbBundle.getMessage (MainClassWarning.class, "AD_MainClassWarning_ChooseMainClass_OK"));
+        
+        final MainClassWarning panel = new MainClassWarning (NbBundle.getMessage(MainClassWarning.class, "CTL_FileMultipleMain", file.getNameExt()),mainClasses);
+        Object[] options = new Object[] {
+            okButton,
+            DialogDescriptor.CANCEL_OPTION
+        };
+
+        panel.addChangeListener (new ChangeListener () {
+           public void stateChanged (ChangeEvent e) {
+               if (e.getSource () instanceof MouseEvent && MouseUtils.isDoubleClick (((MouseEvent)e.getSource ()))) {
+                   // click button and the finish dialog with selected class
+                   okButton.doClick ();
+               } else {
+                   okButton.setEnabled (panel.getSelectedMainClass () != null);
+               }
+           }
+        });
+        DialogDescriptor desc = new DialogDescriptor (panel,
+            NbBundle.getMessage (MainClassWarning.class, "CTL_FileMainClass_Title"), // NOI18N
+            true, options, options[0], DialogDescriptor.BOTTOM_ALIGN, null, null);
+        desc.setMessageType (DialogDescriptor.INFORMATION_MESSAGE);
+        Dialog dlg = DialogDisplayer.getDefault ().createDialog (desc);
+        dlg.setVisible (true);
+        if (desc.getValue() == options[0]) {
+            mainClass = panel.getSelectedMainClass ();
+        }
+        dlg.dispose();
+        return mainClass;
     }
 
     private void showPlatformWarning () {
