@@ -86,15 +86,16 @@ public class HibernateUtil {
         for(HibernateConfiguration configuration : configurations) {
             java.sql.Connection jdbcConnection = getJDBCConnection(configuration); 
             java.sql.DatabaseMetaData dbMetadata = jdbcConnection.getMetaData();
+            java.sql.ResultSet rsSchema = dbMetadata.getSchemas();
+            while(rsSchema.next()) {
             java.sql.ResultSet rs = dbMetadata.getTables(null,
-                    //getDatabaseSchema(configuration),
-                    "APP",
+                    rsSchema.getString("TABLE_SCHEM"),
                     null, new String[]{"TABLE"}); //NOI18N
             while(rs.next()) {
                 allTables.add(rs.getString("TABLE_NAME")); // COLUMN 3 stores the table names.
             }
+            }
         }
-        System.out.println("all tables " + allTables);
         return allTables;
     }
     
@@ -221,7 +222,7 @@ public class HibernateUtil {
 
             JDBCDriver[] drivers = JDBCDriverManager.getDefault().getDrivers(driverClassName);
 
-            final DatabaseConnection dbConnection = DatabaseConnection.create(drivers[0], driverURL, username, "APP", password, true);
+            final DatabaseConnection dbConnection = DatabaseConnection.create(drivers[0], driverURL, username, null, password, true);
             ConnectionManager.getDefault().addConnection(dbConnection);
             if(dbConnection.getJDBCConnection() == null ) {
                 return (java.sql.Connection)Mutex.EVENT.readAccess(new Mutex.Action/*<Void>*/() {
