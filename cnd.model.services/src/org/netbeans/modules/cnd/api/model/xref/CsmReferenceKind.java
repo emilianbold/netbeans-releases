@@ -52,8 +52,8 @@ public enum CsmReferenceKind {
     AFTER_DEREFERENCE_USAGE,
     UNKNOWN;
 
-    public static final EnumSet ANY_USAGE;
-    public static final EnumSet ALL;
+    public static final EnumSet<CsmReferenceKind> ANY_USAGE;
+    public static final EnumSet<CsmReferenceKind> ALL;
     static {
         ANY_USAGE = EnumSet.range(DIRECT_USAGE, AFTER_DEREFERENCE_USAGE);
         ALL = EnumSet.range(DEFINITION, AFTER_DEREFERENCE_USAGE);
