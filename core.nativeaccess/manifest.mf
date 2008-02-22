@@ -1,0 +1,7 @@
+Manifest-Version: 1.0
+OpenIDE-Module: org.netbeans.core.nativeaccess/1
+OpenIDE-Module-Implementation-Version: 1
+OpenIDE-Module-Localizing-Bundle: org/netbeans/core/nativeaccess/Bundle.properties
+OpenIDE-Module-Provides: org.netbeans.core.windows.nativeaccess.NativeWindowSystem
+OpenIDE-Module-Specification-Version: 1.0
+
