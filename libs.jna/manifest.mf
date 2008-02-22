@@ -1,5 +1,4 @@
 Manifest-Version: 1.0
-OpenIDE-Module: org.netbeans.jna/1
+OpenIDE-Module: org.netbeans.libs.jna/1
 OpenIDE-Module-Localizing-Bundle: org/netbeans/libs/jna/Bundle.properties
-OpenIDE-Module-Implementation-Version: 1
 AutoUpdate-Essential-Module: true
