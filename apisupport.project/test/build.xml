@@ -44,7 +44,7 @@ made subject to such option by the copyright holder.
     <property name="xtest.module" value="apisupport.project"/>
     <import file="../../nbbuild/templates/xtest.xml"/>
     <property name="xtest.testtype" value="unit"/>
-    <property name="xtest.attribs" value="stable-cvs"/>
+    <property name="xtest.attribs" value="stable-sources"/>
     <property name="xtest.ide.use.classloader" value="org.netbeans.modules.apisupport.project"/>
 
     <target name="pre-apisupport-test" depends="compile-nb-org-sources">
