@@ -42,11 +42,11 @@
 package org.netbeans.modules.web.jspparser;
 
 import java.io.File;
+import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Enumeration;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Set;
@@ -60,13 +60,15 @@ import javax.servlet.Servlet;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.servlet.jsp.tagext.TagLibraryInfo;
-import javax.swing.text.EditorKit;
-import javax.swing.text.StyledDocument;
+import org.netbeans.modules.web.api.webmodule.WebModule;
+import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
+import org.openide.loaders.DataObject;
+import org.openide.loaders.DataObjectNotFoundException;
+import org.openide.text.CloneableEditorSupport;
 import org.openide.util.NbBundle;
-import org.netbeans.modules.web.jsps.parserapi.JspParserAPI;
 
 /**
  * Simple <code>ServletContext</code> implementation without
@@ -97,7 +99,7 @@ public class ParserServletContext implements ServletContext {
     protected FileObject wmRoot;
     
     
-    protected JspParserAPI.WebModule myWm;
+    protected WebModule myWm;
     
     /** If true, takes the data from the editor; otherwise
      * from the disk.
@@ -115,7 +117,7 @@ public class ParserServletContext implements ServletContext {
      * @param wm JspParserAPI.WebModule in which we are parsing the file - this is used to
      *    find the editor for objects which are open in the editor
      */
-    public ParserServletContext(FileObject wmRoot, JspParserAPI.WebModule wm, boolean useEditor) {
+    public ParserServletContext(FileObject wmRoot, WebModule wm, boolean useEditor) {
         LOGGER.log(Level.FINE, "ParserServletContext created");
         myAttributes = new Hashtable<String, Object>();
         this.wmRoot = wmRoot;
@@ -322,7 +324,7 @@ public class ParserServletContext implements ServletContext {
             FileObject fo = getResourceAsObject(path);
             if ((fo != null) && (useEditorVersion)) {
                 // reading from the editor
-                InputStream result = myWm.getEditorInputStream(fo);
+                InputStream result = getEditorInputStream(fo);
                 if (result != null) {
                     return result;
                 }
@@ -344,6 +346,29 @@ public class ParserServletContext implements ServletContext {
         
     }
     
+    // copied from web.core because it's the only place with this method implemented
+    // (can be easily improved using customization interface if needed)
+    /**
+     * Returns InputStream for the file open in editor or null
+     * if the file is not open.
+     */
+    private InputStream getEditorInputStream(FileObject fo) {
+        InputStream result = null;
+        EditorCookie ec = null;
+        try {
+            ec = DataObject.find(fo).getCookie(EditorCookie.class);
+        } catch (DataObjectNotFoundException e) {
+            Logger.getLogger("global").log(Level.INFO, null, e);
+        }
+        if (ec != null && (ec instanceof CloneableEditorSupport)) {
+            try {
+                result = ((CloneableEditorSupport) ec).getInputStream();
+            } catch (IOException e) {
+                Logger.getLogger("global").log(Level.INFO, null, e);
+            }
+        }
+        return result;
+    }
     
     /**
      * Return the set of resource paths for the "directory" at the

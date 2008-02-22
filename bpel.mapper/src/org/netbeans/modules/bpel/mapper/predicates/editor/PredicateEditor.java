@@ -100,6 +100,7 @@ public class PredicateEditor extends EditorLifeCycleAdapter
                 }
             }
         });
+        SoaUiUtil.activateInlineMnemonics(this);
     }
 
     @Override
@@ -261,12 +262,12 @@ public class PredicateEditor extends EditorLifeCycleAdapter
             .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
                 .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
-                    .add(org.jdesktop.layout.GroupLayout.LEADING, pnlMapper, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 365, Short.MAX_VALUE)
-                    .add(pnlMenu, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 365, Short.MAX_VALUE)
+                    .add(org.jdesktop.layout.GroupLayout.LEADING, pnlMapper, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 976, Short.MAX_VALUE)
+                    .add(pnlMenu, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 976, Short.MAX_VALUE)
                     .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createSequentialGroup()
                         .add(lblContext)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(fldContext, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 214, Short.MAX_VALUE)
+                        .add(fldContext, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 808, Short.MAX_VALUE)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(btnGoToContext)))
                 .addContainerGap())
@@ -276,13 +277,21 @@ public class PredicateEditor extends EditorLifeCycleAdapter
             .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
                 .add(pnlMenu, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(pnlMapper, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 167, Short.MAX_VALUE)
+                .add(pnlMapper, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 551, Short.MAX_VALUE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(lblContext)
                     .add(btnGoToContext)
                     .add(fldContext, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
         );
+
+        fldContext.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getBundle(PredicateEditor.class).getString("ACSN_TXTFLD_SchemaContext")); // NOI18N
+        fldContext.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getBundle(PredicateEditor.class).getString("ACSD_TXTFLD_SchemaContext")); // NOI18N
+        btnGoToContext.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getBundle(PredicateEditor.class).getString("ACSN_BTN_SetFocus")); // NOI18N
+        btnGoToContext.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getBundle(PredicateEditor.class).getString("ACSD_BTN_SetFocus")); // NOI18N
+
+        getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getBundle(PredicateEditor.class).getString("ACSN_DLG_PredicateEditor")); // NOI18N
+        getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getBundle(PredicateEditor.class).getString("ACSD_DLG_PredicateEditor")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
     
     
