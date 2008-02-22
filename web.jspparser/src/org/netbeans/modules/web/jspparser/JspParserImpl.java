@@ -55,6 +55,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.jsps.parserapi.JspParserAPI;
 
 import org.openide.filesystems.FileObject;
@@ -102,7 +103,6 @@ public class JspParserImpl implements JspParserAPI {
                 }
                 ExtClassLoader urlCL = new ExtClassLoader(urls, JspParserImpl.class.getClassLoader());
                 Class<?> cl = urlCL.loadClass("org.netbeans.modules.web.jspparser_ext.WebAppParseSupport");
-                
                 webAppParserImplConstructor = cl.getDeclaredConstructor(new Class[] {WebModule.class});
             } catch (NoSuchMethodException e) {
                 Logger.getLogger("global").log(Level.INFO, null, e);
