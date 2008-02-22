@@ -236,6 +236,7 @@ public class SQLStatementPanel extends JPanel implements IMessageView, ETLOutput
 
         String nbBundle7 = mLoc.t("PRSR001: Database Type:");
         JLabel dbTypeLabel = new JLabel(Localizer.parse(nbBundle7));
+        dbTypeLabel.getAccessibleContext().setAccessibleName(Localizer.parse(nbBundle7));
         dbTypeLabel.setBorder(BorderFactory.createEmptyBorder(0, 5, 0, 8));
         toolbar.add(dbTypeLabel);
 

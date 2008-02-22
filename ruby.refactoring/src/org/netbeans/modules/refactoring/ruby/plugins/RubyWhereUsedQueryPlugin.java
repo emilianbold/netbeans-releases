@@ -416,7 +416,7 @@ public class RubyWhereUsedQueryPlugin extends RubyRefactoringPlugin {
                 return;
             }
             
-            Element element = AstElement.create(root);
+            Element element = AstElement.create(compiler, root);
             Node node = searchCtx.getNode();
             RubyElementCtx fileCtx = new RubyElementCtx(root, node, element, compiler.getFileObject(), compiler);
 

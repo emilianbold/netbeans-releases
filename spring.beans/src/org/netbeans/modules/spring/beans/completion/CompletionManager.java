@@ -82,6 +82,7 @@ import org.netbeans.modules.spring.beans.editor.ContextUtilities;
 import org.netbeans.modules.spring.beans.editor.SpringXMLConfigEditorUtils;
 import org.netbeans.modules.spring.beans.editor.SpringXMLConfigEditorUtils.Public;
 import org.netbeans.modules.spring.beans.editor.SpringXMLConfigEditorUtils.Static;
+import org.netbeans.modules.spring.beans.editor.BeanClassFinder;
 import org.netbeans.modules.spring.beans.utils.StringUtils;
 import org.netbeans.spi.editor.completion.CompletionResultSet;
 import org.openide.filesystems.FileObject;
@@ -308,7 +309,7 @@ public final class CompletionManager {
                 js.runUserActionTask(new Task<CompilationController>() {
 
                     public void run(CompilationController cc) throws Exception {
-                        String className = SpringXMLConfigEditorUtils.getBeanClassName(context.getTag());
+                        String className = new BeanClassFinder(context.getTag(), context.getDocument()).findImplementationClass();
                         if (className == null) {
                             return;
                         }
@@ -793,7 +794,8 @@ public final class CompletionManager {
 
         @Override
         protected String getTypeName(CompletionContext context) {
-            return SpringXMLConfigEditorUtils.getBeanClassName(context.getTag());
+            Node tag = context.getTag();
+            return new BeanClassFinder(tag, context.getDocument()).findImplementationClass();
         }
     }
     
@@ -819,11 +821,16 @@ public final class CompletionManager {
         @Override
         protected String getTypeName(CompletionContext context) {
             Node tag = context.getTag();
-            final String[] className = {SpringXMLConfigEditorUtils.getBeanClassName(tag)};
+            SpringBean mergedBean = SpringXMLConfigEditorUtils.getMergedBean(tag, context.getDocument());
+            if(mergedBean == null) {
+                return null;
+            }
+            
+            final String[] className = {mergedBean.getClassName()};
 
             // if factory-bean has been defined, resolve it and get it's class name
-            if (SpringXMLConfigEditorUtils.hasAttribute(tag, FACTORY_BEAN_ATTRIB)) {
-                final String factoryBeanName = SpringXMLConfigEditorUtils.getAttribute(tag, FACTORY_BEAN_ATTRIB);
+            if (mergedBean.getFactoryBean() != null) {
+                final String factoryBeanName = mergedBean.getFactoryBean();
                 FileObject fo = NbEditorUtilities.getFileObject(context.getDocument());
                 if (fo == null) {
                     return null;
@@ -886,7 +893,9 @@ public final class CompletionManager {
                 js.runUserActionTask(new Task<CompilationController>() {
 
                     public void run(CompilationController cc) throws Exception {
-                        String className = SpringXMLConfigEditorUtils.getBeanClassName(context.getTag());
+                        String className = new BeanClassFinder(
+                                SpringXMLConfigEditorUtils.getBean(context.getTag()), 
+                                context.getDocument()).findImplementationClass();
                         if (className == null) {
                             return;
                         }

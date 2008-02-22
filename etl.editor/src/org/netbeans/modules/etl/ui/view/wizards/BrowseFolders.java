@@ -147,6 +147,7 @@ public class BrowseFolders extends javax.swing.JPanel implements ExplorerManager
         
         String nbBundle6 = mLoc.t("PRSR001: Folders:");
         jLabel1.setText(Localizer.parse(nbBundle6));
+        jLabel1.getAccessibleContext().setAccessibleName(Localizer.parse(nbBundle6));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
@@ -217,6 +218,7 @@ public class BrowseFolders extends javax.swing.JPanel implements ExplorerManager
 
         dialogDescriptor.setClosingOptions( new Object[] { options[ 0 ], options[ 1 ] } );
         Dialog dialog = DialogDisplayer.getDefault().createDialog( dialogDescriptor );
+        dialog.getAccessibleContext().setAccessibleDescription("This is the dialog which enables user to browse folders");
         dialog.setVisible(true);
 
         return optionsListener.getResult();
