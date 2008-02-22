@@ -46,6 +46,7 @@ import org.netbeans.modules.cnd.api.model.CsmDeclaration.Kind;
 import org.netbeans.modules.cnd.api.model.CsmOffsetable.Position;
 import org.netbeans.modules.cnd.api.model.*;
 import org.netbeans.modules.cnd.api.model.CsmType;
+import org.netbeans.modules.cnd.api.model.deep.CsmCompoundStatement;
 import org.netbeans.modules.cnd.api.model.deep.CsmExpression;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 
@@ -89,7 +90,7 @@ public abstract class Instantiation {
         return type;
     }
     
-    public static class Class extends Instantiation implements CsmClass {
+    private static class Class extends Instantiation implements CsmClass {
         public Class(CsmTemplate clazz, CsmType type) {
             super(clazz, type);
         }
@@ -190,7 +191,7 @@ public abstract class Instantiation {
         }
     }
     
-    public static class Function extends Instantiation implements CsmFunction {
+    private static class Function extends Instantiation implements CsmFunction {
         
         public Function(CsmTemplate template, CsmType instantiation) {
             super(template, instantiation);
@@ -282,7 +283,7 @@ public abstract class Instantiation {
         }
     }
 
-    public static class Field implements CsmField {
+    private static class Field implements CsmField {
         private final CsmField fieldRef;
         private final CsmType type;
 
@@ -377,7 +378,7 @@ public abstract class Instantiation {
         }
     }
     
-    public static class Method implements CsmMethod {
+    private static class Method implements CsmMethod, CsmFunctionDefinition {
         private final CsmMethod methodRef;
         private final Class clazzRef;
         private final CsmType retType;
@@ -501,9 +502,17 @@ public abstract class Instantiation {
         public boolean isAbstract() {
             return methodRef.isAbstract();
         }
+
+        public CsmCompoundStatement getBody() {
+            return ((CsmFunctionDefinition)methodRef).getBody();
+        }
+
+        public CsmFunction getDeclaration() {
+            return ((CsmFunctionDefinition)methodRef).getDeclaration();
+        }
     }
     
-    public static class Parameter implements CsmParameter {
+    private static class Parameter implements CsmParameter {
         private final CsmParameter parameterRef;
         private final CsmType type;
 
@@ -590,7 +599,7 @@ public abstract class Instantiation {
         }
     }
     
-    public static class Type implements CsmType {
+    private static class Type implements CsmType {
         private final CsmType template;
         private final CsmType instantiation;
 
