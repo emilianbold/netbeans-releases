@@ -107,14 +107,14 @@ public abstract class CsmReferenceRepository {
     //public abstract Map<CsmObject, Collection<CsmReference>> getReferences(CsmObject[] targets, CsmProject project, EnumSet<CsmReferenceKind> kinds);
 
     /**
-     * look for references of target object in project
-     * @param target target object to find references
+     * look for references of target objects in file
+     * @param targets target objects to find references
      * @param file file as scope where to search
-     * @param kinds flag indicating wether or not to include 
-     *      self declaration object in collection
-     * @return references for target object, empty collection if not found
+     * @param kinds kind of references to search
+     * @return references for target objects in file sorted from beginning, 
+     *          empty collection if no references
      */
-    //public abstract Map<CsmObject, Collection<CsmReference>> getReferences(CsmObject[] targets, CsmFile file, EnumSet<CsmReferenceKind> kinds);
+    public abstract Collection<CsmReference> getReferences(CsmObject[] targets, CsmFile file, EnumSet<CsmReferenceKind> kinds);
     
     //
     // Implementation of the default Repository
@@ -135,8 +135,8 @@ public abstract class CsmReferenceRepository {
             return Collections.<CsmReference>emptyList();
         }
 
-        public Map<CsmObject, Collection<CsmReference>> getReferences(CsmObject[] targets, CsmFile file, EnumSet<CsmReferenceKind> kinds) {
-            return Collections.<CsmObject, Collection<CsmReference>>emptyMap();
+        public Collection<CsmReference> getReferences(CsmObject[] targets, CsmFile file, EnumSet<CsmReferenceKind> kinds) {
+            return Collections.<CsmReference>emptyList();
         }
     }    
 }

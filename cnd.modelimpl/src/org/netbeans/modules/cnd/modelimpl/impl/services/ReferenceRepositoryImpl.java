@@ -48,8 +48,10 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.EnumSet;
 import java.util.HashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import org.netbeans.modules.cnd.api.model.CsmFile;
@@ -144,12 +146,23 @@ public class ReferenceRepositoryImpl extends CsmReferenceRepository {
         return out;
     }
     
-    public Map<CsmObject, Collection<CsmReference>> getReferences(CsmObject[] targets, CsmFile file, EnumSet<CsmReferenceKind> kinds) {
-        Map<CsmObject, Collection<CsmReference>> out = new HashMap<CsmObject, Collection<CsmReference>>(targets.length);
-        for (CsmObject target : targets) {
-            out.put(target, getReferences(target, file, kinds));
+    public Collection<CsmReference> getReferences(CsmObject[] targets, CsmFile file, EnumSet<CsmReferenceKind> kinds) {
+        Collection<CsmReference> refs = new LinkedHashSet<CsmReference>(1024);
+        // TODO: optimize performance
+        for (CsmObject target : targets) {            
+            refs.addAll(getReferences(target, file, kinds));
         }
-        return out;
+        if (!refs.isEmpty() && targets.length > 1) {
+            // if only one target, then collection is already sorted
+            List<CsmReference> sortedRefs = new ArrayList<CsmReference>(refs);
+            Collections.sort(sortedRefs, new Comparator<CsmReference>() {
+                public int compare(CsmReference o1, CsmReference o2) {
+                    return o1.getStartOffset() - o2.getStartOffset();
+                }
+            });    
+            refs = sortedRefs;
+        }
+        return refs;
     }
     
     ////////////////////////////////////////////////////////////////////////////
