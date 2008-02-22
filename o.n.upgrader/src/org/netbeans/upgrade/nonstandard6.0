@@ -23,7 +23,7 @@
 # Contributor(s):
 #
 # The Original Software is NetBeans. The Initial Developer of the Original
-# Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+# Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
 # Microsystems, Inc. All Rights Reserved.
 #
 # If you wish your version of this file to be governed by only the CDDL
@@ -37,24 +37,15 @@
 # Version 2 license, then the option applies only if the new code is
 # made subject to such option by the copyright holder.
 
-TXT_LibrariesManager=Library Manager
+# start the line either with # to begin a comment
+# or include to describe a file(s) to be included during copy
+# or exclude to describe a file(s) to be excluded
+# use of regular expressions allowed in file names 
+#
+# the list is iterated from first to last and the last match
+# decides the result
 
-LibraryChooserGUI.add.title=Add Library
-LibraryChooserGUI.add.button=Add Library
-LibraryChooserGUI.add.button.a11y.desc=Add Library
-LibraryChooserGUI.import.title=Import Library
-LibraryChooserGUI.import.button=Import Library
-LibraryChooserGUI.import.button.a11y.desc=Import Library
-LibraryChooserGUI.manage=&Manage Libraries...
-LibraryChooserGUI.accessibleDescription=The library manager allows you to add predefined libraries to the project classpath or to edit library definitions.
-LibraryChooserGUI.librariesLabel=Available &Libraries:
-LibraryChooserGUI.createButton.text=&Create...
-LibraryChooserGUI.importButton.text=&Import...
-LibraryChooserGUI.manageLibrariesButton.text=&Manage Libraries...
-LibrariesCustomizer.createLibrary.title=Create New Library
-LibrariesCustomizer.customizeLibrary.title=Customize Library
-LibraryChooserGUI.create.a11y.name=Create...
-LibraryChooserGUI.create.a11y.desc=Create library
-LibraryChooserGUI.import.a11y.name=Import...
-LibraryChooserGUI.import.a11y.desc=Import Library
-LibraryChooserGUI.AccessibleContext.accessibleName=Library Manager
+#creator
+include complibs/.*
+include jdbc-drivers/.*\.jar
+include context\.xml
