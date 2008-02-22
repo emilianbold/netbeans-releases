@@ -38,8 +38,6 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
-
 package org.netbeans.modules.etl.project.anttasks;
 
 import org.netbeans.modules.masterindex.plugin.TargetDBSchemaGenerator;
@@ -57,17 +55,20 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 import org.apache.tools.ant.Task;
+import net.java.hulp.i18n.Logger;
+import org.netbeans.modules.etl.logger.Localizer;
+import org.netbeans.modules.etl.logger.LogUtil;
 
 /**
  *
  * @author Manish
  */
-public class EViewDesignTime extends Task {
+public class MasterIndexDesignTime extends Task {
 
     private static String USER_DIR = System.getProperty("user.dir");
     private static String fs = System.getProperty("file.separator");
     private static String CONFIG_DIR = USER_DIR + fs + "src" + fs + "com" + fs + "stc" + fs + "eindex" + fs + "config";
-    private static String OBJECTDEF = "objectdef.xml";
+    private static String OBJECTDEF = "object.xml";
     private static String QUERY_FILE_PATH = CONFIG_DIR + fs + "query.txt";
     private static String QNAME_PREFXI = "Enterprise.SystemObject";
     Element docroot = null;
@@ -78,9 +79,11 @@ public class EViewDesignTime extends Task {
     String parentPrimaryKey = null;
     ArrayList childrenForeignKey = new ArrayList();
     ArrayList orderByFields = new ArrayList();
+    private static transient final Logger mLogger = LogUtil.getLogger(MasterIndexDesignTime.class.getName());
+    private static transient final Localizer mLoc = Localizer.get();
 
     /** Creates a new instance of Main */
-    public EViewDesignTime() {
+    public MasterIndexDesignTime() {
     }
 
     private void parseObjectDef() {
@@ -89,11 +92,11 @@ public class EViewDesignTime extends Task {
             DocumentBuilder root = DocumentBuilderFactory.newInstance().newDocumentBuilder();
             docroot = root.parse(CONFIG_DIR + fs + OBJECTDEF).getDocumentElement();
         } catch (SAXException ex) {
-            System.out.println("SAX Exception : " + CONFIG_DIR + fs + OBJECTDEF);
+            mLogger.infoNoloc(mLoc.t("SAX Exception : " + CONFIG_DIR + fs + OBJECTDEF));
         } catch (IOException ex) {
-            System.out.println("Cannot I/O document : " + CONFIG_DIR + fs + OBJECTDEF);
+            mLogger.infoNoloc(mLoc.t("Cannot I/O document : " + CONFIG_DIR + fs + OBJECTDEF));
         } catch (ParserConfigurationException ex) {
-            System.out.println("Cannot Parse document : " + CONFIG_DIR + fs + OBJECTDEF);
+            mLogger.infoNoloc(mLoc.t("Cannot Parse document : " + CONFIG_DIR + fs + OBJECTDEF));
         }
 
         // Parse Relations
@@ -109,7 +112,6 @@ public class EViewDesignTime extends Task {
 
             //Get the qualified names for the fields
             String qualname = getQualifiedName(tag_value);
-            //System.out.println("Qual Name is :: " + qualname);
             //Find Fileds
             NodeList fieldlist = nodes_element.getElementsByTagName("fields");
             for (int j = 0; j < fieldlist.getLength(); j++) {
@@ -117,7 +119,7 @@ public class EViewDesignTime extends Task {
                 this.selectFields.add(qualname + "." + filed_name);
             }
         }
-        //System.out.println("Fields are :: " + this.selectFields.toString());
+    //System.out.println("Fields are :: " + this.selectFields.toString());
     }
 
     private String getQualifiedName(String tag_value) {
@@ -148,7 +150,6 @@ public class EViewDesignTime extends Task {
             Node child = childrenList.item(i);
             children[i] = child.getTextContent();
         }
-        System.out.println("\n");
     }
 
     private void createOrderBy() {
@@ -163,7 +164,6 @@ public class EViewDesignTime extends Task {
 
     private void queryWriter() {
         try {
-            System.out.println("Write Query ...");
             StringBuffer sbuf = new StringBuffer();
             File queryFile = new File(QUERY_FILE_PATH);
             BufferedWriter out = new BufferedWriter(new FileWriter(queryFile));
@@ -191,30 +191,33 @@ public class EViewDesignTime extends Task {
         return objDefn;
     }
 
-    public void execute() {        
+    public void execute() {
+        mLogger.infoNoloc(mLoc.t("eTLeView Design Time - Query Builder [START] ...\n"));
         ChooseLocationDialog dialog = new ChooseLocationDialog(new JFrame(), true);
-        dialog.getAccessibleContext().setAccessibleDescription("This dialog helps user to locate object.xml and database name");
         dialog.setVisible(true);
-        TargetDBSchemaGenerator dbgen = TargetDBSchemaGenerator.getTargetDBSchemaGenerator();
-        objDefn = dialog.getObjectDefinition(); 
-        boolean fileIsValid = dbgen.setEViewConfigFilePath(dialog.getObjectDefinition(),"object.xml");//("C:/temp/eviewconfig", "objectdef.xml");
-        if (fileIsValid) {
-             File file = new File(dialog.getDBLocation());
-            if(!file.exists()){
-                file.mkdirs();
+        if ((dialog.getDBLocation()) != null && (dialog.getDBName()) != null && (dialog.getObjectDefinition()) != null) {
+            TargetDBSchemaGenerator dbgen = TargetDBSchemaGenerator.getTargetDBSchemaGenerator();
+            objDefn = dialog.getObjectDefinition();
+            boolean fileIsValid = dbgen.setEViewConfigFilePath(dialog.getObjectDefinition(), "object.xml");//("C:/temp/eviewconfig", "objectdef.xml");
+            if (fileIsValid) {
+                File file = new File(dialog.getDBLocation());
+                if (!file.exists()) {
+                    file.mkdirs();
+                }
+                dbgen.createTargetDB(dialog.getDBLocation(), dialog.getDBName());//C:\temp\AAADB 
             }
-            dbgen.createTargetDB(dialog.getDBLocation(), dialog.getDBName());//C:\temp\AAADB 
+            System.out.println("\neTLeView Design Time - Query Builder [END].");
+            mLogger.infoNoloc(mLoc.t("\neTLeView Design Time - Query Builder [END]."));
+        }else{
+            mLogger.infoNoloc(mLoc.t("The dialog is cancelled or any one of the fields are empty"));
         }
-        System.out.println("\neTLeView Design Time - Query Builder [END].");
     }
 
     /**
      * @param args the command line arguments
      */
     public static void main(String[] args) {
-        System.out.println("eTLeView Design Time - Query Builder [START] ...\n");
-        EViewDesignTime main = new EViewDesignTime();
+        MasterIndexDesignTime main = new MasterIndexDesignTime();
         main.execute();
     }
-
 }
