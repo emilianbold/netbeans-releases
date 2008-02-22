@@ -41,10 +41,16 @@ package org.netbeans.modules.hibernate.service;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
+import org.hibernate.HibernateException;
+import org.netbeans.api.db.explorer.ConnectionManager;
+import org.netbeans.api.db.explorer.JDBCDriverManager;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.project.libraries.Library;
+import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.modules.hibernate.cfg.model.HibernateConfiguration;
 import org.netbeans.modules.hibernate.cfg.model.SessionFactory;
 import org.netbeans.modules.hibernate.util.HibernateUtil;
+import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
 
 /**
@@ -55,8 +61,6 @@ import org.openide.util.Exceptions;
  * @author Vadiraj Deshpande (Vadiraj.Deshpande@Sun.COM)
  */
 public class HibernateEnvironment {
-    /** private cache of all hibernate configurations for the current project. */
-    private ArrayList<HibernateConfiguration> configurations = new ArrayList<HibernateConfiguration>();
 
     /** Handle to the current project to which this HibernateEnvironment is bound*/
     private Project project;
@@ -77,28 +81,48 @@ public class HibernateEnvironment {
     public HibernateEnvironment() {
     }
 
-
     /**
-     * Utility method to update the private cache of hibernate configurations.
-     *
-     * @param hibernateConfiguration hibernate configuration that need to be added
-     *        to the private cache.
+     * Returns all tables found in the configurations present in this project.
+     * 
+     * @return list of table names.
      */
-
-    public void addConfiguration(HibernateConfiguration hibernateConfiguration) {
-        configurations.add(hibernateConfiguration);
+    public ArrayList<String> getAllDatabaseTablesForProject() {
+        return getAllDatabaseTables(
+                (HibernateUtil.getAllHibernateConfigurations(project)).toArray(new HibernateConfiguration[]{})
+                );
     }
-
+    
+    public ArrayList<String> getDatabaseTables(FileObject mappingFile) {
+        ArrayList<String> databaseTables = new ArrayList<String>();
+        for(HibernateConfiguration configuration : getAllHibernateConfigurationsFromProject()) {
+            //TODO how to compare? oneis file with full path and another is just a relative path..
+            //if(mappingFile.getName())
+        }
+        return databaseTables;
+    }
+    
     /**
-     * Utility method to update the private cache of hibernate configurations.
-     *
-     * @param hibernateConfiguration the hibenrate configuration that need to be
-     *        removed from the cache.
+     * Returns the list of 'HibernateConfiguration' (schema2beans bean) for 
+     * the current project.
+     * 
+     * @return list of HibernateConfiguration(s).
      */
-    public void removeConfiguration(HibernateConfiguration hibernateConfiguration) {
-        configurations.remove(hibernateConfiguration);
+    public ArrayList<HibernateConfiguration> getAllHibernateConfigurationsFromProject() {
+        return HibernateUtil.getAllHibernateConfigurations(project);
     }
-
+    
+    /**
+     * Returns configuration fileobjects if any contained in this project.
+     * @param project the project.
+     * @return list of FileObjects for configuration files if found in this project, otherwise empty list.
+     */
+    public ArrayList<FileObject> getAllHibernateConfigFileObjects(Project project) {
+        return HibernateUtil.getAllHibernateConfigFileObjects(project);
+    }
+            
+    public ArrayList<FileObject> getAllHibernateMappingFileObjects(Project project) {
+        return HibernateUtil.getAllHibernateMappingFileObjects(project);
+    }        
     /**
      * Connects to the DB using supplied HibernateConfigurations and gets the list of
      * all table names.
@@ -110,26 +134,33 @@ public class HibernateEnvironment {
         try {
             return HibernateUtil.getAllDatabaseTables(configurations);
         } catch (SQLException ex) {
+            
             Exceptions.printStackTrace(ex);
+        } catch(HibernateException e) {
+            //if(ex.getCause() instanceof java.lang.ClassNotFoundException) {
+               // JDBCDriverManager.getDefault().showAddDriverDialog();    
+            //}
         }
         return null;
     }
 
-    /**
-     * Returns all hibernate configurations from private cache.
-     *
-     * @return array list of hibernate configurations.
+     /**
+     * Returns the table column names for the given table.
+     * 
+     * @param tableName the table whose column names are needed.
+     * @return the list of column names.
      */
-    public ArrayList<HibernateConfiguration> getAllHibernateConfigurations() {
-        return configurations;
+    public ArrayList<String> getColumnsForTable(String tableName, FileObject mappingFileObject) {
+        ArrayList<String> columnNames = new ArrayList<String>();
+        //TODO this method is easy to implement..
+        return columnNames;
     }
-
+    
     /**
      * Returns all mappings registered with this HibernateConfiguration.
      *
      * @param hibernateConfiguration hibernate configuration.
      */
-    //TODO this method is a prototype..
     public ArrayList<String> getAllHibernateMappingsFromConfiguration(HibernateConfiguration hibernateConfiguration) {
         ArrayList<String> mappingsFromConfiguration = new ArrayList<String>();
         SessionFactory fact = hibernateConfiguration.getSessionFactory();
@@ -150,4 +181,5 @@ public class HibernateEnvironment {
     public Project getProject() {
         return project;
     }
+
 }

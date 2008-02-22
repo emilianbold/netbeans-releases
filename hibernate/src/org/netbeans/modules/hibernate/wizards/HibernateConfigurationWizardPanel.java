@@ -124,7 +124,6 @@ public class HibernateConfigurationWizardPanel extends javax.swing.JPanel  {
         );
     }// </editor-fold>//GEN-END:initComponents
     private void cmbDialectActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cmbDialectActionPerformed
-        // TODO add your handling code here:
         fillCombos();
     }//GEN-LAST:event_cmbDialectActionPerformed
     // Variables declaration - do not modify//GEN-BEGIN:variables

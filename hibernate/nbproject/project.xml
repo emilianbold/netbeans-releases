@@ -91,12 +91,12 @@ made subject to such option by the copyright holder.
                     </run-dependency>
                 </dependency>
                 <dependency>
-                    <code-name-base>org.netbeans.modules.editor.completion</code-name-base>
+                    <code-name-base>org.netbeans.modules.db</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
                         <release-version>1</release-version>
-                        <specification-version>1.10</specification-version>
+                        <specification-version>1.25</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -106,6 +106,15 @@ made subject to such option by the copyright holder.
                     <run-dependency>
                         <release-version>3</release-version>
                         <specification-version>1.36</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.netbeans.modules.editor.completion</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <release-version>1</release-version>
+                        <specification-version>1.10</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -159,8 +168,17 @@ made subject to such option by the copyright holder.
                     <run-dependency>
                         <release-version>1</release-version>
                         <specification-version>1.5</specification-version>
-                     </run-dependency>
-                 </dependency>
+                    </run-dependency>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.netbeans.modules.project.libraries</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <release-version>1</release-version>
+                        <specification-version>1.16</specification-version>
+                    </run-dependency>
+                </dependency>
                 <dependency>
                     <code-name-base>org.netbeans.modules.projectapi</code-name-base>
                     <build-prerequisite/>
@@ -213,8 +231,8 @@ made subject to such option by the copyright holder.
                     <run-dependency>
                         <release-version>2</release-version>
                         <implementation-version/>
-                     </run-dependency>
-                 </dependency>
+                    </run-dependency>
+                </dependency>
                 <dependency>
                     <code-name-base>org.openide.dialogs</code-name-base>
                     <build-prerequisite/>
@@ -285,17 +303,16 @@ made subject to such option by the copyright holder.
                     <name>unit</name>
                     <test-dependency>
                         <code-name-base>org.netbeans.api.web.webmodule</code-name-base>
-                        <compile-dependency/>
+                        <!--<compile-dependency/> -->
                     </test-dependency>
-                    <test-dependency>
+                    <!-- <test-dependency>
                         <code-name-base>org.netbeans.bootstrap</code-name-base>
                         <compile-dependency/>
-                    </test-dependency>
+                    </test-dependency> -->
                     <test-dependency>
                         <code-name-base>org.netbeans.core.startup</code-name-base>
-                        <compile-dependency/>
                     </test-dependency>
-                    <test-dependency>
+                   <!-- <test-dependency>
                         <code-name-base>org.netbeans.modules.j2ee.api.ejbmodule</code-name-base>
                         <compile-dependency/>
                     </test-dependency>
@@ -306,38 +323,38 @@ made subject to such option by the copyright holder.
                     <test-dependency>
                         <code-name-base>org.netbeans.modules.j2eeserver</code-name-base>
                         <compile-dependency/>
-                    </test-dependency>
+                    </test-dependency> -->
                     <test-dependency>
                         <code-name-base>org.netbeans.modules.masterfs</code-name-base>
-                        <compile-dependency/>
                     </test-dependency>
                     <test-dependency>
                         <code-name-base>org.netbeans.modules.web.project</code-name-base>
-                        <compile-dependency/>
+                        <!-- <compile-dependency/> -->
+                        <recursive/>
                     </test-dependency>
                     <test-dependency>
                         <code-name-base>org.netbeans.modules.websvc.clientapi</code-name-base>
-                        <compile-dependency/>
+                        <!--     <compile-dependency/> -->
                     </test-dependency>
                     <test-dependency>
                         <code-name-base>org.netbeans.modules.websvc.jaxwsapi</code-name-base>
-                        <compile-dependency/>
+                        <!-- <compile-dependency/> -->
                     </test-dependency>
-                    <test-dependency>
+                    <!-- <test-dependency>
                         <code-name-base>org.netbeans.modules.websvc.jaxwsmodel</code-name-base>
                         <compile-dependency/>
-                    </test-dependency>
+                    </test-dependency> -->
                     <test-dependency>
                         <code-name-base>org.netbeans.modules.websvc.websvcapi</code-name-base>
-                        <compile-dependency/>
+                        <!-- <compile-dependency/> -->
                     </test-dependency>
                     <test-dependency>
                         <code-name-base>org.openide.execution</code-name-base>
-                        <compile-dependency/>
+                        <!--   <compile-dependency/> -->
                     </test-dependency>
                     <test-dependency>
                         <code-name-base>org.openide.options</code-name-base>
-                        <compile-dependency/>
+                        <!-- <compile-dependency/> -->
                     </test-dependency>
                 </test-type>
             </test-dependencies>

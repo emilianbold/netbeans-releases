@@ -38,14 +38,23 @@
  */
 package org.netbeans.modules.hibernate.service;
 
+import java.net.URL;
 import java.util.ArrayList;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import org.netbeans.api.db.explorer.DatabaseException;
+import org.netbeans.api.db.explorer.JDBCDriver;
+import org.netbeans.api.db.explorer.JDBCDriverManager;
+import org.netbeans.api.project.Project;
 import org.netbeans.junit.NbTestCase;
 import static org.junit.Assert.*;
 import org.netbeans.modules.hibernate.cfg.model.HibernateConfiguration;
+import org.netbeans.modules.hibernate.loaders.cfg.HibernateCfgDataObject;
 import org.openide.execution.ExecutorTask;
+import org.openide.filesystems.FileObject;
+import org.openide.loaders.DataObject;
+import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.Exceptions;
 
 /**
@@ -67,7 +76,17 @@ public class HibernateEnvironmentTest extends NbTestCase {
     @Override
     public void setUp() {
         hibernateConfiguration = new HibernateConfiguration().createGraph((java.io.InputStream) new java.io.ByteArrayInputStream(hibConfigString.getBytes()));
-
+        
+        try {
+        JDBCDriverManager.getDefault().addDriver(
+                JDBCDriver.create("derby", 
+                "JavaDB",
+                "org.apache.derby.jdbc.ClientDriver", 
+                Util.getDBDriverFiles(getDataDir().getAbsolutePath() + java.io.File.separator + "db-derby-10.2.2.0-bin"))
+                );
+        }catch(DatabaseException e) {
+            e.printStackTrace();
+        }
     }
 
     @After
@@ -78,32 +97,6 @@ public class HibernateEnvironmentTest extends NbTestCase {
         } catch (Exception ex) {
             Exceptions.printStackTrace(ex);
         }
-    }
-
-    /**
-     * Test of addConfiguration method, of class HibernateEnvironment.
-     */
-    @Test
-    public void testAddConfiguration() {
-        System.out.println("addConfiguration");
-
-        HibernateEnvironment instance = new HibernateEnvironment();
-        instance.addConfiguration(hibernateConfiguration);
-        ArrayList<HibernateConfiguration> allConfigurations = instance.getAllHibernateConfigurations();
-        assertEquals(hibernateConfiguration, allConfigurations.get(0));
-    }
-
-    /**
-     * Test of removeConfiguration method, of class HibernateEnvironment.
-     */
-    @Test
-    public void testRemoveConfiguration() {
-        System.out.println("removeConfiguration");
-
-        HibernateEnvironment instance = new HibernateEnvironment();
-        instance.removeConfiguration(hibernateConfiguration);
-        ArrayList<HibernateConfiguration> allConfigurations = instance.getAllHibernateConfigurations();
-        assertEquals(0, allConfigurations.size());
     }
 
     /**
@@ -135,20 +128,29 @@ public class HibernateEnvironmentTest extends NbTestCase {
     @Test
     public void testGetAllHibernateConfigurations() {
         System.out.println("getAllHibernateConfigurations");
-        HibernateEnvironment instance = new HibernateEnvironment();
+        
         ArrayList<HibernateConfiguration> expResult = new ArrayList<HibernateConfiguration>();
 
         expResult.add(hibernateConfiguration);
-        instance.addConfiguration(hibernateConfiguration);
 
-        /////
-        Util.getFiles( new java.io.File(
+        Project project = Util.getProject( new java.io.File(
                 getDataDir().getAbsolutePath() +
                java.io.File.separator + 
                "WebApplication1"
                 ));
-        /////
-        ArrayList<HibernateConfiguration> result = instance.getAllHibernateConfigurations();
+        // Add the config files here.
+        for(FileObject fo : Util.getConfigFiles(project))  {
+            try {
+            expResult.add(
+                    ((HibernateCfgDataObject)DataObject.find(fo)).getHibernateConfiguration()
+                    );
+            }catch (DataObjectNotFoundException e) {
+                e.printStackTrace();
+            }
+        }
+   
+        HibernateEnvironment instance = new HibernateEnvironment(project);
+        ArrayList<HibernateConfiguration> result = instance.getAllHibernateConfigurationsFromProject();
         assertEquals(expResult, result);
     }
 

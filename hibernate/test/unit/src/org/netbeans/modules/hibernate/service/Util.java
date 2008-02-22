@@ -36,11 +36,12 @@
  *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.hibernate.service;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
@@ -67,16 +68,16 @@ import org.openide.util.Exceptions;
  * @author Vadiraj Deshpande (Vadiraj.Deshpande@Sun.COM)
  */
 public class Util {
+
     public static boolean startDB(String dbHome) {
         try {
             String java = System.getProperty("java.home") + File.separator +
                     "bin" + File.separator + "java";
             NbProcessDescriptor desc = new NbProcessDescriptor(
-              java,
-              "-Dderby.system.home=\"" + dbHome + "\" " +
-              "-classpath \"" + getNetworkServerClasspath(dbHome) + "\"" +
-              " org.apache.derby.drda.NetworkServerControl start"
-            );
+                    java,
+                    "-Dderby.system.home=\"" + dbHome + "\" " +
+                    "-classpath \"" + getNetworkServerClasspath(dbHome) + "\"" +
+                    " org.apache.derby.drda.NetworkServerControl start");
 
             Process process = desc.exec(null, new String[]{"DERBY_INSTALL=" + dbHome}, true,
                     new File(dbHome));
@@ -203,10 +204,9 @@ public class Util {
     }
 
     private static String getNetworkServerClasspath(String dbHome) {
-        return
-            dbHome + File.separator + "lib/derby.jar" + File.pathSeparator +
-            dbHome + File.separator + "lib/derbytools.jar" + File.pathSeparator +
-            dbHome + File.separator + "lib/derbynet.jar"; // NOI18N
+        return dbHome + File.separator + "lib/derby.jar" + File.pathSeparator +
+                dbHome + File.separator + "lib/derbytools.jar" + File.pathSeparator +
+                dbHome + File.separator + "lib/derbynet.jar"; // NOI18N
     }
 
     public static boolean stopDB(String dbHome) {
@@ -224,44 +224,62 @@ public class Util {
         }
         return false;
     }
-    
-    public static void getFiles(File projFolder) {
+
+    public static Project getProject(File projFolder) {
         try {
             FileObject pfo = FileUtil.toFileObject(projFolder);
 
-//            for(FileObject fc1 : pfo.getChildren()) {
-//                if(fc1 != null && fc1.isFolder() && fc1.getName().equals("src")) {
-//                    Enumeration<? extends FileObject> enumeration = fc1.getData(true);
-//                    while(enumeration.hasMoreElements()) {
-//                        FileObject fo = enumeration.nextElement();
-//                        System.out.println(" File object " + fo.getNameExt());
-//                    }
-//                }
-//            }
             Project project = ProjectManager.getDefault().findProject(pfo);
-             //open the project here !!
-              openProject(project);       
-            Sources projectSources = ProjectUtils.getSources(project);
-            SourceGroup[] javaSourceGroup = projectSources.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
-            for (SourceGroup sourceGroup : javaSourceGroup) {
-                FileObject root = sourceGroup.getRootFolder();
-                Enumeration<? extends FileObject> enumeration = root.getChildren(true);
-                while (enumeration.hasMoreElements()) {
-                    FileObject fo = enumeration.nextElement();
-                    System.out.println("File object name " + fo.getNameExt());
-                }
-            }
-        
+            //open the project here !!
+            openProject(project);
+
+            return project;
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
         } catch (IllegalArgumentException ex) {
             Exceptions.printStackTrace(ex);
-        } 
+        }
+        return null;
     }
-    
+
+    public static ArrayList<FileObject> getConfigFiles(Project project) {
+        ArrayList<FileObject> files = new ArrayList<FileObject>();
+        Sources projectSources = ProjectUtils.getSources(project);
+        SourceGroup[] javaSourceGroup = projectSources.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
+        for (SourceGroup sourceGroup : javaSourceGroup) {
+            FileObject root = sourceGroup.getRootFolder();
+            Enumeration<? extends FileObject> enumeration = root.getChildren(true);
+            while (enumeration.hasMoreElements()) {
+                FileObject fo = enumeration.nextElement();
+                if(fo != null && fo.getNameExt().equals("cfg.xml")) {
+                    files.add(fo);
+                }
+            }
+        }
+        return files;
+    }
+
     private static void openProject(Project project) {
         ProjectOpenedHook hook = project.getLookup().lookup(ProjectOpenedHook.class);
-        if(hook == null) { System.out.println(" project open hook is null "); }
+        if (hook == null) {
+            System.out.println(" project open hook is null ");
+        }
         ProjectOpenedTrampoline.DEFAULT.projectOpened(hook);
+    }
+    
+    public static URL[] getDBDriverFiles(String driverLocation) {
+        File clientDriverFile = new File(driverLocation + 
+                java.io.File.separator + 
+                "lib" + 
+                java.io.File.separator + 
+                "derbyClient.jar");
+        ArrayList<URL> urls = new ArrayList<URL>();
+        try {
+        
+        urls.add(clientDriverFile.toURL());
+        }catch(MalformedURLException e) {
+            e.printStackTrace();
+        }
+        return urls.toArray(new URL[]{}); 
     }
 }

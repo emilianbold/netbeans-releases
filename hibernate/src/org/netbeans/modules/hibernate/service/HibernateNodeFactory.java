@@ -40,9 +40,7 @@ package org.netbeans.modules.hibernate.service;
 
 import java.awt.Image;
 import java.util.ArrayList;
-import java.util.List;
 import org.netbeans.api.project.Project;
-import org.netbeans.spi.project.support.ProjectOperations;
 import org.netbeans.spi.project.ui.support.NodeFactory;
 import org.netbeans.spi.project.ui.support.NodeFactorySupport;
 import org.netbeans.spi.project.ui.support.NodeList;
@@ -65,30 +63,29 @@ import org.openide.util.HelpCtx;
 public class HibernateNodeFactory implements NodeFactory {
 
     public NodeList<?> createNodes(Project project) {
-        ArrayList<FileObject> files = new ArrayList<FileObject>();
-        List<FileObject> cLists = ProjectOperations.getDataFiles(project);
-        for (FileObject c : cLists) {
-            if (c.isFolder() && c.getName().equals("src")) {
 
-                FileObject[] foc = c.getChildren();
-                for (FileObject foc2 : foc) {
-                    if (foc2.isFolder() && foc2.getName().equals("java")) {
-                        FileObject[] foc3 = foc2.getChildren();
-                        for (FileObject foc4 : foc3) {
-                            if (!foc4.isFolder() && (foc4.getNameExt().endsWith("cfg.xml")) ||
-                                    foc4.getNameExt().endsWith("hbm.xml")) {
-                                files.add(foc4);
-                            }
-                        }
-                    }
-                    if (!foc2.isFolder() && (foc2.getNameExt().endsWith("cfg.xml")) ||
-                            foc2.getNameExt().endsWith("hbm.xml")) {
-                        files.add(foc2);
-                    }
-                }
+        HibernateEnvironment hibernateEnvironment = project.getLookup().lookup(HibernateEnvironment.class);
+        if(hibernateEnvironment != null) {
+            ArrayList<FileObject> files = hibernateEnvironment.getAllHibernateConfigFileObjects(project);
+            files.addAll(
+                    hibernateEnvironment.getAllHibernateMappingFileObjects(project)
+                    );
+            if(files.size() != 0) {
+                // There are Hibernater configuration files in this project.
+                return getHibernateNode(files);
+            } else {
+                // return empty node.
+                return getEmptyNode();
             }
-
+        
+        } else {
+            //Something wrong. This node factory is invoked for projects that do not 
+            // contain HibernateEnvironment in the lookup..Return an empty node.
+            return getEmptyNode();
         }
+    }
+
+    private NodeList<?> getHibernateNode(ArrayList<FileObject> files) {
 
         ArrayList<Node> nodes = new ArrayList<Node>();
         for (FileObject fo : files) {
@@ -98,10 +95,10 @@ public class HibernateNodeFactory implements NodeFactory {
             } catch (DataObjectNotFoundException ex) {
                 Exceptions.printStackTrace(ex);
             }
-
         }
         final Children children = new Children.Array();
         children.add(nodes.toArray(new Node[]{}));
+
         class HibernateRootNode extends AbstractNode {
 
             public HibernateRootNode() {
@@ -120,10 +117,14 @@ public class HibernateNodeFactory implements NodeFactory {
 
             @Override
             public String getHtmlDisplayName() {
-                return "Hibernate";
+                return "Hibernate"; //TODO I18N
             }
         }
         AbstractNode hibernateNode = new HibernateRootNode();
         return NodeFactorySupport.fixedNodeList(new Node[]{hibernateNode});
+    }
+    
+    private NodeList<?> getEmptyNode() {
+        return NodeFactorySupport.fixedNodeList(new Node[]{});
     }
 }
