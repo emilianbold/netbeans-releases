@@ -39,30 +39,26 @@
 
 package org.netbeans.modules.project.ui;
 
+import java.awt.Component;
+import java.awt.Container;
 import java.lang.ref.WeakReference;
+import javax.swing.JEditorPane;
 import org.netbeans.api.project.Project;
 import org.netbeans.junit.NbTestCase;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.loaders.DataFolder;
+import org.openide.nodes.Children;
 import org.openide.util.Lookup;
 
 /**
  *
  * @author Jaroslav Tulach <jaroslav.tulach@netbeans.org>
  */
-public class TemplateChooserPanelGUITest extends NbTestCase {
-    TemplateChooserPanelGUI instance;
-    
-    public TemplateChooserPanelGUITest(String testName) {
+public class TemplatesPanelTest extends NbTestCase implements TemplatesPanelGUI.Builder {
+    public TemplatesPanelTest(String testName) {
         super(testName);
     }
-
-    @Override
-    protected boolean runInEQ() {
-        return true;
-    }
-    
-    
 
     @Override
     protected void setUp() throws Exception {
@@ -74,36 +70,56 @@ public class TemplateChooserPanelGUITest extends NbTestCase {
         super.tearDown();
     }
 
-    /**
-     * Test of readValues method, of class TemplateChooserPanelGUI.
-     */
-    public void testReadValues() {
-        Project p = new P();
-        String category = "";
-        String template = "";
-        instance = new TemplateChooserPanelGUI();
-        instance.readValues(p, category, template);
+    private static Object editor;
+    public void testTemplatesPanel() {
+        TemplatesPanelGUI inst;
+        inst = new TemplatesPanelGUI(this);
         
-        instance.addNotify();
+        inst.addNotify();
+        editor = find(inst, JEditorPane.class, true);
+        WeakReference<Object> ref = new WeakReference<Object>(inst);
         
-        instance.removeNotify();
+        inst.removeNotify();
         
-        WeakReference<Project> ref = new WeakReference<Project>(p);
-        p = null;
+        inst = null;
         assertGC("Panel does not hold ref", ref);
     }
-
-        
-    class P implements Project {
-        FileObject root = FileUtil.createMemoryFileSystem().getRoot();
-        
-        public FileObject getProjectDirectory() {
-            return root;
+    
+    private static Component find(Component c, Class<?> clazz, boolean fail) {
+        if (clazz.isInstance(c)) {
+            return c;
         }
-
-        public Lookup getLookup() {
-            return Lookup.EMPTY;
+        if (c instanceof Container) {
+            Container cont = (Container)c;
+            for (Component p : cont.getComponents()) {
+                Component r = find(p, clazz, false);
+                if (r != null) {
+                    return r;
+                }
+            }
         }
-        
+        if (fail) {
+            fail("Not found " + clazz + " in children of " + c);
+        }
+        return null;
     }
+    
+    public Children createCategoriesChildren(DataFolder folder) {
+        return Children.LEAF;
     }
+
+    public Children createTemplatesChildren(DataFolder folder) {
+        return Children.LEAF;
+    }
+
+    public String getCategoriesName() {
+        return "";
+    }
+
+    public String getTemplatesName() {
+        return "";
+    }
+
+    public void fireChange() {
+    }
+}
