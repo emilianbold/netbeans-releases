@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- *
+ * 
  * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
- *
+ * 
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,13 +20,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
+ * 
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -37,56 +31,66 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ * 
+ * Contributor(s):
+ * 
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-/*
- * ElfSection.java
- *
- *
- * To change this template, choose Tools | Template Manager
- * and open the template in the editor.
- */
+package org.netbeans.modules.spring.beans.wizards;
 
-package org.netbeans.modules.cnd.dwarfdump.section;
-
-import org.netbeans.modules.cnd.dwarfdump.elf.SectionHeader;
-import org.netbeans.modules.cnd.dwarfdump.reader.ElfReader;
-import java.io.IOException;
-import java.io.PrintStream;
+import javax.swing.event.ChangeListener;
+import org.netbeans.api.project.Project;
+import org.netbeans.modules.spring.api.beans.ConfigFileManager;
+import org.netbeans.modules.spring.beans.ProjectSpringScopeProvider;
+import org.openide.WizardDescriptor;
+import org.openide.util.HelpCtx;
 
 /**
  *
- * @author ak119685
+ * @author Rohan Ranade (Rohan.Ranade@Sun.COM)
  */
-public class ElfSection {
-    ElfReader reader;
-    SectionHeader header;
-    int sectionIdx;
-    String sectionName;
+public class SpringXMLConfigGroupPanel implements WizardDescriptor.Panel {
+
+    public static final String CONFIG_FILE_GROUPS = "configFileGroups"; // NOI18N
     
-    public ElfSection(ElfReader reader, int sectionIdx) {
-        this.reader = reader;
-        this.sectionIdx = sectionIdx;
-        this.header = reader.getSectionHeader(sectionIdx);
-        this.sectionName = reader.getSectionName(sectionIdx);
+    private SpringXMLConfigGroupVisual component;
+    private Project p;
+
+    public SpringXMLConfigGroupPanel(Project p) {
+        this.p = p;
     }
 
-    public ElfSection(ElfReader reader, int sectionIdx, SectionHeader header, String sectionName) {
-        this.reader = reader;
-        this.sectionIdx = sectionIdx;
-        this.header = header;
-        this.sectionName = sectionName;
-    }
-    
-    public void dump(PrintStream out) {
-        out.println("\n** Section " + sectionName); // NOI18N
-        if (header != null) {
-            header.dump(out);
+    public SpringXMLConfigGroupVisual getComponent() {
+        if (component == null) {
+            ConfigFileManager manager = NewSpringXMLConfigWizardIterator.getConfigFileManager(p);
+            component = new SpringXMLConfigGroupVisual(p, manager.getConfigFileGroups());
         }
-        out.println("\nContent of the section " + sectionName + "\n"); // NOI18N
+        return component;
     }
+
+    public HelpCtx getHelp() {
+        return new HelpCtx(SpringXMLConfigGroupPanel.class);
+    }
+
+    public void readSettings(Object settings) {
+    }
+
+    public void storeSettings(Object settings) {
+        WizardDescriptor wd = (WizardDescriptor) settings;
+        wd.putProperty(CONFIG_FILE_GROUPS, getComponent().getSelectedConfigFileGroups());
+    }
+
+    public boolean isValid() {
+        return true;
+    }
+
+    public void addChangeListener(ChangeListener l) {
+    }
+
+    public void removeChangeListener(ChangeListener l) {
+    }
+
     
-    public ElfSection read() throws IOException {
-        return null;
-    }
+
 }
