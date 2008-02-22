@@ -193,6 +193,8 @@ public class AppClientProjectProperties {
     public static final String APPCLIENT_TOOL_JVMOPTS = "j2ee.appclient.tool.jvmoptions";  // NOI18N
     public static final String APPCLIENT_TOOL_ARGS = "j2ee.appclient.tool.args"; // NOI18N
     
+    public static final String APPCLIENT_TOOL_CLIENT_JAR = "wa.copy.client.jar.from"; // NOI18N
+    
     /**
      * "API" contract between Application Client and Glassfish plugin's
      * J2eePlatformImpl implementation.
