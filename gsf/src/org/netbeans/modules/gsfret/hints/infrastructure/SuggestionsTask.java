@@ -44,7 +44,7 @@ import java.util.ArrayList;
 import java.util.List;
 import javax.swing.text.Document;
 import org.netbeans.editor.BaseDocument;
-import org.netbeans.fpi.gsf.HintsProvider;
+import org.netbeans.modules.gsf.api.HintsProvider;
 import org.netbeans.modules.gsf.Language;
 import org.netbeans.modules.gsf.LanguageRegistry;
 import org.netbeans.napi.gsfret.source.CompilationInfo;

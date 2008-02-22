@@ -46,9 +46,9 @@ import java.util.Set;
 
 import org.mozilla.javascript.Node;
 import org.mozilla.javascript.Token;
-import org.netbeans.fpi.gsf.CompilationInfo;
-import org.netbeans.fpi.gsf.InstantRenamer;
-import org.netbeans.fpi.gsf.OffsetRange;
+import org.netbeans.modules.gsf.api.CompilationInfo;
+import org.netbeans.modules.gsf.api.InstantRenamer;
+import org.netbeans.modules.gsf.api.OffsetRange;
 import org.netbeans.modules.javascript.editing.lexer.LexUtilities;
 import org.openide.util.NbBundle;
 

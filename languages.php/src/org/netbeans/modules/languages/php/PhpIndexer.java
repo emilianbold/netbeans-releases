@@ -48,10 +48,10 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import org.netbeans.fpi.gsf.Index;
-import org.netbeans.fpi.gsf.Indexer;
-import org.netbeans.fpi.gsf.ParserFile;
-import org.netbeans.fpi.gsf.ParserResult;
+import org.netbeans.modules.gsf.api.Index;
+import org.netbeans.modules.gsf.api.Indexer;
+import org.netbeans.modules.gsf.api.ParserFile;
+import org.netbeans.modules.gsf.api.ParserResult;
 import org.netbeans.modules.php.model.FunctionDefinition;
 import org.netbeans.modules.php.model.Statement;
 import org.openide.util.Exceptions;
@@ -63,7 +63,7 @@ import org.openide.util.Exceptions;
 public class PhpIndexer implements Indexer {
 
     /* (non-Javadoc)
-     * @see org.netbeans.fpi.gsf.Indexer#isIndexable(org.netbeans.fpi.gsf.ParserFile)
+     * @see org.netbeans.modules.gsf.api.Indexer#isIndexable(org.netbeans.modules.gsf.api.ParserFile)
      */
     public boolean isIndexable(ParserFile file) {
         String ext = file.getNameExt();
@@ -71,7 +71,7 @@ public class PhpIndexer implements Indexer {
     }
 
     /* (non-Javadoc)
-     * @see org.netbeans.fpi.gsf.Indexer#updateIndex(org.netbeans.fpi.gsf.Index, org.netbeans.fpi.gsf.ParserResult)
+     * @see org.netbeans.modules.gsf.api.Indexer#updateIndex(org.netbeans.modules.gsf.api.Index, org.netbeans.modules.gsf.api.ParserResult)
      */
     public void updateIndex(Index index, ParserResult result)
             throws IOException {
