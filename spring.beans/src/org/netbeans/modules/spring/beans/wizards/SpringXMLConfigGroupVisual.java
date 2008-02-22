@@ -39,7 +39,7 @@ public class SpringXMLConfigGroupVisual extends javax.swing.JPanel {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        groupsScrollPanel = new javax.swing.JScrollPane();
+        groupsScrollPane = new javax.swing.JScrollPane();
         groupsTable = new javax.swing.JTable();
         groupsLabel = new javax.swing.JLabel();
 
@@ -48,7 +48,7 @@ public class SpringXMLConfigGroupVisual extends javax.swing.JPanel {
         groupsTable.setShowVerticalLines(false);
         groupsTable.getTableHeader().setResizingAllowed(false);
         groupsTable.getTableHeader().setReorderingAllowed(false);
-        groupsScrollPanel.setViewportView(groupsTable);
+        groupsScrollPane.setViewportView(groupsTable);
 
         groupsLabel.setText(org.openide.util.NbBundle.getMessage(SpringXMLConfigGroupVisual.class, "LBL_Config_File_Selection")); // NOI18N
 
@@ -59,21 +59,21 @@ public class SpringXMLConfigGroupVisual extends javax.swing.JPanel {
             .add(layout.createSequentialGroup()
                 .add(groupsLabel)
                 .addContainerGap(36, Short.MAX_VALUE))
-            .add(groupsScrollPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 360, Short.MAX_VALUE)
+            .add(groupsScrollPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 360, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
                 .add(groupsLabel)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(groupsScrollPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 193, Short.MAX_VALUE))
+                .add(groupsScrollPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 193, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
     
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JLabel groupsLabel;
-    private javax.swing.JScrollPane groupsScrollPanel;
+    private javax.swing.JScrollPane groupsScrollPane;
     private javax.swing.JTable groupsTable;
     // End of variables declaration//GEN-END:variables
     
