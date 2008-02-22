@@ -48,14 +48,8 @@ public class BpelLineBreakpointView extends BpelBreakpointView {
             throw new UnknownTypeException(breakpoint);
         }
         
-        if (myBreakpointListener == null) {
-            myBreakpointListener = (BpelBreakpointListener) 
-                    DebuggerManager.getDebuggerManager().lookupFirst 
-                    (null, BpelBreakpointListener.class);
-        }
-        
         final LineBreakpoint lbp = (LineBreakpoint) breakpoint;
-        final Object annotation = myBreakpointListener.findAnnotation(lbp);
+        final Object annotation = getBreakpointListener().findAnnotation(lbp);
         
         String result = EditorUtil.getFileName(lbp.getURL()) +
                 ": " + lbp.getLineNumber();
@@ -80,7 +74,7 @@ public class BpelLineBreakpointView extends BpelBreakpointView {
         }
         
         final LineBreakpoint lbp = (LineBreakpoint) object;
-        final Object annotation = myBreakpointListener.findAnnotation(lbp);
+        final Object annotation = getBreakpointListener().findAnnotation(lbp);
         
         if (annotation != null) {
             final AnnotationType type = 
@@ -104,7 +98,7 @@ public class BpelLineBreakpointView extends BpelBreakpointView {
         final LineBreakpoint oldBreakpoint = currentBreakpoint; 
         
         if (position != null) {
-            final LineBreakpoint breakpoint = myBreakpointListener.findBreakpoint(
+            final LineBreakpoint breakpoint = getBreakpointListener().findBreakpoint(
                     ModelUtil.getUrl(position.getProcessQName()), 
                     position.getXpath(), 
                     position.getLineNumber());
@@ -132,5 +126,15 @@ public class BpelLineBreakpointView extends BpelBreakpointView {
     @Override
     public void removeModelListener(ModelListener listener) {
         listeners.remove(listener);
+    }
+    
+    private BpelBreakpointListener getBreakpointListener() {
+        if (myBreakpointListener == null) {
+            myBreakpointListener = (BpelBreakpointListener) 
+                    DebuggerManager.getDebuggerManager().lookupFirst 
+                    (null, BpelBreakpointListener.class);
+        }
+        
+        return myBreakpointListener;
     }
 }
