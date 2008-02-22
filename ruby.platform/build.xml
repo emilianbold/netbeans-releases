@@ -53,8 +53,9 @@ made subject to such option by the copyright holder.
             <include name="config/ModuleAutoDeps/${code.name.base.dashes}.xml" if="has.module.auto.deps"/>
             <include name="ant/nblib/${code.name.base.dashes}.jar"/>
             <!-- Ruby module additions -->
-            <include name="preindexed/**"/>
-            <include name="rubystubs/**"/>
+            <include name="preindexed/"/>
+            <include name="rubystubs/"/>
+            <include name="jsstubs/"/>
             <include name="jruby-1.1RC1/**/netbeans-index-*.zip"/>
         </patternset>
     </target>    
@@ -83,7 +84,7 @@ made subject to such option by the copyright holder.
         </chmod>
         -->
 
-        <unzip dest="${cluster}/../" src="external/preindexed.zip"/>
+        <unzip dest="${cluster}" src="external/preindexed.zip"/>
         <unzip dest="${cluster}" src="external/preindexed-native.zip"/>
     </target>
 

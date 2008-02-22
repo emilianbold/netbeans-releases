@@ -40,74 +40,68 @@
  */
 package org.netbeans.modules.websvc.saas.codegen.java;
 
-import org.netbeans.modules.websvc.saas.model.WadlSaasMethod;
+import org.netbeans.modules.websvc.saas.model.CustomSaasMethod;
 import java.io.IOException;
-import java.util.Collection;
 import java.util.List;
 import javax.swing.text.JTextComponent;
-import org.netbeans.api.java.source.JavaSource;
-import org.netbeans.api.project.Project;
+import org.netbeans.modules.websvc.saas.codegen.java.model.CustomSaasBean;
 import org.netbeans.modules.websvc.saas.codegen.java.model.ParameterInfo;
-import org.netbeans.modules.websvc.saas.codegen.java.model.WadlSaasBean;
 import org.netbeans.modules.websvc.saas.codegen.java.support.JavaSourceHelper;
+import org.netbeans.modules.websvc.saas.codegen.java.support.Util;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileSystem;
+import org.openide.filesystems.FileUtil;
 
 /**
  * Code generator for REST services wrapping WSDL-based web service.
  *
- * @author nam
+ * @author Ayub Khan
  */
-public class JaxRsCodeGenerator extends SaasCodeGenerator {
+public class CustomCodeGenerator extends SaasCodeGenerator {
 
-    public JaxRsCodeGenerator(JTextComponent targetComponent, 
-            FileObject targetFile, WadlSaasMethod m) throws IOException {
-        super(targetComponent, targetFile, new WadlSaasBean(m));
+    public CustomCodeGenerator(JTextComponent targetComponent, 
+            FileObject targetFile, CustomSaasMethod m) throws IOException {
+        super(targetComponent, targetFile, new CustomSaasBean(m));
+    }
+
+    @Override
+    public CustomSaasBean getBean() {
+        return (CustomSaasBean) bean;
     }
     
     @Override
-    public WadlSaasBean getBean() {
-        return (WadlSaasBean )bean;
-    }
-    
-    @Override
-    protected void preGenerate() {
+    protected void preGenerate() throws IOException {
         JavaSourceHelper.createJavaSource(REST_CONNECTION_TEMPLATE, getTargetFolder(), bean.getPackageName(), REST_CONNECTION);
-    }
-    
-    protected String getCustomMethodBody() throws IOException {
-        String converterName = getConverterName();
-        String paramStr = null;
-        StringBuffer sb1 = new StringBuffer();
-        List<ParameterInfo> params = bean.getInputParameters();
-
-        for (ParameterInfo param : params) {
-            String paramName = param.getName();
-            if (param.getType() != String.class) {
-                sb1.append("{\"" + paramName + "\", " + paramName + ".toString()},");
-            } else {
-                sb1.append("{\"" + paramName + "\", " + paramName + "},");
+        getTargetFolder().getFileSystem().runAtomicAction(new FileSystem.AtomicAction() {
+            public void run() throws IOException {
+                try {
+                    List<String> libs = getBean().getArtifactLibs();
+                    for(String lib: libs) {
+                        //TODO - Fix the copyFile method
+                        copyFile(lib, FileUtil.toFile(getTargetFolder()));
+                    }
+                    List<String> templates = getBean().getArtifactTemplates();
+                    for(String template: templates) {
+                        Util.createDataObjectFromTemplate(template, getTargetFolder(), null);
+                    }
+                } finally {
+                }
             }
-        }
-        paramStr = sb1.toString();
-        if (params.size() > 0) {
-            paramStr = paramStr.substring(0, paramStr.length() - 1);
+        });
+    }
+
+    protected String getCustomMethodBody() throws IOException {
+        String paramStr = "";       //NOI18N
+    
+        int count = 0;
+        for (ParameterInfo param : getBean().getInputParameters()) {
+            if (count++ > 0) {
+                paramStr += ", ";       //NOI18N
+            }
+            
+            paramStr += param.getName();
         }
         
-        String methodBody = "String url = \"" + ((WadlSaasBean) bean).getUrl() + "\";\n";
-        methodBody += "        " + converterName + " converter = new " + converterName + "();\n";
-        methodBody += "        try {\n";
-        methodBody += "             String[][] params = new String[][]{\n";
-        methodBody += "                 " + paramStr + "\n";
-        methodBody += "             };\n";
-        methodBody += "             RestConnection cl = new RestConnection(url, params);\n";
-        methodBody += "             String result = cl.get();\n";
-        methodBody += "             converter.setString(result);\n";
-        methodBody += "             return converter;\n";
-        methodBody += "        } catch (java.io.IOException ex) {\n";
-        methodBody += "             throw new WebApplicationException(ex);\n";
-        methodBody += "        }\n }";
-       
-        return methodBody;
+        return "return execute(" + paramStr + ")";
     }
-
 }

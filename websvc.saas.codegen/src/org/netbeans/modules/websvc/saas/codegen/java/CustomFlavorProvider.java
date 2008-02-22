@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
+ *
  * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,7 +20,13 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
+ * Contributor(s):
+ *
+ * The Original Software is NetBeans. The Initial Developer of the Original
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Microsystems, Inc. All Rights Reserved.
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -31,30 +37,56 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
- * Contributor(s):
- * 
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.websvc.saas.codegen.java;
 
-package org.netbeans.modules.websvc.saas.model;
-
-import org.netbeans.modules.websvc.saas.model.jaxb.Method;
-import org.netbeans.modules.websvc.saas.model.jaxb.SaasServices;
+import java.awt.datatransfer.Transferable;
+import org.netbeans.modules.websvc.saas.model.CustomSaasMethod;
+import org.netbeans.modules.websvc.saas.spi.ConsumerFlavorProvider;
+import org.openide.util.Exceptions;
+import org.openide.util.datatransfer.ExTransferable;
 
 /**
- * Typing purpose
- * @author nam
+ *
+ * @author Ayub Khan
  */
-public class CustomSaas extends Saas {
+public class CustomFlavorProvider implements ConsumerFlavorProvider {
 
-    public CustomSaas(SaasGroup parentGroup, SaasServices services) {
-        super(parentGroup, services);
+    public CustomFlavorProvider() {
     }
-    
-    @Override
-    protected CustomSaasMethod createSaasMethod(Method method) {
-        return new CustomSaasMethod(this, method);
+
+    public Transferable addDataFlavors(Transferable transferable) {
+        try {
+            if (transferable.isDataFlavorSupported(ConsumerFlavorProvider.CUSTOM_METHOD_FLAVOR)) {
+                Object data = transferable.getTransferData(ConsumerFlavorProvider.CUSTOM_METHOD_FLAVOR);
+                if (data instanceof CustomSaasMethod) {
+                    CustomSaasMethod method = (CustomSaasMethod) data;
+                    ExTransferable t = ExTransferable.create(transferable);
+                    CustomEditorDrop editorDrop = new CustomEditorDrop(method);
+                    ActiveEditorDropTransferable s = new ActiveEditorDropTransferable(editorDrop);
+                    t.put(s);
+                    return t;
+                }
+            }
+        } catch (Exception ex) {
+            Exceptions.printStackTrace(ex);
+        }
+
+        return transferable;
     }
-    
+
+    private static class ActiveEditorDropTransferable extends ExTransferable.Single {
+
+        private CustomEditorDrop drop;
+
+        ActiveEditorDropTransferable(CustomEditorDrop drop) {
+            super(CustomEditorDrop.FLAVOR);
+
+            this.drop = drop;
+        }
+
+        public Object getData() {
+            return drop;
+        }
+    }
 }
