@@ -50,20 +50,16 @@ import org.netbeans.spi.editor.completion.support.AsyncCompletionTask;
  */
 public class HibernateCfgCompletionProvider implements CompletionProvider {
 
-    public HibernateCfgCompletionProvider() {
-        super();
-    }
-
     public CompletionTask createTask(int queryType, JTextComponent component) {
-        if (queryType != CompletionProvider.COMPLETION_QUERY_TYPE) {
+        if( queryType != CompletionProvider.COMPLETION_QUERY_TYPE ) 
             return null;
-        }
-
-        return new AsyncCompletionTask(new HibernateCfgCompletionQuery(), component);
+        
+            return new AsyncCompletionTask(new HibernateCfgCompletionQuery(queryType,
+                    component.getSelectionStart()), component);
     }
 
     public int getAutoQueryTypes(JTextComponent component, String typedText) {
-        // return 0 here, meaning no query should be automatically invoked.
+         // return 0 here, meaning no query should be automatically invoked.
         // If we want some query to be invoked automatically, then a combination of the 
         // COMPLETION_QUERY_TYPE, 
         // COMPLETION_ALL_QUERY_TYPE, 

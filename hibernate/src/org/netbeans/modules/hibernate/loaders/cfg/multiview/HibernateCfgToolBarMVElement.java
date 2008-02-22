@@ -130,9 +130,14 @@ public class HibernateCfgToolBarMVElement extends ToolBarMultiViewElement {
     @Override
     public void componentShowing() {
         super.componentShowing();
-
-        // TODO: can have more logic to handle when the view can not be displayed. See Persistence
         view = new ConfigurationView(configDataObject);
+        
+        if (!configDataObject.viewCanBeDisplayed()) {
+            view.setRoot(Node.EMPTY);
+            comp.setContentView(view);
+            return;
+        }
+
         view.initialize();
         comp.setContentView(view);
 
@@ -293,7 +298,7 @@ public class HibernateCfgToolBarMVElement extends ToolBarMultiViewElement {
 
         @Override
         public Error validateView() {
-            // TODO: valiation code here
+            // There is nothing to validate
             return null;
         }
     }

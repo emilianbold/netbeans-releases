@@ -72,7 +72,7 @@ import org.openide.util.NbBundle;
  * 
  * @author Dongmei Cao
  */
-public final class CompletionManager {
+public final class HibernateMappingCompletionManager {
 
     private static final String MAPPING_TAG = "hibernate-mapping";
     private static final String CLASS_TAG = "class";
@@ -105,6 +105,7 @@ public final class CompletionManager {
     private static final String MAP_KEY_TAG = "map-key";
     private static final String ELEMENT_TAG = "element";
     private static final String MANY_TO_MANY_TAG = "many-to-many";
+    
     private static final String TABLE_ATTRIB = "table"; // table name
     private static final String PACKAGE_ATTRIB = "package";
     private static final String CLASS_ATTRIB = "class";
@@ -114,9 +115,11 @@ public final class CompletionManager {
     private static final String EXTENDS_ATTRIB = "extends";
     private static final String PERSISTER_ATTRIB = "persister";
     private static final String CASCADE_ATTRIB = "cascade";
+    private static final String ID_TYPE_ATTRIB = "id-type";
+    
     private static Map<String, Completor> completors = new HashMap<String, Completor>();
 
-    private CompletionManager() {
+    private HibernateMappingCompletionManager() {
         setupCompletors();
     }
 
@@ -124,56 +127,58 @@ public final class CompletionManager {
 
         // Completion items for id generator
         String[] generatorClasses = new String[]{
-            "increment", NbBundle.getMessage(CompletionManager.class, "INCREMENT_GENERATOR_DESC"), // NOI18N
-            "identity", NbBundle.getMessage(CompletionManager.class, "IDENTITY_GENERATOR_DESC"), // NOI18N
-            "sequence", NbBundle.getMessage(CompletionManager.class, "SEQUENCE_GENERATOR_DESC"), // NOI18N
-            "hilo", NbBundle.getMessage(CompletionManager.class, "HILO_GENERATOR_DESC"), // NOI18N
-            "seqhilo", NbBundle.getMessage(CompletionManager.class, "SEQHILO_GENERATOR_DESC"), // NOI18N
-            "uuid", NbBundle.getMessage(CompletionManager.class, "UUID_GENERATOR_DESC"), // NOI18N
-            "guid", NbBundle.getMessage(CompletionManager.class, "GUID_GENERATOR_DESC"), // NOI18N
-            "native", NbBundle.getMessage(CompletionManager.class, "NATIVE_GENERATOR_DESC"), // NOI18N
-            "assigned", NbBundle.getMessage(CompletionManager.class, "ASSIGNED_GENERATOR_DESC"), // NOI18N
-            "select", NbBundle.getMessage(CompletionManager.class, "SELECT_GENERATOR_DESC"), // NOI18N
-            "foreign", NbBundle.getMessage(CompletionManager.class, "FOREIGN_GENERATOR_DESC"), // NOI18N
-            "sequence-identity", NbBundle.getMessage(CompletionManager.class, "SEQUENCE_IDENTITY_GENERATOR_DESC") // NOI18N
+            "increment", NbBundle.getMessage(HibernateMappingCompletionManager.class, "INCREMENT_GENERATOR_DESC"), // NOI18N
+            "identity", NbBundle.getMessage(HibernateMappingCompletionManager.class, "IDENTITY_GENERATOR_DESC"), // NOI18N
+            "sequence", NbBundle.getMessage(HibernateMappingCompletionManager.class, "SEQUENCE_GENERATOR_DESC"), // NOI18N
+            "hilo", NbBundle.getMessage(HibernateMappingCompletionManager.class, "HILO_GENERATOR_DESC"), // NOI18N
+            "seqhilo", NbBundle.getMessage(HibernateMappingCompletionManager.class, "SEQHILO_GENERATOR_DESC"), // NOI18N
+            "uuid", NbBundle.getMessage(HibernateMappingCompletionManager.class, "UUID_GENERATOR_DESC"), // NOI18N
+            "guid", NbBundle.getMessage(HibernateMappingCompletionManager.class, "GUID_GENERATOR_DESC"), // NOI18N
+            "native", NbBundle.getMessage(HibernateMappingCompletionManager.class, "NATIVE_GENERATOR_DESC"), // NOI18N
+            "assigned", NbBundle.getMessage(HibernateMappingCompletionManager.class, "ASSIGNED_GENERATOR_DESC"), // NOI18N
+            "select", NbBundle.getMessage(HibernateMappingCompletionManager.class, "SELECT_GENERATOR_DESC"), // NOI18N
+            "foreign", NbBundle.getMessage(HibernateMappingCompletionManager.class, "FOREIGN_GENERATOR_DESC"), // NOI18N
+            "sequence-identity", NbBundle.getMessage(HibernateMappingCompletionManager.class, "SEQUENCE_IDENTITY_GENERATOR_DESC") // NOI18N
+         // NOI18N
         };
 
         // Completion items for Hibernate type
         String[] hibernateTypes = new String[]{
-            "big_decimal", NbBundle.getMessage(CompletionManager.class, "BIG_DECIMAL_DESC"), // NOI18N
-            "big_integer", NbBundle.getMessage(CompletionManager.class, "BIG_INTEGER_DESC"), // NOI18N
-            "binary", NbBundle.getMessage(CompletionManager.class, "BINARY_DESC"), // NOI18N
-            "blob", NbBundle.getMessage(CompletionManager.class, "BLOB_DESC"), // NOI18N
-            "boolean", NbBundle.getMessage(CompletionManager.class, "BOOLEAN_DESC"), // NOI18N
-            "byte", NbBundle.getMessage(CompletionManager.class, "BYTE_DESC"), // NOI18N
-            "calendar", NbBundle.getMessage(CompletionManager.class, "CALENDAR_DESC"), // NOI18N
-            "calendar_date", NbBundle.getMessage(CompletionManager.class, "CALENDAR_DATE_DESC"), // NOI18N
-            "character", NbBundle.getMessage(CompletionManager.class, "CHARACTER_DESC"), // NOI18N
-            "class", NbBundle.getMessage(CompletionManager.class, "CLASS_DESC"), // NOI18N
-            "clob", NbBundle.getMessage(CompletionManager.class, "CLOB_DESC"), // NOI18N
-            "currency", NbBundle.getMessage(CompletionManager.class, "CURRENCY_DESC"), // NOI18N
-            "date", NbBundle.getMessage(CompletionManager.class, "DATE_DESC"), // NOI18N
-            "double", NbBundle.getMessage(CompletionManager.class, "DOUBLE_DESC"), // NOI18N
-            "float", NbBundle.getMessage(CompletionManager.class, "FLOAT_DESC"), // NOI18N
-            "imm_binary", NbBundle.getMessage(CompletionManager.class, "IMM_BINARY_DESC"), // NOI18N
-            "imm_calendar", NbBundle.getMessage(CompletionManager.class, "IMM_CALENDAR_DESC"), // NOI18N
-            "imm_calendar_date", NbBundle.getMessage(CompletionManager.class, "IMM_CALENDAR_DATE_DESC"), // NOI18N
-            "imm_date", NbBundle.getMessage(CompletionManager.class, "IMM_DATE_DESC"), // NOI18N
-            "imm_serializable", NbBundle.getMessage(CompletionManager.class, "IMM_SERIALIZABLE_DESC"), // NOI18N
-            "imm_time", NbBundle.getMessage(CompletionManager.class, "IMM_TIME_DESC"), // NOI18N
-            "imm_timestamp", NbBundle.getMessage(CompletionManager.class, "IMM_TIMESTAMP_DESC"), // NOI18N
-            "integer", NbBundle.getMessage(CompletionManager.class, "INTEGER_DESC"), // NOI18N
-            "locale", NbBundle.getMessage(CompletionManager.class, "LOCALE_DESC"), // NOI18N
-            "long", NbBundle.getMessage(CompletionManager.class, "LONG_DESC"), // NOI18N
-            "serializable", NbBundle.getMessage(CompletionManager.class, "SERIALIZABLE_DESC"), // NOI18N
-            "short", NbBundle.getMessage(CompletionManager.class, "SHORT_DESC"), // NOI18N
-            "string", NbBundle.getMessage(CompletionManager.class, "STRING_DESC"), // NOI18N
-            "text", NbBundle.getMessage(CompletionManager.class, "TEXT_DESC"), // NOI18N
-            "time", NbBundle.getMessage(CompletionManager.class, "TIME_DESC"), // NOI18N
-            "timestamp", NbBundle.getMessage(CompletionManager.class, "TIMESTAMP_DESC"), // NOI18N
-            "timezone", NbBundle.getMessage(CompletionManager.class, "TIMEZONE_DESC"), // NOI18N,
-            "true_false", NbBundle.getMessage(CompletionManager.class, "TRUE_FALSE_DESC"), // NOI18N
-            "yes_no", NbBundle.getMessage(CompletionManager.class, "YES_NO_DESC") // NOI18N
+            "big_decimal", NbBundle.getMessage(HibernateMappingCompletionManager.class, "BIG_DECIMAL_DESC"), // NOI18N
+            "big_integer", NbBundle.getMessage(HibernateMappingCompletionManager.class, "BIG_INTEGER_DESC"), // NOI18N
+            "binary", NbBundle.getMessage(HibernateMappingCompletionManager.class, "BINARY_DESC"), // NOI18N
+            "blob", NbBundle.getMessage(HibernateMappingCompletionManager.class, "BLOB_DESC"), // NOI18N
+            "boolean", NbBundle.getMessage(HibernateMappingCompletionManager.class, "BOOLEAN_DESC"), // NOI18N
+            "byte", NbBundle.getMessage(HibernateMappingCompletionManager.class, "BYTE_DESC"), // NOI18N
+            "calendar", NbBundle.getMessage(HibernateMappingCompletionManager.class, "CALENDAR_DESC"), // NOI18N
+            "calendar_date", NbBundle.getMessage(HibernateMappingCompletionManager.class, "CALENDAR_DATE_DESC"), // NOI18N
+            "character", NbBundle.getMessage(HibernateMappingCompletionManager.class, "CHARACTER_DESC"), // NOI18N
+            "class", NbBundle.getMessage(HibernateMappingCompletionManager.class, "CLASS_DESC"), // NOI18N
+            "clob", NbBundle.getMessage(HibernateMappingCompletionManager.class, "CLOB_DESC"), // NOI18N
+            "currency", NbBundle.getMessage(HibernateMappingCompletionManager.class, "CURRENCY_DESC"), // NOI18N
+            "date", NbBundle.getMessage(HibernateMappingCompletionManager.class, "DATE_DESC"), // NOI18N
+            "double", NbBundle.getMessage(HibernateMappingCompletionManager.class, "DOUBLE_DESC"), // NOI18N
+            "float", NbBundle.getMessage(HibernateMappingCompletionManager.class, "FLOAT_DESC"), // NOI18N
+            "imm_binary", NbBundle.getMessage(HibernateMappingCompletionManager.class, "IMM_BINARY_DESC"), // NOI18N
+            "imm_calendar", NbBundle.getMessage(HibernateMappingCompletionManager.class, "IMM_CALENDAR_DESC"), // NOI18N
+            "imm_calendar_date", NbBundle.getMessage(HibernateMappingCompletionManager.class, "IMM_CALENDAR_DATE_DESC"), // NOI18N
+            "imm_date", NbBundle.getMessage(HibernateMappingCompletionManager.class, "IMM_DATE_DESC"), // NOI18N
+            "imm_serializable", NbBundle.getMessage(HibernateMappingCompletionManager.class, "IMM_SERIALIZABLE_DESC"), // NOI18N
+            "imm_time", NbBundle.getMessage(HibernateMappingCompletionManager.class, "IMM_TIME_DESC"), // NOI18N
+            "imm_timestamp", NbBundle.getMessage(HibernateMappingCompletionManager.class, "IMM_TIMESTAMP_DESC"), // NOI18N
+            "integer", NbBundle.getMessage(HibernateMappingCompletionManager.class, "INTEGER_DESC"), // NOI18N
+            "locale", NbBundle.getMessage(HibernateMappingCompletionManager.class, "LOCALE_DESC"), // NOI18N
+            "long", NbBundle.getMessage(HibernateMappingCompletionManager.class, "LONG_DESC"), // NOI18N
+            "serializable", NbBundle.getMessage(HibernateMappingCompletionManager.class, "SERIALIZABLE_DESC"), // NOI18N
+            "short", NbBundle.getMessage(HibernateMappingCompletionManager.class, "SHORT_DESC"), // NOI18N
+            "string", NbBundle.getMessage(HibernateMappingCompletionManager.class, "STRING_DESC"), // NOI18N
+            "text", NbBundle.getMessage(HibernateMappingCompletionManager.class, "TEXT_DESC"), // NOI18N
+            "time", NbBundle.getMessage(HibernateMappingCompletionManager.class, "TIME_DESC"), // NOI18N
+            "timestamp", NbBundle.getMessage(HibernateMappingCompletionManager.class, "TIMESTAMP_DESC"), // NOI18N
+            "timezone", NbBundle.getMessage(HibernateMappingCompletionManager.class, "TIMEZONE_DESC"), // NOI18N,
+            "true_false", NbBundle.getMessage(HibernateMappingCompletionManager.class, "TRUE_FALSE_DESC"), // NOI18N
+            "yes_no", NbBundle.getMessage(HibernateMappingCompletionManager.class, "YES_NO_DESC") // NOI18N
+         // NOI18N
         };
 
         String[] cascadeStyles = new String[]{
@@ -208,6 +213,7 @@ public final class CompletionManager {
         registerCompletor(ELEMENT_TAG, TYPE_ATTRIB, typeCompletor);
         registerCompletor(MAP_KEY_TAG, TYPE_ATTRIB, typeCompletor);
         registerCompletor(INDEX_TAG, TYPE_ATTRIB, typeCompletor);
+        registerCompletor(ANY_TAG, ID_TYPE_ATTRIB, typeCompletor);
 
         // Items for classes to be mapped
         JavaClassCompletor javaClassCompletor = new JavaClassCompletor(false);
@@ -280,9 +286,9 @@ public final class CompletionManager {
         registerCompletor(ANY_TAG, CASCADE_ATTRIB, cascadeStyleCompletor);
         registerCompletor(MAP_TAG, CASCADE_ATTRIB, cascadeStyleCompletor);
     }
-    private static CompletionManager INSTANCE = new CompletionManager();
+    private static HibernateMappingCompletionManager INSTANCE = new HibernateMappingCompletionManager();
 
-    public static CompletionManager getDefault() {
+    public static HibernateMappingCompletionManager getDefault() {
         return INSTANCE;
     }
 
@@ -311,7 +317,7 @@ public final class CompletionManager {
 
         private int anchorOffset = -1;
 
-        public abstract List<HibernateMappingCompletionItem> doCompletion(CompletionContext context);
+        public abstract List<HibernateCompletionItem> doCompletion(CompletionContext context);
 
         protected void setAnchorOffset(int anchorOffset) {
             this.anchorOffset = anchorOffset;
@@ -374,14 +380,14 @@ public final class CompletionManager {
             this.itemTextAndDocs = itemTextAndDocs;
         }
 
-        public List<HibernateMappingCompletionItem> doCompletion(CompletionContext context) {
-            List<HibernateMappingCompletionItem> results = new ArrayList<HibernateMappingCompletionItem>();
+        public List<HibernateCompletionItem> doCompletion(CompletionContext context) {
+            List<HibernateCompletionItem> results = new ArrayList<HibernateCompletionItem>();
             int caretOffset = context.getCaretOffset();
             String typedChars = context.getTypedPrefix();
 
             for (int i = 0; i < itemTextAndDocs.length; i += 2) {
                 if (itemTextAndDocs[i].startsWith(typedChars.trim())) {
-                    HibernateMappingCompletionItem item = HibernateMappingCompletionItem.createAttribValueItem(caretOffset - typedChars.length(),
+                    HibernateCompletionItem item = HibernateCompletionItem.createAttribValueItem(caretOffset - typedChars.length(),
                             itemTextAndDocs[i], itemTextAndDocs[i + 1]);
                     results.add(item);
                 }
@@ -404,8 +410,8 @@ public final class CompletionManager {
             this.itemTextAndDocs = itemTextAndDocs;
         }
 
-        public List<HibernateMappingCompletionItem> doCompletion(CompletionContext context) {
-            List<HibernateMappingCompletionItem> results = new ArrayList<HibernateMappingCompletionItem>();
+        public List<HibernateCompletionItem> doCompletion(CompletionContext context) {
+            List<HibernateCompletionItem> results = new ArrayList<HibernateCompletionItem>();
             int caretOffset = context.getCaretOffset();
             String typedChars = context.getTypedPrefix();
 
@@ -419,7 +425,7 @@ public final class CompletionManager {
 
             for (int i = 0; i < itemTextAndDocs.length; i += 2) {
                 if (itemTextAndDocs[i].startsWith(styleName.trim())) {
-                    HibernateMappingCompletionItem item = HibernateMappingCompletionItem.createCascadeStyleItem(caretOffset - styleName.length(),
+                    HibernateCompletionItem item = HibernateCompletionItem.createCascadeStyleItem(caretOffset - styleName.length(),
                             itemTextAndDocs[i], itemTextAndDocs[i + 1]);
                     results.add(item);
                 }
@@ -441,8 +447,8 @@ public final class CompletionManager {
             this.packageOnly = packageOnly;
         }
 
-        public List<HibernateMappingCompletionItem> doCompletion(final CompletionContext context) {
-            final List<HibernateMappingCompletionItem> results = new ArrayList<HibernateMappingCompletionItem>();
+        public List<HibernateCompletionItem> doCompletion(final CompletionContext context) {
+            final List<HibernateCompletionItem> results = new ArrayList<HibernateCompletionItem>();
             try {
                 Document doc = context.getDocument();
                 final String typedChars = context.getTypedPrefix();
@@ -464,7 +470,7 @@ public final class CompletionManager {
             return results;
         }
 
-        private void doNormalJavaCompletion(JavaSource js, final List<HibernateMappingCompletionItem> results,
+        private void doNormalJavaCompletion(JavaSource js, final List<HibernateCompletionItem> results,
                 final String typedPrefix, final int substitutionOffset) throws IOException {
             js.runUserActionTask(new Task<CompilationController>() {
 
@@ -492,7 +498,7 @@ public final class CompletionManager {
                         for (Element pkgChild : pkgChildren) {
                             if ((pkgChild.getKind() == ElementKind.CLASS) && pkgChild.getSimpleName().toString().startsWith(classPrefix)) {
                                 TypeElement typeElement = (TypeElement) pkgChild;
-                                HibernateMappingCompletionItem item = HibernateMappingCompletionItem.createTypeItem(substitutionOffset,
+                                HibernateCompletionItem item = HibernateCompletionItem.createTypeItem(substitutionOffset,
                                         typeElement, ElementHandle.create(typeElement),
                                         cc.getElements().isDeprecated(pkgChild), false);
                                 results.add(item);
@@ -505,7 +511,7 @@ public final class CompletionManager {
             }, true);
         }
 
-        private void doSmartJavaCompletion(final JavaSource js, final List<HibernateMappingCompletionItem> results,
+        private void doSmartJavaCompletion(final JavaSource js, final List<HibernateCompletionItem> results,
                 final String typedPrefix, final int substitutionOffset) throws IOException {
             js.runUserActionTask(new Task<CompilationController>() {
 
@@ -534,11 +540,11 @@ public final class CompletionManager {
             setAnchorOffset(substitutionOffset);
         }
 
-        private void addPackages(ClassIndex ci, List<HibernateMappingCompletionItem> results, String typedPrefix, int substitutionOffset) {
+        private void addPackages(ClassIndex ci, List<HibernateCompletionItem> results, String typedPrefix, int substitutionOffset) {
             Set<String> packages = ci.getPackageNames(typedPrefix, true, EnumSet.allOf(SearchScope.class));
             for (String pkg : packages) {
                 if (pkg.length() > 0) {
-                    HibernateMappingCompletionItem item = HibernateMappingCompletionItem.createPackageItem(substitutionOffset, pkg, false);
+                    HibernateCompletionItem item = HibernateCompletionItem.createPackageItem(substitutionOffset, pkg, false);
                     results.add(item);
                 }
             }
@@ -551,9 +557,9 @@ public final class CompletionManager {
         }
 
         @Override
-        public List<HibernateMappingCompletionItem> doCompletion(final CompletionContext context) {
+        public List<HibernateCompletionItem> doCompletion(final CompletionContext context) {
 
-            final List<HibernateMappingCompletionItem> results = new ArrayList<HibernateMappingCompletionItem>();
+            final List<HibernateCompletionItem> results = new ArrayList<HibernateCompletionItem>();
             final int caretOffset = context.getCaretOffset();
             final String typedChars = context.getTypedPrefix();
 
@@ -579,7 +585,7 @@ public final class CompletionManager {
                         for (Element clsChild : clsChildren) {
                             if (clsChild.getKind() == ElementKind.FIELD) {
                                 VariableElement elem = (VariableElement) clsChild;
-                                HibernateMappingCompletionItem item = HibernateMappingCompletionItem.createClassPropertyItem(caretOffset - typedChars.length(), elem, ElementHandle.create(elem), cc.getElements().isDeprecated(clsChild));
+                                HibernateCompletionItem item = HibernateCompletionItem.createClassPropertyItem(caretOffset - typedChars.length(), elem, ElementHandle.create(elem), cc.getElements().isDeprecated(clsChild));
                                 results.add(item);
                             }
                         }
@@ -604,8 +610,8 @@ public final class CompletionManager {
         }
 
         @Override
-        public List<HibernateMappingCompletionItem> doCompletion(CompletionContext context) {
-            List<HibernateMappingCompletionItem> results = new ArrayList<HibernateMappingCompletionItem>();
+        public List<HibernateCompletionItem> doCompletion(CompletionContext context) {
+            List<HibernateCompletionItem> results = new ArrayList<HibernateCompletionItem>();
             int caretOffset = context.getCaretOffset();
             String typedChars = context.getTypedPrefix();
 
@@ -621,7 +627,7 @@ public final class CompletionManager {
             tableNames.add("VALIDATION_TABLE");
 
             for (String tableName : tableNames) {
-                HibernateMappingCompletionItem item = HibernateMappingCompletionItem.createDatabaseTableItem(
+                HibernateCompletionItem item = HibernateCompletionItem.createDatabaseTableItem(
                         caretOffset - typedChars.length(), tableName);
                 results.add(item);
             }
@@ -639,8 +645,8 @@ public final class CompletionManager {
         }
 
         @Override
-        public List<HibernateMappingCompletionItem> doCompletion(CompletionContext context) {
-            List<HibernateMappingCompletionItem> results = new ArrayList<HibernateMappingCompletionItem>();
+        public List<HibernateCompletionItem> doCompletion(CompletionContext context) {
+            List<HibernateCompletionItem> results = new ArrayList<HibernateCompletionItem>();
             int caretOffset = context.getCaretOffset();
             String typedChars = context.getTypedPrefix();
 
@@ -681,7 +687,7 @@ public final class CompletionManager {
                     pk = true;
                 }
 
-                HibernateMappingCompletionItem item = HibernateMappingCompletionItem.createDatabaseColumnItem(
+                HibernateCompletionItem item = HibernateCompletionItem.createDatabaseColumnItem(
                         caretOffset - typedChars.length(), columnName, pk);
                 results.add(item);
             }

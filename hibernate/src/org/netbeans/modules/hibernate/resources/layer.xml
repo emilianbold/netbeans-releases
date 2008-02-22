@@ -190,7 +190,7 @@ made subject to such option by the copyright holder.
         <folder name="Hibernate">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.hibernate.resources.Bundle"/>
             <attr name="position" intvalue="1450"/>
-            <file name="HibernateConfig.cfg.xml" url="HibernateConfig.xml">
+            <file name="Hibernate.cfg.xml" url="HibernateConfig.xml">
                 <attr name="position" intvalue="100"/>
                 <attr name="template" boolvalue="true"/>                
                 <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.hibernate.wizards.HibernateConfigurationWizard.create"/>
@@ -198,7 +198,7 @@ made subject to such option by the copyright holder.
                 <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/hibernate/resources/HibernateConfigurationFile.html"/>
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.hibernate.resources.Bundle"/>                                		
             </file>
-            <file name="HibernateMapping.hbm.xml" url="HibernateMapping.xml">
+            <file name="Hibernate.hbm.xml" url="HibernateMapping.xml">
                 <attr name="position" intvalue="200"/>
                 <attr name="template" boolvalue="true"/>                
                 <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.hibernate.wizards.HibernateMappingWizard.create"/>

@@ -82,13 +82,13 @@ public class HibernateMappingCompletionQuery extends AsyncCompletionQuery {
 
         switch (context.getCompletionType()) {
             case ATTRIBUTE_VALUE:
-                CompletionManager.getDefault().completeAttributeValues(resultSet, context);
+                HibernateMappingCompletionManager.getDefault().completeAttributeValues(resultSet, context);
                 break;
             case ATTRIBUTE:
-                CompletionManager.getDefault().completeAttributes(resultSet, context);
+                HibernateMappingCompletionManager.getDefault().completeAttributes(resultSet, context);
                 break;
             case TAG:
-                CompletionManager.getDefault().completeElements(resultSet, context);
+                HibernateMappingCompletionManager.getDefault().completeElements(resultSet, context);
                 break;
             }
 

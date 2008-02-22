@@ -38,14 +38,10 @@
  */
 package org.netbeans.modules.hibernate.loaders.mapping.multiview;
 
-import javax.swing.Action;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.hibernate.loaders.mapping.HibernateMappingDataObject;
 import org.netbeans.modules.hibernate.mapping.model.HibernateMapping;
-import org.netbeans.modules.hibernate.mapping.model.MyClass;
-import org.netbeans.modules.hibernate.mapping.model.Resultset;
-import org.netbeans.modules.hibernate.mapping.model.Typedef;
 import org.netbeans.modules.xml.multiview.ToolBarMultiViewElement;
 import org.netbeans.modules.xml.multiview.ui.SectionView;
 import org.netbeans.modules.xml.multiview.ui.ToolBarDesignEditor;
@@ -55,9 +51,7 @@ import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.netbeans.modules.xml.multiview.Error;
 import org.netbeans.modules.xml.multiview.ui.SectionContainer;
-import org.netbeans.modules.xml.multiview.ui.SectionContainerNode;
 import org.netbeans.modules.xml.multiview.ui.SectionPanel;
-import org.openide.util.NbBundle;
 
 /**
  * ToolBarMultiView for Hibernate Configuration file
@@ -77,9 +71,7 @@ public class HibernateMappingToolBarMVElement extends ToolBarMultiViewElement {
     private Project project;
 
     public HibernateMappingToolBarMVElement(HibernateMappingDataObject dObj) {
-        // TODO: not supported till I can figure out conflicts between the XmlMultiViewDataObject and completion provider
-        //super(dOjb);
-        super(null);
+        super(dObj);
         this.mappingDataObject = dObj;
         this.project = FileOwnerQuery.getOwner(dObj.getPrimaryFile());
 

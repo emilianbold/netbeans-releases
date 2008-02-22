@@ -123,4 +123,17 @@ public class HibernateCompletionEditorUtil {
 
         return null;
     }
+    
+    public static String getHbPropertyName(Node tag) {
+        if(!tag.getNodeName().equalsIgnoreCase("property"))
+            return null;
+        else {
+            NamedNodeMap attribs = tag.getAttributes();
+            if(attribs != null && attribs.getNamedItem("name") != null) { // NOI18N
+                return attribs.getNamedItem("name").getNodeValue();
+            }
+        }
+           
+        return null;
+    }
 }
