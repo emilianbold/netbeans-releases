@@ -69,28 +69,28 @@ public class SourceForBinaryImplTest extends TestBase {
     }
     
     public void testFindSourceRootForCompiledClasses() throws Exception {
-        doTestFindSourceRootForCompiledClasses("java/project/src", "java/project/build/classes");
-        doTestFindSourceRootForCompiledClasses("java/project/test/unit/src", "java/project/build/test/unit/classes");
-        doTestFindSourceRootForCompiledClasses("ant/freeform/src", "ant/freeform/build/classes");
-        doTestFindSourceRootForCompiledClasses("ant/freeform/test/unit/src", "ant/freeform/build/test/unit/classes");
+        doTestFindSourceRootForCompiledClasses("java.project/src", "java.project/build/classes");
+        doTestFindSourceRootForCompiledClasses("java.project/test/unit/src", "java.project/build/test/unit/classes");
+        doTestFindSourceRootForCompiledClasses("ant.freeform/src", "ant.freeform/build/classes");
+        doTestFindSourceRootForCompiledClasses("ant.freeform/test/unit/src", "ant.freeform/build/test/unit/classes");
     }
     
     public void testExtraCompilationUnits() throws Exception {
-        doTestFindSourceRootForCompiledClasses("ant/src-bridge", "ant/build/bridge-classes");
+        doTestFindSourceRootForCompiledClasses("o.apache.tools.ant.module/src-bridge", "o.apache.tools.ant.module/build/bridge-classes");
         // Have to load at least one module to get the scan going.
         ClassPath.getClassPath(FileUtil.toFileObject(file("beans/src")), ClassPath.COMPILE);
-        check("ant/src-bridge", TestBase.CLUSTER_JAVA + "/ant/nblib/bridge.jar");
+        check("o.apache.tools.ant.module/src-bridge", TestBase.CLUSTER_JAVA + "/ant/nblib/bridge.jar");
     }
     
     public void testFindSourceRootForModuleJar() throws Exception {
-        ClassPath.getClassPath(FileUtil.toFileObject(file("ant/src")), ClassPath.COMPILE);
-        check("java/project/src", TestBase.CLUSTER_JAVA + "/modules/org-netbeans-modules-java-project.jar");
-        check("openide/loaders/src", TestBase.CLUSTER_PLATFORM + "/modules/org-openide-loaders.jar");
-        check("core/bootstrap/src", TestBase.CLUSTER_PLATFORM + "/lib/boot.jar");
+        ClassPath.getClassPath(FileUtil.toFileObject(file("o.apache.tools.ant.module/src")), ClassPath.COMPILE);
+        check("java.project/src", TestBase.CLUSTER_JAVA + "/modules/org-netbeans-modules-java-project.jar");
+        check("openide.loaders/src", TestBase.CLUSTER_PLATFORM + "/modules/org-openide-loaders.jar");
+        check("o.n.bootstrap/src", TestBase.CLUSTER_PLATFORM + "/lib/boot.jar");
         check("diff/src", TestBase.CLUSTER_IDE + "/modules/org-netbeans-modules-diff.jar");
-        check("editor/libsrc", TestBase.CLUSTER_IDE + "/modules/org-netbeans-modules-editor-lib.jar");
-        check("xtest/nbjunit/src", "testtools/modules/org-netbeans-modules-nbjunit.jar");
-        check("apisupport/project/test/unit/src",file("nbbuild/build/testdist/unit/" + TestBase.CLUSTER_APISUPPORT + "/org-netbeans-modules-apisupport-project/tests.jar"));
+        check("editor.lib/src", TestBase.CLUSTER_IDE + "/modules/org-netbeans-modules-editor-lib.jar");
+        check("nbjunit/src", "testtools/modules/org-netbeans-modules-nbjunit.jar");
+        check("apisupport.project/test/unit/src",file("nbbuild/build/testdist/unit/" + TestBase.CLUSTER_APISUPPORT + "/org-netbeans-modules-apisupport-project/tests.jar"));
     }
     
     public void testExternalModules() throws Exception {
@@ -132,7 +132,7 @@ public class SourceForBinaryImplTest extends TestBase {
     }
     
     private void check(String srcS, File jarF) throws Exception {
-        File srcF = PropertyUtils.resolveFile(nbCVSRootFile(), srcS);
+        File srcF = PropertyUtils.resolveFile(nbRootFile(), srcS);
         FileObject src = FileUtil.toFileObject(srcF);
         assertNotNull("have " + srcF, src);
         URL u = FileUtil.getArchiveRoot(jarF.toURI().toURL());

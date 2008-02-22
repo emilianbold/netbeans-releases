@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8"?>
+<?xml version="1.0"?>
 <!--
 DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
@@ -40,18 +40,23 @@ However, if you add GPL Version 2 code and therefore, elected the GPL
 Version 2 license, then the option applies only if the new code is
 made subject to such option by the copyright holder.
 -->
-<project name="apisupport.project/test" basedir="." default="pre-apisupport-test">
-    <property name="xtest.module" value="apisupport.project"/>
-    <import file="../../nbbuild/templates/xtest.xml"/>
-    <property name="xtest.testtype" value="unit"/>
-    <property name="xtest.attribs" value="stable-sources"/>
-    <property name="xtest.ide.use.classloader" value="org.netbeans.modules.apisupport.project"/>
 
-    <target name="pre-apisupport-test" depends="compile-nb-org-sources">
-        <antcall target="all"/>
-    </target>
+<!--
 
-    <target name="compile-nb-org-sources" if="apisupport-test4u">
-        <ant  dir="../../nbbuild/" target="build" inheritAll="false"/>
-    </target>
-</project>
+Here you can register fileobjects, which do not exist on the local filesystem but
+whose attribute settings are stored there. This may occur for example when attributes
+of a fileobject which exists on the XML filesystem, are changed. Since the XML filesystem
+is read-only, new attribute settings are stored on the local filesystem. During upgrading,
+which is done from the local filesystem such a fileobject does not exist and
+thus its attribute settings are not imported.
+
+-->
+<!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.0//EN" "http://www.netbeans.org/dtds/filesystem-1_0.dtd">
+
+<filesystem>
+    <folder name="J2EE">
+        <folder name="InstalledServers">
+            <file name="Tomcat_instance"/>
+        </folder>
+    </folder>
+</filesystem>

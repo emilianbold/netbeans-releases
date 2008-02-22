@@ -505,7 +505,7 @@ public final class NbPlatform {
     
     /**
      * Get associated source roots for this platform.
-     * Each root could be a netbeans.org CVS checkout or a module suite project directory.
+     * Each root could be a netbeans.org source checkout or a module suite project directory.
      * @return a list of source root URLs (may be empty but not null)
      */
     public URL[] getSourceRoots() {

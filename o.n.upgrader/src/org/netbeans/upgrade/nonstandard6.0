@@ -23,7 +23,7 @@
 # Contributor(s):
 #
 # The Original Software is NetBeans. The Initial Developer of the Original
-# Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+# Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
 # Microsystems, Inc. All Rights Reserved.
 #
 # If you wish your version of this file to be governed by only the CDDL
@@ -37,5 +37,15 @@
 # Version 2 license, then the option applies only if the new code is
 # made subject to such option by the copyright holder.
 
+# start the line either with # to begin a comment
+# or include to describe a file(s) to be included during copy
+# or exclude to describe a file(s) to be excluded
+# use of regular expressions allowed in file names 
+#
+# the list is iterated from first to last and the last match
+# decides the result
 
-build.compiler.source=1.4
+#creator
+include complibs/.*
+include jdbc-drivers/.*\.jar
+include context\.xml
