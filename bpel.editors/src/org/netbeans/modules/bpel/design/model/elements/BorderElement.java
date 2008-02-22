@@ -69,6 +69,7 @@ public abstract class BorderElement extends VisualElement {
     }
     
     
-    public static final Paint STROKE_COLOR = new Color(0xD0D0D0);
+    //public static final Paint STROKE_COLOR = new Color(0xD0D0D0);
+     public static final Paint STROKE_COLOR = new Color(0xEEEEEE);
 }
  

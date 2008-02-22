@@ -107,7 +107,7 @@ class NewCndFileChooserPanelGUI extends javax.swing.JPanel implements ActionList
         browseButton.addActionListener( this );
         locationComboBox.addActionListener( this );
         documentNameTextField.getDocument().addDocumentListener( this );
-        //folderTextField.getDocument().addDocumentListener( this );
+        folderTextField.getDocument().addDocumentListener( this );
         
         setName (NbBundle.getMessage(NewCndFileChooserPanelGUI.class, "LBL_SimpleTargetChooserPanel_Name")); // NOI18N
     }
