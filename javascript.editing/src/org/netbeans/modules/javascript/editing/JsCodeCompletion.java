@@ -367,7 +367,7 @@ public class JsCodeCompletion implements Completable {
                     ((kind != NameKind.EXACT_NAME) && startsWith(name, prefix))) {
                 List<Node> nodeList = localVars.get(name);
                 if (nodeList != null && nodeList.size() > 0) {
-                    AstElement element = AstElement.getElement(nodeList.get(0));
+                    AstElement element = AstElement.getElement(request.info, nodeList.get(0));
                     proposals.add(new PlainItem(element, request));
                 }
             }
@@ -1659,7 +1659,7 @@ methods = new HashSet<IndexedFunction>();
 
         public ElementHandle getElement() {
             // XXX Is this called a lot? I shouldn't need it most of the time
-            return JsParser.createHandle(request.info, element);
+            return element;
         }
 
         public ElementKind getKind() {
@@ -2054,7 +2054,7 @@ methods = new HashSet<IndexedFunction>();
         @Override
         public ElementHandle getElement() {
             // For completion documentation
-            return JsParser.createHandle(request.info, new KeywordElement(keyword));
+            return new KeywordElement(keyword);
         }
     }
 
@@ -2116,7 +2116,7 @@ methods = new HashSet<IndexedFunction>();
         @Override
         public ElementHandle getElement() {
             // For completion documentation
-            return JsParser.createHandle(request.info, new KeywordElement(tag));
+            return new KeywordElement(tag);
         }
     }
     
