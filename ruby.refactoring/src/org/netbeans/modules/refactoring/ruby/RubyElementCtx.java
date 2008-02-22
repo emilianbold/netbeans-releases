@@ -143,14 +143,14 @@ public class RubyElementCtx {
                 break;
             }
         }
-        Element element = AstElement.create(leaf);
+        Element element = AstElement.create(info, leaf);
 
         initialize(root, leaf, element, info.getFileObject(), info);
     }
 
     /** Create a new element holder representing the given node in the same context as the given existing context */
     public RubyElementCtx(RubyElementCtx ctx, Node node) {
-        Element element = AstElement.create(node);
+        Element element = AstElement.create(info, node);
 
         initialize(ctx.getRoot(), node, element, ctx.getFileObject(), ctx.getInfo());
     }
@@ -160,7 +160,7 @@ public class RubyElementCtx {
         Node node = AstUtilities.getForeignNode(element, rootRet);
         Node root = rootRet[0];
 
-        Element e = AstElement.create(node);
+        Element e = AstElement.create(info, node);
 
         FileObject fo = element.getFileObject();
         document = RetoucheUtils.getDocument(null, fo);

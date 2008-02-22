@@ -68,7 +68,7 @@ made subject to such option by the copyright holder.
             <include name="rubystubs/*"/>
           </fileset>
         </chmod>
-        <unzip dest="${cluster}" src="release/rubystubs.zip"/>
+        <unzip dest="${cluster}" src="external/rubystubs.zip"/>
 
         <!-- Don't make the files read-only since this is probably going
              to create headaches for Auto Update! My thought here was that
@@ -83,8 +83,8 @@ made subject to such option by the copyright holder.
         </chmod>
         -->
 
-        <unzip dest="${cluster}/../" src="release/preindexed.zip"/>
-        <unzip dest="${cluster}" src="release/preindexed-native.zip"/>
+        <unzip dest="${cluster}/../" src="external/preindexed.zip"/>
+        <unzip dest="${cluster}" src="external/preindexed-native.zip"/>
     </target>
 
 </project>
