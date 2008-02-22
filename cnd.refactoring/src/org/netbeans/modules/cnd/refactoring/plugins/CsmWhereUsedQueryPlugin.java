@@ -42,6 +42,7 @@ package org.netbeans.modules.cnd.refactoring.plugins;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -89,15 +90,36 @@ public class CsmWhereUsedQueryPlugin extends CsmRefactoringPlugin {
         if (referencedObject == null) {
             return null;
         }
-        List<CsmObject> referencedObjects = getObjectsForFindUsages(referencedObject);
-        CsmFile startFile = getCsmFile(startReferenceObject);     
-        Set<CsmFile> files = new HashSet<CsmFile>();
-        for (CsmObject csmObject : referencedObjects) {
-            files.addAll(getRelevantFiles(startFile, csmObject, refactoring));
+        if (isFindUsages()) {
+            if (CsmKindUtilities.isFile(referencedObject)) {
+                fireProgressListenerStart(ProgressEvent.START, 1);
+                processIncludeQuery((CsmFile)referencedObject, elements);
+                fireProgressListenerStep();
+                fireProgressListenerStop();
+            } else {
+                Collection<CsmObject> referencedObjects = getObjectsForFindUsages(referencedObject);
+                CsmFile startFile = getCsmFile(startReferenceObject);     
+                Set<CsmFile> files = new HashSet<CsmFile>();
+                for (CsmObject csmObject : referencedObjects) {
+                    files.addAll(getRelevantFiles(startFile, csmObject, refactoring));
+                }
+                fireProgressListenerStart(ProgressEvent.START, files.size());
+                processObjectUsagesQuery(referencedObjects, elements, files);
+                fireProgressListenerStop();
+            }
+        } else if (isFindDirectSubclassesOnly() || isFindSubclasses()) {
+            assert CsmKindUtilities.isClass(referencedObject) : "must be class";
+            fireProgressListenerStart(ProgressEvent.START, 1);
+            processSubclassesQuery((CsmClass)referencedObject, elements);
+            fireProgressListenerStep();
+            fireProgressListenerStop();
+        } else if (isFindOverridingMethods()) {
+            assert CsmKindUtilities.isMethod(referencedObject) : "must be method";
+            fireProgressListenerStart(ProgressEvent.START, 1);
+            processOverridenMethodsQuery((CsmMethod)referencedObject, elements);
+            fireProgressListenerStep();
+            fireProgressListenerStop();
         }
-        fireProgressListenerStart(ProgressEvent.START, files.size());
-        processQuery(referencedObject, elements, files);
-        fireProgressListenerStop();
         return null;
     }
 
@@ -169,7 +191,7 @@ public class CsmWhereUsedQueryPlugin extends CsmRefactoringPlugin {
                 CsmMethod method = (CsmMethod)referencedObject;
                 if (CsmVirtualInfoQuery.getDefault().isVirtual(method)) {
                     out.addAll(CsmVirtualInfoQuery.getDefault().getOverridenMethods(method, isSearchFromBaseClass()));
-                    addStartObject = false;
+                    addStartObject = true;
                 }
             }
             if (addStartObject) {
@@ -202,40 +224,45 @@ public class CsmWhereUsedQueryPlugin extends CsmRefactoringPlugin {
     private boolean isSearchInComments() {
         return refactoring.getBooleanValue(WhereUsedQuery.SEARCH_IN_COMMENTS);
     }
-
-    private void processQuery(final CsmObject csmObject, 
+    
+    private void processObjectUsagesQuery(final Collection<CsmObject> csmObjects, 
             final RefactoringElementsBag elements,
             final Collection<CsmFile> files) {
-        if (isFindUsages()) {
-            if (CsmKindUtilities.isFile(csmObject)) {
-                Collection<CsmReference> refs = CsmIncludeHierarchyResolver.getDefault().getIncludes((CsmFile)csmObject);
-                for (CsmReference csmReference : refs) {
-                    elements.add(refactoring, CsmRefactoringElementImpl.create(csmReference, false));
-                }      
-            } else {
-                CsmReferenceRepository xRef = CsmReferenceRepository.getDefault();
-                for (CsmFile file : files) {
-                    if (cancelRequest) {
-                        break;
-                    }
-                    Collection<CsmReference> refs = xRef.getReferences(csmObject, file, CsmReferenceKind.ANY_USAGE);
-                    for (CsmReference csmReference : refs) {
-                        elements.add(refactoring, CsmRefactoringElementImpl.create(csmReference, true));
-                    }      
-                    fireProgressListenerStep();
-                }
+        assert isFindUsages() : "must be find usages mode";
+        CsmReferenceRepository xRef = CsmReferenceRepository.getDefault();
+        EnumSet<CsmReferenceKind> kinds = isFindOverridingMethods() ? CsmReferenceKind.ALL : CsmReferenceKind.ANY_USAGE;
+        CsmObject[] objs = csmObjects.toArray(new CsmObject[csmObjects.size()]);
+        for (CsmFile file : files) {
+            if (cancelRequest) {
+                break;
             }
-        } else if (isFindDirectSubclassesOnly() || isFindSubclasses()) {
-            assert (CsmKindUtilities.isClass(csmObject));
-            CsmClass referencedClass = (CsmClass)csmObject;
-            boolean directSubtypesOnly = isFindDirectSubclassesOnly();
-            Collection<CsmReference> refs = CsmTypeHierarchyResolver.getDefault().getSubTypes(referencedClass, directSubtypesOnly);
+            Collection<CsmReference> refs = xRef.getReferences(objs, file, kinds);
             for (CsmReference csmReference : refs) {
-                elements.add(refactoring, CsmRefactoringElementImpl.create(csmReference, false));
-            }             
-        }
-        if (isFindOverridingMethods()) {
-            
+                elements.add(refactoring, CsmRefactoringElementImpl.create(csmReference, true));
+            }      
+            fireProgressListenerStep();
         }
     }
+    
+    private void processOverridenMethodsQuery(final CsmMethod csmMethod, final RefactoringElementsBag elements) {
+        assert isFindOverridingMethods() : "must be search for overriden methods";
+        Collection<CsmMethod> overrides = CsmVirtualInfoQuery.getDefault().getOverridenMethods(csmMethod, isSearchFromBaseClass());        
+    }
+    
+    private void processIncludeQuery(final CsmFile csmFile, final RefactoringElementsBag elements) {
+        assert isFindUsages() : "must be find usages";
+        Collection<CsmReference> refs = CsmIncludeHierarchyResolver.getDefault().getIncludes(csmFile);
+        for (CsmReference csmReference : refs) {
+            elements.add(refactoring, CsmRefactoringElementImpl.create(csmReference, false));
+        }              
+    }
+    
+    private void processSubclassesQuery(final CsmClass referencedClass, final RefactoringElementsBag elements) {
+        assert isFindDirectSubclassesOnly() || isFindSubclasses() : "must be search of subclasses";
+        boolean directSubtypesOnly = isFindDirectSubclassesOnly();
+        Collection<CsmReference> refs = CsmTypeHierarchyResolver.getDefault().getSubTypes(referencedClass, directSubtypesOnly);
+        for (CsmReference csmReference : refs) {
+            elements.add(refactoring, CsmRefactoringElementImpl.create(csmReference, false));
+        }             
+    }    
 }
