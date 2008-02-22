@@ -60,11 +60,11 @@ public class LocalsTableModel implements TableModel, Constants {
             final String column) throws UnknownTypeException {
         
         if (object == TreeModel.ROOT) {
-            return "";
+            return new LocalsTreeModel.Dummy();
         }
         
         if (object instanceof LocalsTreeModel.Dummy) {
-            return "";
+            return object;
         }
         
         if (column.equals(LOCALS_VALUE_COLUMN_ID)) {
@@ -75,7 +75,7 @@ public class LocalsTableModel implements TableModel, Constants {
                 return myHelper.getValueTooltip(realObject);
             }
             
-            return object;
+            return new Pair(object, myHelper.getValue(object));
         }
         
         if (column.equals(LOCALS_TYPE_COLUMN_ID)) {
@@ -109,10 +109,11 @@ public class LocalsTableModel implements TableModel, Constants {
         
         if (column.equals(LOCALS_VALUE_COLUMN_ID)) {
             if (object instanceof Node) {
-                myHelper.setValue(object, (String) value);
+                myHelper.setValue(object, ((Pair) value).getValue());
             }
             
             fireTableValueChanged(object, LOCALS_VALUE_COLUMN_ID);
+            return;
         }
         
         throw new UnknownTypeException(object);
@@ -163,6 +164,29 @@ public class LocalsTableModel implements TableModel, Constants {
         
         for (int i = 0; i < clone.size(); i++) {
             ((ModelListener) clone.get(i)).modelChanged(event);
+        }
+    }
+    
+    ////////////////////////////////////////////////////////////////////////////
+    // Inner Classes
+    public static class Pair {
+        
+        private Object key;
+        private String value;
+        
+        public Pair(
+                final Object key, 
+                final String value) {
+            this.key = key;
+            this.value = value;
+        }
+        
+        public Object getKey() {
+            return key;
+        }
+        
+        public String getValue() {
+            return value;
         }
     }
 }

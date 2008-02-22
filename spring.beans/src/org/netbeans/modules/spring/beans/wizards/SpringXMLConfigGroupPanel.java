@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- *
+ * 
  * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
- *
+ * 
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,13 +20,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
+ * 
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -37,39 +31,46 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ * 
+ * Contributor(s):
+ * 
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
 package org.netbeans.modules.spring.beans.wizards;
 
 import javax.swing.event.ChangeListener;
+import org.netbeans.api.project.Project;
+import org.netbeans.modules.spring.api.beans.ConfigFileManager;
+import org.netbeans.modules.spring.beans.ProjectSpringScopeProvider;
 import org.openide.WizardDescriptor;
 import org.openide.util.HelpCtx;
 
-public class BeansConfigNamespacesWizardPanel implements WizardDescriptor.Panel {
+/**
+ *
+ * @author Rohan Ranade (Rohan.Ranade@Sun.COM)
+ */
+public class SpringXMLConfigGroupPanel implements WizardDescriptor.Panel {
 
-    public static final String INCLUDED_NAMESPACES = "includedNamespaces"; // NOI18N
+    public static final String CONFIG_FILE_GROUPS = "configFileGroups"; // NOI18N
+    
+    private SpringXMLConfigGroupVisual component;
+    private Project p;
 
-    private SpringXMLConfigNamespacesVisual component;
+    public SpringXMLConfigGroupPanel(Project p) {
+        this.p = p;
+    }
 
-    public SpringXMLConfigNamespacesVisual getComponent() {
+    public SpringXMLConfigGroupVisual getComponent() {
         if (component == null) {
-            component = new SpringXMLConfigNamespacesVisual();
+            ConfigFileManager manager = NewSpringXMLConfigWizardIterator.getConfigFileManager(p);
+            component = new SpringXMLConfigGroupVisual(p, manager.getConfigFileGroups());
         }
         return component;
     }
 
     public HelpCtx getHelp() {
-        return new HelpCtx(BeansConfigNamespacesWizardPanel.class);
-    }
-
-    public boolean isValid() {
-        return true;
-    }
-
-    public final void addChangeListener(ChangeListener l) {
-    }
-
-    public final void removeChangeListener(ChangeListener l) {
+        return new HelpCtx(SpringXMLConfigGroupPanel.class);
     }
 
     public void readSettings(Object settings) {
@@ -77,6 +78,19 @@ public class BeansConfigNamespacesWizardPanel implements WizardDescriptor.Panel 
 
     public void storeSettings(Object settings) {
         WizardDescriptor wd = (WizardDescriptor) settings;
-        wd.putProperty(INCLUDED_NAMESPACES, getComponent().getIncludedNamespaces());
+        wd.putProperty(CONFIG_FILE_GROUPS, getComponent().getSelectedConfigFileGroups());
     }
+
+    public boolean isValid() {
+        return true;
+    }
+
+    public void addChangeListener(ChangeListener l) {
+    }
+
+    public void removeChangeListener(ChangeListener l) {
+    }
+
+    
+
 }

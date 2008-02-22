@@ -39,47 +39,44 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.web.project.parser;
+package org.netbeans.modules.spring.beans.wizards;
 
-import java.io.File;
-import org.netbeans.modules.web.jsps.parserapi.JspParserAPI;
-import org.openide.filesystems.FileObject;
-import java.beans.PropertyChangeListener;
-import org.netbeans.modules.web.api.webmodule.WebModule;
+import javax.swing.event.ChangeListener;
+import org.openide.WizardDescriptor;
+import org.openide.util.HelpCtx;
 
-/**
- *
- * @author Martin Grebac
- */
-public class ParserWebModule extends JspParserAPI.WebModule {
+public class SpringXMLConfigNamespacesPanel implements WizardDescriptor.Panel {
 
-    private WebModule module;
+    public static final String INCLUDED_NAMESPACES = "includedNamespaces"; // NOI18N
 
-    /** Creates a new instance of ParserWebModule */
-    public ParserWebModule(WebModule wm) {
-        module = wm;
+    private SpringXMLConfigNamespacesVisual component;
+
+    public SpringXMLConfigNamespacesVisual getComponent() {
+        if (component == null) {
+            component = new SpringXMLConfigNamespacesVisual();
+        }
+        return component;
     }
 
-    /** Returns the document base directory of the web module.
-     * May return null if we are parsing a tag file that is outside a web module
-     * (that will be packaged into a tag library).
-     */
-    public FileObject getDocumentBase() {
-        return module.getDocumentBase();
+    public HelpCtx getHelp() {
+        return new HelpCtx(SpringXMLConfigNamespacesPanel.class);
     }
 
-    /** Returns InputStream for the file open in editor or null
-     * if the file is not open.
-     */
-    public java.io.InputStream getEditorInputStream (FileObject fo) {
-        return null;
+    public boolean isValid() {
+        return true;
     }
 
-    public void addPropertyChangeListener(PropertyChangeListener l) {}
+    public final void addChangeListener(ChangeListener l) {
+    }
 
-    public void removePropertyChangeListener(PropertyChangeListener l) {}
+    public final void removeChangeListener(ChangeListener l) {
+    }
 
-    public File[] getExtraClasspathEntries() {
-        return null;
+    public void readSettings(Object settings) {
+    }
+
+    public void storeSettings(Object settings) {
+        WizardDescriptor wd = (WizardDescriptor) settings;
+        wd.putProperty(INCLUDED_NAMESPACES, getComponent().getIncludedNamespaces());
     }
 }
