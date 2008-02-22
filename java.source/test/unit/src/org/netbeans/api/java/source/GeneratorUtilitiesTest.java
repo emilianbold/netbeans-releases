@@ -189,6 +189,18 @@ public class GeneratorUtilitiesTest extends NbTestCase {
         performTest("package test;\npublic class Test implements XX {\npublic Test(){\n} }\ninterface XX {public <T extends java.util.List> void test(T t);}", new AddAllAbstractMethodsTask(30), null);
     }
     
+    public void testImplementAllAbstractMethodsb() throws Exception {
+        performTest("package test;\npublic class Test implements java.util.List{\npublic Test(){\n} }\n", new AddAllAbstractMethodsTask(30), null);
+    }
+    
+    public void testImplementAllAbstractMethodsc() throws Exception {
+        performTest("package test;\npublic class Test implements java.util.List<String>{\npublic Test(){\n} }\n", new AddAllAbstractMethodsTask(30), null);
+    }
+    
+    public void testImplementAllAbstractMethodsd() throws Exception {
+        performTest("package test;\npublic class Test implements B {\npublic Test(){\n} }\ninterface A {\npublic Number f();}\ninterface B extends A {\npublic Integer f();}", new AddAllAbstractMethodsTask(30), null);
+    }
+    
     public void testOverrideAnnotation1() throws Exception {
         performTest("package test;\npublic class Test extends C implements B { }\ninterface A {public void test1(); public void test4();}\ninterface B {public void test2();}\nabstract class C implements A {public abstract void test3(); public abstract void test4();}\n", "1.5", new AddAllAbstractMethodsTask(30), new Validator() {
             public void validate(CompilationInfo info) {

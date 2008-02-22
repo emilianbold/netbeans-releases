@@ -801,7 +801,7 @@ class RDocFormatter {
             }
             // TODO - share this between Navigator implementation and here...
             sb.append("<b>");
-            sb.append(executable.getName());
+            sb.append(element.getName());
             sb.append("</b>");
 
             Collection<String> parameters = executable.getParameters();

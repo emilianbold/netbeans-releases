@@ -42,6 +42,7 @@ package org.netbeans.modules.javascript.editing;
 import java.util.ArrayList;
 import java.util.List;
 import org.mozilla.javascript.FunctionNode;
+import org.netbeans.fpi.gsf.CompilationInfo;
 import org.netbeans.fpi.gsf.ElementKind;
 
 public class FunctionAstElement extends AstElement implements FunctionElement {
@@ -50,8 +51,8 @@ public class FunctionAstElement extends AstElement implements FunctionElement {
     private String in;
     private List<String> parameters;
 
-    FunctionAstElement(FunctionNode func) {
-        super(func);
+    FunctionAstElement(CompilationInfo info, FunctionNode func) {
+        super(info, func);
         this.func = func;
     }
 
