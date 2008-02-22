@@ -40,15 +40,22 @@
  */
 package org.netbeans.modules.cnd.refactoring.plugins;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 import org.netbeans.modules.cnd.api.model.CsmClass;
 import org.netbeans.modules.cnd.api.model.CsmFile;
+import org.netbeans.modules.cnd.api.model.CsmMethod;
 import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.CsmUID;
 import org.netbeans.modules.cnd.api.model.CsmValidable;
+import org.netbeans.modules.cnd.api.model.services.CsmVirtualInfoQuery;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.api.model.xref.CsmIncludeHierarchyResolver;
 import org.netbeans.modules.cnd.api.model.xref.CsmReference;
+import org.netbeans.modules.cnd.api.model.xref.CsmReferenceKind;
 import org.netbeans.modules.cnd.api.model.xref.CsmReferenceRepository;
 import org.netbeans.modules.cnd.api.model.xref.CsmTypeHierarchyResolver;
 import org.netbeans.modules.cnd.refactoring.api.WhereUsedQueryConstants;
@@ -82,8 +89,12 @@ public class CsmWhereUsedQueryPlugin extends CsmRefactoringPlugin {
         if (referencedObject == null) {
             return null;
         }
+        List<CsmObject> referencedObjects = getObjectsForFindUsages(referencedObject);
         CsmFile startFile = getCsmFile(startReferenceObject);     
-        Collection<CsmFile> files = getRelevantFiles(startFile, referencedObject, refactoring);
+        Set<CsmFile> files = new HashSet<CsmFile>();
+        for (CsmObject csmObject : referencedObjects) {
+            files.addAll(getRelevantFiles(startFile, csmObject, refactoring));
+        }
         fireProgressListenerStart(ProgressEvent.START, files.size());
         processQuery(referencedObject, elements, files);
         fireProgressListenerStop();
@@ -120,7 +131,12 @@ public class CsmWhereUsedQueryPlugin extends CsmRefactoringPlugin {
 
     @Override
     public Problem fastCheckParameters() {
-        return super.fastCheckParameters();
+        CsmUID uid = refactoring.getRefactoringSource().lookup(CsmUID.class);    
+        if (uid != null && CsmKindUtilities.isMethod((CsmObject)uid.getObject())) {
+            return checkParametersForMethod(isFindOverridingMethods(), isFindUsages());
+        } else {
+            return super.fastCheckParameters();
+        }
     }
     
     
@@ -144,13 +160,33 @@ public class CsmWhereUsedQueryPlugin extends CsmRefactoringPlugin {
             return null;
         }
     }
+
+    private List<CsmObject> getObjectsForFindUsages(CsmObject referencedObject) {
+        List<CsmObject> out = new ArrayList<CsmObject>();
+        if (isFindUsages()) {
+            boolean addStartObject = true;
+            if (CsmKindUtilities.isMethod(referencedObject)) {
+                CsmMethod method = (CsmMethod)referencedObject;
+                if (CsmVirtualInfoQuery.getDefault().isVirtual(method)) {
+                    out.addAll(CsmVirtualInfoQuery.getDefault().getOverridenMethods(method, isSearchFromBaseClass()));
+                    addStartObject = false;
+                }
+            }
+            if (addStartObject) {
+                out.add(referencedObject);
+            }
+        }
+        return out;
+    }
         
     private boolean isFindSubclasses() {
         return refactoring.getBooleanValue(WhereUsedQueryConstants.FIND_SUBCLASSES);
     }
+    
     private boolean isFindUsages() {
         return refactoring.getBooleanValue(WhereUsedQuery.FIND_REFERENCES);
     }
+    
     private boolean isFindDirectSubclassesOnly() {
         return refactoring.getBooleanValue(WhereUsedQueryConstants.FIND_DIRECT_SUBCLASSES);
     }
@@ -182,7 +218,7 @@ public class CsmWhereUsedQueryPlugin extends CsmRefactoringPlugin {
                     if (cancelRequest) {
                         break;
                     }
-                    Collection<CsmReference> refs = xRef.getReferences(csmObject, file, true);
+                    Collection<CsmReference> refs = xRef.getReferences(csmObject, file, CsmReferenceKind.ANY_USAGE);
                     for (CsmReference csmReference : refs) {
                         elements.add(refactoring, CsmRefactoringElementImpl.create(csmReference, true));
                     }      
@@ -197,6 +233,9 @@ public class CsmWhereUsedQueryPlugin extends CsmRefactoringPlugin {
             for (CsmReference csmReference : refs) {
                 elements.add(refactoring, CsmRefactoringElementImpl.create(csmReference, false));
             }             
+        }
+        if (isFindOverridingMethods()) {
+            
         }
     }
 }
