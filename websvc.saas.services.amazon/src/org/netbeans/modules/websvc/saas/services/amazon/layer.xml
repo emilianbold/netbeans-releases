@@ -44,18 +44,10 @@
 <!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.1//EN" "http://www.netbeans.org/dtds/filesystem-1_1.dtd">
 <filesystem>
     
-    <folder name="Templates">
-        <folder name="WebServices">
-            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.websvc.saas.services.amazon.Bundle"/>
-            <file name="profile.properties" url="/org/netbeans/modules/websvc/saas/services/amazon/resources/profile.properties">
-                <attr name="position" intvalue="3310"/>
-            </file>
-        </folder>
-    </folder>
-    
     <folder name="SaasServices">
         <folder name="AmazonS3">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.websvc.saas.services.amazon.Bundle"/>
+            <file name="profile.properties" url="/org/netbeans/modules/websvc/saas/services/amazon/resources/profile.properties"/>
             <file name="AmazonECS.xml" url="/org/netbeans/modules/websvc/saas/services/amazon/resources/AmazonECS.xml"/>
             <file name="AmazonS3Buckets.xml" url="/org/netbeans/modules/websvc/saas/services/amazon/resources/AmazonS3Buckets.xml"/>
             <file name="AmazonS3Bucket.xml" url="/org/netbeans/modules/websvc/saas/services/amazon/resources/AmazonS3Bucket.xml"/>

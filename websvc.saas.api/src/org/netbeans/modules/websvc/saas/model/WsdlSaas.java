@@ -168,9 +168,11 @@ public class WsdlSaas extends Saas implements PropertyChangeListener {
         // we are only interested in transition to ready and retrieved states.
         // when compile fail we fallback to retrieved to allow user examine the wsdl
         
-        if (property.equals("resolved") && Boolean.FALSE.equals(newValue)) { //NOI18N
-            if (getState() == State.INITIALIZING) {
+        if (property.equals("resolved") && getState() == State.INITIALIZING) { //NOI18N
+            if (Boolean.FALSE.equals(newValue)) {
                 setState(State.RETRIEVED);
+            } else if (wsData.isReady()) {
+                setState(State.READY); // compiled in previous IDE run
             }
         } else if (WsdlData.State.WSDL_SERVICE_COMPILED.equals(newValue)) {
             setState(State.READY);
