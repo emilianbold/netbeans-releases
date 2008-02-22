@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
+ *
  * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,7 +20,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -31,9 +31,9 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
+ *
  * Contributor(s):
- * 
+ *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
@@ -53,45 +53,56 @@ import org.openide.util.NbBundle;
 public final class ServerLibraryTypeProvider implements LibraryTypeProvider {
 
     public static final String LIBRARY_TYPE = "j2eeshared"; // NOI18N
-    
+
     public static final String VOLUME_CLASSPATH = "classpath";
-    
+
     public static final String VOLUME_WS_COMPILE_CLASSPATH = "wscompile";
-    
+
     public static final String VOLUME_WS_GENERATE_CLASSPATH = "wsgenerate";
-    
+
     public static final String VOLUME_WS_IMPORT_CLASSPATH = "wsimport";
-    
+
     public static final String VOLUME_WS_INTEROP_CLASSPATH = "wsinterop";
-    
+
     public static final String VOLUME_WS_JWSDP_CLASSPATH = "wsjwsdp";
-    
+
+    public static final String VOLUME_JAVADOC = "javadoc";
+
+    public static final String VOLUME_SOURCE = "src";
+
     // This is runtime only
     //public static final String VOLUME_APP_CLIENT_CLASSPATH = "appclient";
-    
+
     private static final String[] VOLUME_TYPES = new String[] {
             VOLUME_CLASSPATH,
             VOLUME_WS_COMPILE_CLASSPATH,
             VOLUME_WS_GENERATE_CLASSPATH,
             VOLUME_WS_IMPORT_CLASSPATH,
             VOLUME_WS_INTEROP_CLASSPATH,
-            VOLUME_WS_JWSDP_CLASSPATH
+            VOLUME_WS_JWSDP_CLASSPATH,
+            VOLUME_JAVADOC,
+            VOLUME_SOURCE
     };
-    
+
     private ServerLibraryTypeProvider() {
         super();
     }
-    
+
     public static LibraryTypeProvider create() {
         return new ServerLibraryTypeProvider();
     }
-    
+
     public LibraryImplementation createLibrary() {
         return LibrariesSupport.createLibraryImplementation(LIBRARY_TYPE, VOLUME_TYPES);
     }
 
     public Customizer getCustomizer(String volumeType) {
-        return new ServerVolumeCustomizer(volumeType);
+        // avoid user confusion
+        if (VOLUME_CLASSPATH.equals(volumeType) || VOLUME_JAVADOC.equals(volumeType)
+                || VOLUME_SOURCE.equals(volumeType)) {
+            return new ServerVolumeCustomizer(volumeType);
+        }
+        return null;
     }
 
     public String getDisplayName() {

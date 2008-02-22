@@ -486,12 +486,12 @@ public abstract class OperationMetadataImpl implements OperationMetadata {
         
         @Override
         public String getId() {
-            return NbBundle.getMessage(OperationMetadataImpl.class, 
-                            "DN_Negative"); // NOI18N
+            return "negative"; // NOI18N
         }
         
         public String getDisplayName() {
-            return "Negative";
+            return NbBundle.getMessage(OperationMetadataImpl.class, 
+                            "DN_Negative"); // NOI18N
         }
 
 //        public String getShortDescription() {

@@ -56,6 +56,7 @@ public class TreeNodeChooser extends JPanel implements CustomNodeChooser<Node> {
         //
         Util.attachDefaultDblClickAction(myTreePanel, myTreePanel);
         SoaUiUtil.activateInlineMnemonics(this);
+        accessibleContext = treePanel.getAccessibleContext();
     }
     
     public AbstractTreeChooserPanel getTreePanel() {
