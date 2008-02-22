@@ -53,9 +53,9 @@ import javax.swing.text.JTextComponent;
 
 import org.jruby.ast.NewlineNode;
 import org.jruby.ast.Node;
-import org.netbeans.fpi.gsf.CompilationInfo;
-import org.netbeans.fpi.gsf.EditorOptions;
-import org.netbeans.fpi.gsf.OffsetRange;
+import org.netbeans.modules.gsf.api.CompilationInfo;
+import org.netbeans.modules.gsf.api.EditorOptions;
+import org.netbeans.modules.gsf.api.OffsetRange;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenId;
@@ -112,7 +112,7 @@ import org.openide.util.Exceptions;
  *
  * @author Tor Norbye
  */
-public class BracketCompleter implements org.netbeans.fpi.gsf.BracketCompletion {
+public class BracketCompleter implements org.netbeans.modules.gsf.api.BracketCompletion {
     /** When true, automatically reflows comments that are being edited according to the rdoc
      * conventions as well as the right hand side margin
      */
