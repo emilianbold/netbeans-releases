@@ -61,11 +61,11 @@ public class WsdlDataManagerImpl implements WsdlDataManager {
         try {
             WsdlServiceProxyDescriptor desc = data.getJaxWsDescriptor();
             if (desc instanceof WebServiceDescriptor) {
-                mgr.saveWebServiceDescriptor((WebServiceDescriptor)desc);
+                mgr.saveDescriptor((WebServiceDescriptor)desc);
             }
             desc = data.getJaxRpcDescriptor();
             if (desc instanceof WebServiceDescriptor) {
-                mgr.saveWebServiceDescriptor((WebServiceDescriptor)desc);
+                mgr.saveDescriptor((WebServiceDescriptor)desc);
             }
         } catch(Exception ex) {
             mgr.save();
