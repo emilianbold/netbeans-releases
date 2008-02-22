@@ -253,5 +253,23 @@ public class CallStackFrame {
             return cachedLocalVariables;
         }
     }
+    
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == this) {
+            return true;
+        }
+        if (obj instanceof CallStackFrame) {
+            return address.equals(((CallStackFrame)obj).address);
+        } else {
+            return false;
+        }
+    }
+
+    @Override
+    public int hashCode() {
+        int hash = 3;
+        hash = 67 * hash + (this.address != null ? this.address.hashCode() : 0);
+        return hash;
+    }
 }
- 
