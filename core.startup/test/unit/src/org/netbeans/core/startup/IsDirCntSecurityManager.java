@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
- *
+ * 
+ * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * 
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,13 +20,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
+ * 
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -37,49 +31,59 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ * 
+ * Contributor(s):
+ * 
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
+package org.netbeans.core.startup;
 
-package org.netbeans.modules.web.project.parser;
-
-import java.io.File;
-import org.netbeans.modules.web.jsps.parserapi.JspParserAPI;
-import org.openide.filesystems.FileObject;
-import java.beans.PropertyChangeListener;
-import org.netbeans.modules.web.api.webmodule.WebModule;
+import java.security.Permission;
+import junit.framework.Assert;
 
 /**
- *
- * @author Martin Grebac
+ * Counts the number of File.isDirectory() calls.
+ * 
+ * @author Pavel Flaska
  */
-public class ParserWebModule extends JspParserAPI.WebModule {
+public class IsDirCntSecurityManager extends SecurityManager {
 
-    private WebModule module;
+    private static int cnt;
 
-    /** Creates a new instance of ParserWebModule */
-    public ParserWebModule(WebModule wm) {
-        module = wm;
+    public static void initialize() {
+        if (!(System.getSecurityManager() instanceof IsDirCntSecurityManager)) {
+            System.setSecurityManager(new IsDirCntSecurityManager());
+        }
+        cnt = 0;
     }
 
-    /** Returns the document base directory of the web module.
-     * May return null if we are parsing a tag file that is outside a web module
-     * (that will be packaged into a tag library).
-     */
-    public FileObject getDocumentBase() {
-        return module.getDocumentBase();
+    public static void assertCounts(String msg, int maxCounts) {
+        StringBuilder sb = new StringBuilder(msg);
+        sb.append(" limit# = ").append(maxCounts).append("; count# = ");
+        sb.append(cnt).append(".");
+        Assert.assertTrue(sb.toString(), cnt <= maxCounts);
+        cnt = 0;
     }
 
-    /** Returns InputStream for the file open in editor or null
-     * if the file is not open.
-     */
-    public java.io.InputStream getEditorInputStream (FileObject fo) {
-        return null;
+    @Override
+    public void checkRead(String file) {
+        super.checkRead(file);
+        StackTraceElement[] stack = Thread.currentThread().getStackTrace();
+        
+        // File.isDirectory() has been called? If so, count it in.
+        if (stack.length > 3 &&
+                "isDirectory".equals(stack[3].getMethodName()) &&
+                "File.java".equals(stack[3].getFileName())) 
+        {
+            cnt++;
+        }
     }
 
-    public void addPropertyChangeListener(PropertyChangeListener l) {}
+    @Override
+    public void checkPermission(Permission perm) {
+    }
 
-    public void removePropertyChangeListener(PropertyChangeListener l) {}
-
-    public File[] getExtraClasspathEntries() {
-        return null;
+    @Override
+    public void checkPermission(Permission perm, Object context) {
     }
 }

@@ -51,11 +51,16 @@
       <SubComponents>
         <Component class="javax.swing.JLabel" name="objDefnLabel">
           <Properties>
-            <Property name="horizontalAlignment" type="int" value="11"/>
-            <Property name="text" type="java.lang.String" value="EView Object Definition"/>
+            <Property name="text" type="java.lang.String" value="Master Index Object Definition"/>
             <Property name="horizontalTextPosition" type="int" value="2"/>
+            <Property name="maximumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
+              <Dimension value="[150, 25]"/>
+            </Property>
+            <Property name="minimumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
+              <Dimension value="[150, 25]"/>
+            </Property>
             <Property name="preferredSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
-              <Dimension value="[130, 25]"/>
+              <Dimension value="[150, 25]"/>
             </Property>
           </Properties>
           <Constraints>
@@ -84,10 +89,15 @@
         </Component>
         <Component class="javax.swing.JLabel" name="dbLocationLabel">
           <Properties>
-            <Property name="horizontalAlignment" type="int" value="11"/>
             <Property name="text" type="java.lang.String" value="Staging Database Location"/>
+            <Property name="maximumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
+              <Dimension value="[150, 25]"/>
+            </Property>
+            <Property name="minimumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
+              <Dimension value="[150, 25]"/>
+            </Property>
             <Property name="preferredSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
-              <Dimension value="[130, 25]"/>
+              <Dimension value="[150, 25]"/>
             </Property>
           </Properties>
           <Constraints>
@@ -154,10 +164,15 @@
         </Component>
         <Component class="javax.swing.JLabel" name="dbLabel">
           <Properties>
-            <Property name="horizontalAlignment" type="int" value="11"/>
             <Property name="text" type="java.lang.String" value="Database Name"/>
+            <Property name="maximumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
+              <Dimension value="[150, 25]"/>
+            </Property>
+            <Property name="minimumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
+              <Dimension value="[150, 25]"/>
+            </Property>
             <Property name="preferredSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
-              <Dimension value="[130, 25]"/>
+              <Dimension value="[150, 25]"/>
             </Property>
           </Properties>
           <Constraints>
