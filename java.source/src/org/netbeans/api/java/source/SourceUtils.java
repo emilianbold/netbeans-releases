@@ -69,6 +69,7 @@ import com.sun.tools.javac.code.Symbol.*;
 import com.sun.tools.javac.code.Type;
 import com.sun.tools.javac.code.Types;
 import com.sun.tools.javac.comp.Check;
+import com.sun.tools.javac.model.JavacElements;
 import com.sun.tools.javac.tree.JCTree.JCCompilationUnit;
 import com.sun.tools.javac.util.Context;
 import java.io.UnsupportedEncodingException;
@@ -861,7 +862,7 @@ out:                    for (URL e : roots) {
             js.runUserActionTask(new Task<CompilationController>() {
 
                 public void run(CompilationController control) throws Exception {
-                    TypeElement type = control.getElements().getTypeElement(qualifiedName);
+                    TypeElement type = ((JavacElements)control.getElements()).getTypeElementByBinaryName(qualifiedName);
                     if (type == null) {
                         return;
                     }

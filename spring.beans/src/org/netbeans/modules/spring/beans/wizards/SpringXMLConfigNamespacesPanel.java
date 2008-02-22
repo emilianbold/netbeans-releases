@@ -39,14 +39,44 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.mobility.project.security;
-/**
- * @author David Kaspar
- */
-public class KeyStoreRepositoryWarmUp implements Runnable {
-    
-    public void run() {
-        KeyStoreRepository.getDefault();
+package org.netbeans.modules.spring.beans.wizards;
+
+import javax.swing.event.ChangeListener;
+import org.openide.WizardDescriptor;
+import org.openide.util.HelpCtx;
+
+public class SpringXMLConfigNamespacesPanel implements WizardDescriptor.Panel {
+
+    public static final String INCLUDED_NAMESPACES = "includedNamespaces"; // NOI18N
+
+    private SpringXMLConfigNamespacesVisual component;
+
+    public SpringXMLConfigNamespacesVisual getComponent() {
+        if (component == null) {
+            component = new SpringXMLConfigNamespacesVisual();
+        }
+        return component;
     }
-    
+
+    public HelpCtx getHelp() {
+        return new HelpCtx(SpringXMLConfigNamespacesPanel.class);
+    }
+
+    public boolean isValid() {
+        return true;
+    }
+
+    public final void addChangeListener(ChangeListener l) {
+    }
+
+    public final void removeChangeListener(ChangeListener l) {
+    }
+
+    public void readSettings(Object settings) {
+    }
+
+    public void storeSettings(Object settings) {
+        WizardDescriptor wd = (WizardDescriptor) settings;
+        wd.putProperty(INCLUDED_NAMESPACES, getComponent().getIncludedNamespaces());
+    }
 }

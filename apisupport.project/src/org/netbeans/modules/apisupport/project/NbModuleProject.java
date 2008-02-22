@@ -441,7 +441,7 @@ public final class NbModuleProject implements Project {
     }
     
     /**
-     * Slash-separated path inside netbeans.org CVS, or null for external modules.
+     * Slash-separated path inside netbeans.org sources, or null for external modules.
      */
     public String getPathWithinNetBeansOrg() {
         FileObject nbroot = getNbrootFileObject(null);
