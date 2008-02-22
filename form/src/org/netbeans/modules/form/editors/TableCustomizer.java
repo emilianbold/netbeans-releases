@@ -677,6 +677,7 @@ public class TableCustomizer extends JPanel implements Customizer, FormAwareEdit
                 .addContainerGap())
         );
 
+        rowCountLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(TableCustomizer.class, "LBL_TableCustomizer_Rows_Count_ACSD")); // NOI18N
         rowCountSpinner.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(TableCustomizer.class, "LBL_TableCustomizer_Rows_Count_ACSD")); // NOI18N
         insertRowButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(TableCustomizer.class, "LBL_TableCustomizer_Rows_Insert_ACSD")); // NOI18N
         deleteRowButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(TableCustomizer.class, "LBL_TableCustomizer_Rows_Delete_ACSD")); // NOI18N
@@ -696,7 +697,11 @@ public class TableCustomizer extends JPanel implements Customizer, FormAwareEdit
             .add(tabbedPane)
         );
 
+        tabbedPane.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(TableCustomizer.class, "LBL_TableCustomizer_ACSN")); // NOI18N
         tabbedPane.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(TableCustomizer.class, "LBL_TableCustomizer_ACSD")); // NOI18N
+
+        getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(TableCustomizer.class, "LBL_TableCustomizer_ACSN")); // NOI18N
+        getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(TableCustomizer.class, "LBL_TableCustomizer_ACSD")); // NOI18N
     }
 
     // Code for dispatching events from components to event handlers.
