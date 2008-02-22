@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -38,87 +38,58 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
+package org.netbeans.modules.cnd.dwarfdump.trace;
 
-/*
- * StringTableSection.java
- *
- * To change this template, choose Tools | Template Manager
- * and open the template in the editor.
- */
-
-package org.netbeans.modules.cnd.dwarfdump.section;
-
-import org.netbeans.modules.cnd.dwarfdump.reader.ElfReader;
+import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.PrintStream;
+import java.util.List;
+import org.netbeans.modules.cnd.dwarfdump.CompilationUnit;
+import org.netbeans.modules.cnd.dwarfdump.Dwarf;
+import org.netbeans.modules.cnd.dwarfdump.exception.WrongFileFormatException;
+
 
 /**
  *
- * @author ak119685
+ * @author Sergey Grinev
  */
-public class StringTableSection extends ElfSection {
-    byte[] stringtable = null;
+public class TraceDwarf {
     
-    public StringTableSection(ElfReader reader, int sectionIdx) {
-        super(reader, sectionIdx);
-        read();
-    }
+    public static boolean TRACED = false;
 
-    public StringTableSection(ElfReader reader, byte[] stringtable) {
-        super(null, 0, null, "String Table"); //NOI18N
-        this.stringtable = stringtable;
-    }
-    
-    @Override
-    public StringTableSection read() {
+    /**
+     * @param args the command line arguments
+     */
+    public static void main(String[] args) {
+        TRACED = true;
+        String objFileName = args[0];
+        Dwarf dump = null;
         try {
-            long filePos = reader.getFilePointer();
-            reader.seek(header.getSectionOffset());
-            stringtable = new byte[(int)header.getSectionSize()];
-            reader.read(stringtable);
-            reader.seek(filePos);
-        } catch (IOException ex) {
-            ex.printStackTrace();
-        }
-        
-        return this;
-    }
-    
-    public byte[] getStringTable() {
-        return stringtable;
-    }
-    
-    public String getString(long offset) {
-        StringBuilder str = new StringBuilder();
-        
-        for (int i = (int)offset; i < stringtable.length; i++) {
-            if (stringtable[i] == 0) {
-                break;
-            }
-            str.append((char)stringtable[i]);
-        }
-        
-        return str.toString();
-    }
-    
-    @Override
-    public void dump(PrintStream out) {
-        super.dump(out);
-        
-        if (stringtable == null) {
-            out.println("<Empty table>"); // NOI18N
-            return;
-        }
-        
-        int offset = 1;
-        int idx = 0;
+            System.out.println("TraceDwarf.");  // NOI18N
+            dump = new Dwarf(objFileName);
+            List<CompilationUnit> units = dump.getCompilationUnits();
+            System.out.println("\n**** Done. " + units.size() + " compilation units were found:"); // NOI18N
+            int idx = 0;
+            if (units != null && units.size() > 0) {
+                for (CompilationUnit compilationUnit : units) {
+                    System.out.println(++idx + ": " + compilationUnit.getSourceFileName());// NOI18N
+                }
 
-        out.printf("No.\tOffset\tString\n"); // NOI18N
-        
-        while (offset < stringtable.length) {
-            String string = getString(offset);
-            out.printf("%d.\t%d\t%s\n", ++idx, offset, string); // NOI18N
-            offset += string.length() + 1;
+            }
+        } catch (FileNotFoundException ex) {
+            // Skip Exception
+            System.out.println("File not found " + objFileName + ": " + ex.getMessage());  // NOI18N
+        } catch (WrongFileFormatException ex) {
+            System.out.println("Unsuported format of file " + objFileName + ": " + ex.getMessage());  // NOI18N
+        } catch (IOException ex) {
+            System.err.println("Exception in file " + objFileName);  // NOI18N
+            ex.printStackTrace();
+        } catch (Exception ex) {
+            System.err.println("Exception in file " + objFileName);  // NOI18N
+            ex.printStackTrace();
+        } finally {
+            if (dump != null) {
+                dump.dispose();
+            }
         }
     }
 }
