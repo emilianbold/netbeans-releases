@@ -39,7 +39,6 @@
 
 package org.netbeans.modules.cnd.modelimpl.uid;
 
-import org.netbeans.modules.cnd.modelimpl.csm.*;
 import java.util.Collection;
 import java.util.Iterator;
 import org.netbeans.modules.cnd.api.model.CsmIdentifiable;
@@ -86,7 +85,7 @@ public class LazyCsmCollection<T> implements Collection<T> {
     }
 
     public Iterator<T> iterator() {
-        return new MyIterator<T>();
+        return allowNullsAndSkip ? new MySafeIterator<T>() : new MyIterator();
     }
 
     public Object[] toArray() {
@@ -187,23 +186,55 @@ public class LazyCsmCollection<T> implements Collection<T> {
 
     private class MyIterator<T> implements Iterator<T>{
         
-        private Iterator it;
+        private Iterator it;       
         private MyIterator(){
             it = uids.iterator();
         }
         public boolean hasNext() {
             return it.hasNext();
         }
+        
         public T next() {
             CsmUID uid = (CsmUID)it.next();
             T decl = (T) convertToObject(uid);
-            if (!allowNullsAndSkip && decl == null) {
-                assert decl != null : "no object for UID " + uid;
-            }
+            assert decl != null : "no object for UID " + uid;
             return decl;
         }
+        
         public void remove() {
             it.remove();
         }
     }
+    
+    private class MySafeIterator<T> implements Iterator<T>{
+        
+        private Iterator it;       
+        private T next;
+        private MySafeIterator(){
+            it = uids.iterator();
+            next = getNextNonNull();
+        }
+        public boolean hasNext() {
+            return next != null;
+        }
+        
+        private T getNextNonNull() {
+            T out = null;
+            while (out == null && it.hasNext()) {
+                CsmUID uid = (CsmUID)it.next();
+                out = (T) convertToObject(uid);
+            }
+            return out;
+        }
+        
+        public T next() {
+            T decl = next;
+            next = getNextNonNull();
+            return decl;
+        }
+        
+        public void remove() {
+            it.remove();
+        }
+    }    
 }

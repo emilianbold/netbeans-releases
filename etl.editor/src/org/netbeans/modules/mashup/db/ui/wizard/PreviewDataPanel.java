@@ -345,6 +345,7 @@ public class PreviewDataPanel extends JPanel implements ActionListener {
         previewBtn = new JButton(new ImageIcon(url));
         String nbBundle30 = mLoc.t("PRSR001: Show data for this table definition");
         previewBtn.setToolTipText(Localizer.parse(nbBundle30));
+        previewBtn.getAccessibleContext().setAccessibleName(Localizer.parse(nbBundle30));
         previewBtn.setMnemonic(Localizer.parse(nbBundle30).charAt(0));
         previewBtn.setActionCommand(CMD_SHOWDATA);
         previewBtn.addActionListener(this);

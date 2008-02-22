@@ -117,7 +117,7 @@ public class JaxWsEditorDrop implements ActiveEditorDrop {
                     WsdlSaasBean bean = codegen.getBean();
                     boolean showParams = codegen.showParams();
                     List<ParameterInfo> allParams = new ArrayList<ParameterInfo>(bean.getHeaderParameters());
-                    if (showParams) {
+                    if (showParams && bean.getInputParameters() != null) {
                         allParams.addAll(bean.getInputParameters());
                     }
                     JaxRsCodeSetupPanel panel = new JaxRsCodeSetupPanel(

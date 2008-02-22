@@ -765,7 +765,7 @@ public class RenameRefactoringPlugin extends RubyRefactoringPlugin {
             Node root = AstUtilities.getRoot(workingCopy);
             if (root != null) {
                 
-                Element element = AstElement.create(root);
+                Element element = AstElement.create(workingCopy, root);
                 Node node = searchCtx.getNode();
                 RubyElementCtx fileCtx = new RubyElementCtx(root, node, element, workingCopy.getFileObject(), workingCopy);
                 Node method = null;

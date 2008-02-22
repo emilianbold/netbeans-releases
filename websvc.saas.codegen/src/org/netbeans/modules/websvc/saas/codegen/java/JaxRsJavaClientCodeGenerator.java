@@ -84,12 +84,6 @@ public class JaxRsJavaClientCodeGenerator extends JaxRsCodeGenerator {
 
         return new HashSet<FileObject>(Collections.EMPTY_LIST);
     }
-    
-
-    @Override
-    protected void preGenerate() {
-        JavaSourceHelper.createJavaSource(REST_CONNECTION_TEMPLATE, destDir, bean.getPackageName(), REST_CONNECTION);
-    }
 
     /**
      *  Insert the Saas client call
@@ -154,7 +148,7 @@ public class JaxRsJavaClientCodeGenerator extends JaxRsCodeGenerator {
     
     @Override
     public boolean showParams() {
-        return wrapperResourceFile != null;
+        return getWrapperResourceFile() != null;
     }
     
 }
