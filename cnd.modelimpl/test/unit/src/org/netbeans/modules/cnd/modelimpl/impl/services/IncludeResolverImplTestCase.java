@@ -54,6 +54,10 @@ package org.netbeans.modules.cnd.modelimpl.impl.services;
 
 import java.io.File;
 import java.io.PrintStream;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmObject;
@@ -83,17 +87,17 @@ public class IncludeResolverImplTestCase extends TraceModelTestBase {
         super(testName);
     }
     
-//    public void testIncludeResolverInMainCC() throws Exception {
-//        performTest("main.cc", 1, 1); // NOI18N
-//    }
-//
-//    public void testIncludeResolverInLocalCC() throws Exception {
-//        performTest("local.cc", 1, 1); // NOI18N
-//    }
-//
-//    public void testIncludeResolverInHeader2H() throws Exception {
-//        performTest("header2.h", 1, 1); // NOI18N
-//    }
+    public void testIncludeResolverInMainCC() throws Exception {
+        performTest("main.cc", 1, 1); // NOI18N
+    }
+
+    public void testIncludeResolverInLocalCC() throws Exception {
+        performTest("local.cc", 1, 1); // NOI18N
+    }
+
+    public void testIncludeResolverInHeader2H() throws Exception {
+        performTest("header2.h", 1, 1); // NOI18N
+    }
 
     public void testIncludeResolverInMainCCOnLocalVar() throws Exception {
         performTest("main.cc", 1, 1, "local.cc", 2, 8); // NOI18N
@@ -147,12 +151,26 @@ public class IncludeResolverImplTestCase extends TraceModelTestBase {
 
             CsmIncludeResolver ir = new IncludeResolverImpl();
             CsmProject project = currentFile.getProject();
-
             assertNotNull(project);
             
-            for (CsmFile file : project.getAllFiles()) {
+            List<CsmFile> files = new ArrayList<CsmFile>();
+            files.addAll(project.getAllFiles());
+            Collections.sort(files, new Comparator() {
+                public int compare(Object o1, Object o2) {
+                    assertNotNull(o1);
+                    assertNotNull(o2);
+                    CsmFile file1 = (CsmFile) o1;
+                    CsmFile file2 = (CsmFile) o2;
+                    return file1.getAbsolutePath().toString().compareTo(file2.getAbsolutePath().toString());
+                }
+            });
+            
+            for (CsmFile file : files) {
                 assertNotNull(file);
-                for (CsmOffsetableDeclaration decl : file.getDeclarations()) {
+                List<CsmOffsetableDeclaration> decls = new ArrayList<CsmOffsetableDeclaration>();
+                decls.addAll(file.getDeclarations());
+                Collections.sort(decls, FileImpl.START_OFFSET_COMPARATOR);
+                for (CsmOffsetableDeclaration decl : decls) {
                     assertNotNull(decl);
                     if (ir.isObjectVisible(currentFile, decl)) {
                         streamOut.println("Declaration " + decl.getName() + " is visible"); // NOI18N
