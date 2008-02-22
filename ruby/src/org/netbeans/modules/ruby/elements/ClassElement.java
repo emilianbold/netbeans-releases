@@ -42,17 +42,12 @@ package org.netbeans.modules.ruby.elements;
 
 import java.util.Set;
 
-import org.netbeans.modules.ruby.elements.Element;
-
-
 /**
  *
  * @author Tor Norbye
  */
 public interface ClassElement extends Element {
     String getIn();
-
     String getFqn();
-
     Set<String> getIncludes();
 }
