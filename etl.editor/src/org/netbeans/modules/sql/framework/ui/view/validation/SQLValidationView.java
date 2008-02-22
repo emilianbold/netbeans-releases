@@ -87,6 +87,7 @@ public class SQLValidationView extends JPanel implements ETLOutputPanel {
         String nbBundle30 = mLoc.t("PRSR001: Refresh");
         refreshButton.setToolTipText(Localizer.parse(nbBundle30));
         refreshButton.setMnemonic(Localizer.parse(nbBundle30).charAt(0));
+        refreshButton.getAccessibleContext().setAccessibleName(Localizer.parse(nbBundle30));
         refreshButton.addActionListener(aListener);
         btn[0] = refreshButton;
         ActionListener aListener = new ActionListener() {

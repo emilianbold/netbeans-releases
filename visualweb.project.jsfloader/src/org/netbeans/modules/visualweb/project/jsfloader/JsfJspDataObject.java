@@ -321,7 +321,7 @@ implements CookieSet.Factory, JsfJspDataObjectMarker {
         
         TagLibParseCookie tlps = getCookie(TagLibParseCookie.class);
         if (tlps != null) {
-            String encoding = tlps.getCachedOpenInfo(true, fromEditor).getEncoding();
+            String encoding = tlps.getOpenInfo(true, fromEditor).getEncoding();
             try {
                 getPrimaryFile().setAttribute(PROP_ENCODING, encoding);
             } catch (IOException e) {

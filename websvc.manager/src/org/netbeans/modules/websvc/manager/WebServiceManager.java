@@ -128,7 +128,8 @@ public final class WebServiceManager {
         boolean dataInModel = listModel.webServiceExists(wsData);
 
         if (model == null) {
-            removeWebService(wsData);
+            wsData.setResolved(false);
+            removeWebService(wsData, true, false);
 
             Throwable exc = wsdlModeler.getCreationException();
             String cause = (exc != null) ? exc.getLocalizedMessage() : null;
@@ -212,7 +213,7 @@ public final class WebServiceManager {
     }
 
     public void refreshWebService(WebServiceData wsData) throws IOException {
-        removeWebService(wsData, false);
+        removeWebService(wsData, false, true);
         wsData.setWsdlFile(null);
         wsData.setState(WebServiceData.State.WSDL_UNRETRIEVED);
         wsData.setCatalog(null);
@@ -226,7 +227,7 @@ public final class WebServiceManager {
     }
 
     public void resetWebService(WebServiceData wsData) {
-        removeWebService(wsData, false);
+        removeWebService(wsData, false, true);
 
         wsData.setWsdlFile(null);
         wsData.setState(WebServiceData.State.WSDL_UNRETRIEVED);
@@ -263,10 +264,10 @@ public final class WebServiceManager {
      * @param wsData the WebService to remove
      */
     public void removeWebService(WebServiceData wsData) {
-        removeWebService(wsData, true);
+        removeWebService(wsData, true, true);
     }
 
-    private void removeWebService(WebServiceData wsData, boolean removeFromModel) {
+    private void removeWebService(WebServiceData wsData, boolean removeFromModel, boolean deleteWsdl) {
         if (removeFromModel) {
             WebServiceListModel.getInstance().removeWebService(wsData.getId());
         }
@@ -295,7 +296,10 @@ public final class WebServiceManager {
             return;
         }
 
-        boolean deleteWsdl = true;
+        if (! deleteWsdl) {
+            return;
+        }
+        
         WebServiceListModel model = WebServiceListModel.getInstance();
         for (WebServiceData data : model.getWebServiceSet()) {
             if (data != wsData && wsData.getWsdlFile().equals(data.getWsdlFile())) {
@@ -399,8 +403,8 @@ public final class WebServiceManager {
         } finally {
             if (catalogFile.exists() && !success) {
                 rmDir(catalogFile.getParentFile());
-            }
         }
+    }
     }
 
     public static synchronized void compileService(WebServiceData wsData) {

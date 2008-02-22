@@ -338,8 +338,7 @@ public class WebServicePersistenceManager implements ExceptionListener {
         }     
     }
     
-    public void saveWebServiceDescriptor(WebServiceDescriptor descriptor) {
-        try {
+    public void saveDescriptor(WebServiceDescriptor descriptor) throws IOException {
             XMLEncoder encoder = new XMLEncoder(new BufferedOutputStream(new FileOutputStream(descriptor.getXmlDescriptor())));
             encoder.setExceptionListener(this);
             DefaultPersistenceDelegate delegate = new WebServiceDataPersistenceDelegate();
@@ -348,6 +347,11 @@ public class WebServicePersistenceManager implements ExceptionListener {
             
             encoder.close();
             encoder.flush();
+    }
+    
+    public void saveWebServiceDescriptor(WebServiceDescriptor descriptor) {
+        try {
+            saveDescriptor(descriptor);
         }catch (IOException ex) {
             exceptionThrown(ex);
         }

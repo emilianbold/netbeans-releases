@@ -5,6 +5,7 @@ import java.util.Set;
 import org.jruby.ast.Colon2Node;
 import org.jruby.ast.ModuleNode;
 import org.jruby.ast.Node;
+import org.netbeans.fpi.gsf.CompilationInfo;
 import org.netbeans.fpi.gsf.ElementKind;
 
 
@@ -12,8 +13,8 @@ public class AstModuleElement extends AstElement implements ModuleElement {
     private String fqn;
     private String extendWith;
 
-    public AstModuleElement(Node node) {
-        super(node);
+    public AstModuleElement(CompilationInfo info, Node node) {
+        super(info, node);
     }
 
     @Override
