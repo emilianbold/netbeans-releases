@@ -49,7 +49,6 @@ import java.io.File;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.NoSuchElementException;
@@ -139,7 +138,7 @@ public final class NewSpringXMLConfigWizardIterator implements WizardDescriptor.
             }
         });
         
-        Collection<ConfigFileGroup> selectedGroups = (Collection<ConfigFileGroup>) wizard.getProperty(SpringXMLConfigGroupPanel.CONFIG_FILE_GROUPS);
+        Set<ConfigFileGroup> selectedGroups = (Set<ConfigFileGroup>) wizard.getProperty(SpringXMLConfigGroupPanel.CONFIG_FILE_GROUPS);
         if(selectedGroups.size() > 0) {
             addFileToSelectedGroups(selectedGroups, FileUtil.toFile(createdFile[0]));
         }
@@ -147,7 +146,7 @@ public final class NewSpringXMLConfigWizardIterator implements WizardDescriptor.
         return Collections.singleton(createdFile[0]);
     }
     
-    private void addFileToSelectedGroups(Collection<ConfigFileGroup> selectedGroups, File file) {
+    private void addFileToSelectedGroups(Set<ConfigFileGroup> selectedGroups, File file) {
         final ConfigFileManager manager = getConfigFileManager(Templates.getProject(wizard));
         final List<ConfigFileGroup> origGroups = manager.getConfigFileGroups();
         final List<ConfigFileGroup> newGroups = new ArrayList<ConfigFileGroup>(origGroups.size());

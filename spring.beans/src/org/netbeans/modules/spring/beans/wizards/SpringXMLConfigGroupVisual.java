@@ -41,12 +41,11 @@
 
 package org.netbeans.modules.spring.beans.wizards;
 
-import java.util.ArrayList;
-import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import javax.swing.event.TableModelListener;
 import javax.swing.table.TableModel;
-import org.netbeans.api.project.Project;
 import org.netbeans.modules.spring.api.beans.ConfigFileGroup;
 import org.openide.util.NbBundle;
 
@@ -55,12 +54,10 @@ import org.openide.util.NbBundle;
  * @author  Rohan Ranade (Rohan.Ranade@Sun.COM)
  */
 public class SpringXMLConfigGroupVisual extends javax.swing.JPanel {
-    private Project p;
     
     /** Creates new form SpringXMLConfigGroupVisual */
-    public SpringXMLConfigGroupVisual(Project p, List<ConfigFileGroup> configFileGroups) {
+    public SpringXMLConfigGroupVisual(List<ConfigFileGroup> configFileGroups) {
         initComponents();
-        this.p = p;
         groupsTable.getParent().setBackground(groupsTable.getBackground());
         groupsTable.setModel(new ConfigGroupSelectionTableModel(configFileGroups));
         groupsTable.getColumnModel().getColumn(0).setMaxWidth(60);
@@ -93,7 +90,7 @@ public class SpringXMLConfigGroupVisual extends javax.swing.JPanel {
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
                 .add(groupsLabel)
-                .addContainerGap(36, Short.MAX_VALUE))
+                .addContainerGap(152, Short.MAX_VALUE))
             .add(groupsScrollPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 360, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
@@ -113,7 +110,7 @@ public class SpringXMLConfigGroupVisual extends javax.swing.JPanel {
     // End of variables declaration//GEN-END:variables
     
     
-    public Collection<ConfigFileGroup> getSelectedConfigFileGroups() {
+    public Set<ConfigFileGroup> getSelectedConfigFileGroups() {
         return ((ConfigGroupSelectionTableModel)groupsTable.getModel()).getSelectedGroups();
     }
     
@@ -161,8 +158,8 @@ public class SpringXMLConfigGroupVisual extends javax.swing.JPanel {
         public void removeTableModelListener(TableModelListener l) {
         }
         
-        public List<ConfigFileGroup> getSelectedGroups() {
-            List<ConfigFileGroup> selectedGroups = new ArrayList<ConfigFileGroup>(groups.size());
+        public Set<ConfigFileGroup> getSelectedGroups() {
+            Set<ConfigFileGroup> selectedGroups = new HashSet<ConfigFileGroup>(groups.size());
             for (int i = 0; i < groups.size(); i++) {
                 if (selected[i]) {
                     selectedGroups.add(groups.get(i));
