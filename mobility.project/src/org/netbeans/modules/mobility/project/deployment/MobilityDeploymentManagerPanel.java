@@ -57,6 +57,7 @@ import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 import javax.swing.JSlider;
 import javax.swing.JSpinner;
+import javax.swing.SwingUtilities;
 import javax.swing.text.JTextComponent;
 import org.netbeans.spi.mobility.deployment.DeploymentPlugin;
 import org.netbeans.spi.mobility.project.ui.customizer.support.VisualPropertySupport;
@@ -68,9 +69,11 @@ import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.nodes.Node.Cookie;
+import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 
 /**
  *
@@ -84,10 +87,35 @@ public class MobilityDeploymentManagerPanel extends JPanel implements ExplorerMa
     private final VisualPropertySupport vps = VisualPropertySupport.getDefault(props);
     private final String initialTypeName;
 
-    public static synchronized String manageDeployment(String deploymentTypeDisplayName, String instance) {
-        MobilityDeploymentManagerPanel mdmp = new MobilityDeploymentManagerPanel(deploymentTypeDisplayName, instance);
-        DialogDisplayer.getDefault().notify(new DialogDescriptor(mdmp, NbBundle.getMessage(MobilityDeploymentManagerAction.class, "Title_DeploymentManager"), true, new Object[] {DialogDescriptor.CLOSED_OPTION}, DialogDescriptor.CLOSED_OPTION, DialogDescriptor.DEFAULT_ALIGN, new HelpCtx(MobilityDeploymentManagerPanel.class), null));  //NOI18N
-        return mdmp.getSelectedInstanceName();
+    public static synchronized String manageDeployment(final String deploymentTypeDisplayName, final String instance) {
+        final String instanceName[] = new String[1];
+        Thread r1;
+        //do not block AWT, but block the dialog until properties are loaded!
+        RequestProcessor.getDefault().post(r1 = new Thread() {
+            @Override
+            public void run() {
+                Thread r2;
+                Lookup.Result deployments = Lookup.getDefault().lookup(new Lookup.Template<DeploymentPlugin>(DeploymentPlugin.class));                
+                DeploymentPropertiesHandler.loadDeploymentProperties(deployments.allInstances());
+                SwingUtilities.invokeLater(r2 = new Thread() {
+                    @Override
+                    public void run() {
+                        MobilityDeploymentManagerPanel mdmp = new MobilityDeploymentManagerPanel(deploymentTypeDisplayName, instance);
+                        DialogDisplayer.getDefault().notify(new DialogDescriptor(mdmp, NbBundle.getMessage(MobilityDeploymentManagerAction.class, "Title_DeploymentManager"), true, new Object[] {DialogDescriptor.CLOSED_OPTION}, DialogDescriptor.CLOSED_OPTION, DialogDescriptor.DEFAULT_ALIGN, new HelpCtx(MobilityDeploymentManagerPanel.class), null));  //NOI18N
+                        instanceName[0] = mdmp.getSelectedInstanceName();
+                    }
+                });
+                try {
+                    r2.join();
+                } catch (InterruptedException ex) {                    
+                }
+            }
+        });
+        try {
+            r1.join();
+        } catch (InterruptedException ex) {
+        }
+        return instanceName[0];
     }
     
     
