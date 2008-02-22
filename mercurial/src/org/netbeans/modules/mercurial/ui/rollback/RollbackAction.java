@@ -125,12 +125,12 @@ public class RollbackAction extends ContextAction {
                         }else{
                             logger.output(list.get(0));
                             if (HgCommand.hasHistory(root)) {
-                                int response = JOptionPane.showOptionDialog(null,
-                                        NbBundle.getMessage(RollbackAction.class,"MSG_ROLLBACK_CONFIRM_UPDATE_QUERY") ,  // NOI18N
-                                        NbBundle.getMessage(RollbackAction.class,"MSG_ROLLBACK_CONFIRM_UPDATE"), // NOI18N
-                                        JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE,null, null, null);
-                            
-                                if( response == JOptionPane.YES_OPTION){
+                                descriptor = new NotifyDescriptor.Confirmation(NbBundle.getMessage(RollbackAction.class, "MSG_ROLLBACK_CONFIRM_UPDATE_QUERY")); // NOI18N
+                                descriptor.setTitle(NbBundle.getMessage(RollbackAction.class, "MSG_ROLLBACK_CONFIRM")); // NOI18N
+                                descriptor.setMessageType(JOptionPane.WARNING_MESSAGE);
+                                descriptor.setOptionType(NotifyDescriptor.YES_NO_OPTION);
+                                res = DialogDisplayer.getDefault().notify(descriptor);
+                                if (res == NotifyDescriptor.YES_OPTION) {
                                     logger.output(
                                             NbBundle.getMessage(RollbackAction.class,
                                             "MSG_ROLLBACK_FORCE_UPDATE", root.getAbsolutePath())); // NOI18N
