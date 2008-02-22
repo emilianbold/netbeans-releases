@@ -259,21 +259,21 @@ class LibraryChooserGUI extends JPanel implements ExplorerManager.Provider, Help
         tree.setPopupAllowed(false);
         tree.setRootVisible(false);
 
-        createButton.setText(org.openide.util.NbBundle.getMessage(LibraryChooserGUI.class, "LibraryChooserGUI.createButton.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(createButton, org.openide.util.NbBundle.getMessage(LibraryChooserGUI.class, "LibraryChooserGUI.createButton.text")); // NOI18N
         createButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 createButtonActionPerformed(evt);
             }
         });
 
-        importButton.setText(org.openide.util.NbBundle.getMessage(LibraryChooserGUI.class, "LibraryChooserGUI.importButton.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(importButton, org.openide.util.NbBundle.getMessage(LibraryChooserGUI.class, "LibraryChooserGUI.importButton.text")); // NOI18N
         importButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 importButtonActionPerformed(evt);
             }
         });
 
-        manageLibrariesButton.setText(org.openide.util.NbBundle.getMessage(LibraryChooserGUI.class, "LibraryChooserGUI.manageLibrariesButton.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(manageLibrariesButton, org.openide.util.NbBundle.getMessage(LibraryChooserGUI.class, "LibraryChooserGUI.manageLibrariesButton.text")); // NOI18N
         manageLibrariesButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 manageLibrariesButtonActionPerformed(evt);
