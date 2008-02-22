@@ -5,6 +5,9 @@
     <folder name="Templates">
         <folder name="WebServices">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.websvc.saas.services.google.Bundle"/>
+            <file name="GoogleMapResource.java" url="/org/netbeans/modules/websvc/saas/services/google/resources/GoogleMapResource.template">
+                <attr name="position" intvalue="0"/>
+            </file>
             <file name="profile.properties" url="/org/netbeans/modules/websvc/saas/services/google/resources/profile.properties">
                 <attr name="position" intvalue="0"/>
             </file>
