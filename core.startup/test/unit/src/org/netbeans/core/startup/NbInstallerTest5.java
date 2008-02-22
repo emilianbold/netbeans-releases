@@ -59,11 +59,6 @@ public class NbInstallerTest5 extends SetupHid {
         super(name);
     }
 
-    public static void main(String[] args) {
-        //System.setProperty("mlfs.DEBUG", "true");
-        TestRunner.run(new NbTestSuite(NbInstallerTest5.class));
-    }
-    
     /** Test #21173/#23609: overriding layers by module dependencies.
      * Version 2: modules loaded piece by piece.
      * Exercises different logic in XMLFileSystem as well as ModuleLayeredFileSystem.

@@ -23,7 +23,6 @@ import javax.xml.namespace.QName;
 import org.netbeans.modules.xml.xpath.ext.LocationStep;
 import org.netbeans.modules.xml.xpath.ext.StepNodeTest;
 import org.netbeans.modules.xml.xpath.ext.StepNodeNameTest;
-import org.netbeans.modules.xml.xpath.ext.StepNodeTestType;
 import org.netbeans.modules.xml.xpath.ext.StepNodeTypeTest;
 import org.netbeans.modules.xml.xpath.ext.XPathUtils;
 import org.netbeans.modules.xml.xpath.ext.XPathAxis;
@@ -94,7 +93,7 @@ public class LocationStepImpl extends XPathExpressionImpl implements LocationSte
      * @param axis the axis
      * @param nodeTest the node test
      */
-    public LocationStepImpl(XPathModelImpl model, XPathAxis axis, 
+    public LocationStepImpl(XPathModel model, XPathAxis axis, 
             StepNodeTest nodeTest, XPathPredicateExpression[] predicates) {
         super(model);
         //
@@ -213,9 +212,12 @@ public class LocationStepImpl extends XPathExpressionImpl implements LocationSte
     }
 
     public XPathSchemaContext getSchemaContext() {
-        if (!((XPathModelImpl)myModel).isInResolveMode() && 
-                mSchemaContext == null) {
-            myModel.resolveExtReferences(false);
+        if (mSchemaContext == null) {
+            if (myModel.getRootExpression() != null) {
+                myModel.resolveExtReferences(false);
+            } else {
+                myModel.resolveExpressionExtReferences(this);
+            }
         }
         return mSchemaContext;
     }

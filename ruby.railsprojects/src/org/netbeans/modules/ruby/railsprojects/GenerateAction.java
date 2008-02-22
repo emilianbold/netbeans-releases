@@ -52,7 +52,7 @@ import javax.swing.event.ChangeListener;
 import javax.swing.event.ChangeListener;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
-import org.netbeans.api.gsf.EditorAction;
+import org.netbeans.fpi.gsf.EditorAction;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.ruby.rhtml.lexer.api.RhtmlTokenId;

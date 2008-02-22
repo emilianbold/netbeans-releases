@@ -18,9 +18,10 @@
  */
 package org.netbeans.modules.bpel.nodes;
 
+import org.netbeans.modules.bpel.nodes.BpelNode;
 import org.netbeans.modules.bpel.editors.api.nodes.NodeType;
 import org.netbeans.modules.bpel.model.api.CompensationHandler;
-import org.netbeans.modules.bpel.nodes.actions.ActionType;
+import org.netbeans.modules.bpel.editors.api.nodes.actions.ActionType;
 import org.openide.nodes.Children;
 import org.openide.util.Lookup;
 

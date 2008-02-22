@@ -471,7 +471,7 @@ implements PropertyChangeListener, CasaValidationListener {
             CasaModelGraphUtilities.updateNodeProperties(mModel, port, widget);
             
             widget.setEditable(mModel.isEditable(port));
-//            widget.setWSPolicyAttached(true);
+            widget.setWSPolicyAttached(mModel.isWsitEnable(port));
             widget.initializeGlassLayer(mGlassLayer);
             mBindingRegion.addChild(widget);
             moveAction = mMoveActionBindingRegion;
@@ -693,7 +693,14 @@ implements PropertyChangeListener, CasaValidationListener {
             }
         });
     }
-    
+
+    protected void refreshWidgetBadge(CasaComponent node, Widget widget) {
+        // 02/12/08, T. Li, only handle the WSIT badge for now...
+        if (widget instanceof CasaNodeWidgetBinding) {
+            ((CasaNodeWidgetBinding) widget).setWSPolicyAttached(mModel.isWsitEnable((CasaPort) node));            
+        }
+    }
+
     public void cleanup() {
         // scene is not used anymore, free up resources
         TopComponent.getRegistry().removePropertyChangeListener(this);

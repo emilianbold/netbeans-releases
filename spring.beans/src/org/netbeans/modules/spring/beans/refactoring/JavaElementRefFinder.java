@@ -41,7 +41,9 @@
 
 package org.netbeans.modules.spring.beans.refactoring;
 
+import java.io.CharConversionException;
 import java.util.List;
+import java.util.logging.Logger;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Position.Bias;
 import org.netbeans.editor.BaseDocument;
@@ -53,6 +55,7 @@ import org.netbeans.modules.xml.text.syntax.XMLSyntaxSupport;
 import org.openide.filesystems.FileObject;
 import org.openide.text.PositionBounds;
 import org.openide.text.PositionRef;
+import org.openide.xml.XMLUtil;
 
 /**
  *
@@ -78,7 +81,7 @@ public class JavaElementRefFinder {
                 if (matched == null) {
                     continue;
                 }
-                Occurrence occurrence = createOccurrence(matched, bean, docAccess.getFileObject());
+                Occurrence occurrence = createClassOccurrence(matched, bean);
                 if (occurrence != null) {
                     result.add(occurrence);
                 }
@@ -86,7 +89,7 @@ public class JavaElementRefFinder {
         }
     }
 
-    private Occurrence createOccurrence(String matched, SpringBean bean, FileObject fo) throws BadLocationException {
+    private Occurrence createClassOccurrence(String matched, SpringBean bean) throws BadLocationException {
         Location loc = bean.getLocation();
         if (loc == null) {
             return null;
@@ -95,19 +98,56 @@ public class JavaElementRefFinder {
         if (startOffset == -1) {
             return null;
         }
-        AttributeValueFinder finder = new AttributeValueFinder(syntaxSupport, "class", startOffset); // NOI18N
-        if (!finder.find()) {
+        AttributeValueFinder finder = new AttributeValueFinder(syntaxSupport, startOffset); // NOI18N
+        if (!finder.find("class")) {
             return null;
         }
         int foundOffset = finder.getFoundOffset();
-        String foundValue = finder.getFoundValue();
+        String foundValue = finder.getValue();
         int index = foundValue.indexOf(matched);
         if (index == -1) {
             return null;
         }
+        String displayText = createClassDisplayText(finder, foundValue, index, matched.length());
         PositionRef startRef = docAccess.createPositionRef(foundOffset + index, Bias.Forward);
         PositionRef endRef = docAccess.createPositionRef(foundOffset + index + matched.length(), Bias.Backward);
-        return new JavaElementRefOccurrence(matched, fo, new PositionBounds(startRef, endRef));
+        return new JavaElementRefOccurrence(displayText, docAccess.getFileObject(), new PositionBounds(startRef, endRef));
+    }
+
+    private String createClassDisplayText(AttributeValueFinder finder, String classAttrValue, int matchIndex, int matchLength) throws BadLocationException {
+        StringBuilder builder = new StringBuilder();
+        builder.append("&lt;bean"); // NOI18N
+        String attrWithValue = getAttributeWithValue(finder, "id"); // NOI18N
+        if (attrWithValue == null) {
+            attrWithValue = getAttributeWithValue(finder, "name"); // NOI18N
+        }
+        if (attrWithValue != null) {
+            builder.append(' '); // NOI18N
+            builder.append(attrWithValue);
+        }
+        String beforeMatch = escapeAttrValue(classAttrValue.substring(0, matchIndex));
+        String match = escapeAttrValue(classAttrValue.substring(matchIndex, matchIndex + matchLength));
+        String afterMatch = escapeAttrValue(classAttrValue.substring(matchIndex + matchLength, classAttrValue.length()));
+        if (beforeMatch != null && match != null && afterMatch != null) {
+            builder.append(" class="); // NOI18N
+            builder.append(beforeMatch).append("<b>").append(match).append("</b>").append(afterMatch); // NOI18N
+        }
+        return builder.toString();
+    }
+
+    private String getAttributeWithValue(AttributeValueFinder finder, String attrName) throws BadLocationException {
+        if (finder.find(attrName)) {
+            return attrName + "=" + escapeAttrValue(finder.getValue()); // NOI18N
+        }
+        return null;
+    }
+
+    private String escapeAttrValue(String attrValue) {
+        try {
+            return XMLUtil.toAttributeValue(attrValue);
+        } catch (CharConversionException e) {
+            return null;
+        }
     }
 
     public static interface Matcher {
@@ -117,19 +157,16 @@ public class JavaElementRefFinder {
 
     private static final class JavaElementRefOccurrence extends Occurrence {
 
-        private final String className;
+        private final String displayText;
 
-        JavaElementRefOccurrence(String className, FileObject fo, PositionBounds bounds) {
+        JavaElementRefOccurrence(String displayText, FileObject fo, PositionBounds bounds) {
             super(fo, bounds);
-            this.className = className;
+            this.displayText = displayText;
         }
 
         @Override
         public String getDisplayText() {
-            StringBuffer stringBuffer = new StringBuffer();
-            // XXX temporary.
-            stringBuffer.append("&lt;bean class=" + className);
-            return stringBuffer.toString();
+            return displayText;
         }
     }
 }

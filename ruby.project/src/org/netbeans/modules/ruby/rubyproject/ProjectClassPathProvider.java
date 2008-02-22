@@ -41,10 +41,10 @@
 
 package org.netbeans.modules.ruby.rubyproject;
 
-import org.netbeans.api.gsfpath.classpath.ClassPath;
+import org.netbeans.fpi.gsfpath.classpath.ClassPath;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
-import org.netbeans.spi.gsfpath.classpath.ClassPathProvider;
+import org.netbeans.sfpi.gsfpath.classpath.ClassPathProvider;
 import org.openide.filesystems.FileObject;
 
 /**

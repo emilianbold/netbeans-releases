@@ -41,8 +41,8 @@
 package org.netbeans.modules.gsfpath.classpath;
 
 
-import org.netbeans.spi.gsfpath.classpath.support.PathResourceBase;
-import org.netbeans.spi.gsfpath.classpath.ClassPathImplementation;
+import org.netbeans.sfpi.gsfpath.classpath.support.PathResourceBase;
+import org.netbeans.sfpi.gsfpath.classpath.ClassPathImplementation;
 
 import java.net.URL;
 

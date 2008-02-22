@@ -80,7 +80,7 @@ import org.openide.util.lookup.ProxyLookup;
 // XXX need unit test
 
 /**
- * (Copied from Java Project Source (org.netbeans.spi.gsfpath.project.support.ui)
+ * (Copied from Java Project Source (org.netbeans.sfpi.gsfpath.project.support.ui)
  * Displays a package root in a tree.
  * @see "#42151"
  * @author Jesse Glick

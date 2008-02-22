@@ -274,6 +274,10 @@ public abstract class Instantiation {
             return ((CsmFunction)template).isOperator();
         }
         
+        public OperatorKind getOperatorKind() {
+            return ((CsmFunction)template).getOperatorKind();
+        }
+        
         public CharSequence getSignature() {
             return ((CsmFunction)template).getSignature();
         }
@@ -556,6 +560,10 @@ public abstract class Instantiation {
             return methodRef.isOperator();
         }
 
+        public OperatorKind getOperatorKind() {
+            return methodRef.getOperatorKind();
+        }
+        
         public CsmCompoundStatement getBody() {
             return ((CsmFunctionDefinition)methodRef).getBody();
         }
