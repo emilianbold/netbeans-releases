@@ -44,7 +44,7 @@ made subject to such option by the copyright holder.
     <type>org.netbeans.modules.apisupport.project</type>
     <configuration>
         <data xmlns="http://www.netbeans.org/ns/nb-module-project/2">
-            <code-name-base>org.netbeans.jna</code-name-base>
+            <code-name-base>org.netbeans.libs.jna</code-name-base>
             <friend-packages>
                 <friend>org.netbeans.core.nativeaccess</friend>
                 <package>com.sun.jna</package>
