@@ -59,6 +59,9 @@ import org.openide.util.NbBundle;
 public class AddDialog extends DialogDescriptor {
     private static Color errorLabelColor = javax.swing.UIManager.getDefaults().getColor("ToolBar.dockingForeground"); //NOI18N
     public static final JButton ADD_OPTION = new JButton(NbBundle.getMessage(AddDialog.class,"LBL_Add"));
+    static {
+        ADD_OPTION.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/web/jsf/dialogs/Bundle").getString("ACSD_Add"));
+    }
     private JPanel panel;
     
     /** Creates a new instance of EditDialog */

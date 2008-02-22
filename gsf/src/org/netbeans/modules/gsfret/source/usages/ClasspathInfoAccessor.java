@@ -41,7 +41,7 @@
 
 package org.netbeans.modules.gsfret.source.usages;
 
-import org.netbeans.fpi.gsfpath.classpath.ClassPath;
+import org.netbeans.modules.gsfpath.api.classpath.ClassPath;
 import org.netbeans.modules.gsf.Language;
 import org.netbeans.napi.gsfret.source.ClasspathInfo;
 import org.openide.ErrorManager;
