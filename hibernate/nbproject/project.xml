@@ -303,58 +303,31 @@ made subject to such option by the copyright holder.
                     <name>unit</name>
                     <test-dependency>
                         <code-name-base>org.netbeans.api.web.webmodule</code-name-base>
-                        <!--<compile-dependency/> -->
                     </test-dependency>
-                    <!-- <test-dependency>
-                        <code-name-base>org.netbeans.bootstrap</code-name-base>
-                        <compile-dependency/>
-                    </test-dependency> -->
                     <test-dependency>
                         <code-name-base>org.netbeans.core.startup</code-name-base>
                     </test-dependency>
-                   <!-- <test-dependency>
-                        <code-name-base>org.netbeans.modules.j2ee.api.ejbmodule</code-name-base>
-                        <compile-dependency/>
-                    </test-dependency>
-                    <test-dependency>
-                        <code-name-base>org.netbeans.modules.j2ee.dd</code-name-base>
-                        <compile-dependency/>
-                    </test-dependency>
-                    <test-dependency>
-                        <code-name-base>org.netbeans.modules.j2eeserver</code-name-base>
-                        <compile-dependency/>
-                    </test-dependency> -->
                     <test-dependency>
                         <code-name-base>org.netbeans.modules.masterfs</code-name-base>
                     </test-dependency>
                     <test-dependency>
                         <code-name-base>org.netbeans.modules.web.project</code-name-base>
-                        <!-- <compile-dependency/> -->
                         <recursive/>
                     </test-dependency>
                     <test-dependency>
                         <code-name-base>org.netbeans.modules.websvc.clientapi</code-name-base>
-                        <!--     <compile-dependency/> -->
                     </test-dependency>
                     <test-dependency>
                         <code-name-base>org.netbeans.modules.websvc.jaxwsapi</code-name-base>
-                        <!-- <compile-dependency/> -->
                     </test-dependency>
-                    <!-- <test-dependency>
-                        <code-name-base>org.netbeans.modules.websvc.jaxwsmodel</code-name-base>
-                        <compile-dependency/>
-                    </test-dependency> -->
                     <test-dependency>
                         <code-name-base>org.netbeans.modules.websvc.websvcapi</code-name-base>
-                        <!-- <compile-dependency/> -->
                     </test-dependency>
                     <test-dependency>
                         <code-name-base>org.openide.execution</code-name-base>
-                        <!--   <compile-dependency/> -->
                     </test-dependency>
                     <test-dependency>
                         <code-name-base>org.openide.options</code-name-base>
-                        <!-- <compile-dependency/> -->
                     </test-dependency>
                 </test-type>
             </test-dependencies>
