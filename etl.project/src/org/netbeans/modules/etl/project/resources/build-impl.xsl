@@ -154,7 +154,7 @@ is divided into following sections:
                         <fileset dir="${{netbeans.home}}/../platform8/lib"><include name="*.jar" /></fileset>
                     </classpath>
                 </taskdef>   
-                <taskdef name="generate-schema" classname="org.netbeans.modules.etl.project.anttasks.EViewDesignTime">
+                <taskdef name="generate-schema" classname="org.netbeans.modules.etl.project.anttasks.MasterIndexDesignTime">
                     <classpath>
                         <fileset dir="${{module.install.dir}}"><include name="*.jar" /></fileset>
                         <fileset dir="${{module.install.dir}}/ext/etlpro"><include name="*.jar" /></fileset>
@@ -450,7 +450,7 @@ is divided into following sections:
                 <xsl:attribute name="depends">init</xsl:attribute>
                 <!--echo message="SAMPLE" /--> 
                 <generate-schema/>      
-                <!--taskdef name="generate-schema" classname="org.netbeans.modules.etl.project.anttasks.EViewDesignTime">                        
+                <!--taskdef name="generate-schema" classname="org.netbeans.modules.etl.project.anttasks.MasterIndexDesignTime">                        
                 </taskdef-->
                 <!--echo message="SAMPLE COMPLETED" /--> 
             </target>
