@@ -120,7 +120,7 @@ final class MercurialPanel extends javax.swing.JPanel {
                 .add(jLabel3)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
                 .add(annotationTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 405, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 98, Short.MAX_VALUE)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 115, Short.MAX_VALUE)
                 .add(addButton)
                 .addContainerGap())
         );
@@ -132,8 +132,10 @@ final class MercurialPanel extends javax.swing.JPanel {
                     .add(jLabel3)
                     .add(addButton)
                     .add(annotationTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addContainerGap(20, Short.MAX_VALUE))
         );
+
+        addButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(MercurialPanel.class, "ACSD_addButton")); // NOI18N
 
         jPanel2.setBorder(javax.swing.BorderFactory.createTitledBorder(org.openide.util.NbBundle.getMessage(MercurialPanel.class, "MecurialPanel.jPanel2.border.title"))); // NOI18N
 
@@ -148,7 +150,7 @@ final class MercurialPanel extends javax.swing.JPanel {
             .add(jPanel2Layout.createSequentialGroup()
                 .addContainerGap()
                 .add(jLabel4)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 111, Short.MAX_VALUE)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 175, Short.MAX_VALUE)
                 .add(manageButton)
                 .addContainerGap())
         );
@@ -159,8 +161,10 @@ final class MercurialPanel extends javax.swing.JPanel {
                 .add(jPanel2Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(jLabel4)
                     .add(manageButton))
-                .addContainerGap(20, Short.MAX_VALUE))
+                .addContainerGap(24, Short.MAX_VALUE))
         );
+
+        manageButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(MercurialPanel.class, "ACSD_manageButton")); // NOI18N
 
         exportFilename.setLabelFor(exportFilenameTextField);
         org.openide.awt.Mnemonics.setLocalizedText(exportFilename, org.openide.util.NbBundle.getMessage(MercurialPanel.class, "MercurialPanel.ExportFilename.text")); // NOI18N
@@ -190,12 +194,12 @@ final class MercurialPanel extends javax.swing.JPanel {
                             .add(userNameTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 558, Short.MAX_VALUE)
                             .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
                                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                                    .add(exportFilenameTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 426, Short.MAX_VALUE)
-                                    .add(org.jdesktop.layout.GroupLayout.TRAILING, executablePathTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 426, Short.MAX_VALUE))
+                                    .add(exportFilenameTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 427, Short.MAX_VALUE)
+                                    .add(org.jdesktop.layout.GroupLayout.TRAILING, executablePathTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 427, Short.MAX_VALUE))
                                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
                                     .add(execPathBrowseButton)
-                                    .add(exportFilenameBrowseButton, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 123, Short.MAX_VALUE))))))
+                                    .add(exportFilenameBrowseButton, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 125, Short.MAX_VALUE))))))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -221,8 +225,15 @@ final class MercurialPanel extends javax.swing.JPanel {
                 .add(jPanel2, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .add(18, 18, 18)
                 .add(backupOnRevertModifications)
-                .addContainerGap(35, Short.MAX_VALUE))
+                .addContainerGap(25, Short.MAX_VALUE))
         );
+
+        userNameTextField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(MercurialPanel.class, "ACSD_userNameTextField")); // NOI18N
+        executablePathTextField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(MercurialPanel.class, "ACSD_executablePathTextField")); // NOI18N
+        execPathBrowseButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(MercurialPanel.class, "ACSD_execPathBrowseButton")); // NOI18N
+        exportFilenameTextField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(MercurialPanel.class, "ACSD_exportFileNameTextField")); // NOI18N
+        exportFilenameBrowseButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(MercurialPanel.class, "ACSD_exportFilenameBrowseButton")); // NOI18N
+        backupOnRevertModifications.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(MercurialPanel.class, "ACSD_backupOnRevertModifications")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
     
     private void nameChange() {

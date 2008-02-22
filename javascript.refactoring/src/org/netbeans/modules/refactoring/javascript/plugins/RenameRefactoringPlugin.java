@@ -46,10 +46,10 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import org.mozilla.javascript.Token;
-import org.netbeans.fpi.gsf.CancellableTask;
-import org.netbeans.fpi.gsf.ElementKind;
-import org.netbeans.fpi.gsf.Error;
-import org.netbeans.fpi.gsf.Severity;
+import org.netbeans.modules.gsf.api.CancellableTask;
+import org.netbeans.modules.gsf.api.ElementKind;
+import org.netbeans.modules.gsf.api.Error;
+import org.netbeans.modules.gsf.api.Severity;
 import org.netbeans.napi.gsfret.source.ClasspathInfo;
 import org.netbeans.napi.gsfret.source.CompilationController;
 import org.netbeans.napi.gsfret.source.ModificationResult.Difference;
@@ -76,9 +76,9 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.Position.Bias;
 import org.mozilla.javascript.Node;
-import org.netbeans.fpi.gsf.CancellableTask;
-import org.netbeans.fpi.gsf.ElementKind;
-import org.netbeans.fpi.gsf.OffsetRange;
+import org.netbeans.modules.gsf.api.CancellableTask;
+import org.netbeans.modules.gsf.api.ElementKind;
+import org.netbeans.modules.gsf.api.OffsetRange;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
@@ -744,7 +744,7 @@ public class RenameRefactoringPlugin extends JsRefactoringPlugin {
             Node root = AstUtilities.getRoot(workingCopy);
             if (root != null) {
                 
-                Element element = AstElement.getElement(root);
+                Element element = AstElement.getElement(workingCopy, root);
                 Node node = searchCtx.getNode();
                 
                 JsElementCtx fileCtx = new JsElementCtx(root, node, element, workingCopy.getFileObject(), workingCopy);

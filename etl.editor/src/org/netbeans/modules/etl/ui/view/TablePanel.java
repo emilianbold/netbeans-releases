@@ -882,11 +882,13 @@ public class TablePanel extends JPanel {
 
         String nbBundle1 = mLoc.t("PRSR001: Add");
         JButton addColumnButton = new JButton(Localizer.parse(nbBundle1));
+        addColumnButton.getAccessibleContext().setAccessibleName(Localizer.parse(nbBundle1));
         addColumnButton.setActionCommand("Add");
         addColumnButton.setMnemonic(Localizer.parse(nbBundle1).charAt(0));
         addColumnButton.addActionListener(aAdapter);
         String nbBundle2 = mLoc.t("PRSR001: Remove");
         JButton removeColumnButton = new JButton(Localizer.parse(nbBundle2));
+        removeColumnButton.getAccessibleContext().setAccessibleName(Localizer.parse(nbBundle2));
         removeColumnButton.setActionCommand("Remove");
         removeColumnButton.setMnemonic(Localizer.parse(nbBundle2).charAt(0));
         removeColumnButton.addActionListener(aAdapter);

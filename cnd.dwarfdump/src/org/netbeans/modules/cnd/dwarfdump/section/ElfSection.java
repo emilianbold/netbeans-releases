@@ -80,7 +80,9 @@ public class ElfSection {
     
     public void dump(PrintStream out) {
         out.println("\n** Section " + sectionName); // NOI18N
-        header.dump(out);
+        if (header != null) {
+            header.dump(out);
+        }
         out.println("\nContent of the section " + sectionName + "\n"); // NOI18N
     }
     

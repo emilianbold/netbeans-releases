@@ -49,9 +49,9 @@ import java.util.List;
 import java.util.ArrayList;
 import java.util.Collections;
 import org.netbeans.modules.gsf.LanguageRegistry;
-import org.netbeans.sfpi.gsfpath.classpath.ClassPathImplementation;
-import org.netbeans.sfpi.gsfpath.classpath.PathResourceImplementation;
-import org.netbeans.sfpi.gsfpath.classpath.support.ClassPathSupport;
+import org.netbeans.modules.gsfpath.spi.classpath.ClassPathImplementation;
+import org.netbeans.modules.gsfpath.spi.classpath.PathResourceImplementation;
+import org.netbeans.modules.gsfpath.spi.classpath.support.ClassPathSupport;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 
 final class GsfBootClassPathImplementation implements ClassPathImplementation {

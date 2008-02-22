@@ -67,6 +67,8 @@ import org.openide.util.NbBundle;
 import org.netbeans.spi.project.libraries.LibraryImplementation;
 import org.netbeans.spi.project.libraries.LibraryStorageArea;
 import org.netbeans.spi.project.libraries.support.LibrariesSupport;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 
 /**
  *
@@ -111,30 +113,29 @@ public class ServerVolumeCustomizer extends javax.swing.JPanel implements Custom
         this.upButton.setEnabled (false);
         this.downButton.setEnabled (false);
         this.removeButton.setEnabled (false);
-        //if (this.volumeType.equals(J2SELibraryTypeProvider.VOLUME_TYPE_CLASSPATH)) {
+        if (!this.volumeType.equals(ServerLibraryTypeProvider.VOLUME_JAVADOC)
+                && !this.volumeType.equals(ServerLibraryTypeProvider.VOLUME_SOURCE)) {
             this.addButton.setText (NbBundle.getMessage(ServerVolumeCustomizer.class,"ServerVolumeCustomizer.CTL_AddClassPath"));
             this.addButton.setMnemonic(NbBundle.getMessage(ServerVolumeCustomizer.class,"ServerVolumeCustomizer.MNE_AddClassPath").charAt(0));
             this.message.setText(NbBundle.getMessage(ServerVolumeCustomizer.class,"ServerVolumeCustomizer.CTL_ContentClassPath"));
             this.message.setDisplayedMnemonic(NbBundle.getMessage(ServerVolumeCustomizer.class,"ServerVolumeCustomizer.MNE_ContentClassPath").charAt(0));
             this.addButton.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(ServerVolumeCustomizer.class,"ServerVolumeCustomizer.AD_AddClassPath"));
             this.message.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(ServerVolumeCustomizer.class,"ServerVolumeCustomizer.AD_ContentClassPath"));
-        //}
-//        else if (this.volumeType.equals(J2SELibraryTypeProvider.VOLUME_TYPE_JAVADOC)) {
-//            this.addButton.setText(NbBundle.getMessage(ServerVolumeCustomizer.class,"CTL_AddJavadoc"));
-//            this.addButton.setMnemonic(NbBundle.getMessage(ServerVolumeCustomizer.class,"MNE_AddJavadoc").charAt(0));
-//            this.message.setText(NbBundle.getMessage(ServerVolumeCustomizer.class,"CTL_ContentJavadoc"));
-//            this.message.setDisplayedMnemonic(NbBundle.getMessage(ServerVolumeCustomizer.class,"MNE_ContentJavadoc").charAt(0));
-//            this.addButton.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(ServerVolumeCustomizer.class,"AD_AddJavadoc"));
-//            this.message.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(ServerVolumeCustomizer.class,"AD_ContentJavadoc"));
-//        }
-//        else if (this.volumeType.equals(J2SELibraryTypeProvider.VOLUME_TYPE_SRC)) {
-//            this.addButton.setText (NbBundle.getMessage(ServerVolumeCustomizer.class,"CTL_AddSources"));
-//            this.addButton.setMnemonic (NbBundle.getMessage(ServerVolumeCustomizer.class,"MNE_AddSources").charAt(0));
-//            this.message.setText(NbBundle.getMessage(ServerVolumeCustomizer.class,"CTL_ContentSources"));
-//            this.message.setDisplayedMnemonic(NbBundle.getMessage(ServerVolumeCustomizer.class,"MNE_ContentSources").charAt(0));
-//            this.addButton.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(ServerVolumeCustomizer.class,"AD_AddSources"));
-//            this.message.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(ServerVolumeCustomizer.class,"AD_ContentSources"));
-//        }
+        } else if (this.volumeType.equals(ServerLibraryTypeProvider.VOLUME_JAVADOC)) {
+            this.addButton.setText(NbBundle.getMessage(ServerVolumeCustomizer.class,"ServerVolumeCustomizer.CTL_AddJavadoc"));
+            this.addButton.setMnemonic(NbBundle.getMessage(ServerVolumeCustomizer.class,"ServerVolumeCustomizer.MNE_AddJavadoc").charAt(0));
+            this.message.setText(NbBundle.getMessage(ServerVolumeCustomizer.class,"ServerVolumeCustomizer.CTL_ContentJavadoc"));
+            this.message.setDisplayedMnemonic(NbBundle.getMessage(ServerVolumeCustomizer.class,"ServerVolumeCustomizer.MNE_ContentJavadoc").charAt(0));
+            this.addButton.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(ServerVolumeCustomizer.class,"ServerVolumeCustomizer.AD_AddJavadoc"));
+            this.message.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(ServerVolumeCustomizer.class,"ServerVolumeCustomizer.AD_ContentJavadoc"));
+        } else if (this.volumeType.equals(ServerLibraryTypeProvider.VOLUME_SOURCE)) {
+            this.addButton.setText (NbBundle.getMessage(ServerVolumeCustomizer.class,"ServerVolumeCustomizer.CTL_AddSources"));
+            this.addButton.setMnemonic (NbBundle.getMessage(ServerVolumeCustomizer.class,"ServerVolumeCustomizer.MNE_AddSources").charAt(0));
+            this.message.setText(NbBundle.getMessage(ServerVolumeCustomizer.class,"ServerVolumeCustomizer.CTL_ContentSources"));
+            this.message.setDisplayedMnemonic(NbBundle.getMessage(ServerVolumeCustomizer.class,"ServerVolumeCustomizer.MNE_ContentSources").charAt(0));
+            this.addButton.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(ServerVolumeCustomizer.class,"ServerVolumeCustomizer.AD_AddSources"));
+            this.message.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(ServerVolumeCustomizer.class,"ServerVolumeCustomizer.AD_ContentSources"));
+        }
         this.content.addListSelectionListener(new ListSelectionListener () {
             public void valueChanged(ListSelectionEvent e) {
                 if (e.getValueIsAdjusting())
@@ -306,8 +307,8 @@ public class ServerVolumeCustomizer extends javax.swing.JPanel implements Custom
         FileChooser chooser = new FileChooser(baseFolder, baseFolder);
         FileUtil.preventFileChooserSymlinkTraversal(chooser, null);
         chooser.setAcceptAllFileFilterUsed(false);
-        // TODO classes only for now
-        //if (this.volumeType.equals(J2SELibraryTypeProvider.VOLUME_TYPE_CLASSPATH)) {
+        if (!this.volumeType.equals(ServerLibraryTypeProvider.VOLUME_JAVADOC)
+                && !this.volumeType.equals(ServerLibraryTypeProvider.VOLUME_SOURCE)) {
             chooser.setMultiSelectionEnabled (true);
             chooser.setDialogTitle(NbBundle.getMessage(ServerVolumeCustomizer.class,"ServerVolumeCustomizer.TXT_OpenClasses"));
             chooser.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
@@ -315,25 +316,23 @@ public class ServerVolumeCustomizer extends javax.swing.JPanel implements Custom
                     ServerVolumeCustomizer.class,"ServerVolumeCustomizer.TXT_Classpath"),new String[] {"ZIP","JAR"}));   //NOI18N
             chooser.setApproveButtonText(NbBundle.getMessage(ServerVolumeCustomizer.class,"ServerVolumeCustomizer.CTL_SelectCP"));
             chooser.setApproveButtonMnemonic(NbBundle.getMessage(ServerVolumeCustomizer.class,"ServerVolumeCustomizer.MNE_SelectCP").charAt(0));
-        //}
-//        else if (this.volumeType.equals(J2SELibraryTypeProvider.VOLUME_TYPE_JAVADOC)) {
-//            chooser.setMultiSelectionEnabled (true);
-//            chooser.setDialogTitle(NbBundle.getMessage(ServerVolumeCustomizer.class,"TXT_OpenJavadoc"));
-//            chooser.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
-//            chooser.setFileFilter (new SimpleFileFilter(NbBundle.getMessage(
-//                    ServerVolumeCustomizer.class,"TXT_Javadoc"),new String[] {"ZIP","JAR"}));     //NOI18N
-//            chooser.setApproveButtonText(NbBundle.getMessage(ServerVolumeCustomizer.class,"CTL_SelectJD"));
-//            chooser.setApproveButtonMnemonic(NbBundle.getMessage(ServerVolumeCustomizer.class,"MNE_SelectJD").charAt(0));
-//        }
-//        else if (this.volumeType.equals(J2SELibraryTypeProvider.VOLUME_TYPE_SRC)) {
-//            chooser.setMultiSelectionEnabled (true);
-//            chooser.setDialogTitle(NbBundle.getMessage(ServerVolumeCustomizer.class,"TXT_OpenSources"));
-//            chooser.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
-//            chooser.setFileFilter (new SimpleFileFilter(NbBundle.getMessage(
-//                    ServerVolumeCustomizer.class,"TXT_Sources"),new String[] {"ZIP","JAR"}));     //NOI18N
-//            chooser.setApproveButtonText(NbBundle.getMessage(ServerVolumeCustomizer.class,"CTL_SelectSRC"));
-//            chooser.setApproveButtonMnemonic(NbBundle.getMessage(ServerVolumeCustomizer.class,"MNE_SelectSRC").charAt(0));
-//        }
+        } else if (this.volumeType.equals(ServerLibraryTypeProvider.VOLUME_JAVADOC)) {
+            chooser.setMultiSelectionEnabled (true);
+            chooser.setDialogTitle(NbBundle.getMessage(ServerVolumeCustomizer.class,"ServerVolumeCustomizer.TXT_OpenJavadoc"));
+            chooser.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
+            chooser.setFileFilter (new SimpleFileFilter(NbBundle.getMessage(
+                    ServerVolumeCustomizer.class,"ServerVolumeCustomizer.TXT_Javadoc"),new String[] {"ZIP","JAR"}));     //NOI18N
+            chooser.setApproveButtonText(NbBundle.getMessage(ServerVolumeCustomizer.class,"ServerVolumeCustomizer.CTL_SelectJD"));
+            chooser.setApproveButtonMnemonic(NbBundle.getMessage(ServerVolumeCustomizer.class,"ServerVolumeCustomizer.MNE_SelectJD").charAt(0));
+        } else if (this.volumeType.equals(ServerLibraryTypeProvider.VOLUME_SOURCE)) {
+            chooser.setMultiSelectionEnabled (true);
+            chooser.setDialogTitle(NbBundle.getMessage(ServerVolumeCustomizer.class,"ServerVolumeCustomizer.TXT_OpenSources"));
+            chooser.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
+            chooser.setFileFilter (new SimpleFileFilter(NbBundle.getMessage(
+                    ServerVolumeCustomizer.class,"ServerVolumeCustomizer.TXT_Sources"),new String[] {"ZIP","JAR"}));     //NOI18N
+            chooser.setApproveButtonText(NbBundle.getMessage(ServerVolumeCustomizer.class,"ServerVolumeCustomizer.CTL_SelectSRC"));
+            chooser.setApproveButtonMnemonic(NbBundle.getMessage(ServerVolumeCustomizer.class,"ServerVolumeCustomizer.MNE_SelectSRC").charAt(0));
+        }
         if (lastFolder != null) {
             chooser.setCurrentDirectory (lastFolder);
         } else if (baseFolder != null) {
@@ -406,15 +405,16 @@ public class ServerVolumeCustomizer extends javax.swing.JPanel implements Custom
                     ErrorManager.getDefault().notify(mue);
                 }
             }
-            // TODO following block in
-//            if (this.volumeType.equals(J2SELibraryTypeProvider.VOLUME_TYPE_JAVADOC)
-//                && !JavadocForBinaryQueryLibraryImpl.isValidLibraryJavadocRoot (
-//                LibrariesSupport.resolveLibraryEntryURL(libraryLocation, url))) {
-//                DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
-//                    NbBundle.getMessage(ServerVolumeCustomizer.class,"TXT_InvalidJavadocRoot", f.getPath()),
-//                    NotifyDescriptor.ERROR_MESSAGE));
-//                continue;
-//            }
+
+            if (this.volumeType.equals(ServerLibraryTypeProvider.VOLUME_JAVADOC)
+                && !JavadocForBinaryQueryImpl.isValidLibraryJavadocRoot (
+                    LibrariesSupport.resolveLibraryEntryURL(libraryLocation, url))) {
+                
+                DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
+                    NbBundle.getMessage(ServerVolumeCustomizer.class,"ServerVolumeCustomizer.TXT_InvalidJavadocRoot", f.getPath()),
+                    NotifyDescriptor.ERROR_MESSAGE));
+                continue;
+            }
             this.model.addResource(url);
         }        
         int lastIndex = this.model.getSize()-1;

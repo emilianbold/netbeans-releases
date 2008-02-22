@@ -826,8 +826,8 @@ public final class WebProject implements Project, AntProjectListener {
             
             GsfClassPathProviderImpl gsfCpProvider = getLookup().lookup(GsfClassPathProviderImpl.class);
             if (gsfCpProvider != null) {
-                org.netbeans.fpi.gsfpath.classpath.GlobalPathRegistry.getDefault().register(org.netbeans.fpi.gsfpath.classpath.ClassPath.BOOT, gsfCpProvider.getProjectClassPaths(org.netbeans.fpi.gsfpath.classpath.ClassPath.BOOT));
-                org.netbeans.fpi.gsfpath.classpath.GlobalPathRegistry.getDefault().register(org.netbeans.fpi.gsfpath.classpath.ClassPath.SOURCE, gsfCpProvider.getProjectClassPaths(org.netbeans.fpi.gsfpath.classpath.ClassPath.SOURCE));
+                org.netbeans.modules.gsfpath.api.classpath.GlobalPathRegistry.getDefault().register(org.netbeans.modules.gsfpath.api.classpath.ClassPath.BOOT, gsfCpProvider.getProjectClassPaths(org.netbeans.modules.gsfpath.api.classpath.ClassPath.BOOT));
+                org.netbeans.modules.gsfpath.api.classpath.GlobalPathRegistry.getDefault().register(org.netbeans.modules.gsfpath.api.classpath.ClassPath.SOURCE, gsfCpProvider.getProjectClassPaths(org.netbeans.modules.gsfpath.api.classpath.ClassPath.SOURCE));
             }
                     
             // initialize the server configuration
@@ -969,9 +969,9 @@ public final class WebProject implements Project, AntProjectListener {
             // unregister project's classpaths to GlobalPathRegistry
             GsfClassPathProviderImpl gsfCpProvider = lookup.lookup(GsfClassPathProviderImpl.class);
             if (gsfCpProvider != null) {
-                //org.netbeans.fpi.gsfpath.classpath.GlobalPathRegistry.getDefault().unregister(org.netbeans.fpi.gsfpath.classpath.ClassPath.BOOT, gsfCpProvider.getProjectClassPaths(org.netbeans.fpi.gsfpath.classpath.ClassPath.BOOT));
-                org.netbeans.fpi.gsfpath.classpath.GlobalPathRegistry.getDefault().unregister(org.netbeans.fpi.gsfpath.classpath.ClassPath.SOURCE, gsfCpProvider.getProjectClassPaths(org.netbeans.fpi.gsfpath.classpath.ClassPath.SOURCE));
-                //org.netbeans.fpi.gsfpath.classpath.GlobalPathRegistry.getDefault().unregister(org.netbeans.fpi.gsfpath.classpath.ClassPath.COMPILE, gsfCpProvider.getProjectClassPaths(org.netbeans.fpi.gsfpath.classpath.ClassPath.COMPILE));
+                //org.netbeans.modules.gsfpath.api.classpath.GlobalPathRegistry.getDefault().unregister(org.netbeans.modules.gsfpath.api.classpath.ClassPath.BOOT, gsfCpProvider.getProjectClassPaths(org.netbeans.modules.gsfpath.api.classpath.ClassPath.BOOT));
+                org.netbeans.modules.gsfpath.api.classpath.GlobalPathRegistry.getDefault().unregister(org.netbeans.modules.gsfpath.api.classpath.ClassPath.SOURCE, gsfCpProvider.getProjectClassPaths(org.netbeans.modules.gsfpath.api.classpath.ClassPath.SOURCE));
+                //org.netbeans.modules.gsfpath.api.classpath.GlobalPathRegistry.getDefault().unregister(org.netbeans.modules.gsfpath.api.classpath.ClassPath.COMPILE, gsfCpProvider.getProjectClassPaths(org.netbeans.modules.gsfpath.api.classpath.ClassPath.COMPILE));
             }
 
             webPagesFileWatch.reset();

@@ -7,12 +7,17 @@
 # Ruby projects may filter out some unnecessary gems.
 # Configure the following parameters:
 
-NBCVSHOME=~/netbeans/work
+# You can invoke this script with the extra parameter "local" to only update the local zip files (preindexed)
+# or "native" to only update the native zips, or "both" to update everything.
+
+NBHGHOME=~/netbeans/hg/main
 #NATIVERUBYHOME=/Applications/Locomotive2/Bundles/standardRailsMar2007.locobundle/i386
 NATIVERUBYHOME=/Users/tor/dev/ruby/install/ruby-1.8.5/
+#NATIVERUBYHOME=/home/tor/dev/ruby-1.8.5
+VMFLAGS=-J-Xmx1024m
 
 # You probably don't want to change these:
-NB=$NBCVSHOME/nbbuild/netbeans/bin/netbeans
+NB=$NBHGHOME/nbbuild/netbeans/bin/netbeans
 # Location of a Ruby interpreter which contains lots of gems
 NATIVERUBY=$NATIVERUBYHOME/bin/ruby
 SCRATCHFILE=/tmp/native.zip
@@ -21,36 +26,77 @@ USERDIR=/tmp/preindexing
 #############################################################################################
 # No user-configurable parts beyond this point...
 
-RUBY=$NBCVSHOME/nbbuild/netbeans/ruby2
+ar="$1"
+if test "$ar" = "" ; then
+  ar="both"
+fi
+
+
+export PATH=$NATIVERUBYHOME/bin:$PATH
+CLUSTERS=$NBHGHOME/nbbuild/netbeans
+RUBY=$CLUSTERS/ruby2
+GSF=$CLUSTERS/gsf1
 unset GEM_HOME
 
-find $RUBY . -name "netbeans-index*.zip" -exec rm {} \;
-find $NATIVERUBYHOME . -name "netbeans-index*.zip" -exec rm {} \;
+find $CLUSTERS . -name "netbeans-index*.zip" -exec rm {} \;
 rm -rf $RUBY/preindexed/lib
+rm -rf $GSF/preindexed-javascript/lib
+
+if test "$ar" = "local" -o  "$ar" = "both" ; then
 
 rm -rf $USERDIR
-$NB -J-Dgsf.preindexing=true -J-Druby.computeindex --userdir $USERDIR
-rm -rf $USERDIR
-$NB -J-Dgsf.preindexing=true -J-Druby.computeindex --userdir $USERDIR -J-Druby.interpreter=$NATIVERUBY
+$NB $VMFLAGS -J-Dgsf.preindexing=true -J-Druby.computeindex -J-Dnetbeans.full.hack=true --userdir $USERDIR
 
 # Pack preindexed.zip
+#cd $CLUSTERS
 cd $RUBY
 rm -f preindexed-jruby.zip
-zip -r preindexed-jruby.zip `find . -name "netbeans-index*" | egrep -v "action|active|rails"`
-mv preindexed-jruby.zip $NBCVSHOME/ruby/platform/release/preindexed.zip
+#zip -r preindexed-jruby.zip `find . -name "netbeans-index-ruby*" | egrep -v "action|active|rails"`
+zip -r preindexed-jruby.zip `find . -name "netbeans-index-*" | egrep -v "action|active|rails"`
+mv preindexed-jruby.zip $NBHGHOME/ruby.platform/external/preindexed.zip
 rm -f preindexed-jruby.zip
 
+cd $GSF
+rm -f preindexed-javascript.zip
+#zip -r preindexed-javascript.zip `find . -name "netbeans-index-javascript*" | egrep -v "action|active|rails"`
+zip -r preindexed-javascript.zip `find . -name "netbeans-index-*" | egrep -v "action|active|rails"`
+mv preindexed-javascript.zip $NBHGHOME/javascript.editing/external/preindexed.zip
+rm -f preindexed-javascript.zip
+
+fi
+
+# NATIVE
+if test "$ar" = "native" -o  "$ar" = "both" ; then
+
+find $NATIVERUBYHOME . -name "netbeans-index*.zip" -exec rm {} \;
+rm -rf $USERDIR
+$NB $VMFLAGS -J-Dgsf.preindexing=true -J-Druby.computeindex -J-Dnetbeans.full.hack=true --userdir $USERDIR -J-Druby.interpreter=$NATIVERUBY
+
 # Go to the native installation:
+# Ruby
 cd $NATIVERUBYHOME
 rm -f $SCRATCHFILE
-zip -r $SCRATCHFILE `find . -name "netbeans*.zip"` 
-
+zip -r $SCRATCHFILE `find . -name "netbeans-index-ruby*.zip"` 
 cd $RUBY
 rm -rf preindexed
 mkdir preindexed
 cd preindexed
 unzip $SCRATCHFILE
 cd ..
-rm $NBCVSHOME/ruby/platform/release/preindexed-native.zip
-zip -r $NBCVSHOME/ruby/platform/release/preindexed-native.zip preindexed/
+rm $NBHGHOME/ruby.platform/external/preindexed-native.zip
+zip -r $NBHGHOME/ruby.platform/external/preindexed-native.zip preindexed/
 
+# JavaScript
+cd $NATIVERUBYHOME
+rm -f $SCRATCHFILE
+zip -r $SCRATCHFILE `find . -name "netbeans-index-javascript*.zip"` 
+cd $GSF
+rm -rf preindexed-javascript
+mkdir preindexed-javascript
+cd preindexed-javascript
+unzip $SCRATCHFILE
+cd ..
+rm $NBHGHOME/javascript.editing/external/preindexed-native.zip
+zip -r $NBHGHOME/javascript.editing/external/preindexed-native.zip preindexed-javascript/
+
+fi

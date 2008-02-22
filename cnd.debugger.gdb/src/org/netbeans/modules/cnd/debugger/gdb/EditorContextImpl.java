@@ -90,7 +90,6 @@ public class EditorContextImpl extends EditorContext {
     private static String fronting = System.getProperty("netbeans.debugger.fronting"); // NOI18N
     
     private PropertyChangeSupport   pcs;
-    private Map                     annotationToURL = new HashMap();
     private ChangeListener          changedFilesListener;
     private Map                     timeStampToRegistry = new HashMap();
     private Set                     modifiedDataObjects;
@@ -118,7 +117,7 @@ public class EditorContextImpl extends EditorContext {
         resNode.addLookupListener(new EditorLookupListener(Node.class));
 
     }
-    
+
     
     /**
      * Shows source with given url on given line number.
@@ -128,7 +127,11 @@ public class EditorContextImpl extends EditorContext {
      * @param timeStamp a time stamp to be used
      */
     public boolean showSource(String url, int lineNumber, Object timeStamp) {
-        Line l = getLine(url, lineNumber, timeStamp); // false = use original ln
+        return showSource(getDataObject(url), lineNumber, timeStamp);
+    }
+    
+    public boolean showSource(DataObject dobj, int lineNumber, Object timeStamp) {
+        Line l = getLine(dobj, lineNumber, timeStamp); // false = use original ln
         if (l == null) {
             return false;
         }
@@ -147,7 +150,6 @@ public class EditorContextImpl extends EditorContext {
         }
         return true;
     }
-    
     
     /**
      * Creates a new time stamp.
@@ -182,15 +184,18 @@ public class EditorContextImpl extends EditorContext {
     }
     
     public Object annotate(String url, int lineNumber, String annotationType, Object timeStamp) {
-        Line l =  getLine(url, lineNumber, timeStamp);
+        return annotate(getDataObject(url), lineNumber, annotationType, timeStamp);
+    }
+    
+    public Object annotate(DataObject dobj, int lineNumber, String annotationType, Object timeStamp) {
+        Line l =  getLine(dobj, lineNumber, timeStamp);
         if (l == null) {
             return null;
         }
         DebuggerAnnotation annotation = new DebuggerAnnotation(annotationType, l);
-        annotationToURL.put(annotation, url);
-        
         return annotation;
     }
+
 
     /**
      * Removes given annotation.
@@ -200,10 +205,6 @@ public class EditorContextImpl extends EditorContext {
     public void removeAnnotation(Object a) {
         DebuggerAnnotation annotation = (DebuggerAnnotation) a;
         annotation.detach();
-        
-        if (annotationToURL.remove(annotation) == null) {
-            return;
-        }
     }
 
     /**
@@ -219,9 +220,13 @@ public class EditorContextImpl extends EditorContext {
         if (timeStamp == null) {
             return a.getLine().getLineNumber() + 1;
         }
-        String url = (String) annotationToURL.get(a);
-        Line.Set lineSet = getLineSet(url, timeStamp);
-        return lineSet.getOriginalLineNumber(a.getLine()) + 1;
+        DataObject dobj = (DataObject)a.getLine().getLookup().lookup(DataObject.class);
+        if (dobj != null) {
+            Line.Set lineSet = getLineSet(dobj, timeStamp);
+            return lineSet.getOriginalLineNumber(a.getLine()) + 1;
+        } else {
+            return -1;
+        }
     }
     
     /**
@@ -680,8 +685,7 @@ public class EditorContextImpl extends EditorContext {
 	return ec;
     }
 
-    private Line.Set getLineSet(String url, Object timeStamp) {
-        DataObject dataObject = getDataObject(url);
+    private Line.Set getLineSet(DataObject dataObject, Object timeStamp) {
         if (dataObject == null) {
             return null;
         }
@@ -711,8 +715,8 @@ public class EditorContextImpl extends EditorContext {
         return lineCookie.getLineSet();
     }
 
-    private Line getLine(String url, int lineNumber, Object timeStamp) {
-        Line.Set ls = getLineSet(url, timeStamp);
+    private Line getLine(DataObject dobj, int lineNumber, Object timeStamp) {
+        Line.Set ls = getLineSet(dobj, timeStamp);
         if (ls == null) {
             return null;
         }

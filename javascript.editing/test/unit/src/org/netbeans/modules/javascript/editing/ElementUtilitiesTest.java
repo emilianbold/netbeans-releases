@@ -45,7 +45,7 @@ import java.util.Arrays;
 import java.util.List;
 import org.mozilla.javascript.FunctionNode;
 import org.mozilla.javascript.Node;
-import org.netbeans.fpi.gsf.CompilationInfo;
+import org.netbeans.modules.gsf.api.CompilationInfo;
 
 /**
  *
@@ -95,7 +95,7 @@ public class ElementUtilitiesTest extends JsTestBase {
         }
         
         FunctionNode functionNode = AstUtilities.findMethodAtOffset(root, caretOffset);
-        return (FunctionAstElement) AstElement.getElement(functionNode);
+        return (FunctionAstElement) AstElement.getElement(info, functionNode);
     }
     
 }

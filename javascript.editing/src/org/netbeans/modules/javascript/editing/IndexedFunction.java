@@ -47,13 +47,13 @@ import java.util.List;
 import java.util.Set;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
-import org.netbeans.fpi.gsf.ElementKind;
-import org.netbeans.fpi.gsf.Modifier;
-import org.netbeans.fpi.gsf.OffsetRange;
-import org.netbeans.fpi.gsf.ParserFile;
+import org.netbeans.modules.gsf.api.ElementKind;
+import org.netbeans.modules.gsf.api.Modifier;
+import org.netbeans.modules.gsf.api.OffsetRange;
+import org.netbeans.modules.gsf.api.ParserFile;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.javascript.editing.lexer.LexUtilities;
-import org.netbeans.sfpi.gsf.DefaultParserFile;
+import org.netbeans.modules.gsf.spi.DefaultParserFile;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
 
@@ -61,7 +61,7 @@ import org.openide.util.Exceptions;
  *
  * @author Tor Norbye
  */
-public class IndexedFunction implements FunctionElement {
+public class IndexedFunction extends JsElement implements FunctionElement {
     private ElementKind kind;
     protected String signature;
     private String[] args;
@@ -95,11 +95,13 @@ public class IndexedFunction implements FunctionElement {
         return index;
     }
 
+    @Override
     public String getName() {
         return name;
     }
 
 
+    @Override
     public String getIn() {
         return in;
     }
@@ -177,10 +179,12 @@ public class IndexedFunction implements FunctionElement {
         return false;
     }
 
+    @Override
     public ElementKind getKind() {
         return kind;
     }
 
+    @Override
     public Set<Modifier> getModifiers() {
         return Collections.emptySet();
     }
@@ -209,6 +213,7 @@ public class IndexedFunction implements FunctionElement {
         return new DefaultParserFile(getFileObject(), null, platform);
     }
 
+    @Override
     public FileObject getFileObject() {
         if ((fileObject == null) && (fileUrl != null)) {
             fileObject = JsIndex.getFileObject(fileUrl);

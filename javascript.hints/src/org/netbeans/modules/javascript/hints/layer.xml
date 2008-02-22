@@ -78,7 +78,7 @@ made subject to such option by the copyright holder.
         <folder name="text">
             <folder name="javascript">
                 <file name="hints.instance">
-                    <attr name="instanceOf" stringvalue="org.netbeans.fpi.gsf.HintsProvider"/>
+                    <attr name="instanceOf" stringvalue="org.netbeans.modules.gsf.api.HintsProvider"/>
                     <attr name="instanceClass" stringvalue="org.netbeans.modules.javascript.hints.infrastructure.JsHintsProvider"/>
                 </file>
             </folder>

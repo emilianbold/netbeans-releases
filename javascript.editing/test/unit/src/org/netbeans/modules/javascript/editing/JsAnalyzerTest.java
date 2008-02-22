@@ -44,15 +44,15 @@ package org.netbeans.modules.javascript.editing;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import org.netbeans.fpi.gsf.CompilationInfo;
+import org.netbeans.modules.gsf.api.CompilationInfo;
 import java.util.ArrayList;
 import java.util.Comparator;
 import javax.swing.text.Document;
-import org.netbeans.fpi.gsf.CompilationInfo;
-import org.netbeans.fpi.gsf.ElementKind;
-import org.netbeans.fpi.gsf.HtmlFormatter;
-import org.netbeans.fpi.gsf.OffsetRange;
-import org.netbeans.fpi.gsf.StructureItem;
+import org.netbeans.modules.gsf.api.CompilationInfo;
+import org.netbeans.modules.gsf.api.ElementKind;
+import org.netbeans.modules.gsf.api.HtmlFormatter;
+import org.netbeans.modules.gsf.api.OffsetRange;
+import org.netbeans.modules.gsf.api.StructureItem;
 import org.netbeans.modules.javascript.editing.JsAnalyzer.AnalysisResult;
 
 /**
@@ -211,7 +211,7 @@ public class JsAnalyzerTest extends JsTestBase {
     private void checkImports(String relFilePath) throws Exception {
         CompilationInfo info = getInfo(relFilePath);
         JsParseResult result = AstUtilities.getParseResult(info);
-        AnalysisResult analysisResult = JsAnalyzer.analyze(result);
+        AnalysisResult analysisResult = JsAnalyzer.analyze(result, info);
         List<String> imports = analysisResult.getImports();
         if (imports.size() > 1) {
             Collections.sort(imports);

@@ -50,9 +50,9 @@
 package  org.netbeans.modules.visualweb.test.components.util;
 
 
-import java.io.File;
-
-import org.netbeans.modules.visualweb.gravy.*;
+import java.io.ByteArrayInputStream;
+import org.netbeans.jellytools.nodes.Node;
+import org.netbeans.modules.visualweb.gravy.DocumentOutlineOperator;
 import org.netbeans.modules.visualweb.gravy.ProjectNavigatorOperator;
 import org.netbeans.modules.visualweb.gravy.dataconnectivity.ServerNavigatorOperator;
 import org.netbeans.modules.visualweb.gravy.designer.DesignerPaneOperator;
@@ -61,7 +61,9 @@ import org.netbeans.modules.visualweb.gravy.properties.SheetTableOperator;
 import org.netbeans.modules.visualweb.gravy.toolbox.PaletteContainerOperator;
 import org.netbeans.modules.visualweb.gravy.model.IDE;
 import java.awt.event.KeyEvent;
+import java.io.File;
 import java.io.IOException;
+import java.util.Properties;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.netbeans.jemmy.drivers.text.SwingTextKeyboardDriver;
@@ -76,7 +78,14 @@ import org.netbeans.jellytools.WizardOperator;
 import javax.swing.JTextField;
 import javax.swing.JComboBox;
 import javax.swing.tree.TreePath;
+import org.netbeans.jemmy.JemmyException;
 import org.netbeans.jemmy.TimeoutExpiredException;
+import org.netbeans.modules.visualweb.gravy.Bundle;
+import org.netbeans.modules.visualweb.gravy.EditorOperator;
+import org.netbeans.modules.visualweb.gravy.NbDialogOperator;
+import org.netbeans.modules.visualweb.gravy.RaveWindowOperator;
+import org.netbeans.modules.visualweb.gravy.TestUtils;
+import org.netbeans.modules.visualweb.gravy.Util;
 
 /**
  *
@@ -109,6 +118,46 @@ public class ComponentUtils {
     
     /** Creates a new instance of Util */
     public ComponentUtils() {
+    }
+    
+    /**
+     * Selects a component in the Navigator view specified by string <code>path</code>
+     * @param path string path delimited by |
+     */
+    public static void selectComponentByPath(String path) {
+        DocumentOutlineOperator doo = new DocumentOutlineOperator(Util.getMainWindow());
+        JTreeOperator jto = doo.getStructTreeOperator();
+        new Node(jto, path).select();
+     }
+
+    /**
+     * Selects a component in the Navigator view specified by relative path to
+     * <code>Page1|page1|html1|body1|form1|</code> component.
+     * @param a relative path delimited by |
+     */
+    public static void selectForm1Component(String name) {
+        /*TODO should be replaced by selectComponent(String name) which find the component
+          by it's name somwhere in the tree */
+        DocumentOutlineOperator doo = new DocumentOutlineOperator(Util.getMainWindow());
+        JTreeOperator jto = doo.getStructTreeOperator();
+        selectComponentByPath("Page1|page1|html1|body1|form1|"+name);
+     }
+    
+    /**
+     * Reads a property list (key and element pairs) from the String.
+     * @param src properties string in format described at
+     * <a href="http://java.sun.com/j2se/1.5.0/docs/api/java/util/Properties.html#load(java.io.InputStream
+     * Properties.load(java.io.InputStream)</a> method.
+     * @return the <code>Properties</code> object holding the properties represented by the string argument
+     */
+    public static Properties parseProperties(String src) {
+        Properties properties =  new Properties();
+        try {
+            properties.load(new ByteArrayInputStream(src.getBytes("ISO-8859-1")));
+        } catch (IOException ex) {
+            new JemmyException("Failed to parse properties:\n"+src, ex);
+        }
+        return properties;
     }
     
     /*

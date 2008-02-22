@@ -3,9 +3,9 @@ package org.netbeans.modules.ruby;
 import java.util.HashMap;
 import java.util.Map;
 import javax.swing.text.Document;
-import org.netbeans.fpi.gsf.ColoringAttributes;
-import org.netbeans.fpi.gsf.CompilationInfo;
-import org.netbeans.fpi.gsf.OffsetRange;
+import org.netbeans.modules.gsf.api.ColoringAttributes;
+import org.netbeans.modules.gsf.api.CompilationInfo;
+import org.netbeans.modules.gsf.api.OffsetRange;
 
 /**
  * Test the semantic analyzer / highlighter

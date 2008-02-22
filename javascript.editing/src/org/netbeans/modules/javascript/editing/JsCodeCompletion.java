@@ -55,23 +55,23 @@ import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import org.mozilla.javascript.Node;
 import org.netbeans.editor.ext.html.parser.SyntaxElement;
-import org.netbeans.fpi.gsf.CompilationInfo;
-import org.netbeans.fpi.gsf.Completable;
-import org.netbeans.fpi.gsf.CompletionProposal;
-import org.netbeans.fpi.gsf.ElementHandle;
-import org.netbeans.fpi.gsf.ElementKind;
-import org.netbeans.fpi.gsf.HtmlFormatter;
-import org.netbeans.fpi.gsf.Modifier;
-import org.netbeans.fpi.gsf.NameKind;
-import org.netbeans.fpi.gsf.ParameterInfo;
+import org.netbeans.modules.gsf.api.CompilationInfo;
+import org.netbeans.modules.gsf.api.Completable;
+import org.netbeans.modules.gsf.api.CompletionProposal;
+import org.netbeans.modules.gsf.api.ElementHandle;
+import org.netbeans.modules.gsf.api.ElementKind;
+import org.netbeans.modules.gsf.api.HtmlFormatter;
+import org.netbeans.modules.gsf.api.Modifier;
+import org.netbeans.modules.gsf.api.NameKind;
+import org.netbeans.modules.gsf.api.ParameterInfo;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
-import org.netbeans.fpi.gsf.OffsetRange;
-import org.netbeans.fpi.gsf.ParserResult;
+import org.netbeans.modules.gsf.api.OffsetRange;
+import org.netbeans.modules.gsf.api.ParserResult;
 import org.netbeans.modules.html.editor.gsf.HtmlParserResult;
 import org.netbeans.modules.javascript.editing.JsParser.Sanitize;
 import org.netbeans.modules.javascript.editing.lexer.Call;
@@ -367,7 +367,7 @@ public class JsCodeCompletion implements Completable {
                     ((kind != NameKind.EXACT_NAME) && startsWith(name, prefix))) {
                 List<Node> nodeList = localVars.get(name);
                 if (nodeList != null && nodeList.size() > 0) {
-                    AstElement element = AstElement.getElement(nodeList.get(0));
+                    AstElement element = AstElement.getElement(request.info, nodeList.get(0));
                     proposals.add(new PlainItem(element, request));
                 }
             }
@@ -1659,7 +1659,7 @@ methods = new HashSet<IndexedFunction>();
 
         public ElementHandle getElement() {
             // XXX Is this called a lot? I shouldn't need it most of the time
-            return JsParser.createHandle(request.info, element);
+            return element;
         }
 
         public ElementKind getKind() {
@@ -2054,7 +2054,7 @@ methods = new HashSet<IndexedFunction>();
         @Override
         public ElementHandle getElement() {
             // For completion documentation
-            return JsParser.createHandle(request.info, new KeywordElement(keyword));
+            return new KeywordElement(keyword);
         }
     }
 
@@ -2116,7 +2116,7 @@ methods = new HashSet<IndexedFunction>();
         @Override
         public ElementHandle getElement() {
             // For completion documentation
-            return JsParser.createHandle(request.info, new KeywordElement(tag));
+            return new KeywordElement(tag);
         }
     }
     

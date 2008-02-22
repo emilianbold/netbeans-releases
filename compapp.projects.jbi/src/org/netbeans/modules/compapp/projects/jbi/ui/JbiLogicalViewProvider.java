@@ -482,18 +482,7 @@ public class JbiLogicalViewProvider implements LogicalViewProvider {
             
             actions.add(CommonProjectActions.newFileAction());
             
-            // Create CASA on demand            
-            actions.add(null);
-            actions.add(ProjectSensitiveActions.projectSensitiveAction(
-                    new OpenEditorAction(), 
-                    bundle.getString("LBL_EditAction_Name"), // NOI18N
-                    null
-                    ));
-            actions.add(ProjectSensitiveActions.projectCommandAction(
-                    JbiProjectConstants.COMMAND_JBICLEANCONFIG,
-                    bundle.getString("LBL_JbiCleanConfigAction_Name"),  // NOI18N
-                    null
-                    ));         
+            // Create CASA on demand  //chikkala: moved to service composition node action.
             
             actions.add(null);
 

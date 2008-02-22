@@ -3,20 +3,20 @@ package org.netbeans.modules.ruby.elements;
 import java.util.Set;
 
 import org.jruby.ast.ClassNode;
-import org.jruby.ast.Colon2Node;
 import org.jruby.ast.Colon3Node;
 import org.jruby.ast.Node;
 import org.jruby.ast.SClassNode;
 import org.jruby.ast.types.INameNode;
-import org.netbeans.fpi.gsf.ElementKind;
+import org.netbeans.modules.gsf.api.CompilationInfo;
+import org.netbeans.modules.gsf.api.ElementKind;
 
 
 public class AstClassElement extends AstElement implements ClassElement {
     private String fqn;
     private Set<String> includes;
 
-    public AstClassElement(Node node) {
-        super(node);
+    public AstClassElement(CompilationInfo info, Node node) {
+        super(info, node);
     }
 
     @Override
