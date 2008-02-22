@@ -41,7 +41,7 @@ package org.netbeans.modules.gsfret.source.usages;
 
 import java.util.ArrayList;
 import java.util.List;
-import org.netbeans.fpi.gsf.IndexDocument;
+import org.netbeans.modules.gsf.api.IndexDocument;
 
 class IndexDocumentImpl implements IndexDocument {
     final List<String> indexedKeys;

@@ -52,7 +52,7 @@ import org.openide.util.Exceptions;
 
 import java.io.IOException;
 import javax.swing.text.Document;
-import org.netbeans.fpi.gsfpath.classpath.ClassPath;
+import org.netbeans.modules.gsfpath.api.classpath.ClassPath;
 import org.netbeans.napi.gsfret.source.Source;
 import org.netbeans.modules.gsfret.source.usages.RepositoryUpdater;
 import org.openide.filesystems.FileObject;

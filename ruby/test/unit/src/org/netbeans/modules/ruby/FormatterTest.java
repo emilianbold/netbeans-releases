@@ -44,7 +44,7 @@ package org.netbeans.modules.ruby;
 import java.util.List;
 import javax.swing.JTextArea;
 import javax.swing.text.Caret;
-import org.netbeans.fpi.gsf.ParserResult;
+import org.netbeans.modules.gsf.api.ParserResult;
 import org.netbeans.api.ruby.platform.RubyInstallation;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;

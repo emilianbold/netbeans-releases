@@ -45,10 +45,10 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
-import org.netbeans.fpi.gsf.Index;
-import org.netbeans.fpi.gsf.Index.SearchResult;
-import org.netbeans.fpi.gsf.Index.SearchScope;
-import org.netbeans.fpi.gsf.NameKind;
+import org.netbeans.modules.gsf.api.Index;
+import org.netbeans.modules.gsf.api.Index.SearchResult;
+import org.netbeans.modules.gsf.api.Index.SearchScope;
+import org.netbeans.modules.gsf.api.NameKind;
 import org.openide.util.Exceptions;
 
 /**

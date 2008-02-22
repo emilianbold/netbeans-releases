@@ -29,8 +29,8 @@ package org.netbeans.modules.gsf;
 
 import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.mimelookup.MimePath;
-import org.netbeans.fpi.gsf.EditorOptions;
-import org.netbeans.fpi.gsf.EditorOptionsFactory;
+import org.netbeans.modules.gsf.api.EditorOptions;
+import org.netbeans.modules.gsf.api.EditorOptionsFactory;
 import org.netbeans.editor.SettingsNames;
 import org.netbeans.editor.ext.ExtSettingsNames;
 import org.netbeans.modules.editor.options.BaseOptions;
