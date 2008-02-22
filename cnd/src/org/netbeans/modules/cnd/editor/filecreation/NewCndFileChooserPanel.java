@@ -115,7 +115,7 @@ final class NewCndFileChooserPanel implements WizardDescriptor.Panel<WizardDescr
         }
         
         // check if the file name can be created
-        String errorMessage = canUseFileName(gui.getTargetGroup().getRootFolder(), gui.getTargetFolder(), gui.getTargetName());
+        String errorMessage = canUseFileName(gui.getTargetGroup().getRootFolder(), gui.getTargetFolder(), gui.getTargetName(), false);
         wizard.putProperty ("WizardPanel_errorMessage", errorMessage); // NOI18N
         
         if (!es.isKnownExtension(gui.getTargetExtension())) {
@@ -239,8 +239,29 @@ final class NewCndFileChooserPanel implements WizardDescriptor.Panel<WizardDescr
      * @param extension extension of created file
      * @return localized error message or null if all right
      */    
-    final public static String canUseFileName(FileObject targetFolder, String folderName, String newObjectName) {
+    final public static String canUseFileName(FileObject targetFolder, String folderName, String newObjectName, boolean allowFileSeparator) {
         String relFileName = folderName + "/" + newObjectName; // NOI18N
+
+        boolean allowSlash = false;
+        boolean allowBackslash = false;
+        int errorVariant = 0;
+        
+        if (allowFileSeparator) {
+            if (File.separatorChar == '\\') {
+                errorVariant = 3;
+                allowSlash = allowBackslash = true;
+            } else {
+                errorVariant = 1;
+                allowSlash = true;
+            }
+        }
+        
+        if ((!allowSlash && newObjectName.indexOf('/') != -1) || (!allowBackslash && newObjectName.indexOf('\\') != -1)) {
+            //if errorVariant == 3, the test above should never be true:
+            assert errorVariant == 0 || errorVariant == 1 : "Invalid error variant: " + errorVariant;
+            
+            return NbBundle.getMessage(NewCndFileChooserPanel.class, "MSG_not_valid_filename", newObjectName, new Integer(errorVariant));
+        }
 
         // test whether the selected folder on selected filesystem already exists
         if (targetFolder == null) {
