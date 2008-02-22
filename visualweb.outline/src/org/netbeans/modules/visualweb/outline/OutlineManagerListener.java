@@ -72,21 +72,39 @@ import org.openide.windows.WindowManager;
  */
 class OutlineManagerListener implements PropertyChangeListener {
 
+    
+    private final OutlinePanel outlinePanel;
+    
+    
     /** Creates a new instance of OutlineManagerListener */
-    public OutlineManagerListener() {
+    public OutlineManagerListener(OutlinePanel outlinePanel) {
+        this.outlinePanel = outlinePanel;
     }
 
 
     public void propertyChange(PropertyChangeEvent evt) {
         if (ExplorerManager.PROP_SELECTED_NODES.equals(evt.getPropertyName())) {
             Node[] selectedNodes = (Node[])evt.getNewValue();
-
+            
             Set<DesignContext> contexts = getDesignContextsForNodes(selectedNodes);
+
+            if (contexts.isEmpty()) {
+                // XXX #126818 The node selection might not have the context or be empty,
+                // try to get the contexts from the first child under root (which is the page bean).
+                Node[] nodes = outlinePanel.getExplorerManager().getRootContext().getChildren().getNodes();
+                Node firstNode;
+                if (nodes != null && nodes.length > 0) {
+                    firstNode = nodes[0];
+                } else {
+                    firstNode = null;
+                }
+                contexts = getDesignContextsForNodes(new Node[] {firstNode});
+            }
 
             if (contexts.isEmpty()) {
                 return;
             }
-
+            
             Set tcs = TopComponent.getRegistry().getOpened();
             for (Iterator it = tcs.iterator(); it.hasNext(); ) {
                 TopComponent tc = (TopComponent)it.next();

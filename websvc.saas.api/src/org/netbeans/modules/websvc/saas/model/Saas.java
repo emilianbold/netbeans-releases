@@ -65,7 +65,7 @@ public class Saas {
     public static enum State { 
         UNINITIALIZED, 
         INITIALIZING, 
-        RESOLVED,
+        RETRIEVED,
         READY
      
     }
@@ -180,7 +180,7 @@ public class Saas {
         } else {
             RequestProcessor.getDefault().post(new Runnable() {
                 public void run() {
-                    setState(State.RESOLVED);
+                    setState(State.READY);
                 }
             });
         }

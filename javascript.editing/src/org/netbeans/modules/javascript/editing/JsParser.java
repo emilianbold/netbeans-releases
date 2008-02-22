@@ -91,7 +91,6 @@ import org.openide.filesystems.FileObject;
  */
 public class JsParser implements Parser {
     private final PositionManager positions = createPositionManager();
-    private JsModel model;
 
     /**
      * Creates a new instance of JsParser
@@ -349,7 +348,7 @@ public class JsParser implements Parser {
 
         switch (sanitizing) {
         case NEVER:
-            return createParseResult(context.file, null, null, null/*, null, null*/);
+            return createParseResult(context.file, null, null/*, null, null*/);
 
         case NONE:
 
@@ -407,7 +406,7 @@ public class JsParser implements Parser {
         case MISSING_END:
         default:
             // We're out of tricks - just return the failed parse result
-            return createParseResult(context.file, null, null, null/*, null, null*/);
+            return createParseResult(context.file, null, null/*, null, null*/);
         }
     }
 
@@ -558,10 +557,9 @@ public class JsParser implements Parser {
             setParentRefs(root, null);
             context.sanitized = sanitizing;
             //AstRootElement rootElement = new AstRootElement(context.file.getFileObject(), root, result);
-            AstElement rootElement = null;
             
             AstNodeAdapter ast = new AstNodeAdapter(null, root);
-            JsParseResult r = createParseResult(context.file, rootElement, root, ast /*, realRoot, result*/);
+            JsParseResult r = createParseResult(context.file, root, ast /*, realRoot, result*/);
             r.setSanitized(context.sanitized, context.sanitizedRange, context.sanitizedContents);
             r.setSource(source);
             return r;
@@ -574,9 +572,9 @@ public class JsParser implements Parser {
         return "json".equals(context.file.getExtension()); // NOI18N
     }
     
-    private JsParseResult createParseResult(ParserFile file, AstElement rootElement, Node rootNode, AstNodeAdapter ast/*, Node root,
+    private JsParseResult createParseResult(ParserFile file, Node rootNode, AstNodeAdapter ast/*, Node root,
         RootNode realRoot, JsParserResult jrubyResult*/) {
-        return new JsParseResult(this, file, rootElement, rootNode, ast/*, realRoot, jrubyResult*/);
+        return new JsParseResult(this, file, rootNode, ast/*, realRoot, jrubyResult*/);
     }
     
     public PositionManager getPositionManager() {
@@ -607,72 +605,32 @@ public class JsParser implements Parser {
        }
     }
     
-    // TODO - move into the JsElementHandle class!
-    @SuppressWarnings("unchecked")
-    public static ElementHandle createHandle(CompilationInfo info, final Element object) {
-        if (object instanceof KeywordElement || object instanceof CommentElement) {
-            // Not tied to an AST - just pass it around
-            return new JsElementHandle(null, object, info.getFileObject());
-        }
-
-        if (object instanceof IndexedFunction) {
-            // Probably a function in a "foreign" file (not parsed from AST),
-            // such as a signature returned from the index of the Ruby libraries.
-// TODO - make sure this is infrequent! getFileObject is expensive!            
-// Alternatively, do this in a delayed fashion - e.g. pass in null and in getFileObject
-// look up from index            
-            return new JsElementHandle(null, object, ((IndexedFunction)object).getFileObject());
-        }
-
-        if (!(object instanceof AstElement)) {
-            return null;
-        }
-
-        Node root = AstUtilities.getRoot(info);
-
-        return new JsElementHandle(root, object, info.getFileObject());
-    }
-    
-    @SuppressWarnings("unchecked")
-    public static ElementHandle createHandle(ParserResult result, final AstElement object) {
-        Node root = AstUtilities.getRoot(result);
-
-        return new JsElementHandle(root, object, result.getFile().getFileObject());
-    }
-    
     @SuppressWarnings("unchecked")
     public static Element resolveHandle(CompilationInfo info, ElementHandle handle) {
-        JsElementHandle h = (JsElementHandle)handle;
-        Node oldRoot = h.root;
-        Node oldNode;
+        if (handle instanceof AstElement) {
+            AstElement element = (AstElement)handle;
+            CompilationInfo oldInfo = element.getInfo();
+            if (oldInfo == info) {
+                return element;
+            }
+            Node oldNode = element.getNode(); // XXX Make it work for DefaultComObjects...
+            Node oldRoot = AstUtilities.getRoot(oldInfo);
+            
+            Node newRoot = AstUtilities.getRoot(info);
+            if (newRoot == null) {
+                return null;
+            }
 
-        if (h.object instanceof KeywordElement || h.object instanceof IndexedFunction || h.object instanceof CommentElement) {
-            // Not tied to a tree
-            return h.object;
-        }
+            // Find newNode
+            Node newNode = find(oldRoot, oldNode, newRoot);
 
-        if (h.object instanceof AstElement) {
-            oldNode = ((AstElement)h.object).getNode(); // XXX Make it work for DefaultComObjects...
-        } else {
-            return null;
-        }
-        
-        if (info == null) {
-            return null;
-        }
+            if (newNode != null) {
+                AstElement co = AstElement.getElement(info, newNode);
 
-        Node newRoot = AstUtilities.getRoot(info);
-        if (newRoot == null) {
-            return null;
-        }
-
-        // Find newNode
-        Node newNode = find(oldRoot, oldNode, newRoot);
-
-        if (newNode != null) {
-            Element co = AstElement.getElement(newNode);
-
-            return co;
+                return co;
+            }
+        } else if (handle instanceof JsElement) {
+            return (JsElement)handle;
         }
 
         return null;
@@ -718,56 +676,6 @@ public class JsParser implements Parser {
         }
 
         return null;
-    }
-
-    private static class JsElementHandle extends ElementHandle {
-        private final Node root;
-        private final Element object;
-        private final FileObject fileObject;
-
-        private JsElementHandle(Node root, Element object, FileObject fileObject) {
-            this.root = root;
-            this.object = object;
-            this.fileObject = fileObject;
-        }
-
-        public boolean signatureEquals(ElementHandle handle) {
-            // XXX TODO
-            return false;
-        }
-
-        public FileObject getFileObject() {
-            if (object instanceof IndexedFunction) {
-                return ((IndexedFunction)object).getFileObject();
-            }
-
-            return fileObject;
-        }
-
-        @Override
-        public String getMimeType() {
-            return JsMimeResolver.JAVASCRIPT_MIME_TYPE;
-        }
-
-        @Override
-        public String getName() {
-            return object.getName();
-        }
-
-        @Override
-        public String getIn() {
-            return object.getIn();
-        }
-
-        @Override
-        public ElementKind getKind() {
-            return object.getKind();
-        }
-
-        @Override
-        public Set<Modifier> getModifiers() {
-            return object.getModifiers();
-        }
     }
 
     /** Attempts to sanitize the input buffer */

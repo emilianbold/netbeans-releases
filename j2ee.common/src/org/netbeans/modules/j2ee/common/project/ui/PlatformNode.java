@@ -42,6 +42,7 @@
 package org.netbeans.modules.j2ee.common.project.ui;
 
 
+import org.netbeans.modules.j2ee.common.project.ui.ShowJavadocAction;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.CharConversionException;

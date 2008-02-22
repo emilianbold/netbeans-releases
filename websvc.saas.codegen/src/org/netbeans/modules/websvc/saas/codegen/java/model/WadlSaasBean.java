@@ -43,8 +43,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import org.netbeans.modules.websvc.saas.codegen.java.Constants.HttpMethodType;
-import org.netbeans.modules.websvc.saas.codegen.java.Constants.MimeType;
 import org.netbeans.modules.websvc.saas.model.WadlSaasMethod;
 import org.netbeans.modules.websvc.saas.model.wadl.Param;
 import org.netbeans.modules.websvc.saas.model.wadl.RepresentationType;
@@ -60,9 +58,8 @@ import org.netbeans.modules.websvc.saas.codegen.java.support.Inflector;
  *
  * @author ayubkhan
  */
-public class WadlSaasBean extends GenericResourceBean {
+public class WadlSaasBean extends SaasBean {
 
-    private static final String RESOURCE_TEMPLATE = "Templates/SaaSServices/WrapperResource.java"; //NOI18N
     private String outputWrapperName;
     private String wrapperPackageName;
     private List<ParameterInfo> queryParams;
@@ -78,6 +75,7 @@ public class WadlSaasBean extends GenericResourceBean {
     
         this.m = m;
        
+        setResourceClassTemplate(m.getHref());
         inputParams = new ArrayList<ParameterInfo>();
         List<MimeType> mimeTypes = new ArrayList<MimeType>();
         try {

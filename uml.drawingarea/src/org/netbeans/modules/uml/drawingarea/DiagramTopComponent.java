@@ -47,6 +47,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import javax.swing.AbstractAction;
 import javax.swing.InputMap;
 import javax.swing.JComponent;
@@ -1246,10 +1247,16 @@ public class DiagramTopComponent extends CloneableTopComponent
     {
         if ( paletteContrl == null) 
             paletteContrl = this.getAssociatedPalette();
-        if ( paletteContrl == null)
-            return Lookups.fixed(new Object[] {mControl, diagramDO});
+
+        ArrayList objs = new ArrayList();
+        if (mControl != null) 
+            objs.add(mControl);
+        if (paletteContrl != null)
+            objs.add(paletteContrl);
+        if (getDiagramDO() != null)
+            objs.add(getDiagramDO());
         
-        return Lookups.fixed(new Object[] {mControl, paletteContrl, getDiagramDO() } );
+        return Lookups.fixed(objs.toArray());
     }
     
     ///////////////////////////////////////////////////////////////////////////

@@ -63,7 +63,7 @@ public class GlobalJavadocForBinaryImplTest extends TestBase {
         URL nbDocZipURL = Util.urlForJar(nbDocZip);
         NbPlatform.getDefaultPlatform().addJavadocRoot(nbDocZipURL);
         
-        URL loadersSrcURL = file("openide/loaders/src").toURI().toURL();
+        URL loadersSrcURL = file("openide.loaders/src").toURI().toURL();
         Result res = new GlobalJavadocForBinaryImpl().findJavadoc(loadersSrcURL);
         assertNotNull("result is not null", res);
         

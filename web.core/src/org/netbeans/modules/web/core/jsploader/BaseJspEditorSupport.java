@@ -40,6 +40,7 @@
  */
 
 package org.netbeans.modules.web.core.jsploader;
+import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.io.InputStream;
@@ -56,8 +57,8 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.StyledDocument;
 import javax.swing.text.EditorKit;
+import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.modules.web.core.palette.JSPPaletteFactory;
-import org.netbeans.modules.web.jsps.parserapi.JspParserAPI;
 import org.openide.filesystems.FileUtil;
 
 import org.openide.text.DataEditorSupport;
@@ -84,8 +85,10 @@ import org.openide.loaders.DataObject;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.spi.palette.PaletteController;
 import org.openide.util.UserCancelException;
+import org.openide.util.WeakListeners;
 
-class BaseJspEditorSupport extends DataEditorSupport implements EditCookie, EditorCookie.Observable, OpenCookie, LineCookie, CloseCookie, PrintCookie {
+class BaseJspEditorSupport extends DataEditorSupport implements EditCookie, EditorCookie.Observable, OpenCookie,
+        LineCookie, CloseCookie, PrintCookie, PropertyChangeListener {
     
     private static final int AUTO_PARSING_DELAY = 2000;//ms
     
@@ -164,22 +167,19 @@ class BaseJspEditorSupport extends DataEditorSupport implements EditCookie, Edit
         });
     
         encoding = null;
-        
-        JspParserAccess
-                .getJspParserWM (getWebModule (getDataObject().getPrimaryFile()))
-                .addPropertyChangeListener(
-                    new PropertyChangeListener() {
-                        public void propertyChange(java.beans.PropertyChangeEvent evt) {
-                            String propName = evt.getPropertyName();
-                            if (JspParserAPI.WebModule.PROP_LIBRARIES.equals(propName) 
-                                || JspParserAPI.WebModule.PROP_PACKAGE_ROOTS.equals(propName)) {
-                                // the classpath was changed, need to reparsed
-                                restartTimer(false);
-                            }
-                       }    
-                    });
-                    
-        
+
+        WebModule webModule = getWebModule(getDataObject().getPrimaryFile());
+        if (webModule != null) {
+            FileObject wmRoot = webModule.getDocumentBase();
+            // register class path listener
+            ClassPath cp = ClassPath.getClassPath(wmRoot, ClassPath.EXECUTE);
+            cp.addPropertyChangeListener(WeakListeners.propertyChange(this, cp));
+        }
+    }
+    
+    public void propertyChange(PropertyChangeEvent evt) {
+        // the classpath was changed, need to reparsed
+        restartTimer(false);
     }
     
     private WebModule getWebModule(FileObject fo){
@@ -543,5 +543,5 @@ class BaseJspEditorSupport extends DataEditorSupport implements EditCookie, Edit
         }
         
     } // end of JavaEditorComponent inner class
-    
+
 }
