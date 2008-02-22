@@ -152,7 +152,10 @@ public class HibernateEnvironment {
      */
     public ArrayList<String> getColumnsForTable(String tableName, FileObject mappingFileObject) {
         ArrayList<String> columnNames = new ArrayList<String>();
-        //TODO this method is easy to implement..
+        columnNames = HibernateUtil.getColumnsForTable(
+                tableName,
+                getHibernateConfigurationForMappingFile(mappingFileObject)
+        );
         return columnNames;
     }
     
@@ -173,6 +176,17 @@ public class HibernateEnvironment {
         return mappingsFromConfiguration;
     }
 
+    
+    private HibernateConfiguration getHibernateConfigurationForMappingFile(FileObject mappingFileObject)  {
+        for(HibernateConfiguration config : getAllHibernateConfigurationsFromProject()) {
+            for(String mappingFile : getAllHibernateMappingsFromConfiguration(config)) {
+                if(mappingFileObject.getPath().contains(mappingFile)) {
+                    return config;
+                }
+            }
+        }
+        return null ;// TODO fiix this.
+    }
     /**
      * Returns the NetBeans project to which this HibernateEnvironment instance is bound.
      *
