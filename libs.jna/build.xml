@@ -40,44 +40,6 @@ However, if you add GPL Version 2 code and therefore, elected the GPL
 Version 2 license, then the option applies only if the new code is
 made subject to such option by the copyright holder.
 -->
-<project xmlns="http://www.netbeans.org/ns/project/1">
-    <type>org.netbeans.modules.apisupport.project</type>
-    <configuration>
-        <data xmlns="http://www.netbeans.org/ns/nb-module-project/2">
-            <code-name-base>org.netbeans.swing.tabcontrol</code-name-base>
-            <module-dependencies>
-                <dependency>
-                    <code-name-base>org.openide.awt</code-name-base>
-                    <build-prerequisite/>
-                    <compile-dependency/>
-                    <run-dependency>
-                        <specification-version>6.2</specification-version>
-                    </run-dependency>
-                </dependency>
-                <dependency>
-                    <code-name-base>org.openide.util</code-name-base>
-                    <build-prerequisite/>
-                    <compile-dependency/>
-                    <run-dependency>
-                        <specification-version>7.8</specification-version>
-                    </run-dependency>
-                </dependency>
-                <dependency>
-                    <code-name-base>org.openide.windows</code-name-base>
-                    <build-prerequisite/>
-                    <compile-dependency/>
-                    <run-dependency>
-                        <specification-version>6.4</specification-version>
-                    </run-dependency>
-                </dependency>
-            </module-dependencies>
-            <public-packages>
-                <package>org.netbeans.swing.popupswitcher</package>
-                <package>org.netbeans.swing.tabcontrol</package>
-                <package>org.netbeans.swing.tabcontrol.event</package>
-                <package>org.netbeans.swing.tabcontrol.plaf</package>
-                <package>org.netbeans.swing.transparency</package>
-            </public-packages>
-        </data>
-    </configuration>
+<project name="libs.jna" default="netbeans" basedir=".">
+    <import file="../nbbuild/templates/projectized.xml"/>
 </project>
