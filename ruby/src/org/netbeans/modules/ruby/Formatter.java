@@ -46,14 +46,14 @@ import java.util.List;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 
-import org.netbeans.fpi.gsf.OffsetRange;
+import org.netbeans.modules.gsf.api.OffsetRange;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
-import org.netbeans.fpi.gsf.CompilationInfo;
+import org.netbeans.modules.gsf.api.CompilationInfo;
 import org.netbeans.modules.ruby.lexer.LexUtilities;
 import org.netbeans.modules.ruby.lexer.RubyTokenId;
 import org.netbeans.modules.ruby.options.CodeStyle;
@@ -87,7 +87,7 @@ end
  *
  * @author Tor Norbye
  */
-public class Formatter implements org.netbeans.fpi.gsf.Formatter {
+public class Formatter implements org.netbeans.modules.gsf.api.Formatter {
     private boolean isRhtmlDocument;
     private final CodeStyle codeStyle;
     private int rightMarginOverride = -1;

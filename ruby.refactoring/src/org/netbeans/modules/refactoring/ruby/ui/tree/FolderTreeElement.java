@@ -42,8 +42,8 @@
 package org.netbeans.modules.refactoring.ruby.ui.tree;
 
 import javax.swing.Icon;
-import org.netbeans.fpi.gsf.ElementKind;
-import org.netbeans.fpi.gsfpath.classpath.ClassPath;
+import org.netbeans.modules.gsf.api.ElementKind;
+import org.netbeans.modules.gsfpath.api.classpath.ClassPath;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;

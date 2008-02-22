@@ -50,18 +50,18 @@ import org.mozilla.javascript.Node;
 import org.mozilla.javascript.Node.LabelledNode;
 import org.mozilla.javascript.Token;
 import org.netbeans.api.lexer.TokenSequence;
-import org.netbeans.fpi.gsf.CompilationInfo;
-import org.netbeans.fpi.gsf.OffsetRange;
-import org.netbeans.fpi.gsf.Parser;
-import org.netbeans.fpi.gsf.ParserFile;
-import org.netbeans.fpi.gsf.ParserResult;
-import org.netbeans.fpi.gsf.SourceFileReader;
-import org.netbeans.fpi.gsf.TranslatedSource;
+import org.netbeans.modules.gsf.api.CompilationInfo;
+import org.netbeans.modules.gsf.api.OffsetRange;
+import org.netbeans.modules.gsf.api.Parser;
+import org.netbeans.modules.gsf.api.ParserFile;
+import org.netbeans.modules.gsf.api.ParserResult;
+import org.netbeans.modules.gsf.api.SourceFileReader;
+import org.netbeans.modules.gsf.api.TranslatedSource;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
 import org.netbeans.modules.javascript.editing.lexer.JsCommentTokenId;
 import org.netbeans.modules.javascript.editing.lexer.LexUtilities;
-import org.netbeans.sfpi.gsf.DefaultParseListener;
+import org.netbeans.modules.gsf.spi.DefaultParseListener;
 import org.openide.util.Exceptions;
 
 /**

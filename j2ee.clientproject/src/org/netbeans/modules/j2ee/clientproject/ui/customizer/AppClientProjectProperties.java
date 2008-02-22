@@ -702,7 +702,7 @@ public class AppClientProjectProperties {
             privateProps.remove(WebServicesClientConstants.J2EE_PLATFORM_WSIMPORT_CLASSPATH);
             privateProps.remove(WebServicesClientConstants.J2EE_PLATFORM_WSCOMPILE_CLASSPATH);
             privateProps.remove(DEPLOY_ANT_PROPS_FILE);
-            privateProps.remove("wa.copy.client.jar.from"); // NOI18N
+            privateProps.remove(AppClientProjectProperties.APPCLIENT_TOOL_CLIENT_JAR);
             return;
         }
         ((AppClientProject)project).registerJ2eePlatformListener(j2eePlatform);
@@ -779,22 +779,14 @@ public class AppClientProjectProperties {
             privateProps.setProperty(DEPLOY_ANT_PROPS_FILE, antDeployPropsFile.getAbsolutePath());
         }
         
-        //WORKAROUND for --retrieve option in asadmin deploy command
-        //works only for local domains
-        //see also http://www.netbeans.org/issues/show_bug.cgi?id=82929
-        if ("J2EE".equals(Deployment.getDefault().getServerID(newServInstID))) { // NOI18N
-            File asRoot = j2eePlatform.getPlatformRoots()[0];
-            File exFile = new File(asRoot, "lib/javaee.jar"); // NOI18N
-            InstanceProperties ip = InstanceProperties.getInstanceProperties(newServInstID);
-            if (exFile.exists()) {
-                privateProps.setProperty("wa.copy.client.jar.from", // NOI18N
-                        new File(ip.getProperty("LOCATION"), ip.getProperty("DOMAIN") + "/generated/xml/j2ee-modules").getAbsolutePath()); // NOI18N
-            } else {
-                privateProps.setProperty("wa.copy.client.jar.from", // NOI18N
-                        new File(ip.getProperty("LOCATION"), ip.getProperty("DOMAIN") + "/applications/j2ee-modules").getAbsolutePath()); // NOI18N
-            }
+        // WORKAROUND for --retrieve option in asadmin deploy command
+        // works only for local domains
+        // see also http://www.netbeans.org/issues/show_bug.cgi?id=82929
+        String copyProperty = j2eePlatform.getToolProperty(J2eePlatform.TOOL_APP_CLIENT_RUNTIME, J2eePlatform.TOOL_PROP_CLIENT_JAR_LOCATION);
+        if (copyProperty != null) {
+            privateProps.setProperty(AppClientProjectProperties.APPCLIENT_TOOL_CLIENT_JAR, copyProperty);
         } else {
-            privateProps.remove("wa.copy.client.jar.from"); // NOI18N
+            privateProps.remove(AppClientProjectProperties.APPCLIENT_TOOL_CLIENT_JAR);
         }
         
     }

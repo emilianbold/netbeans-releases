@@ -45,7 +45,7 @@ import org.openide.WizardDescriptor;
 
 /**
  * Default implementations of Java-specific template UI.
- * Based on org.netbeans.sfpi.gsfpath.project.support.ui.templates.*.
+ * Based on org.netbeans.modules.gsfpath.spi.project.support.ui.templates.*.
  *
  * @author Jesse Glick
  * @author Tor Norbye

@@ -44,7 +44,7 @@ package org.netbeans.modules.javascript.editing.embedding;
 import java.io.File;
 import java.io.FileReader;
 import java.nio.CharBuffer;
-import org.netbeans.fpi.gsf.CompilationInfo;
+import org.netbeans.modules.gsf.api.CompilationInfo;
 import org.netbeans.api.html.lexer.HTMLTokenId;
 import org.netbeans.api.lexer.Language;
 import org.netbeans.api.lexer.TokenHierarchy;

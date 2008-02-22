@@ -83,12 +83,12 @@ import org.jruby.ast.StrNode;
 import org.jruby.ast.SymbolNode;
 import org.jruby.ast.VCallNode;
 import org.jruby.ast.types.INameNode;
-import org.netbeans.fpi.gsf.CompilationInfo;
-import org.netbeans.fpi.gsf.DeclarationFinder.DeclarationLocation;
-import org.netbeans.fpi.gsf.ElementHandle;
-import org.netbeans.fpi.gsf.HtmlFormatter;
-import org.netbeans.fpi.gsf.NameKind;
-import org.netbeans.fpi.gsf.OffsetRange;
+import org.netbeans.modules.gsf.api.CompilationInfo;
+import org.netbeans.modules.gsf.api.DeclarationFinder.DeclarationLocation;
+import org.netbeans.modules.gsf.api.ElementHandle;
+import org.netbeans.modules.gsf.api.HtmlFormatter;
+import org.netbeans.modules.gsf.api.NameKind;
+import org.netbeans.modules.gsf.api.OffsetRange;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenId;
@@ -124,7 +124,7 @@ import org.openide.util.NbBundle;
  * 
  * @author Tor Norbye
  */
-public class DeclarationFinder implements org.netbeans.fpi.gsf.DeclarationFinder {
+public class DeclarationFinder implements org.netbeans.modules.gsf.api.DeclarationFinder {
     private static final boolean CHOOSE_ONE_DECLARATION = Boolean.getBoolean("ruby.choose_one_decl");
     
     /** An increasing number; I will be using this number modulo the  */
