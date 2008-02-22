@@ -139,7 +139,7 @@ public class HibernateUtil {
         
         for(SourceGroup sourceGroup : javaSourceGroup) {
             FileObject root = sourceGroup.getRootFolder();
-            Enumeration<? extends FileObject> enumeration = root.getChildren(true);
+            Enumeration<? extends FileObject> enumeration = root.getChildren(false);
             while(enumeration.hasMoreElements()) {
                 FileObject fo = enumeration.nextElement();
                 if(fo.getNameExt() != null && fo.getNameExt().endsWith("cfg.xml")) {

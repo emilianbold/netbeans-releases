@@ -51,6 +51,7 @@ import org.netbeans.modules.xml.text.syntax.SyntaxElement;
 import org.netbeans.modules.xml.text.syntax.dom.StartTag;
 import org.netbeans.modules.xml.text.syntax.dom.Tag;
 import org.netbeans.spi.editor.completion.CompletionResultSet;
+import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
 import org.w3c.dom.Text;
 
@@ -320,11 +321,7 @@ public final class HibernateCfgCompletionManager {
             int caretOffset = context.getCaretOffset();
             String typedChars = context.getTypedPrefix();
 
-            // TODO: hard-code some mapping files here for testing code-completion
-            String[] mappingFiles = new String[]{
-                "travel/Person.hbm.xml",
-                "travel/Trip.hbm.xml"
-            };
+            String[] mappingFiles = getMappingFilesFromProject(context);
 
             for (int i = 0; i < mappingFiles.length; i++) {
                 if (mappingFiles[i].startsWith(typedChars.trim())) {
@@ -337,6 +334,20 @@ public final class HibernateCfgCompletionManager {
 
             setAnchorOffset(context.getCurrentToken().getOffset() + 1);
             return results;
+        }
+        
+        // Gets the list of mapping files from HibernateEnvironment.
+        private String[] getMappingFilesFromProject(CompletionContext context) {
+            ArrayList<String> mappingFiles = new ArrayList<String>();
+            org.netbeans.api.project.Project enclosingProject = org.netbeans.api.project.FileOwnerQuery.getOwner(
+                    org.netbeans.modules.editor.NbEditorUtilities.getFileObject(context.getDocument())
+                    );
+            org.netbeans.modules.hibernate.service.HibernateEnvironment env = enclosingProject.getLookup().lookup(org.netbeans.modules.hibernate.service.HibernateEnvironment.class);
+            ArrayList<FileObject> mappingFileObjects = env.getAllHibernateMappingFileObjects(enclosingProject);
+            for(FileObject fo : mappingFileObjects) {
+                mappingFiles.add(fo.getPath());
+            }
+            return mappingFiles.toArray(new String[]{});
         }
     }
 }
