@@ -609,6 +609,9 @@ public class AppClientProjectGenerator {
             }
         }
 
+        // WORKAROUND for --retrieve option in asadmin deploy command
+        // works only for local domains
+        // see also http://www.netbeans.org/issues/show_bug.cgi?id=82929
         String copyProperty = j2eePlatform.getToolProperty(J2eePlatform.TOOL_APP_CLIENT_RUNTIME, J2eePlatform.TOOL_PROP_CLIENT_JAR_LOCATION);
         if (copyProperty != null) {
             ep.setProperty(AppClientProjectProperties.APPCLIENT_TOOL_CLIENT_JAR, copyProperty);
