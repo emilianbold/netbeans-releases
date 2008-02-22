@@ -44,7 +44,6 @@ import java.util.ArrayList;
 
 import java.util.Enumeration;
 import org.hibernate.HibernateException;
-import org.hibernate.cfg.Configuration;
 
 import org.netbeans.api.db.explorer.ConnectionManager;
 import org.netbeans.api.db.explorer.DatabaseConnection;
@@ -56,8 +55,6 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
-import org.netbeans.api.project.libraries.Library;
-import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.modules.hibernate.cfg.model.HibernateConfiguration;
 import org.netbeans.modules.hibernate.cfg.model.SessionFactory;
 import org.netbeans.modules.hibernate.loaders.cfg.HibernateCfgDataObject;
@@ -65,6 +62,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.Exceptions;
+import org.openide.util.Mutex;
 
 /**
  * This class provides utility methods using Hibernate API to query database
@@ -86,19 +84,17 @@ public class HibernateUtil {
     throws java.sql.SQLException, HibernateException{
         ArrayList<String> allTables = new ArrayList<String>();
         for(HibernateConfiguration configuration : configurations) {
-         //   Configuration hibConfiguration = getHibConfiguration(configuration);
-         //   ensureDbDriverLoaded(hibConfiguration);
-         //   org.hibernate.SessionFactory hibSessionFactory = hibConfiguration.buildSessionFactory();
-         //   org.hibernate.Session hibSession = hibSessionFactory.openSession();
-            java.sql.Connection jdbcConnection = getJDBCConnection(configuration); //hibSession.connection();
+            java.sql.Connection jdbcConnection = getJDBCConnection(configuration); 
             java.sql.DatabaseMetaData dbMetadata = jdbcConnection.getMetaData();
             java.sql.ResultSet rs = dbMetadata.getTables(null,
-                    getDatabaseSchema(configuration),
+                    //getDatabaseSchema(configuration),
+                    "APP",
                     null, new String[]{"TABLE"}); //NOI18N
             while(rs.next()) {
-                allTables.add(rs.getString(3)); // COLUMN 3 stores the table names.
+                allTables.add(rs.getString("TABLE_NAME")); // COLUMN 3 stores the table names.
             }
         }
+        System.out.println("all tables " + allTables);
         return allTables;
     }
     
@@ -172,26 +168,16 @@ public class HibernateUtil {
     
     
     private static String getDbConnectionDetails(HibernateConfiguration configuration, String property) {
-       // try {
-        //configuration.getClass().getClassLoader().getParent().loadClass("org.apache.commons.logging.Log");
-          //  Configuration hibConfiguration = /* null  ;*/new Configuration();
-           // Class clazz = Class.forName("org.hibernate.cfg.Configuration", 
-            //        true, configuration.getClass().getClassLoader()); //ClassLoader.getSystemClassLoader());
-           // hibConfiguration = (Configuration)clazz.newInstance();
-            SessionFactory fact = configuration.getSessionFactory();
-            int count = 0;
-            for (String val : fact.getProperty2()) {
-                String propName = fact.getAttributeValue(fact.PROPERTY2, count++, "name"); 
-                if(propName.equals(property)) {
-                    return val;
-                }
+        SessionFactory fact = configuration.getSessionFactory();
+        int count = 0;
+        for (String val : fact.getProperty2()) {
+            String propName = fact.getAttributeValue(fact.PROPERTY2, count++, "name"); 
+            if(propName.equals(property)) {
+                return val;
             }
+        }
 
-            return "";
-       // } catch (ClassNotFoundException ex) {
-      //      Exceptions.printStackTrace(ex);
-      //  } 
-      //  return null;
+        return "";
     }
 
     private static String getDatabaseSchema(HibernateConfiguration configuration) {
@@ -214,11 +200,7 @@ public class HibernateUtil {
     
      private static java.sql.Connection getJDBCConnection(HibernateConfiguration configuration) {
         try {
-            for (Library lib : LibraryManager.getDefault().getLibraries()) {
-                System.out.println("lib name : " + lib.getName());
-                System.out.println("libdesce : " + lib.getDescription());
-                System.out.println("lib type : " + lib.getType());
-            }
+
             String driverClassName = getDbConnectionDetails(configuration, "hibernate.connection.driver_class");
             String driverURL = getDbConnectionDetails(configuration, "hibernate.connection.url");
             String username = getDbConnectionDetails(configuration, "hibernate.connection.username");
@@ -238,24 +220,25 @@ public class HibernateUtil {
             }
 
             JDBCDriver[] drivers = JDBCDriverManager.getDefault().getDrivers(driverClassName);
-//        for(JDBCDriver driver : drivers) {
-//            try {
-//                System.out.println("driverClassName ; " + driverClassName);
-//                System.out.println("driver.getClassname() : " + driver.getClassName());
-//                Class.forName(driver.getClassName());
-//            }catch (ClassNotFoundException e) {
-//                e.printStackTrace();
-//            }
-//        }
-            DatabaseConnection dbConnection = DatabaseConnection.create(drivers[0], driverURL, username, null, password, true);
+
+            final DatabaseConnection dbConnection = DatabaseConnection.create(drivers[0], driverURL, username, "APP", password, true);
             ConnectionManager.getDefault().addConnection(dbConnection);
             if(dbConnection.getJDBCConnection() == null ) {
-                ConnectionManager.getDefault().showConnectionDialog(dbConnection);
-                Thread.sleep(4000);
+                return (java.sql.Connection)Mutex.EVENT.readAccess(new Mutex.Action/*<Void>*/() {
+//                    public /*Void*/  run() {
+//                        ConnectionManager.getDefault().showConnectionDialog(dbConnection);
+//                        //return dbConnection.getJDBCConnection();
+//                       // return Void.TYPE;
+//                    }
+
+                    public Object run() {
+                        ConnectionManager.getDefault().showConnectionDialog(dbConnection);
+                        return dbConnection.getJDBCConnection();
+                    }
+                });
+                
             }
             return dbConnection.getJDBCConnection();
-        } catch (InterruptedException ex) {
-            Exceptions.printStackTrace(ex);
         } catch (DatabaseException ex) {
             Exceptions.printStackTrace(ex);
         }

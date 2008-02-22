@@ -626,6 +626,8 @@ public final class HibernateMappingCompletionManager {
             tableNames.add("CARRENTAL");
             tableNames.add("VALIDATION_TABLE");
 
+            tableNames = getDatabaseTableNamesFromProject(context);
+            
             for (String tableName : tableNames) {
                 HibernateCompletionItem item = HibernateCompletionItem.createDatabaseTableItem(
                         caretOffset - typedChars.length(), tableName);
@@ -635,6 +637,16 @@ public final class HibernateMappingCompletionManager {
             setAnchorOffset(context.getCurrentToken().getOffset() + 1);
 
             return results;
+        }
+
+        private List<String> getDatabaseTableNamesFromProject(CompletionContext context) {
+            List<String> tableNames = new ArrayList<String>();
+            org.netbeans.api.project.Project enclosingProject = org.netbeans.api.project.FileOwnerQuery.getOwner(
+                    org.netbeans.modules.editor.NbEditorUtilities.getFileObject(context.getDocument())
+                    );
+            org.netbeans.modules.hibernate.service.HibernateEnvironment env = enclosingProject.getLookup().lookup(org.netbeans.modules.hibernate.service.HibernateEnvironment.class);
+            tableNames = env.getAllDatabaseTablesForProject();
+            return tableNames;
         }
     }
 
@@ -697,5 +709,7 @@ public final class HibernateMappingCompletionManager {
 
             return results;
         }
+        
+        
     }
 }
