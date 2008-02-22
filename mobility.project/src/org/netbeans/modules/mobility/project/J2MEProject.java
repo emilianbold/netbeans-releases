@@ -115,6 +115,7 @@ import org.netbeans.modules.mobility.project.deployment.MobilityDeploymentProper
 import org.netbeans.modules.mobility.project.queries.SourceLevelQueryImpl;
 import org.netbeans.modules.mobility.project.queries.FileBuiltQueryImpl;
 import org.netbeans.modules.mobility.project.queries.FileEncodingQueryImpl;
+import org.netbeans.modules.mobility.project.security.KeyStoreRepository;
 import org.netbeans.spi.java.project.support.ui.BrokenReferencesSupport;
 import org.netbeans.spi.mobility.deployment.DeploymentPlugin;
 import org.netbeans.spi.mobility.project.ProjectLookupProvider;
@@ -543,9 +544,12 @@ public final class J2MEProject implements Project, AntProjectListener {
         }
         
         protected synchronized void projectOpened() {
+            //inicialize deployment plugins
             deployments = Lookup.getDefault().lookup(new Lookup.Template<DeploymentPlugin>(DeploymentPlugin.class));
             deployments.addLookupListener(this);
             resultChanged(new LookupEvent(deployments));
+            //init keystore, safer than warmup
+            KeyStoreRepository.getDefault();
             // Check up on build scripts.
             addRoots(helper);
             final SourcesHelper sourcesHelper = getLookup().lookup(SourcesHelper.class);
@@ -598,7 +602,7 @@ public final class J2MEProject implements Project, AntProjectListener {
         
         protected synchronized void projectClosed() {
             if (skipCloseHook) return;
-            
+            //do not listen on deployments for this project
             deployments.removeLookupListener(this);
 
             // Probably unnecessary, but just in case:
