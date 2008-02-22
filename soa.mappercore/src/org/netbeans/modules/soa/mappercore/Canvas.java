@@ -68,6 +68,7 @@ import org.netbeans.modules.soa.mappercore.model.Vertex;
 import org.netbeans.modules.soa.mappercore.model.VertexItem;
 import org.netbeans.modules.soa.mappercore.utils.ScrollPaneWrapper;
 import org.netbeans.modules.soa.mappercore.utils.Utils;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -125,6 +126,11 @@ public class Canvas extends MapperPanel implements VertexCanvas,
         registerAction(new MoveUpCanvasAction(this));
         registerAction(new MoveDownCanvasAction(this));
         registerAction(new LinkConnectAction(this));
+    
+        getAccessibleContext().setAccessibleName(NbBundle
+                .getMessage(Canvas.class, "ACSN_Canvas")); // NOI18N
+        getAccessibleContext().setAccessibleDescription(NbBundle
+                .getMessage(Canvas.class, "ACSD_Canvas")); // NOI18N
     }
 
 //    @Override
