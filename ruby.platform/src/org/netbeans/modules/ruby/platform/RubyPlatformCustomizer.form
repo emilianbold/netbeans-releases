@@ -23,7 +23,7 @@
                       <EmptySpace max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="0" attributes="0">
                           <Component id="debuggerPanel" max="32767" attributes="0"/>
-                          <Component id="configPanel" alignment="0" pref="583" max="32767" attributes="0"/>
+                          <Component id="configPanel" alignment="0" max="32767" attributes="0"/>
                       </Group>
                   </Group>
                   <Group type="102" alignment="0" attributes="0">
@@ -32,7 +32,7 @@
                       <Component id="removeButton" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="autoDetectButton" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace pref="116" max="32767" attributes="0"/>
+                      <EmptySpace pref="151" max="32767" attributes="0"/>
                       <Component id="progressPanel" min="-2" max="-2" attributes="0"/>
                   </Group>
               </Group>
@@ -46,7 +46,7 @@
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
                   <Group type="102" alignment="0" attributes="0">
-                      <Component id="platformsListSP" pref="346" max="32767" attributes="0"/>
+                      <Component id="platformsListSP" pref="314" max="32767" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                   </Group>
                   <Group type="102" alignment="0" attributes="0">
@@ -122,53 +122,32 @@
       <Layout>
         <DimensionLayout dim="0">
           <Group type="103" groupAlignment="0" attributes="0">
-              <Group type="102" alignment="1" attributes="0">
-                  <Group type="103" groupAlignment="1" attributes="0">
-                      <Group type="102" alignment="1" max="-2" attributes="0">
-                          <Group type="103" groupAlignment="0" attributes="0">
-                              <Component id="plfInterpreter" linkSize="6" min="-2" max="-2" attributes="0"/>
-                              <Component id="plfName" linkSize="6" min="-2" max="-2" attributes="0"/>
-                          </Group>
-                          <EmptySpace max="-2" attributes="0"/>
-                          <Group type="103" groupAlignment="0" attributes="0">
-                              <Group type="102" attributes="0">
-                                  <Component id="plfNameValue" pref="758" max="32767" attributes="0"/>
-                                  <EmptySpace max="-2" attributes="0"/>
-                              </Group>
-                              <Component id="plfInterpreterValue" pref="770" max="32767" attributes="0"/>
-                          </Group>
-                      </Group>
-                      <Group type="102" alignment="1" max="-2" attributes="0">
-                          <Group type="103" groupAlignment="0" attributes="0">
-                              <Component id="gemHome" linkSize="6" alignment="0" min="-2" max="-2" attributes="0"/>
-                              <Component id="gemPath" alignment="0" min="-2" max="-2" attributes="0"/>
-                              <Component id="gemTool" linkSize="6" alignment="0" min="-2" max="-2" attributes="0"/>
-                          </Group>
-                          <Group type="103" groupAlignment="0" attributes="0">
-                              <Group type="102" alignment="1" attributes="0">
-                                  <EmptySpace max="-2" attributes="0"/>
-                                  <Component id="gemHomeValue" pref="684" max="32767" attributes="0"/>
-                                  <EmptySpace max="-2" attributes="0"/>
-                                  <Component id="browseGemHome" linkSize="8" min="-2" max="-2" attributes="0"/>
-                              </Group>
-                              <Group type="102" alignment="0" attributes="0">
-                                  <EmptySpace min="-2" pref="12" max="-2" attributes="0"/>
-                                  <Group type="103" groupAlignment="0" attributes="0">
-                                      <Group type="102" alignment="1" attributes="0">
-                                          <Component id="gemPathSP" pref="684" max="32767" attributes="1"/>
-                                          <EmptySpace max="-2" attributes="0"/>
-                                          <Group type="103" groupAlignment="1" attributes="0">
-                                              <Component id="addGemPath" linkSize="8" min="-2" max="-2" attributes="0"/>
-                                              <Component id="removeGemPath" linkSize="8" min="-2" max="-2" attributes="0"/>
-                                          </Group>
-                                      </Group>
-                                      <Component id="gemToolValue" alignment="0" pref="770" max="32767" attributes="1"/>
-                                  </Group>
-                              </Group>
-                          </Group>
-                      </Group>
+              <Group type="102" attributes="0">
+                  <Group type="103" groupAlignment="0" attributes="0">
+                      <Component id="plfInterpreter" linkSize="6" min="-2" max="-2" attributes="0"/>
+                      <Component id="plfName" linkSize="6" min="-2" max="-2" attributes="0"/>
+                      <Component id="gemHome" linkSize="6" alignment="0" min="-2" max="-2" attributes="0"/>
+                      <Component id="gemPath" alignment="0" min="-2" max="-2" attributes="0"/>
+                      <Component id="gemTool" linkSize="6" alignment="0" min="-2" max="-2" attributes="0"/>
                   </Group>
                   <EmptySpace max="-2" attributes="0"/>
+                  <Group type="103" groupAlignment="0" attributes="0">
+                      <Group type="102" alignment="0" attributes="0">
+                          <Group type="103" groupAlignment="0" attributes="0">
+                              <Component id="gemHomeValue" alignment="0" pref="416" max="32767" attributes="0"/>
+                              <Component id="gemPathSP" alignment="0" pref="416" max="32767" attributes="1"/>
+                          </Group>
+                          <EmptySpace max="-2" attributes="0"/>
+                          <Group type="103" groupAlignment="1" attributes="0">
+                              <Component id="removeGemPath" linkSize="8" alignment="1" min="-2" max="-2" attributes="0"/>
+                              <Component id="addGemPath" linkSize="8" alignment="1" min="-2" max="-2" attributes="0"/>
+                              <Component id="browseGemHome" linkSize="8" min="-2" max="-2" attributes="0"/>
+                          </Group>
+                      </Group>
+                      <Component id="plfInterpreterValue" alignment="0" pref="511" max="32767" attributes="0"/>
+                      <Component id="plfNameValue" alignment="0" pref="511" max="32767" attributes="0"/>
+                      <Component id="gemToolValue" alignment="0" pref="511" max="32767" attributes="1"/>
+                  </Group>
               </Group>
           </Group>
         </DimensionLayout>
@@ -187,18 +166,18 @@
                   <EmptySpace min="-2" pref="11" max="-2" attributes="0"/>
                   <Group type="103" groupAlignment="3" attributes="0">
                       <Component id="gemHome" alignment="3" min="-2" max="-2" attributes="0"/>
-                      <Component id="browseGemHome" alignment="3" min="-2" max="-2" attributes="0"/>
                       <Component id="gemHomeValue" alignment="3" min="-2" max="-2" attributes="0"/>
+                      <Component id="browseGemHome" alignment="3" min="-2" max="-2" attributes="0"/>
                   </Group>
                   <EmptySpace max="-2" attributes="0"/>
                   <Group type="103" groupAlignment="0" attributes="0">
                       <Component id="gemPath" min="-2" max="-2" attributes="0"/>
+                      <Component id="gemPathSP" min="-2" pref="68" max="-2" attributes="0"/>
                       <Group type="102" attributes="0">
                           <Component id="addGemPath" min="-2" max="-2" attributes="0"/>
                           <EmptySpace max="-2" attributes="0"/>
                           <Component id="removeGemPath" min="-2" max="-2" attributes="0"/>
                       </Group>
-                      <Component id="gemPathSP" min="-2" pref="68" max="-2" attributes="0"/>
                   </Group>
                   <EmptySpace max="-2" attributes="0"/>
                   <Group type="103" groupAlignment="3" attributes="0">
@@ -346,7 +325,7 @@
               <Group type="102" alignment="0" attributes="0">
                   <Component id="rubyDebuggerLabel" min="-2" max="-2" attributes="0"/>
                   <EmptySpace max="-2" attributes="0"/>
-                  <Component id="upperSep" pref="475" max="32767" attributes="0"/>
+                  <Component id="upperSep" pref="510" max="32767" attributes="0"/>
               </Group>
               <Group type="102" alignment="0" attributes="0">
                   <Component id="engineLabel" min="-2" max="-2" attributes="0"/>
