@@ -124,7 +124,7 @@ public class WebAppParseSupport implements WebAppParseProxy, PropertyChangeListe
     private static final JspParserAPI.JspOpenInfo DEFAULT_JSP_OPEN_INFO = new JspParserAPI.JspOpenInfo(false, "8859_1");
     private static final Pattern RE_PATTERN_COMMONS_LOGGING = Pattern.compile(".*commons-logging.*\\.jar.*"); // NOI18N
     
-    private final JspParserAPI.WebModule wm;
+    private final WebModule wm;
     final FileObject wmRoot;
     final FileObject webInf;
     private final FileSystemListener fileSystemListener;
@@ -151,7 +151,7 @@ public class WebAppParseSupport implements WebAppParseProxy, PropertyChangeListe
     private final RequestProcessor.Task reinitCachesTask;
 
     /** Creates a new instance of WebAppParseSupport */
-    public WebAppParseSupport(JspParserAPI.WebModule wm) {
+    public WebAppParseSupport(WebModule wm) {
         this.wm = wm;
         wmRoot = wm.getDocumentBase();
         webInf = wm.getWebInf();
