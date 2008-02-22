@@ -45,7 +45,9 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.logging.Logger;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.Project;
@@ -198,16 +200,18 @@ public class ProjectConfigFileManagerImpl implements ConfigFileManagerImplementa
                 list = configFileGroupsEl.getElementsByTagNameNS(SPRING_DATA_NS, CONFIG_FILE_GROUP);
                 readGroups(list, projectDir, newGroups);
             }
+            removeUnknownFiles(newGroups, new HashSet<File>(newFiles));
         }
         files = newFiles;
         groups = newGroups;
     }
 
     private void readFiles(NodeList configFileEls, File basedir, List<File> files) {
+        Set<File> addedFiles = new HashSet<File>(); // For removing any duplicates.
         for (int i = 0; i < configFileEls.getLength(); i++) {
             Element configFileEl = (Element)configFileEls.item(i);
             File file = ConfigFiles.resolveFile(basedir, configFileEl.getTextContent());
-            if (file != null) {
+            if (file != null && addedFiles.add(file)) {
                 files.add(file);
             }
         }
@@ -221,6 +225,25 @@ public class ProjectConfigFileManagerImpl implements ConfigFileManagerImplementa
             List<File> configFiles = new ArrayList<File>(configFileEls.getLength());
             readFiles(configFileEls, basedir, configFiles);
             groups.add(ConfigFileGroup.create(name, configFiles));
+        }
+    }
+
+    private void removeUnknownFiles(List<ConfigFileGroup> newGroups, Set<File> knownFiles) {
+        for (int i = 0; i < newGroups.size(); i++) {
+            ConfigFileGroup group = newGroups.get(i);
+            for (File file : group.getFiles()) {
+                if (!knownFiles.contains(file)) {
+                    // Found an unknown file, so we will need to remove all unknown files from this group.
+                    List<File> newGroupFiles = new ArrayList<File>(group.getFiles().size());
+                    for (File each : group.getFiles()) {
+                        if (knownFiles.contains(each)) {
+                            newGroupFiles.add(each);
+                        }
+                    }
+                    newGroups.set(i, ConfigFileGroup.create(group.getName(), newGroupFiles));
+                    continue;
+                }
+            }
         }
     }
 

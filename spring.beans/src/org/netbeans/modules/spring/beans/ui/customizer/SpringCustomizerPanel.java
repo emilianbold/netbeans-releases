@@ -42,6 +42,7 @@
 package org.netbeans.modules.spring.beans.ui.customizer;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -162,6 +163,19 @@ public class SpringCustomizerPanel extends javax.swing.JPanel {
     private void addFiles(List<File> newFiles) {
         files.addAll(newFiles);
         ConfigFilesUIs.connectFilesList(files, filesList);
+    }
+
+    private void removeFile(int index) {
+        File file = files.remove(index);
+        for (int i = 0; i < groups.size(); i++) {
+            ConfigFileGroup group = groups.get(i);
+            if (group.containsFile(file)) {
+                List<File> newFiles = group.getFiles();
+                newFiles.remove(file);
+                groups.set(i, ConfigFileGroup.create(group.getName(), newFiles));
+            }
+        }
+        ConfigFilesUIs.connectGroupsList(groups, groupsList);
     }
 
     private void addFilesToCurrentGroup(List<File> newFiles) {
@@ -389,13 +403,19 @@ private void addFileButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN
         chooser.setCurrentDirectory(basedir);
         int option = chooser.showOpenDialog(SwingUtilities.getWindowAncestor(groupFilesList));
         if (option == JFileChooser.APPROVE_OPTION) {
-            addFiles(Collections.singletonList(chooser.getSelectedFile()));
+            File newFile = chooser.getSelectedFile();
+            if (files.contains(newFile)) {
+                String message = NbBundle.getMessage(SpringCustomizerPanel.class, "LBL_FileAlreadyAdded");
+                DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(message, NotifyDescriptor.ERROR_MESSAGE));
+            } else {
+                addFiles(Collections.singletonList(newFile));
+            }
         }
 }//GEN-LAST:event_addFileButtonActionPerformed
 
 private void removeFileButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_removeFileButtonActionPerformed
         int oldFileIndex = filesList.getSelectedIndex();
-        files.remove(oldFileIndex);
+        removeFile(oldFileIndex);
         ConfigFilesUIs.connectFilesList(files, filesList);
         while (oldFileIndex > filesList.getModel().getSize() - 1) {
             oldFileIndex--;
