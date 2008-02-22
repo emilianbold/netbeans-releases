@@ -44,7 +44,7 @@ made subject to such option by the copyright holder.
     <type>org.netbeans.modules.apisupport.project</type>
     <configuration>
         <data xmlns="http://www.netbeans.org/ns/nb-module-project/3">
-            <code-name-base>org.openide</code-name-base>
+            <code-name-base>org.netbeans.modules.openide</code-name-base>
             <module-dependencies>
                 <dependency>
                     <code-name-base>org.netbeans.core</code-name-base>
@@ -192,29 +192,7 @@ made subject to such option by the copyright holder.
                   </test-dependency>
               </test-type>
             </test-dependencies>
-            <public-packages>
-                <package>org.openide</package>
-                <package>org.openide.actions</package>
-                <package>org.openide.awt</package>
-                <package>org.openide.cookies</package>
-                <package>org.openide.explorer</package>
-                <package>org.openide.explorer.propertysheet</package>
-                <package>org.openide.explorer.propertysheet.editors</package>
-                <package>org.openide.explorer.view</package>
-                <package>org.openide.filesystems</package>
-                <package>org.openide.modules</package>
-                <package>org.openide.nodes</package>
-                <package>org.openide.options</package>
-                <package>org.openide.text</package>
-                <package>org.openide.util</package>
-                <package>org.openide.util.actions</package>
-                <package>org.openide.util.datatransfer</package>
-                <package>org.openide.util.enum</package>
-                <package>org.openide.util.io</package>
-                <package>org.openide.util.lookup</package>
-                <package>org.openide.windows</package>
-                <package>org.openide.xml</package>
-            </public-packages>
+            <public-packages/>
         </data>
     </configuration>
 </project>
