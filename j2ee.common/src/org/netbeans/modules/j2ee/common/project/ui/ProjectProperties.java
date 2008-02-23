@@ -78,6 +78,7 @@ public final class ProjectProperties {
     public static final String BUILD_TEST_CLASSES_DIR = "build.test.classes.dir"; // NOI18N
 
     public static final String J2EE_PLATFORM_SHARED = "j2ee.platform.shared"; //NOI18N
+    public static final String J2EE_PLATFORM_CLASSPATH = "j2ee.platform.classpath"; //NOI18N
 
     public static final String[] WELL_KNOWN_PATHS = new String[] {
         "${" + JAVAC_CLASSPATH + "}", // NOI18N

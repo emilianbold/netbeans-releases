@@ -84,14 +84,12 @@ import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 /**
- * This class decorates package nodes and file nodes under the Libraries Nodes.
- * It removes all actions from these nodes except of file node's {@link OpenAction}
- * and package node's {@link FindAction} It also adds the {@link ShowJavadocAction}
- * to both file and package nodes. It also adds {@link RemoveClassPathRootAction} to
- * class path roots.
  */
 public final class EditMediator implements ActionListener, ListSelectionListener {
 
+    private static String[] DEFAULT_ANT_ARTIFACT_TYPES = new String[] {
+        JavaProjectConstants.ARTIFACT_TYPE_JAR, JavaProjectConstants.ARTIFACT_TYPE_FOLDER};
+    
     private final ListComponent list;
     private final DefaultListModel listModel;
     private final ListSelectionModel selectionModel;
@@ -108,6 +106,7 @@ public final class EditMediator implements ActionListener, ListSelectionListener
     private ReferenceHelper refHelper;
     private Project project;
     private FileFilter filter;
+    private String[] antArtifactTypes;
 
     private EditMediator( Project project,
                          AntProjectHelper helper,
@@ -121,7 +120,8 @@ public final class EditMediator implements ActionListener, ListSelectionListener
                          ButtonModel moveDown, 
                          ButtonModel edit,
                          Document libPath,
-                         ClassPathUiSupport.Callback callback) {
+                         ClassPathUiSupport.Callback callback,
+                         String[] antArtifactTypes) {
 
         // Remember all buttons
 
@@ -149,6 +149,7 @@ public final class EditMediator implements ActionListener, ListSelectionListener
         this.filter = new SimpleFileFilter( 
             NbBundle.getMessage( EditMediator.class, "LBL_ZipJarFolderFilter" ), // NOI18N
             new String[] {"ZIP","JAR"} ); // NOI18N
+        this.antArtifactTypes = antArtifactTypes;
     }
 
     public static void register(Project project,
@@ -164,6 +165,25 @@ public final class EditMediator implements ActionListener, ListSelectionListener
                                 ButtonModel edit,
                                 Document libPath,
                                 ClassPathUiSupport.Callback callback) {    
+        register(project, helper, refHelper, list, addJar, addLibrary, 
+                addAntArtifact, remove, moveUp, moveDown, edit, libPath, 
+                callback, DEFAULT_ANT_ARTIFACT_TYPES);
+    }
+    
+    public static void register(Project project,
+                                AntProjectHelper helper,
+                                ReferenceHelper refHelper,
+                                ListComponent list,
+                                ButtonModel addJar,
+                                ButtonModel addLibrary, 
+                                ButtonModel addAntArtifact,
+                                ButtonModel remove, 
+                                ButtonModel moveUp,
+                                ButtonModel moveDown, 
+                                ButtonModel edit,
+                                Document libPath,
+                                ClassPathUiSupport.Callback callback,
+                                String[] antArtifactTypes) {    
 
         EditMediator em = new EditMediator( project, 
                                             helper,
@@ -177,7 +197,8 @@ public final class EditMediator implements ActionListener, ListSelectionListener
                                             moveDown,
                                             edit,
                                             libPath,
-                                            callback );
+                                            callback,
+                                            antArtifactTypes);
 
         // Register the listener on all buttons
         addJar.addActionListener( em ); 
@@ -282,7 +303,7 @@ public final class EditMediator implements ActionListener, ListSelectionListener
         }
         else if ( source == addAntArtifact ) { 
             AntArtifactChooser.ArtifactItem artifactItems[] = AntArtifactChooser.showDialog(
-                    new String[] {JavaProjectConstants.ARTIFACT_TYPE_JAR, JavaProjectConstants.ARTIFACT_TYPE_FOLDER},project, list.getComponent().getParent());
+                    antArtifactTypes, project, list.getComponent().getParent());
             if (artifactItems != null) {
                 int[] newSelection = ClassPathUiSupport.addArtifacts( listModel, list.getSelectedIndices(), artifactItems, callback);
                 list.setSelectedIndices( newSelection );
