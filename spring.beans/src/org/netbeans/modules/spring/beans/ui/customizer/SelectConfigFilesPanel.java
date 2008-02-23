@@ -57,7 +57,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.modules.spring.api.beans.SpringConstants;
-import org.netbeans.modules.spring.beans.ui.customizer.ConfigFileGroupUIs.FileDisplayName;
+import org.netbeans.modules.spring.beans.ui.customizer.ConfigFilesUIs.FileDisplayName;
 import org.netbeans.modules.spring.spi.beans.SpringConfigFileProvider;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -71,7 +71,7 @@ import org.openide.util.RequestProcessor.Task;
  *
  * @author Andrei Badea
  */
-public class ConfigFileDetectPanel extends javax.swing.JPanel {
+public class SelectConfigFilesPanel extends javax.swing.JPanel {
 
     private final RequestProcessor rp = new RequestProcessor("Spring config file detection thread", 1, true); // NOI18N
     private final Set<File> alreadySelectedFiles;
@@ -85,8 +85,8 @@ public class ConfigFileDetectPanel extends javax.swing.JPanel {
      * Creates a new instance of the panel for a project and a set of already selected
      * files. The panel will run a background task to detect any config files in the given project.
      */
-    public static ConfigFileDetectPanel create(Project project, Set<File> alreadySelectedFiles, FileDisplayName fileDisplayName) {
-        return new ConfigFileDetectPanel(project, alreadySelectedFiles, fileDisplayName);
+    public static SelectConfigFilesPanel create(Project project, Set<File> alreadySelectedFiles, FileDisplayName fileDisplayName) {
+        return new SelectConfigFilesPanel(project, alreadySelectedFiles, fileDisplayName);
     }
 
     /**
@@ -94,18 +94,18 @@ public class ConfigFileDetectPanel extends javax.swing.JPanel {
      * files. Since the available files are known, no config files detection
      * task will be run.
      */
-    public static ConfigFileDetectPanel create(List<File> availableFiles, Set<File> alreadySelectedFiles, FileDisplayName fileDisplayName) {
-        return new ConfigFileDetectPanel(availableFiles, alreadySelectedFiles, fileDisplayName);
+    public static SelectConfigFilesPanel create(List<File> availableFiles, Set<File> alreadySelectedFiles, FileDisplayName fileDisplayName) {
+        return new SelectConfigFilesPanel(availableFiles, alreadySelectedFiles, fileDisplayName);
     }
 
-    private ConfigFileDetectPanel(List<File> availableFiles, Set<File> alreadySelectedFiles, FileDisplayName fileDisplayName) {
+    private SelectConfigFilesPanel(List<File> availableFiles, Set<File> alreadySelectedFiles, FileDisplayName fileDisplayName) {
         this.alreadySelectedFiles = alreadySelectedFiles;
         this.availableFiles = availableFiles;
         this.project = null;
         initComponents(fileDisplayName);
     }
 
-    private ConfigFileDetectPanel(Project project, Set<File> alreadySelectedFiles, FileDisplayName fileDisplayName) {
+    private SelectConfigFilesPanel(Project project, Set<File> alreadySelectedFiles, FileDisplayName fileDisplayName) {
         this.project = project;
         this.alreadySelectedFiles = alreadySelectedFiles;
         initComponents(fileDisplayName);
@@ -113,13 +113,13 @@ public class ConfigFileDetectPanel extends javax.swing.JPanel {
 
     private void initComponents(FileDisplayName fileDisplayName) {
         initComponents();
-        ConfigFileGroupUIs.setupConfigFileSelectionTable(configFileTable, fileDisplayName);
+        ConfigFilesUIs.setupFilesSelectionTable(configFileTable, fileDisplayName);
         configFileTable.getParent().setBackground(configFileTable.getBackground());
         configFileTable.getSelectionModel().setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
     }
 
     public boolean open() {
-        String title = NbBundle.getMessage(ConfigFileDetectPanel.class, "LBL_ConfigFiles");
+        String title = NbBundle.getMessage(SelectConfigFilesPanel.class, "LBL_ConfigFilesTitle");
         descriptor = new DialogDescriptor(this, title, true, new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 cancelDetection();
@@ -149,7 +149,7 @@ public class ConfigFileDetectPanel extends javax.swing.JPanel {
     }
 
     public List<File> getSelectedFiles() {
-        return ConfigFileGroupUIs.getSelectedFiles(configFileTable);
+        return ConfigFilesUIs.getSelectedFiles(configFileTable);
     }
 
     private void cancelDetection() {
@@ -161,11 +161,11 @@ public class ConfigFileDetectPanel extends javax.swing.JPanel {
     private void updateAvailableFiles(List<File> availableFiles) {
         this.availableFiles = availableFiles;
         configFileTable.setEnabled(true);
-        ConfigFileGroupUIs.connect(availableFiles, alreadySelectedFiles, configFileTable);
+        ConfigFilesUIs.connectFilesSelectionTable(availableFiles, alreadySelectedFiles, configFileTable);
         configFileTable.getColumnModel().getColumn(0).setMaxWidth(0);
         // In an attempt to hide the progress bar and label, but force
         // the occupy the same space.
-        String message = (availableFiles.size() == 0) ? NbBundle.getMessage(ConfigFileDetectPanel.class, "LBL_NoFilesFound") : " "; // NOI18N
+        String message = (availableFiles.size() == 0) ? NbBundle.getMessage(SelectConfigFilesPanel.class, "LBL_NoFilesFound") : " "; // NOI18N
         messageLabel.setText(message); // NOI18N
         progressBar.setIndeterminate(false);
         progressBar.setBorderPainted(false);
@@ -188,7 +188,7 @@ public class ConfigFileDetectPanel extends javax.swing.JPanel {
         progressBar = new javax.swing.JProgressBar();
         messageLabel = new javax.swing.JLabel();
 
-        detectedFilesLabel.setText(org.openide.util.NbBundle.getMessage(ConfigFileDetectPanel.class, "LBL_DetectedFiles")); // NOI18N
+        detectedFilesLabel.setText(org.openide.util.NbBundle.getMessage(SelectConfigFilesPanel.class, "LBL_ConfigFiles")); // NOI18N
 
         configFileTable.setIntercellSpacing(new java.awt.Dimension(0, 0));
         configFileTable.setShowHorizontalLines(false);
@@ -199,7 +199,7 @@ public class ConfigFileDetectPanel extends javax.swing.JPanel {
         progressBar.setString(" "); // NOI18N
         progressBar.setStringPainted(true);
 
-        messageLabel.setText(org.openide.util.NbBundle.getMessage(ConfigFileDetectPanel.class, "LBL_PleaseWait")); // NOI18N
+        messageLabel.setText(org.openide.util.NbBundle.getMessage(SelectConfigFilesPanel.class, "LBL_PleaseWait")); // NOI18N
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
