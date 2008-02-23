@@ -52,6 +52,7 @@ import java.net.URL;
 import java.net.URLConnection;
 import java.net.URLEncoder;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import javax.lang.model.element.AnnotationMirror;
@@ -128,6 +129,8 @@ import org.netbeans.modules.websvc.jaxws.api.JAXWSSupport;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Lookup;
+import org.openide.util.lookup.Lookups;
 
 public class JaxWsNode extends AbstractNode implements WsWsdlCookie, JaxWsTesterCookie, ConfigureHandlerCookie {
 
@@ -181,7 +184,7 @@ public class JaxWsNode extends AbstractNode implements WsWsdlCookie, JaxWsTester
             }
         };
         content.add(cookie);
-
+        setValue("wsdl-url",getWsdlURL());
     }
 
     @Override
@@ -289,23 +292,37 @@ public class JaxWsNode extends AbstractNode implements WsWsdlCookie, JaxWsTester
     // Create the popup menu:
     @Override
     public Action[] getActions(boolean context) {
-        return new SystemAction[]{SystemAction.get(OpenAction.class),
-                    SystemAction.get(JaxWsRefreshAction.class),
-                    null,
-                    SystemAction.get(AddOperationAction.class),
-                    null,
-                    SystemAction.get(WsTesterPageAction.class),
-                    null,
-                    SystemAction.get(WSEditAttributesAction.class),
-                    null,
-                    SystemAction.get(ConfigureHandlerAction.class),
-                    null,
-                    SystemAction.get(JaxWsGenWSDLAction.class),
-                    null,
-                    SystemAction.get(DeleteAction.class),
-                    null,
-                    SystemAction.get(PropertiesAction.class)
-                };
+        DataObject dobj = getCookie(DataObject.class);
+        ArrayList<Action> actions = new ArrayList<Action>(Arrays.asList(
+                SystemAction.get(OpenAction.class),
+                SystemAction.get(JaxWsRefreshAction.class),
+                null,
+                SystemAction.get(AddOperationAction.class),
+                null,
+                SystemAction.get(WsTesterPageAction.class),
+                null,
+                SystemAction.get(WSEditAttributesAction.class),
+                null,
+                SystemAction.get(ConfigureHandlerAction.class),
+                null,
+                SystemAction.get(JaxWsGenWSDLAction.class),
+                null,
+                SystemAction.get(DeleteAction.class),
+                null,
+                SystemAction.get(PropertiesAction.class)));
+        addFromLayers(actions, "WebServices/Services/Actions");
+        return actions.toArray(new Action[actions.size()]);
+    }
+
+    private void addFromLayers(List<Action> actions, String path) {
+        Lookup look = Lookups.forPath(path);
+        for (Object next : look.lookupAll(Object.class)) {
+            if (next instanceof Action) {
+                actions.add((Action) next);
+            } else if (next instanceof javax.swing.JSeparator) {
+                actions.add(null);
+            }
+        }
     }
 
     @Override

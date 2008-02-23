@@ -160,7 +160,11 @@ public class StepActionProvider extends GdbDebuggerActionProvider {
     protected void checkEnabled(String debuggerState) {
         boolean en = debuggerState.equals(GdbDebugger.STATE_STOPPED);
         for (Object action : getActions()) {
-            setEnabled(action, en);
+            if (action == ActionsManager.ACTION_STEP_OUT) {
+                setEnabled(action, en && getDebugger().isStepOutValid());
+            } else {
+                setEnabled(action, en);
+            }
         }
     }
 }
