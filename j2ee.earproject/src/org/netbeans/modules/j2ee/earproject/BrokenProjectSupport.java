@@ -50,7 +50,8 @@ import java.util.logging.Logger;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ant.AntArtifact;
-import org.netbeans.modules.j2ee.earproject.ui.customizer.VisualClassPathItem;
+import org.netbeans.modules.j2ee.common.project.classpath.ClassPathSupport;
+import org.netbeans.modules.j2ee.earproject.ui.customizer.EarProjectProperties;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.openide.filesystems.FileChangeAdapter;
@@ -80,14 +81,12 @@ public final class BrokenProjectSupport {
     
     public boolean hasBrokenArtifacts() {
         boolean brokenArtifacts = false;
-        List<VisualClassPathItem> vcpis = project.getProjectProperties().getJarContentAdditional();
-        for (VisualClassPathItem vcpi : vcpis) {
-            Object obj = vcpi.getObject();
-            if (!(obj instanceof AntArtifact)) {
+        List<ClassPathSupport.Item> vcpis = EarProjectProperties.getJarContentAdditional(project);
+        for (ClassPathSupport.Item vcpi : vcpis) {
+            if (vcpi.getType() != ClassPathSupport.Item.TYPE_ARTIFACT) {
                 continue;
             }
-            AntArtifact aa = (AntArtifact) obj;
-            FileObject script = aa.getScriptFile();
+            FileObject script = vcpi.getArtifact().getScriptFile();
             if (script == null || !script.isValid()) {
                 brokenArtifacts = true;
                 break;
@@ -128,8 +127,8 @@ public final class BrokenProjectSupport {
     public void adjustReferences() {
         ProjectManager.mutex().writeAccess(new Runnable() {
             public void run() {
-                for (VisualClassPathItem vcpi : project.getProjectProperties().getJarContentAdditional()) {
-                    if (vcpi.getObject() instanceof AntArtifact) {
+                for (ClassPathSupport.Item vcpi : EarProjectProperties.getJarContentAdditional(project)) {
+                    if (vcpi.getType() == ClassPathSupport.Item.TYPE_ARTIFACT) {
                         String raw = vcpi.getRaw();
                         if (raw.matches("^\\$\\{reference\\..*\\}")) { // NOI18N
                             String currEvaluated = project.evaluator().evaluate(raw);
@@ -145,12 +144,12 @@ public final class BrokenProjectSupport {
         });
     }
     
-    private void adjustReference(final VisualClassPathItem vcpi, final String referenceKey) {
+    private void adjustReference(final ClassPathSupport.Item vcpi, final String referenceKey) {
         EditableProperties prjProps = project.getAntProjectHelper().getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
         String referenceValue = prjProps.getProperty(referenceKey);
         if (referenceValue.matches("^\\$\\{project\\..*\\}.+")) { // NOI18N
             String prjReference = referenceValue.substring(0, referenceValue.indexOf('}', 2) + 1);
-            String relPath = vcpi.getEvaluated();
+            String relPath = project.evaluator().evaluate(vcpi.getReference());
             prjProps.setProperty(referenceKey, prjReference + '/' + relPath);
         }
         project.getAntProjectHelper().putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, prjProps);
