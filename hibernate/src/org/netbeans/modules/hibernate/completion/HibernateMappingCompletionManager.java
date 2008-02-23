@@ -63,6 +63,7 @@ import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.Task;
 import org.netbeans.editor.TokenItem;
+import org.netbeans.modules.hibernate.service.TableColumn;
 import org.netbeans.spi.editor.completion.CompletionResultSet;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
@@ -658,17 +659,11 @@ public final class HibernateMappingCompletionManager {
                 return Collections.emptyList();
             }
 
-            List<String> columnNames = getColumnNamesForTable(context, tableName);
+            List<TableColumn> tableColumns = getColumnsForTable(context, tableName);
 
-            for (String columnName : columnNames) {
-                boolean pk = false;
-                if ((tableName.equalsIgnoreCase("PERSON") && columnName.equals("PERSONID")) ||
-                        (tableName.equalsIgnoreCase("TRIP") && columnName.equals("TRIPID"))) {
-                    pk = true;
-                }
-
-                HibernateCompletionItem item = HibernateCompletionItem.createDatabaseColumnItem(
-                        caretOffset - typedChars.length(), columnName, pk);
+            for (TableColumn tableColumn : tableColumns) {
+                  HibernateCompletionItem item = HibernateCompletionItem.createDatabaseColumnItem(
+                        caretOffset - typedChars.length(), tableColumn.getColumnName(), tableColumn.isPrimaryKey());
                 results.add(item);
             }
 
@@ -678,15 +673,15 @@ public final class HibernateMappingCompletionManager {
             return results;
         }
 
-        private List<String> getColumnNamesForTable(CompletionContext context, String tableName) {
-            List<String> columnNames = new ArrayList<String>();
+        private List<TableColumn> getColumnsForTable(CompletionContext context, String tableName) {
+            List<TableColumn> tableColumns = new ArrayList<TableColumn>();
             FileObject currentFileObject = org.netbeans.modules.editor.NbEditorUtilities.getFileObject(context.getDocument());
             org.netbeans.api.project.Project enclosingProject = org.netbeans.api.project.FileOwnerQuery.getOwner(
                     currentFileObject
                     );
             org.netbeans.modules.hibernate.service.HibernateEnvironment env = enclosingProject.getLookup().lookup(org.netbeans.modules.hibernate.service.HibernateEnvironment.class);
-            columnNames = env.getColumnsForTable(tableName, currentFileObject);
-            return columnNames;
+            tableColumns = env.getColumnsForTable(tableName, currentFileObject);
+            return tableColumns;
         }
         
         

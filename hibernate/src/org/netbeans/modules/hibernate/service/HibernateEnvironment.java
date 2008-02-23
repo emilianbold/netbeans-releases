@@ -42,11 +42,7 @@ package org.netbeans.modules.hibernate.service;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import org.hibernate.HibernateException;
-import org.netbeans.api.db.explorer.ConnectionManager;
-import org.netbeans.api.db.explorer.JDBCDriverManager;
 import org.netbeans.api.project.Project;
-import org.netbeans.api.project.libraries.Library;
-import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.modules.hibernate.cfg.model.HibernateConfiguration;
 import org.netbeans.modules.hibernate.cfg.model.SessionFactory;
 import org.netbeans.modules.hibernate.util.HibernateUtil;
@@ -119,7 +115,13 @@ public class HibernateEnvironment {
     public ArrayList<FileObject> getAllHibernateConfigFileObjects(Project project) {
         return HibernateUtil.getAllHibernateConfigFileObjects(project);
     }
-            
+      
+    /**
+     * Returns all mapping files defined under this project.
+     * 
+     * @param project the project for ehcih the mapping files need to be found.
+     * @return List of FileObjects for mapping files.
+     */
     public ArrayList<FileObject> getAllHibernateMappingFileObjects(Project project) {
         return HibernateUtil.getAllHibernateMappingFileObjects(project);
     }        
@@ -134,12 +136,9 @@ public class HibernateEnvironment {
         try {
             return HibernateUtil.getAllDatabaseTables(configurations);
         } catch (SQLException ex) {
-            
             Exceptions.printStackTrace(ex);
         } catch(HibernateException e) {
-            //if(ex.getCause() instanceof java.lang.ClassNotFoundException) {
-               // JDBCDriverManager.getDefault().showAddDriverDialog();    
-            //}
+            Exceptions.printStackTrace(e);
         }
         return null;
     }
@@ -150,8 +149,8 @@ public class HibernateEnvironment {
      * @param tableName the table whose column names are needed.
      * @return the list of column names.
      */
-    public ArrayList<String> getColumnsForTable(String tableName, FileObject mappingFileObject) {
-        ArrayList<String> columnNames = new ArrayList<String>();
+    public ArrayList<TableColumn> getColumnsForTable(String tableName, FileObject mappingFileObject) {
+        ArrayList<TableColumn> columnNames = new ArrayList<TableColumn>();
         columnNames = HibernateUtil.getColumnsForTable(
                 tableName,
                 getHibernateConfigurationForMappingFile(mappingFileObject)
