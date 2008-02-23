@@ -44,11 +44,10 @@ package org.netbeans.modules.ruby.elements;
 import java.util.Collections;
 import java.util.Set;
 
-import org.netbeans.api.gsf.Element;
-import org.netbeans.api.gsf.ElementKind;
-import org.netbeans.api.gsf.Modifier;
+import org.netbeans.modules.gsf.api.ElementKind;
+import org.netbeans.modules.gsf.api.Modifier;
 
-public class CommentElement implements Element {
+public class CommentElement extends RubyElement {
 
     private final String text;
 

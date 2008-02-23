@@ -676,6 +676,8 @@ public class Repository implements ActionListener, DocumentListener, FocusListen
         if (name != null) {
             dialog.addWindowListener(new DialogBoundsPreserver(HgModuleConfig.getDefault().getPreferences(), name)); // NOI18N
         }
+        dialog.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(Repository.class, "ACSD_RepositoryPanel"));
+
         dialog.setVisible(true);
     }
 

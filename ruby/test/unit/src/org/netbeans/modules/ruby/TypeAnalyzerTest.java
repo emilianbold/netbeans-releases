@@ -62,7 +62,8 @@ public class TypeAnalyzerTest extends RubyTestBase {
         BaseDocument doc = getDocument(fo);
         TestCompilationInfo info = getInfo(fo);
         Node root = AstUtilities.getRoot(info);
-        RubyIndex index = RubyIndex.get(info.getIndex());
+        initializeRegistry();
+        RubyIndex index = RubyIndex.get(info.getIndex(RubyMimeResolver.RUBY_MIME_TYPE));
 
         int caretOffset = -1;
         if (caretLine != null) {

@@ -66,6 +66,9 @@ import org.netbeans.installer.wizard.components.panels.JdkLocationPanel;
 import org.netbeans.installer.products.sjsas.wizard.panels.ASPanel;
 import org.netbeans.installer.utils.FileProxy;
 import org.netbeans.installer.utils.ResourceUtils;
+import org.netbeans.installer.utils.applications.JavaUtils;
+import org.netbeans.installer.utils.helper.Text;
+import org.netbeans.installer.utils.applications.JavaUtils.JavaInfo;
 
 
 /**
@@ -98,6 +101,12 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
         
         final File javaHome =
                 new File(getProperty(JdkLocationPanel.JDK_LOCATION_PROPERTY));
+        JavaInfo info = JavaUtils.getInfo(javaHome);
+        LogManager.log("Using the following JDK for AppServer configuration : ");
+        LogManager.log("... path    : "  + javaHome);
+        LogManager.log("... version : "  + info.getVersion().toJdkStyle());
+        LogManager.log("... vendor  : "  + info.getVendor());
+        LogManager.log("... final   : "  + (!info.isNonFinal()));
         
         final FilesList list = getProduct().getInstalledFiles();
         
@@ -170,9 +179,46 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
                     httpsPort,
                     adminPort);
         } catch (IOException e) {
-            throw new InstallationException(
+            final InstallationException firstException = new InstallationException(
                     getString("CL.install.error.create.domain"), // NOI18N
                     e);
+            
+            final File asadminpass = new File(
+                    SystemUtils.getUserHomeDirectory(),
+                    ".asadminpass");;
+                    final File asadmintruststore = new File(
+                            SystemUtils.getUserHomeDirectory(),
+                            ".asadmintruststore");
+                    if (asadminpass.exists() || asadmintruststore.exists()) {
+                        LogManager.log("either .asadminpass or .asadmintruststore " +
+                                "files exist -- deleting them");
+                        
+                        getProduct().addInstallationWarning(firstException);
+                        
+                        try {
+                            FileUtils.deleteFile(asadminpass);
+                            FileUtils.deleteFile(asadmintruststore);                            
+                            FileUtils.deleteFile(
+                                    new File(directory,
+                                    DOMAINS_SUBDIR + File.separator + DOMAIN_NAME),
+                                    true);
+                            
+                            GlassFishUtils.createDomain(
+                                    directory,
+                                    DOMAIN_NAME,
+                                    username,
+                                    password,
+                                    httpPort,
+                                    httpsPort,
+                                    adminPort);
+                        } catch (IOException ex) {
+                            throw new InstallationException(
+                                    getString("CL.install.error.create.domain"), // NOI18N
+                                    ex);
+                        }
+                    } else {
+                        throw firstException;
+                    }
         }
         
         /////////////////////////////////////////////////////////////////////////////
@@ -234,12 +280,12 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
             FileUtils.writeFile(new File(directory, JTB_LICENSE), 
                     ResourceUtils.getResource(JTB_LEGAL_RESOURCE_PREFIX + JTB_LICENSE,
                     cl));
-            FileUtils.writeFile(new File(directory, JTB_DISTRIBUTION), 
-                    ResourceUtils.getResource(JTB_LEGAL_RESOURCE_PREFIX + JTB_DISTRIBUTION,
-                    cl));
-            FileUtils.writeFile(new File(directory, JTB_THIRDPARTYREADME), 
-                    ResourceUtils.getResource(JTB_LEGAL_RESOURCE_PREFIX + JTB_THIRDPARTYREADME,
-                    cl));
+//            FileUtils.writeFile(new File(directory, JTB_DISTRIBUTION), 
+//                    ResourceUtils.getResource(JTB_LEGAL_RESOURCE_PREFIX + JTB_DISTRIBUTION,
+//                    cl));
+//            FileUtils.writeFile(new File(directory, JTB_THIRDPARTYREADME), 
+//                    ResourceUtils.getResource(JTB_LEGAL_RESOURCE_PREFIX + JTB_THIRDPARTYREADME,
+//                    cl));
         } catch (IOException e) {
             throw new InstallationException(
                     getString("CL.install.error.legal.creation"), // NOI18N
@@ -317,6 +363,11 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
     public boolean allowModifyMode() {
         return false;
     }
+    
+    @Override
+    public Text getLicense() {
+       return null;
+    }    
     
     // private //////////////////////////////////////////////////////////////////////
     private FilesList modifyASLauncherFiles(
@@ -645,7 +696,7 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
     public static final String JTB_LEGAL_RESOURCE_PREFIX =
             "org/netbeans/installer/products/sjsas/jtblegal/";
     public static final String JTB_LICENSE =
-            "Java_EE_5_Tools_Update_3_Beta-License.txt";//NOI18N
+            "Java_EE_5_Tools_Update_4-License.txt";//NOI18N
     public static final String JTB_THIRDPARTYREADME =
             "THIRDPARTYREADME.txt";
     public static final String JTB_DISTRIBUTION =

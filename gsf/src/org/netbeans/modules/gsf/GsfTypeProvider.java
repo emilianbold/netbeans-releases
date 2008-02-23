@@ -47,14 +47,15 @@ import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.Icon;
-import org.netbeans.api.gsf.Element;
-import org.netbeans.api.gsf.Index;
-import org.netbeans.api.gsf.NameKind;
-import org.netbeans.api.gsf.TypeSearcher;
-import org.netbeans.api.gsfpath.classpath.ClassPath;
-import org.netbeans.api.gsfpath.queries.SourceForBinaryQuery;
+import org.netbeans.modules.gsf.api.ElementHandle;
+import org.netbeans.modules.gsf.api.Index;
+import org.netbeans.modules.gsf.api.NameKind;
+import org.netbeans.modules.gsf.api.TypeSearcher;
+import org.netbeans.modules.gsfpath.api.classpath.ClassPath;
+import org.netbeans.modules.gsfpath.api.queries.SourceForBinaryQuery;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
@@ -65,7 +66,7 @@ import org.netbeans.napi.gsfret.source.UiUtils;
 import org.netbeans.modules.gsfret.navigation.Icons;
 import org.netbeans.modules.gsfret.source.usages.ClassIndexManager;
 import org.netbeans.modules.gsfret.source.usages.RepositoryUpdater;
-import org.netbeans.spi.gsfpath.classpath.support.ClassPathSupport;
+import org.netbeans.modules.gsfpath.spi.classpath.support.ClassPathSupport;
 import org.netbeans.spi.jumpto.type.SearchType;
 import org.netbeans.spi.jumpto.type.TypeDescriptor;
 import org.netbeans.spi.jumpto.type.TypeProvider;
@@ -148,9 +149,9 @@ public class GsfTypeProvider implements TypeProvider, TypeSearcher.Helper {
             if (projectName == null) {
             try {
                 java.net.URL url = fileObject.getURL();
-                if (ClassIndexManager.getDefault().isBootRoot(url)) {
-                    projectName = "Ruby Lib";
-                }
+                if (ClassIndexManager./*get(language).*/isBootRoot(url)) {
+                   projectName = "Ruby Lib";
+               }
             }
             catch (FileStateInvalidException ex) {
                 Exceptions.printStackTrace(ex);
@@ -213,7 +214,9 @@ public class GsfTypeProvider implements TypeProvider, TypeSearcher.Helper {
             cp = gss = gsb = sfb = gtn = add = sort = 0;
             
             if (cache == null) {
-                LOGGER.fine("GoToTypeAction.getTypeNames recreates cache\n");
+                if (LOGGER.isLoggable(Level.FINE)) {
+                    LOGGER.fine("GoToTypeAction.getTypeNames recreates cache\n");
+                }
                 // Sources
                 time = System.currentTimeMillis();
                 ClassPath scp = RepositoryUpdater.getDefault().getScannedSources();
@@ -224,8 +227,11 @@ public class GsfTypeProvider implements TypeProvider, TypeSearcher.Helper {
                 for (int i = 0; i < roots.length; i++ ) {                    
                     root[0] = roots[i];
                     time = System.currentTimeMillis();                
-                    ClasspathInfo ci = ClasspathInfo.create( EMPTY_CLASSPATH, EMPTY_CLASSPATH, ClassPathSupport.createClassPath(root));               //create(roots[i]);
-                    LOGGER.fine("GoToTypeAction.getTypeNames created ClasspathInfo for source: " + FileUtil.getFileDisplayName(roots[i])+"\n");
+                    ClasspathInfo ci = ClasspathInfo.create(EMPTY_CLASSPATH, EMPTY_CLASSPATH, ClassPathSupport.createClassPath(root)); 
+                    //create(roots[i]);
+                    if (LOGGER.isLoggable(Level.FINE)) {
+                        LOGGER.fine("GoToTypeAction.getTypeNames created ClasspathInfo for source: " + FileUtil.getFileDisplayName(roots[i])+"\n");
+                    }
 //                    if ( isCanceled ) {
                     if ( isCancelled ) {
                         return;
@@ -255,7 +261,9 @@ public class GsfTypeProvider implements TypeProvider, TypeSearcher.Helper {
                         time = System.currentTimeMillis();                        
                         root[0] = roots[i];
                         ClasspathInfo ci = ClasspathInfo.create(ClassPathSupport.createClassPath(root), EMPTY_CLASSPATH, EMPTY_CLASSPATH );//create(roots[i]);                                
-                        LOGGER.fine("GoToTypeAction.getTypeNames created ClasspathInfo for binary: " + FileUtil.getFileDisplayName(roots[i])+"\n");
+                        if (LOGGER.isLoggable(Level.FINE)) {
+                            LOGGER.fine("GoToTypeAction.getTypeNames created ClasspathInfo for binary: " + FileUtil.getFileDisplayName(roots[i])+"\n");
+                        }
                         sources.add( new CacheItem( roots[i], ci, true ) );                                                
                         
                         cp += System.currentTimeMillis() - time;
@@ -273,7 +281,9 @@ public class GsfTypeProvider implements TypeProvider, TypeSearcher.Helper {
                 }
                 
             }
-            LOGGER.fine("GoToTypeAction.getTypeNames collected : " + cache.size() +" elements\n");
+            if (LOGGER.isLoggable(Level.FINE)) {
+                LOGGER.fine("GoToTypeAction.getTypeNames collected : " + cache.size() +" elements\n");
+            }
             
             //ArrayList<GsfTypeDescription> types = new ArrayList<GsfTypeDescription>(cache.size() * 20);
             ArrayList<TypeDescriptor> types = new ArrayList<TypeDescriptor>(cache.size() * 20);
@@ -304,12 +314,12 @@ public class GsfTypeProvider implements TypeProvider, TypeSearcher.Helper {
                     default:
                         textForQuery = text;
                 }
-                LOGGER.fine("GoToTypeAction.getTypeNames queries usages of: " + ci.classpathInfo+"\n");
-                
-                Index index = ci.classpathInfo.getClassIndex();
-                
+                if (LOGGER.isLoggable(Level.FINE)) {
+                    LOGGER.fine("GoToTypeAction.getTypeNames queries usages of: " + ci.classpathInfo+"\n");
+                }
+
                 //Set<? extends Element/*Handle<Element>*/> names = getTypes(index, textForQuery, indexNameKind,  EnumSet.of(ci.isBinary ? Index.SearchScope.DEPENDENCIES : Index.SearchScope.SOURCE ));
-                Set<? extends TypeDescriptor> names = getTypes(index, textForQuery, indexNameKind,  EnumSet.of(ci.isBinary ? Index.SearchScope.DEPENDENCIES : Index.SearchScope.SOURCE ));
+                Set<? extends TypeDescriptor> names = getTypes(ci.classpathInfo, textForQuery, indexNameKind,  EnumSet.of(ci.isBinary ? Index.SearchScope.DEPENDENCIES : Index.SearchScope.SOURCE ));
                 //Set<ElementHandle<TypeElement>> names = ci.classpathInfo.getClassIndex().getDeclaredTypes(textForQuery, indexNameKind, EnumSet.of( ci.isBinary ? ClassIndex.SearchScope.DEPENDENCIES : ClassIndex.SearchScope.SOURCE ));
 //                if ( isCanceled ) {
                 if ( isCancelled ) {
@@ -341,7 +351,9 @@ public class GsfTypeProvider implements TypeProvider, TypeSearcher.Helper {
                 // Sorting is now done on the Go To Tpe dialog side
                 // Collections.sort(types);
                 sort += System.currentTimeMillis() - time;
-                LOGGER.fine("PERF - " + " GSS:  " + gss + " GSB " + gsb + " CP: " + cp + " SFB: " + sfb + " GTN: " + gtn + "  ADD: " + add + "  SORT: " + sort ); 
+                if (LOGGER.isLoggable(Level.FINE)) {
+                    LOGGER.fine("PERF - " + " GSS:  " + gss + " GSB " + gsb + " CP: " + cp + " SFB: " + sfb + " GTN: " + gtn + "  ADD: " + add + "  SORT: " + sort ); 
+                }
                 res.addResult(types);
             }
         }
@@ -349,7 +361,7 @@ public class GsfTypeProvider implements TypeProvider, TypeSearcher.Helper {
        private Collection<? extends TypeSearcher> searchers;
 
   //      private Set<? extends /*ElementHandle<*/Element/*>*/> getTypes(Index index, String textForQuery, NameKind kind, EnumSet<Index.SearchScope> scope) {
-        private Set<? extends TypeDescriptor> getTypes(Index index, String textForQuery, NameKind kind, EnumSet<Index.SearchScope> scope) {
+        private Set<? extends TypeDescriptor> getTypes(ClasspathInfo classpathInfo, String textForQuery, NameKind kind, EnumSet<Index.SearchScope> scope) {
             if (searchers == null) {
                 // XXX Will this do a newInstance every time? That will break my caching...
                 searchers = Lookup.getDefault().lookupAll(TypeSearcher.class);
@@ -369,10 +381,16 @@ public class GsfTypeProvider implements TypeProvider, TypeSearcher.Helper {
 //                    return items;
 //                }
                 if (searchers.size() == 1) {
-                    return searchers.iterator().next().getDeclaredTypes(index, textForQuery, kind, scope, this);
+                    TypeSearcher searcher = searchers.iterator().next();
+                    Language language = LanguageRegistry.getInstance().getLanguageByMimeType(searcher.getMimetype());
+                    Index index = classpathInfo.getClassIndex(language.getMimeType());
+                    
+                    return searcher.getDeclaredTypes(index, textForQuery, kind, scope, this);
                 } else {
                     Set<? extends TypeDescriptor> items = new HashSet<TypeDescriptor>();
                     for (TypeSearcher searcher : searchers) {
+                        Language language = LanguageRegistry.getInstance().getLanguageByMimeType(searcher.getMimetype());
+                        Index index = classpathInfo.getClassIndex(language.getMimeType());
                         Set<? extends TypeDescriptor> set = searcher.getDeclaredTypes(index, textForQuery, kind, scope, this);
                         Set s = items;
                         s.addAll(set);
@@ -385,11 +403,11 @@ public class GsfTypeProvider implements TypeProvider, TypeSearcher.Helper {
             }
         }
 
-    public Icon getIcon(Element element) {
+    public Icon getIcon(ElementHandle element) {
         return Icons.getElementIcon(element.getKind(), element.getModifiers());
     }
 
-    public void open(FileObject fileObject, Element element) {
+    public void open(FileObject fileObject, ElementHandle element) {
         Source js = Source.forFileObject(fileObject);
         UiUtils.open(js, element);
     }

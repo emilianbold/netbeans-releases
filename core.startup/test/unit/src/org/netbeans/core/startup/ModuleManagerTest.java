@@ -2327,7 +2327,10 @@ public class ModuleManagerTest extends SetupHid {
 
     public void testShouldDelegateResource() throws Exception {
         File m1j = new File(getWorkDir(), "m1.jar");
-        createJar(m1j, Collections.singletonMap("java/nio/channels/Channel.class", "override"), Collections.singletonMap("OpenIDE-Module", "m1"));
+        Map<String,String> contents = new HashMap<String,String>();
+        contents.put("javax/swing/JPanel.class", "overrides");
+        contents.put("javax/xml/parsers/DocumentBuilder.class", "ignored");
+        createJar(m1j, contents, Collections.singletonMap("OpenIDE-Module", "m1"));
         File m2j = new File(getWorkDir(), "m2.jar");
         Map<String,String> mani = new HashMap<String,String>();
         mani.put("OpenIDE-Module", "m2");
@@ -2337,7 +2340,7 @@ public class ModuleManagerTest extends SetupHid {
         createJar(m3j, Collections.<String,String>emptyMap(), Collections.singletonMap("OpenIDE-Module", "m3"));
         FakeModuleInstaller installer = new FakeModuleInstaller() {
             public @Override boolean shouldDelegateResource(Module m, Module parent, String pkg) {
-                if (parent == null && pkg.equals("java/nio/channels/") && m.getCodeNameBase().equals("m1")) {
+                if (parent == null && pkg.equals("javax/swing/") && m.getCodeNameBase().matches("m[12]")) {
                     return false;
                 } else {
                     return true;
@@ -2352,11 +2355,76 @@ public class ModuleManagerTest extends SetupHid {
             Module m2 = mgr.create(m2j, null, false, false, false);
             Module m3 = mgr.create(m3j, null, false, false, false);
             mgr.enable(new HashSet<Module>(Arrays.asList(m1, m2, m3)));
-            URL jreResource = ModuleManagerTest.class.getResource("/java/nio/channels/Channel.class");
-            assertNotNull(jreResource);
-            assertFalse(m1.getClassLoader().getResource("java/nio/channels/Channel.class").equals(jreResource));
-            assertFalse(m2.getClassLoader().getResource("java/nio/channels/Channel.class").equals(jreResource));
-            assertEquals(jreResource, m3.getClassLoader().getResource("java/nio/channels/Channel.class"));
+            assertOverrides(m1, "javax.swing.JPanel");
+            assertOverrides(m2, "javax.swing.JPanel");
+            assertDoesNotOverride(m3, "javax.swing.JPanel");
+            assertDoesNotOverride(m1, "javax.xml.parsers.DocumentBuilder");
+            assertDoesNotOverride(m2, "javax.xml.parsers.DocumentBuilder");
+        } finally {
+            mgr.mutexPrivileged().exitWriteAccess();
+        }
+    }
+    static void assertOverrides(Module m, String clazz) throws Exception {
+        try {
+            assertFalse("module " + m.getCodeNameBase() + " did not override " + clazz,
+                    Class.forName(clazz) == m.getClassLoader().loadClass(clazz));
+        } catch (LinkageError e) {
+            // right: we don't provide legal class bodies here, so it would fail to even load
+        }
+        String rsrc = clazz.replace('.', '/') + ".class";
+        URL cpResource = ModuleManagerTest.class.getResource("/" + rsrc);
+        assertNotNull("found " + rsrc, cpResource);
+        URL modResource = m.getClassLoader().getResource(rsrc);
+        assertNotNull("found " + rsrc, modResource);
+        assertFalse("module " + m.getCodeNameBase() + " did not override " + rsrc,
+                cpResource.equals(modResource));
+    }
+    static void assertDoesNotOverride(Module m, String clazz) throws Exception {
+        assertEquals(Class.forName(clazz), m.getClassLoader().loadClass(clazz));
+        String rsrc = clazz.replace('.', '/') + ".class";
+        URL cpResource = ModuleManagerTest.class.getResource("/" + rsrc);
+        assertNotNull("found " + rsrc, cpResource);
+        URL modResource = m.getClassLoader().getResource(rsrc);
+        assertNotNull("found " + rsrc, modResource);
+        assertEquals(cpResource, modResource);
+    }
+
+    public void testDisableWithAutoloadMajorRange() throws Exception { // #127720
+        File m1j = new File(getWorkDir(), "m1.jar");
+        createJar(m1j, Collections.<String,String>emptyMap(), Collections.singletonMap("OpenIDE-Module", "m1/0"));
+        File m2j = new File(getWorkDir(), "m2.jar");
+        Map<String,String> mani = new HashMap<String,String>();
+        mani.put("OpenIDE-Module", "m2");
+        mani.put("OpenIDE-Module-Module-Dependencies", "m1/0-1");
+        createJar(m2j, Collections.<String,String>emptyMap(), mani);
+        File m3j = new File(getWorkDir(), "m3.jar");
+        mani = new HashMap<String,String>();
+        mani.put("OpenIDE-Module", "m3");
+        mani.put("OpenIDE-Module-Module-Dependencies", "m1/0");
+        createJar(m3j, Collections.<String,String>emptyMap(), mani);
+        FakeModuleInstaller installer = new FakeModuleInstaller();
+        FakeEvents ev = new FakeEvents();
+        ModuleManager mgr = new ModuleManager(installer, ev);
+        mgr.mutexPrivileged().enterWriteAccess();
+        try {
+            Module m1 = mgr.create(m1j, null, false, true, false);
+            Module m2 = mgr.create(m2j, null, false, false, false);
+            Module m3 = mgr.create(m3j, null, false, false, false);
+            mgr.enable(m2);
+            mgr.enable(m3);
+            assertTrue(m1.isEnabled());
+            assertTrue(m2.isEnabled());
+            assertTrue(m3.isEnabled());
+            assertEquals(Collections.singletonList(m3), mgr.simulateDisable(Collections.singleton(m3)));
+            mgr.disable(m3);
+            assertTrue(m1.isEnabled());
+            assertTrue(m2.isEnabled());
+            assertFalse(m3.isEnabled());
+            assertEquals(Arrays.asList(m2, m1), mgr.simulateDisable(Collections.singleton(m2)));
+            mgr.disable(m2);
+            assertFalse(m1.isEnabled());
+            assertFalse(m2.isEnabled());
+            assertFalse(m3.isEnabled());
         } finally {
             mgr.mutexPrivileged().exitWriteAccess();
         }

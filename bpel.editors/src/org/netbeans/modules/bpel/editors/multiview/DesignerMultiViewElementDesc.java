@@ -16,7 +16,6 @@
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
-
 package org.netbeans.modules.bpel.editors.multiview;
 
 import java.awt.Image;
@@ -40,7 +39,7 @@ public class DesignerMultiViewElementDesc implements MultiViewDescription,
 {
 
     private static final long serialVersionUID = 1L;
-	
+    
     public static final String PREFERRED_ID = BpelEditorConstants.BPEL_DESIGNMV_PREFFERED_ID;
     
     private static final String LBL_DESIGN = "LBL_TAB_Design";

@@ -175,7 +175,7 @@ implements Map {
             }
             offset += read;
         }
-        assertEquals("Ofset is 4", 4, offset);
+        assertEquals("Offset is 4", 4, offset);
         
         String s = new String(arr);
         assertEquals("123\n", s);

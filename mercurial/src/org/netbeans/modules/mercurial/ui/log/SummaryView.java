@@ -40,7 +40,6 @@
  */
 package org.netbeans.modules.mercurial.ui.log;
 
-import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.ErrorManager;
@@ -56,20 +55,19 @@ import java.awt.event.*;
 import java.awt.*;
 import java.awt.geom.Rectangle2D;
 import java.util.*;
-import java.util.List;
 import java.io.File;
 import java.io.IOException;
 import java.text.DateFormat;
 import java.util.List;
-import java.util.List;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.modules.mercurial.ExceptionHandler;
 import org.netbeans.modules.mercurial.HgException;
+import org.netbeans.modules.mercurial.HgModuleConfig;
 import org.netbeans.modules.mercurial.HgProgressSupport;
 import org.netbeans.modules.mercurial.Mercurial;
 import org.netbeans.modules.mercurial.VersionsCache;
 import org.netbeans.modules.mercurial.ui.diff.DiffSetupSource;
-import org.netbeans.modules.mercurial.ui.update.RevertModifications;
+import org.netbeans.modules.mercurial.ui.diff.ExportDiffAction;
 import org.netbeans.modules.mercurial.ui.update.RevertModificationsAction;
 
 /**
@@ -82,7 +80,9 @@ import org.netbeans.modules.mercurial.ui.update.RevertModificationsAction;
  */
 class SummaryView implements MouseListener, ComponentListener, MouseMotionListener, DiffSetupSource {
 
+    private static final String SUMMARY_DIFF_PROPERTY = "Summary-Diff-";
     private static final String SUMMARY_REVERT_PROPERTY = "Summary-Revert-";
+    private static final String SUMMARY_EXPORTDIFFS_PROPERTY = "Summary-ExportDiffs-";
 
     private final SearchHistoryPanel master;
     
@@ -155,7 +155,7 @@ class SummaryView implements MouseListener, ComponentListener, MouseMotionListen
         if (idx == -1) return;
         Rectangle rect = resultsList.getCellBounds(idx, idx);
         Point p = new Point(e.getX() - rect.x, e.getY() - rect.y);
-        Rectangle diffBounds = (Rectangle) resultsList.getClientProperty("Summary-Diff-" + idx); // NOI18N
+        Rectangle diffBounds = (Rectangle) resultsList.getClientProperty(SUMMARY_DIFF_PROPERTY + idx); // NOI18N
         if (diffBounds != null && diffBounds.contains(p)) {
             diffPrevious(idx);
         }
@@ -163,8 +163,13 @@ class SummaryView implements MouseListener, ComponentListener, MouseMotionListen
         if (diffBounds != null && diffBounds.contains(p)) {
             revertModifications(new int [] { idx });
         }
+        diffBounds = (Rectangle) resultsList.getClientProperty(SUMMARY_EXPORTDIFFS_PROPERTY + idx); // NOI18N
+        if (diffBounds != null && diffBounds.contains(p)) {
+            System.out.println("ExportDiffs: " + idx); // DEBUG
+            exportDiffs(idx);
+        }
     }
-
+    
     public void mouseEntered(MouseEvent e) {
         // not interested
     }
@@ -193,12 +198,17 @@ class SummaryView implements MouseListener, ComponentListener, MouseMotionListen
         if (idx == -1) return;
         Rectangle rect = resultsList.getCellBounds(idx, idx);
         Point p = new Point(e.getX() - rect.x, e.getY() - rect.y);
-        Rectangle diffBounds = (Rectangle) resultsList.getClientProperty("Summary-Diff-" + idx); // NOI18N
+        Rectangle diffBounds = (Rectangle) resultsList.getClientProperty(SUMMARY_DIFF_PROPERTY + idx); // NOI18N
         if (diffBounds != null && diffBounds.contains(p)) {
             resultsList.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
             return;
         }
         diffBounds = (Rectangle) resultsList.getClientProperty(SUMMARY_REVERT_PROPERTY + idx); // NOI18N
+        if (diffBounds != null && diffBounds.contains(p)) {
+            resultsList.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+            return;
+        }
+        diffBounds = (Rectangle) resultsList.getClientProperty(SUMMARY_EXPORTDIFFS_PROPERTY + idx); // NOI18N
         if (diffBounds != null && diffBounds.contains(p)) {
             resultsList.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
             return;
@@ -428,6 +438,7 @@ class SummaryView implements MouseListener, ComponentListener, MouseMotionListen
 
     private static void revertImpl(SearchHistoryPanel master, RepositoryRevision[] revisions, RepositoryRevision.Event[] events, HgProgressSupport progress) {
         List<File> revertFiles = new ArrayList<File>();
+        boolean doBackup = HgModuleConfig.getDefault().getBackupOnRevertModifications();
         for (RepositoryRevision revision : revisions) {
             File root = new File(revision.getRepositoryRootUrl());
             for(RepositoryRevision.Event event: revision.getEvents()){
@@ -435,7 +446,7 @@ class SummaryView implements MouseListener, ComponentListener, MouseMotionListen
                 revertFiles.add(event.getFile());
             }
             RevertModificationsAction.performRevert(
-                        root, revision.getLog().getRevision(), revertFiles);
+                        root, revision.getLog().getRevision(), revertFiles, doBackup, progress.getLogger());
             revertFiles.clear();
         }
         
@@ -465,7 +476,7 @@ class SummaryView implements MouseListener, ComponentListener, MouseMotionListen
                 if(revEvents != null && !revEvents.isEmpty()){
                     // Assuming all files in a given repository reverting to same revision
                     RevertModificationsAction.performRevert(
-                        root, revEvents.get(0).getLogInfoHeader().getLog().getRevision(), revertFiles);
+                        root, revEvents.get(0).getLogInfoHeader().getLog().getRevision(), revertFiles, doBackup, progress.getLogger());
                 }
             }                       
         }
@@ -496,6 +507,15 @@ class SummaryView implements MouseListener, ComponentListener, MouseMotionListen
             master.showDiff(container);
         }
     }
+
+    private void exportDiffs(int idx) {
+        Object o = dispResults.get(idx);
+        if (o instanceof RepositoryRevision) {
+            RepositoryRevision repoRev = (RepositoryRevision) o;
+            ExportDiffAction.exportDiffRevision(repoRev);
+        }        
+    }
+
 
     public JComponent getComponent() {
         return scrollPane;
@@ -532,6 +552,7 @@ class SummaryView implements MouseListener, ComponentListener, MouseMotionListen
         private int             index;
         private HyperlinkLabel  diffLink;
         private HyperlinkLabel  revertLink;
+        private HyperlinkLabel  exportDiffsLink;
 
         public SummaryCellRenderer() {
             selectedStyle = textPane.addStyle("selected", null); // NOI18N
@@ -562,7 +583,11 @@ class SummaryView implements MouseListener, ComponentListener, MouseMotionListen
             actionsPane.add(diffLink);
 
             revertLink = new HyperlinkLabel();
+            revertLink.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 8));
             actionsPane.add(revertLink);
+            
+            exportDiffsLink = new HyperlinkLabel();
+            actionsPane.add(exportDiffsLink);
             
             textPane.setBorder(null);
         }
@@ -638,8 +663,9 @@ class SummaryView implements MouseListener, ComponentListener, MouseMotionListen
             
             actionsPane.setVisible(true);
             if(!master.isIncomingSearch()){
-                diffLink.set(NbBundle.getMessage(SummaryView.class, "CTL_Action_Diff"), foregroundColor, backgroundColor);
+                diffLink.set(NbBundle.getMessage(SummaryView.class, "CTL_Action_Diff"), foregroundColor, backgroundColor);// NOI18N
                 revertLink.set(NbBundle.getMessage(SummaryView.class, "CTL_Action_Revert"), foregroundColor, backgroundColor); // NOI18N
+                exportDiffsLink.set(NbBundle.getMessage(SummaryView.class, "CTL_Action_ExportDiffs"), foregroundColor, backgroundColor); // NOI18N
             }
     }
 
@@ -703,12 +729,16 @@ class SummaryView implements MouseListener, ComponentListener, MouseMotionListen
             {
                 Rectangle bounds = diffLink.getBounds();
                 bounds.setBounds(bounds.x, bounds.y + apb.y, bounds.width, bounds.height);
-                resultsList.putClientProperty("Summary-Diff-" + index, bounds); // NOI18N
+                resultsList.putClientProperty(SUMMARY_DIFF_PROPERTY + index, bounds); // NOI18N
             }
 
             Rectangle bounds = revertLink.getBounds();
             bounds.setBounds(bounds.x, bounds.y + apb.y, bounds.width, bounds.height);
             resultsList.putClientProperty(SUMMARY_REVERT_PROPERTY + index, bounds); // NOI18N
+
+            Rectangle edBounds = exportDiffsLink.getBounds();
+            edBounds.setBounds(edBounds.x, edBounds.y + apb.y, edBounds.width, edBounds.height);
+            resultsList.putClientProperty(SUMMARY_EXPORTDIFFS_PROPERTY + index, edBounds); // NOI18N            
         }
     }
     

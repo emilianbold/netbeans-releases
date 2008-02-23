@@ -39,6 +39,8 @@
 package org.netbeans.modules.ruby.railsprojects.ui.wizards;
 
 import java.awt.BorderLayout;
+import java.awt.Component;
+import javax.swing.JPanel;
 import org.netbeans.api.ruby.platform.RubyPlatform;
 import org.openide.WizardDescriptor;
 import org.openide.util.NbBundle;
@@ -49,51 +51,71 @@ import org.openide.util.NbBundle;
  */
 public class DatabaseConfigPanelVisual extends javax.swing.JPanel {
 
-    private JdbcConnectionsPanel jdbcPanel; 
+    private JdbcConnectionsPanel jdbcPanel;
     private RailsAdaptersPanel adaptersPanel;
-            
+    private boolean initialized;
+
     /** Creates new form DatabaseConfigPanel */
     public DatabaseConfigPanelVisual() {
         initComponents();
+        configureOptionsButtonGroup.add(useIDEConnections);
+        configureOptionsButtonGroup.add(useRailsAdapter);
         jdbcPanel = new JdbcConnectionsPanel();
         adaptersPanel = new RailsAdaptersPanel();
+        ideConnectionsPanel.add(jdbcPanel, BorderLayout.CENTER);
+        adapterConfigurationPanel.add(adaptersPanel, BorderLayout.CENTER);
         setName(NbBundle.getMessage(DatabaseConfigPanelVisual.class, "LAB_ConfigureDatabase"));
         putClientProperty("NewProjectWizard_Title", NbBundle.getMessage(DatabaseConfigPanelVisual.class, "TXT_ConfigureDatabase")); // NOI18N
-                
+
         initInnerPanels();
     }
 
     private boolean isJdbc() {
-        return useJdbcCheckBox.isSelected();
+        return useJdbc.isSelected();
     }
-    
+
+    private boolean useIdeConnections() {
+        return useIDEConnections.isSelected();
+    }
+
     private SettingsPanel getActivePanel() {
-        return isJdbc() ? jdbcPanel : adaptersPanel;
+        return useIdeConnections() ? jdbcPanel : adaptersPanel;
     }
-    
+
     void read(WizardDescriptor descriptor) {
-        RubyPlatform platform = 
+        RubyPlatform platform =
                 (RubyPlatform) descriptor.getProperty(NewRailsProjectWizardIterator.PLATFORM);
-        useJdbcCheckBox.setEnabled(platform.isJRuby());
+        boolean jruby = platform.isJRuby();
+        if (!initialized) {
+            useIDEConnections.setSelected(jruby);
+            useRailsAdapter.setSelected(!jruby);
+            initialized = true;
+        }
+        if (!jruby) {
+            useJdbc.setSelected(false);
+        }
+        useJdbc.setEnabled(jruby);
         jdbcPanel.read(descriptor);
         adaptersPanel.read(descriptor);
+        initInnerPanels();
     }
-    
+
     void store(WizardDescriptor descriptor) {
+        descriptor.putProperty(NewRailsProjectWizardIterator.JDBC_WN, isJdbc());
         getActivePanel().store(descriptor);
     }
 
     private void initInnerPanels() {
-        boolean jdbc = isJdbc();
-        if (jdbc) {
-            connectionPanelContainer.remove(adaptersPanel);
-            connectionPanelContainer.add(jdbcPanel, BorderLayout.CENTER);
-        } else {
-            connectionPanelContainer.remove(jdbcPanel);
-            connectionPanelContainer.add(adaptersPanel, BorderLayout.CENTER);
+        boolean useIdeConnections = useIdeConnections();
+        setEnabled(jdbcPanel, useIdeConnections);
+        setEnabled(adaptersPanel, !useIdeConnections);
+    }
+    
+    private void setEnabled(JPanel panel, boolean enable) {
+        panel.setEnabled(enable);
+        for (Component component : panel.getComponents()) {
+            component.setEnabled(enable);
         }
-        jdbcPanel.setVisible(jdbc);
-        adaptersPanel.setVisible(!jdbc);
     }
 
     /** This method is called from within the constructor to
@@ -105,18 +127,33 @@ public class DatabaseConfigPanelVisual extends javax.swing.JPanel {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        useJdbcCheckBox = new javax.swing.JCheckBox();
-        connectionPanelContainer = new javax.swing.JPanel();
+        configureOptionsButtonGroup = new javax.swing.ButtonGroup();
+        ideConnectionsPanel = new javax.swing.JPanel();
+        adapterConfigurationPanel = new javax.swing.JPanel();
+        useIDEConnections = new javax.swing.JRadioButton();
+        useRailsAdapter = new javax.swing.JRadioButton();
         jSeparator1 = new javax.swing.JSeparator();
+        useJdbc = new javax.swing.JCheckBox();
 
-        useJdbcCheckBox.setText(org.openide.util.NbBundle.getMessage(DatabaseConfigPanelVisual.class, "UseJdbc")); // NOI18N
-        useJdbcCheckBox.addItemListener(new java.awt.event.ItemListener() {
-            public void itemStateChanged(java.awt.event.ItemEvent evt) {
-                useJdbcCheckBoxItemStateChanged(evt);
+        ideConnectionsPanel.setLayout(new java.awt.BorderLayout());
+
+        adapterConfigurationPanel.setLayout(new java.awt.BorderLayout());
+
+        useIDEConnections.setText(org.openide.util.NbBundle.getMessage(DatabaseConfigPanelVisual.class, "LBL_ConfigureUsingIDEConnections")); // NOI18N
+        useIDEConnections.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                useIDEConnectionsActionPerformed(evt);
             }
         });
 
-        connectionPanelContainer.setLayout(new java.awt.BorderLayout());
+        useRailsAdapter.setText(org.openide.util.NbBundle.getMessage(DatabaseConfigPanelVisual.class, "LBL_ConfigureDirectly")); // NOI18N
+        useRailsAdapter.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                useRailsAdapterActionPerformed(evt);
+            }
+        });
+
+        useJdbc.setText(org.openide.util.NbBundle.getMessage(DatabaseConfigPanelVisual.class, "UseJdbc")); // NOI18N
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
@@ -125,35 +162,49 @@ public class DatabaseConfigPanelVisual extends javax.swing.JPanel {
             .add(layout.createSequentialGroup()
                 .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(jSeparator1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 597, Short.MAX_VALUE)
-                    .add(layout.createSequentialGroup()
-                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(useJdbcCheckBox)
-                            .add(connectionPanelContainer, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 579, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                        .addContainerGap(18, Short.MAX_VALUE))))
+                    .add(jSeparator1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 576, Short.MAX_VALUE)
+                    .add(org.jdesktop.layout.GroupLayout.TRAILING, adapterConfigurationPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 576, Short.MAX_VALUE)
+                    .add(ideConnectionsPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 576, Short.MAX_VALUE)
+                    .add(useIDEConnections)
+                    .add(useRailsAdapter)
+                    .add(useJdbc))
+                .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
-                .addContainerGap()
-                .add(useJdbcCheckBox)
+                .add(useIDEConnections)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(jSeparator1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 4, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
-                .add(connectionPanelContainer, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 277, Short.MAX_VALUE)
-                .addContainerGap())
+                .add(ideConnectionsPanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 122, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(useRailsAdapter)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(adapterConfigurationPanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 137, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(jSeparator1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .add(9, 9, 9)
+                .add(useJdbc)
+                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
 
-private void useJdbcCheckBoxItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_useJdbcCheckBoxItemStateChanged
+private void useIDEConnectionsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_useIDEConnectionsActionPerformed
     initInnerPanels();
-}//GEN-LAST:event_useJdbcCheckBoxItemStateChanged
+}//GEN-LAST:event_useIDEConnectionsActionPerformed
+
+private void useRailsAdapterActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_useRailsAdapterActionPerformed
+    initInnerPanels();
+}//GEN-LAST:event_useRailsAdapterActionPerformed
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JPanel connectionPanelContainer;
+    private javax.swing.JPanel adapterConfigurationPanel;
+    private javax.swing.ButtonGroup configureOptionsButtonGroup;
+    private javax.swing.JPanel ideConnectionsPanel;
     private javax.swing.JSeparator jSeparator1;
-    private javax.swing.JCheckBox useJdbcCheckBox;
+    private javax.swing.JRadioButton useIDEConnections;
+    private javax.swing.JCheckBox useJdbc;
+    private javax.swing.JRadioButton useRailsAdapter;
     // End of variables declaration//GEN-END:variables
 
 }

@@ -40,17 +40,14 @@
 package org.netbeans.modules.web.jspparser;
 
 import java.io.File;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import javax.servlet.jsp.tagext.TagLibraryInfo;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.jsps.parserapi.JspParserAPI;
 import org.netbeans.modules.web.jsps.parserapi.JspParserAPI.ParseResult;
-import org.netbeans.modules.web.jsps.parserapi.JspParserAPI.WebModule;
 import org.netbeans.modules.web.jsps.parserapi.JspParserFactory;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -255,10 +252,9 @@ public class CacheTest extends NbTestCase {
 
     private void touchFile(String projectName, String projectFile) throws Exception {
         FileObject fmtFo = TestUtil.getProjectFile(this, projectName, projectFile);
-        Thread.sleep(500);
         assertNotNull(fmtFo);
         File fmt = FileUtil.toFile(fmtFo);
-        assertTrue("Changing timestamp should succeed", fmt.setLastModified(System.currentTimeMillis()));
+        assertTrue("Changing timestamp should succeed", fmt.setLastModified(System.currentTimeMillis() + 1000));
         FileUtil.refreshFor(fmt);
     }
 
@@ -266,32 +262,5 @@ public class CacheTest extends NbTestCase {
         FileObject fmtFo = TestUtil.getProjectFile(this, projectName, projectFile);
         assertNotNull(fmtFo);
         fmtFo.delete();
-    }
-
-    private static boolean compareTagLibMaps(Map<String, String[]> map1, Map<String, String[]> map2) {
-        if (map1 == map2) {
-            return true;
-        }
-
-        if (map1.size() != map2.size()) {
-            return false;
-        }
-
-        try {
-            for (Entry<String, String[]> e : map2.entrySet()) {
-                String key = e.getKey();
-                List<String> value = Arrays.asList(e.getValue());
-                List<String> value2 = Arrays.asList(map1.get(key));
-                if (!value.equals(value2)) {
-                    return false;
-                }
-            }
-        } catch (ClassCastException unused) {
-            return false;
-        } catch (NullPointerException unused) {
-            return false;
-        }
-
-        return true;
     }
 }

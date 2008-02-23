@@ -1,0 +1,54 @@
+
+.t.e.s.t. Comments
+// This is a line comment
+code()//More comments
+/* block comment*/not
+.e.o.f.
+
+.t.e.s.t. Identifiers
+a ab aB2 2a x
+yZ
+z
+.e.o.f.
+
+
+.t.e.s.t. String Literals
+" "
+.e.o.f.
+
+.t.e.s.t. Regular expressions
+/^Ruby the OOPL/;
+/Ruby/i
+.e.o.f.
+
+
+.t.e.s.t. Number Literals
+123
+-123
+1_234
+123.45
+1.2e-3
+0xffff
+0b01011
+0377
+.e.o.f.
+
+
+.t.e.s.t. Operators
+= + - * []
+.e.o.f.
+ 
+
+.t.e.s.t. Keywords
+alias and BEGIN begin break case class def defined? do
+else elsif END end ensure false for if in module
+next nil not or redo rescue retry return self super
+then true undef unless until when while yield
+.e.o.f.
+
+
+.t.e.s.t. Non-keywords
+require attr_accessor
+abstracta assertx b br car dou doubl finall im i ifa inti throwsx
+.e.o.f.
+

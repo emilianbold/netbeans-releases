@@ -70,15 +70,14 @@ import org.netbeans.spi.project.ui.support.ProjectChooser;
 import org.netbeans.api.progress.ProgressHandle;
 
 import org.netbeans.modules.j2ee.api.ejbjar.Ear;
-import org.netbeans.modules.j2ee.common.sharability.PanelSharability;
-import org.netbeans.modules.j2ee.common.sharability.SharabilityUtilities;
+import org.netbeans.modules.j2ee.common.SharabilityUtility;
+import org.netbeans.modules.j2ee.common.project.ui.PanelSharability;
 import org.netbeans.modules.web.api.webmodule.WebFrameworks;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.project.WebProject;
 import org.netbeans.modules.web.project.api.WebProjectCreateData;
 import org.netbeans.modules.web.project.api.WebProjectUtilities;
-import org.netbeans.modules.web.project.ui.FoldersListSettings;
-import org.netbeans.modules.web.project.ui.customizer.WebProjectProperties;
+import org.netbeans.modules.j2ee.common.project.ui.UserProjectSettings;
 
 /**
  * Wizard to create a new Web project.
@@ -99,13 +98,13 @@ public class NewWebProjectWizardIterator implements WizardDescriptor.ProgressIns
 	if (WebFrameworks.getFrameworks().size() > 0)
 	    steps = new String[] {
 		NbBundle.getMessage(NewWebProjectWizardIterator.class, "LBL_NWP1_ProjectTitleName"), //NOI18N
-                //NbBundle.getMessage(NewWebProjectWizardIterator.class, "PanelShareabilityVisual.label"),
+                NbBundle.getMessage(NewWebProjectWizardIterator.class, "PanelShareabilityVisual.label"),
 		NbBundle.getMessage(NewWebProjectWizardIterator.class, "LBL_NWP2_Frameworks") //NOI18N
 	    };
 	else
 	    steps = new String[] {
 		NbBundle.getMessage(NewWebProjectWizardIterator.class, "LBL_NWP1_ProjectTitleName"), //NOI18N
-                //NbBundle.getMessage(NewWebProjectWizardIterator.class, "PanelShareabilityVisual.label")
+                NbBundle.getMessage(NewWebProjectWizardIterator.class, "PanelShareabilityVisual.label")
 	    };
 	
         return steps;
@@ -143,7 +142,7 @@ public class NewWebProjectWizardIterator implements WizardDescriptor.ProgressIns
         createData.setSourceLevel((String) wiz.getProperty(WizardProperties.SOURCE_LEVEL));
         
         createData.setLibrariesDefinition(
-                SharabilityUtilities.getLibraryLocation((String) wiz.getProperty(PanelSharability.WIZARD_SHARED_LIBRARIES)));
+                SharabilityUtility.getLibraryLocation((String) wiz.getProperty(PanelSharability.WIZARD_SHARED_LIBRARIES)));
         createData.setServerLibraryName((String) wiz.getProperty(PanelSharability.WIZARD_SERVER_LIBRARY));
         
         AntProjectHelper h = WebProjectUtilities.createProject(createData);
@@ -153,7 +152,7 @@ public class NewWebProjectWizardIterator implements WizardDescriptor.ProgressIns
 
         Integer index = (Integer) wiz.getProperty(PROP_NAME_INDEX);
         if(index != null) {
-            FoldersListSettings.getDefault().setNewProjectCount(index.intValue());
+            UserProjectSettings.getDefault().setNewProjectCount(index.intValue());
         }
         wiz.putProperty(WizardProperties.NAME, null); // reset project name
 
@@ -168,7 +167,7 @@ public class NewWebProjectWizardIterator implements WizardDescriptor.ProgressIns
         }
 
         //remember last used server
-        FoldersListSettings.getDefault().setLastUsedServer(servInstID);
+        UserProjectSettings.getDefault().setLastUsedServer(servInstID);
 	
         // save last project location
         dirF = (dirF != null) ? dirF.getParentFile() : null;
@@ -234,14 +233,14 @@ public class NewWebProjectWizardIterator implements WizardDescriptor.ProgressIns
 	    //standard panels + configurable framework panel
 	    panels = new WizardDescriptor.Panel[] {
 		new PanelConfigureProject(),
-                //new PanelSharability(WizardProperties.PROJECT_DIR, WizardProperties.SERVER_INSTANCE_ID, true),
+                new PanelSharability(WizardProperties.PROJECT_DIR, WizardProperties.SERVER_INSTANCE_ID, true),
 		new PanelSupportedFrameworks()
 	    };
 	else
 	    //no framework available, don't show framework panel
 	    panels = new WizardDescriptor.Panel[] {
 		new PanelConfigureProject(),
-                //new PanelSharability(WizardProperties.PROJECT_DIR, WizardProperties.SERVER_INSTANCE_ID, true)
+                new PanelSharability(WizardProperties.PROJECT_DIR, WizardProperties.SERVER_INSTANCE_ID, true)
 	    };
         panelsCount = panels.length;
         

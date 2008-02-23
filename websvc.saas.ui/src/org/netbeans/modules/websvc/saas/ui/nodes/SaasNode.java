@@ -39,6 +39,7 @@
 
 package org.netbeans.modules.websvc.saas.ui.nodes;
 
+import java.awt.Image;
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.Action;
@@ -49,6 +50,7 @@ import org.netbeans.modules.websvc.saas.ui.actions.RefreshServiceAction;
 import org.netbeans.modules.websvc.saas.ui.actions.ViewApiDocAction;
 import org.netbeans.modules.websvc.saas.util.SaasUtil;
 import org.openide.nodes.AbstractNode;
+import org.openide.util.Lookup;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.lookup.AbstractLookup;
 
@@ -77,17 +79,31 @@ public abstract class SaasNode extends AbstractNode {
     public String getShortDescription() {
         return saas.getDescription();
     }
-    
+
     @Override
-    public Action[] getActions(boolean context) {
-        saas.toStateReady();
-        
+    public Image getIcon(int type) {
+        /*Image icon = SaasUtil.loadIcon(saas, type);
+        if (icon != null) {
+            return icon;
+        }*/
+        return getGenericIcon(type);
+    }
+    
+    protected abstract Image getGenericIcon(int type);
+
+    public static List<Action> getActions(Lookup lookup) {
         List<Action> actions = new ArrayList<Action>();
         for (SaasNodeActionsProvider ext : SaasUtil.getSaasNodeActionsProviders()) {
-            for (Action a : ext.getSaasActions(this.getLookup())) {
+            for (Action a : ext.getSaasActions(lookup)) {
                 actions.add(a);
             }
         }
+        return actions;
+    }
+    
+    @Override
+    public Action[] getActions(boolean context) {
+        List<Action> actions = getActions(getLookup());
         actions.add(SystemAction.get(ViewApiDocAction.class));
         actions.add(SystemAction.get(DeleteServiceAction.class));
         actions.add(SystemAction.get(RefreshServiceAction.class));

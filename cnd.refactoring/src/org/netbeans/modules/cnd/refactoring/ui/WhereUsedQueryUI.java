@@ -40,9 +40,11 @@
  */
 package org.netbeans.modules.cnd.refactoring.ui;
 
+import java.util.Collection;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.cnd.api.model.CsmNamedElement;
 import org.netbeans.modules.cnd.api.model.CsmObject;
+import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.api.model.xref.CsmReference;
 import org.netbeans.modules.cnd.refactoring.api.WhereUsedQueryConstants;
@@ -92,17 +94,16 @@ public class WhereUsedQueryUI implements RefactoringUI {
         // handle parameters defined in panel
         assert panel != null;
         query.putValue(WhereUsedQuery.SEARCH_IN_COMMENTS,panel.isSearchInComments());
-        // TODO: handle selected scope
-        if (panel.getScope()==WhereUsedPanel.Scope.ALL) {
-            // query.getContext().add();
-        } else {
-            // query.getContext().add();
-        }
+        boolean allProjects = (panel.getScope()==WhereUsedPanel.Scope.ALL);
+        Collection<CsmProject> prjs = CsmRefactoringUtils.getRelatedCsmProjects(this.origObject, allProjects);
+        CsmProject[] ar = prjs.toArray(new CsmProject[prjs.size()]);
+        query.getContext().add(ar);
+
         CsmObject refObj = panel.getReferencedObject();
         if (refObj == null) {
             query.setRefactoringSource(Lookup.EMPTY);
         } else {
-            query.setRefactoringSource(Lookups.fixed(refObj, CsmRefactoringUtils.getHandler(refObj)));
+            query.setRefactoringSource(Lookups.singleton(CsmRefactoringUtils.getHandler(refObj)));
         }
         if (panel.isVirtualMethod()) {
             setForMethod();
@@ -122,14 +123,14 @@ public class WhereUsedQueryUI implements RefactoringUI {
             if (refObj == null) {
                 query.setRefactoringSource(Lookup.EMPTY);
             } else {
-                query.setRefactoringSource(Lookups.fixed(refObj, CsmRefactoringUtils.getHandler(refObj)));
+                query.setRefactoringSource(Lookups.singleton(CsmRefactoringUtils.getHandler(refObj)));
             }            
         } else {
             CsmObject refObj = panel.getReferencedObject();
             if (refObj == null) {
                 query.setRefactoringSource(Lookup.EMPTY);
             } else {
-                query.setRefactoringSource(Lookups.fixed(refObj, CsmRefactoringUtils.getHandler(refObj)));
+                query.setRefactoringSource(Lookups.singleton(CsmRefactoringUtils.getHandler(refObj)));
             }
         }
         query.putValue(WhereUsedQueryConstants.FIND_OVERRIDING_METHODS,panel.isMethodOverriders());
@@ -187,33 +188,6 @@ public class WhereUsedQueryUI implements RefactoringUI {
             }
             description = description.replace("<html>", "").replace("</html>", ""); // NOI18N
             return getString(key, description);
-//            if (CsmKindUtilities.isClass(origCsmObject)/*kind == ElementKind.MODULE || kind == ElementKind.CLASS*/) {
-//                if (!panel.isClassFindUsages())
-//                    if (!panel.isClassSubTypesDirectOnly()) {
-//                        return getFormattedString("DSC_WhereUsedFindAllSubTypes", name);
-//                    } else {
-//                        return getFormattedString("DSC_WhereUsedFindDirectSubTypes", name);
-//                    }
-//            } else {
-//                if (CsmKindUtilities.isFunction(origCsmObject)/*kind == ElementKind.METHOD*/) {
-//                    String description = null;
-//                    if (panel.isMethodFindUsages()) {
-//                        description = getString("DSC_FindUsages");
-//                    }
-//                    
-//                    if (panel.isMethodOverriders()) {
-//                        if (description != null) {
-//                            description += " " + getString("DSC_And") + " ";
-//                        } else {
-//                            description = "";
-//                        }
-//                        description += getString("DSC_WhereUsedMethodOverriders");
-//                    }
-//                    
-//                    description += " " + getFormattedString("DSC_WhereUsedOf", panel.getMethodDeclaringClass() + '.' + name); //NOI18N
-//                    return description;
-//                }
-//            }
         }
         return getString("DSC_WhereUsed", name); // NOI18N
     }
