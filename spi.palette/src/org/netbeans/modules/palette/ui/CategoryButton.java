@@ -101,7 +101,7 @@ class CategoryButton extends JCheckBox implements Autoscroll {
         setFont( getFont().deriveFont( Font.BOLD ) );
         setMargin(new Insets(0, 3, 0, 3));
         setFocusPainted( false );
-        
+
         setSelected( false );
 
         setHorizontalAlignment( SwingConstants.LEFT );
@@ -203,7 +203,6 @@ class CategoryButton extends JCheckBox implements Autoscroll {
         return support;
     }
 
-    @Override
     public Color getBackground() {
         if( isFocusOwner() ) {
             if( isAqua )
@@ -218,7 +217,6 @@ class CategoryButton extends JCheckBox implements Autoscroll {
         }
     }
 
-    @Override
     public Color getForeground() {
         if( isFocusOwner() ) {
             if( isAqua )
@@ -227,17 +225,6 @@ class CategoryButton extends JCheckBox implements Autoscroll {
         } else {
             return super.getForeground();
         }
-    }
-
-    @Override
-    protected void paintComponent(Graphics g) {
-        if( isAqua ) {
-            //#124759 - for some reason Mac Leopard asks for background color only once
-            //so we need to force background repaint here
-            g.setColor( getBackground() );
-            g.fillRect( 0, 0, getWidth(), getHeight() );
-        }
-        super.paintComponent(g);
     }
     
     private class MoveFocusAction extends AbstractAction {
