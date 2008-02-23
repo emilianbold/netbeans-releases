@@ -216,7 +216,7 @@
                 <attr name="useCustomEditorKit" boolvalue="true"/>
                 
                 <file name="language.instance">
-                    <attr name="instanceOf" stringvalue="org.netbeans.fpi.gsf.GsfLanguage"/>
+                    <attr name="instanceOf" stringvalue="org.netbeans.modules.gsf.api.GsfLanguage"/>
                     <attr name="instanceClass" stringvalue="org.netbeans.modules.ruby.rhtml.RhtmlLanguage"/>
                 </file>
             </folder>

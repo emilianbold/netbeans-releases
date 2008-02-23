@@ -42,8 +42,8 @@ package org.netbeans.modules.javascript.editing;
 import java.util.ArrayList;
 import java.util.List;
 import org.mozilla.javascript.FunctionNode;
-import org.netbeans.fpi.gsf.CompilationInfo;
-import org.netbeans.fpi.gsf.ElementKind;
+import org.netbeans.modules.gsf.api.CompilationInfo;
+import org.netbeans.modules.gsf.api.ElementKind;
 
 public class FunctionAstElement extends AstElement implements FunctionElement {
     private FunctionNode func;

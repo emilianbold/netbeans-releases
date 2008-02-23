@@ -59,8 +59,8 @@ import org.netbeans.api.editor.settings.EditorStyleConstants;
 import org.netbeans.api.editor.settings.FontColorSettings;
 import org.netbeans.editor.Coloring;
 import org.netbeans.editor.SettingsDefaults;
-import org.netbeans.fpi.gsf.ColoringAttributes;
-import static org.netbeans.fpi.gsf.ColoringAttributes.*;
+import org.netbeans.modules.gsf.api.ColoringAttributes;
+import static org.netbeans.modules.gsf.api.ColoringAttributes.*;
 
 /**
  * This file is originally from Retouche, the Java Support 

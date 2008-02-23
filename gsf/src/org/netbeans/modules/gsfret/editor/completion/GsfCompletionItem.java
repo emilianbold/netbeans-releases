@@ -52,9 +52,9 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.JTextComponent;
 import javax.swing.text.Position;
 import org.netbeans.api.editor.completion.Completion;
-import org.netbeans.fpi.gsf.CompletionProposal;
-import org.netbeans.fpi.gsf.ElementHandle;
-import org.netbeans.fpi.gsf.Modifier;
+import org.netbeans.modules.gsf.api.CompletionProposal;
+import org.netbeans.modules.gsf.api.ElementHandle;
+import org.netbeans.modules.gsf.api.Modifier;
 import org.netbeans.napi.gsfret.source.CompilationInfo;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.lib.editor.codetemplates.api.CodeTemplateManager;
@@ -71,17 +71,17 @@ import org.netbeans.spi.editor.completion.support.CompletionUtilities;
  */
 public abstract class GsfCompletionItem implements CompletionItem {
     /** Cache for looking up tip proposal - usually null (shortlived) */
-    static org.netbeans.fpi.gsf.CompletionProposal tipProposal;
+    static org.netbeans.modules.gsf.api.CompletionProposal tipProposal;
     
     protected CompilationInfo info;
     
     protected static int SMART_TYPE = 1000;
         
     private static class DelegatedItem extends GsfCompletionItem {
-        private org.netbeans.fpi.gsf.CompletionProposal item;
+        private org.netbeans.modules.gsf.api.CompletionProposal item;
         private static ImageIcon icon[][] = new ImageIcon[2][4];
         
-        private DelegatedItem(CompilationInfo info, org.netbeans.fpi.gsf.CompletionProposal item) {
+        private DelegatedItem(CompilationInfo info, org.netbeans.modules.gsf.api.CompletionProposal item) {
             super(item.getAnchorOffset());
             this.item = item;
             this.info = info;
