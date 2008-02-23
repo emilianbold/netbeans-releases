@@ -94,12 +94,7 @@ public class WsdlSaasNode extends SaasNode {
     private static final java.awt.Image ICON =
        Utilities.loadImage( "org/netbeans/modules/websvc/saas/ui/resources/webservice.png" ); //NOI18N
     
-    @Override
-    public Image getIcon(int type) {
-        Image icon = SaasUtil.loadIcon(saas, type);
-        if (icon != null) {
-            return icon;
-        }
+    public Image getGenericIcon(int type) {
         return ICON;
     }
     
