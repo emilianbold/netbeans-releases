@@ -1274,7 +1274,6 @@ final class ModuleList implements Stamps.Updater {
      */
     private Map<String,Object> computeProperties(Module m) {
         if (m.isFixed() || ! m.isValid()) throw new IllegalArgumentException("fixed or invalid: " + m); // NOI18N
-        if (! (m.getHistory() instanceof ModuleHistory)) throw new IllegalArgumentException("weird history: " + m); // NOI18N
         Map<String,Object> p = new HashMap<String,Object>();
         p.put("name", m.getCodeNameBase()); // NOI18N
         int rel = m.getCodeNameRelease();
@@ -1291,11 +1290,13 @@ final class ModuleList implements Stamps.Updater {
         p.put("autoload", m.isAutoload() ? Boolean.TRUE : Boolean.FALSE); // NOI18N
         p.put("eager", m.isEager() ? Boolean.TRUE : Boolean.FALSE); // NOI18N
         p.put("reloadable", m.isReloadable() ? Boolean.TRUE : Boolean.FALSE); // NOI18N
-        ModuleHistory hist = (ModuleHistory)m.getHistory();
-        p.put("jar", hist.getJar()); // NOI18N
-        if (hist.getInstallerStateChanged()) {
-            p.put("installer", m.getCodeNameBase().replace('.', '-') + ".ser"); // NOI18N
-            p.put("installerState", hist.getInstallerState()); // NOI18N
+        if (m.getHistory() instanceof ModuleHistory) {
+            ModuleHistory hist = (ModuleHistory) m.getHistory();
+            p.put("jar", hist.getJar()); // NOI18N
+            if (hist.getInstallerStateChanged()) {
+                p.put("installer", m.getCodeNameBase().replace('.', '-') + ".ser"); // NOI18N
+                p.put("installerState", hist.getInstallerState()); // NOI18N
+            }
         }
         return p;
     }
