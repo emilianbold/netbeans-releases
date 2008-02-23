@@ -42,6 +42,7 @@
 package org.netbeans.modules.spring.beans.ui.customizer;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -154,27 +155,54 @@ public class SpringCustomizerPanel extends javax.swing.JPanel {
 
     private void replaceCurrentGroup(ConfigFileGroup newGroup) {
         groups.set(currentGroupIndex, newGroup);
-        int oldGroupIndex = currentGroupIndex;
+        int selIndex = currentGroupIndex;
         ConfigFilesUIs.connectGroupsList(groups, groupsList);
-        groupsList.setSelectedIndex(oldGroupIndex);
+        groupsList.setSelectedIndex(selIndex);
     }
 
     private void addFiles(List<File> newFiles) {
         files.addAll(newFiles);
         ConfigFilesUIs.connectFilesList(files, filesList);
+        filesList.setSelectedIndex(filesList.getModel().getSize() - 1);
     }
 
-    private void removeFile(int index) {
-        File file = files.remove(index);
+    private void removeFiles() {
+        List<File> removedFiles = new ArrayList<File>();
+        int[] indices = filesList.getSelectedIndices();
+        for (int i = 0; i < indices.length; i++) {
+            removedFiles.add(files.remove(indices[i] - i));
+        }
         for (int i = 0; i < groups.size(); i++) {
             ConfigFileGroup group = groups.get(i);
-            if (group.containsFile(file)) {
-                List<File> newFiles = group.getFiles();
-                newFiles.remove(file);
-                groups.set(i, ConfigFileGroup.create(group.getName(), newFiles));
+            List<File> groupFiles = group.getFiles();
+            if (groupFiles.removeAll(removedFiles)) {
+                ConfigFileGroup newGroup = ConfigFileGroup.create(group.getName(), groupFiles);
+                if (currentGroup == group) {
+                    replaceCurrentGroup(newGroup);
+                } else {
+                    groups.set(i, newGroup);
+                }
             }
         }
+        ConfigFilesUIs.connectFilesList(files, filesList);
+        int selIndex = Math.min(indices[0], filesList.getModel().getSize() - 1);
+        filesList.setSelectedIndex(selIndex);
+    }
+
+    private void addGroup(ConfigFileGroup group) {
+        groups.add(group);
         ConfigFilesUIs.connectGroupsList(groups, groupsList);
+        groupsList.setSelectedIndex(groupsList.getModel().getSize() - 1);
+    }
+
+    private void removeGroups() {
+        int[] indices = groupsList.getSelectedIndices();
+        for (int i = 0; i < indices.length; i++) {
+            groups.remove(indices[i] - i);
+        }
+        ConfigFilesUIs.connectGroupsList(groups, groupsList);
+        int selIndex = Math.min(indices[0], groupsList.getModel().getSize() - 1);
+        groupsList.setSelectedIndex(selIndex);
     }
 
     private void addFilesToCurrentGroup(List<File> newFiles) {
@@ -183,6 +211,17 @@ public class SpringCustomizerPanel extends javax.swing.JPanel {
         ConfigFileGroup newGroup = ConfigFileGroup.create(currentGroup.getName(), groupFiles);
         replaceCurrentGroup(newGroup);
         groupFilesList.setSelectedIndex(groupFilesList.getModel().getSize() - 1);
+    }
+
+    private void removeFilesFromCurrentGroup() {
+        List<File> groupFiles = currentGroup.getFiles();
+        int[] indices = groupFilesList.getSelectedIndices();
+        for (int i = 0; i < indices.length; i++) {
+            groupFiles.remove(indices[i] - i);
+        }
+        replaceCurrentGroup(ConfigFileGroup.create(currentGroup.getName(), groupFiles));
+        int selIndex = Math.min(indices[0], groupFilesList.getModel().getSize() - 1);
+        groupFilesList.setSelectedIndex(selIndex);
     }
 
     /** This method is called from within the constructor to
@@ -413,13 +452,7 @@ private void addFileButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN
 }//GEN-LAST:event_addFileButtonActionPerformed
 
 private void removeFileButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_removeFileButtonActionPerformed
-        int oldFileIndex = filesList.getSelectedIndex();
-        removeFile(oldFileIndex);
-        ConfigFilesUIs.connectFilesList(files, filesList);
-        while (oldFileIndex > filesList.getModel().getSize() - 1) {
-            oldFileIndex--;
-        }
-        filesList.setSelectedIndex(oldFileIndex);
+        removeFiles();
 }//GEN-LAST:event_removeFileButtonActionPerformed
 
 private void detectFilesButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_detectFilesButtonActionPerformed
@@ -445,10 +478,7 @@ private void addGroupButtonActionPerformed(java.awt.event.ActionEvent evt) {//GE
                 NbBundle.getMessage(SpringCustomizerPanel.class, "LBL_NewConfigFileGroup"));
         DialogDisplayer.getDefault().notify(input);
         if (input.getValue() == NotifyDescriptor.OK_OPTION) {
-            ConfigFileGroup newGroup = ConfigFileGroup.create(input.getInputText(), Collections.<File>emptyList());
-            groups.add(newGroup);
-            ConfigFilesUIs.connectGroupsList(groups, groupsList);
-            groupsList.setSelectedIndex(groupsList.getModel().getSize() - 1);
+            addGroup(ConfigFileGroup.create(input.getInputText(), Collections.<File>emptyList()));
         }
 }//GEN-LAST:event_addGroupButtonActionPerformed
 
@@ -462,19 +492,12 @@ private void editGroupButtonActionPerformed(java.awt.event.ActionEvent evt) {//G
         }
         DialogDisplayer.getDefault().notify(input);
         if (input.getValue() == NotifyDescriptor.OK_OPTION) {
-            ConfigFileGroup newGroup = ConfigFileGroup.create(input.getInputText(), currentGroup.getFiles());
-            replaceCurrentGroup(newGroup);
+            replaceCurrentGroup(ConfigFileGroup.create(input.getInputText(), currentGroup.getFiles()));
         }
 }//GEN-LAST:event_editGroupButtonActionPerformed
 
 private void removeGroupButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_removeGroupButtonActionPerformed
-        groups.remove(currentGroupIndex);
-        int oldGroupIndex = currentGroupIndex;
-        ConfigFilesUIs.connectGroupsList(groups, groupsList);
-        while (oldGroupIndex > groupsList.getModel().getSize() - 1) {
-            oldGroupIndex--;
-        }
-        groupsList.setSelectedIndex(oldGroupIndex);
+        removeGroups();
 }//GEN-LAST:event_removeGroupButtonActionPerformed
 
 private void addGroupFilesButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addGroupFilesButtonActionPerformed
@@ -491,15 +514,7 @@ private void addGroupFilesButtonActionPerformed(java.awt.event.ActionEvent evt) 
 }//GEN-LAST:event_addGroupFilesButtonActionPerformed
 
 private void removeGroupFileButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_removeGroupFileButtonActionPerformed
-        int oldFileIndex = groupFilesList.getSelectedIndex();
-        List<File> groupFiles = currentGroup.getFiles();
-        groupFiles.remove(oldFileIndex);
-        ConfigFileGroup newGroup = ConfigFileGroup.create(currentGroup.getName(), groupFiles);
-        replaceCurrentGroup(newGroup);
-        while (oldFileIndex > groupsList.getModel().getSize() - 1) {
-            oldFileIndex--;
-        }
-        groupFilesList.setSelectedIndex(oldFileIndex);
+        removeFilesFromCurrentGroup();
 }//GEN-LAST:event_removeGroupFileButtonActionPerformed
 
 

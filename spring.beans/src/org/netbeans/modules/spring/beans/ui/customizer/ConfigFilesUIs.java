@@ -53,7 +53,6 @@ import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JTable;
 import javax.swing.ListModel;
-import javax.swing.ListSelectionModel;
 import javax.swing.event.ListDataListener;
 import javax.swing.event.TableModelListener;
 import javax.swing.table.DefaultTableCellRenderer;
@@ -80,12 +79,10 @@ public class ConfigFilesUIs {
 
     public static void setupGroupsList(JList list) {
         list.setCellRenderer(new ConfigFileGroupRenderer());
-        list.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
     }
 
     public static void setupFilesList(JList list, FileDisplayName displayName) {
         list.setCellRenderer(new ConfigFileRenderer(displayName));
-        list.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
     }
 
     public static void connectGroupsList(List<ConfigFileGroup> groups, JList list) {
@@ -94,7 +91,6 @@ public class ConfigFilesUIs {
 
     public static void connectFilesList(List<File> files, JList list) {
         list.setModel(new ConfigFileListModel(files));
-        list.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
     }
 
     public static void disconnect(JList list) {
