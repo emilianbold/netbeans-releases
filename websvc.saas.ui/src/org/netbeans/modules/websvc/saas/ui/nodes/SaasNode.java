@@ -91,7 +91,6 @@ public abstract class SaasNode extends AbstractNode {
     
     @Override
     public Action[] getActions(boolean context) {
-        saas.toStateReady(false);
         List<Action> actions = getActions(getLookup());
         actions.add(SystemAction.get(ViewApiDocAction.class));
         actions.add(SystemAction.get(DeleteServiceAction.class));

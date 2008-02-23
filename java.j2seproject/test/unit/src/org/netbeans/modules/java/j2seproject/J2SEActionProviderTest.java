@@ -293,24 +293,27 @@ public class J2SEActionProviderTest extends NbTestCase {
         assertEquals("There must be be target parameter", "foo/BarTest.java", p.getProperty("javac.includes"));
 
         // test COMMAND_DEBUG_FIX
-
+        actionProvider.unitTestingSupport_fixClasses = "foo/Bar";
         p = new Properties();
-        context = Lookups.fixed(someSource1);
+        context = Lookups.fixed(someSource1);        
         targets = actionProvider.getTargetNames(JavaProjectConstants.COMMAND_DEBUG_FIX, context, p);
+        actionProvider.unitTestingSupport_fixClasses = null;
         assertNotNull("Must found some targets for COMMAND_DEBUG_FIX", targets);
         assertEquals("There must be one target for COMMAND_DEBUG_FIX", 1, targets.length);
         assertEquals("Unexpected target name", "debug-fix", targets[0]);
-        assertEquals("There must be one target parameter", 1, p.keySet().size());
+        assertEquals("There must be one target parameter", 2, p.keySet().size());
         assertEquals("There must be be target parameter", "foo/Bar", p.getProperty("fix.includes"));
+        assertEquals("There must be be target parameter", "foo/Bar", p.getProperty("fix.classes"));
         p = new Properties();
         context = Lookups.fixed(someTest1);
         targets = actionProvider.getTargetNames(JavaProjectConstants.COMMAND_DEBUG_FIX, context, p);
         assertNotNull("Must found some targets for COMMAND_DEBUG_FIX", targets);
         assertEquals("There must be one target for COMMAND_DEBUG_FIX", 1, targets.length);
         assertEquals("Unexpected target name", "debug-fix-test", targets[0]);
-        assertEquals("There must be one target parameter", 1, p.keySet().size());
+        assertEquals("There must be one target parameter", 2, p.keySet().size());
         assertEquals("There must be be target parameter", "foo/BarTest", p.getProperty("fix.includes"));
-
+        assertEquals("There must be be target parameter", "", p.getProperty("fix.classes"));   //XXX: currently not set for tests, intentionally? 
+        
         // test COMMAND_RUN_SINGLE
 
         p = new Properties();

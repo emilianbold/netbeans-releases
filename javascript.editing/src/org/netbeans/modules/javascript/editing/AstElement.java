@@ -39,25 +39,26 @@
 package org.netbeans.modules.javascript.editing;
 
 import java.util.Collections;
-import java.util.Set;
 import java.util.List;
 import org.mozilla.javascript.Node;
 import org.mozilla.javascript.Token;
 import org.mozilla.javascript.FunctionNode;
-import org.netbeans.fpi.gsf.Modifier;
-import org.netbeans.fpi.gsf.ElementKind;
+import org.netbeans.modules.gsf.api.CompilationInfo;
+import org.netbeans.modules.gsf.api.ElementKind;
 
 /**
  *
  * @author Tor Norbye
  */
-public class AstElement implements Element {
+public class AstElement extends JsElement {
 
     protected List<AstElement> children;
     protected Node node;
     protected String name;
+    protected CompilationInfo info;
 
-    AstElement(Node node) {
+    AstElement(CompilationInfo info, Node node) {
+        this.info = info;
         this.node = node;
     }
     
@@ -83,6 +84,7 @@ public class AstElement implements Element {
         return name;
     }
 
+    @Override
     public String getIn() {
         return "";
     }
@@ -96,10 +98,6 @@ public class AstElement implements Element {
         default:
             return ElementKind.OTHER;
         }
-    }
-
-    public Set<Modifier> getModifiers() {
-        return Collections.emptySet();
     }
 
     public List<AstElement> getChildren() {
@@ -168,17 +166,21 @@ public class AstElement implements Element {
     public String toString() {
         return "JsElement:" + getName() + "(" + getKind() + ")"; // NOI18N
     }
+
+    public CompilationInfo getInfo() {
+        return info;
+    }
     
-    public static AstElement getElement(Node node) {
+    public static AstElement getElement(CompilationInfo info, Node node) {
         switch (node.getType()) {
             case Token.FUNCTION:
                 if (node instanceof FunctionNode) {
-                    return new FunctionAstElement((FunctionNode) node);
+                    return new FunctionAstElement(info, (FunctionNode) node);
                 } else {
                 // Fall through
                 }
             default:
-                return new AstElement(node);
+                return new AstElement(info, node);
         }
     }
 }

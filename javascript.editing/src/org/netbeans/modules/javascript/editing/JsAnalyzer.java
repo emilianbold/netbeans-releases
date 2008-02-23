@@ -51,17 +51,17 @@ import java.util.Set;
 import org.mozilla.javascript.FunctionNode;
 import org.mozilla.javascript.Node;
 import org.mozilla.javascript.Token;
-import org.netbeans.fpi.gsf.CompilationInfo;
-import org.netbeans.fpi.gsf.ElementHandle;
-import org.netbeans.fpi.gsf.ElementKind;
-import org.netbeans.fpi.gsf.HtmlFormatter;
-import org.netbeans.fpi.gsf.Modifier;
-import org.netbeans.fpi.gsf.OffsetRange;
-import org.netbeans.fpi.gsf.StructureItem;
-import org.netbeans.fpi.gsf.StructureScanner;
+import org.netbeans.modules.gsf.api.CompilationInfo;
+import org.netbeans.modules.gsf.api.ElementHandle;
+import org.netbeans.modules.gsf.api.ElementKind;
+import org.netbeans.modules.gsf.api.HtmlFormatter;
+import org.netbeans.modules.gsf.api.Modifier;
+import org.netbeans.modules.gsf.api.OffsetRange;
+import org.netbeans.modules.gsf.api.StructureItem;
+import org.netbeans.modules.gsf.api.StructureScanner;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
-import org.netbeans.fpi.gsf.TranslatedSource;
+import org.netbeans.modules.gsf.api.TranslatedSource;
 import org.openide.util.Exceptions;
 
 /**
@@ -125,7 +125,7 @@ public class JsAnalyzer implements StructureScanner {
         AnalysisResult ar = result.getStructure();
 
         List<?extends AstElement> elements = ar.getElements();
-        List<StructureItem> itemList = new ArrayList<StructureItem>(elements.size());
+        //List<StructureItem> itemList = new ArrayList<StructureItem>(elements.size());
 
         Map<String,List<OffsetRange>> folds = new HashMap<String,List<OffsetRange>>();
         List<OffsetRange> codeblocks = new ArrayList<OffsetRange>();
@@ -175,8 +175,8 @@ public class JsAnalyzer implements StructureScanner {
         return folds;
     }
     
-    static AnalysisResult analyze(JsParseResult result) {
-        AnalysisResult analysisResult = new AnalysisResult();
+    static AnalysisResult analyze(JsParseResult result, CompilationInfo info) {
+        AnalysisResult analysisResult = new AnalysisResult(info);
         ParseTreeWalker walker = new ParseTreeWalker(analysisResult);
         Node root = result.getRootNode();
         if (root != null) {
@@ -190,8 +190,10 @@ public class JsAnalyzer implements StructureScanner {
     public static class AnalysisResult implements ParseTreeVisitor {
         private List<AstElement> elements = new ArrayList<AstElement>();
         private List<String> imports = null;
+        private CompilationInfo info;
         
-        private AnalysisResult() {
+        private AnalysisResult(CompilationInfo info) {
+            this.info = info;
         }
         
         private boolean addName(StringBuilder sb, Node node) {
@@ -274,7 +276,7 @@ public class JsAnalyzer implements StructureScanner {
                             FunctionNode func = AstUtilities.getLabelledFunction(child);
                             if (func != null) {
                                 //AstElement js = AstElement.getElement(node);
-                                FunctionAstElement js = new FunctionAstElement(func);
+                                FunctionAstElement js = new FunctionAstElement(info, func);
                                 js.setName(child.getString(), className);
                                 elements.add(js);
                             }
@@ -287,7 +289,7 @@ public class JsAnalyzer implements StructureScanner {
             case Token.FUNCTION: {
                 FunctionNode func = (FunctionNode) node;
                 //AstElement js = AstElement.getElement(node);
-                FunctionAstElement js = new FunctionAstElement(func);
+                FunctionAstElement js = new FunctionAstElement(info, func);
                 Node parent = node.getParentNode();
                 
                 // If it's an anonymous function, I've gotta do some more stuff 
@@ -352,7 +354,7 @@ public class JsAnalyzer implements StructureScanner {
                         String name = node.getString();
                         if (!globals.contains(name)) {
                             globals.add(name);
-                            GlobalAstElement global = new GlobalAstElement(node);
+                            GlobalAstElement global = new GlobalAstElement(info, node);
                             elements.add(global);
                         }
                     }
@@ -433,7 +435,7 @@ public class JsAnalyzer implements StructureScanner {
         }
 
         public ElementHandle getElementHandle() {
-            return JsParser.createHandle(info, element);
+            return element;
         }
 
         public ElementKind getKind() {
@@ -573,7 +575,7 @@ public class JsAnalyzer implements StructureScanner {
         }
 
         public ElementHandle getElementHandle() {
-            return JsParser.createHandle(info, element);
+            return element;
         }
 
         public ElementKind getKind() {

@@ -49,8 +49,8 @@ import java.io.StringReader;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
+import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.jsps.parserapi.JspParserAPI;
-import org.netbeans.modules.web.jsps.parserapi.JspParserAPI.WebModule;
 import org.openide.filesystems.FileObject;
 import org.xml.sax.Attributes;
 import org.xml.sax.InputSource;
@@ -106,17 +106,14 @@ public class FastOpenInfoParser {
                 //find deployment descriptor
                 FileObject documentBase = wm.getDocumentBase();
                 if(documentBase != null) {
-                    org.netbeans.modules.web.api.webmodule.WebModule wmod = org.netbeans.modules.web.api.webmodule.WebModule.getWebModule(documentBase);
-                    if (wmod != null) { //can be null if the document out of any webmodule
-                        FileObject dd = wmod.getDeploymentDescriptor();
-                        //test whether the DD exists, if not parse the JSP file
-                        if (dd != null) {
-                            //parse the DD and try to find <jsp-property-group> element with <page-encoding> and <is-xml> elements
-                            DDParseInfo ddParseInfo = parse(new InputSource(dd.getInputStream())); //parse with default encoding
-                            //if the DD defines encoding or marks jsps as xml documents return null
-                            if (ddParseInfo.definesEncoding || ddParseInfo.marksXMLDocuments) {
-                                return null;
-                            }
+                    FileObject dd = wm.getDeploymentDescriptor();
+                    //test whether the DD exists, if not parse the JSP file
+                    if (dd != null) {
+                        //parse the DD and try to find <jsp-property-group> element with <page-encoding> and <is-xml> elements
+                        DDParseInfo ddParseInfo = parse(new InputSource(dd.getInputStream())); //parse with default encoding
+                        //if the DD defines encoding or marks jsps as xml documents return null
+                        if (ddParseInfo.definesEncoding || ddParseInfo.marksXMLDocuments) {
+                            return null;
                         }
                     }
                 }

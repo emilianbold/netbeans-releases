@@ -276,6 +276,7 @@ public class FlatfileResulSetPanel extends JPanel implements ActionListener, Pro
         URL url = getClass().getResource("/org/netbeans/modules/sql/framework/ui/resources/images/refresh16.png");
         showDataBtn = new JButton(new ImageIcon(url));
         String nbBundle30 = mLoc.t("PRSR001: Show data for selected flat file table node");
+        showDataBtn.getAccessibleContext().setAccessibleName(Localizer.parse(nbBundle30));
         showDataBtn.setToolTipText(Localizer.parse(nbBundle30));
         showDataBtn.setMnemonic(Localizer.parse(nbBundle30).charAt(0));
         showDataBtn.setActionCommand(CMD_SHOW_DATA);

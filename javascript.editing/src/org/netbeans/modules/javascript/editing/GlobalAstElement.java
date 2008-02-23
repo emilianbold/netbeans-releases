@@ -40,7 +40,8 @@
 package org.netbeans.modules.javascript.editing;
 
 import org.mozilla.javascript.Node;
-import org.netbeans.fpi.gsf.ElementKind;
+import org.netbeans.modules.gsf.api.CompilationInfo;
+import org.netbeans.modules.gsf.api.ElementKind;
 
 /**
  *
@@ -49,8 +50,8 @@ import org.netbeans.fpi.gsf.ElementKind;
 public class GlobalAstElement extends AstElement {
     Node var;
     
-    GlobalAstElement(Node var) {
-        super(var);
+    GlobalAstElement(CompilationInfo info, Node var) {
+        super(info, var);
         this.var = var;
     }
     

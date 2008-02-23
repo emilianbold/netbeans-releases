@@ -121,7 +121,7 @@ public class J2EEProjectWorkflow extends org.netbeans.performance.test.utilities
         
         Node node = new Node(new SourcePackagesNode(j2eeproject_app), new SourcePackagesNode(j2eeproject_app).getChildren()[0]+"|Main.java" );
         EPFootprintUtilities.openFile(node,"Main.java",true);
-        EPFootprintUtilities.insertToFile("Main.java", 20, "System.out.println(\"Hello World\");",true);
+        EPFootprintUtilities.insertToFile("Main.java", 19, "System.out.println(\"Hello World\");",true);
         
         new SaveAllAction().performAPI();
         

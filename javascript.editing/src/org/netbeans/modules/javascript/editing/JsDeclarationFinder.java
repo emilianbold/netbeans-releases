@@ -50,12 +50,12 @@ import java.util.Set;
 import javax.swing.text.Document;
 import org.mozilla.javascript.Node;
 import org.mozilla.javascript.Node.StringNode;
-import org.netbeans.fpi.gsf.CompilationInfo;
-import org.netbeans.fpi.gsf.DeclarationFinder;
-import org.netbeans.fpi.gsf.ElementHandle;
-import org.netbeans.fpi.gsf.HtmlFormatter;
-import org.netbeans.fpi.gsf.NameKind;
-import org.netbeans.fpi.gsf.OffsetRange;
+import org.netbeans.modules.gsf.api.CompilationInfo;
+import org.netbeans.modules.gsf.api.DeclarationFinder;
+import org.netbeans.modules.gsf.api.ElementHandle;
+import org.netbeans.modules.gsf.api.HtmlFormatter;
+import org.netbeans.modules.gsf.api.NameKind;
+import org.netbeans.modules.gsf.api.OffsetRange;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenId;
@@ -250,9 +250,9 @@ public class JsDeclarationFinder implements DeclarationFinder {
     }
     
     private DeclarationLocation getLocation(CompilationInfo info, Node node) {
-        AstElement element = AstElement.getElement(node);
+        AstElement element = AstElement.getElement(info, node);
         return new DeclarationLocation(info.getFileObject(), LexUtilities.getLexerOffset(info, node.getSourceStart()), 
-                JsParser.createHandle(info, element));
+                element);
     }
 
 
@@ -263,7 +263,7 @@ public class JsDeclarationFinder implements DeclarationFinder {
                 NameKind.EXACT_NAME, JsIndex.ALL_SCOPE, parseResult, true);
         IndexedFunction function = findBestFunctionMatch(info, functions);
         if (function != null) {
-            return new DeclarationLocation(function.getFileObject(), 0, JsParser.createHandle(info, function));
+            return new DeclarationLocation(function.getFileObject(), 0, function);
         } else {
             return DeclarationLocation.NONE;
         }
@@ -303,10 +303,10 @@ public class JsDeclarationFinder implements DeclarationFinder {
                     int offset = 0; // unknown - use top of the file
                     // TODO - initialize in the index!
                     loc = new DeclarationLocation(candidate.getFileObject(),
-                        offset, JsParser.createHandle(info, com));
+                        offset, com);
                 } else {
                     loc = new DeclarationLocation(com.getFile().getFileObject(),
-                       node.getSourceStart(), JsParser.createHandle(info, com));
+                       node.getSourceStart(), com);
                 }
                 if (invalid) {
                     loc.setInvalidMessage(NbBundle.getMessage(JsDeclarationFinder.class, "InvalidJsMethod", candidate.getName()));
@@ -323,7 +323,7 @@ public class JsDeclarationFinder implements DeclarationFinder {
 //                    }
 //                    if (not_nodoced >= 2) {
                         for (final IndexedFunction mtd : methods) {
-                            loc.addAlternative(new JsAltLocation(mtd, mtd == candidate, info));
+                            loc.addAlternative(new JsAltLocation(mtd, mtd == candidate));
                         }
 //                    }
                 }
@@ -341,14 +341,10 @@ public class JsDeclarationFinder implements DeclarationFinder {
         private IndexedFunction element;
         private boolean isPreferred;
         private String cachedDisplayItem;
-        private CompilationInfo info;
         
-        JsAltLocation(IndexedFunction element, boolean isPreferred, CompilationInfo info) {
+        JsAltLocation(IndexedFunction element, boolean isPreferred) {
             this.element = element;
             this.isPreferred = isPreferred;
-            // TODO - get rid of this field; it's only temporarily needed during my transition
-            // to ElementHandles
-            this.info = info;
         }
 
         public String getDisplayHtml(HtmlFormatter formatter) {
@@ -470,15 +466,18 @@ boolean documented = false;
 
         public DeclarationLocation getLocation() {
             Node node = AstUtilities.getForeignNode(element, null);
+            if (node == null) {
+                return DeclarationLocation.NONE;
+            }
             int offset = node.getSourceStart();
             DeclarationLocation loc = new DeclarationLocation(element.getFileObject(),
-                offset, JsParser.createHandle(info, element));
+                offset, element);
 
             return loc;
         }
 
         public ElementHandle getElement() {
-            return JsParser.createHandle(info, element);
+            return element;
         }
 
         public int compareTo(AlternativeLocation alternative) {

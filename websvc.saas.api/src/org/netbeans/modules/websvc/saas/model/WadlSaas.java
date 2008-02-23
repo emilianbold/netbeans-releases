@@ -128,7 +128,7 @@ public class WadlSaas extends Saas {
     private void toStateReady() {
         try {
             getWadlModel();
-            setState(State.RESOLVED);
+            setState(State.READY);
         } catch (IOException ioe) {
             Exceptions.printStackTrace(ioe);
         }

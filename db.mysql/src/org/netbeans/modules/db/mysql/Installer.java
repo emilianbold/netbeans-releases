@@ -42,9 +42,7 @@
 package org.netbeans.modules.db.mysql;
 
 import java.sql.Connection;
-import java.sql.Driver;
 import java.sql.SQLException;
-import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
@@ -52,9 +50,9 @@ import org.netbeans.api.db.explorer.ConnectionManager;
 import org.netbeans.api.db.explorer.DatabaseConnection;
 import org.netbeans.api.db.explorer.DatabaseException;
 import org.netbeans.api.db.explorer.JDBCDriver;
-import org.netbeans.api.db.explorer.JDBCDriverManager;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
+import org.netbeans.modules.db.mysql.DatabaseUtils.URLParser;
 import org.openide.modules.ModuleInstall;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
@@ -77,7 +75,7 @@ public class Installer extends ModuleInstall {
     public void restored() {
         // If MySQL was already registered once for this user, don't
         // do it again
-        if ( options.getConnectionRegistered() ) {
+        if ( options.isConnectionRegistered() && options.isProviderRegistered()) {
             return;
         }
             
@@ -110,7 +108,7 @@ public class Installer extends ModuleInstall {
          * Explorer.
          */
         private void findAndRegisterMySQL() {            
-            if ( (jdbcDriver = getJDBCDriver()) == null ) {
+            if ( (jdbcDriver = DatabaseUtils.getJDBCDriver()) == null ) {
                 // Driver not registered, that's OK, the user may 
                 // have deleted it, but nothing to do here.
                 return;
@@ -123,7 +121,25 @@ public class Installer extends ModuleInstall {
             String user = MySQLOptions.getDefaultAdminUser();
             String password = MySQLOptions.getDefaultAdminPassword();
             
-            String url = MySQLOptions.getURL(host, port);
+            DatabaseConnection dbconn = findDatabaseConnection();
+            if ( dbconn != null ) {
+                // The user has a registered connection for MySQL, 
+                // so let's use its settings to register the MySQL node
+                options.setAdminUser(user);
+                if ( MySQLOptions.getDefaultAdminUser().equals(user)) {
+                    options.setAdminPassword(password);
+                }
+
+                URLParser urlParser = new URLParser(dbconn.getDatabaseURL());
+                options.setHost(urlParser.getHost());
+                options.setPort(urlParser.getPort());
+                options.setConnectionRegistered(true);
+                registerProvider(true);
+                return;
+            }
+
+            // All right, now let's try auto-detection...
+            String url = DatabaseUtils.getURL(host, port);
             ConnectStatus status = testConnection(url, user, password);
             
             if ( status == ConnectStatus.CONNECT_SUCCEEDED  ||
@@ -133,57 +149,50 @@ public class Installer extends ModuleInstall {
                 options.setAdminUser(user);
                 
                 registerConnection(host, port, user);
+                registerProvider(true);
             }
         }
 
-        private void registerConnection(String host, String port, String user) {
-            if ( options.getConnectionRegistered() ) {
-                return;
-            }
-            
-            String url = MySQLOptions.getURL(host, port);
+        private DatabaseConnection findDatabaseConnection() {
             DatabaseConnection[] connections = 
                     ConnectionManager.getDefault().getConnections();
             
             for ( DatabaseConnection conn : connections ) {
-                // If there's already a connection registered, we're done
-                if ( conn.getDriverClass().equals(MySQLOptions.getDriverClass()) &&
-                     conn.getDatabaseURL().equals(url) && 
-                     conn.getUser().equals(user)) {
-                    options.setConnectionRegistered(true);
-                    return;
+                if ( conn.getDriverClass().equals(MySQLOptions.getDriverClass())) {
+                    return conn;
                 }
             }
             
-            DatabaseConnection dbconn = 
-                    DatabaseConnection.create(jdbcDriver, url, user, null, null, false);
+            return null;
+        }
+
+        private void registerConnection(String host, String port, String user) {
+            if ( options.isConnectionRegistered() ) {
+                return;
+            }
             
+            String url = DatabaseUtils.getURL(host, port);                        
+            DatabaseConnection dbconn = DatabaseConnection.create(jdbcDriver, url, user, 
+                 null, null, false);
+
             try {
-                ConnectionManager.getDefault().addConnection(dbconn);
-                options.setConnectionRegistered(true);
+             ConnectionManager.getDefault().addConnection(dbconn);
+             options.setConnectionRegistered(true);
             } catch ( DatabaseException e ) {
-                LOGGER.log(Level.INFO, 
-                    "Unable to register default connection for MySQL", e);
-            }            
+             LOGGER.log(Level.INFO, 
+                 "Unable to register default connection for MySQL", e);
+            }
+        }
+
+        private void registerProvider(boolean value) {
+            ServerNodeProvider.getDefault().setRegistered(true);
         }
 
         private ConnectStatus testConnection(String url, String user, 
-                String password) {            
-            Driver driver = getDriver();
-            Properties dbprops = new Properties();
+                String password) {
             Connection conn;
-
-            if ( driver == null ) {
-                return ConnectStatus.NO_SERVER;
-            } 
-            
-            if ((user != null) && (user.length() > 0)) {
-                dbprops.put("user", user); //NOI18N
-                dbprops.put("password", password); //NOI18N
-            }
-           
             try {
-                conn = driver.connect(url, dbprops);
+                conn = DatabaseUtils.connect(url, user, password);
             } catch (SQLException e) {
                 LOGGER.log(Level.FINE, null, e);
                 if ( isServerException(e) ) {
@@ -191,6 +200,14 @@ public class Installer extends ModuleInstall {
                 } else {
                     return ConnectStatus.NO_SERVER;
                 }
+            } catch ( DatabaseException e ) {
+                Exceptions.printStackTrace(e);
+                return ConnectStatus.NO_SERVER;
+            }
+            
+            // Issue 127994 - driver sometimes silently returns null (??)
+            if ( conn == null ) {
+                return ConnectStatus.NO_SERVER;
             }
             
             try { 
@@ -202,48 +219,29 @@ public class Installer extends ModuleInstall {
             return ConnectStatus.CONNECT_SUCCEEDED;            
         }
         
-        private JDBCDriver getJDBCDriver() {
-            JDBCDriver[]  drivers = JDBCDriverManager.getDefault().
-                    getDrivers(MySQLOptions.getDriverClass());
-
-            if ( drivers.length == 0 ) {
-                return null;
-            }
-
-            return drivers[0];
-        }
-        
-        private Driver getDriver() {
-            Driver driver;
-            ClassLoader driverLoader = new DriverClassLoader(jdbcDriver);
-            
-            try {
-                driver = (Driver)Class.forName(jdbcDriver.getClassName(), 
-                        true, driverLoader).newInstance();
-            } catch (Exception ex) {
-                Exceptions.printStackTrace(ex);
-                return null;
-            }
-            
-            return driver;
-
-        }
 
         private boolean isServerException(SQLException e) {
-            // An exception whose SQL state starts with '20' is
-            // client side-only.  So any SQL state that *doesn't*
-            // start with '20' must have come from a live server
             //
             // See http://dev.mysql.com/doc/refman/5.0/en/error-handling.html
+            // for info on MySQL errors and sql states.
             //
-            if ( e.getSQLState().startsWith("20"))  { // NOI18N
-                if ( e.getNextException() != null ) {
-                    // Maybe the next exception is a server exception...
-                    return ( isServerException(e.getNextException()) );
-                } else {
-                    return false;
-                }
+            String sqlstate = e.getSQLState();
+            SQLException nexte = e.getNextException();
+            
+            if ( sqlstate.equals("08S01")) { // Communications exception
+                return false;
             }
+            
+            if ( sqlstate.startsWith("20"))  {
+                // An exception whose SQL state starts with '20' is
+                // client side-only.  So any SQL state that *doesn't*
+                // start with '20' must have come from a live server
+                return false;
+            }
+
+            if ( nexte != null ) {
+                return ( isServerException(nexte) );
+            } 
             
             return true;
         }

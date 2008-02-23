@@ -56,6 +56,7 @@ import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.debugger.DebuggerManagerAdapter;
 import org.netbeans.modules.cnd.debugger.gdb.GdbDebugger;
 import org.netbeans.modules.cnd.debugger.gdb.EditorContextBridge;
+import org.netbeans.modules.cnd.debugger.gdb.disassembly.Disassembly;
 import org.openide.util.Utilities;
 
 /**
@@ -67,7 +68,7 @@ import org.openide.util.Utilities;
  */
 public class BreakpointAnnotationListener extends DebuggerManagerAdapter {
     
-    private HashMap breakpointToAnnotation = new HashMap();
+    private HashMap<GdbBreakpoint,Object> breakpointToAnnotation = new HashMap<GdbBreakpoint,Object>();
     private boolean listen = true;
     
     
@@ -88,15 +89,12 @@ public class BreakpointAnnotationListener extends DebuggerManagerAdapter {
                    (!propertyName.equals(LineBreakpoint.PROP_CONDITION) &&
                     !propertyName.equals(LineBreakpoint.PROP_URL) &&
                     !propertyName.equals(LineBreakpoint.PROP_LINE_NUMBER) &&
-                    !propertyName.equals(GdbBreakpoint.PROP_ENABLED))) {
+                    !propertyName.equals(GdbBreakpoint.PROP_ENABLED) &&
+                    !propertyName.equals(AddressBreakpoint.PROP_REFRESH))) {
                 return;
             }
-            if (e.getSource() instanceof LineBreakpoint) {
-                LineBreakpoint lb = (LineBreakpoint) e.getSource();
-                annotate(lb);
-            }  else if (e.getSource() instanceof FunctionBreakpoint) {
-                FunctionBreakpoint fb = (FunctionBreakpoint) e.getSource();
-                annotate(fb);
+            if (e.getSource() instanceof GdbBreakpoint) {
+                annotate((GdbBreakpoint)e.getSource());
             }
         }
     }
@@ -126,9 +124,7 @@ public class BreakpointAnnotationListener extends DebuggerManagerAdapter {
     }
     
     public GdbBreakpoint findBreakpoint(String url, int lineNumber) {
-        Iterator i = breakpointToAnnotation.keySet().iterator();
-        while (i.hasNext()) {
-            Object o = i.next();
+        for (GdbBreakpoint o : breakpointToAnnotation.keySet()) {
             if (o instanceof LineBreakpoint) {
                 LineBreakpoint lb = (LineBreakpoint) o;
                 if (!lb.getURL().equals(url)) continue;
@@ -164,6 +160,23 @@ public class BreakpointAnnotationListener extends DebuggerManagerAdapter {
                 int ln = EditorContextBridge.getContext().getLineNumber(annotation, null);
                 if (ln == lineNumber) return fb;
             }
+            if (o instanceof AddressBreakpoint) {
+                Disassembly dis = Disassembly.getCurrent();
+                if (dis == null) {
+                    continue;
+                }
+                AddressBreakpoint ab = (AddressBreakpoint)o;
+                if (dis.getAddressLine(ab.getAddress()) != -1) {
+                    //Breakpoint is from the same function
+                    Object annotation = breakpointToAnnotation.get(ab);
+                    if (annotation != null) {
+                        int ln = EditorContextBridge.getContext().getLineNumber(annotation, null);
+                        if (ln == lineNumber) {
+                            return ab;
+                        }
+                    }
+                }
+            }
         }
         return null;
     }
@@ -186,7 +199,7 @@ public class BreakpointAnnotationListener extends DebuggerManagerAdapter {
 
         // add new one
         annotation = EditorContextBridge.annotate(b);
-        if (annotation == null) {
+        if (annotation == null && !(b instanceof AddressBreakpoint)) {
             return;
         }
         breakpointToAnnotation.put(b, annotation);
@@ -205,21 +218,27 @@ public class BreakpointAnnotationListener extends DebuggerManagerAdapter {
      * when a new debugging session starts.
      */
     public void updateBreakpoints() {
-        Iterator it = breakpointToAnnotation.keySet().iterator();
-        while (it.hasNext()) {
-            Object o = it.next();
-            if (o instanceof GdbBreakpoint) {
-                update((GdbBreakpoint) o, null);
-            }
+        for (GdbBreakpoint o : breakpointToAnnotation.keySet()) {
+            update(o, null);
         }
     }
     
     private void update(GdbBreakpoint b, Object timeStamp) {
         Object annotation = breakpointToAnnotation.get(b);
-        int ln = EditorContextBridge.getContext().getLineNumber(annotation, timeStamp);
-        listen = false;
-        b.setLineNumber(ln);
-        listen = true;
+        //check dis annotations
+        if (b instanceof AddressBreakpoint) {
+            // try to reannotate
+            listen = false;
+            annotation = EditorContextBridge.annotate(b);
+            breakpointToAnnotation.put(b, annotation);
+            listen = true;
+        }
+        if (annotation != null) {
+            int ln = EditorContextBridge.getContext().getLineNumber(annotation, timeStamp);
+            listen = false;
+            b.setLineNumber(ln);
+            listen = true;
+        }
     }
     
     private void removeAnnotation(Breakpoint b) {
