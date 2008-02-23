@@ -181,6 +181,12 @@ public final class J2eePlatform {
     public static final String TOOL_PROP_JVM_OPTS           = "jvm.opts";       // NOI18N
 
     /**
+     * Tool property constant for application client jar location.
+     * @since 1.40
+     */
+    public static final String TOOL_PROP_CLIENT_JAR_LOCATION = "client.jar.location";       // NOI18N
+
+    /**
      * Constant for the distribution archive client property. Some of the tool
      * property values may refer to this property.
      * @since 1.16
@@ -493,7 +499,7 @@ public final class J2eePlatform {
         Map<FileObject, String> copied = new  HashMap<FileObject, String>();
 
         List<URL> contentItem = new ArrayList<URL>();
-        content.put(ServerLibraryTypeProvider.VOLUME_CLASSPATH, contentItem); // NOI18N
+        content.put(ServerLibraryTypeProvider.VOLUME_CLASSPATH, contentItem);
         copyFiles(copied, usedNames, jarFolder, folderName,
                 getVolumeContent(this, J2eeLibraryTypeProvider.VOLUME_TYPE_CLASSPATH), contentItem);
 
@@ -522,9 +528,15 @@ public final class J2eePlatform {
         copyFiles(copied, usedNames, jarFolder, folderName,
                 getToolClasspathEntries(TOOL_JWSDP), contentItem);
 
-        // TODO javadoc and sources
-        // getVolumeContent(this, J2eeLibraryTypeProvider.VOLUME_TYPE_JAVADOC)
-        // getVolumeContent(this, J2eeLibraryTypeProvider.VOLUME_TYPE_SRC)
+        contentItem = new ArrayList<URL>();
+        content.put(ServerLibraryTypeProvider.VOLUME_JAVADOC, contentItem);
+        copyFiles(copied, usedNames, jarFolder, folderName,
+                getVolumeContent(this, J2eeLibraryTypeProvider.VOLUME_TYPE_JAVADOC), contentItem);
+
+        contentItem = new ArrayList<URL>();
+        content.put(ServerLibraryTypeProvider.VOLUME_SOURCE, contentItem);
+        copyFiles(copied, usedNames, jarFolder, folderName,
+                getVolumeContent(this, J2eeLibraryTypeProvider.VOLUME_TYPE_SRC), contentItem);
 
         return manager.createLibrary(ServerLibraryTypeProvider.LIBRARY_TYPE, libraryName, content); // NOI18N
     }
@@ -587,7 +599,9 @@ public final class J2eePlatform {
             }
             URL u = LibrariesSupport.convertFilePathToURL(folderName
                     + File.separator + copied.get(jarObject));
-            content.add(u);
+            if (!content.contains(u)) {
+                content.add(u);
+            }
         }
     }
 

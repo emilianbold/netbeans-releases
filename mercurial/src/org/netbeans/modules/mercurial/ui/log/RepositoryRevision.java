@@ -51,7 +51,7 @@ import org.netbeans.modules.mercurial.util.HgUtils;
  *
  * @author Maros Sandor
  */
-class RepositoryRevision {
+public class RepositoryRevision {
 
     private HgLogMessage message;
 

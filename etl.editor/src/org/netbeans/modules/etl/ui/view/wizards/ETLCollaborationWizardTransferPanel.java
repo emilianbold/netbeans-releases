@@ -723,11 +723,13 @@ public class ETLCollaborationWizardTransferPanel extends JPanel implements Actio
 
         String nbBundle30 = mLoc.t("PRSR001: Select");
         selectButton.setText(Localizer.parse(nbBundle30));
+        selectButton.getAccessibleContext().setAccessibleName(Localizer.parse(nbBundle30));
         selectButton.setMnemonic(Localizer.parse(nbBundle30).charAt(0));
         selectButton.addActionListener(this);
 
         String nbBundle31 = mLoc.t("PRSR001: Remove");
         removeButton.setText(Localizer.parse(nbBundle31));
+        removeButton.getAccessibleContext().setAccessibleName(Localizer.parse(nbBundle31));
         removeButton.setMnemonic(Localizer.parse(nbBundle31).charAt(0));
         removeButton.addActionListener(this);
         removeButton.setEnabled(false);

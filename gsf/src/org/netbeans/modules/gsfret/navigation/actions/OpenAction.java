@@ -58,7 +58,7 @@ import org.openide.text.PositionBounds;
 import org.openide.util.*;
 import javax.swing.*;
 import java.awt.event.*;
-import org.netbeans.fpi.gsf.ElementHandle;
+import org.netbeans.modules.gsf.api.ElementHandle;
 import org.netbeans.napi.gsfret.source.Source;
 import org.netbeans.napi.gsfret.source.UiUtils;
 import org.openide.loaders.DataObjectNotFoundException;

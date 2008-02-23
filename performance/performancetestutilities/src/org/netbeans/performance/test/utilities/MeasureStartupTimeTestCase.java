@@ -237,13 +237,13 @@ public class MeasureStartupTimeTestCase extends org.netbeans.junit.NbPerformance
         // guiltracker lib
         cmd.append(" --cp:a ").append(classpath);
         // userdir
-        cmd.append(" --userdir ").append(userdir.getAbsolutePath());
+        cmd.append(" --userdir \"").append(userdir.getAbsolutePath()).append('\"');
         // get jdkhome path
-        cmd.append(" --jdkhome ").append(jdkhome);
+        cmd.append(" --jdkhome \"").append(jdkhome).append('\"');
         // netbeans full hack
         cmd.append(" -J-Dnetbeans.full.hack=true");
         // measure argument
-        cmd.append(" -J-Dorg.netbeans.log.startup.logfile=").append(measureFile.getAbsolutePath());
+        cmd.append(" -J-Dorg.netbeans.log.startup.logfile=\"").append(measureFile.getAbsolutePath()).append('\"');
         // measure argument - we have to set this one to ommit repaint of memory toolbar (see openide/actions/GarbageCollectAction)
         cmd.append(" -J-Dorg.netbeans.log.startup=tests");
         // close the IDE after startup

@@ -46,8 +46,10 @@ import java.io.IOException;
 import java.util.ArrayList;
 import javax.swing.SwingUtilities;
 import org.netbeans.modules.palette.DefaultModel;
+import org.netbeans.modules.palette.DefaultSettings;
 import org.netbeans.modules.palette.Model;
 import org.netbeans.modules.palette.RootNode;
+import org.netbeans.modules.palette.Settings;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.Repository;
@@ -138,6 +140,7 @@ public final class PaletteFactory {
                                                    PaletteActions customActions,
                                                    PaletteFilter filter,
                                                    DragAndDropHandler dndHandler ) {
+        
         if( null == paletteRoot ) {
             throw new IllegalArgumentException( "Palette root Node cannot be null." );
         }
@@ -157,6 +160,7 @@ public final class PaletteFactory {
 
         RootNode root = new RootNode( paletteRoot, Lookups.fixed( lookupObjects.toArray() ) );
         Model model = createModel( root );
+        Settings settings = new DefaultSettings( model );
         
         SwingUtilities.invokeLater( new Runnable() {
             public void run() {
@@ -164,7 +168,7 @@ public final class PaletteFactory {
             }
         });
         
-        return new PaletteController( model );
+        return new PaletteController( model, settings );
     }
     
     private static Model createModel( RootNode root ) {

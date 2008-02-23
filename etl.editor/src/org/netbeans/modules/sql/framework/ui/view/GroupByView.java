@@ -451,6 +451,7 @@ public class GroupByView extends JPanel implements EnhancedCustomPropertyEditor 
         // add button
         String nbBundle30 = mLoc.t("PRSR001: Add Column/Expression");
         JButton addButton = new JButton(Localizer.parse(nbBundle30));
+        addButton.getAccessibleContext().setAccessibleName(Localizer.parse(nbBundle30));
         addButton.setMnemonic(Localizer.parse(nbBundle30).charAt(0));
         addButton.setToolTipText("<html> <table border=0 cellspacing=0 cellpadding=0 ><tr> <td>When target column is added, <br>the mapped expression/column <br>will be used in group by clause</td></tr></table>");
         addButton.setActionCommand("ADD");
@@ -476,6 +477,7 @@ public class GroupByView extends JPanel implements EnhancedCustomPropertyEditor 
         String nbBundle31 = mLoc.t("PRSR001: Remove");
         JButton removeButton = new JButton(Localizer.parse(nbBundle31));
         removeButton.setMnemonic(Localizer.parse(nbBundle31).charAt(0));
+        removeButton.getAccessibleContext().setAccessibleName(Localizer.parse(nbBundle31));
         removeButton.setActionCommand("REMOVE");
         removeButton.addActionListener(aListener);
         removeButtonPanel.add(removeButton);
@@ -505,6 +507,7 @@ public class GroupByView extends JPanel implements EnhancedCustomPropertyEditor 
         String nbBundle32 = mLoc.t("PRSR001: Having...");
         JButton havingButton = new JButton(Localizer.parse(nbBundle32));
         havingButton.setMnemonic(Localizer.parse(nbBundle32).charAt(0));
+        havingButton.getAccessibleContext().setAccessibleName(Localizer.parse(nbBundle32));
         havingButton.setActionCommand("Having");
         havingButton.addActionListener(aListener);
         havingPanel.add(havingButton);

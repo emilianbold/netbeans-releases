@@ -53,6 +53,7 @@ import org.openide.util.RequestProcessor;
 import org.netbeans.api.debugger.ActionsManager;
 import org.netbeans.spi.debugger.ContextProvider;
 import org.netbeans.modules.cnd.debugger.gdb.GdbDebugger;
+import org.netbeans.modules.cnd.debugger.gdb.disassembly.Disassembly;
 
 /**
  * Implements non visual part of stepping through code in gdb debugger.
@@ -107,7 +108,11 @@ public class StepActionProvider extends GdbDebuggerActionProvider {
         if (getDebugger() != null) {
             synchronized (getDebugger().LOCK) {
                 if (action == ActionsManager.ACTION_STEP_INTO) {
-                    getDebugger().stepInto();
+                    if (Disassembly.isInDisasm()) {
+                        getDebugger().stepI();
+                    } else {
+                        getDebugger().stepInto();
+                    }
                     return;
                 }
                 if (action == ActionsManager.ACTION_STEP_OUT) {
@@ -115,7 +120,11 @@ public class StepActionProvider extends GdbDebuggerActionProvider {
                     return;
                 }
                 if (action == ActionsManager.ACTION_STEP_OVER) {
-                    getDebugger().stepOver();
+                    if (Disassembly.isInDisasm()) {
+                        getDebugger().stepI();
+                    } else {
+                        getDebugger().stepOver();
+                    }
                     return;
                 }
                 if (action == ActionsManager.ACTION_CONTINUE) {
@@ -151,7 +160,11 @@ public class StepActionProvider extends GdbDebuggerActionProvider {
     protected void checkEnabled(String debuggerState) {
         boolean en = debuggerState.equals(GdbDebugger.STATE_STOPPED);
         for (Object action : getActions()) {
-            setEnabled(action, en);
+            if (action == ActionsManager.ACTION_STEP_OUT) {
+                setEnabled(action, en && getDebugger().isStepOutValid());
+            } else {
+                setEnabled(action, en);
+            }
         }
     }
 }

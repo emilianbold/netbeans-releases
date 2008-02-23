@@ -90,6 +90,8 @@ public class VWPMeasureActions  {
         suite.addTest(new CleanAndBuildProject("testCleanAndBuildSingleOpenedPageProject","CnB project with single opened page"));
         suite.addTest(new CleanAndBuildProject("testCleanAndBuildMultipleOpenedPagesProject","CnB project with two opened pages"));
         
+        suite.addTest(new PageSwitchTest("testPageSwitch"));
+        
         suite.addTest(new CreateWebPackProject("testCreateWebPackProject","Create Visual Web Project"));        
         
         return suite;
