@@ -41,7 +41,16 @@
 
 package org.netbeans.modules.websvc.saas.ui.actions;
 
+import java.net.URL;
+import org.netbeans.modules.websvc.saas.model.Saas;
+import org.netbeans.modules.websvc.saas.model.WadlSaas;
+import org.netbeans.modules.websvc.saas.util.SaasUtil;
+import org.openide.cookies.EditorCookie;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.URLMapper;
+import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
+import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.NodeAction;
@@ -58,8 +67,19 @@ public class ViewWadlAction extends NodeAction {
     }
     
     protected boolean enable(Node[] nodes) {
-        //TODO
+        WadlSaas saas = getWsdlSaas(nodes);
+        if (saas != null) {
+            return saas.getState() == Saas.State.RETRIEVED ||
+                   saas.getState() == Saas.State.READY;
+        }
         return false;
+    }
+    
+    private WadlSaas getWsdlSaas(Node[] nodes) {
+        if (nodes == null || nodes.length != 1) {
+            return null;
+        }
+        return nodes[0].getLookup().lookup(WadlSaas.class);
     }
     
     public HelpCtx getHelpCtx() {
@@ -71,8 +91,16 @@ public class ViewWadlAction extends NodeAction {
     }
     
     protected void performAction(Node[] activatedNodes) {
-        //TODO
-
+        WadlSaas saas = getWsdlSaas(activatedNodes);
+        if (saas != null && saas.getLocalWadlFile() != null) {
+            try {
+                DataObject wadlDataObject = DataObject.find(saas.getLocalWadlFile());
+                EditorCookie editorCookie = wadlDataObject.getCookie(EditorCookie.class);
+                editorCookie.open();
+            } catch (Exception e) {
+                Exceptions.printStackTrace(e);
+            }
+        }
     }
     
     public boolean asynchronous() {

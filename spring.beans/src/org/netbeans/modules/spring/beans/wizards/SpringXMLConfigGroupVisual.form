@@ -17,9 +17,9 @@
       <Group type="103" groupAlignment="0" attributes="0">
           <Group type="102" attributes="0">
               <Component id="groupsLabel" min="-2" max="-2" attributes="0"/>
-              <EmptySpace pref="36" max="32767" attributes="0"/>
+              <EmptySpace pref="152" max="32767" attributes="0"/>
           </Group>
-          <Component id="groupsScrollPanel" alignment="0" pref="360" max="32767" attributes="0"/>
+          <Component id="groupsScrollPane" alignment="0" pref="360" max="32767" attributes="0"/>
       </Group>
     </DimensionLayout>
     <DimensionLayout dim="1">
@@ -27,13 +27,13 @@
           <Group type="102" alignment="0" attributes="0">
               <Component id="groupsLabel" min="-2" max="-2" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
-              <Component id="groupsScrollPanel" pref="193" max="32767" attributes="0"/>
+              <Component id="groupsScrollPane" pref="193" max="32767" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>
   </Layout>
   <SubComponents>
-    <Container class="javax.swing.JScrollPane" name="groupsScrollPanel">
+    <Container class="javax.swing.JScrollPane" name="groupsScrollPane">
       <AuxValues>
         <AuxValue name="autoScrollPane" type="java.lang.Boolean" value="true"/>
       </AuxValues>

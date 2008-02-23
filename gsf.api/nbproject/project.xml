@@ -85,6 +85,7 @@
                 -->
             </module-dependencies>
             <friend-packages>
+                <friend>org.netbeans.modules.languages.ejs</friend>
                 <friend>org.netbeans.modules.groovy.gsp</friend>
                 <friend>org.netbeans.modules.groovy.editor</friend>
                 <friend>org.netbeans.modules.gsf</friend>

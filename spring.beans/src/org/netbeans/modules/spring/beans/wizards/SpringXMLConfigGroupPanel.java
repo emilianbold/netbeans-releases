@@ -42,7 +42,6 @@ package org.netbeans.modules.spring.beans.wizards;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.spring.api.beans.ConfigFileManager;
-import org.netbeans.modules.spring.beans.ProjectSpringScopeProvider;
 import org.openide.WizardDescriptor;
 import org.openide.util.HelpCtx;
 
@@ -64,7 +63,7 @@ public class SpringXMLConfigGroupPanel implements WizardDescriptor.Panel {
     public SpringXMLConfigGroupVisual getComponent() {
         if (component == null) {
             ConfigFileManager manager = NewSpringXMLConfigWizardIterator.getConfigFileManager(p);
-            component = new SpringXMLConfigGroupVisual(p, manager.getConfigFileGroups());
+            component = new SpringXMLConfigGroupVisual(manager.getConfigFileGroups());
         }
         return component;
     }
