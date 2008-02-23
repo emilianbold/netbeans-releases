@@ -164,7 +164,7 @@ public final class NewSpringXMLConfigWizardIterator implements WizardDescriptor.
             }
         }
         
-        manager.mutex().postWriteRequest(new Runnable() {
+        manager.mutex().writeAccess(new Runnable() {
             public void run() {
                 try {
                     manager.putConfigFilesAndGroups(newFiles, newGroups);
