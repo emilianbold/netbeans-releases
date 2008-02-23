@@ -44,20 +44,15 @@ package org.netbeans.core.startup;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.CharArrayWriter;
 import java.io.DataOutputStream;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.ObjectInputStream;
 import java.io.ObjectOutput;
-import java.io.ObjectOutputStream;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
@@ -1285,11 +1280,11 @@ final class ModuleList implements Stamps.Updater {
             p.put("specversion", spec); // NOI18N
         }
         if (!m.isAutoload() && !m.isEager()) {
-            p.put("enabled", m.isEnabled() ? Boolean.TRUE : Boolean.FALSE); // NOI18N
+            p.put("enabled", m.isEnabled()); // NOI18N
         }
-        p.put("autoload", m.isAutoload() ? Boolean.TRUE : Boolean.FALSE); // NOI18N
-        p.put("eager", m.isEager() ? Boolean.TRUE : Boolean.FALSE); // NOI18N
-        p.put("reloadable", m.isReloadable() ? Boolean.TRUE : Boolean.FALSE); // NOI18N
+        p.put("autoload", m.isAutoload()); // NOI18N
+        p.put("eager", m.isEager()); // NOI18N
+        p.put("reloadable", m.isReloadable()); // NOI18N
         if (m.getHistory() instanceof ModuleHistory) {
             ModuleHistory hist = (ModuleHistory) m.getHistory();
             p.put("jar", hist.getJar()); // NOI18N
