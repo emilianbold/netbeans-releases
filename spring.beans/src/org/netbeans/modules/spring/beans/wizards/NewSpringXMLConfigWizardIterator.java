@@ -148,6 +148,9 @@ public final class NewSpringXMLConfigWizardIterator implements WizardDescriptor.
     
     private void addFileToSelectedGroups(Set<ConfigFileGroup> selectedGroups, File file) {
         final ConfigFileManager manager = getConfigFileManager(Templates.getProject(wizard));
+        final List<File> origFiles = manager.getConfigFiles();
+        final List<File> newFiles = new ArrayList<File>(origFiles);
+        newFiles.add(file);
         final List<ConfigFileGroup> origGroups = manager.getConfigFileGroups();
         final List<ConfigFileGroup> newGroups = new ArrayList<ConfigFileGroup>(origGroups.size());
         
@@ -163,7 +166,7 @@ public final class NewSpringXMLConfigWizardIterator implements WizardDescriptor.
         manager.mutex().postWriteRequest(new Runnable() {
             public void run() {
                 try {
-                    manager.putConfigFileGroups(newGroups);
+                    manager.putConfigFilesAndGroups(newFiles, newGroups);
                     manager.save();
                 } catch (IOException ex) {
                     Exceptions.printStackTrace(ex);
