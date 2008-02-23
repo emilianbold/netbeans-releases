@@ -138,6 +138,7 @@ public final class NewSpringXMLConfigWizardIterator implements WizardDescriptor.
             }
         });
         
+        @SuppressWarnings("unchecked")
         Set<ConfigFileGroup> selectedGroups = (Set<ConfigFileGroup>) wizard.getProperty(SpringXMLConfigGroupPanel.CONFIG_FILE_GROUPS);
         if(selectedGroups.size() > 0) {
             addFileToSelectedGroups(selectedGroups, FileUtil.toFile(createdFile[0]));
