@@ -2389,6 +2389,47 @@ public class ModuleManagerTest extends SetupHid {
         assertEquals(cpResource, modResource);
     }
 
+    public void testDisableWithAutoloadMajorRange() throws Exception { // #127720
+        File m1j = new File(getWorkDir(), "m1.jar");
+        createJar(m1j, Collections.<String,String>emptyMap(), Collections.singletonMap("OpenIDE-Module", "m1/0"));
+        File m2j = new File(getWorkDir(), "m2.jar");
+        Map<String,String> mani = new HashMap<String,String>();
+        mani.put("OpenIDE-Module", "m2");
+        mani.put("OpenIDE-Module-Module-Dependencies", "m1/0-1");
+        createJar(m2j, Collections.<String,String>emptyMap(), mani);
+        File m3j = new File(getWorkDir(), "m3.jar");
+        mani = new HashMap<String,String>();
+        mani.put("OpenIDE-Module", "m3");
+        mani.put("OpenIDE-Module-Module-Dependencies", "m1/0");
+        createJar(m3j, Collections.<String,String>emptyMap(), mani);
+        FakeModuleInstaller installer = new FakeModuleInstaller();
+        FakeEvents ev = new FakeEvents();
+        ModuleManager mgr = new ModuleManager(installer, ev);
+        mgr.mutexPrivileged().enterWriteAccess();
+        try {
+            Module m1 = mgr.create(m1j, null, false, true, false);
+            Module m2 = mgr.create(m2j, null, false, false, false);
+            Module m3 = mgr.create(m3j, null, false, false, false);
+            mgr.enable(m2);
+            mgr.enable(m3);
+            assertTrue(m1.isEnabled());
+            assertTrue(m2.isEnabled());
+            assertTrue(m3.isEnabled());
+            assertEquals(Collections.singletonList(m3), mgr.simulateDisable(Collections.singleton(m3)));
+            mgr.disable(m3);
+            assertTrue(m1.isEnabled());
+            assertTrue(m2.isEnabled());
+            assertFalse(m3.isEnabled());
+            assertEquals(Arrays.asList(m2, m1), mgr.simulateDisable(Collections.singleton(m2)));
+            mgr.disable(m2);
+            assertFalse(m1.isEnabled());
+            assertFalse(m2.isEnabled());
+            assertFalse(m3.isEnabled());
+        } finally {
+            mgr.mutexPrivileged().exitWriteAccess();
+        }
+    }
+
     private File copyJar(File file, String manifest) throws IOException {
         File ret = File.createTempFile(file.getName(), "2ndcopy", file.getParentFile());
         JarFile jar = new JarFile(file);

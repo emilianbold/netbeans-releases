@@ -63,6 +63,7 @@ import org.netbeans.modules.soa.mappercore.graphics.VerticalGradient;
 import org.netbeans.modules.soa.mappercore.model.MapperModel;
 import org.netbeans.modules.soa.mappercore.model.Vertex;
 import org.netbeans.modules.soa.mappercore.utils.ScrollPaneWrapper;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -156,7 +157,10 @@ public class RightTree extends MapperPanel implements
         iMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_CONTEXT_MENU, 0), "show-popupMenu");
         aMap.put("show-popupMenu", new ShowPopupMenuAction());
         
-        
+        getAccessibleContext().setAccessibleName(NbBundle
+                .getMessage(RightTree.class, "ACSN_RightTree")); // NOI18N
+        getAccessibleContext().setAccessibleDescription(NbBundle
+                .getMessage(RightTree.class, "ACSD_RightTree")); // NOI18N
     }
 
     public void registrAction(MapperKeyboardAction action) {

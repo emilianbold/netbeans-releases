@@ -832,14 +832,14 @@ public class HgCommand {
         return messages;
     }
     
-    public static HgLogMessage[] getIncomingMessages(final String rootUrl, boolean bShowMerges,  OutputLogger logger) {
+    public static HgLogMessage[] getIncomingMessages(final String rootUrl, String toRevision, boolean bShowMerges,  OutputLogger logger) {
         final List<HgLogMessage> messages = new ArrayList<HgLogMessage>(0);  
         final File root = new File(rootUrl);
         
         try {
 
             List<String> list = new LinkedList<String>();
-            list = HgCommand.doIncomingForSearch(root, logger, bShowMerges);
+            list = HgCommand.doIncomingForSearch(root, toRevision, bShowMerges, logger);
             processLogMessages(list, messages);
 
         } catch (HgException ex) {
@@ -859,7 +859,7 @@ public class HgCommand {
         try {
 
             List<String> list = new LinkedList<String>();
-            list = HgCommand.doOut(root, logger, bShowMerges);
+            list = HgCommand.doOut(root, bShowMerges, logger);
             processLogMessages(list, messages);
 
         } catch (HgException ex) {
@@ -886,7 +886,7 @@ public class HgCommand {
             List<String> list = new LinkedList<String>();
             list = HgCommand.doLogForHistory(root, 
                     files != null ? new ArrayList<File>(files) : null,
-                    fromRevision, toRevision, headRev, logger, bShowMerges);
+                    fromRevision, toRevision, headRev, bShowMerges, logger);
             processLogMessages(list, messages);
             
         } catch (HgException ex) {
@@ -1127,7 +1127,7 @@ public class HgCommand {
      * @throws org.netbeans.modules.mercurial.HgException
      */
     public static List<String> doLogForHistory(File repository, List<File> files, 
-            String from, String to, String headRev, OutputLogger logger, boolean bShowMerges) throws HgException {
+            String from, String to, String headRev, boolean bShowMerges, OutputLogger logger) throws HgException {
         if (repository == null ) return null;
         if (files != null && files.isEmpty()) return null;
         
@@ -1190,7 +1190,7 @@ public class HgCommand {
      * @return List<String> list of the out entries for the specified repo.
      * @throws org.netbeans.modules.mercurial.HgException
      */
-    public static List<String> doOut(File repository, OutputLogger logger, boolean bShowMerges) throws HgException {
+    public static List<String> doOut(File repository, boolean bShowMerges, OutputLogger logger) throws HgException {
         if (repository == null ) return null;
         
         List<String> command = new ArrayList<String>();
@@ -1235,7 +1235,7 @@ public class HgCommand {
      * @return List<String> list of the out entries for the specified repo.
      * @throws org.netbeans.modules.mercurial.HgException
      */
-    public static List<String> doIncomingForSearch(File repository, OutputLogger logger, boolean bShowMerges) throws HgException {
+    public static List<String> doIncomingForSearch(File repository, String to, boolean bShowMerges, OutputLogger logger) throws HgException {
         if (repository == null ) return null;
         
         List<String> command = new ArrayList<String>();
@@ -1248,6 +1248,11 @@ public class HgCommand {
             command.add(HG_LOG_NO_MERGES_CMD);
         }
         command.add(HG_LOG_DEBUG_CMD);        
+        String revStr = handleIncomingRevNumber(to);
+        if(revStr != null){
+            command.add(HG_FLAG_REV_CMD);
+            command.add(revStr);
+        }        
         command.add(HG_LOG_TEMPLATE_HISTORY_CMD);
 
         List<String> list = exec(command);
@@ -1343,6 +1348,23 @@ public class HgCommand {
         }
         return null;
     }
+
+    private static String handleIncomingRevNumber(String to) {
+        int toInt = -1;
+
+        // Handle users entering head or tip for revision, instead of a number
+        if (to != null && (to.equalsIgnoreCase(HG_STATUS_FLAG_TIP_CMD) || to.equalsIgnoreCase(HG_HEAD_STR))) {
+            to = HG_STATUS_FLAG_TIP_CMD;
+        }
+        try {
+            toInt = Integer.parseInt(to);
+        } catch (NumberFormatException e) {
+            // ignore invalid numbers
+        }
+
+        return (toInt > -1) ? to : HG_STATUS_FLAG_TIP_CMD;
+    }
+
     private static String handleRevNumbers(String from, String to, String headRev){
         int fromInt = -1;
         int toInt = -1;

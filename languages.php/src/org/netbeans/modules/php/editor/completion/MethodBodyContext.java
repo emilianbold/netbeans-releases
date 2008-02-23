@@ -41,8 +41,8 @@
 package org.netbeans.modules.php.editor.completion;
 
 import java.util.List;
-import org.netbeans.fpi.gsf.CompletionProposal;
-import org.netbeans.fpi.gsf.HtmlFormatter;
+import org.netbeans.modules.gsf.api.CompletionProposal;
+import org.netbeans.modules.gsf.api.HtmlFormatter;
 import org.netbeans.modules.php.model.ClassBody;
 import org.netbeans.modules.php.model.ClassDefinition;
 import org.netbeans.modules.php.model.FunctionDefinition;

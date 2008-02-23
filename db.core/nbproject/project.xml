@@ -166,6 +166,7 @@ made subject to such option by the copyright holder.
                 </test-type>
             </test-dependencies>
             <friend-packages>
+                <friend>org.netbeans.modules.db.mysql</friend>
                 <friend>org.netbeans.modules.db.sql.editor</friend>
                 <package>org.netbeans.modules.db.api.sql.execute</package>
             </friend-packages>

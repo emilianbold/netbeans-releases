@@ -42,15 +42,12 @@ package org.netbeans.modules.websvc.saas.ui.nodes;
 import java.awt.Image;
 import java.awt.datatransfer.Transferable;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
 import javax.swing.Action;
 import org.netbeans.modules.websvc.saas.model.Saas;
 import org.netbeans.modules.websvc.saas.model.WsdlSaasPort;
-import org.netbeans.modules.websvc.saas.spi.SaasNodeActionsProvider;
 import org.netbeans.modules.websvc.saas.ui.actions.ViewWSDLAction;
 import org.netbeans.modules.websvc.saas.util.SaasTransferable;
-import org.netbeans.modules.websvc.saas.util.SaasUtil;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.PropertySupport;
 import org.openide.nodes.Sheet;
@@ -90,7 +87,6 @@ public class WsdlPortNode extends AbstractNode {
     @Override
     public Action[] getActions(boolean context) {
         List<Action> actions = SaasNode.getActions(getLookup());
-        actions.add(SystemAction.get(ViewWSDLAction.class));
         return actions.toArray(new Action[actions.size()]);
     }
     
