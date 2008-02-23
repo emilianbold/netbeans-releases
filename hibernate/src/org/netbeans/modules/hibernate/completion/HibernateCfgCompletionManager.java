@@ -210,7 +210,7 @@ public final class HibernateCfgCompletionManager {
                 if (values[i].startsWith(typedChars.trim())
                         || values[i].startsWith( "org.hibernate.dialect." + typedChars.trim()) ) { // NOI18N
                     HibernateCompletionItem item = 
-                            HibernateCompletionItem.createHbPropertyValueItem(caretOffset, values[i]);
+                            HibernateCompletionItem.createHbPropertyValueItem(caretOffset-typedChars.length(), values[i]);
                     resultSet.addItem(item);
                 }
             }
