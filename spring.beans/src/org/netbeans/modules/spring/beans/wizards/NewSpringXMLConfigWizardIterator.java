@@ -75,6 +75,8 @@ import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 import org.openide.text.CloneableEditorSupport;
 import org.openide.util.Exceptions;
+import org.openide.util.Mutex.ExceptionAction;
+import org.openide.util.MutexException;
 
 public final class NewSpringXMLConfigWizardIterator implements WizardDescriptor.AsynchronousInstantiatingIterator {
 
@@ -147,7 +149,7 @@ public final class NewSpringXMLConfigWizardIterator implements WizardDescriptor.
         return Collections.singleton(createdFile[0]);
     }
     
-    private void addFileToSelectedGroups(Set<ConfigFileGroup> selectedGroups, File file) {
+    private void addFileToSelectedGroups(Set<ConfigFileGroup> selectedGroups, File file) throws IOException {
         final ConfigFileManager manager = getConfigFileManager(Templates.getProject(wizard));
         final List<File> origFiles = manager.getConfigFiles();
         final List<File> newFiles = new ArrayList<File>(origFiles);
@@ -164,16 +166,17 @@ public final class NewSpringXMLConfigWizardIterator implements WizardDescriptor.
             }
         }
         
-        manager.mutex().writeAccess(new Runnable() {
-            public void run() {
-                try {
+        try {
+            manager.mutex().writeAccess(new ExceptionAction<Void>() {
+                public Void  run() throws IOException {
                     manager.putConfigFilesAndGroups(newFiles, newGroups);
                     manager.save();
-                } catch (IOException ex) {
-                    Exceptions.printStackTrace(ex);
+                    return null;
                 }
-            }
-        });
+            });
+        } catch (MutexException e) {
+            throw (IOException) e.getException();
+        }
     }
     
     private ConfigFileGroup addFileToConfigGroup(ConfigFileGroup cfg, File file) {
