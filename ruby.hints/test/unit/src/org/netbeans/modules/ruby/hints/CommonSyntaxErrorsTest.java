@@ -28,9 +28,6 @@
 
 package org.netbeans.modules.ruby.hints;
 
-import org.netbeans.modules.ruby.hints.HintTestBase;
-import org.openide.filesystems.FileObject;
-
 /**
  *
  * @author Tor Norbye

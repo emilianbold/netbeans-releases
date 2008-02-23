@@ -90,6 +90,7 @@ public final class SubprojectProviderImpl implements SubprojectProvider {
         Element data = project.getPrimaryConfigurationData();
         Element moduleDependencies = Util.findElement(data,
             "module-dependencies", NbModuleProjectType.NAMESPACE_SHARED); // NOI18N
+        assert moduleDependencies != null : "Malformed metadata in " + project;
         for (Element dep : Util.findSubElements(moduleDependencies)) {
             /* Probably better to open runtime deps too. TBD.
             if (Util.findElement(dep, "build-prerequisite", // NOI18N

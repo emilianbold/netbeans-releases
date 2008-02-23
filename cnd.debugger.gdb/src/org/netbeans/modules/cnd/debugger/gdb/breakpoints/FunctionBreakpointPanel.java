@@ -41,27 +41,12 @@
 
 package org.netbeans.modules.cnd.debugger.gdb.breakpoints;
 
-import java.net.MalformedURLException;
-import java.net.URL;
 import javax.swing.JPanel;
-import javax.swing.text.Document;
-import javax.swing.text.StyledDocument;
 import org.netbeans.api.debugger.DebuggerManager;
-
-//import org.netbeans.api.debugger.jpda.LineBreakpoint;
-//import org.netbeans.modules.debugger.jpda.ui.EditorContextBridge;
-//import org.netbeans.modules.debugger.jpda.ui.FilteredKeymap;
 import org.netbeans.api.debugger.Breakpoint;
 import org.netbeans.spi.debugger.ui.Controller;
-
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
-import org.openide.cookies.EditorCookie;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.URLMapper;
-import org.openide.loaders.DataObject;
-import org.openide.loaders.DataObjectNotFoundException;
-import org.openide.text.NbDocument;
 import org.openide.util.NbBundle;
 
 /**
@@ -74,20 +59,19 @@ import org.openide.util.NbBundle;
 // Implement HelpCtx.Provider interface to provide help ids for help system
 // public class FunctionBreakpointPanel extends JPanel implements Controller {
 //
-public class FunctionBreakpointPanel extends JPanel implements Controller, org.openide.util.HelpCtx.Provider {
+public class FunctionBreakpointPanel extends JPanel implements Controller {
     
     private ActionsPanel                actionsPanel; 
     private FunctionBreakpoint          breakpoint;
     private boolean                     createBreakpoint = false;
     
     
-    private static FunctionBreakpoint createBreakpoint () {
+    private static FunctionBreakpoint createBreakpoint() {
         FunctionBreakpoint mb = FunctionBreakpoint.create (
             // EditorContextBridge.getCurrentFunction ()
             "main" // DEBUG // NOI18N
         );
-        mb.setPrintText (
-            NbBundle.getBundle (FunctionBreakpointPanel.class).getString
+        mb.setPrintText(NbBundle.getBundle (FunctionBreakpointPanel.class).getString
                 ("CTL_Function_Breakpoint_Print_Text")); // NOI18N
         
         return mb;
@@ -97,82 +81,23 @@ public class FunctionBreakpointPanel extends JPanel implements Controller, org.o
     /** 
      * Creates new form FunctionBreakpointPanel
      */
-    public FunctionBreakpointPanel () {
-        this (createBreakpoint ());
+    public FunctionBreakpointPanel() {
+        this(createBreakpoint());
         createBreakpoint = true;
     }
     
     /** 
      * Creates new form FunctionBreakpointPanel
      */
-    public FunctionBreakpointPanel (FunctionBreakpoint b) {
+    public FunctionBreakpointPanel(FunctionBreakpoint b) {
         breakpoint = b;
-        initComponents ();
+        initComponents();
 
-        String url = b.getURL();
-        // Textfield File Name is not used
-        //try {
-        //    URI uri = new URI(url);
-        //    tfFileName.setText(uri.getPath());
-        //} catch (Exception e) {
-        //    tfFileName.setText(url);
-        //}
-        //tfLineNumber.setText(Integer.toString(b.getLineNumber()));
-        tfCondition.setText (b.getCondition ());
-        setupConditionPane();
+        tfFunctionName.setText(b.getFunctionName());
+        tfCondition.setText(b.getCondition());
         
-        actionsPanel = new ActionsPanel (b);
-        pActions.add (actionsPanel, "Center"); // NOI18N
-    }
-    
-//    private static int findNumLines(String url) {
-//        FileObject file;
-//        try {
-//            file = URLMapper.findFileObject (new URL(url));
-//        } catch (MalformedURLException e) {
-//            return 0;
-//        }
-//        if (file == null) return 0;
-//        DataObject dataObject;
-//        try {
-//            dataObject = DataObject.find (file);
-//        } catch (DataObjectNotFoundException ex) {
-//            return 0;
-//        }
-//        EditorCookie ec = (EditorCookie) dataObject.getCookie(EditorCookie.class);
-//        if (ec == null) return 0;
-//        ec.prepareDocument().waitFinished();
-//        Document d = ec.getDocument();
-//        if (!(d instanceof StyledDocument)) return 0;
-//        StyledDocument sd = (StyledDocument) d;
-//        return NbDocument.findLineNumber(sd, sd.getLength());
-//    }
-    
-    private void setupConditionPane() {
-//        tfCondition.setKeymap(new FilteredKeymap(tfCondition.getKeymap()));
-//        String url = breakpoint.getURL();
-//        DataObject dobj = null;
-//        FileObject file;
-//        try {
-//            file = URLMapper.findFileObject (new URL (url));
-//            if (file != null) {
-//                try {
-//                    dobj = DataObject.find (file);
-//                } catch (DataObjectNotFoundException ex) {
-//                    // null dobj
-//                }
-//            }
-//        } catch (MalformedURLException e) {
-//            // null dobj
-//        }
-//        tfCondition.getDocument().putProperty(javax.swing.text.Document.StreamDescriptionProperty, dobj);
-    }
-    
-    /** 
-     * Implement getHelpCtx() with the correct helpID
-    */
-    public org.openide.util.HelpCtx getHelpCtx() {
-        return new org.openide.util.HelpCtx("NetbeansDebuggerBreakpointLineJPDA"); // NOI18N
+        actionsPanel = new ActionsPanel(b);
+        pActions.add(actionsPanel, "Center"); // NOI18N
     }
     
     /** This method is called from within the constructor to
@@ -185,9 +110,9 @@ public class FunctionBreakpointPanel extends JPanel implements Controller, org.o
         java.awt.GridBagConstraints gridBagConstraints;
 
         pSettings = new javax.swing.JPanel();
-        jLabel5 = new javax.swing.JLabel();
-        jLabel1 = new javax.swing.JLabel();
-        tfLineNumber = new javax.swing.JTextField();
+        lCondition = new javax.swing.JLabel();
+        lFunctionName = new javax.swing.JLabel();
+        tfFunctionName = new javax.swing.JTextField();
         spCondition = new javax.swing.JScrollPane();
         tfCondition = new javax.swing.JEditorPane();
         pActions = new javax.swing.JPanel();
@@ -200,31 +125,31 @@ public class FunctionBreakpointPanel extends JPanel implements Controller, org.o
         pSettings.setMinimumSize(new java.awt.Dimension(249, 80));
         pSettings.setLayout(new java.awt.GridBagLayout());
 
-        jLabel5.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/debugger/gdb/breakpoints/Bundle").getString("MN_L_Function_Breakpoint_Condition").charAt(0));
-        jLabel5.setLabelFor(tfCondition);
-        jLabel5.setText(bundle.getString("L_Function_Breakpoint_Condition")); // NOI18N
+        lCondition.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/debugger/gdb/breakpoints/Bundle").getString("MN_L_Function_Breakpoint_Condition").charAt(0));
+        lCondition.setLabelFor(tfCondition);
+        lCondition.setText(bundle.getString("L_Function_Breakpoint_Condition")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 5;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(3, 3, 3, 3);
-        pSettings.add(jLabel5, gridBagConstraints);
-        jLabel5.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_L_Function_Breakpoint_Condition")); // NOI18N
+        pSettings.add(lCondition, gridBagConstraints);
+        lCondition.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_L_Function_Breakpoint_Condition")); // NOI18N
 
-        jLabel1.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/debugger/gdb/breakpoints/Bundle").getString("MN_L_Function_Breakpoint_Function_Name").charAt(0));
-        jLabel1.setLabelFor(tfLineNumber);
-        jLabel1.setText(bundle.getString("L_Function_Breakpoint_Function_Name")); // NOI18N
+        lFunctionName.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/debugger/gdb/breakpoints/Bundle").getString("MN_L_Function_Breakpoint_Function_Name").charAt(0));
+        lFunctionName.setLabelFor(tfFunctionName);
+        lFunctionName.setText(bundle.getString("L_Function_Breakpoint_Function_Name")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 3;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(3, 3, 3, 3);
-        pSettings.add(jLabel1, gridBagConstraints);
-        jLabel1.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_L_Function_Breakpoint_Function_Name")); // NOI18N
+        pSettings.add(lFunctionName, gridBagConstraints);
+        lFunctionName.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_L_Function_Breakpoint_Function_Name")); // NOI18N
 
-        tfLineNumber.setToolTipText(bundle.getString("TTT_TF_Function_Breakpoint_Function_Name")); // NOI18N
+        tfFunctionName.setToolTipText(bundle.getString("TTT_TF_Function_Breakpoint_Function_Name")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 3;
@@ -232,9 +157,9 @@ public class FunctionBreakpointPanel extends JPanel implements Controller, org.o
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(3, 3, 3, 3);
-        pSettings.add(tfLineNumber, gridBagConstraints);
-        tfLineNumber.getAccessibleContext().setAccessibleName(bundle.getString("ACSD_TF_Function_Breakpoint_Function_Name")); // NOI18N
-        tfLineNumber.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_TF_Function_Breakpoint_Function_Name")); // NOI18N
+        pSettings.add(tfFunctionName, gridBagConstraints);
+        tfFunctionName.getAccessibleContext().setAccessibleName(bundle.getString("ACSD_TF_Function_Breakpoint_Function_Name")); // NOI18N
+        tfFunctionName.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_TF_Function_Breakpoint_Function_Name")); // NOI18N
 
         spCondition.setHorizontalScrollBarPolicy(javax.swing.ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
         spCondition.setToolTipText(org.openide.util.NbBundle.getMessage(FunctionBreakpointPanel.class, "ACSD_TF_Function_Breakpoint_Condition")); // NOI18N
@@ -283,18 +208,18 @@ public class FunctionBreakpointPanel extends JPanel implements Controller, org.o
      *
      * @return whether customizer can be closed
      */
-    public boolean ok () {
+    public boolean ok() {
         String msg = valiadateMsg();
         if (msg != null) {
             DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(msg));
             return false;
         }
-        actionsPanel.ok ();
-        String functionName = tfLineNumber.getText().trim();
+        actionsPanel.ok();
+        String functionName = tfFunctionName.getText().trim();
         String Condition = tfCondition.getText();
-        //breakpoint.setLineNumber(Integer.parseInt(tfLineNumber.getText().trim()));
         breakpoint.setFunctionName(functionName);
         breakpoint.setCondition(Condition);
+        
         // Check if this breakpoint already set
         DebuggerManager dm = DebuggerManager.getDebuggerManager();
         Breakpoint[] bs = dm.getBreakpoints();
@@ -322,8 +247,9 @@ public class FunctionBreakpointPanel extends JPanel implements Controller, org.o
             }
         }
         // Create a new breakpoint
-        if (createBreakpoint)
+        if (createBreakpoint) {
             dm.addBreakpoint(breakpoint);
+        }
         return true;
     }
     
@@ -332,7 +258,7 @@ public class FunctionBreakpointPanel extends JPanel implements Controller, org.o
      *
      * @return whether customizer can be closed
      */
-    public boolean cancel () {
+    public boolean cancel() {
         return true;
     }
     
@@ -344,12 +270,12 @@ public class FunctionBreakpointPanel extends JPanel implements Controller, org.o
      * is valid
      */
     @Override
-    public boolean isValid () {
+    public boolean isValid() {
         return true;
     }
     
-    private String valiadateMsg () {
-        String function = tfLineNumber.getText().trim();
+    private String valiadateMsg() {
+        String function = tfFunctionName.getText().trim();
         // Empty string is not a valid function name
         if ((function == null) || (function.equals(""))) { // NOI18N
             return NbBundle.getBundle (FunctionBreakpointPanel.class).getString 
@@ -360,14 +286,14 @@ public class FunctionBreakpointPanel extends JPanel implements Controller, org.o
     
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JLabel jLabel1;
-    private javax.swing.JLabel jLabel5;
     private javax.swing.JPanel jPanel1;
+    private javax.swing.JLabel lCondition;
+    private javax.swing.JLabel lFunctionName;
     private javax.swing.JPanel pActions;
     private javax.swing.JPanel pSettings;
     private javax.swing.JScrollPane spCondition;
     private javax.swing.JEditorPane tfCondition;
-    private javax.swing.JTextField tfLineNumber;
+    private javax.swing.JTextField tfFunctionName;
     // End of variables declaration//GEN-END:variables
     
 }

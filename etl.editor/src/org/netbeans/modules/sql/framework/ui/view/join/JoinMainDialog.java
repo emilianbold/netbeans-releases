@@ -131,9 +131,12 @@ public class JoinMainDialog extends JDialog {
         contentPane.add(bottomPanel, BorderLayout.SOUTH);
         String nbBundle1 = mLoc.t("PRSR001: Ok");
         okButton = new JButton(Localizer.parse(nbBundle1));
+        okButton.getAccessibleContext().setAccessibleName(Localizer.parse(nbBundle1));
+        okButton.setMnemonic(Localizer.parse(nbBundle1).charAt(0));
         String nbBundle2 = mLoc.t("PRSR001: Cancel");
         cancelButton = new JButton(Localizer.parse(nbBundle2));
-
+        cancelButton.setMnemonic(Localizer.parse(nbBundle2).charAt(0));
+        cancelButton.getAccessibleContext().setAccessibleName(Localizer.parse(nbBundle2));
         int maxBWidth = okButton.getPreferredSize().width;
         if (cancelButton.getPreferredSize().width > maxBWidth) {
             maxBWidth = cancelButton.getPreferredSize().width;

@@ -45,10 +45,10 @@ import java.util.Set;
 
 import javax.swing.ImageIcon;
 
-import org.netbeans.api.gsf.Element;
-import org.netbeans.api.gsf.ElementKind;
-import org.netbeans.api.gsf.HtmlFormatter;
-import org.netbeans.api.gsf.Modifier;
+import org.netbeans.modules.gsf.api.Element;
+import org.netbeans.modules.gsf.api.ElementKind;
+import org.netbeans.modules.gsf.api.HtmlFormatter;
+import org.netbeans.modules.gsf.api.Modifier;
 import org.netbeans.modules.languages.php.lang.MagicConstants;
 import org.netbeans.modules.php.model.FormalParameter;
 
@@ -72,7 +72,7 @@ class MagicConstantItem extends CompletionItem {
 
 
     /* (non-Javadoc)
-     * @see org.netbeans.api.gsf.CompletionProposal#getIcon()
+     * @see org.netbeans.modules.gsf.api.CompletionProposal#getIcon()
      */
     public ImageIcon getIcon() {
         // TODO An Icon for Keyword is required.
@@ -80,21 +80,21 @@ class MagicConstantItem extends CompletionItem {
     }
 
     /* (non-Javadoc)
-     * @see org.netbeans.api.gsf.CompletionProposal#getInsertPrefix()
+     * @see org.netbeans.modules.gsf.api.CompletionProposal#getInsertPrefix()
      */
     public String getInsertPrefix() {
         return myMagicConstant.value();
     }
 
     /* (non-Javadoc)
-     * @see org.netbeans.api.gsf.CompletionProposal#getKind()
+     * @see org.netbeans.modules.gsf.api.CompletionProposal#getKind()
      */
     public ElementKind getKind() {
         return ElementKind.KEYWORD;
     }
 
     /* (non-Javadoc)
-     * @see org.netbeans.api.gsf.CompletionProposal#getLhsHtml()
+     * @see org.netbeans.modules.gsf.api.CompletionProposal#getLhsHtml()
      */
     public String getLhsHtml() {
         HtmlFormatter formatter = getFormatter();
@@ -106,7 +106,7 @@ class MagicConstantItem extends CompletionItem {
     }
 
     /* (non-Javadoc)
-     * @see org.netbeans.api.gsf.CompletionProposal#getModifiers()
+     * @see org.netbeans.modules.gsf.api.CompletionProposal#getModifiers()
      */
     public Set<Modifier> getModifiers() {
         // TODO Auto-generated method stub
@@ -114,14 +114,14 @@ class MagicConstantItem extends CompletionItem {
     }
 
     /* (non-Javadoc)
-     * @see org.netbeans.api.gsf.CompletionProposal#getName()
+     * @see org.netbeans.modules.gsf.api.CompletionProposal#getName()
      */
     public String getName() {
         return myMagicConstant.value();
     }
 
     /* (non-Javadoc)
-     * @see org.netbeans.api.gsf.CompletionProposal#getRhsHtml()
+     * @see org.netbeans.modules.gsf.api.CompletionProposal#getRhsHtml()
      */
     public String getRhsHtml() {
         // TODO If it is possible then a text explained the return type 
@@ -130,7 +130,7 @@ class MagicConstantItem extends CompletionItem {
     }
 
     /* (non-Javadoc)
-     * @see org.netbeans.api.gsf.CompletionProposal#isSmart()
+     * @see org.netbeans.modules.gsf.api.CompletionProposal#isSmart()
      */
     public boolean isSmart() {
         return true;
@@ -142,7 +142,7 @@ class MagicConstantItem extends CompletionItem {
     }
     
     /* (non-Javadoc)
-     * @see org.netbeans.api.gsf.CompletionProposal#getElement()
+     * @see org.netbeans.modules.gsf.api.CompletionProposal#getElement()
      */
     @Override
     public Element getElement() {

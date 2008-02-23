@@ -658,8 +658,10 @@ public class ETLCollaborationWizardTransferPanel extends JPanel implements Actio
 
     private void initComponents() {
         srcLabel = new javax.swing.JLabel();
+        srcLabel.setDisplayedMnemonic(LBL_SOURCE_MSG.charAt(0));
         jScrollPane1 = new javax.swing.JScrollPane();
         destLabel = new javax.swing.JLabel();
+        destLabel.setDisplayedMnemonic(LBL_DEST_MSG.charAt(0));
         jScrollPane2 = new javax.swing.JScrollPane();
         schemaTablesList = new javax.swing.JList();
         jLabel3 = new javax.swing.JLabel();
@@ -671,12 +673,12 @@ public class ETLCollaborationWizardTransferPanel extends JPanel implements Actio
         //jButton3 = new javax.swing.JButton();
         srcLabel.setText(LBL_SOURCE_MSG);
         srcLabel.setName("srcLabel");
-
+        srcLabel.getAccessibleContext().setAccessibleName(LBL_SOURCE_MSG);
         jScrollPane1.setViewportView(sourceList);
 
         destLabel.setText(LBL_DEST_MSG);
         destLabel.setName("destLabel");
-
+        destLabel.getAccessibleContext().setAccessibleName(LBL_DEST_MSG);
         schemaTablesList.setModel(new javax.swing.AbstractListModel() {
 
             String[] strings = {""            };
@@ -689,7 +691,9 @@ public class ETLCollaborationWizardTransferPanel extends JPanel implements Actio
                 return strings[i];
             }
         });
-        schemaTablesList.setName("schemaTables");
+        String nbBundle20 = mLoc.t("PRSR001: schemaTables");
+        schemaTablesList.setName(Localizer.parse(nbBundle20));
+        schemaTablesList.getAccessibleContext().setAccessibleName(Localizer.parse(nbBundle20));
         schemaTablesList.addMouseListener(new java.awt.event.MouseAdapter() {
 
             @Override
@@ -703,7 +707,9 @@ public class ETLCollaborationWizardTransferPanel extends JPanel implements Actio
         jScrollPane2.setViewportView(schemaTablesList);
         String nbBundle9 = mLoc.t("PRSR001: Selected Tables:");
         jLabel3.setText(Localizer.parse(nbBundle9));
+        jLabel3.getAccessibleContext().setAccessibleName(Localizer.parse(nbBundle20));
         jLabel3.setName("selectedTablesLabel");
+        jLabel3.setDisplayedMnemonic(Localizer.parse(nbBundle9).charAt(0));
 
         jTable1.setModel(new javax.swing.table.DefaultTableModel(
                 new Object[][]{},
@@ -711,15 +717,20 @@ public class ETLCollaborationWizardTransferPanel extends JPanel implements Actio
             "Name", "Schema", "User", "Connection"
         }));
         jTable1.setName("selectedTables");
+        jTable1.getAccessibleContext().setAccessibleName(Localizer.parse(nbBundle9));
         jScrollPane3.setViewportView(jTable1);
         jScrollPane3.setAutoscrolls(true);
 
-        selectButton.setMnemonic('S');
-        selectButton.setText("Select");
+        String nbBundle30 = mLoc.t("PRSR001: Select");
+        selectButton.setText(Localizer.parse(nbBundle30));
+        selectButton.getAccessibleContext().setAccessibleName(Localizer.parse(nbBundle30));
+        selectButton.setMnemonic(Localizer.parse(nbBundle30).charAt(0));
         selectButton.addActionListener(this);
 
-        removeButton.setMnemonic('R');
-        removeButton.setText("Remove");
+        String nbBundle31 = mLoc.t("PRSR001: Remove");
+        removeButton.setText(Localizer.parse(nbBundle31));
+        removeButton.getAccessibleContext().setAccessibleName(Localizer.parse(nbBundle31));
+        removeButton.setMnemonic(Localizer.parse(nbBundle31).charAt(0));
         removeButton.addActionListener(this);
         removeButton.setEnabled(false);
 

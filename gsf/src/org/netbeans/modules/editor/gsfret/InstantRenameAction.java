@@ -45,6 +45,7 @@ import java.io.IOException;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import javax.swing.Action;
 
@@ -52,15 +53,16 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 
-import org.netbeans.api.gsf.CancellableTask;
-import org.netbeans.api.gsf.ColoringAttributes;
-import org.netbeans.api.gsf.InstantRenamer;
-import org.netbeans.api.gsf.OffsetRange;
+import org.netbeans.modules.gsf.api.CancellableTask;
+import org.netbeans.modules.gsf.api.ColoringAttributes;
+import org.netbeans.modules.gsf.api.InstantRenamer;
+import org.netbeans.modules.gsf.api.OffsetRange;
 import org.netbeans.napi.gsfret.source.CompilationController;
 import org.netbeans.napi.gsfret.source.Phase;
 import org.netbeans.napi.gsfret.source.Source;
 import org.netbeans.napi.gsfret.source.SourceUtils;
 import org.netbeans.editor.BaseAction;
+import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
 import org.netbeans.modules.editor.highlights.spi.Highlight;
 import org.netbeans.modules.gsf.Language;
@@ -127,13 +129,19 @@ public class InstantRenameAction extends BaseAction {
                         }
 
                         Document doc = target.getDocument();
-                        Language language =
-                            LanguageRegistry.getInstance()
-                                            .getLanguageByMimeType(controller.getFileObject()
-                                                                             .getMIMEType());
-
+                        BaseDocument baseDoc = (BaseDocument)doc;
+                        List<Language> list = LanguageRegistry.getInstance().getEmbeddedLanguages(baseDoc, caret);
+                        Language language = null;
+                        for (Language l : list) {
+                            if (l.getInstantRenamer() != null) {
+                                language = l;
+                                break;
+                            }
+                        }
+                        
                         if (language != null) {
                             InstantRenamer renamer = language.getInstantRenamer();
+                            assert renamer != null;
 
                             String[] descRetValue = new String[1];
 

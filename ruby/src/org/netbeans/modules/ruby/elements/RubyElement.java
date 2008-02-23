@@ -40,8 +40,13 @@
  */
 package org.netbeans.modules.ruby.elements;
 
-import org.netbeans.api.gsf.Element;
-import org.netbeans.api.gsf.Element;
+import java.util.Collections;
+import java.util.Set;
+import org.netbeans.modules.gsf.api.ElementHandle;
+import org.netbeans.modules.gsf.api.ElementKind;
+import org.netbeans.modules.gsf.api.Modifier;
+import org.netbeans.modules.ruby.RubyMimeResolver;
+import org.openide.filesystems.FileObject;
 
 
 /**
@@ -51,4 +56,27 @@ import org.netbeans.api.gsf.Element;
  * @author Tor Norbye
  */
 public abstract class RubyElement implements Element {
+    public abstract String getName();
+    public abstract ElementKind getKind();
+
+    public String getMimeType() {
+        return RubyMimeResolver.RUBY_MIME_TYPE;
+    }
+
+    public boolean signatureEquals(ElementHandle handle) {
+        // XXX TODO
+        return false;
+    }
+
+    public FileObject getFileObject() {
+        return null;
+    }
+    
+    public Set<Modifier> getModifiers() {
+        return Collections.emptySet();
+    }
+
+    public String getIn() {
+        return null;
+    }
 }

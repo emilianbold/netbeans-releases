@@ -40,24 +40,41 @@
  */
 package org.netbeans.modules.gsf;
 
+import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
-import org.netbeans.api.gsf.annotations.NonNull;
-import org.netbeans.modules.gsf.DefaultLanguage;
+import java.util.Map;
+import java.util.RandomAccess;
+import org.netbeans.api.lexer.Token;
+import org.netbeans.api.lexer.TokenId;
+import org.netbeans.modules.gsf.api.EmbeddingModel;
+import org.netbeans.modules.gsf.api.GsfLanguage;
+import org.netbeans.modules.gsf.api.annotations.CheckForNull;
+import org.netbeans.modules.gsf.api.annotations.NonNull;
+import org.netbeans.api.lexer.TokenHierarchy;
+import org.netbeans.api.lexer.TokenSequence;
+import org.netbeans.editor.BaseDocument;
+import org.netbeans.modules.gsfpath.api.classpath.ClassPath;
+import org.netbeans.modules.gsfret.source.usages.ClassIndexManager;
+import org.netbeans.modules.gsfpath.spi.classpath.ClassPathFactory;
+import org.netbeans.modules.gsfpath.spi.classpath.ClassPathImplementation;
+import org.netbeans.modules.gsfpath.spi.classpath.PathResourceImplementation;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileSystem.AtomicAction;
 import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.Repository;
 import org.openide.filesystems.Repository;
 import org.openide.util.Exceptions;
+import org.openide.util.Lookup;
 
 /**
  * Registry which locates and provides information about languages supported
@@ -82,11 +99,14 @@ public class LanguageRegistry implements Iterable<Language> {
     private static final String PALETTE = "palette.instance";
     private static final String STRUCTURE = "structure.instance";
     private static final String HINTS = "hints.instance";
+    private static final String SEMANTIC = "semantic.instance";
+    private static final String OCCURRENCES = "occurrences.instance";
 
     /** Location in the system file system where languages are registered */
     private static final String FOLDER = "GsfPlugins";
     private List<Language> languages;
     private boolean languagesInitialized;
+    private Collection<? extends EmbeddingModel> embeddingModels;
 
     /**
      * Creates a new instance of LanguageRegistry
@@ -138,15 +158,224 @@ public class LanguageRegistry implements Iterable<Language> {
      * or null if no such language is supported
      */
     public Language getLanguageByMimeType(@NonNull String mimeType) {
-        assert mimeType.equals(mimeType.toLowerCase());
+        if (languages == null) {
+            return null;
+        }
 
-        for (Language language : this) {
+        assert mimeType.equals(mimeType.toLowerCase()) : mimeType;
+        assert languages instanceof RandomAccess;
+
+        for (int i = 0, n = languages.size(); i < n; i++) {
+            Language language = languages.get(i);
             if (language.getMimeType().equals(mimeType)) {
                 return language;
             }
         }
 
         return null;
+    }
+
+    @CheckForNull
+    public EmbeddingModel getEmbedding(@NonNull String targetMimeType, @NonNull String sourceMimeType) {
+        Collection<? extends EmbeddingModel> models = getEmbeddingModels();
+        
+        for (EmbeddingModel model : models) {
+            if (model.getTargetMimeType().equals(targetMimeType) &&
+                model.getSourceMimeTypes().contains(sourceMimeType)) {
+                return model;
+            }
+        }
+
+        return null;
+    }
+
+    private Collection<? extends EmbeddingModel> getEmbeddingModels() {
+        if (embeddingModels == null) {
+            embeddingModels = Lookup.getDefault().lookupAll(EmbeddingModel.class);
+        }
+        
+        return embeddingModels;
+    }
+    
+    private Map<String,Map<String,Boolean>> relevantMimes = new HashMap<String,Map<String,Boolean>>();
+
+    /** Return true iff the given file object is relevant for the given mimeType.
+     * This is true when the file is of a mime type that we're looking for, or if there
+     * is an embedding model mapping available for the given file's mime type targeting
+     * the requested mime type.
+     */
+    public boolean isRelevantFor(FileObject fo, String targetMimeType) {
+        final String fileMimeType = fo.getMIMEType();
+        if (targetMimeType.equals(fileMimeType)) {
+            return true;
+        }
+
+        Map<String,Boolean> mimeMap = relevantMimes.get(targetMimeType);
+        if (mimeMap == null) {
+            mimeMap = new  HashMap<String,Boolean>();
+            relevantMimes.put(targetMimeType, mimeMap);
+        }
+
+        Boolean result = mimeMap.get(fileMimeType);
+        if (result == null) {
+            // Check to see if the file is relevant
+            result = Boolean.FALSE;
+
+            Collection<? extends EmbeddingModel> models = getEmbeddingModels();
+            for (EmbeddingModel model : models) {
+                if (model.getTargetMimeType().equals(targetMimeType) && 
+                    model.getSourceMimeTypes().contains(fileMimeType)) {
+                    result = Boolean.TRUE;
+                    break;
+                }
+            }
+
+            mimeMap.put(targetMimeType, result);
+        }
+        
+        return result.booleanValue();
+    }
+    
+    @NonNull
+    public List<Language> getApplicableLanguages(String mimeType) {
+        // TODO - cache the answer since this is called a lot (for example during
+        // task list scanning)
+        Collection<? extends EmbeddingModel> models = getEmbeddingModels();
+        
+        List<Language> result = new ArrayList<Language>(5);
+
+        final Language origLanguage = getLanguageByMimeType(mimeType);
+        if (origLanguage != null) {
+            result.add(origLanguage);
+        }
+        
+        for (EmbeddingModel model : models) {
+            if (model.getSourceMimeTypes().contains(mimeType)) {
+                Language language = getLanguageByMimeType(model.getTargetMimeType());
+                if (language != null && !result.contains(language)) {
+                    result.add(language);
+                }
+            }
+        }
+        
+        return result;
+    }
+    
+    private ClassPath libraryPath;
+    private List<URL> urls;
+
+    
+    public List<URL> getLibraryUrls() {
+        if (urls == null) {
+            urls = new ArrayList<URL>();
+            for (Language language : this) {
+                GsfLanguage gsfLanguage = language.getGsfLanguage();
+                if (gsfLanguage != null) {
+                    for (FileObject fo : gsfLanguage.getCoreLibraries()) {
+                        try {
+                            URL url = FileUtil.toFile(fo).toURI().toURL();
+                            urls.add(url);
+                            ClassIndexManager.get(language).addBootRoot(url);
+                        } catch (MalformedURLException ex) {
+                            Exceptions.printStackTrace(ex);
+                        }
+                    }
+                }
+            }
+        }
+        
+        return urls;
+    }
+
+    public List<FileObject> getLibraryFos() {
+        List<FileObject> fos = new ArrayList<FileObject>();
+        for (Language language : this) {
+            GsfLanguage gsfLanguage = language.getGsfLanguage();
+            if (gsfLanguage != null) {
+                for (FileObject fo : gsfLanguage.getCoreLibraries()) {
+                    fos.add(fo);
+                }
+            }
+        }
+        
+        return fos;
+    }
+    
+    public ClassPath getLibraryPaths() {
+        if (libraryPath == null) {
+            List<URL> urlList = getLibraryUrls();
+            final URL[] urlArray = urlList.toArray(new URL[urlList.size()]);
+            
+            libraryPath = ClassPathFactory.createClassPath(new ClassPathImplementation() {
+
+                public List<? extends PathResourceImplementation> getResources() {
+                    return Collections.<PathResourceImplementation>singletonList(new PathResourceImplementation() {
+                        public URL[] getRoots() {
+                            return urlArray;
+                        }
+
+                        public ClassPathImplementation getContent() {
+                            return null;
+                        }
+
+                        public void addPropertyChangeListener(PropertyChangeListener listener) {
+                        }
+
+                        public void removePropertyChangeListener(PropertyChangeListener listener) {
+                        }
+                    });
+                }
+
+                public void addPropertyChangeListener(PropertyChangeListener listener) {
+                }
+
+                public void removePropertyChangeListener(PropertyChangeListener listener) {
+                }
+                
+            });
+        }
+        
+        return libraryPath;
+    }
+    
+    private void addLanguages(List<Language> result, TokenSequence ts, int offset) {
+        ts.move(offset);
+        if (ts.moveNext() || ts.movePrevious()) {
+            TokenSequence ets = ts.embedded();
+            if (ets != null) {
+                addLanguages(result, ets, offset); // Recurse
+            }
+            String mimeType = ts.language().mimeType();
+            Language language = getLanguageByMimeType(mimeType);
+
+            if (language != null) {
+                result.add(language);
+            }
+        }
+    }
+    
+    public List<Language> getEmbeddedLanguages(BaseDocument doc, int offset) {
+        List<Language> result = new ArrayList<Language>();
+
+        doc.readLock(); // Read-lock due to Token hierarchy use
+        try {
+            TokenSequence ts = TokenHierarchy.get(doc).tokenSequence();
+            if (ts != null) {
+                addLanguages(result, ts, offset);
+            }
+        } finally {
+            doc.readUnlock();
+        }
+
+        String mimeType = (String) doc.getProperty("mimeType"); // NOI18N
+        if (mimeType != null) {
+            Language language = LanguageRegistry.getInstance().getLanguageByMimeType(mimeType);
+            if (language != null) {
+                result.add(language);
+            }
+        }
+        
+        return result;
     }
 
     /**
@@ -401,6 +630,18 @@ public class LanguageRegistry implements Iterable<Language> {
 
                 if (paletteFile != null) {
                     language.setPaletteFile(paletteFile);
+                }
+                
+                FileObject semanticFile = mimeFile.getFileObject(SEMANTIC, null);
+
+                if (semanticFile != null) {
+                    language.setSemanticAnalyzer(semanticFile);
+                }
+                
+                FileObject occurrencesFile = mimeFile.getFileObject(OCCURRENCES, null);
+
+                if (occurrencesFile != null) {
+                    language.setOccurrencesFinderFile(occurrencesFile);
                 }
             }
         }

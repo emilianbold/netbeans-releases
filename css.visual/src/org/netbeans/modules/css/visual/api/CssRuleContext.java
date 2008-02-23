@@ -28,8 +28,8 @@
 package org.netbeans.modules.css.visual.api;
 
 import javax.swing.text.Document;
-import org.netbeans.modules.css.model.CssModel;
-import org.netbeans.modules.css.model.CssRule;
+import org.netbeans.modules.css2.editor.model.CssModel;
+import org.netbeans.modules.css2.editor.model.CssRule;
 import org.openide.filesystems.FileObject;
 
 /**

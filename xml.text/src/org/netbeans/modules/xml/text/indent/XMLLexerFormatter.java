@@ -54,6 +54,7 @@ import org.netbeans.api.xml.lexer.XMLTokenId;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Formatter;
 import org.netbeans.editor.Utilities;
+import org.netbeans.modules.editor.indent.api.IndentUtils;
 import org.netbeans.modules.editor.indent.spi.Context;
 import org.netbeans.modules.editor.structure.formatting.JoinedTokenSequence;
 import org.netbeans.modules.editor.structure.formatting.TagBasedLexerFormatter;
@@ -69,15 +70,16 @@ public class XMLLexerFormatter extends TagBasedLexerFormatter {
 
     private static final String TAG_OPENING_PREFIX = "<"; //NOI18N
     private static final String TAG_CLOSING_PREFIX = "</"; //NOI18N
-    
+   
     private final LanguagePath languagePath;
+    private int spacesPerTab = 4;
 
     public XMLLexerFormatter(LanguagePath languagePath) {
         this.languagePath = languagePath;
     }
 
     @Override
-    protected boolean isOpeningTag(JoinedTokenSequence jts, int tagTokenOffset) {        
+    protected boolean isOpeningTag(JoinedTokenSequence jts, int tagTokenOffset) {       
         Token token = getTokenAtOffset(jts, tagTokenOffset);
         return token != null
                 && token.id() == XMLTokenId.TAG
@@ -110,7 +112,7 @@ public class XMLLexerFormatter extends TagBasedLexerFormatter {
             token.id() == XMLTokenId.CDATA_SECTION) {
             return true;
         }
-        
+       
         return false;
     }
 
@@ -127,27 +129,27 @@ public class XMLLexerFormatter extends TagBasedLexerFormatter {
     protected LanguagePath supportedLanguagePath() {
         return languagePath;
     }
-    
+   
     @Override
     protected String extractTagName(JoinedTokenSequence jts, int tagTokenOffset) {
-        Token token = getTokenAtOffset(jts, tagTokenOffset);        
+        Token token = getTokenAtOffset(jts, tagTokenOffset);       
         String tagImage = token.text().toString();
         int startIndex = -1;
-        
+       
         if (isOpeningTag(jts, tagTokenOffset)) {
             startIndex = TAG_OPENING_PREFIX.length();
         } else if (isClosingTag(jts, tagTokenOffset)) {
             startIndex = TAG_CLOSING_PREFIX.length();
         }
-        
+       
         if (startIndex >= 0) {
             String tagName = tagImage.substring(startIndex);
             return tagName;
         }
-        
-        return null;        
+       
+        return null;       
     }
-    
+   
     @Override
     protected int getTagEndingAtPosition(JoinedTokenSequence jts,
             int position) throws BadLocationException {
@@ -192,7 +194,7 @@ public class XMLLexerFormatter extends TagBasedLexerFormatter {
 
         int r = jts.offset() + jts.token().length();
         jts.move(originalOffset);
-        jts.moveNext();        
+        jts.moveNext();       
         return thereAreMoreTokens ? r : -1;
     }
 
@@ -218,10 +220,10 @@ public class XMLLexerFormatter extends TagBasedLexerFormatter {
         return -1;
     }
 
-//    @Override
-//    public void reformat(Context context, int startOffset, int endOffset) throws BadLocationException {
-    public void reformat(Context context, int startOffset, int endOffset, boolean value) throws BadLocationException {
+    @Override
+    public void reformat(Context context, int startOffset, int endOffset) throws BadLocationException {
         BaseDocument doc = (BaseDocument) context.document();
+        spacesPerTab = IndentUtils.indentLevelSize(doc);
         doc.atomicLock();
         try {
             List<TokenElement> tags = getTags(doc);
@@ -271,7 +273,12 @@ public class XMLLexerFormatter extends TagBasedLexerFormatter {
     private void changePrettyText(BaseDocument doc, TokenElement tag, int so) throws BadLocationException {
         Formatter formatter = Formatter.getFormatter(XMLKit.class);
         formatter.setExpandTabs(false);
-        String newIndentText = formatter.getIndentString(doc, tag.getIndentLevel());
+        //i expected the call IndentUtils.createIndentString() to return
+        //the correct string for the indent level, but it doesn't.
+        //so this is just a workaround.
+        String newIndentText = IndentUtils.createIndentString(doc,
+                tag.getIndentLevel()*spacesPerTab);
+        //String newIndentText = formatter.getIndentString(doc, tag.getIndentLevel());
         doc.insertString(so, "\n" + newIndentText, null);
         int previousEndOffset = Utilities.getFirstNonWhiteBwd(doc, so) + 1;
         if (previousEndOffset < so) {

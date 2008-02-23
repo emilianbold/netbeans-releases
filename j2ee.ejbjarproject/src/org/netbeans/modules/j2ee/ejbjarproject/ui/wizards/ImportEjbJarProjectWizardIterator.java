@@ -50,7 +50,6 @@ import java.util.Set;
 
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.progress.ProgressHandle;
-import org.netbeans.modules.j2ee.ejbjarproject.ui.FoldersListSettings;
 import org.netbeans.spi.project.ui.support.ProjectChooser;
 
 import org.openide.WizardDescriptor;
@@ -60,8 +59,9 @@ import org.openide.filesystems.FileUtil;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.j2ee.api.ejbjar.Ear;
-import org.netbeans.modules.j2ee.common.sharability.PanelSharability;
-import org.netbeans.modules.j2ee.common.sharability.SharabilityUtilities;
+import org.netbeans.modules.j2ee.common.project.ui.UserProjectSettings;
+import org.netbeans.modules.j2ee.common.project.ui.PanelSharability;
+import org.netbeans.modules.j2ee.common.SharabilityUtility;
 import org.netbeans.modules.j2ee.ejbjarproject.EjbJarProject;
 import org.openide.util.NbBundle;
 
@@ -82,7 +82,7 @@ public class ImportEjbJarProjectWizardIterator implements WizardDescriptor.Progr
     // Make sure list of steps is accurate.
     private static final String[] STEPS = new String[]{
         NbBundle.getMessage(ImportEjbJarProjectWizardIterator.class, "LBL_IW_ImportTitle"), //NOI18N
-        //NbBundle.getMessage(ImportEjbJarProjectWizardIterator.class, "PanelShareabilityVisual.label"), 
+        NbBundle.getMessage(ImportEjbJarProjectWizardIterator.class, "PanelShareabilityVisual.label"), 
         NbBundle.getMessage(ImportEjbJarProjectWizardIterator.class, "LAB_ConfigureSourceRoots") //NOI18N
     };
 
@@ -92,7 +92,7 @@ public class ImportEjbJarProjectWizardIterator implements WizardDescriptor.Progr
     private WizardDescriptor.Panel[] createPanels() {
         return new WizardDescriptor.Panel[] {
             new ImportLocation(),
-            //new PanelSharability(WizardProperties.PROJECT_DIR, WizardProperties.SERVER_INSTANCE_ID, false),
+            new PanelSharability(WizardProperties.PROJECT_DIR, WizardProperties.SERVER_INSTANCE_ID, false),
             new PanelSourceFolders.Panel()
         };
     }
@@ -120,7 +120,7 @@ public class ImportEjbJarProjectWizardIterator implements WizardDescriptor.Progr
         String j2eeLevel = (String) wiz.getProperty(WizardProperties.J2EE_LEVEL);
         
         String librariesDefinition =
-                SharabilityUtilities.getLibraryLocation((String) wiz.getProperty(PanelSharability.WIZARD_SHARED_LIBRARIES));
+                SharabilityUtility.getLibraryLocation((String) wiz.getProperty(PanelSharability.WIZARD_SHARED_LIBRARIES));
         String serverLibraryName = (String) wiz.getProperty(PanelSharability.WIZARD_SERVER_LIBRARY);
         
         AntProjectHelper h = EjbJarProjectGenerator.importProject(dirF, name,
@@ -147,7 +147,7 @@ public class ImportEjbJarProjectWizardIterator implements WizardDescriptor.Progr
         }
         
         // remember last used server
-        FoldersListSettings.getDefault().setLastUsedServer(serverInstanceID);
+        UserProjectSettings.getDefault().setLastUsedServer(serverInstanceID);
         
         // downgrade the Java platform or src level to 1.4        
         String platformName = (String)wiz.getProperty(WizardProperties.JAVA_PLATFORM);

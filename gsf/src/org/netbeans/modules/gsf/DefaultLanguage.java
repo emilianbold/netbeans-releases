@@ -45,16 +45,18 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.Action;
-import org.netbeans.api.gsf.Completable;
-import org.netbeans.api.gsf.BracketCompletion;
-import org.netbeans.api.gsf.DeclarationFinder;
-import org.netbeans.api.gsf.Formatter;
-import org.netbeans.api.gsf.InstantRenamer;
-import org.netbeans.api.gsf.Indexer;
-import org.netbeans.api.gsf.Parser;
-import org.netbeans.api.gsf.GsfLanguage;
-import org.netbeans.api.gsf.HintsProvider;
-import org.netbeans.api.gsf.StructureScanner;
+import org.netbeans.modules.gsf.api.Completable;
+import org.netbeans.modules.gsf.api.BracketCompletion;
+import org.netbeans.modules.gsf.api.DeclarationFinder;
+import org.netbeans.modules.gsf.api.Formatter;
+import org.netbeans.modules.gsf.api.InstantRenamer;
+import org.netbeans.modules.gsf.api.Indexer;
+import org.netbeans.modules.gsf.api.Parser;
+import org.netbeans.modules.gsf.api.GsfLanguage;
+import org.netbeans.modules.gsf.api.HintsProvider;
+import org.netbeans.modules.gsf.api.OccurrencesFinder;
+import org.netbeans.modules.gsf.api.SemanticAnalyzer;
+import org.netbeans.modules.gsf.api.StructureScanner;
 //import org.netbeans.spi.palette.PaletteController;
 import org.netbeans.modules.gsfret.editor.semantic.ColoringManager;
 import org.openide.ErrorManager;
@@ -68,6 +70,7 @@ import org.openide.loaders.DataObjectNotFoundException;
  * @author Tor Norbye
  */
 public class DefaultLanguage implements Language {
+    private ColoringManager coloringManager;
     private String displayName;
     private String iconBase;
     private String mime;
@@ -85,6 +88,8 @@ public class DefaultLanguage implements Language {
     private StructureScanner structure;
     private HintsProvider hintsProvider;;
     //private PaletteController palette;
+    private OccurrencesFinder occurrences;
+    private SemanticAnalyzer semantic;
     private FileObject parserFile;
     private FileObject languageFile;
     private FileObject completionProviderFile;
@@ -96,7 +101,9 @@ public class DefaultLanguage implements Language {
     private FileObject structureFile;
     private FileObject hintsProviderFile;
     private FileObject paletteFile;
-    private ColoringManager coloringManager;
+    private FileObject semanticFile;
+    private FileObject occurrencesFile;
+    
     
     /** Creates a new instance of DefaultLanguage */
     public DefaultLanguage(String mime) {
@@ -413,5 +420,35 @@ public class DefaultLanguage implements Language {
     
     public boolean hasFormatter() {
         return this.formatterFile != null;
+    }
+
+    public OccurrencesFinder getOccurrencesFinder() {
+        if (occurrences == null && occurrencesFile != null) {
+            occurrences = (OccurrencesFinder)createInstance(occurrencesFile);
+            if (occurrences == null) {
+                // Don't keep trying
+                occurrencesFile = null;
+            }
+        }
+        return occurrences;
+    }
+
+    public void setOccurrencesFinderFile(FileObject occurrencesFile) {
+        this.occurrencesFile = occurrencesFile;
+    }
+    
+    public SemanticAnalyzer getSemanticAnalyzer() {
+        if (semantic == null && semanticFile != null) {
+            semantic = (SemanticAnalyzer)createInstance(semanticFile);
+            if (semantic == null) {
+                // Don't keep trying
+                semanticFile = null;
+            }
+        }
+        return semantic;
+    }
+
+    public void setSemanticAnalyzer(FileObject semanticFile) {
+        this.semanticFile = semanticFile;
     }
 }

@@ -54,6 +54,7 @@ import org.openide.windows.WindowManager;
 import org.netbeans.modules.mercurial.HgException;
 import org.netbeans.modules.mercurial.HgProgressSupport;
 import org.netbeans.modules.mercurial.Mercurial;
+import org.netbeans.modules.mercurial.OutputLogger;
 import org.netbeans.modules.mercurial.FileStatusCache;
 import org.netbeans.modules.mercurial.FileInformation;
 import org.netbeans.modules.mercurial.util.HgUtils;
@@ -138,15 +139,16 @@ public class AnnotateAction extends ContextAction {
             RequestProcessor rp = Mercurial.getInstance().getRequestProcessor(repository);
             HgProgressSupport support = new HgProgressSupport() {
                 public void perform() {
-                    HgUtils.outputMercurialTabInRed(
+                    OutputLogger logger = getLogger();
+                    logger.outputInRed(
                             NbBundle.getMessage(AnnotateAction.class,
                             "MSG_ANNOTATE_TITLE")); // NOI18N
-                    HgUtils.outputMercurialTabInRed(
+                    logger.outputInRed(
                             NbBundle.getMessage(AnnotateAction.class,
                             "MSG_ANNOTATE_TITLE_SEP")); // NOI18N
                     computeAnnotations(repository, file, this, ab);
-                    HgUtils.outputMercurialTab("\t" + file.getAbsolutePath()); // NOI18N
-                    HgUtils.outputMercurialTabInRed(
+                    logger.output("\t" + file.getAbsolutePath()); // NOI18N
+                    logger.outputInRed(
                             NbBundle.getMessage(AnnotateAction.class,
                             "MSG_ANNOTATE_DONE")); // NOI18N
                 }
@@ -158,7 +160,7 @@ public class AnnotateAction extends ContextAction {
     private void computeAnnotations(File repository, File file, HgProgressSupport progress, AnnotationBar ab) {
         List<String> list = null;
         try {
-             list = HgCommand.doAnnotate(repository, file);
+             list = HgCommand.doAnnotate(repository, file, progress.getLogger());
         } catch (HgException ex) {
             NotifyDescriptor.Exception e = new NotifyDescriptor.Exception(ex);
             DialogDisplayer.getDefault().notifyLater(e);
@@ -170,7 +172,7 @@ public class AnnotateAction extends ContextAction {
         if (list == null) return;
         AnnotateLine [] lines = toAnnotateLines(list);
         try {
-             list = HgCommand.doLogShort(repository, file);
+             list = HgCommand.doLogShort(repository, file, progress.getLogger());
         } catch (HgException ex) {
             NotifyDescriptor.Exception e = new NotifyDescriptor.Exception(ex);
             DialogDisplayer.getDefault().notifyLater(e);

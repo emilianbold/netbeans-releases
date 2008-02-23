@@ -52,7 +52,7 @@ import javax.swing.SwingUtilities;
 import javax.swing.border.EmptyBorder;
 import javax.swing.KeyStroke;
 import javax.swing.event.ChangeEvent;
-import org.netbeans.api.gsf.StructureItem;
+import org.netbeans.modules.gsf.api.StructureItem;
 import org.netbeans.modules.gsfret.navigation.ClassMemberFilters;
 import org.netbeans.modules.gsfret.navigation.ElementNode;
 import org.netbeans.modules.gsfret.navigation.actions.FilterSubmenuAction;
