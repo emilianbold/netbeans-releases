@@ -44,6 +44,7 @@ import java.awt.Dialog;
 import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import javax.swing.Action;
@@ -95,10 +96,12 @@ import org.openide.nodes.AbstractNode;
 import org.openide.nodes.PropertySupport;
 import org.openide.nodes.Sheet;
 import org.openide.util.HelpCtx;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.lookup.AbstractLookup;
 import org.openide.util.lookup.InstanceContent;
+import org.openide.util.lookup.Lookups;
 
 public class JaxWsClientNode extends AbstractNode implements OpenCookie, JaxWsRefreshCookie,
         ConfigureHandlerCookie{
@@ -135,6 +138,7 @@ public class JaxWsClientNode extends AbstractNode implements OpenCookie, JaxWsRe
             });
         }
         content.add(new EditWSAttributesCookieImpl(this, jaxWsModel));
+        setValue("wsdl-url",client.getWsdlUrl());
     }
     
     @Override
@@ -230,7 +234,7 @@ public class JaxWsClientNode extends AbstractNode implements OpenCookie, JaxWsRe
     // Create the popup menu:
     @Override
     public Action[] getActions(boolean context) {
-        return new SystemAction[] {
+        ArrayList<Action> actions = new ArrayList<Action>(Arrays.asList(
             SystemAction.get(OpenAction.class),
             SystemAction.get(JaxWsRefreshClientAction.class),
             null,
@@ -240,10 +244,22 @@ public class JaxWsClientNode extends AbstractNode implements OpenCookie, JaxWsRe
             null,
             SystemAction.get(DeleteAction.class),
             null,
-            SystemAction.get(PropertiesAction.class),
-        };
+            SystemAction.get(PropertiesAction.class)));
+        addFromLayers(actions, "WebServices/Clients/Actions");
+        return actions.toArray(new Action[actions.size()]);
     }
     
+    private void addFromLayers(ArrayList<Action> actions, String path) {
+        Lookup look = Lookups.forPath(path);
+        for (Object next : look.lookupAll(Object.class)) {
+            if (next instanceof Action) {
+                actions.add((Action) next);
+            } else if (next instanceof javax.swing.JSeparator) {
+                actions.add(null);
+            }
+        }
+    }
+
     @Override
     public HelpCtx getHelpCtx() {
         return HelpCtx.DEFAULT_HELP;

@@ -40,30 +40,67 @@
 package org.netbeans.modules.ruby.railsprojects.server.spi;
 
 import java.io.File;
+import java.util.concurrent.Future;
 import org.netbeans.api.ruby.platform.RubyPlatform;
 
+
 /** 
- * ROUGH DRAFT
- * 
  * Ruby Server API
  * 
- * An implementation of this interface provides the ability to start, stop, and
- * administer a server instance offering Ruby runtime capabilities to the NetBeans
- * IDE.
+ * An implementation of this interface provides the ability to start, stop, 
+ * and administer a server instance offering Ruby runtime capabilities to the 
+ * NetBeans IDE.
  * 
- * TODO Some apis (marked below) should be asynchronous and should return a monitor object
- * of some type.  FutureTask<T> is an interesting candidate, but there does not
- * appear to be a way to return status messages as the action progresses.  Maybe
- * a derived class of FutureTask in common server SPI
- * 
- * TODO Some enumerated types are needed (ServerState, OperationState).  Common Server
- * SPI candidates?  Could simplify to static strings/ints in this interface (cheezy, IMO)
- * 
- *
  * @author Peter Williams
  */
 public interface RubyInstance {
 
+    /**
+     * Enum for the current state of the server (stopped, running, etc.)
+     */
+    public static enum ServerState { 
+        STOPPED,    // Server is not running or otherwise unavailable.
+        STARTING,   // Server is in the process of starting up.
+        RUNNING,    // Server is running and available.
+        STOPPING    // Server is in the process of stopping.
+    };
+    
+    /**
+     * Enum for the current state of a server operation (e.g start, stop, deploy)
+     */
+    public static enum OperationState {
+        RUNNING,    // Operation is running.
+        COMPLETED,  // Operation completed successfully.
+        FAILED      // Operation failed.
+    }
+    
+    /**
+     * Immutable object combining an operation state with a useful message about
+     * how the operation ended up in that state, e.g. failure message, running
+     * server greeting, etc.
+     */
+    public static class OperationResult {
+        
+        public final OperationState operationState;
+        public final ServerState serverState;
+        public final String message;
+        
+        /**
+         * Constructor for an OperationResult object describing the current
+         * status of an operation.
+         * 
+         * @param operationState Status of operation for this result.
+         * @param serverState Server state at the time of this result.
+         * @param message Message describing result, e.g. failure message, etc.
+         */
+        public OperationResult(final OperationState operationState, 
+                final ServerState serverState, final String message) {
+            this.operationState = operationState;
+            this.serverState = serverState;
+            this.message = message;
+        }
+    }
+    
     /**
      * Get the URI that uniquely identifies this Ruby Server Instance
      * 
@@ -81,54 +118,33 @@ public interface RubyInstance {
     
     
     /**
-     * TODO What is this for and what does this api return?
-     * 
-     * !PW FIXME Suggested by Erno, please fill in.
-     * 
-     * @return FIXME describe return value.
-     */
-//    public String getServerType();
-    
-    
-    /**
      * Returns current state of server (starting, running, stopping, stopped, etc.)
-     * 
-     * TODO Define and use enumerated type for server states.  See o.n.spi.glassfish.ServerState
-     * in glassfish.common [V3] module for an example.
      * 
      * TODO Should ServerState be defined in common server SPI?  Is it really API?
      * 
-     * @return current state of server (TODO change type to enumeration)
+     * @return current state of server
      */
-    public String getServerState();
+    public ServerState getServerState();
     
     
     /**
      * Start the server using the given <code>platform</code>, or if a 
      * <code>null</code> was passed, using the "default" platform of the server.
      * 
-     * TODO - this method should execute asynchronously, returning a FutureTask<T>
-     * instance or similar to monitor and retrieve progress and status of the
-     * startup process.
-     * 
      * @param platform the platform to use or <code>null</code>.
      * 
      * @return true if startup succeeded and server is running, false otherwise.
      */
-    public boolean startServer(RubyPlatform platform);
+    public Future<OperationState> startServer(RubyPlatform platform);
 
     
     /**
      * Stop the server
      * 
-     * TODO - this method should execute asynchronously, returning a FutureTask<T>
-     * instance or similar to monitor and retrieve progress and status of the
-     * shutdown process.
-     * 
      * @return true if server successfully stopped (or was already stopped), false
      * if server is still running or otherwise unresponsive.
      */
-    public boolean stopServer();
+    public Future<OperationState> stopServer();
 
     
     /**
@@ -138,19 +154,17 @@ public interface RubyInstance {
      * frameworks?  They should not require additional api methods (though they
      * may require additional parameters).
      * 
-     * TODO Should this api be asynchronous?  Directory deployment, especially for
-     * Ruby/Rails apps should be very fast, except possibly in the case where
-     * the server is recently started and JRuby has not yet been initialized -- 
-     * that case may take up to 10 seconds...
+     * TODO Need better error reporting for this result, asynchronous or not.
+     * Perhaps use Future<OperationResult> which combines the operation state
+     * with a message.
      * 
      * @param applicationName name to assign to deployed application (defaults
      *   to directory or jar name if null or empty).
      * @param applicationDir directory containing Ruby (Rails?) application.
      * 
      * @return true if the application was successfully deployed, false otherwise.
-     * TODO Need better error reporting for this result, asynchronous or not.
      */
-    public boolean deploy(String applicationName, File applicationDir);
+    public Future<OperationState> deploy(String applicationName, File applicationDir);
     
     
     /**
@@ -162,9 +176,24 @@ public interface RubyInstance {
      * 
      * @return true if the application was stopped (or was not running), false otherwise.
      */
-    public boolean stop(String applicationName);
+    public Future<OperationState> stop(String applicationName);
     
 
+    /**
+     * Executes the application against this server.  Starts or restarts server
+     * if necessary, deploys application to server and enables it.
+     * 
+     * @param platform the platform to use or <code>null</code>.
+     * @param applicationName name to assign to deployed application (defaults
+     *   to directory or jar name if null or empty).
+     * @param applicationDir directory containing Ruby (Rails?) application.
+     * 
+     * @return true if server was successfully started (if necessary) and if 
+     *   application was successfully deployed and executed.
+     */
+    public Future<OperationState> runApplication(RubyPlatform platform, 
+            String applicationName, File applicationDir);
+    
     /**
      * Checks whether the given <code>platform</code> is supported by 
      * this instance. In other words, checks whether this instance can
