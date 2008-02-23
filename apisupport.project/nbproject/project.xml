@@ -410,7 +410,6 @@ made subject to such option by the copyright holder.
             </test-dependencies>
             <friend-packages>
                 <friend>org.codehaus.mevenide.netbeans.apisupport</friend>
-                <friend>org.netbeans.modules.languages.studio</friend>
                 <package>org.netbeans.modules.apisupport.project.spi</package>
             </friend-packages>
         </data>

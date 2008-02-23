@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<saas-services
+    xmlns="http://xml.netbeans.org/websvc/saas/services/1.0"
+    xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'    
+    xmlns:xsd="http://www.w3.org/2001/XMLSchema"             
+    xsi:schemaLocation='http://xml.netbeans.org/websvc/saas/services/1.0 
+                    ../../../../../../../../../../websvc.saas.api/src/org/netbeans/modules/websvc/saas/model/SaasServices.xsd'
+    url="https://sandbox.google.com/api/adsense/v2/AdSenseForSearchService?wsdl"
+    type="http://schemas.xmlsoap.org/wsdl/"
+    api-doc="http://code.google.com/apis/adsense/">
+    
+    <description>Enables a developer to obtain a code snippet that adds the 
+        Google search box to a publisher's web page. The search can be a full web search 
+        or restricted to one of several domains. When an end user performs a search, 
+        ads are displayed.  When a user clicks through, Google credits a payment.
+    </description>
+    
+    <display-name>GoogleAdSenseForSearch</display-name>
+
+    <saas-metadata>
+        <localizing-bundle>org.netbeans.modules.websvc.components.google.Bundle</localizing-bundle>
+        <group name="Google"/>
+        <code-gen>
+            <artifacts targets="java,servlet"/>
+        </code-gen>
+        <!-- http-basic, api-key, custom -->
+        <authentication profile="Templates/WebServices/profile.properties">
+            <api-key id="zwsid"/>
+        </authentication>
+    </saas-metadata>
+
+    <methods>
+        <method name="GoogleAdSenseForSearch" serviceName="AdSenseForSearchServiceService"
+                portName="AdSenseForSearchService" operationName="generateSearchBoxCode">
+            <documentation>Produces a code snippet for Google search box to publish on a web page</documentation>
+        </method>
+    </methods>
+        
+    
+</saas-services>

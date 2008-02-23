@@ -138,8 +138,10 @@ public class CastAsDialog extends JDialog implements ActionListener {
         try {
             String nbBundle1 = mLoc.t("PRSR001: Ok");
             mOkButton = new JButton(Localizer.parse(nbBundle1)); //NOI18N
+            mOkButton.getAccessibleContext().setAccessibleName(Localizer.parse(nbBundle1));
             String nbBundle2 = mLoc.t("PRSR001: Cancel");
             mCancelButton = new JButton(Localizer.parse(nbBundle2)); //NOI18N
+            mCancelButton.getAccessibleContext().setAccessibleName(Localizer.parse(nbBundle2));
 
             initComponents();
         } catch (Exception e) {
@@ -362,6 +364,7 @@ public class CastAsDialog extends JDialog implements ActionListener {
 
         String nbBundle3 = mLoc.t("PRSR001: Type:");
         JLabel typeLabel = new JLabel(Localizer.parse(nbBundle3)); //NOI18N
+        typeLabel.getAccessibleContext().setAccessibleName(Localizer.parse(nbBundle3));
         gridBag.setConstraints(typeLabel, constraints);
         formPanel.add(typeLabel);
 
@@ -377,6 +380,7 @@ public class CastAsDialog extends JDialog implements ActionListener {
         constraints.weightx = 1.0;
         String nbBundle4 = mLoc.t("PRSR001: Precision/length:");
         JLabel precLengthLabel = new JLabel(Localizer.parse(nbBundle4)); //NOI18N
+        precLengthLabel.getAccessibleContext().setAccessibleName(Localizer.parse(nbBundle4));
         gridBag.setConstraints(precLengthLabel, constraints);
         formPanel.add(precLengthLabel);
 
@@ -395,6 +399,7 @@ public class CastAsDialog extends JDialog implements ActionListener {
         constraints.weightx = 1.0;
         String nbBundle5 = mLoc.t("PRSR001: Scale:");
         JLabel scaleLabel = new JLabel(Localizer.parse(nbBundle5)); //NOI18N
+        scaleLabel.getAccessibleContext().setAccessibleName(Localizer.parse(nbBundle5));
         gridBag.setConstraints(scaleLabel, constraints);
         formPanel.add(scaleLabel);
 

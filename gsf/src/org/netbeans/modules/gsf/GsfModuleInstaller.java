@@ -52,6 +52,7 @@ import javax.management.ObjectName;
 import org.netbeans.napi.gsfret.source.SourceTaskFactoryManager;
 import org.netbeans.editor.Settings;
 import org.netbeans.modules.gsfret.source.ActivatedDocumentListener;
+import org.netbeans.modules.gsfret.source.SourceAccessor;
 import org.netbeans.modules.gsfret.source.usages.ClassIndexManager;
 import org.netbeans.modules.gsfret.source.usages.RepositoryUpdater;
 import org.netbeans.modules.gsfret.source.util.LowMemoryNotifierMBean;
@@ -68,6 +69,12 @@ public class GsfModuleInstaller extends ModuleInstall {
 
     @Override
     public void restored() {
+        // Attempt to deal with load order problem deadlocking on the mac
+        // This was a quickfix for a similar bug to 126558; see
+        //  http://hg.netbeans.org/main/rev/63c10f6d307b
+        // for a better way to fix it
+        SourceAccessor.dummy = 1;
+        
         // add editor support for our registered editor types
         Settings.addInitializer(new GsfEditorSettings());
         Settings.reset();
@@ -90,12 +97,16 @@ public class GsfModuleInstaller extends ModuleInstall {
         final boolean ret = super.closing();
         RepositoryUpdater.getDefault().close();
         try {
-            ClassIndexManager.getDefault().writeLock(new ClassIndexManager.ExceptionAction<Void>() {
-                 public Void run() throws IOException {
-                     ClassIndexManager.getDefault().close();
-                     return null;
-                 }
-            });
+            for (final Language language : LanguageRegistry.getInstance()) {
+                if (language.getIndexer() != null) {
+                    ClassIndexManager.get(language).writeLock(new ClassIndexManager.ExceptionAction<Void>() {
+                         public Void run() throws IOException {
+                             ClassIndexManager.get(language).close();
+                             return null;
+                         }
+                    });
+                }
+            }
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
         }

@@ -204,8 +204,19 @@ public final class ClassPathSupport {
     public String[] encodeToStrings(List<Item> classpath) {
         return encodeToStrings(classpath, null);
     }
+    public String[] encodeToStrings( List<Item> classpath, String projectXMLElement) {
+        return encodeToStrings(classpath, projectXMLElement, "classpath");
+    }
     
-    public String[] encodeToStrings( List<Item> classpath, String projectXMLElement ) {
+    /**
+     * 
+     * @param classpath
+     * @param projectXMLElement
+     * @param libraryVolumeType
+     * @return
+     * @since 1.22
+     */
+    public String[] encodeToStrings( List<Item> classpath, String projectXMLElement, String libraryVolumeType ) {
         List<String> items = new ArrayList<String>();
         for (Item item : classpath) {
             String reference = null;
@@ -253,7 +264,7 @@ public final class ClassPathSupport {
                         if ( library == null ) {
                             break;
                         }
-                        reference = getLibraryReference( item );
+                        reference = getLibraryReference( item, libraryVolumeType );
                         item.setReference(reference);
                     }
                     break;    
@@ -311,11 +322,22 @@ public final class ClassPathSupport {
     }
     
     public String getLibraryReference( Item item ) {
-        if ( item.getType() != Item.TYPE_LIBRARY ) {
-            throw new IllegalArgumentException( "Item must be of type LIBRARY" );
-        }
-        return referenceHelper.createLibraryReference(item.getLibrary(), "classpath"); // NOI18N
+        return getLibraryReference(item, "classpath");
     }
+    
+    /**
+     * 
+     * @param item
+     * @param volumeType
+     * @return
+     * @since 1.22
+     */
+    public String getLibraryReference( Item item, String volumeType ) {
+        if ( item.getType() != Item.TYPE_LIBRARY ) {
+            throw new IllegalArgumentException( "Item must be of type LIBRARY" ); // NOI18N
+        }
+        return referenceHelper.createLibraryReference(item.getLibrary(), volumeType); // NOI18N
+    }    
     
     // Private methods ---------------------------------------------------------
 

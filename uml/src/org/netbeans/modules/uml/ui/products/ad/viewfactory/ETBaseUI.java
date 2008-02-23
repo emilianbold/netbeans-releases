@@ -445,6 +445,8 @@ public class ETBaseUI
       {
          meid = modEle.getXMIID();
          topLevelId = modEle.getTopLevelId();
+         if (topLevelId == null) 
+             topLevelId = "";
       }
 
       // If we're disconnected from the presentation element we don't want to loose our ids.  So

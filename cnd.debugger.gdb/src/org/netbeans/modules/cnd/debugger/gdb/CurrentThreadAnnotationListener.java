@@ -43,9 +43,9 @@ package org.netbeans.modules.cnd.debugger.gdb;
 
 import java.beans.PropertyChangeEvent;
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import javax.swing.SwingUtilities;
 
 import org.netbeans.api.debugger.*;
@@ -92,7 +92,9 @@ public class CurrentThreadAnnotationListener extends DebuggerManagerAdapter {
             annotate();
         } else if (e.getPropertyName().equals(GdbDebugger.PROP_STATE)) {
             annotate();
-        }
+        } else if (e.getPropertyName().equals(GdbDebugger.DIS_UPDATE)) {
+            annotate();
+        } 
     }
 
 
@@ -166,7 +168,7 @@ public class CurrentThreadAnnotationListener extends DebuggerManagerAdapter {
 
 
     // do not need synchronization, called in a 1-way RP
-    private HashMap               stackAnnotations = new HashMap();
+    private final Set              stackAnnotations = new HashSet();
     
     private RequestProcessor rp = new RequestProcessor("Debugger Thread Annotation Refresher"); // NOI18N
 
@@ -191,9 +193,8 @@ public class CurrentThreadAnnotationListener extends DebuggerManagerAdapter {
                             }
                             currentPC = null;
                         }
-                        Iterator i = stackAnnotations.values().iterator();
-                        while (i.hasNext()) {
-                            EditorContextBridge.removeAnnotation(i.next());
+                        for (Object ann : stackAnnotations) {
+                            EditorContextBridge.removeAnnotation(ann);
                         }
                         stackAnnotations.clear();
                     }
@@ -213,7 +214,7 @@ public class CurrentThreadAnnotationListener extends DebuggerManagerAdapter {
             if (taskAnnotate == null) {
                 taskAnnotate = rp.post(new Runnable() {
                     public void run() {
-                        List stack;
+                        List<CallStackFrame> stack;
                         synchronized (rp) {
                             if (stackToAnnotate == null) {
                                 return ; // Nothing to do
@@ -227,37 +228,38 @@ public class CurrentThreadAnnotationListener extends DebuggerManagerAdapter {
                             EditorContextBridge.removeAnnotation(currentPC);
                         }
                         currentPC = null;
-                        Iterator iter = stackAnnotations.values().iterator();
-                        while (iter.hasNext()) {
-                            EditorContextBridge.removeAnnotation(iter.next());
+                        for (Object ann : stackAnnotations) {
+                            EditorContextBridge.removeAnnotation(ann);
                         }
                         stackAnnotations.clear();
                         
                         // Add new annotations
-                        HashMap newAnnotations = new HashMap();
+                        Set<CallStackFrame> newAnnotations = new HashSet<CallStackFrame>();
                         String annotationType = EditorContext.CURRENT_LINE_ANNOTATION_TYPE;
-                        int i, k = stack.size();
-                        for (i = 0; i < k; i++) {
-                            // 1) check Line
-//                            String language = null;
-                            CallStackFrame csf = (CallStackFrame) stack.get(i);
-                            int lineNumber = csf.getLineNumber();
-                            String line = Integer.toString(lineNumber);
-
-                            // 2) line already annotated?
-                            if (newAnnotations.containsKey(line))
+                        for (CallStackFrame csf : stack) {
+                            // 1) Stack frame already annotated?
+                            if (!newAnnotations.add(csf)) {
                                 continue;
+                            }
 
-                            // 3) annotate line
+                            // 2) annotate line
                             Object da = EditorContextBridge.annotate(csf, annotationType);
 
-                            // 4) add new line to hashMap
+                            // 3) add new frame to set
                             if (da != null) {
-                                newAnnotations.put(line, da);
+                                stackAnnotations.add(da);
                             }
+                            
+                            // 4) annotate dis
+                            da = EditorContextBridge.annotateDis(csf, annotationType);
+                            
+                            // 5) add new dis line to hashMap
+                            if (da != null) {
+                                stackAnnotations.add(da);
+                            }
+                            
                             annotationType = EditorContext.CALL_STACK_FRAME_ANNOTATION_TYPE;
                         }
-                        stackAnnotations = newAnnotations;
                     }
                 });
             }

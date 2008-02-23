@@ -276,6 +276,7 @@ public class FlatfileResulSetPanel extends JPanel implements ActionListener, Pro
         URL url = getClass().getResource("/org/netbeans/modules/sql/framework/ui/resources/images/refresh16.png");
         showDataBtn = new JButton(new ImageIcon(url));
         String nbBundle30 = mLoc.t("PRSR001: Show data for selected flat file table node");
+        showDataBtn.getAccessibleContext().setAccessibleName(Localizer.parse(nbBundle30));
         showDataBtn.setToolTipText(Localizer.parse(nbBundle30));
         showDataBtn.setMnemonic(Localizer.parse(nbBundle30).charAt(0));
         showDataBtn.setActionCommand(CMD_SHOW_DATA);
@@ -285,6 +286,7 @@ public class FlatfileResulSetPanel extends JPanel implements ActionListener, Pro
 
         String nbBundle31 = mLoc.t("PRSR001: Limit number of rows");
         JLabel lbl = new JLabel(Localizer.parse(nbBundle31));
+        lbl.getAccessibleContext().setAccessibleName(Localizer.parse(nbBundle31));
         lbl.setDisplayedMnemonic(Localizer.parse(nbBundle31).charAt(0));
 
         recordCountPanel.add(lbl);
@@ -298,7 +300,9 @@ public class FlatfileResulSetPanel extends JPanel implements ActionListener, Pro
         fl.setAlignment(FlowLayout.LEFT);
         totalRowsPanel.setLayout(fl);
 
-        JLabel totalRowsNameLabel = new JLabel("Total rows:");
+        String nbBundle51 = mLoc.t("PRSR001: Total rows:");
+        JLabel totalRowsNameLabel = new JLabel(Localizer.parse(nbBundle51));
+        totalRowsNameLabel.getAccessibleContext().setAccessibleName(Localizer.parse(nbBundle51));
         totalRowsNameLabel.setBorder(BorderFactory.createEmptyBorder(0, 100, 0, 8));
         totalRowsPanel.add(totalRowsNameLabel);
 

@@ -58,8 +58,7 @@ import org.openide.text.PositionBounds;
 import org.openide.util.*;
 import javax.swing.*;
 import java.awt.event.*;
-import org.netbeans.api.gsf.Element;
-import org.netbeans.api.gsf.ElementHandle;
+import org.netbeans.modules.gsf.api.ElementHandle;
 import org.netbeans.napi.gsfret.source.Source;
 import org.netbeans.napi.gsfret.source.UiUtils;
 import org.openide.loaders.DataObjectNotFoundException;
@@ -79,10 +78,10 @@ import org.openide.windows.TopComponent;
  */
 public final class OpenAction extends AbstractAction {
     
-    private ElementHandle<? extends Element> elementHandle;   
+    private ElementHandle elementHandle;   
     private FileObject fileObject;
       
-    public OpenAction( ElementHandle<? extends Element> elementHandle, FileObject fileObject ) {
+    public OpenAction(ElementHandle elementHandle, FileObject fileObject) {
         this.elementHandle = elementHandle;
         this.fileObject = fileObject;
         putValue ( Action.NAME, NbBundle.getMessage ( OpenAction.class, "LBL_Goto" ) ); //NOI18N

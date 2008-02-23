@@ -445,11 +445,10 @@ public final class CsmProjectContentResolver {
                     for (CsmDeclaration decl : currentFile.getDeclarations()) {
                         if (CsmKindUtilities.isFunction(decl)) {
                             CsmFunction fun = (CsmFunction) decl;
-                            if (fun.getScope().equals(currentFile) /*&& fun.getStartOffset() < offset*/) {
+                            if (CsmBaseUtilities.isFileLocalFunction(fun)) {
                                 if (decl.getName().length() != 0 && matchName(decl.getName().toString(), strPrefix, match)) {
                                     out.add(fun);
                                 }
-                                
                             }
                         }
                     }

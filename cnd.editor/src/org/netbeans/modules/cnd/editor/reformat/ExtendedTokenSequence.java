@@ -45,6 +45,7 @@ import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.cnd.api.lexer.CppTokenId;
+import org.netbeans.modules.cnd.editor.reformat.DiffLinkedList.DiffResult;
 import static org.netbeans.cnd.api.lexer.CppTokenId.*;
 
 /**
@@ -59,7 +60,7 @@ public class ExtendedTokenSequence {
         this.diffs = diffs;
     }
 
-    void replacePrevious(Token<CppTokenId> previous, String space){
+    /*package local*/ void replacePrevious(Token<CppTokenId> previous, String space){
         String old = previous.text().toString();
         if (!old.equals(space) || old.indexOf('\t') >=0){ // NOI18N
             diffs.addFirst(ts.offset() - previous.length(),
@@ -94,6 +95,52 @@ public class ExtendedTokenSequence {
         if (!old.equals(space) || old.indexOf('\t') >=0){ // NOI18N
             diffs.addFirst(ts.offset()+current.length(),
                            ts.offset()+current.length()+next.length(), space); 
+        }
+    }
+    
+    /*package local*/ int getTokenPosition(){
+        int index = ts.index();
+        try {
+            int column = 0;
+            while(ts.movePrevious()){
+                DiffResult diff = diffs.getDiffs(this, 0);
+                if (diff != null){
+                    if (diff.before != null){
+                        column+=diff.before.spaceLength();
+                        if (diff.before.hasNewLine()) {
+                            return column;
+                        }
+                    }
+                    if (diff.replace != null){
+                        column+=diff.replace.spaceLength();
+                        if (diff.replace.hasNewLine()) {
+                            return column;
+                        }
+                        continue;
+                    }
+                }
+                switch (ts.token().id()) {
+                    case NEW_LINE:
+                    case PREPROCESSOR_DIRECTIVE:
+                         return column;
+                    case BLOCK_COMMENT:
+                        String text = ts.token().text().toString();
+                        int i = text.lastIndexOf('\n');
+                        if (i < 0){
+                            column+=text.length();
+                            break;
+                        } 
+                        column+=text.length()-i+1;
+                        return column;
+                    default:
+                        column+=ts.token().length();
+                        break;
+                }
+            }
+            return column;
+        } finally {
+            ts.moveIndex(index);
+            ts.moveNext();
         }
     }
     
@@ -188,6 +235,15 @@ public class ExtendedTokenSequence {
                 if (!ts.moveNext()){
                     return true;
                 }
+                DiffResult diff = diffs.getDiffs(this, 0);
+                if (diff != null){
+                    if (diff.replace != null){
+                        if (diff.replace.hasNewLine()) {
+                            return true;
+                        }
+                        continue;
+                    }
+                }
                 CppTokenId id = ts.token().id();
                 if (id == NEW_LINE){
                     return true;
@@ -195,6 +251,13 @@ public class ExtendedTokenSequence {
                     // skip
                 } else if (ts.token().id() != WHITESPACE){
                     return false;
+                }
+                if (diff != null){
+                    if (diff.after != null){
+                        if (diff.after.hasNewLine()) {
+                            return true;
+                        }
+                    }
                 }
             }
         } finally {
@@ -282,6 +345,20 @@ public class ExtendedTokenSequence {
                 if (!ts.movePrevious()){
                     return true;
                 }
+                DiffResult diff = diffs.getDiffs(this, 0);
+                if (diff != null){
+                    if (diff.before != null){
+                        if (diff.before.hasNewLine()) {
+                            return true;
+                        }
+                    }
+                    if (diff.replace != null){
+                        if (diff.replace.hasNewLine()) {
+                            return true;
+                        }
+                        continue;
+                    }
+                }
                 if (ts.token().id() == NEW_LINE ||
                     ts.token().id() == PREPROCESSOR_DIRECTIVE){
                     return true;
@@ -306,6 +383,28 @@ public class ExtendedTokenSequence {
                     parenDepth--;
                     if (parenDepth == 0){
                         return lookPreviousImportant();
+                    }
+                } else if (ts.token().id() == RPAREN){
+                    parenDepth++;
+                }
+            }
+        } finally {
+            ts.moveIndex(index);
+            ts.moveNext();
+        }
+    }
+
+    /*package local*/ int openParenIndent(int parenDepth) {
+        int index = ts.index();
+        try {
+            while(true) {
+                if (!ts.movePrevious()){
+                    return -1;
+                }
+                if (ts.token().id() == LPAREN){
+                    parenDepth--;
+                    if (parenDepth == 0){
+                        return getTokenPosition()+1;
                     }
                 } else if (ts.token().id() == RPAREN){
                     parenDepth++;

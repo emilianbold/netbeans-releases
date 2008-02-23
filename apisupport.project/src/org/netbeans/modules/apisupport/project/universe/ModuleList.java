@@ -181,7 +181,7 @@ public final class ModuleList {
             // netbeans.org module.
             File nbroot = findNetBeansOrg(basedir);
             if (nbroot == null) {
-                throw new IOException("Could not find netbeans.org CVS root from " + basedir + "; note that 3rd-level modules (a/b/c) are permitted at the maximum"); // NOI18N
+                throw new IOException("Could not find netbeans.org source root from " + basedir + "; note that 3rd-level modules (a/b/c) are permitted at the maximum"); // NOI18N
             }
             return findOrCreateModuleListFromNetBeansOrgSources(nbroot);
         }
@@ -925,7 +925,7 @@ public final class ModuleList {
     }
     
     /**
-     * Whether whether a given dir is root of netbeans.org CVS.
+     * Whether whether a given dir is root of netbeans.org sources.
      */
     public static boolean isNetBeansOrg(File dir) {
         return new File(dir, "nbbuild").isDirectory() && // NOI18N
@@ -934,7 +934,7 @@ public final class ModuleList {
     }
     
     /**
-     * Find the root of netbeans.org CVS starting from a project basedir.
+     * Find the root of netbeans.org sources starting from a project basedir.
      */
     public static File findNetBeansOrg(File basedir) {
         File f = basedir;

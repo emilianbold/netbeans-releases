@@ -42,10 +42,10 @@ package org.netbeans.modules.php.editor.completion;
 
 import java.util.Set;
 import javax.swing.ImageIcon;
-import org.netbeans.api.gsf.Element;
-import org.netbeans.api.gsf.ElementKind;
-import org.netbeans.api.gsf.HtmlFormatter;
-import org.netbeans.api.gsf.Modifier;
+import org.netbeans.modules.gsf.api.Element;
+import org.netbeans.modules.gsf.api.ElementKind;
+import org.netbeans.modules.gsf.api.HtmlFormatter;
+import org.netbeans.modules.gsf.api.Modifier;
 
 /**
  * Completion proposal for the PHP code block. 
