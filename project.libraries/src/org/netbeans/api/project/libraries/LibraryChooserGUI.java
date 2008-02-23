@@ -281,7 +281,7 @@ class LibraryChooserGUI extends JPanel implements ExplorerManager.Provider, Help
             }
         });
 
-        manageLibrariesButton.setText(org.openide.util.NbBundle.getMessage(LibraryChooserGUI.class, "LibraryChooserGUI.manageLibrariesButton.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(manageLibrariesButton, org.openide.util.NbBundle.getMessage(LibraryChooserGUI.class, "LibraryChooserGUI.manageLibrariesButton.text")); // NOI18N
         manageLibrariesButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 manageLibrariesButtonActionPerformed(evt);

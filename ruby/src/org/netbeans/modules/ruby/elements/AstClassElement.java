@@ -7,8 +7,8 @@ import org.jruby.ast.Colon3Node;
 import org.jruby.ast.Node;
 import org.jruby.ast.SClassNode;
 import org.jruby.ast.types.INameNode;
-import org.netbeans.fpi.gsf.CompilationInfo;
-import org.netbeans.fpi.gsf.ElementKind;
+import org.netbeans.modules.gsf.api.CompilationInfo;
+import org.netbeans.modules.gsf.api.ElementKind;
 
 
 public class AstClassElement extends AstElement implements ClassElement {

@@ -45,7 +45,7 @@ import java.text.DateFormat;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
-import org.netbeans.fpi.gsfpath.classpath.ClassPath;
+import org.netbeans.modules.gsfpath.api.classpath.ClassPath;
 
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;

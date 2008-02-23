@@ -44,16 +44,16 @@ package org.netbeans.modules.ruby;
 import java.util.List;
 import junit.framework.TestCase;
 import org.jruby.ast.Node;
-import org.netbeans.fpi.gsf.CompilationInfo;
-import org.netbeans.fpi.gsf.ElementHandle;
-import org.netbeans.fpi.gsf.OccurrencesFinder;
-import org.netbeans.fpi.gsf.OffsetRange;
-import org.netbeans.fpi.gsf.ParseListener;
-import org.netbeans.fpi.gsf.ParserFile;
-import org.netbeans.fpi.gsf.ParserResult;
-import org.netbeans.fpi.gsf.PositionManager;
-import org.netbeans.fpi.gsf.SemanticAnalyzer;
-import org.netbeans.fpi.gsf.SourceFileReader;
+import org.netbeans.modules.gsf.api.CompilationInfo;
+import org.netbeans.modules.gsf.api.ElementHandle;
+import org.netbeans.modules.gsf.api.OccurrencesFinder;
+import org.netbeans.modules.gsf.api.OffsetRange;
+import org.netbeans.modules.gsf.api.ParseListener;
+import org.netbeans.modules.gsf.api.ParserFile;
+import org.netbeans.modules.gsf.api.ParserResult;
+import org.netbeans.modules.gsf.api.PositionManager;
+import org.netbeans.modules.gsf.api.SemanticAnalyzer;
+import org.netbeans.modules.gsf.api.SourceFileReader;
 import org.netbeans.modules.ruby.RubyParser.Sanitize;
 
 /**

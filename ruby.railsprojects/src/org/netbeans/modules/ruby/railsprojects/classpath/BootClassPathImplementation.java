@@ -42,9 +42,9 @@ package org.netbeans.modules.ruby.railsprojects.classpath;
 
 import java.beans.PropertyChangeEvent;
 import org.netbeans.api.ruby.platform.RubyInstallation;
-import org.netbeans.sfpi.gsfpath.classpath.ClassPathImplementation;
-import org.netbeans.sfpi.gsfpath.classpath.PathResourceImplementation;
-import org.netbeans.sfpi.gsfpath.classpath.support.ClassPathSupport;
+import org.netbeans.modules.gsfpath.spi.classpath.ClassPathImplementation;
+import org.netbeans.modules.gsfpath.spi.classpath.PathResourceImplementation;
+import org.netbeans.modules.gsfpath.spi.classpath.support.ClassPathSupport;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.File;

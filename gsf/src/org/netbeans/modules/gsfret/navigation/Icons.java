@@ -47,8 +47,8 @@ import java.util.HashMap;
 import java.util.Map;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
-import org.netbeans.fpi.gsf.ElementKind;
-import org.netbeans.fpi.gsf.Modifier;
+import org.netbeans.modules.gsf.api.ElementKind;
+import org.netbeans.modules.gsf.api.Modifier;
 import org.openide.util.Utilities;
 
 
