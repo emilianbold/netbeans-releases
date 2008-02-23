@@ -76,6 +76,7 @@ import org.netbeans.modules.j2ee.clientproject.Utils;
 import org.netbeans.modules.j2ee.clientproject.classpath.ClassPathSupportCallbackImpl;
 import org.netbeans.modules.j2ee.common.project.classpath.ClassPathSupport;
 import org.netbeans.modules.j2ee.common.project.ui.ClassPathUiSupport;
+import org.netbeans.modules.j2ee.common.project.ui.J2eePlatformUiSupport;
 import org.netbeans.modules.j2ee.common.project.ui.ProjectProperties;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.AntDeploymentHelper;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;

@@ -845,53 +845,56 @@ public class AppClientLogicalViewProvider implements LogicalViewProvider {
             Node[] result;
             if (key == LIBRARIES) {
                 //Libraries Node
-                result = new Node[] {
+                result = new Node[]{
                     new LibrariesNode(
-                            NbBundle.getMessage(AppClientLogicalViewProvider.class,"CTL_LibrariesNode"),
-                            project,
-                            evaluator,
-                            helper,
-                            resolver,
-                            ProjectProperties.RUN_CLASSPATH,
-                            new String[] {ProjectProperties.BUILD_CLASSES_DIR},
-                            AppClientProjectProperties.JAVA_PLATFORM, // NOI18N
-                            AppClientProjectProperties.J2EE_SERVER_INSTANCE,
-                            new Action[] {
-                            LibrariesNode.createAddProjectAction(project, project.getSourceRoots()),
-                            LibrariesNode.createAddLibraryAction(resolver, project.getSourceRoots(), null),
-                            LibrariesNode.createAddFolderAction(project.getAntProjectHelper(), project.getSourceRoots()),
+                    NbBundle.getMessage(AppClientLogicalViewProvider.class, "CTL_LibrariesNode"),
+                    project,
+                    evaluator,
+                    helper,
+                    resolver,
+                    ProjectProperties.RUN_CLASSPATH,
+                    new String[]{ProjectProperties.BUILD_CLASSES_DIR},
+                    "platform.active", // NOI18N
+                    AppClientProjectProperties.JAVA_PLATFORM, // NOI18N
+                    AppClientProjectProperties.J2EE_SERVER_INSTANCE,
+                    new Action[]{
+                        LibrariesNode.createAddProjectAction(project, project.getSourceRoots()),
+                        LibrariesNode.createAddLibraryAction(resolver, project.getSourceRoots(), null),
+                        LibrariesNode.createAddFolderAction(project.getAntProjectHelper(), project.getSourceRoots()),
                         null,
                         new PreselectPropertiesAction(project, "Libraries", CustomizerLibraries.COMPILE) // NOI18N
-                        },
+                    },
                     ClassPathSupportCallbackImpl.ELEMENT_INCLUDED_LIBRARIES,
                     cs)
                 };
             } else if (key == TEST_LIBRARIES) {
-                result = new Node[] {
+                result = new Node[]{
                     new LibrariesNode(
-                            NbBundle.getMessage(AppClientLogicalViewProvider.class,"CTL_TestLibrariesNode"),
-                            project,
-                            evaluator,
-                            helper,
-                            resolver,
-                            ProjectProperties.RUN_TEST_CLASSPATH,
-                            new String[] {
+                    NbBundle.getMessage(AppClientLogicalViewProvider.class, "CTL_TestLibrariesNode"),
+                    project,
+                    evaluator,
+                    helper,
+                    resolver,
+                    ProjectProperties.RUN_TEST_CLASSPATH,
+                    new String[]{
                         ProjectProperties.BUILD_TEST_CLASSES_DIR,
                         ProjectProperties.JAVAC_CLASSPATH,
                         ProjectProperties.BUILD_CLASSES_DIR,
-                            },
-                            null,
-                            null,
-                            new Action[] {
+                    },
+                    null,
+                    null,
+                    null,
+                    new Action[]{
                         LibrariesNode.createAddProjectAction(project, project.getTestSourceRoots()),
                         LibrariesNode.createAddLibraryAction(resolver, project.getTestSourceRoots(), null),
                         LibrariesNode.createAddFolderAction(project.getAntProjectHelper(), project.getTestSourceRoots()),
                         null,
                         new PreselectPropertiesAction(project, "Libraries", CustomizerLibraries.COMPILE_TESTS), // NOI18N
-                            },
-                            null,
-                            cs
-                    ),
+                    },
+                    null,
+                    cs)
+                
+            ,
                 };
             }
             // else if (key instanceof SourceGroup) {

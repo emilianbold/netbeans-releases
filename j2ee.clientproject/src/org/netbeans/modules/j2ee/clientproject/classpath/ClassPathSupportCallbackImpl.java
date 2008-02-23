@@ -41,19 +41,13 @@
 
 package org.netbeans.modules.j2ee.clientproject.classpath;
 
-import java.io.File;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 import org.netbeans.modules.j2ee.clientproject.AppClientProjectType;
 import org.netbeans.modules.j2ee.common.project.classpath.ClassPathSupport;
 import org.netbeans.modules.j2ee.common.project.classpath.ClassPathSupport.Item;
 import org.netbeans.modules.j2ee.common.project.ui.ProjectProperties;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
-import org.netbeans.spi.project.support.ant.PropertyEvaluator;
-import org.netbeans.spi.project.support.ant.ReferenceHelper;
 import org.openide.filesystems.FileObject;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;

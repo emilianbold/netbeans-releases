@@ -85,6 +85,7 @@ import org.netbeans.api.project.libraries.LibraryChooser;
 import org.netbeans.modules.web.project.WebProject;
 import org.netbeans.modules.j2ee.common.project.classpath.ClassPathSupport;
 import org.netbeans.modules.j2ee.common.project.ui.AntArtifactChooser;
+import org.netbeans.modules.j2ee.common.project.ui.LibrariesNode;
 import org.netbeans.modules.j2ee.common.project.ui.ProjectProperties;
 import org.netbeans.modules.java.api.common.util.CommonProjectUtils;
 import org.netbeans.modules.web.project.classpath.ClassPathSupportCallbackImpl;
@@ -277,10 +278,7 @@ public class WarIncludesUi {
     
     static class ClassPathCellRenderer extends DefaultTableCellRenderer {
         
-        private static String RESOURCE_ICON_CLASSPATH = "org/netbeans/modules/web/project/ui/resources/referencedClasspath.gif"; //NOI18N
-        
         private static ImageIcon ICON_FOLDER = null; 
-        private static ImageIcon ICON_CLASSPATH  = new ImageIcon( Utilities.loadImage( RESOURCE_ICON_CLASSPATH ) );
         
         private static ImageIcon ICON_BROKEN_JAR;
         private static ImageIcon ICON_BROKEN_LIBRARY;
@@ -289,11 +287,11 @@ public class WarIncludesUi {
         // Contains well known paths in the WebProject
         private static final Map WELL_KNOWN_PATHS_NAMES = new HashMap();
         static {
-            WELL_KNOWN_PATHS_NAMES.put( ProjectProperties.JAVAC_CLASSPATH, NbBundle.getMessage( WarIncludesUi.class, "LBL_JavacClasspath_DisplayName" ) );
-            WELL_KNOWN_PATHS_NAMES.put( ProjectProperties.JAVAC_TEST_CLASSPATH, NbBundle.getMessage( WarIncludesUi.class,"LBL_JavacTestClasspath_DisplayName") );
-            WELL_KNOWN_PATHS_NAMES.put( ProjectProperties.RUN_TEST_CLASSPATH, NbBundle.getMessage( WarIncludesUi.class, "LBL_RunTestClasspath_DisplayName" ) );
-            WELL_KNOWN_PATHS_NAMES.put( ProjectProperties.BUILD_CLASSES_DIR, NbBundle.getMessage( WarIncludesUi.class, "LBL_BuildClassesDir_DisplayName" ) );            
-            WELL_KNOWN_PATHS_NAMES.put( ProjectProperties.BUILD_TEST_CLASSES_DIR, NbBundle.getMessage (WarIncludesUi.class,"LBL_BuildTestClassesDir_DisplayName") );
+            WELL_KNOWN_PATHS_NAMES.put( ProjectProperties.JAVAC_CLASSPATH, NbBundle.getMessage( LibrariesNode.class, "LBL_JavacClasspath_DisplayName" ) );
+            WELL_KNOWN_PATHS_NAMES.put( ProjectProperties.JAVAC_TEST_CLASSPATH, NbBundle.getMessage( LibrariesNode.class,"LBL_JavacTestClasspath_DisplayName") );
+            WELL_KNOWN_PATHS_NAMES.put( ProjectProperties.RUN_TEST_CLASSPATH, NbBundle.getMessage( LibrariesNode.class, "LBL_RunTestClasspath_DisplayName" ) );
+            WELL_KNOWN_PATHS_NAMES.put( ProjectProperties.BUILD_CLASSES_DIR, NbBundle.getMessage( LibrariesNode.class, "LBL_BuildClassesDir_DisplayName" ) );            
+            WELL_KNOWN_PATHS_NAMES.put( ProjectProperties.BUILD_TEST_CLASSES_DIR, NbBundle.getMessage (LibrariesNode.class,"LBL_BuildTestClassesDir_DisplayName") );
         };
 
         public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
@@ -375,7 +373,7 @@ public class WarIncludesUi {
                         return file.isDirectory() ? getFolderIcon() : ProjectProperties.ICON_JAR;
                     }
                 case ClassPathSupport.Item.TYPE_CLASSPATH:
-                    return ICON_CLASSPATH;
+                    return ProjectProperties.ICON_CLASSPATH;
                 
             }
             

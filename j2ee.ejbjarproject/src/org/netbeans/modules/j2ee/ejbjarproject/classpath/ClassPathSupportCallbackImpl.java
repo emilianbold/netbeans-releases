@@ -55,7 +55,6 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.w3c.dom.Text;
 import org.netbeans.modules.j2ee.ejbjarproject.EjbJarProjectType;
-import org.netbeans.modules.java.api.common.util.CommonProjectUtils;
 import org.openide.filesystems.FileObject;
 
 /**

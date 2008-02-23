@@ -77,6 +77,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.modules.j2ee.common.project.ui.ClassPathUiSupport;
+import org.netbeans.modules.j2ee.common.project.ui.J2eePlatformUiSupport;
 import org.netbeans.modules.j2ee.common.project.ui.ProjectProperties;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
@@ -85,12 +86,12 @@ import org.netbeans.modules.java.api.common.SourceRoots;
 import org.netbeans.modules.java.api.common.ant.UpdateHelper;
 import org.netbeans.modules.java.api.common.ui.PlatformUiSupport;
 import org.netbeans.modules.web.project.UpdateProjectImpl;
+import org.netbeans.modules.web.project.Utils;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.netbeans.spi.project.support.ant.ReferenceHelper;
 import org.netbeans.modules.web.project.WebProjectUtil;
-import org.netbeans.modules.web.project.Utils;
 import org.netbeans.modules.web.project.WebProject;
 import org.netbeans.modules.web.project.WebProjectType;
 import org.netbeans.modules.web.project.classpath.ClassPathSupportCallbackImpl;
@@ -860,7 +861,7 @@ public class WebProjectProperties {
             UI_LOGGER.log(logRecord);
         }
     }
-    
+
     private static void setNewContextPathValue(String contextPath, Project project, EditableProperties projectProps, EditableProperties privateProps) {
         if (contextPath == null)
             return;
