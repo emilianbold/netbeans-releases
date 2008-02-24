@@ -60,7 +60,9 @@ import org.openide.util.Exceptions;
 
 
 import com.nwoods.jgo.JGoBrush;
+import java.awt.event.InputEvent;
 import javax.swing.JOptionPane;
+import javax.swing.KeyStroke;
 import net.java.hulp.i18n.Logger;
 import org.netbeans.modules.etl.logger.Localizer;
 import org.netbeans.modules.etl.logger.LogUtil;
@@ -131,6 +133,7 @@ public class SQLTargetTableArea extends SQLBasicTableArea {
             String nbBundle1 = mLoc.t("PRSR001: Show SQL");
             String lblShowSql =  Localizer.parse(nbBundle1);
             showSqlItem = new JMenuItem(lblShowSql, new ImageIcon(showSqlUrl));
+            showSqlItem.setAccelerator(KeyStroke.getKeyStroke('S', InputEvent.CTRL_MASK));
             showSqlItem.addActionListener(aListener);
             popUpMenu.add(showSqlItem);
 
@@ -138,6 +141,7 @@ public class SQLTargetTableArea extends SQLBasicTableArea {
             String nbBundle2 = mLoc.t("PRSR001: Show Data");
             String lblShowData = Localizer.parse(nbBundle2);
             showDataItem = new JMenuItem(lblShowData, new ImageIcon(showDataUrl));
+            showDataItem.setAccelerator(KeyStroke.getKeyStroke('D',InputEvent.CTRL_MASK));
             showDataItem.addActionListener(aListener);
             popUpMenu.add(showDataItem);
 
@@ -147,7 +151,7 @@ public class SQLTargetTableArea extends SQLBasicTableArea {
             String nbBundle3 = mLoc.t("PRSR001: Show Rejected Data...");
             String lblRjtShowData = Localizer.parse(nbBundle3);
             showRejectionDataItem = new JMenuItem(lblRjtShowData, new ImageIcon(showRejectionDataImgUrl));
-
+            showRejectionDataItem.setAccelerator(KeyStroke.getKeyStroke('E',InputEvent.CTRL_MASK));
             showRejectionDataItem.addActionListener(aListener);
             popUpMenu.add(showRejectionDataItem);
 
@@ -155,12 +159,14 @@ public class SQLTargetTableArea extends SQLBasicTableArea {
             addSelectVisibleColumnsPopUpMenu(aListener);
             String nbBundle4 = mLoc.t("PRSR001: Refresh Metadata");
             synchroniseItem = new JMenuItem(Localizer.parse(nbBundle4), new ImageIcon(synchroniseImgUrl));
+            synchroniseItem.setAccelerator(KeyStroke.getKeyStroke('R',InputEvent.CTRL_MASK));
             synchroniseItem.addActionListener(aListener);
             popUpMenu.add(synchroniseItem);
 
             String nbBundle5 = mLoc.t("PRSR001: Remount");
             String lblRemount = Localizer.parse(nbBundle5);
             remountItem = new JMenuItem(lblRemount, new ImageIcon(remountImgUrl));
+            remountItem.setAccelerator(KeyStroke.getKeyStroke('M',InputEvent.CTRL_MASK));
             remountItem.addActionListener(aListener);
             SQLObject tbl = (SQLObject) SQLTargetTableArea.this.getDataObject();
             SQLDBModelImpl impl = (SQLDBModelImpl) tbl.getParentObject();
@@ -175,6 +181,7 @@ public class SQLTargetTableArea extends SQLBasicTableArea {
             String nbBundle6 = mLoc.t("PRSR001: Target Join Condition...");
             String lblTargetCondition = Localizer.parse(nbBundle6);
             editJoinConditionItem = new JMenuItem(lblTargetCondition, new ImageIcon(targetTableConditionImgUrl));
+            editJoinConditionItem.setAccelerator(KeyStroke.getKeyStroke('J',InputEvent.CTRL_MASK));
             editJoinConditionItem.addActionListener(aListener);
             popUpMenu.add(editJoinConditionItem);
 
@@ -182,6 +189,7 @@ public class SQLTargetTableArea extends SQLBasicTableArea {
             String nbBundle7 = mLoc.t("PRSR001: Outer Filter Condition...");
             String lblTargetFilterCondition = Localizer.parse(nbBundle7);
             editFilterConditionItem = new JMenuItem(lblTargetFilterCondition, new ImageIcon(dataFilterImgUrl));
+            editFilterConditionItem.setAccelerator(KeyStroke.getKeyStroke('F',InputEvent.CTRL_MASK));
             editFilterConditionItem.addActionListener(aListener);
             popUpMenu.add(editFilterConditionItem);
             popUpMenu.addSeparator();
@@ -194,6 +202,7 @@ public class SQLTargetTableArea extends SQLBasicTableArea {
             String nbBundle8 = mLoc.t("PRSR001: Properties");
             String lblProps =  Localizer.parse(nbBundle8);
             propertiesItem = new JMenuItem(lblProps, new ImageIcon(propertiesUrl));
+            propertiesItem.setAccelerator(KeyStroke.getKeyStroke('P',InputEvent.CTRL_MASK));
             propertiesItem.addActionListener(aListener);
             popUpMenu.add(propertiesItem);
         } catch (BaseException ex) {

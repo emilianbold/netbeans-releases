@@ -52,6 +52,7 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -93,7 +94,9 @@ import org.xml.sax.SAXException;
  * @author Jesse Glick, Jan Pokorsky, Jaroslav Tulach, et al.
  */
 final class NbInstaller extends ModuleInstaller {
-    
+
+    private static final Logger LOG = Logger.getLogger(NbInstaller.class.getName());
+
     /** set of manifest sections for each module */
     private final Map<Module,Set<ManifestSection>> sections = new HashMap<Module,Set<ManifestSection>>(100);
     /** ModuleInstall classes for each module that declares one */
@@ -110,8 +113,8 @@ final class NbInstaller extends ModuleInstaller {
     private ModuleManager mgr;
     /** set of permitted core or package dependencies from a module */
     private final Map<Module,Set<String>> kosherPackages = new HashMap<Module,Set<String>>(100);
-    /** Package prefixes passed as special system property. */
-    private static String[] specialResourcePrefixes = null;
+    /** classpath ~ JRE packages to be hidden from a module */
+    private final Map<Module,List<Module.PackageExport>> hiddenClasspathPackages = new  HashMap<Module,List<Module.PackageExport>>();
         
     /** Create an NbInstaller.
      * You should also call {@link #registerManager} and if applicable
@@ -135,6 +138,7 @@ final class NbInstaller extends ModuleInstaller {
     // @SuppressWarnings("unchecked")
     public void prepare(Module m) throws InvalidException {
         ev.log(Events.PREPARE, m);
+        checkForHiddenPackages(m);
         Set<ManifestSection> mysections = null;
         Class<?> clazz = null;
         {
@@ -224,6 +228,50 @@ final class NbInstaller extends ModuleInstaller {
             layers.put(m, layerResource);
         }
     }
+
+    private void checkForHiddenPackages(Module m) throws InvalidException {
+        List<Module.PackageExport> hiddenPackages = new ArrayList<Module.PackageExport>();
+        List<Module> mWithDeps = new LinkedList<Module>();
+        mWithDeps.add(m);
+        for (Dependency d : m.getDependencies()) {
+            if (d.getType() == Dependency.TYPE_MODULE) {
+                Module _m = mgr.get((String) Util.parseCodeName(d.getName())[0]);
+                assert _m != null : d;
+                mWithDeps.add(_m);
+            }
+        }
+        for (Module _m : mWithDeps) {
+            String hidden = (String) _m.getAttribute("OpenIDE-Module-Hide-Classpath-Packages"); // NOI18N
+            if (hidden != null) {
+                for (String piece : hidden.trim().split("[ ,]+")) { // NOI18N
+                    try {
+                        if (piece.endsWith(".*")) { // NOI18N
+                            String pkg = piece.substring(0, piece.length() - 2);
+                            Dependency.create(Dependency.TYPE_MODULE, pkg);
+                            if (pkg.lastIndexOf('/') != -1) {
+                                throw new IllegalArgumentException("Illegal OpenIDE-Module-Hide-Classpath-Packages: " + hidden); // NOI18N
+                            }
+                            hiddenPackages.add(new Module.PackageExport(pkg.replace('.', '/') + '/', false));
+                        } else if (piece.endsWith(".**")) { // NOI18N
+                            String pkg = piece.substring(0, piece.length() - 3);
+                            Dependency.create(Dependency.TYPE_MODULE, pkg);
+                            if (pkg.lastIndexOf('/') != -1) {
+                                throw new IllegalArgumentException("Illegal OpenIDE-Module-Hide-Classpath-Packages: " + hidden); // NOI18N
+                            }
+                            hiddenPackages.add(new Module.PackageExport(pkg.replace('.', '/') + '/', true));
+                        } else {
+                            throw new IllegalArgumentException("Illegal OpenIDE-Module-Hide-Classpath-Packages: " + hidden); // NOI18N
+                        }
+                    } catch (IllegalArgumentException x) {
+                        throw new InvalidException(_m, x.getMessage());
+                    }
+                }
+            }
+        }
+        if (!hiddenPackages.isEmpty()) {
+            hiddenClasspathPackages.put(m, hiddenPackages);
+        }
+    }
     
     public void dispose(Module m) {
         Util.err.fine("dispose: " + m);
@@ -237,6 +285,7 @@ final class NbInstaller extends ModuleInstaller {
         installs.remove(m);
         layers.remove(m);
         kosherPackages.remove(m);
+        hiddenClasspathPackages.remove(m);
     }
     
     public void load(List<Module> modules) {
@@ -488,12 +537,6 @@ final class NbInstaller extends ModuleInstaller {
      * If a module has no declared layer, does nothing.
      */
     private void loadLayers(List<Module> modules, boolean load) {
-        if (
-            ModuleLayeredFileSystem.getUserModuleLayer().isLayersOK() &&
-            ModuleLayeredFileSystem.getInstallationModuleLayer().isLayersOK()
-        ) {
-            return;
-        }
         ev.log(load ? Events.LOAD_LAYERS : Events.UNLOAD_LAYERS, modules);
         // #23609: dependent modules should be able to override:
         modules = new ArrayList<Module>(modules);
@@ -727,8 +770,9 @@ final class NbInstaller extends ModuleInstaller {
                 arr.add("org.openide.modules.os.Solaris"); // NOI18N
             }
             
-            // module format is now 1
-            arr.add ("org.openide.modules.ModuleFormat1"); // NOI18N
+            // module format is now 2
+            arr.add("org.openide.modules.ModuleFormat1"); // NOI18N
+            arr.add("org.openide.modules.ModuleFormat2"); // NOI18N
             
             return arr.toArray (new String[0]);
         }
@@ -743,33 +787,34 @@ final class NbInstaller extends ModuleInstaller {
             for (String cppkg : CLASSPATH_PACKAGES) {
                 if (pkg.startsWith(cppkg) && !findKosher(m).contains(cppkg)) {
                     // Undeclared use of a classpath package. Refuse it.
-                    if (Util.err.isLoggable(Level.FINE)) {
-                        Util.err.fine("Refusing to load classpath package " + pkg + " for " + m.getCodeNameBase() + " without a proper dependency"); // NOI18N
+                    if (LOG.isLoggable(Level.FINE)) {
+                        LOG.fine("Refusing to load classpath package " + pkg + " for " + m.getCodeNameBase() + " without a proper dependency"); // NOI18N
                     }
                     return false;
                 }
             }
+            List<Module.PackageExport> hiddenPackages = hiddenClasspathPackages.get(m);
+            if (hiddenPackages != null) {
+                for (Module.PackageExport hidden : hiddenPackages) {
+                    if (hidden.recursive ? pkg.startsWith(hidden.pkg) : pkg.equals(hidden.pkg)) {
+                        if (LOG.isLoggable(Level.FINE)) {
+                            LOG.fine("Refusing to load classpath package " + pkg + " for " + m.getCodeNameBase());
+                        }
+                        return false;
+                    }
+                }
+            }
+        }
+        if (LOG.isLoggable(Level.FINER)) {
+            LOG.finer("Delegating resource " + pkg + " from " + parent + " for " + m.getCodeNameBase());
         }
         return true;
     }
     
-    private static final String[] CLASSPATH_PACKAGES = new String[] {
+    private static final String[] CLASSPATH_PACKAGES = {
         // core.jar shall be inaccessible
         "org/netbeans/core/startup/",
-        // Java language infrastructure bundled with IDE; do not want clashes with JDK 6:
-        "com/sun/tools/javac/",
-        "com/sun/tools/javadoc/",
-        "com/sun/javadoc/",
-        "com/sun/source/",
-        "javax/annotation/",
-        "javax/lang/model/",
-        "javax/tools/",
-        // do not want JAX-WS 2.0 classes from JDK 6;
-        "javax/xml/bind/", // NOI18N
-        "javax/xml/ws/", // NOI18N
-        "javax/xml/stream/", // NOI18N
-        "javax/jws/", // NOI18N
-        "javax/xml/soap/" // NOI18N
+        // Do not add JRE packages here! See issue #96711 for the alternative.
     };
     
     private Set<String> findKosher(Module m) {

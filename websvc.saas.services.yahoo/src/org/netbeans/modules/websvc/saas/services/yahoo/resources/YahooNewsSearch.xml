@@ -60,7 +60,7 @@
 
         <icon16>org/netbeans/modules/websvc/saas/services/yahoo/resources/yahoo16.png</icon16>
 
-        <group name="YahooTrafficService">
+        <group name="Yahoo">
         </group>
 
         <authentication profile="Templates/WebServices/profile.properties">

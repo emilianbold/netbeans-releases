@@ -84,12 +84,7 @@ public class WsdlSaasBean extends SaasBean {
     private static JaxwsOperationInfo[] toJaxwsOperationInfos(WsdlSaasMethod m, 
             Project project) {
         List<JaxwsOperationInfo> infos = new ArrayList<JaxwsOperationInfo>();
-        
-        //for (Method m : data.getService().getMethods()) {
-            String service = m.getSaas().getDefaultServiceName();
-            String port = m.getWsdlPort().getName();
-            infos.add(new JaxwsOperationInfo(m.getSaas().getParentGroup().getName(), service, port, m.getName(), m.getSaas().getUrl(), project));
-        //}
+        infos.add(new JaxwsOperationInfo(m, project));
         
         return infos.toArray(new JaxwsOperationInfo[infos.size()]);
     }
@@ -165,5 +160,8 @@ public class WsdlSaasBean extends SaasBean {
     public JaxwsOperationInfo lastOperationInfo() {
         return getOperationInfos()[getOperationInfos().length-1];
     }
-    
+
+    public String getResourceClassTemplate() {
+        return RESOURCE_TEMPLATE;
+    }
 }

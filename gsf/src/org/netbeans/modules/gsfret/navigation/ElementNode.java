@@ -49,12 +49,11 @@ import java.util.List;
 import java.util.Set;
 import javax.swing.Action;
 import javax.swing.Icon;
-import org.netbeans.api.gsf.Element;
-import org.netbeans.api.gsf.ElementHandle;
-import org.netbeans.api.gsf.ElementKind;
-import org.netbeans.api.gsf.Modifier;
-import org.netbeans.api.gsf.StructureItem;
-import org.netbeans.api.gsf.StructureItem;
+import org.netbeans.modules.gsf.api.ElementHandle;
+import org.netbeans.modules.gsf.api.ElementKind;
+import org.netbeans.modules.gsf.api.Modifier;
+import org.netbeans.modules.gsf.api.StructureItem;
+import org.netbeans.modules.gsf.api.StructureItem;
 import org.netbeans.modules.gsfret.navigation.actions.OpenAction;
 import org.openide.filesystems.FileObject;
 import org.openide.nodes.AbstractNode;
@@ -289,7 +288,7 @@ public class ElementNode extends AbstractNode {
         //FileObject fileObject; // For the root description
         
         String name;
-        ElementHandle<? extends Element> elementHandle;
+        ElementHandle elementHandle;
         ElementKind kind;
         Set<Modifier> modifiers;        
         List<Description> subs; 

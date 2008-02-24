@@ -261,9 +261,13 @@ public class SaasGroup {
      * @return
      */
     public Group getPathFromRoot() {
+        SaasGroup parentGroup = getParent();
+        if (parentGroup == null) {
+            return null;
+        }
+        
         Group group = new Group();
         group.setName(getName());
-        SaasGroup parentGroup = getParent();
         while(parentGroup != SaasServicesModel.getInstance().getRootGroup()) {
             Group p = new Group();
             p.setName(parentGroup.getName());

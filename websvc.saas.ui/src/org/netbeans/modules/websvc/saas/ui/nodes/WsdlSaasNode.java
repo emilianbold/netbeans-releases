@@ -94,12 +94,7 @@ public class WsdlSaasNode extends SaasNode {
     private static final java.awt.Image ICON =
        Utilities.loadImage( "org/netbeans/modules/websvc/saas/ui/resources/webservice.png" ); //NOI18N
     
-    @Override
-    public Image getIcon(int type) {
-        Image icon = SaasUtil.loadIcon(saas, type);
-        if (icon != null) {
-            return icon;
-        }
+    public Image getGenericIcon(int type) {
         return ICON;
     }
     
@@ -173,28 +168,11 @@ public class WsdlSaasNode extends SaasNode {
     
     @Override
     public Transferable clipboardCopy() throws IOException {
-        if (getSaas().getState() != Saas.State.RESOLVED) {
-            getSaas().toStateReady();
+        if (getSaas().getState() != Saas.State.READY) {
+            getSaas().toStateReady(false);
             return super.clipboardCopy();
         }
         return SaasTransferable.addFlavors(transferable);
-    }
-    
-    private URL getWsdlURL(){
-        URL url = null;
-        java.lang.String wsdlURL = saas.getUrl();
-        try {
-            url = new URL(wsdlURL);
-        } catch (MalformedURLException ex) {
-            //attempt to recover
-            File f = new File(wsdlURL);
-            try{
-                url = f.getCanonicalFile().toURI().normalize().toURL();
-            } catch (IOException exc) {
-                Exceptions.printStackTrace(exc);
-            }
-        }
-        return url;
     }
     
 }

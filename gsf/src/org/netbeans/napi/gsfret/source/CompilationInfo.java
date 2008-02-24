@@ -41,14 +41,23 @@
 package org.netbeans.napi.gsfret.source;
 
 import java.io.IOException;
-import org.netbeans.api.gsf.Index;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import org.netbeans.modules.gsf.api.Error;
+import org.netbeans.modules.gsf.api.Index;
+import org.netbeans.modules.gsf.api.ParserResult;
 import org.netbeans.modules.gsf.Language;
 import org.netbeans.modules.gsf.LanguageRegistry;
 import org.netbeans.modules.gsfret.source.parsing.SourceFileObject;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
-import org.netbeans.api.gsf.annotations.CheckForNull;
 import org.netbeans.api.lexer.TokenHierarchy;
+import org.openide.filesystems.FileUtil;
 
 
 /**
@@ -62,15 +71,15 @@ import org.netbeans.api.lexer.TokenHierarchy;
  *
  * @author Petr Hrebejk, Tomas Zezula
  */
-public class CompilationInfo extends org.netbeans.api.gsf.CompilationInfo {
+public class CompilationInfo extends org.netbeans.modules.gsf.api.CompilationInfo {
     private Phase phase = Phase.MODIFIED;
-    private CompilationUnitTree compilationUnit;
     private ParserTaskImpl javacTask;
     final SourceFileObject jfo;
     final Source javaSource;
     boolean needsRestart;
     private Language language;
-
+    private Map<String,ParserResult> embeddedResults = new HashMap<String,ParserResult>();
+ 
     CompilationInfo() throws IOException {
         super(null);
         this.javaSource = null;
@@ -104,20 +113,6 @@ public class CompilationInfo extends org.netbeans.api.gsf.CompilationInfo {
      */
     public Phase getPhase() {
         return this.phase;
-    }
-
-    /**
-     * Returns the javac tree representing the source file.
-     * @return {@link CompilationUnitTree} the compilation unit cantaining the top level classes contained in the,
-     * java source file. It may return null when the phase is less than {@link JavaSource.Phase#PARSED}
-     */
-    @CheckForNull
-    public CompilationUnitTree getCompilationUnit() {
-        if (this.jfo == null) {
-            throw new IllegalStateException();
-        }
-
-        return this.compilationUnit;
     }
 
     /**
@@ -163,18 +158,13 @@ public class CompilationInfo extends org.netbeans.api.gsf.CompilationInfo {
     }
     
     @Override
-    public Index getIndex() {
-        return getClasspathInfo().getClassIndex();
+    public Index getIndex(String mimeType) {
+        return getClasspathInfo().getClassIndex(mimeType);
     }
 
     void setPhase(final Phase phase) {
         assert phase != null;
         this.phase = phase;
-    }
-
-    void setCompilationUnit(final CompilationUnitTree compilationUnit) {
-        assert compilationUnit != null;
-        this.compilationUnit = compilationUnit;
     }
 
     synchronized ParserTaskImpl getParserTask() {
@@ -187,6 +177,8 @@ public class CompilationInfo extends org.netbeans.api.gsf.CompilationInfo {
         return javacTask;
     }
 
+    // TODO - get rid of this method - it doesn't work for embedding langauges where you really
+    // need to iterate over the results to pick the best language!
     public Language getLanguage() {
         if (language == null) {
             FileObject fo = getFileObject();
@@ -199,4 +191,48 @@ public class CompilationInfo extends org.netbeans.api.gsf.CompilationInfo {
     public void setLanguage(Language language) {
         this.language = language;
     }    
+    
+    // TODO - switch over to making an iterator for parse results instead!
+    public Set<String> getEmbeddedMimeTypes() {
+        return embeddedResults.keySet();
+    }
+    
+    public void addEmbeddingResult(String mimeType, ParserResult result) {
+        embeddedResults.put(mimeType, result);
+        result.setInfo(this);
+    }
+
+    @Override
+    public Collection<? extends ParserResult> getEmbeddedResults(String mimeType) {
+        ParserResult result = getEmbeddedResult(mimeType, 0);
+        if (result != null) {
+            return Collections.singletonList(result);
+        } else {
+            return Collections.emptyList();
+        }
+    }
+    
+    @Override
+    public ParserResult getEmbeddedResult(String embeddedMimeType, int offset) {
+        ParserResult root = embeddedResults.get(embeddedMimeType);
+        
+        return root;
+    }    
+    
+    @Override
+    public List<Error> getErrors() {
+        List<Error> errors = new ArrayList<Error>();
+        for (ParserResult result : embeddedResults.values()) {
+            errors.addAll(result.getDiagnostics());
+        }
+
+        return errors;
+    }
+
+    @Override
+    public String toString() {
+        return "CompilationInfo for " + FileUtil.getFileDisplayName(getFileObject()) + "; phase=" + getPhase();
+    }
+    
+    
 }

@@ -42,7 +42,11 @@ package org.netbeans.modules.gsfret.hints.infrastructure;
 
 import java.util.ArrayList;
 import java.util.List;
-import org.netbeans.api.gsf.HintsProvider;
+import javax.swing.text.Document;
+import org.netbeans.editor.BaseDocument;
+import org.netbeans.modules.gsf.api.HintsProvider;
+import org.netbeans.modules.gsf.Language;
+import org.netbeans.modules.gsf.LanguageRegistry;
 import org.netbeans.napi.gsfret.source.CompilationInfo;
 import org.netbeans.napi.gsfret.source.support.CaretAwareSourceTaskFactory;
 import org.netbeans.modules.gsfret.editor.semantic.ScanningCancellableTask;
@@ -59,16 +63,33 @@ public class SuggestionsTask extends ScanningCancellableTask<CompilationInfo> {
     public SuggestionsTask() {
     }
     
+    static HintsProvider getHintsProvider(Document doc, int offset) {
+        BaseDocument baseDoc = (BaseDocument)doc;
+        List<Language> list = LanguageRegistry.getInstance().getEmbeddedLanguages(baseDoc, offset);
+        for (Language l : list) {
+            if (l.getHintsProvider() != null) {
+                return l.getHintsProvider();
+            }
+        }
+        
+        return null;
+    }
+    
     public void run(CompilationInfo info) throws Exception {
         resume();
         
+        Document doc = info.getDocument();
+        if (doc == null) {
+            return;
+        }
+
         int pos = CaretAwareSourceTaskFactory.getLastPosition(info.getFileObject());
         
         if (pos == -1) {
             return;
         }
 
-        HintsProvider provider = info.getLanguage().getHintsProvider();
+        HintsProvider provider = getHintsProvider(doc, pos);
 
         if (provider == null) {
             return;

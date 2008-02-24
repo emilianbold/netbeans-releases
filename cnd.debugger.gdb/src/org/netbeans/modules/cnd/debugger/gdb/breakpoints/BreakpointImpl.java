@@ -162,7 +162,12 @@ public abstract class BreakpointImpl implements PropertyChangeListener {
     }
 
     protected abstract void setRequests();
-    protected abstract void suspend();
+    
+    protected void suspend() {
+        getDebugger().getGdbProxy().break_delete(getBreakpointNumber());
+        setState(BPSTATE_UNVALIDATED);
+        setRequests();
+    }
 
     /**
      * Called when Fix&Continue is invoked. Reqritten in LineBreakpointImpl.

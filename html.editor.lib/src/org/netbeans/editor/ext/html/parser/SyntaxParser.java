@@ -58,6 +58,7 @@ import org.netbeans.api.lexer.TokenHierarchyEventType;
 import org.netbeans.api.lexer.TokenHierarchyListener;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
+import org.openide.util.Exceptions;
 import org.openide.util.RequestProcessor;
 
 /**
@@ -90,6 +91,8 @@ public final class SyntaxParser {
     private List<SyntaxElement> parsedElements;
     private boolean isSuccessfulyParsed = false;
 
+    protected final ParserSource parserSource;
+    
     /** Returns an instance of SyntaxParser for given document.
      *  The client is supposed to add a SyntaxParserListener to the obtained instance
      *  to get notification whenever the document changes and is reparsed.
@@ -104,6 +107,24 @@ public final class SyntaxParser {
         return parser;
     }
 
+    /** Creates a new instance of SyntaxParser parsing the immutable source. */
+    public static SyntaxParser create(CharSequence source) {
+        return new SyntaxParser(source);
+    }
+    
+    private SyntaxParser(final CharSequence source) {
+        this.parserTask = null;
+        this.doc = null;
+        this.parsedElements = EMPTY_ELEMENTS_LIST;
+        this.languagePath = LanguagePath.get(HTMLTokenId.language());
+        this.hi = TokenHierarchy.create(source, HTMLTokenId.language());
+        this.parserSource = new ParserSource() {
+            public CharSequence getText(int offset, int length) throws BadLocationException {
+                return source.subSequence(offset, offset + length);
+            }
+        };
+    }
+    
     private SyntaxParser(Document document, LanguagePath languagePath) {
         this.doc = document;
         this.languagePath = languagePath;
@@ -117,6 +138,12 @@ public final class SyntaxParser {
             throw new IllegalStateException("Cannot obtain TokenHierarchy instance for document " + document + " with " + mimeType + " mimetype."); //NOI18N
         }
 
+        this.parserSource = new ParserSource() {
+            public String getText(int offset, int length) throws BadLocationException {
+                return doc.getText(offset, length);
+            }
+        };
+        
         parsedElements = EMPTY_ELEMENTS_LIST;
 
         parserTask = RequestProcessor.getDefault().create(new Runnable() {
@@ -131,6 +158,21 @@ public final class SyntaxParser {
         //ensure the document is parsed
         restartParser();
 
+    }
+    
+    /** Parses the immutable source. */
+    public List<SyntaxElement> parseImmutableSource() {
+        if(doc != null) {
+            throw new IllegalStateException("Cannot explicitly parse muttable source!");
+        } else {
+            try {
+                return parseDocument();
+            } catch (BadLocationException ex) {
+                LOGGER.log(Level.WARNING, "Error during parsing html content", ex);
+                return null;
+                
+            }
+        }
     }
 
     //---------------------------- public methods ------------------------------
@@ -199,7 +241,7 @@ public final class SyntaxParser {
     }
 
     private void entityReference() {
-        elements.add(new SyntaxElement(doc, 
+        elements.add(new SyntaxElement(parserSource, 
                 start, 
                 token.offset(hi) + token.length() - start, 
                 SyntaxElement.TYPE_ENTITY_REFERENCE));
@@ -207,14 +249,14 @@ public final class SyntaxParser {
     }
     
     private void comment() {
-        elements.add(new SyntaxElement(doc, 
+        elements.add(new SyntaxElement(parserSource, 
                 start, 
                 token.offset(hi) + token.length() - start, 
                 SyntaxElement.TYPE_COMMENT));
     }
     
     private void declaration() {
-        elements.add(new SyntaxElement.Declaration(doc, 
+        elements.add(new SyntaxElement.Declaration(parserSource, 
                 start, 
                 token.offset(hi) + token.length() - start,
                 root_element,
@@ -245,7 +287,7 @@ public final class SyntaxParser {
                 attributes.add(ta);
             }
         
-        elements.add(new SyntaxElement.Tag(doc, 
+        elements.add(new SyntaxElement.Tag(parserSource, 
                 start, 
                 token.offset(hi) + token.length() - start, 
                 tagName, 

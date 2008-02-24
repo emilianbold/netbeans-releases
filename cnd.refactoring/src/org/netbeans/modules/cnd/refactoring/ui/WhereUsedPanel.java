@@ -44,6 +44,7 @@ import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.event.ItemEvent;
+import java.util.Collection;
 import java.util.Iterator;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JLabel;
@@ -76,6 +77,7 @@ import org.netbeans.modules.cnd.api.model.CsmQualifiedNamedElement;
 import org.netbeans.modules.cnd.api.model.CsmTypedef;
 import org.netbeans.modules.cnd.api.model.CsmVariable;
 import org.netbeans.modules.cnd.api.model.CsmVisibility;
+import org.netbeans.modules.cnd.api.model.services.CsmVirtualInfoQuery;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.api.model.xref.CsmReference;
 import org.netbeans.modules.cnd.refactoring.support.CsmRefactoringUtils;
@@ -123,7 +125,7 @@ public class WhereUsedPanel extends JPanel implements CustomRefactoringPanel {
     private boolean initialized = false;
     private CsmClass methodDeclaringSuperClass = null;
     private CsmClass methodDeclaringClass = null;
-    private CsmMethod baseVirtualMethod;
+    private CsmMethod baseVirtualMethod = null;
 
     /*package*/ String getBaseMethodDescription() {
         if (baseVirtualMethod != null) {
@@ -176,8 +178,12 @@ public class WhereUsedPanel extends JPanel implements CustomRefactoringPanel {
             methodDeclaringClass = ((CsmMember)refObject).getContainingClass();
             String displayClassName = methodDeclaringClass.getName().toString();
             labelText = getString("DSC_MethodUsages", functionDisplayName, displayClassName); // NOI18N
-            if (((CsmMethod)refObject).isVirtual()) {
-                baseVirtualMethod = getOriginalVirtualMethod((CsmMethod)refObject);
+            CsmVirtualInfoQuery query = CsmVirtualInfoQuery.getDefault();
+            if (query.isVirtual((CsmMethod)refObject)) {
+                Collection<CsmMethod> baseMethods = query.getBaseDeclaration((CsmMethod)refObject);
+                // use only the first for now
+                baseVirtualMethod = baseMethods.isEmpty() ? null : baseMethods.iterator().next();
+                assert baseVirtualMethod != null : "virtual method must have start virtual declaration";
                 methodDeclaringSuperClass = baseVirtualMethod.getContainingClass();
                 if (!refObject.equals(baseVirtualMethod)) {
                     _isBaseClassText = getString("LBL_UsagesOfBaseClass", methodDeclaringSuperClass.getName().toString()); // NOI18N
@@ -487,6 +493,8 @@ searchInComments.addItemListener(new java.awt.event.ItemListener() {
 
     add(commentsPanel, java.awt.BorderLayout.NORTH);
 
+    scopeLabel.setDisplayedMnemonic(org.openide.util.NbBundle.getMessage(WhereUsedPanel.class, "LBL_Scope_MNEM").charAt(0));
+    scopeLabel.setLabelFor(scope);
     scopeLabel.setText(org.openide.util.NbBundle.getMessage(WhereUsedPanel.class, "LBL_Scope")); // NOI18N
 
     scope.addActionListener(new java.awt.event.ActionListener() {
@@ -503,7 +511,7 @@ searchInComments.addItemListener(new java.awt.event.ItemListener() {
             .addContainerGap()
             .add(scopeLabel)
             .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-            .add(scope, 0, 287, Short.MAX_VALUE)
+            .add(scope, 0, 283, Short.MAX_VALUE)
             .addContainerGap())
     );
     scopePanelLayout.setVerticalGroup(
@@ -597,7 +605,7 @@ searchInComments.addItemListener(new java.awt.event.ItemListener() {
     }
     
     /*package*/ boolean isVirtualMethod() {
-        return CsmKindUtilities.isMethod(refObject) && ((CsmMethod)refObject).isVirtual();
+        return baseVirtualMethod != null;
     }
     
     /*package*/ boolean isClass() {
