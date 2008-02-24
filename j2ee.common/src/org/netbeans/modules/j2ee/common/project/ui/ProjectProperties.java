@@ -49,6 +49,7 @@ import javax.swing.ImageIcon;
 import javax.swing.ListCellRenderer;
 import javax.swing.table.TableCellRenderer;
 import org.netbeans.modules.j2ee.common.project.classpath.ClassPathSupport;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
 import org.netbeans.modules.java.api.common.util.CommonProjectUtils;
 import org.netbeans.spi.project.libraries.support.LibrariesSupport;
 import org.netbeans.spi.project.support.ant.EditableProperties;
@@ -137,6 +138,9 @@ public final class ProjectProperties {
         }
         while (classpath.hasNext()) {
             ClassPathSupport.Item item = (ClassPathSupport.Item)classpath.next();
+            if (item.getType() == ClassPathSupport.Item.TYPE_LIBRARY && item.getLibrary().getType().equals(J2eePlatform.LIBRARY_TYPE)) {
+                continue;
+            }
             ArrayList<String> files = new ArrayList<String>();
             ArrayList<String> dirs = new ArrayList<String>();
             getFilesForItem (item, files, dirs, projectFolder);
