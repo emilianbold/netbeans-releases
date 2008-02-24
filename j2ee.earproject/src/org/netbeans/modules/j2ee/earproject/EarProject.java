@@ -322,7 +322,8 @@ public final class EarProject implements Project, AntProjectListener, ProjectPro
                     ProjectManager.mutex().writeAccess(new Mutex.Action() {
                         public Object run() {
                             EditableProperties ep = helper.getProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH);
-                            if (!Boolean.parseBoolean(ep.getProperty(ProjectProperties.J2EE_PLATFORM_SHARED))) {
+                            EditableProperties projectProps = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
+                            if (!ProjectProperties.isUsingServerLibrary(projectProps, EarProjectProperties.J2EE_PLATFORM_CLASSPATH)) {         
                                 String classpath = EarProjectGenerator.toClasspathString(platform.getClasspathEntries());
                                 ep.setProperty(ProjectProperties.J2EE_PLATFORM_CLASSPATH, classpath);
                             }

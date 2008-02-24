@@ -422,7 +422,7 @@ public final class EarProjectProperties {
         
         J2eePlatform j2eePlatform = Deployment.getDefault().getJ2eePlatform(newServInstID);
         
-        if (Boolean.parseBoolean(projectProps.getProperty(ProjectProperties.J2EE_PLATFORM_SHARED))) {
+        if (ProjectProperties.isUsingServerLibrary(projectProps, EarProjectProperties.J2EE_PLATFORM_CLASSPATH)) {         
             if (serverLibraryName != null) {
                 projectProps.setProperty(J2EE_PLATFORM_CLASSPATH,
                     "${libs." + serverLibraryName + "." + "classpath" + "}"); //NOI18N

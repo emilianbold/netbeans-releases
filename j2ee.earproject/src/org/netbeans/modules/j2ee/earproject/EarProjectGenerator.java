@@ -568,8 +568,6 @@ public final class EarProjectGenerator {
         if (h.isSharableProject() && serverLibraryName != null) {
             ep.setProperty(ProjectProperties.J2EE_PLATFORM_CLASSPATH, "${libs." + serverLibraryName + ".classpath}"); //NOI18N
         }
-        ep.setProperty(ProjectProperties.J2EE_PLATFORM_SHARED,
-                Boolean.toString(h.isSharableProject() && serverLibraryName != null));        
         
         String srcLevel = sourceLevel;
         if (srcLevel == null) {
