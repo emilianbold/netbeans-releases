@@ -51,7 +51,6 @@ import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.gsf.api.CompilationInfo;
 import org.netbeans.modules.javascript.editing.lexer.JsCommentLexer;
 import org.netbeans.modules.javascript.editing.lexer.JsCommentTokenId;
-import org.netbeans.modules.javascript.editing.lexer.LexUtilities;
 import org.openide.filesystems.FileObject;
 
 
@@ -104,6 +103,30 @@ public class JsTypeAnalyzer {
     private final BaseDocument doc;
     private final FileObject fileObject;
     private final CompilationInfo info;
+    private static volatile boolean usingIndex;
+    
+    // Generated with
+    //  /bin/grep "^var" *.js  | grep new | awk '{print "BROWSER_BUILTINS.put(\"" $2 "\",\"" $5 "\");"}'
+    private static Map<String,String> BROWSER_BUILTINS = new HashMap<String,String>();
+    static {
+        BROWSER_BUILTINS.put("java","Java");
+        BROWSER_BUILTINS.put("netscape","Netscape");
+        BROWSER_BUILTINS.put("sun","Sun");
+        BROWSER_BUILTINS.put("cssRule","CssRule");
+        BROWSER_BUILTINS.put("document","Document");
+        BROWSER_BUILTINS.put("element","Element");
+        BROWSER_BUILTINS.put("event","Event");
+        BROWSER_BUILTINS.put("form","Form");
+        BROWSER_BUILTINS.put("navigator","Navigator");
+        BROWSER_BUILTINS.put("range","Range");
+        BROWSER_BUILTINS.put("screen","Screen");
+        BROWSER_BUILTINS.put("style","Style");
+        BROWSER_BUILTINS.put("stylesheet","Stylesheet");
+        BROWSER_BUILTINS.put("table","Table");
+        BROWSER_BUILTINS.put("tableRow","TableRow");
+        BROWSER_BUILTINS.put("treeWalker","TreeWalker");
+        BROWSER_BUILTINS.put("window","Window");
+    }
 
     /** Creates a new instance of JsTypeAnalyzer for a given position.
      * The {@link #analyze} method will do the rest. */
@@ -170,7 +193,9 @@ public class JsTypeAnalyzer {
         return null;
     }
 
-    /** Called on AsgnNodes to compute RHS */
+    /** Called on AsgnNodes to compute RHS 
+     * XXX See also GlobalAstNode.expressionType!
+     */
     private String expressionType(Node node) {
         switch (node.getType()) {
         case Token.NUMBER:
@@ -233,7 +258,18 @@ public class JsTypeAnalyzer {
         }
 
         String type = types.get(symbol);
-        
+    
+        if (type == null) {
+            // Look for builtins
+            type = BROWSER_BUILTINS.get(symbol);
+            
+            // Look in the index to see if this is a known type
+            if (type == null && index != null) {
+                // TODO - only do this if the symbol is a global variable (and on the index side,
+                // limit FQN matches to globals)
+                type = index.getType(symbol);
+            }
+        }
         // We keep track of the types contained within Arrays
         // internally (and probably hashes as well, TODO)
         // such that we can do the right thing when you operate

@@ -271,9 +271,10 @@ public class MeasureStartupTimeTestCase extends org.netbeans.junit.NbPerformance
         Process ideProcess = runtime.exec(cmd.toString(),null,ideBinDir);
         
         // track out and errs from ide - the last parameter is PrintStream where the
-        // streams are copied - currently set to null, so it does not hit performance much
+        // streams are copied - currently set to null, so it does not hit performance much        
         ThreadReader sout = new ThreadReader(ideProcess.getInputStream(), null);
-        ThreadReader serr = new ThreadReader(ideProcess.getErrorStream(), null);
+        // FIXME: System.err is used to catch errors from the running IDE
+        ThreadReader serr = new ThreadReader(ideProcess.getErrorStream(), System.err);
         try {
             System.out.println("IDE exited with status = " + ideProcess.waitFor());
         } catch (InterruptedException ie) {
