@@ -78,9 +78,7 @@ public final class ProjectProperties {
     public static final String BUILD_CLASSES_DIR = "build.classes.dir"; //NOI18N
     public static final String BUILD_TEST_CLASSES_DIR = "build.test.classes.dir"; // NOI18N
 
-    public static final String J2EE_PLATFORM_SHARED = "j2ee.platform.shared"; //NOI18N
     public static final String J2EE_PLATFORM_CLASSPATH = "j2ee.platform.classpath"; //NOI18N
-
     public static final String[] WELL_KNOWN_PATHS = new String[] {
         "${" + JAVAC_CLASSPATH + "}", // NOI18N
         "${" + JAVAC_TEST_CLASSPATH + "}", // NOI18N
@@ -226,12 +224,26 @@ public final class ProjectProperties {
             }
         }
     }
-    
+
     public static ListCellRenderer createClassPathListRendered(PropertyEvaluator evaluator, FileObject projectFolder) {
         return new ClassPathListCellRenderer(evaluator, projectFolder);
     }
     
     public static TableCellRenderer createClassPathTableRendered(PropertyEvaluator evaluator, FileObject projectFolder) {
         return new ClassPathListCellRenderer.ClassPathTableCellRenderer(evaluator, projectFolder);
+    }
+    
+    /**
+     * Returns <code>true</code> if the server library is used for j2ee instead
+     * of the classpath pointing to the server installation.
+     *
+     * @param projectProperties project properties
+     * @param j2eePlatformClasspathProperty name of the classpath property
+     * @return <code>true</code> if the server library is used for j2ee instead
+     *             of the classpath pointing to the server installation
+     */
+    public static boolean isUsingServerLibrary(EditableProperties projectProperties, String j2eePlatformClasspathProperty) {
+        String value = projectProperties.getProperty(j2eePlatformClasspathProperty);
+        return (value != null && !"".equals(value.trim()));
     }
 }

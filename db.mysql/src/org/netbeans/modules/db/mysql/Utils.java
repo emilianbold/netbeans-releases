@@ -39,10 +39,14 @@
 
 package org.netbeans.modules.db.mysql;
 
+import java.io.File;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
+import org.openide.util.Utilities;
 
 /**
  * Various utility methods
@@ -53,7 +57,7 @@ public class Utils {
     private static Logger LOGGER = Logger.getLogger(Utils.class.getName());
     
     public static void displayError(String msg, Exception ex) {
-        LOGGER.log(Level.WARNING, msg, ex);
+        LOGGER.log(Level.INFO, msg, ex);
         
         msg = msg + ": " + ex.getMessage();
         
@@ -62,5 +66,87 @@ public class Utils {
         
 	DialogDisplayer.getDefault().notify(d);        
     }
+    
+    
+    /**
+     * Return true if this is a valid directory
+     * @param path path to validate
+     * @param emptyOK set to true if an empty/null string is OK
+     */
+    public static boolean isValidDirectory(String path, boolean emptyOK) {
+        return isValidPath(path, true, emptyOK);
+    }
+    
+    /**
+     * Return true if this is a valid executable file
+     * @param path path to validate
+     * @param emptyOK set to true if an empty/null string is OK
+     */
+    public static boolean isValidExecutable(String path, boolean emptyOK) {
+        return isValidPath(path, false, emptyOK);
+    }
+
+    private static boolean isValidPath(String path, boolean isDirectory, boolean emptyOK) {
+        if ( path == null || path.length() == 0 ) {
+            return emptyOK;
+        }
+        File file = new File(path).getAbsoluteFile();
+        if ( ! file.exists() ) {
+            return false;
+        }
+        
+        return (isDirectory && file.isDirectory()) || 
+                (!isDirectory && file.isFile()) ||
+                (Utilities.isMac() && !isDirectory && path.endsWith(".app"));
+    }
+    
+    /**
+     * Return true if this is a valid URL
+     * @param url url to validate
+     * @param emptyOK set to true if an empty/null string is OK
+     * @return
+     */
+    public static boolean isValidURL(String url, boolean emptyOK) {
+        if ( url == null || url.length() == 0 ) {
+            return emptyOK;
+        }
+
+        try {
+            new URL(url);
+        } catch (MalformedURLException ex) {
+            return false;
+        }
+        
+        return true;
+    }
+    
+    /**
+     * Pop up a confirmation dialog
+     * 
+     * @param message
+     *      The message to display
+     *  
+     * @return true if the user pressed [OK], false if they pressed [CANCEL]
+     */
+    public static boolean displayConfirmDialog(String message) {
+        NotifyDescriptor ndesc = new NotifyDescriptor.Confirmation(
+                message, NotifyDescriptor.OK_CANCEL_OPTION);
+
+        Object result = DialogDisplayer.getDefault().notify(ndesc);
+
+        return ( result == NotifyDescriptor.OK_OPTION );
+    }
+
+    /**
+     * Check to see if the admin command has been set and confirmed,
+     * raising the appropriate dialogs as needed.
+     * 
+     * @return true if the admin command is now set and confirmed,
+     *   false if the user cancelled.
+     */
+    // TODO - implement this once we have auto-detection working...
+    
+    
+    
 
 }

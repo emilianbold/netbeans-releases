@@ -53,7 +53,7 @@ import org.openide.util.actions.SystemAction;
  * 
  * @author David Van Couvering
  */
-class DatabaseNode extends AbstractNode {
+class DatabaseNode extends AbstractNode implements Comparable {
     
     // I'd like a less generic icon, but this is what we have for now...
     private static final String ICON_BASE = "org/netbeans/modules/db/mysql/resources/database.gif";
@@ -128,5 +128,11 @@ class DatabaseNode extends AbstractNode {
         }
         
     }
+    
+    public int compareTo(Object other) {
+        Node othernode = (Node)other;
+        return this.getDisplayName().compareTo(othernode.getDisplayName());
+    }
+
         
 }

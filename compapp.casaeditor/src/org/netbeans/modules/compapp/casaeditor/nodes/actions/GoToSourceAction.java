@@ -82,7 +82,7 @@ public class GoToSourceAction extends NodeAction {
         
         if (activatedNodes[0] instanceof ServiceUnitProcessNode) {
             ServiceUnitProcessNode node = ((ServiceUnitProcessNode) activatedNodes[0]);
-            sesu = (CasaServiceEngineServiceUnit) node.getData();
+            sesu = (CasaServiceEngineServiceUnit) node.getServiceEngineServiceUnit();
             filePath = node.getFilePath();
         } else if (activatedNodes[0] instanceof EndpointNode) {
             EndpointNode node = ((EndpointNode) activatedNodes[0]);

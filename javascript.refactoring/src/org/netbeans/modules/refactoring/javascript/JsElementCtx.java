@@ -184,7 +184,7 @@ public class JsElementCtx {
             case Token.NAME:
             case Token.BINDNAME:
                 // TODO - look up scope and see if it's a global or a local var
-                //kind = ElementKind.FIELD;
+                //kind = ElementKind.GLOBAL;
                 kind = ElementKind.VARIABLE;
                 break;
             case Token.CONST:
