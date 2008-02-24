@@ -84,7 +84,7 @@ public class SpringScopeTest extends ConfigFileTestCase {
             }
         });
         assertEquals(1, beanCount[0]);
-        assertEquals(1, scope.file2AdHocModel.size());
+        assertEquals(1, scope.file2Model.size());
 
         SpringConfigModel anotherModel = SpringScopeAccessor.DEFAULT.getConfigModel(scope, configFO);
         assertSame(model, anotherModel);
@@ -95,7 +95,7 @@ public class SpringScopeTest extends ConfigFileTestCase {
         } finally {
             lock.releaseLock();
         }
-        assertEquals(0, scope.file2AdHocModel.size());
+        assertEquals(0, scope.file2Model.size());
     }
 
     public void testGetConfigModel() throws IOException {
@@ -153,7 +153,7 @@ public class SpringScopeTest extends ConfigFileTestCase {
 
         manager.mutex().writeAccess(new Runnable() {
             public void run() {
-                manager.putConfigFileGroups(Collections.<ConfigFileGroup>emptyList());
+                manager.putConfigFilesAndGroups(Collections.<File>emptyList(), Collections.<ConfigFileGroup>emptyList());
             }
         });
         assertEquals(0, scope.group2Model.size());
