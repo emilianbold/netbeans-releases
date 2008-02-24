@@ -100,7 +100,6 @@ public class ModuleOperationsTest extends TestBase {
         FileObject prjDir = project.getProjectDirectory();
         
         FileObject buildXML = prjDir.getFileObject(GeneratedFilesHelper.BUILD_XML_PATH);
-        prjDir.createData(".cvsignore");
         
         // build project
         ActionUtils.runTarget(buildXML, new String[] { "compile" }, null).waitFinished();
@@ -110,7 +109,6 @@ public class ModuleOperationsTest extends TestBase {
             buildXML,
             prjDir.getFileObject("manifest.mf"),
             prjDir.getFileObject("nbproject"),
-            prjDir.getFileObject(".cvsignore"),
         };
         assertEquals("correct metadata files", Arrays.asList(expectedMetadataFiles), ProjectOperations.getMetadataFiles(project));
         

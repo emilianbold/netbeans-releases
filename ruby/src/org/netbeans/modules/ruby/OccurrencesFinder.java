@@ -84,10 +84,10 @@ import org.jruby.ast.VCallNode;
 import org.jruby.ast.YieldNode;
 import org.jruby.ast.types.INameNode;
 import org.jruby.lexer.yacc.ISourcePosition;
-import org.netbeans.fpi.gsf.ColoringAttributes;
-import org.netbeans.fpi.gsf.CompilationInfo;
+import org.netbeans.modules.gsf.api.ColoringAttributes;
+import org.netbeans.modules.gsf.api.CompilationInfo;
 import org.netbeans.modules.ruby.lexer.RubyTokenId;
-import org.netbeans.fpi.gsf.OffsetRange;
+import org.netbeans.modules.gsf.api.OffsetRange;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
@@ -108,7 +108,7 @@ import org.openide.util.Exceptions;
  *
  * @author Tor Norbye
  */
-public class OccurrencesFinder implements org.netbeans.fpi.gsf.OccurrencesFinder {
+public class OccurrencesFinder implements org.netbeans.modules.gsf.api.OccurrencesFinder {
     private boolean cancelled;
     private int caretPosition;
     private Map<OffsetRange, ColoringAttributes> occurrences;

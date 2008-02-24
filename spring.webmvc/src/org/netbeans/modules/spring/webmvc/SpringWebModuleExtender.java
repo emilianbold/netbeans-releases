@@ -274,25 +274,27 @@ public class SpringWebModuleExtender extends WebModuleExtender implements Change
             // COPY TEMPLATE SPRING RESOURCES (JSP, XML, PROPERTIES)
             copyResource("index.jsp", FileUtil.createData(jsp, "index.jsp")); // NOI18N
             copyResource("jdbc.properties", FileUtil.createData(webInf, "jdbc.properties")); // NOI18N
-            final List<File> configFiles = new ArrayList<File>(2);
+            final List<File> newFiles = new ArrayList<File>(2);
             FileObject configFile;
             configFile = copyResource("applicationContext.xml", FileUtil.createData(webInf, "applicationContext.xml")); // NOI18N
             addFileToOpen(configFile);
-            configFiles.add(FileUtil.toFile(configFile));
+            newFiles.add(FileUtil.toFile(configFile));
             configFile = copyResource("dispatcher-servlet.xml", FileUtil.createData(webInf, getComponent().getDispatcherName() + "-servlet.xml")); // NOI18N
             addFileToOpen(configFile);
-            configFiles.add(FileUtil.toFile(configFile));
+            newFiles.add(FileUtil.toFile(configFile));
 
             SpringScope scope = SpringScope.getSpringScope(configFile);
             if (scope != null) {
                 final ConfigFileManager manager = scope.getConfigFileManager();
                 manager.mutex().writeAccess(new Runnable() {
                     public void run() {
+                        List<File> files = manager.getConfigFiles();
+                        files.addAll(newFiles);
                         List<ConfigFileGroup> groups = manager.getConfigFileGroups();
                         String groupName = NbBundle.getMessage(SpringWebModuleExtender.class, "LBL_DefaultGroup");
-                        ConfigFileGroup newGroup = ConfigFileGroup.create(groupName, configFiles);
+                        ConfigFileGroup newGroup = ConfigFileGroup.create(groupName, newFiles);
                         groups.add(newGroup);
-                        manager.putConfigFileGroups(groups);
+                        manager.putConfigFilesAndGroups(files, groups);
                         try {
                             manager.save();
                         } catch (IOException e) {

@@ -60,6 +60,7 @@ if [ "$action" = "build" ]; then
     testmodule openide.dialogs || exit 4
     testmodule openide.awt || exit 4
     testmodule openide.windows || exit 4
+    testmodule core.startup # || exit 4
 #    testmodule openide.io || exit 4
     if [ `hg out --template '{node|short}\n' http://hg.netbeans.org/main | wc -l` > 0 ]; then
         echo No outgoing changes

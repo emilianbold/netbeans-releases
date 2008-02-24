@@ -41,11 +41,7 @@
 
 package org.netbeans.modules.db.explorer;
 
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Iterator;
-import java.util.List;
-import org.openide.nodes.Node;
 import org.openide.util.Lookup;
 
 /**
@@ -58,14 +54,11 @@ public class DbNodeLoaderSupport {
     private DbNodeLoaderSupport() {
     }
 
-    public static List<Node> getAllNodes() {
-        List<Node> nodes = new ArrayList<Node>();
+    // Unchecked cast from generic collection to a typed collection
+    @SuppressWarnings("unchecked")
+    public static Collection<DbNodeLoader> getLoaders() {
         Collection loaders = Lookup.getDefault().lookupAll(DbNodeLoader.class);
-        for (Iterator i = loaders.iterator(); i.hasNext();) {
-            nodes.addAll(((DbNodeLoader)i.next()).getAllNodes());
-        }
-        
-        return nodes;
+        return loaders;
     }
-
+    
 }

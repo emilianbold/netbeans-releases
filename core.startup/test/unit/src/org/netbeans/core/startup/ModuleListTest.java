@@ -133,8 +133,8 @@ public class ModuleListTest extends SetupHid {
         mgr.mutexPrivileged().enterWriteAccess();
         try {
             // XXX try to read an actual initial list too...
-            assertEquals(Collections.EMPTY_SET, list.readInitial());
-            Set modules = new HashSet();
+            assertEquals(Collections.emptySet(), list.readInitial());
+            Set<Module> modules = new HashSet<Module>();
             modules.add(makeModule("simple-module.jar"));
             modules.add(makeModule("depends-on-simple-module.jar"));
             list.trigger(modules);
@@ -166,7 +166,7 @@ public class ModuleListTest extends SetupHid {
             assertNotNull(m1);
             Module m2 = mgr.get("org.bar");
             assertNotNull(m2);
-            mgr.disable(new HashSet(Arrays.asList(new Module[] {m1, m2})));
+            mgr.disable(new HashSet<Module>(Arrays.asList(m1, m2)));
         } finally {
             mgr.mutexPrivileged().exitWriteAccess();
         }
@@ -246,10 +246,10 @@ public class ModuleListTest extends SetupHid {
     public void testAddNewModuleViaXML() throws Exception {
         mgr.mutexPrivileged().enterWriteAccess();
         try {
-            assertEquals(Collections.EMPTY_SET, list.readInitial());
-            assertEquals(Collections.EMPTY_SET, mgr.getModules());
-            list.trigger(Collections.EMPTY_SET);
-            assertEquals(Collections.EMPTY_SET, mgr.getModules());
+            assertEquals(Collections.emptySet(), list.readInitial());
+            assertEquals(Collections.emptySet(), mgr.getModules());
+            list.trigger(Collections.<Module>emptySet());
+            assertEquals(Collections.emptySet(), mgr.getModules());
         } finally {
             mgr.mutexPrivileged().exitWriteAccess();
         }

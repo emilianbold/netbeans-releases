@@ -41,39 +41,140 @@
 
 package org.netbeans.modules.j2ee.earproject.ui.customizer;
 
-import javax.swing.JButton;
+import java.io.File;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+import javax.swing.DefaultListModel;
 import javax.swing.JPanel;
+import javax.swing.event.ListDataEvent;
+import javax.swing.event.ListDataListener;
+import org.netbeans.api.project.libraries.LibraryManager;
+import org.netbeans.modules.j2ee.common.project.classpath.ClassPathSupport;
+import org.netbeans.modules.j2ee.common.project.ui.ClassPathUiSupport;
+import org.netbeans.modules.j2ee.common.project.ui.EditMediator;
+import org.netbeans.spi.java.project.support.ui.SharableLibrariesUtils;
+import org.netbeans.spi.project.support.ant.PropertyUtils;
+import org.openide.awt.Mnemonics;
+import org.openide.filesystems.FileUtil;
+import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
-public final class CustomizerLibraries extends JPanel implements HelpCtx.Provider {
-    private static final long serialVersionUID = 1L;
+public final class CustomizerLibraries extends JPanel implements HelpCtx.Provider, ListDataListener {
+
+    private EarProjectProperties uiProperties;
+    private boolean isSharable;
     
-    // Helper for storing properties
-    private final VisualPropertySupport vps;
-    
-    private final VisualClasspathSupport vws;
-    
-    public CustomizerLibraries(final EarProjectProperties earProperties) {
+    public CustomizerLibraries(final EarProjectProperties uiProperties) {
+        this.uiProperties = uiProperties;
         initComponents();
-        this.getAccessibleContext().setAccessibleDescription(
-                NbBundle.getMessage(CustomizerLibraries.class, "ACS_CustomizeRun_A11YDesc")); // NOI18N
-        vws = new VisualClasspathSupport(earProperties.getProject(),
-                (String) earProperties.get(EarProjectProperties.J2EE_PLATFORM),
-                jTableAddContent,
-                jButtonAddJar,
-                jButtonAddLib,
-                jButtonAddProject,
-                new JButton(), // edit button
-                jButtonRemove,
-                new JButton(),
-                new JButton(), true);
-        vps = new VisualPropertySupport(earProperties);
-        initValues();
+        jListCp.setModel( uiProperties.DEBUG_CLASSPATH_MODEL );
+        jListCp.setCellRenderer( uiProperties.CLASS_PATH_LIST_RENDERER );
+        EditMediator.register( uiProperties.getProject(),
+                               uiProperties.getProject().getAntProjectHelper(),
+                               uiProperties.getProject().getReferenceHelper(),
+                               EditMediator.createListComponent( jListCp) , 
+                               jButtonAddJar.getModel(), 
+                               jButtonAddLib.getModel(), 
+                               jButtonAddProject.getModel(), 
+                               jButtonRemove.getModel(), 
+                               jButtonMoveUp.getModel(), 
+                               jButtonMoveDown.getModel(),
+                               jButtonEdit.getModel(),
+                               uiProperties.SHARED_LIBRARIES_MODEL,
+                               null );
+        librariesLocation.setDocument(uiProperties.SHARED_LIBRARIES_MODEL);
+        testBroken();
+        uiProperties.DEBUG_CLASSPATH_MODEL.addListDataListener( this );
+        //check the sharability status of the project.
+        isSharable = uiProperties.getProject().getAntProjectHelper().isSharableProject();
+        if (!isSharable) {
+            sharedLibrariesLabel.setEnabled(false);
+            librariesLocation.setEnabled(false);
+            librariesBrowse.setText(NbBundle.getMessage(CustomizerLibraries.class, 
+                    "LBL_CustomizeLibraries_MakeSharable"));
+        } else {
+            librariesLocation.setText(uiProperties.getProject().getAntProjectHelper().getLibrariesLocation());
+        }
     }
     
-    public void initValues() {
-        vps.register(vws, EarProjectProperties.RUN_CLASSPATH);
+    private void testBroken() {
+        
+        DefaultListModel[] models = new DefaultListModel[] {
+            uiProperties.DEBUG_CLASSPATH_MODEL,
+        };
+        
+        boolean broken = false;
+        
+        for( int i = 0; i < models.length; i++ ) {
+            for( Iterator it = ClassPathUiSupport.getIterator( models[i] ); it.hasNext(); ) {
+                if ( ((ClassPathSupport.Item)it.next()).isBroken() ) {
+                    broken = true;
+                    break;
+                }
+            }
+            if ( broken ) {
+                break;
+            }
+        }
+        
+        if ( broken ) {
+            jLabelErrorMessage.setText( NbBundle.getMessage( CustomizerLibraries.class, "LBL_CustomizeLibraries_Libraries_Error" ) ); // NOI18N
+        }
+        else {
+            jLabelErrorMessage.setText( " " ); // NOI18N
+        }
+//        J2eeArchiveLogicalViewProvider viewProvider = (J2eeArchiveLogicalViewProvider) uiProperties.getProject().getLookup().lookup(J2eeArchiveLogicalViewProvider.class);
+//        //Update the state of project's node if needed
+//        viewProvider.testBroken();        
+    }
+    
+    /** split file name into folder and name */
+    private static String[] splitPath(String s) {
+        int i = Math.max(s.lastIndexOf('/'), s.lastIndexOf('\\'));
+        if (i == -1) {
+            return new String[]{s, null};
+        } else {
+            return new String[]{s.substring(0, i), s.substring(i+1)};
+        }
+    }
+
+    private void switchLibrary() {
+        String loc = librariesLocation.getText();
+        LibraryManager man;
+        if (loc.trim().length() > -1) {
+            try {
+                File base = FileUtil.toFile(uiProperties.getProject().getProjectDirectory());
+                File location = FileUtil.normalizeFile(PropertyUtils.resolveFile(base, loc));
+                URL url = location.toURI().toURL();
+                man = LibraryManager.forLocation(url);
+            } catch (MalformedURLException ex) {
+                Exceptions.printStackTrace(ex);
+                //TODO show as error in UI
+                man = LibraryManager.getDefault();
+            }
+        } else {
+            man = LibraryManager.getDefault();
+        }
+        
+        
+        DefaultListModel[] models = new DefaultListModel[]{
+            uiProperties.DEBUG_CLASSPATH_MODEL,
+           };
+        for (int i = 0; i < models.length; i++) {
+            for (Iterator it = ClassPathUiSupport.getIterator(models[i]); it.hasNext();) {
+                ClassPathSupport.Item itm = (ClassPathSupport.Item) it.next();
+                if (itm.getType() == ClassPathSupport.Item.TYPE_LIBRARY) {
+                    itm.reassignLibraryManager(man);
+                }
+            }
+        }
+        jListCp.repaint();
+        testBroken();
+        
     }
     
     /** This method is called from within the constructor to
@@ -81,112 +182,202 @@ public final class CustomizerLibraries extends JPanel implements HelpCtx.Provide
      * WARNING: Do NOT modify this code. The content of this method is
      * always regenerated by the Form Editor.
      */
-    // <editor-fold defaultstate="collapsed" desc=" Generated Code ">//GEN-BEGIN:initComponents
+    // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
-        java.awt.GridBagConstraints gridBagConstraints;
 
-        embeddedCPPanel = new javax.swing.JPanel();
         jLabelEmbeddedCP = new javax.swing.JLabel();
         jScrollPane2 = new javax.swing.JScrollPane();
-        jTableAddContent = new javax.swing.JTable();
+        jListCp = new javax.swing.JList();
         jButtonAddJar = new javax.swing.JButton();
         jButtonAddLib = new javax.swing.JButton();
         jButtonAddProject = new javax.swing.JButton();
         jButtonRemove = new javax.swing.JButton();
-
-        setLayout(new java.awt.GridBagLayout());
-
-        embeddedCPPanel.setLayout(new java.awt.GridBagLayout());
+        sharedLibrariesLabel = new javax.swing.JLabel();
+        librariesLocation = new javax.swing.JTextField();
+        librariesBrowse = new javax.swing.JButton();
+        jButtonEdit = new javax.swing.JButton();
+        jButtonMoveUp = new javax.swing.JButton();
+        jButtonMoveDown = new javax.swing.JButton();
+        jLabelErrorMessage = new javax.swing.JLabel();
 
         jLabelEmbeddedCP.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
-        jLabelEmbeddedCP.setLabelFor(jTableAddContent);
         org.openide.awt.Mnemonics.setLocalizedText(jLabelEmbeddedCP, org.openide.util.NbBundle.getBundle(CustomizerLibraries.class).getString("LBL_CustomizerRun_EmbeddedClasspathElements_JLabel")); // NOI18N
         jLabelEmbeddedCP.setVerticalAlignment(javax.swing.SwingConstants.TOP);
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 0;
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 12);
-        embeddedCPPanel.add(jLabelEmbeddedCP, gridBagConstraints);
 
-        jTableAddContent.setModel(new javax.swing.table.DefaultTableModel(
-            new Object [][] {
-
-            },
-            new String [] {
-
-            }
-        ));
-        jScrollPane2.setViewportView(jTableAddContent);
-
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 1;
-        gridBagConstraints.gridheight = 4;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.weightx = 10.0;
-        gridBagConstraints.weighty = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 11);
-        embeddedCPPanel.add(jScrollPane2, gridBagConstraints);
+        jScrollPane2.setPreferredSize(new java.awt.Dimension(252, 202));
+        jScrollPane2.setViewportView(jListCp);
 
         org.openide.awt.Mnemonics.setLocalizedText(jButtonAddJar, org.openide.util.NbBundle.getBundle(CustomizerLibraries.class).getString("LBL_CustomizeEAR_AddJar_JButton")); // NOI18N
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 1;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 5, 0);
-        embeddedCPPanel.add(jButtonAddJar, gridBagConstraints);
 
         org.openide.awt.Mnemonics.setLocalizedText(jButtonAddLib, org.openide.util.NbBundle.getBundle(CustomizerLibraries.class).getString("LBL_CustomizeCompile_Classpath_AddLibrary_JButton")); // NOI18N
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 2;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 5, 0);
-        embeddedCPPanel.add(jButtonAddLib, gridBagConstraints);
 
         org.openide.awt.Mnemonics.setLocalizedText(jButtonAddProject, org.openide.util.NbBundle.getBundle(CustomizerLibraries.class).getString("LBL_CustomizeCompile_Classpath_AddProject_JButton")); // NOI18N
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 3;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 11, 0);
-        embeddedCPPanel.add(jButtonAddProject, gridBagConstraints);
 
         org.openide.awt.Mnemonics.setLocalizedText(jButtonRemove, org.openide.util.NbBundle.getBundle(CustomizerLibraries.class).getString("LBL_CustomizeCompile_Classpath_Remove_JButton")); // NOI18N
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 4;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTH;
-        embeddedCPPanel.add(jButtonRemove, gridBagConstraints);
 
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 0;
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.gridheight = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.weighty = 1.0;
-        add(embeddedCPPanel, gridBagConstraints);
+        org.openide.awt.Mnemonics.setLocalizedText(sharedLibrariesLabel, java.text.MessageFormat.format(org.openide.util.NbBundle.getMessage(CustomizerLibraries.class, "LBL_CustomizeGeneral_SharedLibraries"), new Object[] {})); // NOI18N
 
+        librariesLocation.setEditable(false);
+
+        org.openide.awt.Mnemonics.setLocalizedText(librariesBrowse, org.openide.util.NbBundle.getMessage(CustomizerLibraries.class, "LBL_CustomizerLibraries_Browse_JButton")); // NOI18N
+        librariesBrowse.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                librariesBrowseActionPerformed(evt);
+            }
+        });
+
+        org.openide.awt.Mnemonics.setLocalizedText(jButtonEdit, org.openide.util.NbBundle.getBundle(CustomizerLibraries.class).getString("LBL_CustomizeCompile_Classpath_Edit_JButton")); // NOI18N
+
+        org.openide.awt.Mnemonics.setLocalizedText(jButtonMoveUp, org.openide.util.NbBundle.getBundle(CustomizerLibraries.class).getString("LBL_CustomizeCompile_Classpath_MoveUp_JButton")); // NOI18N
+
+        org.openide.awt.Mnemonics.setLocalizedText(jButtonMoveDown, org.openide.util.NbBundle.getBundle(CustomizerLibraries.class).getString("LBL_CustomizeCompile_Classpath_MoveUp_JButton")); // NOI18N
+
+        org.openide.awt.Mnemonics.setLocalizedText(jLabelErrorMessage, " ");
+
+        org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
+        this.setLayout(layout);
+        layout.setHorizontalGroup(
+            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(layout.createSequentialGroup()
+                .add(jLabelEmbeddedCP)
+                .addContainerGap())
+            .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(layout.createSequentialGroup()
+                        .add(sharedLibrariesLabel)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(librariesLocation, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 289, Short.MAX_VALUE))
+                    .add(jScrollPane2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 382, Short.MAX_VALUE))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING, false)
+                    .add(org.jdesktop.layout.GroupLayout.TRAILING, librariesBrowse, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .add(org.jdesktop.layout.GroupLayout.TRAILING, jButtonAddProject, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 119, Short.MAX_VALUE)
+                    .add(org.jdesktop.layout.GroupLayout.TRAILING, jButtonAddLib, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 119, Short.MAX_VALUE)
+                    .add(org.jdesktop.layout.GroupLayout.TRAILING, jButtonAddJar, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .add(org.jdesktop.layout.GroupLayout.TRAILING, jButtonEdit, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 119, Short.MAX_VALUE)
+                    .add(org.jdesktop.layout.GroupLayout.TRAILING, jButtonRemove, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 119, Short.MAX_VALUE)
+                    .add(org.jdesktop.layout.GroupLayout.TRAILING, jButtonMoveUp, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 119, Short.MAX_VALUE)
+                    .add(org.jdesktop.layout.GroupLayout.TRAILING, jButtonMoveDown, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 119, Short.MAX_VALUE)))
+            .add(jLabelErrorMessage, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 507, Short.MAX_VALUE)
+        );
+        layout.setVerticalGroup(
+            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(layout.createSequentialGroup()
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(sharedLibrariesLabel)
+                    .add(librariesLocation, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(librariesBrowse))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(jLabelEmbeddedCP)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(layout.createSequentialGroup()
+                        .add(jButtonAddProject)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(jButtonAddLib)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(jButtonAddJar)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
+                        .add(jButtonEdit)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
+                        .add(jButtonRemove)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
+                        .add(jButtonMoveUp)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(jButtonMoveDown))
+                    .add(jScrollPane2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 271, Short.MAX_VALUE))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(jLabelErrorMessage))
+        );
     }// </editor-fold>//GEN-END:initComponents
+
+    private void librariesBrowseActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_librariesBrowseActionPerformed
+        if (!isSharable) {
+            
+            List<String> libs = new ArrayList<String>();
+            List<String> jars = new ArrayList<String>();
+            collectLibs(uiProperties.DEBUG_CLASSPATH_MODEL, libs, jars);
+            boolean result = SharableLibrariesUtils.showMakeSharableWizard(uiProperties.getProject().getAntProjectHelper(), uiProperties.getProject().getReferenceHelper(), libs, jars);
+            if (result) {
+                isSharable = true;
+                sharedLibrariesLabel.setEnabled(true);
+                librariesLocation.setEnabled(true);
+                librariesLocation.setText(uiProperties.getProject().getAntProjectHelper().getLibrariesLocation());
+                Mnemonics.setLocalizedText(librariesBrowse, NbBundle.getMessage(CustomizerLibraries.class, "LBL_CustomizerLibraries_Browse_JButton")); // NOI18N
+                updateJars(uiProperties.DEBUG_CLASSPATH_MODEL);
+                switchLibrary();
+            }
+        } else {
+            File prjLoc = FileUtil.toFile(uiProperties.getProject().getProjectDirectory());
+            String s[] = splitPath(librariesLocation.getText().trim());
+            String loc = SharableLibrariesUtils.browseForLibraryLocation(s[0], this, prjLoc);
+            if (loc != null) {
+                librariesLocation.setText(s[1] != null ? loc + File.separator + s[1] :
+                    loc + File.separator + SharableLibrariesUtils.DEFAULT_LIBRARIES_FILENAME);
+                switchLibrary();
+            }
+        }
+    }//GEN-LAST:event_librariesBrowseActionPerformed
+
+    private void collectLibs(DefaultListModel model, List<String> libs, List<String> jarReferences) { 
+        for (int i = 0; i < model.size(); i++) {
+            ClassPathSupport.Item item = (ClassPathSupport.Item) model.get(i);
+            if (item.getType() == ClassPathSupport.Item.TYPE_LIBRARY) {
+                libs.add(item.getLibrary().getName());
+            }
+            if (item.getType() == ClassPathSupport.Item.TYPE_JAR) {
+                if (item.getReference() != null) {
+                    //TODO reference is null for not yet persisted items.
+                    // there seems to be no way to generate a reference string without actually
+                    // creating and writing the property..
+                    jarReferences.add(item.getReference());
+                }
+            }
+        }
+    }    
+
+    private void updateJars(DefaultListModel model) {
+        for (int i = 0; i < model.size(); i++) {
+            ClassPathSupport.Item item = (ClassPathSupport.Item) model.get(i);
+            if (item.getType() == ClassPathSupport.Item.TYPE_JAR) {
+                if (item.getReference() != null) {
+                    uiProperties.cs.updateJarReference(item);
+                }
+            }
+        }
+        
+    }
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JPanel embeddedCPPanel;
     private javax.swing.JButton jButtonAddJar;
     private javax.swing.JButton jButtonAddLib;
     private javax.swing.JButton jButtonAddProject;
+    private javax.swing.JButton jButtonEdit;
+    private javax.swing.JButton jButtonMoveDown;
+    private javax.swing.JButton jButtonMoveUp;
     private javax.swing.JButton jButtonRemove;
     private javax.swing.JLabel jLabelEmbeddedCP;
+    private javax.swing.JLabel jLabelErrorMessage;
+    private javax.swing.JList jListCp;
     private javax.swing.JScrollPane jScrollPane2;
-    private javax.swing.JTable jTableAddContent;
+    private javax.swing.JButton librariesBrowse;
+    private javax.swing.JTextField librariesLocation;
+    private javax.swing.JLabel sharedLibrariesLabel;
     // End of variables declaration//GEN-END:variables
     
     public HelpCtx getHelpCtx() {
         return new HelpCtx(CustomizerLibraries.class);
+    }
+
+    public void intervalAdded(ListDataEvent e) {
+    }
+
+    public void intervalRemoved(ListDataEvent e) {
+        testBroken(); 
+    }
+
+    public void contentsChanged(ListDataEvent e) {
+        testBroken(); 
     }
     
 }

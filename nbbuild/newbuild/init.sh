@@ -46,7 +46,9 @@ if [ -z $DIST_SERVER_PATH ]; then
     DIST_SERVER_PATH=/releng/www/netbeans/6.0/nightly
 fi
 
-NB_ALL=$BASE_DIR/main
+if [ -z $NB_ALL ]; then
+    NB_ALL=$BASE_DIR/main
+fi
 
 DIST=$BASE_DIR/dist
 LOGS=$DIST/logs

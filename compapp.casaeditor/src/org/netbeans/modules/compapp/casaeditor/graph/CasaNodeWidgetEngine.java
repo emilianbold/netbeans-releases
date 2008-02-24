@@ -267,15 +267,17 @@ public class CasaNodeWidgetEngine extends CasaNodeWidget
      * @param widget the pin widget
      */
     public void attachPinWidget(CasaPinWidget widget) {
-        // All Provides pins should come before Consumes pins.
-        //addPinWithOrdering(widget);
         mContainerWidget.addChild(widget);
         setPinFont(getPinFont());
         setPinColor(getPinColor());
         mContainerWidget.setPreferredBounds(null);
     }
-    private List<String> groupNames = new ArrayList<String>();
-
+    
+    public void attachProcessWidget(CasaProcessTitleWidget widget) {
+        mContainerWidget.addChild(widget);
+        mContainerWidget.setPreferredBounds(null);
+    }
+    
     public void doneAddingWidget() {
         //Add a cushoning widget only if there are other widgets than the title.
         if (mContainerWidget.getChildren().size() > 1) {
@@ -286,47 +288,6 @@ public class CasaNodeWidgetEngine extends CasaNodeWidget
                 cushioningWidget.setBorder(new LineBorder(Color.BLACK));
             }
         }
-    }
-
-    class GroupTitleWidget extends Widget {
-
-        GroupTitleWidget(Scene scene, String processName) {
-            super(scene);
-
-            setLayout(RegionUtilities.createHorizontalFlowLayoutWithJustifications(LayoutFactory.SerialAlignment.CENTER, 5));
-
-            Widget leftEmptyWidget = new Widget(getScene()); //Placeholder to place MinimizeIcon inside rounded rectangle
-            leftEmptyWidget.setPreferredBounds(new Rectangle(CasaNodeWidgetEngine.ARROW_PIN_WIDTH, 2));
-            Widget rightEmptyWidget = new Widget(getScene()); //Placeholder to place MinimizeIcon inside rounded rectangle
-            rightEmptyWidget.setPreferredBounds(new Rectangle(CasaNodeWidgetEngine.ARROW_PIN_WIDTH, 2));
-
-            LabelWidget groupTitleWidget = new LabelWidget(getScene(), "<" + processName + ">");
-            groupTitleWidget.setOpaque(true);
-            groupTitleWidget.setAlignment(Alignment.RIGHT);
-//            groupTitleWidget.setBackground(Color.green);
-            groupTitleWidget.setFont(getScene().getDefaultFont().deriveFont(Font.BOLD));
-
-            addChild(leftEmptyWidget);
-            addChild(groupTitleWidget);
-            addChild(rightEmptyWidget);
-
-            //getActions().addAction(SystemAction.getAction(GoToSourceAction.class));
-            
-            if (DEBUG) {
-                leftEmptyWidget.setBorder(new LineBorder(Color.red));
-                groupTitleWidget.setBorder(new LineBorder(Color.blue));
-                rightEmptyWidget.setBorder(new LineBorder(Color.red));
-            }
-        }
-    }
-
-    public void addGroupWidget(String processName) {
-
-        groupNames.add(processName);
-        Widget myWidget = new GroupTitleWidget(getScene(), processName);
-        mContainerWidget.addChild(myWidget);
-
-        mContainerWidget.setPreferredBounds(null);
     }
 
     /**

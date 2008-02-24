@@ -74,8 +74,9 @@ public class WadlSaasBean extends SaasBean {
                 new HttpMethodType[]{HttpMethodType.GET});
     
         this.m = m;
-       
-        setResourceClassTemplate(m.getHref());
+        if (m.getMethod() != null) {
+            setResourceClassTemplate(m.getMethod().getHref());
+        }
         inputParams = new ArrayList<ParameterInfo>();
         List<MimeType> mimeTypes = new ArrayList<MimeType>();
         try {
