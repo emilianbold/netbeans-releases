@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- *
+ * 
  * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
- *
+ * 
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,13 +20,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
+ * 
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -37,21 +31,55 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ * 
+ * Contributor(s):
+ * 
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.spring.beans.refactoring.plugins;
-
-import org.netbeans.modules.refactoring.spi.ui.TreeElement;
-import org.netbeans.modules.refactoring.spi.ui.TreeElementFactoryImplementation;
+package org.netbeans.modules.websvc.api.jaxws.project.config;
 
 /**
- * @author John Baker
+ *
+ * @author rico
  */
-public final class SpringBeansRefactoringTreeImpl implements TreeElementFactoryImplementation {
+public class WsimportOptions {
 
-    public TreeElement getTreeElement(Object object) {        
-        return null;
+    private org.netbeans.modules.websvc.jaxwsmodel.project_config1_0.WsimportOptions wsimportOptions;
+
+    public WsimportOptions(org.netbeans.modules.websvc.jaxwsmodel.project_config1_0.WsimportOptions wsimportOptions) {
+        this.wsimportOptions = wsimportOptions;
     }
 
-    public void cleanUp() {
+    public org.netbeans.modules.websvc.jaxwsmodel.project_config1_0.WsimportOptions getOriginal() {
+        return wsimportOptions;
+    }
+
+    public WsimportOption newWsimportOption() {
+        org.netbeans.modules.websvc.jaxwsmodel.project_config1_0.WsimportOption wsimportOption = wsimportOptions.newWsimportOption();
+        return new WsimportOption(wsimportOption);
+    }
+
+    public void addWsimportOption(WsimportOption wsimportOption) {
+        wsimportOptions.addWsimportOption(wsimportOption.getOriginal());
+    }
+
+    public void removeWsimportOption(WsimportOption wsimportOption) {
+        wsimportOptions.removeWsimportOption(wsimportOption.getOriginal());
+    }
+    
+    public void clearWsimportOptions(){
+        org.netbeans.modules.websvc.jaxwsmodel.project_config1_0.WsimportOption[] options = wsimportOptions.getWsimportOption();
+        for(int i = 0; i < options.length; i++){
+            wsimportOptions.removeWsimportOption(options[i]);
+        }
+    }
+
+    public WsimportOption[] getWsimportOptions() {
+        org.netbeans.modules.websvc.jaxwsmodel.project_config1_0.WsimportOption[] options = wsimportOptions.getWsimportOption();
+        WsimportOption[] wsimportOptions = new WsimportOption[options.length];
+        for (int i = 0; i < options.length; i++) {
+            wsimportOptions[i] = new WsimportOption(options[i]);
+        }
+        return wsimportOptions;
     }
 }

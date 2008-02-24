@@ -62,7 +62,7 @@ public class Occurrences {
 
     public static List<Occurrence> getJavaClassOccurrences(final String className, SpringScope scope) throws IOException {
         final List<Occurrence> result = new ArrayList<Occurrence>();
-        for (SpringConfigModel model : scope.getConfigModels()) {
+        for (SpringConfigModel model : scope.getAllFilesConfigModels()) {
             model.runDocumentAction(new Action<DocumentAccess>() {
                 public void run(DocumentAccess docAccess) {
                     try {
@@ -78,7 +78,7 @@ public class Occurrences {
 
     public static List<Occurrence> getJavaPackageOccurrences(final String packageName, final boolean subpackages, SpringScope scope) throws IOException {
         final List<Occurrence> result = new ArrayList<Occurrence>();
-        for (SpringConfigModel model : scope.getConfigModels()) {
+        for (SpringConfigModel model : scope.getAllFilesConfigModels()) {
             model.runDocumentAction(new Action<DocumentAccess>() {
                 public void run(DocumentAccess docAccess) {
                     try {

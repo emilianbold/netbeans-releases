@@ -49,7 +49,7 @@ import org.openide.util.HelpCtx;
  *
  * @author Rohan Ranade (Rohan.Ranade@Sun.COM)
  */
-public class SpringXMLConfigGroupPanel implements WizardDescriptor.Panel {
+public class SpringXMLConfigGroupPanel implements WizardDescriptor.Panel<WizardDescriptor> {
 
     public static final String CONFIG_FILE_GROUPS = "configFileGroups"; // NOI18N
     
@@ -72,12 +72,11 @@ public class SpringXMLConfigGroupPanel implements WizardDescriptor.Panel {
         return new HelpCtx(SpringXMLConfigGroupPanel.class);
     }
 
-    public void readSettings(Object settings) {
+    public void readSettings(WizardDescriptor settings) {
     }
 
-    public void storeSettings(Object settings) {
-        WizardDescriptor wd = (WizardDescriptor) settings;
-        wd.putProperty(CONFIG_FILE_GROUPS, getComponent().getSelectedConfigFileGroups());
+    public void storeSettings(WizardDescriptor settings) {
+        settings.putProperty(CONFIG_FILE_GROUPS, getComponent().getSelectedConfigFileGroups());
     }
 
     public boolean isValid() {
@@ -89,7 +88,5 @@ public class SpringXMLConfigGroupPanel implements WizardDescriptor.Panel {
 
     public void removeChangeListener(ChangeListener l) {
     }
-
-    
 
 }
