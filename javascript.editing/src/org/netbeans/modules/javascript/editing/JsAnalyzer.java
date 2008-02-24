@@ -62,6 +62,7 @@ import org.netbeans.modules.gsf.api.StructureScanner;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
 import org.netbeans.modules.gsf.api.TranslatedSource;
+import org.netbeans.modules.javascript.editing.lexer.LexUtilities;
 import org.openide.util.Exceptions;
 
 /**
@@ -195,6 +196,11 @@ public class JsAnalyzer implements StructureScanner {
         private AnalysisResult(CompilationInfo info) {
             this.info = info;
         }
+
+        String getExtends(String name) {
+            // Not yet implemented; TODO: track Extend. calls in Prototype, ext, etc.
+            return null;
+        }
         
         private boolean addName(StringBuilder sb, Node node) {
             switch (node.getType()) {
@@ -273,12 +279,17 @@ public class JsAnalyzer implements StructureScanner {
                     int index = 0;
                     for (Node child = node.getFirstChild(); child != null; child = child.getNext(), index++) {
                         if (child.getType() == Token.OBJLITNAME) {
-                            FunctionNode func = AstUtilities.getLabelledFunction(child);
-                            if (func != null) {
-                                //AstElement js = AstElement.getElement(node);
-                                FunctionAstElement js = new FunctionAstElement(info, func);
-                                js.setName(child.getString(), className);
-                                elements.add(js);
+                            String s = child.getString();
+                            Node f = AstUtilities.getLabelledNode(child);
+                            if (f != null) {
+                                AstElement js = AstElement.getElement(info, f);
+                                if (js != null) {
+                                    js.setName(child.getString(), className);
+                                    if (f.getType() != Token.FUNCTION) {
+                                        js.setKind(ElementKind.PROPERTY);
+                                    }
+                                    elements.add(js);
+                                }
                             }
                         }
                     }
@@ -596,15 +607,15 @@ public class JsAnalyzer implements StructureScanner {
             case KEYWORD:
             case VARIABLE:
             case OTHER:
+            case GLOBAL:
+            case PACKAGE:
+            case PROPERTY:
                 return true;
 
             case MODULE:
             case CLASS:
                 return false;
 
-            case GLOBAL:
-                return true;
-                
             default:
                 throw new RuntimeException("Unhandled kind: " + kind);
             }
@@ -627,11 +638,11 @@ public class JsAnalyzer implements StructureScanner {
         }
 
         public long getPosition() {
-            return element.getNode().getSourceStart();
+            return LexUtilities.getLexerOffset(info, element.getNode().getSourceStart());
         }
 
         public long getEndPosition() {
-            return element.getNode().getSourceEnd();
+            return LexUtilities.getLexerOffset(info, element.getNode().getSourceEnd());
         }
 
         @Override

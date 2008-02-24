@@ -149,6 +149,8 @@ public class JBIComponentInstallationConfigurationDialog
                 } else if (JBIComponentConfigurationDescriptor.XSD_BOOLEAN.equals(typeQName)) {
                     value = "false";                    
                 } else if (JBIComponentConfigurationDescriptor.XSD_INT.equals(typeQName) ||
+                    JBIComponentConfigurationDescriptor.XSD_BYTE.equals(typeQName) ||
+                    JBIComponentConfigurationDescriptor.XSD_SHORT.equals(typeQName) ||
                     JBIComponentConfigurationDescriptor.XSD_POSITIVE_INTEGER.equals(typeQName) ||
                     JBIComponentConfigurationDescriptor.XSD_NEGATIVE_INTEGER.equals(typeQName) ||
                     JBIComponentConfigurationDescriptor.XSD_NON_POSITIVE_INTEGER.equals(typeQName) ||
@@ -161,6 +163,8 @@ public class JBIComponentInstallationConfigurationDialog
 
             Object attrValue = null;
             if (JBIComponentConfigurationDescriptor.XSD_INT.equals(typeQName) ||
+                    JBIComponentConfigurationDescriptor.XSD_BYTE.equals(typeQName) ||
+                    JBIComponentConfigurationDescriptor.XSD_SHORT.equals(typeQName) ||
                     JBIComponentConfigurationDescriptor.XSD_POSITIVE_INTEGER.equals(typeQName) ||
                     JBIComponentConfigurationDescriptor.XSD_NEGATIVE_INTEGER.equals(typeQName) ||
                     JBIComponentConfigurationDescriptor.XSD_NON_POSITIVE_INTEGER.equals(typeQName) ||

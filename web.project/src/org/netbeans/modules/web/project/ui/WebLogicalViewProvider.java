@@ -456,13 +456,13 @@ public class WebLogicalViewProvider implements LogicalViewProvider {
         public Image getMyIcon( int type ) {
             Image original = super.getIcon( type );                
             return broken || brokenServerAction.isEnabled() || brokenDatasourceAction.isEnabled() ? 
-            Utilities.mergeImages(original, ProjectProperties.ICON_BROKEN_BADGE.getImage(), 8, 0) : original;
+                Utilities.mergeImages(original, ProjectProperties.ICON_BROKEN_BADGE.getImage(), 8, 0) : original;
         }
 
         public Image getMyOpenedIcon( int type ) {
             Image original = super.getOpenedIcon(type);                
-            return broken || brokenServerAction.isEnabled() || brokenDatasourceAction.isEnabled() ? Utilities.mergeImages(original, 
-                ProjectProperties.ICON_BROKEN_BADGE.getImage(), 8, 0) : original;            
+            return broken || brokenServerAction.isEnabled() || brokenDatasourceAction.isEnabled() ? 
+                Utilities.mergeImages(original, ProjectProperties.ICON_BROKEN_BADGE.getImage(), 8, 0) : original;            
         }            
 
         public String getHtmlDisplayName() {

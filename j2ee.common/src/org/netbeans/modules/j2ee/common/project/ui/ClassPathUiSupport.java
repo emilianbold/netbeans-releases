@@ -213,14 +213,13 @@ public final class ClassPathUiSupport {
     }
     
     public static int[] addLibraries( DefaultListModel listModel, int[] indices, Library[] libraries, 
-            Set<Library> alreadyIncludedLibs, ClassPathSupport.Callback callback, String additionalProperty, String additionalPropertyValue) {
+            Set<Library> alreadyIncludedLibs, Callback callback) {
         int lastIndex = indices == null || indices.length == 0 ? listModel.getSize() - 1 : indices[indices.length - 1];
         for (int i = 0, j=1; i < libraries.length; i++) {
             if (!alreadyIncludedLibs.contains(libraries[i])) {
                 ClassPathSupport.Item item = ClassPathSupport.Item.create( libraries[i], null);
-                callback.initAdditionalProperties(item);
-                if (additionalProperty != null) {
-                    item.setAdditionalProperty(additionalProperty, additionalPropertyValue);
+                if (callback != null) {
+                    callback.initItem(item);
                 }
                 listModel.add( lastIndex + j++, item);
             }
@@ -239,15 +238,14 @@ public final class ClassPathUiSupport {
     }
 
     public static int[] addJarFiles( DefaultListModel listModel, int[] indices, String filePaths[], File base,
-            ClassPathSupport.Callback callback, String additionalProperty, String additionalPropertyValue) {
+            Callback callback) {
         int lastIndex = indices == null || indices.length == 0 ? listModel.getSize() - 1 : indices[indices.length - 1];
         int[] indexes = new int[filePaths.length];
         for( int i = 0, delta = 0; i+delta < filePaths.length; ) {            
             int current = lastIndex + 1 + i;
             ClassPathSupport.Item item = ClassPathSupport.Item.create( filePaths[i], base, null);
-            callback.initAdditionalProperties(item);
-            if (additionalProperty != null) {
-                item.setAdditionalProperty(additionalProperty, additionalPropertyValue);
+            if (callback != null) {
+                callback.initItem(item);
             }
             if ( !listModel.contains( item ) ) {
                 listModel.add( current, item );
@@ -264,15 +262,14 @@ public final class ClassPathUiSupport {
     }
     
     public static int[] addArtifacts( DefaultListModel listModel, int[] indices, AntArtifactChooser.ArtifactItem artifactItems[],
-            ClassPathSupport.Callback callback, String additionalProperty, String additionalPropertyValue) {
+            Callback callback) {
         int lastIndex = indices == null || indices.length == 0 ? listModel.getSize() - 1 : indices[indices.length - 1];
         int[] indexes = new int[artifactItems.length];
         for( int i = 0; i < artifactItems.length; i++ ) {
             int current = lastIndex + 1 + i;
             ClassPathSupport.Item item = ClassPathSupport.Item.create( artifactItems[i].getArtifact(), artifactItems[i].getArtifactURI(), null) ;
-            callback.initAdditionalProperties(item);
-            if (additionalProperty != null) {
-                item.setAdditionalProperty(additionalProperty, additionalPropertyValue);
+            if (callback != null) {
+                callback.initItem(item);
             }
             if ( !listModel.contains( item ) ) {
                 listModel.add( current, item );
@@ -284,5 +281,11 @@ public final class ClassPathUiSupport {
         }
         return indexes;
     }
-    
+   
+    /**
+     * Perform optional initialization of item
+     */
+    public static interface Callback {
+        void initItem(ClassPathSupport.Item item);
+    }
 }

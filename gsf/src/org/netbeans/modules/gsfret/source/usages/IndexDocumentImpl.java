@@ -65,4 +65,24 @@ class IndexDocumentImpl implements IndexDocument {
             unindexedValues.add(value);
         }
     }
+    
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+        sb.append("IndexDocumentImpl("); // NOI18N
+        for (int i = 0; i < indexedKeys.size(); i++) {
+            sb.append(indexedKeys.get(i));
+            sb.append(":"); // NOI18N
+            sb.append(indexedValues.get(i));
+            sb.append("\n"); // NOI18N
+        }
+        for (int i = 0; i < unindexedKeys.size(); i++) {
+            sb.append(unindexedKeys.get(i));
+            sb.append(":"); // NOI18N
+            sb.append(unindexedValues.get(i));
+            sb.append("\n"); // NOI18N
+        }
+        sb.append(")"); // NOI18N
+        return sb.toString();
+    }
 }

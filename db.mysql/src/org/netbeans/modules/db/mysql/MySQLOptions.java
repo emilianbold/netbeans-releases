@@ -71,6 +71,13 @@ public class MySQLOptions {
     static final String PROP_CONN_REGISTERED = "conn-registered"; // NOI18N
     static final String PROP_PROVIDER_REGISTERED = "provider-registered"; // NOI18N
     static final String PROP_PROVIDER_REMOVED = "provider-removed"; // NO18N
+    static final String PROP_ADMIN_PATH = "admin-path"; // NOI18N
+    static final String PROP_START_PATH = "start-path"; // NOI18N
+    static final String PROP_STOP_PATH = "stop-path"; // NOI18N
+    static final String PROP_ADMIN_ARGS = "admin-args"; // NOI18N
+    static final String PROP_START_ARGS = "start-args"; // NOI18N
+    static final String PROP_STOP_ARGS = "stop-args"; // NOI18N
+    static final String PROP_COMMANDS_CONFIRMED = "commands-confirmed"; // NOI18N
     
     // Currently not modifiable...
     private static final String DRIVER_CLASS = "com.mysql.jdbc.Driver";
@@ -133,83 +140,6 @@ public class MySQLOptions {
             listener.propertyChange(event);
         }
     }
-
-
-    /**
-     * Returns the MySQL location or an empty string if the MySQL location
-     * is not set. Never returns null.
-     */
-    /** TODO - implement location semantics 
-    public String getLocation() {
-        String location = getProperty(PROP_MYSQL_LOCATION);
-        if (location == null) {
-            location = ""; // NOI18N
-        }
-        
-     */
-
-    /**
-     * Returns true if the MySQL location is null. This method is needed
-     * since getLocation() will never return a null value.
-     */
-    /* TODO - implement location semantics   
-     public boolean isLocationNull() {
-    return getProperty(PROP_MYSQL_LOCATION) == null;
-    }
-     */
-    /**
-     * Sets the MySQL location.
-     *
-     * @param location the MySQL location. A null value is valid and
-     *        will be returned by getLocation() as an empty
-     *        string (meaning "not set"). An empty string is valid
-     *        and has the meaning "set to the default location".
-     */
-    /* TODO - Implement location semantics
-    public void setLocation(String location) {
-        if (location !=  null && location.length() > 0) {
-            File locationFile = new File(location).getAbsoluteFile();
-            if (!locationFile.exists()) {
-                String message = NbBundle.getMessage(MySQLOptions.class, 
-                        "ERR_DirectoryDoesNotExist", locationFile);
-                IllegalArgumentException e = new IllegalArgumentException(message);
-                Exceptions.attachLocalizedMessage(e, message);
-                throw e;
-            }
-            if (!Util.isMySQLInstallLocation(locationFile)) {
-                String message = NbBundle.getMessage(MySQLOptions.class, 
-                        "ERR_InvalidMySQLLocation", locationFile);
-                IllegalArgumentException e = new IllegalArgumentException(message);
-                Exceptions.attachLocalizedMessage(e, message);
-                throw e;
-            }
-        }
-
-        synchronized (this) {
-            stopMySQLServer();
-            LOGGER.log(Level.FINE, "Setting location to {0}", location); // NOI18N
-            putProperty(PROP_MYSQL_LOCATION, location);
-        }
-    }
-
-    public synchronized boolean trySetLocation(String location) {
-        LOGGER.log(Level.FINE, "trySetLocation: Trying to set location to {0}", location); // NOI18N
-        String current = getLocation();
-        if (current.length() == 0) {
-            setLocation(location);
-            LOGGER.fine("trysetLocation: Succeeded"); // NOI18N
-            return true;
-        }
-        File currentFile = new File(current);
-        if (!currentFile.exists() || currentFile.isFile()) {
-             setLocation(location);
-             LOGGER.fine("trysetLocation: correcting"); // NOI18N
-             return true;                
-        }
-        LOGGER.fine("trySetLocation: Another location already set"); // NOI18N
-        return false;
-    }
-     */
 
     public String getHost() {
         return getProperty(PROP_HOST);
@@ -311,7 +241,61 @@ public class MySQLOptions {
     public boolean isProviderRemoved() {
         return getBooleanProperty(PROP_PROVIDER_REMOVED);
     }
+    
+    public String getStartPath() {
+        return getProperty(PROP_START_PATH);
+    }
+    
+    public void setStartPath(String path) {
+        putProperty(PROP_START_PATH, path);
+    }
+    
+    public String getStartArgs() {
+        return getProperty(PROP_START_ARGS);
+    }
+    
+    public void setStartArgs(String args) {
+        putProperty(PROP_START_ARGS, args);
+    }
+    
+    public String getStopPath() {
+        return getProperty(PROP_STOP_PATH);
+    }
+    
+    public void setStopPath(String path) {
+        putProperty(PROP_STOP_PATH, path);
+    }
+    
+    public String getStopArgs() {
+        return getProperty(PROP_STOP_ARGS);
+    }
+    
+    public void setStopArgs(String args) {
+        putProperty(PROP_STOP_ARGS, args);
+    }
+    public String getAdminPath() {
+        return getProperty(PROP_ADMIN_PATH);
+    }
+    
+    public void setAdminPath(String path) {
+        putProperty(PROP_ADMIN_PATH, path);
+    }
 
+    public String getAdminArgs() {
+        return getProperty(PROP_ADMIN_ARGS);
+    }
+    
+    public void setAdminArgs(String args) {
+        putProperty(PROP_ADMIN_ARGS, args);
+    }
+    
+    public boolean isAdminCommandsConfirmed() {
+        return getBooleanProperty(PROP_COMMANDS_CONFIRMED);
+    }
+    
+    public void setAdminCommandsConfirmed(boolean confirmed) {
+        putProperty(PROP_COMMANDS_CONFIRMED, confirmed);
+    }
 
     /* TODO - Implement support for database directory 
     public String getDatabaseDirectory() {

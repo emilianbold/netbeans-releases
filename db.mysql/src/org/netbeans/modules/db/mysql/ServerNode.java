@@ -61,7 +61,7 @@ import org.openide.util.actions.SystemAction;
  * 
  * @author David Van Couvering
  */
-class ServerNode extends AbstractNode implements ChangeListener {  
+class ServerNode extends AbstractNode implements ChangeListener, Comparable {  
     private final ServerInstance server;
     
     // I'd like a less generic icon, but this is what we have for now...
@@ -119,8 +119,12 @@ class ServerNode extends AbstractNode implements ChangeListener {
         } else {
             return new SystemAction[] {
                 SystemAction.get(CreateDatabaseAction.class),
+                SystemAction.get(StartAction.class),
+                SystemAction.get(StopAction.class),
+                SystemAction.get(ConnectServerAction.class),
                 SystemAction.get(RefreshAction.class),
                 SystemAction.get(DeleteAction.class),
+                SystemAction.get(AdministerAction.class),
                 SystemAction.get(PropertiesAction.class)
             };
         }
@@ -192,6 +196,11 @@ class ServerNode extends AbstractNode implements ChangeListener {
             return o1.getDisplayName().compareTo(o2.getDisplayName());
         }
 
+    }
+
+    public int compareTo(Object other) {
+        Node othernode = (Node)other;
+        return this.getDisplayName().compareTo(othernode.getDisplayName());
     }
 
 }
