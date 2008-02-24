@@ -53,7 +53,6 @@ import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JTable;
 import javax.swing.ListModel;
-import javax.swing.ListSelectionModel;
 import javax.swing.event.ListDataListener;
 import javax.swing.event.TableModelListener;
 import javax.swing.table.DefaultTableCellRenderer;
@@ -66,47 +65,44 @@ import org.openide.util.NbBundle;
  *
  * @author Andrei Badea
  */
-public class ConfigFileGroupUIs {
+public class ConfigFilesUIs {
 
-    private ConfigFileGroupUIs() {}
-
-    public static void setupGroupsList(JList list) {
-        list.setCellRenderer(new ConfigFileGroupRenderer());
-        list.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-    }
-
-    public static void setupGroupFilesList(JList list, FileDisplayName displayName) {
-        list.setCellRenderer(new ConfigFileRenderer(displayName));
-        list.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-    }
-
-    public static void connect(List<ConfigFileGroup> groups, JList list) {
-        list.setModel(new ConfigFileGroupListModel(groups));
-    }
-
-    public static void connect(ConfigFileGroup group, JList list) {
-        list.setModel(new ConfigFileListModel(group));
-        list.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-    }
+    private ConfigFilesUIs() {}
 
     public static String getGroupName(ConfigFileGroup group) {
         String name = group.getName();
         if (name == null || name.length() == 0) {
-            name = NbBundle.getMessage(ConfigFileGroupUIs.class, "LBL_Unnamed");
+            name = NbBundle.getMessage(ConfigFilesUIs.class, "LBL_Unnamed");
         }
         return name;
+    }
+
+    public static void setupGroupsList(JList list) {
+        list.setCellRenderer(new ConfigFileGroupRenderer());
+    }
+
+    public static void setupFilesList(JList list, FileDisplayName displayName) {
+        list.setCellRenderer(new ConfigFileRenderer(displayName));
+    }
+
+    public static void connectGroupsList(List<ConfigFileGroup> groups, JList list) {
+        list.setModel(new ConfigFileGroupListModel(groups));
+    }
+
+    public static void connectFilesList(List<File> files, JList list) {
+        list.setModel(new ConfigFileListModel(files));
     }
 
     public static void disconnect(JList list) {
         list.setModel(new DefaultListModel());
     }
 
-    public static void setupConfigFileSelectionTable(JTable table, FileDisplayName displayName) {
+    public static void setupFilesSelectionTable(JTable table, FileDisplayName displayName) {
         table.setDefaultRenderer(File.class, new ConfigFileSelectionFileRenderer(displayName));
         table.setDefaultRenderer(Boolean.class, new ConfigFileSelectionBooleanRenderer(table.getDefaultRenderer(Boolean.class)));
     }
 
-    public static void connect(List<File> availableFiles, Set<File> alreadySelectedFiles, JTable table) {
+    public static void connectFilesSelectionTable(List<File> availableFiles, Set<File> alreadySelectedFiles, JTable table) {
         table.setModel(new ConfigFileSelectionTableModel(availableFiles, alreadySelectedFiles));
     }
 
@@ -150,21 +146,21 @@ public class ConfigFileGroupUIs {
 
     private static final class ConfigFileListModel implements ListModel {
 
-        private ConfigFileGroup group;
+        private List<File> files;
 
-        public ConfigFileListModel(ConfigFileGroup group) {
-            this.group = group;
+        public ConfigFileListModel(List<File> files) {
+            this.files = files;
         }
 
         public void addListDataListener(ListDataListener l) {
         }
 
         public Object getElementAt(int index) {
-            return group.getFiles().get(index);
+            return files.get(index);
         }
 
         public int getSize() {
-            return group.getFiles().size();
+            return files.size();
         }
 
         public void removeListDataListener(ListDataListener l) {
@@ -270,7 +266,7 @@ public class ConfigFileGroupUIs {
             ConfigFileSelectionTableModel model = (ConfigFileSelectionTableModel)table.getModel();
             String toolTipText = null;
             if (!model.isEnabled(row)) {
-                toolTipText = NbBundle.getMessage(ConfigFileGroupUIs.class, "LBL_FileAlreadyAdded");
+                toolTipText = NbBundle.getMessage(ConfigFilesUIs.class, "LBL_FileAlreadyAdded");
             }
             component.setToolTipText(toolTipText);
             component.setEnabled(model.isEnabled(row));
@@ -295,7 +291,7 @@ public class ConfigFileGroupUIs {
             component.setEnabled(model.isEnabled(row));
             String toolTipText = null;
             if (!model.isEnabled(row)) {
-                toolTipText = NbBundle.getMessage(ConfigFileGroupUIs.class, "LBL_FileAlreadyAdded");
+                toolTipText = NbBundle.getMessage(ConfigFilesUIs.class, "LBL_FileAlreadyAdded");
             }
             if (component instanceof JComponent) {
                 ((JComponent)component).setToolTipText(toolTipText);
