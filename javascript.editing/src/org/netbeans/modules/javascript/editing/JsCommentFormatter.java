@@ -63,7 +63,7 @@ public class JsCommentFormatter {
     private final List<String> params;
     private final List<String> exceptions;
     // flag to see if this is already formatted comment with all html stuff
-    private final boolean formattedComment;
+    private boolean formattedComment;
     
     @SuppressWarnings("unchecked")
     public JsCommentFormatter(List<String> comments) {
@@ -71,8 +71,13 @@ public class JsCommentFormatter {
         this.params = new  ArrayList<String>();
         this.exceptions = new  ArrayList<String>();
 
-        // hack: if there is Summary word on first line, it is probably formatted comment
-        formattedComment = (comments.size() > 0 && comments.get(0).indexOf("Summary") != -1); // NOI18N
+        // hack: if there is Summary word on first couple of lines, it is probably formatted comment
+        for (int i = 0, n = Math.min(3,comments.size()); i < n; i++) {
+            if (comments.get(i).indexOf("Summary") != -1) { // NOI18N)
+                formattedComment = true;
+                break;
+            }
+        }
         
         StringBuilder sb = new StringBuilder();
         for (String line : comments) {

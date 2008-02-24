@@ -488,7 +488,6 @@ public class JsCodeCompletionTest extends JsTestBase {
         assertAutoQuery(QueryType.NONE, "foo^", " ");
         assertAutoQuery(QueryType.NONE, "foo^", "c");
         assertAutoQuery(QueryType.NONE, "foo^", "d");
-        assertAutoQuery(QueryType.NONE, "foo^", ";");
         assertAutoQuery(QueryType.NONE, "foo^", "f");
         assertAutoQuery(QueryType.NONE, "Foo:^", ":");
         assertAutoQuery(QueryType.NONE, "Foo::^", ":");
@@ -499,6 +498,7 @@ public class JsCodeCompletionTest extends JsTestBase {
     }
 
     public void testAutoQuery2() throws Exception {
+        assertAutoQuery(QueryType.STOP, "foo^", ";");
         assertAutoQuery(QueryType.STOP, "foo^", "[");
         assertAutoQuery(QueryType.STOP, "foo^", "(");
         assertAutoQuery(QueryType.STOP, "foo^", "{");
