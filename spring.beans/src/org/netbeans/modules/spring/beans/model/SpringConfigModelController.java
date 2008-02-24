@@ -214,7 +214,6 @@ public class SpringConfigModelController {
                                     beanSources.put(currentFile, lockedDoc.getBeanSource());
                                     ConfigModelSpringBeans springBeans = new ConfigModelSpringBeans(beanSources);
                                     DocumentAccess docAccess = new DocumentAccess(springBeans, currentFile, lockedDoc);
-                                    // The action can call lockedDoc.commit().
                                     action.run(docAccess);
                                 } finally {
                                     lockedDoc.unlock();
