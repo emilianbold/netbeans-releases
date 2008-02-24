@@ -47,6 +47,7 @@ import org.netbeans.modules.j2ee.clientproject.AppClientProjectType;
 import org.netbeans.modules.j2ee.common.project.classpath.ClassPathSupport;
 import org.netbeans.modules.j2ee.common.project.classpath.ClassPathSupport.Item;
 import org.netbeans.modules.j2ee.common.project.ui.ProjectProperties;
+import org.netbeans.modules.java.api.common.util.CommonProjectUtils;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.openide.filesystems.FileObject;
 import org.w3c.dom.Document;
@@ -88,7 +89,8 @@ public class ClassPathSupportCallbackImpl implements ClassPathSupport.Callback {
         List<String> libraries = new ArrayList<String>(libs.getLength());
         for ( int i = 0; i < libs.getLength(); i++ ) {
             Element item = (Element)libs.item( i );
-            libraries.add( findText( item ));
+            // appclient is different from other j2ee projects - it stores reference without ${ and }
+            libraries.add( "${"+findText( item )+"}"); // NOI18N
         }
         return libraries;
     }
@@ -134,7 +136,8 @@ public class ClassPathSupportCallbackImpl implements ClassPathSupport.Callback {
             libraryElement.setAttribute(ATTR_DIRS, "" + dirs.size());
         }
         
-        libraryElement.appendChild( doc.createTextNode( item.getReference() ) );
+        // appclient is different from other j2ee projects - it stores reference without ${ and }
+        libraryElement.appendChild( doc.createTextNode( CommonProjectUtils.getAntPropertyName(item.getReference()) ) );
         return libraryElement;
     }
        
