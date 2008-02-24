@@ -36,25 +36,72 @@
  * 
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.db.mysql;
 
+import org.netbeans.api.db.explorer.DatabaseException;
+import org.netbeans.modules.db.mysql.DatabaseUtils.ConnectStatus;
+import org.openide.nodes.Node;
+import org.openide.util.HelpCtx;
+import org.openide.util.NbBundle;
+import org.openide.util.actions.CookieAction;
+
 /**
- * An enumeration indicating the status after attempting to connect to the
- * server
+ * Connect to a database
  * 
  * @author David Van Couvering
  */
-public enum ConnectStatus {
-    /** The server was not detected at the given host/port */
-    NO_SERVER, 
+public class ConnectServerAction extends CookieAction {
+    private static final Class[] COOKIE_CLASSES = 
+            new Class[] { ServerInstance.class };
     
-    /** We could establish a connection, but authentication failed with
-     * the given user and password
-     */
-    SERVER_RUNNING, 
-    
-    /** We were able to connect and authenticate */
-    CONNECT_SUCCEEDED
+    public ConnectServerAction() {
+        putValue("noIconInMenu", Boolean.TRUE);
+    }
 
+    @Override
+    protected boolean asynchronous() {
+        return false;
+    }
+
+    public String getName() {
+        return NbBundle.getBundle(ConnectServerAction.class).
+                getString("LBL_ConnectServerAction");
+    }
+
+    public HelpCtx getHelpCtx() {
+        return new HelpCtx(ConnectServerAction.class);
+    }
+
+    @Override
+    public boolean enable(Node[] activatedNodes) {
+        if ( activatedNodes == null || activatedNodes.length == 0 ) {
+            return false;
+        }
+        
+        ServerInstance server = activatedNodes[0].getCookie(ServerInstance.class);
+        
+        return ( (!server.isConnected()) && server.isRunning() );
+    }
+
+    @Override
+    protected void performAction(Node[] activatedNodes) {
+        ServerInstance server = activatedNodes[0].getCookie(ServerInstance.class);
+        try { 
+            server.connect();
+        } catch ( DatabaseException dbe ) {
+            Utils.displayError(NbBundle.getMessage(ConnectServerAction.class,
+                        "MSG_UnableToConnect"), 
+                    dbe);
+        }
+    }
+    
+    @Override
+    protected int mode() {
+        return MODE_EXACTLY_ONE;
+    }
+
+    @Override
+    protected Class<?>[] cookieClasses() {
+        return COOKIE_CLASSES;
+    }
 }
