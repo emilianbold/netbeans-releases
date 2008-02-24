@@ -1,5 +1,5 @@
 /*
- * PropertiesPanel.java
+ * BasePropertiesPanel.java
  *
  * Created on February 15, 2008, 12:59 PM
  */
@@ -24,7 +24,7 @@ import org.openide.util.NbBundle;
  *
  * @author  David Van Couvering
  */
-public class PropertiesPanel extends javax.swing.JPanel {
+public class BasePropertiesPanel extends javax.swing.JPanel {
     MySQLOptions options = MySQLOptions.getDefault();
     DialogDescriptor descriptor;
     private Color nbErrorForeground;
@@ -47,7 +47,7 @@ public class PropertiesPanel extends javax.swing.JPanel {
     };
 
 
-    private void validatePanel() {
+    public void validatePanel() {
         if (descriptor == null) {
             return;
         }
@@ -55,12 +55,12 @@ public class PropertiesPanel extends javax.swing.JPanel {
         String error = null;
         
         if ( getHost() == null || getHost().equals("")) {
-            error = NbBundle.getMessage(PropertiesPanel.class,
-                        "PropertiesPanel.MSG_SpecifyHost");
+            error = NbBundle.getMessage(BasePropertiesPanel.class,
+                        "BasePropertiesPanel.MSG_SpecifyHost");
         }
         if ( getUser() == null || getUser().equals("")) {
-            error = NbBundle.getMessage(PropertiesPanel.class,
-                        "PropertiesPanel.MSG_SpecifyUser");
+            error = NbBundle.getMessage(BasePropertiesPanel.class,
+                        "BasePropertiesPanel.MSG_SpecifyUser");
         }
         
         if (error != null) {
@@ -71,52 +71,9 @@ public class PropertiesPanel extends javax.swing.JPanel {
             descriptor.setValid(true);
         }
     }
-    public static boolean showMySQLProperties(ServerInstance server) {
-        assert SwingUtilities.isEventDispatchThread();
-        
-        PropertiesPanel panel = new PropertiesPanel(server);
-        String title = NbBundle.getMessage(PropertiesPanel.class, 
-                "PropertiesPanel.LBL_MySQLPropertiesTitle");
-
-        DialogDescriptor desc = new DialogDescriptor(panel, title);
-        panel.setDialogDescriptor(desc);
-
-        for (;;) {                    
-            Dialog dialog = DialogDisplayer.getDefault().createDialog(desc);
-            String acsd = NbBundle.getMessage(PropertiesPanel.class, 
-                    "PropertiesPanel.ACSD_PropertiesPanel");
-            dialog.getAccessibleContext().setAccessibleDescription(acsd);
-            dialog.setVisible(true);
-            dialog.dispose();
-
-            if (!DialogDescriptor.OK_OPTION.equals(desc.getValue())) {
-                return false;
-            }
-
-            server.setHost(panel.getHost());
-            server.setPort(panel.getPort());
-            server.setUser(panel.getUser());
-            server.setPassword(panel.getPassword());
-            server.setSavePassword(panel.getSavePassword());
-
-            // Register the node provider in case it isn't currently registered
-            ServerNodeProvider.getDefault().setRegistered(true);
-            
-            try {
-                server.connect();
-            } catch ( DatabaseException e ) {
-                Utils.displayError(
-                        NbBundle.getMessage(PropertiesPanel.class, 
-                            "PropertiesPanel.MSG_UnableToConnect"), 
-                        e);
-            }
-           
-            return true;
-        }
-    }
-
-    /** Creates new form PropertiesPanel */
-    public PropertiesPanel(ServerInstance server) {
+    
+    /** Creates new form BasePropertiesPanel */
+    public BasePropertiesPanel(ServerInstance server) {
         nbErrorForeground = UIManager.getColor("nb.errorForeground"); //NOI18N
         if (nbErrorForeground == null) {
             //nbErrorForeground = new Color(89, 79, 191); // RGB suggested by Bruce in #28466
@@ -152,26 +109,26 @@ public class PropertiesPanel extends javax.swing.JPanel {
         chkSavePassword.setSelected(server.isSavePassword());
     }
 
-    private String getHost() {
+    String getHost() {
         return txtHost.getText().trim();
     }
 
-    private String getPassword() {
+    String getPassword() {
         return new String(txtPassword.getPassword()).trim();
     }
 
-    private String getPort() {
+    String getPort() {
         return txtPort.getText().trim();
     }
 
-    private String getUser() {
+    String getUser() {
         return txtUser.getText().trim();
     }
 
-    private boolean getSavePassword() {
+    boolean getSavePassword() {
         return chkSavePassword.isSelected();
     }
-    private void setDialogDescriptor(DialogDescriptor desc) {
+    void setDialogDescriptor(DialogDescriptor desc) {
         this.descriptor = desc;
         validatePanel();
     }
@@ -196,29 +153,35 @@ public class PropertiesPanel extends javax.swing.JPanel {
         txtPassword = new javax.swing.JPasswordField();
         messageLabel = new javax.swing.JLabel();
 
-        jLabel1.setText(org.openide.util.NbBundle.getMessage(PropertiesPanel.class, "PropertiesPanel.jLabel1.text")); // NOI18N
+        setAutoscrolls(true);
 
-        jLabel2.setText(org.openide.util.NbBundle.getMessage(PropertiesPanel.class, "PropertiesPanel.jLabel2.text")); // NOI18N
+        jLabel1.setLabelFor(txtHost);
+        jLabel1.setText(org.openide.util.NbBundle.getMessage(BasePropertiesPanel.class, "BasePropertiesPanel.jLabel1.text")); // NOI18N
 
-        jLabel3.setText(org.openide.util.NbBundle.getMessage(PropertiesPanel.class, "PropertiesPanel.jLabel3.text")); // NOI18N
+        jLabel2.setLabelFor(txtPort);
+        jLabel2.setText(org.openide.util.NbBundle.getMessage(BasePropertiesPanel.class, "BasePropertiesPanel.jLabel2.text")); // NOI18N
 
-        jLabel4.setText(org.openide.util.NbBundle.getMessage(PropertiesPanel.class, "PropertiesPanel.jLabel4.text")); // NOI18N
+        jLabel3.setLabelFor(txtUser);
+        jLabel3.setText(org.openide.util.NbBundle.getMessage(BasePropertiesPanel.class, "BasePropertiesPanel.jLabel3.text")); // NOI18N
 
-        chkSavePassword.setText(org.openide.util.NbBundle.getMessage(PropertiesPanel.class, "PropertiesPanel.chkSavePassword.text")); // NOI18N
+        jLabel4.setLabelFor(txtPassword);
+        jLabel4.setText(org.openide.util.NbBundle.getMessage(BasePropertiesPanel.class, "BasePropertiesPanel.jLabel4.text")); // NOI18N
 
-        txtHost.setText(org.openide.util.NbBundle.getMessage(PropertiesPanel.class, "PropertiesPanel.txtHost.text")); // NOI18N
+        chkSavePassword.setText(org.openide.util.NbBundle.getMessage(BasePropertiesPanel.class, "BasePropertiesPanel.chkSavePassword.text")); // NOI18N
+
+        txtHost.setText(org.openide.util.NbBundle.getMessage(BasePropertiesPanel.class, "BasePropertiesPanel.txtHost.text")); // NOI18N
         txtHost.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 txtHostActionPerformed(evt);
             }
         });
 
-        txtPort.setText(org.openide.util.NbBundle.getMessage(PropertiesPanel.class, "PropertiesPanel.txtPort.text")); // NOI18N
+        txtPort.setText(org.openide.util.NbBundle.getMessage(BasePropertiesPanel.class, "BasePropertiesPanel.txtPort.text")); // NOI18N
 
-        txtUser.setText(org.openide.util.NbBundle.getMessage(PropertiesPanel.class, "PropertiesPanel.txtUser.text")); // NOI18N
+        txtUser.setText(org.openide.util.NbBundle.getMessage(BasePropertiesPanel.class, "BasePropertiesPanel.txtUser.text")); // NOI18N
 
         messageLabel.setForeground(new java.awt.Color(255, 0, 51));
-        messageLabel.setText(org.openide.util.NbBundle.getMessage(PropertiesPanel.class, "PropertiesPanel.messageLabel.text")); // NOI18N
+        messageLabel.setText(org.openide.util.NbBundle.getMessage(BasePropertiesPanel.class, "BasePropertiesPanel.messageLabel.text")); // NOI18N
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
@@ -227,6 +190,9 @@ public class PropertiesPanel extends javax.swing.JPanel {
             .add(layout.createSequentialGroup()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(layout.createSequentialGroup()
+                        .add(52, 52, 52)
+                        .add(chkSavePassword))
+                    .add(layout.createSequentialGroup()
                         .addContainerGap()
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                             .add(jLabel1)
@@ -234,24 +200,20 @@ public class PropertiesPanel extends javax.swing.JPanel {
                             .add(jLabel3)
                             .add(jLabel4))
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(txtPassword, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 216, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                            .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING, false)
-                                .add(txtHost, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 216, Short.MAX_VALUE)
-                                .add(txtUser)
-                                .add(txtPort))))
-                    .add(layout.createSequentialGroup()
-                        .add(52, 52, 52)
-                        .add(chkSavePassword))
+                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
+                            .add(txtPassword, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 216, Short.MAX_VALUE)
+                            .add(txtHost, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 216, Short.MAX_VALUE)
+                            .add(txtPort, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 216, Short.MAX_VALUE)
+                            .add(txtUser, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 216, Short.MAX_VALUE)))
                     .add(layout.createSequentialGroup()
                         .addContainerGap()
-                        .add(messageLabel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 432, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
-                .addContainerGap(49, Short.MAX_VALUE))
+                        .add(messageLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 386, Short.MAX_VALUE)))
+                .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
-                .add(36, 36, 36)
+                .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(layout.createSequentialGroup()
                         .add(jLabel1)
@@ -260,6 +222,7 @@ public class PropertiesPanel extends javax.swing.JPanel {
                         .add(11, 11, 11)
                         .add(jLabel3))
                     .add(layout.createSequentialGroup()
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(txtHost, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(txtPort, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
@@ -271,9 +234,9 @@ public class PropertiesPanel extends javax.swing.JPanel {
                     .add(txtPassword, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
                 .add(chkSavePassword)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 38, Short.MAX_VALUE)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
                 .add(messageLabel)
-                .addContainerGap())
+                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
         layout.linkSize(new java.awt.Component[] {jLabel1, jLabel2, jLabel3, jLabel4, txtHost, txtPort, txtUser}, org.jdesktop.layout.GroupLayout.VERTICAL);

@@ -39,7 +39,7 @@
 
 package org.netbeans.modules.db.mysql;
 
-import org.netbeans.modules.db.mysql.ui.PropertiesPanel;
+import org.netbeans.modules.db.mysql.ui.PropertiesDialog;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
@@ -66,7 +66,8 @@ public class RegisterServerAction extends NodeAction {
     @Override
     protected void performAction(Node[] activatedNodes) {
         ServerInstance server = ServerInstance.getDefault();
-        PropertiesPanel.showMySQLProperties(server);        
+        PropertiesDialog dlg = new PropertiesDialog(server);
+        dlg.displayDialog();
     }
 
     @Override

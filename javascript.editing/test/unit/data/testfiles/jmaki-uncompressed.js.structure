@@ -1,5 +1,5 @@
-Jmaki:METHOD:[]:ESCAPED{Jmaki}:
-Map:METHOD:[]:ESCAPED{Map}:
+Jmaki:CONSTRUCTOR:[]:ESCAPED{Jmaki}:
+Map:CONSTRUCTOR:[]:ESCAPED{Map}:
 keys:METHOD:[]:ESCAPED{keys}:
 put:METHOD:[]:ESCAPED{put}(PARAMETERS{ESCAPED{key}, ESCAPED{value}}):
 get:METHOD:[]:ESCAPED{get}(PARAMETERS{ESCAPED{key}}):
@@ -32,7 +32,7 @@ log:METHOD:[]:ESCAPED{log}(PARAMETERS{ESCAPED{text}, ESCAPED{level}}):
 initialize:METHOD:[]:ESCAPED{initialize}:
 namespace:METHOD:[]:ESCAPED{namespace}(PARAMETERS{ESCAPED{_path}, ESCAPED{target}}):
 findObject:METHOD:[]:ESCAPED{findObject}(PARAMETERS{ESCAPED{_path}}):
-Timer:METHOD:[]:ESCAPED{Timer}(PARAMETERS{ESCAPED{args}, ESCAPED{isCall}}):
+Timer:CONSTRUCTOR:[]:ESCAPED{Timer}(PARAMETERS{ESCAPED{args}, ESCAPED{isCall}}):
 processTopic:METHOD:[]:ESCAPED{processTopic}:
 processCall:METHOD:[]:ESCAPED{processCall}:
 run:METHOD:[]:ESCAPED{run}:
@@ -40,14 +40,14 @@ addTimer:METHOD:[]:ESCAPED{addTimer}(PARAMETERS{ESCAPED{_timer}}):
 addTimers:METHOD:[]:ESCAPED{addTimers}(PARAMETERS{ESCAPED{_timers}}):
 postInitialize:METHOD:[]:ESCAPED{postInitialize}:
 filter:METHOD:[]:ESCAPED{filter}(PARAMETERS{ESCAPED{input}, ESCAPED{filter}}):
-DContainer:METHOD:[]:ESCAPED{DContainer}(PARAMETERS{ESCAPED{args}}):
+DContainer:CONSTRUCTOR:[]:ESCAPED{DContainer}(PARAMETERS{ESCAPED{args}}):
 loadURL:METHOD:[]:ESCAPED{loadURL}(PARAMETERS{ESCAPED{_url}}):
 getPosition:METHOD:[]:ESCAPED{getPosition}(PARAMETERS{ESCAPED{_e}}):
 resize:METHOD:[]:ESCAPED{resize}:
 init:METHOD:[]:ESCAPED{init}:
 layout:METHOD:[]:ESCAPED{layout}:
 destroy:METHOD:[]:ESCAPED{destroy}:
-Injector:METHOD:[]:ESCAPED{Injector}:
+Injector:CONSTRUCTOR:[]:ESCAPED{Injector}:
 inject:METHOD:[]:ESCAPED{inject}(PARAMETERS{ESCAPED{task}}):
 inject:METHOD:[]:ESCAPED{inject}(PARAMETERS{ESCAPED{task}}):
 processTask:METHOD:[]:ESCAPED{processTask}(PARAMETERS{ESCAPED{injectionPoint}, ESCAPED{task}}):
@@ -66,5 +66,11 @@ se:CLASS:[]:ESCAPED{se}:
   onreadystatechange:METHOD:[]:ESCAPED{onreadystatechange}:
 _req:CLASS:[]:ESCAPED{_req}:
   onreadystatechange:METHOD:[]:ESCAPED{onreadystatechange}:
+args:CLASS:[]:ESCAPED{args}:
+  fn:PROPERTY:[]:ESCAPED{fn}:
+  on:PROPERTY:[]:ESCAPED{on}:
+  to:PROPERTY:[]:ESCAPED{to}:
+  to:PROPERTY:[]:ESCAPED{to}:
+  topics:PROPERTY:[]:ESCAPED{topics}:
 window:CLASS:[]:ESCAPED{window}:
   onload:METHOD:[]:ESCAPED{onload}:

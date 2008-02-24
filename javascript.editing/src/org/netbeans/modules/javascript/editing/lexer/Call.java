@@ -70,16 +70,6 @@ public class Call {
     public Call(String type, String lhs, boolean isStatic, boolean methodExpected) {
         super();
 
-        if (lhs != null) {
-            if ("document".equals(lhs) ||  // NOI18N
-                    ("element".equals(lhs)) || // NOI18N
-                    ("event".equals(lhs)) || // NOI18N
-                    ("window".equals(lhs))) { // NOI18N
-                // TODO - the other primary DOM objects too - style, stylesheet, etc. Look these up!
-                type = lhs;
-            }
-        }
-        
         this.type = type;
         this.lhs = lhs;
         this.methodExpected = methodExpected;

@@ -138,13 +138,13 @@ public class JsTypeSearcher implements TypeSearcher {
         kind = adjustKind(kind, textForQuery);
         
         if (kind == NameKind.CASE_INSENSITIVE_PREFIX /*|| kind == NameKind.CASE_INSENSITIVE_REGEXP*/) {
-//            textForQuery = textForQuery.toLowerCase();
+            textForQuery = textForQuery.toLowerCase();
         }
 
         Set<JsTypeDescriptor> result = new HashSet<JsTypeDescriptor>();
-        Set<IndexedFunction> functions = index.getFunctions(textForQuery, null, kind, scope, null, true);
-        for (IndexedFunction func : functions) {
-            result.add(new JsTypeDescriptor(func, helper));
+        Set<IndexedElement> elements = index.getAllNames(textForQuery, kind, scope, null);
+        for (IndexedElement element : elements) {
+            result.add(new JsTypeDescriptor(element, helper));
         }
         
         
@@ -220,14 +220,14 @@ public class JsTypeSearcher implements TypeSearcher {
     }
 
     private class JsTypeDescriptor extends GsfTypeDescriptor {
-        private final IndexedFunction element;
+        private final IndexedElement element;
         private String projectName;
         private Icon projectIcon;
         private final Helper helper;
         private boolean isLibrary;
         private static final String ICON_PATH = "org/netbeans/modules/javascript/editing/javascript.png"; //NOI18N
         
-        public JsTypeDescriptor(IndexedFunction element, Helper helper) {
+        public JsTypeDescriptor(IndexedElement element, Helper helper) {
             this.element = element;
             this.helper = helper;
         }

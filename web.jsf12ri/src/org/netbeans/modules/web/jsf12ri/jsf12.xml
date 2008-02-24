@@ -48,12 +48,12 @@ made subject to such option by the copyright holder.
     <localizing-bundle>org/netbeans/modules/web/jsf12/Bundle</localizing-bundle>
     <volume>
         <type>classpath</type>
-	<resource>jar:nbinst://org.netbeans.modules.web.jsf/modules/ext/jsf-1_2/commons-beanutils.jar!/</resource>
-	<resource>jar:nbinst://org.netbeans.modules.web.jsf/modules/ext/jsf-1_2/commons-collections.jar!/</resource>
-	<resource>jar:nbinst://org.netbeans.modules.web.jsf/modules/ext/jsf-1_2/commons-digester.jar!/</resource>
-	<resource>jar:nbinst://org.netbeans.modules.web.jsf/modules/ext/jsf-1_2/commons-logging.jar!/</resource>
-	<resource>jar:nbinst://org.netbeans.modules.web.jsf/modules/ext/jsf-1_2/jsf-api.jar!/</resource>
-	<resource>jar:nbinst://org.netbeans.modules.web.jsf/modules/ext/jsf-1_2/jsf-impl.jar!/</resource>
+	<resource>jar:nbinst://org.netbeans.modules.web.jsf12ri/modules/ext/jsf-1_2/commons-beanutils.jar!/</resource>
+	<resource>jar:nbinst://org.netbeans.modules.web.jsf12ri/modules/ext/jsf-1_2/commons-collections.jar!/</resource>
+	<resource>jar:nbinst://org.netbeans.modules.web.jsf12ri/modules/ext/jsf-1_2/commons-digester.jar!/</resource>
+	<resource>jar:nbinst://org.netbeans.modules.web.jsf12ri/modules/ext/jsf-1_2/commons-logging.jar!/</resource>
+	<resource>jar:nbinst://org.netbeans.modules.web.jsf12/modules/ext/jsf-1_2/jsf-api.jar!/</resource>
+	<resource>jar:nbinst://org.netbeans.modules.web.jsf12ri/modules/ext/jsf-1_2/jsf-impl.jar!/</resource>
     </volume>
     <volume>
         <type>javadoc</type>

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * 
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
  * 
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -37,24 +37,37 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.db.mysql;
+package org.netbeans.modules.javascript.editing;
+
+import org.netbeans.modules.gsf.api.ElementKind;
 
 /**
- * An enumeration indicating the status after attempting to connect to the
- * server
- * 
- * @author David Van Couvering
+ *
+ * @author Tor Norbye
  */
-public enum ConnectStatus {
-    /** The server was not detected at the given host/port */
-    NO_SERVER, 
+public class IndexedProperty extends IndexedElement {
     
-    /** We could establish a connection, but authentication failed with
-     * the given user and password
-     */
-    SERVER_RUNNING, 
+    IndexedProperty(String name, String in, JsIndex index, String fileUrl, String attributes, int flags, ElementKind kind) {
+        super(name, in, index, fileUrl, attributes, flags, kind);
+    }
     
-    /** We were able to connect and authenticate */
-    CONNECT_SUCCEEDED
+    @Override
+    public String toString() {
+        return getSignature() + ":" + getFilenameUrl();
+    }
 
+    @Override
+    public String getSignature() {
+        if (signature == null) {
+            StringBuilder sb = new StringBuilder();
+            if (in != null) {
+                sb.append(in);
+                sb.append('.');
+            }
+            sb.append(name);
+            signature = sb.toString();
+        }
+
+        return signature;
+    }
 }

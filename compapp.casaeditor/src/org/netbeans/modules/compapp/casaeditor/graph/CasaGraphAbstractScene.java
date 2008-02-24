@@ -68,7 +68,7 @@ import java.util.*;
  */
 // TODO - is it asserted that removing a node removes all its pins
 // TODO - is it asserted that removing a pin disconnects all the attached edges
-public abstract class CasaGraphAbstractScene<N, E, P> extends ObjectScene {
+public abstract class CasaGraphAbstractScene<N, E, P, G> extends ObjectScene {
     
     private HashSet<N> regions = new HashSet<N> ();
     private Set<N> regionsUm = Collections.unmodifiableSet(regions);
@@ -78,9 +78,13 @@ public abstract class CasaGraphAbstractScene<N, E, P> extends ObjectScene {
     private Set<E> edgesUm = Collections.unmodifiableSet(edges);
     private HashSet<P> pins = new HashSet<P> ();
     private Set<P> pinsUm = Collections.unmodifiableSet(pins);
+    private HashSet<G> processes = new HashSet<G> ();
+    private Set<G> processesUm = Collections.unmodifiableSet(processes);
     
     private HashMap<N, HashSet<P>> nodePins = new HashMap<N, HashSet<P>> ();
+    private HashMap<N, HashSet<G>> nodeProcesses = new HashMap<N, HashSet<G>> ();
     private HashMap<P, N> pinNodes = new HashMap<P, N> ();
+    private HashMap<G, N> processNodes = new HashMap<G, N> ();
     private HashMap<E, P> edgeSourcePins = new HashMap<E, P> ();
     private HashMap<E, P> edgeTargetPins = new HashMap<E, P> ();
     private HashMap<P, List<E>> pinInputEdges = new HashMap<P, List<E>> ();
@@ -128,6 +132,7 @@ public abstract class CasaGraphAbstractScene<N, E, P> extends ObjectScene {
         addObject(node, widget);
         nodes.add(node);
         nodePins.put(node, new HashSet<P> ());
+        nodeProcesses.put(node, new HashSet<G> ());
         notifyNodeAdded(node, widget);
         return widget;
     }
@@ -141,8 +146,11 @@ public abstract class CasaGraphAbstractScene<N, E, P> extends ObjectScene {
         assert nodes.contains(node);
         for (P pin : new HashSet<P> (nodePins.get(node)))
             removePin(pin);
+        for (G process : new HashSet<G> (nodeProcesses.get(node)))
+            removeProcess(process);
         nodes.remove(node);
         nodePins.remove(node);
+        nodeProcesses.remove(node);
         Widget widget = findWidget(node);
         removeObject(node);
         detachNodeWidget(node, widget);
@@ -165,6 +173,15 @@ public abstract class CasaGraphAbstractScene<N, E, P> extends ObjectScene {
      */
     public final Collection<N> getNodes() {
         return nodesUm;
+    }
+    
+    /**
+     * Returns a collection of all processes registered in the graph model.
+     * 
+     * @return  the collection of all processes registered in the graph model
+     */
+    public final Collection<G> getProcesses() {
+        return processesUm;
     }
     
     /**
@@ -229,7 +246,7 @@ public abstract class CasaGraphAbstractScene<N, E, P> extends ObjectScene {
         notifyPinAdded(node, pin, widget);
         return widget;
     }
-    
+        
     /**
      * Removes an pin and detaches all edges that are connected to it.
      * @param pin the pin to be removed; the pin must not be null and must be already in the model
@@ -249,6 +266,46 @@ public abstract class CasaGraphAbstractScene<N, E, P> extends ObjectScene {
         Widget widget = findWidget(pin);
         removeObject(pin);
         detachPinWidget(pin, widget);
+    }
+    
+    
+    /**
+     * Adds a process and assigns it to a specified node.
+     * 
+     * @param node  the node where the process is assigned to
+     * @param process   the process to be added; the process must not be null, 
+     *          must not be already in the model and must be unique in the model
+     * 
+     * @return the widget that is created by addProcess
+     */
+    public final Widget addProcess(N node, G process) {
+        assert node != null;
+        assert process != null;
+        Widget widget = attachProcessWidget(node, process);
+        //System.out.println("add " + process);
+        addObject(process, widget);
+        processes.add(process);
+        nodeProcesses.get(node).add(process);
+        processNodes.put(process, node);
+        return widget;
+    }
+    
+    /**
+     * Removes a process and detach it.
+     * 
+     * @param process   the process to be removed; the process must not be null
+     *                  and must be already in the model
+     */
+    public final void removeProcess(G process) {
+        assert process != null;
+        assert processes.contains(process);
+        processes.remove(process);
+        N node = processNodes.remove(process);
+        nodeProcesses.get(node).remove(process);
+        Widget widget = findWidget(process);
+        removeObject(process);
+        //System.out.println("remove " + group);
+        detachGroupWidget(process, widget);
     }
     
     /**
@@ -470,6 +527,11 @@ public abstract class CasaGraphAbstractScene<N, E, P> extends ObjectScene {
             widget.removeFromParent();
     }
     
+    protected void detachGroupWidget(G group, Widget widget) {
+        if (widget != null)
+            widget.removeFromParent();
+    }
+    
     
     /**
      * Called by the addRegion method before the region is registered to acquire a widget that is going to represent the region in the scene.
@@ -503,6 +565,19 @@ public abstract class CasaGraphAbstractScene<N, E, P> extends ObjectScene {
      * @return the widget representing the pin; null, if the pin is non-visual
      */
     protected abstract Widget attachPinWidget(N node, P pin);
+    
+    /**
+     * Called by the addProcess method before the process is registered to 
+     * acquire a widget that is going to represent the process in the scene.
+     * The method is responsible for creating the widget, adding it into 
+     * the scene and returning it from the method.
+     * 
+     * @param node      the node where the process is assigned to
+     * @param process   the process that is going to be added
+     * 
+     * @return the widget representing the process
+     */
+    protected abstract Widget attachProcessWidget(N node, G process);
     
     /**
      * Called by the setEdgeSource method to notify about the changing the edge source in the graph model.
@@ -552,6 +627,7 @@ public abstract class CasaGraphAbstractScene<N, E, P> extends ObjectScene {
      */
     protected abstract void refreshWidgetBadge(N node, Widget widget);
 
+    @Override
     public void userSelectionSuggested(Set<?> suggestedSelectedObjects, boolean invertSelection) {
         super.userSelectionSuggested(suggestedSelectedObjects, invertSelection);
         fireSelectionChanged();
