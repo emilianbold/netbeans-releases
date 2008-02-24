@@ -41,8 +41,6 @@
 
 package org.netbeans.modules.db.mysql;
 
-import java.sql.Connection;
-import java.sql.SQLException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
@@ -52,9 +50,9 @@ import org.netbeans.api.db.explorer.DatabaseException;
 import org.netbeans.api.db.explorer.JDBCDriver;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
+import org.netbeans.modules.db.mysql.DatabaseUtils.ConnectStatus;
 import org.netbeans.modules.db.mysql.DatabaseUtils.URLParser;
 import org.openide.modules.ModuleInstall;
-import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.windows.WindowManager;
@@ -140,7 +138,8 @@ public class Installer extends ModuleInstall {
 
             // All right, now let's try auto-detection...
             String url = DatabaseUtils.getURL(host, port);
-            ConnectStatus status = testConnection(url, user, password);
+            ConnectStatus status = DatabaseUtils.testConnection(url, user, 
+                    password);
             
             if ( status == ConnectStatus.CONNECT_SUCCEEDED  ||
                  status == ConnectStatus.SERVER_RUNNING ) {
@@ -188,63 +187,5 @@ public class Installer extends ModuleInstall {
             ServerNodeProvider.getDefault().setRegistered(true);
         }
 
-        private ConnectStatus testConnection(String url, String user, 
-                String password) {
-            Connection conn;
-            try {
-                conn = DatabaseUtils.connect(url, user, password);
-            } catch (SQLException e) {
-                LOGGER.log(Level.FINE, null, e);
-                if ( isServerException(e) ) {
-                    return ConnectStatus.SERVER_RUNNING;
-                } else {
-                    return ConnectStatus.NO_SERVER;
-                }
-            } catch ( DatabaseException e ) {
-                Exceptions.printStackTrace(e);
-                return ConnectStatus.NO_SERVER;
-            }
-            
-            // Issue 127994 - driver sometimes silently returns null (??)
-            if ( conn == null ) {
-                return ConnectStatus.NO_SERVER;
-            }
-            
-            try { 
-                conn.close();
-            } catch (SQLException sqle) {
-                LOGGER.log(Level.FINE, null, sqle);
-            }
-
-            return ConnectStatus.CONNECT_SUCCEEDED;            
-        }
-        
-
-        private boolean isServerException(SQLException e) {
-            //
-            // See http://dev.mysql.com/doc/refman/5.0/en/error-handling.html
-            // for info on MySQL errors and sql states.
-            //
-            String sqlstate = e.getSQLState();
-            SQLException nexte = e.getNextException();
-            
-            if ( sqlstate.equals("08S01")) { // Communications exception
-                return false;
-            }
-            
-            if ( sqlstate.startsWith("20"))  {
-                // An exception whose SQL state starts with '20' is
-                // client side-only.  So any SQL state that *doesn't*
-                // start with '20' must have come from a live server
-                return false;
-            }
-
-            if ( nexte != null ) {
-                return ( isServerException(nexte) );
-            } 
-            
-            return true;
-        }
-
-    }
+    }   
 }
