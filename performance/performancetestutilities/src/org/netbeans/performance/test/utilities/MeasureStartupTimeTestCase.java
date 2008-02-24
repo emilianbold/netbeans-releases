@@ -237,13 +237,13 @@ public class MeasureStartupTimeTestCase extends org.netbeans.junit.NbPerformance
         // guiltracker lib
         cmd.append(" --cp:a ").append(classpath);
         // userdir
-        cmd.append(" --userdir ").append(userdir.getAbsolutePath());
+        cmd.append(" --userdir \"").append(userdir.getAbsolutePath()).append('\"');
         // get jdkhome path
-        cmd.append(" --jdkhome ").append(jdkhome);
+        cmd.append(" --jdkhome \"").append(jdkhome).append('\"');
         // netbeans full hack
         cmd.append(" -J-Dnetbeans.full.hack=true");
         // measure argument
-        cmd.append(" -J-Dorg.netbeans.log.startup.logfile=").append(measureFile.getAbsolutePath());
+        cmd.append(" -J-Dorg.netbeans.log.startup.logfile=\"").append(measureFile.getAbsolutePath()).append('\"');
         // measure argument - we have to set this one to ommit repaint of memory toolbar (see openide/actions/GarbageCollectAction)
         cmd.append(" -J-Dorg.netbeans.log.startup=tests");
         // close the IDE after startup
@@ -271,9 +271,10 @@ public class MeasureStartupTimeTestCase extends org.netbeans.junit.NbPerformance
         Process ideProcess = runtime.exec(cmd.toString(),null,ideBinDir);
         
         // track out and errs from ide - the last parameter is PrintStream where the
-        // streams are copied - currently set to null, so it does not hit performance much
+        // streams are copied - currently set to null, so it does not hit performance much        
         ThreadReader sout = new ThreadReader(ideProcess.getInputStream(), null);
-        ThreadReader serr = new ThreadReader(ideProcess.getErrorStream(), null);
+        // FIXME: System.err is used to catch errors from the running IDE
+        ThreadReader serr = new ThreadReader(ideProcess.getErrorStream(), System.err);
         try {
             System.out.println("IDE exited with status = " + ideProcess.waitFor());
         } catch (InterruptedException ie) {

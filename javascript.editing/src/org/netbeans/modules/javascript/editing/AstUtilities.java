@@ -50,18 +50,19 @@ import org.mozilla.javascript.Node;
 import org.mozilla.javascript.Node.LabelledNode;
 import org.mozilla.javascript.Token;
 import org.netbeans.api.lexer.TokenSequence;
-import org.netbeans.fpi.gsf.CompilationInfo;
-import org.netbeans.fpi.gsf.OffsetRange;
-import org.netbeans.fpi.gsf.Parser;
-import org.netbeans.fpi.gsf.ParserFile;
-import org.netbeans.fpi.gsf.ParserResult;
-import org.netbeans.fpi.gsf.SourceFileReader;
-import org.netbeans.fpi.gsf.TranslatedSource;
+import org.netbeans.modules.gsf.api.CompilationInfo;
+import org.netbeans.modules.gsf.api.OffsetRange;
+import org.netbeans.modules.gsf.api.Parser;
+import org.netbeans.modules.gsf.api.ParserFile;
+import org.netbeans.modules.gsf.api.ParserResult;
+import org.netbeans.modules.gsf.api.SourceFileReader;
+import org.netbeans.modules.gsf.api.TranslatedSource;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
+import org.netbeans.modules.gsf.api.ElementKind;
 import org.netbeans.modules.javascript.editing.lexer.JsCommentTokenId;
 import org.netbeans.modules.javascript.editing.lexer.LexUtilities;
-import org.netbeans.sfpi.gsf.DefaultParseListener;
+import org.netbeans.modules.gsf.spi.DefaultParseListener;
 import org.openide.util.Exceptions;
 
 /**
@@ -181,7 +182,7 @@ public class AstUtilities {
         return result.getRootNode();
     }
 
-    public static Node getForeignNode(final IndexedFunction o, Node[] foreignRootRet) {
+    public static Node getForeignNode(final IndexedElement o, Node[] foreignRootRet) {
         ParserFile file = o.getFile();
 
         if (file == null) {
@@ -239,14 +240,22 @@ TranslatedSource translatedSource = null; // TODO - determine this here?
         if (signature == null) {
             return null;
         }
-
 //        Node node = AstUtilities.findBySignature(root, signature);
         JsParseResult rpr = (JsParseResult)result;
-        for (AstElement element : rpr.getStructure().getElements()) {
-            if (element instanceof FunctionAstElement) {
-                FunctionAstElement func = (FunctionAstElement) element;
-                if (signature.equals(func.getSignature())) {
-                    return func.getNode();
+        boolean lookForFunction = o.getKind() == ElementKind.CONSTRUCTOR || o.getKind() == ElementKind.METHOD;
+        if (lookForFunction) {
+            for (AstElement element : rpr.getStructure().getElements()) {
+                if (element instanceof FunctionAstElement) {
+                    FunctionAstElement func = (FunctionAstElement) element;
+                    if (signature.equals(func.getSignature())) {
+                        return func.getNode();
+                    }
+                }
+            }
+        } else {
+            for (AstElement element : rpr.getStructure().getElements()) {
+                if (signature.equals(element.getSignature())) {
+                    return element.getNode();
                 }
             }
         }
@@ -536,6 +545,18 @@ TranslatedSource translatedSource = null; // TODO - determine this here?
             return (FunctionNode)labelledNode;
         }
         
+        return null;
+    }
+
+    public static Node getLabelledNode(Node objlitNode) {
+        assert objlitNode.getType() == Token.OBJLITNAME;
+        LabelledNode node = (LabelledNode)objlitNode;
+        Node labelledNode = node.getLabelledNode();
+        
+        return labelledNode;
+    }
+    
+    public static String getFqn(AstPath path) {
         return null;
     }
 }

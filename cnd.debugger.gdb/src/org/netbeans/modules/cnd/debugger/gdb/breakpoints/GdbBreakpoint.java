@@ -41,15 +41,11 @@
 
 package org.netbeans.modules.cnd.debugger.gdb.breakpoints;
 
-import java.lang.Integer;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.HashSet;
 import java.util.Iterator;
-
 import org.netbeans.api.debugger.Breakpoint;
-
-import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.modules.cnd.debugger.gdb.event.GdbBreakpointEvent;
 import org.netbeans.modules.cnd.debugger.gdb.event.GdbBreakpointListener;
 import org.netbeans.modules.cnd.debugger.gdb.GdbDebugger;

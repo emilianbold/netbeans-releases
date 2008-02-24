@@ -157,7 +157,7 @@ public class MakeListOfNBM extends Task {
         String versionSpecNum = attr.getValue("OpenIDE-Module-Specification-Version"); //NOI18N
         if (versionSpecNum == null) {
             log("Manifest in jar file "+module.getAbsolutePath()+" does not contain tag OpenIDE-Module-Specification-Version");
-            return;
+            versionSpecNum = "0";
         }
 
         UpdateTracking.Version version = track.addNewModuleVersion( codename, versionSpecNum );
@@ -279,11 +279,6 @@ public class MakeListOfNBM extends Task {
             }
         }
         track.write();
-        String moduleName = this.getProject().getProperty("module.name"); //NOI18N
-        if (moduleName == null) {
-            // external module?
-            return;
-        }
     }
 
     private void updateFileSetForLorB(FileSet fs) {

@@ -2,8 +2,8 @@
 <!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.1//EN" "http://www.netbeans.org/dtds/filesystem-1_1.dtd">
 <filesystem>
     <folder name="Templates">
-        <attr name="position" intvalue="3000"/>
         <folder name="SaaSServices">
+            <attr name="position" intvalue="3000"/>
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.websvc.saas.codegen.Bundle"/>
             <file name="RestConnection.java" url="/org/netbeans/modules/websvc/saas/codegen/java/resources/RestConnection.template">
                 <attr name="position" intvalue="10"/>

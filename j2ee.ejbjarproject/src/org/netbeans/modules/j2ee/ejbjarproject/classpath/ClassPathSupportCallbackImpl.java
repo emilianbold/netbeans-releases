@@ -55,7 +55,6 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.w3c.dom.Text;
 import org.netbeans.modules.j2ee.ejbjarproject.EjbJarProjectType;
-import org.netbeans.modules.java.api.common.util.CommonProjectUtils;
 import org.openide.filesystems.FileObject;
 
 /**
@@ -226,8 +225,5 @@ public class ClassPathSupportCallbackImpl implements ClassPathSupport.Callback {
         putIncludedLibraries(items, helper, projectXMLElement);
     }
 
-    public void initAdditionalProperties(Item item) {
-        item.setAdditionalProperty(INCLUDE_IN_DEPLOYMENT, "true"); //NOI18N
-    }
 }
 
