@@ -350,11 +350,10 @@ public final class LibrariesNode extends AbstractNode {
             if (platformProperty!=null) {
                 result.add (new Key());
             }
-            if (j2eePlatformProperty != null) { 
-                if (!Boolean.parseBoolean(projectSharedProps.getProperty(ProjectProperties.J2EE_PLATFORM_SHARED))) {
+            if (j2eePlatformProperty != null) {
+                String j2eePlatform = projectSharedProps.getProperty(j2eeClassPathProperty);
+                if (j2eePlatform == null) {
                     result.add(new Key(true));
-                } else {
-                    result.addAll(getKeys(projectSharedProps, projectPrivateProps, privateProps, j2eeClassPathProperty, rootsList));
                 }
             }
             //XXX: Workaround: Remove this when there will be API for listening on nonexistent files
