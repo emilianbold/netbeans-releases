@@ -187,6 +187,7 @@ public final class LibrariesLocationUpdater implements PropertyChangeListener {
                             cs.encodeToStrings(additionalLibs, additionalProjectXMLElement);
                             set.addAll(additionalLibs);
                         }
+                        props = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);    //Reread the properties
                         ProjectProperties.storeLibrariesLocations(set.iterator(), props, project.getProjectDirectory());
                         helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, props);
                         try {
