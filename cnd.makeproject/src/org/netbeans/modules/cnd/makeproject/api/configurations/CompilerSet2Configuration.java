@@ -56,6 +56,13 @@ public class CompilerSet2Configuration {
         this.makeConfiguration = makeConfiguration;
         this.cachedDisplayName = cachedDisplayName;
         String csName = CppSettings.getDefault().getCompilerSetName();
+        if (csName == null || csName.length() == 0) {
+            // This can happen on Solaris!!!!
+            if (CompilerSetManager.getDefault().getCompilerSetNames().size() > 0)
+                csName = CompilerSetManager.getDefault().getCompilerSet(0).getName();
+            else
+                csName = "Sun"; // NOI18N
+        }
         compilerSetName = new StringConfiguration(null, csName);
     }
     

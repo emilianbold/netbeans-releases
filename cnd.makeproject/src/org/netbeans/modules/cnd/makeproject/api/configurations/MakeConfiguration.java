@@ -149,16 +149,16 @@ public class MakeConfiguration extends Configuration {
         this.dependencyChecking = dependencyChecking;
     }
     
-    public CompilerSetConfiguration getCompilerSet() {
-        return compilerSet;
+    public CompilerSet2Configuration getCompilerSet() {
+        return compilerSet2;
     }
     
     public void setCompilerSet(CompilerSetConfiguration compilerSet) {
         this.compilerSet = compilerSet;
     }
     
-    public CompilerSet2Configuration getCompilerSet2() {
-        return compilerSet2;
+    public CompilerSetConfiguration getCompilerSet2() {
+        return compilerSet;
     }
     
     public void setCompilerSet2(CompilerSet2Configuration compilerSet2) {
@@ -338,8 +338,8 @@ public class MakeConfiguration extends Configuration {
         super.cloneConf(clone);
         clone.setCloneOf(this);
         
-        clone.setCompilerSet((CompilerSetConfiguration) getCompilerSet().clone());
-        clone.setCompilerSet2((CompilerSet2Configuration) getCompilerSet2().clone());
+        clone.setCompilerSet2((CompilerSet2Configuration) getCompilerSet().clone());
+        clone.setCompilerSet((CompilerSetConfiguration) getCompilerSet2().clone());
         clone.setCRequired((BooleanConfiguration) getCRequired().clone());;
         clone.setCppRequired((BooleanConfiguration) getCppRequired().clone());;
         clone.setFortranRequired((BooleanConfiguration) getFortranRequired().clone());
@@ -376,8 +376,8 @@ public class MakeConfiguration extends Configuration {
         set.setName("ProjectDefaults"); // NOI18N
         set.setDisplayName(getString("ProjectDefaultsTxt"));
         set.setShortDescription(getString("ProjectDefaultsHint"));
-        set.put(new IntNodeProp(getCompilerSet(), true, "CompilerSCollection", getString("CompilerCollectionTxt"), getString("CompilerCollectionHint"))); // NOI18N
-        set.put(new CompilerSetNodeProp(getCompilerSet2(), true, "CompilerSCollection2", getString("CompilerCollectionTxt")+"2", getString("CompilerCollectionHint")+"2")); // NOI18N
+        //set.put(new IntNodeProp(getCompilerSet2(), true, "CompilerSCollection", getString("CompilerCollectionTxt"), getString("CompilerCollectionHint"))); // NOI18N
+        set.put(new CompilerSetNodeProp(getCompilerSet(), true, "CompilerSCollection2", getString("CompilerCollectionTxt")+"2", getString("CompilerCollectionHint")+"2")); // NOI18N
         set.put(new BooleanNodeProp(getCRequired(), true, "cRequired", getString("CRequiredTxt"), getString("CRequiredHint"))); // NOI18N
         set.put(new BooleanNodeProp(getCppRequired(), true, "cppRequired", getString("CppRequiredTxt"), getString("CppRequiredHint"))); // NOI18N
         if (CppSettings.getDefault().isFortranEnabled()) {
@@ -403,7 +403,7 @@ public class MakeConfiguration extends Configuration {
         set.setName("Compiler Collection"); // NOI18N
         set.setDisplayName(getString("CompilerCollectionTxt"));
         set.setShortDescription(getString("CompilerCollectionHint"));
-        set.put(new IntNodeProp(getCompilerSet(), true, "CompilerCollection", getString("CompilerCollectionTxt"), getString("CompilerCollectionHint"))); // NOI18N
+        set.put(new IntNodeProp(getCompilerSet2(), true, "CompilerCollection", getString("CompilerCollectionTxt"), getString("CompilerCollectionHint"))); // NOI18N
         sheet.put(set);
         
         return sheet;
