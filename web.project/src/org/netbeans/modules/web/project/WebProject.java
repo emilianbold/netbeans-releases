@@ -66,7 +66,6 @@ import org.netbeans.modules.websvc.jaxws.api.JAXWSSupport;
 import org.netbeans.modules.websvc.jaxws.spi.JAXWSSupportFactory;
 import org.netbeans.modules.websvc.spi.client.WebServicesClientSupportFactory;
 import org.netbeans.modules.websvc.spi.jaxws.client.JAXWSClientSupportFactory;
-import org.openide.util.WeakListeners;
 import org.openide.util.lookup.Lookups;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -118,6 +117,7 @@ import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.spi.project.ui.ProjectOpenedHook;
 import org.netbeans.modules.j2ee.common.project.classpath.ClassPathSupport;
 import org.netbeans.modules.j2ee.common.project.classpath.LibrariesLocationUpdater;
+import org.netbeans.modules.j2ee.common.project.ui.ClassPathUiSupport;
 import org.netbeans.modules.j2ee.common.project.ui.ProjectProperties;
 import org.netbeans.modules.j2ee.common.ui.BrokenServerSupport;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
@@ -185,6 +185,7 @@ public final class WebProject implements Project, AntProjectListener {
     private final WebProjectLibrariesModifierImpl libMod;
     private final ClassPathProviderImpl cpProvider;
     private LibrariesLocationUpdater librariesLocationUpdater;
+    private ClassPathUiSupport.Callback classPathUiSupportCallback;
     
     private AntBuildExtender buildExtender;
             
@@ -322,7 +323,7 @@ public final class WebProject implements Project, AntProjectListener {
         apiJAXWSClientSupport = JAXWSClientSupportFactory.createJAXWSClientSupport(jaxWsClientSupport);
         enterpriseResourceSupport = new WebContainerImpl(this, refHelper, helper);
         cpMod = new ClassPathModifier(this, this.updateHelper, eval, refHelper,
-            new ClassPathSupportCallbackImpl(helper), createClassPathModifierCallback());
+            new ClassPathSupportCallbackImpl(helper), createClassPathModifierCallback(), getClassPathUiSupportCallback());
         libMod = new WebProjectLibrariesModifierImpl(this, this.updateHelper, eval, refHelper);
         classPathExtender = new ClassPathExtender(cpMod, ProjectProperties.JAVAC_CLASSPATH, ClassPathSupportCallbackImpl.TAG_WEB_MODULE_LIBRARIES);
         librariesLocationUpdater = new LibrariesLocationUpdater(this, updateHelper, eval, cpMod.getClassPathSupport(),
@@ -354,6 +355,28 @@ public final class WebProject implements Project, AntProjectListener {
                 return null;
             }
         };        
+    }
+    
+    public synchronized ClassPathUiSupport.Callback getClassPathUiSupportCallback() {
+        if (classPathUiSupportCallback == null) {
+            classPathUiSupportCallback = new ClassPathUiSupport.Callback() {
+                public void initItem(ClassPathSupport.Item item) {
+                    switch (item.getType()) {
+                        case ClassPathSupport.Item.TYPE_JAR:
+                            item.setAdditionalProperty(ClassPathSupportCallbackImpl.PATH_IN_DEPLOYMENT, 
+                                    item.getResolvedFile().isDirectory() ? 
+                                        ClassPathSupportCallbackImpl.PATH_IN_WAR_DIR : 
+                                        ClassPathSupportCallbackImpl.PATH_IN_WAR_LIB);
+                            break;
+                        default:
+                            item.setAdditionalProperty(ClassPathSupportCallbackImpl.PATH_IN_DEPLOYMENT, 
+                                    ClassPathSupportCallbackImpl.PATH_IN_WAR_LIB);
+                    }
+                }
+            };
+            
+        }
+        return classPathUiSupportCallback;
     }
 
     public UpdateProjectImpl getUpdateImplementation() {
@@ -578,8 +601,13 @@ public final class WebProject implements Project, AntProjectListener {
                 if (evt.getPropertyName().equals(J2eePlatform.PROP_CLASSPATH)) {
                     ProjectManager.mutex().writeAccess(new Mutex.Action() {
                         public Object run() {
-                            EditableProperties ep = helper.getProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH);
-                            if (!Boolean.parseBoolean(ep.getProperty(WebProjectProperties.J2EE_PLATFORM_SHARED))) {
+                            EditableProperties ep = helper.getProperties(
+                                    AntProjectHelper.PRIVATE_PROPERTIES_PATH);
+                            EditableProperties projectProps = helper.getProperties(
+                                    AntProjectHelper.PROJECT_PROPERTIES_PATH);
+
+                            if (!ProjectProperties.isUsingServerLibrary(projectProps,
+                                    WebProjectProperties.J2EE_PLATFORM_CLASSPATH)) {
                                 String classpath = Utils.toClasspathString(platform.getClasspathEntries());
                                 ep.setProperty(WebProjectProperties.J2EE_PLATFORM_CLASSPATH, classpath);
                             }

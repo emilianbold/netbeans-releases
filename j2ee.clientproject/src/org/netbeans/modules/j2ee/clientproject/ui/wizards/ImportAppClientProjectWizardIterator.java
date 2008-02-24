@@ -55,7 +55,7 @@ import org.netbeans.modules.j2ee.api.ejbjar.Ear;
 import org.netbeans.modules.j2ee.clientproject.AppClientProject;
 import org.netbeans.modules.j2ee.clientproject.Utils;
 import org.netbeans.modules.j2ee.clientproject.api.AppClientProjectGenerator;
-import org.netbeans.modules.j2ee.clientproject.ui.FoldersListSettings;
+import org.netbeans.modules.j2ee.common.project.ui.UserProjectSettings;
 import org.netbeans.modules.j2ee.common.project.ui.PanelSharability;
 import org.netbeans.modules.j2ee.common.SharabilityUtility;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
@@ -141,7 +141,7 @@ public class ImportAppClientProjectWizardIterator implements WizardDescriptor.Pr
         }
         
         // remember last used server
-        FoldersListSettings.getDefault().setLastUsedServer(serverInstanceID);
+        UserProjectSettings.getDefault().setLastUsedServer(serverInstanceID);
         
         // downgrade the Java platform or src level to 1.4
         String platformName = (String)wiz.getProperty(WizardProperties.JAVA_PLATFORM);

@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -46,6 +46,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.StringReader;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
@@ -83,13 +85,13 @@ import org.netbeans.modules.xml.api.EncodingUtil;
  */
 public class FastOpenInfoParser {
     
-    static final boolean debug = Boolean.getBoolean("netbeans.debug.fastopeninfo"); // NOI18N
+    private static final Logger LOGGER = Logger.getLogger(FastOpenInfoParser.class.getName());
     
     static FastOpenInfoParser get(WebModule wm) {
         return new FastOpenInfoParser(wm);
     }
     
-    private WebModule wm;
+    private final WebModule wm;
     
     /** Creates a new instance of FastOpenInfoParser */
     private FastOpenInfoParser(WebModule wm) {
@@ -97,15 +99,20 @@ public class FastOpenInfoParser {
     }
     
     public JspParserAPI.JspOpenInfo getJspOpenInfo(FileObject fo, boolean useEditor) {
-        long a = System.currentTimeMillis();
+        long start = 0;
+        if (LOGGER.isLoggable(Level.FINE)) {
+            start = System.currentTimeMillis();
+        }
         try {
-            if(wm != null && wm.getDocumentBase() != null && useEditor) return null; //better let the parser do it
+            if (wm != null && wm.getDocumentBase() != null && useEditor) {
+                return null; //better let the parser do it
+            }
             
             //if there isn't a webmodule detect the encoding from the file only
-            if(wm != null) {
+            if (wm != null) {
                 //find deployment descriptor
                 FileObject documentBase = wm.getDocumentBase();
-                if(documentBase != null) {
+                if (documentBase != null) {
                     FileObject dd = wm.getDeploymentDescriptor();
                     //test whether the DD exists, if not parse the JSP file
                     if (dd != null) {
@@ -128,10 +135,10 @@ public class FastOpenInfoParser {
             byte[] buffer = new byte[8192*4];
             InputStream _is = fo.getInputStream();
             int readed = _is.read(buffer);
-            InputStream is = new ByteArrayInputStream(buffer,0,readed);
+            InputStream is = new ByteArrayInputStream(buffer, 0, readed);
             _is.close();
             
-            if(isXMLSyntax(fo)) {
+            if (isXMLSyntax(fo)) {
                 //XML document - detect encoding acc. to fisrt 4 bytes or xml prolog
                 enc = EncodingUtil.detectEncoding(is);
             } else {
@@ -140,17 +147,19 @@ public class FastOpenInfoParser {
                 enc = parseEncodingFromFile(is);
             }
             
-            if(debug) System.out.println("[fast open parser] detected " + enc + " encoding.");
+            LOGGER.fine("[fast open parser] detected " + enc + " encoding.");
             return enc == null ? null : new JspParserAPI.JspOpenInfo(isXMLSyntax(fo), enc);
             
-        } catch(IOException e) {
+        } catch (IOException e) {
             //do not handle
-        } catch(SAXException se) {
+        } catch (SAXException se) {
             //do not handle
-        } catch(ParserConfigurationException pce) {
+        } catch (ParserConfigurationException pce) {
             //do not handle
         } finally {
-            if(debug) System.out.println("[fast open parser] taken " + (System.currentTimeMillis() - a) + "ms.");
+            if (LOGGER.isLoggable(Level.FINE)) {
+                LOGGER.fine("[fast open parser] taken " + (System.currentTimeMillis() - start) + "ms.");
+            }
         }
         return null;
     }
@@ -167,8 +176,10 @@ public class FastOpenInfoParser {
     
     private static boolean isXMLSyntax(FileObject fo) {
         String ext = fo.getExt();
-        if(ext != null && ("jspx".equalsIgnoreCase(ext) || "tagx".equalsIgnoreCase(ext))) return true;
-        else return false;
+        if (ext != null && ("jspx".equalsIgnoreCase(ext) || "tagx".equalsIgnoreCase(ext))) { // NOI18N
+            return true;
+        }
+        return false;
     }
     
     //JSP encoding parser
@@ -199,38 +210,44 @@ public class FastOpenInfoParser {
         int state = P_INIT;
         int i = 0;
         int pos = -1;
-        while(i < len) {
+        while (i < len) {
             char c = buffer[i];
             
-            switch(state) {
+            switch (state) {
                 case P_INIT:
-                    if(c == '<') state = P_LT;
+                    if (c == '<') { // NOI18N
+                        state = P_LT;
+                    }
                     i++;
                     break;
                 case P_LT:
-                    switch(c) {
-                        case '%' :
+                    switch (c) {
+                        case '%': // NOI18N
                             state = P_LT_PER;
                             break;
-                        default: state = P_INIT;
+                        default:
+                            state = P_INIT;
+                            break;
                     }
                     i++;
                     break;
                     
                 case P_LT_PER:
-                    switch(c) {
-                        case '@':
+                    switch (c) {
+                        case '@': // NOI18N
                             state = P_LT_PER_ATS;
                             break;
-                        default: state = P_INIT;
+                        default:
+                            state = P_INIT;
+                            break;
                     }
                     i++;
                     break;
                 case P_LT_PER_ATS:
-                    if(c == ' ' || c == '\t') {
+                    if (c == ' ' || c == '\t') { // NOI18N
                         i++;
                         break;
-                    } else if(prescanFor(buffer, i, PAGE)) {
+                    } else if (prescanFor(buffer, i, PAGE)) {
                         state = P_PD;
                         i = i + PAGE.length();
                         break;
@@ -239,59 +256,68 @@ public class FastOpenInfoParser {
                     i++;
                     break;
                 case P_PD:
-                    if(prescanFor(buffer, i, ENCODING)) {
+                    if (prescanFor(buffer, i, ENCODING)) {
                         state = P_ENC;
                         i = i + ENCODING.length();
                         break;
-                    } else if(prescanFor(buffer, i, CONTENTYPE)) {
+                    } else if (prescanFor(buffer, i, CONTENTYPE)) {
                         state = P_CT;
                         i = i + CONTENTYPE.length();
                         break;
-                    } else if(c == '%') state = P_APER;
+                    } else if (c == '%') { // NOI18N
+                        state = P_APER;
+                    }
                     i++;
                     break;
                 case P_APER:
-                    if(c == '>') state = P_INIT;
-                    else state = P_PD;
+                    if (c == '>') { // NOI18N
+                        state = P_INIT;
+                    } else {
+                        state = P_PD;
+                    }
                     i++;
                     break;
                 case P_ENC:
-                    switch(c) {
-                        case ' ':
-                        case '\t':
+                    switch (c) {
+                        case ' ': // NOI18N
+                        case '\t': // NOI18N
                             ;
                             break;
-                        case '=':
+                        case '=': // NOI18N
                             state = P_ENC_EQ;
                             break;
-                        case '%':
+                        case '%': // NOI18N
                             state = P_APER;
                             break;
                         default:
                             state = P_PD;
+                            break;
                     }
                     i++;
                     break;
                 case P_ENC_EQ:
-                    switch(c) {
-                        case ' ':
-                        case '\t':
+                    switch (c) {
+                        case ' ': // NOI18N
+                        case '\t': // NOI18N
                             break;
-                        case '"':
+                        case '"': // NOI18N
                             state = P_ENC_EQ_VAL;
                             pos = i + 1;
                             break;
-                        case '%':
+                        case '%': // NOI18N
                             state = P_APER;
                             break;
                         default:
                             state = P_PD;
+                            break;
                     }
                     i++;
                     break;
                 case P_ENC_EQ_VAL:
-                    switch(c) {
-                        case '"': return new String(buffer, pos, i - pos); //return the encoding attr value
+                    switch (c) {
+                        case '"': // NOI18N
+                            return new String(buffer, pos, i - pos); //return the encoding attr value
+                            //break;
                         default:
                     }
                     i++;
@@ -299,43 +325,45 @@ public class FastOpenInfoParser {
                     
                 case P_CT:
                     switch(c) {
-                        case ' ':
-                        case '\t':
+                        case ' ': // NOI18N
+                        case '\t': // NOI18N
                             break;
-                        case '=':
+                        case '=': // NOI18N
                             state = P_CT_EQ;
                             break;
-                        case '%':
+                        case '%': // NOI18N
                             state = P_APER;
                             break;
                         default:
                             state = P_PD;
+                            break;
                     }
                     i++;
                     break;
                 case P_CT_EQ:
                     switch(c) {
-                        case ' ':
-                        case '\t':
+                        case ' ': // NOI18N
+                        case '\t': // NOI18N
                             break;
-                        case '"':
+                        case '"': // NOI18N
                             state = P_CT_EQ_VAL;
                             break;
-                        case '%':
+                        case '%': // NOI18N
                             state = P_APER;
                             break;
                         default:
                             state = P_PD;
+                            break;
                     }
                     i++;
                     break;
                 case P_CT_EQ_VAL:
-                    if(prescanFor(buffer, i, CHARSET)) {
+                    if (prescanFor(buffer, i, CHARSET)) {
                         state = P_CT_VAL_CHS;
                         i = i + CHARSET.length();
                         pos = i;
                         break;
-                    } else if(c == '"') {
+                    } else if (c == '"') { // NOI18N
                         state = P_PD;
                         break;
                     }
@@ -343,7 +371,7 @@ public class FastOpenInfoParser {
                     break;
                 case P_CT_VAL_CHS:
                     switch(c) {
-                        case '"':
+                        case '"': // NOI18N
                             contentType = new String(buffer, pos, i - pos); //return the encoding attr value
                             state = P_PD;
                             break;
@@ -351,7 +379,6 @@ public class FastOpenInfoParser {
                     }
                     i++;
                     break;
-                    
             } //eof state switch
         }
         
@@ -359,11 +386,14 @@ public class FastOpenInfoParser {
         return contentType;
     }
     
-    
     private static boolean prescanFor(char[] buffer, int position, String text) {
-        if((buffer.length - position) < text.length()) return false; //too short buffer - the text cannot be there
-        for(int i = 0; i < text.length(); i++) {
-            if(buffer[position+i] != text.charAt(i)) return false;
+        if ((buffer.length - position) < text.length()) {
+            return false; //too short buffer - the text cannot be there
+        }
+        for (int i = 0; i < text.length(); i++) {
+            if (buffer[position + i] != text.charAt(i)) {
+                return false;
+            }
         }
         return true;
     }
@@ -383,20 +413,34 @@ public class FastOpenInfoParser {
         
         class Handler extends DefaultHandler {
             private boolean inJspPropertyGroup = false;
+
+            @Override
             public void startElement(String uri, String localname, String qname, Attributes attr) throws SAXException {
                 String tagName = qname.toLowerCase();
-                if(JSP_PROPERTY_GROUP.equals(tagName)) inJspPropertyGroup = true;
-                if(inJspPropertyGroup) {
-                    if(PAGE_ENCODING.equals(tagName)) ddParseInfo.definesEncoding = true;
-                    if(IS_XML.equals(tagName)) ddParseInfo.marksXMLDocuments = true;
+                if (JSP_PROPERTY_GROUP.equals(tagName)) {
+                    inJspPropertyGroup = true;
+                }
+                if (inJspPropertyGroup) {
+                    if (PAGE_ENCODING.equals(tagName)) {
+                        ddParseInfo.definesEncoding = true;
+                    }
+                    if (IS_XML.equals(tagName)) {
+                        ddParseInfo.marksXMLDocuments = true;
+                    }
                 }
             }
+
+            @Override
             public void endElement(String uri, String localname, String qname) throws SAXException {
                 String tagName = qname.toLowerCase();
-                if(JSP_PROPERTY_GROUP.equals(tagName)) inJspPropertyGroup = false;
+                if (JSP_PROPERTY_GROUP.equals(tagName)) {
+                    inJspPropertyGroup = false;
+                }
             }
+
+            @Override
             public InputSource resolveEntity (String publicId, String systemId) {
-                return new InputSource(new StringReader("")); //prevent the parser to use catalog entity resolver
+                return new InputSource(new StringReader("")); //prevent the parser to use catalog entity resolver // NOI18N
             }
         }
         parser.parse(src, new Handler());
@@ -405,7 +449,7 @@ public class FastOpenInfoParser {
     
     private static final class DDParseInfo {
         public boolean definesEncoding, marksXMLDocuments;
-        public DDParseInfo() {}
+        public DDParseInfo() {
+        }
     }
-    
 }
