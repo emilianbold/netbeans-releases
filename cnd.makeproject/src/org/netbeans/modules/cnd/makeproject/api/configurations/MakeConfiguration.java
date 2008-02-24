@@ -377,7 +377,7 @@ public class MakeConfiguration extends Configuration {
         set.setDisplayName(getString("ProjectDefaultsTxt"));
         set.setShortDescription(getString("ProjectDefaultsHint"));
         //set.put(new IntNodeProp(getCompilerSet2(), true, "CompilerSCollection", getString("CompilerCollectionTxt"), getString("CompilerCollectionHint"))); // NOI18N
-        set.put(new CompilerSetNodeProp(getCompilerSet(), true, "CompilerSCollection2", getString("CompilerCollectionTxt")+"2", getString("CompilerCollectionHint")+"2")); // NOI18N
+        set.put(new CompilerSetNodeProp(getCompilerSet(), true, "CompilerSCollection2", getString("CompilerCollectionTxt"), getString("CompilerCollectionHint"))); // NOI18N
         set.put(new BooleanNodeProp(getCRequired(), true, "cRequired", getString("CRequiredTxt"), getString("CRequiredHint"))); // NOI18N
         set.put(new BooleanNodeProp(getCppRequired(), true, "cppRequired", getString("CppRequiredTxt"), getString("CppRequiredHint"))); // NOI18N
         if (CppSettings.getDefault().isFortranEnabled()) {
