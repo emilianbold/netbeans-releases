@@ -41,68 +41,59 @@
 
 package org.netbeans.modules.j2ee.earproject.ui.customizer;
 
-import java.awt.Dialog;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.util.StringTokenizer;
-import javax.swing.DefaultListModel;
+import javax.swing.JButton;
 import javax.swing.JPanel;
 import javax.swing.JTable;
 import javax.swing.ListSelectionModel;
-import javax.swing.event.ListSelectionEvent;
-import javax.swing.event.ListSelectionListener;
 import javax.swing.table.TableColumn;
-import org.openide.DialogDescriptor;
-import org.openide.DialogDisplayer;
+import org.netbeans.modules.j2ee.api.ejbjar.EjbProjectConstants;
+import org.netbeans.modules.j2ee.common.project.classpath.ClassPathSupport;
+import org.netbeans.modules.j2ee.common.project.classpath.ClassPathSupport.Item;
+import org.netbeans.modules.j2ee.common.project.ui.ClassPathUiSupport;
+import org.netbeans.modules.j2ee.common.project.ui.EditMediator;
+import org.netbeans.modules.j2ee.earproject.classpath.ClassPathSupportCallbackImpl;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
 /**
  * Customizer for Enterprise Application packaging.
  */
-public class CustomizerJarContent extends JPanel implements ListSelectionListener, HelpCtx.Provider {
+public class CustomizerJarContent extends JPanel implements HelpCtx.Provider {
     private static final long serialVersionUID = 1L;
     
-    private Dialog dialog;
-    private final AddFilter filterDlg = new AddFilter();
-    private final DefaultListModel dlm = new DefaultListModel();
-    private final EarProjectProperties earProperties;
-    private final VisualPropertySupport vps;
-    private final VisualArchiveIncludesSupport vws;
-    private final ActionListener actionListener;
+    private final EarProjectProperties uiProperties;
     
     public CustomizerJarContent(EarProjectProperties earProperties) {
+        this.uiProperties = earProperties;
         initComponents();
         this.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CustomizerJarContent.class, "ACS_CustomizeEAR_A11YDesc"));
         
-        this.earProperties = earProperties;
-        vps = new VisualPropertySupport(earProperties);
-        vws = new VisualArchiveIncludesSupport( earProperties.getProject(),
-                (String) earProperties.get(EarProjectProperties.J2EE_PLATFORM),
-                jTableAddContent,
-                jButtonAddJar,
-                jButtonAddLib,
-                jButtonAddProject,
-                jButtonRemove);
-        
-        jListExContent.setModel(dlm);
-        
-        // XXX correct these when the sematics are well defined
-        //jButtonAddLib.setEnabled(false);
-        
-        actionListener = new ActionListener() {
-            public void actionPerformed(ActionEvent event) {
-                if (event.getSource() == DialogDescriptor.OK_OPTION) {
-                    dlm.addElement(filterDlg.getExpression());
-                    setExcludeProperty();
-                    closeDialog();
-                }
+        jTextFieldFileName.setDocument(uiProperties.ARCHIVE_NAME_MODEL);
+        jTextFieldExContent.setDocument( uiProperties.BUILD_CLASSES_EXCLUDES_MODEL );
+        uiProperties.ARCHIVE_COMPRESS_MODEL.setMnemonic( jCheckBoxCompress.getMnemonic() );
+        jCheckBoxCompress.setModel( uiProperties.ARCHIVE_COMPRESS_MODEL );
+        ClassPathUiSupport.Callback callback = new ClassPathUiSupport.Callback() {
+            public void initItem(Item item) {
+                item.setAdditionalProperty(ClassPathSupportCallbackImpl.PATH_IN_DEPLOYMENT, "/"); //NOI18N
             }
         };
-        
-        jListExContent.getSelectionModel().addListSelectionListener(this);
+        EditMediator.register( uiProperties.getProject(),
+                uiProperties.getProject().getAntProjectHelper(),
+                uiProperties.getProject().getReferenceHelper(),
+                EditMediator.createListComponent(jTableAddContent, uiProperties.EAR_CONTENT_ADDITIONAL_MODEL.getDefaultListModel()) , 
+                jButtonAddJar.getModel(),
+                jButtonAddLib.getModel(),
+                jButtonAddProject.getModel(),
+                jButtonRemove.getModel(),
+                (new JButton()).getModel(), // no button in UI
+                (new JButton()).getModel(), // no button in UI
+                (new JButton()).getModel(), // no button in UI
+                uiProperties.SHARED_LIBRARIES_MODEL,
+                callback,
+                new String[]{EjbProjectConstants.ARTIFACT_TYPE_J2EE_MODULE_IN_EAR_ARCHIVE});
+        jTableAddContent.setModel( uiProperties.EAR_CONTENT_ADDITIONAL_MODEL);
+        jTableAddContent.setDefaultRenderer(ClassPathSupport.Item.class, uiProperties.CLASS_PATH_TABLE_RENDERER);
         initTableVisualProperties(jTableAddContent);
-        initValues();
     }
     
     private void initTableVisualProperties(JTable table) {
@@ -126,44 +117,16 @@ public class CustomizerJarContent extends JPanel implements ListSelectionListene
         column.setMinWidth(28);
     }
     
-    public void initValues() {
-        vps.register(jTextFieldFileName, EarProjectProperties.JAR_NAME);
-        vps.register(jCheckBoxCommpress, EarProjectProperties.JAR_COMPRESS);
-        vps.register(vws, EarProjectProperties.JAR_CONTENT_ADDITIONAL);
-        
-        dlm.removeAllElements();
-        String exclude = (String) earProperties.get(EarProjectProperties.BUILD_CLASSES_EXCLUDES);
-        if (exclude != null) {
-            StringTokenizer excludeTokenizer = new StringTokenizer(exclude, ","); //NOI18N
-            while (excludeTokenizer.hasMoreElements()) {
-                dlm.addElement(excludeTokenizer.nextToken());
-            }
-        } else {
-            dlm.addElement("**/*.java"); //NOI18N
-        }
-        
-        // Set the initial state of the buttons
-        valueChanged(null);
-    }
-    
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
      * always regenerated by the Form Editor.
      */
-    // <editor-fold defaultstate="collapsed" desc=" Generated Code ">//GEN-BEGIN:initComponents
+    // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
-        java.awt.GridBagConstraints gridBagConstraints;
 
-        jPanel1 = new javax.swing.JPanel();
-        jLabelFileName = new javax.swing.JLabel();
-        jTextFieldFileName = new javax.swing.JTextField();
-        jCheckBoxCommpress = new javax.swing.JCheckBox();
+        jCheckBoxCompress = new javax.swing.JCheckBox();
         jLabelExContent = new javax.swing.JLabel();
-        jScrollPane1 = new javax.swing.JScrollPane();
-        jListExContent = new javax.swing.JList();
-        jButtonAddFilter = new javax.swing.JButton();
-        jButtonRemoveFilter = new javax.swing.JButton();
         jLabelAddContent = new javax.swing.JLabel();
         jScrollPane2 = new javax.swing.JScrollPane();
         jTableAddContent = new javax.swing.JTable();
@@ -171,103 +134,18 @@ public class CustomizerJarContent extends JPanel implements ListSelectionListene
         jButtonAddLib = new javax.swing.JButton();
         jButtonAddProject = new javax.swing.JButton();
         jButtonRemove = new javax.swing.JButton();
+        jTextFieldFileName = new javax.swing.JTextField();
+        jLabelFileName = new javax.swing.JLabel();
+        jLabelExContent1 = new javax.swing.JLabel();
+        jTextFieldExContent = new javax.swing.JTextField();
 
-        setLayout(new java.awt.GridBagLayout());
+        org.openide.awt.Mnemonics.setLocalizedText(jCheckBoxCompress, NbBundle.getMessage(CustomizerJarContent.class, "LBL_CustomizeEAR_Commpres_JCheckBox")); // NOI18N
+        jCheckBoxCompress.setMargin(new java.awt.Insets(0, 0, 0, 0));
 
-        jPanel1.setLayout(new java.awt.GridBagLayout());
-
-        jLabelFileName.setLabelFor(jTextFieldFileName);
-        org.openide.awt.Mnemonics.setLocalizedText(jLabelFileName, NbBundle.getMessage(CustomizerJarContent.class, "LBL_CustomizeEAR_FileName_JLabel"));
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 11);
-        jPanel1.add(jLabelFileName, gridBagConstraints);
-
-        jTextFieldFileName.setEditable(false);
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.weightx = 1.0;
-        jPanel1.add(jTextFieldFileName, gridBagConstraints);
-        jTextFieldFileName.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CustomizerJarContent.class, "ACS_CustomizeEAR_FileName_A11YDesc"));
-
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 11, 0);
-        add(jPanel1, gridBagConstraints);
-
-        org.openide.awt.Mnemonics.setLocalizedText(jCheckBoxCommpress, NbBundle.getMessage(CustomizerJarContent.class, "LBL_CustomizeEAR_Commpres_JCheckBox"));
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 1;
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 11, 0);
-        add(jCheckBoxCommpress, gridBagConstraints);
-        jCheckBoxCommpress.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CustomizerJarContent.class, "ACS_CustomizeEAR_Commpres_A11YDesc"));
-
-        jLabelExContent.setLabelFor(jListExContent);
-        org.openide.awt.Mnemonics.setLocalizedText(jLabelExContent, NbBundle.getMessage(CustomizerJarContent.class, "LBL_CustomizeEAR_Content_JLabel"));
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.insets = new java.awt.Insets(12, 0, 2, 0);
-        add(jLabelExContent, gridBagConstraints);
-
-        jScrollPane1.setViewportView(jListExContent);
-        jListExContent.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CustomizerJarContent.class, "ACS_CustomizeEAR_Content_A11YDesc"));
-
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridheight = 2;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.weighty = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 11);
-        add(jScrollPane1, gridBagConstraints);
-
-        org.openide.awt.Mnemonics.setLocalizedText(jButtonAddFilter, NbBundle.getMessage(CustomizerJarContent.class, "LBL_CustomizeEAR_AddFilter_JButton"));
-        jButtonAddFilter.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jButtonAddFilterActionPerformed(evt);
-            }
-        });
-
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTH;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 11, 0);
-        add(jButtonAddFilter, gridBagConstraints);
-        jButtonAddFilter.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CustomizerJarContent.class, "ACS_CustomizeEAR_AddFilter_A11YDesc"));
-
-        org.openide.awt.Mnemonics.setLocalizedText(jButtonRemoveFilter, NbBundle.getMessage(CustomizerJarContent.class, "LBL_CustomizeEAR_RemoveFilter_JButton"));
-        jButtonRemoveFilter.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jButtonRemoveFilterActionPerformed(evt);
-            }
-        });
-
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 4;
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTH;
-        add(jButtonRemoveFilter, gridBagConstraints);
-        jButtonRemoveFilter.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CustomizerJarContent.class, "ACS_CustomizeEAR_Remove_A11YDesc"));
+        org.openide.awt.Mnemonics.setLocalizedText(jLabelExContent, NbBundle.getMessage(CustomizerJarContent.class, "LBL_CustomizeEAR_Content_JLabel")); // NOI18N
 
         jLabelAddContent.setLabelFor(jTableAddContent);
-        org.openide.awt.Mnemonics.setLocalizedText(jLabelAddContent, NbBundle.getMessage(CustomizerJarContent.class, "LBL_CustomizeEAR_AddContent_JLabel"));
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 5;
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(11, 0, 2, 0);
-        add(jLabelAddContent, gridBagConstraints);
+        org.openide.awt.Mnemonics.setLocalizedText(jLabelAddContent, NbBundle.getMessage(CustomizerJarContent.class, "LBL_CustomizeEAR_AddContent_JLabel")); // NOI18N
 
         jTableAddContent.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
@@ -278,112 +156,106 @@ public class CustomizerJarContent extends JPanel implements ListSelectionListene
             }
         ));
         jScrollPane2.setViewportView(jTableAddContent);
-        jTableAddContent.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CustomizerJarContent.class, "LBL_AACH_ProjectJarFiles_JLabel"));
+        jTableAddContent.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CustomizerJarContent.class, "LBL_AACH_ProjectJarFiles_JLabel")); // NOI18N
 
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridheight = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.weighty = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 11, 11);
-        add(jScrollPane2, gridBagConstraints);
+        org.openide.awt.Mnemonics.setLocalizedText(jButtonAddJar, NbBundle.getMessage(CustomizerJarContent.class, "LBL_CustomizeEAR_AddJar_JButton")); // NOI18N
 
-        org.openide.awt.Mnemonics.setLocalizedText(jButtonAddJar, NbBundle.getMessage(CustomizerJarContent.class, "LBL_CustomizeEAR_AddJar_JButton"));
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 6;
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 5, 0);
-        add(jButtonAddJar, gridBagConstraints);
-        jButtonAddJar.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CustomizerJarContent.class, "ACS_CustomizeEAR_AddJar_A11YDesc"));
+        org.openide.awt.Mnemonics.setLocalizedText(jButtonAddLib, NbBundle.getMessage(CustomizerJarContent.class, "LBL_CustomizeEAR_AddLib_JButton")); // NOI18N
 
-        org.openide.awt.Mnemonics.setLocalizedText(jButtonAddLib, NbBundle.getMessage(CustomizerJarContent.class, "LBL_CustomizeEAR_AddLib_JButton"));
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 7;
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 5, 0);
-        add(jButtonAddLib, gridBagConstraints);
-        jButtonAddLib.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CustomizerJarContent.class, "ACS_CustomizeEAR_AddLib_A11YDesc"));
+        org.openide.awt.Mnemonics.setLocalizedText(jButtonAddProject, NbBundle.getMessage(CustomizerJarContent.class, "LBL_CustomizeEAR_AddProject_JButton")); // NOI18N
 
-        org.openide.awt.Mnemonics.setLocalizedText(jButtonAddProject, NbBundle.getMessage(CustomizerJarContent.class, "LBL_CustomizeEAR_AddProject_JButton"));
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 8;
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 11, 0);
-        add(jButtonAddProject, gridBagConstraints);
-        jButtonAddProject.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CustomizerJarContent.class, "ACS_CustomizeEAR_AddProject_A11YDesc"));
+        org.openide.awt.Mnemonics.setLocalizedText(jButtonRemove, NbBundle.getMessage(CustomizerJarContent.class, "LBL_CustomizeEAR_Remove_JButton")); // NOI18N
 
-        org.openide.awt.Mnemonics.setLocalizedText(jButtonRemove, NbBundle.getMessage(CustomizerJarContent.class, "LBL_CustomizeEAR_Remove_JButton"));
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 9;
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.gridheight = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTH;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 11, 0);
-        add(jButtonRemove, gridBagConstraints);
-        jButtonRemove.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CustomizerJarContent.class, "ACS_CustomizeEAR_AdditionalRemove_A11YDesc"));
+        jTextFieldFileName.setEditable(false);
 
-    }
-    // </editor-fold>//GEN-END:initComponents
-    
-    private void jButtonRemoveFilterActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonRemoveFilterActionPerformed
-        Object[] items = jListExContent.getSelectedValues();
-        for (int i = 0; i < items.length; i++) {
-            dlm.removeElement(items[i]);
-        }
-        setExcludeProperty();
-    }//GEN-LAST:event_jButtonRemoveFilterActionPerformed
-    
-    private void jButtonAddFilterActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonAddFilterActionPerformed
-        DialogDescriptor descriptor = new DialogDescriptor(filterDlg, NbBundle.getMessage(CustomizerJarContent.class, "LBL_AddFilter_Title"), true, actionListener); //NOI18N
-        Object [] closingOptions = {DialogDescriptor.CANCEL_OPTION};
-        descriptor.setClosingOptions(closingOptions);
-        dialog = DialogDisplayer.getDefault().createDialog(descriptor);
-        dialog.setVisible(true);
-    }//GEN-LAST:event_jButtonAddFilterActionPerformed
-    
+        jLabelFileName.setLabelFor(jTextFieldFileName);
+        org.openide.awt.Mnemonics.setLocalizedText(jLabelFileName, NbBundle.getMessage(CustomizerJarContent.class, "LBL_CustomizeEAR_FileName_JLabel")); // NOI18N
+
+        org.openide.awt.Mnemonics.setLocalizedText(jLabelExContent1, NbBundle.getMessage(CustomizerJarContent.class, "LBL_CustomizeEAR_Content_Comment_JLabel")); // NOI18N
+
+        org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
+        this.setLayout(layout);
+        layout.setHorizontalGroup(
+            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(layout.createSequentialGroup()
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(jCheckBoxCompress)
+                    .add(jLabelAddContent)
+                    .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
+                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
+                            .add(layout.createSequentialGroup()
+                                .add(jScrollPane2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 329, Short.MAX_VALUE)
+                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
+                                    .add(jButtonAddProject, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 119, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                                    .add(jButtonAddLib, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 119, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                                    .add(jButtonAddJar)
+                                    .add(jButtonRemove, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 119, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
+                            .add(layout.createSequentialGroup()
+                                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                                    .add(jLabelExContent)
+                                    .add(jLabelFileName))
+                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
+                                    .add(org.jdesktop.layout.GroupLayout.LEADING, jTextFieldFileName, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 352, Short.MAX_VALUE)
+                                    .add(org.jdesktop.layout.GroupLayout.LEADING, jLabelExContent1)
+                                    .add(org.jdesktop.layout.GroupLayout.LEADING, jTextFieldExContent, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 352, Short.MAX_VALUE))))
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)))
+                .addContainerGap())
+        );
+        layout.setVerticalGroup(
+            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(layout.createSequentialGroup()
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(jLabelFileName)
+                    .add(jTextFieldFileName, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(jLabelExContent)
+                    .add(jTextFieldExContent, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(jLabelExContent1)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(jCheckBoxCompress)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(jLabelAddContent)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(layout.createSequentialGroup()
+                        .add(jButtonAddProject)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(jButtonAddLib)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(jButtonAddJar)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
+                        .add(jButtonRemove)
+                        .addContainerGap(33, Short.MAX_VALUE))
+                    .add(jScrollPane2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 148, Short.MAX_VALUE)))
+        );
+
+        jCheckBoxCompress.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CustomizerJarContent.class, "ACS_CustomizeEAR_Commpres_A11YDesc")); // NOI18N
+        jButtonAddJar.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CustomizerJarContent.class, "ACS_CustomizeEAR_AddJar_A11YDesc")); // NOI18N
+        jButtonAddLib.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CustomizerJarContent.class, "ACS_CustomizeEAR_AddLib_A11YDesc")); // NOI18N
+        jButtonAddProject.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CustomizerJarContent.class, "ACS_CustomizeEAR_AddProject_A11YDesc")); // NOI18N
+        jButtonRemove.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CustomizerJarContent.class, "ACS_CustomizeEAR_AdditionalRemove_A11YDesc")); // NOI18N
+        jTextFieldFileName.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CustomizerJarContent.class, "ACS_CustomizeEAR_FileName_A11YDesc")); // NOI18N
+    }// </editor-fold>//GEN-END:initComponents
+            
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JButton jButtonAddFilter;
     private javax.swing.JButton jButtonAddJar;
     private javax.swing.JButton jButtonAddLib;
     private javax.swing.JButton jButtonAddProject;
     private javax.swing.JButton jButtonRemove;
-    private javax.swing.JButton jButtonRemoveFilter;
-    private javax.swing.JCheckBox jCheckBoxCommpress;
+    private javax.swing.JCheckBox jCheckBoxCompress;
     private javax.swing.JLabel jLabelAddContent;
     private javax.swing.JLabel jLabelExContent;
+    private javax.swing.JLabel jLabelExContent1;
     private javax.swing.JLabel jLabelFileName;
-    private javax.swing.JList jListExContent;
-    private javax.swing.JPanel jPanel1;
-    private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JTable jTableAddContent;
+    private javax.swing.JTextField jTextFieldExContent;
     private javax.swing.JTextField jTextFieldFileName;
     // End of variables declaration//GEN-END:variables
-    
-    private void closeDialog() {
-        if (dialog != null) {
-            dialog.dispose();
-        }
-    }
-    
-    public void valueChanged(ListSelectionEvent e) {
-        jButtonRemoveFilter.setEnabled(!(jListExContent.isSelectionEmpty()));
-    }
-    
-    private void setExcludeProperty() {
-        String exclude = dlm.toString();
-        exclude = exclude.replaceAll(" ", ""); //NOI18N
-        exclude = exclude.substring(1, exclude.length() -1);
-        earProperties.put(EarProjectProperties.BUILD_CLASSES_EXCLUDES, exclude);
-    }
     
     /** Help context where to find more about the paste type action.
      * @return the help context for this action

@@ -41,6 +41,7 @@
 
 package org.netbeans.modules.j2ee.ejbjarproject.ui.customizer;
 
+import org.netbeans.modules.j2ee.common.project.ui.J2eePlatformUiSupport;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
