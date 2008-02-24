@@ -56,9 +56,9 @@ import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.j2ee.clientproject.api.AppClientProjectGenerator;
+import org.netbeans.modules.j2ee.common.SharabilityUtility;
+import org.netbeans.modules.j2ee.common.project.ui.PanelSharability;
 import org.netbeans.modules.j2ee.common.project.ui.UserProjectSettings;
-import org.netbeans.modules.j2ee.common.sharability.PanelSharability;
-import org.netbeans.modules.j2ee.common.sharability.SharabilityUtilities;
 import org.netbeans.modules.j2ee.dd.api.application.Application;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.earproject.EarProject;
@@ -149,7 +149,7 @@ public class NewEarProjectWizardIterator implements WizardDescriptor.ProgressIns
         // remember last used server
         UserProjectSettings.getDefault().setLastUsedServer(serverInstanceID);
         String librariesDefinition =
-                SharabilityUtilities.getLibraryLocation((String) wiz.getProperty(PanelSharability.WIZARD_SHARED_LIBRARIES));
+                SharabilityUtility.getLibraryLocation((String) wiz.getProperty(PanelSharability.WIZARD_SHARED_LIBRARIES));
         String serverLibraryName = (String) wiz.getProperty(PanelSharability.WIZARD_SERVER_LIBRARY);
         return testableInstantiate(dirF,name,j2eeLevel, serverInstanceID, warName,
                 ejbJarName, carName, mainClass, platformName, sourceLevel, handle, 
@@ -193,6 +193,7 @@ public class NewEarProjectWizardIterator implements WizardDescriptor.ProgressIns
         
         AuxiliaryConfiguration aux = h.createAuxiliaryConfiguration();
         ReferenceHelper refHelper = new ReferenceHelper(h, aux, h.getStandardPropertyEvaluator());
+        Project webProject = null;
         if (null != warName) {
             File webAppDir = FileUtil.normalizeFile(new File(dirF, warName));
             
@@ -214,7 +215,7 @@ public class NewEarProjectWizardIterator implements WizardDescriptor.ProgressIns
                 handle.progress(4);
 
             FileObject webAppDirFO = FileUtil.toFileObject(webAppDir);
-            Project webProject = ProjectManager.getDefault().findProject(webAppDirFO);
+            webProject = ProjectManager.getDefault().findProject(webAppDirFO);
             WebModule wm = WebModule.getWebModule(webAppDirFO);
             WebProjectUtilities.ensureWelcomePage(wm.getDocumentBase(), wm.getDeploymentDescriptor());
             
@@ -259,7 +260,7 @@ public class NewEarProjectWizardIterator implements WizardDescriptor.ProgressIns
             Project ejbJarProject = ProjectManager.getDefault().findProject(ejbJarDirFO);
             EarProjectProperties.addJ2eeSubprojects(earProject, new Project[] { ejbJarProject });
             resultSet.add(ejbJarDirFO);
-            EarProjectGenerator.addEJBToClassPaths(ejbJarProject, appClient, earProject); // #74123
+            EarProjectGenerator.addEJBToClassPaths(ejbJarProject, appClient, webProject); // #74123
         }
         CustomizerRun.ApplicationUrisComboBoxModel.initializeProperties(earProject, warName, carName);
         NewEarProjectWizardIterator.setProjectChooserFolder(dirF);

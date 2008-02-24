@@ -52,9 +52,9 @@ import java.util.Set;
 import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.progress.ProgressHandle;
+import org.netbeans.modules.j2ee.common.SharabilityUtility;
+import org.netbeans.modules.j2ee.common.project.ui.PanelSharability;
 import org.netbeans.modules.j2ee.common.project.ui.UserProjectSettings;
-import org.netbeans.modules.j2ee.common.sharability.PanelSharability;
-import org.netbeans.modules.j2ee.common.sharability.SharabilityUtilities;
 import org.netbeans.modules.j2ee.earproject.EarProjectGenerator;
 import org.netbeans.modules.j2ee.earproject.ModuleType;
 import org.openide.WizardDescriptor;
@@ -122,7 +122,7 @@ public class ImportBlueprintEarWizardIterator implements WizardDescriptor.Progre
         Map<FileObject, ModuleType> userModules = (Map<FileObject, ModuleType>)
                 wiz.getProperty(WizardProperties.USER_MODULES);
         String librariesDefinition =
-                SharabilityUtilities.getLibraryLocation((String) wiz.getProperty(PanelSharability.WIZARD_SHARED_LIBRARIES));
+                SharabilityUtility.getLibraryLocation((String) wiz.getProperty(PanelSharability.WIZARD_SHARED_LIBRARIES));
         String serverLibraryName = (String) wiz.getProperty(PanelSharability.WIZARD_SERVER_LIBRARY);
         return testableInstantiate(platformName, sourceLevel, j2eeLevel, dirF,
                 srcF, serverInstanceID, name, userModules, handle, librariesDefinition, serverLibraryName);

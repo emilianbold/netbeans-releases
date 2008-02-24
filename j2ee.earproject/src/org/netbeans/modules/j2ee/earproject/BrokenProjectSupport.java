@@ -129,7 +129,7 @@ public final class BrokenProjectSupport {
             public void run() {
                 for (ClassPathSupport.Item vcpi : EarProjectProperties.getJarContentAdditional(project)) {
                     if (vcpi.getType() == ClassPathSupport.Item.TYPE_ARTIFACT) {
-                        String raw = vcpi.getRaw();
+                        String raw = vcpi.getReference();
                         if (raw.matches("^\\$\\{reference\\..*\\}")) { // NOI18N
                             String currEvaluated = project.evaluator().evaluate(raw);
                             FileObject currEvaluatedFO = project.getAntProjectHelper().resolveFileObject(currEvaluated);

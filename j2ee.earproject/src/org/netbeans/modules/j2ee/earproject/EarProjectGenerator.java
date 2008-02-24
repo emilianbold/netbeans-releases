@@ -59,9 +59,9 @@ import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.ant.AntArtifact;
 import org.netbeans.api.project.ant.AntArtifactQuery;
 import org.netbeans.modules.j2ee.clientproject.api.AppClientProjectGenerator;
+import org.netbeans.modules.j2ee.common.SharabilityUtility;
 import org.netbeans.modules.j2ee.common.project.classpath.ClassPathSupport;
 import org.netbeans.modules.j2ee.common.project.ui.ProjectProperties;
-import org.netbeans.modules.j2ee.common.sharability.SharabilityUtilities;
 import org.netbeans.modules.j2ee.dd.api.application.Application;
 import org.netbeans.modules.j2ee.dd.api.application.DDProvider;
 import org.netbeans.modules.j2ee.dd.api.application.Module;
@@ -74,7 +74,6 @@ import org.netbeans.modules.j2ee.ejbjarproject.api.EjbJarProjectGenerator;
 import org.netbeans.modules.web.project.api.WebProjectCreateData;
 import org.netbeans.modules.web.project.api.WebProjectUtilities;
 import org.netbeans.spi.java.project.classpath.ProjectClassPathExtender;
-import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.ProjectGenerator;
@@ -185,17 +184,17 @@ public final class EarProjectGenerator {
         FileUtil.copyFile(Repository.getDefault().getDefaultFileSystem().findResource(
                 "org-netbeans-modules-j2ee-earproject/MANIFEST.MF"), docBase, "MANIFEST"); // NOI18N
         
-        EarProject p = (EarProject)ProjectManager.getDefault().findProject(h.getProjectDirectory());
-        EditableProperties ep = h.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
-        ep.put(EarProjectProperties.SOURCE_ROOT, "."); //NOI18N
-        ep.setProperty(EarProjectProperties.META_INF, DEFAULT_DOC_BASE_FOLDER);
-        ep.setProperty(EarProjectProperties.RESOURCE_DIR, DEFAULT_RESOURCE_FOLDER);
-        h.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, ep);        
-        ProjectManager.getDefault().saveProject(p);
+        final EarProject p = (EarProject)ProjectManager.getDefault().findProject(h.getProjectDirectory());
         final ReferenceHelper refHelper = p.getReferenceHelper();
         try {
             ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction<Void>() {
                 public Void run() throws Exception {
+                    EditableProperties ep = h.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
+                    ep.put(EarProjectProperties.SOURCE_ROOT, "."); //NOI18N
+                    ep.setProperty(EarProjectProperties.META_INF, DEFAULT_DOC_BASE_FOLDER);
+                    ep.setProperty(EarProjectProperties.RESOURCE_DIR, DEFAULT_RESOURCE_FOLDER);
+                    h.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, ep);        
+                    ProjectManager.getDefault().saveProject(p);
                     copyRequiredLibraries(h, refHelper, serverInstanceID, serverLibraryName);
                     return null;
                 }
@@ -216,10 +215,10 @@ public final class EarProjectGenerator {
         if (!h.isSharableProject()) {
             return;
         }
-        if (h.isSharableProject() && serverlibraryName != null  && SharabilityUtilities.getLibrary(
+        if (h.isSharableProject() && serverlibraryName != null  && SharabilityUtility.findSharedServerLibrary(
                 h.resolveFile(h.getLibrariesLocation()), serverlibraryName) == null) {
 
-            SharabilityUtilities.createLibrary(
+            SharabilityUtility.createLibrary(
                 h.resolveFile(h.getLibrariesLocation()), serverlibraryName, serverInstanceId);
         }
      }

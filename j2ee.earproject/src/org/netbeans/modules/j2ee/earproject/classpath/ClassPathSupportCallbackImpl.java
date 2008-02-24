@@ -41,12 +41,13 @@
 
 package org.netbeans.modules.j2ee.earproject.classpath;
 
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import org.netbeans.modules.j2ee.common.project.classpath.ClassPathSupport.Item;
+import org.netbeans.modules.j2ee.common.project.ui.ProjectProperties;
 import org.netbeans.modules.j2ee.earproject.EarProjectType;
-import org.netbeans.modules.j2ee.earproject.ui.customizer.EarProjectProperties;
 import org.netbeans.modules.java.api.common.util.CommonProjectUtils;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.w3c.dom.Document;
@@ -66,6 +67,8 @@ public final class ClassPathSupportCallbackImpl implements org.netbeans.modules.
     private static final String TAG_PATH_IN_EAR = "path-in-war"; //NOI18N
     private static final String TAG_FILE = "file"; //NOI18N
     private static final String TAG_LIBRARY = "library"; //NOI18N
+    private static final String ATTR_FILES = "files"; //NOI18N
+    private static final String ATTR_DIRS = "dirs"; //NOI18N
 
     /** Path of item in additional EAR content panel */
     public static final String PATH_IN_DEPLOYMENT = "pathInDeployment"; //NOI18N
@@ -104,6 +107,15 @@ public final class ClassPathSupportCallbackImpl implements org.netbeans.modules.
 
         for (Item item : classpath) {
             Element library = doc.createElementNS(EarProjectType.PROJECT_CONFIGURATION_NAMESPACE, TAG_LIBRARY);
+            List<String> files = new ArrayList<String>();
+            List<String> dirs = new ArrayList<String>();
+            ProjectProperties.getFilesForItem(item, files, dirs, helper.getProjectDirectory());
+            if (files.size() > 0) {
+                library.setAttribute(ATTR_FILES, "" + files.size());
+            }
+            if (dirs.size() > 0) {
+                library.setAttribute(ATTR_DIRS, "" + dirs.size());
+            }           
             webModuleLibs.appendChild(library);
             Element webFile = doc.createElementNS(EarProjectType.PROJECT_CONFIGURATION_NAMESPACE, TAG_FILE);
             library.appendChild(webFile);
