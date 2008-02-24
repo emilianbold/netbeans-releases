@@ -41,6 +41,7 @@ package org.netbeans.modules.ruby.railsprojects.server.spi;
 
 import java.io.File;
 import java.util.concurrent.Future;
+import javax.swing.event.ChangeListener;
 import org.netbeans.api.ruby.platform.RubyPlatform;
 
 
@@ -120,9 +121,11 @@ public interface RubyInstance {
     /**
      * Returns current state of server (starting, running, stopping, stopped, etc.)
      * 
+     * The implementation of this method must be threadsafe.
+     * 
      * TODO Should ServerState be defined in common server SPI?  Is it really API?
      * 
-     * @return current state of server
+     * @return Current state of server (starting, running, stopped, etc.)
      */
     public ServerState getServerState();
     
@@ -204,4 +207,23 @@ public interface RubyInstance {
      * instances, false otherwise.
      */
     public boolean isPlatformSupported(RubyPlatform platform);
+    
+    /**
+     * Add a change listener to receive changes in server state from this server 
+     * instance.  Listener implementation can call getServerState() to determine
+     * the current state.
+     * 
+     * @param listener Listener to receive change events whenever the running
+     * state of this server instance changes.
+     */
+    public void addChangeListener(ChangeListener listener);
+    
+    /**
+     * Remove a change listener previously added to this server instance.
+     * 
+     * @param listener Listener that was being notified of state change events
+     * from this server instance.
+     */
+    public void removeChangeListener(ChangeListener listener);
+    
 }
