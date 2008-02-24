@@ -44,7 +44,7 @@ package org.netbeans.modules.j2ee.clientproject.ui.wizards;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.api.java.platform.Specification;
-import org.netbeans.modules.j2ee.clientproject.ui.FoldersListSettings;
+import org.netbeans.modules.j2ee.common.project.ui.UserProjectSettings;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.openide.modules.SpecificationVersion;
 
@@ -99,16 +99,16 @@ public final class J2eeVersionWarningPanel extends javax.swing.JPanel {
         
         if (WARN_SET_JDK_14.equals(warningType)) {
             setJdk14Panel.setVisible(true);
-            downgradeJdk14CheckBox.setSelected(FoldersListSettings.getDefault().isAgreedSetJdk14());
+            downgradeJdk14CheckBox.setSelected(UserProjectSettings.getDefault().isAgreedSetJdk14());
         } else if (WARN_SET_SOURCE_LEVEL_14.equals(warningType)) {
             setSourceLevel14Panel.setVisible(true);
-            downgradeSourceLevel14CheckBox.setSelected(FoldersListSettings.getDefault().isAgreedSetSourceLevel14());
+            downgradeSourceLevel14CheckBox.setSelected(UserProjectSettings.getDefault().isAgreedSetSourceLevel14());
         } else if (WARN_SET_JDK_15.equals(warningType)) {
             setJdk15Panel.setVisible(true);
-            downgradeJdk15CheckBox.setSelected(FoldersListSettings.getDefault().isAgreedSetJdk15());
+            downgradeJdk15CheckBox.setSelected(UserProjectSettings.getDefault().isAgreedSetJdk15());
         } else if (WARN_SET_SOURCE_LEVEL_15.equals(warningType)) {
             setSourceLevel15Panel.setVisible(true);
-            downgradeSourceLevel15CheckBox.setSelected(FoldersListSettings.getDefault().isAgreedSetSourceLevel15());
+            downgradeSourceLevel15CheckBox.setSelected(UserProjectSettings.getDefault().isAgreedSetSourceLevel15());
         }
     }
     
@@ -375,19 +375,19 @@ public final class J2eeVersionWarningPanel extends javax.swing.JPanel {
     }// </editor-fold>//GEN-END:initComponents
 
     private void downgradeSourceLevel15CheckBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_downgradeSourceLevel15CheckBoxActionPerformed
-        FoldersListSettings.getDefault().setAgreedSetSourceLevel15(downgradeSourceLevel15CheckBox.isSelected());
+        UserProjectSettings.getDefault().setAgreedSetSourceLevel15(downgradeSourceLevel15CheckBox.isSelected());
     }//GEN-LAST:event_downgradeSourceLevel15CheckBoxActionPerformed
 
     private void downgradeJdk15CheckBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_downgradeJdk15CheckBoxActionPerformed
-        FoldersListSettings.getDefault().setAgreedSetJdk15(downgradeJdk15CheckBox.isSelected());
+        UserProjectSettings.getDefault().setAgreedSetJdk15(downgradeJdk15CheckBox.isSelected());
     }//GEN-LAST:event_downgradeJdk15CheckBoxActionPerformed
 
     private void downgradeSourceLevel14CheckBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_downgradeSourceLevel14CheckBoxActionPerformed
-        FoldersListSettings.getDefault().setAgreedSetSourceLevel14(downgradeSourceLevel14CheckBox.isSelected());
+        UserProjectSettings.getDefault().setAgreedSetSourceLevel14(downgradeSourceLevel14CheckBox.isSelected());
     }//GEN-LAST:event_downgradeSourceLevel14CheckBoxActionPerformed
 
     private void downgradeJdk14CheckBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_downgradeJdk14CheckBoxActionPerformed
-        FoldersListSettings.getDefault().setAgreedSetJdk14(downgradeJdk14CheckBox.isSelected());
+        UserProjectSettings.getDefault().setAgreedSetJdk14(downgradeJdk14CheckBox.isSelected());
     }//GEN-LAST:event_downgradeJdk14CheckBoxActionPerformed
     
     // Variables declaration - do not modify//GEN-BEGIN:variables

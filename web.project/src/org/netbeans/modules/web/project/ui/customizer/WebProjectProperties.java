@@ -59,6 +59,7 @@ import javax.swing.ListCellRenderer;
 import javax.swing.SwingUtilities;
 
 import javax.swing.table.DefaultTableModel;
+import javax.swing.table.TableCellRenderer;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.PlainDocument;
@@ -78,6 +79,7 @@ import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.modules.j2ee.common.project.ui.ClassPathUiSupport;
+import org.netbeans.modules.j2ee.common.project.ui.J2eePlatformUiSupport;
 import org.netbeans.modules.j2ee.common.project.ui.ProjectProperties;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
@@ -86,12 +88,12 @@ import org.netbeans.modules.java.api.common.SourceRoots;
 import org.netbeans.modules.java.api.common.ant.UpdateHelper;
 import org.netbeans.modules.java.api.common.ui.PlatformUiSupport;
 import org.netbeans.modules.web.project.UpdateProjectImpl;
+import org.netbeans.modules.web.project.Utils;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.netbeans.spi.project.support.ant.ReferenceHelper;
 import org.netbeans.modules.web.project.WebProjectUtil;
-import org.netbeans.modules.web.project.Utils;
 import org.netbeans.modules.web.project.WebProject;
 import org.netbeans.modules.web.project.WebProjectType;
 import org.netbeans.modules.web.project.classpath.ClassPathSupportCallbackImpl;
@@ -211,7 +213,7 @@ public class WebProjectProperties {
     ListCellRenderer CLASS_PATH_LIST_RENDERER;
     ListCellRenderer PLATFORM_LIST_RENDERER;
     ListCellRenderer JAVAC_SOURCE_RENDERER;
-    WebClassPathUi.ClassPathTableCellItemRenderer CLASS_PATH_TABLE_ITEM_RENDERER;
+    TableCellRenderer CLASS_PATH_TABLE_ITEM_RENDERER;
     Document SHARED_LIBRARIES_MODEL;
 
     // CustomizerCompile
@@ -306,8 +308,8 @@ public class WebProjectProperties {
      */
     private void init() {
         
-        CLASS_PATH_LIST_RENDERER = new WebClassPathUi.ClassPathListCellRenderer(evaluator, project.getProjectDirectory());
-        CLASS_PATH_TABLE_ITEM_RENDERER = new WebClassPathUi.ClassPathTableCellItemRenderer(evaluator, project.getProjectDirectory());
+        CLASS_PATH_LIST_RENDERER = ProjectProperties.createClassPathListRendered(evaluator, project.getProjectDirectory());
+        CLASS_PATH_TABLE_ITEM_RENDERER = ProjectProperties.createClassPathTableRendered(evaluator, project.getProjectDirectory());
         
         // CustomizerSources
         SOURCE_ROOTS_MODEL = WebSourceRootsUi.createModel( project.getSourceRoots() );
@@ -924,7 +926,7 @@ public class WebProjectProperties {
             item.setReference(null);
         }
     }
-    
+
     private static void setNewContextPathValue(String contextPath, Project project, EditableProperties projectProps, EditableProperties privateProps) {
         if (contextPath == null)
             return;

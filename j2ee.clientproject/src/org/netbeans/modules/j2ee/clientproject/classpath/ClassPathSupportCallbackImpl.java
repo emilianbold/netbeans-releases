@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -39,45 +39,42 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.j2ee.ejbjarproject.classpath;
+package org.netbeans.modules.j2ee.clientproject.classpath;
 
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Iterator;
 import java.util.List;
+import org.netbeans.modules.j2ee.clientproject.AppClientProjectType;
 import org.netbeans.modules.j2ee.common.project.classpath.ClassPathSupport;
 import org.netbeans.modules.j2ee.common.project.classpath.ClassPathSupport.Item;
 import org.netbeans.modules.j2ee.common.project.ui.ProjectProperties;
+import org.netbeans.modules.java.api.common.util.CommonProjectUtils;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
+import org.openide.filesystems.FileObject;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.w3c.dom.Text;
-import org.netbeans.modules.j2ee.ejbjarproject.EjbJarProjectType;
-import org.openide.filesystems.FileObject;
 
 /**
  *
  * @author Petr Hrebejk
- * @author Andrei Badea
  */
 public class ClassPathSupportCallbackImpl implements ClassPathSupport.Callback {
-    
+     
     public final static String ELEMENT_INCLUDED_LIBRARIES = "included-library"; // NOI18N
-    
-    private static String[] ejbjarElemOrder = new String[] { "name", "minimum-ant-version", "explicit-platform", "use-manifest", "included-library", "web-services", "source-roots", "test-roots" }; //NOI18N
+    public static final String INCLUDE_IN_DEPLOYMENT = "includeInDeployment";
     
     private static final String ATTR_FILES = "files"; //NOI18N
     private static final String ATTR_DIRS = "dirs"; //NOI18N
     
-    public static final String INCLUDE_IN_DEPLOYMENT = "includeInDeployment";
-    
-    private AntProjectHelper helper;
-
-    public ClassPathSupportCallbackImpl(AntProjectHelper helper) {
-        this.helper = helper;
+    private AntProjectHelper antProjectHelper;
+        
+    /** Creates a new instance of ClassPathSupport */
+    public  ClassPathSupportCallbackImpl(AntProjectHelper antProjectHelper) {
+        this.antProjectHelper = antProjectHelper;
     }
+    
     
     /** 
      * Returns a list with the classpath items which are to be included 
@@ -88,11 +85,12 @@ public class ClassPathSupportCallbackImpl implements ClassPathSupport.Callback {
         assert includedLibrariesElement != null;
         
         Element data = antProjectHelper.getPrimaryConfigurationData( true );
-        NodeList libs = data.getElementsByTagNameNS( EjbJarProjectType.PROJECT_CONFIGURATION_NAMESPACE, includedLibrariesElement );
+        NodeList libs = data.getElementsByTagNameNS( AppClientProjectType.PROJECT_CONFIGURATION_NAMESPACE, includedLibrariesElement );
         List<String> libraries = new ArrayList<String>(libs.getLength());
         for ( int i = 0; i < libs.getLength(); i++ ) {
             Element item = (Element)libs.item( i );
-            libraries.add( findText( item ));
+            // appclient is different from other j2ee projects - it stores reference without ${ and }
+            libraries.add( "${"+findText( item )+"}"); // NOI18N
         }
         return libraries;
     }
@@ -101,89 +99,35 @@ public class ClassPathSupportCallbackImpl implements ClassPathSupport.Callback {
      * Updates the project helper with the list of classpath items which are to be
      * included in deployment.
      */
-    private static void putIncludedLibraries(List<ClassPathSupport.Item> classpath, AntProjectHelper antProjectHelper, String includedLibrariesElement ) {
+    private static void putIncludedLibraries(List<Item> classpath,
+            AntProjectHelper antProjectHelper, String includedLibrariesElement) {
         assert antProjectHelper != null;
         assert includedLibrariesElement != null;
         
         Element data = antProjectHelper.getPrimaryConfigurationData( true );
-        NodeList libs = data.getElementsByTagNameNS( EjbJarProjectType.PROJECT_CONFIGURATION_NAMESPACE, includedLibrariesElement );
+        NodeList libs = data.getElementsByTagNameNS( AppClientProjectType.PROJECT_CONFIGURATION_NAMESPACE, includedLibrariesElement );
         while ( libs.getLength() > 0 ) {
             Node n = libs.item( 0 );
             n.getParentNode().removeChild( n );
         }
 
         Document doc = data.getOwnerDocument();
+        //find a correcponding classpath item for the library
         for (ClassPathSupport.Item item : classpath) {
             if("true".equals(item.getAdditionalProperty(INCLUDE_IN_DEPLOYMENT))) { // NOI18N
-                appendChildElement(data, 
-                    createLibraryElement(doc, item, includedLibrariesElement, antProjectHelper.getProjectDirectory()), 
-                    ejbjarElemOrder);
+                data.appendChild(createLibraryElement(doc, item, 
+                        includedLibrariesElement, antProjectHelper.getProjectDirectory()));
             }
         }
         
         antProjectHelper.putPrimaryConfigurationData( data, true );
     }
     
-    /**
-     * Find all direct child elements of an element.
-     * More useful than {@link Element#getElementsByTagNameNS} because it does
-     * not recurse into recursive child elements.
-     * Children which are all-whitespace text nodes are ignored; others cause
-     * an exception to be thrown.
-     * @param parent a parent element in a DOM tree
-     * @return a list of direct child elements (may be empty)
-     * @throws IllegalArgumentException if there are non-element children besides whitespace
-     */
-    private static List<Element> findSubElements(Element parent) throws IllegalArgumentException {
-        NodeList l = parent.getChildNodes();
-        List<Element> elements = new ArrayList<Element>(l.getLength());
-        for (int i = 0; i < l.getLength(); i++) {
-            Node n = l.item(i);
-            if (n.getNodeType() == Node.ELEMENT_NODE) {
-                elements.add((Element)n);
-            } else if (n.getNodeType() == Node.TEXT_NODE) {
-                String text = ((Text)n).getNodeValue();
-                if (text.trim().length() > 0) {
-                    throw new IllegalArgumentException("non-ws text encountered in " + parent + ": " + text); // NOI18N
-                }
-            } else if (n.getNodeType() == Node.COMMENT_NODE) {
-                // skip
-            } else {
-                throw new IllegalArgumentException("unexpected non-element child of " + parent + ": " + n); // NOI18N
-            }
-        }
-        return elements;
-    }
-    
-    /**
-     * Append child element to the correct position according to given
-     * order.
-     * @param parent parent to which the child will be added
-     * @param el element to be added
-     * @param order order of the elements which must be followed
-     */
-    private static void appendChildElement(Element parent, Element el, String[] order) {
-        Element insertBefore = null;
-        List l = Arrays.asList(order);
-        int index = l.indexOf(el.getLocalName());
-        assert index != -1 : el.getLocalName()+" was not found in "+l; // NOI18N
-        Iterator it = findSubElements(parent).iterator();
-        while (it.hasNext()) {
-            Element e = (Element)it.next();
-            int index2 = l.indexOf(e.getLocalName());
-            assert index2 != -1 : e.getLocalName()+" was not found in "+l; // NOI18N
-            if (index2 > index) {
-                insertBefore = e;
-                break;
-            }
-        }
-        parent.insertBefore(el, insertBefore);
-    }
-        
-    private static Element createLibraryElement(Document doc, Item item, String includedLibrariesElement, FileObject projectFolder) {
-        Element libraryElement = doc.createElementNS( EjbJarProjectType.PROJECT_CONFIGURATION_NAMESPACE, includedLibrariesElement );
-        ArrayList files = new ArrayList ();
-        ArrayList dirs = new ArrayList ();
+    private static Element createLibraryElement(Document doc, Item item, 
+            String includedLibrariesElement, FileObject projectFolder) {
+        Element libraryElement = doc.createElementNS( AppClientProjectType.PROJECT_CONFIGURATION_NAMESPACE, includedLibrariesElement );
+        List<String> files = new ArrayList<String>();
+        List<String> dirs = new ArrayList<String>();
         ProjectProperties.getFilesForItem(item, files, dirs, projectFolder);
         if (files.size() > 0) {
             libraryElement.setAttribute(ATTR_FILES, "" + files.size());
@@ -192,7 +136,8 @@ public class ClassPathSupportCallbackImpl implements ClassPathSupport.Callback {
             libraryElement.setAttribute(ATTR_DIRS, "" + dirs.size());
         }
         
-        libraryElement.appendChild( doc.createTextNode( item.getReference() ) );
+        // appclient is different from other j2ee projects - it stores reference without ${ and }
+        libraryElement.appendChild( doc.createTextNode( CommonProjectUtils.getAntPropertyName(item.getReference()) ) );
         return libraryElement;
     }
        
@@ -212,18 +157,16 @@ public class ClassPathSupportCallbackImpl implements ClassPathSupport.Callback {
         }
         return null;
     }
-        
 
     public void readAdditionalProperties(List<Item> items, String projectXMLElement) {
-        List<String> l = getIncludedLibraries(helper, projectXMLElement);
+        List<String> l = getIncludedLibraries(antProjectHelper, projectXMLElement);
         for (Item item : items) {
             item.setAdditionalProperty(INCLUDE_IN_DEPLOYMENT, Boolean.toString(l.contains(item.getReference())));
         }
     }
 
     public void storeAdditionalProperties(List<Item> items, String projectXMLElement) {
-        putIncludedLibraries(items, helper, projectXMLElement);
+        putIncludedLibraries(items, antProjectHelper, projectXMLElement);
     }
 
 }
-
