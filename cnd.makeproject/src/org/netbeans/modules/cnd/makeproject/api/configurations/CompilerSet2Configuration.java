@@ -44,6 +44,7 @@ package org.netbeans.modules.cnd.makeproject.api.configurations;
 import org.netbeans.modules.cnd.api.compilers.CompilerSet;
 import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
 import org.netbeans.modules.cnd.settings.CppSettings;
+import org.openide.util.Utilities;
 
 public class CompilerSet2Configuration {
     private MakeConfiguration makeConfiguration;
@@ -57,11 +58,15 @@ public class CompilerSet2Configuration {
         this.cachedDisplayName = cachedDisplayName;
         String csName = CppSettings.getDefault().getCompilerSetName();
         if (csName == null || csName.length() == 0) {
-            // This can happen on Solaris!!!!
+            // This can happen on Unix!!!!
             if (CompilerSetManager.getDefault().getCompilerSetNames().size() > 0)
                 csName = CompilerSetManager.getDefault().getCompilerSet(0).getName();
-            else
-                csName = "Sun"; // NOI18N
+            else {
+                if (Utilities.getOperatingSystem() == Utilities.OS_SOLARIS)
+                    csName = "Sun"; // NOI18N
+                else
+                    csName = "GNU"; // NOI18N
+            }
         }
         compilerSetName = new StringConfiguration(null, csName);
     }
