@@ -39,13 +39,17 @@
 
 package org.netbeans.modules.hibernate.service;
 
+import java.io.IOException;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import org.hibernate.HibernateException;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.project.libraries.Library;
+import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.modules.hibernate.cfg.model.HibernateConfiguration;
 import org.netbeans.modules.hibernate.cfg.model.SessionFactory;
 import org.netbeans.modules.hibernate.util.HibernateUtil;
+import org.netbeans.modules.web.project.api.WebProjectLibrariesModifier;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
 
@@ -155,13 +159,40 @@ public class HibernateEnvironment {
                 tableName,
                 getHibernateConfigurationForMappingFile(mappingFileObject)
         );
+        
         return columnNames;
+    }
+    
+    /**
+     * Registers Hibernate Library in this project.
+     * 
+     * @return true if the library is registered, false if the library is already registered or 
+     * registration fails for some reason.
+     */
+    public boolean addHibernateLibraryToProject() {
+        boolean addLibraryResult = false;
+        try {
+            LibraryManager libraryManager = LibraryManager.getDefault();
+            Library hibernateLibrary = libraryManager.getLibrary("hibernate-support");  //NOI18N
+            WebProjectLibrariesModifier webProjectLibrariesModifier = project.getLookup().lookup(WebProjectLibrariesModifier.class);
+            addLibraryResult = webProjectLibrariesModifier.addCompileLibraries(new Library[]{hibernateLibrary});
+            addLibraryResult &= webProjectLibrariesModifier.addPackageLibraries(new Library[]{hibernateLibrary}, "lib"); //NOI18N
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+            addLibraryResult = false;
+        } catch(UnsupportedOperationException ex) {
+            //TODO handle this exception gracefully.
+            // For now just report it.
+            Exceptions.printStackTrace(ex);
+        }   
+        return addLibraryResult;
     }
     
     /**
      * Returns all mappings registered with this HibernateConfiguration.
      *
      * @param hibernateConfiguration hibernate configuration.
+     * @return list of mapping files.
      */
     public ArrayList<String> getAllHibernateMappingsFromConfiguration(HibernateConfiguration hibernateConfiguration) {
         ArrayList<String> mappingsFromConfiguration = new ArrayList<String>();

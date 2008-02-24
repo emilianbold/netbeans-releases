@@ -52,6 +52,7 @@ import org.netbeans.api.project.Sources;
 import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.netbeans.modules.hibernate.cfg.model.SessionFactory;
 import org.netbeans.modules.hibernate.loaders.cfg.HibernateCfgDataObject;
+import org.netbeans.modules.hibernate.service.HibernateEnvironment;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataFolder;
@@ -214,6 +215,10 @@ public class HibernateConfigurationWizard implements WizardDescriptor.Instantiat
             HibernateCfgDataObject hdo = (HibernateCfgDataObject) newOne;
             hdo.addSessionFactory(sFactory);
             hdo.save();
+            // Register Hibernate Library in the project if its not already registered.
+            HibernateEnvironment hibernateEnvironment = project.getLookup().lookup(HibernateEnvironment.class);
+            System.out.println("Library registered : " + hibernateEnvironment.addHibernateLibraryToProject());
+            
             return Collections.singleton(hdo.getPrimaryFile());
 
         } catch (Exception e) {
