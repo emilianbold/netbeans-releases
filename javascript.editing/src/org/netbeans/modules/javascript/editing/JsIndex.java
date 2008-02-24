@@ -172,15 +172,20 @@ public class JsIndex {
     
     private String getExtends(String className, Set<Index.SearchScope> scope) {
         final Set<SearchResult> result = new HashSet<SearchResult>();
-        search(JsIndexer.FIELD_EXTEND, className, NameKind.PREFIX, result, scope, TERMS_EXTEND);
-        String target = className+";";
+        search(JsIndexer.FIELD_EXTEND, className.toLowerCase(), NameKind.CASE_INSENSITIVE_PREFIX, result, scope, TERMS_EXTEND);
+        String target = className.toLowerCase()+";";
         for (SearchResult map : result) {
             String[] exts = map.getValues(JsIndexer.FIELD_EXTEND);
             
             if (exts != null) {
                 for (String ext : exts) {
                     if (ext.startsWith(target)) {
-                        return ext.substring(target.length());
+                        // Make sure it's a case match
+                        int caseIndex = target.length();
+                        int end = ext.indexOf(';', caseIndex);
+                        if (className.equals(ext.substring(caseIndex, end))) {
+                            return ext.substring(end+1);
+                        }
                     }
                 }
             }
@@ -207,6 +212,8 @@ public class JsIndex {
         
         Set<String> seenTypes = new HashSet<String>();
         seenTypes.add(type);
+        boolean haveRedirected = false;
+        boolean inheriting = false;
         
         while (true) {
             NameKind originalKind = kind;
@@ -295,11 +302,17 @@ public class JsIndex {
                         inEndIdx++;
 
                         // Filter out methods on other classes
-                        if (type != null && (funcIn == null || !funcIn.equals(type))) {
-                            continue;
-                        }
+//                        if (type != null && (funcIn == null || !funcIn.equals(type))) {
+//                            continue;
+//                        }
 
                         IndexedElement element = IndexedElement.create(signature, map.getPersistentUrl(), elementName, funcIn, inEndIdx, this, false);
+                        if (!haveRedirected) {
+                            element.setSmart(true);
+                        }
+                        if (!inheriting) {
+                            element.setInherited(false);
+                        }
                         elements.add(element);
                     }
                 }
@@ -310,6 +323,7 @@ public class JsIndex {
             }
             type = getExtends(type, scope);
             if (type == null) {
+                haveRedirected = true;
                 type = "Object"; // NOI18N
             }
             // Prevent circularity in types
@@ -318,6 +332,7 @@ public class JsIndex {
             } else {
                 seenTypes.add(type);
             }
+            inheriting = true;
         }
         
         return elements;
@@ -500,6 +515,8 @@ public class JsIndex {
 
         Set<String> seenTypes = new HashSet<String>();
         seenTypes.add(type);
+        boolean haveRedirected = false;
+        boolean inheriting = type == null;
         
         while (true) {
         
@@ -612,6 +629,12 @@ public class JsIndex {
                         if (onlyConstructors && element.getKind() != ElementKind.CONSTRUCTOR) {
                             continue;
                         }
+                        if (!haveRedirected) {
+                            element.setSmart(true);
+                        }
+                        if (!inheriting) {
+                            element.setInherited(false);
+                        }
                         elements.add(element);
                     }
                 }
@@ -623,6 +646,7 @@ public class JsIndex {
             type = getExtends(type, scope);
             if (type == null) {
                 type = "Object"; // NOI18N
+                haveRedirected = true;
             }
             // Prevent circularity in types
             if (seenTypes.contains(type)) {
@@ -630,6 +654,7 @@ public class JsIndex {
             } else {
                 seenTypes.add(type);
             }
+            inheriting = true;
         }
         
         return elements;
