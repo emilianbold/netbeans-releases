@@ -771,7 +771,7 @@ public final class EarProjectProperties {
         List<ClassPathSupport.Item> items = getJarContentAdditional(p);
         List<Project> projects = new ArrayList<Project>(items.size());
         for (ClassPathSupport.Item item : items) {
-            if (item.getType() != ClassPathSupport.Item.TYPE_ARTIFACT) {
+            if (item.getType() != ClassPathSupport.Item.TYPE_ARTIFACT || item.getArtifact() == null) {
                 continue;
             }
             Project vcpiProject = item.getArtifact().getProject();

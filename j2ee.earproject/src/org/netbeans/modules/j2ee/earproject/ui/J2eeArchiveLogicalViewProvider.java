@@ -77,7 +77,6 @@ import org.netbeans.modules.j2ee.common.ui.BrokenServerSupport;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.InstanceListener;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
-import org.netbeans.modules.j2ee.earproject.BrokenProjectSupport;
 import org.netbeans.modules.j2ee.earproject.EarProject;
 import org.netbeans.modules.j2ee.earproject.ui.actions.AddModuleAction;
 import org.netbeans.modules.j2ee.earproject.ui.customizer.EarProjectProperties;
@@ -233,7 +232,6 @@ public class J2eeArchiveLogicalViewProvider implements LogicalViewProvider {
         
         private Action brokenLinksAction;
         private final BrokenServerAction brokenServerAction;
-        private final BrokenProjectSupport brokenProjectSupport;
         private boolean broken;
         
         // icon badging >>>
@@ -259,12 +257,6 @@ public class J2eeArchiveLogicalViewProvider implements LogicalViewProvider {
             J2eeModuleProvider moduleProvider = project.getLookup().lookup(J2eeModuleProvider.class);
             moduleProvider.addInstanceListener(WeakListeners.create(InstanceListener.class, brokenServerAction, moduleProvider));
             refreshProjectFiles();
-            this.brokenProjectSupport = project.getLookup().lookup(BrokenProjectSupport.class);
-            this.brokenProjectSupport.addChangeListener(new ChangeListener() {
-                public void stateChanged(ChangeEvent e) {
-                    checkProjectValidity();
-                }
-            });
         }
         
         private void refreshProjectFiles() {
@@ -346,10 +338,7 @@ public class J2eeArchiveLogicalViewProvider implements LogicalViewProvider {
         
         private synchronized void checkProjectValidity() {
             boolean old = broken;
-            broken = brokenProjectSupport.hasBrokenArtifacts();
-            if (!broken) {
-                broken = hasBrokenLinks(helper.getAntProjectHelper(), resolver);
-            }
+            broken = hasBrokenLinks(helper.getAntProjectHelper(), resolver);
             if (old != broken) {
                 getBrokenLinksAction().setEnabled(broken);
                 fireIconChange();
@@ -569,7 +558,6 @@ public class J2eeArchiveLogicalViewProvider implements LogicalViewProvider {
             
             public void actionPerformed(ActionEvent e) {
                 BrokenReferencesSupport.showCustomizer(helper.getAntProjectHelper(), resolver, BREAKABLE_PROPERTIES, new String[]{ EarProjectProperties.JAVA_PLATFORM});
-                brokenProjectSupport.adjustReferences();
                 checkProjectValidity();
             }
             

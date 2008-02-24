@@ -96,7 +96,7 @@ public class LogicalViewChildren extends Children.Keys<ClassPathSupport.Item>  i
         List<ClassPathSupport.Item> vcpis = EarProjectProperties.getJarContentAdditional(project);
         List<ClassPathSupport.Item> keys = new ArrayList<ClassPathSupport.Item>();
         for (ClassPathSupport.Item item : vcpis) {
-            if (item.getType() != ClassPathSupport.Item.TYPE_ARTIFACT) {
+            if (item.getType() != ClassPathSupport.Item.TYPE_ARTIFACT || item.getArtifact() == null) {
                 continue;
             }
             Project vcpiProject = item.getArtifact().getProject();

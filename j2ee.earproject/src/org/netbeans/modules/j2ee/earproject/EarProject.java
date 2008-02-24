@@ -137,7 +137,6 @@ public final class EarProject implements Project, AntProjectListener, ProjectPro
     private final Ear ear;
     private final AntBasedProjectType abpt;
     private final UpdateHelper updateHelper;
-    private final BrokenProjectSupport brokenProjectSupport;
     private final UpdateProjectImpl updateProject;
     private PropertyChangeListener j2eePlatformListener;
     private LibrariesLocationUpdater librariesLocationUpdater;
@@ -157,7 +156,6 @@ public final class EarProject implements Project, AntProjectListener, ProjectPro
         ear = EjbJarFactory.createEar(appModule);
         updateProject = new UpdateProjectImpl(this, this.helper, aux);
         updateHelper = new UpdateHelper(updateProject, helper);
-        brokenProjectSupport = new BrokenProjectSupport(this);
         lookup = createLookup(aux);
         cs = new ClassPathSupport( eval, refHelper, 
                 updateHelper.getAntProjectHelper(), updateHelper, new ClassPathSupportCallbackImpl(helper));
@@ -241,7 +239,6 @@ public final class EarProject implements Project, AntProjectListener, ProjectPro
             ),
             this,
             new EarProjectOperations(this),
-            brokenProjectSupport,
             new AntArtifactProviderImpl(),
             UILookupMergerSupport.createPrivilegedTemplatesMerger(),
             UILookupMergerSupport.createRecommendedTemplatesMerger(),
@@ -536,8 +533,6 @@ public final class EarProject implements Project, AntProjectListener, ProjectPro
             } catch (IOException e) {
                 Exceptions.printStackTrace(e);
             }
-            
-            brokenProjectSupport.cleanUp();
             
             // unregister project's classpaths to GlobalPathRegistry
             ClassPathProviderImpl cpProvider = lookup.lookup(ClassPathProviderImpl.class);
