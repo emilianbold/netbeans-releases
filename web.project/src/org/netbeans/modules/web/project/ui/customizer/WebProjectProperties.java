@@ -742,8 +742,9 @@ public class WebProjectProperties {
                 try {
                     EditableProperties projectProps = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
                     EditableProperties privateProps = helper.getProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH);
-                    boolean serverLibUsed = projectProps.getProperty(WebProjectProperties.J2EE_PLATFORM_CLASSPATH) != null;
-                    setNewServerInstanceValue(serverInstanceID, project, projectProps, privateProps,!serverLibUsed);
+                    boolean serverLibUsed = ProjectProperties.isUsingServerLibrary(projectProps, J2EE_PLATFORM_CLASSPATH);
+                    setNewServerInstanceValue(serverInstanceID, project, projectProps,
+                            privateProps, !serverLibUsed);
                     helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, projectProps);
                     helper.putProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH, privateProps);
                     ProjectManager.getDefault().saveProject(project);
