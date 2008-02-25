@@ -121,7 +121,6 @@ class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.P
     void setOutSearch() {
         criteria.setForOut();
         bOutSearch = true;
-        divider.setVisible(false);
         tbSummary.setToolTipText(NbBundle.getMessage(SearchHistoryPanel.class,  "TT_OutSummary"));
         showMergesChkBox.setToolTipText(NbBundle.getMessage(SearchHistoryPanel.class,  "TT_OutShowMerges"));
         tbDiff.setToolTipText(NbBundle.getMessage(SearchHistoryPanel.class,  "TT_OutShowDiff"));
