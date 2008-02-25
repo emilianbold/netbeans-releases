@@ -74,7 +74,6 @@
     <saas-metadata>
 
         <localizing-bundle>org.netbeans.modules.websvc.saas.services.amazon.Bundle</localizing-bundle>
-        <icon16>"org/netbeans/modules/websvc/components/amazon/resources/amazon16.png</icon16>
 
         <group name="Amazon"/>
         <code-gen packageName="org.netbeans.saas.services.amazon">

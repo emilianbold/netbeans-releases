@@ -106,6 +106,7 @@ public class SymbolDumper extends SimpleTypeVisitor6<Void, Boolean> {
     
     private PrintWriter output;
     private Types types;
+    private boolean hasErrors;
     
     /** Creates a new instance of SymbolDumper */
     public SymbolDumper(PrintWriter output, Types types) {
@@ -202,6 +203,8 @@ public class SymbolDumper extends SimpleTypeVisitor6<Void, Boolean> {
         
         output.append(';');
         
+        hasErrors = true;
+        
         return null;
     }
 
@@ -274,8 +277,8 @@ public class SymbolDumper extends SimpleTypeVisitor6<Void, Boolean> {
         }
     }
     
-    public static void dump(PrintWriter output, Types types, TransTypes trans, TypeElement type, Element enclosingElement) {
-        SymbolDumper.dumpImpl(output, types, type, enclosingElement);
+    public static boolean dump(PrintWriter output, Types types, TransTypes trans, TypeElement type, Element enclosingElement) {
+        boolean result = SymbolDumper.dumpImpl(output, types, type, enclosingElement);
         
         output.append('\n');
         Symbol.ClassSymbol sym = (Symbol.ClassSymbol)type;        
@@ -299,7 +302,7 @@ public class SymbolDumper extends SimpleTypeVisitor6<Void, Boolean> {
             if ((symToDump.flags() & Flags.BRIDGE) != 0) {
                 symToDump.flags_field |= Flags.SYNTHETIC;
             }
-            SymbolDumper.dumpImpl(output, types, symToDump);
+            result |= SymbolDumper.dumpImpl(output, types, symToDump);
         }
         
         ListBuffer<JCTree> bridges = new ListBuffer<JCTree>();
@@ -309,16 +312,20 @@ public class SymbolDumper extends SimpleTypeVisitor6<Void, Boolean> {
         for (JCTree bridge : bridges) {
             if (bridge.getKind() == Tree.Kind.METHOD) {
                 assert ((JCTree.JCMethodDecl)bridge).sym != null;
-                SymbolDumper.dumpImpl(output, types, (Element)(((JCTree.JCMethodDecl)bridge).sym));
+                result |= SymbolDumper.dumpImpl(output, types, (Element)(((JCTree.JCMethodDecl)bridge).sym));
             }
         }
         
         output.append('W');
-                
-        dumpAnnotations(new SymbolDumper(output, types), type);
+        
+        SymbolDumper d = new SymbolDumper(output, types);
+        
+        dumpAnnotations(d, type);
+        
+        return result | d.hasErrors;
     }
     
-    private static void dumpImpl(PrintWriter output, Types types, TypeElement type, Element enclosingElement) {
+    private static boolean dumpImpl(PrintWriter output, Types types, TypeElement type, Element enclosingElement) {
         SymbolDumper d = new SymbolDumper(output, types);
         
         output.append('G');
@@ -352,6 +359,8 @@ public class SymbolDumper extends SimpleTypeVisitor6<Void, Boolean> {
         output.append(';');
         
         dumpInnerclasses(output, ElementFilter.typesIn(type.getEnclosedElements()));
+        
+        return d.hasErrors;
     }
     
     private static void dumpEnclosingElement(SymbolDumper dumper, Element enclosingElement) {
@@ -383,22 +392,24 @@ public class SymbolDumper extends SimpleTypeVisitor6<Void, Boolean> {
         output.append(';');
     }
     
-    private static void dumpImpl(PrintWriter output, Types types, Element el) {
+    private static boolean dumpImpl(PrintWriter output, Types types, Element el) {
         if (el.getKind().isField()) {
-            dumpImpl(output, types, (VariableElement) el);
+            boolean result = dumpImpl(output, types, (VariableElement) el);
             output.append('\n');
-            return;
+            return result;
         }
         if (el.getKind() == ElementKind.METHOD || el.getKind() == ElementKind.CONSTRUCTOR) {
-            dumpImpl(output, types, (ExecutableElement) el);
+            boolean result = dumpImpl(output, types, (ExecutableElement) el);
             output.append('\n');
-            return;
+            return result;
         }
         
         Logger.getLogger(SymbolDumper.class.getName()).info("Unhandled ElementKind: " + el.getKind());
+        
+        return false;
     }
     
-    private static void dumpImpl(PrintWriter output, Types types, VariableElement variable) {
+    private static boolean dumpImpl(PrintWriter output, Types types, VariableElement variable) {
         SymbolDumper d = new SymbolDumper(output, types);
         
         output.append('A');
@@ -457,9 +468,11 @@ public class SymbolDumper extends SimpleTypeVisitor6<Void, Boolean> {
         output.append(";");
         
         dumpAnnotations(d, variable);
+        
+        return d.hasErrors;
     }
     
-    private static void dumpImpl(PrintWriter output, Types types, ExecutableElement executable) {
+    private static boolean dumpImpl(PrintWriter output, Types types, ExecutableElement executable) {
         SymbolDumper d = new SymbolDumper(output, types);
         ExecutableType type = (ExecutableType) executable.asType();
         
@@ -500,6 +513,8 @@ public class SymbolDumper extends SimpleTypeVisitor6<Void, Boolean> {
         } else {
             output.append(';');
         }
+        
+        return d.hasErrors;
     }
     
     private static void appendEscapedString(PrintWriter output, String value) {
