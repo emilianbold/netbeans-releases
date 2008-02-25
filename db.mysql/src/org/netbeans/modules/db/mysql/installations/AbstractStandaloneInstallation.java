@@ -43,51 +43,39 @@ import org.netbeans.modules.db.mysql.Installation;
 import org.openide.util.Utilities;
 
 /**
- * Defines the AMP stack distribution called "XAMPP" for Linux
- * See <a href="http://www.apachefriends.org/en/xampp-linux.html">
- * http://www.apachefriends.org/en/xampp-linux.html</a>
+ * Defines the installation of MySQL from mysql.com or other standalone
+ * mechanism, where it is not installed as a service and you directly
+ * call the commands to start and stop
  * 
  * @author David Van Couvering
  */
-public class LinuxXAMPPInstallation extends AbstractInstallation {
-    private static final String DEFAULT_BASE_PATH = "/opt/lampp"; // NOI8N
-    private static final String LAMPP_EXE_PATH = "/lampp"; // NOI18N
-    private static final String ADMIN_URL = "http://localhost/phpmyadmin";
+public abstract class AbstractStandaloneInstallation extends AbstractInstallation {
+    private static final String START_PATH="/mysqld";
+    private static final String STOP_PATH="/mysqladmin";
     private static final String DEFAULT_PORT = "3306";
     
-    private String basePath = DEFAULT_BASE_PATH;
+    private String basePath;
     
-    private static final LinuxXAMPPInstallation DEFAULT = 
-            new LinuxXAMPPInstallation(DEFAULT_BASE_PATH);
-    
-    public static final LinuxXAMPPInstallation getDefault() {
-        return DEFAULT;
-    }
-    
-    private LinuxXAMPPInstallation(String basePath) {
+    protected AbstractStandaloneInstallation(String basePath) {
         this.basePath = basePath;
     }
-
+            
     public boolean isStackInstall() {
-        return true;
-    }
-
-    public boolean isValidOnCurrentOS() {
-        return Utilities.isUnix();
+        return false;
     }
 
     public String[] getAdminCommand() {
-        return new String[] { ADMIN_URL, "" };
+        return new String[] { "", "" };
     }
 
     public String[] getStartCommand() {
-        String command = basePath + LAMPP_EXE_PATH; // NOI18N
-        return new String[] { command, "startmysql" };
+        String command = basePath + START_PATH; // NOI18N
+        return new String[] { command, "" };
     }
 
     public String[] getStopCommand() {
-        String command = basePath + LAMPP_EXE_PATH; // NOI18N
-        return new String[] { command, "stopmysql" };
+        String command = basePath + STOP_PATH; // NOI18N
+        return new String[] { command, "-u root stop" };
     }
     
     public String getDefaultPort() {
@@ -101,17 +89,11 @@ public class LinuxXAMPPInstallation extends AbstractInstallation {
 
     @Override
     protected String getStartPath() {
-        return LAMPP_EXE_PATH;
+        return START_PATH;
     }
 
     @Override
     protected String getStopPath() {
-        return LAMPP_EXE_PATH;
+        return STOP_PATH;
     }
-
-    @Override
-    protected Installation createInstallation(String basePath) {
-        return new LinuxXAMPPInstallation(basePath);
-    }
-
 }
