@@ -547,13 +547,12 @@ public final class EncapsulateFieldRefactoringPlugin extends JavaRefactoringPlug
         
         @Override
         public Tree visitClass(ClassTree node, Element field) {
-            if (getCurrentPath().getCompilationUnit() == getCurrentPath().getParentPath().getLeaf()) {
-                // node is toplevel class
-                TypeElement clazz = (TypeElement) workingCopy.getTrees().getElement(getCurrentPath());
-                for (EncapsulateDesc desc : descs) {
-                    desc.useAccessors = resolveAlwaysUseAccessors(clazz, desc);
-                }
-
+            TypeElement clazz = (TypeElement) workingCopy.getTrees().getElement(getCurrentPath());
+            boolean[] origValues = new boolean[descs.size()];
+            int counter = 0;
+            for (EncapsulateDesc desc : descs) {
+                origValues[counter++] = desc.useAccessors;
+                desc.useAccessors = resolveUseAccessor(clazz, desc);
             }
             
             if (sourceFile == workingCopy.getFileObject()) {
@@ -574,7 +573,13 @@ public final class EncapsulateFieldRefactoringPlugin extends JavaRefactoringPlug
                     }
                 }
             }
-            return scan(node.getMembers(), field);
+            
+            Tree result = scan(node.getMembers(), field);
+            counter = 0;
+            for (EncapsulateDesc desc : descs) {
+                desc.useAccessors = origValues[counter++];
+            }
+            return result;
         }
         
         @Override
@@ -707,7 +712,6 @@ public final class EncapsulateFieldRefactoringPlugin extends JavaRefactoringPlug
             EncapsulateDesc desc = fields.get(el);
             if (desc != null && desc.useAccessors
                     && desc.refactoring.getGetterName() != null
-                    && desc.refactoring.getSetterName() != null
                     && (isArrayOrImmutable || checkAssignmentInsideExpression())
                     && !isInConstructorOfFieldClass(getCurrentPath(), desc.field)
                     && !isInGetterSetter(getCurrentPath(), desc.currentGetter, desc.currentSetter)) {
@@ -715,7 +719,7 @@ public final class EncapsulateFieldRefactoringPlugin extends JavaRefactoringPlug
                 ExpressionTree invkgetter = createGetterInvokation(t, desc.refactoring.getGetterName());
                 if (isArrayOrImmutable) {
                     rewrite(t, invkgetter);
-                } else {
+                } else if (desc.refactoring.getSetterName() != null) {
                     ExpressionTree setter = createMemberSelection(node.getExpression(), desc.refactoring.getSetterName());
 
                     Tree.Kind operator = kind == Tree.Kind.POSTFIX_INCREMENT || kind == Tree.Kind.PREFIX_INCREMENT
@@ -897,7 +901,7 @@ public final class EncapsulateFieldRefactoringPlugin extends JavaRefactoringPlug
             }
         }
         
-        private boolean resolveAlwaysUseAccessors(TypeElement where, EncapsulateDesc desc) {
+        private boolean resolveUseAccessor(TypeElement where, EncapsulateDesc desc) {
             if (desc.refactoring.isAlwaysUseAccessors()) {
                 return true;
             }
@@ -906,7 +910,8 @@ public final class EncapsulateFieldRefactoringPlugin extends JavaRefactoringPlug
             Set<Modifier> mods = desc.refactoring.getFieldModifiers();
             if (mods.contains(Modifier.PRIVATE)) {
                 // check enclosing top level class
-                return SourceUtils.getOutermostEnclosingTypeElement(where) != SourceUtils.getOutermostEnclosingTypeElement(desc.field);
+                // return SourceUtils.getOutermostEnclosingTypeElement(where) != SourceUtils.getOutermostEnclosingTypeElement(desc.field);
+                return where != desc.field.getEnclosingElement();
             }
             
             if (mods.contains(Modifier.PROTECTED)) {

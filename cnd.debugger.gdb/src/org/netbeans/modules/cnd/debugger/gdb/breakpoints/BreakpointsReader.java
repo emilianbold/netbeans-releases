@@ -72,6 +72,11 @@ public class BreakpointsReader implements Properties.Reader {
                     FunctionBreakpoint.PROP_BREAKPOINT_TYPE, FunctionBreakpoint.TYPE_FUNCTION_ENTRY));
             b = fb;
         }
+        if (typeID.equals (AddressBreakpoint.class.getName()) ||
+                        typeID.equals(AddressBreakpoint.class.getName() + "$AddressBreakpointComparable")) { // NOI18N
+            AddressBreakpoint ab = AddressBreakpoint.create(properties.getString(AddressBreakpoint.PROP_ADDRESS_VALUE, "")); // NOI18N
+            b = ab;
+        }
         
         b.setCondition(properties.getString(GdbBreakpoint.PROP_CONDITION, "")); // NOI18N
         b.setPrintText(properties.getString(GdbBreakpoint.PROP_PRINT_TEXT, "")); // NOI18N
@@ -104,6 +109,9 @@ public class BreakpointsReader implements Properties.Reader {
             FunctionBreakpoint fb = (FunctionBreakpoint) object;
             properties.setString(FunctionBreakpoint.PROP_FUNCTION_NAME, fb.getFunctionName());
             properties.setInt(FunctionBreakpoint.PROP_BREAKPOINT_TYPE, fb.getBreakpointType());
+        } else if (object instanceof AddressBreakpoint) {
+            AddressBreakpoint fb = (AddressBreakpoint) object;
+            properties.setString(AddressBreakpoint.PROP_ADDRESS_VALUE, fb.getAddress());
         }
     }
 }

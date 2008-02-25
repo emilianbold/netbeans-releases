@@ -104,8 +104,9 @@ public class CliJbiGenerator {
     public static final String XSI_ATTR_NAME = "xsi:schemaLocation"; // NOI18N
     public static final String XSI_ATTR_VALUE ="http://java.sun.com/xml/ns/jbi jbi.xsd"; // NOI18N
     
-    public static final String JBI_EXT_NS = "http://enterprise.netbeans.org/bpel/jbi-extensions"; // NOI18N
+    public static final String JBI_EXT_NS = "http://enterprise.netbeans.org/jbi-extensions"; // NOI18N
     
+    public static final String JBI_EXT_DISPLAY_NAME = "display-name";
     public static final String JBI_EXT_PROC_NAME_ATTR = "process-name";
     public static final String JBI_EXT_FILE_PATH_ATTR = "file-path";
     
@@ -326,7 +327,11 @@ public class CliJbiGenerator {
                             ENDPOINT_ATTR_NAME, provider.getMyRoleName() + "_" + MY_ROLE
                             );
                     
-                    Element extensionElement = (Element) document.createElementNS(JBI_EXT_NS, populateNamespace(JBI_EXT_NS) + ":" + JBI_EXT_PROC_NAME_ATTR);
+                    Element extensionElement = (Element) document.createElementNS(JBI_EXT_NS, populateNamespace(JBI_EXT_NS) + ":" + JBI_EXT_DISPLAY_NAME);
+                    extensionElement.setTextContent(provider.getMyRoleName());
+                    portMapNode.appendChild(extensionElement);
+                    
+                    extensionElement = (Element) document.createElementNS(JBI_EXT_NS, populateNamespace(JBI_EXT_NS) + ":" + JBI_EXT_PROC_NAME_ATTR);
                     extensionElement.setTextContent(provider.getProcessName());
                     portMapNode.appendChild(extensionElement);
                     
@@ -366,7 +371,11 @@ public class CliJbiGenerator {
                             ENDPOINT_ATTR_NAME, consumer.getPartnerRoleName() + "_" + PARTNER_ROLE
                             );
                     
-                    Element extensionElement = (Element) document.createElementNS(JBI_EXT_NS, populateNamespace(JBI_EXT_NS) + ":" + JBI_EXT_PROC_NAME_ATTR);
+                    Element extensionElement = (Element) document.createElementNS(JBI_EXT_NS, populateNamespace(JBI_EXT_NS) + ":" + JBI_EXT_DISPLAY_NAME);
+                    extensionElement.setTextContent(consumer.getPartnerRoleName());
+                    portMapNode.appendChild(extensionElement);
+                    
+                    extensionElement = (Element) document.createElementNS(JBI_EXT_NS, populateNamespace(JBI_EXT_NS) + ":" + JBI_EXT_PROC_NAME_ATTR);
                     extensionElement.setTextContent(consumer.getProcessName());
                     portMapNode.appendChild(extensionElement);
                     
@@ -404,6 +413,9 @@ public class CliJbiGenerator {
         try {
             // Use a Transformer for output
             TransformerFactory tFactory = TransformerFactory.newInstance();
+            
+            tFactory.setAttribute("indent-number", new Integer(4));
+            
             Transformer transformer = tFactory.newTransformer();
             DOMSource source = new DOMSource(document);
             pw = new PrintWriter(jbiFile, "UTF-8"); 
@@ -413,6 +425,7 @@ public class CliJbiGenerator {
             transformer.setOutputProperty(OutputKeys.ENCODING, "UTF-8");  // NOI18N
             transformer.setOutputProperty(OutputKeys.MEDIA_TYPE, "text/xml");  // NOI18N
             transformer.setOutputProperty(OutputKeys.STANDALONE, "yes");  // NOI18N
+            transformer.setOutputProperty(OutputKeys.INDENT, "yes"); // NOI18N
             
             transformer.transform(source, result);
         } catch (Exception ex) {

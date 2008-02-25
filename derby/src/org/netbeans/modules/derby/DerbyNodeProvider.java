@@ -43,6 +43,7 @@ package org.netbeans.modules.derby;
 
 import java.util.ArrayList;
 import java.util.List;
+import javax.swing.event.ChangeListener;
 import org.netbeans.modules.db.api.explorer.NodeProvider;
 import org.openide.nodes.Node;
 
@@ -65,5 +66,15 @@ public class DerbyNodeProvider implements NodeProvider {
 
     public List<Node> getNodes() {
         return nodes;
+    }
+
+    public void addChangeListener(ChangeListener listener) {
+        // No change events at this time...  
+        // TODO only register the Java DB node if Java DB is detected.
+        // Requires adding action to register Java DB manually, like with
+        // MySQL.  For now the Java DB node is always there.
+    }
+
+    public void removeChangeListener(ChangeListener listener) {
     }
 }

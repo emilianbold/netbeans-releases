@@ -28,6 +28,9 @@ import java.awt.Dimension;
 import java.awt.dnd.DropTarget;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
+import java.util.logging.Level;
+import java.util.logging.LogRecord;
+import java.util.logging.Logger;
 import javax.swing.Action;
 import javax.swing.ActionMap;
 import javax.swing.InputMap;
@@ -145,10 +148,19 @@ public class DesignView extends JPanel implements
 
     private TriScrollPane scrollPane;
 
+    // Memory leak probing
+    private static final Logger TIMERS = Logger.getLogger("TIMER.bpel"); // NOI18N
 
 
     public DesignView(Lookup lookup) {
         super();
+        
+        if (TIMERS.isLoggable(Level.FINE)) {
+            LogRecord rec = new LogRecord(Level.FINE, "BPEL DesignView"); // NOI18N
+            rec.setParameters(new Object[] {this});
+            TIMERS.log(rec);
+        }
+
 
         zoomManager = new ZoomManager(this);
         rightStripe = new RightStripe(this);

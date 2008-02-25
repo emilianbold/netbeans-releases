@@ -41,21 +41,35 @@
 
 package org.netbeans.modules.beans.beaninfo;
 
-import java.util.*;
-
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Comparator;
+import java.util.Iterator;
+import java.util.List;
+import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.TypeElement;
+import javax.lang.model.element.VariableElement;
+import javax.lang.model.type.ArrayType;
+import javax.lang.model.type.DeclaredType;
+import javax.lang.model.type.TypeKind;
+import javax.lang.model.type.TypeMirror;
+import javax.lang.model.util.ElementFilter;
+import org.netbeans.api.java.source.CompilationInfo;
+import org.netbeans.api.java.source.ElementHandle;
+import org.netbeans.api.java.source.ui.ElementHeaders;
+import org.netbeans.modules.beans.EventSetPattern;
+import org.netbeans.modules.beans.GenerateBeanException;
+import org.netbeans.modules.beans.IdxPropertyPattern;
+import org.netbeans.modules.beans.Pattern;
+import org.netbeans.modules.beans.PatternAnalyser;
+import org.netbeans.modules.beans.PropertyPattern;
 import org.openide.nodes.Node;
-import org.openide.ErrorManager;
-
-import org.netbeans.modules.beans.*;
-import org.netbeans.jmi.javamodel.*;
-
-import javax.jmi.reflect.JmiException;
 
 /** The basic class representing features included in BeanInfo.
 *
 * @author Petr Hrebejk
 */
-public abstract class BiFeature extends Object implements IconBases, Node.Cookie, Comparable {
+public abstract class BiFeature implements IconBases, Node.Cookie, Comparable {
 
     /** generated Serialized Version UID */
     //static final long serialVersionUID = -8680621542479107034L;
@@ -85,9 +99,9 @@ public abstract class BiFeature extends Object implements IconBases, Node.Cookie
         this(pattern.getName());
     }
 
-    public BiFeature(org.netbeans.jmi.javamodel.Method me) throws JmiException {
-        this(me.getName());
-        displayName = "\"\""; // NOI18N
+    BiFeature(String name, String displayName) {
+        this.name = name;
+        this.displayName = displayName;
     }
 
     protected BiFeature() {        
@@ -95,7 +109,7 @@ public abstract class BiFeature extends Object implements IconBases, Node.Cookie
     }
     
     private BiFeature(String name) {
-        this.name = name;
+        this(name, null);
     }
 
     abstract String getCreationString();
@@ -174,8 +188,8 @@ public abstract class BiFeature extends Object implements IconBases, Node.Cookie
     }
 
     /** Generates collection of strings which customize the feature */
-    Collection getCustomizationStrings () {
-        ArrayList col = new ArrayList();
+    List<String> getCustomizationStrings () {
+        List<String> col = new ArrayList<String>();
         StringBuffer sb = new StringBuffer( 100 );
 
         if ( expert ) {
@@ -211,10 +225,10 @@ public abstract class BiFeature extends Object implements IconBases, Node.Cookie
 
 
     /** Analyzes the bean info code for all customizations */
-    void analyzeCustomization ( Collection code ) throws GenerateBeanException {
+    void analyzeCustomization ( Collection<String> code ) throws GenerateBeanException {
         setIncluded( false );
         
-        Iterator it = code.iterator();
+        Iterator<String> it = code.iterator();
         String n = getBracketedName();
 
         String stNew = n + "=new"; // NOI18N
@@ -224,7 +238,7 @@ public abstract class BiFeature extends Object implements IconBases, Node.Cookie
         String stDisplayName = n + "." + TEXT_DISPLAY_NAME; // NOI18N
         String stShortDescription = n + "." + TEXT_SHORT_DESCRIPTION; // NOI18N
         while( it.hasNext() ) {
-            String statement = ( String ) it.next();
+            String statement = it.next();
 
             if ( statement.indexOf( stNew ) != -1 ) {
                 setIncluded( true );
@@ -268,18 +282,18 @@ public abstract class BiFeature extends Object implements IconBases, Node.Cookie
     abstract void analyzeCustomizationString( String statement );
 
     public static final class Descriptor extends BiFeature {
-        JavaClass element;
+        ElementHandle<TypeElement> element;
         String customizer;
         private String beanName;
 
-        Descriptor( JavaClass ce ) throws GenerateBeanException {
-            this.element = ce;
-            this.beanName = initBeanName(this.element);
+        Descriptor( TypeElement ce ) throws GenerateBeanException {
+            this.element = ElementHandle.create(ce);
+            this.beanName = ce.getQualifiedName().toString();
         }
 
         /** Returns the call to constructor of PropertyDescriptor */
         String getCreationString () {
-            StringBuffer sb = new StringBuffer( 100 );
+            StringBuilder sb = new StringBuilder( 100 );
 
             sb.append( "new BeanDescriptor  ( " ); // NOI18N
             sb.append( getBeanName() + ".class , " ); // NOI18N
@@ -297,14 +311,6 @@ public abstract class BiFeature extends Object implements IconBases, Node.Cookie
             return BIF_DESCRIPTOR; // NOI18N
         }
         
-
-        Collection getCustomizationStrings () {
-            Collection col = super.getCustomizationStrings();
-//            StringBuffer sb = new StringBuffer( 100 );
-
-            return col;
-        }
-
         void analyzeCustomizationString( String statement ) {
         }
 
@@ -322,8 +328,9 @@ public abstract class BiFeature extends Object implements IconBases, Node.Cookie
             return getName();
         }
 
+        @Override
         String getBrackets(){
-            return "";
+            return ""; // NOI18N
         }
         
         public String getCustomizer(){
@@ -335,16 +342,9 @@ public abstract class BiFeature extends Object implements IconBases, Node.Cookie
         }
         
         //overrides BiFeature.isIncluded(), this property is always included ( disabled by setting get from Introspection )
+        @Override
         public boolean isIncluded() {
             return true;
-        }
-        
-        private static String initBeanName(JavaClass element) throws GenerateBeanException {
-            try {
-                return element.getName();
-            } catch(JmiException e) {
-                throw new GenerateBeanException(e);
-            }
         }
         
         public String getBeanName() {
@@ -369,21 +369,17 @@ public abstract class BiFeature extends Object implements IconBases, Node.Cookie
         private String getterName;
         private String setterName;
 
-        Property( PropertyPattern pp ) throws GenerateBeanException {
+        Property( PropertyPattern pp, CompilationInfo javac ) throws GenerateBeanException {
             super( pp );
             mode = pp.getMode();
             pattern = pp;
 
-            try {
-                assert JMIUtils.isInsideTrans();
-                declaringClassName = pattern.getDeclaringClass().getName();
-                NamedElement ne = pattern.getGetterMethod(); 
-                getterName = ne == null? null: ne.getName();
-                ne = pattern.getSetterMethod(); 
-                setterName = ne == null? null: ne.getName();
-            } catch (JmiException e) {
-                throw new GenerateBeanException(e);
-            }
+            TypeElement declaringClass = pattern.getDeclaringClass().resolve(javac);
+            declaringClassName = declaringClass.getQualifiedName().toString();
+            ElementHandle<ExecutableElement> getterHandle = pattern.getGetterMethod();
+            getterName = getterHandle == null? null: getterHandle.resolve(javac).getSimpleName().toString();
+            ElementHandle<ExecutableElement> setterHandle = pattern.getSetterMethod();
+            setterName = setterHandle == null? null: setterHandle.resolve(javac).getSimpleName().toString();
         }
 
         protected final String getDeclaringClassName() {
@@ -437,12 +433,10 @@ public abstract class BiFeature extends Object implements IconBases, Node.Cookie
         public void setPropertyEditorClass(String propertyEditorClass) {
             this.propertyEditorClass = propertyEditorClass;
         }
-        
-//        protected final String get
 
         /** Returns the call to constructor of PropertyDescriptor */
         String getCreationString () {
-            StringBuffer sb = new StringBuffer( 100 );
+            StringBuilder sb = new StringBuilder( 100 );
 
             sb.append( "new PropertyDescriptor ( " ); // NOI18N
             sb.append( "\"" + this.getName() + "\", " ); // NOI18N
@@ -475,9 +469,10 @@ public abstract class BiFeature extends Object implements IconBases, Node.Cookie
             }
         }
 
-        Collection getCustomizationStrings () {
-            Collection col = super.getCustomizationStrings();
-            StringBuffer sb = new StringBuffer( 100 );
+        @Override
+        List<String> getCustomizationStrings () {
+            List<String> col = super.getCustomizationStrings();
+            StringBuilder sb = new StringBuilder( 100 );
 
             if ( bound ) {
                 sb.setLength( 0 );
@@ -549,21 +544,20 @@ public abstract class BiFeature extends Object implements IconBases, Node.Cookie
         private String indexedGetterName;
         private String indexedSetterName;
 
-        IdxProperty( IdxPropertyPattern pp ) throws GenerateBeanException {
-            super( pp );
+        IdxProperty( IdxPropertyPattern pp, CompilationInfo javac ) throws GenerateBeanException {
+            super( pp, javac );
             pattern = pp;
 
             niGetter = hasNiGetter();
             niSetter = hasNiSetter();
-            try {
-                assert JMIUtils.isInsideTrans();
-                NamedElement ne = pattern.getIndexedGetterMethod(); 
-                indexedGetterName = ne == null? null: ne.getName();
-                ne = pattern.getIndexedSetterMethod(); 
-                indexedSetterName = ne == null? null: ne.getName();
-            } catch (JmiException e) {
-                throw new GenerateBeanException(e);
-            }
+            ElementHandle<ExecutableElement> indexedGetterHandle = pattern.getIndexedGetterMethod();
+            indexedGetterName = indexedGetterHandle == null
+                    ? null
+                    : indexedGetterHandle.resolve(javac).getSimpleName().toString();
+            ElementHandle<ExecutableElement> indexedSetterHandle = pattern.getIndexedSetterMethod();
+            indexedSetterName = indexedSetterHandle == null
+                    ? null
+                    : indexedSetterHandle.resolve(javac).getSimpleName().toString();
         }
 
         boolean isNiGetter() {
@@ -592,6 +586,7 @@ public abstract class BiFeature extends Object implements IconBases, Node.Cookie
         }
 
         /** Returns the call to constructor of IndexedPropertyDescriptor */
+        @Override
         String getCreationString () {
             StringBuffer sb = new StringBuffer( 100 );
 
@@ -622,6 +617,7 @@ public abstract class BiFeature extends Object implements IconBases, Node.Cookie
             return sb.toString();
         }
 
+        @Override
         String getIconBase( boolean defaultIcon ) {
             if( defaultIcon ) {
                 return BIF_IDXPROPERTY_RW + "S"; // NOI18N
@@ -636,6 +632,7 @@ public abstract class BiFeature extends Object implements IconBases, Node.Cookie
             }
         }
 
+        @Override
         void analyzeCreationString( String statement ) {
             String[] params = BiAnalyser.getParameters( statement );
 
@@ -667,10 +664,10 @@ public abstract class BiFeature extends Object implements IconBases, Node.Cookie
         private boolean isInDefaultEventSet = true;
         private String creationString;
 
-        EventSet( EventSetPattern esp ) throws GenerateBeanException {
+        EventSet( EventSetPattern esp, CompilationInfo javac ) throws GenerateBeanException {
             super( esp );
             pattern = esp;
-            creationString = initCreationString();
+            creationString = initCreationString(javac);
         }
 
         public boolean isUnicast() {
@@ -694,13 +691,15 @@ public abstract class BiFeature extends Object implements IconBases, Node.Cookie
         }
 
         public int compare(Object o1, Object o2) {
-            if (!(o1 instanceof org.netbeans.jmi.javamodel.Method) ||
-                    !(o2 instanceof org.netbeans.jmi.javamodel.Method))
-                throw new IllegalArgumentException();
-            org.netbeans.jmi.javamodel.Method m1 = (org.netbeans.jmi.javamodel.Method) o1;
-            org.netbeans.jmi.javamodel.Method m2 = (org.netbeans.jmi.javamodel.Method) o2;
-
-            return m1.getName().compareTo(m2.getName());
+            // XXX was used to sort listener methods in initCreationString
+            throw new UnsupportedOperationException();
+//            if (!(o1 instanceof org.netbeans.jmi.javamodel.Method) ||
+//                    !(o2 instanceof org.netbeans.jmi.javamodel.Method))
+//                throw new IllegalArgumentException();
+//            org.netbeans.jmi.javamodel.Method m1 = (org.netbeans.jmi.javamodel.Method) o1;
+//            org.netbeans.jmi.javamodel.Method m2 = (org.netbeans.jmi.javamodel.Method) o2;
+//
+//            return m1.getName().compareTo(m2.getName());
         }
 
         /** Returns the call to constructor of EventSetDescriptor */
@@ -708,44 +707,25 @@ public abstract class BiFeature extends Object implements IconBases, Node.Cookie
             return creationString;
         }
         
-        private String initCreationString () throws GenerateBeanException {
-            assert JMIUtils.isInsideTrans();
-            try {
-                StringBuffer sb = new StringBuffer( 100 );
-            
-                List/*<Method>*/ listenerMethods;
-
-                try {
-                    Type listenerType = pattern.getType();
-                    JavaClass listener = (JavaClass) listenerType;
-                    listenerMethods = new ArrayList(JMIUtils.getMethods(listener));
-                    Collections.sort(listenerMethods, this);
-                } catch (IllegalStateException e) {
-                    ErrorManager.getDefault().notify(e);
-                    listenerMethods = Collections.EMPTY_LIST;
-                }
-
-                sb.append( "new EventSetDescriptor ( " ); // NOI18N
-                sb.append( pattern.getDeclaringClass().getName() + ".class, " ); // NOI18N
-                sb.append( "\"" + this.getName() + "\", " ); // NOI18N
-                sb.append( pattern.getType().getName() + ".class, " ); // NOI18N
-                sb.append( "new String[] {" ); // NOI18N
-                int i = 0;
-                for (Iterator it = listenerMethods.iterator(); it.hasNext();) {
-                    org.netbeans.jmi.javamodel.Method method = (org.netbeans.jmi.javamodel.Method) it.next();
-                    if (i++ > 0) {
-                        sb.append(", "); // NOI18N
-                    }
-                    sb.append( "\"" + method.getName() + "\"" ); // NOI18N
-                }
-                sb.append( "}, "); // NOI18N
-                sb.append( "\"" + pattern.getAddListenerMethod().getName() + "\", " ); // NOI18N
-                sb.append( "\"" + pattern.getRemoveListenerMethod().getName() + "\" )" ); // NOI18N
-
-                return sb.toString();
-            } catch (JmiException e) {
-                throw new GenerateBeanException(e);
+        private String initCreationString (CompilationInfo javac) throws GenerateBeanException {
+            String code = "new EventSetDescriptor ( %1$s.class, \"%2$s\", %3$s.class, new String[] {%4$s}, \"%5$s\", \"%6$s\" )"; // NOI18N
+            String paramdelim = ", "; //NOI18N
+            StringBuilder methodList = new StringBuilder();
+            TypeMirror listenerType = pattern.getType().resolve(javac);
+            TypeElement listener = (TypeElement) ((DeclaredType) listenerType).asElement();
+            // is sorting necessary here?
+            for (ExecutableElement me : ElementFilter.methodsIn(listener.getEnclosedElements())) {
+                methodList.append(paramdelim).append('"').append(me.getSimpleName()).append('"');
             }
+
+            return String.format(code,
+                    pattern.getDeclaringClass().resolve(javac).getQualifiedName(),
+                    pattern.getName(),
+                    pattern.getType().resolve(javac).toString(), // XXX ???
+                    methodList.length() == 0? methodList: methodList.substring(paramdelim.length()),
+                    pattern.getAddListenerMethod().resolve(javac).getSimpleName(),
+                    pattern.getRemoveListenerMethod().resolve(javac).getSimpleName()
+                    );
         }
 
         String getIconBase( boolean defaultIcon ) {
@@ -763,9 +743,10 @@ public abstract class BiFeature extends Object implements IconBases, Node.Cookie
             }
         }
 
-        Collection getCustomizationStrings () {
-            Collection col = super.getCustomizationStrings();
-            StringBuffer sb = new StringBuffer( 100 );
+        @Override
+        List<String> getCustomizationStrings () {
+            List<String> col = super.getCustomizationStrings();
+            StringBuilder sb = new StringBuilder( 100 );
 
             if ( isUnicast() ) {
                 sb.setLength( 0 );
@@ -803,111 +784,57 @@ public abstract class BiFeature extends Object implements IconBases, Node.Cookie
     }
 
     public static final class Method extends BiFeature {
-        org.netbeans.jmi.javamodel.Method element;
+        private ElementHandle<ExecutableElement> element;
         private String varName;
         private String toolTip;
-        private org.netbeans.jmi.javamodel.Method me;
-        private static Map PRIMITIVE_2_CLASS;
         private String creationString;
 
-        Method( org.netbeans.jmi.javamodel.Method me, PatternAnalyser pa ) throws GenerateBeanException {
-            super( me );
-            element = me;
-            this.me = me;
-            toolTip = initToolTip(this.element);
-            creationString = initCreationString(this.element);
+        Method( ExecutableElement me, PatternAnalyser pa, CompilationInfo javac ) throws GenerateBeanException {
+            super( me.getSimpleName().toString(), "\"\"" ); //NOI18N
+            element = ElementHandle.create(me);
+            toolTip = initToolTip(me, javac);
+            creationString = initCreationString(me);
         }
         
         String getBracketedName() {
             return "[METHOD_" + getName() + "]"; // NOI18N
         }
         
-        private static String findPrimitiveClass(String primitiveType) {
-            if (PRIMITIVE_2_CLASS == null) {
-                Map m = new HashMap();
-                m.put("int", "Integer.TYPE"); // NOI18N
-                m.put("boolean", "Boolean.TYPE"); // NOI18N
-                m.put("char", "Character.TYPE"); // NOI18N
-                m.put("long", "Long.TYPE"); // NOI18N
-                m.put("short", "Short.TYPE"); // NOI18N
-                m.put("byte", "Byte.TYPE"); // NOI18N
-                m.put("float", "Float.TYPE"); // NOI18N
-                m.put("double", "Double.TYPE"); // NOI18N
-                PRIMITIVE_2_CLASS = Collections.unmodifiableMap(m);
-            }
-            return (String) PRIMITIVE_2_CLASS.get(primitiveType);
-        }
-        
-        private static String getTypeClass(Type type) throws JmiException {
-            assert JMIUtils.isInsideTrans();
-            if (type instanceof PrimitiveType) {
-                return findPrimitiveClass(type.getName());
-            } else if (type instanceof Array) { // Generic
-                return resolveArrayClass((Array) type);
-            } else if (type instanceof ParameterizedType) { // Generic
-                return ((ParameterizedType) type).getDefinition().getName() + ".class"; // NOI18N
-            } else if (type instanceof ClassDefinition) { // Class
-                return ((ClassDefinition) type).getName() + ".class"; // NOI18N
+        private static String getTypeClass(TypeMirror type) {
+            TypeKind kind = type.getKind();
+            if (kind.isPrimitive()) {
+                return kind.name();
+            } else if (kind == TypeKind.ARRAY) {
+                return resolveArrayClass((ArrayType) type);
+            } else if (kind == TypeKind.DECLARED) {
+                return ((TypeElement) ((DeclaredType) type).asElement()).getQualifiedName().toString();
             } else {
                 throw new IllegalStateException("Unknown type" + type); // NOI18N
             }
         }
 
-        private static String resolveArrayClass(Array array) {
-            Type type = array;
-            int i = 0;
-            for (;type instanceof Array; i++) {
-                type = ((Array) type).getType();
+        private static String resolveArrayClass(ArrayType array) {
+            TypeMirror type = array;
+            StringBuilder dim = new StringBuilder();
+            for (int i = 0; type.getKind() == TypeKind.ARRAY; i++) {
+                type = ((ArrayType) type).getComponentType();
+                dim.append("[]"); // NOI18N
             }
-            if (type instanceof ParameterizedType) {
-                char[] brackets = new char[i * 2];
-                for (int j = 0; j < brackets.length; j++) {
-                    brackets[j] = '[';
-                    brackets[++j] = ']';
-                }
-                return ((ParameterizedType) type).getDefinition().getName() + String.valueOf(brackets) + ".class"; // NOI18N
-            } else {
-                return array.getName() + ".class"; // NOI18N
-            }
+            
+            return getTypeClass(type) + dim;
         }
 
+        @Override
         public String getToolTip() {
             return this.toolTip;
         }
         
-        private static String initToolTip(org.netbeans.jmi.javamodel.Method element) throws GenerateBeanException {
-            assert JMIUtils.isInsideTrans();
-            try {
-                StringBuffer sb = new StringBuffer( 100 );
-                sb.append( element.getName() + "("); // NOI18N
-            
-                List/*<Parameter>*/ parameters = element.getParameters();
-            
-                int i = 0;
-                for (Iterator iterator = parameters.iterator(); iterator.hasNext();) {
-                    Parameter param = (Parameter) iterator.next();
-                    if (i++ > 0)
-                        sb.append(", "); // NOI18N
-                    try {
-                        sb.append(param.getType().getName());
-                    } catch (NullPointerException e) {
-                        ErrorManager.getDefault().annotate(e, "method: " + element); // NOI18N
-                        ErrorManager.getDefault().annotate(e, "i: " + i); // NOI18N
-                        ErrorManager.getDefault().annotate(e, "param: " + param); // NOI18N
-                        if (param != null)
-                            ErrorManager.getDefault().annotate(e, "type: " + param.getType()); // NOI18N
-                        throw e;
-                    }
-                }
-            
-                sb.append(")"); // NOI18N
-                return sb.toString();
-            } catch (JmiException e) {
-                throw new GenerateBeanException(e);
-            }
+        private static String initToolTip(ExecutableElement element, CompilationInfo javac) {
+            return ElementHeaders.getHeader(element, javac,
+                    ElementHeaders.NAME + ElementHeaders.PARAMETERS);
         }
         
-        org.netbeans.jmi.javamodel.Method getElement() {
+        ElementHandle<ExecutableElement> getElement() {
             return element;
         }
         
@@ -916,30 +843,21 @@ public abstract class BiFeature extends Object implements IconBases, Node.Cookie
             return creationString;
         }
         
-        private static String initCreationString (org.netbeans.jmi.javamodel.Method element) throws GenerateBeanException {
-            assert JMIUtils.isInsideTrans();
-            try {
-                StringBuffer sb = new StringBuffer( 100 );
-                sb.append( "new MethodDescriptor ( " ); // NOI18N
-                //sb.append( "Class.forName(\"" + this.element.getDeclaringClass().getName().getFullName() + "\").getMethod(\"" + this.element.getName().getFullName() + "\", "); // NOI18N
-                sb.append( element.getDeclaringClass().getName() + ".class.getMethod(\"" + element.getName() + "\", "); // NOI18N
-                sb.append( "new Class[] {"); // NOI18N
-            
-                List/*<Parameter>*/ parameters = element.getParameters();
-            
-                int i = 0;
-                for (Iterator it = parameters.iterator(); it.hasNext();) {
-                    Parameter param = (Parameter) it.next();
-                    if (i++ > 0)
-                        sb.append(", "); // NOI18N
-                    sb.append(getTypeClass(param.getType())); // NOI18N
-                }
-            
-                sb.append("}))"); // NOI18N
-                return sb.toString();
-            } catch (JmiException e) {
-                throw new GenerateBeanException(e);
+        private static String initCreationString (ExecutableElement element) {
+            TypeElement enclClass = (TypeElement) element.getEnclosingElement();
+            String code = "new MethodDescriptor(%1$s.class.getMethod(\"%2$s\", new Class[] {%3$s}))"; // NOI18N
+            String paramdelim = ", "; //NOI18N
+            StringBuilder sb = new StringBuilder();
+            for (VariableElement param : element.getParameters()) {
+                sb.append(paramdelim).append(getTypeClass(param.asType())).append(".class"); // NOI18N
             }
+
+            return String.format(
+                    code,
+                    enclClass.getQualifiedName(),
+                    element.getSimpleName(),
+                    sb.length() == 0? sb: sb.substring(paramdelim.length())
+                    );
         }
         
         String getIconBase( boolean defaultIcon ) {
@@ -956,12 +874,12 @@ public abstract class BiFeature extends Object implements IconBases, Node.Cookie
         }
         
         /** Analyzes the bean info code for all customizations */
-        void analyzeCustomization ( Collection code ) throws GenerateBeanException {
-            assert JMIUtils.isInsideTrans();
-            if (me != null) {
+        @Override
+        void analyzeCustomization ( Collection<String> code ) throws GenerateBeanException {
+            if (element != null) {
                 // find the method identifier
                 String creation = (String) BiAnalyser.normalizeText(this.getCreationString()).toArray()[0];
-                Iterator it = code.iterator();
+                Iterator<String> it = code.iterator();
                 int index;
                 
                 while( it.hasNext() ) {
@@ -972,7 +890,7 @@ public abstract class BiFeature extends Object implements IconBases, Node.Cookie
                     }
                 }
                 
-                me = null;
+                element = null;
             }
             
             String realName = this.getName();

@@ -78,6 +78,7 @@ import org.openide.util.RequestProcessor;
 import org.netbeans.modules.db.sql.execute.ui.SQLResultPanel;
 import org.netbeans.modules.db.sql.execute.SQLExecuteHelper;
 import org.netbeans.modules.db.sql.execute.SQLExecutionResults;
+import org.openide.cookies.CloseCookie;
 import org.openide.filesystems.FileLock;
 import org.openide.loaders.MultiDataObject;
 import org.openide.text.CloneableEditor;
@@ -94,7 +95,9 @@ import org.openide.windows.CloneableOpenSupport;
  *
  * @author Jesse Beaumont, Andrei Badea
  */
-public class SQLEditorSupport extends DataEditorSupport implements OpenCookie, EditCookie, EditorCookie.Observable, PrintCookie, SQLExecuteCookie {
+public class SQLEditorSupport extends DataEditorSupport 
+        implements OpenCookie, EditCookie, EditorCookie.Observable, 
+        PrintCookie, SQLExecuteCookie, CloseCookie {
     
     private static final Logger LOGGER = Logger.getLogger(SQLEditorSupport.class.getName());
     private static final boolean LOG = LOGGER.isLoggable(Level.FINE);

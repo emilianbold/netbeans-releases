@@ -81,11 +81,14 @@ import org.netbeans.modules.j2ee.api.ejbjar.Car;
 import org.netbeans.modules.j2ee.api.ejbjar.EjbProjectConstants;
 import org.netbeans.modules.j2ee.clientproject.AppClientProject;
 import org.netbeans.modules.j2ee.clientproject.AppClientProjectUtil;
-import org.netbeans.modules.j2ee.clientproject.classpath.ClassPathSupport;
+import org.netbeans.modules.j2ee.clientproject.classpath.ClassPathSupportCallbackImpl;
 import org.netbeans.modules.j2ee.clientproject.ui.customizer.AppClientProjectProperties;
 import org.netbeans.modules.j2ee.clientproject.ui.customizer.CustomizerLibraries;
 import org.netbeans.modules.j2ee.clientproject.ui.customizer.CustomizerProviderImpl;
 import org.netbeans.modules.j2ee.clientproject.wsclient.AppClientProjectWebServicesClientSupport;
+import org.netbeans.modules.j2ee.common.project.classpath.ClassPathSupport;
+import org.netbeans.modules.j2ee.common.project.ui.LibrariesNode;
+import org.netbeans.modules.j2ee.common.project.ui.ProjectProperties;
 import org.netbeans.modules.j2ee.common.ui.BrokenServerSupport;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
@@ -229,12 +232,12 @@ public class AppClientLogicalViewProvider implements LogicalViewProvider {
     // Private innerclasses ----------------------------------------------------
     
     private static final String[] BREAKABLE_PROPERTIES = new String[] {
-        AppClientProjectProperties.JAVAC_CLASSPATH,
+        ProjectProperties.JAVAC_CLASSPATH,
 //        AppClientProjectProperties.RUN_CLASSPATH, take it from target server
         AppClientProjectProperties.DEBUG_CLASSPATH,
-        AppClientProjectProperties.RUN_TEST_CLASSPATH,
+        ProjectProperties.RUN_TEST_CLASSPATH,
         AppClientProjectProperties.DEBUG_TEST_CLASSPATH,
-        AppClientProjectProperties.JAVAC_TEST_CLASSPATH,
+        ProjectProperties.JAVAC_TEST_CLASSPATH,
     };
     
     public boolean hasBrokenLinks() {
@@ -277,8 +280,6 @@ public class AppClientLogicalViewProvider implements LogicalViewProvider {
         System.arraycopy(testRootProps, 0, result, BREAKABLE_PROPERTIES.length + srcRootProps.length, testRootProps.length);
         return result;
     }
-    
-    private static Image brokenProjectBadge = Utilities.loadImage("org/netbeans/modules/j2ee/clientproject/ui/resources/brokenProjectBadge.gif", true);
     
     /** Filter node containin additional features for the J2SE physical
      */
@@ -416,7 +417,7 @@ public class AppClientLogicalViewProvider implements LogicalViewProvider {
         private Image getMyIcon(int type) {
             Image original = super.getIcon(type);
             return broken || illegalState || brokenServerAction.isEnabled()
-                   ? Utilities.mergeImages(original, brokenProjectBadge, 8, 0)
+                   ? Utilities.mergeImages(original, ProjectProperties.ICON_BROKEN_BADGE.getImage(), 8, 0)
                    : original;
         }
         
@@ -445,7 +446,7 @@ public class AppClientLogicalViewProvider implements LogicalViewProvider {
         private Image getMyOpenedIcon(int type) {
             Image original = super.getOpenedIcon(type);
             return broken || illegalState || brokenServerAction.isEnabled()
-                   ? Utilities.mergeImages(original, brokenProjectBadge, 8, 0)
+                   ? Utilities.mergeImages(original, ProjectProperties.ICON_BROKEN_BADGE.getImage(), 8, 0)
                    : original;
         }
         
@@ -742,7 +743,7 @@ public class AppClientLogicalViewProvider implements LogicalViewProvider {
         private static final Object TEST_LIBRARIES = "TestLibs"; //NOI18N
         private static final String WSDL_FOLDER=AppClientProjectWebServicesClientSupport.WSDL_FOLDER;
         
-        private final Project project;
+        private final AppClientProject project;
         private final PropertyEvaluator evaluator;
         private final UpdateHelper helper;
         private final ReferenceHelper resolver;
@@ -753,6 +754,7 @@ public class AppClientLogicalViewProvider implements LogicalViewProvider {
         private final JaxWsChangeListener jaxWsListener;
         private FileObject wsdlFolder;
         private Car jp;
+        private final ClassPathSupport cs;
         
         public LogicalViewChildren(AppClientProject project, PropertyEvaluator evaluator, UpdateHelper helper, ReferenceHelper resolver) {
             this.project = project;
@@ -763,6 +765,8 @@ public class AppClientLogicalViewProvider implements LogicalViewProvider {
             this.metaInfListener = new MetaInfListener();
             this.wsdlListener = new WsdlCreationListener();
             this.jaxWsListener = new JaxWsChangeListener();
+            cs = new ClassPathSupport(evaluator, resolver, helper.getAntProjectHelper(), helper, 
+                    new ClassPathSupportCallbackImpl(helper.getAntProjectHelper()));
             Car jps[] = Car.getCars(project);
             assert jps.length > 0;
             jp = jps[0];
@@ -841,54 +845,56 @@ public class AppClientLogicalViewProvider implements LogicalViewProvider {
             Node[] result;
             if (key == LIBRARIES) {
                 //Libraries Node
-                result = new Node[] {
+                result = new Node[]{
                     new LibrariesNode(
-                            NbBundle.getMessage(AppClientLogicalViewProvider.class,"CTL_LibrariesNode"),
-                            project,
-                            evaluator,
-                            helper,
-                            resolver,
-                            AppClientProjectProperties.RUN_CLASSPATH,
-                            new String[] {AppClientProjectProperties.BUILD_CLASSES_DIR},
-                            AppClientProjectProperties.JAVA_PLATFORM, // NOI18N
-                            AppClientProjectProperties.J2EE_SERVER_INSTANCE,
-                            new Action[] {
-                        LibrariesNode.createAddProjectAction(project, AppClientProjectProperties.JAVAC_CLASSPATH,
-                                                         ClassPathSupport.ELEMENT_INCLUDED_LIBRARIES),
-                        LibrariesNode.createAddLibraryAction(project, helper.getAntProjectHelper(), AppClientProjectProperties.JAVAC_CLASSPATH,
-                                                         ClassPathSupport.ELEMENT_INCLUDED_LIBRARIES),
-                        LibrariesNode.createAddFolderAction(project, AppClientProjectProperties.JAVAC_CLASSPATH,
-                                                         ClassPathSupport.ELEMENT_INCLUDED_LIBRARIES),
+                    NbBundle.getMessage(AppClientLogicalViewProvider.class, "CTL_LibrariesNode"),
+                    project,
+                    evaluator,
+                    helper,
+                    resolver,
+                    ProjectProperties.RUN_CLASSPATH,
+                    new String[]{ProjectProperties.BUILD_CLASSES_DIR},
+                    "platform.active", // NOI18N
+                    AppClientProjectProperties.JAVA_PLATFORM, // NOI18N
+                    AppClientProjectProperties.J2EE_PLATFORM_CLASSPATH,
+                    new Action[]{
+                        LibrariesNode.createAddProjectAction(project, project.getSourceRoots()),
+                        LibrariesNode.createAddLibraryAction(resolver, project.getSourceRoots(), null),
+                        LibrariesNode.createAddFolderAction(project.getAntProjectHelper(), project.getSourceRoots()),
                         null,
                         new PreselectPropertiesAction(project, "Libraries", CustomizerLibraries.COMPILE) // NOI18N
-                        },
-                    ClassPathSupport.ELEMENT_INCLUDED_LIBRARIES)
+                    },
+                    ClassPathSupportCallbackImpl.ELEMENT_INCLUDED_LIBRARIES,
+                    cs)
                 };
             } else if (key == TEST_LIBRARIES) {
-                result = new Node[] {
+                result = new Node[]{
                     new LibrariesNode(
-                            NbBundle.getMessage(AppClientLogicalViewProvider.class,"CTL_TestLibrariesNode"),
-                            project,
-                            evaluator,
-                            helper,
-                            resolver,
-                            AppClientProjectProperties.RUN_TEST_CLASSPATH,
-                            new String[] {
-                        AppClientProjectProperties.BUILD_TEST_CLASSES_DIR,
-                        AppClientProjectProperties.JAVAC_CLASSPATH,
-                        AppClientProjectProperties.BUILD_CLASSES_DIR,
-                            },
-                            null,
-                            null,
-                            new Action[] {
-                        LibrariesNode.createAddProjectAction(project, AppClientProjectProperties.JAVAC_TEST_CLASSPATH, null),
-                        LibrariesNode.createAddLibraryAction(project, helper.getAntProjectHelper(), AppClientProjectProperties.JAVAC_TEST_CLASSPATH, null),
-                        LibrariesNode.createAddFolderAction(project, AppClientProjectProperties.JAVAC_TEST_CLASSPATH, null),
+                    NbBundle.getMessage(AppClientLogicalViewProvider.class, "CTL_TestLibrariesNode"),
+                    project,
+                    evaluator,
+                    helper,
+                    resolver,
+                    ProjectProperties.RUN_TEST_CLASSPATH,
+                    new String[]{
+                        ProjectProperties.BUILD_TEST_CLASSES_DIR,
+                        ProjectProperties.JAVAC_CLASSPATH,
+                        ProjectProperties.BUILD_CLASSES_DIR,
+                    },
+                    null,
+                    null,
+                    null,
+                    new Action[]{
+                        LibrariesNode.createAddProjectAction(project, project.getTestSourceRoots()),
+                        LibrariesNode.createAddLibraryAction(resolver, project.getTestSourceRoots(), null),
+                        LibrariesNode.createAddFolderAction(project.getAntProjectHelper(), project.getTestSourceRoots()),
                         null,
                         new PreselectPropertiesAction(project, "Libraries", CustomizerLibraries.COMPILE_TESTS), // NOI18N
-                            },
-                            null
-                    ),
+                    },
+                    null,
+                    cs)
+                
+            ,
                 };
             }
             // else if (key instanceof SourceGroup) {

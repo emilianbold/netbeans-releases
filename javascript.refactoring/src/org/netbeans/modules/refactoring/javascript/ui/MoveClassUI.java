@@ -48,7 +48,7 @@ import java.text.MessageFormat;
 import java.util.Collection;
 import java.util.Collections;
 import javax.swing.event.ChangeListener;
-import org.netbeans.fpi.gsfpath.classpath.ClassPath;
+import org.netbeans.modules.gsfpath.api.classpath.ClassPath;
 import org.netbeans.modules.refactoring.api.AbstractRefactoring;
 import org.netbeans.modules.refactoring.api.MoveRefactoring;
 import org.netbeans.modules.refactoring.api.Problem;

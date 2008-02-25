@@ -48,8 +48,8 @@ import javax.swing.text.StyledDocument;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmObject;
-import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.api.model.xref.CsmReference;
+import org.netbeans.modules.cnd.api.model.xref.CsmReferenceKind;
 import org.netbeans.modules.cnd.api.model.xref.CsmReferenceResolver;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.openide.cookies.EditorCookie;
@@ -116,20 +116,20 @@ public class ReferenceResolverImpl extends CsmReferenceResolver {
     }
     
     @Override
-    public ReferenceKind getReferenceKind(CsmReference ref) {
-        ReferenceKind kind = ReferencesSupport.getReferenceKind(ref);
-        if (kind == ReferenceKind.UNKNOWN) {
+    public CsmReferenceKind getReferenceKind(CsmReference ref) {
+        CsmReferenceKind kind = ReferencesSupport.getReferenceKind(ref);
+        if (kind == CsmReferenceKind.UNKNOWN) {
             kind = super.getReferenceKind(ref);
         }
         return kind;
     }
 
     @Override
-    public ReferenceKind getReferenceKind(CsmReference ref, CsmObject targetDecl, CsmObject targetDef) {
+    public CsmReferenceKind getReferenceKind(CsmReference ref, CsmObject targetDecl, CsmObject targetDef) {
         // default implementation
         assert targetDecl != null;
-        ReferenceKind kind = super.getReferenceKind(ref, targetDecl, targetDef);
-        if (kind == ReferenceKind.DIRECT_USAGE) {
+        CsmReferenceKind kind = super.getReferenceKind(ref, targetDecl, targetDef);
+        if (kind == CsmReferenceKind.DIRECT_USAGE) {
             kind = ReferencesSupport.getReferenceUsageKind(ref);
         }
         return kind;

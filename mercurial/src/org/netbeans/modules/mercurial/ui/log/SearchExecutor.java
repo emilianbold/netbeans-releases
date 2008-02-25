@@ -146,9 +146,9 @@ class SearchExecutor implements Runnable {
         
         HgLogMessage[] messages;
         if (master.isIncomingSearch()) {
-            messages = HgCommand.getIncomingMessages(rootUrl, master.isShowMerges(), logger);
+            messages = HgCommand.getIncomingMessages(rootUrl, toRevision, master.isShowMerges(), logger);
         }else if (master.isOutSearch()) {
-            messages = HgCommand.getOutMessages(rootUrl, master.isShowMerges(), logger);
+            messages = HgCommand.getOutMessages(rootUrl, toRevision, master.isShowMerges(), logger);
         } else {
             messages = HgCommand.getLogMessages(rootUrl, files, fromRevision, toRevision,  
                     master.isShowMerges(), logger);

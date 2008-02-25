@@ -43,25 +43,28 @@ import java.io.IOException;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
-import org.mozilla.javascript.FunctionNode;
 import org.mozilla.javascript.Node;
+import org.mozilla.javascript.FunctionNode;
 import org.mozilla.javascript.Node.LabelledNode;
 import org.mozilla.javascript.Token;
 import org.netbeans.api.lexer.TokenSequence;
-import org.netbeans.fpi.gsf.CompilationInfo;
-import org.netbeans.fpi.gsf.OffsetRange;
-import org.netbeans.fpi.gsf.Parser;
-import org.netbeans.fpi.gsf.ParserFile;
-import org.netbeans.fpi.gsf.ParserResult;
-import org.netbeans.fpi.gsf.SourceFileReader;
-import org.netbeans.fpi.gsf.TranslatedSource;
+import org.netbeans.modules.gsf.api.CompilationInfo;
+import org.netbeans.modules.gsf.api.OffsetRange;
+import org.netbeans.modules.gsf.api.Parser;
+import org.netbeans.modules.gsf.api.ParserFile;
+import org.netbeans.modules.gsf.api.ParserResult;
+import org.netbeans.modules.gsf.api.SourceFileReader;
+import org.netbeans.modules.gsf.api.TranslatedSource;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
+import org.netbeans.modules.gsf.api.ElementKind;
+import org.netbeans.modules.gsf.api.annotations.NonNull;
 import org.netbeans.modules.javascript.editing.lexer.JsCommentTokenId;
 import org.netbeans.modules.javascript.editing.lexer.LexUtilities;
-import org.netbeans.sfpi.gsf.DefaultParseListener;
+import org.netbeans.modules.gsf.spi.DefaultParseListener;
 import org.openide.util.Exceptions;
 
 /**
@@ -181,7 +184,7 @@ public class AstUtilities {
         return result.getRootNode();
     }
 
-    public static Node getForeignNode(final IndexedFunction o, Node[] foreignRootRet) {
+    public static Node getForeignNode(final IndexedElement o, Node[] foreignRootRet) {
         ParserFile file = o.getFile();
 
         if (file == null) {
@@ -239,15 +242,23 @@ TranslatedSource translatedSource = null; // TODO - determine this here?
         if (signature == null) {
             return null;
         }
-
 //        Node node = AstUtilities.findBySignature(root, signature);
         JsParseResult rpr = (JsParseResult)result;
-        for (AstElement element : rpr.getStructure().getElements()) {
-            if (element instanceof FunctionAstElement) {
-                FunctionAstElement func = (FunctionAstElement) element;
-                if (signature.equals(func.getSignature())) {
-                    return func.getNode();
+        boolean lookForFunction = o.getKind() == ElementKind.CONSTRUCTOR || o.getKind() == ElementKind.METHOD;
+        if (lookForFunction) {
+            for (AstElement element : rpr.getStructure().getElements()) {
+                if (element instanceof FunctionAstElement) {
+                    FunctionAstElement func = (FunctionAstElement) element;
+                    if (signature.equals(func.getSignature())) {
+                        return func.getNode();
+                    }
                 }
+            }
+        }
+
+        for (AstElement element : rpr.getStructure().getElements()) {
+            if (signature.equals(element.getSignature())) {
+                return element.getNode();
             }
         }
         
@@ -536,6 +547,266 @@ TranslatedSource translatedSource = null; // TODO - determine this here?
             return (FunctionNode)labelledNode;
         }
         
+        return null;
+    }
+
+    public static Node getLabelledNode(Node objlitNode) {
+        assert objlitNode.getType() == Token.OBJLITNAME;
+        LabelledNode node = (LabelledNode)objlitNode;
+        Node labelledNode = node.getLabelledNode();
+        
+        return labelledNode;
+    }
+    
+    public static String getFunctionFqn(Node node) {
+        FunctionNode func = (FunctionNode) node;
+        //AstElement js = AstElement.getElement(node);
+        Node parent = node.getParentNode();
+        int parentType = parent != null ? parent.getType() : 0;
+
+        // If it's an anonymous function, I've gotta do some more stuff 
+        // here. In particular, I should look for a pattern where the
+        // anonymous function is assigned to a class property, and if
+        // so, record that somehow
+        //if (func.)
+        // String derivedName = ...
+        //js.setName(derivedName);
+        String funcName = func.getFunctionName();
+        if (funcName == null || funcName.length() == 0) {
+            String name = null;
+            if (parentType == Token.OBJECTLIT) {
+                // Foo.Bar = { foo : function() }
+                // We handle object literals but skip the ones
+                // that don't have an associated name. This must
+                // be one of those cases.
+                //name = parent.getString();
+            } else if (parentType == Token.SETPROP || parentType == Token.SETNAME) {
+                // this.foo = function() { }
+                if (parent.getFirstChild().getType() == Token.THIS) {
+                    Node method = parent.getFirstChild().getNext();
+                    if (method.getType() == Token.STRING) {
+                        String methodName = method.getString();
+                        Node clzNode = parent;
+                        while (clzNode != null) {
+                            if (clzNode.getType() == Token.FUNCTION) {
+                                // Determine function name
+                                String ancestorName = getFunctionFqn(clzNode);
+                                if (ancestorName != null && Character.isUpperCase(ancestorName.charAt(0))) {
+                                    return ancestorName + "." + methodName;
+                                }
+                            }
+                            clzNode = clzNode.getParentNode();
+                        }
+                    }
+                }
+
+                // Foo.Bar.baz = function() { }
+                StringBuilder sb = new StringBuilder();
+                if (addName(sb, parent)) {
+                    name = sb.toString();
+                }
+            }
+
+            return name;
+        }
+
+        return funcName;
+    }
+    
+    /** Return an array of strings: string[0]=class, string[1]=extends, defined by the objectlit. Both can be null. */
+    @NonNull
+    public static String[] getObjectLitFqn(Node node) {
+        assert node.getType() == Token.OBJECTLIT;
+        // Foo.Bar = { foo : function() }
+        Node parent = node.getParentNode();
+
+        String className = null;
+        String extendsName = null;
+        int parentType = parent != null ? parent.getType() : 0;
+        if (parentType == Token.NAME) {
+            className = parent.getString();
+        } else if (parentType == Token.SETPROP || parentType == Token.SETNAME) {
+            StringBuilder sb = new StringBuilder();
+            if (AstUtilities.addName(sb, parent)) {
+                className = sb.toString();
+            }
+        } else if (parentType == Token.CALL && parent.getParentNode() != null &&
+                (parent.getParentNode().getType() == Token.SETPROP ||
+                 parent.getParentNode().getType() == Token.NAME)) {
+            // Look for patterns of the form
+            //   Pirate.prototype = Object.extend(new Person(), { say: function() {} });
+            // This looks like this:
+            //
+            //SETPROP
+            //  NAME:"Pirate"
+            //  STRING:"prototype"
+            //  CALL
+            //      GETPROP
+            //          NAME:"Object"
+            //          STRING:"extend"
+            //      NEW
+            //          NAME:"Person"
+            //      OBJECTLIT
+            Node callTarget = parent.getFirstChild();
+            if (callTarget != null && callTarget.getType() == Token.GETPROP) {
+                Node clz = callTarget.getFirstChild();
+                Node mtd = clz != null ? clz.getNext() : null;
+                if (clz != null && mtd != null) {
+                    if (clz.getType() == Token.NAME && "Object".equals(clz.getString()) && // NOI18N
+                        mtd.getType() == Token.STRING && "extend".equals(mtd.getString())) { // NOI18N
+                        StringBuilder sb = new StringBuilder();
+                        if (AstUtilities.addName(sb, parent.getParentNode())) {
+                            className = sb.toString();
+                            Node prev = parent.getFirstChild().getNext();
+                            if (prev != null && prev.getType() == Token.NEW && prev.getFirstChild() != null) {
+                                StringBuilder extend = new StringBuilder();
+                                if (AstUtilities.addName(extend, prev.getFirstChild())) {
+                                    extendsName = extend.toString();
+                                }
+                            }
+                        }
+                    } else if (clz.getType() == Token.NAME && "Class".equals(clz.getString()) && // NOI18N
+                        mtd.getType() == Token.STRING && "create".equals(mtd.getString())) { // NOI18N
+                        // Prototype.js new-style:
+                        // var Person = Class.create({
+                        // and
+                        // var Pirate = Class.create(Person, {
+                        StringBuilder sb = new StringBuilder();
+                        if (AstUtilities.addName(sb, parent.getParentNode())) {
+                            className = sb.toString();
+                            Node firstArg = callTarget.getNext();
+                            if (firstArg.getType() == Token.NAME || firstArg.getType() == Token.GETPROP) {
+                                StringBuilder extend = new StringBuilder();
+                                if (AstUtilities.addName(extend, firstArg)) {
+                                    extendsName = extend.toString();
+                                }
+                            }
+                        }
+                    } else if (clz.getType() == Token.NAME && "Ext".equals(clz.getString()) && // NOI18N
+                        mtd.getType() == Token.STRING && "extend".equals(mtd.getString())) { // NOI18N
+                        // Ext extensions
+                        // Ext.TabPanel = Ext.extend(Ext.Panel,  {
+                        StringBuilder sb = new StringBuilder();
+                        if (AstUtilities.addName(sb, parent.getParentNode())) {
+                            className = sb.toString();
+                            Node firstArg = callTarget.getNext();
+                            if (firstArg.getType() == Token.NAME || firstArg.getType() == Token.GETPROP) {
+                                StringBuilder extend = new StringBuilder();
+                                if (AstUtilities.addName(extend, firstArg)) {
+                                    extendsName = extend.toString();
+                                }
+                            }
+                        }
+                    }
+
+                }
+            }
+        } else if (parentType == Token.CALL) {
+            // Ext:
+            // Ext.extend(Ext.tree.AsyncTreeNode, Ext.tree.TreeNode, {
+            Node callTarget = parent.getFirstChild();
+            if (callTarget != null && callTarget.getType() == Token.GETPROP) {
+                Node clz = callTarget.getFirstChild();
+                Node mtd = clz != null ? clz.getNext() : null;
+                if (clz != null && mtd != null) {
+                    if (clz.getType() == Token.NAME && "Ext".equals(clz.getString()) && // NOI18N
+                        mtd.getType() == Token.STRING && "extend".equals(mtd.getString())) { // NOI18N
+
+                        Node first = callTarget.getNext();
+                        if (first != null && (first.getType() == Token.NAME || first.getType() == Token.GETPROP)) {
+                            Node second = first.getNext();
+                            if (second != null && (second.getType() == Token.NAME || second.getType() == Token.GETPROP)) {
+                                StringBuilder clzName = new StringBuilder();
+                                if (AstUtilities.addName(clzName, first)) {
+                                    className = clzName.toString();
+                                    StringBuilder superName = new StringBuilder();
+                                    if (AstUtilities.addName(superName, second)) {
+                                        extendsName = superName.toString();
+                                    }
+                                }
+
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        // TODO: Ext  "this.addEvents()"
+
+        String[] result = new String[2];
+        result[0] = className;
+        result[1] = extendsName;
+        
+        return result;
+    }
+    
+    
+    public static boolean addName(StringBuilder sb, Node node) {
+        switch (node.getType()) {
+        case Token.BINDNAME:
+        case Token.NAME:
+        case Token.STRING: {
+            String s = node.getString();
+
+            // Skip prototype in name - but do we need this in the metadata
+            // somewhere?
+            //if ("prototype".equals(s)) { // NOI18N
+            //    return true;
+            //}
+            if (sb.length() > 0) {
+                sb.append('.');
+            }
+            sb.append(s);
+            return true;
+        }
+        case Token.SETPROP:
+            if (node.hasChildren()) {
+                Node child = node.getFirstChild();
+                addName(sb, child);
+                child = child.getNext();
+                if (child != null) {
+                    addName(sb, child);
+                }
+
+                return true;
+            }
+            break;
+
+        case Token.SETNAME:
+        case Token.GETPROP: {
+            for (Node child = node.getFirstChild(); child != null; child = child.getNext()) {
+                addName(sb, child);
+            }
+            break;
+        }
+        }
+
+        return true;
+    }
+    
+    
+    public static String getFqn(AstPath path) {
+        Node clzNode = path.leaf();
+        while (clzNode != null) {
+            if (clzNode.getType() == Token.FUNCTION) {
+                // Determine function name
+                String ancestorName = getFunctionFqn(clzNode);
+                if (ancestorName != null && Character.isUpperCase(ancestorName.charAt(0))) {
+                    return ancestorName;
+                }
+            } else if (clzNode.getType() == Token.OBJECTLIT) {
+                String className = getObjectLitFqn(clzNode)[0];
+                if (className != null) {
+                    final String prototype = ".prototype"; // NOI18N
+                    if (className.endsWith(prototype)) { // NOI18N
+                        className = className.substring(0, className.length()-prototype.length()); // NOI18N
+                    }
+                    
+                    return className;
+                }
+            }
+            clzNode = clzNode.getParentNode();
+        }
         return null;
     }
 }

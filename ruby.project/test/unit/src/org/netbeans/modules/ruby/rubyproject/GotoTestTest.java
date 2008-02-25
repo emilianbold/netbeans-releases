@@ -42,7 +42,7 @@
 package org.netbeans.modules.ruby.rubyproject;
 
 import java.io.File;
-import org.netbeans.fpi.gsf.DeclarationFinder.DeclarationLocation;
+import org.netbeans.modules.gsf.api.DeclarationFinder.DeclarationLocation;
 import org.netbeans.spi.gototest.TestLocator;
 import org.netbeans.spi.gototest.TestLocator.LocationResult;
 import org.openide.filesystems.FileObject;

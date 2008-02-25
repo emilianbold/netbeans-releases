@@ -44,7 +44,7 @@ import java.io.IOException;
 import java.text.MessageFormat;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.fileinfo.NonRecursiveFolder;
-import org.netbeans.fpi.gsf.ElementKind;
+import org.netbeans.modules.gsf.api.ElementKind;
 import org.netbeans.napi.gsfret.source.ClasspathInfo;
 import org.netbeans.napi.gsfret.source.CompilationInfo;
 import org.netbeans.modules.refactoring.api.AbstractRefactoring;

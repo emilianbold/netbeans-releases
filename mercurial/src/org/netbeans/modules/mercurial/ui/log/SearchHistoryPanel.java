@@ -119,9 +119,10 @@ class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.P
     }
 
     void setOutSearch() {
+        criteria.setForOut();
         bOutSearch = true;
-        divider.setVisible(false);
         tbSummary.setToolTipText(NbBundle.getMessage(SearchHistoryPanel.class,  "TT_OutSummary"));
+        showMergesChkBox.setToolTipText(NbBundle.getMessage(SearchHistoryPanel.class,  "TT_OutShowMerges"));
         tbDiff.setToolTipText(NbBundle.getMessage(SearchHistoryPanel.class,  "TT_OutShowDiff"));
     }
 
@@ -135,11 +136,12 @@ class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.P
 
     
     void setIncomingSearch() {
+        criteria.setForIncoming();
         bIncomingSearch = true;
-        divider.setVisible(false);
         tbDiff.setVisible(false);
         bNext.setVisible(false);
         bPrev.setVisible(false);
+        showMergesChkBox.setToolTipText(NbBundle.getMessage(SearchHistoryPanel.class,  "TT_IncomingShowMerges"));
         tbSummary.setToolTipText(NbBundle.getMessage(SearchHistoryPanel.class,  "TT_IncomingSummary"));
     }
     
@@ -502,7 +504,8 @@ class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.P
         jToolBar1.add(jSeparator3);
 
         showMergesChkBox.setSelected(true);
-        org.openide.awt.Mnemonics.setLocalizedText(showMergesChkBox, org.openide.util.NbBundle.getMessage(SearchHistoryPanel.class, "MSG_SHOW_MERGE")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(showMergesChkBox, org.openide.util.NbBundle.getMessage(SearchHistoryPanel.class, "CTL_ShowMerge")); // NOI18N
+        showMergesChkBox.setToolTipText(org.openide.util.NbBundle.getMessage(SearchHistoryPanel.class, "TT_ShowMerges")); // NOI18N
         showMergesChkBox.setFocusable(false);
         showMergesChkBox.setHorizontalTextPosition(javax.swing.SwingConstants.RIGHT);
         showMergesChkBox.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);

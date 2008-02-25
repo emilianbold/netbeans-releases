@@ -1,68 +1,64 @@
 Results for alert('foo1 with queryType=COMPLETION and nameKind=PREFIX
 ------------------------------------
-CONSTRUCTO Array()                                    null
-CONSTRUCTO Array()                                    null
-CONSTRUCTO Boolean()                                  null
-CONSTRUCTO Boolean()                                  null
-CONSTRUCTO CSS()                                      null
-CONSTRUCTO Date()                                     null
-CONSTRUCTO Date()                                     null
-CONSTRUCTO Error()                                    null
-CONSTRUCTO Error()                                    null
-CONSTRUCTO EvalError()                                null
-CONSTRUCTO EvalError()                                null
-CONSTRUCTO EventTarget()                              null
-CONSTRUCTO Function()                                 null
-CONSTRUCTO Function()                                 null
-CONSTRUCTO JavaArray()                                null
-CONSTRUCTO JavaClass()                                null
-CONSTRUCTO JavaObject()                               null
-CONSTRUCTO JavaPackage()                              null
-CONSTRUCTO Math()                                     null
-CONSTRUCTO Node()                                     null
-CONSTRUCTO Number()                                   null
-CONSTRUCTO Number()                                   null
-CONSTRUCTO Object()                                   null
-CONSTRUCTO Object()                                   null
-CONSTRUCTO Packages()                                 null
-CONSTRUCTO RangeError()                               null
-CONSTRUCTO RangeError()                               null
-CONSTRUCTO ReferenceError()                           null
-CONSTRUCTO ReferenceError()                           null
-CONSTRUCTO RegExp()                                   null
-CONSTRUCTO RegExp()                                   null
-CONSTRUCTO Storage()                                  null
-CONSTRUCTO String()                                   null
-CONSTRUCTO String()                                   null
-CONSTRUCTO SyntaxError()                              null
-CONSTRUCTO SyntaxError()                              null
-CONSTRUCTO TypeError()                                null
-CONSTRUCTO TypeError()                                null
-CONSTRUCTO URIError()                                 null
-CONSTRUCTO URIError()                                 null
-CONSTRUCTO WRONG_DOCUMENT_ERR_note()                  null
-METHOD     cssRule()                                  null
-METHOD     dispatchEvent_example()                    null
-METHOD     document()                                 null
-METHOD     element()                                  null
-METHOD     event()                                    null
-METHOD     form()                                     null
-METHOD     java()                                     null
-METHOD     netscape()                                 null
-METHOD     range()                                    null
-METHOD     selection()                                null
-METHOD     style()                                    null
-METHOD     stylesheet()                               null
-METHOD     sun()                                      null
-METHOD     table()                                    null
-METHOD     tableRow()                                 null
-METHOD     treeWalker()                               null
-METHOD     window()                                   null
-VARIABLE   bar1                                       null
-VARIABLE   element1                                   null
-VARIABLE   foo1                                       null
-VARIABLE   options1                                   null
-VARIABLE   update1                                    null
+PACKAGE    Array                                      Core JS
+PACKAGE    Array                                      Core JS
+PACKAGE    Boolean                                    Core JS
+PACKAGE    Boolean                                    Core JS
+PACKAGE    CssRule                                    DOM
+PACKAGE    Date                                       Core JS
+PACKAGE    Date                                       Core JS
+PACKAGE    Date                                       Core JS
+PACKAGE    Document                                   DOM
+PACKAGE    Document                                   DOM
+PACKAGE    Element                                    DOM
+PACKAGE    Element                                    DOM
+PACKAGE    Error                                      Core JS
+PACKAGE    Error                                      Core JS
+PACKAGE    EvalError                                  Core JS
+PACKAGE    Event                                      DOM
+PACKAGE    Event                                      DOM
+PACKAGE    Form                                       DOM
+PACKAGE    Form                                       DOM
+PACKAGE    Function                                   Core JS
+PACKAGE    Function                                   Core JS
+PACKAGE    JavaArray                                  Core JS
+PACKAGE    Math                                       Core JS
+PACKAGE    Math                                       Core JS
+PACKAGE    Navigator                                  DOM
+PACKAGE    Navigator                                  DOM
+PACKAGE    Number                                     Core JS
+PACKAGE    Number                                     Core JS
+PACKAGE    Object                                     Core JS
+PACKAGE    Object                                     Core JS
+PACKAGE    Packages                                   Core JS
+PACKAGE    Range                                      DOM
+PACKAGE    Range                                      DOM
+PACKAGE    RangeError                                 Core JS
+PACKAGE    ReferenceError                             Core JS
+PACKAGE    RegExp                                     Core JS
+PACKAGE    RegExp                                     Core JS
+PACKAGE    Screen                                     DOM
+PACKAGE    Selection                                  DOM
+PACKAGE    Selection                                  DOM
+PACKAGE    String                                     Core JS
+PACKAGE    String                                     Core JS
+PACKAGE    Style                                      DOM
+PACKAGE    Stylesheet                                 DOM
+PACKAGE    Stylesheet                                 DOM
+PACKAGE    SyntaxError                                Core JS
+PACKAGE    Table                                      DOM
+PACKAGE    Table                                      DOM
+PACKAGE    TableRow                                   DOM
+PACKAGE    TreeWalker                                 DOM
+PACKAGE    TypeError                                  Core JS
+PACKAGE    URIError                                   Core JS
+PACKAGE    Window                                     DOM
+PACKAGE    Window                                     DOM
+VARIABLE   bar1                                       
+VARIABLE   element1                                   
+VARIABLE   foo1                                       
+VARIABLE   options1                                   
+VARIABLE   update1                                    
 KEYWORD    abstract                                   null
 KEYWORD    boolean                                    null
 KEYWORD    break                                      null
@@ -123,3 +119,64 @@ KEYWORD    void                                       null
 KEYWORD    volatile                                   null
 KEYWORD    while                                      null
 KEYWORD    with                                       null
+GLOBAL     Array                                      Core JS
+GLOBAL     Boolean                                    Core JS
+GLOBAL     CSS                                        DOM
+GLOBAL     CssRule                                    DOM
+GLOBAL     Date                                       Core JS
+GLOBAL     Document                                   DOM
+GLOBAL     Element                                    DOM
+GLOBAL     Error                                      Core JS
+GLOBAL     EvalError                                  Core JS
+GLOBAL     Event                                      DOM
+GLOBAL     EventTarget                                DOM
+GLOBAL     Form                                       DOM
+GLOBAL     Function                                   Core JS
+GLOBAL     Java                                       Core JS
+GLOBAL     JavaArray                                  Core JS
+GLOBAL     JavaClass                                  Core JS
+GLOBAL     JavaObject                                 Core JS
+GLOBAL     JavaPackage                                Core JS
+GLOBAL     Math                                       Core JS
+GLOBAL     Navigator                                  DOM
+GLOBAL     Netscape                                   Core JS
+GLOBAL     Node                                       DOM
+GLOBAL     Number                                     Core JS
+GLOBAL     Object                                     Core JS
+GLOBAL     Packages                                   Core JS
+GLOBAL     Range                                      DOM
+GLOBAL     RangeError                                 Core JS
+GLOBAL     ReferenceError                             Core JS
+GLOBAL     RegExp                                     Core JS
+GLOBAL     Screen                                     DOM
+GLOBAL     Selection                                  DOM
+GLOBAL     Storage                                    DOM
+GLOBAL     String                                     Core JS
+GLOBAL     Style                                      DOM
+GLOBAL     Stylesheet                                 DOM
+GLOBAL     Sun                                        Core JS
+GLOBAL     SyntaxError                                Core JS
+GLOBAL     Table                                      DOM
+GLOBAL     TableRow                                   DOM
+GLOBAL     TreeWalker                                 DOM
+GLOBAL     TypeError                                  Core JS
+GLOBAL     URIError                                   Core JS
+GLOBAL     WRONG_DOCUMENT_ERR_note                    DOM
+GLOBAL     Window                                     DOM
+GLOBAL     cssRule                                    DOM
+GLOBAL     document                                   DOM
+GLOBAL     element                                    DOM
+GLOBAL     event                                      DOM
+GLOBAL     form                                       DOM
+GLOBAL     java                                       Core JS
+GLOBAL     navigator                                  DOM
+GLOBAL     netscape                                   Core JS
+GLOBAL     range                                      DOM
+GLOBAL     screen                                     DOM
+GLOBAL     style                                      DOM
+GLOBAL     stylesheet                                 DOM
+GLOBAL     sun                                        Core JS
+GLOBAL     table                                      DOM
+GLOBAL     tableRow                                   DOM
+GLOBAL     treeWalker                                 DOM
+GLOBAL     window                                     DOM

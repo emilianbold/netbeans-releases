@@ -42,7 +42,7 @@ package org.netbeans.modules.languages.php;
 
 import java.util.List;
 
-import org.netbeans.fpi.gsf.GsfLanguage;
+import org.netbeans.modules.gsf.api.GsfLanguage;
 import org.netbeans.api.lexer.Language;
 import org.netbeans.api.lexer.TokenId;
 import org.netbeans.modules.php.lexer.PhpTokenId;
@@ -55,14 +55,14 @@ import org.netbeans.modules.php.lexer.PhpTokenId;
 public class PhpLanguage implements GsfLanguage {
 
     /* (non-Javadoc)
-     * @see org.netbeans.fpi.gsf.GsfLanguage#getLexerLanguage()
+     * @see org.netbeans.modules.gsf.api.GsfLanguage#getLexerLanguage()
      */
     public Language getLexerLanguage() {
         return PhpTokenId.language();
     }
 
     /* (non-Javadoc)
-     * @see org.netbeans.fpi.gsf.GsfLanguage#getLineCommentPrefix()
+     * @see org.netbeans.modules.gsf.api.GsfLanguage#getLineCommentPrefix()
      */
     public String getLineCommentPrefix() {
         // TODO Auto-generated method stub
@@ -70,7 +70,7 @@ public class PhpLanguage implements GsfLanguage {
     }
 
     /* (non-Javadoc)
-     * @see org.netbeans.fpi.gsf.GsfLanguage#getRelevantTokenTypes()
+     * @see org.netbeans.modules.gsf.api.GsfLanguage#getRelevantTokenTypes()
      */
     public List<? extends TokenId> getRelevantTokenTypes() {
         // TODO Auto-generated method stub
@@ -78,7 +78,7 @@ public class PhpLanguage implements GsfLanguage {
     }
 
     /* (non-Javadoc)
-     * @see org.netbeans.fpi.gsf.GsfLanguage#isIdentifierChar(char)
+     * @see org.netbeans.modules.gsf.api.GsfLanguage#isIdentifierChar(char)
      */
     public boolean isIdentifierChar( char c ) {
         // TODO Auto-generated method stub

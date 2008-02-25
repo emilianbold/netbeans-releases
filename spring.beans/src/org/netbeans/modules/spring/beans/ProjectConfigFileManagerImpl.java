@@ -44,7 +44,10 @@ package org.netbeans.modules.spring.beans;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.logging.Logger;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.Project;
@@ -70,6 +73,7 @@ public class ProjectConfigFileManagerImpl implements ConfigFileManagerImplementa
     private static final Logger LOGGER = Logger.getLogger(ProjectConfigFileManagerImpl.class.getName());
 
     private static final String SPRING_DATA = "spring-data"; // NOI18N
+    private static final String CONFIG_FILES = "config-files"; // NOI18N
     private static final String CONFIG_FILE_GROUPS = "config-file-groups"; // NOI18N
     private static final String CONFIG_FILE_GROUP = "config-file-group"; // NOI18N
     private static final String NAME = "name"; // NOI18N
@@ -79,6 +83,8 @@ public class ProjectConfigFileManagerImpl implements ConfigFileManagerImplementa
     private final Project project;
     private final AuxiliaryConfiguration auxConfig;
     private final ChangeSupport changeSupport = new ChangeSupport(this);
+
+    private List<File> files;
     private List<ConfigFileGroup> groups;
 
     public ProjectConfigFileManagerImpl(Project project) {
@@ -99,6 +105,29 @@ public class ProjectConfigFileManagerImpl implements ConfigFileManagerImplementa
     }
 
     /**
+     * Returns the list of config files in this manager. The list is
+     * modifiable and not live, therefore changes to the list do not
+     * modify the contents of the manager.
+     *
+     * @return the list; never null.
+     */
+    public List<File> getConfigFiles() {
+        return mutex().readAccess(new Action<List<File>>() {
+            public List<File> run() {
+                synchronized (ProjectConfigFileManagerImpl.this) {
+                    if (files == null) {
+                        readConfiguration();
+                    }
+                    assert files != null;
+                }
+                List<File> result = new ArrayList<File>(files.size());
+                result.addAll(files);
+                return result;
+            }
+        });
+    }
+
+    /**
      * Returns the list of config file groups in this manger. The list is
      * modifiable and not live, therefore changes to the list do not
      * modify the contents of the manager.
@@ -110,7 +139,7 @@ public class ProjectConfigFileManagerImpl implements ConfigFileManagerImplementa
             public List<ConfigFileGroup> run() {
                 synchronized (ProjectConfigFileManagerImpl.this) {
                     if (groups == null) {
-                        groups = readGroups();
+                        readConfiguration();
                     }
                     assert groups != null;
                 }
@@ -122,30 +151,17 @@ public class ProjectConfigFileManagerImpl implements ConfigFileManagerImplementa
     }
 
     /**
-     * Returns the config file group (if any) which contains the given config file.
-     *
-     * @param  file a file; never null.
-     * @return the config file group or null.
-     */
-    public ConfigFileGroup getConfigFileGroupFor(File file) {
-        for (ConfigFileGroup group : getConfigFileGroups()) {
-            if (group.containsFile(file)) {
-                return group;
-            }
-        }
-        return null;
-    }
-
-    /**
      * Modifies the list of config file groups. This method needs to be called
      * under {@code mutex()} write access.
      *
      * @throws IllegalStateException if the called does not hold {@code mutex()}
      *         write access.
      */
-    public void putConfigFileGroups(List<ConfigFileGroup> newGroups) {
+    public void putConfigFilesAndGroups(List<File> newFiles, List<ConfigFileGroup> newGroups) {
         assert mutex().isWriteAccess();
-        writeGroups(newGroups);
+        writeConfiguration(newFiles, newGroups);
+        files = new ArrayList<File>(newFiles.size());
+        files.addAll(newFiles);
         groups = new ArrayList<ConfigFileGroup>(newGroups.size());
         groups.addAll(newGroups);
         changeSupport.fireChange();
@@ -160,44 +176,78 @@ public class ProjectConfigFileManagerImpl implements ConfigFileManagerImplementa
         changeSupport.addChangeListener(listener);
     }
 
-    List<ConfigFileGroup> readGroups() {
+    private void readConfiguration() {
         assert mutex().isReadAccess();
-        List<ConfigFileGroup> result = new ArrayList<ConfigFileGroup>();
+        File projectDir = FileUtil.toFile(project.getProjectDirectory());
+        if (projectDir == null) {
+            LOGGER.warning("The directory of project "+ project + "is null");
+            files = Collections.emptyList();
+            groups = Collections.emptyList();
+        }
+        List<File> newFiles = new ArrayList<File>();
+        List<ConfigFileGroup> newGroups = new ArrayList<ConfigFileGroup>();
         Element springConfigEl = auxConfig.getConfigurationFragment(SPRING_DATA, SPRING_DATA_NS, true);
         if (springConfigEl != null) {
-            NodeList list = springConfigEl.getElementsByTagNameNS(SPRING_DATA_NS, CONFIG_FILE_GROUPS);
+            NodeList list = springConfigEl.getElementsByTagNameNS(SPRING_DATA_NS, CONFIG_FILES);
+            if (list.getLength() > 0) {
+                Element configFilesEl = (Element)list.item(0);
+                list = configFilesEl.getElementsByTagNameNS(SPRING_DATA_NS, CONFIG_FILE);
+                readFiles(list, projectDir, newFiles);
+            }
+            list = springConfigEl.getElementsByTagNameNS(SPRING_DATA_NS, CONFIG_FILE_GROUPS);
             if (list.getLength() > 0) {
                 Element configFileGroupsEl = (Element)list.item(0);
                 list = configFileGroupsEl.getElementsByTagNameNS(SPRING_DATA_NS, CONFIG_FILE_GROUP);
-                readGroups(list, result);
+                readGroups(list, projectDir, newGroups);
             }
+            removeUnknownFiles(newGroups, new HashSet<File>(newFiles));
         }
-        return result;
+        files = newFiles;
+        groups = newGroups;
     }
 
-    private void readGroups(NodeList configFileGroupEls, List<ConfigFileGroup> groups) {
+    private void readFiles(NodeList configFileEls, File basedir, List<File> files) {
+        Set<File> addedFiles = new HashSet<File>(); // For removing any duplicates.
+        for (int i = 0; i < configFileEls.getLength(); i++) {
+            Element configFileEl = (Element)configFileEls.item(i);
+            File file = ConfigFiles.resolveFile(basedir, configFileEl.getTextContent());
+            if (file != null && addedFiles.add(file)) {
+                files.add(file);
+            }
+        }
+    }
+
+    private void readGroups(NodeList configFileGroupEls, File basedir, List<ConfigFileGroup> groups) {
         for (int i = 0; i < configFileGroupEls.getLength(); i++) {
             Element configFileGroupEl = (Element)configFileGroupEls.item(i);
             String name = configFileGroupEl.getAttribute(NAME);
             NodeList configFileEls = configFileGroupEl.getElementsByTagNameNS(SPRING_DATA_NS, CONFIG_FILE);
             List<File> configFiles = new ArrayList<File>(configFileEls.getLength());
-            for (int j = 0; j < configFileEls.getLength(); j++) {
-                Element configFileEl = (Element)configFileEls.item(j);
-                configFiles.add(getAbsoluteFile(configFileEl.getTextContent()));
-            }
+            readFiles(configFileEls, basedir, configFiles);
             groups.add(ConfigFileGroup.create(name, configFiles));
         }
     }
 
-    private File getAbsoluteFile(String path) {
-        File projectDir = FileUtil.toFile(project.getProjectDirectory());
-        if (projectDir == null) {
-            return null;
+    private void removeUnknownFiles(List<ConfigFileGroup> newGroups, Set<File> knownFiles) {
+        for (int i = 0; i < newGroups.size(); i++) {
+            ConfigFileGroup group = newGroups.get(i);
+            for (File file : group.getFiles()) {
+                if (!knownFiles.contains(file)) {
+                    // Found an unknown file, so we will need to remove all unknown files from this group.
+                    List<File> newGroupFiles = new ArrayList<File>(group.getFiles().size());
+                    for (File each : group.getFiles()) {
+                        if (knownFiles.contains(each)) {
+                            newGroupFiles.add(each);
+                        }
+                    }
+                    newGroups.set(i, ConfigFileGroup.create(group.getName(), newGroupFiles));
+                    continue;
+                }
+            }
         }
-        return ConfigFiles.resolveFile(projectDir, path);
     }
 
-    private void writeGroups(List<ConfigFileGroup> groups) {
+    private void writeConfiguration(List<File> files, List<ConfigFileGroup> groups) {
         assert mutex().isWriteAccess();
         File projectDir = FileUtil.toFile(project.getProjectDirectory());
         if (projectDir == null) {
@@ -206,10 +256,21 @@ public class ProjectConfigFileManagerImpl implements ConfigFileManagerImplementa
         }
         Document doc = XMLUtil.createDocument(SPRING_DATA, SPRING_DATA_NS, null, null);
         Element springConfigEl = doc.getDocumentElement();
+        Element configFilesEl = springConfigEl.getOwnerDocument().createElementNS(SPRING_DATA_NS, CONFIG_FILES);
+        springConfigEl.appendChild(configFilesEl);
+        writeFiles(files, projectDir, configFilesEl);
         Element configFileGroupsEl = springConfigEl.getOwnerDocument().createElementNS(SPRING_DATA_NS, CONFIG_FILE_GROUPS);
         springConfigEl.appendChild(configFileGroupsEl);
         writeGroups(groups, projectDir, configFileGroupsEl);
         auxConfig.putConfigurationFragment(springConfigEl, true);
+    }
+
+    private void writeFiles(List<File> files, File basedir, Element parentEl) {
+        for (File file : files) {
+            Element configFileEl = parentEl.getOwnerDocument().createElementNS(SPRING_DATA_NS, CONFIG_FILE);
+            configFileEl.appendChild(configFileEl.getOwnerDocument().createTextNode(ConfigFiles.getRelativePath(basedir, file)));
+            parentEl.appendChild(configFileEl);
+        }
     }
 
     private void writeGroups(List<ConfigFileGroup> groups, File basedir, Element configFileGroupsEl) {
@@ -219,11 +280,7 @@ public class ProjectConfigFileManagerImpl implements ConfigFileManagerImplementa
             if (name != null && name.length() > 0) {
                 configFileGroupEl.setAttribute(NAME, name);
             }
-            for (File file : group.getFiles()) {
-                Element configFileEl = configFileGroupEl.getOwnerDocument().createElementNS(SPRING_DATA_NS, CONFIG_FILE);
-                configFileEl.appendChild(configFileEl.getOwnerDocument().createTextNode(ConfigFiles.getRelativePath(basedir, file)));
-                configFileGroupEl.appendChild(configFileEl);
-            }
+            writeFiles(group.getFiles(), basedir, configFileGroupEl);
             configFileGroupsEl.appendChild(configFileGroupEl);
         }
     }

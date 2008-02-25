@@ -21,13 +21,8 @@ package org.netbeans.api.project.libraries;
 
 import java.awt.Component;
 import java.beans.PropertyChangeListener;
-import java.io.File;
 import java.io.IOException;
 import java.util.Set;
-import javax.swing.JFileChooser;
-import org.openide.filesystems.FileUtil;
-import org.openide.util.Exceptions;
-import org.openide.util.NbBundle;
 
 /**
  * Visual picker for libraries.

@@ -39,8 +39,8 @@
 
 package org.netbeans.modules.html.editor.gsf.embedding;
 
-import org.netbeans.fpi.gsf.EmbeddingModel;
-import org.netbeans.fpi.gsf.TranslatedSource;
+import org.netbeans.modules.gsf.api.EmbeddingModel;
+import org.netbeans.modules.gsf.api.TranslatedSource;
 
 /**
  *
