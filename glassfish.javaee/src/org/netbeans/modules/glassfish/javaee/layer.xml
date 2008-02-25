@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.1//EN" "http://www.netbeans.org/dtds/filesystem-1_1.dtd">
+<filesystem>
+    
+    <!-- GlassFish V3 common server module support -->
+    <folder name="Servers">
+        <folder name="GlassFish">
+            <file name="JavaEEServerModuleFactory.instance">
+                <attr name="instanceCreate" methodvalue="org.netbeans.modules.glassfish.javaee.JavaEEServerModuleFactory.getDefault"/>
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.glassfish.javaee.JavaEEServerModuleFactory"/>
+                <attr name="instanceOf" stringvalue="org.netbeans.spi.glassfish.GlassfishModuleFactory"/>
+            </file>
+            <file name="JavaEEServerModule.instance">
+                <attr name="instanceCreate" methodvalue="org.netbeans.modules.glassfish.javaee.JavaEEServerModule.create"/>
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.glassfish.javaee.JavaEEServerModule"/>
+                <attr name="instanceOf" stringvalue="org.netbeans.spi.glassfish.ServerModule"/>
+            </file>
+        </folder>
+    </folder>
+
+    <!-- j2eeserver api support -->
+    <folder name="J2EE">
+        <folder name="DeploymentPlugins">
+            <folder name="gfv3">
+                <file name="Descriptor" url="nbdep.xml"/>
+                <file name="Factory.instance">
+                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.glassfish.javaee.Hk2DeploymentFactory.create"/>
+                    <attr name="instanceClass" stringvalue="org.netbeans.modules.glassfish.javaee.Hk2DeploymentFactory"/>
+                    <attr name="instanceOf" stringvalue="javax.enterprise.deploy.spi.factories.DeploymentFactory"/>
+                </file>
+<!--                <file name="RegistryNodeFactory.instance">
+                    <attr name="instanceClass" stringvalue="org.netbeans.modules.glassfish.javaee.nodes.Hk2RegistryNodeFactory"/>
+                    <attr name="instanceOf" stringvalue="org.netbeans.modules.j2ee.deployment.plugins.spi.RegistryNodeFactory"/>
+                </file> -->
+                <file name="J2eePlatformFactory.instance">
+                    <attr name="instanceCreate" newvalue="org.netbeans.modules.glassfish.javaee.Hk2JavaEEPlatformFactory"/>
+                    <attr name="instanceClass" stringvalue="org.netbeans.modules.glassfish.javaee.Hk2JavaEEPlatformFactory"/>
+                    <attr name="instanceOf" stringvalue="org.netbeans.modules.j2ee.deployment.plugins.spi.J2eePlatformFactory"/>
+                </file>
+                <file name="OptionalFactory.instance">
+                    <attr name="instanceCreate" newvalue="org.netbeans.modules.glassfish.javaee.Hk2OptionalFactory"/>
+                    <attr name="instanceClass" stringvalue="org.netbeans.modules.glassfish.javaee.Hk2OptionalFactory"/>
+                    <attr name="instanceOf" stringvalue="org.netbeans.modules.j2ee.deployment.plugins.spi.OptionalDeploymentManagerFactory"/>
+                </file>
+                <file name="ModuleConfigFactory.instance">
+                    <attr name="instanceCreate" newvalue="org.netbeans.modules.glassfish.javaee.Hk2ModuleConfigFactory"/>
+                    <attr name="instanceClass" stringvalue="org.netbeans.modules.glassfish.javaee.Hk2ModuleConfigFactory"/>
+                    <attr name="instanceOf" stringvalue="org.netbeans.modules.j2ee.deployment.plugins.spi.config.ModuleConfigurationFactory"/>
+                </file>
+                <folder name="DeploymentFileNames">
+                    <folder name="WAR">
+                        <file name="WEB-INF\sun-web.xml"/>
+                    </folder>
+                </folder>
+            </folder>
+        </folder>
+    </folder>
+    
+</filesystem>
