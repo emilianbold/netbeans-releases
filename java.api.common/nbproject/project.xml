@@ -150,6 +150,7 @@
                 <package>org.netbeans.modules.java.api.common.ant</package>
                 <package>org.netbeans.modules.java.api.common.queries</package>
                 <package>org.netbeans.modules.java.api.common.ui</package>
+                <package>org.netbeans.modules.java.api.common.util</package>
             </friend-packages>
         </data>
     </configuration>

@@ -46,6 +46,8 @@ import java.util.Map;
 import java.util.HashMap;
 
 import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.project.SourceGroup;
+import org.netbeans.modules.j2ee.common.project.ui.ProjectProperties;
 import org.netbeans.modules.j2ee.ejbjarproject.ui.customizer.EjbJarProjectProperties;
 import org.netbeans.modules.java.api.common.SourceRoots;
 import org.netbeans.spi.java.classpath.ClassPathFactory;
@@ -343,6 +345,39 @@ public final class ClassPathProviderImpl implements ClassPathProvider, AntProjec
 
     public synchronized void propertiesChanged(AntProjectEvent ev) {
         this.dirCache.clear();
+    }
+
+    public String getPropertyName (SourceGroup sg, String type) {
+        FileObject root = sg.getRootFolder();
+        FileObject[] path = getPrimarySrcPath();
+        for (int i=0; i<path.length; i++) {
+            if (root.equals(path[i])) {
+                if (ClassPath.COMPILE.equals(type)) {
+                    return ProjectProperties.JAVAC_CLASSPATH;
+                }
+                else if (ClassPath.EXECUTE.equals(type)) {
+                    return EjbJarProjectProperties.DEBUG_CLASSPATH;
+                }
+                else {
+                    return null;
+                }
+            }
+        }
+        path = getTestSrcDir();
+        for (int i=0; i<path.length; i++) {
+            if (root.equals(path[i])) {
+                if (ClassPath.COMPILE.equals(type)) {
+                    return ProjectProperties.JAVAC_TEST_CLASSPATH;
+                }
+                else if (ClassPath.EXECUTE.equals(type)) {
+                    return ProjectProperties.RUN_TEST_CLASSPATH;
+                }
+                else {
+                    return null;
+                }
+            }
+        }
+        return null;
     }
 
 }

@@ -50,8 +50,8 @@ import java.util.concurrent.Callable;
 import org.netbeans.modules.spring.api.Action;
 import org.netbeans.modules.spring.api.beans.ConfigFileGroup;
 import org.netbeans.modules.spring.api.beans.model.SpringBeans;
-import org.netbeans.modules.spring.api.beans.model.SpringConfigModel.WriteContext;
-import org.netbeans.modules.spring.beans.model.SpringConfigFileModelController.DocumentWrite;
+import org.netbeans.modules.spring.api.beans.model.SpringConfigModel.DocumentAccess;
+import org.netbeans.modules.spring.beans.model.SpringConfigFileModelController.LockedDocument;
 import org.netbeans.modules.spring.beans.model.impl.ConfigFileSpringBeanSource;
 import org.netbeans.modules.spring.util.fcs.FileChangeSupport;
 import org.netbeans.modules.spring.util.fcs.FileChangeSupportEvent;
@@ -177,9 +177,9 @@ public class SpringConfigModelController {
         });
     }
 
-    public void runWriteAction(Action<WriteContext> action) throws IOException {
+    public void runDocumentAction(Action<DocumentAccess> action) throws IOException {
         try {
-            runWriteAction0(action);
+            runDocumentAction0(action);
         } catch (Exception e) {
             if (e instanceof RuntimeException) {
                 throw (RuntimeException)e;
@@ -192,7 +192,7 @@ public class SpringConfigModelController {
         }
     }
 
-    private void runWriteAction0(final Action<WriteContext> action) throws Exception {
+    private void runDocumentAction0(final Action<DocumentAccess> action) throws Exception {
         ExclusiveAccess.getInstance().runSyncTask(new Callable<Void>() {
             public Void call() throws IOException {
                 if (readAccess != null) {
@@ -207,16 +207,16 @@ public class SpringConfigModelController {
                         for (File currentFile : file2Controller.keySet()) {
                             Map<File, SpringBeanSource> beanSources = computeSpringBeanSources(currentFile);
                             SpringConfigFileModelController controller = file2Controller.get(currentFile);
-                            DocumentWrite docWrite = controller.getDocumentWrite();
-                            if (docWrite != null) {
-                                docWrite.open();
+                            LockedDocument lockedDoc = controller.getLockedDocument();
+                            if (lockedDoc != null) {
+                                lockedDoc.lock();
                                 try {
-                                    beanSources.put(currentFile, docWrite.getBeanSource());
+                                    beanSources.put(currentFile, lockedDoc.getBeanSource());
                                     ConfigModelSpringBeans springBeans = new ConfigModelSpringBeans(beanSources);
-                                    WriteContext context = new WriteContext(springBeans, currentFile, docWrite.getDocument());
-                                    action.run(context);
+                                    DocumentAccess docAccess = new DocumentAccess(springBeans, currentFile, lockedDoc);
+                                    action.run(docAccess);
                                 } finally {
-                                    docWrite.close();
+                                    lockedDoc.unlock();
                                 }
                             }
                         }
@@ -235,7 +235,7 @@ public class SpringConfigModelController {
             for (Map.Entry<File, SpringConfigFileModelController> entry : file2Controller.entrySet()) {
                 File currentFile = entry.getKey();
                 if (!currentFile.equals(skip)) {
-                    result.put(entry.getKey(), entry.getValue().getDocumentRead().getBeanSource());
+                    result.put(entry.getKey(), entry.getValue().getUpToDateBeanSource());
                 }
             }
         }

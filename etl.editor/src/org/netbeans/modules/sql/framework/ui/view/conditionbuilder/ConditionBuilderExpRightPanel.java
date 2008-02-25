@@ -585,15 +585,18 @@ public class ConditionBuilderExpRightPanel extends TopComponent {
         valArea = new JTextArea();
         valSPane.setViewportView(valArea);
 
-        JButton validationButton = new JButton("Validate");
+        String nbBundle60 = mLoc.t("PRSR001: Validate");
+        JButton validationButton = new JButton(Localizer.parse(nbBundle60));
+        validationButton.getAccessibleContext().setAccessibleName(Localizer.parse(nbBundle60));
         validationButton.addActionListener(new ValidationListener());
         validationPanel.add(validationButton, BorderLayout.EAST);
         splitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT);
         splitPane.setResizeWeight(SPLITPANE_RESIZE_WEIGHT);
         //outputView = new SQLOutputConditionView(this);
         logView = new SQLLogView();
-        logView.setName("Validation ");
-
+        String nbBundle61 = mLoc.t("PRSR001: Validation");
+        logView.setName(Localizer.parse(nbBundle61));
+        logView.getAccessibleContext().setAccessibleName(Localizer.parse(nbBundle61));
         splitPane.setTopComponent(c);
         hSplitPane.setRightComponent(splitPane);
         this.add(hSplitPane, BorderLayout.CENTER);

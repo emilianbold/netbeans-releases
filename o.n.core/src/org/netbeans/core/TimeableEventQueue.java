@@ -278,6 +278,7 @@ implements Runnable {
             StringBuilder sb = new StringBuilder();
             sb.append(msg).append('\n');
             appendGroup(sb, "", root, all);
+            sb.append('\n').append("---");
             return sb.toString();
         }
         

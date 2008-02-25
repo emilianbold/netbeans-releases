@@ -1,7 +1,7 @@
 /*
  *  ItemsResource
  *
- * Created on December 12, 2007, 1:31 AM
+ * Created on February 19, 2008, 7:16 PM
  *
  * To change this template, choose Tools | Template Manager
  * and open the template in the editor.
@@ -28,7 +28,7 @@ import javax.ws.rs.ConsumeMime;
 public class ItemsResource {
     @HttpContext
     private UriInfo context;
-    
+
     /** Creates a new instance of ItemsResource */
     public ItemsResource() {
     }

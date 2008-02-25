@@ -82,7 +82,9 @@ import org.openide.util.Exceptions;
 
 import com.nwoods.jgo.JGoBrush;
 import com.nwoods.jgo.JGoView;
+import java.awt.event.InputEvent;
 import javax.swing.JOptionPane;
+import javax.swing.KeyStroke;
 import net.java.hulp.i18n.Logger;
 import org.netbeans.modules.etl.logger.Localizer;
 import org.netbeans.modules.etl.logger.LogUtil;
@@ -153,6 +155,7 @@ public class SQLSourceTableArea extends SQLBasicTableArea {
             String nbBundle1 = mLoc.t("PRSR001: Show SQL");
             String lblShowSql = Localizer.parse(nbBundle1);
             showSqlItem = new JMenuItem(lblShowSql, new ImageIcon(showSqlUrl));
+            showSqlItem.setAccelerator(KeyStroke.getKeyStroke('S', InputEvent.CTRL_MASK));
             showSqlItem.addActionListener(aListener);
             popUpMenu.add(showSqlItem);
 
@@ -160,18 +163,21 @@ public class SQLSourceTableArea extends SQLBasicTableArea {
             String nbBundle2 = mLoc.t("PRSR001: Show Data");
             String lblShowData = Localizer.parse(nbBundle2);
             showDataItem = new JMenuItem(lblShowData, new ImageIcon(showDataUrl));
+            showDataItem.setAccelerator(KeyStroke.getKeyStroke('D',InputEvent.CTRL_MASK));
             showDataItem.addActionListener(aListener);
             popUpMenu.add(showDataItem);
 
 
             addSelectVisibleColumnsPopUpMenu(aListener);
             synchroniseItem = new JMenuItem("Refresh Metadata", new ImageIcon(synchroniseImgUrl));
+            synchroniseItem.setAccelerator(KeyStroke.getKeyStroke('R',InputEvent.CTRL_MASK));
             synchroniseItem.addActionListener(aListener);
             popUpMenu.add(synchroniseItem);
 
             String nbBundle3 = mLoc.t("PRSR001: Remount");
             String lblRemount = Localizer.parse(nbBundle3);
             remountItem = new JMenuItem(lblRemount, new ImageIcon(remountImgUrl));
+            remountItem.setAccelerator(KeyStroke.getKeyStroke('M',InputEvent.CTRL_MASK));
             remountItem.addActionListener(aListener);
             SQLObject tbl = (SQLObject) SQLSourceTableArea.this.getDataObject();
             SQLDBModelImpl impl = (SQLDBModelImpl) tbl.getParentObject();
@@ -184,12 +190,14 @@ public class SQLSourceTableArea extends SQLBasicTableArea {
             String nbBundle4 = mLoc.t("PRSR001: Extraction Condition...");
             popUpMenu.addSeparator();
             dataFilterMapItem = new JMenuItem(Localizer.parse(nbBundle4), new ImageIcon(dataFilterImgUrl));
+            dataFilterMapItem.setAccelerator(KeyStroke.getKeyStroke('F',InputEvent.CTRL_MASK));
             dataFilterMapItem.addActionListener(aListener);
             popUpMenu.add(dataFilterMapItem);
 
             // Define data validation action
             String nbBundle5 = mLoc.t("PRSR001: Data Validation...");
             dataValidationMapItem = new JMenuItem(Localizer.parse(nbBundle5), new ImageIcon(defineValidationImgUrl));
+            dataValidationMapItem.setAccelerator(KeyStroke.getKeyStroke('V',InputEvent.CTRL_MASK));
             dataValidationMapItem.addActionListener(aListener);
             popUpMenu.add(dataValidationMapItem);
 
@@ -202,12 +210,14 @@ public class SQLSourceTableArea extends SQLBasicTableArea {
             String nbBundle6 = mLoc.t("PRSR001: Properties");
             String lblProps = Localizer.parse(nbBundle6);
             propertiesItem = new JMenuItem(lblProps, new ImageIcon(propertiesUrl));
+            propertiesItem.setAccelerator(KeyStroke.getKeyStroke('P',InputEvent.CTRL_MASK));
             propertiesItem.addActionListener(aListener);
             popUpMenu.add(propertiesItem);
 
             // Auto map action
             String nbBundle7 = mLoc.t("PRSR001: Auto Map");
             autoMapItem = new JMenuItem(Localizer.parse(nbBundle7), new ImageIcon(autoMapImgUrl));
+            autoMapItem.setAccelerator(KeyStroke.getKeyStroke('A',InputEvent.CTRL_MASK));
             autoMapItem.addActionListener(aListener);
 
             popUpMenu.addSeparator();

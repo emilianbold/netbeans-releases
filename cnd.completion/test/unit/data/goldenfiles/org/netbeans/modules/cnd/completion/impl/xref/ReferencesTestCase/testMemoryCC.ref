@@ -36,25 +36,25 @@
 ==============================================================
 'Module', tokenID=identifier, offset=2217 [45:5/2217-45:11/2223]
 --OWNER:
-    FUNCTION_DEFINITION Memory(int,int,int)  [44:1/2126-47:6/2303] ReferencesTestCase/memory.cc
+    EXPR null text='Module("Memory", "generic", type, size, units'
 --RESOLVED TO:
     FUNCTION Module(const char*,const char*,int,int,int)  [54:5/2246-54:92/2333] ReferencesTestCase/module.h
 ==============================================================
 'type', tokenID=identifier, offset=2245 [45:33/2245-45:37/2249]
 --OWNER:
-    FUNCTION_DEFINITION Memory(int,int,int)  [44:1/2126-47:6/2303] ReferencesTestCase/memory.cc
+    EXPR null text='Module("Memory", "generic", type, size, units'
 --RESOLVED TO:
     VARIABLE type [44:16/2141-44:24/2149] ReferencesTestCase/memory.cc  TYPE: int TEXT=int  [44:16/2141-44:19/2144]  INIT: null  SCOPE: Memory 
 ==============================================================
 'size', tokenID=identifier, offset=2251 [45:39/2251-45:43/2255]
 --OWNER:
-    FUNCTION_DEFINITION Memory(int,int,int)  [44:1/2126-47:6/2303] ReferencesTestCase/memory.cc
+    EXPR null text='Module("Memory", "generic", type, size, units'
 --RESOLVED TO:
     VARIABLE size [44:42/2167-44:50/2175] ReferencesTestCase/memory.cc  TYPE: int TEXT=int  [44:42/2167-44:45/2170]  INIT: null  SCOPE: Memory 
 ==============================================================
 'units', tokenID=identifier, offset=2257 [45:45/2257-45:50/2262]
 --OWNER:
-    FUNCTION_DEFINITION Memory(int,int,int)  [44:1/2126-47:6/2303] ReferencesTestCase/memory.cc
+    EXPR null text='Module("Memory", "generic", type, size, units'
 --RESOLVED TO:
     VARIABLE units [44:66/2191-44:75/2200] ReferencesTestCase/memory.cc  TYPE: int TEXT=int  [44:66/2191-44:69/2194]  INIT: null  SCOPE: Memory 
 ==============================================================

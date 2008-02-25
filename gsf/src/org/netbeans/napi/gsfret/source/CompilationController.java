@@ -42,16 +42,18 @@
 package org.netbeans.napi.gsfret.source;
 
 import java.util.Map;
-import org.netbeans.api.gsf.OffsetRange;
-import org.netbeans.api.gsf.Parser;
-import org.netbeans.api.gsf.ParserResult;
-import org.netbeans.api.gsf.ColoringAttributes;
+import java.util.Set;
+import org.netbeans.modules.gsf.api.OffsetRange;
+import org.netbeans.modules.gsf.api.Parser;
+import org.netbeans.modules.gsf.api.ParserResult;
+import org.netbeans.modules.gsf.api.ColoringAttributes;
 import java.io.IOException;
+import java.util.Collection;
 import java.util.List;
 import javax.swing.text.Document;
-import org.netbeans.api.gsf.Error;
-import org.netbeans.api.gsf.Index;
-import org.netbeans.api.gsf.PositionManager;
+import org.netbeans.modules.gsf.api.Error;
+import org.netbeans.modules.gsf.api.Index;
+import org.netbeans.modules.gsf.api.PositionManager;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.modules.gsf.Language;
 import org.openide.filesystems.FileObject;
@@ -128,23 +130,6 @@ public class CompilationController extends CompilationInfo {
     }
         
     /**
-     * Returns the javac tree representing the source file.
-     *
-     * @return {@link CompilationUnitTree} the compilation unit cantaining the top level classes contained in the
-     * java source file. It may return null when the {@link CompilationController#getPhase} is lower than 
-     * {@link JavaSource.Phase#PARSED}. Before calling this method the client has to call {@link CompilationController#toPhase}
-     * with required {@link JavaSource.Phase}.
-     */
-    @Override
-    public CompilationUnitTree getCompilationUnit() {
-        return this.delegate.getCompilationUnit();
-    }
-
-    @Override
-    public ParserResult getParserResult() {
-        return this.delegate.getParserResult();
-    }
-    /**
      * Returns the content of the file represented by the {@link Source}.
      * 
      * 
@@ -158,17 +143,6 @@ public class CompilationController extends CompilationInfo {
     @Override
     public TokenHierarchy<?> getTokenHierarchy() {
         return this.delegate.getTokenHierarchy();
-    }
-
-    /**
-     * Returns the errors in the file represented by the {@link Source}.
-     * 
-     * 
-     * @return an list of {@link Diagnostic}
-     */
-    @Override
-    public List<Error/*Diagnostic*/> getDiagnostics() {
-        return this.delegate.getDiagnostics();
     }
 
 //    @Override
@@ -202,16 +176,6 @@ public class CompilationController extends CompilationInfo {
     }
 
     @Override
-    public PositionManager getPositionManager() {
-        return this.delegate.getPositionManager();
-    }
-
-    @Override
-    public Parser getParser() {
-        return this.delegate.getParser();
-    }
-
-    @Override
     public Document getDocument() throws IOException {
         return this.delegate.getDocument();
     }
@@ -222,26 +186,6 @@ public class CompilationController extends CompilationInfo {
     void setPhase(final Phase phase) {
         throw new UnsupportedOperationException ("CompilationController supports only read interface");          //NOI18N
     }   
-
-    @Override 
-    void setCompilationUnit(final CompilationUnitTree compilationUnit) {
-        throw new UnsupportedOperationException ("CompilationController supports only read interface");          //NOI18N
-    }
-
-    @Override 
-    public void setParserResult(final ParserResult parserResult) {
-        throw new UnsupportedOperationException ("CompilationController supports only read interface");          //NOI18N
-    }
-
-    @Override 
-    public void setPositionManager(final PositionManager positions) {
-        throw new UnsupportedOperationException ("CompilationController supports only read interface");          //NOI18N
-    }
-
-    @Override 
-    public void setParser(final Parser parser) {
-        throw new UnsupportedOperationException ("CompilationController supports only read interface");          //NOI18N
-    }
 
     @Override 
     public void setLanguage(final Language language) {
@@ -259,7 +203,34 @@ public class CompilationController extends CompilationInfo {
     }
     
     @Override
-    public Index getIndex() {
-        return this.delegate.getIndex();
+    public Index getIndex(String mimeType) {
+        return this.delegate.getIndex(mimeType);
     }
+
+    @Override
+    public Collection<? extends ParserResult> getEmbeddedResults(String mimeType) {
+        return this.delegate.getEmbeddedResults(mimeType);
+    }
+
+    @Override
+    public ParserResult getEmbeddedResult(String mimeType, int offset) {
+        return this.delegate.getEmbeddedResult(mimeType, offset);
+    }
+
+    @Override
+    public List<Error> getErrors() {
+        return this.delegate.getErrors();
+    }
+
+    @Override
+    public void addEmbeddingResult(String mimeType, ParserResult result) {
+        this.delegate.addEmbeddingResult(mimeType, result);
+    }
+
+    @Override
+    public Set<String> getEmbeddedMimeTypes() {
+        return this.delegate.getEmbeddedMimeTypes();
+    }
+    
+    
 }

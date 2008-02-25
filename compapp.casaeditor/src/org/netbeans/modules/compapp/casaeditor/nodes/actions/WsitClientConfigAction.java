@@ -137,7 +137,7 @@ public class WsitClientConfigAction extends NodeAction {
     protected void performAction(Node[] activatedNodes) {
         String mName = activatedNodes[0].getDisplayName();
         final WSDLEndpointNode node = ((WSDLEndpointNode) activatedNodes[0]); // .getData(); // CasaPortImpl
-        CasaPort cp = (CasaPort) node.getData();
+        final CasaPort cp = (CasaPort) node.getData();
         String ptn = ((CasaWrapperModel) cp.getModel()).getCasaPortType(cp).toString();
 
         Node[] ns = node.getChildren().getNodes();
@@ -180,7 +180,8 @@ public class WsitClientConfigAction extends NodeAction {
 
                 // todo: 08/24, we need to decide how to back out changes when CANCEL is selected..
                 if(dialogDesc.getValue() == NotifyDescriptor.OK_OPTION){
-                    // save
+                    // refresh wsit badge..
+                    ((CasaWrapperModel) cp.getModel()).refershWsitStatus(cp);
                 } else { // click on cancle..
                     try {
                         if (undoManager != null) {

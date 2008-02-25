@@ -88,13 +88,17 @@ public final class SuiteActions implements ActionProvider {
         actions.add(ProjectSensitiveActions.projectCommandAction(ActionProvider.COMMAND_DEBUG, NbBundle.getMessage(SuiteActions.class, "SUITE_ACTION_debug"), null));
         addFromLayers(actions, "Projects/Profiler_Actions_temporary"); //NOI18N
         actions.add(null);
+        NbPlatform platform = project.getPlatform(true); //true -> #96095
+        if (platform != null && platform.getHarnessVersion() >= NbPlatform.HARNESS_VERSION_61) {
+            actions.add(ProjectSensitiveActions.projectCommandAction(ActionProvider.COMMAND_TEST, NbBundle.getMessage(SuiteActions.class, "SUITE_ACTION_test"), null));
+            actions.add(null);
+        }
         actions.add(ProjectSensitiveActions.projectCommandAction("build-zip", NbBundle.getMessage(SuiteActions.class, "SUITE_ACTION_zip"), null));
         actions.add(null);
         actions.add(ProjectSensitiveActions.projectCommandAction("build-jnlp", NbBundle.getMessage(SuiteActions.class, "SUITE_ACTION_build_jnlp"), null));
         actions.add(ProjectSensitiveActions.projectCommandAction("run-jnlp", NbBundle.getMessage(SuiteActions.class, "SUITE_ACTION_run_jnlp"), null));
         actions.add(ProjectSensitiveActions.projectCommandAction("debug-jnlp", NbBundle.getMessage(SuiteActions.class, "SUITE_ACTION_debug_jnlp"), null));
         actions.add(null);
-        NbPlatform platform = project.getPlatform(true); //true -> #96095
         if (platform != null && platform.getHarnessVersion() >= NbPlatform.HARNESS_VERSION_55u1) {
             actions.add(ProjectSensitiveActions.projectCommandAction("build-mac", NbBundle.getMessage(SuiteActions.class, "SUITE_ACTION_mac"), null));
             actions.add(null);
@@ -147,7 +151,7 @@ public final class SuiteActions implements ActionProvider {
     }
     
     public String[] getSupportedActions() {
-        return new String[] {
+        List<String> actions = new ArrayList<String>(Arrays.asList(
             ActionProvider.COMMAND_BUILD,
             ActionProvider.COMMAND_CLEAN,
             ActionProvider.COMMAND_REBUILD,
@@ -163,7 +167,12 @@ public final class SuiteActions implements ActionProvider {
             ActionProvider.COMMAND_RENAME,
             ActionProvider.COMMAND_MOVE,
             ActionProvider.COMMAND_DELETE
-        };
+        ));
+        NbPlatform platform = project.getPlatform(true); //true -> #96095
+        if (platform != null && platform.getHarnessVersion() >= NbPlatform.HARNESS_VERSION_61) {
+            actions.add(ActionProvider.COMMAND_TEST);
+        }
+        return actions.toArray(new String[actions.size()]);
     }
     
     public boolean isActionEnabled(String command, Lookup context) throws IllegalArgumentException {
@@ -221,6 +230,8 @@ public final class SuiteActions implements ActionProvider {
             targetNames = new String[] {"run"}; // NOI18N
         } else if (command.equals(ActionProvider.COMMAND_DEBUG)) {
             targetNames = new String[] {"debug"}; // NOI18N
+        } else if (command.equals(ActionProvider.COMMAND_TEST)) {
+            targetNames = new String[] {"test"}; // NOI18N
         } else if (command.equals("build-zip")) { // NOI18N
             if (promptForAppName(PROMPT_FOR_APP_NAME_MODE_ZIP)) { // #65006
                 return null;

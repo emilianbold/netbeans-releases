@@ -12,8 +12,11 @@ import javax.swing.JPanel;
 import javax.swing.ListSelectionModel;
 import javax.swing.SwingUtilities;
 import javax.swing.table.DefaultTableModel;
+import net.java.hulp.i18n.Logger;
 import org.netbeans.api.db.explorer.ConnectionManager;
 import org.netbeans.api.db.explorer.DatabaseConnection;
+import org.netbeans.modules.etl.logger.Localizer;
+import org.netbeans.modules.etl.logger.LogUtil;
 import org.netbeans.modules.sql.framework.common.utils.DBExplorerUtil;
 import org.netbeans.modules.sql.framework.model.DBMetaDataFactory;
 
@@ -26,7 +29,8 @@ public final class JDBCTableVisualPanel extends JPanel {
     private DBMetaDataFactory meta = new DBMetaDataFactory();
     DatabaseConnection conn = null;
     private Map<String, String> driverMap = new HashMap<String, String>();
-
+    private static transient final Logger mLogger = LogUtil.getLogger(JDBCTableVisualPanel.class.getName());
+    private static transient final Localizer mLoc = Localizer.get();
     /**
      * Creates new form ChooseTableVisualPanel
      */
@@ -37,7 +41,9 @@ public final class JDBCTableVisualPanel extends JPanel {
         tableList.setModel(new DefaultListModel());
         connectionList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         selectButton.setEnabled(false);
+        selectButton.setMnemonic('S');
         removeButton.setEnabled(false);
+        removeButton.setMnemonic('R');
         populateConnections();
         connectionList.addMouseListener(new MouseListener() {
 
@@ -88,9 +94,10 @@ public final class JDBCTableVisualPanel extends JPanel {
         });
     }
 
+    String nbBundle2 = mLoc.t("PRSR001: Choose Connection Details");
     @Override
     public String getName() {
-        return "Choose Connection Details";
+        return Localizer.parse(nbBundle2);
     }
 
     public DefaultTableModel getTables() {
@@ -288,7 +295,8 @@ public final class JDBCTableVisualPanel extends JPanel {
             canAdvance = true;
         } else {
             removeButton.setEnabled(false);
-            error.setText("No table available for processing.");
+            String nbBundle1 = mLoc.t("PRSR001: No table available for processing.");
+            error.setText(Localizer.parse(nbBundle1));
             canAdvance = false;
         }
         Runnable run = new Runnable() {

@@ -420,12 +420,19 @@ public class GenerateCodeAction extends CookieAction
         if (assocProject instanceof UMLProject)
         {
             UMLProject umlProject = (UMLProject)assocProject;
+            UMLProjectProperties props = umlProject.getUMLProjectProperties();
         
-            if (umlProject.getUMLProjectProperties().getProjectMode()
-                .equals(UMLProject.PROJECT_MODE_ANALYSIS_STR))
+            if (props != null) 
             {
-                return false;
-            }
+                String mode = props.getProjectMode();
+                if (mode != null) 
+                {
+                    if (mode.equals(UMLProject.PROJECT_MODE_ANALYSIS_STR))
+                    {
+                        return false;
+                    }
+                }
+            } 
         }
         
         else

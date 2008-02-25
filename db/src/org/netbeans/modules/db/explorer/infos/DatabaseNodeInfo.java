@@ -71,6 +71,7 @@ import org.netbeans.modules.db.explorer.actions.DatabaseAction;
 import org.netbeans.modules.db.explorer.nodes.DatabaseNode;
 import org.netbeans.modules.db.explorer.nodes.RootNode;
 import org.openide.nodes.Children;
+import org.openide.util.Exceptions;
 
 public class DatabaseNodeInfo extends Hashtable implements Node.Cookie {
     public static final String SPECIFICATION_FACTORY = "specfactory"; //NOI18N
@@ -362,7 +363,11 @@ public class DatabaseNodeInfo extends Hashtable implements Node.Cookie {
         put(DatabaseNodeInfo.CHILDREN, charr);
         initChildren(charr);
         
-        // create sub-tree (by infos)
+        refreshNodes(charr);        
+    }
+    
+    protected void refreshNodes(Vector charr) {
+                // create sub-tree (by infos)
         try {
             final Node[] subTreeNodes = new Node[charr.size()];
             
@@ -370,8 +375,17 @@ public class DatabaseNodeInfo extends Hashtable implements Node.Cookie {
             final DatabaseNodeChildren children = (DatabaseNodeChildren) getNode().getChildren();
             
             // build refreshed sub-tree
-            for(int i = 0; i < charr.size(); i++)
-                subTreeNodes[i] = children.createNode((DatabaseNodeInfo) charr.elementAt(i));
+            for(int i = 0; i < charr.size(); i++) {
+                Object child = charr.elementAt(i);
+                if ( child instanceof DatabaseNodeInfo ) {
+                    subTreeNodes[i] = 
+                            children.createNode((DatabaseNodeInfo)child);
+                } else if ( child instanceof Node ) {
+                    subTreeNodes[i] = (Node)child;
+                } else {
+                    throw new ClassCastException(child.getClass().getName());
+                }
+            }
 
             Children.MUTEX.postWriteRequest(new Runnable() {
                 public void run() {
@@ -385,10 +399,11 @@ public class DatabaseNodeInfo extends Hashtable implements Node.Cookie {
             
             fireRefresh();
         } catch (ClassCastException ex) {
-            //PENDING
+            Exceptions.printStackTrace(ex);
         } catch (Exception ex) {
             Logger.getLogger("global").log(Level.INFO, null, ex);
         }
+
     }
 
     protected void fireRefresh() {
@@ -688,7 +703,11 @@ public class DatabaseNodeInfo extends Hashtable implements Node.Cookie {
     throws DatabaseException
     {
         Vector children = (Vector)get(CHILDREN);
-        if (children.size() > 0 && children.elementAt(0) instanceof DatabaseNodeInfo) return children;
+        if (children.size() > 0 && 
+                (children.elementAt(0) instanceof DatabaseNodeInfo ||
+                 children.elementAt(0) instanceof Node) ) {
+            return children;
+        }
 
         Vector chalt = new Vector();
         initChildren(chalt);

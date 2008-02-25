@@ -263,7 +263,7 @@ public class IcanproLogicalViewProvider implements LogicalViewProvider {
 //                null,
 //                ProjectSensitiveActions.projectCommandAction( IcanproConstants.COMMAND_REDEPLOY, bundle.getString( "LBL_RedeployAction_Name" ), null ), // NOI18N
 //                ProjectSensitiveActions.projectCommandAction( IcanproConstants.COMMAND_DEPLOY, bundle.getString( "LBL_DeployAction_Name" ), null ), // NOI18N
-                actions.add(ProjectSensitiveActions.projectCommandAction( IcanproConstants.POPULATE_CATALOG, bundle.getString( "LBL_Populate_Catalog" ), null )); // NOI18N
+//                actions.add(ProjectSensitiveActions.projectCommandAction( IcanproConstants.POPULATE_CATALOG, bundle.getString( "LBL_Populate_Catalog" ), null )); // NOI18N
                 actions.add(null);
                 actions.add(CommonProjectActions.setAsMainProjectAction());
                 actions.add(CommonProjectActions.openSubprojectsAction());

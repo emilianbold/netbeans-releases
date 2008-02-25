@@ -58,6 +58,9 @@ import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmInclude;
 import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.CsmOffsetable;
+import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
+import org.netbeans.modules.cnd.api.model.CsmProject;
+import org.netbeans.modules.cnd.api.model.CsmVariable;
 import org.netbeans.modules.cnd.api.model.services.CsmIncludeResolver;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.api.project.NativeFileItem;
@@ -74,6 +77,24 @@ public class IncludeResolverImpl extends CsmIncludeResolver {
 
     @Override
     public String getIncludeDirective(CsmFile currentFile, CsmObject item) {
+        if (CsmKindUtilities.isOffsetable(item)) {
+            CsmFile file = ((CsmOffsetable) item).getContainingFile();
+            if (file.equals(currentFile) || file.isHeaderFile()) {
+                return getIncludeDerectiveByFile(currentFile, item);
+            } else if (file.isSourceFile() && CsmKindUtilities.isGlobalVariable(item)) {
+                Collection<CsmOffsetableDeclaration> decls = file.getProject().findDeclarations(((CsmVariable) item).getUniqueName() + " (EXTERN)"); // NOI18N
+                if (!decls.isEmpty()) {
+                    return getIncludeDerectiveByFile(currentFile, decls.iterator().next());
+                }
+            }
+        } else {
+            System.err.println("not yet handled object " + item);
+        }
+        return ""; // NOI18N
+    }
+
+    // Generates "#include *" string for item
+    private String getIncludeDerectiveByFile(CsmFile currentFile, CsmObject item) {
         if (CsmKindUtilities.isOffsetable(item)) {
             if (currentFile instanceof FileImpl) {
                 NativeFileItem nativeFile = ((FileImpl) currentFile).getNativeFileItem();
@@ -124,9 +145,10 @@ public class IncludeResolverImpl extends CsmIncludeResolver {
         } else {
             System.err.println("not yet handled object " + item);
         }
-        return "";
+        return ""; // NOI18N
     }
 
+    // Returns relative path for file from list of paths
     private String getRelativePath(List<String> paths, String filePath) {
         String goodPath = ""; // NOI18N
         for (String path : paths) {
@@ -143,17 +165,56 @@ public class IncludeResolverImpl extends CsmIncludeResolver {
     public boolean isObjectVisible(CsmFile currentFile, CsmObject item) {
         if (CsmKindUtilities.isOffsetable(item)) {
             CsmFile file = ((CsmOffsetable) item).getContainingFile();
-            HashSet<CsmFile> scannedfiles = new HashSet();
-            if (!file.equals(currentFile)) {
-                Collection<CsmInclude> includes = currentFile.getIncludes();
-                if (isFileVisibleInIncludeFiles(includes, file, scannedfiles)) {
-                    return true;
+             if (!file.equals(currentFile)) {
+                if (file.isHeaderFile()) {
+                    HashSet<CsmFile> scannedfiles = new HashSet();
+                    if (isFileVisibleInIncludeFiles(currentFile.getIncludes(), file, scannedfiles)) {
+                        return true;
+                    }
+                } else if (file.isSourceFile() && CsmKindUtilities.isGlobalVariable(item)) {
+                    HashSet<CsmProject> scannedprojects = new HashSet();
+                    if (isVariableVisible(currentFile, file.getProject(), (CsmVariable) item, scannedprojects)) {
+                        return true;
+                    }
                 }
             } else {
                 return true;
             }
         } else {
             System.err.println("not yet handled object " + item);
+        }
+        return false;
+    }
+
+    // Says is variable visible in current file
+    private boolean isVariableVisible(CsmFile currentFile, CsmProject project, CsmVariable var, HashSet<CsmProject> scannedProjects) {
+        if (scannedProjects.contains(project)) {
+            return false;
+        }
+        scannedProjects.add(project);
+        if (isVariableDeclarationsVisible(currentFile, project.findDeclarations(var.getUniqueName() + " (EXTERN)"))) { // NOI18N
+            return true;
+        }
+        if (isVariableDeclarationsVisible(currentFile, project.findDeclarations(var.getUniqueName()))) {
+            return true;
+        }
+        for (CsmProject lib : project.getLibraries()) {
+            if (isVariableVisible(currentFile, lib, var, scannedProjects)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    // Says is at least one of variable declarations visible in current file
+    private boolean isVariableDeclarationsVisible(CsmFile currentFile, Collection<CsmOffsetableDeclaration> decls) {
+        for (CsmOffsetableDeclaration decl : decls) {
+            HashSet<CsmFile> scannedFiles = new HashSet();
+            if(decl.getContainingFile().equals(currentFile)) {
+                return true;
+            } else if (isFileVisibleInIncludeFiles(currentFile.getIncludes(), decl.getContainingFile(), scannedFiles)) {
+                return true;
+            }
         }
         return false;
     }

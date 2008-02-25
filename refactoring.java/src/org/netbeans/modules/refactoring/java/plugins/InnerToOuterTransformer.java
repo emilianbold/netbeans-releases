@@ -192,7 +192,7 @@ public class InnerToOuterTransformer extends RefactoringVisitor {
             for (Element superType:RetoucheUtils.getSuperTypes((TypeElement)inner, workingCopy, true)) {
                 ClassTree tree = (ClassTree) workingCopy.getTrees().getTree(superType);
             }
-        } else if (currentElement!=null && workingCopy.getTypes().isSubtype(currentElement.asType(), inner.asType()) && currentElement!=inner) {
+        } else if (refactoring.getReferenceName() != null && currentElement!=null && workingCopy.getTypes().isSubtype(currentElement.asType(), inner.asType()) && currentElement!=inner) {
                 VariableTree variable = make.Variable(make.Modifiers(Collections.<Modifier>emptySet()), refactoring.getReferenceName(), make.Type(outer.asType()), null);
                 for (Tree member:classTree.getMembers()) {
                     if (member.getKind() == Tree.Kind.METHOD) {

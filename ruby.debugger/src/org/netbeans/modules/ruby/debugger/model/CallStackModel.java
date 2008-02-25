@@ -60,9 +60,6 @@ import org.netbeans.spi.viewmodel.NodeActionsProvider;
 import org.openide.util.NbBundle;
 import org.rubyforge.debugcommons.model.RubyFrame;
 
-/**
- * @author Martin Krauskopf
- */
 public class CallStackModel implements TreeModel, NodeModel,
         NodeActionsProvider, TableModel {
     

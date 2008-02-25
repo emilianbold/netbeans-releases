@@ -13,6 +13,7 @@
     </Property>
   </Properties>
   <AuxValues>
+    <AuxValue name="FormSettings_autoSetComponentName" type="java.lang.Boolean" value="false"/>
     <AuxValue name="FormSettings_generateMnemonicsCode" type="java.lang.Boolean" value="true"/>
     <AuxValue name="FormSettings_i18nAutoMode" type="java.lang.Boolean" value="false"/>
     <AuxValue name="FormSettings_layoutCodeTarget" type="java.lang.Integer" value="2"/>
@@ -31,7 +32,7 @@
                   <Group type="102" alignment="0" attributes="1">
                       <Component id="filterLabel" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
-                      <Component id="filterTextField" pref="549" max="32767" attributes="0"/>
+                      <Component id="filterTextField" pref="550" max="32767" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="caseSensitiveFilterCheckBox" min="-2" max="-2" attributes="0"/>
                   </Group>
@@ -39,7 +40,7 @@
                   <Group type="102" alignment="0" attributes="0">
                       <Component id="filtersLabel" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
-                      <Component id="filtersToolbar" pref="580" max="32767" attributes="0"/>
+                      <Component id="filtersToolbar" pref="581" max="32767" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="closeButton" min="-2" max="-2" attributes="0"/>
                   </Group>
@@ -197,6 +198,7 @@
               <ComponentRef name="javaHierarchyModeButtonGroup"/>
             </Property>
             <Property name="icon" postCode="showSuperTypeHierarchyToggleButton.setIcon(JavaMembersAndHierarchyIcons.SUPER_TYPE_HIERARCHY_ICON);"/>
+            <Property name="mnemonic" type="int" value="83"/>
             <Property name="selected" type="boolean" value="true"/>
             <Property name="toolTipText" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
               <ResourceString bundle="org/netbeans/modules/java/navigation/Bundle.properties" key="TOOLTIP_showSuperTypeHierarchyToggleButton" replaceFormat="org.openide.util.NbBundle.getBundle({sourceFileName}.class).getString(&quot;{key}&quot;)"/>
@@ -212,6 +214,7 @@
               <ComponentRef name="javaHierarchyModeButtonGroup"/>
             </Property>
             <Property name="icon" postCode="showSubTypeHierarchyToggleButton.setIcon(JavaMembersAndHierarchyIcons.SUB_TYPE_HIERARCHY_ICON);"/>
+            <Property name="mnemonic" type="int" value="66"/>
             <Property name="toolTipText" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
               <ResourceString bundle="org/netbeans/modules/java/navigation/Bundle.properties" key="TOOLTIP_showSubTypeHierarchyToggleButton" replaceFormat="org.openide.util.NbBundle.getBundle({sourceFileName}.class).getString(&quot;{key}&quot;)"/>
             </Property>
@@ -223,6 +226,7 @@
         <Component class="javax.swing.JToggleButton" name="showFQNToggleButton">
           <Properties>
             <Property name="icon" postCode="showFQNToggleButton.setIcon(JavaMembersAndHierarchyIcons.FQN_ICON);"/>
+            <Property name="mnemonic" type="int" value="81"/>
             <Property name="toolTipText" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
               <ResourceString bundle="org/netbeans/modules/java/navigation/Bundle.properties" key="TOOLTIP_showFQNToggleButton" replaceFormat="org.openide.util.NbBundle.getBundle({sourceFileName}.class).getString(&quot;{key}&quot;)"/>
             </Property>
@@ -234,6 +238,7 @@
         <Component class="javax.swing.JToggleButton" name="showInnerToggleButton">
           <Properties>
             <Property name="icon" postCode="showInnerToggleButton.setIcon(JavaMembersAndHierarchyIcons.INNER_CLASS_ICON);"/>
+            <Property name="mnemonic" type="int" value="73"/>
             <Property name="selected" type="boolean" value="true"/>
             <Property name="toolTipText" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
               <ResourceString bundle="org/netbeans/modules/java/navigation/Bundle.properties" key="TOOLTIP_showInnerToggleButton" replaceFormat="org.openide.util.NbBundle.getBundle({sourceFileName}.class).getString(&quot;{key}&quot;)"/>
@@ -246,6 +251,7 @@
         <Component class="javax.swing.JButton" name="expandAllButton">
           <Properties>
             <Property name="icon" postCode="expandAllButton.setIcon(JavaMembersAndHierarchyIcons.EXPAND_ALL_ICON);"/>
+            <Property name="mnemonic" type="int" value="69"/>
             <Property name="toolTipText" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
               <ResourceString bundle="org/netbeans/modules/java/navigation/Bundle.properties" key="TOOLTIP_expandAll" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
             </Property>

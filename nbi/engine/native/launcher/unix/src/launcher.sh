@@ -237,7 +237,7 @@ parseCommandLineArguments() {
 	done
 }
 
-setLauncherLocale() {        index=0
+setLauncherLocale() {
 	if [ 0 -eq $LOCAL_OVERRIDDEN ] ; then		
         	SYSTEM_LOCALE="$LANG"
 		debug "Setting initial launcher locale from the system : $SYSTEM_LOCALE"
@@ -269,8 +269,8 @@ setLauncherLocale() {        index=0
   			# the less the length the less the difference and more coincedence
 
                         comp=`echo "$SYSTEM_LOCALE" | sed -e "s/^${arg}//"`				
-			length1=`awk 'END{ print length(a) }' a="$comp" < /dev/null`
-			length2=`awk 'END{ print length(b) }' b="$LAUNCHER_LOCALE" < /dev/null`
+			length1=`getStringLength "$comp"`
+                        length2=`getStringLength "$LAUNCHER_LOCALE"`
                         if [ $length1 -lt $length2 ] ; then	
 				# more coincidence between $SYSTEM_LOCALE and $arg than between $SYSTEM_LOCALE and $arg
                                 compare=`ifLess "$comp" "$LAUNCHER_LOCALE"`
@@ -339,6 +339,11 @@ ifNumber()
 	fi 
 	echo $result
 }
+getStringLength() {
+    strlength=`awk 'END{ print length(a) }' a="$1" < /dev/null`
+    echo $strlength
+}
+
 resolveRelativity() {
 	if [ 1 -eq `ifPathRelative "$1"` ] ; then
 		echo "$CURRENT_DIRECTORY"/"$1" | sed 's/\"//g' 2>/dev/null
@@ -646,6 +651,13 @@ resolveResourceSize() {
     	echo "$resourceSize"
 }
 
+resolveResourceMd5() {
+	resourcePrefix="$1"
+	resourceVar="$""$resourcePrefix""_MD5"
+	resourceMd5=`eval "echo \"$resourceVar\""`
+    	echo "$resourceMd5"
+}
+
 resolveResourceType() {
 	resourcePrefix="$1"
 	resourceVar="$""$resourcePrefix""_TYPE"
@@ -663,8 +675,11 @@ extractResource() {
                 resourceSize=`resolveResourceSize "$resourcePrefix"`
 		debug "... resource size=$resourceSize"
             	resourcePath=`resolveResourcePath "$resourcePrefix"`
-	    	debug "... resource path=$resourcePath"		
+	    	debug "... resource path=$resourcePath"
             	extractFile "$resourceSize" "$resourcePath"
+                resourceMd5=`resolveResourceMd5 "$resourcePrefix"`
+	    	debug "... resource md5=$resourceMd5"
+                checkMd5 "$resourcePath" "$resourceMd5"
 		debug "... done"
 	fi
 	debug "... extracting resource finished"	
@@ -722,7 +737,7 @@ processJarsClasspath() {
 extractFile() {
         start=$LAUNCHER_TRACKING_SIZE
         size=$1 #absolute size
-        name=$2 #relative part
+        name="$2" #relative part        
         fullBlocks=`expr $size / $FILE_BLOCK_SIZE`
         fullBlocksSize=`expr "$FILE_BLOCK_SIZE" \* "$fullBlocks"`
         oneBlocks=`expr  $size - $fullBlocksSize`
@@ -757,9 +772,62 @@ extractFile() {
 		LAUNCHER_TRACKING_SIZE=`expr "$LAUNCHER_TRACKING_SIZE" + 1`
 
 		LAUNCHER_TRACKING_SIZE_BYTES=`expr "$LAUNCHER_TRACKING_SIZE_BYTES" + "$oneBlocks"`
-        fi
+        fi        
 }
 
+md5_program=""
+no_md5_program_id="no_md5_program"
+
+initMD5program() {
+    if [ -z "$md5_program" ] ; then 
+        type digest >> /dev/null 2>&1
+        if [ 0 -eq $? ] ; then
+            md5_program="digest -a md5"
+        else
+            type md5sum >> /dev/null 2>&1
+            if [ 0 -eq $? ] ; then
+                md5_program="md5sum"
+            else 
+                type gmd5sum >> /dev/null 2>&1
+                if [ 0 -eq $? ] ; then
+                    md5_program="gmd5sum"
+                else
+                    type md5 >> /dev/null 2>&1
+                    if [ 0 -eq $? ] ; then
+                        md5_program="md5 -q"
+                    else 
+                        md5_program="$no_md5_program_id"
+                    fi
+                fi
+            fi
+        fi
+        debug "... program to check: $md5_program"
+    fi
+}
+
+checkMd5() {
+     name="$1"
+     md5="$2"     
+     if [ 32 -eq `getStringLength "$md5"` ] ; then
+         #do MD5 check         
+         initMD5program            
+         if [ 0 -eq `ifEquals "$md5_program" "$no_md5_program_id"` ] ; then
+            debug "... check MD5 of file : $name"           
+            debug "... expected md5: $md5"
+            realmd5=`$md5_program "$name" 2>/dev/null | sed "s/ .*//g"`
+            debug "... real md5 : $realmd5"
+            if [ 32 -eq `getStringLength "$realmd5"` ] ; then
+                if [ 0 -eq `ifEquals "$md5" "$realmd5"` ] ; then
+                        debug "... integration check FAILED"
+			message "$MSG_ERROR_INTEGRITY" `normalizePath "$LAUNCHER_FULL_PATH"`
+			exitProgram $ERROR_INTEGRITY
+                fi
+            else
+                debug "... looks like not the MD5 sum"
+            fi
+         fi
+     fi   
+}
 searchJavaEnvironment() {
      if [ -z "$LAUNCHER_JAVA_EXE" ] ; then
 		    # search java in the environment

@@ -51,9 +51,6 @@ import org.netbeans.modules.ruby.debugger.EditorUtil;
 import org.netbeans.modules.ruby.debugger.model.CallSite;
 import org.openide.util.RequestProcessor;
 
-/**
- * @author Martin Krauskopf
- */
 public final class CallStackAnnotation {
 
     private static Map<CallSite, DebuggerAnnotation[]> stackAnnotations;

@@ -74,12 +74,9 @@ import org.netbeans.modules.cnd.debugger.gdb.IOManager;
 public class BreakpointOutput extends LazyActionsManagerListener
                 implements DebuggerManagerListener, GdbBreakpointListener, PropertyChangeListener {
 
-    private static final Pattern backslashEscapePattern = Pattern.compile("\\\\"); // NOI18N
-    private static final Pattern threadNamePattern = Pattern.compile("\\{threadName\\}"); // NOI18N
     private static final Pattern fileNamePattern = Pattern.compile("\\{fileName\\}"); // NOI18N
     private static final Pattern functionNamePattern = Pattern.compile("\\{functionName\\}"); // NOI18N
     private static final Pattern lineNumberPattern = Pattern.compile("\\{lineNumber\\}"); // NOI18N
-    private static final Pattern expressionPattern = Pattern.compile("\\{=(.*?)\\}"); // NOI18N
 
     private IOManager               ioManager;
     private GdbDebugger             debugger;
@@ -90,7 +87,7 @@ public class BreakpointOutput extends LazyActionsManagerListener
     public BreakpointOutput(ContextProvider contextProvider) {
         this.contextProvider = contextProvider;
         this.debugger = (GdbDebugger) contextProvider.lookupFirst(null, GdbDebugger.class);
-        debugger.addPropertyChangeListener(debugger.PROP_STATE, this);
+        debugger.addPropertyChangeListener(GdbDebugger.PROP_STATE, this);
         hookBreakpoints();
         DebuggerManager.getDebuggerManager().addDebuggerListener(DebuggerManager.PROP_BREAKPOINTS, this);
     }
@@ -120,7 +117,7 @@ public class BreakpointOutput extends LazyActionsManagerListener
                 return;
             }
         }
-        if (event.getConditionResult() == event.CONDITION_FALSE) {
+        if (event.getConditionResult() == GdbBreakpointEvent.CONDITION_FALSE) {
             return;
         }
         GdbBreakpoint breakpoint = (GdbBreakpoint) event.getSource();
@@ -170,8 +167,8 @@ public class BreakpointOutput extends LazyActionsManagerListener
     
     public void propertyChange(PropertyChangeEvent evt) {
         synchronized (lock) {
-            if (debugger == null || evt.getPropertyName() != debugger.PROP_STATE ||
-                        debugger.getState() != debugger.STATE_RUNNING) {
+            if (debugger == null || !evt.getPropertyName().equals(GdbDebugger.PROP_STATE) ||
+                        !debugger.getState().equals(GdbDebugger.STATE_RUNNING)) {
                 return;
             }
         }
@@ -196,13 +193,14 @@ public class BreakpointOutput extends LazyActionsManagerListener
         if (o instanceof LineBreakpoint) {
             // replace $ by \$
             LineBreakpoint lpb = (LineBreakpoint) o;
-            String name = basename(lpb.getURL());
+            String name = lpb.getPath();
             String lnum = Integer.toString(lpb.getLineNumber());
             printText = fileNamePattern.matcher(printText).replaceAll(name);
             printText = lineNumberPattern.matcher(printText).replaceAll(lnum); // NOI18N
-        } else {
-            printText = fileNamePattern.matcher(printText).replaceAll("?"); // NOI18N
-            printText = lineNumberPattern.matcher(printText).replaceAll("-1"); // NOI18N
+        } else if (o instanceof FunctionBreakpoint) {
+            FunctionBreakpoint fbp = (FunctionBreakpoint) o;
+            String functionName = fbp.getFunctionName();
+            printText = functionNamePattern.matcher(printText).replaceAll(functionName);
 	}
         Throwable thr = event.getConditionException();
         if (thr != null) {
@@ -210,23 +208,10 @@ public class BreakpointOutput extends LazyActionsManagerListener
         }
         return printText;
     }
-    
-    private String basename(String url) {
-        int idx = url.lastIndexOf(File.separatorChar);
-        String name;
-        
-        if (idx > 0) {
-            name = url.substring(idx + 1);
-        } else {
-            name = url.substring(5);
-        }
-        return name;
-    }
 
     private void lookupIOManager () {
-        List lamls = contextProvider.lookup 
-            (null, LazyActionsManagerListener.class);
-        for (Iterator i = lamls.iterator (); i.hasNext ();) {
+        List lamls = contextProvider.lookup(null, LazyActionsManagerListener.class);
+        for (Iterator i = lamls.iterator(); i.hasNext();) {
             Object o = i.next();
             if (o instanceof DebuggerOutput) {
                 ioManager = ((DebuggerOutput) o).getIOManager();

@@ -44,18 +44,12 @@
 <!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.1//EN" "http://www.netbeans.org/dtds/filesystem-1_1.dtd">
 <filesystem>
     
-    <folder name="Templates">
-        <folder name="WebServices">
-            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.websvc.saas.services.strikeiron.Bundle"/>
-            <file name="profile.properties" url="/org/netbeans/modules/websvc/saas/services/strikeiron/resources/profile.properties">
-                <attr name="position" intvalue="0"/>
-            </file>
-        </folder>
-    </folder>
-    
     <folder name="SaasServices">
         <folder name="StrikeIron">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.websvc.saas.services.strikeiron.Bundle"/>
+            <attr name="icon16" stringvalue="/org/netbeans/modules/websvc/saas/services/strikeiron/resources/strikeiron16.png"/>
+            <attr name="icon32" stringvalue="/org/netbeans/modules/websvc/saas/services/strikeiron/resources/strikeiron32.png"/>
+            <file name="profile.properties" url="/org/netbeans/modules/websvc/saas/services/strikeiron/resources/profile.properties"/>
             <file name="AddressVerification40.xml" url="/org/netbeans/modules/websvc/saas/services/strikeiron/resources/AddressVerification40.xml" />
             <file name="EmailVerify30.xml" url="/org/netbeans/modules/websvc/saas/services/strikeiron/resources/EmailVerify30.xml" />
             <file name="IPAddressLookup.xml" url="/org/netbeans/modules/websvc/saas/services/strikeiron/resources/IPAddressLookup.xml" />

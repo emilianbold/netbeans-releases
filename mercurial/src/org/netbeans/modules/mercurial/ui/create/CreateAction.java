@@ -45,6 +45,7 @@ import java.util.Calendar;
 import java.util.logging.Level;
 import org.netbeans.modules.mercurial.HgException;
 import org.netbeans.modules.mercurial.Mercurial;
+import org.netbeans.modules.mercurial.OutputLogger;
 import org.netbeans.modules.mercurial.util.HgUtils;
 import org.netbeans.modules.versioning.spi.VCSContext;
 import org.netbeans.modules.versioning.util.Utils;
@@ -149,15 +150,17 @@ public class CreateAction extends ContextAction {
         File projFile = HgUtils.getProjectFile(proj);
         
         if (projFile == null) {
-            HgUtils.outputMercurialTabInRed( NbBundle.getMessage(CreateAction.class,"MSG_CREATE_TITLE")); // NOI18N
-            HgUtils.outputMercurialTabInRed( NbBundle.getMessage(CreateAction.class,"MSG_CREATE_TITLE_SEP")); // NOI18N
-            HgUtils.outputMercurialTabInRed(
+            OutputLogger logger = OutputLogger.getLogger(Mercurial.MERCURIAL_OUTPUT_TAB_TITLE);
+            logger.outputInRed( NbBundle.getMessage(CreateAction.class,"MSG_CREATE_TITLE")); // NOI18N
+            logger.outputInRed( NbBundle.getMessage(CreateAction.class,"MSG_CREATE_TITLE_SEP")); // NOI18N
+            logger.outputInRed(
                     NbBundle.getMessage(CreateAction.class, "MSG_CREATE_NOT_SUPPORTED_INVIEW_INFO")); // NOI18N
-            HgUtils.outputMercurialTab(""); // NOI18N
+            logger.output(""); // NOI18N
             JOptionPane.showMessageDialog(null,
                     NbBundle.getMessage(CreateAction.class, "MSG_CREATE_NOT_SUPPORTED_INVIEW"),// NOI18N
                     NbBundle.getMessage(CreateAction.class, "MSG_CREATE_NOT_SUPPORTED_INVIEW_TITLE"),// NOI18N
                     JOptionPane.INFORMATION_MESSAGE);
+            logger.closeLog();
             return;
         }
         String projName = HgProjectUtils.getProjectName(projFile);
@@ -166,13 +169,6 @@ public class CreateAction extends ContextAction {
         root = getCommonAncestor(files);
         root = getCommonAncestor(root, projFile);
         if (root == null) return;
-        
-        HgUtils.outputMercurialTabInRed(
-                NbBundle.getMessage(CreateAction.class,
-                "MSG_CREATE_TITLE")); // NOI18N
-        HgUtils.outputMercurialTabInRed(
-                NbBundle.getMessage(CreateAction.class,
-                "MSG_CREATE_TITLE_SEP")); // NOI18N
         
         final File rootToManage = root;
         final String prjName = projName;
@@ -183,10 +179,18 @@ public class CreateAction extends ContextAction {
             public void perform() {
                 
                 try {
-                    HgUtils.outputMercurialTab(
+                    OutputLogger logger = getLogger();
+                    logger.outputInRed(
+                            NbBundle.getMessage(CreateAction.class,
+                            "MSG_CREATE_TITLE")); // NOI18N
+                    logger.outputInRed(
+                            NbBundle.getMessage(CreateAction.class,
+                            "MSG_CREATE_TITLE_SEP")); // NOI18N
+        
+                    logger.output(
                             NbBundle.getMessage(CreateAction.class,
                             "MSG_CREATE_INIT", prjName, rootToManage)); // NOI18N
-                    HgCommand.doCreate(rootToManage);
+                    HgCommand.doCreate(rootToManage, logger);
                     hg.versionedFilesChanged();
                     hg.refreshAllAnnotations();      
                 } catch (HgException ex) {
@@ -201,6 +205,7 @@ public class CreateAction extends ContextAction {
         
         HgProgressSupport supportAdd = new HgProgressSupport() {
             public void perform() {
+                OutputLogger logger = getLogger();
                 try {
                     File[] files = HgUtils.getProjectRootFiles(proj);
                     FileStatusCache cache = hg.getFileStatusCache();
@@ -212,27 +217,27 @@ public class CreateAction extends ContextAction {
                         repositoryFiles = HgCommand.getUnknownStatus(rootToManage, rootFile);
                         Calendar end = Calendar.getInstance();
                         Mercurial.LOG.log(Level.FINE, "getUnknownStatus took {0} millisecs", end.getTimeInMillis() - start.getTimeInMillis()); // NOI18N
-                        HgUtils.outputMercurialTab(
+                        logger.output(
                                 NbBundle.getMessage(CreateAction.class,
                                 "MSG_CREATE_ADD", repositoryFiles.keySet().size(), rootFile.getAbsolutePath())); // NOI18N
                         start = Calendar.getInstance(); cache.addToCache(repositoryFiles.keySet());
                         end = Calendar.getInstance();
                         Mercurial.LOG.log(Level.FINE, "addUnknownsToCache took {0} millisecs", end.getTimeInMillis() - start.getTimeInMillis()); // NOI18N
-                        if (repositoryFiles.keySet().size() < HgUtils.MAX_LINES_TO_PRINT) {
+                        if (repositoryFiles.keySet().size() < OutputLogger.MAX_LINES_TO_PRINT) {
                             for(File f: repositoryFiles.keySet()){
-                                HgUtils.outputMercurialTab("\t" + f.getAbsolutePath()); // NOI18N
+                                logger.output("\t" + f.getAbsolutePath()); // NOI18N
                             }
                         }
                     }
                     HgUtils.createIgnored(rootToManage);
-                    HgUtils.outputMercurialTab(""); // NOI18N
-                    HgUtils.outputMercurialTabInRed(NbBundle.getMessage(CreateAction.class, "MSG_CREATE_DONE_WARNING")); // NOI18N
+                    logger.output(""); // NOI18N
+                    logger.outputInRed(NbBundle.getMessage(CreateAction.class, "MSG_CREATE_DONE_WARNING")); // NOI18N
                 } catch (HgException ex) {
                     NotifyDescriptor.Exception e = new NotifyDescriptor.Exception(ex);
                     DialogDisplayer.getDefault().notifyLater(e);
                 } finally {
-                    HgUtils.outputMercurialTabInRed(NbBundle.getMessage(CreateAction.class, "MSG_CREATE_DONE")); // NOI18N
-                    HgUtils.outputMercurialTab(""); // NOI18N
+                    logger.outputInRed(NbBundle.getMessage(CreateAction.class, "MSG_CREATE_DONE")); // NOI18N
+                    logger.output(""); // NOI18N
                 }
             }
         };

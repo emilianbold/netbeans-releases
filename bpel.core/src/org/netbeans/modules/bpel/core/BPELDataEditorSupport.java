@@ -94,7 +94,6 @@ public class BPELDataEditorSupport extends DataEditorSupport implements
         return (QuietUndoManager) getUndoRedo();
     }
 
-    // vlv
     public UndoRedo.Manager getUndoRedoManager() {
       return getUndoManager();
     }

@@ -147,22 +147,35 @@ is divided into following sections:
                         <fileset dir="${{module.install.dir}}/ext/etlpro"><include name="*.jar" /></fileset>
                         <fileset dir="${{module.install.dir}}/ext/etl"><include name="*.jar" /></fileset>                                                
                         <fileset dir="${{module.install.dir}}/ext"><include name="*.jar" /></fileset>
-                        <fileset dir="${{netbeans.home}}/../ide8/modules"><include name="*.jar" /></fileset>
-                        <fileset dir="${{netbeans.home}}/../platform7/modules"><include name="*.jar" /></fileset>
-                        <fileset dir="${{netbeans.home}}/../platform7/core"><include name="*.jar" /></fileset>
-                        <fileset dir="${{netbeans.home}}/../platform7/lib"><include name="*.jar" /></fileset>
+                        <fileset dir="${{netbeans.home}}/../soa2/modules"><include name="*.jar" /></fileset>
+                        <fileset dir="${{netbeans.home}}/../ide9/modules"><include name="*.jar" /></fileset>
+                        <fileset dir="${{netbeans.home}}/../platform8/modules"><include name="*.jar" /></fileset>
+                        <fileset dir="${{netbeans.home}}/../platform8/core"><include name="*.jar" /></fileset>
+                        <fileset dir="${{netbeans.home}}/../platform8/lib"><include name="*.jar" /></fileset>
                     </classpath>
                 </taskdef>   
-                <taskdef name="generate-schema" classname="org.netbeans.modules.etl.project.anttasks.EViewDesignTime">
+                <taskdef name="generate-schema" classname="org.netbeans.modules.etl.project.anttasks.MasterIndexDesignTime">
                     <classpath>
                         <fileset dir="${{module.install.dir}}"><include name="*.jar" /></fileset>
                         <fileset dir="${{module.install.dir}}/ext/etlpro"><include name="*.jar" /></fileset>
                         <fileset dir="${{module.install.dir}}/ext/etl"><include name="*.jar" /></fileset>                                                
                         <fileset dir="${{module.install.dir}}/ext"><include name="*.jar" /></fileset>
-                        <fileset dir="${{netbeans.home}}/../ide8/modules"><include name="*.jar" /></fileset>
-                        <fileset dir="${{netbeans.home}}/../platform7/modules"><include name="*.jar" /></fileset>
-                        <fileset dir="${{netbeans.home}}/../platform7/core"><include name="*.jar" /></fileset>
-                        <fileset dir="${{netbeans.home}}/../platform7/lib"><include name="*.jar" /></fileset>
+                        <fileset dir="${{netbeans.home}}/../ide9/modules"><include name="*.jar" /></fileset>
+                        <fileset dir="${{netbeans.home}}/../platform8/modules"><include name="*.jar" /></fileset>
+                        <fileset dir="${{netbeans.home}}/../platform8/core"><include name="*.jar" /></fileset>
+                        <fileset dir="${{netbeans.home}}/../platform8/lib"><include name="*.jar" /></fileset>
+                    </classpath>
+                </taskdef>
+                 <taskdef name="bulk-loader" classname="org.netbeans.modules.etl.project.anttasks.ETLBulkLoader">
+                    <classpath>
+                        <fileset dir="${{module.install.dir}}"><include name="*.jar" /></fileset>
+                        <fileset dir="${{module.install.dir}}/ext/etlpro"><include name="*.jar" /></fileset>
+                        <fileset dir="${{module.install.dir}}/ext/etl"><include name="*.jar" /></fileset>                                                
+                        <fileset dir="${{module.install.dir}}/ext"><include name="*.jar" /></fileset>
+                        <fileset dir="${{netbeans.home}}/../ide9/modules"><include name="*.jar" /></fileset>
+                        <fileset dir="${{netbeans.home}}/../platform8/modules"><include name="*.jar" /></fileset>
+                        <fileset dir="${{netbeans.home}}/../platform8/core"><include name="*.jar" /></fileset>
+                        <fileset dir="${{netbeans.home}}/../platform8/lib"><include name="*.jar" /></fileset>
                     </classpath>
                 </taskdef>
             </target>
@@ -437,9 +450,13 @@ is divided into following sections:
                 <xsl:attribute name="depends">init</xsl:attribute>
                 <!--echo message="SAMPLE" /--> 
                 <generate-schema/>      
-                <!--taskdef name="generate-schema" classname="org.netbeans.modules.etl.project.anttasks.EViewDesignTime">                        
+                <!--taskdef name="generate-schema" classname="org.netbeans.modules.etl.project.anttasks.MasterIndexDesignTime">                        
                 </taskdef-->
                 <!--echo message="SAMPLE COMPLETED" /--> 
+            </target>
+             <target name="etl_bulkloader">      
+                <xsl:attribute name="depends">init</xsl:attribute>
+                <bulk-loader/> 
             </target>
             
             <target name="pre-dist">

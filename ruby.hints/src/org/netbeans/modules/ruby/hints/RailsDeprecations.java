@@ -39,8 +39,8 @@ import org.jruby.ast.CallNode;
 import org.jruby.ast.Node;
 import org.jruby.ast.NodeTypes;
 import org.jruby.ast.types.INameNode;
-import org.netbeans.api.gsf.CompilationInfo;
-import org.netbeans.api.gsf.OffsetRange;
+import org.netbeans.modules.gsf.api.CompilationInfo;
+import org.netbeans.modules.gsf.api.OffsetRange;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.ruby.AstPath;
@@ -208,7 +208,7 @@ public class RailsDeprecations implements AstRule {
                 
                 // Add a warning - you're using a deprecated field. Use the
                 // method/attribute instead!
-                String message = NbBundle.getMessage(RailsDeprecations.class, "DeprecatedMethodUse", name, deprecatedMethods.get(name));
+                String message = NbBundle.getMessage(RailsDeprecations.class, "DeprecatedRailsMethodUse", name, deprecatedMethods.get(name));
                 addFix(info, node, result, message);
             }
         }

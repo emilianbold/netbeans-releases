@@ -2,7 +2,9 @@
 
 <Form version="1.5" maxVersion="1.5" type="org.netbeans.modules.form.forminfo.JPanelFormInfo">
   <Properties>
-    <Property name="name" type="java.lang.String" value="XML Model Generation Options" noResource="true"/>
+    <Property name="name" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+      <ResourceString bundle="org/netbeans/modules/xml/wizard/Bundle.properties" key="PROP_xml_content_panel_name" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+    </Property>
   </Properties>
   <AuxValues>
     <AuxValue name="FormSettings_autoResourcing" type="java.lang.Integer" value="1"/>
@@ -26,7 +28,7 @@
                   <Group type="102" alignment="0" attributes="0">
                       <Group type="103" groupAlignment="0" attributes="0">
                           <Group type="102" alignment="0" attributes="0">
-                              <Component id="attributes" max="32767" attributes="0"/>
+                              <Component id="attributes" pref="191" max="32767" attributes="0"/>
                               <EmptySpace min="523" pref="523" max="523" attributes="0"/>
                           </Group>
                           <Group type="102" alignment="0" attributes="0">
@@ -36,49 +38,49 @@
                           <Group type="102" alignment="0" attributes="0">
                               <Group type="103" groupAlignment="0" attributes="0">
                                   <Group type="102" alignment="0" attributes="0">
-                                      <Component id="jLabel7" max="32767" attributes="0"/>
+                                      <Component id="jLabel7" pref="79" max="32767" attributes="0"/>
                                       <EmptySpace min="46" pref="46" max="46" attributes="0"/>
                                   </Group>
                                   <Group type="102" alignment="0" attributes="0">
-                                      <Component id="jLabel5" max="32767" attributes="0"/>
+                                      <Component id="jLabel5" pref="95" max="32767" attributes="0"/>
                                       <EmptySpace min="30" pref="30" max="30" attributes="0"/>
                                   </Group>
-                                  <Component id="jLabel3" alignment="0" max="32767" attributes="0"/>
+                                  <Component id="jLabel3" alignment="0" pref="125" max="32767" attributes="0"/>
                               </Group>
                               <EmptySpace min="-2" pref="7" max="-2" attributes="0"/>
                               <Group type="103" groupAlignment="0" attributes="0">
                                   <Group type="102" alignment="0" attributes="0">
                                       <EmptySpace min="-2" pref="17" max="-2" attributes="0"/>
-                                      <Component id="rootElementComboBox" max="32767" attributes="0"/>
+                                      <Component id="rootElementComboBox" pref="65" max="32767" attributes="0"/>
                                       <EmptySpace min="500" pref="500" max="500" attributes="0"/>
                                   </Group>
                                   <Group type="102" alignment="0" attributes="0">
                                       <EmptySpace min="-2" pref="42" max="-2" attributes="0"/>
                                       <Group type="103" groupAlignment="0" attributes="0">
-                                          <Component id="depthSpinner" max="32767" attributes="0"/>
-                                          <Component id="occurSpinner" max="32767" attributes="0"/>
+                                          <Component id="depthSpinner" pref="62" max="32767" attributes="0"/>
+                                          <Component id="occurSpinner" pref="62" max="32767" attributes="0"/>
                                       </Group>
                                       <EmptySpace min="-2" pref="66" max="-2" attributes="0"/>
                                       <Group type="103" groupAlignment="0" attributes="0">
                                           <Group type="102" alignment="0" attributes="0">
-                                              <Component id="jLabel4" max="32767" attributes="0"/>
+                                              <Component id="jLabel4" pref="398" max="32767" attributes="0"/>
                                               <EmptySpace min="14" pref="14" max="14" attributes="0"/>
                                           </Group>
-                                          <Component id="jLabel6" alignment="0" max="32767" attributes="0"/>
+                                          <Component id="jLabel6" alignment="0" pref="412" max="32767" attributes="0"/>
                                       </Group>
                                   </Group>
                               </Group>
                           </Group>
                           <Group type="102" alignment="0" attributes="0">
-                              <Component id="titleLabel" max="32767" attributes="0"/>
+                              <Component id="titleLabel" pref="373" max="32767" attributes="0"/>
                               <EmptySpace min="341" pref="341" max="341" attributes="0"/>
                           </Group>
                           <Group type="102" alignment="0" attributes="0">
-                              <Component id="jLabel1" max="32767" attributes="0"/>
+                              <Component id="jLabel1" pref="91" max="32767" attributes="0"/>
                               <EmptySpace min="623" pref="623" max="623" attributes="0"/>
                           </Group>
                           <Group type="102" alignment="0" attributes="0">
-                              <Component id="jLabel2" max="32767" attributes="0"/>
+                              <Component id="jLabel2" pref="113" max="32767" attributes="0"/>
                               <EmptySpace min="601" pref="601" max="601" attributes="0"/>
                           </Group>
                       </Group>
@@ -150,6 +152,14 @@
           <ResourceString bundle="org/netbeans/modules/xml/wizard/Bundle.properties" key="XMLContentPanel.attributes.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
       </Properties>
+      <AccessibilityProperties>
+        <Property name="AccessibleContext.accessibleName" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/xml/wizard/Bundle.properties" key="XMLContentPanel.attributes.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+        <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/xml/wizard/Bundle.properties" key="XMLContentPanel.attributes.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+      </AccessibilityProperties>
       <Events>
         <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="attributesActionPerformed"/>
       </Events>
@@ -163,6 +173,14 @@
           <ResourceString bundle="org/netbeans/modules/xml/wizard/Bundle.properties" key="XMLContentPanel.elements.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
       </Properties>
+      <AccessibilityProperties>
+        <Property name="AccessibleContext.accessibleName" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/xml/wizard/Bundle.properties" key="XMLContentPanel.elements.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+        <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/xml/wizard/Bundle.properties" key="XMLContentPanel.elements.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+      </AccessibilityProperties>
       <Events>
         <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="elementsActionPerformed"/>
       </Events>

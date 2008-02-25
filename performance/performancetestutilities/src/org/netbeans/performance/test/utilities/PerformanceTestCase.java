@@ -391,7 +391,7 @@ public abstract class PerformanceTestCase extends JellyTestCase implements NbPer
 
         dumpLog();
         if(exceptionDuringMeasurement!=null)
-            throw new Error("Exception {" + exceptionDuringMeasurement+ "}rises during measurement, look at appropriate log file for stack trace(s).");
+            throw new Error("Exception {" + exceptionDuringMeasurement+ "} rises during measurement, look at appropriate log file for stack trace(s).");
 
         compare(measuredTime);
 
@@ -864,7 +864,7 @@ public abstract class PerformanceTestCase extends JellyTestCase implements NbPer
         long result = end.getTimeMillis() - start.getTimeMillis();
         
         if (result < 0 || start.getTimeMillis() == 0) {
-            throw new IllegalStateException("Measuring failed, because we start["+start.getTimeMillis()+"] > end["+end.getTimeMillis()+"] or start=0");
+            throw new IllegalStateException("Measuring failed, because we start ["+start.getTimeMillis()+"] > end ["+end.getTimeMillis()+"] or start=0");
         }
         return result;
     }

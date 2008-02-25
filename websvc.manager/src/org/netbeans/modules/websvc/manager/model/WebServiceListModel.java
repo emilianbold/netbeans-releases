@@ -54,7 +54,6 @@ import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
 import org.netbeans.modules.websvc.manager.WebServiceManager;
 import org.netbeans.modules.websvc.manager.WebServicePersistenceManager;
-import org.netbeans.modules.websvc.manager.ui.AddWebServiceDlg;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileAttributeEvent;
@@ -401,14 +400,18 @@ public class WebServiceListModel {
         return initialized;
     }
     
-    public Task addWebService(final String wsdl, final String packageName, final String groupId) {
+    public WebServiceData addWebService(final String wsdl, final String packageName, final String groupId) {
+        final WebServiceData wsData = new WebServiceData(wsdl, groupId);
+        wsData.setPackageName(packageName);
+        wsData.setResolved(false);
+
         // Run the add W/S asynchronously
         Runnable addWsRunnable = new Runnable() {
             public void run() {
                 boolean addError = false;
                 Exception exc = null;
                 try {
-                    WebServiceManager.getInstance().addWebService(wsdl, packageName, groupId);
+                    WebServiceManager.getInstance().addWebService(wsData, true);
                 } catch (IOException ex) {
                     addError = true;
                     exc = ex;
@@ -419,14 +422,14 @@ public class WebServiceListModel {
                     SwingUtilities.invokeLater(new Runnable() {
                         public void run() {
                             if (exception instanceof FileNotFoundException) {
-                                String errorMessage = NbBundle.getMessage(AddWebServiceDlg.class, "INVALID_URL");
+                                String errorMessage = NbBundle.getMessage(WebServiceListModel.class, "INVALID_URL");
                                 NotifyDescriptor d = new NotifyDescriptor.Message(errorMessage);
                                 DialogDisplayer.getDefault().notify(d);
                             } else {
                                 String cause = (exception != null) ? exception.getLocalizedMessage() : null;
                                 String excString = (exception != null) ? exception.getClass().getName() + " - " + cause : null;
 
-                                String errorMessage = NbBundle.getMessage(AddWebServiceDlg.class, "WS_ADD_ERROR") + "\n\n" + excString; // NOI18N
+                                String errorMessage = NbBundle.getMessage(WebServiceListModel.class, "WS_ADD_ERROR") + "\n\n" + excString; // NOI18N
                                 NotifyDescriptor d = new NotifyDescriptor.Message(errorMessage);
                                 DialogDisplayer.getDefault().notify(d);
                             }
@@ -435,9 +438,8 @@ public class WebServiceListModel {
                 }
             }
         };
-        
-        return WebServiceManager.getInstance().getRequestProcessor().post(addWsRunnable);
-        
+        WebServiceManager.getInstance().getRequestProcessor().post(addWsRunnable);
+        return wsData;
     }
 
     private static final class RestFolderListener implements FileChangeListener {

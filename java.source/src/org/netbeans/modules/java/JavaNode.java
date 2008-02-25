@@ -45,24 +45,23 @@ import java.awt.Image;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
-import java.lang.ref.Reference;
-import java.lang.ref.WeakReference;
 import java.lang.reflect.InvocationTargetException;
 import java.net.URI;
 import java.net.URL;
 import java.util.Collection;
-import java.util.LinkedList;
-import java.util.Map;
-import java.util.WeakHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.queries.FileBuiltQuery;
 import org.netbeans.api.queries.FileBuiltQuery.Status;
+import org.netbeans.modules.java.source.usages.ExecutableFilesIndex;
 import org.netbeans.spi.java.loaders.RenameHandler;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataNode;
 import org.openide.loaders.DataObject;
@@ -70,6 +69,7 @@ import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.nodes.PropertySupport;
 import org.openide.nodes.Sheet;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
@@ -81,8 +81,6 @@ import org.openide.util.WeakListeners;
  */
 public final class JavaNode extends DataNode implements ChangeListener {
 
-    static final boolean SHOW_MAIN_CLASS_BADGE = Boolean.getBoolean("org.netbeans.modules.java.JavaNode.enableExecutableBadge"); // NOI18N
-    
     /** generated Serialized Version UID */
     private static final long serialVersionUID = -7396485743899766258L;
 
@@ -94,6 +92,8 @@ public final class JavaNode extends DataNode implements ChangeListener {
     
     private Status status;
     private final AtomicBoolean isCompiled;
+    private ChangeListener executableListener;
+    private final AtomicBoolean isExecutable;
 
     /** Create a node for the Java data object using the default children.
     * @param jdo the data object to represent
@@ -101,46 +101,34 @@ public final class JavaNode extends DataNode implements ChangeListener {
     public JavaNode (final DataObject jdo, boolean isJavaSource) {
         super (jdo, Children.LEAF);
         this.setIconBaseWithExtension(isJavaSource ? JAVA_ICON_BASE : CLASS_ICON_BASE);
-        if (isJavaSource) {            
+        Logger.getLogger("TIMER").log(Level.FINE, "JavaNode", new Object[] {jdo.getPrimaryFile(), this});
+        if (isJavaSource) {
             this.isCompiled = new AtomicBoolean(true);                                        
             WORKER.post(new BuildStatusTask(this));
+            this.isExecutable = new AtomicBoolean(false);
+            WORKER.post(new ExecutableTask(this));
             
             jdo.addPropertyChangeListener(new PropertyChangeListener() {
                 public void propertyChange(PropertyChangeEvent evt) {
                     if (DataObject.PROP_PRIMARY_FILE.equals(evt.getPropertyName())) {
+                        Logger.getLogger("TIMER").log(Level.FINE, "JavaNode", new Object[]{jdo.getPrimaryFile(), this});
                         WORKER.post(new Runnable() {
                             public void run() {
                                 synchronized (JavaNode.this) {
                                     status = null;
+                                    executableListener = null;
                                     WORKER.post(new BuildStatusTask(JavaNode.this));
-                                    
-                                    if (SHOW_MAIN_CLASS_BADGE) {
-                                        registerNode(jdo, JavaNode.this);
-                                    }
+                                    WORKER.post(new ExecutableTask(JavaNode.this));
                                 }
                             }
                         });
                     }
                 }
             });
-            
-            if (SHOW_MAIN_CLASS_BADGE) {
-                registerNode(jdo, this);
-            }
         } else {
             this.isCompiled = null;
+            this.isExecutable = null;
         }
-    }
-    
-    private static synchronized void registerNode(DataObject od, JavaNode node) {
-        isExecutable(od.getPrimaryFile());
-        Collection<Reference<JavaNode>> nodes = file2Nodes.get(od.getPrimaryFile());
-
-        if (nodes == null) {
-            file2Nodes.put(od.getPrimaryFile(), nodes = new LinkedList<Reference<JavaNode>>());
-        }
-
-        nodes.add(new WeakReference<JavaNode>(node));
     }
     
     public void setName(String name) {
@@ -333,30 +321,55 @@ public final class JavaNode extends DataNode implements ChangeListener {
         }
     }
     
-    private static final Map<FileObject, Boolean> file2Executable = new WeakHashMap<FileObject, Boolean>();
-    private static final Map<FileObject, Collection<Reference<JavaNode>>> file2Nodes = new WeakHashMap<FileObject, Collection<Reference<JavaNode>>>();
-    
-    private static synchronized boolean isExecutable(FileObject file) {
-        if (!file2Executable.containsKey(file)) {
-            file2Executable.put(file, Boolean.FALSE);
-            IsMainResolver.FactoryImpl.get().addFile(file);
-            return false;
+    private static class ExecutableTask implements Runnable {
+        private final JavaNode node;
+        
+        public ExecutableTask(JavaNode node) {
+            this.node = node;
         }
-        
-        return file2Executable.get(file) == Boolean.TRUE;
-    }
-    
-    static synchronized void setExecutable(FileObject file, boolean executable) {
-        boolean old = isExecutable(file);
-        
-        file2Executable.put(file, executable);
-        
-        if (old != executable && file2Nodes.get(file) != null) {
-            for (Reference<JavaNode> nodes : file2Nodes.get(file)) {
-                JavaNode n = nodes.get();
+
+        public void run() {
+            ChangeListener _executableListener;
+            
+            synchronized (node) {
+                _executableListener = node.executableListener;
+            }
+            
+            FileObject file = node.getDataObject().getPrimaryFile();
+
+            if (_executableListener == null) {
+                _executableListener = new ChangeListener() {
+                    public void stateChanged(ChangeEvent e) {
+                        WORKER.post(new ExecutableTask(node));
+                    }
+                };
                 
-                if (n != null) {
-                    n.setIconBaseWithExtension(executable ? JAVA_ICON_BASE_MAIN : JAVA_ICON_BASE);
+                try {
+                    ExecutableFilesIndex.DEFAULT.addChangeListener(file.getURL(), _executableListener);
+                } catch (FileStateInvalidException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+                
+                synchronized (node) {
+                    if (node.executableListener == null) {
+                        node.executableListener = _executableListener;
+                    }
+                }
+            }
+            
+            ClassPath cp = ClassPath.getClassPath(file, ClassPath.SOURCE);
+            FileObject root = cp != null ? cp.findOwnerRoot(file) : null;
+            
+            if (root != null) {
+                try {
+                    boolean newIsExecutable = ExecutableFilesIndex.DEFAULT.isMainClass(root.getURL(), file.getURL());
+                    boolean oldIsExecutable = node.isExecutable.getAndSet(newIsExecutable);
+
+                    if (newIsExecutable != oldIsExecutable) {
+                        node.setIconBaseWithExtension(newIsExecutable ? JAVA_ICON_BASE_MAIN : JAVA_ICON_BASE);
+                    }
+                } catch (FileStateInvalidException ex) {
+                    Exceptions.printStackTrace(ex);
                 }
             }
         }

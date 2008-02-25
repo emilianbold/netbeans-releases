@@ -49,7 +49,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.netbeans.api.gsf.CancellableTask;
+import org.netbeans.modules.gsf.api.CancellableTask;
 import org.netbeans.napi.gsfret.source.Source.Priority;
 import org.openide.filesystems.FileObject;
 import org.netbeans.napi.gsfret.source.support.EditorAwareSourceTaskFactory;
@@ -75,7 +75,7 @@ import org.openide.util.RequestProcessor;
  * as there are support classes for common {@link SourceTaskFactory} implementations.
  *
  * This factory should be registered in the global lookup by listing its fully qualified
- * name in file <code>META-INF/services/org.netbeans.api.gsfpath.source.SourceTaskFactory</code>.
+ * name in file <code>META-INF/services/org.netbeans.modules.gsfpath.api.source.SourceTaskFactory</code>.
  * 
  * @see EditorAwareSourceTaskFactory
  * @see CaretAwareSourceTaskFactory

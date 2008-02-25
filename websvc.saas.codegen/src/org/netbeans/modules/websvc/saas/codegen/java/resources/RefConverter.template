@@ -1,0 +1,56 @@
+/*
+ * RefConverter.java
+ *
+ * Created on __DATE__, __TIME__
+ *
+ * To change this template, choose Tools | Template Manager
+ * and open the template in the editor.
+ */
+
+package Templates.Classes;
+
+import java.net.URI;
+import javax.xml.bind.annotation.XmlAttribute;
+
+/**
+ * Converter class for reference.
+ *
+ * @author __USER__
+ */
+
+public class RefConverter {
+    
+    private URI uri;
+    
+    public RefConverter() {
+    }
+    
+    /**
+     * Creates a new instance of ZipInfoRefConverter.
+     *
+     * @param uri associated uri
+     */
+    
+    public RefConverter(URI uri) {
+        this.uri = uri;
+    }
+    
+    /**
+     * Returns the URI associated with this reference converter.
+     *
+     * @return the converted uri
+     */
+    @XmlAttribute
+    public URI getUri() {
+        return uri;
+    }
+    
+    /**
+     * Sets the URI for this reference converter.
+     *
+     */
+    
+    public void setUri(URI uri) {
+        this.uri = uri;
+    }
+}

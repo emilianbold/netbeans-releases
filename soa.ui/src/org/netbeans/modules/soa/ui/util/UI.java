@@ -51,6 +51,7 @@ import java.awt.event.ComponentEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.util.Stack;
 
 import javax.swing.Action;
 import javax.swing.AbstractAction;
@@ -208,6 +209,19 @@ public final class UI {
     text.setLineWrap(true);
     text.setWrapStyleWord(true);
     return text;
+  }
+
+  public static void a11y(Component component, String a11y) {
+      a11y(component, a11y, a11y);
+  }
+
+  public static void a11y(Component component, String a11yN, String a11yD) {
+    if (a11yN != null) {  
+        component.getAccessibleContext().setAccessibleName(a11yN);
+    }
+    if (a11yD != null) {
+        component.getAccessibleContext().setAccessibleDescription(a11yD);
+    }
   }
 
   public static String i18n(Class clazz, String key) {
@@ -393,14 +407,51 @@ public final class UI {
     return p;
   }
 
+  public static void startTimeln() {
+    tim();
+    startTime();
+  }
+  public static void startTime() {
+    ourTimes.push(System.currentTimeMillis());
+  }
+
+  public static void endTime(Object object) {
+    long currentTime = System.currentTimeMillis();
+    tim(object + ": " + ((currentTime - ourTimes.pop()) / MILLIS) + " sec."); // NOI18N
+  }
+
+  public static void tim() {
+    if (ENABLE_TIM) {
+      System.out.println();
+    }
+  }
+
+  public static void tim(Object object) {
+    if (ENABLE_TIM) {
+      System.out.println("*** " + object); // NOI18N
+    }
+  }
+  
+  public static void log() {
+    if (ENABLE_LOG) {
+      System.out.println();
+    }
+  }
+
+  public static void log(Object object) {
+    if (ENABLE_LOG) {
+      System.out.println("*** " + object); // NOI18N
+    }
+  }
+
   public static void out() {
-    if (ENABLED) {
+    if (ENABLE_OUT) {
       System.out.println();
     }
   }
 
   public static void out(Object object) {
-    if (ENABLED) {
+    if (ENABLE_OUT) {
       System.out.println("*** " + object); // NOI18N
     }
   }
@@ -649,15 +700,26 @@ public final class UI {
     });
   }
 
+  private static Stack<Long> ourTimes = new Stack<Long>();
+
   public static final int TINY_INSET = 2;
   public static final int SMALL_INSET = 7;
   public static final int MEDIUM_INSET = 11;
+
+  private static final double MILLIS = 1000.0;
 
   public static final String UH = System.getProperty("user.home"); // NOI18N
   public static final String LS = System.getProperty("line.separator"); // NOI18N
   public static final String FS = System.getProperty("file.separator"); // NOI18N
 
   private static final Border CORNER_BORDER = new CornerBorder();
-  private static final String LOG_PROPERTY = "org.netbeans.modules.log.out"; // NOI18N
-  private static final boolean ENABLED = System.getProperty(LOG_PROPERTY) != null;
+
+  private static final boolean ENABLE_LOG =
+    System.getProperty("org.netbeans.modules.log") != null; // NOI18N
+  
+  private static final boolean ENABLE_OUT =
+    System.getProperty("org.netbeans.modules.out") != null; // NOI18N
+
+  private static final boolean ENABLE_TIM =
+    System.getProperty("org.netbeans.modules.tim") != null; // NOI18N
 }

@@ -54,7 +54,7 @@ import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.JavaPlatformManager;
-import org.netbeans.modules.web.project.ui.customizer.WebProjectProperties;
+import org.netbeans.modules.j2ee.common.project.ui.ProjectProperties;
 
 public class Utils {
 
@@ -140,7 +140,7 @@ public class Utils {
      * @return the default value of the <tt>debug.classpath</tt> property.
      */
     public static String getDefaultDebugClassPath() {
-        return "${" + WebProjectProperties.BUILD_CLASSES_DIR + "}:${" + WebProjectProperties.JAVAC_CLASSPATH + "}"; // NOI18N
+        return "${" + ProjectProperties.BUILD_CLASSES_DIR + "}:${" + ProjectProperties.JAVAC_CLASSPATH + "}"; // NOI18N
     }
     
     /**

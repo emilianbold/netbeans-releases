@@ -96,6 +96,12 @@ made subject to such option by the copyright holder.
         </condition>
         <property name="nbjdk.javadoc" value="${nbjdk.javadoc.tmp}"/>
         <common:property name="nbjdk.bootclasspath.tmp" value="platforms.${nbjdk.active}.bootclasspath"/>
+        <condition property="nbjdk.bootclasspath" value="${nbjdk.home}/../Classes/classes.jar">
+            <and>
+                <equals arg1="${nbjdk.bootclasspath.tmp}" arg2="$${platforms.${nbjdk.active}.bootclasspath}"/>
+                <os family="mac"/>
+            </and>
+        </condition>
         <condition property="nbjdk.bootclasspath" value="${nbjdk.home}/jre/lib/rt.jar">
             <equals arg1="${nbjdk.bootclasspath.tmp}" arg2="$${platforms.${nbjdk.active}.bootclasspath}"/>
         </condition>

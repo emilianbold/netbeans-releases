@@ -52,5 +52,101 @@ made subject to such option by the copyright holder.
     <property name="xtest.testtype" value="qa-functional"/>
     <property name="xtest.attribs" value="validation,stable"/>
 
+    <path id="ws.kit.path">
+        <pathelement location="${netbeans.dest.dir}/enterprise5/modules/org-netbeans-modules-j2ee-dd-webservice.jar"/>
+        <pathelement location="${netbeans.dest.dir}/enterprise5/modules/org-netbeans-modules-websvc-clientapi.jar"/>
+        <pathelement location="${netbeans.dest.dir}/enterprise5/modules/org-netbeans-modules-websvc-components-strikeiron.jar"/>
+        <pathelement location="${netbeans.dest.dir}/enterprise5/modules/org-netbeans-modules-websvc-core.jar"/>
+        <pathelement location="${netbeans.dest.dir}/enterprise5/modules/org-netbeans-modules-websvc-customization.jar"/>
+        <pathelement location="${netbeans.dest.dir}/enterprise5/modules/org-netbeans-modules-websvc-design.jar"/>
+        <pathelement location="${netbeans.dest.dir}/enterprise5/modules/org-netbeans-modules-websvc-editor-hints.jar"/>
+        <pathelement location="${netbeans.dest.dir}/enterprise5/modules/org-netbeans-modules-websvc-jaxwsapi.jar"/>
+        <pathelement location="${netbeans.dest.dir}/enterprise5/modules/org-netbeans-modules-websvc-jaxwsmodel.jar"/>
+        <pathelement location="${netbeans.dest.dir}/enterprise5/modules/org-netbeans-modules-websvc-manager.jar"/>
+        <pathelement location="${netbeans.dest.dir}/enterprise5/modules/org-netbeans-modules-websvc-metro-samples.jar"/>
+        <pathelement location="${netbeans.dest.dir}/enterprise5/modules/org-netbeans-modules-websvc-saas-api.jar"/>
+        <pathelement location="${netbeans.dest.dir}/enterprise5/modules/org-netbeans-modules-websvc-utilities.jar"/>
+        <pathelement location="${netbeans.dest.dir}/enterprise5/modules/org-netbeans-modules-websvc-websvcapi.jar"/>
+        <pathelement location="${netbeans.dest.dir}/enterprise5/modules/org-netbeans-modules-websvc-wsitconf.jar"/>
+        <pathelement location="${netbeans.dest.dir}/enterprise5/modules/org-netbeans-modules-websvc-wsitmodelext.jar"/>
+    </path>
+
+    <path id="ws.kit.src.path">
+        <pathelement location="../../j2ee.dd.webservice/src"/>
+        <pathelement location="../../websvc.clientapi/src"/>
+        <pathelement location="../../websvc.components.strikeiron/src"/>
+        <pathelement location="../../websvc.core/src"/>
+        <pathelement location="../../websvc.customization/src"/>
+        <pathelement location="../../websvc.design/src"/>
+        <pathelement location="../../websvc.editor.hints/src"/>
+        <pathelement location="../../websvc.jaxwsapi/src"/>
+        <pathelement location="../../websvc.jaxwsmodel/src"/>
+        <pathelement location="../../websvc.manager/src"/>
+        <pathelement location="../../websvc.metro.samples/src"/>
+        <pathelement location="../../websvc.saas.api/src"/>
+        <pathelement location="../../websvc.utilities/src"/>
+        <pathelement location="../../websvc.websvcapi/src"/>
+        <pathelement location="../../websvc.wsitconf/src"/>
+        <pathelement location="../../websvc.wsitmodelext/src"/>
+    </path>
+
+    <target name="emma-init-coverage-path-module" unless="coverage.kit">
+        <antcall target="xtest.emma-init-coverage-path"/>
+    </target>
+
+    <target name="emma-init-coverage-path-kit" if="coverage.kit">
+        <property name="coverage.path" refid="ws.kit.path"/>
+        <!-- only when is emma.disable.backup -->
+        <property name="backup.netbeans.dest.dir" location="${netbeans.dest.dir}"/>
+        <pathconvert property="backup.coverage.path" targetos="unix">
+            <path refid="ws.kit.path"/>
+            <mapper>
+                <globmapper from="${netbeans.dest.dir}*" to="${backup.netbeans.dest.dir}*" />
+            </mapper>
+        </pathconvert>
+        <echo>coverage.path=${backup.coverage.path}</echo>
+        <path id="coverage.path.id" path="${backup.coverage.path}"/>
+    </target>
+
+    <target name="emma-init-coverage-path" depends="emma-init-coverage-path-module,emma-init-coverage-path-kit"/>
+
+    <target name="emma-init-coverage-source-path-module" unless="coverage.kit">
+        <antcall target="xtest.emma-init-coverage-source-path"/>
+    </target>
+
+    <target name="emma-init-coverage-source-path-kit" if="coverage.kit">
+        <property name="coverage.source.path" refid="ws.kit.src.path" />
+        <echo>coverage.source.path=${coverage.source.path}</echo>
+        <path id="coverage.source.path" refid="ws.kit.src.path"/>
+    </target>
+
+    <target name="emma-init-coverage-source-path" depends="emma-init-coverage-source-path-module,emma-init-coverage-source-path-kit"/>
+
+    <target name="coverage-runtests-module" unless="coverage.kit">
+        <antcall target="runtests">
+            <param name="coverage.lib.path" location="${emma.dir}/emma.jar"/>
+            <param name="xtest.jvm.coverage.args" value="-Demma.coverage.out.file=${coverage.dir}/coverage.emma"/>
+            <param name="xtest.ide.coverage.args" value="-J-Dnetbeans.security.nocheck=true -J-Demma.coverage.out.file=${coverage.dir}/coverage.emma"/>
+            <!-- code coverage needs to parse project.xml in everytime -->
+            <param name="do.we.need.to.parse.project.xml.file" value="true"/>
+            <param name="netbeans.dest.dir" location="${backup.netbeans.dest.dir}"/>
+        </antcall>
+    </target>
+
+    <target name="coverage-runtests-kit" if="coverage.kit">
+        <fail unless="j2ee.appserver.path" message="Need appserver to be able to measure coverage"/>
+        <property name="xtest.userdata|com.sun.aas.installRoot" value="${j2ee.appserver.path}"/>
+        <antcall target="runtests">
+            <param name="coverage.lib.path" location="${emma.dir}/emma.jar"/>
+            <param name="xtest.jvm.coverage.args" value="-Demma.coverage.out.file=${coverage.dir}/coverage.emma"/>
+            <param name="xtest.ide.coverage.args" value="-J-Dnetbeans.security.nocheck=true -J-Demma.coverage.out.file=${coverage.dir}/coverage.emma"/>
+            <!-- code coverage needs to parse project.xml in everytime -->
+            <param name="do.we.need.to.parse.project.xml.file" value="true"/>
+            <param name="netbeans.dest.dir" location="${backup.netbeans.dest.dir}"/>
+        </antcall>
+    </target>
+
+    <target name="coverage-runtests" depends="coverage-runtests-module,coverage-runtests-kit"/>
+
 </project>
 

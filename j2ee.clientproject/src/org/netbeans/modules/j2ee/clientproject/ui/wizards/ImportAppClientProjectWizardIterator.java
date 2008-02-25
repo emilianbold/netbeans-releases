@@ -55,7 +55,9 @@ import org.netbeans.modules.j2ee.api.ejbjar.Ear;
 import org.netbeans.modules.j2ee.clientproject.AppClientProject;
 import org.netbeans.modules.j2ee.clientproject.Utils;
 import org.netbeans.modules.j2ee.clientproject.api.AppClientProjectGenerator;
-import org.netbeans.modules.j2ee.clientproject.ui.FoldersListSettings;
+import org.netbeans.modules.j2ee.common.project.ui.UserProjectSettings;
+import org.netbeans.modules.j2ee.common.project.ui.PanelSharability;
+import org.netbeans.modules.j2ee.common.SharabilityUtility;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.ui.support.ProjectChooser;
 import org.openide.WizardDescriptor;
@@ -75,12 +77,14 @@ public class ImportAppClientProjectWizardIterator implements WizardDescriptor.Pr
     // Make sure list of steps is accurate.
     private static final String[] STEPS = new String[]{
         NbBundle.getMessage(ImportAppClientProjectWizardIterator.class, "LBL_IW_ImportTitle"), //NOI18N
+        NbBundle.getMessage(NewAppClientProjectWizardIterator.class, "PanelShareabilityVisual.label"),
         NbBundle.getMessage(ImportAppClientProjectWizardIterator.class, "LAB_ConfigureSourceRoots") //NOI18N
     };
     
     private WizardDescriptor.Panel[] createPanels() {
         return new WizardDescriptor.Panel[] {
             new ImportLocation(),
+            new PanelSharability(WizardProperties.PROJECT_DIR, WizardProperties.SERVER_INSTANCE_ID, true),
             new PanelSourceFolders.Panel()
         };
     }
@@ -108,7 +112,14 @@ public class ImportAppClientProjectWizardIterator implements WizardDescriptor.Pr
         String serverInstanceID = (String) wiz.getProperty(WizardProperties.SERVER_INSTANCE_ID);
         String j2eeLevel = (String) wiz.getProperty(WizardProperties.J2EE_LEVEL);
         
-        AntProjectHelper h = AppClientProjectGenerator.importProject(dirF, name, sourceFolders, testFolders, configFilesFolder, libName, j2eeLevel, serverInstanceID);
+        String librariesDefinition =
+                SharabilityUtility.getLibraryLocation((String) wiz.getProperty(PanelSharability.WIZARD_SHARED_LIBRARIES));
+        String serverLibraryName = (String) wiz.getProperty(PanelSharability.WIZARD_SERVER_LIBRARY);
+        
+        AntProjectHelper h = AppClientProjectGenerator.importProject(dirF, name,
+                sourceFolders, testFolders, configFilesFolder, libName, j2eeLevel,
+                serverInstanceID, librariesDefinition, serverLibraryName);
+        
         handle.progress(2);
         
         FileObject dir = FileUtil.toFileObject (dirF);
@@ -130,7 +141,7 @@ public class ImportAppClientProjectWizardIterator implements WizardDescriptor.Pr
         }
         
         // remember last used server
-        FoldersListSettings.getDefault().setLastUsedServer(serverInstanceID);
+        UserProjectSettings.getDefault().setLastUsedServer(serverInstanceID);
         
         // downgrade the Java platform or src level to 1.4
         String platformName = (String)wiz.getProperty(WizardProperties.JAVA_PLATFORM);

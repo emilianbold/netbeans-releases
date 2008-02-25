@@ -184,11 +184,12 @@ public final class StorageImpl <K extends Object, V extends Object> {
 
             if (profileInfos != null) {
                 for(Object [] info : profileInfos) {
-                    assert info.length == 4;
+                    assert info.length == 5;
                     FileObject profileHome = (FileObject) info[0];
                     FileObject settingFile = (FileObject) info[1];
                     boolean modulesFile = ((Boolean) info[2]).booleanValue();
                     FileObject linkTarget = (FileObject) info[3];
+                    boolean legacyFile = ((Boolean) info[4]).booleanValue();
                     
                     if (linkTarget != null) {
                         // link to another mimetype
@@ -211,7 +212,7 @@ public final class StorageImpl <K extends Object, V extends Object> {
                         StorageReader<? extends K, ? extends V> reader = storageDescription.createReader(settingFile, mimePath.getPath());
 
                         // Load data from the settingFile
-                        Utils.load(settingFile, reader);
+                        Utils.load(settingFile, reader, !legacyFile);
                         Map<? extends K, ? extends V> added = reader.getAdded();
                         Set<? extends K> removed = reader.getRemoved();
 
@@ -315,7 +316,7 @@ public final class StorageImpl <K extends Object, V extends Object> {
                 sfs.runAtomicAction(new FileSystem.AtomicAction() {
                     public void run() throws IOException {
                         for(Object [] info : profileInfos) {
-                            assert info.length == 4;
+                            assert info.length == 5;
                             FileObject profileHome = (FileObject) info[0];
                             FileObject settingFile = (FileObject) info[1];
                             boolean modulesFile = ((Boolean) info[2]).booleanValue();

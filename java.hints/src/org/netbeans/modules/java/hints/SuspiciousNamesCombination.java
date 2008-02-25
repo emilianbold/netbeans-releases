@@ -167,16 +167,12 @@ public class SuspiciousNamesCombination extends AbstractHint {
         String actualName      = getName(vt.getInitializer());
         
         if (isConflicting(declarationName, actualName)) {
-            try {
-                int[] span = Utilities.findIdentifierSpan(treePath, info, info.getDocument());
-                
-                if (span != null && span[0] != (-1) && span[1] != (-1)) {
-                    String description = NbBundle.getMessage(SuspiciousNamesCombination.class, "HINT_SuspiciousNamesCombination");
-                    
-                    return Collections.singletonList(ErrorDescriptionFactory.createErrorDescription(getSeverity().toEditorSeverity(), description, info.getFileObject(), span[0], span[1]));
-                }
-            } catch (IOException ex) {
-                Exceptions.printStackTrace(ex);
+            int[] span = info.getTreeUtilities().findNameSpan(vt);
+
+            if (span != null) {
+                String description = NbBundle.getMessage(SuspiciousNamesCombination.class, "HINT_SuspiciousNamesCombination");
+
+                return Collections.singletonList(ErrorDescriptionFactory.createErrorDescription(getSeverity().toEditorSeverity(), description, info.getFileObject(), span[0], span[1]));
             }
         }
         

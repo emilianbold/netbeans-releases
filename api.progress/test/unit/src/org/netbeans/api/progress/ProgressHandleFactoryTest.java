@@ -43,13 +43,17 @@ package org.netbeans.api.progress;
 
 import javax.swing.JComponent;
 import javax.swing.JProgressBar;
+import javax.swing.SwingUtilities;
 import javax.swing.Timer;
+import javax.swing.UIDefaults;
+import javax.swing.UIManager;
 import junit.framework.TestCase;
 import org.netbeans.progress.module.Controller;
 import org.netbeans.progress.spi.InternalHandle;
 import org.netbeans.progress.spi.ProgressEvent;
 import org.netbeans.progress.spi.ProgressUIWorker;
 import org.openide.util.Cancellable;
+import org.openide.util.Exceptions;
 
 /**
  *
@@ -106,7 +110,57 @@ public class ProgressHandleFactoryTest extends TestCase {
         assertEquals(0, ((JProgressBar) component).getValue());
         
     }
-     
+    
+    private static class AwtBlocker implements Runnable {
+
+        public AwtBlocker(int blockingTime) {
+            this.blockingTime = blockingTime;
+        }
+
+        public void run() {
+            UIDefaults uidef = UIManager.getDefaults();
+            synchronized (uidef) {
+                blocking = true;
+                sleep();
+            }
+        }
+        synchronized void sleep() {
+            try {
+                wait(blockingTime);
+            } catch (InterruptedException ex) {
+            }
+        }
+        synchronized void wakeup() {
+            notify();
+        }
+        volatile public boolean blocking = false;
+        private int blockingTime;
+    }
+
+    /**
+     * Tests if ProgressUIWorkerProvider is created inside awt thread (if not deadlock is possible)
+     */
+    public void testProgressCanBeCreatedOutOfSyncAwt() {
+        Controller.defaultInstance = null;
+        final int blockingTime = 10000;
+        AwtBlocker blocker = new AwtBlocker(blockingTime);
+        long start = System.currentTimeMillis();
+        SwingUtilities.invokeLater(blocker);
+        while (!blocker.blocking) {
+            try {
+                Thread.sleep(10);
+            } catch (InterruptedException ex) {
+            }
+        }
+
+        ProgressHandle pHandle = ProgressHandleFactory.createHandle("Peforming operation...");
+        pHandle.start();
+        long elapsed = System.currentTimeMillis() - start;
+        assertTrue("Possible deadlock detected, ProgressUIWorkerProvider is creating UI outside AWT thread.", elapsed < blockingTime);
+        pHandle.finish();
+        blocker.wakeup();
+    }
+
      private static class TestCancel implements Cancellable {
          public boolean cancel() {
              return true;

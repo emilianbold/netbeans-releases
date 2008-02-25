@@ -30,18 +30,18 @@ package org.netbeans.modules.websvc.saas.util;
 
 import java.io.File;
 import java.io.FileFilter;
-import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
-import java.nio.channels.FileChannel;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 import java.util.jar.Manifest;
 import org.netbeans.junit.MockServices;
-import org.netbeans.modules.websvc.saas.spi.websvcmgr.WsdlServiceProxyDescriptor;
+import org.netbeans.modules.websvc.saas.model.SaasServicesModel;
+import org.netbeans.modules.websvc.saas.model.SaasServicesModelTest;
+import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.LocalFileSystem;
@@ -59,101 +59,33 @@ import org.openide.util.NbCollections;
  * @author quynguyen
  */
 public class SetupUtil {
-    private static final String WORKDIR_SPACES = "user directory/config/WebServices";
-    private static final String WORKDIR = "userdirectory/config/WebServices";
-    private static final String TEST_WSDL = "/org/netbeans/modules/websvc/saas/util/uszip.asmx.wsdl";
-    private static final String TEST_CATALOG = "/org/netbeans/modules/websvc/saas/util/catalog.xml";
-    private static final String CATALOG_FILE = "catalog.xml";
-    private static final String WSDL_FILE = "uszip.asmx.wsdl";
     
     private static final String ENDORSED_REF = "modules/ext/jaxws21/api/jaxws-api.jar";
     private static final String JAXWS_LIB_PROPERTY = "libs.jaxws21.classpath";
     
-    public static SetupData commonSetUp(File workingDir) throws Exception {
-        SetupData data = new SetupData();
-        
-        String workDirByOS = 
-                System.getProperty("os.name").startsWith("Windows") ? WORKDIR_SPACES : WORKDIR;
-        
-        File websvcHome = new File(workingDir, workDirByOS);
-        data.setWebsvcHome(websvcHome);
-        
-        File websvcUserDir = new File(WsdlServiceProxyDescriptor.WEBSVC_HOME);
-        websvcUserDir.mkdirs();
-        
-        File wsdlFile = new File(websvcUserDir, WSDL_FILE);
-        File catalogFile = new File(websvcUserDir, CATALOG_FILE);
-
-        retrieveURL(wsdlFile, SetupUtil.class.getResource(TEST_WSDL));
-        retrieveURL(catalogFile, SetupUtil.class.getResource(TEST_CATALOG));
-        
-        copy(wsdlFile, workingDir);
-        
-        System.getProperties().setProperty("netbeans.user", websvcUserDir.getParentFile().getParentFile().getAbsolutePath());
-        
-        data.setLocalWsdlFile(wsdlFile);
-        data.setLocalCatalogFile(catalogFile);
-        data.setLocalOriginalWsdl(new File(workingDir, wsdlFile.getName()));
-        
+    public static void commonSetUp(File workingDir) throws Exception {
+        File testuserdir = new File(workingDir.getParentFile(), "testuser");
+        System.getProperties().setProperty("netbeans.user", testuserdir.getAbsolutePath());
+        SaasServicesModelTest.resetSaasServicesModel();
+        FileObject websvcHome = SaasServicesModel.getWebServiceHome();
+        File userconfig = FileUtil.toFile(websvcHome.getParent());
         MainFS fs = new MainFS();
-        fs.setConfigRootDir(websvcHome.getParentFile());
+        fs.setConfigRootDir(userconfig);
         TestRepository.defaultFileSystem = fs;
         
         MockServices.setServices(DialogDisplayerNotifier.class, InstalledFileLocatorImpl.class, TestRepository.class);
         
         InstalledFileLocatorImpl locator = (InstalledFileLocatorImpl)Lookup.getDefault().lookup(InstalledFileLocator.class);
-        locator.setUserConfigRoot(websvcHome.getParentFile());
+        locator.setUserConfigRoot(userconfig);
         
-        File targetBuildProperties = new File(websvcUserDir.getParentFile().getParentFile(), "build.properties");
+        File targetBuildProperties = new File(testuserdir, "build.properties");
         generatePropertiesFile(targetBuildProperties);
         
-        return data;
     }
 
     public static void commonTearDown() throws Exception {
         
         MockServices.setServices();
-    }
-    
-    public static void copy(File src, File target) throws Exception {        
-        if (src.isFile()) {
-            File targetFile = new File(target, src.getName());
-            
-            FileInputStream is = new FileInputStream(src);
-            FileOutputStream os = new FileOutputStream(targetFile);
-            
-            FileChannel inputChannel = is.getChannel();
-            FileChannel outputChannel = os.getChannel();
-            
-            inputChannel.transferTo(0, inputChannel.size(), outputChannel);
-            inputChannel.close();
-            outputChannel.close();
-        }else {
-            File newDir = new File(target, src.getName());
-            newDir.mkdirs();
-            
-            File[] dirFiles = src.listFiles();
-            if (dirFiles != null) {
-                for (int i = 0; i < dirFiles.length; i++) {
-                    copy(dirFiles[i], newDir);
-                }
-            }
-        }
-    }
-    
-    public static void retrieveURL(File targetFile, URL url) throws IOException {
-        targetFile.getParentFile().mkdirs();
-        FileOutputStream fos = new FileOutputStream(targetFile);
-        byte[] readBuffer = new byte[1024];
-        
-        InputStream is = url.openStream();
-        int bytesRead = 0;
-        while ( (bytesRead = is.read(readBuffer, 0, 1024)) > 0) {
-            fos.write(readBuffer, 0, bytesRead);
-        }
-        fos.flush();
-        fos.close();
-        is.close();
     }
     
     private static void generatePropertiesFile(File target) throws IOException {

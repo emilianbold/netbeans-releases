@@ -29,9 +29,11 @@ package org.netbeans.modules.gsf;
 
 import org.netbeans.modules.editor.indent.spi.Context;
 import org.netbeans.modules.editor.indent.spi.ReformatTask;
+import org.netbeans.napi.gsfret.source.Source;
 
 public class GsfReformatTaskFactory implements ReformatTask.Factory {
     public ReformatTask createTask(Context context) {
-        return new GsfReformatTask(context);
+        Source source = Source.forDocument(context.document());
+        return source != null ? new GsfReformatTask(source, context) : null;
     }
 }

@@ -391,7 +391,7 @@ public final class SettingsType {
                             infos = new ArrayList<Object[]>();
                             files.put(profileId, infos);
                         }
-                        Object [] oo = new Object [] { profileHome, f , true, linkTarget };
+                        Object [] oo = new Object [] { profileHome, f , true, linkTarget, false };
                         infos.add(oo);
                     }
                 } else if (f.getMIMEType().equals(mimeType)) {
@@ -413,7 +413,7 @@ public final class SettingsType {
                         infos = new ArrayList<Object[]>();
                         files.put(profileId, infos);
                     }
-                    Object [] oo = new Object [] { profileHome, f, moduleFiles, null };
+                    Object [] oo = new Object [] { profileHome, f, moduleFiles, null, false };
                     
                     // There can be a writable file in the modules folder and it
                     // needs to be added last so that it does not get hidden by
@@ -593,7 +593,7 @@ public final class SettingsType {
                 pair = new ArrayList<Object[]>();
                 files.put(profileId, pair);
             }
-            pair.add(new Object [] { profileHome, file, moduleFiles, null });
+            pair.add(new Object [] { profileHome, file, moduleFiles, null, true });
             
             if (LOG.isLoggable(Level.INFO)) {
                 Utils.logOnce(LOG, Level.INFO, settingTypeId + " settings " + //NOI18N
@@ -676,7 +676,7 @@ public final class SettingsType {
                         pair = new ArrayList<Object[]>();
                         files.put(profileId, pair);
                     }
-                    pair.add(new Object [] { profileHome, f, moduleFiles, null });
+                    pair.add(new Object [] { profileHome, f, moduleFiles, null, true });
 
                     if (LOG.isLoggable(Level.INFO)) {
                         Utils.logOnce(LOG, Level.INFO, settingTypeId + " settings " + //NOI18N

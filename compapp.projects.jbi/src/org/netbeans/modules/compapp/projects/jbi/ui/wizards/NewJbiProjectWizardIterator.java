@@ -41,6 +41,7 @@
 
 package org.netbeans.modules.compapp.projects.jbi.ui.wizards;
 
+import java.util.LinkedHashSet;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.compapp.projects.jbi.CasaHelper;
@@ -48,6 +49,7 @@ import org.netbeans.modules.compapp.projects.jbi.JbiProject;
 import org.netbeans.modules.compapp.projects.jbi.JbiProjectGenerator;
 
 import org.netbeans.modules.compapp.projects.jbi.ui.JbiLogicalViewProvider;
+import org.netbeans.modules.compapp.projects.jbi.ui.actions.OpenEditorAction;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.openide.WizardDescriptor;
 
@@ -109,15 +111,17 @@ public class NewJbiProjectWizardIterator implements WizardDescriptor.Instantiati
      */
     public Set instantiate() throws IOException {
                 
-        Set resultSet = new HashSet();
+        LinkedHashSet resultSet = new LinkedHashSet();
         File dirF = (File) wiz.getProperty(WizardProperties.PROJECT_DIR);
         String name = (String) wiz.getProperty(WizardProperties.NAME);
         String j2eeLevel = (String) wiz.getProperty(WizardProperties.J2EE_LEVEL);
         AntProjectHelper antHelper = null;
         antHelper = JbiProjectGenerator.createProject(dirF, name, j2eeLevel);
         
-        FileObject dir = FileUtil.toFileObject(dirF);
-        resultSet.add(dir);
+        FileObject dir = FileUtil.toFileObject(FileUtil.normalizeFile(dirF));
+        
+       // resultSet.add(dir);
+        
         // find casa file and add to the open list.
         Project p = ProjectManager.getDefault().findProject(antHelper.getProjectDirectory());
         JbiProject jbiPrj = null;
@@ -127,38 +131,28 @@ public class NewJbiProjectWizardIterator implements WizardDescriptor.Instantiati
                 jbiPrj = (JbiProject) p;
             }
         }
-        FileObject casaFO = null;
+        
+        FileObject prjDir = null;
         if ( jbiPrj != null ) {
-            casaFO = CasaHelper.getCasaFileObject(jbiPrj, true);
-        }
-        if ( casaFO != null ) {
-            resultSet.add(casaFO);
-        } 
-        // add src dir to open lisk
-        FileObject srcFO = null;
-        if ( dir != null ) {
-            srcFO = dir.getFileObject("src"); //TODO: get the source dir from properties.
-        }
-        if ( srcFO != null ) {
-            resultSet.add(srcFO);
+            prjDir = jbiPrj.getProjectDirectory();
+            resultSet.add(prjDir);  // add the project dir so that project is selected and expanded.
         } 
         
-        // Expand project
-        expandJbiProject(jbiPrj);
+        
+        FileObject casaFO = null;
+        if ( jbiPrj != null ) {
+            // TODO: when Issue 127437 fixed, then remove use the below instead. 
+            // casaFO = CasaHelper.getCasaFileObject(jbiPrj, true);
+            // resultSet.add(casaFO);
+            // need to explicitly open due to issue #127437
+            (new OpenEditorAction()).perform(jbiPrj);
+        }
+
         // Returning set of FileObject of project diretory. 
         // Project will be open and set as main
+        
         return resultSet;
-    }
-    
-    private void expandJbiProject(JbiProject prj) {
-        //TODO: implement the project expansion 
-//        JbiLogicalViewProvider view =  prj.getLookup().lookup(JbiLogicalViewProvider.class);
-//        view.refreshRootNode();
-//        Node root = null;
-//        view.findPath(root, "");  
-//        Project p = prj;
-       
-    }
+    }    
 
     /**
      * DOCUMENT ME!

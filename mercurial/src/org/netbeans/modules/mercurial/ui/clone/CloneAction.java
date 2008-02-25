@@ -55,6 +55,7 @@ import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.mercurial.HgException;
 import org.netbeans.modules.mercurial.HgProgressSupport;
 import org.netbeans.modules.mercurial.Mercurial;
+import org.netbeans.modules.mercurial.OutputLogger;
 import org.netbeans.modules.mercurial.HgModuleConfig;
 import org.netbeans.modules.mercurial.config.HgConfigFiles;
 import org.netbeans.modules.mercurial.util.HgCommand;
@@ -144,6 +145,7 @@ public class CloneAction extends ContextAction {
             Runnable doOpenProject = new Runnable () {
                 public void run()  {
                     // Open and set focus on the cloned project if possible
+                    OutputLogger logger = getLogger();
                     try {
                         FileObject cloneProj = FileUtil.toFileObject(clonePrjFile);
                         Project prj = null;
@@ -154,7 +156,7 @@ public class CloneAction extends ContextAction {
                             hg.versionedFilesChanged();
                             hg.refreshAllAnnotations();
                         }else{
-                            HgUtils.outputMercurialTabInRed( NbBundle.getMessage(CloneAction.class,
+                            logger.outputInRed( NbBundle.getMessage(CloneAction.class,
                                     "MSG_EXTERNAL_CLONE_PRJ_NOT_FOUND_CANT_SETASMAIN")); // NOI18N
                         }
             
@@ -162,43 +164,44 @@ public class CloneAction extends ContextAction {
                         NotifyDescriptor.Exception e = new NotifyDescriptor.Exception(new HgException(ex.toString()));
                         DialogDisplayer.getDefault().notifyLater(e);
                     } finally{
-                       HgUtils.outputMercurialTabInRed(NbBundle.getMessage(CloneAction.class, "MSG_CLONE_DONE")); // NOI18N
-                       HgUtils.outputMercurialTab(""); // NOI18N
+                       logger.outputInRed(NbBundle.getMessage(CloneAction.class, "MSG_CLONE_DONE")); // NOI18N
+                       logger.output(""); // NOI18N
                     }
                 }
             };
             public void perform() {
+                OutputLogger logger = getLogger();
                 try {
                     // TODO: We need to annotate the cloned project 
                     // See http://qa.netbeans.org/issues/show_bug.cgi?id=112870
-                    HgUtils.outputMercurialTabInRed(
+                    logger.outputInRed(
                             NbBundle.getMessage(CloneAction.class,
                             "MSG_CLONE_TITLE")); // NOI18N
-                    HgUtils.outputMercurialTabInRed(
+                    logger.outputInRed(
                             NbBundle.getMessage(CloneAction.class,
                             "MSG_CLONE_TITLE_SEP")); // NOI18N
-                    List<String> list = HgCommand.doClone(source, target);
+                    List<String> list = HgCommand.doClone(source, target, logger);
                     if(list != null && !list.isEmpty()){
                         HgUtils.createIgnored(cloneFolder);
-                        HgUtils.outputMercurialTab(list);
+                        logger.output(list);
                
                         if (prjName != null) {
-                            HgUtils.outputMercurialTabInRed(
+                            logger.outputInRed(
                                     NbBundle.getMessage(CloneAction.class,
                                     "MSG_CLONE_FROM", prjName, source)); // NOI18N
-                            HgUtils.outputMercurialTabInRed(
+                            logger.outputInRed(
                                     NbBundle.getMessage(CloneAction.class,
                                     "MSG_CLONE_TO", prjName, target)); // NOI18N
                         } else {
-                            HgUtils.outputMercurialTabInRed(
+                            logger.outputInRed(
                                     NbBundle.getMessage(CloneAction.class,
                                     "MSG_EXTERNAL_CLONE_FROM", source)); // NOI18N
-                            HgUtils.outputMercurialTabInRed(
+                            logger.outputInRed(
                                     NbBundle.getMessage(CloneAction.class,
                                     "MSG_EXTERNAL_CLONE_TO", target)); // NOI18N
 
                         }
-                        HgUtils.outputMercurialTab(""); // NOI18N
+                        logger.output(""); // NOI18N
 
                         if (isLocalClone){
                             SwingUtilities.invokeLater(doOpenProject);
@@ -231,8 +234,8 @@ public class CloneAction extends ContextAction {
                         fixLocalPullPushPathsOnWindows(cloneFolder.getAbsolutePath(), defaultPull, defaultPush);
                     }
                     if(!isLocalClone){
-                        HgUtils.outputMercurialTabInRed(NbBundle.getMessage(CloneAction.class, "MSG_CLONE_DONE")); // NOI18N
-                        HgUtils.outputMercurialTab(""); // NOI18N
+                        logger.outputInRed(NbBundle.getMessage(CloneAction.class, "MSG_CLONE_DONE")); // NOI18N
+                        logger.output(""); // NOI18N
                     }
                 }
             }

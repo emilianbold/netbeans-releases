@@ -105,9 +105,16 @@ public class ContextASTEvaluator extends ASTEvaluator {
         }
     }
     
+    static void setEvaluated(Document document, boolean evaluated) {
+        ContextASTEvaluator evaluator = get (document);
+        if (evaluator == null) return;
+        evaluator.evaluated = evaluated;
+    }
+    
     private Document                    document;
     private DatabaseContext             rootContext;
     private Stack<DatabaseContext>      currentContext;
+    private boolean evaluated;
     
     
     ContextASTEvaluator (Document document) {
@@ -119,10 +126,13 @@ public class ContextASTEvaluator extends ASTEvaluator {
         rootContext = new DatabaseContext (null, null, root.getOffset (), root.getEndOffset ());
         currentContext = new Stack<DatabaseContext> ();
         currentContext.push (rootContext);
+        evaluated = false;
     }
 
     public void afterEvaluation (State state, ASTNode root) {
-        DatabaseManager.setRoot (root, rootContext);
+        if (evaluated) {
+            DatabaseManager.setRoot (root, rootContext);
+        }
     }
 
     public void evaluate (State state, List<ASTItem> path, Feature feature) {
@@ -134,6 +144,7 @@ public class ContextASTEvaluator extends ASTEvaluator {
         DatabaseContext newContext = new DatabaseContext (context, type, leaf.getOffset (), leaf.getEndOffset ());
         context.addContext (leaf, newContext);
         currentContext.push (newContext);
+        evaluated = true;
     }
 
     public String getFeatureName () {

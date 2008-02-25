@@ -80,15 +80,12 @@ public class ServiceCompositionNode extends FilterNode {
                     null,
                     ProjectSensitiveActions.projectSensitiveAction(
                     new OpenEditorAction(),
-                    bundle.getString("LBL_EditAction_Name"), // NOI18N
+                    bundle.getString("LBL_ServiceCompositionNode.edit.action.name"), // NOI18N
                     null),
                     ProjectSensitiveActions.projectCommandAction(
                     JbiProjectConstants.COMMAND_JBICLEANCONFIG,
-                    bundle.getString("LBL_JbiCleanConfigAction_Name"), // NOI18N
-                    null),
-                    org.openide.util.actions.SystemAction.get(org.openide.actions.FileSystemAction.class),
-                    null,
-                    org.openide.util.actions.SystemAction.get(org.openide.actions.ToolsAction.class),
+                    bundle.getString("LBL_ServiceCompositionNode.clean.action.name"), // NOI18N
+                    null)
                 };
     }
 
@@ -97,7 +94,7 @@ public class ServiceCompositionNode extends FilterNode {
         ResourceBundle bundle = NbBundle.getBundle(ServiceCompositionNode.class);
         return ProjectSensitiveActions.projectSensitiveAction(
                     new OpenEditorAction(),
-                    bundle.getString("LBL_EditAction_Name"), // NOI18N
+                    bundle.getString("LBL_ServiceCompositionNode.edit.action.name"), // NOI18N
                     null);
     }
 

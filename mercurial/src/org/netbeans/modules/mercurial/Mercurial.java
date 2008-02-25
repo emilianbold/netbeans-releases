@@ -57,6 +57,8 @@ import org.netbeans.modules.mercurial.util.HgCommand;
 import org.openide.util.NbBundle;
 import javax.swing.JOptionPane;
 import java.util.prefs.Preferences;
+import org.openide.NotifyDescriptor;
+import org.openide.DialogDisplayer;
 
 /**
  * Main entry point for Mercurial functionality, use getInstance() to get the Mercurial object.
@@ -159,26 +161,32 @@ public class Mercurial {
         if (version != null && !goodVersion) {
              if (runVersion == null || !runVersion.equals(version)) {
                 Preferences prefs = HgModuleConfig.getDefault().getPreferences();
-                int response = JOptionPane.showOptionDialog(null,
-                        NbBundle.getMessage(Mercurial.class, "MSG_VERSION_CONFIRM_QUERY", version), // NOI18N
-                        NbBundle.getMessage(Mercurial.class, "MSG_VERSION_CONFIRM"), // NOI18N
-                        JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE, null, null, null);
-                if (response == JOptionPane.YES_OPTION) {
+                NotifyDescriptor descriptor = new NotifyDescriptor.Confirmation(NbBundle.getMessage(Mercurial.class, "MSG_VERSION_CONFIRM_QUERY", version)); // NOI18N
+                descriptor.setTitle(NbBundle.getMessage(Mercurial.class, "MSG_VERSION_CONFIRM")); // NOI18N
+                descriptor.setMessageType(JOptionPane.WARNING_MESSAGE);
+                descriptor.setOptionType(NotifyDescriptor.YES_NO_OPTION);
+
+                Object res = DialogDisplayer.getDefault().notify(descriptor);
+                OutputLogger logger = getLogger(Mercurial.MERCURIAL_OUTPUT_TAB_TITLE);
+                if (res == NotifyDescriptor.YES_OPTION) {
                     goodVersion = true;
                     prefs.put(HgModuleConfig.PROP_RUN_VERSION, version);
-                    HgUtils.outputMercurialTabInRed(NbBundle.getMessage(Mercurial.class, "MSG_USING_VERSION_MSG", version)); // NOI18N);
+                    logger.outputInRed(NbBundle.getMessage(Mercurial.class, "MSG_USING_VERSION_MSG", version)); // NOI18N);
                 } else {
                     prefs.remove(HgModuleConfig.PROP_RUN_VERSION);
-                    HgUtils.outputMercurialTabInRed(NbBundle.getMessage(Mercurial.class, "MSG_NOT_USING_VERSION_MSG", version)); // NOI18N);
+                    logger.outputInRed(NbBundle.getMessage(Mercurial.class, "MSG_NOT_USING_VERSION_MSG", version)); // NOI18N);
                 }
+                logger.closeLog();
             } else {
                 goodVersion = true;
             }
         } else if (version == null) {
             Preferences prefs = HgModuleConfig.getDefault().getPreferences();
             prefs.remove(HgModuleConfig.PROP_RUN_VERSION);
-            HgUtils.outputMercurialTabInRed(NbBundle.getMessage(Mercurial.class, "MSG_VERSION_NONE_OUTPUT_MSG")); // NOI18N);
+            OutputLogger logger = getLogger(Mercurial.MERCURIAL_OUTPUT_TAB_TITLE);
+            logger.outputInRed(NbBundle.getMessage(Mercurial.class, "MSG_VERSION_NONE_OUTPUT_MSG")); // NOI18N);
             HgUtils.warningDialog(Mercurial.class, "MSG_VERSION_NONE_TITLE", "MSG_VERSION_NONE_MSG");// NOI18N
+            logger.closeLog();
         }
     }
 
@@ -362,4 +370,13 @@ public class Mercurial {
         }
     }
 
+    /**
+     *
+     * @param repositoryRoot String of Mercurial repository so that logger writes to correct output tab. Can be null
+     * in which case the logger will not print anything
+     * @return OutputLogger logger to write to
+     */
+    public OutputLogger getLogger(String repositoryRoot) {
+        return OutputLogger.getLogger(repositoryRoot);
+    }
 }

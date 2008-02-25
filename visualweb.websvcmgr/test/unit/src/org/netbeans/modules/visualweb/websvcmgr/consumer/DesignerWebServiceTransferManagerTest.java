@@ -38,23 +38,23 @@
  */
 package org.netbeans.modules.visualweb.websvcmgr.consumer;
 
-import com.sun.tools.ws.processor.model.Operation;
-import com.sun.tools.ws.processor.model.java.JavaMethod;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.Transferable;
 import java.io.File;
 import java.util.HashMap;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlOperation;
 import org.netbeans.modules.websvc.manager.WebServiceManager;
 import org.netbeans.modules.websvc.manager.api.WebServiceDescriptor;
-import org.netbeans.modules.websvc.manager.api.WebServiceMetaDataTransfer;
-import org.netbeans.modules.websvc.manager.api.WebServiceMetaDataTransfer.MethodTransferable;
-import org.netbeans.modules.websvc.manager.api.WebServiceMetaDataTransfer.PortTransferable;
 import org.netbeans.modules.websvc.manager.model.WebServiceData;
 import org.netbeans.modules.websvc.manager.model.WebServiceListModel;
 import org.netbeans.modules.websvc.manager.test.SetupData;
 import org.netbeans.modules.websvc.manager.test.SetupUtil;
+import org.netbeans.modules.websvc.saas.model.Saas;
+import org.netbeans.modules.websvc.saas.model.SaasGroup;
+import org.netbeans.modules.websvc.saas.model.SaasServicesModel;
+import org.netbeans.modules.websvc.saas.model.SaasServicesModelTest;
+import org.netbeans.modules.websvc.saas.model.WsdlSaas;
+import org.netbeans.modules.websvc.saas.util.SaasTransferable;
 import org.openide.util.datatransfer.ExTransferable;
 
 /**
@@ -64,6 +64,7 @@ import org.openide.util.datatransfer.ExTransferable;
 public class DesignerWebServiceTransferManagerTest extends NbTestCase {
 
     private WebServiceData wsData;
+    private WsdlSaas saas;
     private SetupData data;
 
     public DesignerWebServiceTransferManagerTest(String testName) {
@@ -73,13 +74,13 @@ public class DesignerWebServiceTransferManagerTest extends NbTestCase {
     @Override
     protected void setUp() throws Exception {
         super.setUp();
-
+        
         data = SetupUtil.commonSetUp(getWorkDir());
         wsData = new WebServiceData(
                 data.getLocalWsdlFile().getAbsolutePath(),
                 data.getLocalOriginalWsdl().toURI().toURL().toExternalForm(),
                 WebServiceListModel.DEFAULT_GROUP);
-
+        
         wsData.setPackageName("websvc");
         wsData.setCatalog(data.getLocalCatalogFile().getAbsolutePath());
         WebServiceManager.getInstance().addWebService(wsData, false);
@@ -112,6 +113,12 @@ public class DesignerWebServiceTransferManagerTest extends NbTestCase {
 
         wsData.setJaxWsDescriptor(descriptor);
         wsData.setJaxWsDescriptorPath(descriptor.getXmlDescriptor());
+        SaasGroup group = SaasServicesModel.getInstance().getRootGroup();
+        saas = new WsdlSaas(group, "test", data.getLocalOriginalWsdl().toURL().toExternalForm(), "websvc");
+        SaasServicesModelTest.setWsdlData(saas, wsData);
+        saas.toStateReady(true);
+        assertTrue(wsData.isReady());
+        assertEquals(Saas.State.READY, saas.getState());
     }
 
     @Override
@@ -127,9 +134,8 @@ public class DesignerWebServiceTransferManagerTest extends NbTestCase {
     public void testPortAddDataFlavors() throws Exception {
         System.out.println("addDataFlavors(port)");
 
-        String portName = wsData.getWsdlService().getPorts().get(0).getName();
-        Transferable transferable = ExTransferable.create(
-                new PortTransferable(new WebServiceMetaDataTransfer.Port(wsData, portName)));
+        Transferable t = new SaasTransferable(saas.getPorts().get(0), SaasTransferable.WSDL_PORT_FLAVORS);
+        Transferable transferable = ExTransferable.create(t);
 
         HashMap<DataFlavor, Object> origMappings = new HashMap<DataFlavor, Object>();
         DataFlavor[] flavors = transferable.getTransferDataFlavors();
@@ -155,12 +161,8 @@ public class DesignerWebServiceTransferManagerTest extends NbTestCase {
     }
 
     public void testMethodAddDataFlavors() throws Exception {
-        String portName = wsData.getWsdlService().getPorts().get(0).getName();
-        WsdlOperation inOperation = wsData.getWsdlService().getPorts().get(0).getOperations().get(0);
-                
-        JavaMethod javaMethod = ((Operation)inOperation.getInternalJAXWSOperation()).getJavaMethod() ;
-        Transferable  transferable = ExTransferable.create(new MethodTransferable(
-                new WebServiceMetaDataTransfer.Method(wsData, javaMethod, portName, inOperation)));
+        Transferable t = new SaasTransferable(saas.getPorts().get(0).getWsdlMethods().get(0), SaasTransferable.WSDL_METHOD_FLAVORS);
+        Transferable transferable = ExTransferable.create(t);
 
         HashMap<DataFlavor, Object> origMappings = new HashMap<DataFlavor, Object>();
         DataFlavor[] flavors = transferable.getTransferDataFlavors();

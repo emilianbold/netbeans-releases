@@ -56,8 +56,6 @@ import org.netbeans.api.project.ProjectManager;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.java.project.JavaAntLogger;
 import org.netbeans.modules.web.api.webmodule.WebModule;
-import org.netbeans.modules.web.core.jsploader.JspParserAccess;
-import org.netbeans.modules.web.jsps.parserapi.JspParserAPI;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.modules.ModuleInfo;
@@ -99,14 +97,14 @@ final class TestUtil {
         return FileUtil.createData(workDirFO, path);
     }
 
-    static JspParserAPI.WebModule getWebModule(FileObject fo) {
+    static WebModule getWebModule(FileObject fo) {
         WebModule wm =  WebModule.getWebModule(fo);
         if (wm == null) {
             return null;
         }
         FileObject wmRoot = wm.getDocumentBase();
         if (fo == wmRoot || FileUtil.isParentOf(wmRoot, fo)) {
-            return JspParserAccess.getJspParserWM(WebModule.getWebModule(fo));
+            return WebModule.getWebModule(fo);
         }
         return null;
     }

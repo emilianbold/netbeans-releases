@@ -75,13 +75,14 @@ import org.netbeans.modules.xml.xam.Component;
 import org.netbeans.modules.xml.xam.dom.AbstractDocumentComponent;
 import org.netbeans.modules.xml.xam.spi.Validator.ResultType;
 import org.netbeans.modules.bpel.validation.core.Outcome;
+import org.netbeans.modules.bpel.validation.core.BpelValidator;
 import static org.netbeans.modules.soa.ui.util.UI.*;
 
 /**
  * @author Vladimir Yaroslavskiy
  * @version 2007.05.03
  */
-public final class Validator extends org.netbeans.modules.bpel.validation.core.Validator {
+public final class Validator extends BpelValidator {
     
     // vlv
     private void processCorrelationsHolder(CorrelationsHolder holder) {
@@ -160,24 +161,26 @@ public final class Validator extends org.netbeans.modules.bpel.validation.core.V
 
     @Override
     public void visit( Process process ) {
-
         String queryLang = process.getQueryLanguage();
+
         if ( queryLang != null ) {
             addAttributeWarning( Process.QUERY_LANGUAGE, process );
         }
         String expression = process.getExpressionLanguage();
+        
         if ( expression != null ) {
             addAttributeWarning( Process.EXPRESSION_LANGUAGE, process );
         }
         TBoolean value = process.getSuppressJoinFailure();
+        
         if ( value != null ) {
             addAttributeWarning( Process.SUPPRESS_JOIN_FAILURE, process );
         }
         value = process.getExitOnStandardFault();
+        
         if ( value != null ) {
             addAttributeWarning( Process.EXIT_ON_STANDART_FAULT, process );
         }
-        
         // check whether the URI is valid.
         checkValidURI(process, Process.QUERY_LANGUAGE, process.getQueryLanguage());
         checkValidURI(process, Process.EXPRESSION_LANGUAGE, process.getExpressionLanguage());
@@ -189,30 +192,10 @@ public final class Validator extends org.netbeans.modules.bpel.validation.core.V
     }
     
     @Override
-    public void visit( ReThrow reThrow ) {
-       // addElementError( reThrow ); //Rethrow is supported now
-    }
-    
-    @Override
-    public void visit( Compensate compensate ) {
-//      addElementError( compensate );
-    }
-    
-    @Override
     public void visit( PartnerLink partnerLink ) {
         if ( partnerLink.getInitializePartnerRole() != null ) {
             addAttributeWarning( PartnerLink.INITIALIZE_PARTNER_ROLE, partnerLink);
         }
-    }
-    
-    @Override
-    public void visit( CompensationHandler handler ) {
-//      addElementError( handler );
-    }
-    
-    @Override
-    public void visit( TerminationHandler handler ) {
-//      addElementError( handler );
     }
     
     @Override
@@ -241,15 +224,15 @@ public final class Validator extends org.netbeans.modules.bpel.validation.core.V
             addElementsInParentError(invoke, (BpelEntity[])catches);
         }
         CatchAll catchAll = invoke.getCatchAll();
+
         if ( catchAll != null ) {
             addElementsInParentError( invoke, catchAll );
         }
-        
         // Rule: <fromPart>, <toPart> is not supported.
-        if(invoke.getFromPartContaner() != null ) {
+        if (invoke.getFromPartContaner() != null ) {
             addElementsInParentError(invoke, FROM_PARTS);
         }
-        if(invoke.getToPartContaner() != null ) {
+        if (invoke.getToPartContaner() != null ) {
             addElementsInParentError(invoke, TO_PARTS);
         }
     }
@@ -281,27 +264,27 @@ public final class Validator extends org.netbeans.modules.bpel.validation.core.V
             addAttributeWarning( From.PROPERTY, from );
         }
 // # 123382
-//        if ( from.getPartnerLink()!= null ) {
-//            addAttributeWarning( From.PARTNER_LINK, from );
+//        if (from.getPartnerLink() != null) {
+//            addAttributeWarning(From.PARTNER_LINK, from);
 //        }
         if ( from.getEndpointReference()!= null ) {
             addAttributeWarning( From.ENDPOINT_REFERENCE, from );
         }
-        
-        checkAbsenceExtensions( from );
+        checkAbsenceExtensions(from);
     }
     
-    public void visit( To to ) {
-    Documentation[] docs = to.getDocumentations();
-        if ( docs!= null && docs.length>0 ) {
-            addElementsInParentError(to, (BpelEntity[])docs);
+    public void visit(To to) {
+        Documentation[] docs = to.getDocumentations();
+    
+        if (docs!= null && docs.length > 0) {
+            addElementsInParentError(to, (BpelEntity[]) docs);
         }
-        if ( to.getProperty()!= null ) {
+        if (to.getProperty () != null) {
             addAttributeWarning( To.PROPERTY, to );
         }
 // # 123382
-//        if ( to .getPartnerLink()!= null ) {
-//            addAttributeWarning(To.PARTNER_LINK, to );
+//        if (to.getPartnerLink () != null) {
+//            addAttributeWarning(To.PARTNER_LINK, to);
 //        }
         checkAbsenceExtensions( to );
     }
@@ -425,11 +408,6 @@ public final class Validator extends org.netbeans.modules.bpel.validation.core.V
     @Override
     public void  visit(MessageExchangeContainer messageExchangeContainer) {
             addElementError(messageExchangeContainer);
-    }
-
-    @Override
-    public void visit(ExtensionEntity entity) {
-        // TODO a to suuport Logging Alerting extensions
     }
 
     private void checkAbsenceExtensions( ExtensibleElements element ) {

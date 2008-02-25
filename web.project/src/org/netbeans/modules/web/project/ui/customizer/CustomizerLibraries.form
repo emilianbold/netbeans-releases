@@ -31,9 +31,9 @@
                   <Component id="jButton1" alignment="0" max="32767" attributes="1"/>
               </Group>
           </Group>
-          <Component id="jLabelErrorMessage" alignment="0" pref="564" max="32767" attributes="0"/>
-          <Component id="jCheckBoxBuildSubprojects" alignment="0" pref="564" max="32767" attributes="0"/>
-          <Component id="jTabbedPane1" alignment="0" pref="564" max="32767" attributes="0"/>
+          <Component id="jLabelErrorMessage" alignment="0" pref="621" max="32767" attributes="0"/>
+          <Component id="jCheckBoxBuildSubprojects" alignment="0" pref="621" max="32767" attributes="0"/>
+          <Component id="jTabbedPane1" alignment="0" pref="621" max="32767" attributes="0"/>
       </Group>
     </DimensionLayout>
     <DimensionLayout dim="1">

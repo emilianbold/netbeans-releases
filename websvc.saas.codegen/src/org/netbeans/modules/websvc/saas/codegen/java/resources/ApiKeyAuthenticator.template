@@ -1,12 +1,14 @@
-<#assign licenseFirst = "/*">
-<#assign licensePrefix = " * ">
-<#assign licenseLast = " */">
-<#include "../Licenses/license-${project.license}.txt">
+/*
+ * RefConverter.java
+ *
+ * Created on __DATE__, __TIME__
+ *
+ * To change this template, choose Tools | Template Manager
+ * and open the template in the editor.
+ */
 
-<#if package?? && package != "">
-package ${package};
+package Templates.Classes;
 
-</#if>
 import java.io.IOException;
 import java.util.Properties;
 import java.util.logging.Level;
@@ -14,9 +16,9 @@ import java.util.logging.Logger;
 
 /**
  *
- * @author ${user}
+ * @author __USER__
  */
-public class ${name} {
+public class ApiKeyAuthenticator {
 
     private static String apiKey;
     
@@ -24,7 +26,7 @@ public class ${name} {
         try {
             Properties props = new Properties();
             props.load(${name}.class.getResourceAsStream(
-                    "${profile.properties}"));
+                    "profile.properties"));
             apiKey = props.getProperty("api_key");
         } catch (IOException ex) {
             Logger.getLogger(${name}.class.getName()).log(Level.SEVERE, null, ex);

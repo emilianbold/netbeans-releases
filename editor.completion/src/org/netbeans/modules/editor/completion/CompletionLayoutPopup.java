@@ -278,6 +278,12 @@ abstract class CompletionLayoutPopup {
         // to click on its scrollbars etc. will cause the window to be hidden,
         // so force a heavyweight parent by passing in owner==null. (#96717)
         JTextComponent owner = Utilities.isMac() ? null : layout.getEditorComponent();
+
+        // #76648: Autocomplete box is too close to text
+        if(displayAboveCaret && Utilities.isMac()) {
+            popupBounds.y -= 10;
+        }
+        
         popup = factory.getPopup(owner, contComp, popupBounds.x, popupBounds.y);
         popup.show();
 

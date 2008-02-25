@@ -52,6 +52,7 @@ import org.openide.*;
 import org.openide.util.NbBundle;
 import org.netbeans.editor.*;
 import org.netbeans.modules.editor.NbEditorKit;
+import org.openide.awt.Mnemonics;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 
@@ -74,7 +75,6 @@ public class KeyBindingsEditorPanel extends javax.swing.JPanel {
         initComponents ();
         
         getAccessibleContext().setAccessibleDescription(getBundleString("ACSD_KBEP_Panel")); // NOI18N
-        sequencesLabel.setDisplayedMnemonic(getBundleString("KBEP_Sequences_Mnemonic").charAt (0)); // NOI18N
         actionsList.getAccessibleContext().setAccessibleName(getBundleString("ACSN_KBEP_Actions")); // NOI18N
         actionsList.getAccessibleContext().setAccessibleDescription(getBundleString("ACSD_KBEP_Actions")); // NOI18N
         sequencesList.getAccessibleContext().setAccessibleDescription(getBundleString("ACSD_KBEP_Sequences")); // NOI18N
@@ -272,7 +272,8 @@ public class KeyBindingsEditorPanel extends javax.swing.JPanel {
     /**
      * Create our visual representation.
      */
-    private void initComponents() {//GEN-BEGIN:initComponents
+    // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
+    private void initComponents() {
         java.awt.GridBagConstraints gridBagConstraints;
 
         actionsPanel = new javax.swing.JPanel();
@@ -288,34 +289,30 @@ public class KeyBindingsEditorPanel extends javax.swing.JPanel {
         addSequenceButton = new javax.swing.JButton();
         removeSequenceButton = new javax.swing.JButton();
 
+        setBorder(javax.swing.BorderFactory.createEmptyBorder(12, 12, 11, 11));
         setLayout(new java.awt.BorderLayout(0, 12));
 
-        setBorder(new javax.swing.border.EmptyBorder(new java.awt.Insets(12, 12, 11, 11)));
+        actionsPanel.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0), getBundleString("KBEP_Actions")));
         actionsPanel.setLayout(new java.awt.GridBagLayout());
 
-        actionsPanel.setBorder(new javax.swing.border.TitledBorder(new javax.swing.border.EmptyBorder(new java.awt.Insets(0, 0, 0, 0)), getBundleString("KBEP_Actions")));
         sortButtonsPanel.setLayout(new java.awt.GridBagLayout());
 
-        nameSortRadioButton.setMnemonic(getBundleString ("KBEP_name_sort_button_mnemonic").charAt (0));
-        nameSortRadioButton.setText(getBundleString ("KBEP_name_sort_button"));
+        org.openide.awt.Mnemonics.setLocalizedText(nameSortRadioButton, getBundleString ("KBEP_name_sort_button"));
         nameSortRadioButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 nameSortRadioButtonActionPerformed(evt);
             }
         });
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         sortButtonsPanel.add(nameSortRadioButton, gridBagConstraints);
 
-        actionSortRadioButton.setMnemonic(getBundleString ("KBEP_action_sort_button_mnemonic").charAt (0));
-        actionSortRadioButton.setText(getBundleString ("KBEP_action_sort_button"));
+        org.openide.awt.Mnemonics.setLocalizedText(actionSortRadioButton, getBundleString ("KBEP_action_sort_button"));
         actionSortRadioButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 actionSortRadioButtonActionPerformed(evt);
             }
         });
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.weightx = 1.0;
@@ -335,7 +332,6 @@ public class KeyBindingsEditorPanel extends javax.swing.JPanel {
                 actionsListValueChanged(evt);
             }
         });
-
         actionsScrollPane.setViewportView(actionsList);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -352,20 +348,20 @@ public class KeyBindingsEditorPanel extends javax.swing.JPanel {
         sequencesPanel.setLayout(new java.awt.GridBagLayout());
 
         sequencesLabel.setLabelFor(sequencesList);
-        sequencesLabel.setText(getBundleString("KBEP_Sequences"));
+        org.openide.awt.Mnemonics.setLocalizedText(sequencesLabel, getBundleString("KBEP_Sequences"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 2, 12);
         sequencesPanel.add(sequencesLabel, gridBagConstraints);
 
         sequencesScrollPane.setPreferredSize(new java.awt.Dimension(259, 80));
+
         sequencesList.setCellRenderer(new KeySequenceCellRenderer());
         sequencesList.addListSelectionListener(new javax.swing.event.ListSelectionListener() {
             public void valueChanged(javax.swing.event.ListSelectionEvent evt) {
                 sequencesListValueChanged(evt);
             }
         });
-
         sequencesScrollPane.setViewportView(sequencesList);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -378,15 +374,13 @@ public class KeyBindingsEditorPanel extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 12);
         sequencesPanel.add(sequencesScrollPane, gridBagConstraints);
 
-        addSequenceButton.setMnemonic(getBundleString ("KBEP_Add_Mnemonic").charAt (0));
-        addSequenceButton.setText(getBundleString( "KBEP_Add" ));
+        org.openide.awt.Mnemonics.setLocalizedText(addSequenceButton, getBundleString( "KBEP_Add" ));
         addSequenceButton.setEnabled(false);
         addSequenceButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 addSequenceButtonActionPerformed(evt);
             }
         });
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 1;
@@ -394,15 +388,13 @@ public class KeyBindingsEditorPanel extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 5, 0);
         sequencesPanel.add(addSequenceButton, gridBagConstraints);
 
-        removeSequenceButton.setMnemonic(getBundleString ("KBEP_Remove_Mnemonic").charAt (0));
-        removeSequenceButton.setText(getBundleString( "KBEP_Remove" ));
+        org.openide.awt.Mnemonics.setLocalizedText(removeSequenceButton, getBundleString( "KBEP_Remove" ));
         removeSequenceButton.setEnabled(false);
         removeSequenceButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 removeSequenceButtonActionPerformed(evt);
             }
         });
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 2;
@@ -410,8 +402,7 @@ public class KeyBindingsEditorPanel extends javax.swing.JPanel {
         sequencesPanel.add(removeSequenceButton, gridBagConstraints);
 
         add(sequencesPanel, java.awt.BorderLayout.SOUTH);
-
-    }//GEN-END:initComponents
+    }// </editor-fold>//GEN-END:initComponents
 
     private void nameSortRadioButtonActionPerformed (java.awt.event.ActionEvent evt) {//GEN-FIRST:event_nameSortRadioButtonActionPerformed
         sortActionsList ();
@@ -456,18 +447,18 @@ public class KeyBindingsEditorPanel extends javax.swing.JPanel {
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JList sequencesList;
-    private javax.swing.JButton addSequenceButton;
-    private javax.swing.JPanel sortButtonsPanel;
-    private javax.swing.JPanel actionsPanel;
-    private javax.swing.JScrollPane sequencesScrollPane;
     private javax.swing.JRadioButton actionSortRadioButton;
-    private javax.swing.JPanel sequencesPanel;
+    private javax.swing.JList actionsList;
+    private javax.swing.JPanel actionsPanel;
     private javax.swing.JScrollPane actionsScrollPane;
+    private javax.swing.JButton addSequenceButton;
     private javax.swing.JRadioButton nameSortRadioButton;
     private javax.swing.JButton removeSequenceButton;
     private javax.swing.JLabel sequencesLabel;
-    private javax.swing.JList actionsList;
+    private javax.swing.JList sequencesList;
+    private javax.swing.JPanel sequencesPanel;
+    private javax.swing.JScrollPane sequencesScrollPane;
+    private javax.swing.JPanel sortButtonsPanel;
     // End of variables declaration//GEN-END:variables
 
     /**
@@ -480,14 +471,14 @@ public class KeyBindingsEditorPanel extends javax.swing.JPanel {
         Dialog dial;
 
         Object[] buttons = { new JButton( getBundleString( "KBEP_OK_LABEL" ) ), // NOI18N
-                             new JButton( getBundleString("KBEP_CLEAR_LABEL" ) ), // NOI18N
+                             new JButton(), // NOI18N
                              DialogDescriptor.CANCEL_OPTION };
         KeySequence retVal = null;
 
         KeySequenceRequester() {
             ((JButton)buttons[0]).getAccessibleContext().setAccessibleDescription(LocaleSupport.getString("ACSD_KBEP_OK")); // NOI18N
             ((JButton)buttons[1]).getAccessibleContext().setAccessibleDescription(LocaleSupport.getString("ACSD_KBEP_CLEAR")); // NOI18N
-            ((JButton)buttons[1]).setMnemonic (getBundleString("KBEP_CLEAR_Mnemonic").charAt (0)); // NOI18N
+            Mnemonics.setLocalizedText((JButton)buttons[1],  getBundleString("KBEP_CLEAR_LABEL" ));
             ((JButton)buttons[0]).setEnabled( false ); // default initial state
 
             // Prepare KeySequence input dialog

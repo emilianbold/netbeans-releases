@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -52,6 +52,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -80,25 +81,34 @@ final class GemRunner {
     }
 
     boolean fetchBoth() {
-        return gemRunner("list", null, null, "--both");
+        return gemRunner("list", null, null, "--both"); // NOI18N
     }
 
     boolean fetchRemote() {
-        return gemRunner("list", null, null, "--remote");
+        return gemRunner("list", null, null, "--remote"); // NOI18N
     }
 
     boolean fetchLocal() {
-        return gemRunner("list", null, null, "--local");
+        return gemRunner("list", null, null, "--local"); // NOI18N
     }
     
     boolean install(final List<String> gemNames, boolean rdoc, boolean ri, boolean includeDeps,
             String version) {
-        return install(gemNames, rdoc, ri, includeDeps, version, null, null);
+        return installRemote(gemNames, rdoc, ri, includeDeps, version, null, null);
+    }
+
+    boolean installLocal(File gem, boolean rdoc, boolean ri) {
+        return installLocal(gem, rdoc, ri, null, null);
     }
 
     boolean installAsynchronously(List<String> gemNames, boolean rdoc, boolean ri,
             boolean includeDeps, String version, Runnable asyncCompletionTask, Component parent) {
-        return install(gemNames, rdoc, ri, includeDeps, version, asyncCompletionTask, parent);
+        return installRemote(gemNames, rdoc, ri, includeDeps, version, asyncCompletionTask, parent);
+    }
+
+    boolean installLocalAsynchronously(File gem, boolean rdoc, boolean ri,
+            Runnable asyncCompletionTask, Component parent) {
+        return installLocal(gem, rdoc, ri, asyncCompletionTask, parent);
     }
 
     boolean update(final List<String> gemNames, boolean rdoc, boolean ri) {
@@ -118,15 +128,14 @@ final class GemRunner {
         return uninstall(gemNames, asyncCompletionTask, parent);
     }
 
-    private boolean install(final List<String> gemNames, boolean rdoc, boolean ri, boolean includeDeps,
-            String version, Runnable asyncCompletionTask, Component parent) {
+    private boolean install(final List<String> gems, boolean rdoc, boolean ri, boolean includeDeps,
+            String version, Runnable asyncCompletionTask, Component parent, boolean local) {
         List<String> argList = new ArrayList<String>();
 
-        for (String gemname : gemNames) {
-            argList.add(gemname);
+        for (String gem : gems) {
+            argList.add(gem);
         }
 
-        //argList.add("--verbose"); // NOI18N
         if (!rdoc) {
             argList.add("--no-rdoc"); // NOI18N
         }
@@ -161,6 +170,17 @@ final class GemRunner {
         } else {
             return gemRunner(gemCmd, null, null, args);
         }
+    }
+    
+    private boolean installRemote(final List<String> gemNames, boolean rdoc, boolean ri, boolean includeDeps,
+            String version, Runnable asyncCompletionTask, Component parent) {
+        return install(gemNames, rdoc, ri, includeDeps, version, asyncCompletionTask, parent, false);
+    }
+
+    private boolean installLocal(final File gem, boolean rdoc,
+            boolean ri, Runnable asyncCompletionTask, Component parent) {
+        // XXX make 'includeDeps' customizable
+        return install(Collections.singletonList(gem.getAbsolutePath()), rdoc, ri, false, null, asyncCompletionTask, parent, true);
     }
 
     private boolean update(final List<String> gemNames, boolean rdoc, boolean ri,

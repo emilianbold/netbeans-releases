@@ -543,6 +543,10 @@ public final class AntProjectHelper {
      */
     private void save() throws IOException {
         assert ProjectManager.mutex().isWriteAccess();
+        if (!getProjectDirectory().isValid()) {
+            //ProjectManager.saveProject() is called when project is deleted externally..
+            return;
+        }
         Set<FileLock> locks = new HashSet<FileLock>();
         try {
             synchronized (modifiedMetadataPaths) {

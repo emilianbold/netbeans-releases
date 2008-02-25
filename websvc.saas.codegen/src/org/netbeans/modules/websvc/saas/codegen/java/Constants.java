@@ -56,7 +56,63 @@ public class Constants {
     public static final String XML_ELEMENT_ANNOTATION = "XmlElement";  //NOI18N
     
     public static final String XML_ATTRIBUTE_ANNOTATION = "XmlAttribute";  //NOI18N
+    
+    public static final String PATH_ANNOTATION = "Path"; //NOI18N
+    
+    public static final String URI_PARAM_ANNOTATION = "UriParam";       //NOI18N
+    
+    public static final String QUERY_PARAM_ANNOTATION = "QueryParam";       //NOI18N
+    
+    public static final String DEFAULT_VALUE_ANNOTATION = "DefaultValue";       //NOI18N
+    
+    public static final String GET_ANNOTATION = "GET";   //NOI18N
+    
+    public static final String POST_ANNOTATION = "POST";   //NOI18N
+    
+    public static final String PUT_ANNOTATION = "PUT";   //NOI18N
+    
+    public static final String DELETE_ANNOTATION = "DELETE";   //NOI18N
+    
+    public static final String PRODUCE_MIME_ANNOTATION = "ProduceMime"; //NOI18N
+    
+    public static final String CONSUME_MIME_ANNOTATION = "ConsumeMime"; //NOI18N
+    
+    public static final String HTTP_CONTEXT_ANNOTATION = "HttpContext";     //NOI18N
 
+    public static final String REST_API_PACKAGE = "javax.ws.rs.";       //NOI18N
+    
+    public static final String PATH = REST_API_PACKAGE + PATH_ANNOTATION;
+    
+    public static final String GET = REST_API_PACKAGE + GET_ANNOTATION;
+    
+    public static final String POST = REST_API_PACKAGE + POST_ANNOTATION;
+    
+    public static final String PUT = REST_API_PACKAGE + PUT_ANNOTATION;
+    
+    public static final String DELETE = REST_API_PACKAGE + DELETE_ANNOTATION;
+    
+    public static final String PRODUCE_MIME = REST_API_PACKAGE + PRODUCE_MIME_ANNOTATION;
+    
+    public static final String CONSUME_MIME = REST_API_PACKAGE + CONSUME_MIME_ANNOTATION;
+    
+    public static final String URI_PARAM = REST_API_PACKAGE + URI_PARAM_ANNOTATION;
+    
+    public static final String QUERY_PARAM = REST_API_PACKAGE + QUERY_PARAM_ANNOTATION;
+    
+    public static final String DEFAULT_VALUE = REST_API_PACKAGE + DEFAULT_VALUE_ANNOTATION;
+
+    public static final String WEB_APPLICATION_EXCEPTION = REST_API_PACKAGE + "WebApplicationException";
+    
+    public static final String HTTP_RESPONSE = REST_API_PACKAGE + "core.Response"; //NOI18N
+    
+    public static final String RESPONSE_BUILDER = REST_API_PACKAGE + "core.Response.Builder";       //NOI8N
+    
+    public static final String ENTITY_TYPE = REST_API_PACKAGE + "Entity";
+    
+    public static final String HTTP_CONTEXT = REST_API_PACKAGE + "core.HttpContext";    //NOI18N
+    
+    public static final String URI_INFO = REST_API_PACKAGE + "core.UriInfo";     //NOI18N
+    
     public static final String URI_TYPE = "java.net.URI";       //NOI18N
     
     public static final String QUERY_TYPE = "javax.persistence.Query";       //NOI18N
@@ -138,6 +194,33 @@ public class Constants {
         
         public String toString() {
             return value;
+        }
+    }
+    
+    public enum HttpMethodType {
+        GET("get", Constants.GET), 
+        PUT("put", Constants.PUT),
+        POST("post", Constants.POST),
+        DELETE("delete", Constants.DELETE);
+        
+        private String prefix; 
+        private String annotationType;
+        
+        HttpMethodType(String prefix, String annotationType) {
+            this.prefix = prefix;
+            this.annotationType = annotationType;
+        }
+        
+        public String value() {
+            return name();
+        }
+        
+        public String prefix() {
+            return prefix;
+        }
+        
+        public String getAnnotationType() {
+            return annotationType;
         }
     }
    

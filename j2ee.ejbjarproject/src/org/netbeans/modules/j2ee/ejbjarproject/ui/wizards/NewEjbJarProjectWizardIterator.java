@@ -54,8 +54,10 @@ import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.j2ee.api.ejbjar.Ear;
+import org.netbeans.modules.j2ee.common.SharabilityUtility;
+import org.netbeans.modules.j2ee.common.project.ui.UserProjectSettings;
+import org.netbeans.modules.j2ee.common.project.ui.PanelSharability;
 import org.netbeans.modules.j2ee.ejbjarproject.EjbJarProject;
-import org.netbeans.modules.j2ee.ejbjarproject.ui.FoldersListSettings;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 
 import org.openide.WizardDescriptor;
@@ -78,12 +80,14 @@ public class NewEjbJarProjectWizardIterator implements WizardDescriptor.Progress
 
     // Make sure list of steps is accurate.
     private static final String[] STEPS = new String[] {
-                                NbBundle.getBundle("org/netbeans/modules/j2ee/ejbjarproject/ui/wizards/Bundle").getString("LBL_NWP1_ProjectTitleName"), //NOI18N
-                            };
+        NbBundle.getBundle("org/netbeans/modules/j2ee/ejbjarproject/ui/wizards/Bundle").getString("LBL_NWP1_ProjectTitleName"), //NOI18N
+        NbBundle.getMessage(NewEjbJarProjectWizardIterator.class, "PanelShareabilityVisual.label")
+    };
 
     private WizardDescriptor.Panel[] createPanels() {
         return new WizardDescriptor.Panel[] {
             new PanelConfigureProject(),
+            new PanelSharability(WizardProperties.PROJECT_DIR, WizardProperties.SERVER_INSTANCE_ID, true)
         };
     }
 
@@ -104,8 +108,13 @@ public class NewEjbJarProjectWizardIterator implements WizardDescriptor.Progress
         String name = (String) wiz.getProperty(WizardProperties.NAME);
         String serverInstanceID = (String) wiz.getProperty(WizardProperties.SERVER_INSTANCE_ID);
         String j2eeLevel = (String) wiz.getProperty(WizardProperties.J2EE_LEVEL);
+        String librariesDefinition =
+                SharabilityUtility.getLibraryLocation((String) wiz.getProperty(PanelSharability.WIZARD_SHARED_LIBRARIES));
+        String serverLibraryName = (String) wiz.getProperty(PanelSharability.WIZARD_SERVER_LIBRARY);
         
-        AntProjectHelper h = EjbJarProjectGenerator.createProject(dirF, name, j2eeLevel, serverInstanceID);
+        AntProjectHelper h = EjbJarProjectGenerator.createProject(dirF, name,
+                j2eeLevel, serverInstanceID, librariesDefinition, serverLibraryName);
+        
         handle.progress(2);
         FileObject dir = FileUtil.toFileObject(dirF);
         
@@ -119,7 +128,7 @@ public class NewEjbJarProjectWizardIterator implements WizardDescriptor.Progress
         }
         
         // remember last used server
-    	FoldersListSettings.getDefault().setLastUsedServer(serverInstanceID);
+    	UserProjectSettings.getDefault().setLastUsedServer(serverInstanceID);
         
         // downgrade the Java platform or src level to 1.4        
         String platformName = (String)wiz.getProperty(WizardProperties.JAVA_PLATFORM);

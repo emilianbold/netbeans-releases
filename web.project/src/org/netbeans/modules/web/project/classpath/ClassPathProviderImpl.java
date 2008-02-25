@@ -48,6 +48,7 @@ import java.util.HashMap;
 
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.project.SourceGroup;
+import org.netbeans.modules.j2ee.common.project.ui.ProjectProperties;
 import org.netbeans.modules.java.api.common.SourceRoots;
 import org.netbeans.modules.web.project.ui.customizer.WebProjectProperties;
 import org.netbeans.spi.java.classpath.ClassPathFactory;
@@ -127,7 +128,7 @@ public final class ClassPathProviderImpl implements ClassPathProvider, PropertyC
     }
 
     private FileObject getBuildClassesDir() {
-        return getDir(WebProjectProperties.BUILD_CLASSES_DIR);
+        return getDir(ProjectProperties.BUILD_CLASSES_DIR);
     }
     
     private FileObject getDistJar() {
@@ -135,7 +136,7 @@ public final class ClassPathProviderImpl implements ClassPathProvider, PropertyC
     }
     
     private FileObject getBuildTestClassesDir() {
-        return getDir(WebProjectProperties.BUILD_TEST_CLASSES_DIR);
+        return getDir(ProjectProperties.BUILD_TEST_CLASSES_DIR);
     }
 
     private FileObject getDocumentBaseDir() {
@@ -376,7 +377,7 @@ public final class ClassPathProviderImpl implements ClassPathProvider, PropertyC
         for (int i=0; i<path.length; i++) {
             if (root.equals(path[i])) {
                 if (ClassPath.COMPILE.equals(type)) {
-                    return WebProjectProperties.JAVAC_CLASSPATH;
+                    return ProjectProperties.JAVAC_CLASSPATH;
                 }
                 else if (ClassPath.EXECUTE.equals(type)) {
                     return WebProjectProperties.DEBUG_CLASSPATH;
@@ -390,10 +391,10 @@ public final class ClassPathProviderImpl implements ClassPathProvider, PropertyC
         for (int i=0; i<path.length; i++) {
             if (root.equals(path[i])) {
                 if (ClassPath.COMPILE.equals(type)) {
-                    return WebProjectProperties.JAVAC_TEST_CLASSPATH;
+                    return ProjectProperties.JAVAC_TEST_CLASSPATH;
                 }
                 else if (ClassPath.EXECUTE.equals(type)) {
-                    return WebProjectProperties.RUN_TEST_CLASSPATH;
+                    return ProjectProperties.RUN_TEST_CLASSPATH;
                 }
                 else {
                     return null;

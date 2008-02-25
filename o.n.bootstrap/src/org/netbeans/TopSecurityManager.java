@@ -54,18 +54,11 @@ import java.security.Permission;
 import java.security.PrivilegedActionException;
 import java.security.PrivilegedExceptionAction;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
-import java.util.prefs.PreferenceChangeEvent;
-import java.util.prefs.PreferenceChangeListener;
-import java.util.prefs.Preferences;
 import org.openide.util.Lookup;
-import org.openide.util.Lookup.Item;
-import org.openide.util.NbPreferences;
 
 /** NetBeans security manager implementation.
 * @author Ales Novak, Jesse Glick
@@ -109,10 +102,7 @@ public class TopSecurityManager extends SecurityManager {
             if (delegates.contains(sm)) throw new SecurityException();
             delegates.add(sm);
             if (fsSecManager == null) {
-                Lookup.Result<SecurityManager> res = Lookup.getDefault().lookup(new Lookup.Template(SecurityManager.class));
-                Iterator<? extends Item<SecurityManager>> it = res.allItems().iterator();
-                for (; it.hasNext();) {
-                    Lookup.Item<SecurityManager> item = it.next();
+                for (Lookup.Item<SecurityManager> item : Lookup.getDefault().lookupResult(SecurityManager.class).allItems()) {
                     if (item != null && "org.netbeans.modules.masterfs.filebasedfs.utils.FileChangedManager".equals(item.getId())) {//NOI18N
                         fsSecManager = item.getInstance();
                         break;

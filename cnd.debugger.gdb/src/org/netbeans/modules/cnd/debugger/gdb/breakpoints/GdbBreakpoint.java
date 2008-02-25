@@ -45,9 +45,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.HashSet;
 import java.util.Iterator;
-
 import org.netbeans.api.debugger.Breakpoint;
-
 import org.netbeans.modules.cnd.debugger.gdb.event.GdbBreakpointEvent;
 import org.netbeans.modules.cnd.debugger.gdb.event.GdbBreakpointListener;
 import org.netbeans.modules.cnd.debugger.gdb.GdbDebugger;
@@ -64,6 +62,7 @@ import org.openide.util.Utilities;
 public abstract class GdbBreakpoint extends Breakpoint {
     
     public static final String          PROP_SUSPEND = "suspend"; // NOI18N
+    public static final String          PROP_THREAD_ID = "threadID"; // NOI18N
     public static final String          PROP_HIDDEN = "hidden"; // NOI18N
     public static final String          PROP_PRINT_TEXT = "printText"; // NOI18N
     public static final String          PROP_BREAKPOINT_STATE = "breakpointState"; // NOI18N
@@ -71,10 +70,15 @@ public abstract class GdbBreakpoint extends Breakpoint {
     public static final String          PROP_URL = "url"; // NOI18N
     public static final String          PROP_CONDITION = "condition"; // NOI18N
     
+    public static final int             SUSPEND_NONE = 0;
+    public static final int             SUSPEND_THREAD = 1;
+    public static final int             SUSPEND_ALL = 2;
+    
     private int                         lineNumber;
     private boolean                     enabled = true;
     private boolean                     hidden = false;
-    private int                         suspend = 0; // Not fully implemented yet!
+    private int                         suspend = SUSPEND_ALL;
+    private String                      threadID = "1"; // NOI18N
     private String                      printText;
     private HashSet                     breakpointListeners = new HashSet();
     private GdbDebugger                 debugger;
@@ -140,6 +144,8 @@ public abstract class GdbBreakpoint extends Breakpoint {
      * @param file name
      */
     public void setURL(String url) {
+        String old;
+        
         synchronized (this) {
             if (url != null && this.url != null && url.equals(this.url)) {
                 return;
@@ -173,9 +179,10 @@ public abstract class GdbBreakpoint extends Breakpoint {
             } catch (Exception ex) {
                 assert !Boolean.getBoolean("gdb.assertions.enabled"); // NOI18N
             }
+            old = this.url;
             this.url = url;
+            firePropertyChange (PROP_URL, old, url);
         }
-//        firePropertyChange(PROP_URL, old, url);
     }
     
     /**
@@ -224,12 +231,30 @@ public abstract class GdbBreakpoint extends Breakpoint {
      * @param s a new value of suspend property
      */
     public void setSuspend(int s) {
-        if (s == suspend) {
+        setSuspend(s, "");
+    }
+    
+    /**
+     * Sets value of suspend property.
+     *
+     * @param s a new value of suspend property
+     */
+    public void setSuspend(int s, String threadID) {
+        if (s == suspend && this.threadID.equals(threadID)) {
             return;
         }
-        int old = suspend;
+        if (threadID.length() == 0) {
+            threadID = this.threadID;
+        }
+        String old = Integer.toString(suspend) + ':' + this.threadID;
+        String nu = Integer.toString(s) + ':' + threadID;
         suspend = s;
-        firePropertyChange(PROP_SUSPEND, new Integer(old), new Integer(s));
+        this.threadID = threadID;
+        firePropertyChange(PROP_SUSPEND, old, nu);
+    }
+    
+    public String getThreadID() {
+        return threadID;
     }
     
     /**
@@ -270,7 +295,7 @@ public abstract class GdbBreakpoint extends Breakpoint {
      * @param printText a new value of print text property
      */
     public void setPrintText(String printText) {
-        if (this.printText == null || this.printText.equals(printText)) {
+        if (printText == null || printText.equals(this.printText)) {
             return;
         }
         String old = this.printText;

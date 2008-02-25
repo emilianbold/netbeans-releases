@@ -40,7 +40,6 @@
 package org.netbeans.modules.cnd.editor.reformat;
 
 import org.netbeans.api.lexer.Token;
-import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.cnd.api.lexer.CppTokenId;
 
 /**
@@ -53,11 +52,14 @@ class StackEntry {
     private CppTokenId kind;
     private CppTokenId importantKind;
     private boolean likeToFunction = false;
+    private boolean likeToArrayInitialization = false;
+    private String text;
 
-    StackEntry(TokenSequence<CppTokenId> ts) {
+    StackEntry(ExtendedTokenSequence ts) {
         super();
         index = ts.index();
         kind = ts.token().id();
+        text = ts.token().text().toString();
         switch (kind) {
             case IF: //("if", "keyword-directive"),
             case ELSE: //("else", "keyword-directive"),
@@ -75,7 +77,7 @@ class StackEntry {
         }
     }
 
-    private void initImportant(TokenSequence<CppTokenId> ts) {
+    private void initImportant(ExtendedTokenSequence ts) {
         int i = ts.index();
         try {
             int paren = 0;
@@ -87,20 +89,6 @@ class StackEntry {
                 }
                 Token<CppTokenId> current = ts.token();
                 switch (current.id()) {
-                    case RBRACE: //("}", "separator"),
-                    {
-                        curly++;
-                        break;
-                    }
-                    case LBRACE: //("{", "separator"),
-                    {
-                        if (curly == 0) {
-                            // undefined
-                            return;
-                        }
-                        curly--;
-                        break;
-                    }
                     case RPAREN: //(")", "separator"),
                     {
                         if (paren == 0 && curly == 0 && triangle == 0) {
@@ -112,16 +100,26 @@ class StackEntry {
                     case LPAREN: //("(", "separator"),
                     {
                         if (paren == 0) {
-                            // undefined
+                            likeToArrayInitialization = true;
                             return;
                         }
                         paren--;
                         break;
                     }
+                    case RBRACE: //("}", "separator"),
+                    case LBRACE: //("{", "separator"),
                     case SEMICOLON: //(";", "separator"),
                     {
                         if (paren == 0 && curly == 0 && triangle == 0) {
                             // undefined
+                            return;
+                        }
+                        break;
+                    }
+                    case EQ: //("=", "operator"),
+                    {
+                        if (paren == 0) {
+                            likeToArrayInitialization = true;
                             return;
                         }
                         break;
@@ -158,10 +156,19 @@ class StackEntry {
                         }
                         break;
                     }
+                    case EXTERN: //EXTERN("extern", "keyword"),
+                    {
+                        if (paren == 0 && curly == 0 && triangle == 0) {
+                            if (!likeToFunction) {
+                                importantKind = CppTokenId.NAMESPACE;
+                                return;
+                            }
+                        }
+                        break;
+                    }
                     case IF: //("if", "keyword-directive"),
                     case ELSE: //("else", "keyword-directive"),
                     case SWITCH: //("switch", "keyword-directive"),
-                    case CASE: //("case", "keyword-directive"),
                     case WHILE: //("while", "keyword-directive"),
                     case DO: //("do", "keyword-directive"),
                     case FOR: //("for", "keyword-directive"),
@@ -185,6 +192,10 @@ class StackEntry {
     public int getIndex() {
         return index;
     }
+    
+    public String getText() {
+        return text;
+    }
 
     public CppTokenId getKind() {
         return kind;
@@ -198,12 +209,23 @@ class StackEntry {
         return likeToFunction;
     }
 
+    public boolean isLikeToArrayInitialization() {
+        return likeToArrayInitialization;
+    }
+
+    public void setLikeToArrayInitialization(boolean likeToArrayInitialization) {
+        this.likeToArrayInitialization = likeToArrayInitialization;
+    }
+
+    @Override
     public String toString(){
         StringBuilder buf = new StringBuilder(kind.name());
         if (importantKind != null && kind != importantKind){
-            buf.append("("+importantKind.name()+")");
+            buf.append("("+importantKind.name()+")"); // NOI18N
         } else if (likeToFunction) {
-            buf.append("(FUNCTION)");
+            buf.append("(FUNCTION)"); // NOI18N
+        } else if (likeToArrayInitialization) {
+            buf.append("(ARRAY_INITIALIZATION)"); // NOI18N
         }
         return buf.toString();
     }

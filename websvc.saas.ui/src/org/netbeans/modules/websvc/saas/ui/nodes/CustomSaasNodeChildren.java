@@ -41,6 +41,7 @@ package org.netbeans.modules.websvc.saas.ui.nodes;
 
 import java.util.Collections;
 import org.netbeans.modules.websvc.saas.model.CustomSaas;
+import org.netbeans.modules.websvc.saas.model.CustomSaasMethod;
 import org.netbeans.modules.websvc.saas.model.Saas;
 import org.netbeans.modules.websvc.saas.model.SaasMethod;
 import org.openide.nodes.Node;
@@ -87,7 +88,7 @@ public class CustomSaasNodeChildren extends SaasNodeChildren<SaasMethod> {
         if (needsWaiting()) {
             return getWaitNode();
         }
-        return new Node[] { new SaasMethodNode(getSaas(), key) };
+        return new Node[] { new CustomMethodNode((CustomSaasMethod) key) };
     }
 
 }

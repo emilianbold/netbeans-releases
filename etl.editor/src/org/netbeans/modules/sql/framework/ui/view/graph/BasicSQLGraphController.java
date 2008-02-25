@@ -191,6 +191,7 @@ public class BasicSQLGraphController implements IGraphController {
                     dlgDesc = new DialogDescriptor(selectorPnl, dlgTitle, true, NotifyDescriptor.OK_CANCEL_OPTION, NotifyDescriptor.OK_OPTION, DialogDescriptor.DEFAULT_ALIGN, null, null);
 
                     Dialog dlg = DialogDisplayer.getDefault().createDialog(dlgDesc);
+                    dlg.getAccessibleContext().setAccessibleDescription("This dialog helps user to add a table");
                     dlg.setVisible(true);
                     SQLDBTable sTable = null;
                     if (NotifyDescriptor.OK_OPTION == dlgDesc.getValue()) {
@@ -780,6 +781,7 @@ public class BasicSQLGraphController implements IGraphController {
                     String title = Localizer.parse(nbBundle14);
                     DialogDescriptor dlgDesc = new DialogDescriptor(customOptPane, title, true, NotifyDescriptor.OK_CANCEL_OPTION, NotifyDescriptor.OK_OPTION, DialogDescriptor.DEFAULT_ALIGN, null, null);
                     Dialog customOptDialog = DialogDisplayer.getDefault().createDialog(dlgDesc);
+                    customOptDialog.getAccessibleContext().setAccessibleDescription("This dialog hepls user configure user-defined functions");
                     customOptDialog.setVisible(true);
                     if (NotifyDescriptor.CANCEL_OPTION == dlgDesc.getValue()) {
                         return;

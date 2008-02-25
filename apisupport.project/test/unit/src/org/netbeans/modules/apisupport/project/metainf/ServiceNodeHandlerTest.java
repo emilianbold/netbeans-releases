@@ -205,8 +205,8 @@ public class ServiceNodeHandlerTest extends  TestBase {
        }
     }    
     public void testNbOrgModule() throws Exception {
-        FileObject prjFo = nbCVSRoot().getFileObject("openide/fs");
-        FileObject prj2Fo = nbCVSRoot().getFileObject("openide/masterfs");
+        FileObject prjFo = nbRoot().getFileObject("openide.filesystems");
+        FileObject prj2Fo = nbRoot().getFileObject("masterfs");
         deleteService(prjFo,"org.myservice");   
         deleteService(prj2Fo,"org.myservice");   
         try {
@@ -335,11 +335,6 @@ public class ServiceNodeHandlerTest extends  TestBase {
 	printNodes(nodes,buff);
     }
     
-    public void log (String string) {
-	System.out.println(string);
-	super.log(string);
-    }
-
     private Node[] exploreNodes(ServiceNodeHandler.ServiceRootChildren children) throws Exception {
         List<String> events = new ArrayList<String>();
         events.add(SUtil.LOG_COMPUTE_KEYS);
@@ -353,6 +348,7 @@ public class ServiceNodeHandlerTest extends  TestBase {
     
     private static void deleteServiceFolder(NbModuleProject prj) throws IOException {
         FileObject srcDir = prj.getSourceDirectory();
+        // XXX huh?!
         FileObject serviceFo = FileUtil.createData(srcDir,"META-INF/services");
         final FileObject miFo = FileUtil.createData(srcDir,"META-INF");
         miFo.getFileSystem().runAtomicAction(new AtomicAction() {

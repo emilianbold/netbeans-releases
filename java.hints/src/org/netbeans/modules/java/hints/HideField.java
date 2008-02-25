@@ -28,6 +28,7 @@
 package org.netbeans.modules.java.hints;
 
 import com.sun.source.tree.Tree.Kind;
+import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
 import java.io.IOException;
 import java.util.Collections;
@@ -74,7 +75,7 @@ public class HideField extends AbstractHint {
         return EnumSet.of(Kind.VARIABLE);
     }
 
-    protected List<Fix> computeFixes(CompilationInfo compilationInfo, TreePath treePath, Document doc, int[] bounds) {
+    protected List<Fix> computeFixes(CompilationInfo compilationInfo, TreePath treePath, int[] bounds) {
         stop = false;
         
         Element el = compilationInfo.getTrees().getElement(treePath);
@@ -100,12 +101,8 @@ public class HideField extends AbstractHint {
             return null;
         }
         
-        int[] span = Utilities.findIdentifierSpan(
-            treePath,
-            compilationInfo,
-            doc
-        );
-        if (span[0] == (-1) || span[1] == (-1)) {
+        int[] span = compilationInfo.getTreeUtilities().findNameSpan((VariableTree) treePath.getLeaf());
+        if (span == null) {
             return null;
         }
         List<Fix> fixes = Collections.<Fix>singletonList(new FixImpl(
@@ -121,36 +118,22 @@ public class HideField extends AbstractHint {
     
     public List<ErrorDescription> run(CompilationInfo compilationInfo,
                                       TreePath treePath) {
-        try {
-            Document doc = compilationInfo.getDocument();
-            
-            if (doc == null) {
-                return null;
-            }
-        
-            int[] span = new int[2];
-            List<Fix> fixes = computeFixes(compilationInfo, treePath, doc, span);
-            if (fixes == null) {
-                return null;
-            }
-
-            ErrorDescription ed = ErrorDescriptionFactory.createErrorDescription(
-                getSeverity().toEditorSeverity(),
-                getDisplayName(),
-                fixes,
-                doc,
-                doc.createPosition(span[0]),
-                doc.createPosition(span[1]) // NOI18N
-            );
-
-            return Collections.singletonList(ed);
-        } catch (BadLocationException e) {
-            Exceptions.printStackTrace(e);
-        } catch (IOException e) {
-            Exceptions.printStackTrace(e);
+        int[] span = new int[2];
+        List<Fix> fixes = computeFixes(compilationInfo, treePath, span);
+        if (fixes == null) {
+            return null;
         }
-        
-        return null;
+
+        ErrorDescription ed = ErrorDescriptionFactory.createErrorDescription(
+            getSeverity().toEditorSeverity(),
+            getDisplayName(),
+            fixes,
+            compilationInfo.getFileObject(),
+            span[0],
+            span[1]
+        );
+
+        return Collections.singletonList(ed);
     }
 
     public String getId() {

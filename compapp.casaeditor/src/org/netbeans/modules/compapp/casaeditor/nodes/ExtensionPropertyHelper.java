@@ -118,11 +118,9 @@ public class ExtensionPropertyHelper {
             String eeLocalName = eeQName.getLocalPart();
 
             List<JbiExtensionInfo> extInfoList = installedExtInfo.getJbiExtensionList();
-            Collections.sort(extInfoList, new Comparator() {
-                public int compare(Object o1, Object o2) {
-                    JbiExtensionInfo extInfo1 = (JbiExtensionInfo)o1;
-                    JbiExtensionInfo extInfo2 = (JbiExtensionInfo)o2;
-                    return extInfo1.getName().compareTo(extInfo2.getName());
+            Collections.sort(extInfoList, new Comparator<JbiExtensionInfo>() {
+                public int compare(JbiExtensionInfo o1, JbiExtensionInfo o2) {
+                    return o1.getName().compareTo(o2.getName());
                 }                
             });
             

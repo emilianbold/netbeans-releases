@@ -45,6 +45,7 @@ import java.util.Collection;
 import java.util.List;
 
 import org.openide.util.Lookup;
+import static org.netbeans.modules.soa.ui.util.UI.*;
 
 /**
  * @author Vladimir Yaroslavskiy

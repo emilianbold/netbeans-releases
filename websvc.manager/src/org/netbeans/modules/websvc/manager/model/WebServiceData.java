@@ -49,7 +49,6 @@ import java.util.List;
 import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlService;
 import org.netbeans.modules.websvc.manager.api.WebServiceDescriptor;
 import org.netbeans.modules.websvc.saas.spi.websvcmgr.WsdlData;
-import org.netbeans.modules.websvc.saas.spi.websvcmgr.WsdlServiceProxyDescriptor;
 
 /**
  * A webservice meta data. Holds the URL location, package name for code generation
@@ -369,11 +368,19 @@ public class WebServiceData implements WsdlData {
         boolean fireEvent = (!wsdlState.equals(State.WSDL_SERVICE_COMPILED) && 
                 state.equals(State.WSDL_SERVICE_COMPILED));
         
+        State old = wsdlState;
         this.wsdlState = state;
+        
         if (fireEvent) {
             for (WebServiceDataListener listener : listeners) {
                 listener.webServiceCompiled(new WebServiceDataEvent(this));
-            }            
+            }          
+        }
+        
+        PropertyChangeEvent evt =
+                new PropertyChangeEvent(this, PROP_STATE, old, state); // NOI18N
+        for (PropertyChangeListener listener : propertyListeners) {
+            listener.propertyChange(evt);
         }
     }
     
@@ -417,10 +424,6 @@ public class WebServiceData implements WsdlData {
     
     public void removePropertyChangeListener(PropertyChangeListener listener) {
         propertyListeners.remove(listener);
-    }
-    
-    public static enum State {
-        WSDL_UNRETRIEVED, WSDL_RETRIEVING, WSDL_RETRIEVED, WSDL_SERVICE_COMPILING, WSDL_SERVICE_COMPILED, WSDL_SERVICE_COMPILE_FAILED
     }
     
 }

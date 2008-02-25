@@ -41,6 +41,8 @@ package org.netbeans.modules.websvc.saas.ui.nodes;
 
 import java.awt.Image;
 import org.netbeans.modules.websvc.saas.model.CustomSaas;
+import org.openide.util.lookup.AbstractLookup;
+import org.openide.util.lookup.InstanceContent;
 
 /**
  *
@@ -49,14 +51,18 @@ import org.netbeans.modules.websvc.saas.model.CustomSaas;
 public class CustomSaasNode extends SaasNode {
     
     public CustomSaasNode(CustomSaas saas) {
-        super(new CustomSaasNodeChildren(saas), saas);
+        this(saas, new InstanceContent());
+    }
+
+    protected CustomSaasNode(CustomSaas saas, InstanceContent content) {
+        super(new CustomSaasNodeChildren(saas), new AbstractLookup(content), saas);
+        content.add(saas);
     }
 
     private static final java.awt.Image ICON =
        org.openide.util.Utilities.loadImage( "org/netbeans/modules/websvc/saas/ui/resources/custom_service.png" ); //NOI18N
     
-    @Override
-    public java.awt.Image getIcon(int type) {
+    protected java.awt.Image getGenericIcon(int type) {
         return ICON;
     }
     

@@ -554,14 +554,24 @@ public abstract class WSDLElementNode<T extends WSDLComponent> extends AbstractN
             }
 
             Set<QName> attributes = mElement.getAttributeMap().keySet();
-
+            
             if (attributes.contains(qname)) {
-                firePropertyChange(propName, event.getOldValue(),
+                String mappedName = getMappedPropertyName(propName);
+                firePropertyChange(mappedName, event.getOldValue(),
                         event.getNewValue());
             }
         }
     }
 
+    /**
+     * Return the property sheet property name for the element attribute name.
+     * Overriding classes can return a different name. by default, same is returned.
+     * @param propName
+     * @return mapped name on the property sheet
+     */
+    public String getMappedPropertyName(String propName) {
+        return propName;
+    }
     
     /*
      * Recursively finds prefixes used by child extensibility elements and tries to clean them.

@@ -28,6 +28,9 @@ import java.awt.Dimension;
 import java.awt.dnd.DropTarget;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
+import java.util.logging.Level;
+import java.util.logging.LogRecord;
+import java.util.logging.Logger;
 import javax.swing.Action;
 import javax.swing.ActionMap;
 import javax.swing.InputMap;
@@ -89,6 +92,7 @@ import org.netbeans.modules.bpel.design.actions.FindUsagesAction;
 import org.netbeans.modules.bpel.design.actions.GoToLoggingAction;
 import org.netbeans.modules.bpel.design.actions.GoToMapperAction;
 import org.netbeans.modules.bpel.design.actions.GoToSourceAction;
+import org.netbeans.modules.bpel.design.actions.TabToNextComponentAction;
 import org.netbeans.modules.bpel.design.model.PartnerRole;
 import org.netbeans.modules.bpel.nodes.actions.GoToAction;
 import org.netbeans.modules.bpel.nodes.actions.ShowBpelMapperAction;
@@ -144,13 +148,21 @@ public class DesignView extends JPanel implements
 
     private TriScrollPane scrollPane;
 
+    // Memory leak probing
+    private static final Logger TIMERS = Logger.getLogger("TIMER.bpel"); // NOI18N
 
 
     public DesignView(Lookup lookup) {
         super();
+        
+        if (TIMERS.isLoggable(Level.FINE)) {
+            LogRecord rec = new LogRecord(Level.FINE, "BPEL DesignView"); // NOI18N
+            rec.setParameters(new Object[] {this});
+            TIMERS.log(rec);
+        }
+
 
         zoomManager = new ZoomManager(this);
-        navigationTools = new NavigationTools(this);
         rightStripe = new RightStripe(this);
 
         setBackground(new Color(0xFCFAF5));
@@ -162,18 +174,15 @@ public class DesignView extends JPanel implements
 
         overlayView = new OverlayPanel(this);
 
-
-        this.add(overlayView, 0);
-
         consumersView = new PartnerlinksView(this, PartnerRole.CONSUMER);
         providersView = new PartnerlinksView(this, PartnerRole.PROVIDER);
         processView = new ProcessView(this);
-
-
-        scrollPane = new TriScrollPane(processView, consumersView, providersView);
-        this.add(scrollPane, 1);
-
-
+ 
+        navigationTools = new NavigationTools(this);
+ 
+        scrollPane = new TriScrollPane(processView, consumersView, 
+                providersView, navigationTools, overlayView);
+        this.add(scrollPane, 0);
 
         dndHandler = new DnDHandler(this);
 
@@ -199,12 +208,6 @@ public class DesignView extends JPanel implements
 
         reloadModel();
         diagramChanged();
-        scrollPane.addScrollListener(new TriScrollPane.ScrollListener() {
-
-            public void viewScrolled(JComponent view) {
-                //getDecorationManager().repositionComponentsRecursive();
-            }
-        });
     }
 
     public DiagramView getConsumersView() {
@@ -496,8 +499,8 @@ public class DesignView extends JPanel implements
         am.put("findusages-something", new FindUsagesAction(this)); // NOI18N
 //        am.put("find_next_mex_peer", new CycleMexAction()); // NOI18N
 //        am.put("show_context_menu", new ShowContextMenu()); // NOI18N
-//        am.put("go_next_hierarchy_component", new GoNextHieComponentAction()); // NOI18N
-//        am.put("go_previous_hierarchy_component", new GoPrevHieComponentAction()); // NOI18N
+        am.put("go_next_hierarchy_component", new TabToNextComponentAction(this, true)); // NOI18N
+        am.put("go_previous_hierarchy_component", new TabToNextComponentAction(this, false)); // NOI18N
 //
 //        am.put("go_nearest_right_component", new GoRightNearestComponentAction()); // NOI18N
 //        am.put("go_nearest_left_component", new GoLeftNearestComponentAction()); // NOI18N
@@ -971,6 +974,7 @@ public class DesignView extends JPanel implements
         }
     }
 
+   
     public DnDHandler getDndHandler() {
         return dndHandler;
     }

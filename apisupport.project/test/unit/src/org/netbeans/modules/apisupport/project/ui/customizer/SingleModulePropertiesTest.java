@@ -207,8 +207,8 @@ public class SingleModulePropertiesTest extends TestBase {
         assertEquals("number of available public packages", 2, pptm.getRowCount());
         assertEquals("number of selected public packages", 1, pptm.getSelectedPackages().length);
         
-        // libs/xerces properties
-        NbModuleProject libP = (NbModuleProject) ProjectManager.getDefault().findProject(nbCVSRoot().getFileObject("libs/xerces"));
+        // libs.xerces properties
+        NbModuleProject libP = (NbModuleProject) ProjectManager.getDefault().findProject(nbRoot().getFileObject("libs.xerces"));
         props = loadProperties(libP);
         pptm = props.getPublicPackagesModel();
         assertEquals("number of available public packages", 38, pptm.getRowCount());
@@ -369,7 +369,7 @@ public class SingleModulePropertiesTest extends TestBase {
         assertEquals("There are two available friends for component2.", 2, props.getAvailableFriends().length);
         
         // netbeans.org
-        Project javaProject = ProjectManager.getDefault().findProject(nbCVSRoot().getFileObject("java/project"));
+        Project javaProject = ProjectManager.getDefault().findProject(nbRoot().getFileObject("java.project"));
         props = loadProperties((NbModuleProject) javaProject);
         assertTrue("There are two available friends for component2.", props.getAvailableFriends().length > 50);
     }

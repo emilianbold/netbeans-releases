@@ -49,8 +49,8 @@ import java.io.IOException;
 import java.util.Collections;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
-import org.netbeans.api.gsfpath.classpath.ClassPath;
-import org.netbeans.api.gsfpath.classpath.GlobalPathRegistry;
+import org.netbeans.modules.gsfpath.api.classpath.ClassPath;
+import org.netbeans.modules.gsfpath.api.classpath.GlobalPathRegistry;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectManager;
@@ -489,7 +489,7 @@ public final class RubyProject implements Project, RakeProjectListener {
             "Templates/Ruby/test.rb", // NOI18N
             "Templates/Ruby/class.rb", // NOI18N
             "Templates/Ruby/module.rb", // NOI18N
-            "Templates/Ruby/rakefile.rb", // NOI18N
+            "Templates/Ruby/Rakefile", // NOI18N
             "Templates/Ruby/suite.rb", // NOI18N
             "Templates/Ruby/rspec.rb", // NOI18N
         };

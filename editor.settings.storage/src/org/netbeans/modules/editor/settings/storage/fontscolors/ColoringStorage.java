@@ -158,9 +158,11 @@ public final class ColoringStorage implements StorageDescription<String, Attribu
         
         Map<String, SimpleAttributeSet> fontsColorsMap = new HashMap<String, SimpleAttributeSet>();
         for(Object [] info : profileInfos) {
+            assert info.length == 5;
             FileObject profileHome = (FileObject) info[0];
             FileObject settingFile = (FileObject) info[1];
             boolean modulesFile = ((Boolean) info[2]).booleanValue();
+            boolean legacyFile = ((Boolean) info[4]).booleanValue();
 
             // Skip files with wrong type of colorings
             boolean isTokenColoringFile = isTokenColoringFile(settingFile);
@@ -170,7 +172,7 @@ public final class ColoringStorage implements StorageDescription<String, Attribu
             
             // Load colorings from the settingFile
             ColoringsReader reader = new ColoringsReader(settingFile, mimePath.getPath());
-            Utils.load(settingFile, reader);
+            Utils.load(settingFile, reader, !legacyFile);
             Map<String, SimpleAttributeSet> sets = reader.getAdded();
             
             // Process loaded colorings

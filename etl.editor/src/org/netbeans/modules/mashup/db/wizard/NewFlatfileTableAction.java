@@ -35,6 +35,7 @@ public final class NewFlatfileTableAction extends CallableSystemAction {
         wizardDescriptor.setTitle(Localizer.parse(nbBundle1));
         ((MashupTableWizardIterator)iterator).setDescriptor(wizardDescriptor);
         Dialog dialog = DialogDisplayer.getDefault().createDialog(wizardDescriptor);
+        dialog.getAccessibleContext().setAccessibleDescription("This dialog helps to create a flatfile table from xls,csv and txt sources");
         dialog.setVisible(true);
         dialog.toFront();
         boolean cancelled = wizardDescriptor.getValue() != WizardDescriptor.FINISH_OPTION;

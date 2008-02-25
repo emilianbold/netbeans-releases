@@ -77,6 +77,8 @@ public class ObjectCreationExpression extends ExpressionStateHandler
     private ITokenDescriptor  m_pPrimitive      = null;
     private boolean m_ExpressionList ;
     private TemplateInstantiationStateHandler mTemplateHandler = null;
+    private ArrayDeclartorExpression mArrayDeclaratorHandler = null;
+    private ArrayInitializerExpression mArrayInitializerHandler = null;
     
     public ObjectCreationExpression()
     {
@@ -138,6 +140,16 @@ public class ObjectCreationExpression extends ExpressionStateHandler
         {
             mTemplateHandler = new TemplateInstantiationStateHandler(false);
             retVal = mTemplateHandler;
+        }
+        else if("Array Declarator".equals(stateName))
+        {
+            mArrayDeclaratorHandler = new ArrayDeclartorExpression();
+            retVal = mArrayDeclaratorHandler;
+        }
+        else if("Array Initializer".equals(stateName))
+        {
+            mArrayInitializerHandler = new ArrayInitializerExpression();
+            retVal = mArrayInitializerHandler;
         }
         else
         {
@@ -357,6 +369,9 @@ public class ObjectCreationExpression extends ExpressionStateHandler
         if(m_Identifier.getLength() > 0)
         {
             retVal += m_Identifier.getIdentifierAsSource();
+
+            retVal += arrayDeclInit();
+
             if(m_pArgumentStart != null)
             {
                 String value =  m_pArgumentStart.getValue();
@@ -373,14 +388,18 @@ public class ObjectCreationExpression extends ExpressionStateHandler
         {
             String typeName =  m_pPrimitive.getValue();
             retVal += typeName;
+            retVal += arrayDeclInit();
             retVal += super.toString();
-        }
+       }
         else if(mTemplateHandler != null)
         {
             String typeName = mTemplateHandler.toString();
             retVal += typeName;
-            retVal += super.toString();
-            
+            //lvv - 126584 removed extra call to super.toString(), see below 
+            //retVal += super.toString();
+
+            retVal += arrayDeclInit();
+
             if(m_pArgumentStart != null)
             {
                 String value =  m_pArgumentStart.getValue();
@@ -396,6 +415,19 @@ public class ObjectCreationExpression extends ExpressionStateHandler
         return retVal;
     }
     
+    private String arrayDeclInit() {
+        String retVal = "";
+        if (mArrayDeclaratorHandler != null) 
+        {
+            retVal += mArrayDeclaratorHandler.toString();
+        }
+        if (mArrayInitializerHandler != null) 
+        {
+            retVal += " " + mArrayInitializerHandler.toString();
+        }
+        return retVal;
+    } 
+
     public long getStartPosition()
     {
         long retVal = -1;

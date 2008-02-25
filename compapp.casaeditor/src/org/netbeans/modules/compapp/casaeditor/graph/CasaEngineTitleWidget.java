@@ -49,6 +49,7 @@ import java.awt.Rectangle;
 import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
+import javax.swing.border.LineBorder;
 import org.netbeans.api.visual.action.WidgetAction;
 import org.netbeans.api.visual.action.WidgetAction.State;
 import org.netbeans.api.visual.action.WidgetAction.WidgetMouseEvent;
@@ -60,7 +61,6 @@ import org.netbeans.api.visual.widget.ImageWidget;
 import org.netbeans.api.visual.widget.LabelWidget;
 import org.netbeans.api.visual.widget.Scene;
 import org.netbeans.api.visual.widget.Widget;
-import org.netbeans.modules.compapp.casaeditor.design.CasaModelGraphScene;
 import org.netbeans.modules.compapp.casaeditor.graph.actions.EditablePropertiesAction;
 import org.openide.util.Utilities;
 
@@ -98,6 +98,7 @@ public class CasaEngineTitleWidget extends Widget implements CasaMinimizable {
     private boolean mConfigurationStatus = true;
     private Widget mTitleWidget;
     
+    private static final boolean DEBUG = false;
     
     public CasaEngineTitleWidget(Scene scene, StateModel stateModel) {
         super(scene);
@@ -150,6 +151,16 @@ public class CasaEngineTitleWidget extends Widget implements CasaMinimizable {
         topHolderWidget.addChild(bottomEmptyWidget);
         
         addChild(topHolderWidget);
+        
+        if (DEBUG) {
+            setBorder(new LineBorder(Color.black));
+            mTitleWidget.setBorder(new LineBorder(Color.blue));
+            minimizeWidget.setBorder(new LineBorder(Color.red));
+            mDeleteWidget.setBorder(new LineBorder(Color.blue));
+            configureWidget.setBorder(new LineBorder(Color.red));
+            mNameWidget.setBorder(new LineBorder(Color.blue));
+            typeWidget.setBorder(new LineBorder(Color.red));
+        }
     }
 
     public void setTitleColor(Color color) {

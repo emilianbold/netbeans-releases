@@ -89,7 +89,7 @@ public final class CharBuffer {
     }
     void toCol(int n) {
         if (!expandTabs)
-            while(((col+tabSize)&~(tabSize-1))<=n)
+            while((col + tabSize - (col % tabSize)) <= n)
                 append('\t');
         while (col < n) append(' ');
     }
@@ -113,7 +113,7 @@ public final class CharBuffer {
             col = 0;
             break;
           case '\t':
-            col = col+tabSize & ~(tabSize-1);
+            col += tabSize - (col % tabSize);
             break;
           case '\b':
             if (col > maxcol) maxcol = col;

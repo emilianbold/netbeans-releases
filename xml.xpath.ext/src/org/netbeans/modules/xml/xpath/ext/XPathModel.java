@@ -68,7 +68,7 @@ public interface XPathModel extends XPathSchemaContextHolder {
     void discardResolvedStatus();
     
     /**
-     * Tries to resolve all external references: variable, schema elements 
+     * Tries resolving all external references: variable, schema elements 
      * and attributes. Assigns schema contexts for all context holders.
      * 
      * Only the model's root expression is processed here. 
@@ -88,6 +88,15 @@ public interface XPathModel extends XPathSchemaContextHolder {
     
     
     /**
+     * This method does almost the same as the resolveExtReferences but 
+     * it is intended to process expressions, which aren't connected to
+     * the model root. 
+     * The model root is assigned automatically when the parseExpression() 
+     * is used. But it is not if you create an expression with the help of 
+     * the factory methods. So there are two choise: 
+     *  - specify the expression as a root (method setRootExpression) and 
+     * call the resolveExtReferences().
+     *  - call this method (without specifying the expression as a root).
      * 
      * Be aware that the implementation method is synchronized. So the 
      * second thread will be locked until the method is not finished in 

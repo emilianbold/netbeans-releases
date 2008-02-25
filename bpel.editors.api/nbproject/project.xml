@@ -172,9 +172,11 @@
                 <friend>org.netbeans.modules.bpel.refactoring</friend>
                 <friend>org.netbeans.modules.bpel.search</friend>
                 <friend>org.netbeans.modules.bpel.xpath</friend>
+                <friend>org.netbeans.modules.bpel.debugger.ui</friend>
                 <package>org.netbeans.modules.bpel.editors.api</package>
                 <package>org.netbeans.modules.bpel.editors.api.diagram</package>
                 <package>org.netbeans.modules.bpel.editors.api.nodes</package>
+                <package>org.netbeans.modules.bpel.editors.api.nodes.actions</package>
                 <package>org.netbeans.modules.bpel.editors.api.nodes.images</package>
                 <package>org.netbeans.modules.bpel.editors.api.ui.valid</package>
                 <package>org.netbeans.modules.bpel.editors.api.utils</package>

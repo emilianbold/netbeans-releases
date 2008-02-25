@@ -1,10 +1,12 @@
 package org.netbeans.modules.etl.ui.view.graph.actions;
 
 import java.awt.event.ActionEvent;
+import java.awt.event.InputEvent;
 import java.net.URL;
 import javax.swing.Action;
 import javax.swing.ImageIcon;
 
+import javax.swing.KeyStroke;
 import org.axiondb.ExternalConnectionProvider;
 import org.netbeans.modules.etl.ui.DataObjectProvider;
 import org.netbeans.modules.etl.ui.view.ETLCollaborationTopPanel;
@@ -29,9 +31,11 @@ public final class TestRunAction extends GraphAction {
         this.putValue(Action.SMALL_ICON, new ImageIcon(runIconUrl));
 
         //action tooltip
-        String nbBundle2 = mLoc.t("PRSR001: Run Collaboration");
+        String nbBundle2 = mLoc.t("PRSR001: Run Collaboration (Cntl-N)");
         this.putValue(Action.SHORT_DESCRIPTION,Localizer.parse(nbBundle2));
 
+        // Acceleratot Cntl-N
+        this.putValue(Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke('N', InputEvent.CTRL_MASK));
     }
 
     public void actionPerformed(ActionEvent ev) {

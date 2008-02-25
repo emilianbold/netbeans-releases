@@ -48,7 +48,7 @@ import javax.swing.JFileChooser;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.text.Document;
-import org.netbeans.modules.web.project.ui.FoldersListSettings;
+import org.netbeans.modules.j2ee.common.project.ui.UserProjectSettings;
 import org.netbeans.spi.project.ui.support.ProjectChooser;
 import org.openide.WizardDescriptor;
 import org.openide.WizardValidationException;
@@ -291,7 +291,7 @@ public class PanelProjectLocationVisual extends SettingsPanel implements Documen
         
         String projectName = (String) settings.getProperty ("name"); //NOI18N
         if (projectName == null) {
-                int baseCount = FoldersListSettings.getDefault().getNewProjectCount() + 1;
+                int baseCount = UserProjectSettings.getDefault().getNewProjectCount() + 1;
                 String formater = NbBundle.getMessage(PanelProjectLocationVisual.class,"LBL_NPW1_DefaultProjectName");
                 while ((projectName=validFreeProjectName(projectLocation, formater, baseCount))==null)
                     baseCount++;                
@@ -397,7 +397,7 @@ public class PanelProjectLocationVisual extends SettingsPanel implements Documen
     }
 
     private static int getValidProjectNameIndex(int currentIndex, File projectLocation) {
-        int index = currentIndex > 0 ? currentIndex : FoldersListSettings.getDefault().getNewProjectCount() + 1;
+        int index = currentIndex > 0 ? currentIndex : UserProjectSettings.getDefault().getNewProjectCount() + 1;
         if(projectLocation != null) {
             while (new File(projectLocation, getProjectName(index)).exists()) {
                 index++;

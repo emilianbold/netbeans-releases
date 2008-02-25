@@ -275,7 +275,7 @@ public class VariableImpl<T> extends OffsetableDeclarationBase<T> implements Csm
         CsmScope scope = this.scopeRef;
         if (scope == null) {
             scope = UIDCsmConverter.UIDtoScope(this.scopeUID);
-            assert (scope != null || this.scopeUID == null) : "null object for UID " + this.scopeUID;
+            // scope could be null when enclosing context is invalidated
         }
         return scope;
     }

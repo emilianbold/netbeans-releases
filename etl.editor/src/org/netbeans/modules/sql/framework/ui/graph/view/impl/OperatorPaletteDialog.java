@@ -106,7 +106,7 @@ public class OperatorPaletteDialog extends JDialog implements ActionListener {
         JPanel bp2 = new JPanel();
         mCheckName.addActionListener(this);
         mBtnCancel.addActionListener(this);
-
+        mBtnCancel.getAccessibleContext().setAccessibleName(Localizer.parse(nbBundle));
         bp2.add(mBtnCancel);
         bp.add(bp2, BorderLayout.EAST);
         bp.add(mCheckName, BorderLayout.WEST);

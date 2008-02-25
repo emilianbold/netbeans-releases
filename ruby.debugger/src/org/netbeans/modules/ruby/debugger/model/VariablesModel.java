@@ -62,9 +62,6 @@ import static org.netbeans.spi.debugger.ui.Constants.LOCALS_TO_STRING_COLUMN_ID;
 import static org.netbeans.spi.debugger.ui.Constants.LOCALS_TYPE_COLUMN_ID;
 import static org.netbeans.spi.debugger.ui.Constants.LOCALS_VALUE_COLUMN_ID;
 
-/**
- * @author Martin Krauskopf
- */
 public class VariablesModel implements TreeModel, ExtendedNodeModel, TableModel {
     
     private static final String GLOBAL = "Global Variables"; // NOI18N

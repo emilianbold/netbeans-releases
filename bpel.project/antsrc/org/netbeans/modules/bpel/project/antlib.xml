@@ -18,6 +18,7 @@
  Microsystems, Inc. All Rights Reserved.
 -->
 <antlib>
-  <typedef name="BpelProjectJBIGen" classname="org.netbeans.modules.bpel.project.anttasks.IDEGenerateJBIDescriptor"/>
-  <typedef name="BpelProjectValidate" classname="org.netbeans.modules.bpel.project.anttasks.IDEValidateBPELProject"/>
+  <typedef name="validate-project" classname="org.netbeans.modules.bpel.project.anttasks.ide.IdeValidateBpelProjectTask"/>
+  <typedef name="generate-catalog-xml" classname="org.netbeans.modules.bpel.project.anttasks.ide.IdeGenerateCatalogTask"/>
+  <typedef name="generate-jbi-xml" classname="org.netbeans.modules.bpel.project.anttasks.ide.IdeGenerateJbiDescriptorTask"/>
 </antlib>

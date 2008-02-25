@@ -487,7 +487,21 @@ public abstract class ModelSet implements FileChangeListener {
                 String platformVersion = JsfProjectUtils.getJ2eePlatformVersion(project);
                 if (platformVersion.equals(JsfProjectUtils.J2EE_1_3) || 
                         platformVersion.equals(JsfProjectUtils.J2EE_1_4)) {
-                    if (jaxrpc16Library != null) {           
+                    if (jaxrpc16Library == null) {
+                    	// Hmmm...project does not have a reference to the jaxrpc16 
+                    	// library so we need to get it from global library manager                    	
+                    	Library[] globalLibraries = LibraryManager.getDefault().getLibraries();
+                        for (Library library : globalLibraries) {                                                      
+                            if (library.getType().equals("j2se")) {
+                                if (library.getName().equals("jaxrpc16")) {
+                                    // cache
+                                    jaxrpc16Library = library;
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                    if (jaxrpc16Library != null) {
                         // Add the jars from jaxrpc16Library
                         addEntriesInLibraryVolume(jaxrpc16Library, "classpath", urls1Set); // NOI18N
                     }
@@ -564,8 +578,41 @@ public abstract class ModelSet implements FileChangeListener {
         return Collections.emptyList();
     }
     
-    private static void addEntriesInLibraryVolume(Library library, String volumeType, Set<URL> urlsSet) {
-        urlsSet.addAll(library.getContent(volumeType));
+    private static void addEntriesInLibraryVolume(Library library, String volumeType, Set urlsSet) {
+        List urls = library.getContent(volumeType);
+        List normalizedUrls = new ArrayList();
+        
+        for (Iterator it = urls.iterator(); it.hasNext();) {
+            URL url = (URL) it.next();
+            FileObject fileObject = URLMapper.findFileObject (url);
+            
+            //file inside library is broken
+            if (fileObject == null)
+                continue;
+            
+            if ("jar".equals(url.getProtocol())) {  //NOI18N
+                fileObject = FileUtil.getArchiveFile (fileObject);
+            }
+            File f = FileUtil.toFile(fileObject);                            
+            if (f != null) {
+                try {
+                    URL entry = f.toURI().toURL();
+                    if (FileUtil.isArchiveFile(entry)) {
+                        entry = FileUtil.getArchiveRoot(entry);
+                    } else if (!f.exists()) {
+                        // if file does not exist (e.g. build/classes folder
+                        // was not created yet) then corresponding File will
+                        // not be ended with slash. Fix that.
+                        assert !entry.toExternalForm().endsWith("/") : f; // NOI18N
+                        entry = new URL(entry.toExternalForm() + "/"); // NOI18N
+                    }
+                    normalizedUrls.add(entry);
+                } catch (MalformedURLException mue) {
+                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, mue);
+                }
+            }
+        }
+        urlsSet.addAll(normalizedUrls); // NOI18N
     }
     
     private static boolean addJarsInFolder(FileObject folder, Set urlsSet) {

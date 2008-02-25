@@ -84,6 +84,7 @@ import org.netbeans.spi.project.ui.ProjectOpenedHook;
 import org.netbeans.spi.project.ui.RecommendedTemplates;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.loaders.DataLoaderPool;
 import org.openide.util.Lookup;
 import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
@@ -101,6 +102,7 @@ import org.w3c.dom.Text;
 public final class MakeProject implements Project, AntProjectListener {
 
     private static final Icon MAKE_PROJECT_ICON = new ImageIcon(Utilities.loadImage("org/netbeans/modules/cnd/makeproject/ui/resources/makeProject.gif")); // NOI18N
+    private static MakeTemplateListener templateListener = null;
     private final AntProjectHelper helper;
     private final PropertyEvaluator eval;
     private final ReferenceHelper refHelper;
@@ -128,6 +130,10 @@ public final class MakeProject implements Project, AntProjectListener {
             nl = nl.item(0).getChildNodes();
             String typeTxt = (String) nl.item(0).getNodeValue();
             projectType = new Integer(typeTxt).intValue();
+        }
+        
+        if (templateListener == null) {
+            DataLoaderPool.getDefault().addOperationListener(templateListener = new MakeTemplateListener());
         }
     }
 

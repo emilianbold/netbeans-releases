@@ -1,0 +1,3 @@
+Spry.Effect.Registry.prototype.getRegisteredEffect = function(|>MARK_OCCURRENCES:elem^ent<|, effect) 
+	var eleIdx = this.getIndexOfElement(|>MARK_OCCURRENCES:element<|);
+		var addedElement = new Spry.Effect.AnimatedElement(|>MARK_OCCURRENCES:element<|);

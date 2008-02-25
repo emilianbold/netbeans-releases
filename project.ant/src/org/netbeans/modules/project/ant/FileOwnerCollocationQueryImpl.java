@@ -46,6 +46,8 @@ import java.net.URI;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.spi.queries.CollocationQueryImplementation;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 
 /**
  * A CollocationQueryImplementation implementation that collocates files based on
@@ -70,10 +72,12 @@ public class FileOwnerCollocationQueryImpl implements CollocationQueryImplementa
         if (prj == null) {
             return null;
         }
-        while (prj != null && f != null) {
-            f = f.getParentFile();
-            if (f != null) {
-                prj = FileOwnerQuery.getOwner(f.toURI());
+        File parentF = f;
+        while (prj != null && parentF != null) {
+            f = parentF;
+            parentF = parentF.getParentFile();
+            if (parentF != null) {
+                prj = FileOwnerQuery.getOwner(parentF.toURI());
             } else {
                 prj = null;
             }

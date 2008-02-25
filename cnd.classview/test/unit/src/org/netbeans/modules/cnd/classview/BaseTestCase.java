@@ -78,7 +78,7 @@ public class BaseTestCase extends TraceModelTestBase implements CsmModelListener
         super.tearDown();
     }
     
-    protected @Override void postTest(String[] args) {
+    protected @Override void postTest(String[] args, Object... params) {
         CsmProject project = getCsmProject();
         assertNotNull("Project not found",project); // NOI18N
         childrenUpdater = new ChildrenUpdater();

@@ -51,7 +51,7 @@ find netbeans | egrep -v "netbeans/(extra|testtools|xml|java|apisupport|harness|
 
 cd netbeans
 expat='extra|testtools'
-for c in platform ide java apisupport harness enterprise profiler uml visualweb ruby mobility soa xml cnd identity php; do
+for c in platform ide java apisupport harness enterprise profiler uml visualweb ruby mobility soa xml cnd identity gsf; do
     find * | egrep "^$c[0-9]*/" | zip -q $DIST/zip/moduleclusters/$BASENAME-$c.zip -@ || exit
     expat="$expat|$c[0-9]*"
 done

@@ -176,8 +176,7 @@ public class TargetDBSchemaGenerator {
         }
 
         columns.append(createPrimaryKeyConstraint(defaultCol));
-
-        //columns.append(createForeignKeyConstraint(modeltablename));
+        columns.append(createForeignKeyConstraint(modeltablename));
 
         return columns.toString();
     }
@@ -286,6 +285,7 @@ public class TargetDBSchemaGenerator {
                     objDef = new ObjectDefinitionBuilder().parse(bdis);
                     addExtraFieldsToParent(objDef);
                     lookup = Lookup.createLookup(objDef);
+					validateEviewModel();
                 } catch (AxionException ex) {
                     mLogger.infoNoloc(mLoc.t("PRSR018: Error Reading eview config file :{0}", ex.getMessage()));
                 } finally {
@@ -366,4 +366,40 @@ public class TargetDBSchemaGenerator {
         }
         return "NULL";
     }
+
+	   /**
+    * EView Model object.xml is validated against all child tables containing FK column.
+    * All chld tables must contain ObjectId column for the parent to achieve join condition.
+    * This is validated at schema generation level. If not found compliant, used is blocked to generate
+    * staging schema till proper object.xml is provided.
+    */
+   private void validateEviewModel() {
+       String fkname = this.lookup.getRootName() + "Id";
+       //Check if this is present as a field in all child tables
+       Iterator QChildTableNames = this.lookup.getChildIndexMap().keySet().iterator();
+       boolean overallstatus = true;
+       while (QChildTableNames.hasNext()) {
+           boolean fkavailable = false;
+           Object Qchildname = QChildTableNames.next();
+           HashMap childfieldmap = (HashMap) this.lookup.getLookupMap().get(Qchildname);
+           Iterator childfields = childfieldmap.keySet().iterator();
+           while (childfields.hasNext()) {
+               String childfield = (String) childfields.next();               
+               if (childfield.equals(fkname)) {
+                   mLogger.infoNoloc(mLoc.t("Foreign Key Column is available for [ " + Qchildname + " ] !!"));
+                   fkavailable = true;
+                   break;
+               }
+           }
+           if (!fkavailable) {
+               mLogger.infoNoloc(mLoc.t("FK not available for [ " + Qchildname + " ]"));
+               overallstatus = false;
+           }
+       }
+       if (!overallstatus) {
+           mLogger.infoNoloc(mLoc.t("Object.xml validation failed!.\nGenerate [ " + fkname + " ] field in all the child objects and re-run schema generator with the valid object.xml"));
+           System.exit(0);
+       }
+
+   } 
 }

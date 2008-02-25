@@ -42,8 +42,8 @@
 package org.netbeans.modules.gsf;
 
 import org.netbeans.modules.gsf.SourceAdapter;
-import org.netbeans.api.gsf.SourceModel;
-import org.netbeans.api.gsf.SourceModelFactory;
+import org.netbeans.modules.gsf.api.SourceModel;
+import org.netbeans.modules.gsf.api.SourceModelFactory;
 import org.netbeans.napi.gsfret.source.Source;
 import org.openide.filesystems.FileObject;
 

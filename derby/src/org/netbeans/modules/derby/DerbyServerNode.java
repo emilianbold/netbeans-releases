@@ -43,6 +43,7 @@ package org.netbeans.modules.derby;
 
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
+import org.openide.nodes.Node;
 import org.openide.util.actions.SystemAction;
 
 /**
@@ -51,18 +52,18 @@ import org.openide.util.actions.SystemAction;
  * 
  * @author David Van Couvering
  */
-public class DerbyServerNode extends AbstractNode {
+public class DerbyServerNode extends AbstractNode implements Comparable {
     private static final DerbyServerNode DEFAULT = new DerbyServerNode();
     
     private SystemAction[] actions = new SystemAction[] {
-            new StartAction(),
-            new StopAction(),
-            new CreateDatabaseAction(),
-            new DerbySettingsAction()
+            SystemAction.get(StartAction.class),
+            SystemAction.get(StopAction.class),
+            SystemAction.get(CreateDatabaseAction.class),
+            SystemAction.get(DerbyPropertiesAction.class)
         };
     
     // I'd like a less generic icon, but this is what we have for now...
-    private static final String ICON_BASE = "org/netbeans/modules/derby/resources/database.gif";
+    private static final String ICON_BASE = "org/netbeans/modules/derby/resources/catalog.gif";
     
     public static DerbyServerNode getDefault() {
         return DEFAULT;
@@ -108,6 +109,11 @@ public class DerbyServerNode extends AbstractNode {
     @Override
     public SystemAction getDefaultAction() {
         return null;
-    }   
+    } 
+    
+    public int compareTo(Object other) {
+        Node otherNode = (Node)other;
+        return this.getDisplayName().compareTo(otherNode.getDisplayName());
+    }
 
 }

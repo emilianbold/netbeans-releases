@@ -81,68 +81,54 @@ public class DoubleCheck extends AbstractHint {
     public List<ErrorDescription> run(CompilationInfo compilationInfo,
                                       TreePath treePath) {
         stop = false;
-        try {
-            Document doc = compilationInfo.getDocument();
-            
-            if (doc == null) {
-                return null;
-            }
-            
-            Tree e = treePath.getLeaf();
-            if (e == null || e.getKind() != Kind.SYNCHRONIZED) {
-                return null;
-            }
-            
-            SynchronizedTree synch = (SynchronizedTree)e;
-            IfTree outer = findOuterIf(compilationInfo, treePath);
-            if (outer == null) {
-                return null;
-            }
-            
-            IfTree same = null;
-            for (StatementTree statement : synch.getBlock().getStatements()) {
-                if (sameIf(statement, outer)) {
-                    same = (IfTree)statement;
-                    break;
-                }
-                if (stop) {
-                    return null;
-                }
-            }
-            if (same == null) {
-                return null;
-            }
-            
-            TreePath outerPath = compilationInfo.getTrees().getPath(compilationInfo.getCompilationUnit(), outer);
-            
-            List<Fix> fixes = Collections.<Fix>singletonList(new FixImpl(
-                TreePathHandle.create(treePath, compilationInfo),
-                TreePathHandle.create(outerPath, compilationInfo),
-                compilationInfo.getFileObject()
-            ));
-
-            int span = (int)compilationInfo.getTrees().getSourcePositions().getStartPosition(
-                compilationInfo.getCompilationUnit(),
-                synch
-            );
-
-            ErrorDescription ed = ErrorDescriptionFactory.createErrorDescription(
-                getSeverity().toEditorSeverity(),
-                NbBundle.getMessage(DoubleCheck.class, "MSG_FixDoubleCheck"), // NOI18N
-                fixes,
-                doc,
-                doc.createPosition(span),
-                doc.createPosition(span + "synchronized".length()) // NOI18N
-            );
-
-            return Collections.singletonList(ed);
-        } catch (BadLocationException e) {
-            Exceptions.printStackTrace(e);
-        } catch (IOException e) {
-            Exceptions.printStackTrace(e);
+        Tree e = treePath.getLeaf();
+        if (e == null || e.getKind() != Kind.SYNCHRONIZED) {
+            return null;
         }
-        
-        return null;
+
+        SynchronizedTree synch = (SynchronizedTree)e;
+        IfTree outer = findOuterIf(compilationInfo, treePath);
+        if (outer == null) {
+            return null;
+        }
+
+        IfTree same = null;
+        for (StatementTree statement : synch.getBlock().getStatements()) {
+            if (sameIf(statement, outer)) {
+                same = (IfTree)statement;
+                break;
+            }
+            if (stop) {
+                return null;
+            }
+        }
+        if (same == null) {
+            return null;
+        }
+
+        TreePath outerPath = compilationInfo.getTrees().getPath(compilationInfo.getCompilationUnit(), outer);
+
+        List<Fix> fixes = Collections.<Fix>singletonList(new FixImpl(
+            TreePathHandle.create(treePath, compilationInfo),
+            TreePathHandle.create(outerPath, compilationInfo),
+            compilationInfo.getFileObject()
+        ));
+
+        int span = (int)compilationInfo.getTrees().getSourcePositions().getStartPosition(
+            compilationInfo.getCompilationUnit(),
+            synch
+        );
+
+        ErrorDescription ed = ErrorDescriptionFactory.createErrorDescription(
+            getSeverity().toEditorSeverity(),
+            NbBundle.getMessage(DoubleCheck.class, "MSG_FixDoubleCheck"), // NOI18N
+            fixes,
+            compilationInfo.getFileObject(),
+            span,
+            span + "synchronized".length() // NOI18N
+        );
+
+        return Collections.singletonList(ed);
     }
 
     public String getId() {

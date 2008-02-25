@@ -83,21 +83,14 @@ made subject to such option by the copyright holder.
             <file name="org-netbeans-modules-xml-tools-generator-XMLGenerateSupportFactory$Creator.instance">
                 &xml-cookie-attributes;
             </file>
+            <!--
             <file name="org-netbeans-modules-xml-tools-generator-DTDGenerateSupportFactory$Creator.instance">
                 &dtd-cookie-attributes;
             </file>
+            -->
             <file name="org-netbeans-modules-xml-tools-generator-XMLGenerateAction$GenerateDTDAction.instance">
                 &xml-action-attributes;
-            </file>
-            <!-- TODO: Retouche -->
-            <!--
-            <file name="org-netbeans-modules-xml-tools-generator-XMLGenerateAction$GenerateDocumentHandlerAction.instance">
-                &dtd-action-attributes;
             </file>            
-            <file name="org-netbeans-modules-xml-tools-generator-XMLGenerateAction$GenerateDOMScannerAction.instance">
-                &dtd-action-attributes;
-            </file>
-            -->
         </folder>
 
     </folder>
@@ -111,26 +104,11 @@ made subject to such option by the copyright holder.
 
             <file name="org-netbeans-modules-xml-tools-doclet-DocletAction.instance"/>
 
-            <file name="org-netbeans-modules-xml-tools-generator-XMLGenerateAction$GenerateDTDAction.instance"/>
-            <!-- TODO: Retouche -->
-            <!-- 
-            <file name="org-netbeans-modules-xml-tools-generator-XMLGenerateAction$GenerateDocumentHandlerAction.instance" />
-            <file name="org-netbeans-modules-xml-tools-generator-XMLGenerateAction$GenerateDOMScannerAction.instance" />
-            -->
+            <file name="org-netbeans-modules-xml-tools-generator-XMLGenerateAction$GenerateDTDAction.instance"/>            
         </folder>
     </folder>
 
-    <!-- register entities with system entity resolver -->
-    <folder name="xml">
-        <folder name="entities">
-            <folder name="XML_Module">
-                <file name="DTD_SAX_Bindings_1_0" url="nbres:/org/netbeans/modules/xml/tools/generator/sax-bindings.dtd">
-                    <attr name="hint.originalPublicID" stringvalue="-//XML Module//DTD SAX Bindings 1.0//EN"/>
-                </file>
-            </folder>
-        </folder> <!-- entities -->
-    </folder> <!-- xml -->
-
+   
     <folder name="Shortcuts">
         <file name="O-F9.instance">
 	    <attr name="instanceClass" stringvalue="org.netbeans.modules.xml.tools.actions.CheckAction"/>

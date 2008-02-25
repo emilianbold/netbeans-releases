@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -41,16 +41,28 @@
 
 package org.apache.jasper.compiler;
 
-import java.io.*;
+import java.io.File;
 import java.lang.reflect.Field;
+import java.net.MalformedURLException;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
-import java.util.*;
-import javax.servlet.jsp.*;
-import javax.servlet.jsp.tagext.*;
-import javax.xml.parsers.*;
-import org.apache.jasper.*;
-import org.openide.ErrorManager;
+import java.util.Enumeration;
+import java.util.HashSet;
+import java.util.Hashtable;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.Vector;
+import javax.servlet.jsp.JspException;
+import javax.servlet.jsp.PageContext;
+import javax.servlet.jsp.tagext.TagFileInfo;
+import javax.servlet.jsp.tagext.TagLibraryInfo;
+import org.apache.jasper.JasperException;
+import org.apache.jasper.JspCompilationContext;
+import org.apache.jasper.Options;
+import org.openide.util.Exceptions;
 
 
 /**
@@ -59,10 +71,10 @@ import org.openide.ErrorManager;
  */
 public class GetParseData {
 
-    protected JspCompilationContext ctxt;
+    private final JspCompilationContext ctxt;
 
-    protected Options options;
-    private CompilerHacks compHacks;
+    private final Options options;
+    private final CompilerHacks compHacks;
     private int errorReportingMode;
 
     private org.netbeans.modules.web.jsps.parserapi.Node.Nodes nbNodes;
@@ -74,8 +86,8 @@ public class GetParseData {
     public GetParseData(JspCompilationContext ctxt, int errorReportingMode) {
         this.ctxt = ctxt;
         this.errorReportingMode = errorReportingMode;
-        this.options = ctxt.getOptions();
-        this.compHacks = new CompilerHacks(ctxt);
+        options = ctxt.getOptions();
+        compHacks = new CompilerHacks(ctxt);
     }
     
     public org.netbeans.modules.web.jsps.parserapi.Node.Nodes getNbNodes() {
@@ -111,8 +123,7 @@ public class GetParseData {
             //   errDispatcher));
 
             JspConfig jspConfig = options.getJspConfig();
-            JspProperty jspProperty =
-                            jspConfig.findJspProperty(ctxt.getJspFile());
+            JspProperty jspProperty = jspConfig.findJspProperty(ctxt.getJspFile());
 
             /*
              * If the current uri is matched by a pattern specified in
@@ -236,21 +247,17 @@ public class GetParseData {
 
             // PENDING - we may need to process tag files somehow
             //	tfp.removeProtoTypeFiles(ctxt.getClassFileName());
-        }
-        catch (ThreadDeath t) {
+        } catch (ThreadDeath t) {
             throw t;
-        }
-        catch (Throwable t) {
+        } catch (Throwable t) {
             parseException = t;
-        }
-        finally {
+        } finally {
             // convert the nodes
             try {
                 if (pageNodes != null) {
                     nbNodes = convertNodes(pageNodes);
                 }
-            }
-            catch (JasperException e) {
+            } catch (JasperException e) {
                 if (parseException == null) {
                     parseException = e;
                 }
@@ -261,8 +268,7 @@ public class GetParseData {
                     // xmlView may be null
                     nbPageInfo = convertPageInfo(pageInfo, xmlView, ctxt);
                 }
-            }
-            catch (JspException e) {
+            } catch (JspException e) {
                 if (parseException == null) {
                     parseException = e;
                 }
@@ -270,7 +276,6 @@ public class GetParseData {
         }
 //	return smapStr;
     }
-    
     
     private static org.netbeans.modules.web.jsps.parserapi.Node.Nodes convertNodes(Node.Nodes nodes) throws JasperException {
         org.netbeans.modules.web.jsps.parserapi.Node.Nodes nbNodes =
@@ -354,7 +359,7 @@ public class GetParseData {
             return bd;
         }
         catch (IllegalAccessException e) {
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+            Exceptions.printStackTrace(e);
             throw new RuntimeException();
         }
     }
@@ -387,26 +392,25 @@ public class GetParseData {
             return xmlView;
         }
         
+        @Override
         public String toString() {
             StringBuilder sb = new StringBuilder();
             sb.append(super.toString());
-            sb.append(" ------- XML View (constructed from the original data structure) -----\n");
+            sb.append(" ------- XML View (constructed from the original data structure) -----\n"); // NOI18N
             if (xmlView == null) {
-                sb.append("no XML view\n");
-            }
-            else {
+                sb.append("no XML view\n"); // NOI18N
+            } else {
                 sb.append(getXMLView());
             }
             return sb.toString();
         }
-        
     }
     
     static class BeanDataImpl implements org.netbeans.modules.web.jsps.parserapi.PageInfo.BeanData {
 
-        private String id;
-        private int scope;
-        private String className;
+        private final String id;
+        private final int scope;
+        private final String className;
 
         BeanDataImpl(String id, int scope, String className) {
             this.id = id;
@@ -428,7 +432,6 @@ public class GetParseData {
         public String getClassName() {
             return className;
         }
-
     }
                 
     // ------ getting BeanRepository data by reflection
@@ -447,9 +450,8 @@ public class GetParseData {
                 requestBeansF.setAccessible(true);
                 beanTypesF = BeanRepository.class.getDeclaredField("beanTypes");
                 beanTypesF.setAccessible(true);
-            }
-            catch (NoSuchFieldException e) {
-                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+            } catch (NoSuchFieldException e) {
+                Exceptions.printStackTrace(e);
             }
         }
     }
@@ -471,9 +473,8 @@ public class GetParseData {
                 jspPrefixMapperF.setAccessible(true);
                 xmlPrefixMapperF = PageInfo.class.getDeclaredField("xmlPrefixMapper");
                 xmlPrefixMapperF.setAccessible(true);
-            }
-            catch (NoSuchFieldException e) {
-                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+            } catch (NoSuchFieldException e) {
+                Exceptions.printStackTrace(e);
             }
         }
     }
@@ -482,9 +483,8 @@ public class GetParseData {
         initPageInfoFields();
         try {
             return (Vector)pluginDclsF.get(pageInfo);
-        }
-        catch (IllegalAccessException e) {
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+        } catch (IllegalAccessException e) {
+            Exceptions.printStackTrace(e);
             throw new RuntimeException();
         }
     }
@@ -493,19 +493,18 @@ public class GetParseData {
         initPageInfoFields();
         try {
             return (HashSet)prefixesF.get(pageInfo);
-        }
-        catch (IllegalAccessException e) {
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+        } catch (IllegalAccessException e) {
+            Exceptions.printStackTrace(e);
             throw new RuntimeException();
         }
     }
 
-    private static class TagFileInfoCacheRecord{
-        long time;
-        TagFileInfo tagFileInfo;
+    private static class TagFileInfoCacheRecord {
+        final long time;
+        final TagFileInfo tagFileInfo;
         
         public TagFileInfoCacheRecord(long time, TagFileInfo info){
-            this.tagFileInfo = info;
+            tagFileInfo = info;
             this.time = time;
         }
     }
@@ -527,7 +526,6 @@ public class GetParseData {
             while (iter.hasNext()){
                 libInfo = (TagLibraryInfo)iter.next();
                 try {
-                    ArrayList tags = new ArrayList();
                     if (libInfo instanceof ImplicitTagLibraryInfo){
                         //We need the access for the files
                         Field tagFileMapF = ImplicitTagLibraryInfo.class.getDeclaredField("tagFileMap");
@@ -562,21 +560,17 @@ public class GetParseData {
                         tagInfosF.setAccessible(true);    
                         tagInfosF.set(libInfo, tagFiles);
                     }
-                }
-                catch (java.lang.NoSuchFieldException e){
-                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
-                }
-                catch (java.net.MalformedURLException e){
-                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
-                }
-                catch (java.net.URISyntaxException e) {
-                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+                } catch (NoSuchFieldException e){
+                    Exceptions.printStackTrace(e);
+                } catch (MalformedURLException e){
+                    Exceptions.printStackTrace(e);
+                } catch (URISyntaxException e) {
+                    Exceptions.printStackTrace(e);
                 }
             }
             return taglibs;
-        }
-        catch (IllegalAccessException e) {
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+        } catch (IllegalAccessException e) {
+            Exceptions.printStackTrace(e);
             throw new RuntimeException();
         }
     }
@@ -585,9 +579,8 @@ public class GetParseData {
         initPageInfoFields();
         try {
             return (Map)jspPrefixMapperF.get(pageInfo);
-        }
-        catch (IllegalAccessException e) {
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+        } catch (IllegalAccessException e) {
+            Exceptions.printStackTrace(e);
             throw new RuntimeException();
         }
     }
@@ -596,11 +589,9 @@ public class GetParseData {
         initPageInfoFields();
         try {
             return (Map)xmlPrefixMapperF.get(pageInfo);
-        }
-        catch (IllegalAccessException e) {
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+        } catch (IllegalAccessException e) {
+            Exceptions.printStackTrace(e);
             throw new RuntimeException();
         }
     }
-    
 }

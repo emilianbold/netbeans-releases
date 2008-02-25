@@ -55,9 +55,6 @@ import org.openide.awt.Mnemonics;
 import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
 
-/**
- * @author Martin Krauskopf
- */
 public final class Util {
     
     public static final Logger LOGGER = Logger.getLogger(Util.class.getName());
@@ -145,7 +142,6 @@ public final class Util {
         }
         String problems = platform.getFastDebuggerProblemsInHTML();
         if (problems == null) {
-            turnOnRubyDebugOptions(platform);
             return true;
         }
         if (!strict && DebuggerPreferences.getInstance().isDoNotAskAgain()) {
@@ -166,12 +162,8 @@ public final class Util {
         }
         Object[] options = new Object[] { installButton, nonInstallButton };
         descriptor.setOptions(options);
-        if (DialogDisplayer.getDefault().notify(descriptor) == installButton) {
-            if (platform.installFastDebugger()) {
-                turnOnRubyDebugOptions(platform);
-            } else {
-                Util.showWarning(getMessage("Util.fast.debugger.install.failed"));
-            }
+        if (DialogDisplayer.getDefault().notify(descriptor) == installButton && !platform.installFastDebugger()) {
+            Util.showWarning(getMessage("Util.fast.debugger.install.failed"));
         }
         if (!strict) {
             DebuggerPreferences.getInstance().setDoNotAskAgain(rubyDebugPanel.isDoNotAskAgain());
@@ -181,13 +173,6 @@ public final class Util {
     
     private static String getMessage(final String key) {
         return NbBundle.getMessage(Util.class, key);
-    }
-    
-    private static void turnOnRubyDebugOptions(final RubyPlatform platform) {
-        DebuggerPreferences prefs = DebuggerPreferences.getInstance();
-        if (platform.hasFastDebuggerInstalled()) {
-            prefs.setUseClassicDebugger(platform, false);
-        }
     }
     
 }

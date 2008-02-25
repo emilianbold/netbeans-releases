@@ -125,6 +125,12 @@ final class TemplateChooserPanelGUI extends javax.swing.JPanel implements Proper
         }
     }
 
+    @Override
+    public void removeNotify() {
+        super.removeNotify();
+        project = null;
+    }
+
     /** Called from readSettings, to initialize the GUI with proper components
      */
     private void initValues( Project p ) {

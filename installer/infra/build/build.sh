@@ -147,6 +147,9 @@ run() {
             \"-Dcvs.root=${CVS_ROOT}\" \
             \"-Dcvs.timestamp=${CVS_STAMP}\" \
             \"-Dcvs.branch=${CVS_BRANCH}\" \
+            \"-Dbuild.jdk5=${BUILD_JDK5}\" \
+            \"-Dbuild.jdk6=${BUILD_JDK6}\" \
+            \"-Ddisable.build.netbeans=${DISABLE_NETBEANS_BUILD}\" \
             \"-Dglassfish.home=${GLASSFISH_HOME}\" \
             \"-Dglassfish.asadmin=${GLASSFISH_ASADMIN}\" \
             \"-Dglassfish.http.port=${GLASSFISH_HTTP_PORT}\" \

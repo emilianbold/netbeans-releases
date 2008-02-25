@@ -118,7 +118,7 @@ class OutlinePanel extends JPanel implements ExplorerManager.Provider, Lookup.Pr
 
     private final OutlineTreeView treeView = new OutlineTreeView(this);
 
-    private final PropertyChangeListener outlineManagerListener = new OutlineManagerListener();
+    private final PropertyChangeListener outlineManagerListener = new OutlineManagerListener(this);
 
 //    private DesignProjectListener designProjectListener;
 

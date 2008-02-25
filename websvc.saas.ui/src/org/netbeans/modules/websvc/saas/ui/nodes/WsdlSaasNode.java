@@ -41,30 +41,28 @@ package org.netbeans.modules.websvc.saas.ui.nodes;
 
 import java.awt.Image;
 import java.awt.datatransfer.Transferable;
-import java.io.File;
+import java.awt.datatransfer.UnsupportedFlavorException;
 import java.io.IOException;
-import java.net.MalformedURLException;
 import java.util.List;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import javax.swing.Action;
 import org.netbeans.modules.websvc.saas.model.Saas;
-import org.netbeans.modules.websvc.saas.model.Saas;
-import org.netbeans.modules.websvc.saas.model.Saas;
 import org.netbeans.modules.websvc.saas.model.WsdlSaas;
+import org.netbeans.modules.websvc.saas.model.WsdlSaasPort;
+import org.netbeans.modules.websvc.saas.spi.ConsumerFlavorProvider;
 import org.netbeans.modules.websvc.saas.ui.actions.ViewWSDLAction;
 import org.netbeans.modules.websvc.saas.util.SaasTransferable;
-import org.netbeans.modules.websvc.saas.util.SaasUtil;
 import org.netbeans.modules.websvc.saas.util.WsdlUtil;
 import org.openide.nodes.PropertySupport;
 import org.openide.nodes.Sheet;
 import org.openide.nodes.Sheet.Set;
-import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.datatransfer.ExTransferable;
+import org.openide.util.datatransfer.ExTransferable.Single;
+import org.openide.util.lookup.AbstractLookup;
 import org.openide.util.lookup.InstanceContent;
 
 /**
@@ -72,18 +70,25 @@ import org.openide.util.lookup.InstanceContent;
  * @author nam
  */
 public class WsdlSaasNode extends SaasNode {
-    Transferable transferable;
+    ExTransferable transferable;
     
     public WsdlSaasNode(WsdlSaas saas) {
         this(saas, new InstanceContent());
     }
     
     protected WsdlSaasNode(WsdlSaas saas, InstanceContent content) {
-        super(new WsdlSaasNodeChildren(saas), saas);
+        super(new WsdlSaasNodeChildren(saas), new AbstractLookup(content), saas);
         content.add(saas);
         transferable = ExTransferable.create(
-            new SaasTransferable<WsdlSaas>(saas, SaasTransferable.WSDL_METHOD_FLAVORS));
+            new SaasTransferable<WsdlSaas>(saas, SaasTransferable.WSDL_SERVICE_FLAVORS));
     }
+    
+    private static WsdlSaasPort getDefaultPort(WsdlSaas saas) {
+        if (saas.getPorts().isEmpty()) {
+            return null;
+        }
+        return saas.getPorts().get(0);
+    } 
     
     @Override
     public WsdlSaas getSaas() {
@@ -93,12 +98,7 @@ public class WsdlSaasNode extends SaasNode {
     private static final java.awt.Image ICON =
        Utilities.loadImage( "org/netbeans/modules/websvc/saas/ui/resources/webservice.png" ); //NOI18N
     
-    @Override
-    public Image getIcon(int type) {
-        Image icon = SaasUtil.loadIcon(saas, type);
-        if (icon != null) {
-            return icon;
-        }
+    public Image getGenericIcon(int type) {
         return ICON;
     }
     
@@ -170,30 +170,28 @@ public class WsdlSaasNode extends SaasNode {
         return sheet;
     }
     
+    private boolean portAdded;
+    
     @Override
     public Transferable clipboardCopy() throws IOException {
         if (getSaas().getState() != Saas.State.READY) {
-            getSaas().toStateReady();
+            getSaas().toStateReady(true);
             return super.clipboardCopy();
         }
-        return SaasTransferable.addFlavors(transferable);
-    }
-    
-    private URL getWsdlURL(){
-        URL url = null;
-        java.lang.String wsdlURL = saas.getUrl();
-        try {
-            url = new URL(wsdlURL);
-        } catch (MalformedURLException ex) {
-            //attempt to recover
-            File f = new File(wsdlURL);
-            try{
-                url = f.getCanonicalFile().toURI().normalize().toURL();
-            } catch (IOException exc) {
-                Exceptions.printStackTrace(exc);
+        if (! portAdded) {
+            final WsdlSaasPort port = getDefaultPort(getSaas());
+            if (port != null) {
+                transferable.put(new Single(ConsumerFlavorProvider.PORT_FLAVOR) {
+                    @Override
+                    protected Object getData() throws IOException, UnsupportedFlavorException {
+                        return port;
+                    }
+
+                });
             }
+            portAdded = true;
         }
-        return url;
+        return SaasTransferable.addFlavors(transferable);
     }
     
 }

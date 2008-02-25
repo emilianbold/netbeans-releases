@@ -843,6 +843,11 @@ public class DatabaseConnection implements DBConnection {
         }
                 
         for (int i = 0; i < nodes.length; i++) {
+            // Skip nodes registered by node providers
+            if ( ! (nodes[i] instanceof DatabaseNode) ) {
+                continue;
+            }
+            
             DatabaseNodeInfo info = (DatabaseNodeInfo)nodes[i].getCookie(DatabaseNodeInfo.class);
             if (info == null) {
                 continue;

@@ -81,10 +81,10 @@ import org.netbeans.modules.cnd.makeproject.ui.utils.ConfSelectorPanel;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
 import org.netbeans.modules.cnd.api.compilers.Tool;
 import org.netbeans.modules.cnd.api.utils.Path;
-import org.netbeans.modules.cnd.makeproject.api.configurations.CompilerSetConfiguration;
+import org.netbeans.modules.cnd.makeproject.api.DefaultProjectActionHandler;
+import org.netbeans.modules.cnd.makeproject.api.configurations.CompilerSet2Configuration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.FortranCompilerConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
-import org.netbeans.modules.cnd.makeproject.api.configurations.ui.CustomizerRootNodeProvider;
 import org.netbeans.modules.cnd.settings.CppSettings;
 import org.netbeans.modules.cnd.ui.options.LocalToolsPanelModel;
 import org.netbeans.modules.cnd.ui.options.ToolsPanelModel;
@@ -737,11 +737,11 @@ public class MakeActionProvider implements ActionProvider {
     }
     
     private static boolean hasDebugger() {
-        return CustomizerRootNodeProvider.getInstance().getCustomizerNode("Debug") != null; // NOI18N
+        return DefaultProjectActionHandler.getInstance().getCustomDebugActionHandlerProvider() != null;
     }
     
     public boolean validateBuildSystem(MakeConfigurationDescriptor pd, MakeConfiguration conf, boolean validated) {
-        CompilerSetConfiguration csconf = conf.getCompilerSet();
+        CompilerSet2Configuration csconf = conf.getCompilerSet();
         ArrayList<String> errs = new ArrayList<String>();
         CompilerSet cs;
         BuildToolsAction bt = null;

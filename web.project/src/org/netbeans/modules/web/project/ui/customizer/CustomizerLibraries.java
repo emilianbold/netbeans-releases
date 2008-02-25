@@ -58,11 +58,16 @@ import javax.swing.table.JTableHeader;
 import javax.swing.table.TableColumn;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.PlatformsCustomizer;
+import org.netbeans.modules.j2ee.common.project.classpath.ClassPathSupport.Item;
 import org.netbeans.modules.java.api.common.ui.PlatformUiSupport;
 import org.netbeans.api.project.libraries.LibraryManager;
-import org.netbeans.modules.web.project.classpath.ClassPathSupport;
+import org.netbeans.modules.j2ee.common.project.classpath.ClassPathSupport;
+import org.netbeans.modules.j2ee.common.SharabilityUtility;
+import org.netbeans.modules.j2ee.common.project.ui.ClassPathUiSupport;
+import org.netbeans.modules.j2ee.common.project.ui.EditMediator;
+import org.netbeans.modules.web.project.classpath.ClassPathSupportCallbackImpl;
 import org.netbeans.modules.web.project.ui.WebLogicalViewProvider;
-import org.netbeans.modules.web.project.ui.wizards.PanelOptionsVisual;
+import org.netbeans.spi.java.project.support.ui.SharableLibrariesUtils;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.awt.Mnemonics;
 import org.openide.filesystems.FileUtil;
@@ -89,49 +94,61 @@ public class CustomizerLibraries extends JPanel implements HelpCtx.Provider, Lis
 
         jTableCpC.setModel( uiProperties.JAVAC_CLASSPATH_MODEL );
         initTableVisualProperties(jTableCpC);
-        uiProperties.CLASS_PATH_TABLE_ITEM_RENDERER.setBooleanRenderer(jTableCpC.getDefaultRenderer(Boolean.class));
-        jTableCpC.setDefaultRenderer( ClassPathSupport.Item.class, uiProperties.CLASS_PATH_TABLE_ITEM_RENDERER );
-        jTableCpC.setDefaultRenderer( Boolean.class, uiProperties.CLASS_PATH_TABLE_ITEM_RENDERER );
-        
-        WebClassPathUi.EditMediator.register( uiProperties.getProject(),
-                                               WebClassPathUi.EditMediator.createListComponent( jTableCpC, uiProperties.JAVAC_CLASSPATH_MODEL.getDefaultListModel()),  
-                                               jButtonAddJarC.getModel(), 
-                                               jButtonAddLibraryC.getModel(), 
-                                               jButtonAddArtifactC.getModel(), 
-                                               jButtonRemoveC.getModel(), 
-                                               jButtonMoveUpC.getModel(), 
-                                               jButtonMoveDownC.getModel(),
-                                               jButtonEditC.getModel(),
-                                               uiProperties.SHARED_LIBRARIES_MODEL,
-                                               true );
+        //uiProperties.CLASS_PATH_TABLE_ITEM_RENDERER.setBooleanRenderer(jTableCpC.getDefaultRenderer(Boolean.class));
+        jTableCpC.setDefaultRenderer(ClassPathSupport.Item.class, uiProperties.CLASS_PATH_TABLE_ITEM_RENDERER);
+        //jTableCpC.setDefaultRenderer( Boolean.class, uiProperties.CLASS_PATH_TABLE_ITEM_RENDERER );
+
+        ClassPathUiSupport.Callback callback = new ClassPathUiSupport.Callback() {
+            public void initItem(Item item) {
+                item.setAdditionalProperty(ClassPathSupportCallbackImpl.PATH_IN_DEPLOYMENT, 
+                        ClassPathSupportCallbackImpl.PATH_IN_WAR_NONE);
+            }
+        };
+        EditMediator.register( uiProperties.getProject(),
+                               uiProperties.getProject().getAntProjectHelper(),
+                               uiProperties.getProject().getReferenceHelper(),
+                               EditMediator.createListComponent( jTableCpC, uiProperties.JAVAC_CLASSPATH_MODEL.getDefaultListModel()),  
+                               jButtonAddJarC.getModel(), 
+                               jButtonAddLibraryC.getModel(), 
+                               jButtonAddArtifactC.getModel(), 
+                               jButtonRemoveC.getModel(), 
+                               jButtonMoveUpC.getModel(), 
+                               jButtonMoveDownC.getModel(),
+                               jButtonEditC.getModel(),
+                               uiProperties.SHARED_LIBRARIES_MODEL,
+                               uiProperties.getProject().getClassPathUiSupportCallback() );
         
         jListCpCT.setModel( uiProperties.JAVAC_TEST_CLASSPATH_MODEL);
         jListCpCT.setCellRenderer( uiProperties.CLASS_PATH_LIST_RENDERER );
-        WebClassPathUi.EditMediator.register( uiProperties.getProject(),
-                                               WebClassPathUi.EditMediator.createListComponent( jListCpCT) , 
-                                               jButtonAddJarCT.getModel(), 
-                                               jButtonAddLibraryCT.getModel(), 
-                                               jButtonAddArtifactCT.getModel(), 
-                                               jButtonRemoveCT.getModel(), 
-                                               jButtonMoveUpCT.getModel(), 
-                                               jButtonMoveDownCT.getModel(),
-                                               jButtonEditCT.getModel(),
-                                               uiProperties.SHARED_LIBRARIES_MODEL,
-                                               false );
+        EditMediator.register( uiProperties.getProject(),
+                               uiProperties.getProject().getAntProjectHelper(),
+                               uiProperties.getProject().getReferenceHelper(),
+                               EditMediator.createListComponent( jListCpCT) , 
+                               jButtonAddJarCT.getModel(), 
+                               jButtonAddLibraryCT.getModel(), 
+                               jButtonAddArtifactCT.getModel(), 
+                               jButtonRemoveCT.getModel(), 
+                               jButtonMoveUpCT.getModel(), 
+                               jButtonMoveDownCT.getModel(),
+                               jButtonEditCT.getModel(),
+                               uiProperties.SHARED_LIBRARIES_MODEL,
+                               callback );
                 
         jListCpRT.setModel( uiProperties.RUN_TEST_CLASSPATH_MODEL );
         jListCpRT.setCellRenderer( uiProperties.CLASS_PATH_LIST_RENDERER );
-        WebClassPathUi.EditMediator.register( uiProperties.getProject(),
-                                               WebClassPathUi.EditMediator.createListComponent( jListCpRT), 
-                                               jButtonAddJarRT.getModel(), 
-                                               jButtonAddLibraryRT.getModel(), 
-                                               jButtonAddArtifactRT.getModel(), 
-                                               jButtonRemoveRT.getModel(), 
-                                               jButtonMoveUpRT.getModel(), 
-                                               jButtonMoveDownRT.getModel(),
-                                               jButtonEditRT.getModel(),
-                                               uiProperties.SHARED_LIBRARIES_MODEL,
-                                               false );
+        EditMediator.register( uiProperties.getProject(),
+                               uiProperties.getProject().getAntProjectHelper(),
+                               uiProperties.getProject().getReferenceHelper(),
+                               EditMediator.createListComponent( jListCpRT), 
+                               jButtonAddJarRT.getModel(), 
+                               jButtonAddLibraryRT.getModel(), 
+                               jButtonAddArtifactRT.getModel(), 
+                               jButtonRemoveRT.getModel(), 
+                               jButtonMoveUpRT.getModel(), 
+                               jButtonMoveDownRT.getModel(),
+                               jButtonEditRT.getModel(),
+                               uiProperties.SHARED_LIBRARIES_MODEL,
+                               callback );
         
         uiProperties.NO_DEPENDENCIES_MODEL.setMnemonic( jCheckBoxBuildSubprojects.getMnemonic() );
         jCheckBoxBuildSubprojects.setModel( uiProperties.NO_DEPENDENCIES_MODEL );                        
@@ -151,8 +168,7 @@ public class CustomizerLibraries extends JPanel implements HelpCtx.Provider, Lis
         if (!isSharable) {
             sharedLibrariesLabel.setEnabled(false);
             librariesLocation.setEnabled(false);
-//            librariesBrowse.setText("Make Sharable...");
-            librariesBrowse.setEnabled(false);
+            librariesBrowse.setText(NbBundle.getMessage(CustomizerLibraries.class, "LBL_CustomizeLibraries_MakeSharable"));
         } else {
             librariesLocation.setText(uiProperties.getProject().getAntProjectHelper().getLibrariesLocation());
         }
@@ -714,41 +730,63 @@ public class CustomizerLibraries extends JPanel implements HelpCtx.Provider, Lis
     private void librariesBrowseActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_librariesBrowseActionPerformed
         if (!isSharable) {
             
-            List<String> libs = collectLibs(uiProperties.JAVAC_CLASSPATH_MODEL.getDefaultListModel(), new ArrayList<String>());
-            libs = collectLibs(uiProperties.JAVAC_TEST_CLASSPATH_MODEL, libs);
-            libs = collectLibs(uiProperties.RUN_TEST_CLASSPATH_MODEL, libs);
-            boolean result = false; //MakeSharableUtils.showMakeSharableWizard(uiProperties.getProject().getAntProjectHelper(), libs);
+            List<String> libs = new ArrayList<String>();
+            List<String> jars = new ArrayList<String>();
+            collectLibs(uiProperties.JAVAC_CLASSPATH_MODEL.getDefaultListModel(), libs, jars);
+            collectLibs(uiProperties.JAVAC_TEST_CLASSPATH_MODEL, libs, jars);
+            collectLibs(uiProperties.RUN_TEST_CLASSPATH_MODEL, libs, jars);
+            boolean result = SharableLibrariesUtils.showMakeSharableWizard(uiProperties.getProject().getAntProjectHelper(), uiProperties.getProject().getReferenceHelper(), libs, jars);
             if (result) {
                 isSharable = true;
                 sharedLibrariesLabel.setEnabled(true);
                 librariesLocation.setEnabled(true);
                 librariesLocation.setText(uiProperties.getProject().getAntProjectHelper().getLibrariesLocation());
                 Mnemonics.setLocalizedText(librariesBrowse, NbBundle.getMessage(CustomizerLibraries.class, "LBL_CustomizerLibraries_Browse_JButton")); // NOI18N
+                updateJars(uiProperties.JAVAC_CLASSPATH_MODEL.getDefaultListModel());
+                updateJars(uiProperties.JAVAC_TEST_CLASSPATH_MODEL);
+                updateJars(uiProperties.RUN_TEST_CLASSPATH_MODEL);
+                switchLibrary();
             }
         } else {
             File prjLoc = FileUtil.toFile(uiProperties.getProject().getProjectDirectory());
             String s[] = splitPath(librariesLocation.getText().trim());
-            String loc = PanelOptionsVisual.browseForLibraryLication(s[0], this, prjLoc);
+            String loc = SharableLibrariesUtils.browseForLibraryLocation(s[0], this, prjLoc);
             if (loc != null) {
                 librariesLocation.setText(s[1] != null ? loc + File.separator + s[1] :
-                    loc + File.separator + WebProjectProperties.DEFAULT_LIBRARIES_FILENAME);
+                    loc + File.separator + SharableLibrariesUtils.DEFAULT_LIBRARIES_FILENAME);
                 switchLibrary();
             }
         }
     }//GEN-LAST:event_librariesBrowseActionPerformed
 
-    private List<String> collectLibs(DefaultListModel model, List<String> libs) {
+    private void collectLibs(DefaultListModel model, List<String> libs, List<String> jarReferences) { 
         for (int i = 0; i < model.size(); i++) {
             ClassPathSupport.Item item = (ClassPathSupport.Item) model.get(i);
             if (item.getType() == ClassPathSupport.Item.TYPE_LIBRARY) {
                 libs.add(item.getLibrary().getName());
             }
             if (item.getType() == ClassPathSupport.Item.TYPE_JAR) {
-                //TODO
+                if (item.getReference() != null) {
+                    //TODO reference is null for not yet persisted items.
+                    // there seems to be no way to generate a reference string without actually
+                    // creating and writing the property..
+                    jarReferences.add(item.getReference());
+                }
             }
         }
-        return libs;
     }    
+
+    private void updateJars(DefaultListModel model) {
+        for (int i = 0; i < model.size(); i++) {
+            ClassPathSupport.Item item = (ClassPathSupport.Item) model.get(i);
+            if (item.getType() == ClassPathSupport.Item.TYPE_JAR) {
+                if (item.getReference() != null) {
+                    uiProperties.cs.updateJarReference(item);
+                }
+            }
+        }
+        
+    }
     
     private void jCheckBoxBuildSubprojectsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jCheckBoxBuildSubprojectsActionPerformed
         // TODO add your handling code here:

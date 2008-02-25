@@ -45,10 +45,12 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import org.netbeans.modules.db.api.explorer.NodeProvider;
 import org.netbeans.modules.db.explorer.DbNodeLoader;
 import org.openide.nodes.Node;
-import org.openide.util.Lookup;
 import org.openide.util.lookup.Lookups;
 
 /**
@@ -57,12 +59,14 @@ import org.openide.util.lookup.Lookups;
  *  
  * @author David Van Couvering
  */
-public class DbNodeLoaderImpl implements DbNodeLoader {
+public class DbNodeLoaderImpl implements DbNodeLoader, ChangeListener {
     
             /** 
      * Not private because used in the tests.
      */
     static final String NODE_PROVIDER_PATH = "Databases/NodeProviders"; // NOI18N
+    final CopyOnWriteArrayList<ChangeListener> listeners = 
+            new CopyOnWriteArrayList<ChangeListener>();
 
     public List<Node> getAllNodes() {
         List<Node> nodes = new ArrayList<Node>();
@@ -71,8 +75,27 @@ public class DbNodeLoaderImpl implements DbNodeLoader {
         for (Iterator i = providers.iterator(); i.hasNext();) {
             NodeProvider provider = (NodeProvider)i.next();
             nodes.addAll(provider.getNodes());
+            
+            provider.addChangeListener(this);
         }
         
         return nodes;
+    }
+
+    public void addChangeListener(ChangeListener listener) {
+        listeners.add(listener);
+    }
+
+    public void removeChangeListener(ChangeListener listener) {
+        listeners.remove(listener);
+    }
+
+    public synchronized void stateChanged(ChangeEvent evt) {
+        // At this point, any state change simply means that the consumer 
+        // should re-call getAllNodes(), so delegate the state change up to 
+        // the consumer.
+        for ( ChangeListener listener : listeners ) {
+            listener.stateChanged(new ChangeEvent(this));
+        }
     }
 }

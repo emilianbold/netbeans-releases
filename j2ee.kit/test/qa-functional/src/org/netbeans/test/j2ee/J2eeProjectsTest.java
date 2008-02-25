@@ -52,7 +52,6 @@ import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.junit.NbTestSuite;
 import org.netbeans.modules.j2ee.earproject.EarProject;
-import org.netbeans.modules.j2ee.earproject.EarProjectType;
 import org.netbeans.modules.j2ee.earproject.ui.customizer.EarProjectProperties;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
@@ -165,11 +164,10 @@ public class J2eeProjectsTest extends JellyTestCase {
             earPrj = (EarProject) pm.findProject(FileUtil.toFileObject(new File(projectsHome, "J2eePrj").getCanonicalFile()));
             warPrj = pm.findProject(FileUtil.toFileObject(new File(projectsHome, "WebModule").getCanonicalFile()));
             ejbPrj = pm.findProject(FileUtil.toFileObject(new File(projectsHome, "EJBModule").getCanonicalFile()));
-            AntProjectHelper h = earPrj.getUpdateHelper().getAntProjectHelper();
+            AntProjectHelper h = earPrj.getAntProjectHelper();
             AuxiliaryConfiguration aux = h.createAuxiliaryConfiguration();
             ReferenceHelper refHelper = new ReferenceHelper(h, aux, h.getStandardPropertyEvaluator());
-            EarProjectProperties epp = new EarProjectProperties(earPrj, refHelper, new EarProjectType());
-            epp.addJ2eeSubprojects(new Project[] {warPrj, ejbPrj});
+            EarProjectProperties.addJ2eeSubprojects(earPrj, new Project[] {warPrj, ejbPrj});
         } catch (IOException ioe) {
             ioe.printStackTrace(reporter.getLogStream());
             fail("IOEx while adding modules to EAR project.");

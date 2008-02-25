@@ -242,7 +242,29 @@ public final class Stamps {
     public void shutdown() {
         waitFor(true);
     }
-
+    
+    public void discardCaches() {
+        String user = System.getProperty ("netbeans.user"); // NOI18N
+        long now = System.currentTimeMillis();
+        if (user != null) {
+            File f = new File(user, ".lastModified");
+            if (f.exists()) {
+                f.setLastModified(now);
+            } else {
+                f.getParentFile().mkdirs();
+                try {
+                    f.createNewFile();
+                } catch (IOException ex) {
+                    LOG.log(Level.WARNING, "Cannot create " + f, ex);
+                }
+            }
+        }
+        AtomicLong al = moduleJARs;
+        if (al != null) {
+            al.set(now);
+        }
+    }
+    
     final void waitFor(boolean noNotify) {
         Worker wait;
         synchronized (worker) {

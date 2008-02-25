@@ -13,9 +13,6 @@
                 -->
             </folder>
         </folder>
-    </folder>
-
-    <folder name="Editors">
         <folder name="AnnotationTypes">
           <file name="org-netbeans-modules-gsf-hints-fixable_error.xml" url="parser_annotation_err.xml"/>
 

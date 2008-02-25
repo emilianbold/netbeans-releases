@@ -46,7 +46,6 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.text.Collator;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
 import java.util.SortedSet;
@@ -93,7 +92,11 @@ public class JavaPlatformComponentFactory {
         
         private void refresh() {
             platforms.clear();
-            platforms.addAll(Arrays.asList(mgr.getInstalledPlatforms()));
+            for (JavaPlatform plaf : mgr.getInstalledPlatforms()) {
+                if (plaf.getSpecification().getName().equals("j2se")) { // NOI18N
+                    platforms.add(plaf);
+                }
+            }
         }
 
         public int getSize() {
@@ -178,7 +181,7 @@ public class JavaPlatformComponentFactory {
         }
 
         // #93658: GTK needs name to render cell renderer "natively"
-        public String getName() {
+        public @Override String getName() {
             String name = super.getName();
             return name == null ? "ComboBox.renderer" : name;  // NOI18N
         }

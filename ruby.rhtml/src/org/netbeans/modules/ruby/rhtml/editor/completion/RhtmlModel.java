@@ -190,6 +190,7 @@ public class RhtmlModel {
                 // I don't have to do this on lines that are in comments... But no big harm
                 text = text.replace("'", "\\'");
                 buffer.append(text);
+                // TODO: This "\n" shouldn't be there if the next "<%" is a "<%-" !
                 buffer.append("';\n"); // NOI18N
                 int generatedEnd = buffer.length();
 
@@ -345,6 +346,7 @@ public class RhtmlModel {
             this.generatedEnd = generatedEnd;
         }
         
+        @Override
         public String toString() {
             StringBuilder sb = new StringBuilder();
             sb.append("CodeBlockData[");

@@ -35,6 +35,8 @@ import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.ruby.platform.RubyPlatformManager;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.ruby.RubyTestBase;
+import org.netbeans.modules.ruby.railsprojects.database.RailsAdapterFactory;
+import org.netbeans.modules.ruby.railsprojects.database.RailsDatabaseConfiguration;
 import org.netbeans.spi.project.ui.support.NodeFactory;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
@@ -63,7 +65,8 @@ public class RailsProjectTestBase extends RubyTestBase {
     
     protected RailsProject createTestProject(String projectName, String... paths) throws Exception {
         File prjDirF = new File(getWorkDir(), projectName);
-        RailsProjectCreateData data = new RailsProjectCreateData(RubyPlatformManager.getDefaultPlatform(), prjDirF, projectName, false, null, false, false, "WEBRICK");
+        RailsDatabaseConfiguration dbConf = RailsAdapterFactory.getAdapters().get(0);
+        RailsProjectCreateData data = new RailsProjectCreateData(RubyPlatformManager.getDefaultPlatform(), prjDirF, projectName, false, dbConf, false, "WEBRICK");
         RailsProjectGenerator.createProject(data);
         RubyTestBase.createFiles(prjDirF, paths);
         RailsProject project = (RailsProject) ProjectManager.getDefault().findProject(FileUtil.toFileObject(prjDirF));

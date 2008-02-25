@@ -20,6 +20,8 @@
 package org.netbeans.modules.bpel.debugger.ui;
 
 import java.beans.PropertyChangeEvent;
+import java.util.Iterator;
+import java.util.List;
 import org.netbeans.api.debugger.DebuggerEngine;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.debugger.DebuggerManagerAdapter;
@@ -31,8 +33,11 @@ import org.netbeans.modules.bpel.debugger.api.ProcessInstance;
 import org.netbeans.modules.bpel.debugger.api.SourcePath;
 import org.netbeans.modules.bpel.debugger.api.pem.PemEntity;
 import org.netbeans.modules.bpel.debugger.api.psm.PsmEntity;
+import org.netbeans.modules.bpel.debugger.ui.breakpoint.BpelLineBreakpointView;
 import org.netbeans.modules.bpel.debugger.ui.util.ModelUtil;
 import org.netbeans.modules.bpel.model.api.BpelModel;
+import org.netbeans.spi.viewmodel.Model;
+import org.netbeans.spi.viewmodel.NodeModel;
 import org.openide.util.RequestProcessor;
 
 
@@ -120,6 +125,10 @@ public class CurrentPositionAnnotationListener extends DebuggerManagerAdapter {
     private void updateCurrentPosition() {
         if (myCurrentDebugger != null) {
             myCurrentPosition = myCurrentDebugger.getCurrentPosition();
+            
+            if (getBreakpointsNodeModel() != null) {
+                getBreakpointsNodeModel().setCurrentPosition(myCurrentPosition);
+            }
         } else {
             myCurrentPosition = null;
         }
@@ -204,4 +213,22 @@ public class CurrentPositionAnnotationListener extends DebuggerManagerAdapter {
             }
         });
     }
+    
+    private BpelLineBreakpointView breakpointsNodeModel;
+    private BpelLineBreakpointView getBreakpointsNodeModel () {
+        if (breakpointsNodeModel == null) {
+            List l = DebuggerManager.getDebuggerManager ().lookup
+                ("BreakpointsView", Model.class);
+            Iterator it = l.iterator ();
+            while (it.hasNext ()) {
+                Model nm = (Model) it.next ();
+                if (nm instanceof BpelLineBreakpointView) {
+                    breakpointsNodeModel = (BpelLineBreakpointView) nm;
+                    break;
+                }
+            }
+        }
+        return breakpointsNodeModel;
+    }
+    
 }

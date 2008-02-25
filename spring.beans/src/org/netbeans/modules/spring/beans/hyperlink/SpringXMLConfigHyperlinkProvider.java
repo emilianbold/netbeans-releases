@@ -48,12 +48,10 @@ import org.netbeans.editor.BaseDocument;
 import org.netbeans.lib.editor.hyperlink.spi.HyperlinkProvider;
 import org.netbeans.modules.spring.beans.editor.ContextUtilities;
 import org.netbeans.modules.spring.beans.editor.DocumentContext;
-import org.netbeans.modules.spring.beans.editor.EditorContextFactory;
 import org.netbeans.modules.spring.beans.editor.SpringXMLConfigEditorUtils.Public;
 import org.netbeans.modules.spring.beans.editor.SpringXMLConfigEditorUtils.Static;
 import org.netbeans.modules.spring.beans.utils.StringUtils;
 import org.netbeans.modules.xml.text.syntax.XMLSyntaxSupport;
-import org.netbeans.modules.xml.text.syntax.dom.Tag;
 
 /**
  * Provides hyperlinking functionality for Spring XML Configuration files
@@ -64,14 +62,6 @@ public class SpringXMLConfigHyperlinkProvider implements HyperlinkProvider {
 
     private static final String P_NAMESPACE = "http://www.springframework.org/schema/p"; // NOI18N
 
-    public enum Type {
-        TAG,
-        ATTRIB_VALUE,
-        ATTRIB,
-        TEXT,
-        NONE
-    };
-    
     private static final String BEAN_TAG = "bean";  // NOI18N
     private static final String IMPORT_TAG = "import";  // NOI18N
     private static final String LOOKUP_METHOD_TAG = "lookup-method";  // NOI18N
@@ -97,13 +87,8 @@ public class SpringXMLConfigHyperlinkProvider implements HyperlinkProvider {
     private static final String LOCAL_ATTRIB = "local";  // NOI18N
     
     private BaseDocument lastDocument;
-    private int startOffset;
-    private int endOffset;
-    private String valueString;
-    private String tagString;
-    private String attribString;
-    private Tag currentTag;
-    private Type type = Type.NONE;
+
+    private HyperlinkProcessor currentProcessor;
 
     private Map<String, HyperlinkProcessor> attribValueProcessors = 
             new HashMap<String, HyperlinkProcessor>();
@@ -171,80 +156,42 @@ public class SpringXMLConfigHyperlinkProvider implements HyperlinkProvider {
             return false;
         }
 
-        return processHyperlinkPoint(doc, offset);
-    }
-
-    private boolean processHyperlinkPoint(BaseDocument doc, int offset) {
-        DocumentContext context = EditorContextFactory.getDocumentContext(doc, offset);
-        if (ContextUtilities.isValueToken(context.getCurrentToken())) {
-            type = Type.ATTRIB_VALUE;
-            lastDocument = doc;
-            valueString = context.getCurrentTokenImage();
-            valueString = valueString.substring(1, valueString.length() - 1);
-            startOffset = context.getCurrentToken().getOffset() + 1;
-            endOffset = startOffset + context.getCurrentTokenImage().length() - 2;
-
-            currentTag = ContextUtilities.getCurrentTagElement(context);
-            tagString = currentTag.getTagName();
-            attribString = ContextUtilities.getAttributeTokenImage(context);
-
-            HyperlinkProcessor hyperlinkProcessor = 
-                    locateHyperlinkProcessor(tagString, attribString, attribValueProcessors);
-            
-            if(hyperlinkProcessor == null) {
-                if (attribString.endsWith("-ref")) {  // NOI18N
-                    return isPNamespaceName(context, attribString);
-                }
+        HyperlinkEnv env = new HyperlinkEnv(document, offset);
+        if(env.getType().isValueHyperlink()) {
+            currentProcessor = locateHyperlinkProcessor(env.getTagName(), env.getAttribName(), attribValueProcessors);
+            if(currentProcessor == null && isPNamespaceName(env.getDocumentContext(), env.getAttribName())) {
+                currentProcessor = pHyperlinkProcessor;
+            }
+        } else if(env.getType().isAttributeHyperlink()) {
+            if (isPNamespaceName(env.getDocumentContext(), env.getAttribName())) {
+                currentProcessor = pHyperlinkProcessor;
             } else {
-                return true;
+                currentProcessor = null;
             }
-        } else if(ContextUtilities.isAttributeToken(context.getCurrentToken())) {
-            type = Type.ATTRIB;
-            lastDocument = doc;
-            attribString = context.getCurrentTokenImage();
-            startOffset = context.getCurrentToken().getOffset();
-            endOffset = startOffset + context.getCurrentTokenImage().length();
-            currentTag = ContextUtilities.getCurrentTagElement(context);
-            tagString = currentTag.getTagName();
-            valueString = null;
-            
-            if (isPNamespaceName(context, attribString)) {
-                return true;
-            }
+        } else {
+            currentProcessor = null;
         }
-
-        return false;
+        
+        return currentProcessor != null;
     }
 
     public int[] getHyperlinkSpan(Document document, int offset) {
         if (!(document instanceof BaseDocument)) {
             return null;
         }
+        
+        if(currentProcessor == null) {
+            return null;
+        }
 
-        return new int[]{startOffset, endOffset};
+        HyperlinkEnv env = new HyperlinkEnv(document, offset);
+        return currentProcessor.getSpan(env);
     }
 
     public void performClickAction(Document document, int offset) {
-        DocumentContext context = EditorContextFactory.getDocumentContext(document, offset);
-        HyperlinkProcessor processor = null;
-        
-        if (type == Type.ATTRIB_VALUE) {
-            processor = 
-                    locateHyperlinkProcessor(tagString, attribString, attribValueProcessors);
-            
-            if(processor == null 
-                    && isPNamespaceName(context, attribString)
-                    && attribString.endsWith("-ref")) {  // NOI18N
-                processor = pHyperlinkProcessor;
-            }
-        } else if(type == Type.ATTRIB) {
-            if (isPNamespaceName(context, attribString)) {
-                processor = pHyperlinkProcessor;
-            }
-        }
-        
-        if(processor != null) {
-            processor.process(new HyperlinkEnv(document, currentTag, tagString, attribString, valueString, type));
+        HyperlinkEnv env = new HyperlinkEnv(document, offset);
+        if(currentProcessor != null) {
+            currentProcessor.process(env);
         }
     }
     

@@ -43,8 +43,10 @@ package org.netbeans.modules.css.visual.ui.preview;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.lang.ref.WeakReference;
-import org.netbeans.modules.css.editor.CssCloneableEditor;
+import javax.swing.text.Document;
+import org.netbeans.modules.css.editor.CssEditorSupport;
 import org.netbeans.modules.css.visual.ui.StyleBuilderTopComponent;
+import org.openide.cookies.EditorCookie;
 import org.openide.util.WeakListeners;
 import org.openide.windows.TopComponent;
 import org.openide.windows.TopComponent.Registry;
@@ -56,88 +58,96 @@ import org.openide.windows.WindowManager;
  * @author Marek Fukala
  */
 public class CSSTCController implements PropertyChangeListener {
-    
+
     //allow GCize the shared class instance if noone needs it anymore
     public static WeakReference<CSSTCController> instance;
-    
-    private boolean windowsOpened = false;
+    private TopComponent lastCSSTC = null;
     
     /** Clients (CSSPreviewable TopComponent-s) should hold a strong reference to the
      * instance obtained by this method call during its livecycle.
      */
     public static synchronized CSSTCController getDefault() {
-        if(instance == null) {
+        if (instance == null) {
             instance = new WeakReference<CSSTCController>(new CSSTCController());
         }
         CSSTCController controllerInstance = instance.get();
-        if(controllerInstance == null) {
+        if (controllerInstance == null) {
             controllerInstance = new CSSTCController();
             instance = new WeakReference<CSSTCController>(controllerInstance);
             return controllerInstance;
         }
         return instance.get();
     }
-    
+
     public CSSTCController() {
         //register a weak property change listener to the window manager registry
-        Registry reg =  WindowManager.getDefault().getRegistry();
+        Registry reg = WindowManager.getDefault().getRegistry();
         reg.addPropertyChangeListener(
                 WeakListeners.propertyChange(this, reg));
     }
-    
+
     public void propertyChange(PropertyChangeEvent evt) {
         if (TopComponent.Registry.PROP_ACTIVATED.equals(evt.getPropertyName())) {
             //a TC activated -
             //check if the TC is editor TC and if so close the CSS preview and style builder
-            TopComponent activated = (TopComponent)evt.getNewValue();
-            if(isCSSTC(activated)) {
-                previewableActivated();
-                windowsOpened = true;
+            TopComponent activated = (TopComponent) evt.getNewValue();
+
+            if (isCSSTC(activated)) {
+                previewableActivated(activated);
             } else {
                 //issue 104603 workaround
-                if(activated instanceof CssPreviewTopComponent
-                        || activated instanceof StyleBuilderTopComponent) {
-                    return ; //do not close the windows if user click on them
+                if (activated instanceof CssPreviewTopComponent || activated instanceof StyleBuilderTopComponent) {
+                    return; //do not close the windows if user click on them
                 }
-                
+
                 //A non - CSS previewable activated in editor - close the CSS windows
-                if(WindowManager.getDefault().isOpenedEditorTopComponent(activated)) {
+                if (WindowManager.getDefault().isOpenedEditorTopComponent(activated) && lastCSSTC != null) {
                     notPreviewableActivated();
                 }
             }
-        } else if(windowsOpened && TopComponent.Registry.PROP_TC_CLOSED.equals(evt.getPropertyName())) {
+        } else if (lastCSSTC != null && TopComponent.Registry.PROP_TC_CLOSED.equals(evt.getPropertyName())) {
             //a TC closed - check if the TC is CSSpreviewable
             //check if the activated nodes
-            TopComponent closedTC = (TopComponent)evt.getNewValue();
-            if(isCSSTC(closedTC)) {
+            TopComponent closedTC = (TopComponent) evt.getNewValue();
+//            if (isCSSTC(closedTC)) {
+            if(closedTC == lastCSSTC) {
                 //close the CSS windows
                 //FIXME side effect is that the windows are close
                 //and reopened again if another css previewable gets active
                 notPreviewableActivated();
-                windowsOpened = false;
             }
         }
     }
-    
+
     private boolean isCSSTC(TopComponent tc) {
-        return tc instanceof CssCloneableEditor;
-//        if(tc.getActivatedNodes() != null) {
-//            for(Node n : tc.getActivatedNodes()) {
-//                CssPreviewable previewable = n.getCookie(CssPreviewable.class);
-//                if(previewable != null) {
-//                    return true;
-//                }
-//            }
-//        }
-//        return false;
+        Document doc = getDocument(tc);
+        if (doc != null) {
+            String mimeType = (String) doc.getProperty("mimeType");
+            if (mimeType != null && "text/x-css".equals(mimeType)) {
+                return true;
+            }
+        }
+        return false;
     }
-    
-    private void previewableActivated() {
+
+    private Document getDocument(TopComponent tc) {
+        EditorCookie ec = tc.getLookup().lookup(EditorCookie.class);
+        if (ec != null) {
+            return ec.getDocument();
+        } else {
+            return null;
+        }
+    }
+  
+    private void previewableActivated(TopComponent tc) {
+        this.lastCSSTC = tc;
         WindowManager.getDefault().findTopComponentGroup("Csswsgrp").open();
+        CssEditorSupport.getDefault().cssTCActivated(tc);
     }
-    
+
     private void notPreviewableActivated() {
+        this.lastCSSTC = null;
         WindowManager.getDefault().findTopComponentGroup("Csswsgrp").close();
+        CssEditorSupport.getDefault().cssTCDeactivated();
     }
-    
 }

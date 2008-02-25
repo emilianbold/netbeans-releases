@@ -115,6 +115,7 @@ public final class SharableLibrariesUtils {
         chooser.setCurrentDirectory(lib);
         chooser.setFileSelectionMode( JFileChooser.DIRECTORIES_ONLY );
         chooser.setDialogTitle(NbBundle.getMessage(SharableLibrariesUtils.class,"LBL_Browse_Libraries_Title"));
+        chooser.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(SharableLibrariesUtils.class,"ASCD_Browse_Libraries_Title"));
         if (JFileChooser.APPROVE_OPTION == chooser.showOpenDialog(comp)) {
             String[] files;
             try {
@@ -144,12 +145,13 @@ public final class SharableLibrariesUtils {
         final WizardDescriptor wizardDescriptor = new WizardDescriptor(getPanels());
         // {0} will be replaced by WizardDesriptor.Panel.getComponent().getName()
         wizardDescriptor.setTitleFormat(new MessageFormat("{0}"));
-        wizardDescriptor.setTitle("Make project sharable and self-contained.");
+        wizardDescriptor.setTitle(NbBundle.getMessage(SharableLibrariesUtils.class, "TIT_MakeSharableWizard")); 
         wizardDescriptor.putProperty(PROP_HELPER, helper);
         wizardDescriptor.putProperty(PROP_REFERENCE_HELPER, ref);
         wizardDescriptor.putProperty(PROP_LIBRARIES, libraryNames);
         wizardDescriptor.putProperty(PROP_JAR_REFS, jarReferences);
         Dialog dialog = DialogDisplayer.getDefault().createDialog(wizardDescriptor);
+        dialog.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(SharableLibrariesUtils.class, "ACSD_MakeSharableWizard"));
         dialog.setVisible(true);
         dialog.toFront();
         boolean cancelled = wizardDescriptor.getValue() != WizardDescriptor.FINISH_OPTION;

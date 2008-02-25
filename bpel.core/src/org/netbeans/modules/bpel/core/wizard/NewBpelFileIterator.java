@@ -120,7 +120,6 @@ public class NewBpelFileIterator implements TemplateWizard.Iterator {
       if (data == null) {
         return Collections.emptySet();
       }
-      // vlv
       SoaUiUtil.fixEncoding(data, dir);
       
       return Collections.singleton(data);

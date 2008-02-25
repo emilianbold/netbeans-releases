@@ -3,7 +3,7 @@
   <SOAP-ENV:Header/>
   <SOAP-ENV:Body>
     <TravelItinerary xmlns="http://www.opentravel.org/OTA/2003/05">
-            <ItineraryRef Type="14">            
+            <ItineraryRef Type="14">
                 <UniqueID>M839LWNN</UniqueID>
             </ItineraryRef>
             <CustomerInfos>

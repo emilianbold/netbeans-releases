@@ -46,6 +46,7 @@ import org.netbeans.editor.Formatter;
 import org.netbeans.editor.ext.ExtFormatter;
 import org.netbeans.modules.cnd.editor.cplusplus.CKit;
 import org.netbeans.modules.cnd.editor.options.EditorOptions;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -95,7 +96,7 @@ public final class CodeStyle {
     }
     
     private static CodeStyle create(Language language) {
-        return new CodeStyle(language, EditorOptions.getPreferences(EditorOptions.getCurrentProfileId(language)));
+        return new CodeStyle(language, EditorOptions.getPreferences(language, EditorOptions.getCurrentProfileId(language)));
     }
     
 
@@ -135,29 +136,34 @@ public final class CodeStyle {
     }
 
     public BracePlacement getFormatNewlineBeforeBraceNamespace() {
-        return BracePlacement.valueOf(getOption(EditorOptions.CC_FORMAT_NEWLINE_BEFORE_BRACE_NAMESPACE,
-                                      EditorOptions.defaultCCFormatNewlineBeforeBraceNamespace));
+        return BracePlacement.valueOf(getOption(EditorOptions.newLineBeforeBraceNamespace,
+                                      EditorOptions.newLineBeforeBraceNamespaceDefault));
     }
 
     public BracePlacement getFormatNewlineBeforeBraceClass() {
-        return BracePlacement.valueOf(getOption(EditorOptions.CC_FORMAT_NEWLINE_BEFORE_BRACE_CLASS,
-                                      EditorOptions.defaultCCFormatNewlineBeforeBraceClass));
+        return BracePlacement.valueOf(getOption(EditorOptions.newLineBeforeBraceClass,
+                                      EditorOptions.newLineBeforeBraceClassDefault));
     }
 
     public BracePlacement getFormatNewlineBeforeBraceDeclaration() {
-        return BracePlacement.valueOf(getOption(EditorOptions.CC_FORMAT_NEWLINE_BEFORE_BRACE_DECLARATION,
-                                      EditorOptions.defaultCCFormatNewlineBeforeBraceDeclaration));
+        return BracePlacement.valueOf(getOption(EditorOptions.newLineBeforeBraceDeclaration,
+                                      EditorOptions.newLineBeforeBraceDeclarationDefault));
     }
 
     public BracePlacement getFormatNewlineBeforeBrace() {
-        return BracePlacement.valueOf(getOption(EditorOptions.CC_FORMAT_NEWLINE_BEFORE_BRACE,
-                                      EditorOptions.defaultCCFormatNewlineBeforeBrace));
+        return BracePlacement.valueOf(getOption(EditorOptions.newLineBeforeBrace,
+                                      EditorOptions.newLineBeforeBraceDefault));
     }
 
 
     public PreprocessorIndent indentPreprocessorDirectives(){
         return PreprocessorIndent.valueOf(getOption(EditorOptions.indentPreprocessorDirectives,
                                       EditorOptions.indentPreprocessorDirectivesDefault));
+    }
+    
+    public boolean indentCasesFromSwitch() {
+        return getOption(EditorOptions.indentCasesFromSwitch,
+                         EditorOptions.indentCasesFromSwitchDefault);
     }
 
     public boolean sharpAtStartLine(){
@@ -166,13 +172,23 @@ public final class CodeStyle {
     }
             
     public boolean getFormatLeadingStarInComment() {
-        return getOption(EditorOptions.CC_FORMAT_LEADING_STAR_IN_COMMENT,
-                         EditorOptions.defaultCCFormatLeadingStarInComment);
+        return getOption(EditorOptions.addLeadingStarInComment,
+                         EditorOptions.addLeadingStarInCommentDefault);
     }
 
     public int getFormatStatementContinuationIndent() {
-        return getOption(EditorOptions.CC_FORMAT_STATEMENT_CONTINUATION_INDENT,
-                         EditorOptions.defaultCCFormatStatementContinuationIndent);
+        return getOption(EditorOptions.statementContinuationIndent,
+                         EditorOptions.statementContinuationIndentDefault);
+    }
+
+    public boolean alignMultilineCallArgs() {
+        return getOption(EditorOptions.alignMultilineCallArgs,
+                         EditorOptions.alignMultilineCallArgsDefault);
+    }
+
+    public boolean alignMultilineMethodParams() {
+        return getOption(EditorOptions.alignMultilineMethodParams,
+                         EditorOptions.alignMultilineMethodParamsDefault);
     }
 
     public boolean spaceAroundUnaryOps() {
@@ -240,6 +256,98 @@ public final class CodeStyle {
                          EditorOptions.spaceAfterTypeCastDefault);
     }
     
+    //SpacesBeforeLeftBraces
+    public boolean spaceBeforeClassDeclLeftBrace(){
+        return getOption(EditorOptions.spaceBeforeClassDeclLeftBrace,
+                         EditorOptions.spaceBeforeClassDeclLeftBraceDefault);
+    }
+    public boolean spaceBeforeMethodDeclLeftBrace(){
+        return getOption(EditorOptions.spaceBeforeMethodDeclLeftBrace,
+                         EditorOptions.spaceBeforeMethodDeclLeftBraceDefault);
+    }
+    public boolean spaceBeforeIfLeftBrace(){
+        return getOption(EditorOptions.spaceBeforeIfLeftBrace,
+                         EditorOptions.spaceBeforeIfLeftBraceDefault);
+    }
+    public boolean spaceBeforeElseLeftBrace(){
+        return getOption(EditorOptions.spaceBeforeElseLeftBrace,
+                         EditorOptions.spaceBeforeElseLeftBraceDefault);
+    }
+    public boolean spaceBeforeWhileLeftBrace(){
+        return getOption(EditorOptions.spaceBeforeWhileLeftBrace,
+                         EditorOptions.spaceBeforeWhileLeftBraceDefault);
+    }
+    public boolean spaceBeforeForLeftBrace(){
+        return getOption(EditorOptions.spaceBeforeForLeftBrace,
+                         EditorOptions.spaceBeforeForLeftBraceDefault);
+    }
+    public boolean spaceBeforeDoLeftBrace(){
+        return getOption(EditorOptions.spaceBeforeDoLeftBrace,
+                         EditorOptions.spaceBeforeDoLeftBraceDefault);
+    }
+    public boolean spaceBeforeSwitchLeftBrace(){
+        return getOption(EditorOptions.spaceBeforeSwitchLeftBrace,
+                         EditorOptions.spaceBeforeSwitchLeftBraceDefault);
+    }
+    public boolean spaceBeforeTryLeftBrace(){
+        return getOption(EditorOptions.spaceBeforeTryLeftBrace,
+                         EditorOptions.spaceBeforeTryLeftBraceDefault);
+    }
+    public boolean spaceBeforeCatchLeftBrace(){
+        return getOption(EditorOptions.spaceBeforeCatchLeftBrace,
+                         EditorOptions.spaceBeforeCatchLeftBraceDefault);
+    }
+    public boolean spaceBeforeArrayInitLeftBrace(){
+        return getOption(EditorOptions.spaceBeforeArrayInitLeftBrace,
+                         EditorOptions.spaceBeforeArrayInitLeftBraceDefault);
+    }
+
+    //SpacesWithinParentheses
+    public boolean spaceWithinParens(){
+        return getOption(EditorOptions.spaceWithinParens,
+                         EditorOptions.spaceWithinParensDefault);
+    }
+    public boolean spaceWithinMethodDeclParens(){
+        return getOption(EditorOptions.spaceWithinMethodDeclParens,
+                         EditorOptions.spaceWithinMethodDeclParensDefault);
+    }
+    public boolean spaceWithinMethodCallParens(){
+        return getOption(EditorOptions.spaceWithinMethodCallParens,
+                         EditorOptions.spaceWithinMethodCallParensDefault);
+    }
+    public boolean spaceWithinIfParens(){
+        return getOption(EditorOptions.spaceWithinIfParens,
+                         EditorOptions.spaceWithinIfParensDefault);
+    }
+    public boolean spaceWithinForParens(){
+        return getOption(EditorOptions.spaceWithinForParens,
+                         EditorOptions.spaceWithinForParensDefault);
+    }
+    public boolean spaceWithinWhileParens(){
+        return getOption(EditorOptions.spaceWithinWhileParens,
+                         EditorOptions.spaceWithinWhileParensDefault);
+    }
+    public boolean spaceWithinSwitchParens(){
+        return getOption(EditorOptions.spaceWithinSwitchParens,
+                         EditorOptions.spaceWithinSwitchParensDefault);
+    }
+    public boolean spaceWithinCatchParens(){
+        return getOption(EditorOptions.spaceWithinCatchParens,
+                         EditorOptions.spaceWithinCatchParensDefault);
+    }
+    public boolean spaceWithinTypeCastParens(){
+        return getOption(EditorOptions.spaceWithinTypeCastParens,
+                         EditorOptions.spaceWithinTypeCastParensDefault);
+    }
+    public boolean spaceWithinBraces(){
+        return getOption(EditorOptions.spaceWithinBraces,
+                         EditorOptions.spaceWithinBracesDefault);
+    }
+    public boolean spaceWithinArrayInitBrackets(){
+        return getOption(EditorOptions.spaceWithinArrayInitBrackets,
+                         EditorOptions.spaceWithinArrayInitBracketsDefault);
+    }
+    
     private boolean getOption(String key, boolean defaultValue) {
         return getPreferences().getBoolean(key, defaultValue);
     }
@@ -263,18 +371,33 @@ public final class CodeStyle {
     // Nested classes ----------------------------------------------------------
     public enum Language {
         C,
-        CPP,
+        CPP;
+        
+        @Override
+        public String toString() {
+            return NbBundle.getMessage(CodeStyle.class, "LBL_Language_"+name()); // NOI18N
+        }
     }
 
     public enum BracePlacement {
         SAME_LINE,
-        NEW_LINE,
+        NEW_LINE;
+        
+        @Override
+        public String toString() {
+            return NbBundle.getMessage(CodeStyle.class, "LBL_bp_"+name()); // NOI18N
+        }
     }
 
     public enum PreprocessorIndent {
         START_LINE,
         CODE_INDENT,
-        PREPROCESSOR_INDENT,
+        PREPROCESSOR_INDENT;
+
+        @Override
+        public String toString() {
+            return NbBundle.getMessage(CodeStyle.class, "LBL_pi_"+name()); // NOI18N
+        }
     }
 
     // Communication with non public packages ----------------------------------

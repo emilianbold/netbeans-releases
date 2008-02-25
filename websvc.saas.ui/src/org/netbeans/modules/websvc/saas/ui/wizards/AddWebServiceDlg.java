@@ -61,9 +61,9 @@ import java.net.MalformedURLException;
 
 import javax.swing.filechooser.FileFilter;
 import javax.swing.*;
-import org.netbeans.modules.websvc.manager.util.ManagerUtil;
 import org.netbeans.modules.websvc.saas.model.SaasGroup;
 import org.netbeans.modules.websvc.saas.model.SaasServicesModel;
+import org.netbeans.modules.websvc.saas.util.WsdlUtil;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -78,6 +78,8 @@ import org.openide.util.NbBundle;
  */
 public class AddWebServiceDlg extends JPanel  implements ActionListener {
     
+    public static final String DEFAULT_PACKAGE_HOLDER = NbBundle.getMessage(AddWebServiceDlg.class, "MSG_ClickToOverride"); // NOI18N
+
     private DialogDescriptor dlg = null;
     private String addString =  NbBundle.getMessage(AddWebServiceDlg.class, "Add");
     private String cancelString =  NbBundle.getMessage(AddWebServiceDlg.class, "CANCEL");
@@ -92,7 +94,7 @@ public class AddWebServiceDlg extends JPanel  implements ActionListener {
     private JButton cancelButton = new JButton();
     private JButton addButton = new JButton();
     
-    private String groupId;
+    private SaasGroup group;
     private final boolean jaxRPCAvailable;
 
     private static final String[] KEYWORDS = 
@@ -120,19 +122,12 @@ public class AddWebServiceDlg extends JPanel  implements ActionListener {
     }
     
     
-    public AddWebServiceDlg() {
-        this(SaasServicesModel.getInstance().getRootGroup());
-    }
-    
-    
     public AddWebServiceDlg(SaasGroup group) {
         initComponents();
         myInitComponents();
-        this.groupId = groupId;
-        jaxRPCAvailable = ManagerUtil.isJAXRPCAvailable();
+        this.group = group;
+        jaxRPCAvailable = WsdlUtil.isJAXRPCAvailable();
     }
-
-
     
     private static boolean isValidPackageName(String packageName) {
         if (packageName == null || packageName.length() == 0) { // let jaxws pick package name
@@ -190,7 +185,8 @@ public class AddWebServiceDlg extends JPanel  implements ActionListener {
         
         // Check the package name
         final String packageName = jTxtpackageName.getText().trim();
-        if (!isValidPackageName(packageName)) {
+        boolean defaultPackage = DEFAULT_PACKAGE_HOLDER.equals(packageName) || packageName.length() == 0;
+        if (!defaultPackage && !isValidPackageName(packageName)) {
             setErrorMessage(NbBundle.getMessage(AddWebServiceDlg.class, "INVALID_PACKAGE"));
             addButton.setEnabled(false);
         }else if (jTxtLocalFilename.isEnabled()) {
@@ -284,10 +280,10 @@ public class AddWebServiceDlg extends JPanel  implements ActionListener {
         
         setDefaults();
         
-        jTxtpackageName.setText(NbBundle.getMessage(AddWebServiceDlg.class, "MSG_ClickToOverride")); // NOI18N
+        jTxtpackageName.setText(DEFAULT_PACKAGE_HOLDER);
         jTxtpackageName.setForeground(Color.GRAY);
     }
-        
+    
     public void displayDialog(){
         
         dlg = new DialogDescriptor(this, NbBundle.getMessage(AddWebServiceDlg.class, "ADD_WEB_SERVICE"),
@@ -391,8 +387,7 @@ public class AddWebServiceDlg extends JPanel  implements ActionListener {
         dialog = null;
         
         // Run the add W/S asynchronously
-        //TODO:nam
-        // SaasServiceModel.getInstance().addWebService(wsdl, packageName, groupId);
+        SaasServicesModel.getInstance().createWsdlService(group, wsdl, packageName);
     }    
     
     public void actionPerformed(ActionEvent evt) {
@@ -487,7 +482,7 @@ public class AddWebServiceDlg extends JPanel  implements ActionListener {
             }
         });
 
-        errorLabel.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/websvc/manager/resources/warning.png"))); // NOI18N
+        errorLabel.setVerticalTextPosition(javax.swing.SwingConstants.TOP);
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
@@ -502,21 +497,21 @@ public class AddWebServiceDlg extends JPanel  implements ActionListener {
                             .add(jRbnUrl)
                             .add(pkgNameLbl))
                         .add(29, 29, 29)
-                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING, false)
-                            .add(org.jdesktop.layout.GroupLayout.LEADING, jTxtpackageName)
-                            .add(jTxtLocalFilename, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 492, Short.MAX_VALUE)
-                            .add(jTxtWsdlURL))
-                        .add(25, 25, 25)
-                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
-                            .add(jBtnBrowse, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 115, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                            .add(jBtnProxy, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 115, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
+                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                            .add(jTxtpackageName, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 503, Short.MAX_VALUE)
+                            .add(jTxtWsdlURL, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 503, Short.MAX_VALUE)
+                            .add(org.jdesktop.layout.GroupLayout.TRAILING, jTxtLocalFilename, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 503, Short.MAX_VALUE))
+                        .add(6, 6, 6)
+                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                            .add(jBtnProxy, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .add(jBtnBrowse, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 98, Short.MAX_VALUE)))
                     .add(layout.createSequentialGroup()
                         .addContainerGap()
                         .add(jLblChooseSource))
                     .add(layout.createSequentialGroup()
                         .add(25, 25, 25)
-                        .add(errorLabel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 739, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
-                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                        .add(errorLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 739, Short.MAX_VALUE)))
+                .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -527,23 +522,24 @@ public class AddWebServiceDlg extends JPanel  implements ActionListener {
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(layout.createSequentialGroup()
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                            .add(jBtnBrowse)
-                            .add(jTxtLocalFilename, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                            .add(jTxtLocalFilename, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                            .add(jBtnBrowse))
                         .add(12, 12, 12)
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                            .add(jBtnProxy)
                             .add(jRbnUrl)
-                            .add(jTxtWsdlURL, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
+                            .add(jTxtWsdlURL, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                            .add(jBtnProxy)))
                     .add(jRbnFilesystem))
                 .add(18, 18, 18)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(jTxtpackageName, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                    .add(pkgNameLbl))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 27, Short.MAX_VALUE)
-                .add(errorLabel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 36, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(pkgNameLbl)
+                    .add(jTxtpackageName, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .add(errorLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 36, Short.MAX_VALUE)
                 .addContainerGap())
         );
 
+        jLblChooseSource.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(AddWebServiceDlg.class, "LBL_WsdlSource")); // NOI18N
         jRbnFilesystem.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(AddWebServiceDlg.class, "AddWebServiceDlg.localFilelRadioButton.ACC_desc"));
         jTxtLocalFilename.getAccessibleContext().setAccessibleName(NbBundle.getMessage(AddWebServiceDlg.class, "AddWebServiceDlg.localFileComboBox.ACC_name"));
         jTxtLocalFilename.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(AddWebServiceDlg.class, "AddWebServiceDlg.localFileComboBox.ACC_desc"));
@@ -556,8 +552,8 @@ public class AddWebServiceDlg extends JPanel  implements ActionListener {
         jTxtpackageName.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(AddWebServiceDlg.class, "AddWebServiceDlg.packageTextField.ACC_desc"));
         errorLabel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(AddWebServiceDlg.class, "AddWebServiceDlg.errorLabel.ACC_name"));
 
-        getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(AddWebServiceDlg.class, "AddWebServiceDlg.main.ACC_name")); // NOI18N
-        getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(AddWebServiceDlg.class, "AddWebServiceDlg.main.ACC_desc")); // NOI18N
+        getAccessibleContext().setAccessibleName("null");
+        getAccessibleContext().setAccessibleDescription("null");
     }// </editor-fold>//GEN-END:initComponents
     
 private void jRbnUrlActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jRbnUrlActionPerformed

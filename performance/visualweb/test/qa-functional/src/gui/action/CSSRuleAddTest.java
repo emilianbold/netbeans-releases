@@ -51,6 +51,7 @@ import org.netbeans.jellytools.TopComponentOperator;
 import org.netbeans.jellytools.actions.ActionNoBlock;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jemmy.ComponentChooser;
+import org.netbeans.jemmy.JemmyProperties;
 import org.netbeans.jemmy.operators.ComponentOperator;
 import org.netbeans.jemmy.operators.JButtonOperator;
 import org.netbeans.jemmy.operators.JComboBoxOperator;
@@ -152,7 +153,12 @@ public class CSSRuleAddTest  extends org.netbeans.performance.test.utilities.Per
     }
 
     private TopComponentOperator findCSSEditor() {
-        return new TopComponentOperator(fileName);
+        TopComponentOperator cssEditorToFind; 
+        long oldTimeout = JemmyProperties.getCurrentTimeouts().getTimeout("ComponentOperator.WaitComponentTimeout");
+        JemmyProperties.getCurrentTimeouts().setTimeout("ComponentOperator.WaitComponentTimeout",120000);
+          cssEditorToFind = new TopComponentOperator(fileName);
+        JemmyProperties.getCurrentTimeouts().setTimeout("ComponentOperator.WaitComponentTimeout", oldTimeout);
+        return cssEditorToFind; 
     }
     private TopComponentOperator findStyleBuilder() {
         return new TopComponentOperator(org.netbeans.jellytools.Bundle.getString("org.netbeans.modules.css.visual.ui.Bundle", "CTL_CSSStyleBuilderTopComponent"));

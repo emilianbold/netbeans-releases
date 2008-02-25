@@ -2,7 +2,7 @@
 <!--
 DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
-Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
 
 
 The contents of this file are subject to the terms of either the GNU
@@ -26,7 +26,7 @@ your own identifying information:
 Contributor(s):
 
 The Original Software is NetBeans. The Initial Developer of the Original
-Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
 Microsystems, Inc. All Rights Reserved.
 
 If you wish your version of this file to be governed by only the CDDL
@@ -58,5 +58,6 @@ made subject to such option by the copyright holder.
     <bind key="DOS-DOWN" actionName="select-element-previous"/>
     -->
     <bind key="AS-F6" actionName="run-focused-spec"/>
+    <bind key="AS-F5" actionName="debug-focused-test"/>
     <bind key="O-I" actionName="rails-generator"/>
 </bindings>

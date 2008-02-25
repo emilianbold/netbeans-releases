@@ -47,15 +47,11 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
-import javax.swing.text.BadLocationException;
-import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.spring.api.Action;
 import org.netbeans.modules.spring.api.beans.ConfigFileGroup;
-import org.netbeans.modules.spring.api.beans.model.SpringConfigModel.WriteContext;
+import org.netbeans.modules.spring.api.beans.model.SpringConfigModel.DocumentAccess;
 import org.netbeans.modules.spring.beans.ConfigFileTestCase;
 import org.netbeans.modules.spring.beans.TestUtils;
-import org.netbeans.modules.xml.text.syntax.SyntaxElement;
-import org.netbeans.modules.xml.text.syntax.XMLSyntaxSupport;
 
 /**
  *
@@ -95,8 +91,8 @@ public class SpringConfigModelTest extends ConfigFileTestCase {
             // OK.
         }
         try {
-            model.runWriteAction(new Action<WriteContext>() {
-                public void run(WriteContext parameter) {
+            model.runDocumentAction(new Action<DocumentAccess>() {
+                public void run(DocumentAccess parameter) {
                     throw new RuntimeException();
                 }
             });
@@ -106,7 +102,7 @@ public class SpringConfigModelTest extends ConfigFileTestCase {
         }
     }
 
-    public void testWriteActionInvocation() throws IOException {
+    public void testDocumentAction() throws IOException {
         String contents = TestUtils.createXMLConfigText("");
         TestUtils.copyStringToFile(contents, configFile);
         File configFile2 = createConfigFileName("dispatcher-servlet.xml");
@@ -114,31 +110,13 @@ public class SpringConfigModelTest extends ConfigFileTestCase {
         ConfigFileGroup group = ConfigFileGroup.create(Arrays.asList(configFile, configFile2));
         SpringConfigModel model = new SpringConfigModel(group);
         final Set<File> invokedForFiles = new HashSet<File>();
-        model.runWriteAction(new Action<WriteContext>() {
-            public void run(WriteContext context) {
-                invokedForFiles.add(context.getFile());
+        model.runDocumentAction(new Action<DocumentAccess>() {
+            public void run(DocumentAccess docAccess) {
+                invokedForFiles.add(docAccess.getFile());
             }
         });
         assertEquals(2, invokedForFiles.size());
         assertTrue(invokedForFiles.contains(configFile));
         assertTrue(invokedForFiles.contains(configFile2));
-    }
-
-    public void testWriteAccessDocumentWrite() throws IOException {
-        String contents = TestUtils.createXMLConfigText("<bean id='foo' class='org.example.Foo'/>");
-        TestUtils.copyStringToFile(contents, configFile);
-        ConfigFileGroup group = ConfigFileGroup.create(Collections.singletonList(configFile));
-        SpringConfigModel model = new SpringConfigModel(group);
-        model.runWriteAction(new Action<WriteContext>() {
-            public void run(WriteContext context) {
-                int offset = context.getSpringBeans().findBean("foo").getLocation().getOffset();
-                try {
-                    String expected = "<bean id='foo'";
-                    assertEquals(expected, context.getDocument().getText(offset, expected.length()));
-                } catch (BadLocationException e) {
-                    fail();
-                }
-            }
-        });
     }
 }

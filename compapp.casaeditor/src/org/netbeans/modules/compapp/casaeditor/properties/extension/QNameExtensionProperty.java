@@ -69,7 +69,7 @@ public class QNameExtensionProperty extends ExtensionProperty<QName> {
             String displayName,
             String description) {
         super(node, extensionPointComponent, firstEE, lastEE, propertyType,
-                Integer.class, propertyName, displayName, description);
+                QName.class, propertyName, displayName, description);
     }
 
     @Override

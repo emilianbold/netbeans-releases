@@ -45,6 +45,7 @@ import javax.swing.Action;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.JSeparator;
+import javax.swing.SwingUtilities;
 import javax.xml.namespace.QName;
 import org.netbeans.modules.compapp.casaeditor.model.casa.CasaComponent;
 import org.netbeans.modules.compapp.casaeditor.model.casa.CasaExtensibilityElement;
@@ -147,7 +148,7 @@ class ClearConfigExtensionAction extends NodeAbstractAction {
         }
 
         // FIXME: not working as expected
-        ((CasaNode) getNode()).refresh(); // refresh the property sheet
+       ((CasaNode) getNode()).refresh(); // refresh the property sheet   
     }
 }
 

@@ -101,21 +101,6 @@ made subject to such option by the copyright holder.
             <file name="ricoh-ant-utils.xml" url="Utils.xml"/>
         </folder>
     </folder>    
-    <folder name="Templates">
-        <folder name="CDC">
-            <file name="RicohXlet.java" url="RicohXlet_java">
-                <attr name="position" intvalue="400"/>
-                <attr name="template" boolvalue="true"/>
-                <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/j2me/cdc/project/ricoh/resources/RicohXlet.html"/>
-                <attr name="instantiatingIterator" methodvalue="org.netbeans.spi.java.project.support.ui.templates.JavaTemplates.createJavaTemplateIterator"/> 
-                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.j2me.cdc.project.ricoh.Bundle"/>
-                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/j2me/cdc/project/ricoh/resources/class.gif"/>
-                <attr name="CDC" boolvalue="true"/>
-                <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
-                <attr name="templateCategory" stringvalue="CDC/Ricoh"/>
-            </file>            
-        </folder>
-    </folder>
     
     <folder name="RecommendedTemplates">
         <folder name="org.netbeans.modules.kjava.j2meproject">
@@ -128,6 +113,19 @@ made subject to such option by the copyright holder.
     </folder>
     
     <folder name="Templates">
+        <folder name="CDC">
+            <file name="RicohXlet.java" url="RicohXlet_java">
+                <attr name="position" intvalue="400"/>
+                <attr name="template" boolvalue="true"/>
+                <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/j2me/cdc/project/ricoh/resources/RicohXlet.html"/>
+                <attr name="instantiatingIterator" methodvalue="org.netbeans.spi.java.project.support.ui.templates.JavaTemplates.createJavaTemplateIterator"/>
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.j2me.cdc.project.ricoh.Bundle"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/j2me/cdc/project/ricoh/resources/class.gif"/>
+                <attr name="CDC" boolvalue="true"/>
+                <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
+                <attr name="templateCategory" stringvalue="CDC/Ricoh"/>
+            </file>
+        </folder>
         <folder name="Project">
             <folder name="Samples">
                 <folder name="J2ME">
