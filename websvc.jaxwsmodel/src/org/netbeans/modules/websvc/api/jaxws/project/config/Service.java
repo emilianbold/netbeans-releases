@@ -186,6 +186,18 @@ public final class Service {
         return bool;
     }
     
+     public void setUseSoap12(Boolean useSoap12){
+        service.setUseSoap12(useSoap12);
+    }
+    
+    public boolean isUseSoap12(){
+        Boolean bool = service.getUseSoap12();
+        if(bool == null){
+            bool = false;
+        }    
+        return bool;
+    }
+    
     public WsimportOptions newWsimportOptions(){
         return new WsimportOptions(service.newWsimportOptions());
     }
