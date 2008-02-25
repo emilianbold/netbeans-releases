@@ -40,7 +40,6 @@
 package org.netbeans.modules.db.mysql.installations;
 
 import org.netbeans.modules.db.mysql.Installation;
-import org.netbeans.modules.db.mysql.Installation.Command;
 import org.openide.util.Utilities;
 
 /**
@@ -50,19 +49,24 @@ import org.openide.util.Utilities;
  * 
  * @author David Van Couvering
  */
-public class LinuxDefaultInstallation implements Installation {
+public class WindowsXAMPPInstallation extends AbstractInstallation {
+    private static final String DEFAULT_BASE_PATH = "C:/xampp"; // NOI8N
+    private static final String START_PATH="/mysql_start.bat";
+    private static final String STOP_PATH="/mysql_stop.bat";
+    private static final String ADMIN_URL = "http://localhost/phpmyadmin";
     private static final String DEFAULT_PORT = "3306";
-    private static final String GKSU = "/usr/bin/gksu";
-    private static final String SERVICE_CMD = "/etc/init.d/mysql";
-        
-    private static final LinuxDefaultInstallation DEFAULT = 
-            new LinuxDefaultInstallation();
     
-    public static final LinuxDefaultInstallation getDefault() {
+    private String basePath = DEFAULT_BASE_PATH;
+    
+    private static final WindowsXAMPPInstallation DEFAULT = 
+            new WindowsXAMPPInstallation(DEFAULT_BASE_PATH);
+    
+    public static final WindowsXAMPPInstallation getDefault() {
         return DEFAULT;
     }
     
-    private LinuxDefaultInstallation() {
+    private WindowsXAMPPInstallation(String basePath) {
+        this.basePath = basePath;
     }
 
     public boolean isStackInstall() {
@@ -70,29 +74,45 @@ public class LinuxDefaultInstallation implements Installation {
     }
 
     public boolean isValidOnCurrentOS() {
-        return Utilities.isUnix();
+        return Utilities.isWindows();
     }
 
     public String[] getAdminCommand() {
-        return new String[] { "", "" };
+        return new String[] { ADMIN_URL, "" };
     }
 
     public String[] getStartCommand() {
-        String args = SERVICE_CMD + " start"; // NOI18N
-        return new String[] { GKSU, args };
+        String command = basePath + START_PATH; // NOI18N
+        return new String[] { command, "" };
     }
 
     public String[] getStopCommand() {
-        String args = SERVICE_CMD + " stop"; // NOI18N
-        return new String[] { GKSU, args };
+        String command = basePath + STOP_PATH + " stop"; // NOI18N
+        return new String[] { command, "" };
     }
     
     public String getDefaultPort() {
         return DEFAULT_PORT;
     }
 
-    public Installation getInstallation(String command, Command cmdType) {
-        return null; // not supported
+    @Override
+    protected String getBasePath() {
+        return basePath;
+    }
+
+    @Override
+    protected String getStartPath() {
+        return START_PATH;
+    }
+
+    @Override
+    protected String getStopPath() {
+        return STOP_PATH;
+    }
+
+    @Override
+    protected Installation createInstallation(String basePath) {
+        return new WindowsXAMPPInstallation(basePath);
     }
 
 }
