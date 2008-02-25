@@ -135,7 +135,8 @@ public class SourceGroupSupport {
     
     public static SourceGroup findSourceGroupForFile(SourceGroup[] sourceGroups, FileObject folder) {
         for (int i = 0; i < sourceGroups.length; i++) {
-            if (FileUtil.isParentOf(sourceGroups[i].getRootFolder(), folder)) {
+            if (FileUtil.isParentOf(sourceGroups[i].getRootFolder(), folder) ||
+                sourceGroups[i].getRootFolder().equals(folder)) {
                 return sourceGroups[i];
             }
         }

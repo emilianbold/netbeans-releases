@@ -47,11 +47,11 @@ import java.util.Set;
 
 import javax.swing.text.Document;
 
-import org.netbeans.fpi.gsf.Modifier;
-import org.netbeans.fpi.gsf.ParserFile;
+import org.netbeans.modules.gsf.api.Modifier;
+import org.netbeans.modules.gsf.api.ParserFile;
 import org.netbeans.modules.ruby.NbUtilities;
 import org.netbeans.modules.ruby.RubyIndex;
-import org.netbeans.sfpi.gsf.DefaultParserFile;
+import org.netbeans.modules.gsf.spi.DefaultParserFile;
 import org.openide.filesystems.FileObject;
 
 

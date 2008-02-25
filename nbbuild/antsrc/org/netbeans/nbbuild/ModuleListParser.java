@@ -289,6 +289,14 @@ final class ModuleListParser {
         }
         Element cnbEl = ParseProjectXml.findNBMElement(dataEl, "code-name-base");
         String cnb = XMLUtil.findText(cnbEl);
+        if (moduleType == ParseProjectXml.TYPE_NB_ORG && project != null) {
+            String expectedDirName = abbreviate(cnb);
+            String actualDirName = dir.getName();
+            if (!actualDirName.equals(expectedDirName)) {
+                // XXX make this a fatal error later when all existing violations are corrected
+                project.log("Warning: expected module to be in dir named " + expectedDirName + " but was actually found in dir named " + actualDirName, Project.MSG_WARN);
+            }
+        }
         // Clumsy but the best way I know of to evaluate properties.
         Project fakeproj = new Project();
         if (project != null) {
@@ -481,6 +489,15 @@ final class ModuleListParser {
             entries.put(cnb, entry);
         }
         return true;
+    }
+    static String abbreviate(String cnb) {
+        return cnb.replaceFirst("^org\\.netbeans\\.modules\\.", ""). // NOI18N
+                   replaceFirst("^org\\.netbeans\\.(libs|lib|api|spi|core)\\.", "$1."). // NOI18N
+                   replaceFirst("^org\\.netbeans\\.", "o.n."). // NOI18N
+                   replaceFirst("^org\\.openide\\.", "openide."). // NOI18N
+                   replaceFirst("^org\\.", "o."). // NOI18N
+                   replaceFirst("^com\\.sun\\.", "c.s."). // NOI18N
+                   replaceFirst("^com\\.", "c."); // NOI18N
     }
     
     /**

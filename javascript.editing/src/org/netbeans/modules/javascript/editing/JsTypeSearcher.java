@@ -51,12 +51,12 @@ import java.util.regex.Pattern;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import org.mozilla.javascript.Node;
-import org.netbeans.fpi.gsf.ElementHandle;
-import org.netbeans.fpi.gsf.Index;
-import org.netbeans.fpi.gsf.Index.SearchScope;
-import org.netbeans.fpi.gsf.NameKind;
-import org.netbeans.fpi.gsf.TypeSearcher;
-import org.netbeans.fpi.gsf.TypeSearcher.GsfTypeDescriptor;
+import org.netbeans.modules.gsf.api.ElementHandle;
+import org.netbeans.modules.gsf.api.Index;
+import org.netbeans.modules.gsf.api.Index.SearchScope;
+import org.netbeans.modules.gsf.api.NameKind;
+import org.netbeans.modules.gsf.api.TypeSearcher;
+import org.netbeans.modules.gsf.api.TypeSearcher.GsfTypeDescriptor;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
@@ -138,13 +138,21 @@ public class JsTypeSearcher implements TypeSearcher {
         kind = adjustKind(kind, textForQuery);
         
         if (kind == NameKind.CASE_INSENSITIVE_PREFIX /*|| kind == NameKind.CASE_INSENSITIVE_REGEXP*/) {
-//            textForQuery = textForQuery.toLowerCase();
+            textForQuery = textForQuery.toLowerCase();
         }
 
         Set<JsTypeDescriptor> result = new HashSet<JsTypeDescriptor>();
-        Set<IndexedFunction> functions = index.getFunctions(textForQuery, null, kind, scope, null, true);
-        for (IndexedFunction func : functions) {
-            result.add(new JsTypeDescriptor(func, helper));
+        Set<IndexedElement> elements;
+        int dot = textForQuery.lastIndexOf('.');
+        if (dot != -1) {
+            String prefix = textForQuery.substring(dot+1);
+            String in = textForQuery.substring(0, dot);
+            elements = index.getElements(prefix, in, kind, scope, null);
+        } else {
+            elements = index.getAllNames(textForQuery, kind, scope, null);
+        }
+        for (IndexedElement element : elements) {
+            result.add(new JsTypeDescriptor(element, helper));
         }
         
         
@@ -220,14 +228,14 @@ public class JsTypeSearcher implements TypeSearcher {
     }
 
     private class JsTypeDescriptor extends GsfTypeDescriptor {
-        private final IndexedFunction element;
+        private final IndexedElement element;
         private String projectName;
         private Icon projectIcon;
         private final Helper helper;
         private boolean isLibrary;
         private static final String ICON_PATH = "org/netbeans/modules/javascript/editing/javascript.png"; //NOI18N
         
-        public JsTypeDescriptor(IndexedFunction element, Helper helper) {
+        public JsTypeDescriptor(IndexedElement element, Helper helper) {
             this.element = element;
             this.helper = helper;
         }

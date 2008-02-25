@@ -40,8 +40,8 @@
 package org.netbeans.modules.websvc.saas.ui.nodes;
 
 import java.awt.Image;
-import java.util.Arrays;
-import org.netbeans.modules.websvc.saas.model.WadlSaas;
+import java.util.List;
+import javax.swing.Action;
 import org.netbeans.modules.websvc.saas.model.WadlSaasResource;
 import org.netbeans.modules.websvc.saas.model.wadl.Resource;
 import org.openide.nodes.AbstractNode;
@@ -99,5 +99,11 @@ public class ResourceNode extends AbstractNode {
     @Override
     public Image getOpenedIcon(int type){
         return getIcon( type);
+    }
+    
+    @Override
+    public Action[] getActions(boolean context) {
+        List<Action> actions = SaasNode.getActions(getLookup());
+        return actions.toArray(new Action[actions.size()]);
     }
 }

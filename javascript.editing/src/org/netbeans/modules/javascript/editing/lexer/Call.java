@@ -44,7 +44,7 @@ package org.netbeans.modules.javascript.editing.lexer;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 
-import org.netbeans.fpi.gsf.annotations.NonNull;
+import org.netbeans.modules.gsf.api.annotations.NonNull;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenId;
@@ -70,16 +70,6 @@ public class Call {
     public Call(String type, String lhs, boolean isStatic, boolean methodExpected) {
         super();
 
-        if (lhs != null) {
-            if ("document".equals(lhs) ||  // NOI18N
-                    ("element".equals(lhs)) || // NOI18N
-                    ("event".equals(lhs)) || // NOI18N
-                    ("window".equals(lhs))) { // NOI18N
-                // TODO - the other primary DOM objects too - style, stylesheet, etc. Look these up!
-                type = lhs;
-            }
-        }
-        
         this.type = type;
         this.lhs = lhs;
         this.methodExpected = methodExpected;

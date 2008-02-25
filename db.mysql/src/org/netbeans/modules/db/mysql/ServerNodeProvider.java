@@ -39,17 +39,69 @@
 
 package org.netbeans.modules.db.mysql;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
+import org.netbeans.modules.db.api.explorer.NodeProvider;
+import org.openide.nodes.Node;
+
 /**
  * Provides a node for working with a local MySQL Server instance
  * 
  * @author David Van Couvering
  */
-public class ServerNodeProvider {
+public class ServerNodeProvider implements NodeProvider {
 
-    private static ServerNodeProvider DEFAULT = new ServerNodeProvider();
+    private static final ServerNodeProvider DEFAULT = new ServerNodeProvider();
+    private static final MySQLOptions options = MySQLOptions.getDefault();
+    private final ArrayList<Node> nodes = new ArrayList<Node>();
+    private static final ArrayList<Node> emptyNodeList = new ArrayList<Node>();
+    private final CopyOnWriteArrayList<ChangeListener> listeners = 
+            new CopyOnWriteArrayList<ChangeListener>();
     
-    static ServerNodeProvider getDefault() {
+    public static ServerNodeProvider getDefault() {
         return DEFAULT;
     }
     
+    private ServerNodeProvider() {
+        // Right now only one server, although this may (likely) change
+        nodes.add(ServerNode.create(ServerInstance.getDefault()));
+    }
+
+    public List<Node> getNodes() {
+         if ( options.isProviderRegistered() ) {
+            return nodes;
+        } else {
+            return emptyNodeList;
+        }
+    } 
+    
+    public synchronized void setRegistered(boolean registered) {
+        boolean old = options.isProviderRegistered();
+        if ( registered != old ) {
+            options.setProviderRegistered(registered);
+            notifyChange();
+        }
+    }
+    
+    synchronized boolean isRegistered() {
+        return options.isProviderRegistered();
+    }
+    
+    void notifyChange() {
+        ChangeEvent evt = new ChangeEvent(this);
+        for ( ChangeListener listener : listeners ) {
+            listener.stateChanged(evt);
+        }
+    }
+
+    public void addChangeListener(ChangeListener listener) {
+        listeners.add(listener);
+    }
+
+    public void removeChangeListener(ChangeListener listener) {
+        listeners.remove(listener);
+    }
 }

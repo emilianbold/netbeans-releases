@@ -84,7 +84,7 @@ public final class InstalledFileLocatorImpl extends InstalledFileLocator {
         if (d != null) {
             File f = new File(d).getAbsoluteFile();
             if (f.isDirectory()) {
-                _dirs.add(f);
+                _dirs.add(FileUtil.normalizeFile(f));
             }
         }
     }
@@ -217,7 +217,7 @@ public final class InstalledFileLocatorImpl extends InstalledFileLocator {
     }
     
     private static File makeFile(File dir, String prefix, String name) {
-        return FileUtil.normalizeFile(new File(dir, prefix.replace('/', File.separatorChar) + name));
+        return new File(dir, prefix.replace('/', File.separatorChar) + name);
     }
     
 }

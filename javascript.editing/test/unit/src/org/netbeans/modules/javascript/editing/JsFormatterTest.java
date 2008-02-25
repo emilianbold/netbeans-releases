@@ -46,7 +46,7 @@ import javax.swing.text.Caret;
 import org.netbeans.api.ruby.platform.RubyInstallation;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.lib.editor.util.swing.DocumentUtilities;
-import org.netbeans.fpi.gsf.ParserResult;
+import org.netbeans.modules.gsf.api.ParserResult;
 import org.openide.filesystems.FileObject;
 import org.openide.util.NbPreferences;
 

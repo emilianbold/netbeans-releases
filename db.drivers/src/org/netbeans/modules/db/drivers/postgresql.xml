@@ -46,6 +46,6 @@ made subject to such option by the copyright holder.
   <display-name value='PostgreSQL'/>
   <class value='org.postgresql.Driver'/>
   <urls>
-  	<url value="nbinst:///modules/ext/postgresql-8.2-506.jdbc3.jar"/>
+  	<url value="nbinst:///modules/ext/postgresql-8.3-603.jdbc3.jar"/>
   </urls>
 </driver>

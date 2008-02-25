@@ -196,6 +196,7 @@ final class MakeSharableVisualPanel1 extends JPanel {
         );
 
         lblDefinition.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(MakeSharableVisualPanel1.class, "ACSD_lblDefinition")); // NOI18N
+        txtDefinition.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(MakeSharableVisualPanel1.class, "ACSD_lblDefinition")); // NOI18N
         btnDefinition.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(MakeSharableVisualPanel1.class, "ACSD_btnDefinition")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
 

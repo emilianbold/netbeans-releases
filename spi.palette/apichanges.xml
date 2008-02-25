@@ -296,6 +296,22 @@ is the proper place.
         <issue number="105561"/>
     </change>      
     
+    <change id="per-document-visibility" >
+        <api name="palette_api"/>
+        <summary>Palette visibility is defined per document-type.</summary>
+        <version major="1" minor="13"/>
+        <date day="22" month="2" year="2008"/>
+        <author login="saubrecht"/>
+        <compatibility addition="no" binary="compatible" deletion="no" semantic="compatible" deprecation="no" modification="no" source="compatible"/>
+        <description>
+            <p>
+                Now it's possible to close the palette window while e.g. editing an HTML file
+                and the palette will still show up when designing a form.
+            </p>
+        </description>
+        <issue number="62964"/>
+    </change>      
+    
 </changes>
   
     <!-- Now the surrounding HTML text and document structure: -->

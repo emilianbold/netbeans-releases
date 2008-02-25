@@ -56,7 +56,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.ui.OpenProjects;
-import org.netbeans.modules.j2ee.clientproject.ui.FoldersListSettings;
+import org.netbeans.modules.j2ee.common.project.ui.UserProjectSettings;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeApplication;
@@ -90,7 +90,7 @@ public class PanelOptionsVisual extends SettingsPanel implements PropertyChangeL
         setJ2eeVersionWarningPanel();
         initEnterpriseApplications();
         this.panel = panel;
-        initServers(FoldersListSettings.getDefault().getLastUsedServer());
+        initServers(UserProjectSettings.getDefault().getLastUsedServer());
         // preselect the first item in the j2ee spec combo
         if (j2eeSpecComboBox.getModel().getSize() > 0) {
             j2eeSpecComboBox.setSelectedIndex(0);
@@ -364,7 +364,7 @@ public class PanelOptionsVisual extends SettingsPanel implements PropertyChangeL
             String j2ee = getSelectedJ2eeSpec();
             if (j2ee != null) {
                 String warningType = J2eeVersionWarningPanel.findWarningType(j2ee);
-                FoldersListSettings fls = FoldersListSettings.getDefault();
+                UserProjectSettings fls = UserProjectSettings.getDefault();
                 String srcLevel = "1.6"; // NOI18N
                 if ((warningType.equals(J2eeVersionWarningPanel.WARN_SET_SOURCE_LEVEL_14)
                         || warningType.equals(J2eeVersionWarningPanel.WARN_SET_JDK_14))

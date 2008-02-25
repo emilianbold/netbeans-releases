@@ -97,8 +97,7 @@ public class AddModuleAction extends CookieAction {
             // build script
             Project p = FileOwnerQuery.getOwner(aph.getProjectDirectory());
             EarProject ep = p.getLookup().lookup(EarProject.class);
-            EarProjectProperties epp = ep.getProjectProperties();
-            epp.addJ2eeSubprojects(moduleProjects);
+            EarProjectProperties.addJ2eeSubprojects(ep, moduleProjects);
         } catch (UserCancelException uce) {
             // this action has been cancelled
         }

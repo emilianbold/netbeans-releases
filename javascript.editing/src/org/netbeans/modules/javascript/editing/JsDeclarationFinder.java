@@ -50,12 +50,12 @@ import java.util.Set;
 import javax.swing.text.Document;
 import org.mozilla.javascript.Node;
 import org.mozilla.javascript.Node.StringNode;
-import org.netbeans.fpi.gsf.CompilationInfo;
-import org.netbeans.fpi.gsf.DeclarationFinder;
-import org.netbeans.fpi.gsf.ElementHandle;
-import org.netbeans.fpi.gsf.HtmlFormatter;
-import org.netbeans.fpi.gsf.NameKind;
-import org.netbeans.fpi.gsf.OffsetRange;
+import org.netbeans.modules.gsf.api.CompilationInfo;
+import org.netbeans.modules.gsf.api.DeclarationFinder;
+import org.netbeans.modules.gsf.api.ElementHandle;
+import org.netbeans.modules.gsf.api.HtmlFormatter;
+import org.netbeans.modules.gsf.api.NameKind;
+import org.netbeans.modules.gsf.api.OffsetRange;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenId;
@@ -70,6 +70,8 @@ import org.openide.util.NbBundle;
 
 /**
  *
+ * @todo Handle $super - jump to the superclass' implementation of the given method
+ * 
  * @author Tor Norbye
  */
 public class JsDeclarationFinder implements DeclarationFinder {
@@ -78,7 +80,7 @@ public class JsDeclarationFinder implements DeclarationFinder {
     public OffsetRange getReferenceSpan(Document document, int lexOffset) {
         TokenHierarchy<Document> th = TokenHierarchy.get(document);
         
-        BaseDocument doc = (BaseDocument)document;
+        //BaseDocument doc = (BaseDocument)document;
         
         TokenSequence<?extends JsTokenId> ts = LexUtilities.getJsTokenSequence(th, lexOffset);
 
@@ -113,13 +115,16 @@ public class JsDeclarationFinder implements DeclarationFinder {
         String prefix = AstUtilities.getCallName(call, false);
         JsParseResult parseResult = AstUtilities.getParseResult(info);
         JsIndex index = JsIndex.get(info.getIndex(JsMimeResolver.JAVASCRIPT_MIME_TYPE));
-        Set<IndexedFunction> functions = index.getFunctions(prefix, null,
-                NameKind.EXACT_NAME, JsIndex.ALL_SCOPE, parseResult, true);
+        Set<IndexedElement> functions = index.getAllNames(prefix,
+                NameKind.EXACT_NAME, JsIndex.ALL_SCOPE, parseResult);
 
-        IndexedFunction candidate =
-            findBestFunctionMatch(info, /*name,*/ functions/*, (BaseDocument)info.getDocument(),
+        IndexedElement candidate =
+            findBestElementMatch(info, /*name,*/ functions/*, (BaseDocument)info.getDocument(),
                 astOffset, lexOffset, path, closest, index*/);
-        return candidate;
+        if (candidate instanceof IndexedFunction) {
+            return (IndexedFunction)candidate;
+        }
+        return null;
     }
 
     private OffsetRange getReferenceSpan(TokenSequence<?> ts,
@@ -237,11 +242,11 @@ public class JsDeclarationFinder implements DeclarationFinder {
             String prefix = new JsCodeCompletion().getPrefix(info, lexOffset, false);
             if (prefix != null) {
                 JsIndex index = JsIndex.get(info.getIndex(JsMimeResolver.JAVASCRIPT_MIME_TYPE));
-                Set<IndexedFunction> functions = index.getFunctions(prefix, null,
-                        NameKind.EXACT_NAME, JsIndex.ALL_SCOPE, parseResult, true);
+                Set<IndexedElement> elements = index.getAllNames(prefix,
+                        NameKind.EXACT_NAME, JsIndex.ALL_SCOPE, parseResult);
 
                 String name = null; // unused!
-                return getMethodDeclaration(info, name, functions, node, index, astOffset, lexOffset);
+                return getMethodDeclaration(info, name, elements, node, index, astOffset, lexOffset);
             }
         } finally {
             doc.readUnlock();
@@ -259,9 +264,9 @@ public class JsDeclarationFinder implements DeclarationFinder {
     DeclarationLocation findLinkedMethod(CompilationInfo info, String url) {
         JsIndex index = JsIndex.get(info.getIndex(JsMimeResolver.JAVASCRIPT_MIME_TYPE));
         JsParseResult parseResult = AstUtilities.getParseResult(info);
-        Set<IndexedFunction> functions = index.getFunctions(url, null,
-                NameKind.EXACT_NAME, JsIndex.ALL_SCOPE, parseResult, true);
-        IndexedFunction function = findBestFunctionMatch(info, functions);
+        Set<IndexedElement> elements = index.getAllNames(url,
+                NameKind.EXACT_NAME, JsIndex.ALL_SCOPE, parseResult);
+        IndexedElement function = findBestElementMatch(info, elements);
         if (function != null) {
             return new DeclarationLocation(function.getFileObject(), 0, function);
         } else {
@@ -269,7 +274,7 @@ public class JsDeclarationFinder implements DeclarationFinder {
         }
     }
 
-    private IndexedFunction findBestFunctionMatch(CompilationInfo info, /*String name,*/ Set<IndexedFunction> functions/*,
+    private IndexedElement findBestElementMatch(CompilationInfo info, /*String name,*/ Set<IndexedElement> elements/*,
         BaseDocument doc, int astOffset, int lexOffset, AstPath path/ Node call, JsIndex index*/) {
         // For now no good heuristics to pick a method.
         // Possible things to consider:
@@ -277,18 +282,18 @@ public class JsDeclarationFinder implements DeclarationFinder {
         // -- builtins should get some priority over libraries
         // -- other methods called which can help disambiguate
         // -- documentation?
-        if (functions.size() > 0) {
-            return functions.iterator().next();
+        if (elements.size() > 0) {
+            return elements.iterator().next();
         }
         
         return null;
     }
 
-    private DeclarationLocation getMethodDeclaration(CompilationInfo info, String name, Set<IndexedFunction> methods, 
+    private DeclarationLocation getMethodDeclaration(CompilationInfo info, String name, Set<IndexedElement> elements, 
             /*AstPath path,*/ Node closest, JsIndex index, int astOffset, int lexOffset) {
 //        try {
-            IndexedFunction candidate =
-                findBestFunctionMatch(info, /*name,*/ methods/*, (BaseDocument)info.getDocument(),
+            IndexedElement candidate =
+                findBestElementMatch(info, /*name,*/ elements/*, (BaseDocument)info.getDocument(),
                     astOffset, lexOffset, path, closest, index*/);
 
             if (candidate != null) {
@@ -296,7 +301,7 @@ public class JsDeclarationFinder implements DeclarationFinder {
                 if (candidate.getFilenameUrl() != null && candidate.getFilenameUrl().indexOf("jsstubs") != -1) {
                     invalid = true;
                 }
-                IndexedFunction com = candidate;
+                IndexedElement com = candidate;
                 Node node = AstUtilities.getForeignNode(com, null);
                 DeclarationLocation loc;
                 if (node == null) {
@@ -312,7 +317,7 @@ public class JsDeclarationFinder implements DeclarationFinder {
                     loc.setInvalidMessage(NbBundle.getMessage(JsDeclarationFinder.class, "InvalidJsMethod", candidate.getName()));
                 }
 
-                if (!CHOOSE_ONE_DECLARATION && methods.size() > 1) {
+                if (!CHOOSE_ONE_DECLARATION && elements.size() > 1) {
                     // Could the :nodoc: alternatives: if there is only one nodoc'ed alternative
                     // don't ask user!
 //                    int not_nodoced = 0;
@@ -322,8 +327,8 @@ public class JsDeclarationFinder implements DeclarationFinder {
 //                        }
 //                    }
 //                    if (not_nodoced >= 2) {
-                        for (final IndexedFunction mtd : methods) {
-                            loc.addAlternative(new JsAltLocation(mtd, mtd == candidate));
+                        for (final IndexedElement e : elements) {
+                            loc.addAlternative(new JsAltLocation(e, e == candidate));
                         }
 //                    }
                 }
@@ -338,11 +343,11 @@ public class JsDeclarationFinder implements DeclarationFinder {
     }
     
     private class JsAltLocation implements AlternativeLocation {
-        private IndexedFunction element;
+        private IndexedElement element;
         private boolean isPreferred;
         private String cachedDisplayItem;
         
-        JsAltLocation(IndexedFunction element, boolean isPreferred) {
+        JsAltLocation(IndexedElement element, boolean isPreferred) {
             this.element = element;
             this.isPreferred = isPreferred;
         }

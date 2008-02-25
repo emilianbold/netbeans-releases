@@ -44,7 +44,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import org.netbeans.fpi.gsf.ElementKind;
+import org.netbeans.modules.gsf.api.ElementKind;
 import org.netbeans.modules.ruby.RubyIndex;
 
 

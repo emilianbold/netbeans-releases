@@ -62,7 +62,7 @@ public final class TestEntry {
     private static final String JAR_NAME = "tests.jar"; // NOI18N
     private static final String QA_FUNCTIONAL = "qa-functional"; // NOI18N
     private static final String UNIT = "unit"; // NOI18N;
-    /** Hardcoded location of testdistribution relatively to nb cvs. */
+    /** Hardcoded location of testdistribution relatively to nb source root. */
     private static final String TEST_DIST_DIR = "nbbuild/build/testdist"; // NOI18N;
     private final String codeNameBase;
     private final boolean unit;
@@ -138,7 +138,7 @@ public final class TestEntry {
     public URL getSrcDir() throws IOException {
         String nborgPath = getNetBeansOrgPath();
         if (nborgPath != null) {
-            return new File(getNBCVSRoot(),nborgPath).toURI().toURL(); 
+            return new File(getNBRoot(),nborgPath).toURI().toURL(); 
         } 
         File prjDir = getTestDistRoot();
         // find parent when dir was not created
@@ -170,21 +170,21 @@ public final class TestEntry {
         return null;
     }
     
-    File getNBCVSRoot() {
+    File getNBRoot() {
         File rootDir = getTestDistRoot();
         String path = rootDir.getAbsolutePath().replace(File.separatorChar,'/');
-        File nbcvs = null;
-        // hardcoded location of testdistribution relatively to nb cvs
+        File nbroot = null;
+        // hardcoded location of testdistribution relatively to nb source root
         if (path.endsWith(TEST_DIST_DIR)) { 
-            nbcvs = rootDir.getParentFile().getParentFile().getParentFile();
+            nbroot = rootDir.getParentFile().getParentFile().getParentFile();
         }
-        return nbcvs;
+        return nbroot;
     } 
     
     public String getNetBeansOrgPath () throws IOException {
-        File nbcvs =  getNBCVSRoot();
-        if (nbcvs != null && ModuleList.isNetBeansOrg(nbcvs) ) {
-            ModuleList list = ModuleList.findOrCreateModuleListFromNetBeansOrgSources(nbcvs);
+        File nbroot =  getNBRoot();
+        if (nbroot != null && ModuleList.isNetBeansOrg(nbroot) ) {
+            ModuleList list = ModuleList.findOrCreateModuleListFromNetBeansOrgSources(nbroot);
             ModuleEntry entry = list.getEntry(codeNameBase);
             if (entry == null) {
                 return null;

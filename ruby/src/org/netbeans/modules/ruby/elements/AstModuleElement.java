@@ -5,8 +5,8 @@ import java.util.Set;
 import org.jruby.ast.Colon2Node;
 import org.jruby.ast.ModuleNode;
 import org.jruby.ast.Node;
-import org.netbeans.fpi.gsf.CompilationInfo;
-import org.netbeans.fpi.gsf.ElementKind;
+import org.netbeans.modules.gsf.api.CompilationInfo;
+import org.netbeans.modules.gsf.api.ElementKind;
 
 
 public class AstModuleElement extends AstElement implements ModuleElement {

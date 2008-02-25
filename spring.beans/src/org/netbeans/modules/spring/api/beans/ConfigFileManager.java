@@ -82,6 +82,17 @@ public final class ConfigFileManager {
     }
 
     /**
+     * Returns the list of config files in this manager. The list is
+     * modifiable and not live, therefore changes to the list do not
+     * modify the contents of the manager.
+     *
+     * @return the list; never null.
+     */
+    public List<File> getConfigFiles() {
+        return impl.getConfigFiles();
+    }
+
+    /**
      * Returns the list of config file groups in this manger. The list is
      * modifiable and not live, therefore changes to the list do not
      * modify the contents of the manager.
@@ -93,35 +104,21 @@ public final class ConfigFileManager {
     }
 
     /**
-     * Returns the config file group (if any) which contains the given config file.
-     *
-     * @param  file a file; never null.
-     * @return the config file group or null.
-     */
-    public ConfigFileGroup getConfigFileGroupFor(File file) {
-        Parameters.notNull("file", file);
-        for (ConfigFileGroup group : getConfigFileGroups()) {
-            if (group.containsFile(file)) {
-                return group;
-            }
-        }
-        return null;
-    }
-
-    /**
      * Modifies the list of config file groups. This method needs to be called
      * under {@code mutex()} write access.
      *
+     * @param  files the files to add; never null.
      * @param  groups the groups to add; never null.
      * @throws IllegalStateException if the called does not hold {@code mutex()}
      *         write access.
      */
-    public void putConfigFileGroups(List<ConfigFileGroup> groups) {
+    public void putConfigFilesAndGroups(List<File> files, List<ConfigFileGroup> groups) {
+        Parameters.notNull("files", files);
         Parameters.notNull("groups", groups);
         if (!mutex().isWriteAccess()) {
-            throw new IllegalStateException("The putConfigFileGroups() method should be called under mutex() write access");
+            throw new IllegalStateException("The putConfigFilesAndGroups() method should be called under mutex() write access");
         }
-        impl.putConfigFileGroups(groups);
+        impl.putConfigFilesAndGroups(files, groups);
     }
 
     /**

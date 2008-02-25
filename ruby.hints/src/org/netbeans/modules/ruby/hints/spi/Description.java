@@ -28,7 +28,7 @@
 package org.netbeans.modules.ruby.hints.spi;
 
 import java.util.List;
-import org.netbeans.fpi.gsf.OffsetRange;
+import org.netbeans.modules.gsf.api.OffsetRange;
 import org.openide.filesystems.FileObject;
 
 /**
