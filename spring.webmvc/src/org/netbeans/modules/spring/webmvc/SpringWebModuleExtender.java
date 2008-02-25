@@ -291,7 +291,7 @@ public class SpringWebModuleExtender extends WebModuleExtender implements Change
                         List<File> files = manager.getConfigFiles();
                         files.addAll(newFiles);
                         List<ConfigFileGroup> groups = manager.getConfigFileGroups();
-                        String groupName = NbBundle.getMessage(SpringWebModuleExtender.class, "LBL_DefaultGroup");
+                        String groupName = NbBundle.getMessage(SpringWebModuleExtender.class, "LBL_DefaultGroup"); // NOI18N
                         ConfigFileGroup newGroup = ConfigFileGroup.create(groupName, newFiles);
                         groups.add(newGroup);
                         manager.putConfigFilesAndGroups(files, groups);
@@ -303,7 +303,7 @@ public class SpringWebModuleExtender extends WebModuleExtender implements Change
                     }
                 });
             } else {
-                LOGGER.log(Level.WARNING, "Could not find a SpringScope for file {0}", configFile);
+                LOGGER.log(Level.WARNING, "Could not find a SpringScope for file {0}", configFile); // NOI18N
             }
 
             // MODIFY EXISTING REDIRECT.JSP
@@ -337,6 +337,9 @@ public class SpringWebModuleExtender extends WebModuleExtender implements Change
                     }
                     if (resourceName.equals("redirect.jsp")) { // NOI18N
                         line = SpringWebFrameworkUtils.reviseRedirectJsp(line, dispatcherMapping);
+                    }
+                    if (resourceName.equals("index.jsp")) { // NOI18N
+                        line = SpringWebFrameworkUtils.setWelcomePageText(line);
                     }
                     buffer.append(line);
                     buffer.append(lineSeparator);
