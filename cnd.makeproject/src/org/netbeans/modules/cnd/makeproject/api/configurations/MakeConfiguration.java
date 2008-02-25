@@ -41,7 +41,6 @@
 
 package org.netbeans.modules.cnd.makeproject.api.configurations;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -57,11 +56,9 @@ import org.netbeans.modules.cnd.makeproject.api.remote.FilePathAdaptor;
 import org.netbeans.modules.cnd.makeproject.configurations.ui.IntNodeProp;
 import org.netbeans.modules.cnd.makeproject.api.platforms.Platforms;
 import org.netbeans.modules.cnd.makeproject.configurations.ui.BooleanNodeProp;
+import org.netbeans.modules.cnd.makeproject.configurations.ui.CompilerSetNodeProp;
 import org.netbeans.modules.cnd.makeproject.configurations.ui.RequiredProjectsNodeProp;
 import org.netbeans.modules.cnd.settings.CppSettings;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
-import org.openide.nodes.Node;
 import org.openide.nodes.Sheet;
 import org.openide.util.NbBundle;
 
@@ -90,6 +87,7 @@ public class MakeConfiguration extends Configuration {
     private IntConfiguration configurationType;
     private MakefileConfiguration makefileConfiguration;
     private CompilerSetConfiguration compilerSet;
+    private CompilerSet2Configuration compilerSet2;
     private BooleanConfiguration gdbRequired; // GRP - FIXME: Do we need gdb here?
     private BooleanConfiguration cRequired;
     private BooleanConfiguration cppRequired;
@@ -112,6 +110,7 @@ public class MakeConfiguration extends Configuration {
         super(baseDir, name);
         configurationType = new IntConfiguration(null, configurationTypeValue, TYPE_NAMES, null);
         compilerSet = new CompilerSetConfiguration(null, getDefaultCompilerSetIndex(), getCompilerSetDisplayNames(), getCompilerSetNames());
+        compilerSet2 = new CompilerSet2Configuration(this, null);
         cRequired = new BooleanConfiguration(null, CppSettings.getDefault().isCRequired());
         cppRequired = new BooleanConfiguration(null, CppSettings.getDefault().isCppRequired());
         fortranRequired = new BooleanConfiguration(null, CppSettings.getDefault().isFortranRequired());
@@ -150,8 +149,20 @@ public class MakeConfiguration extends Configuration {
         this.dependencyChecking = dependencyChecking;
     }
     
-    public CompilerSetConfiguration getCompilerSet() {
+    public CompilerSet2Configuration getCompilerSet() {
+        return compilerSet2;
+    }
+    
+    public void setCompilerSet(CompilerSetConfiguration compilerSet) {
+        this.compilerSet = compilerSet;
+    }
+    
+    public CompilerSetConfiguration getCompilerSet2() {
         return compilerSet;
+    }
+    
+    public void setCompilerSet2(CompilerSet2Configuration compilerSet2) {
+        this.compilerSet2 = compilerSet2;
     }
     
     public BooleanConfiguration getCRequired() {
@@ -166,9 +177,6 @@ public class MakeConfiguration extends Configuration {
         return fortranRequired;
     }
     
-    public void setCompilerSet(CompilerSetConfiguration compilerSet) {
-        this.compilerSet = compilerSet;
-    }
     
     public void setCRequired(BooleanConfiguration cRequired) {
         this.cRequired = cRequired;
@@ -272,6 +280,7 @@ public class MakeConfiguration extends Configuration {
         setBaseDir(makeConf.getBaseDir());
         getConfigurationType().assign(makeConf.getConfigurationType());
         getCompilerSet().assign(makeConf.getCompilerSet());
+        getCompilerSet2().assign(makeConf.getCompilerSet2());
         getCRequired().assign(makeConf.getCRequired());
         getCppRequired().assign(makeConf.getCppRequired());
         getFortranRequired().assign(makeConf.getFortranRequired());
@@ -329,7 +338,8 @@ public class MakeConfiguration extends Configuration {
         super.cloneConf(clone);
         clone.setCloneOf(this);
         
-        clone.setCompilerSet((CompilerSetConfiguration) getCompilerSet().clone());
+        clone.setCompilerSet2((CompilerSet2Configuration) getCompilerSet().clone());
+        clone.setCompilerSet((CompilerSetConfiguration) getCompilerSet2().clone());
         clone.setCRequired((BooleanConfiguration) getCRequired().clone());;
         clone.setCppRequired((BooleanConfiguration) getCppRequired().clone());;
         clone.setFortranRequired((BooleanConfiguration) getFortranRequired().clone());
@@ -366,7 +376,8 @@ public class MakeConfiguration extends Configuration {
         set.setName("ProjectDefaults"); // NOI18N
         set.setDisplayName(getString("ProjectDefaultsTxt"));
         set.setShortDescription(getString("ProjectDefaultsHint"));
-        set.put(new IntNodeProp(getCompilerSet(), true, "CompilerSCollection", getString("CompilerCollectionTxt"), getString("CompilerCollectionHint"))); // NOI18N
+        //set.put(new IntNodeProp(getCompilerSet2(), true, "CompilerSCollection", getString("CompilerCollectionTxt"), getString("CompilerCollectionHint"))); // NOI18N
+        set.put(new CompilerSetNodeProp(getCompilerSet(), true, "CompilerSCollection2", getString("CompilerCollectionTxt"), getString("CompilerCollectionHint"))); // NOI18N
         set.put(new BooleanNodeProp(getCRequired(), true, "cRequired", getString("CRequiredTxt"), getString("CRequiredHint"))); // NOI18N
         set.put(new BooleanNodeProp(getCppRequired(), true, "cppRequired", getString("CppRequiredTxt"), getString("CppRequiredHint"))); // NOI18N
         if (CppSettings.getDefault().isFortranEnabled()) {
@@ -392,7 +403,7 @@ public class MakeConfiguration extends Configuration {
         set.setName("Compiler Collection"); // NOI18N
         set.setDisplayName(getString("CompilerCollectionTxt"));
         set.setShortDescription(getString("CompilerCollectionHint"));
-        set.put(new IntNodeProp(getCompilerSet(), true, "CompilerCollection", getString("CompilerCollectionTxt"), getString("CompilerCollectionHint"))); // NOI18N
+        set.put(new IntNodeProp(getCompilerSet2(), true, "CompilerCollection", getString("CompilerCollectionTxt"), getString("CompilerCollectionHint"))); // NOI18N
         sheet.put(set);
         
         return sheet;
