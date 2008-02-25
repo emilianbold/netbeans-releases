@@ -116,7 +116,7 @@ public class SaasGroupNode extends AbstractNode {
     private Image vendorIcon = null;
     private Image getVendorIcon(int type) {
         if (vendorIcon == null && group.getServices().size() > 0) {
-            vendorIcon = SaasUtil.loadIcon(group.getServices().get(0), type);
+            vendorIcon = SaasUtil.loadIcon(group, type);
         }
         return vendorIcon;
     }

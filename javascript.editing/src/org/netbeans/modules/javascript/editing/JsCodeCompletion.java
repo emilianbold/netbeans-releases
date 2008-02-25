@@ -828,8 +828,13 @@ public class JsCodeCompletion implements Completable {
         
         Set<IndexedElement> matches;
         if (fqn != null) {
-            //matches = index.getInheritedElements(fqn, prefix, kind, JsIndex.ALL_SCOPE, result);
             matches = index.getElements(prefix, fqn, kind, JsIndex.ALL_SCOPE, result);
+            // Also add in non-fqn-prefixed elements
+            Set<IndexedElement> top = index.getElements(prefix, null, kind, JsIndex.ALL_SCOPE, result);
+            if (top.size() > 0) {
+                matches.addAll(top);
+            }
+            
         } else {
             matches = index.getAllNames(prefix, kind, JsIndex.ALL_SCOPE, result);
         }
@@ -940,7 +945,7 @@ public class JsCodeCompletion implements Completable {
                     // Try with the LHS + current FQN recursively. E.g. if we're in
                     // Test::Unit when there's a call to Foo.x, we'll try
                     // Test::Unit::Foo, and Test::Foo
-                    while (elements.size() == 0 && fqn != null) {
+                    while (elements.size() == 0 && fqn != null && !fqn.equals(type)) {
                         elements = index.getElements(prefix, fqn + "." + type, kind, JsIndex.ALL_SCOPE, result);
 
                         int f = fqn.lastIndexOf("::");
@@ -952,13 +957,11 @@ public class JsCodeCompletion implements Completable {
                         }
                     }
                     
-                    if (elements.size() == 0) {
-                        // Add methods in the class (without an FQN)
-                        Set<IndexedElement> m = index.getElements(prefix, type, kind, JsIndex.ALL_SCOPE, result);
+                    // Add methods in the class (without an FQN)
+                    Set<IndexedElement> m = index.getElements(prefix, type, kind, JsIndex.ALL_SCOPE, result);
 
-                        if (m.size() > 0) {
-                            elements = m;
-                        }
+                    if (m.size() > 0) {
+                        elements = m;
                     }
                 }
             }
@@ -1252,7 +1255,7 @@ public class JsCodeCompletion implements Completable {
         JsCommentFormatter formatter = new JsCommentFormatter(comments);
         if (element instanceof IndexedElement) {
             String url = ((IndexedElement)element).getFilenameUrl();
-            if (url.indexOf("/jsstubs/") != -1) { // NOI18N
+            if (url.indexOf("jsstubs/") != -1) { // NOI18N
                 formatter.setFormattedComment(true);
             }
         }

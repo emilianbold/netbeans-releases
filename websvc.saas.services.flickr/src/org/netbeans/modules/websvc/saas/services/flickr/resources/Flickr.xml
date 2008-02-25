@@ -55,7 +55,6 @@
     
     <saas-metadata>
         <localizing-bundle>org.netbeans.modules.websvc.saas.services.flickr.Bundle</localizing-bundle>
-        <icon16>org/netbeans/modules/websvc/saas/services/flickr/resources/flickr16.png</icon16>
         <group name="Flickr"/>
     </saas-metadata>
     
