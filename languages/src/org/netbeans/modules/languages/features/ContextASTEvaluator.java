@@ -105,6 +105,12 @@ public class ContextASTEvaluator extends ASTEvaluator {
         }
     }
     
+    static void setEvaluated(Document document, boolean evaluated) {
+        ContextASTEvaluator evaluator = get (document);
+        if (evaluator == null) return;
+        evaluator.evaluated = evaluated;
+    }
+    
     private Document                    document;
     private DatabaseContext             rootContext;
     private Stack<DatabaseContext>      currentContext;
