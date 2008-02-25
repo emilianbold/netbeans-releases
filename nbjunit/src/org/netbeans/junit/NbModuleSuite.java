@@ -40,7 +40,10 @@
 package org.netbeans.junit;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.lang.reflect.Method;
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
@@ -49,8 +52,13 @@ import java.net.URLClassLoader;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Enumeration;
+import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Set;
+import java.util.TreeSet;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import junit.framework.Assert;
 import junit.framework.TestCase;
 import junit.framework.TestResult;
@@ -105,6 +113,15 @@ public class NbModuleSuite extends NbTestSuite {
         
         System.setProperty("netbeans.user", ud.getPath());
         
+        TreeSet<String> modules = new TreeSet<String>();
+        modules.addAll(findEnabledModules(NbTestSuite.class.getClassLoader()));
+        modules.add("org.openide.filesystems");
+        modules.add("org.openide.modules");
+        modules.add("org.openide.util");
+        modules.add("org.netbeans.core.startup");
+        modules.add("org.netbeans");
+        turnModules(ud, modules, platform);
+        
         List<String> args = new ArrayList<String>();
         args.add("--nosplash");
         m.invoke(null, (Object)args.toArray(new String[0]));
@@ -140,6 +157,38 @@ public class NbModuleSuite extends NbTestSuite {
             Assert.fail("Cannot find utilities JAR");
             return null;
         }
+    }
+    
+    private static Pattern CODENAME = Pattern.compile("OpenIDE-Module: *([^/$ \n\r]*)[/]?[0-9]*", Pattern.MULTILINE);
+    /** Looks for all modules on classpath of given loader and builds 
+     * their list from them.
+     */
+    static Set<String> findEnabledModules(ClassLoader loader) throws IOException {
+        Set<String> cnbs = new TreeSet<String>();
+        
+        Enumeration<URL> en = loader.getResources("META-INF/MANIFEST.MF");
+        while (en.hasMoreElements()) {
+            URL url = en.nextElement();
+            String manifest = asString(url.openStream(), true);
+            Matcher m = CODENAME.matcher(manifest);
+            if (m.find()) {
+                cnbs.add(m.group(1));
+            }
+        }
+
+        return cnbs;
+    }
+    
+    private static String asString(InputStream is, boolean close) throws IOException {
+        byte[] arr = new byte[is.available()];
+        int len = is.read(arr);
+        if (len != arr.length) {
+            throw new IOException("Not fully read: " + arr.length + " was " + len);
+        }
+        if (close) {
+            is.close();
+        }
+        return new String(arr, "UTF-8"); // NOI18N
     }
     
     private static final class JunitLoader extends URLClassLoader {
@@ -187,4 +236,43 @@ public class NbModuleSuite extends NbTestSuite {
             return false;
         }
     }
+
+    private static Pattern ENABLED = Pattern.compile("<param name=[\"']enabled[\"']>([^<]*)</param>", Pattern.MULTILINE);
+    
+    private static void turnModules(File ud, TreeSet<String> modules, File... clusterDirs) throws IOException {
+        File config = new File(new File(ud, "config"), "Modules");
+        config.mkdirs();
+        
+        for (File c : clusterDirs) {
+            File modulesDir = new File(new File(c, "config"), "Modules");
+            for (File m : modulesDir.listFiles()) {
+                String n = m.getName();
+                if (n.endsWith(".xml")) {
+                    n = n.substring(0, n.length() - 4);
+                }
+                n = n.replace('-', '.');
+                
+                String xml = asString(new FileInputStream(m), true);
+                Matcher matcherEnabled = ENABLED.matcher(xml);
+             //   Matcher matcherEager = EAGER.matcher(xml);
+                
+                boolean enabled = matcherEnabled.find() && "true".equals(matcherEnabled.group(1));
+                
+                if (modules.contains(n) != enabled) {
+                    String out = 
+                        xml.substring(0, matcherEnabled.start(1)) +
+                        (enabled ? "false" : "true") +
+                        xml.substring(matcherEnabled.end(1));
+                    writeModule(new File(config, m.getName()), out);
+                }
+            }
+        }
+    }
+
+    private static void writeModule(File file, String xml) throws IOException {
+        FileOutputStream os = new FileOutputStream(file);
+        os.write(xml.getBytes("UTF-8"));
+        os.close();
+    }
 }
+
