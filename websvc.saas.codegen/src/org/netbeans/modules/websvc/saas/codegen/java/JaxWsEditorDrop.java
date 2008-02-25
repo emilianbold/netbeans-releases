@@ -115,16 +115,16 @@ public class JaxWsEditorDrop implements ActiveEditorDrop {
                         JaxWsCodeGeneratorFactory.create(targetComponent, targetFO, method);
                 
                     WsdlSaasBean bean = codegen.getBean();
-                    boolean showParams = codegen.showParams();
+                    boolean showParams = codegen.canShowParam();
                     List<ParameterInfo> allParams = new ArrayList<ParameterInfo>(bean.getHeaderParameters());
                     if (showParams && bean.getInputParameters() != null) {
                         allParams.addAll(bean.getInputParameters());
                     }
-                    JaxRsCodeSetupPanel panel = new JaxRsCodeSetupPanel(
+                    JaxWsCodeSetupPanel panel = new JaxWsCodeSetupPanel(
                             codegen.getSubresourceLocatorUriTemplate(),
                             bean.getQualifiedClassName(), 
                             allParams,
-                            !showParams);
+                            showParams);
 
                     DialogDescriptor desc = new DialogDescriptor(panel, 
                             NbBundle.getMessage(JaxWsEditorDrop.class,

@@ -114,7 +114,7 @@ public class CustomEditorDrop implements ActiveEditorDrop {
                         CustomCodeGeneratorFactory.create(targetComponent, targetFO, method);
                 
                     CustomSaasBean bean = codegen.getBean();
-                    boolean showParams = codegen.showParams();
+                    boolean showParams = codegen.canShowParam();
                     List<ParameterInfo> allParams = new ArrayList<ParameterInfo>(bean.getHeaderParameters());
                     if (showParams && bean.getInputParameters() != null) {
                         allParams.addAll(bean.getInputParameters());
@@ -123,7 +123,7 @@ public class CustomEditorDrop implements ActiveEditorDrop {
                             codegen.getSubresourceLocatorUriTemplate(),
                             bean.getQualifiedClassName(), 
                             allParams,
-                            !showParams);
+                            showParams);
 
                     DialogDescriptor desc = new DialogDescriptor(panel, 
                             NbBundle.getMessage(CustomEditorDrop.class,

@@ -42,7 +42,13 @@ package org.netbeans.modules.websvc.saas.codegen.java;
 
 import org.netbeans.modules.websvc.saas.model.WadlSaasMethod;
 import java.io.IOException;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
 import javax.swing.text.JTextComponent;
+import org.netbeans.api.java.source.JavaSource;
+import org.netbeans.api.progress.ProgressHandle;
+import org.netbeans.modules.websvc.saas.codegen.java.support.JavaSourceHelper;
 import org.openide.filesystems.FileObject;
 
 /**
@@ -55,5 +61,65 @@ public class JaxRsResourceClassCodeGenerator extends JaxRsCodeGenerator {
     public JaxRsResourceClassCodeGenerator(JTextComponent targetComponent, 
             FileObject targetFile, WadlSaasMethod m) throws IOException {
         super(targetComponent, targetFile, m);
+    }
+    
+    @Override
+    public Set<FileObject> generate(ProgressHandle pHandle) throws IOException {
+        initProgressReporting(pHandle);
+
+        preGenerate();
+        
+        createAuthenticatorClass();
+        
+        createSaasServiceClass();
+        addSaasServiceMethod();
+        addImportsToSaasService();
+        
+        insertSaasServiceAccessCode(isInBlock(getTargetComponent()));
+        addImportsToTargetFile();
+
+        FileObject outputWrapperFO = generateJaxbOutputWrapper();
+        if (outputWrapperFO != null) {
+            setJaxbOutputWrapperSource(JavaSource.forFileObject(outputWrapperFO));
+        }
+        generateSaasServiceResourceClass();
+        addSubresourceLocator();
+        FileObject refConverterFO = getOrCreateGenericRefConverter().getFileObjects().iterator().next();
+        modifyTargetConverter();
+        FileObject[] result = new FileObject[]{getTargetFile(), getWrapperResourceFile(), refConverterFO, outputWrapperFO};
+        if (outputWrapperFO == null) {
+            result = new FileObject[]{getTargetFile(), getWrapperResourceFile(), refConverterFO};
+        }
+        JavaSourceHelper.saveSource(result);
+
+        finishProgressReporting();
+
+        return new HashSet<FileObject>(Arrays.asList(result));
+    }
+
+    @Override
+    protected String getCustomMethodBody() throws IOException {
+        String paramUse = "";
+        String paramDecl = "";
+        String converterName = getConverterName();
+        
+        //Evaluate template parameters
+        paramUse += getQueryParameterUsage(getBean().getTemplateParameters());
+        paramDecl += getQueryParameterDeclaration(getBean().getTemplateParameters());
+
+        //Evaluate query parameters
+        paramUse += getQueryParameterUsage(getBean().getQueryParameters());
+        paramDecl += getQueryParameterDeclaration(getBean().getQueryParameters());
+
+        if(paramUse.endsWith(", "))
+            paramUse = paramUse.substring(0, paramUse.length()-2);
+        
+        String methodBody = "";
+        methodBody += "        " + converterName + " converter = new " + converterName + "();\n";
+        methodBody += "             String result = " + getSaasServiceName() + "." + getSaasServiceMethodName() + "(" + paramUse + ");\n";
+        methodBody += "             converter.setString(result);\n";
+        methodBody += "             return converter;\n";
+        
+        return methodBody;
     }
 }
