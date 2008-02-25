@@ -57,11 +57,12 @@ public class IsDirCntSecurityManager extends SecurityManager {
         cnt = 0;
     }
 
-    public static void assertCounts(String msg, int maxCounts) {
+    public static void assertCounts(String msg, int minCount, int maxCount) {
         StringBuilder sb = new StringBuilder(msg);
-        sb.append(" limit# = ").append(maxCounts).append("; count# = ");
+        sb.append(" limits = <").append(minCount).append(',');
+        sb.append(maxCount).append('>').append("; count# = ");
         sb.append(cnt).append(".");
-        Assert.assertTrue(sb.toString(), cnt <= maxCounts);
+        Assert.assertTrue(sb.toString(), cnt >= minCount && cnt <= maxCount);
         cnt = 0;
     }
 

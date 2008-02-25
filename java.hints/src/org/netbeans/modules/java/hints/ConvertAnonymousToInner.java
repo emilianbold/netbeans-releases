@@ -354,6 +354,17 @@ public class ConvertAnonymousToInner extends AbstractHint {
             }
         }
         
+        Element targetElement = copy.getTrees().getElement(tp);
+        if (isStaticContext) {
+            while (targetElement.getEnclosingElement().getKind() != ElementKind.PACKAGE) {
+                if (!targetElement.getModifiers().contains(Modifier.STATIC)) {
+                    isStaticContext = false;
+                    break;
+                }
+                targetElement = targetElement.getEnclosingElement();
+            }
+        }
+        
         Tree superTypeTree = make.Type(superType);
         
         Logger.getLogger(ConvertAnonymousToInner.class.getName()).log(Level.FINE, "usesNonStaticMembers = {0}", usesNonStaticMembers ); //NOI18N

@@ -47,6 +47,7 @@ import javax.swing.text.Document;
 import org.netbeans.modules.css.editor.CssEditorSupport;
 import org.netbeans.modules.css.visual.ui.StyleBuilderTopComponent;
 import org.openide.cookies.EditorCookie;
+import org.openide.util.Lookup;
 import org.openide.util.WeakListeners;
 import org.openide.windows.TopComponent;
 import org.openide.windows.TopComponent.Registry;
@@ -120,6 +121,9 @@ public class CSSTCController implements PropertyChangeListener {
     }
 
     private boolean isCSSTC(TopComponent tc) {
+        if(tc == null) {
+            return false;
+        }
         Document doc = getDocument(tc);
         if (doc != null) {
             String mimeType = (String) doc.getProperty("mimeType");
@@ -131,7 +135,11 @@ public class CSSTCController implements PropertyChangeListener {
     }
 
     private Document getDocument(TopComponent tc) {
-        EditorCookie ec = tc.getLookup().lookup(EditorCookie.class);
+        Lookup lookup = tc.getLookup(); //should be always non null unless someone overrides the TC
+        if(lookup == null) {
+            return null;
+        }
+        EditorCookie ec = lookup.lookup(EditorCookie.class);
         if (ec != null) {
             return ec.getDocument();
         } else {

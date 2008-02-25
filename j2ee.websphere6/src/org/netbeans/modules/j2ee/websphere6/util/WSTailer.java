@@ -112,6 +112,7 @@ public class WSTailer extends Thread {
      */
     public void run() {
         if(isIOPanelOpen.containsKey(io)) {
+            io.select();
             return;
         }
         
