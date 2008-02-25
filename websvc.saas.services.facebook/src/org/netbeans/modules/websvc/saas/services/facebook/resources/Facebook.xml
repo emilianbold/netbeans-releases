@@ -55,7 +55,6 @@
     
     <saas-metadata>
         <localizing-bundle>org.netbeans.modules.websvc.saas.services.facebook.Bundle</localizing-bundle>
-        <icon16>org/netbeans/modules/websvc/saas/services/facebook/resources/facebook16.png</icon16>
         <group name="Facebook"/>
     </saas-metadata>
     
