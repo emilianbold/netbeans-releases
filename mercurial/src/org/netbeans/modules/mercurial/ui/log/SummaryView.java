@@ -68,6 +68,7 @@ import org.netbeans.modules.mercurial.Mercurial;
 import org.netbeans.modules.mercurial.VersionsCache;
 import org.netbeans.modules.mercurial.ui.diff.DiffSetupSource;
 import org.netbeans.modules.mercurial.ui.diff.ExportDiffAction;
+import org.netbeans.modules.mercurial.ui.rollback.BackoutAction;
 import org.netbeans.modules.mercurial.ui.update.RevertModificationsAction;
 
 /**
@@ -299,7 +300,7 @@ class SummaryView implements MouseListener, ComponentListener, MouseMotionListen
         long revision = Long.parseLong(container.getLog().getRevision());
 
         final boolean rollbackToEnabled = !missingFile && !revisionSelected && oneRevisionMultiselected;
-        final boolean rollbackChangeEnabled = !missingFile && oneRevisionMultiselected && (drev.length == 0 || noExDeletedExistingFiles); // drev.length == 0 => the whole revision was selected
+        final boolean rollbackChangeEnabled = !missingFile && oneRevisionMultiselected && (drev.length == 0); // drev.length == 0 => the whole revision was selected
         final boolean viewEnabled = selection.length == 1 && !revisionSelected && drev[0].getFile() != null && drev[0].getFile().exists() &&  !drev[0].getFile().isDirectory();
         final boolean diffToPrevEnabled = selection.length == 1;
         
@@ -320,33 +321,28 @@ class SummaryView implements MouseListener, ComponentListener, MouseMotionListen
          * and creates a patch which is then applied ot the file in the working dir, effectively removing
          * the change applied between revX and revY
          * In hg we'd need to do a hg diff -r revX -r revY, generate a patch and then apply it to the working dir copy
-         * /
-        menu.add(new JMenuItem(new AbstractAction(NbBundle.getMessage(SummaryView.class, "CTL_SummaryView_RollbackChange")) { // NOI18N
-            {
-                setEnabled(false); // rollbackChangeEnabled); 
-            }
-            public void actionPerformed(ActionEvent e) {
-                revertModifications(selection);
-            }
-        }));
-        */
-        if (!revisionSelected) {
+         */
+        if (revisionSelected) {
+            menu.add(new JMenuItem(new AbstractAction(NbBundle.getMessage(SummaryView.class, "CTL_SummaryView_RollbackChange")) { // NOI18N
+
+                {
+                    setEnabled(rollbackChangeEnabled);
+                }
+
+                public void actionPerformed(ActionEvent e) {
+                    rollback(selection[0]);
+                }
+            }));
+        }else{
             menu.add(new JMenuItem(new AbstractAction(NbBundle.getMessage(SummaryView.class, "CTL_SummaryView_RollbackTo", "" + revision)) { // NOI18N
                 {                    
                     setEnabled(rollbackToEnabled);
                 }
                 public void actionPerformed(ActionEvent e) {
                     revertModifications(selection);
-                }
-                
-                /*public void actionPerformed(ActionEvent e) {
-                    RequestProcessor.getDefault().post(new Runnable() {
-                        public void run() {                            
-                            rollback(drev);
-                        }
-                    });
-                }*/
+                }                
             }));
+            
             menu.add(new JMenuItem(new AbstractAction(NbBundle.getMessage(SummaryView.class, "CTL_SummaryView_View")) { // NOI18N
                 {
                     setEnabled(viewEnabled);
@@ -363,45 +359,18 @@ class SummaryView implements MouseListener, ComponentListener, MouseMotionListen
 
         menu.show(resultsList, p.x, p.y);
     }
-
-    /**
-     * Overwrites local file with this revision.
-     *
-     * @param event
-     */
-    static void rollback(RepositoryRevision.Event event) {
-        rollback(new RepositoryRevision.Event[ ]{event});
-    }    
     
     /**
-     * Overwrites local file with this revision.
+     * Rollback this changeset
      *
      * @param event
      */
-    static void rollback(final RepositoryRevision.Event[] events) {
-        String repository = events[0].getLogInfoHeader().getRepositoryRootUrl();
-        RequestProcessor rp = Mercurial.getInstance().getRequestProcessor(repository);
-        HgProgressSupport support = new HgProgressSupport() {
-            public void perform() {
-                for(RepositoryRevision.Event event : events) {
-                    rollback(event, this);   
-                }                
-            }
-        };
-        support.start(rp, repository, NbBundle.getMessage(SummaryView.class, "MSG_Rollback_Progress")); // NOI18N
-}
-
-    private static void rollback(RepositoryRevision.Event event, HgProgressSupport progress) {
-        File file = event.getFile();
-        File parent = file.getParentFile();
-        parent.mkdirs();
-        try {
-            File oldFile = VersionsCache.getInstance().getFileRevision(event.getFile(), event.getLogInfoHeader().getLog().getRevision());
-            file.delete();
-            FileUtil.copyFile(FileUtil.toFileObject(oldFile), FileUtil.toFileObject(parent), file.getName(), "");
-        } catch (IOException e) {
-            ErrorManager.getDefault().notify(e);
-        }
+    private void rollback(int idx) {
+        Object o = dispResults.get(idx);
+        if (o instanceof RepositoryRevision) {
+            RepositoryRevision repoRev = (RepositoryRevision) o;
+            BackoutAction.backout(repoRev);
+        }        
     }
 
     private void revertModifications(int[] selection) {
