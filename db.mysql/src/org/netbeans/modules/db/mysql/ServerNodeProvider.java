@@ -85,7 +85,7 @@ public class ServerNodeProvider implements NodeProvider {
             notifyChange();
         }
     }
-
+    
     synchronized boolean isRegistered() {
         return options.isProviderRegistered();
     }

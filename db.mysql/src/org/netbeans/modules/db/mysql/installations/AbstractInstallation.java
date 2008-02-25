@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * 
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
  * 
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -36,72 +36,64 @@
  * 
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.db.mysql;
 
-import org.netbeans.api.db.explorer.DatabaseException;
-import org.netbeans.modules.db.mysql.DatabaseUtils.ConnectStatus;
-import org.openide.nodes.Node;
-import org.openide.util.HelpCtx;
-import org.openide.util.NbBundle;
-import org.openide.util.actions.CookieAction;
+package org.netbeans.modules.db.mysql.installations;
+
+import org.netbeans.modules.db.mysql.Installation;
 
 /**
- * Connect to a database
+ * Provides some helper functionality for installations
  * 
  * @author David Van Couvering
  */
-public class ConnectServerAction extends CookieAction {
-    private static final Class[] COOKIE_CLASSES = 
-            new Class[] { ServerInstance.class };
+public abstract class AbstractInstallation implements Installation {
+    /**
+     * @return the base/installation path for this installation
+     */
+    protected abstract String getBasePath();
     
-    public ConnectServerAction() {
-        putValue("noIconInMenu", Boolean.TRUE);
-    }
+    /**
+     * 
+     * @return the path for the start command, relative to its base path
+     */
+    protected abstract String getStartPath();
+    
+    /**
+     * @return the path for the stop command, relative to its base path
+     */
+    protected abstract String getStopPath();
+    
+    /**
+     * Create a new installation given a new base path
+     * 
+     * @param basePath the base path to use for the installation
+     * 
+     * @return a new instance of the installation using this new base path
+     */
+    protected abstract Installation createInstallation(String basePath);
+   
 
-    @Override
-    protected boolean asynchronous() {
-        return false;
-    }
-
-    public String getName() {
-        return NbBundle.getBundle(ConnectServerAction.class).
-                getString("LBL_ConnectServerAction");
-    }
-
-    public HelpCtx getHelpCtx() {
-        return new HelpCtx(ConnectServerAction.class);
-    }
-
-    @Override
-    public boolean enable(Node[] activatedNodes) {
-        if ( activatedNodes == null || activatedNodes.length == 0 ) {
-            return false;
+    public Installation getInstallation(String command, Command cmdType) {
+        // Installations either come with no admin UI or with phpmyadmin,
+        // so creating a new installation from the admin command doesn't
+        // really work...
+        if ( cmdType == Command.ADMIN ) {
+            return null;
         }
         
-        ServerInstance server = activatedNodes[0].getCookie(ServerInstance.class);
+        String newBasePath;
         
-        return server != null && (!server.isConnected()) && server.isRunning();
-    }
-
-    @Override
-    protected void performAction(Node[] activatedNodes) {
-        ServerInstance server = activatedNodes[0].getCookie(ServerInstance.class);
-        try { 
-            server.connect();
-        } catch ( DatabaseException dbe ) {
-            Utils.displayError(NbBundle.getMessage(ConnectServerAction.class,
-                        "MSG_UnableToConnect"), 
-                    dbe);
+        if ( cmdType == Command.START ) {
+            newBasePath = command.replace(getStartPath(), "");
+        } else {
+            newBasePath = command.replace(getStopPath(), "");
         }
-    }
-    
-    @Override
-    protected int mode() {
-        return MODE_EXACTLY_ONE;
+        if ( newBasePath.equals(command)) {
+            // not a valid command path
+            return null;
+        }
+        
+        return createInstallation(newBasePath);
     }
 
-    @Override
-    protected Class<?>[] cookieClasses() {
-        return COOKIE_CLASSES;
-    }
 }
