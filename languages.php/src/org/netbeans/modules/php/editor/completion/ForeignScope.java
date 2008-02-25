@@ -43,7 +43,7 @@ package org.netbeans.modules.php.editor.completion;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import org.netbeans.fpi.gsf.CompletionProposal;
+import org.netbeans.modules.gsf.api.CompletionProposal;
 
 /**
  * Implementation of the <code>CompletionResultProvider</code> for the foreign 

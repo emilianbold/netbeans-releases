@@ -1,10 +1,10 @@
 package org.netbeans.modules.ruby;
 
 import java.io.IOException;
-import org.netbeans.fpi.gsf.CancellableTask;
-import org.netbeans.fpi.gsf.CompilationInfo;
-import org.netbeans.fpi.gsf.SourceModel;
-import org.netbeans.fpi.gsf.SourceModelFactory;
+import org.netbeans.modules.gsf.api.CancellableTask;
+import org.netbeans.modules.gsf.api.CompilationInfo;
+import org.netbeans.modules.gsf.api.SourceModel;
+import org.netbeans.modules.gsf.api.SourceModelFactory;
 import org.netbeans.editor.BaseDocument;
 import org.openide.filesystems.FileObject;
 

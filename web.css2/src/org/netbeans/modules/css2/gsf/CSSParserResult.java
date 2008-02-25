@@ -39,10 +39,10 @@
 
 package org.netbeans.modules.css2.gsf;
 
-import org.netbeans.fpi.gsf.ElementHandle;
-import org.netbeans.fpi.gsf.Parser;
-import org.netbeans.fpi.gsf.ParserFile;
-import org.netbeans.fpi.gsf.ParserResult;
+import org.netbeans.modules.gsf.api.ElementHandle;
+import org.netbeans.modules.gsf.api.Parser;
+import org.netbeans.modules.gsf.api.ParserFile;
+import org.netbeans.modules.gsf.api.ParserResult;
 import org.netbeans.modules.css2.editor.Css;
 import org.netbeans.modules.css2.parser.SimpleNode;
 

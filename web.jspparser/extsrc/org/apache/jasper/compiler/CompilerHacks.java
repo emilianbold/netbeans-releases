@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -46,7 +46,7 @@ import java.util.HashMap;
 import java.util.Map;
 import org.apache.jasper.JasperException;
 import org.apache.jasper.JspCompilationContext;
-import org.openide.ErrorManager;
+import org.openide.util.Exceptions;
 
 /** Reflection stuff for org.apache.jasper.compiler.Compiler.
  *
@@ -54,8 +54,9 @@ import org.openide.ErrorManager;
  */
 public class CompilerHacks {
 
+    // @GuardedBy(this)
     private Compiler comp;
-    protected JspCompilationContext ctxt;
+    private final JspCompilationContext ctxt;
 
     private static Field pageInfoF;
     private static Field errDispatcherF;
@@ -72,18 +73,17 @@ public class CompilerHacks {
     static void initMethodsAndFields() {
         try {
             // pageInfo field
-            pageInfoF = Compiler.class.getDeclaredField("pageInfo");
+            pageInfoF = Compiler.class.getDeclaredField("pageInfo"); // NOI18N
             pageInfoF.setAccessible(true);
             // errDispatcher field
-            errDispatcherF = Compiler.class.getDeclaredField("errDispatcher");
+            errDispatcherF = Compiler.class.getDeclaredField("errDispatcher"); // NOI18N
             errDispatcherF.setAccessible(true);
-        }
-        catch (NoSuchFieldException e) {
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+        } catch (NoSuchFieldException e) {
+            Exceptions.printStackTrace(e);
         }
     }
     
-    private void setupCompiler() throws JasperException {
+    private synchronized void setupCompiler() throws JasperException {
         if (comp == null) {
             comp = ctxt.createParser();
             setErrDispatcherInCompiler(comp, new ErrorDispatcher(false));
@@ -100,8 +100,7 @@ public class CompilerHacks {
     private static void setPageInfoInCompiler(Compiler c, PageInfo pageInfo) throws JasperException {
         try {
             pageInfoF.set(c, pageInfo);
-        }
-        catch (IllegalAccessException e) {
+        } catch (IllegalAccessException e) {
             throw new JasperException(e);
         }
     }
@@ -109,34 +108,36 @@ public class CompilerHacks {
     private static void setErrDispatcherInCompiler(Compiler c, ErrorDispatcher errDispatcher) throws JasperException {
         try {
             errDispatcherF.set(c, errDispatcher);
-        }
-        catch (IllegalAccessException e) {
+        } catch (IllegalAccessException e) {
             throw new JasperException(e);
         }
     }
     
     /** Hacked PageInfo to get better XML directive data
      */
-    class HackPageInfo extends PageInfo {
+    static final class HackPageInfo extends PageInfo {
 
         /** Map of prefix -> uri. */
-        private Map approxXmlPrefixMapper;
+        private final Map<String, String> approxXmlPrefixMapper = new HashMap<String, String>();
         
         HackPageInfo(BeanRepository beanRepository, String jspFile) {
             super(beanRepository, jspFile);
-            approxXmlPrefixMapper = new HashMap();
         }
         
+        @Override
         public void pushPrefixMapping(String prefix, String uri) {
             super.pushPrefixMapping(prefix, uri);
             if (uri != null) {
-                approxXmlPrefixMapper.put(prefix, uri);
+                synchronized (approxXmlPrefixMapper) {
+                    approxXmlPrefixMapper.put(prefix, uri);
+                }
             }
         }
         
-        Map getApproxXmlPrefixMapper() {
-            return approxXmlPrefixMapper;
+        Map<String, String> getApproxXmlPrefixMapper() {
+            synchronized (approxXmlPrefixMapper) {
+                return approxXmlPrefixMapper;
+            }
         }
     }
-    
 }

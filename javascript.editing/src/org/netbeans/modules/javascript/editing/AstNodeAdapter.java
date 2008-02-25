@@ -30,7 +30,7 @@ import org.mozilla.javascript.FunctionNode;
 import org.mozilla.javascript.Node;
 import org.mozilla.javascript.ScriptOrFnNode;
 import org.mozilla.javascript.Token;
-import org.netbeans.fpi.gsf.ParserResult;
+import org.netbeans.modules.gsf.api.ParserResult;
 import org.openide.util.Enumerations;
 
 

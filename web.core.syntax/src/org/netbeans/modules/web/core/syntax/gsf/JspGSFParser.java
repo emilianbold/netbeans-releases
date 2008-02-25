@@ -38,11 +38,11 @@
  */
 package org.netbeans.modules.web.core.syntax.gsf;
 
-import org.netbeans.fpi.gsf.ParseEvent;
-import org.netbeans.fpi.gsf.Parser;
-import org.netbeans.fpi.gsf.ParserFile;
-import org.netbeans.fpi.gsf.ParserResult;
-import org.netbeans.fpi.gsf.PositionManager;
+import org.netbeans.modules.gsf.api.ParseEvent;
+import org.netbeans.modules.gsf.api.Parser;
+import org.netbeans.modules.gsf.api.ParserFile;
+import org.netbeans.modules.gsf.api.ParserResult;
+import org.netbeans.modules.gsf.api.PositionManager;
 
 /**
  * just fake class, we need the parser and the StructureScanner to enable 

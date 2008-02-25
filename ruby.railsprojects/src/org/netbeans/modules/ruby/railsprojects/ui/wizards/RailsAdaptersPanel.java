@@ -45,6 +45,7 @@ import javax.swing.ComboBoxModel;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.ListCellRenderer;
+import org.netbeans.modules.ruby.railsprojects.database.ConfigurableRailsAdapter;
 import org.netbeans.modules.ruby.railsprojects.database.RailsAdapterFactory;
 import org.netbeans.modules.ruby.railsprojects.database.RailsDatabaseConfiguration;
 import org.openide.WizardDescriptor;
@@ -66,18 +67,10 @@ public class RailsAdaptersPanel extends SettingsPanel {
         initComponents();
         List<RailsDatabaseConfiguration> adapters = RailsAdapterFactory.getAdapters();
         developmentComboBox.setModel(new AdapterListModel(adapters));
-        productionComboBox.setModel(new AdapterListModel(adapters));
-        testComboBox.setModel(new AdapterListModel(adapters));
         developmentComboBox.setRenderer(new AdapterListCellRendered());
-        productionComboBox.setRenderer(new AdapterListCellRendered());
-        testComboBox.setRenderer(new AdapterListCellRendered());
 
         //TODO: enable once the logic for editing database.yml
         // to change production and test databases is implemented
-        productionComboBox.setVisible(false);
-        testComboBox.setVisible(false);
-        productionLabel.setVisible(false);
-        testLabel.setVisible(false);
     }
 
     /** This method is called from within the constructor to
@@ -91,16 +84,26 @@ public class RailsAdaptersPanel extends SettingsPanel {
 
         developmentLabel = new javax.swing.JLabel();
         developmentComboBox = new javax.swing.JComboBox();
-        productionComboBox = new javax.swing.JComboBox();
-        productionLabel = new javax.swing.JLabel();
-        testComboBox = new javax.swing.JComboBox();
-        testLabel = new javax.swing.JLabel();
+        databaseNameLabel = new javax.swing.JLabel();
+        databaseNameField = new javax.swing.JTextField();
+        userNameLabel = new javax.swing.JLabel();
+        userNameField = new javax.swing.JTextField();
+        passwordLabel = new javax.swing.JLabel();
+        passwordField = new javax.swing.JPasswordField();
 
         developmentLabel.setText(org.openide.util.NbBundle.getMessage(RailsAdaptersPanel.class, "LBL_DatabaseAdapter")); // NOI18N
 
-        productionLabel.setText(org.openide.util.NbBundle.getMessage(RailsAdaptersPanel.class, "LBL_ProductionConnection")); // NOI18N
+        databaseNameLabel.setText(org.openide.util.NbBundle.getMessage(RailsAdaptersPanel.class, "RailsAdaptersPanel.databaseNameLabel.text")); // NOI18N
 
-        testLabel.setText(org.openide.util.NbBundle.getMessage(RailsAdaptersPanel.class, "LBL_TestConnection")); // NOI18N
+        userNameLabel.setText(org.openide.util.NbBundle.getMessage(RailsAdaptersPanel.class, "RailsAdaptersPanel.userNameLabel.text")); // NOI18N
+
+        userNameField.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                userNameFieldActionPerformed(evt);
+            }
+        });
+
+        passwordLabel.setText(org.openide.util.NbBundle.getMessage(RailsAdaptersPanel.class, "RailsAdaptersPanel.passwordLabel.text")); // NOI18N
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
@@ -109,14 +112,16 @@ public class RailsAdaptersPanel extends SettingsPanel {
             .add(layout.createSequentialGroup()
                 .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(productionLabel)
                     .add(developmentLabel)
-                    .add(testLabel))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                    .add(databaseNameLabel)
+                    .add(userNameLabel)
+                    .add(passwordLabel))
+                .add(18, 18, 18)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(testComboBox, 0, 399, Short.MAX_VALUE)
-                    .add(developmentComboBox, 0, 399, Short.MAX_VALUE)
-                    .add(productionComboBox, 0, 399, Short.MAX_VALUE))
+                    .add(passwordField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 356, Short.MAX_VALUE)
+                    .add(userNameField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 356, Short.MAX_VALUE)
+                    .add(databaseNameField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 356, Short.MAX_VALUE)
+                    .add(developmentComboBox, 0, 356, Short.MAX_VALUE))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -126,28 +131,51 @@ public class RailsAdaptersPanel extends SettingsPanel {
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(developmentLabel)
                     .add(developmentComboBox, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .add(18, 18, 18)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(productionLabel)
-                    .add(productionComboBox, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .add(18, 18, 18)
+                    .add(databaseNameLabel)
+                    .add(databaseNameField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 22, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(testLabel)
-                    .add(testComboBox, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(27, Short.MAX_VALUE))
+                    .add(userNameLabel)
+                    .add(userNameField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 21, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(passwordLabel)
+                    .add(passwordField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 22, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .addContainerGap(23, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
+
+private void userNameFieldActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_userNameFieldActionPerformed
+// TODO add your handling code here:
+}//GEN-LAST:event_userNameFieldActionPerformed
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JTextField databaseNameField;
+    private javax.swing.JLabel databaseNameLabel;
     private javax.swing.JComboBox developmentComboBox;
     private javax.swing.JLabel developmentLabel;
-    private javax.swing.JComboBox productionComboBox;
-    private javax.swing.JLabel productionLabel;
-    private javax.swing.JComboBox testComboBox;
-    private javax.swing.JLabel testLabel;
+    private javax.swing.JPasswordField passwordField;
+    private javax.swing.JLabel passwordLabel;
+    private javax.swing.JTextField userNameField;
+    private javax.swing.JLabel userNameLabel;
     // End of variables declaration//GEN-END:variables
     @Override
     void store( WizardDescriptor settings) {
-        settings.putProperty(NewRailsProjectWizardIterator.RAILS_DEVELOPMENT_DB, developmentComboBox.getSelectedItem());
+        Boolean jdbc = (Boolean) settings.getProperty(NewRailsProjectWizardIterator.JDBC_WN);
+        RailsDatabaseConfiguration databaseConfiguration = (RailsDatabaseConfiguration) developmentComboBox.getSelectedItem();
+        if (jdbc != null && jdbc.booleanValue()) {
+            // TODO: try at least to bundle jdbc drives if possible
+        } else {
+            databaseConfiguration = 
+                    new ConfigurableRailsAdapter((RailsDatabaseConfiguration) developmentComboBox.getSelectedItem(),
+                    userNameField.getText(), 
+                    String.valueOf(passwordField.getPassword()), 
+                    databaseNameField.getText());
+        }
+
+        settings.putProperty(NewRailsProjectWizardIterator.RAILS_DEVELOPMENT_DB, databaseConfiguration);
 //        settings.putProperty(NewRailsProjectWizardIterator.RAILS_PRODUCTION_DB, StandardRailsAdapter.get(pr));
 //        settings.putProperty(NewRailsProjectWizardIterator.RAILS_DEVELOPMENT_DB, StandardRailsAdapter.get(devel));
     }

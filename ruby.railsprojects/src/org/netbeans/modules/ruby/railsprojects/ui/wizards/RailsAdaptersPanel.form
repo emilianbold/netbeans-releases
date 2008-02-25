@@ -15,18 +15,20 @@
   <Layout>
     <DimensionLayout dim="0">
       <Group type="103" groupAlignment="0" attributes="0">
-          <Group type="102" alignment="0" attributes="0">
+          <Group type="102" attributes="0">
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
-                  <Component id="productionLabel" alignment="0" min="-2" max="-2" attributes="0"/>
                   <Component id="developmentLabel" alignment="0" min="-2" max="-2" attributes="0"/>
-                  <Component id="testLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                  <Component id="databaseNameLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                  <Component id="userNameLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                  <Component id="passwordLabel" alignment="0" min="-2" max="-2" attributes="0"/>
               </Group>
-              <EmptySpace max="-2" attributes="0"/>
+              <EmptySpace min="-2" pref="18" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
-                  <Component id="testComboBox" alignment="0" pref="399" max="32767" attributes="0"/>
-                  <Component id="developmentComboBox" alignment="0" pref="399" max="32767" attributes="0"/>
-                  <Component id="productionComboBox" alignment="0" pref="399" max="32767" attributes="0"/>
+                  <Component id="passwordField" pref="356" max="32767" attributes="0"/>
+                  <Component id="userNameField" pref="356" max="32767" attributes="0"/>
+                  <Component id="databaseNameField" pref="356" max="32767" attributes="0"/>
+                  <Component id="developmentComboBox" alignment="0" pref="356" max="32767" attributes="0"/>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
           </Group>
@@ -40,17 +42,22 @@
                   <Component id="developmentLabel" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="developmentComboBox" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
-              <EmptySpace type="separate" max="-2" attributes="0"/>
+              <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
-                  <Component id="productionLabel" alignment="3" min="-2" max="-2" attributes="0"/>
-                  <Component id="productionComboBox" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="databaseNameLabel" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="databaseNameField" alignment="3" min="-2" pref="22" max="-2" attributes="0"/>
               </Group>
-              <EmptySpace type="separate" max="-2" attributes="0"/>
+              <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
-                  <Component id="testLabel" alignment="3" min="-2" max="-2" attributes="0"/>
-                  <Component id="testComboBox" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="userNameLabel" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="userNameField" alignment="3" min="-2" pref="21" max="-2" attributes="0"/>
               </Group>
-              <EmptySpace pref="27" max="32767" attributes="0"/>
+              <EmptySpace max="-2" attributes="0"/>
+              <Group type="103" groupAlignment="3" attributes="0">
+                  <Component id="passwordLabel" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="passwordField" alignment="3" min="-2" pref="22" max="-2" attributes="0"/>
+              </Group>
+              <EmptySpace pref="23" max="32767" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>
@@ -65,23 +72,35 @@
     </Component>
     <Component class="javax.swing.JComboBox" name="developmentComboBox">
     </Component>
-    <Component class="javax.swing.JComboBox" name="productionComboBox">
-    </Component>
-    <Component class="javax.swing.JLabel" name="productionLabel">
+    <Component class="javax.swing.JLabel" name="databaseNameLabel">
       <Properties>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/ruby/railsprojects/ui/wizards/Bundle.properties" key="LBL_ProductionConnection" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+          <ResourceString bundle="org/netbeans/modules/ruby/railsprojects/ui/wizards/Bundle.properties" key="RailsAdaptersPanel.databaseNameLabel.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
       </Properties>
     </Component>
-    <Component class="javax.swing.JComboBox" name="testComboBox">
+    <Component class="javax.swing.JTextField" name="databaseNameField">
     </Component>
-    <Component class="javax.swing.JLabel" name="testLabel">
+    <Component class="javax.swing.JLabel" name="userNameLabel">
       <Properties>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/ruby/railsprojects/ui/wizards/Bundle.properties" key="LBL_TestConnection" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+          <ResourceString bundle="org/netbeans/modules/ruby/railsprojects/ui/wizards/Bundle.properties" key="RailsAdaptersPanel.userNameLabel.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
       </Properties>
+    </Component>
+    <Component class="javax.swing.JTextField" name="userNameField">
+      <Events>
+        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="userNameFieldActionPerformed"/>
+      </Events>
+    </Component>
+    <Component class="javax.swing.JLabel" name="passwordLabel">
+      <Properties>
+        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/ruby/railsprojects/ui/wizards/Bundle.properties" key="RailsAdaptersPanel.passwordLabel.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+      </Properties>
+    </Component>
+    <Component class="javax.swing.JPasswordField" name="passwordField">
     </Component>
   </SubComponents>
 </Form>

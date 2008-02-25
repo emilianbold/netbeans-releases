@@ -52,6 +52,7 @@ import org.netbeans.spi.viewmodel.UnknownTypeException;
 import org.netbeans.modules.cnd.debugger.gdb.breakpoints.GdbBreakpoint;
 import org.netbeans.modules.cnd.debugger.gdb.breakpoints.LineBreakpoint;
 import org.netbeans.modules.cnd.debugger.gdb.EditorContextBridge;
+import org.netbeans.modules.cnd.debugger.gdb.breakpoints.AddressBreakpoint;
 
 /**
  * @author   Jan Jancura and Gordon Prieur
@@ -124,6 +125,10 @@ public class BreakpointsNodeModel implements NodeModel {
 			"CTL_Function_Breakpoint", b.getFunctionName())); // NOI18N
 		}
             }
+        } else if (o instanceof AddressBreakpoint) {
+            AddressBreakpoint b = (AddressBreakpoint)o;
+            return bold(b, NbBundle.getMessage(BreakpointsNodeModel.class, "CTL_Address_Breakpoint", // NOI18N
+                    b.getAddress()));
         } else {
             throw new UnknownTypeException(o);
         }
@@ -149,6 +154,10 @@ public class BreakpointsNodeModel implements NodeModel {
                 return NbBundle.getMessage(BreakpointsNodeModel.class, "CTL_Function_Breakpoint", // NOI18N
                         className, b.getFunctionName());
             }
+        } else if (o instanceof AddressBreakpoint) {
+            return NbBundle.getMessage(BreakpointsNodeModel.class, "CTL_Address_Breakpoint", // NOI18N
+                    EditorContextBridge.getFileName((AddressBreakpoint) o),
+                    ((AddressBreakpoint) o).getAddress()); // NOI18N
         } else {
             throw new UnknownTypeException(o);
         }
@@ -159,6 +168,8 @@ public class BreakpointsNodeModel implements NodeModel {
             return LINE_BREAKPOINT;
         } else if (o instanceof FunctionBreakpoint) {
             return BREAKPOINT;
+        } else if (o instanceof AddressBreakpoint) {
+            return LINE_BREAKPOINT;
         } else {
             throw new UnknownTypeException (o);
         }

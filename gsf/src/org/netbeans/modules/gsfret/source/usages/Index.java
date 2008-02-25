@@ -58,8 +58,8 @@ import java.util.Properties;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
-import org.netbeans.fpi.gsf.IndexDocument;
-import org.netbeans.fpi.gsf.Indexer;
+import org.netbeans.modules.gsf.api.IndexDocument;
+import org.netbeans.modules.gsf.api.Indexer;
 import org.netbeans.modules.gsf.Language;
 import org.netbeans.modules.gsf.LanguageRegistry;
 import org.openide.ErrorManager;
@@ -80,7 +80,7 @@ import org.openide.util.Exceptions;
  * @author Tomas Zezula
  */
 // BEGIN TOR MODIFICATIONS
-public abstract class Index extends org.netbeans.fpi.gsf.Index {    
+public abstract class Index extends org.netbeans.modules.gsf.api.Index {    
     protected Language language;
     
     protected Index(Language language) {

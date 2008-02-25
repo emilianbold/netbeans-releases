@@ -40,7 +40,7 @@
  */
 package org.netbeans.modules.ruby;
 
-import org.netbeans.fpi.gsf.ParserResult.AstTreeNode;
+import org.netbeans.modules.gsf.api.ParserResult.AstTreeNode;
 import java.io.IOException;
 import java.io.Reader;
 import java.io.StringReader;
@@ -56,23 +56,23 @@ import org.jruby.lexer.yacc.SyntaxException;
 import org.jruby.parser.DefaultRubyParser;
 import org.jruby.parser.RubyParserConfiguration;
 import org.jruby.parser.RubyParserResult;
-import org.netbeans.fpi.gsf.CompilationInfo;
+import org.netbeans.modules.gsf.api.CompilationInfo;
 import org.netbeans.modules.ruby.elements.Element;
-import org.netbeans.fpi.gsf.ElementHandle;
-import org.netbeans.fpi.gsf.Error;
-import org.netbeans.fpi.gsf.OffsetRange;
-import org.netbeans.fpi.gsf.ParseEvent;
-import org.netbeans.fpi.gsf.ParseListener;
-import org.netbeans.fpi.gsf.Parser;
-import org.netbeans.fpi.gsf.ParserFile;
-import org.netbeans.fpi.gsf.ParserResult;
-import org.netbeans.fpi.gsf.PositionManager;
-import org.netbeans.fpi.gsf.Severity;
-import org.netbeans.fpi.gsf.SourceFileReader;
-import org.netbeans.fpi.gsf.TranslatedSource;
+import org.netbeans.modules.gsf.api.ElementHandle;
+import org.netbeans.modules.gsf.api.Error;
+import org.netbeans.modules.gsf.api.OffsetRange;
+import org.netbeans.modules.gsf.api.ParseEvent;
+import org.netbeans.modules.gsf.api.ParseListener;
+import org.netbeans.modules.gsf.api.Parser;
+import org.netbeans.modules.gsf.api.ParserFile;
+import org.netbeans.modules.gsf.api.ParserResult;
+import org.netbeans.modules.gsf.api.PositionManager;
+import org.netbeans.modules.gsf.api.Severity;
+import org.netbeans.modules.gsf.api.SourceFileReader;
+import org.netbeans.modules.gsf.api.TranslatedSource;
 import org.netbeans.modules.ruby.elements.AstElement;
 import org.netbeans.modules.ruby.elements.RubyElement;
-import org.netbeans.sfpi.gsf.DefaultError;
+import org.netbeans.modules.gsf.spi.DefaultError;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 

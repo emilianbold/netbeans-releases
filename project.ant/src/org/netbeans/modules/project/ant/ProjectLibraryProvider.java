@@ -914,6 +914,9 @@ public class ProjectLibraryProvider implements ArealLibraryProvider<ProjectLibra
             sharedLibFolder = ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction<FileObject>() {
                 public FileObject run() throws IOException {
                     FileObject lf = FileUtil.toFileObject(libBaseFolder);
+                    if (lf == null) {
+                        lf = FileUtil.createFolder(libBaseFolder);
+                    }
                     return lf.createFolder(getUniqueName(lf, lib.getName(), null));
                 }
             });
@@ -1001,6 +1004,7 @@ public class ProjectLibraryProvider implements ArealLibraryProvider<ProjectLibra
      * @return new file name without extension
      */
     private static String getUniqueName(FileObject baseFolder, String nameFileName, String extension) {
+        assert baseFolder != null;
         int suffix = 2;
         String name = nameFileName;  //NOI18N
         while (baseFolder.getFileObject(name + (extension != null ? "." + extension : "")) != null) {

@@ -153,7 +153,7 @@ Contributor(s): Andrei Badea
                 <friend>org.netbeans.modules.java.sourceui</friend>
                 <friend>org.netbeans.modules.ruby</friend>
                 <friend>org.netbeans.modules.gsf</friend>
-                <friend>org.netbeans.fpi.gsf</friend>
+                <friend>org.netbeans.modules.gsf.api</friend>
                 <friend>org.netbeans.modules.cnd.gotodeclaration</friend>
                 <friend>org.netbeans.modules.javascript.editing</friend>
                 <package>org.netbeans.api.jumpto.type</package>

@@ -44,7 +44,7 @@ package org.netbeans.modules.php.editor.completion;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.netbeans.api.gsf.CompletionProposal;
+import org.netbeans.modules.gsf.api.CompletionProposal;
 import org.netbeans.modules.languages.php.lang.Operators;
 import org.netbeans.modules.php.model.SourceElement;
 

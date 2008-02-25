@@ -531,6 +531,28 @@ public class CasaWrapperModel extends CasaModel {
 
         return null;
     }
+    
+    /**
+     * Gets the service engine service unit endpoint reference that references 
+     * the given endpoint.
+     * 
+     * @param endpoint an endpoint
+     * @return  the service endinge service unit endpoint reference referencing 
+     *          the given endpoint; or null if there is no service engine 
+     *          service unit endpoint reference referencing the given endpoint.
+     */
+    public CasaEndpointRef getServiceEngineEndpointRef(final CasaEndpoint endpoint) {
+
+        for (CasaServiceEngineServiceUnit seSU : getServiceEngineServiceUnits()) {
+            for (CasaEndpointRef endpointRef : seSU.getEndpoints()) {
+                if (endpointRef.getEndpoint().get() == endpoint) {
+                    return endpointRef;
+                }
+            }
+        }
+        
+        return null;
+     }
 
     /**
      * Sets the location of an internal/external service engine service unit.

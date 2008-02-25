@@ -40,9 +40,22 @@
 package org.netbeans.modules.j2ee.deployment.impl.sharability;
 
 import java.beans.Customizer;
+import java.io.File;
+import java.io.IOException;
+import java.net.URI;
+import java.net.URL;
+import java.util.Iterator;
+import java.util.List;
+import org.netbeans.api.project.ProjectManager;
 import org.netbeans.spi.project.libraries.LibraryImplementation;
 import org.netbeans.spi.project.libraries.LibraryTypeProvider;
 import org.netbeans.spi.project.libraries.support.LibrariesSupport;
+import org.netbeans.spi.project.support.ant.EditableProperties;
+import org.netbeans.spi.project.support.ant.PropertyUtils;
+import org.openide.ErrorManager;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.URLMapper;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 
@@ -72,6 +85,8 @@ public final class ServerLibraryTypeProvider implements LibraryTypeProvider {
 
     // This is runtime only
     //public static final String VOLUME_APP_CLIENT_CLASSPATH = "appclient";
+
+    private static final String LIB_PREFIX = "libs.";
 
     private static final String[] VOLUME_TYPES = new String[] {
             VOLUME_CLASSPATH,
@@ -117,16 +132,97 @@ public final class ServerLibraryTypeProvider implements LibraryTypeProvider {
         return VOLUME_TYPES.clone();
     }
 
-    public void libraryCreated(LibraryImplementation libraryImpl) {
-        // TODO anything ?
+    // XXX copied from j2se
+    public void libraryCreated(final LibraryImplementation libraryImpl) {
+        assert libraryImpl != null;
+        ProjectManager.mutex().postWriteRequest(
+                new Runnable() {
+                    public void run () {
+                        try {
+                            EditableProperties props = PropertyUtils.getGlobalProperties();
+                            boolean save = addLibraryIntoBuild(libraryImpl, props);
+                            if (save) {
+                                PropertyUtils.putGlobalProperties(props);
+                            }
+                        } catch (IOException ioe) {
+                            ErrorManager.getDefault().notify(ioe);
+                        }
+                    }
+                }
+        );
     }
 
-    public void libraryDeleted(LibraryImplementation libraryImpl) {
-        // TODO anything ?
+    // XXX copied from j2se
+    public void libraryDeleted(final LibraryImplementation libraryImpl) {
+        assert libraryImpl != null;
+        ProjectManager.mutex().postWriteRequest(new Runnable() {
+                public void run() {
+                    try {
+                        EditableProperties props = PropertyUtils.getGlobalProperties();
+                        for (int i = 0; i < VOLUME_TYPES.length; i++) {
+                            String property = LIB_PREFIX + libraryImpl.getName() + '.' + VOLUME_TYPES[i];  //NOI18N
+                            props.remove(property);
+                        }
+                        PropertyUtils.putGlobalProperties(props);
+                    } catch (IOException ioe) {
+                        ErrorManager.getDefault().notify(ioe);
+                    }
+                }
+            });
     }
 
     public Lookup getLookup() {
         return Lookup.EMPTY;
     }
 
+    // XXX copied from j2se
+    private static boolean addLibraryIntoBuild(LibraryImplementation impl, EditableProperties props) {
+        boolean modified = false;
+        for (int i = 0; i < VOLUME_TYPES.length; i++) {
+            String propName = LIB_PREFIX + impl.getName() + '.' + VOLUME_TYPES[i];     //NOI18N
+            List roots = impl.getContent(VOLUME_TYPES[i]);
+            if (roots == null) {
+                //Non valid library, but try to recover
+                continue;
+            }
+            StringBuffer propValue = new StringBuffer();
+            boolean first = true;
+            for (Iterator rootsIt = roots.iterator(); rootsIt.hasNext();) {
+                URL url = (URL) rootsIt.next();
+                if ("jar".equals(url.getProtocol())) {
+                    url = FileUtil.getArchiveFile(url);
+                    // XXX check whether this is really the root
+                }
+                File f = null;
+                FileObject fo = URLMapper.findFileObject(url);
+                if (fo != null) {
+                    f = FileUtil.toFile(fo);
+                } else if ("file".equals(url.getProtocol())) {    //NOI18N
+                    //If the file does not exist (eg library from cleaned project)
+                    // and it is a file protocol URL, add it.
+                    URI uri = URI.create(url.toExternalForm());
+                    if (uri != null) {
+                        f = new File(uri);
+                    }
+                }
+                if (f != null) {
+                    if (!first) {
+                        propValue.append(File.pathSeparatorChar);
+                    }
+                    first = false;
+                    f = FileUtil.normalizeFile(f);
+                    propValue.append(f.getAbsolutePath());
+                } else {
+                    ErrorManager.getDefault().log("ServerLibraryTypeProvider: Can not resolve URL: " + url); //NOI18N
+                }
+            }
+            String oldValue = props.getProperty(propName);
+            String newValue = propValue.toString();
+            if (!newValue.equals(oldValue)) {
+                    props.setProperty(propName, newValue);
+                    modified = true;
+            }
+        }
+        return modified;
+    }
 }

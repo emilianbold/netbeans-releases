@@ -42,11 +42,10 @@ package org.netbeans.modules.spring.beans.refactoring.plugins;
 
 import com.sun.source.tree.Tree.Kind;
 import java.io.IOException;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.lang.model.element.TypeElement;
-import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.CompilationController;
+import org.netbeans.api.java.source.ElementUtilities;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.TreePathHandle;
@@ -76,18 +75,13 @@ public class SpringFindUsagesPlugin implements RefactoringPlugin {
     }
    
     public Problem prepare(RefactoringElementsBag refactoringElementsBag) {
-        Object element = springBeansWhereUsed.getRefactoringSource().lookup(TreePathHandle.class);
-
-        if (element instanceof TreePathHandle) {
-            treePathHandle = (TreePathHandle) element;
-            if (treePathHandle != null && treePathHandle.getKind() == Kind.CLASS) {
-                SpringScope scope = SpringScope.getSpringScope(treePathHandle.getFileObject());
-                if (scope != null) {
-                    fillElementsBag(springBeansWhereUsed, treePathHandle.getFileObject(), scope, refactoringElementsBag);                 
-                }
+        treePathHandle = springBeansWhereUsed.getRefactoringSource().lookup(TreePathHandle.class);
+        if (treePathHandle != null && treePathHandle.getKind() == Kind.CLASS) {
+            SpringScope scope = SpringScope.getSpringScope(treePathHandle.getFileObject());
+            if (scope != null) {
+                fillElementsBag(springBeansWhereUsed, treePathHandle.getFileObject(), scope, refactoringElementsBag);
             }
         }
-
         return null;
     }
 
@@ -108,32 +102,22 @@ public class SpringFindUsagesPlugin implements RefactoringPlugin {
     }
     
     private void fillElementsBag(final AbstractRefactoring refactoring, final FileObject fileObject, final SpringScope scope, final RefactoringElementsBag refactoringElementsBag) {
-        if (fileObject != null) {
-            ClasspathInfo cpInfo = refactoring.getContext().lookup(ClasspathInfo.class);
-            JavaSource source = JavaSource.create(cpInfo, new FileObject[]{fileObject});
-            
-            try {
-                source.runUserActionTask(new Task<CompilationController>() {
-
-                    public void run(CompilationController compilationController) throws Exception {
-                        compilationController.toPhase(JavaSource.Phase.RESOLVED);
-                        try {
-                            TypeElement type = (TypeElement) treePathHandle.resolveElement(compilationController);
-                            if (type != null) {
-                                String fqnc = type.getQualifiedName().toString();
-                                for (Occurrences.Occurrence item : Occurrences.getJavaClassOccurrences(fqnc, scope)) {
-                                    refactoringElementsBag.add(springBeansWhereUsed, SpringRefactoringElement.create(item));
-                                }
-                            }
-                        } catch (IOException ex) {
-                            Exceptions.printStackTrace(ex);
+        JavaSource source = JavaSource.forFileObject(fileObject);
+        try {
+            source.runUserActionTask(new Task<CompilationController>() {
+                public void run(CompilationController compilationController) throws Exception {
+                    compilationController.toPhase(JavaSource.Phase.RESOLVED);
+                    TypeElement type = (TypeElement) treePathHandle.resolveElement(compilationController);
+                    if (type != null) {
+                        String className = ElementUtilities.getBinaryName(type);
+                        for (Occurrences.Occurrence item : Occurrences.getJavaClassOccurrences(className, scope)) {
+                            refactoringElementsBag.add(refactoring, SpringRefactoringElement.create(item));
                         }
-                        refactoring.getContext().add(compilationController);
-                    }
-                }, false);
-            } catch (IOException exception) {
-                LOGGER.log(Level.WARNING, "Exception in Spring find usages plugin", exception); //NOI18N
-            }
+                    }                  
+                }
+            }, false);
+        } catch (IOException exception) {
+            Exceptions.printStackTrace(exception);
         }
-    }         
+    }
 }

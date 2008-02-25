@@ -80,7 +80,6 @@ public class JdbcConnectionsPanel extends SettingsPanel {
         developmentComboBox = new javax.swing.JComboBox();
         productionComboBox = new javax.swing.JComboBox();
         testComboBox = new javax.swing.JComboBox();
-        useJdbc = new javax.swing.JCheckBox();
 
         developmentLabel.setText(org.openide.util.NbBundle.getMessage(JdbcConnectionsPanel.class, "LBL_DevelopmentConnection")); // NOI18N
 
@@ -88,36 +87,30 @@ public class JdbcConnectionsPanel extends SettingsPanel {
 
         testLabel.setText(org.openide.util.NbBundle.getMessage(JdbcConnectionsPanel.class, "LBL_TestConnection")); // NOI18N
 
-        useJdbc.setText(org.openide.util.NbBundle.getMessage(JdbcConnectionsPanel.class, "UseJdbc")); // NOI18N
-
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
+                .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(useJdbc)
-                    .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
-                        .addContainerGap()
-                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(developmentLabel)
-                            .add(testLabel)
-                            .add(productionLabel))
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(productionComboBox, 0, 384, Short.MAX_VALUE)
-                            .add(testComboBox, 0, 384, Short.MAX_VALUE)
-                            .add(developmentComboBox, 0, 384, Short.MAX_VALUE))))
+                    .add(testLabel)
+                    .add(productionLabel)
+                    .add(developmentLabel))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(productionComboBox, 0, 384, Short.MAX_VALUE)
+                    .add(testComboBox, 0, 384, Short.MAX_VALUE)
+                    .add(developmentComboBox, 0, 384, Short.MAX_VALUE))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
-                .add(useJdbc)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(developmentLabel)
-                    .add(developmentComboBox, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                    .add(developmentComboBox, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(developmentLabel))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(testLabel)
@@ -126,7 +119,7 @@ public class JdbcConnectionsPanel extends SettingsPanel {
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(productionLabel)
                     .add(productionComboBox, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(66, Short.MAX_VALUE))
+                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
 
@@ -138,7 +131,6 @@ public class JdbcConnectionsPanel extends SettingsPanel {
     private javax.swing.JLabel productionLabel;
     private javax.swing.JComboBox testComboBox;
     private javax.swing.JLabel testLabel;
-    private javax.swing.JCheckBox useJdbc;
     // End of variables declaration//GEN-END:variables
 
     @Override
@@ -147,7 +139,8 @@ public class JdbcConnectionsPanel extends SettingsPanel {
         DatabaseConnection production = (DatabaseConnection) productionComboBox.getSelectedItem();
         DatabaseConnection test = (DatabaseConnection) testComboBox.getSelectedItem();
         RailsDatabaseConfiguration databaseConfiguration = null;
-        if (useJdbc.isSelected()) {
+        Boolean jdbc = (Boolean) settings.getProperty(NewRailsProjectWizardIterator.JDBC_WN);
+        if (jdbc != null && jdbc.booleanValue()) {
             databaseConfiguration = new RailsJdbcConnection(devel, test, production);
         } else {
             databaseConfiguration = new RailsJdbcAsAdapterConnection(devel, test, production);
@@ -157,13 +150,6 @@ public class JdbcConnectionsPanel extends SettingsPanel {
 
     @Override
     void read(WizardDescriptor settings) {
-        RubyPlatform platform = 
-                (RubyPlatform) settings.getProperty(NewRailsProjectWizardIterator.PLATFORM);
-        boolean jruby = platform.isJRuby();
-        useJdbc.setEnabled(jruby);
-        if (!jruby) {
-            useJdbc.setSelected(false);
-        }
     }
 
     @Override

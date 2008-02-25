@@ -78,6 +78,7 @@ public class RubyPlatformCustomizer extends JPanel {
     public static void showCustomizer() {
         RubyPlatformCustomizer customizer = new RubyPlatformCustomizer();
         JButton closeButton = new JButton();
+        closeButton.getAccessibleContext().setAccessibleDescription(getMessage("RubyPlatformCustomizer.closeButton.AccessibleContext.accessibleName"));
         Mnemonics.setLocalizedText(closeButton,
                 NbBundle.getMessage(RubyPlatformCustomizer.class, "CTL_Close"));
         DialogDescriptor descriptor = new DialogDescriptor(
@@ -96,6 +97,8 @@ public class RubyPlatformCustomizer extends JPanel {
 
     public RubyPlatformCustomizer() {
         initComponents();
+        getAccessibleContext().setAccessibleName(getMessage("RubyPlatformCustomizer.AccessibleContext.accessibleName"));
+        getAccessibleContext().setAccessibleDescription(getMessage("RubyPlatformCustomizer.AccessibleContext.accessibleDescription"));
         refreshPlatformList();
         gemPathList.addListSelectionListener(new ListSelectionListener() {
             public void valueChanged(ListSelectionEvent e) {
@@ -280,6 +283,8 @@ public class RubyPlatformCustomizer extends JPanel {
 
         platformsList.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
         platformsListSP.setViewportView(platformsList);
+        platformsList.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(RubyPlatformCustomizer.class, "RubyPlatformCustomizer.platformsList.AccessibleContext.accessibleName")); // NOI18N
+        platformsList.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(RubyPlatformCustomizer.class, "RubyPlatformCustomizer.platformsList.AccessibleContext.accessibleDescription")); // NOI18N
 
         org.openide.awt.Mnemonics.setLocalizedText(addButton, org.openide.util.NbBundle.getMessage(RubyPlatformCustomizer.class, "RubyPlatformCustomizer.addButton.text")); // NOI18N
         addButton.addActionListener(new java.awt.event.ActionListener() {
@@ -319,6 +324,7 @@ public class RubyPlatformCustomizer extends JPanel {
             }
         });
 
+        gemPath.setLabelFor(gemPathList);
         org.openide.awt.Mnemonics.setLocalizedText(gemPath, org.openide.util.NbBundle.getMessage(RubyPlatformCustomizer.class, "RubyPlatformCustomizer.gemPath.text")); // NOI18N
 
         plfInterpreter.setLabelFor(plfInterpreterValue);
@@ -332,6 +338,8 @@ public class RubyPlatformCustomizer extends JPanel {
         plfNameValue.setEditable(false);
 
         gemPathSP.setViewportView(gemPathList);
+        gemPathList.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(RubyPlatformCustomizer.class, "RubyPlatformCustomizer.gemPathList.AccessibleContext.accessibleName")); // NOI18N
+        gemPathList.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(RubyPlatformCustomizer.class, "RubyPlatformCustomizer.gemPathList.AccessibleContext.accessibleDescription")); // NOI18N
 
         org.openide.awt.Mnemonics.setLocalizedText(addGemPath, org.openide.util.NbBundle.getMessage(RubyPlatformCustomizer.class, "RubyPlatformCustomizer.addGemPath.text")); // NOI18N
         addGemPath.addActionListener(new java.awt.event.ActionListener() {
@@ -351,40 +359,27 @@ public class RubyPlatformCustomizer extends JPanel {
         configPanel.setLayout(configPanelLayout);
         configPanelLayout.setHorizontalGroup(
             configPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(org.jdesktop.layout.GroupLayout.TRAILING, configPanelLayout.createSequentialGroup()
-                .add(configPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
+            .add(configPanelLayout.createSequentialGroup()
+                .add(configPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(plfInterpreter)
+                    .add(plfName)
+                    .add(gemHome)
+                    .add(gemPath)
+                    .add(gemTool))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(configPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(configPanelLayout.createSequentialGroup()
                         .add(configPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(plfInterpreter)
-                            .add(plfName))
+                            .add(gemHomeValue, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 416, Short.MAX_VALUE)
+                            .add(gemPathSP, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 416, Short.MAX_VALUE))
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(configPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(configPanelLayout.createSequentialGroup()
-                                .add(plfNameValue, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 758, Short.MAX_VALUE)
-                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED))
-                            .add(plfInterpreterValue, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 770, Short.MAX_VALUE)))
-                    .add(configPanelLayout.createSequentialGroup()
-                        .add(configPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(gemHome)
-                            .add(gemPath)
-                            .add(gemTool))
-                        .add(configPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(org.jdesktop.layout.GroupLayout.TRAILING, configPanelLayout.createSequentialGroup()
-                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                                .add(gemHomeValue, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 684, Short.MAX_VALUE)
-                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                                .add(browseGemHome))
-                            .add(configPanelLayout.createSequentialGroup()
-                                .add(12, 12, 12)
-                                .add(configPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                                    .add(org.jdesktop.layout.GroupLayout.TRAILING, configPanelLayout.createSequentialGroup()
-                                        .add(gemPathSP, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 684, Short.MAX_VALUE)
-                                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                                        .add(configPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
-                                            .add(addGemPath)
-                                            .add(removeGemPath)))
-                                    .add(gemToolValue, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 770, Short.MAX_VALUE))))))
-                .addContainerGap())
+                        .add(configPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
+                            .add(removeGemPath)
+                            .add(addGemPath)
+                            .add(browseGemHome)))
+                    .add(plfInterpreterValue, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 511, Short.MAX_VALUE)
+                    .add(plfNameValue, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 511, Short.MAX_VALUE)
+                    .add(gemToolValue, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 511, Short.MAX_VALUE)))
         );
 
         configPanelLayout.linkSize(new java.awt.Component[] {gemHome, gemTool, plfInterpreter, plfName}, org.jdesktop.layout.GroupLayout.HORIZONTAL);
@@ -404,21 +399,29 @@ public class RubyPlatformCustomizer extends JPanel {
                 .add(11, 11, 11)
                 .add(configPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(gemHome)
-                    .add(browseGemHome)
-                    .add(gemHomeValue, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                    .add(gemHomeValue, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(browseGemHome))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(configPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(gemPath)
+                    .add(gemPathSP, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 68, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                     .add(configPanelLayout.createSequentialGroup()
                         .add(addGemPath)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(removeGemPath))
-                    .add(gemPathSP, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 68, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                        .add(removeGemPath)))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(configPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(gemTool)
                     .add(gemToolValue, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
         );
+
+        gemToolValue.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(RubyPlatformCustomizer.class, "RubyPlatformCustomizer.gemToolValue.AccessibleContext.accessibleDescription")); // NOI18N
+        gemHomeValue.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(RubyPlatformCustomizer.class, "RubyPlatformCustomizer.gemHomeValue.AccessibleContext.accessibleDescription")); // NOI18N
+        browseGemHome.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(RubyPlatformCustomizer.class, "RubyPlatformCustomizer.browseGemHome.AccessibleContext.accessibleDescription")); // NOI18N
+        plfInterpreterValue.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(RubyPlatformCustomizer.class, "RubyPlatformCustomizer.plfInterpreterValue.AccessibleContext.accessibleDescription")); // NOI18N
+        plfNameValue.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(RubyPlatformCustomizer.class, "RubyPlatformCustomizer.plfNameValue.AccessibleContext.accessibleDescription")); // NOI18N
+        addGemPath.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(RubyPlatformCustomizer.class, "RubyPlatformCustomizer.addGemPath.AccessibleContext.accessibleDescription")); // NOI18N
+        removeGemPath.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(RubyPlatformCustomizer.class, "RubyPlatformCustomizer.removeGemPath.AccessibleContext.accessibleDescription")); // NOI18N
 
         org.openide.awt.Mnemonics.setLocalizedText(autoDetectLabel, org.openide.util.NbBundle.getMessage(RubyPlatformCustomizer.class, "RubyPlatformCustomizer.autoDetectLabel.text")); // NOI18N
         progressPanel.add(autoDetectLabel);
@@ -447,7 +450,7 @@ public class RubyPlatformCustomizer extends JPanel {
             .add(debuggerPanelLayout.createSequentialGroup()
                 .add(rubyDebuggerLabel)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(upperSep, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 475, Short.MAX_VALUE))
+                .add(upperSep, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 510, Short.MAX_VALUE))
             .add(debuggerPanelLayout.createSequentialGroup()
                 .add(engineLabel)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
@@ -470,6 +473,8 @@ public class RubyPlatformCustomizer extends JPanel {
                 .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
+        installFastDebugger.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(RubyPlatformCustomizer.class, "RubyPlatformCustomizer.installFastDebugger.AccessibleContext.accessibleDescription")); // NOI18N
+
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -482,14 +487,14 @@ public class RubyPlatformCustomizer extends JPanel {
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                             .add(debuggerPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .add(configPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 583, Short.MAX_VALUE)))
+                            .add(configPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
                     .add(layout.createSequentialGroup()
                         .add(addButton)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(removeButton)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(autoDetectButton)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 116, Short.MAX_VALUE)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 151, Short.MAX_VALUE)
                         .add(progressPanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
                 .addContainerGap())
         );
@@ -499,7 +504,7 @@ public class RubyPlatformCustomizer extends JPanel {
                 .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(layout.createSequentialGroup()
-                        .add(platformsListSP, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 346, Short.MAX_VALUE)
+                        .add(platformsListSP, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 314, Short.MAX_VALUE)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED))
                     .add(layout.createSequentialGroup()
                         .add(configPanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
@@ -517,6 +522,9 @@ public class RubyPlatformCustomizer extends JPanel {
 
         layout.linkSize(new java.awt.Component[] {addButton, autoDetectButton, progressPanel, removeButton}, org.jdesktop.layout.GroupLayout.VERTICAL);
 
+        addButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(RubyPlatformCustomizer.class, "RubyPlatformCustomizer.addButton.AccessibleContext.accessibleDescription")); // NOI18N
+        removeButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(RubyPlatformCustomizer.class, "RubyPlatformCustomizer.removeButton.AccessibleContext.accessibleDescription")); // NOI18N
+        autoDetectButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(RubyPlatformCustomizer.class, "RubyPlatformCustomizer.autoDetectButton.AccessibleContext.accessibleDescription")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
 
     private PlatformComponentFactory.RubyPlatformListModel getPlafListModel() {

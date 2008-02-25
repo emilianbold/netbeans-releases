@@ -144,6 +144,11 @@ public class SaasServicesModel {
                     }
                     loadSaasServiceFile(fo, false);
                 }
+                SaasGroup g = rootGroup.getChildGroup(groupFolder.getName());
+                if (g != null) {
+                    g.setIcon16Path((String)groupFolder.getAttribute("icon16"));
+                    g.setIcon32Path((String)groupFolder.getAttribute("icon32"));
+                }
             }
         }
     }

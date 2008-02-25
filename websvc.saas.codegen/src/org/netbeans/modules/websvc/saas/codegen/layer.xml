@@ -3,18 +3,19 @@
 <filesystem>
     <folder name="Templates">
         <folder name="SaaSServices">
+            <attr name="position" intvalue="3000"/>
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.websvc.saas.codegen.Bundle"/>
             <file name="RestConnection.java" url="/org/netbeans/modules/websvc/saas/codegen/java/resources/RestConnection.template">
-                <attr name="position" intvalue="5010"/>
+                <attr name="position" intvalue="10"/>
             </file>
             <file name="GenericResource.java" url="/org/netbeans/modules/websvc/saas/codegen/java/resources/GenericResource.template">
-                <attr name="position" intvalue="5020"/>
+                <attr name="position" intvalue="20"/>
             </file>
             <file name="WrapperResource.java" url="/org/netbeans/modules/websvc/saas/codegen/java/resources/WrapperResource.template">
-                <attr name="position" intvalue="5030"/>
+                <attr name="position" intvalue="30"/>
             </file>
             <file name="RefConverter.java" url="/org/netbeans/modules/websvc/saas/codegen/java/resources/RefConverter.template">
-                <attr name="position" intvalue="5040"/>
+                <attr name="position" intvalue="40"/>
             </file>
         </folder>
     </folder>

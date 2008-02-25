@@ -43,10 +43,10 @@ package org.netbeans.modules.ruby;
 import org.jruby.ast.Node;
 import org.jruby.ast.RootNode;
 import org.jruby.parser.RubyParserResult;
-import org.netbeans.fpi.gsf.OffsetRange;
-import org.netbeans.fpi.gsf.ParserFile;
-import org.netbeans.fpi.gsf.ParserResult;
-import org.netbeans.fpi.gsf.annotations.NonNull;
+import org.netbeans.modules.gsf.api.OffsetRange;
+import org.netbeans.modules.gsf.api.ParserFile;
+import org.netbeans.modules.gsf.api.ParserResult;
+import org.netbeans.modules.gsf.api.annotations.NonNull;
 
 
 /**

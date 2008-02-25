@@ -49,7 +49,6 @@ import java.beans.PropertyChangeSupport;
 import java.io.IOException;
 import java.lang.ref.WeakReference;
 import java.util.Arrays;
-import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.logging.Level;
@@ -79,7 +78,9 @@ import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.modules.j2ee.common.project.classpath.ClassPathExtender;
 import org.netbeans.modules.j2ee.common.project.classpath.ClassPathModifier;
+import org.netbeans.modules.j2ee.common.project.classpath.ClassPathSupport;
 import org.netbeans.modules.j2ee.common.project.classpath.LibrariesLocationUpdater;
+import org.netbeans.modules.j2ee.common.project.ui.ClassPathUiSupport;
 import org.netbeans.modules.j2ee.common.project.ui.ProjectProperties;
 import org.netbeans.modules.j2ee.common.ui.BrokenServerSupport;
 import org.netbeans.modules.j2ee.spi.ejbjar.EjbJarFactory;
@@ -113,7 +114,6 @@ import org.openide.util.Lookup;
 import org.openide.util.Mutex;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
-import org.openide.util.WeakListeners;
 import org.openide.util.lookup.Lookups;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
@@ -189,6 +189,7 @@ public class EjbJarProject implements Project, AntProjectListener, FileChangeLis
     private AntBuildExtender buildExtender;
     private final ClassPathProviderImpl cpProvider;
     private LibrariesLocationUpdater librariesLocationUpdater;
+    private ClassPathUiSupport.Callback classPathUiSupportCallback;
     
     // TODO: AB: replace the code in EjbJarProjectProperties.setNewServerInstanceValue with this 
     /*private String propJ2eeServerInstance;
@@ -268,7 +269,7 @@ public class EjbJarProject implements Project, AntProjectListener, FileChangeLis
         apiWebServicesClientSupport = WebServicesClientSupportFactory.createWebServicesClientSupport(ejbJarWebServicesClientSupport);
         apiJAXWSClientSupport = JAXWSClientSupportFactory.createJAXWSClientSupport(jaxWsClientSupport);
         classPathModifier = new ClassPathModifier(this, this.updateHelper, eval, refHelper,
-            new ClassPathSupportCallbackImpl(helper), createClassPathModifierCallback());
+            new ClassPathSupportCallbackImpl(helper), createClassPathModifierCallback(), getClassPathUiSupportCallback());
         classPathExtender = new ClassPathExtender(classPathModifier, ProjectProperties.JAVAC_CLASSPATH, ClassPathSupportCallbackImpl.ELEMENT_INCLUDED_LIBRARIES);
         librariesLocationUpdater = new LibrariesLocationUpdater(this, updateHelper, eval, classPathModifier.getClassPathSupport(),
                 ProjectProperties.JAVAC_CLASSPATH, ClassPathSupportCallbackImpl.ELEMENT_INCLUDED_LIBRARIES, 
@@ -307,6 +308,18 @@ public class EjbJarProject implements Project, AntProjectListener, FileChangeLis
                 return null;
             }
         };        
+    }
+
+    public synchronized ClassPathUiSupport.Callback getClassPathUiSupportCallback() {
+        if (classPathUiSupportCallback == null) {
+            classPathUiSupportCallback = new ClassPathUiSupport.Callback() {
+                public void initItem(ClassPathSupport.Item item) {
+                    item.setAdditionalProperty(ClassPathSupportCallbackImpl.INCLUDE_IN_DEPLOYMENT, "true");
+                }
+            };
+            
+        }
+        return classPathUiSupportCallback;
     }
 
     /**
@@ -647,8 +660,13 @@ public class EjbJarProject implements Project, AntProjectListener, FileChangeLis
                 if (evt.getPropertyName().equals(J2eePlatform.PROP_CLASSPATH)) {
                     ProjectManager.mutex().writeAccess(new Runnable() {
                         public void run() {
-                            EditableProperties ep = helper.getProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH);
-                            if (!Boolean.parseBoolean(ep.getProperty(EjbJarProjectProperties.J2EE_PLATFORM_SHARED))) {
+                            EditableProperties ep = helper.getProperties(
+                                    AntProjectHelper.PRIVATE_PROPERTIES_PATH);
+                            EditableProperties projectProps = helper.getProperties(
+                                    AntProjectHelper.PROJECT_PROPERTIES_PATH);
+
+                            if (!ProjectProperties.isUsingServerLibrary(projectProps,
+                                    EjbJarProjectProperties.J2EE_PLATFORM_CLASSPATH)) {
                                 String classpath = Utils.toClasspathString(platform.getClasspathEntries());
                                 ep.setProperty(EjbJarProjectProperties.J2EE_PLATFORM_CLASSPATH, classpath);
                             }

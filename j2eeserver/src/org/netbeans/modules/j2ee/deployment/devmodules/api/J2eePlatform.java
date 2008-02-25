@@ -81,6 +81,8 @@ import org.openide.util.Utilities;
 public final class J2eePlatform {
 
     /**
+     * Type of the library created by {@link #createLibrary(File, String)}.
+     * 
      * @since 1.40
      */
     public static final String LIBRARY_TYPE = ServerLibraryTypeProvider.LIBRARY_TYPE;
@@ -471,11 +473,14 @@ public final class J2eePlatform {
     }
 
     /**
+     * Creates sharable Java library containing all libraries and sources
+     * provided by this platform. All files are copied to shared location and
+     * library is created.
      *
-     * @param location
-     * @param libraryName
-     * @return
-     * @throws java.io.IOException
+     * @param location sharable libraries location
+     * @param libraryName name of the library
+     * @return created library
+     * @throws java.io.IOException if the library can't be created for some reason
      * @since 1.40
      */
     public Library createLibrary(File location, String libraryName) throws IOException {

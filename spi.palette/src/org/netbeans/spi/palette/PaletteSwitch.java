@@ -48,10 +48,11 @@ import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.mimelookup.MimePath;
-import org.netbeans.modules.palette.ui.PalettePanel;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataShadow;
@@ -81,7 +82,7 @@ final class PaletteSwitch implements Runnable, LookupListener {
     private PropertyChangeSupport propertySupport;
     
     private PaletteController currentPalette;
-    private boolean isGroupOpen = false;
+//    private boolean isGroupOpen = false;
     private Lookup.Result lookupRes;
     
     /** Creates a new instance of PaletteSwitcher */
@@ -142,7 +143,7 @@ final class PaletteSwitch implements Runnable, LookupListener {
 
         propertySupport.firePropertyChange( PROP_PALETTE_CONTENTS, oldPalette, currentPalette );
     }
-    
+
     private PaletteController findPalette() {
         TopComponent.Registry registry = TopComponent.getRegistry();
         
@@ -241,19 +242,21 @@ final class PaletteSwitch implements Runnable, LookupListener {
             return;
         
         WindowManager wm = WindowManager.getDefault();
-        final TopComponentGroup group = wm.findTopComponentGroup( "commonpalette" ); // NOI18N
-        if( null == group )
-            return; // group not found (should not happen)
+        TopComponent palette = wm.findTopComponent("CommonPalette"); // NOI18N
+        if( null == palette ) {
+            Logger.getLogger( getClass().getName() ).log( Level.INFO, "Cannot find CommonPalette component." ); // NOI18N
+                
+            //for unit-testing
+            palette = PaletteTopComponent.getDefault();
+        }
         
-        if( null == prevPalette && null != newPalette ) {
-            group.open();
-            isGroupOpen = true;
-        } else if( ((null != prevPalette && null == newPalette) 
-            || (null == prevPalette && null == newPalette))
-            && (isGroupOpen || isGroupOpenHack( group )) ) {
-            PalettePanel.getDefault().setContent( null, null, null );
-            group.close();
-            isGroupOpen = false;
+        if( PaletteVisibility.isVisible(newPalette) || PaletteVisibility.isVisible(null) ) {
+            if( !palette.isOpened() )
+                palette.open();
+            PaletteVisibility.setVisible(newPalette, true);
+        } else {
+            if( palette.isOpened() )
+                palette.close();
         }
     }
     

@@ -35,18 +35,18 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import javax.swing.text.Document;
-import org.netbeans.fpi.gsf.CompilationInfo;
-import org.netbeans.fpi.gsf.Error;
-import org.netbeans.fpi.gsf.Index;
-import org.netbeans.fpi.gsf.ParseEvent;
-import org.netbeans.fpi.gsf.ParseListener;
-import org.netbeans.fpi.gsf.ParserFile;
-import org.netbeans.fpi.gsf.ParserResult;
-import org.netbeans.fpi.gsf.TranslatedSource;
+import org.netbeans.modules.gsf.api.CompilationInfo;
+import org.netbeans.modules.gsf.api.Error;
+import org.netbeans.modules.gsf.api.Index;
+import org.netbeans.modules.gsf.api.ParseEvent;
+import org.netbeans.modules.gsf.api.ParseListener;
+import org.netbeans.modules.gsf.api.ParserFile;
+import org.netbeans.modules.gsf.api.ParserResult;
+import org.netbeans.modules.gsf.api.TranslatedSource;
 import org.netbeans.napi.gsfret.source.ClasspathInfo;
 import org.netbeans.napi.gsfret.source.Source;
 import org.netbeans.editor.BaseDocument;
-import org.netbeans.sfpi.gsf.DefaultParserFile;
+import org.netbeans.modules.gsf.spi.DefaultParserFile;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
 
@@ -102,11 +102,6 @@ class TestCompilationInfo extends CompilationInfo {
     
     private Map<String,ParserResult> embeddedResults = new HashMap<String,ParserResult>();
     
-    public void addEmbeddingResult(String mimeType, ParserResult result) {
-        embeddedResults.put(mimeType, result);
-        result.setInfo(this);
-    }
-    
     @Override
     public Collection<? extends ParserResult> getEmbeddedResults(String mimeType) {
         ParserResult result = getEmbeddedResult(mimeType, 0);
@@ -155,6 +150,7 @@ TranslatedSource translatedSource = null; // TODO
                 parserResult.addError(error);
             }
             embeddedResults.put(JsMimeResolver.JAVASCRIPT_MIME_TYPE, parserResult);
+            parserResult.setInfo(this);
         }
         
         return embeddedResults.get(embeddedMimeType);

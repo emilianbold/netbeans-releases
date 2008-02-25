@@ -92,13 +92,9 @@ class OutlineManagerListener implements PropertyChangeListener {
                 // XXX #126818 The node selection might not have the context or be empty,
                 // try to get the contexts from the first child under root (which is the page bean).
                 Node[] nodes = outlinePanel.getExplorerManager().getRootContext().getChildren().getNodes();
-                Node firstNode;
                 if (nodes != null && nodes.length > 0) {
-                    firstNode = nodes[0];
-                } else {
-                    firstNode = null;
+                    contexts = getDesignContextsForNodes(new Node[] {nodes[0]});
                 }
-                contexts = getDesignContextsForNodes(new Node[] {firstNode});
             }
 
             if (contexts.isEmpty()) {
@@ -164,6 +160,10 @@ class OutlineManagerListener implements PropertyChangeListener {
 
         Set<DesignContext> contexts = new HashSet<DesignContext>();
         for (Node node : nodes) {
+            if (node == null) {
+                continue;
+            }
+            
             DesignBean designBean = (DesignBean)node.getLookup().lookup(DesignBean.class);
 
             if (designBean == null) {

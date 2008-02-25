@@ -78,6 +78,7 @@ import org.netbeans.modules.compapp.casaeditor.graph.actions.CasaPaletteAcceptPr
 import org.netbeans.modules.compapp.casaeditor.graph.actions.CasaRemoveAction;
 import org.netbeans.modules.compapp.casaeditor.graph.actions.CasaPopupMenuAction;
 import org.netbeans.modules.compapp.casaeditor.graph.actions.CasaPopupMenuProvider;
+import org.netbeans.modules.compapp.casaeditor.graph.actions.DoubleClickToOpenAction;
 import org.netbeans.modules.compapp.casaeditor.graph.actions.MouseWheelScrollAction;
 import org.netbeans.modules.compapp.casaeditor.graph.actions.RegionResizeAction;
 import org.netbeans.modules.compapp.casaeditor.graph.layout.CasaCollisionCollector;
@@ -88,6 +89,7 @@ import org.netbeans.modules.compapp.casaeditor.graph.layout.LayoutEngines;
 import org.netbeans.modules.compapp.casaeditor.model.casa.CasaComponent;
 import org.netbeans.modules.compapp.casaeditor.model.casa.CasaConnection;
 import org.netbeans.modules.compapp.casaeditor.model.casa.CasaConsumes;
+import org.netbeans.modules.compapp.casaeditor.model.casa.CasaEndpoint;
 import org.netbeans.modules.compapp.casaeditor.model.casa.CasaServiceEngineServiceUnit;
 import org.netbeans.modules.compapp.casaeditor.model.casa.CasaProvides;
 import org.netbeans.modules.compapp.casaeditor.model.casa.CasaWrapperModel;
@@ -121,7 +123,7 @@ import org.openide.windows.WindowManager;
  * @author Josh Sandusky
  */
 public class CasaModelGraphScene 
-extends CasaGraphAbstractScene<CasaComponent, CasaComponent, CasaComponent>
+extends CasaGraphAbstractScene<CasaComponent, CasaComponent, CasaComponent, CasaComponent>
 implements PropertyChangeListener, CasaValidationListener {
 
     private static final Logger LOGGER = Logger.getLogger(CasaModelGraphScene.class.getName());
@@ -136,6 +138,7 @@ implements PropertyChangeListener, CasaValidationListener {
     private Router mDirectRouter = RouterFactory.createDirectRouter();
     private Router mCurrentRouter = mDirectRouter;
 
+    private WidgetAction mDoubleClickOpenAction = new DoubleClickToOpenAction();
     private WidgetAction mPopupMenuAction = new CasaPopupMenuAction(new CasaPopupMenuProvider());
     private WidgetAction mMoveControlPointAction = ActionFactory.createOrthogonalMoveControlPointAction ();
     private WidgetAction mMoveActionBindingRegion;
@@ -529,10 +532,26 @@ implements PropertyChangeListener, CasaValidationListener {
         }
         ((CasaNodeWidget) findWidget(node)).attachPinWidget(widget);
         
+        widget.getActions().addAction(mDoubleClickOpenAction);
         widget.getActions().addAction(createObjectHoverAction());
         widget.getActions().addAction(createSelectAction());
         widget.getActions().addAction(mPopupMenuAction);
         widget.getActions().addAction(new CasaConnectAction(this, mConnectionLayer));
+
+        return widget;
+    }
+    
+    @Override
+    protected Widget attachProcessWidget (CasaComponent node, CasaComponent endpoint) {
+        
+        CasaProcessTitleWidget widget = new CasaProcessTitleWidget(
+                this, ((CasaEndpoint)endpoint).getProcessName());
+        
+        ((CasaNodeWidgetEngine) findWidget(node)).attachProcessWidget(widget);
+        
+        widget.getActions().addAction(mDoubleClickOpenAction);
+        widget.getActions().addAction(createSelectAction());
+        widget.getActions().addAction(mPopupMenuAction);
 
         return widget;
     }
@@ -760,6 +779,7 @@ implements PropertyChangeListener, CasaValidationListener {
         Set<CasaComponent> objectsToSelect = new HashSet<CasaComponent>();
         for (CasaComponent component : modelComponents) {
             if (
+                    component instanceof CasaEndpoint ||    // Process
                     component instanceof CasaPort ||
                     component instanceof CasaServiceEngineServiceUnit ||
                     component instanceof CasaConsumes ||
@@ -789,6 +809,7 @@ implements PropertyChangeListener, CasaValidationListener {
             // Special mouse listener that ensures scene component
             // has focus when it is clicked.
             getView().addMouseListener(new MouseAdapter() {
+                @Override
                 public void mousePressed(MouseEvent e) {
                     if (!getView().hasFocus()) {
                         getView().requestFocusInWindow();
@@ -836,6 +857,7 @@ implements PropertyChangeListener, CasaValidationListener {
      * @param object the object
      * @return the identity code of the object; null, if the object is null
      */
+    @Override
     public Comparable getIdentityCode (Object object) {
         if(object == null || object instanceof CasaRegion) {
             return null;

@@ -40,8 +40,9 @@
 package org.netbeans.modules.javascript.editing;
 
 import org.mozilla.javascript.Node;
-import org.netbeans.fpi.gsf.CompilationInfo;
-import org.netbeans.fpi.gsf.ElementKind;
+import org.mozilla.javascript.Token;
+import org.netbeans.modules.gsf.api.CompilationInfo;
+import org.netbeans.modules.gsf.api.ElementKind;
 
 /**
  *
@@ -63,5 +64,62 @@ public class GlobalAstElement extends AstElement {
     @Override
     public ElementKind getKind() {
         return ElementKind.GLOBAL;
+    }
+    
+    public String getType() {
+        Node first = node.getFirstChild();
+        if (first != null && first.getType() == Token.NEW) {
+            return expressionType(first);
+        }
+        return null;
+    }
+    
+    /** Called on AsgnNodes to compute RHS
+     * See also JsAnalyzer.expressionType!
+     */
+    private String expressionType(Node node) {
+        switch (node.getType()) {
+        case Token.NUMBER:
+            return "Number";
+        case Token.STRING:
+            return "String";
+        case Token.REGEXP:
+            return "RegExp";
+        case Token.TRUE:
+        case Token.FALSE:
+            return "Boolean";
+        case Token.ARRAYLIT:
+            return "Array";
+        case Token.FUNCTION:
+            return "Function";
+        case Token.NEW: {
+            Node first = AstUtilities.getFirstChild(node);
+            if (first.getType() == Token.NAME) {
+                return first.getString();
+            } else {
+                return expressionType(first);
+            }
+        }
+        //        case Token.NAME: {
+        //            String name = node.getString();
+        //            return types.get(name);
+        //        }
+        case Token.GETPROP: {
+            Node first = AstUtilities.getFirstChild(node);
+            String secondStr = AstUtilities.getSecondChild(node).getString();
+            if (first.getType() == Token.NAME) {
+               return first.getString()+"."+secondStr; // NOI18N
+            } else {
+                String lhsType = expressionType(first);
+                if (lhsType != null) {
+                    return lhsType+"."+secondStr; // NOI18N
+                } else {
+                    return null;
+                }
+            }
+        }
+        default:
+            return null;
+        }
     }
 }
