@@ -58,11 +58,7 @@ public class URLMapperTest extends NbTestCase {
     private static FileSystem mfs;
     public URLMapperTest(String name) {
         super(name);
-        try {
-            mfs = FileBasedFileSystem.getInstance(getWorkDir());
-        } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
-        }
+        mfs = FileBasedFileSystem.getInstance();
     }
 
     public void testURLMapperCallingFromMetaInfLookup() {

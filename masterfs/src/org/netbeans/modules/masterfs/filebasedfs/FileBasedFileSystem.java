@@ -38,7 +38,6 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.masterfs.filebasedfs;
 
 import java.awt.Image;
@@ -46,131 +45,162 @@ import java.io.File;
 import java.io.IOException;
 import java.io.ObjectStreamException;
 import java.io.Serializable;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
-import java.util.logging.Logger;
 import org.netbeans.modules.masterfs.ProvidedExtensionsProxy;
+import org.netbeans.modules.masterfs.filebasedfs.fileobjects.BaseFileObj;
 import org.netbeans.modules.masterfs.filebasedfs.fileobjects.FileObjectFactory;
-import org.netbeans.modules.masterfs.filebasedfs.utils.FileInfo;
+import org.netbeans.modules.masterfs.filebasedfs.fileobjects.RootObj;
+import org.netbeans.modules.masterfs.filebasedfs.fileobjects.RootObjWindows;
 import org.netbeans.modules.masterfs.providers.AnnotationProvider;
 import org.netbeans.modules.masterfs.providers.ProvidedExtensions;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
-import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 import org.openide.util.Utilities;
 import org.openide.util.actions.SystemAction;
+import org.openide.util.lookup.Lookups;
 
 /**
  * @author Radek Matous
  */
 public final class FileBasedFileSystem extends FileSystem {
-    private static Map allInstances = new HashMap();
-
-    private transient final FileObjectFactory factory;
+    private static FileBasedFileSystem INSTANCE = new FileBasedFileSystem();
+    transient private RootObj root;
     transient private final StatusImpl status = new StatusImpl();
-    public static boolean WARNINGS = true;
-    private ThreadLocal<Boolean> refreshIsOn = new ThreadLocal<Boolean>();
-
-    public boolean isWarningEnabled() {
-        Boolean isRefreshOn = refreshIsOn.get();
-        return WARNINGS && !Utilities.isMac() &&(isRefreshOn == null || !isRefreshOn.booleanValue());
-    }    
-
-    //only for tests purposes
-    public static void reinitForTests() {
-        FileBasedFileSystem.allInstances = new HashMap();
+    transient private static  int modificationInProgress;
+    
+    public FileBasedFileSystem() {
+        if (Utilities.isWindows()) {
+            RootObjWindows realRoot = new RootObjWindows();
+            root = new RootObj(realRoot);
+        } else {
+            FileObjectFactory factory = FileObjectFactory.getInstance(new File("/"));//NOI18N
+            root = new RootObj(factory.getRoot());
+        }
+    }
+   
+    public synchronized static boolean isModificationInProgress() {
+        return modificationInProgress == 0 ? false : true;
     }
 
-    public static FileBasedFileSystem getInstance(final File file) {
-        return getInstance(file, true);
+    private synchronized static void setModificationInProgress(boolean started) {
+        if (started) {
+            modificationInProgress++;
+        } else {
+            modificationInProgress--;
+        }
+    }
+
+    public static void runAsInconsistent(Runnable r)   {
+        try {
+            setModificationInProgress(true);
+            r.run();
+        } finally {
+            setModificationInProgress(false);
+        }
     }
     
-    public static FileBasedFileSystem getInstance(final File file, boolean addMising) {
-        FileBasedFileSystem retVal = null;
-        final FileInfo rootInfo = new FileInfo(file).getRoot();
-        final File rootFile = rootInfo.getFile();
-
-        synchronized (FileBasedFileSystem.allInstances) {
-            retVal = (FileBasedFileSystem) FileBasedFileSystem.allInstances.get(rootFile);
+    public static <Retval> Retval runAsInconsistent(FSCallable<Retval> r)  throws IOException {
+        Retval retval = null;
+        try {
+            setModificationInProgress(true);
+            retval = r.call();
+        } finally {
+            setModificationInProgress(false);
         }
-        if (retVal == null && addMising) {
-            if (rootInfo.isConvertibleToFileObject()) {           
-                synchronized (FileBasedFileSystem.allInstances) {
-                    retVal = (FileBasedFileSystem) FileBasedFileSystem.allInstances.get(rootFile);
-                    if (retVal == null) {
-                        retVal = new FileBasedFileSystem(rootFile);
-                        FileBasedFileSystem.allInstances.put(rootFile, retVal);
-                    }
+        return retval;
+    }
+    
+    public static Map<File, ? extends FileObjectFactory> factories() {
+        return FileObjectFactory.factories();
+    }        
+
+    public static final FileObject getFileObject(final File file) {
+        return getFileObject(file, FileObjectFactory.Caller.GetFileObject);
+    }
+    
+    public static final FileObject getFileObject(final File file, FileObjectFactory.Caller caller) {
+        FileObjectFactory fs = FileObjectFactory.getInstance(file);
+        FileObject retval = null;
+        if (fs != null) {
+            if (file.getParentFile() == null && Utilities.isUnix()) {
+                retval = FileBasedFileSystem.getInstance().getRoot();
+            } else {
+                retval = fs.getValidFileObject(file,caller);
+            }                
+        }         
+        return retval;
+    }
+    
+    
+    public static FileBasedFileSystem getInstance() {
+        return INSTANCE;
+    }
+
+    @Override
+    public void refresh(final boolean expected) {                        
+        final Runnable r = new Runnable() {
+            public void run() {
+                refreshImpl(expected);
+            }            
+        };
+        try {
+            FileBasedFileSystem.getInstance().runAtomicAction(new FileSystem.AtomicAction() {
+                public void run() throws IOException {
+                    FileBasedFileSystem.runAsInconsistent(r);
                 }
+            });
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+    }
+    
+    public void refreshImpl(boolean expected) {                        
+        FileObject fo = root.getRealRoot();
+        if (fo instanceof BaseFileObj) {
+            ((BaseFileObj)fo).getFactory().refresh(expected);
+        } else if (fo instanceof RootObjWindows) {
+            Collection<? extends FileObjectFactory> fcs =  factories().values();
+            for (FileObjectFactory fileObjectFactory : fcs) {
+                fileObjectFactory.refresh(expected);
             }
         }
-        return retVal;
     }
-    
-    public static final FileObject getFileObject(final File file) {
-        FileBasedFileSystem fs = getInstance(file);
-        return (fs != null) ? fs.findFileObject(file,FileObjectFactory.Caller.GetFileObject) : null;
-    }
-    
-
-    static Collection getInstances() {
-        synchronized (FileBasedFileSystem.allInstances) {
-            return new ArrayList(allInstances.values());
-        }
+        
+    @Override
+    public String getDisplayName() {
+        return getClass().getName();
     }
 
-    public Status getStatus() {
-        return status;
-    }
-            
-    static int getSize () {
-        synchronized (FileBasedFileSystem.allInstances) {
-            return allInstances.size();
-        }        
-    }
-    
-    private FileBasedFileSystem(final File rootFile) {
-        this.factory = FileObjectFactory.getInstance(new FileInfo(rootFile));
+    @Override
+    public boolean isReadOnly() {
+        return false;
     }
 
-    public final org.openide.filesystems.FileObject findResource(final String name) {
-        return getFactory().getRoot().getRealRoot().getFileObject(name); 
+    @Override
+    public FileObject getRoot() {
+        return root;
     }
 
-    public final FileObject findFileObject(final File f) {
-        return findFileObject(new FileInfo (f), FileObjectFactory.Caller.Others);
+    @Override
+    public FileObject findResource(String name) {
+        if (Utilities.isWindows()) {
+            if ("".equals(name)) {//NOI18N
+                return FileBasedFileSystem.getInstance().getRoot();
+            }
+        }  else {
+            name = (name.startsWith("/")) ? name : ("/"+name);    
+        }               
+        return getFileObject(new File(name));
     }
 
-    public final FileObject findFileObject(final FileInfo fInfo) {
-        return findFileObject(fInfo, FileObjectFactory.Caller.Others);
-    }
-    
-    
-    public final FileObject findFileObject(final File f, FileObjectFactory.Caller caller) {
-        return findFileObject(new FileInfo (f), caller);
-    }
-    
-    public final FileObject findFileObject(final FileInfo fInfo, FileObjectFactory.Caller caller) {
-        final FileObject retVal = (getFactory().findFileObject(fInfo, this, caller));
-        return (retVal != null && retVal.isValid()) ? retVal : null;
-    }
-
-    public final org.openide.filesystems.FileObject getRoot() {
-        return getFactory().getRoot();
-    }
-
-    public final String getDisplayName() {
-        return getFactory().getRoot().getRealRoot().getPath();
-    }
-
-    public final SystemAction[] getActions() {
+    @Override
+    public SystemAction[] getActions() {
         return new SystemAction[] {};
     }
 
@@ -182,202 +212,112 @@ public final class FileBasedFileSystem extends FileSystem {
         return new SystemAction[] {};
 
     }
-
-    public final void refresh(final boolean expected) {
-        Statistics.StopWatch stopWatch = Statistics.getStopWatch(Statistics.REFRESH_FS);
-        stopWatch.start();
-        try {
-            try {
-                refreshIsOn.set(true);            
-                this.runAtomicAction(new FileSystem.AtomicAction() {
-                    public void run() throws IOException {
-                        getFactory().refreshAll(expected);
-                    }            
-                });
-            } finally {
-                refreshIsOn.set(false);
-            }
-        } catch(IOException iex) {/*method refreshAll doesn't throw IOException*/}
-        stopWatch.stop();
-	
-        // print refresh stats unconditionally in trunk
-        Logger.getLogger("org.netbeans.modules.masterfs.REFRESH").fine(
-            "FS.refresh statistics (" + Statistics.fileObjects() + "FileObjects):\n  " +
-            Statistics.REFRESH_FS.toString() + "\n  " +
-            Statistics.LISTENERS_CALLS.toString() + "\n  " + 
-            Statistics.REFRESH_FOLDER.toString() + "\n  " + 
-            Statistics.REFRESH_FILE.toString() + "\n"
-        );
-
-        Statistics.REFRESH_FS.reset();
-        Statistics.LISTENERS_CALLS.reset();
-        Statistics.REFRESH_FOLDER.reset();
-        Statistics.REFRESH_FILE.reset();
-    }
     
-    public final void refreshFor(final File file) {
-        Statistics.StopWatch stopWatch = Statistics.getStopWatch(Statistics.REFRESH_FS);
-        stopWatch.start();
-        try {
-            try {
-                refreshIsOn.set(true);            
-                this.runAtomicAction(new FileSystem.AtomicAction() {
-                    public void run() throws IOException {
-                        getFactory().refreshFor(file);
-                    }            
-                });
-            } finally {
-                refreshIsOn.set(false);
-            }
-        } catch(IOException iex) {/*method refreshAll doesn't throw IOException*/}
-        stopWatch.stop();        
-	
-        // print refresh stats unconditionally in trunk
-        Logger.getLogger("org.netbeans.modules.masterfs.REFRESH").fine(
-            "FS.refresh statistics (" + Statistics.fileObjects() + "FileObjects):\n  " +
-            Statistics.REFRESH_FS.toString() + "\n  " +
-            Statistics.LISTENERS_CALLS.toString() + "\n  " + 
-            Statistics.REFRESH_FOLDER.toString() + "\n  " + 
-            Statistics.REFRESH_FILE.toString() + "\n"
-        );
-
-        Statistics.REFRESH_FS.reset();
-        Statistics.LISTENERS_CALLS.reset();
-        Statistics.REFRESH_FOLDER.reset();
-        Statistics.REFRESH_FILE.reset();
-    }
-    
-
-    public final boolean isReadOnly() {
-        return false;
+    public Status getStatus() {
+        return status;
     }
 
-    public final String toString() {
-        return getDisplayName();
-    }
-
-    public final FileObjectFactory getFactory() {
-        return factory;
-    }
-    
-    public Object writeReplace() throws ObjectStreamException {
-        return new SerReplace(this);
-    }
-        
-    private static class SerReplace implements Serializable {
-        /** serial version UID */
-        static final long serialVersionUID = -3714631266626840241L;        
-        private File root;
-        SerReplace(FileSystem fs) {
-            root = FileUtil.toFile(fs.getRoot());
-            assert root != null;
-        }        
-        
-        public Object readResolve() throws ObjectStreamException {
-            return FileBasedFileSystem.getInstance(root);
-        }        
-    }
-        
     public final class StatusImpl implements FileSystem.HtmlStatus,
-    org.openide.util.LookupListener, org.openide.filesystems.FileStatusListener {
+            org.openide.util.LookupListener, org.openide.filesystems.FileStatusListener {
+
         /** result with providers */
         private org.openide.util.Lookup.Result annotationProviders;
         private Collection previousProviders;
+        
+
         {
-            annotationProviders = org.openide.util.Lookup.getDefault ().lookup (
-                new org.openide.util.Lookup.Template (AnnotationProvider.class)
-            );
-            annotationProviders.addLookupListener (this);
-            resultChanged (null);
+            annotationProviders = org.openide.util.Lookup.getDefault().lookup(
+                    new org.openide.util.Lookup.Template(AnnotationProvider.class));
+            annotationProviders.addLookupListener(this);
+            resultChanged(null);
         }
 
         public ProvidedExtensions getExtensions() {
-            Collection c = (previousProviders != null) ?
-                Collections.unmodifiableCollection(previousProviders) : Collections.EMPTY_LIST;
+            Collection c = (previousProviders != null) ? Collections.unmodifiableCollection(previousProviders) : Collections.EMPTY_LIST;
             return new ProvidedExtensionsProxy(c);
         }
-        
-        public void resultChanged (org.openide.util.LookupEvent ev) {
-            java.util.Collection now = annotationProviders.allInstances ();
+
+        public void resultChanged(org.openide.util.LookupEvent ev) {
+            java.util.Collection now = annotationProviders.allInstances();
             java.util.Collection add;
-            
+
             if (previousProviders != null) {
-                add = new HashSet (now);
-                add.removeAll (previousProviders);
-                
+                add = new HashSet(now);
+                add.removeAll(previousProviders);
+
                 HashSet toRemove = new HashSet(previousProviders);
-                toRemove.removeAll (now);
-                java.util.Iterator it = toRemove.iterator ();
-                while (it.hasNext ()) {
-                    AnnotationProvider ap = (AnnotationProvider)it.next ();
-                    ap.removeFileStatusListener (this);
+                toRemove.removeAll(now);
+                java.util.Iterator it = toRemove.iterator();
+                while (it.hasNext()) {
+                    AnnotationProvider ap = (AnnotationProvider) it.next();
+                    ap.removeFileStatusListener(this);
                 }
-            
+
             } else {
                 add = now;
             }
 
-            
-            
-            java.util.Iterator it = add.iterator ();
-            while (it.hasNext ()) {
-                AnnotationProvider ap = (AnnotationProvider)it.next ();
+
+
+            java.util.Iterator it = add.iterator();
+            while (it.hasNext()) {
+                AnnotationProvider ap = (AnnotationProvider) it.next();
                 try {
-                    ap.addFileStatusListener (this);
+                    ap.addFileStatusListener(this);
                 } catch (java.util.TooManyListenersException ex) {
                     Exceptions.printStackTrace(ex);
                 }
             }
-            
+
             previousProviders = now;
         }
 
         public SystemAction[] getActions(java.util.Set foSet) {
-            
+
             javax.swing.Action[] retVal = null;
-            java.util.Iterator it = annotationProviders.allInstances ().iterator ();
-            while (retVal == null && it.hasNext ()) {
-                AnnotationProvider ap = (AnnotationProvider)it.next ();
-                retVal = ap.actions (foSet);
+            java.util.Iterator it = annotationProviders.allInstances().iterator();
+            while (retVal == null && it.hasNext()) {
+                AnnotationProvider ap = (AnnotationProvider) it.next();
+                retVal = ap.actions(foSet);
             }
             if (retVal != null) {
                 // right now we handle just SystemAction, it can be changed if necessary
                 SystemAction[] ret = new SystemAction[retVal.length];
                 for (int i = 0; i < retVal.length; i++) {
                     if (retVal[i] instanceof SystemAction) {
-                        ret[i] = (SystemAction)retVal[i];
+                        ret[i] = (SystemAction) retVal[i];
                     }
                 }
                 return ret;
             }
             return null;
         }
-        
-        public void annotationChanged (org.openide.filesystems.FileStatusEvent ev) {
-            fireFileStatusChanged (ev);
+
+        public void annotationChanged(org.openide.filesystems.FileStatusEvent ev) {
+            fireFileStatusChanged(ev);
         }
-                
+
         public Image annotateIcon(Image icon, int iconType, Set files) {
-            Image retVal = null;            
-            
-            Iterator it = annotationProviders.allInstances ().iterator ();
-            while (retVal == null && it.hasNext ()) {
-                AnnotationProvider ap = (AnnotationProvider)it.next ();
-                retVal = ap.annotateIcon (icon, iconType, files);
+            Image retVal = null;
+
+            Iterator it = annotationProviders.allInstances().iterator();
+            while (retVal == null && it.hasNext()) {
+                AnnotationProvider ap = (AnnotationProvider) it.next();
+                retVal = ap.annotateIcon(icon, iconType, files);
             }
             if (retVal != null) {
                 return retVal;
             }
-                        
+
             return icon;
         }
 
         public String annotateName(String name, Set files) {
             String retVal = null;
-            Iterator it = annotationProviders.allInstances ().iterator ();
-            while (retVal == null && it.hasNext ()) {
-                AnnotationProvider ap = (AnnotationProvider)it.next ();
-                retVal = ap.annotateName (name, files);
+            Iterator it = annotationProviders.allInstances().iterator();
+            while (retVal == null && it.hasNext()) {
+                AnnotationProvider ap = (AnnotationProvider) it.next();
+                retVal = ap.annotateName(name, files);
             }
             if (retVal != null) {
                 return retVal;
@@ -387,12 +327,28 @@ public final class FileBasedFileSystem extends FileSystem {
 
         public String annotateNameHtml(String name, Set files) {
             String retVal = null;
-            Iterator it = annotationProviders.allInstances ().iterator ();
-            while (retVal == null && it.hasNext ()) {
-                AnnotationProvider ap = (AnnotationProvider)it.next ();
-                retVal = ap.annotateNameHtml (name, files);
+            Iterator it = annotationProviders.allInstances().iterator();
+            while (retVal == null && it.hasNext()) {
+                AnnotationProvider ap = (AnnotationProvider) it.next();
+                retVal = ap.annotateNameHtml(name, files);
             }
             return retVal;
         }
-    }        
+    }
+
+    public Object writeReplace() throws ObjectStreamException {
+        return new SerReplace();
+    }
+
+    private static class SerReplace implements Serializable {
+        /** serial version UID */
+        static final long serialVersionUID = -3714631266626840241L;
+        public Object readResolve() throws ObjectStreamException {
+            return FileBasedFileSystem.getInstance();
+        }
+    }
+    
+    public static interface  FSCallable<V>  {
+        public V call() throws IOException;                
+    }
 }

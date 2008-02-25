@@ -40,6 +40,7 @@
  */
 
 package org.netbeans.modules.masterfs.filebasedfs;
+import org.netbeans.modules.masterfs.filebasedfs.fileobjects.FileObjectFactory;
 import java.util.Iterator;
 import org.netbeans.modules.masterfs.filebasedfs.naming.NamingFactory;
 
@@ -68,7 +69,7 @@ public final class Statistics {
     }
     
     public static int fileSystems() {
-        return FileBasedFileSystem.getSize();
+        return FileObjectFactory.getFactoriesSize();
     }
     
     public static int fileNamings() {
@@ -77,17 +78,17 @@ public final class Statistics {
     
     public static int fileObjects() {
         int retVal = 0;
-        Iterator it = FileBasedFileSystem.getInstances().iterator();
+        Iterator it = FileObjectFactory.getInstances().iterator();
         for (int i = 0; it.hasNext(); i++) {
-            FileBasedFileSystem fbs = (FileBasedFileSystem)it.next();
+            FileObjectFactory fbs = (FileObjectFactory)it.next();
             retVal += fileObjectsPerFileSystem(fbs);
         }
         
         return retVal;
     }
     
-    public static int fileObjectsPerFileSystem(FileBasedFileSystem fbs) {
-        return fbs.getFactory().getSize();
+    public static int fileObjectsPerFileSystem(FileObjectFactory factory) {
+        return factory.getSize();
     }
 
             

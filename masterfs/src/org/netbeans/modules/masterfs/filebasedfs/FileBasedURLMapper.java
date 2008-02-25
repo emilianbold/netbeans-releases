@@ -134,11 +134,7 @@ public final class FileBasedURLMapper extends URLMapper {
                 return null;
             }
         }
-        final FileBasedFileSystem instance = FileBasedFileSystem.getInstance(file);
-        if (instance != null) {
-            retVal = instance.getFactory().findFileObject(file, instance, FileObjectFactory.Caller.ToFileObject);
-        }
-
+        retVal = FileBasedFileSystem.getInstance().getFileObject(file, FileObjectFactory.Caller.ToFileObject);
         return new FileObject[]{retVal};
     }
 

@@ -154,6 +154,9 @@ public final class FolderObj extends BaseFileObj {
             createFolder(folder2Create, name);
 
             final FileNaming childName = this.getChildrenCache().getChild(folder2Create.getName(), true);
+            if (childName != null && childName.isDirectory()) {
+                NamingFactory.remove(childName, null);
+            }            
             if (childName != null) {
                 NamingFactory.checkCaseSensitivity(childName, folder2Create);                        
             }
@@ -230,6 +233,9 @@ public final class FolderObj extends BaseFileObj {
             createData(file2Create);
 
             final FileNaming childName = getChildrenCache().getChild(file2Create.getName(), true);
+            if (childName != null && childName.isDirectory()) {
+                NamingFactory.remove(childName, null);
+            }
             if (childName != null) {
                 NamingFactory.checkCaseSensitivity(childName, file2Create);                        
             }
