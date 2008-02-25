@@ -121,7 +121,7 @@ public class HibernateCfgDataObject extends XmlMultiViewDataObject {
             try {
                 configuration = getHibernateConfiguration();
             } catch (RuntimeException ex) { // must catch RTE (thrown by schema2beans when document is not valid)
-                ErrorManager.getDefault().notify(org.openide.ErrorManager.INFORMATIONAL, ex);
+                //ErrorManager.getDefault().notify(org.openide.ErrorManager.INFORMATIONAL, ex);
                 return false;
             }
         } else {
