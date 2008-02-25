@@ -461,7 +461,7 @@ public class JsCodeCompletion implements Completable {
         // offer to complete the function ids
         TokenSequence<? extends JsTokenId> ts = LexUtilities.getPositionedSequence(request.doc, request.lexOffset);
         assert ts != null; // or we wouldn't have been called in the first place
-        Token<? extends JsTokenId> stringToken = ts.token();
+        //Token<? extends JsTokenId> stringToken = ts.token();
         int stringOffset = ts.offset();
 
     tokenLoop:
@@ -828,19 +828,25 @@ public class JsCodeCompletion implements Completable {
         
         Set<IndexedElement> matches;
         if (fqn != null) {
-            matches = index.getInheritedElements(fqn, prefix, kind, JsIndex.ALL_SCOPE, result);
+            matches = index.getElements(prefix, fqn, kind, JsIndex.ALL_SCOPE, result);
+            // Also add in non-fqn-prefixed elements
+            Set<IndexedElement> top = index.getElements(prefix, null, kind, JsIndex.ALL_SCOPE, result);
+            if (top.size() > 0) {
+                matches.addAll(top);
+            }
+            
         } else {
-            matches = index.getElements(prefix, null, kind, JsIndex.ALL_SCOPE, result);
+            matches = index.getAllNames(prefix, kind, JsIndex.ALL_SCOPE, result);
         }
 
         for (IndexedElement element : matches) {
+            JsCompletionItem item;
             if (element instanceof IndexedFunction) {
-                FunctionItem item = new FunctionItem((IndexedFunction)element, request);
-                proposals.add(item);
+                item = new FunctionItem((IndexedFunction)element, request);
             } else {
-                PlainItem item = new PlainItem(element, request);
-                proposals.add(item);
+                item = new PlainItem(request, element);
             }
+            proposals.add(item);
 
         }
 
@@ -939,8 +945,8 @@ public class JsCodeCompletion implements Completable {
                     // Try with the LHS + current FQN recursively. E.g. if we're in
                     // Test::Unit when there's a call to Foo.x, we'll try
                     // Test::Unit::Foo, and Test::Foo
-                    while (elements.size() == 0 && fqn != null) {
-                        elements = index.getInheritedElements(fqn + "." + type, prefix, kind, JsIndex.ALL_SCOPE, result);
+                    while (elements.size() == 0 && fqn != null && !fqn.equals(type)) {
+                        elements = index.getElements(prefix, fqn + "." + type, kind, JsIndex.ALL_SCOPE, result);
 
                         int f = fqn.lastIndexOf("::");
 
@@ -951,13 +957,11 @@ public class JsCodeCompletion implements Completable {
                         }
                     }
                     
-                    if (elements.size() == 0) {
-                        // Add methods in the class (without an FQN)
-                        Set<IndexedElement> m = index.getElements(prefix, type, kind, JsIndex.ALL_SCOPE, result);
+                    // Add methods in the class (without an FQN)
+                    Set<IndexedElement> m = index.getElements(prefix, type, kind, JsIndex.ALL_SCOPE, result);
 
-                        if (m.size() > 0) {
-                            elements = m;
-                        }
+                    if (m.size() > 0) {
+                        elements = m;
                     }
                 }
             }
@@ -971,9 +975,9 @@ public class JsCodeCompletion implements Completable {
             for (IndexedElement element : elements) {
                 // Skip constructors - you don't want to call
                 //   x.Foo !
-                if (element.getKind() == ElementKind.CONSTRUCTOR) {
-                    continue;
-                }
+//                if (element.getKind() == ElementKind.CONSTRUCTOR) {
+//                    continue;
+//                }
                 
 //                // Don't include private or protected methods on other objects
 //                if (skipPrivate && (method.isPrivate() && !"new".equals(method.getName()))) {
@@ -995,7 +999,7 @@ public class JsCodeCompletion implements Completable {
                     FunctionItem item = new FunctionItem((IndexedFunction)element, request);
                     proposals.add(item);
                 } else {
-                    PlainItem item = new PlainItem(element, request);
+                    PlainItem item = new PlainItem(request, element);
                     proposals.add(item);
                 }
             }
@@ -1249,6 +1253,12 @@ public class JsCodeCompletion implements Completable {
         }
 
         JsCommentFormatter formatter = new JsCommentFormatter(comments);
+        if (element instanceof IndexedElement) {
+            String url = ((IndexedElement)element).getFilenameUrl();
+            if (url.indexOf("jsstubs/") != -1) { // NOI18N
+                formatter.setFormattedComment(true);
+            }
+        }
         String name = element.getName();
         if (name != null && name.length() > 0) {
             formatter.setSeqName(name);
@@ -1641,13 +1651,18 @@ public class JsCodeCompletion implements Completable {
     private abstract class JsCompletionItem implements CompletionProposal {
         protected CompletionRequest request;
         protected Element element;
-        protected boolean smart;
+        protected IndexedElement indexedElement;
 
         private JsCompletionItem(Element element, CompletionRequest request) {
             this.element = element;
             this.request = request;
         }
 
+        private JsCompletionItem(CompletionRequest request, IndexedElement element) {
+            this(element, request);
+            this.indexedElement = element;
+        }
+        
         public int getAnchorOffset() {
             return request.anchor;
         }
@@ -1681,9 +1696,16 @@ public class JsCodeCompletion implements Completable {
             ElementKind kind = getKind();
             HtmlFormatter formatter = request.formatter;
             formatter.reset();
+            boolean emphasize = indexedElement != null ? !indexedElement.isInherited() : false;
+            if (emphasize) {
+                formatter.emphasis(true);
+            }
             formatter.name(kind, true);
             formatter.appendText(getName());
             formatter.name(kind, false);
+            if (emphasize) {
+                formatter.emphasis(false);
+            }
 
             return formatter.getText();
         }
@@ -1733,12 +1755,8 @@ public class JsCodeCompletion implements Completable {
             return cls + "(" + getKind() + "): " + getName();
         }
 
-        void setSmart(boolean smart) {
-            this.smart = smart;
-        }
-
         public boolean isSmart() {
-            return smart;
+            return indexedElement != null ? indexedElement.isSmart() : true;
         }
 
         public List<String> getInsertParams() {
@@ -1757,7 +1775,7 @@ public class JsCodeCompletion implements Completable {
     private class FunctionItem extends JsCompletionItem {
         private IndexedFunction function;
         FunctionItem(IndexedFunction element, CompletionRequest request) {
-            super(element, request);
+            super(request, element);
             this.function = element;
         }
 
@@ -1775,8 +1793,7 @@ public class JsCodeCompletion implements Completable {
             if (strike) {
                 formatter.deprecated(true);
             }
-//            boolean emphasize = !method.isInherited();
-    boolean emphasize = false;
+            boolean emphasize = !function.isInherited();
             if (emphasize) {
                 formatter.emphasis(true);
             }
@@ -1933,6 +1950,11 @@ public class JsCodeCompletion implements Completable {
             // For completion documentation
             return new KeywordElement(keyword);
         }
+        
+        @Override
+        public boolean isSmart() {
+            return false;
+        }
     }
 
     private class TagItem extends JsCompletionItem {
@@ -1995,11 +2017,19 @@ public class JsCodeCompletion implements Completable {
             // For completion documentation
             return new KeywordElement(tag);
         }
+
+        @Override
+        public boolean isSmart() {
+            return true;
+        }
     }
     
     private class PlainItem extends JsCompletionItem {
         PlainItem(Element element, CompletionRequest request) {
             super(element, request);
+        }
+        PlainItem(CompletionRequest request, IndexedElement element) {
+            super(request, element);
         }
     }
 
