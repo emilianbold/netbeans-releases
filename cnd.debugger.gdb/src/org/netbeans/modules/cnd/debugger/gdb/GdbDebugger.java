@@ -321,7 +321,19 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
                     ((Session) lookupProvider.lookupFirst(null, Session.class)).kill();
                 }
                 if (Utilities.isWindows()) {
-                    gdb.info_threads(); // we get the PID from this...
+                    CommandBuffer cb = new CommandBuffer();
+                    gdb.info_threads(cb); // we get the PID from this...
+                    String msg = cb.waitForCompletion();
+                    if (msg.startsWith("* 1 thread ")) { // NOI18N
+                        int pos = msg.indexOf('.');
+                        if (pos > 0) {
+                            try {
+                                programPID = Long.valueOf(msg.substring(11, pos));
+                            } catch (NumberFormatException ex) {
+                                log.warning("Failed to get PID from \"info threads\""); // NOI18N
+                            }
+                        }
+                    }
                 } else if (Utilities.getOperatingSystem() != Utilities.OS_MAC) {
                     gdb.info_proc(); // we get the PID from this...
                 }
