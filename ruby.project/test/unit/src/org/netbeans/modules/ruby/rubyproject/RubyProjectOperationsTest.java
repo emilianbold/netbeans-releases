@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -38,33 +38,41 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
+
 package org.netbeans.modules.ruby.rubyproject;
 
-import java.io.File;
-import org.netbeans.api.ruby.platform.RubyPlatformManager;
-import org.netbeans.modules.ruby.spi.project.support.rake.RakeProjectHelper;
+import java.util.Arrays;
+import org.netbeans.spi.project.ActionProvider;
+import org.netbeans.spi.project.support.ProjectOperations;
 import org.openide.filesystems.FileObject;
 
-public class RubyProjectGeneratorTest extends RubyProjectTestBase {
-
-    public RubyProjectGeneratorTest(String testName) {
-        super(testName);
+public class RubyProjectOperationsTest extends RubyProjectTestBase {
+    
+    public RubyProjectOperationsTest(String name) {
+        super(name);
     }
-
-    public void testCreateProject() throws Exception {
+    
+    public void testDelete() throws Exception {
         registerLayer();
-        File projectDir = new File(getWorkDir(), "RubyApp");
-        String name = "script.rb";
-        RakeProjectHelper helper = RubyProjectGenerator.createProject(projectDir, "Ruby Application", name, RubyPlatformManager.getDefaultPlatform());
-        FileObject prjDirFO = helper.getProjectDirectory();
-        assertNotNull("project created", prjDirFO);
-
-        assertNotNull("has Rakefile", prjDirFO.getFileObject("Rakefile"));
-        FileObject libDirFO = prjDirFO.getFileObject("lib");
-        assertNotNull("has lib", libDirFO);
-        assertNotNull("has script.rb", libDirFO.getFileObject(name));
-        assertNull("does not have Rakefile in lib", libDirFO.getFileObject("Rakefile"));
-
-        assertNotNull("has README", prjDirFO.getFileObject("README"));
+        RubyProject project = createTestProject();
+        ActionProvider ap = project.getLookup().lookup(ActionProvider.class);
+        assertNotNull("have an action provider", ap);
+        assertTrue("delete action is enabled", ap.isActionEnabled(ActionProvider.COMMAND_DELETE, null));
+        
+        FileObject prjDir = project.getProjectDirectory();
+        
+        FileObject[] expectedMetadataFiles = {
+            prjDir.getFileObject("nbproject"),
+            prjDir.getFileObject("Rakefile"),
+            prjDir.getFileObject("README"),
+        };
+        assertEquals("correct metadata files", Arrays.asList(expectedMetadataFiles), ProjectOperations.getMetadataFiles(project));
+        
+        FileObject[] expectedDataFiles = {
+            prjDir.getFileObject("lib"),
+            prjDir.getFileObject("test"),
+        };
+        assertEquals("correct data files", Arrays.asList(expectedDataFiles), ProjectOperations.getDataFiles(project));
     }
+    
 }

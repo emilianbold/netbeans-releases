@@ -15,8 +15,8 @@
 <h2>JSF 1.2 Bubble Help Component</h2>
 <p><small><a href="#seealso">See Also | Tutorials  </a></small><small><a href="#tutorials"></a></small>
 
-<p>THIS TOPIC IS IN PROGRESS. IT IS NOT COMPLETE. </p>
-<p>The Bubble Help component <img src="../../../images/bubble.png" alt="Bubble help component icon">&nbsp;is a pop-up type window that provides detailed information to the end user when a mouse hovers on a particular screen element. The Bubble Help component can contain any application specified content. The Bubble Help component contains a header and a body. The the header is optional and can contain a title text and controls. The text can also contain a hyperlink, image, or other component. </p>
+<p>The Bubble Help component <img src="../../../images/bubble.png" alt="Bubble help component icon">&nbsp;is a pop-up type window that provides detailed information to the end user when a mouse hovers on a particular screen element. A Bubble Help component can contain  an icon depicting an alert message (information, warning,
+error, or success, or a user-defined type specified in the <code>indicators</code> property) and a summary message, plus an optional detail message. The Bubble Help component can also contain a hyperlink.</p>
 <ul class="note">
       <li>
         This component is a JavaServer Faces 1.2 component. You see components that use this
@@ -31,18 +31,18 @@
 
 <p>The Bubble Help component contains the following structure elements:
 <ul>
-<li><b>Bubble Title:</b> This title appears in the title bar area.</li>
-<li><b>Bubble Remove Control:</b> This element closes the bubble window. It appears to the right of the bubble title bar.</li>
-<li><b>Bubble Content Area:</b> The main text of the bubble.</li>
+<li><b>Bubble Title.</b> This title appears in the title bar area.</li>
+<li><b>Bubble Remove Control. </b>This element closes the bubble window. It appears to the right of the bubble title bar.</li>
+<li><b>Bubble Content Area.</b> The main text of the bubble.</li>
 </ul> 
 <p>After dragging the button to from the Woodstock Composite category of the Palette to the Visual Designer, you can:</p>
 <ul>
-  <li>Select the Bubble Help component and edit its properties in the Bubble Help's <a href="propsheets/alert_props.html">Properties window</a>. Some typical properties you might set are:
+  <li>Select the Bubble Help component and edit its properties in the Bubble Help's <a href="propsheets/bubble_props.html">Properties window</a>. Some typical properties you might set are:
 	  <ul>
 		  <li><b>id.</b> The name of the component. In the JSP file, this name is the value of the component's <code>id</code> attribute. In the page bean, this property's value is the name of the <code>Bubble</code> object.</li>
-		  <li><b>duration.</b> Number of milliseconds after which the popup help window should close.</li>
-          <li><strong>openDelay.</strong> This determines the  delay in milliseconds before opening the bubble. </li>
-          <li><strong>closeButton.</strong> Use this attribute to display a close button for the bubble. </li>
+		  <li><b>duration.</b> The number of milliseconds after which the popup help window should close.</li>
+          <li><strong>openDelay.</strong> This property determines the  delay in milliseconds before opening the bubble. </li>
+          <li><strong>closeButton.</strong> Use this property to display a close button for the bubble. </li>
     </ul>
   </li>
   <li>Right-click the Bubble Help component and choose one of several actions:<ul><li><b>Bind to Data. </b>Dynamically set the summary text. The text comes from the object or data provider you specify, such as a column of a database table. For more information, see <a href="../../dialogs/bindtodata_simple_db.html">Bind to Data Dialog Box</a>. </li>

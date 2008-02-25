@@ -3519,6 +3519,26 @@ public class CasaWrapperModel extends CasaModel {
 
     }
 
+    /**
+     * Change the xlink reference of a casa WSDL port
+     * @param casaPort selected WSDL port
+     * @param href xlink reference
+     */
+    public void setEndpointLink(CasaPort casaPort, String href) {
+        if ((casaPort == null) || (casaPort.getLink().getHref().equals(href))) {
+            return;
+        }
+
+        startTransaction();
+        try {
+            casaPort.getLink().setHref(href);
+        } finally {
+            if (isIntransaction()) {
+                fireChangeEvent(casaPort, PROPERTY_CASA_PORT_REFRESH);
+                endTransaction();
+            }
+        }
+    }
 
 }
 

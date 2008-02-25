@@ -21,8 +21,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
  * The Original Software is NetBeans. The Initial Developer of the Original
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
@@ -38,33 +36,35 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.ruby.rubyproject;
+package org.netbeans.api.ruby.platform;
 
 import java.io.File;
-import org.netbeans.api.ruby.platform.RubyPlatformManager;
-import org.netbeans.modules.ruby.spi.project.support.rake.RakeProjectHelper;
-import org.openide.filesystems.FileObject;
+import org.openide.modules.InstalledFileLocator;
 
-public class RubyProjectGeneratorTest extends RubyProjectTestBase {
+public final class InstalledFileLocatorImpl extends InstalledFileLocator {
 
-    public RubyProjectGeneratorTest(String testName) {
-        super(testName);
+    public InstalledFileLocatorImpl() {
     }
 
-    public void testCreateProject() throws Exception {
-        registerLayer();
-        File projectDir = new File(getWorkDir(), "RubyApp");
-        String name = "script.rb";
-        RakeProjectHelper helper = RubyProjectGenerator.createProject(projectDir, "Ruby Application", name, RubyPlatformManager.getDefaultPlatform());
-        FileObject prjDirFO = helper.getProjectDirectory();
-        assertNotNull("project created", prjDirFO);
-
-        assertNotNull("has Rakefile", prjDirFO.getFileObject("Rakefile"));
-        FileObject libDirFO = prjDirFO.getFileObject("lib");
-        assertNotNull("has lib", libDirFO);
-        assertNotNull("has script.rb", libDirFO.getFileObject(name));
-        assertNull("does not have Rakefile in lib", libDirFO.getFileObject("Rakefile"));
-
-        assertNotNull("has README", prjDirFO.getFileObject("README"));
+    public @Override File locate( String relativePath, String codeNameBase, boolean localized) {
+        if (relativePath.equals("ruby/debug-commons-0.9.5/classic-debug.rb")) {
+            File rubydebugDir = RubyTestBase.getDirectory("rubydebug.dir", true);
+            File cd = new File(rubydebugDir, "classic-debug.rb");
+            if (!cd.isFile()) {
+                throw new RuntimeException("classic-debug found in " + rubydebugDir);
+            }
+            return cd;
+        } else if (relativePath.equals("jruby-1.1RC1")) {
+            return TestUtil.getXTestJRubyHome();
+        } else if (relativePath.equals("platform_info.rb")) {
+            String script = System.getProperty("xtest.platform_info.rb");
+            if (script == null) {
+                throw new RuntimeException("xtest.platform_info.rb property has to be set when running within binary distribution");
+            }
+            return new File(script);
+        } else {
+            return null;
+        }
     }
+    
 }
