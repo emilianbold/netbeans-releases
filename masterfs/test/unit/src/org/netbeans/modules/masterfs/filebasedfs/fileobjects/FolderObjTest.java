@@ -125,6 +125,17 @@ public class FolderObjTest extends NbTestCase {
         assertNotNull(workDirFo.createData("a"));
     }
     
+    public void testBug128234() throws Exception {
+        final FileObject workDirFo = FileBasedFileSystem.getFileObject(getWorkDir());
+        FileObject fo = workDirFo.createData("a");
+        assertNotNull(fo);
+        File f = FileUtil.toFile(fo);
+        assertNotNull(f);
+        FileUtil.toFileObject(new File(f,f.getName()));
+    }
+    
+    
+    
     public void testMove85336() throws Exception {
         final FileObject workDirFo = FileBasedFileSystem.getFileObject(getWorkDir());
         FolderObj to =  (FolderObj)FileUtil.createFolder(workDirFo, "a/b/c");

@@ -787,7 +787,8 @@ public abstract class BaseFileObj extends FileObject {
     }
 
     public static FolderObj getExistingFor(File f, FileObjectFactory fbs) {         
-        return (FolderObj) fbs.getCachedOnly(f);
+        FileObject retval = fbs.getCachedOnly(f);
+        return (FolderObj) ((retval instanceof FolderObj) ? retval : null);
     }
     
     public static FolderObj getExistingParentFor(File f, FileObjectFactory fbs) {         
