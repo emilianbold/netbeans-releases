@@ -48,6 +48,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import org.netbeans.modules.gsf.api.CompilationInfo;
+import org.netbeans.modules.gsf.api.ElementKind;
 import org.netbeans.modules.gsf.api.Index;
 import org.netbeans.modules.gsf.api.IndexDocument;
 import org.netbeans.modules.gsf.api.IndexDocumentFactory;
@@ -374,5 +375,35 @@ public class JsIndexerTest extends JsTestBase {
         // TODO - transfer logic from JsIndex.getFqn logic into IndexElement.create
         // so that I get "Baz" here
         assertEquals("DonaldDuck.Mickey.Baz", element.getName());
+    }
+
+    public void testRestore7() throws Exception {
+        List<IndexDocument> docs = indexFile("testfiles/dojo.js.uncompressed.js");
+        JsIndex index = JsIndex.get(((IndexDocumentImpl)docs.get(0)).index);
+        IndexedElement element = findElement(docs, JsIndexer.FIELD_FQN, "dojo.deferred", index);
+        assertNotNull(element);
+        // TODO - transfer logic from JsIndex.getFqn logic into IndexElement.create
+        // so that I get "Baz" here
+        assertEquals("dojo.Deferred", element.getName());
+        assertEquals(ElementKind.CONSTRUCTOR, element.getKind());
+        IndexedFunction func = (IndexedFunction)element;
+        assertEquals(1, func.getArgs().length);
+        assertEquals("canceller", func.getArgs()[0]);
+    }
+    
+    public void testOldPrototypes() throws Exception {
+        checkIndexer("testfiles/oldstyle-prototype.js");
+    }
+
+    public void testNewPrototypes() throws Exception {
+        checkIndexer("testfiles/newstyle-prototype.js");
+    }
+
+    public void testFunctionStyle() throws Exception {
+        checkIndexer("testfiles/class-via-function.js");
+    }
+    
+    public void testExtStyle() throws Exception {
+        checkIndexer("testfiles/class-inheritance-ext.js");
     }
 }

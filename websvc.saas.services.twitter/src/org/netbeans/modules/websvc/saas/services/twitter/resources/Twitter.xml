@@ -58,8 +58,6 @@
 
         <localizing-bundle>org.netbeans.modules.websvc.saas.services.twitter.Bundle</localizing-bundle>
 
-        <icon16>org/netbeans/modules/websvc/saas/services/twitter/resources/twitter16.png</icon16>
-
         <group name="Twitter">
         </group>
 
