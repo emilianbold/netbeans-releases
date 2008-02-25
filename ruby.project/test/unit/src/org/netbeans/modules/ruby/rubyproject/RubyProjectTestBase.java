@@ -50,7 +50,6 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.ruby.platform.RubyPlatform;
 import org.netbeans.api.ruby.platform.RubyPlatformManager;
-import org.netbeans.junit.NbTestCase;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
@@ -105,18 +104,18 @@ public abstract class RubyProjectTestBase extends RubyTestBase {
     }
 
     protected void registerLayer() throws Exception {
-        MockLookup.setInstances(new Repo(this));
+        MockLookup.setInstances(new Repo());
         FileObject template = Repository.getDefault().getDefaultFileSystem().findResource("Templates/Ruby/main.rb");
         assertNotNull("layer registered", template);
     }
 
     private static final class Repo extends Repository {
 
-        public Repo(NbTestCase t) throws Exception {
-            super(mksystem(t));
+        public Repo() throws Exception {
+            super(mksystem());
         }
 
-        private static FileSystem mksystem(NbTestCase t) throws Exception {
+        private static FileSystem mksystem() throws Exception {
             List<FileSystem> layers = new ArrayList<FileSystem>();
             addLayer(layers, "org/netbeans/modules/ruby/rubyproject/ui/resources/layer.xml");
             return new MultiFileSystem(layers.toArray(new FileSystem[layers.size()]));
