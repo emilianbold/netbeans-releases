@@ -45,14 +45,12 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Method;
-import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Enumeration;
-import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
@@ -60,9 +58,7 @@ import java.util.TreeSet;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import junit.framework.Assert;
-import junit.framework.TestCase;
 import junit.framework.TestResult;
-import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 
 /**
@@ -70,11 +66,17 @@ import org.openide.util.Lookup;
  * @author Jaroslav Tulach <jaroslav.tulach@netbeans.org>
  */
 public class NbModuleSuite extends NbTestSuite {
-    private Class<?> clazz;
+    private final Class<?> clazz;
+    private final String clusterRegExp;
 
     public NbModuleSuite(Class<?> aClass) {
+        this(aClass, ".*");
+    }
+    
+    public NbModuleSuite(Class<?> aClass, String clusterRegExp) {
         super();
-        clazz = aClass;
+        this.clazz = aClass;
+        this.clusterRegExp = clusterRegExp;
     }
 
     @Override
@@ -118,9 +120,20 @@ public class NbModuleSuite extends NbTestSuite {
         modules.add("org.openide.filesystems");
         modules.add("org.openide.modules");
         modules.add("org.openide.util");
+        modules.remove("org.netbeans.insane");
         modules.add("org.netbeans.core.startup");
-        modules.add("org.netbeans");
+        modules.add("org.netbeans.bootstrap");
         turnModules(ud, modules, platform);
+
+        StringBuilder sb = new StringBuilder();
+        String sep = "";
+        for (File f : findClusters()) {
+            turnModules(ud, modules, f);
+            sb.append(sep);
+            sb.append(f.getPath());
+            sep = File.pathSeparator;
+        }
+        System.setProperty("netbeans.dirs", sb.toString());
         
         List<String> args = new ArrayList<String>();
         args.add("--nosplash");
@@ -157,6 +170,25 @@ public class NbModuleSuite extends NbTestSuite {
             Assert.fail("Cannot find utilities JAR");
             return null;
         }
+    }
+    
+    private File[] findClusters() {
+        List<File> clusters = new ArrayList<File>();
+        File plat = findPlatform();
+        
+        for (File f : plat.getParentFile().listFiles()) {
+            if (f.equals(plat)) {
+                continue;
+            }
+            if (!f.getName().matches(clusterRegExp)) {
+                continue;
+            }
+            File m = new File(new File(f, "config"), "Modules");
+            if (m.exists()) {
+                clusters.add(f);
+            }
+        }
+        return clusters.toArray(new File[0]);
     }
     
     private static Pattern CODENAME = Pattern.compile("OpenIDE-Module: *([^/$ \n\r]*)[/]?[0-9]*", Pattern.MULTILINE);
@@ -259,11 +291,17 @@ public class NbModuleSuite extends NbTestSuite {
                 boolean enabled = matcherEnabled.find() && "true".equals(matcherEnabled.group(1));
                 
                 if (modules.contains(n) != enabled) {
-                    String out = 
-                        xml.substring(0, matcherEnabled.start(1)) +
-                        (enabled ? "false" : "true") +
-                        xml.substring(matcherEnabled.end(1));
-                    writeModule(new File(config, m.getName()), out);
+                    assert matcherEnabled.groupCount() == 1 : "Groups: " + matcherEnabled.groupCount() + " for:\n" + xml;
+
+                    try {
+                        String out = 
+                            xml.substring(0, matcherEnabled.start(1)) +
+                            (enabled ? "false" : "true") +
+                            xml.substring(matcherEnabled.end(1));
+                        writeModule(new File(config, m.getName()), out);
+                    } catch (IllegalStateException ex) {
+                        throw (IOException)new IOException("Unparseable:\n" + xml).initCause(ex);
+                    }
                 }
             }
         }
