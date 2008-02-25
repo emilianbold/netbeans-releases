@@ -123,16 +123,7 @@ public final class FileUtil extends Object {
     private static final Map<FileObject, Boolean> archiveFileCache = new WeakHashMap<FileObject,Boolean>();
     private static FileSystem diskFileSystem;
 
-    private FileUtil() {
-    }
-    
-    /**
-     * Refreshes all necessary filesystems. Not all instances of <code>FileObject</code> are refreshed
-     * but just those that represent passed <code>files</code> and their children recursively.
-     * @param files
-     * @since 7.6
-     */
-    public static void refreshFor(File... files) {
+    private static FileSystem getDiskFileSystem(File... files) {
         FileSystem fs = getDiskFileSystem();
         if (fs == null) {
             for (File file : files) {
@@ -143,6 +134,20 @@ public final class FileUtil extends Object {
                 }
             }
         }
+        return fs;
+    }
+
+    private FileUtil() {
+    }
+    
+    /**
+     * Refreshes all necessary filesystems. Not all instances of <code>FileObject</code> are refreshed
+     * but just those that represent passed <code>files</code> and their children recursively.
+     * @param files
+     * @since 7.6
+     */
+    public static void refreshFor(File... files) {
+        FileSystem fs = getDiskFileSystem(files);
         if (fs != null) {
             try {
                 fs.getRoot().setAttribute("request_for_refreshing_files_be_aware_this_is_not_public_api", files);
@@ -151,6 +156,48 @@ public final class FileUtil extends Object {
             }
         } 
     }         
+
+    /**
+     * Refreshes all <code>FileObject</code> that represent files <code>File.listRoots()</code> 
+     * and their children recursively.
+     * @since 7.7
+     */
+    public static void refreshAll() {
+        refreshFor(File.listRoots());
+    }         
+    
+    /**
+     * Registers <code>listener</code> so that it will receive
+     * <code>FileEvents</code> from <code>FileSystems</code> providing instances
+     * of <code>FileObject</code> convertible to <code>java.io.File</code>. 
+     * @param fcl
+     * @see #toFileObject
+     * @since 7.7
+     */
+    public static void addFileChangeListener(FileChangeListener fcl) {
+        FileSystem fs = getDiskFileSystem();
+        if (fs == null) {fs = getDiskFileSystem(File.listRoots());}
+        if (fs != null) {
+            fs.addFileChangeListener(fcl);
+        }
+    }
+    
+    /**
+     * Unregisters <code>listener</code> so that it will no longer receive
+     * <code>FileEvents</code> from <code>FileSystems</code> providing instances
+     * of <code>FileObject</code> convertible to <code>java.io.File</code>      
+     * @param fcl
+     * @see #toFileObject
+     * @since 7.7
+     */
+    public static void removeFileChangeListener(FileChangeListener fcl) {
+        FileSystem fs = getDiskFileSystem();
+        if (fs == null) {fs = getDiskFileSystem(File.listRoots());}
+        if (fs != null) {
+            fs.addFileChangeListener(fcl);
+        }
+    }
+    
     
     /**
      * Executes atomic action. For more info see {@link FileSystem#runAtomicAction}. 
