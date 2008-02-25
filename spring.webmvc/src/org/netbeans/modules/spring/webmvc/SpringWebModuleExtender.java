@@ -335,6 +335,9 @@ public class SpringWebModuleExtender extends WebModuleExtender implements Change
                     if ((resourceName.contains("-servlet.xml") || ((resourceName.equals("redirect.jsp"))))) { // NOI18N
                         line = SpringWebFrameworkUtils.replaceExtensionInTemplates(line, dispatcherMapping);
                     }
+                    if (resourceName.equals("redirect.jsp")) { // NOI18N
+                        line = SpringWebFrameworkUtils.reviseRedirectJsp(line, dispatcherMapping);
+                    }
                     buffer.append(line);
                     buffer.append(lineSeparator);
                     line = reader.readLine();
