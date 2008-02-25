@@ -263,7 +263,6 @@ class LuceneIndex extends Index {
         }
     };
     
-    // TODO - use this one
     private class CustomFieldSelector implements FieldSelector {
         private Set<String> includeFields;
         
@@ -271,7 +270,10 @@ class LuceneIndex extends Index {
             this.includeFields = includeFields;
         }
         public FieldSelectorResult accept(String key) {
-            return includeFields.contains(key) ? FieldSelectorResult.LOAD : FieldSelectorResult.NO_LOAD;
+            // Always load the filename since clients don't know about it but it's needed
+            // to call getPersistentUrl()
+            boolean include = includeFields.contains(key) || key.equals(DocumentUtil.FIELD_FILENAME);
+            return include ? FieldSelectorResult.LOAD : FieldSelectorResult.NO_LOAD;
         }
     }
     

@@ -105,11 +105,6 @@ class TestCompilationInfo extends CompilationInfo {
     
     private Map<String,ParserResult> embeddedResults = new HashMap<String,ParserResult>();
     
-    public void addEmbeddingResult(String mimeType, ParserResult result) {
-        embeddedResults.put(mimeType, result);
-        result.setInfo(this);
-    }
-
     @Override
     public Collection<? extends ParserResult> getEmbeddedResults(String mimeType) {
         ParserResult result = getEmbeddedResult(mimeType, 0);
@@ -157,6 +152,7 @@ TranslatedSource translatedSource = null; // TODO
                 parserResult.addError(error);
             }
             embeddedResults.put(RubyMimeResolver.RUBY_MIME_TYPE, parserResult);
+            parserResult.setInfo(this);
         }
         
         return embeddedResults.get(embeddedMimeType);

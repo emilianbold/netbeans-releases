@@ -58,8 +58,6 @@
 
         <localizing-bundle>org.netbeans.modules.websvc.saas.services.zillow.Bundle</localizing-bundle>
 
-        <icon16>org/netbeans/modules/websvc/saas/services/zillow/resources/zillow16.png</icon16>
-
         <group name="Zillow">
         </group>
 

@@ -184,7 +184,9 @@ public class GsfCompletionProvider implements CompletionProvider {
             if (!ts.moveNext() || ts.move(offset) == 0) {
                 return true;
             }
-            ts.moveNext(); // Move to the next token after move(offset)
+            if (!ts.moveNext()) { // Move to the next token after move(offset)
+                return false;
+            }
 
             TokenId tokenId = ts.token().id();
             

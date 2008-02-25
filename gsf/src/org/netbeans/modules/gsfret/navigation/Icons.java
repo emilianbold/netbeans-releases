@@ -139,6 +139,7 @@ public final class Icons {
         case ERROR:
             img = Utilities.loadImage( ICON_BASE + "error-glyph" + GIF_EXTENSION );
             break;
+        case PACKAGE:
         case MODULE:
             img = Utilities.loadImage( ICON_BASE + "package" + GIF_EXTENSION );
             break;
@@ -149,6 +150,7 @@ public final class Icons {
             img = Utilities.loadImage( ICON_BASE + "html_element" + PNG_EXTENSION );
             break;
         case VARIABLE:
+        case PROPERTY:
         case GLOBAL:
         case ATTRIBUTE:
         case FIELD:

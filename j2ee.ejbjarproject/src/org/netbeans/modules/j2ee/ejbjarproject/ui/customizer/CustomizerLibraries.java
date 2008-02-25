@@ -60,7 +60,10 @@ import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.PlatformsCustomizer;
 import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.modules.j2ee.common.project.classpath.ClassPathSupport;
+import org.netbeans.modules.j2ee.common.project.classpath.ClassPathSupport.Item;
 import org.netbeans.modules.j2ee.common.project.ui.ClassPathUiSupport;
+import org.netbeans.modules.j2ee.common.project.ui.EditMediator;
+import org.netbeans.modules.j2ee.ejbjarproject.classpath.ClassPathSupportCallbackImpl;
 import org.netbeans.modules.j2ee.ejbjarproject.ui.EjbJarLogicalViewProvider;
 import org.netbeans.modules.java.api.common.ui.PlatformUiSupport;
 import org.netbeans.spi.java.project.support.ui.SharableLibrariesUtils;
@@ -93,49 +96,53 @@ public class CustomizerLibraries extends JPanel implements HelpCtx.Provider, Lis
         
         jTableCpC.setModel( uiProperties.JAVAC_CLASSPATH_MODEL );
         initTableVisualProperties(jTableCpC);
-        uiProperties.CLASS_PATH_TABLE_ITEM_RENDERER.setBooleanRenderer(jTableCpC.getDefaultRenderer(Boolean.class));
         jTableCpC.setDefaultRenderer( ClassPathSupport.Item.class, uiProperties.CLASS_PATH_TABLE_ITEM_RENDERER );
-        jTableCpC.setDefaultRenderer( Boolean.class, uiProperties.CLASS_PATH_TABLE_ITEM_RENDERER );
         
-        EjbJarClassPathUi.EditMediator.register( uiProperties.getProject(),
-                                               EjbJarClassPathUi.EditMediator.createListComponent( jTableCpC, uiProperties.JAVAC_CLASSPATH_MODEL.getDefaultListModel()),  
-                                               jButtonAddJarC.getModel(), 
-                                               jButtonAddLibraryC.getModel(), 
-                                               jButtonAddArtifactC.getModel(), 
-                                               jButtonRemoveC.getModel(), 
-                                               jButtonMoveUpC.getModel(), 
-                                               jButtonMoveDownC.getModel(),
-                                               jButtonEditC.getModel(),
-                                               uiProperties.SHARED_LIBRARIES_MODEL,
-                                               true );
+        EditMediator.register( uiProperties.getProject(),
+                               uiProperties.getProject().getAntProjectHelper(),
+                               uiProperties.getProject().getReferenceHelper(),
+                               EditMediator.createListComponent( jTableCpC, uiProperties.JAVAC_CLASSPATH_MODEL.getDefaultListModel()),  
+                               jButtonAddJarC.getModel(), 
+                               jButtonAddLibraryC.getModel(), 
+                               jButtonAddArtifactC.getModel(), 
+                               jButtonRemoveC.getModel(), 
+                               jButtonMoveUpC.getModel(), 
+                               jButtonMoveDownC.getModel(),
+                               jButtonEditC.getModel(),
+                               uiProperties.SHARED_LIBRARIES_MODEL,
+                               uiProperties.getProject().getClassPathUiSupportCallback());
         
         jListCpCT.setModel( uiProperties.JAVAC_TEST_CLASSPATH_MODEL);
         jListCpCT.setCellRenderer( uiProperties.CLASS_PATH_LIST_RENDERER );
-        EjbJarClassPathUi.EditMediator.register( uiProperties.getProject(),
-                                               EjbJarClassPathUi.EditMediator.createListComponent( jListCpCT) , 
-                                               jButtonAddJarCT.getModel(), 
-                                               jButtonAddLibraryCT.getModel(), 
-                                               jButtonAddArtifactCT.getModel(), 
-                                               jButtonRemoveCT.getModel(), 
-                                               jButtonMoveUpCT.getModel(), 
-                                               jButtonMoveDownCT.getModel(),
-                                               jButtonEditCT.getModel(),
-                                               uiProperties.SHARED_LIBRARIES_MODEL,
-                                               false );
+        EditMediator.register( uiProperties.getProject(),
+                               uiProperties.getProject().getAntProjectHelper(),
+                               uiProperties.getProject().getReferenceHelper(),
+                               EditMediator.createListComponent( jListCpCT) , 
+                               jButtonAddJarCT.getModel(), 
+                               jButtonAddLibraryCT.getModel(), 
+                               jButtonAddArtifactCT.getModel(), 
+                               jButtonRemoveCT.getModel(), 
+                               jButtonMoveUpCT.getModel(), 
+                               jButtonMoveDownCT.getModel(),
+                               jButtonEditCT.getModel(),
+                               uiProperties.SHARED_LIBRARIES_MODEL,
+                               null);
                 
         jListCpRT.setModel( uiProperties.RUN_TEST_CLASSPATH_MODEL );
         jListCpRT.setCellRenderer( uiProperties.CLASS_PATH_LIST_RENDERER );
-        EjbJarClassPathUi.EditMediator.register( uiProperties.getProject(),
-                                               EjbJarClassPathUi.EditMediator.createListComponent( jListCpRT), 
-                                               jButtonAddJarRT.getModel(), 
-                                               jButtonAddLibraryRT.getModel(), 
-                                               jButtonAddArtifactRT.getModel(), 
-                                               jButtonRemoveRT.getModel(), 
-                                               jButtonMoveUpRT.getModel(), 
-                                               jButtonMoveDownRT.getModel(),
-                                               jButtonEditRT.getModel(),
-                                               uiProperties.SHARED_LIBRARIES_MODEL,
-                                               false );
+        EditMediator.register( uiProperties.getProject(),
+                               uiProperties.getProject().getAntProjectHelper(),
+                               uiProperties.getProject().getReferenceHelper(),
+                               EditMediator.createListComponent( jListCpRT), 
+                               jButtonAddJarRT.getModel(), 
+                               jButtonAddLibraryRT.getModel(), 
+                               jButtonAddArtifactRT.getModel(), 
+                               jButtonRemoveRT.getModel(), 
+                               jButtonMoveUpRT.getModel(), 
+                               jButtonMoveDownRT.getModel(),
+                               jButtonEditRT.getModel(),
+                               uiProperties.SHARED_LIBRARIES_MODEL,
+                               null);
         
         jCheckBoxBuildSubprojects.setModel( uiProperties.NO_DEPENDENCIES_MODEL );                        
         librariesLocation.setDocument(uiProperties.SHARED_LIBRARIES_MODEL);

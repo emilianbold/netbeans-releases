@@ -41,21 +41,17 @@
 
 package org.netbeans.modules.beans.beaninfo;
 
-import java.util.Collection;
+import java.util.Collections;
 import java.util.Iterator;
-
+import java.util.List;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
-import org.netbeans.jmi.javamodel.JavaClass;
 
 /** Implements children for basic source code patterns
  *
  * @author Petr Hrebejk
  */
-public final class BiChildren extends Children.Keys {
-
-    /** The class element its subelements are represented */
-    protected JavaClass        classElement;
+public final class BiChildren extends Children.Keys<Class<?>> {
 
     /** Object for finding patterns in class */
     private BiAnalyser       biAnalyser;
@@ -66,7 +62,7 @@ public final class BiChildren extends Children.Keys {
     /** Create pattern children. The children are initilay unfiltered.
      */ 
 
-    public BiChildren ( BiAnalyser biAnalyser, Class[] keys ) {
+    public BiChildren ( BiAnalyser biAnalyser, Class<?>[] keys ) {
         super();
         this.biAnalyser = biAnalyser;
         setKeys( keys );
@@ -74,13 +70,15 @@ public final class BiChildren extends Children.Keys {
 
     /** Called when the preparetion of nodes is needed
      */
+    @Override
     protected void addNotify() {
         //refreshAllKeys ();
     }
 
     /** Called when all children are garbage collected */
+    @Override
     protected void removeNotify() {
-        setKeys( java.util.Collections.EMPTY_SET );
+        setKeys( Collections.<Class<?>>emptySet() );
     }
 
     /** Gets the pattern analyser which manages the patterns */
@@ -93,7 +91,7 @@ public final class BiChildren extends Children.Keys {
 
     /** Creates nodes for given key.
     */
-    protected Node[] createNodes( final Object key ) {
+    protected Node[] createNodes( final Class<?> key ) {
         if ( key == BiFeature.Descriptor.class )
             return createNodesFromFeatures( biAnalyser.getDescriptor() );
         if ( key == BiFeature.Property.class )
@@ -120,14 +118,14 @@ public final class BiChildren extends Children.Keys {
 
     // Utility methods --------------------------------------------------------------------
 
-    Node[] createNodesFromFeatures( Collection col ) {
+    Node[] createNodesFromFeatures( List<? extends BiFeature> col ) {
 
-        Iterator it = col.iterator();
+        Iterator<? extends BiFeature> it = col.iterator();
 
         Node[] nodes = new Node[ col.size() ];
 
         for ( int i = 0; it.hasNext() && i < nodes.length; i++ )
-            nodes[i] = new BiFeatureNode( (BiFeature) it.next(), biAnalyser );
+            nodes[i] = new BiFeatureNode( it.next(), biAnalyser );
 
         return nodes;
     }

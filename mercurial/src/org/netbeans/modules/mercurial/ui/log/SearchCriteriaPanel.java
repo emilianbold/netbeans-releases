@@ -96,8 +96,8 @@ class SearchCriteriaPanel extends javax.swing.JPanel {
         fromLabel.setToolTipText(NbBundle.getMessage(SearchHistoryPanel.class,  "TT_IncomingFrom"));
         toLabel.setToolTipText(NbBundle.getMessage(SearchHistoryPanel.class,  "TT_IncomingTo"));
 
+        tfFrom.setText(NbBundle.getMessage(SearchHistoryPanel.class,  "TTF_IncomingFrom"));
         tfFrom.setEnabled(false);
-        fromLabel.setEnabled(false);
     }
     
     void setForOut() {
@@ -107,9 +107,9 @@ class SearchCriteriaPanel extends javax.swing.JPanel {
         usernameLabel.setToolTipText(NbBundle.getMessage(SearchHistoryPanel.class,  "TT_OutUsername"));
         fromLabel.setToolTipText(NbBundle.getMessage(SearchHistoryPanel.class,  "TT_OutFrom"));
         toLabel.setToolTipText(NbBundle.getMessage(SearchHistoryPanel.class,  "TT_OutTo"));
-
+        
+        tfFrom.setText(NbBundle.getMessage(SearchHistoryPanel.class,  "TTF_OutFrom"));
         tfFrom.setEnabled(false);
-        fromLabel.setEnabled(false);
     }
     
     private Date parseDate(String s) {
