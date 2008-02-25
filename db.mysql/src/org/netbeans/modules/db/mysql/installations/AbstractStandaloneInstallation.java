@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
- *
+ * 
+ * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * 
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,13 +20,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
+ * 
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -37,21 +31,69 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ * 
+ * Contributor(s):
+ * 
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.spring.beans.refactoring.plugins;
 
-import org.netbeans.modules.refactoring.spi.ui.TreeElement;
-import org.netbeans.modules.refactoring.spi.ui.TreeElementFactoryImplementation;
+package org.netbeans.modules.db.mysql.installations;
+
+import org.netbeans.modules.db.mysql.Installation;
+import org.openide.util.Utilities;
 
 /**
- * @author John Baker
+ * Defines the installation of MySQL from mysql.com or other standalone
+ * mechanism, where it is not installed as a service and you directly
+ * call the commands to start and stop
+ * 
+ * @author David Van Couvering
  */
-public final class SpringBeansRefactoringTreeImpl implements TreeElementFactoryImplementation {
-
-    public TreeElement getTreeElement(Object object) {        
-        return null;
+public abstract class AbstractStandaloneInstallation extends AbstractInstallation {
+    private static final String START_PATH="/mysqld";
+    private static final String STOP_PATH="/mysqladmin";
+    private static final String DEFAULT_PORT = "3306";
+    
+    private String basePath;
+    
+    protected AbstractStandaloneInstallation(String basePath) {
+        this.basePath = basePath;
+    }
+            
+    public boolean isStackInstall() {
+        return false;
     }
 
-    public void cleanUp() {
+    public String[] getAdminCommand() {
+        return new String[] { "", "" };
+    }
+
+    public String[] getStartCommand() {
+        String command = basePath + START_PATH; // NOI18N
+        return new String[] { command, "" };
+    }
+
+    public String[] getStopCommand() {
+        String command = basePath + STOP_PATH; // NOI18N
+        return new String[] { command, "-u root stop" };
+    }
+    
+    public String getDefaultPort() {
+        return DEFAULT_PORT;
+    }
+
+    @Override
+    protected String getBasePath() {
+        return basePath;
+    }
+
+    @Override
+    protected String getStartPath() {
+        return START_PATH;
+    }
+
+    @Override
+    protected String getStopPath() {
+        return STOP_PATH;
     }
 }

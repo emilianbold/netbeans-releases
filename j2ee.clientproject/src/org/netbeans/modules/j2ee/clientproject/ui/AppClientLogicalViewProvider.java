@@ -856,7 +856,7 @@ public class AppClientLogicalViewProvider implements LogicalViewProvider {
                     new String[]{ProjectProperties.BUILD_CLASSES_DIR},
                     "platform.active", // NOI18N
                     AppClientProjectProperties.JAVA_PLATFORM, // NOI18N
-                    AppClientProjectProperties.J2EE_SERVER_INSTANCE,
+                    AppClientProjectProperties.J2EE_PLATFORM_CLASSPATH,
                     new Action[]{
                         LibrariesNode.createAddProjectAction(project, project.getSourceRoots()),
                         LibrariesNode.createAddLibraryAction(resolver, project.getSourceRoots(), null),

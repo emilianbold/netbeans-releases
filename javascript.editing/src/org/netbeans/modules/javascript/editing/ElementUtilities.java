@@ -99,9 +99,12 @@ public class ElementUtilities {
         }
 
         if (element instanceof IndexedElement) {
+            IndexedElement indexedElement = (IndexedElement) element;
             // this was called in code moved to getNode
-            List<String> comments = ((IndexedElement)element).getComments();
-            return comments;
+            List<String> comments = indexedElement.getComments();
+            if (comments != null || indexedElement.getDocOffset() == -1) {
+                return comments;
+            }
         }
         
         Node node = getNode(info, element);

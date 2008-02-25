@@ -105,6 +105,7 @@ made subject to such option by the copyright holder.
         <property name="jnlp.master.dir" location="build/tmp/master-jnlp"/>
         <mkdir dir="${jnlp.master.dir}"/>
         
+        <property name="dist.dir" location="dist"/>
         <property name="disabled.modules" value=""/>
         <property name="enabled.clusters" value=""/>
         <property name="disabled.clusters" value=""/>
@@ -221,14 +222,14 @@ made subject to such option by the copyright holder.
  </servlet-mapping>
 </web-app>         
 ]]></echo>
-        <mkdir dir="dist"/>
-        <war basedir="${jnlp.dest.dir}" destfile="dist/${app.name}.war" webxml="build/tmp/web.xml">
+        <mkdir dir="${dist.dir}"/>
+        <war basedir="${jnlp.dest.dir}" destfile="${dist.dir}/${app.name}.war" webxml="build/tmp/web.xml">
             <zipfileset dir="${jnlp.servlet.jar}/.." file="${jnlp.servlet.jar}" prefix="WEB-INF/lib"/>
         </war>
     </target>
 
     <target name="build-jnlp-local" depends="build-jnlp-nowar">
-        <property name="build.jnlp.local.dir" location="dist/jnlp/local"/>
+        <property name="build.jnlp.local.dir" location="${dist.dir}/jnlp/local"/>
         <mkdir dir="${build.jnlp.local.dir}"/>
         <mkdir dir="${build.jnlp.local.dir}/netbeans/"/>
         <mkdir dir="${build.jnlp.local.dir}/app/"/>

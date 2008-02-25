@@ -58,8 +58,6 @@
 
         <localizing-bundle>org.netbeans.modules.websvc.saas.services.google.Bundle</localizing-bundle>
 
-        <icon16>org/netbeans/modules/websvc/saas/services/google/resources/google16.png</icon16>
-
         <group name="Google">
         </group>
 

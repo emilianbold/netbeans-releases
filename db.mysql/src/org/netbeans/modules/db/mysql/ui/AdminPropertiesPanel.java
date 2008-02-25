@@ -12,6 +12,9 @@ import javax.swing.JFileChooser;
 import javax.swing.JTextField;
 import javax.swing.UIManager;
 import javax.swing.event.DocumentListener;
+import org.netbeans.modules.db.mysql.Installation;
+import org.netbeans.modules.db.mysql.Installation.Command;
+import org.netbeans.modules.db.mysql.InstallationSupport;
 import org.netbeans.modules.db.mysql.MySQLOptions;
 import org.netbeans.modules.db.mysql.ServerInstance;
 import org.netbeans.modules.db.mysql.Utils;
@@ -33,6 +36,7 @@ public class AdminPropertiesPanel extends javax.swing.JPanel {
         
         public void removeUpdate(javax.swing.event.DocumentEvent e) {
             validatePanel();
+            
         }
 
         public void insertUpdate(javax.swing.event.DocumentEvent e) {
@@ -44,7 +48,7 @@ public class AdminPropertiesPanel extends javax.swing.JPanel {
         }
 
     };
-
+    
 
     private void validatePanel() {
         if (descriptor == null) {
@@ -81,6 +85,13 @@ public class AdminPropertiesPanel extends javax.swing.JPanel {
             messageLabel.setText(" "); // NOI18N
             descriptor.setValid(true);
         }
+    }
+    
+    /** If one command is updated, fill in the other values if it is for
+     * a known installation.
+     */
+    private void fillInCommands() {
+        
     }
 
     /** Creates new form PropertiesPanel */
@@ -187,6 +198,11 @@ public class AdminPropertiesPanel extends javax.swing.JPanel {
                 txtAdminActionPerformed(evt);
             }
         });
+        txtAdmin.addFocusListener(new java.awt.event.FocusAdapter() {
+            public void focusLost(java.awt.event.FocusEvent evt) {
+                txtAdminFocusLost(evt);
+            }
+        });
 
         btnAdminBrowse.setText(org.openide.util.NbBundle.getMessage(AdminPropertiesPanel.class, "AdminPropertiesPanel.btnAdminBrowse.text")); // NOI18N
         btnAdminBrowse.addActionListener(new java.awt.event.ActionListener() {
@@ -198,6 +214,16 @@ public class AdminPropertiesPanel extends javax.swing.JPanel {
         txtAdminArgs.setText(org.openide.util.NbBundle.getMessage(AdminPropertiesPanel.class, "AdminPropertiesPanel.txtAdminArgs.text")); // NOI18N
 
         txtStart.setText(org.openide.util.NbBundle.getMessage(AdminPropertiesPanel.class, "AdminPropertiesPanel.txtStart.text")); // NOI18N
+        txtStart.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                txtStartActionPerformed(evt);
+            }
+        });
+        txtStart.addFocusListener(new java.awt.event.FocusAdapter() {
+            public void focusLost(java.awt.event.FocusEvent evt) {
+                txtStartFocusLost(evt);
+            }
+        });
 
         btnStartBrowse.setText(org.openide.util.NbBundle.getMessage(AdminPropertiesPanel.class, "AdminPropertiesPanel.btnStartBrowse.text")); // NOI18N
         btnStartBrowse.addActionListener(new java.awt.event.ActionListener() {
@@ -341,7 +367,7 @@ private void btnAdminBrowseActionPerformed(java.awt.event.ActionEvent evt) {//GE
 }//GEN-LAST:event_btnAdminBrowseActionPerformed
 
 private void txtAdminActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txtAdminActionPerformed
-// TODO add your handling code here:
+
 }//GEN-LAST:event_txtAdminActionPerformed
 
 private void txtStopActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txtStopActionPerformed
@@ -359,6 +385,33 @@ private void btnStopBrowseActionPerformed(java.awt.event.ActionEvent evt) {//GEN
 private void txtStartArgsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txtStartArgsActionPerformed
 // TODO add your handling code here:
 }//GEN-LAST:event_txtStartArgsActionPerformed
+
+private void txtAdminFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_txtAdminFocusLost
+
+}//GEN-LAST:event_txtAdminFocusLost
+
+private void txtStartFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_txtStartFocusLost
+
+}//GEN-LAST:event_txtStartFocusLost
+
+private void txtStartActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txtStartActionPerformed
+    /** TODO - nice idea, but no time to do in time for 6.1 
+    String startPath = getStartPath();    
+    
+    Installation installation = InstallationSupport.findInstallationByCommand(
+            startPath, Command.START);
+    if ( installation != null ) {
+        String[] command = installation.getAdminCommand();
+        txtAdmin.setText(command[0]);
+        txtAdminArgs.setText(command[1]);
+        
+        command = installation.getStopCommand();
+        txtStop.setText(command[0]);
+        txtStopArgs.setText(command[1]);
+    }
+     */
+
+}//GEN-LAST:event_txtStartActionPerformed
 
 
 

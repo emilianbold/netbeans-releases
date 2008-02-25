@@ -157,7 +157,7 @@ class EditJarPanel extends javax.swing.JPanel {
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                             .add(btnSource)
                             .add(btnJavadoc)))
-                    .add(txtJar, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 425, Short.MAX_VALUE))
+                    .add(txtJar, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 435, Short.MAX_VALUE))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -181,9 +181,12 @@ class EditJarPanel extends javax.swing.JPanel {
         );
 
         lblJar.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(EditJarPanel.class, "ACSD_lblJar")); // NOI18N
+        txtJar.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(EditJarPanel.class, "ACSD_lblJar")); // NOI18N
         lblJavadoc.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(EditJarPanel.class, "ACSD_lblJavadoc")); // NOI18N
+        txtJavadoc.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(EditJarPanel.class, "ACSD_lblJavadoc")); // NOI18N
         btnJavadoc.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(EditJarPanel.class, "ACSD_btnJavadoc")); // NOI18N
         lblSource.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(EditJarPanel.class, "ACSD_lblSource")); // NOI18N
+        txtSource.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(EditJarPanel.class, "ACSD_lblSource")); // NOI18N
         btnSource.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(EditJarPanel.class, "ACSD_btnSource")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
     private void btnJavadocActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnJavadocActionPerformed

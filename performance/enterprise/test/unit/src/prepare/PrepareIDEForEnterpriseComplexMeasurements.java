@@ -157,7 +157,7 @@ public class PrepareIDEForEnterpriseComplexMeasurements extends JellyTestCase {
         
         new JButtonOperator(addServerInstanceDialog,nextButtonCaption).push();
         
-        new JTextFieldOperator(addServerInstanceDialog, "glassfish").enterText(appServerPath);
+        new JTextFieldOperator(addServerInstanceDialog).enterText(appServerPath);
         
         new JButtonOperator(addServerInstanceDialog,finishButtonCaption).push();
         
