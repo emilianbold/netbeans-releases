@@ -321,7 +321,9 @@ public class TestCreator {
                     }
                     result.add(testFileObj);
                     // add the test class to the JMUnitTestClasses property
-                    TestUtils.addTestClassProperty(this.mProject, this.aph, packageName + "." + TestUtils.getTestClassName(srcClassNameShort));
+                    TestUtils.addTestClassProperty(this.mProject, this.aph, (packageName != null && packageName.trim().length() != 0) ? 
+                        (packageName + "." + TestUtils.getTestClassName(srcClassNameShort)) : 
+                        TestUtils.getTestClassName(srcClassNameShort));
 
                 }
             } catch (IOException ex) {
