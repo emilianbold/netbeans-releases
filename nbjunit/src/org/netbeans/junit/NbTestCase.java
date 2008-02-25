@@ -732,7 +732,7 @@ public abstract class NbTestCase extends TestCase implements NbTest {
     }
     
     // private method for deleting a file/directory (and all its subdirectories/files)
-    private void deleteFile(File file) throws IOException {
+    private static void deleteFile(File file) throws IOException {
         if (file.isDirectory()) {
             // file is a directory - delete sub files first
             File files[] = file.listFiles();
@@ -750,7 +750,7 @@ public abstract class NbTestCase extends TestCase implements NbTest {
     }
     
     // private method for deleting every subfiles/subdirectories of a file object
-    private void deleteSubFiles(File file) throws IOException {
+    static void deleteSubFiles(File file) throws IOException {
         if (file.isDirectory()) {
             File files[] = file.listFiles();
             for (int i = 0; i < files.length; i++) {
