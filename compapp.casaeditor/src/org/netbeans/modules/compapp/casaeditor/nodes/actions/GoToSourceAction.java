@@ -51,6 +51,7 @@ import org.netbeans.modules.compapp.casaeditor.model.casa.CasaEndpointRef;
 import org.netbeans.modules.compapp.casaeditor.model.casa.CasaServiceEngineServiceUnit;
 import org.netbeans.modules.compapp.casaeditor.model.casa.CasaWrapperModel;
 import org.netbeans.modules.compapp.casaeditor.nodes.EndpointNode;
+import org.netbeans.modules.compapp.casaeditor.nodes.ServiceUnitProcessNode;
 import org.netbeans.spi.project.SubprojectProvider;
 import org.openide.cookies.EditCookie;
 import org.openide.cookies.EditorCookie;
@@ -76,14 +77,24 @@ public class GoToSourceAction extends NodeAction {
             return;
         }
 
-        if (activatedNodes[0] instanceof EndpointNode) {
+        CasaServiceEngineServiceUnit sesu = null;
+        String filePath = null;
+        
+        if (activatedNodes[0] instanceof ServiceUnitProcessNode) {
+            ServiceUnitProcessNode node = ((ServiceUnitProcessNode) activatedNodes[0]);
+            sesu = (CasaServiceEngineServiceUnit) node.getServiceEngineServiceUnit();
+            filePath = node.getFilePath();
+        } else if (activatedNodes[0] instanceof EndpointNode) {
             EndpointNode node = ((EndpointNode) activatedNodes[0]);
             CasaEndpointRef endpointRef = (CasaEndpointRef) node.getData();
-
-            Project ownerProject = getOwnerProject(endpointRef);
+            sesu = (CasaServiceEngineServiceUnit) endpointRef.getParent();
+            filePath = endpointRef.getFilePath();
+        }
+        
+        if (sesu != null && filePath != null) {
+            Project ownerProject = getOwnerProject(sesu);
             FileObject ownerProjectDir = ownerProject.getProjectDirectory();
 
-            String filePath = endpointRef.getFilePath();
             if (filePath != null && filePath.length() > 0) {
                 filePath = "src/" + filePath; // NOI18N
                 FileObject fileObject = ownerProjectDir.getFileObject(filePath);
@@ -105,8 +116,9 @@ public class GoToSourceAction extends NodeAction {
                         }
                     }
                     SwingUtilities.invokeLater(new Runnable() {
+
                         public void run() {
-                            requestViewOpen(dataObject);                            
+                            requestViewOpen(dataObject);
                         }
                     });
                 } catch (DataObjectNotFoundException e) {
@@ -115,27 +127,27 @@ public class GoToSourceAction extends NodeAction {
             }
         }
     }
-        
+
     // This is a slightly modified version based on BpelMultiViewSupport.
     private void requestViewOpen(DataObject targetDO) {
-        
+
         List<TopComponent> associatedTCs = new ArrayList<TopComponent>();
         TopComponent activeTC = TopComponent.getRegistry().getActivated();
-        if (targetDO ==  (DataObject) activeTC.getLookup().lookup(DataObject.class)) {
+        if (targetDO == (DataObject) activeTC.getLookup().lookup(DataObject.class)) {
             associatedTCs.add(activeTC);
         }
         Set openTCs = TopComponent.getRegistry().getOpened();
         for (Object tc : openTCs) {
             TopComponent topComponent = (TopComponent) tc;
-            if (targetDO == (DataObject)topComponent.getLookup().lookup(DataObject.class)) {
+            if (targetDO == (DataObject) topComponent.getLookup().lookup(DataObject.class)) {
                 associatedTCs.add(topComponent);
             }
         }
-        
+
         // Use the first TC in the list that has the desired perspective
-        for (TopComponent targetTC: associatedTCs){
+        for (TopComponent targetTC : associatedTCs) {
             MultiViewHandler handler = MultiViews.findMultiViewHandler(targetTC);
-            if ( handler==null) {
+            if (handler == null) {
                 continue;
             }
             MultiViewPerspective[] p = handler.getPerspectives();
@@ -168,11 +180,9 @@ public class GoToSourceAction extends NodeAction {
     /**
      * Gets the owner project for the given endpoint reference.
      */
-    private Project getOwnerProject(CasaEndpointRef endpointRef) {
-        CasaWrapperModel model = (CasaWrapperModel) endpointRef.getModel();
+    private Project getOwnerProject(CasaServiceEngineServiceUnit sesu) {
+        CasaWrapperModel model = (CasaWrapperModel) sesu.getModel();
 
-        CasaServiceEngineServiceUnit sesu =
-                (CasaServiceEngineServiceUnit) endpointRef.getParent();
         String unitName = sesu.getUnitName();
 
         Project jbiProject = model.getJBIProject();

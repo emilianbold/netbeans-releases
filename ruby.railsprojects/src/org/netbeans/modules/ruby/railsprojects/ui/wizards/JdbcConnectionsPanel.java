@@ -42,6 +42,9 @@ package org.netbeans.modules.ruby.railsprojects.ui.wizards;
 import org.netbeans.api.db.explorer.ConnectionManager;
 import org.netbeans.api.db.explorer.DatabaseConnection;
 import org.netbeans.api.db.explorer.support.DatabaseExplorerUIs;
+import org.netbeans.api.ruby.platform.RubyPlatform;
+import org.netbeans.modules.ruby.railsprojects.database.RailsDatabaseConfiguration;
+import org.netbeans.modules.ruby.railsprojects.database.RailsJdbcAsAdapterConnection;
 import org.netbeans.modules.ruby.railsprojects.database.RailsJdbcConnection;
 import org.openide.WizardDescriptor;
 import org.openide.WizardValidationException;
@@ -91,9 +94,9 @@ public class JdbcConnectionsPanel extends SettingsPanel {
             .add(layout.createSequentialGroup()
                 .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(developmentLabel)
                     .add(testLabel)
-                    .add(productionLabel))
+                    .add(productionLabel)
+                    .add(developmentLabel))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(productionComboBox, 0, 384, Short.MAX_VALUE)
@@ -106,17 +109,17 @@ public class JdbcConnectionsPanel extends SettingsPanel {
             .add(layout.createSequentialGroup()
                 .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(developmentLabel)
-                    .add(developmentComboBox, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .add(18, 18, 18)
+                    .add(developmentComboBox, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(developmentLabel))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(testLabel)
                     .add(testComboBox, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .add(18, 18, 18)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(productionLabel)
                     .add(productionComboBox, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(37, Short.MAX_VALUE))
+                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
 
@@ -135,7 +138,14 @@ public class JdbcConnectionsPanel extends SettingsPanel {
         DatabaseConnection devel = (DatabaseConnection) developmentComboBox.getSelectedItem();
         DatabaseConnection production = (DatabaseConnection) productionComboBox.getSelectedItem();
         DatabaseConnection test = (DatabaseConnection) testComboBox.getSelectedItem();
-        settings.putProperty(NewRailsProjectWizardIterator.RAILS_DEVELOPMENT_DB, new RailsJdbcConnection(devel, test, production));
+        RailsDatabaseConfiguration databaseConfiguration = null;
+        Boolean jdbc = (Boolean) settings.getProperty(NewRailsProjectWizardIterator.JDBC_WN);
+        if (jdbc != null && jdbc.booleanValue()) {
+            databaseConfiguration = new RailsJdbcConnection(devel, test, production);
+        } else {
+            databaseConfiguration = new RailsJdbcAsAdapterConnection(devel, test, production);
+        }
+        settings.putProperty(NewRailsProjectWizardIterator.RAILS_DEVELOPMENT_DB, databaseConfiguration);
     }
 
     @Override

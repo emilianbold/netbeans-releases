@@ -47,7 +47,7 @@ import org.netbeans.api.project.ProjectManager;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.j2ee.clientproject.api.AppClientProjectGenerator;
 import org.netbeans.modules.j2ee.clientproject.test.TestUtil;
-import org.netbeans.modules.j2ee.clientproject.ui.customizer.AppClientProjectProperties;
+import org.netbeans.modules.j2ee.common.project.ui.ProjectProperties;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
@@ -123,7 +123,7 @@ public class AppClientProjectClassPathExtenderTest extends NbTestCase {
         
         EditableProperties ep = new EditableProperties();
         
-        ep.put(AppClientProjectProperties.JAVAC_CLASSPATH, "y");
+        ep.put(ProjectProperties.JAVAC_CLASSPATH, "y");
         
         helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, ep);
     }

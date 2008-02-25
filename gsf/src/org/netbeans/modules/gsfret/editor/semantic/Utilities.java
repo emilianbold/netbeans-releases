@@ -44,9 +44,9 @@ import java.awt.Color;
 import java.util.Collection;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
-import org.netbeans.api.gsf.ColoringAttributes;
-import org.netbeans.api.gsf.ParserResult;
-import org.netbeans.api.gsf.PositionManager;
+import org.netbeans.modules.gsf.api.ColoringAttributes;
+import org.netbeans.modules.gsf.api.ParserResult;
+import org.netbeans.modules.gsf.api.PositionManager;
 import org.netbeans.modules.editor.highlights.spi.Highlight;
 import org.netbeans.modules.gsf.Language;
 

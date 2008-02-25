@@ -1,0 +1,32 @@
+
+
+Document 0
+Delete:  source : <TESTURL>/simple.js
+
+
+
+Document 1
+Indexed:
+  base2 : boo;DonaldDuck.Mickey.Baz.boo;boo|FUNCTION|param;0;;;;
+  base2 : global1;;global1|GLOBAL|;;0;;;Foo.Bar;
+  base2 : global2;;global2|GLOBAL|;;0;90;;Array;
+  base2 : global3;;global3|GLOBAL|;;0;;;org.foo.bar.Baz;
+  base2 : method1;;method1|FUNCTION|;0;0;;;
+  base2 : method2;;method2|FUNCTION|;0;28;;;
+  base2 : method2;;method2|FUNCTION|;0;4c;;;
+  fqn2 : donaldduck.mickey.baz.boo.boo;;DonaldDuck.Mickey.Baz.boo.boo|FUNCTION|param;0;;;;
+  fqn2 : global1;;global1|GLOBAL|;;0;;;Foo.Bar;
+  fqn2 : global2;;global2|GLOBAL|;;0;90;;Array;
+  fqn2 : global3;;global3|GLOBAL|;;0;;;org.foo.bar.Baz;
+  fqn2 : method1;;method1|FUNCTION|;0;0;;;
+  fqn2 : method2;;method2|FUNCTION|;0;28;;;
+  fqn2 : method2;;method2|FUNCTION|;0;4c;;;
+  lcbase2 : boo;DonaldDuck.Mickey.Baz.boo;boo|FUNCTION|param;0;;;;
+  lcbase2 : global1;;global1|GLOBAL|;;0;;;Foo.Bar;
+  lcbase2 : global2;;global2|GLOBAL|;;0;90;;Array;
+  lcbase2 : global3;;global3|GLOBAL|;;0;;;org.foo.bar.Baz;
+  lcbase2 : method1;;method1|FUNCTION|;0;0;;;
+  lcbase2 : method2;;method2|FUNCTION|;0;28;;;
+  lcbase2 : method2;;method2|FUNCTION|;0;4c;;;
+
+Not Indexed:

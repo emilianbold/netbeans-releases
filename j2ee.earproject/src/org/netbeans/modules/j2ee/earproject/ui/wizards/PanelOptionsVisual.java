@@ -51,11 +51,11 @@ import javax.swing.DefaultComboBoxModel;
 import javax.swing.JPanel;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import org.netbeans.modules.j2ee.common.project.ui.UserProjectSettings;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.ServerManager;
-import org.netbeans.modules.j2ee.earproject.ui.FoldersListSettings;
 import org.netbeans.modules.j2ee.earproject.ui.customizer.EarProjectProperties;
 import org.openide.WizardDescriptor;
 import org.openide.util.NbBundle;
@@ -75,7 +75,7 @@ public class PanelOptionsVisual extends JPanel implements PropertyChangeListener
         initComponents();
         this.panel = panel;
         setJ2eeVersionWarningPanel();
-        initServers(FoldersListSettings.getDefault().getLastUsedServer());
+        initServers(UserProjectSettings.getDefault().getLastUsedServer());
         // preselect the first item in the j2ee spec combo
         if (j2eeSpecComboBox.getModel().getSize() > 0) {
             j2eeSpecComboBox.setSelectedIndex(0);
@@ -540,7 +540,7 @@ public class PanelOptionsVisual extends JPanel implements PropertyChangeListener
             String j2ee = getSelectedJ2eeSpec();
             if (j2ee != null) {
                 String warningType = J2eeVersionWarningPanel.findWarningType(j2ee);
-                FoldersListSettings fls = FoldersListSettings.getDefault();
+                UserProjectSettings fls = UserProjectSettings.getDefault();
                 String srcLevel = "1.6"; // NOI18N
                 if ((warningType.equals(J2eeVersionWarningPanel.WARN_SET_SOURCE_LEVEL_14)
                         || warningType.equals(J2eeVersionWarningPanel.WARN_SET_JDK_14))

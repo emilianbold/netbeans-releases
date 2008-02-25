@@ -444,7 +444,12 @@ public class ProcessInstanceImpl implements ProcessInstance {
             
             // add the fault to the list, so it can be displayed by the 
             // processes view
-            if (faultData.isWSDLMessage()) {
+            if (faultData == null) {
+                myFaults.add(new FaultImpl(
+                        faultQName, 
+                        position.getXpath(), 
+                        null));
+            } else if (faultData.isWSDLMessage()) {
                 myFaults.add(new FaultImpl(
                         faultQName, 
                         position.getXpath(), 

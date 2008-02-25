@@ -64,6 +64,7 @@ import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
 import org.netbeans.modules.j2ee.api.ejbjar.Car;
 import org.netbeans.modules.j2ee.api.ejbjar.EjbJar;
+import org.netbeans.modules.j2ee.common.project.classpath.ClassPathSupport;
 import org.netbeans.modules.j2ee.dd.api.application.Application;
 import org.netbeans.modules.j2ee.dd.api.application.ApplicationMetadata;
 import org.netbeans.modules.j2ee.dd.api.application.DDProvider;
@@ -79,7 +80,6 @@ import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleFactory;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.j2ee.earproject.model.ApplicationMetadataModelImpl;
 import org.netbeans.modules.j2ee.earproject.ui.customizer.EarProjectProperties;
-import org.netbeans.modules.j2ee.earproject.ui.customizer.VisualClassPathItem;
 import org.netbeans.modules.j2ee.earproject.util.EarProjectUtil;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
 import org.netbeans.modules.j2ee.metadata.model.spi.MetadataModelFactory;
@@ -286,9 +286,8 @@ public final class ProjectEar extends J2eeApplicationProvider
 
         application = DDProvider.getDefault().getDDRoot(dd);
         application.setDisplayName(ProjectUtils.getInformation(project).getDisplayName());
-        EarProjectProperties epp = project.getProjectProperties();
-        for (VisualClassPathItem vcpi : epp.getJarContentAdditional()) {
-            epp.addItemToAppDD(application, vcpi);
+        for (ClassPathSupport.Item item : EarProjectProperties.getJarContentAdditional(project)) {
+            EarProjectProperties.addItemToAppDD(project, application, item);
         }
         
         return application;
@@ -561,7 +560,7 @@ public final class ProjectEar extends J2eeApplicationProvider
             Logger.getLogger("global").log(Level.INFO,
                                            "Unable to add module to the Enterpise Application. Owner project not found."); // NOI18N
         } else {
-            project.getProjectProperties().addJ2eeSubprojects(new Project [] {owner});
+            EarProjectProperties.addJ2eeSubprojects(project, new Project [] {owner});
         }
     }
 

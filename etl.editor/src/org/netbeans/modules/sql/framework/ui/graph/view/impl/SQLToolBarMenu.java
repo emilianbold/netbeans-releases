@@ -307,6 +307,7 @@ public class SQLToolBarMenu extends JToggleButton {
 
             String nbBundle1 = mLoc.t("PRSR001: Settings...");
             AbstractButton setupButton = new JButton(Localizer.parse(nbBundle1));
+            setupButton.getAccessibleContext().setAccessibleName(Localizer.parse(nbBundle1));
             addButton(1, setupButton);
             mButtonHeight = setupButton.getPreferredSize().height + 2;
             setupButton.addActionListener(new ActionListener() {

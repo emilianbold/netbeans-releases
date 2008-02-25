@@ -42,6 +42,7 @@
 package org.netbeans.modules.db.explorer;
 
 import java.util.List;
+import javax.swing.event.ChangeListener;
 import org.openide.nodes.Node;
 
 /**
@@ -56,4 +57,18 @@ public interface DbNodeLoader {
      * Get all the registered nodes
      */
     public List<Node> getAllNodes();
+    
+    /** 
+     * Listen on state changes to this loader.  A state change indicates
+     * that the consumer should reload the nodes by calling getAllNodes()
+     * 
+     * @param listener the listener to be added
+     * @see #getAllNodes()
+     */
+    public void addChangeListener(ChangeListener listener);
+
+    /**
+     * @see #removeChangeListener(ChangeListener)
+     */
+    public void removeChangeListener(ChangeListener listener);    
 }

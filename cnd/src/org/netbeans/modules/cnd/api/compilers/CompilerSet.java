@@ -234,45 +234,46 @@ public class CompilerSet {
     public static CompilerSet getCompilerSet(String name) {
         CompilerSet cs = CompilerSetManager.getDefault().getCompilerSet(CompilerFlavor.toFlavor(name));
         
+//        IZ 120845 Project compiler collection property is changed after adding/changing compiler collection in Tools->Options
+//        if (cs == null) {
+//            if (name.startsWith("Sun")) { // NOI18N
+//                cs = CompilerSetManager.getDefault().getCompilerSet(CompilerFlavor.Sun12);
+//                if (cs == null) {
+//                    cs = CompilerSetManager.getDefault().getCompilerSet(CompilerFlavor.Sun11);
+//                }
+//                if (cs == null) {
+//                    cs = CompilerSetManager.getDefault().getCompilerSet(CompilerFlavor.Sun10);
+//                }
+//                if (cs == null) {
+//                    cs = CompilerSetManager.getDefault().getCompilerSet(CompilerFlavor.Sun9);
+//                }
+//                if (cs == null) {
+//                    cs = CompilerSetManager.getDefault().getCompilerSet(CompilerFlavor.Sun8);
+//                }
+//            } else {
+//                if (Utilities.isWindows()) {
+//                    cs = CompilerSetManager.getDefault().getCompilerSet(CompilerFlavor.Cygwin);
+//                    if (cs == null) {
+//                        cs = CompilerSetManager.getDefault().getCompilerSet(CompilerFlavor.MinGW);
+//                    }
+//                    if (cs == null) {
+//                        cs = CompilerSetManager.getDefault().getCompilerSet(CompilerFlavor.Interix);
+//                    }
+//                    if (cs == null) {
+//                        cs = CompilerSetManager.getDefault().getCompilerSet(CompilerFlavor.DJGPP);
+//                    }
+//                    if (cs == null) {
+//                        cs = CompilerSetManager.getDefault().getCompilerSet(CompilerFlavor.GNU);
+//                    }
+//                } else {
+//                    cs = CompilerSetManager.getDefault().getCompilerSet(CompilerFlavor.GNU);
+//                }
+//            }
+//        }
         if (cs == null) {
-            if (name.startsWith("Sun")) { // NOI18N
-                cs = CompilerSetManager.getDefault().getCompilerSet(CompilerFlavor.Sun12);
-                if (cs == null) {
-                    cs = CompilerSetManager.getDefault().getCompilerSet(CompilerFlavor.Sun11);
-                }
-                if (cs == null) {
-                    cs = CompilerSetManager.getDefault().getCompilerSet(CompilerFlavor.Sun10);
-                }
-                if (cs == null) {
-                    cs = CompilerSetManager.getDefault().getCompilerSet(CompilerFlavor.Sun9);
-                }
-                if (cs == null) {
-                    cs = CompilerSetManager.getDefault().getCompilerSet(CompilerFlavor.Sun8);
-                }
-            } else {
-                if (Utilities.isWindows()) {
-                    cs = CompilerSetManager.getDefault().getCompilerSet(CompilerFlavor.Cygwin);
-                    if (cs == null) {
-                        cs = CompilerSetManager.getDefault().getCompilerSet(CompilerFlavor.MinGW);
-                    }
-                    if (cs == null) {
-                        cs = CompilerSetManager.getDefault().getCompilerSet(CompilerFlavor.Interix);
-                    }
-                    if (cs == null) {
-                        cs = CompilerSetManager.getDefault().getCompilerSet(CompilerFlavor.DJGPP);
-                    }
-                    if (cs == null) {
-                        cs = CompilerSetManager.getDefault().getCompilerSet(CompilerFlavor.GNU);
-                    }
-                } else {
-                    cs = CompilerSetManager.getDefault().getCompilerSet(CompilerFlavor.GNU);
-                }
-            }
-            if (cs == null) {
-                CompilerFlavor flavor = CompilerFlavor.toFlavor(name);
-                flavor = flavor == null ? CompilerFlavor.Unknown : flavor;
-                cs = new CompilerSet(flavor, ""); // NOI18N
-            }
+            CompilerFlavor flavor = CompilerFlavor.toFlavor(name);
+            flavor = flavor == null ? CompilerFlavor.Unknown : flavor;
+            cs = new CompilerSet(flavor, ""); // NOI18N
         }
         return cs;
     }

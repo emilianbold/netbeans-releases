@@ -3,18 +3,13 @@
 Document 0
 Delete:  source : <TESTURL>/action_view.rb
 
-Indexed:
-
-Not Indexed:
 
 
 Document 1
-Delete:
 Indexed:
   class : Base
   class-ig : base
   fqn : ActionView::Base
-  source : <TESTURL>/action_view.rb
 
 Not Indexed:
   attrs : |CLASS|

@@ -56,8 +56,6 @@ public class MacroInputPanel extends javax.swing.JPanel {
     public MacroInputPanel() {
         initComponents ();
         getAccessibleContext().setAccessibleDescription(getBundleString("ACSD_MIP")); // NOI18N
-        macroLabel.setDisplayedMnemonic(getBundleString("MIP_Macro_Mnemonic").charAt(0)); // NOI18N
-        expandLabel.setDisplayedMnemonic(getBundleString("MIP_Expand_Mnemonic").charAt(0)); // NOI18N
         macroField.getAccessibleContext().setAccessibleDescription(getBundleString("ACSD_MIP_Macro")); // NOI18N
         expandTextArea.getAccessibleContext().setAccessibleDescription(getBundleString("ACSD_MIP_Expand")); // NOI18N
         Dimension dim = getPreferredSize();
@@ -85,7 +83,8 @@ public class MacroInputPanel extends javax.swing.JPanel {
     }
 
 
-    private void initComponents() {//GEN-BEGIN:initComponents
+    // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
+    private void initComponents() {
         java.awt.GridBagConstraints gridBagConstraints;
 
         macroLabel = new javax.swing.JLabel();
@@ -94,18 +93,17 @@ public class MacroInputPanel extends javax.swing.JPanel {
         expandScrollPane = new javax.swing.JScrollPane();
         expandTextArea = new javax.swing.JTextArea();
 
+        setBorder(javax.swing.BorderFactory.createEmptyBorder(12, 12, 11, 11));
         setLayout(new java.awt.GridBagLayout());
 
-        setBorder(new javax.swing.border.EmptyBorder(new java.awt.Insets(12, 12, 11, 11)));
         macroLabel.setLabelFor(macroField);
-        macroLabel.setText(getBundleString( "MIP_Macro" )); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(macroLabel, getBundleString( "MIP_Macro" ));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 5, 12);
         add(macroLabel, gridBagConstraints);
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 0;
@@ -115,7 +113,7 @@ public class MacroInputPanel extends javax.swing.JPanel {
         add(macroField, gridBagConstraints);
 
         expandLabel.setLabelFor(expandTextArea);
-        expandLabel.setText(getBundleString( "MIP_Expand" )); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(expandLabel, getBundleString( "MIP_Expand" ));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
@@ -134,16 +132,15 @@ public class MacroInputPanel extends javax.swing.JPanel {
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
         add(expandScrollPane, gridBagConstraints);
-
-    }//GEN-END:initComponents
+    }// </editor-fold>//GEN-END:initComponents
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JTextArea expandTextArea;
-    private javax.swing.JLabel macroLabel;
-    private javax.swing.JTextField macroField;
-    private javax.swing.JScrollPane expandScrollPane;
     private javax.swing.JLabel expandLabel;
+    private javax.swing.JScrollPane expandScrollPane;
+    private javax.swing.JTextArea expandTextArea;
+    private javax.swing.JTextField macroField;
+    private javax.swing.JLabel macroLabel;
     // End of variables declaration//GEN-END:variables
 
 }

@@ -44,6 +44,8 @@ package org.netbeans.editor;
 import java.awt.*;
 import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 import java.util.Hashtable;
 import java.util.Map;
 import java.util.HashMap;
@@ -68,6 +70,8 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.Position;
 import javax.swing.text.View;
 import javax.swing.plaf.TextUI;
+import org.netbeans.editor.ext.Completion;
+import org.netbeans.editor.ext.ExtUtilities;
 import org.netbeans.modules.editor.lib.ColoringMap;
 import org.openide.util.WeakListeners;
 
@@ -79,7 +83,7 @@ import org.openide.util.WeakListeners;
 * @author Miloslav Metelka
 * @version 1.00
 */
-public class EditorUI implements ChangeListener, PropertyChangeListener, SettingsChangeListener {
+public class EditorUI implements ChangeListener, PropertyChangeListener, SettingsChangeListener, MouseListener {
 
     private static final Logger LOG = Logger.getLogger(EditorUI.class.getName());
     
@@ -242,6 +246,8 @@ public class EditorUI implements ChangeListener, PropertyChangeListener, Setting
     /** Left right corner of the JScrollPane */
     private JPanel glyphCorner;
     
+    private boolean popupMenuEnabled;
+
     public static final String LINE_HEIGHT_CHANGED_PROP = "line-height-changed-prop"; //NOI18N
 
     /** init paste action #39678 */
@@ -342,6 +348,7 @@ public class EditorUI implements ChangeListener, PropertyChangeListener, Setting
             // listen on component
             component.addPropertyChangeListener(this);
             component.addFocusListener(focusL);
+            component.addMouseListener(this);
 
             // listen on caret
             Caret caret = component.getCaret();
@@ -383,6 +390,7 @@ public class EditorUI implements ChangeListener, PropertyChangeListener, Setting
                 // stop listening on component
                 component.removePropertyChangeListener(this);
                 component.removeFocusListener(focusL);
+                component.removeMouseListener(this);
             
             }
 
@@ -454,6 +462,9 @@ public class EditorUI implements ChangeListener, PropertyChangeListener, Setting
             if (disableLineNumbers)
                 lineNumberVisible = false;
         }
+
+        popupMenuEnabled = SettingsUtil.getBoolean(kitClass,
+            org.netbeans.editor.ext.ExtSettingsNames.POPUP_MENU_ENABLED, true);
 
         BaseDocument doc = getDocument();
         if (doc != null) {
@@ -605,7 +616,7 @@ public class EditorUI implements ChangeListener, PropertyChangeListener, Setting
                         BaseKit kit = Utilities.getKit(c);
                         if (kit != null) {
                             boolean isEditable = c.isEditable();
-                            boolean selectionVisible = c.getCaret().isSelectionVisible();
+                            boolean selectionVisible = Utilities.isSelectionShowing(c);
                             boolean caretGuarded = isCaretGuarded();
 
                             Action a = kit.getActionByName(BaseKit.copyAction);
@@ -1619,6 +1630,36 @@ public class EditorUI implements ChangeListener, PropertyChangeListener, Setting
             ret = ((Integer)textLimitLine).intValue();
         }
         return ret;
+    }
+
+    public void mouseClicked(MouseEvent evt) {
+    }
+
+    public void mousePressed(MouseEvent evt) {
+        getWordMatch().clear();
+
+        Completion completion = ExtUtilities.getCompletion(component);
+        if (completion != null && completion.isPaneVisible()) {
+            // Hide completion if visible
+            completion.setPaneVisible(false);
+        }
+        showPopupMenuForPopupTrigger(evt);
+    }
+    
+    public void mouseReleased(MouseEvent evt) {
+        showPopupMenuForPopupTrigger(evt); // On Win the popup trigger is on mouse release
+    }
+
+    private void showPopupMenuForPopupTrigger(MouseEvent evt) {
+        if (component != null && evt.isPopupTrigger() && popupMenuEnabled) {
+            ExtUtilities.getExtEditorUI(component).showPopupMenu(evt.getX(), evt.getY());
+        }
+    }
+    
+    public void mouseEntered(MouseEvent evt) {
+    }
+
+    public void mouseExited(MouseEvent evt) {
     }
 
 }

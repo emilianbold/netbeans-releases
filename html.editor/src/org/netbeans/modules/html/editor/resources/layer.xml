@@ -42,6 +42,73 @@ made subject to such option by the copyright holder.
 -->
 <!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.0//EN" "http://www.netbeans.org/dtds/filesystem-1_0.dtd">
 <filesystem>
+    
+    <folder name="GsfPlugins">
+        <folder name="text">
+            <folder name="html">
+                <attr name="displayName" stringvalue="HTML"/>
+                
+                <!-- use custom editor kit -->
+                <attr name="useCustomEditorKit" boolvalue="true"/>
+                
+                <file name="language.instance">
+                    <attr name="instanceOf" stringvalue="org.netbeans.modules.gsf.api.GsfLanguage"/>
+                    <attr name="instanceClass" stringvalue="org.netbeans.modules.html.editor.gsf.HtmlLanguage"/>
+                </file>
+                
+                <file name="parser.instance">
+                    <attr name="instanceOf" stringvalue="org.netbeans.modules.gsf.api.Parser"/>
+                    <attr name="instanceClass" stringvalue="org.netbeans.modules.html.editor.gsf.HtmlGSFParser"/>
+                </file>
+                
+                <file name="structure.instance">
+                    <attr name="instanceOf" stringvalue="org.netbeans.modules.gsf.api.StructureScanner"/>
+                    <attr name="instanceClass" stringvalue="org.netbeans.modules.html.editor.gsf.HtmlStructureScanner"/>
+                </file>
+
+                <file name="semantic.instance">
+                    <attr name="instanceOf" stringvalue="org.netbeans.modules.gsf.api.SemanticAnalyzer"/>
+                    <attr name="instanceClass" stringvalue="org.netbeans.modules.html.editor.gsf.HtmlSemanticAnalyzer"/>
+                </file>
+                
+                <!--<file name="completion.instance">
+                    <attr name="instanceOf" stringvalue="org.netbeans.modules.gsf.api.Completable"/>
+                    <attr name="instanceClass" stringvalue="org.netbeans.modules.html.editor.gsf.HtmlCompleter"/>
+                </file>-->
+                
+                <!--<file name="renamer.instance">
+                    <attr name="instanceOf" stringvalue="org.netbeans.modules.gsf.api.InstantRenamer"/>
+                    <attr name="instanceClass" stringvalue="org.netbeans.modules.ruby.RenameHandler"/>
+                </file>
+                
+                <file name="declarationfinder.instance">
+                    <attr name="instanceOf" stringvalue="org.netbeans.modules.gsf.api.DeclarationFinder"/>
+                    <attr name="instanceClass" stringvalue="org.netbeans.modules.ruby.rhtml.RhtmlFinder"/>
+                </file>
+                
+                <file name="bracket.instance">
+                    <attr name="instanceOf" stringvalue="org.netbeans.modules.gsf.api.BracketCompletion"/>
+                    <attr name="instanceClass" stringvalue="org.netbeans.modules.ruby.BracketCompleter"/>
+                </file>
+                -->
+                
+                <!--
+
+                Don't index rhtml files - there's usually nothing interesting (new classes, methods) there
+                <file name="indexer.instance">
+                    <attr name="instanceOf" stringvalue="org.netbeans.modules.gsf.api.Indexer"/>
+                    <attr name="instanceClass" stringvalue="org.netbeans.modules.ruby.RubyIndexer"/>
+                </file>
+                <folder name="extensions">
+                    <file name="rhtml"/>
+                    <file name="erb"/>
+                </folder>
+                -->
+            </folder>
+        </folder>
+    </folder>
+    
+    
     <folder name="DTDs">
         <folder name="3_2">
             <file name="catalog" url="DTDs/3_2/catalog"/>
@@ -77,7 +144,7 @@ made subject to such option by the copyright holder.
             <file name="strict.dtd" url="DTDs/4_01/strict.dtd"/>
         </folder>
     </folder>
-
+    
     <folder name="Services">
         <folder name="IndentEngine">
             <file name="org-netbeans-modules-editor-html-LineWrapIndentEngine.settings" url="LineWrapIndentEngine.settings">
@@ -89,9 +156,9 @@ made subject to such option by the copyright holder.
                 <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/editor/resources/indentEngine.gif"/>
             </file>
         </folder>
-
+        
     </folder>
-
+    
     <folder name="Templates">
         <folder name="Services">
             <folder name="IndentEngine">
@@ -108,7 +175,7 @@ made subject to such option by the copyright holder.
             </folder>
         </folder>
     </folder>
-
+    
     <folder name="Editors">
         <folder name="text">
             <folder name="html">
@@ -121,12 +188,20 @@ made subject to such option by the copyright holder.
                     </file>
                 </folder>
                 
-                <attr name="createDataObject" boolvalue="false"/>
-                <file name="org-netbeans-modules-html-editor-indent-HtmlIndentTaskFactory.instance"/>
+                <folder name="FoldManager">
+                    <file name="org-netbeans-modules-gsfret-editor-fold-GsfFoldManagerFactory.instance"/>
+                </folder>
+                <folder name="SideBar">
+                    <file name="org-netbeans-modules-editor-gsfret-GsfCodeFoldingSideBarFactory.instance">
+                        <attr name="position" intvalue="1200"/>
+                    </file>
+                </folder>
                 
-                <file name="language.nbs" url="HTML.nbs">
-                    <attr name="icon" stringvalue="org/netbeans/modules/html/editor/resources/html.png"/>
-                </file>
+                <!--
+                disable Schlieman:
+                <attr name="createDataObject" boolvalue="false"/>-->
+                
+                <file name="org-netbeans-modules-html-editor-indent-HtmlIndentTaskFactory.instance"/>
                 
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.html.editor.resources.Bundle"/>
                 <folder name="FontsColors">
@@ -138,7 +213,7 @@ made subject to such option by the copyright holder.
                         </folder>
                     </folder>
                 </folder>
-
+                
                 <folder name="Keybindings">
                     <folder name="NetBeans">
                         <folder name="Defaults">
@@ -149,14 +224,22 @@ made subject to such option by the copyright holder.
                 
                 <folder name="CompletionProviders">
                     <file name="org-netbeans-modules-editor-html-HTMLCompletionProvider.instance"/>
+                    <file name="org-netbeans-modules-gsfret-editor-completion-GsfCompletionProvider.instance"/>
+                </folder>
+                
+                <folder name="HyperlinkProviders">
+                    <file name="GsfHyperlinkProvider.instance">
+                        <attr name="instanceClass" stringvalue="org.netbeans.modules.gsfret.editor.hyperlink.GsfHyperlinkProvider"/>
+                        <attr name="instanceOf" stringvalue="org.netbeans.lib.editor.hyperlink.spi.HyperlinkProviderExt"/>
+                    </file>
                 </folder>
                 
                 <file name="Settings.settings" url="HTMLOptions.settings"/>
                 <file name="EditorKit.instance">
                     <attr name="instanceClass" stringvalue="org.netbeans.modules.editor.html.HTMLKit"/>
                 </file>
-
-                <folder name="FoldManager">
+                
+                <!--<folder name="FoldManager">
                     <file name="org-netbeans-modules-languages-features-LanguagesFoldManager$Factory.instance"/>
                 </folder>
                 <folder name="SideBar">
@@ -167,6 +250,8 @@ made subject to such option by the copyright holder.
                 <folder name="UpToDateStatusProvider">
                     <file name="org-netbeans-modules-languages-features-UpToDateStatusProviderFactoryImpl.instance"/>
                 </folder>
+                -->
+                
                 <folder name="Popup">
                     <file name="ViewAction.instance">
                         <attr name="instanceClass" stringvalue="org.openide.actions.ViewAction"/>
@@ -187,7 +272,7 @@ made subject to such option by the copyright holder.
                     <file name="generate-fold-popup">
                         <attr name="position" intvalue="4200"/>
                     </file>
-                    </folder>
+                </folder>
             </folder>
         </folder>
     </folder>

@@ -48,7 +48,7 @@ import javax.swing.text.BadLocationException;
 import org.netbeans.modules.spring.api.Action;
 import org.netbeans.modules.spring.api.beans.SpringScope;
 import org.netbeans.modules.spring.api.beans.model.SpringConfigModel;
-import org.netbeans.modules.spring.api.beans.model.SpringConfigModel.WriteContext;
+import org.netbeans.modules.spring.api.beans.model.SpringConfigModel.DocumentAccess;
 import org.netbeans.modules.spring.beans.refactoring.JavaElementRefFinder.Matcher;
 import org.openide.filesystems.FileObject;
 import org.openide.text.PositionBounds;
@@ -62,11 +62,11 @@ public class Occurrences {
 
     public static List<Occurrence> getJavaClassOccurrences(final String className, SpringScope scope) throws IOException {
         final List<Occurrence> result = new ArrayList<Occurrence>();
-        for (SpringConfigModel model : scope.getConfigModels()) {
-            model.runWriteAction(new Action<WriteContext>() {
-                public void run(WriteContext context) {
+        for (SpringConfigModel model : scope.getAllFilesConfigModels()) {
+            model.runDocumentAction(new Action<DocumentAccess>() {
+                public void run(DocumentAccess docAccess) {
                     try {
-                        new JavaElementRefFinder(context).addOccurrences(new JavaClassRefMatcher(className), result);
+                        new JavaElementRefFinder(docAccess).addOccurrences(new JavaClassRefMatcher(className), result);
                     } catch (BadLocationException e) {
                         Exceptions.printStackTrace(e);
                     }
@@ -78,11 +78,11 @@ public class Occurrences {
 
     public static List<Occurrence> getJavaPackageOccurrences(final String packageName, final boolean subpackages, SpringScope scope) throws IOException {
         final List<Occurrence> result = new ArrayList<Occurrence>();
-        for (SpringConfigModel model : scope.getConfigModels()) {
-            model.runWriteAction(new Action<WriteContext>() {
-                public void run(WriteContext context) {
+        for (SpringConfigModel model : scope.getAllFilesConfigModels()) {
+            model.runDocumentAction(new Action<DocumentAccess>() {
+                public void run(DocumentAccess docAccess) {
                     try {
-                        new JavaElementRefFinder(context).addOccurrences(new JavaPackageRefMatcher(packageName, subpackages), result);
+                        new JavaElementRefFinder(docAccess).addOccurrences(new JavaPackageRefMatcher(packageName, subpackages), result);
                     } catch (BadLocationException e) {
                         Exceptions.printStackTrace(e);
                     }

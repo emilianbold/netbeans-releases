@@ -53,6 +53,7 @@ import org.netbeans.modules.compapp.projects.jbi.CasaConstants;
 import org.netbeans.modules.compapp.projects.jbi.descriptor.endpoints.model.Connection;
 import org.netbeans.modules.compapp.projects.jbi.descriptor.endpoints.model.Endpoint;
 import org.netbeans.modules.compapp.projects.jbi.descriptor.endpoints.model.PtConnection;
+import org.netbeans.modules.compapp.projects.jbi.descriptor.XmlUtil;
 import org.netbeans.modules.xml.wsdl.model.Definitions;
 import org.netbeans.modules.xml.wsdl.model.Port;
 import org.netbeans.modules.xml.wsdl.model.Service;
@@ -395,11 +396,14 @@ public class ConnectionResolver implements CasaConstants {
                 String oldConnectionState = oldConnection.getAttribute(CASA_STATE_ATTR_NAME);
                 
                 // we are only interested in user-deleted and user-created connections
+                // 02/14/08, T.Li, this logic may cause problems, e.g.,
+                // if an "unchanged" connection can not be auto generated in the next build
+                /*
                 if (!oldConnectionState.equals(CASA_DELETED_ATTR_VALUE) &&
                         !oldConnectionState.equals(CASA_NEW_ATTR_VALUE)) {
                     continue;
                 }
-                
+                */
                 String cID = oldConnection.getAttribute(CASA_CONSUMER_ATTR_NAME);
                 String pID = oldConnection.getAttribute(CASA_PROVIDER_ATTR_NAME);
                 Endpoint c = CasaBuilder.getEndpoint(oldCasaDocument, cID);
@@ -425,24 +429,52 @@ public class ConnectionResolver implements CasaConstants {
                     if (cBcName == null && pBcName == null) {
                         removeConnection(con);
                     }
-                } else if (oldConnectionState.equals(CASA_NEW_ATTR_VALUE)) {
+                } else { // if (oldConnectionState.equals(CASA_NEW_ATTR_VALUE)) {
                     // Add user-created connections.
                     // (Note that it's possible that user-created connection
                     // have already been auto-generated during compapp rebuild.)
                     Connection con = new Connection(c, p);
                     
-                    // update bc's connection list..
-                    String cBcName = endpointID2BCName.get(cID);
-                    if (cBcName != null) {
-                        addConnection(con, true, cBcName);
-                    }
-                    String pBcName = endpointID2BCName.get(pID);
-                    if (pBcName != null) {
-                        addConnection(con, false, pBcName);
-                    }
+                    if (!isInConnectionList(connectionList, con)) {
+                        // update bc's connection list..
+                        String cBcName = endpointID2BCName.get(cID);
+                        if (cBcName != null) {
+                            addConnection(con, true, cBcName);
+                        }
+                        String pBcName = endpointID2BCName.get(pID);
+                        if (pBcName != null) {
+                            addConnection(con, false, pBcName);
+                        }
                     
-                    if (cBcName == null && pBcName == null) {
-                        addConnection(con);
+                        if (cBcName == null && pBcName == null) {
+                            addConnection(con);
+                        }
+                    }
+                }
+            }
+
+            // 02/06/07, tli, handle connection-less wsdl endpoints in CASA
+            // - add a loop connection for unconnected wsdl endpoints
+            // - filter out consumes/provides based on endpoint config extension
+            NodeList endpointList =
+                    oldCasaDocument.getElementsByTagName(CASA_ENDPOINT_ELEM_NAME);
+            for (int i = 0; i < endpointList.getLength(); i++) {
+                Element endpoint = (Element) endpointList.item(i);
+                String name = endpoint.getAttribute(CASA_NAME_ATTR_NAME);
+                String bcName = endpointID2BCName.get(name);
+                if (bcName != null) { // a connection-less wsdl endpoint...
+                    String endpointName = endpoint.getAttribute(CASA_ENDPOINT_NAME_ATTR_NAME);
+                    QName serviceQName = XmlUtil.getAttributeNSName(
+                            endpoint, CASA_SERVICE_NAME_ATTR_NAME);
+                    QName interfaceQName = XmlUtil.getAttributeNSName(
+                            endpoint, CASA_INTERFACE_NAME_ATTR_NAME);
+                    Endpoint pt = new Endpoint(endpointName, serviceQName, interfaceQName);
+
+                    // skip all connected endpoints and non-wsdl endpoints...
+                    if (!isConnected(pt)) {
+                        Connection con = new Connection(pt, pt);
+                        addConnection(con, true, bcName);
+                        addConnection(con, false, bcName);
                     }
                 }
             }
