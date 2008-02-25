@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -46,11 +46,10 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
-import java.util.WeakHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -110,15 +109,6 @@ public class ExecutionService {
     /** Display names of currently active processes. */
     private static final Set<String> ACTIVE_DISPLAY_NAMES = new HashSet<String>();
 
-    /**
-     * All tabs which were used for some process which has now ended.
-     * These are closed when you start a fresh process.
-     * Map from tab to tab display name.
-     * @see "#43001"
-     */
-    private static final Map<ExecutionService, String> FREE_TABS =
-        new WeakHashMap<ExecutionService, String>();
-    
     /** Set of currently active processes. */
     private final static Set<ExecutionService> RUNNING_PROCESSES = new HashSet<ExecutionService>();
 
@@ -236,56 +226,23 @@ public class ExecutionService {
         if (!rerun) {
             // try to find free output windows
             synchronized (this) {
-                synchronized (FREE_TABS) {
-                    for (Iterator<Map.Entry<ExecutionService, String>> it = FREE_TABS.entrySet().iterator(); it.hasNext();) {
-                        Map.Entry<ExecutionService, String> entry = it.next();
-                        ExecutionService free = entry.getKey();
-
-                        //InputOutput free = entry.getKey();
-                        String freeName = entry.getValue();
-                        if (free.io.isClosed()) {
-                            it.remove();
-                            continue;
-                        }
-
-                        if ((free != this) && (io == null) && ExecutionService.isAppropriateName(descriptor.getDisplayName(), freeName)) {
-                            // Reuse it.
-                            displayName = freeName;
-                            io = free.io;
-                            stopAction = free.stopAction;
-                            rerunAction = free.rerunAction;
-
-                            try {
-                                io.getOut().reset();
-                            } catch (IOException ioe) {
-                                Exceptions.printStackTrace(ioe);
-                            }
-
-                            // Apparently useless and just prints warning: io.getErr().reset();
-                            // useless: io.flushReader();
-
-                            if (descriptor.frontWindow) {
-                                io.select();
-                            }
-                            it.remove();
-                        }// else {
-                            // if ('auto close tabs' options implemented and checked) { // see #47753
-                            //   free.io.closeInputOutput();
-                            // }
-                        //}
+                if (io == null) {
+                    Entry<InputOutput, String> entry = FreeIOHandler.findFreeIO(descriptor.getDisplayName(), descriptor.frontWindow);
+                    if (entry != null) {
+                        io = entry.getKey();
+                        displayName = entry.getValue();
                     }
                 }
             }
             
-            if ((io == null) || (stopAction == null)) { // free OW wa not found
+            if (io == null || stopAction == null) { // free IO was not found
                 displayName = getNonActiveDisplayName(descriptor.getDisplayName());
 
                 stopAction = new StopAction();
                 rerunAction = new RerunAction(this, descriptor.getFileObject());
 
                 if (io == null) {
-                    io = IOProvider.getDefault()
-                                   .getIO(displayName, new Action[] { rerunAction, stopAction });
+                    io = IOProvider.getDefault().getIO(displayName, new Action[] { rerunAction, stopAction });
 
                     try {
                         io.getOut().reset();
@@ -406,9 +363,7 @@ public class ExecutionService {
                     RUNNING_PROCESSES.remove(ExecutionService.this);
 
                     if (io != null) {
-                        synchronized (FREE_TABS) {
-                            FREE_TABS.put(ExecutionService.this, displayName);
-                        }
+                        FreeIOHandler.addFreeIO(io, displayName);
                     }
 
                     ACTIVE_DISPLAY_NAMES.remove(displayName);
@@ -450,11 +405,9 @@ public class ExecutionService {
         try {
             InputForwarder in = new InputForwarder(process.getOutputStream(), ioput.getIn());
             OutputForwarder out =
-                new OutputForwarder(process.getInputStream(), ioput.getOut(), fileLocator,
-                    recognizers, sa, "Output"); // NOI18N
+                new OutputForwarder(process.getInputStream(), ioput.getOut(), fileLocator, recognizers, sa);
             OutputForwarder err =
-                new OutputForwarder(process.getErrorStream(), ioput.getErr(), fileLocator,
-                    recognizers, sa, "Error"); // NOI18N
+                new OutputForwarder(process.getErrorStream(), ioput.getErr(), fileLocator, recognizers, sa);
 
             RequestProcessor PROCESSOR =
                 new RequestProcessor("Process Execution Stream Handler", 3, true); // NOI18N
@@ -537,4 +490,5 @@ public class ExecutionService {
         }
         return sb.toString().trim();
     }
+    
 }

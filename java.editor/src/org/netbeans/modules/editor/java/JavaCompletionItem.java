@@ -44,6 +44,7 @@ package org.netbeans.modules.editor.java;
 import com.sun.source.tree.*;
 import com.sun.source.util.SourcePositions;
 import com.sun.source.util.TreePath;
+import com.sun.source.util.Trees;
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.Graphics;
@@ -808,13 +809,25 @@ public abstract class JavaCompletionItem implements CompletionItem {
                             } finally {
                                 doc.atomicUnlock();
                             }
-                            if (insideNew) {
-                                List<ExecutableElement> ctors = type != null && type.getKind() == TypeKind.DECLARED ? ElementFilter.constructorsIn(elem.getEnclosedElements()) : null;
-                                if (ctors != null) {
-                                    final JavaCompletionItem item = ctors.size() > 1 || Utilities.hasAccessibleInnerClassConstructor(elem, controller.getTreeUtilities().scopeFor(offset), controller.getTrees())
-                                            ? null : ctors.size() == 1
-                                            ? createExecutableItem(ctors.get(0), (ExecutableType)controller.getTypes().asMemberOf(type, ctors.get(0)), offset, false, false, false, true)
-                                            : createDefaultConstructorItem(elem, offset, true);
+                            if (insideNew && type != null && type.getKind() == TypeKind.DECLARED) {
+                                ExecutableElement ctor = null;
+                                Trees trees = controller.getTrees();
+                                Scope scope = controller.getTreeUtilities().scopeFor(offset);
+                                int val = 0; // no constructors seen yet
+                                for (ExecutableElement ee : ElementFilter.constructorsIn(elem.getEnclosedElements())) {
+                                    if (trees.isAccessible(scope, ee, type)) {
+                                        if (ctor != null) {
+                                            val = 2; // more than one accessible constructors seen
+                                            break;
+                                        }
+                                        ctor = ee;
+                                    }
+                                    val = 1; // constructor seen
+                                }
+                                if (val != 1 || ctor != null) {
+                                    final JavaCompletionItem item = val == 0 ? createDefaultConstructorItem(elem, offset, true) :
+                                            val == 2 || Utilities.hasAccessibleInnerClassConstructor(elem, scope, trees) ? null :
+                                            createExecutableItem(ctor, (ExecutableType)controller.getTypes().asMemberOf(type, ctor), offset, false, false, false, true);
                                     try {
                                         final Position offPosition = doc.createPosition(offset);
                                         SwingUtilities.invokeLater(new Runnable() {
