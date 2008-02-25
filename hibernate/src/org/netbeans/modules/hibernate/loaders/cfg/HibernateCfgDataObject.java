@@ -261,7 +261,7 @@ public class HibernateCfgDataObject extends XmlMultiViewDataObject {
 
     @Override
     protected Image getXmlViewIcon() {
-        return Utilities.loadImage("org/netbeans/modules/hibernate/resources/hibernateCfg.gif");
+        return Utilities.loadImage("org/netbeans/modules/hibernate/resources/hibernate-configuration.png");
     }
 
     /** 
@@ -315,7 +315,7 @@ public class HibernateCfgDataObject extends XmlMultiViewDataObject {
         }
 
         public Image getIcon() {
-            return Utilities.loadImage("org/netbeans/modules/hibernate/resources/hibernateCfg.gif");
+            return Utilities.loadImage("org/netbeans/modules/hibernate/resources/hibernate-configuration.png");
         }
 
         public String preferredID() {

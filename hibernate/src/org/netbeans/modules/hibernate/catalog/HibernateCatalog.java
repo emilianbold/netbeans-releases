@@ -113,7 +113,7 @@ public class HibernateCatalog implements CatalogReader, CatalogDescriptor,
     }
 
     public Image getIcon(int type) {
-        return Utilities.loadImage("org/netbeans/modules/hibernate/resources/hibernateCfg.gif"); //NOI18N
+        return Utilities.loadImage("org/netbeans/modules/hibernate/resources/hibernate-configuration.png"); //NOI18N
     }
 
     public String getDisplayName() {
