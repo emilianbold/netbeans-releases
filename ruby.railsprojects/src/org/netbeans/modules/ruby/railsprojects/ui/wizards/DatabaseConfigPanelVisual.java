@@ -139,21 +139,21 @@ public class DatabaseConfigPanelVisual extends javax.swing.JPanel {
 
         adapterConfigurationPanel.setLayout(new java.awt.BorderLayout());
 
-        useIDEConnections.setText(org.openide.util.NbBundle.getMessage(DatabaseConfigPanelVisual.class, "LBL_ConfigureUsingIDEConnections")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(useIDEConnections, org.openide.util.NbBundle.getMessage(DatabaseConfigPanelVisual.class, "LBL_ConfigureUsingIDEConnections")); // NOI18N
         useIDEConnections.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 useIDEConnectionsActionPerformed(evt);
             }
         });
 
-        useRailsAdapter.setText(org.openide.util.NbBundle.getMessage(DatabaseConfigPanelVisual.class, "LBL_ConfigureDirectly")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(useRailsAdapter, org.openide.util.NbBundle.getMessage(DatabaseConfigPanelVisual.class, "LBL_ConfigureDirectly")); // NOI18N
         useRailsAdapter.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 useRailsAdapterActionPerformed(evt);
             }
         });
 
-        useJdbc.setText(org.openide.util.NbBundle.getMessage(DatabaseConfigPanelVisual.class, "UseJdbc")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(useJdbc, org.openide.util.NbBundle.getMessage(DatabaseConfigPanelVisual.class, "UseJdbc")); // NOI18N
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
@@ -186,6 +186,13 @@ public class DatabaseConfigPanelVisual extends javax.swing.JPanel {
                 .add(useJdbc)
                 .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
+
+        useIDEConnections.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(DatabaseConfigPanelVisual.class, "ACSD_ConfigureUsingIDEConnections")); // NOI18N
+        useRailsAdapter.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(DatabaseConfigPanelVisual.class, "ACSD_ConfigureDirectly")); // NOI18N
+        useJdbc.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(DatabaseConfigPanelVisual.class, "ASCD_UseJdbc")); // NOI18N
+
+        getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(DatabaseConfigPanelVisual.class, "ASCN_DatabaseConfigPanel")); // NOI18N
+        getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(DatabaseConfigPanelVisual.class, "ASCN_DatabaseConfigPanel")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
 
 private void useIDEConnectionsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_useIDEConnectionsActionPerformed

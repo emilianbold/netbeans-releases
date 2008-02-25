@@ -35,7 +35,8 @@ cd nbbuild
 rm -f netbeans/nb.cluster.*
 # Do not delete. It is needed for tests to determine classpath.
 #rm -f netbeans/moduleCluster.properties
-rm -f netbeans/build_info
+# Do not delete. It contains 'hg id' of repository in time of build.
+#rm -f netbeans/build_info
 
 BASENAME=netbeans-$BUILDNUM
 

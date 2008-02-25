@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -44,6 +44,7 @@ package org.netbeans.modules.ruby.railsprojects.ui.wizards;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 import javax.swing.JPanel;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -314,7 +315,7 @@ public class RailsInstallationPanel extends JPanel {
 
     static class Panel implements WizardDescriptor.ValidatingPanel {
 
-        private ArrayList listeners;        
+        private ArrayList<ChangeListener> listeners;        
         private RailsInstallationPanel component;
         private WizardDescriptor settings;
 
@@ -327,7 +328,7 @@ public class RailsInstallationPanel extends JPanel {
 
         public void addChangeListener(ChangeListener l) {
             if (this.listeners == null) {
-                this.listeners = new ArrayList ();
+                this.listeners = new ArrayList<ChangeListener>();
             }
             this.listeners.add (l);
         }

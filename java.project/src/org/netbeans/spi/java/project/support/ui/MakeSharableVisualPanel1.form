@@ -62,6 +62,11 @@
       </AccessibilityProperties>
     </Component>
     <Component class="javax.swing.JTextField" name="txtDefinition">
+      <AccessibilityProperties>
+        <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/spi/java/project/support/ui/Bundle.properties" key="ACSD_lblDefinition" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+      </AccessibilityProperties>
     </Component>
     <Component class="javax.swing.JButton" name="btnDefinition">
       <Properties>

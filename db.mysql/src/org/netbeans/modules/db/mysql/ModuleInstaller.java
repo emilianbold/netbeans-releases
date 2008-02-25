@@ -64,9 +64,9 @@ import org.openide.windows.WindowManager;
  * 
  * @author David Van Couvering
  */
-public class Installer extends ModuleInstall {
+public class ModuleInstaller extends ModuleInstall {
 
-    private static final Logger LOGGER = Logger.getLogger(Installer.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(ModuleInstaller.class.getName());
     private static final MySQLOptions options = MySQLOptions.getDefault();
 
     @Override
@@ -91,7 +91,7 @@ public class Installer extends ModuleInstall {
 
 
             ProgressHandle handle = ProgressHandleFactory.createSystemHandle(
-                    NbBundle.getMessage(Installer.class, "MSG_RegisterMySQL"));
+                    NbBundle.getMessage(ModuleInstaller.class, "MSG_RegisterMySQL"));
             handle.start();
             try {
                 findAndRegisterMySQL();
@@ -112,10 +112,18 @@ public class Installer extends ModuleInstall {
                 return;
             }
                         
-            // TODO - Search for install path and set location if found
-            
+            findAndRegisterInstallation();            
+            findAndRegisterRunningServer();
+        }
+        
+        private void findAndRegisterRunningServer() {
             String host = MySQLOptions.getDefaultHost();
-            String port = MySQLOptions.getDefaultPort();
+            
+            // port may have been set through installation detection
+            String port = options.getPort();
+            if ( port == null || port.length() == 0 ) {
+                port = MySQLOptions.getDefaultPort();
+            }
             String user = MySQLOptions.getDefaultAdminUser();
             String password = MySQLOptions.getDefaultAdminPassword();
             
@@ -150,6 +158,37 @@ public class Installer extends ModuleInstall {
                 registerConnection(host, port, user);
                 registerProvider(true);
             }
+
+        }
+        
+        private void findAndRegisterInstallation() {
+            Installation installation = InstallationSupport.detectInstallation();
+            if ( installation == null ) {
+                return;
+            }
+            
+            String[] command = installation.getAdminCommand();
+            if ( Utils.isValidExecutable(command[0], true /*emptyOK*/) ||
+                 Utils.isValidURL(command[0], true /*emptyOK*/ )) {
+                options.setAdminPath(command[0]);
+                options.setAdminArgs(command[1]);
+            }
+            
+            command = installation.getStartCommand();
+            if ( Utils.isValidExecutable(command[0], true)) {
+                options.setStartPath(command[0]);
+                options.setStartArgs(command[1]);
+            }
+            
+            command = installation.getStopCommand();
+            if ( Utils.isValidExecutable(command[0], true)) {
+                options.setStopPath(command[0]);
+                options.setStopArgs(command[1]);
+            }
+            
+            options.setPort(installation.getDefaultPort());
+            
+            options.setProviderRegistered(true);
         }
 
         private DatabaseConnection findDatabaseConnection() {

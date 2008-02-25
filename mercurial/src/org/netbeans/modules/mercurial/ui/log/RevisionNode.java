@@ -115,12 +115,8 @@ class RevisionNode extends AbstractNode {
             return new Action [] {
                 SystemAction.get(RevertModificationsAction.class)
             };
-        } else {
-            return new Action [] {
-                new RollbackAction(),
-                SystemAction.get(RevertModificationsAction.class)
-            };
-        }
+        } 
+        return null;
     }
     
     private void initProperties() {
@@ -207,17 +203,6 @@ class RevisionNode extends AbstractNode {
         }
     }
 
-    private class RollbackAction extends AbstractAction {
-
-        public RollbackAction() {
-            putValue(Action.NAME, NbBundle.getMessage(RevisionNode.class, "CTL_Action_RollbackTo", // NOI18N
-                    event.getLogInfoHeader().getLog().getRevision()));
-        }
-
-        public void actionPerformed(ActionEvent e) {
-            SummaryView.rollback(event);
-        }
-    }
 
     private static class RevertModificationsAction extends NodeAction {
 

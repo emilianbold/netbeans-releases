@@ -752,7 +752,8 @@ public class StructureAnalyzer implements StructureScanner {
         return null;
     }
     
-    AnalysisResult analyze(RubyParseResult result) {
+    AnalysisResult analyze(RubyParseResult result, CompilationInfo info) {
+        this.info = info;
         return scan(result);
     }
 

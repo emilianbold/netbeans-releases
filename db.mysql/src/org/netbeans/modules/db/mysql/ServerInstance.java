@@ -49,6 +49,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Iterator;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -90,7 +91,7 @@ public class ServerInstance implements Node.Cookie {
         
     private static ServerInstance DEFAULT;;
 
-    private static final MySQLOptions options = MySQLOptions.getDefault();
+    private static final MySQLOptions OPTIONS = MySQLOptions.getDefault();
     
     // SQL commands
     private static final String GET_DATABASES_SQL = "SHOW DATABASES"; // NOI18N
@@ -109,8 +110,7 @@ public class ServerInstance implements Node.Cookie {
             "modules/org-netbeans-modules-db-mysql.jar";
     private static final String RESOURCE_DIR_PATH =
             "org/netbeans/modules/db/mysql/resources";
-
-        
+    
     final AdminConnection adminConn = new AdminConnection();
     final ArrayList<ChangeListener> listeners = new ArrayList<ChangeListener>();
     
@@ -223,34 +223,34 @@ public class ServerInstance implements Node.Cookie {
 
 
     public String getHost() {
-        return options.getHost();
+        return OPTIONS.getHost();
     }
 
     public void setHost(String host) {
-        options.setHost(host);
+        OPTIONS.setHost(host);
     }
  
     public String getPort() {
-        return options.getPort();
+        return OPTIONS.getPort();
     }
 
     public void setPort(String port) {
-        options.setPort(port);
+        OPTIONS.setPort(port);
     }
 
     public String getUser() {
-        return options.getAdminUser();
+        return OPTIONS.getAdminUser();
     }
 
     public void setUser(String adminUser) {
-        options.setAdminUser(adminUser);
+        OPTIONS.setAdminUser(adminUser);
     }
 
     public String getPassword() {
         if ( adminPassword != null ) {
             return adminPassword;
         } else{
-            return options.getAdminPassword();
+            return OPTIONS.getAdminPassword();
         }
     }
 
@@ -258,73 +258,73 @@ public class ServerInstance implements Node.Cookie {
         this.adminPassword = adminPassword == null ? "" : adminPassword;
 
         if ( isSavePassword() ) {
-            options.setAdminPassword(adminPassword);
+            OPTIONS.setAdminPassword(adminPassword);
         } 
     }
     
     public boolean isSavePassword() {
-        return options.isSavePassword();
+        return OPTIONS.isSavePassword();
     }
 
     public void setSavePassword(boolean savePassword) {
-        options.setSavePassword(savePassword);
+        OPTIONS.setSavePassword(savePassword);
         
         // Save the password in case it was already set...
-        options.setAdminPassword(getPassword());
+        OPTIONS.setAdminPassword(getPassword());
     }
     
     public String getAdminPath() {
-        return options.getAdminPath();
+        return OPTIONS.getAdminPath();
     }
     
     public void setAdminPath(String path) {
-        options.setAdminPath(path);
+        OPTIONS.setAdminPath(path);
     }
     
     public String getStartPath() {
-        return options.getStartPath();
+        return OPTIONS.getStartPath();
     }
     
     public void setStartPath(String path) {
-        options.setStartPath(path);
+        OPTIONS.setStartPath(path);
     }
     
     public String getStopPath() {
-        return options.getStopPath();
+        return OPTIONS.getStopPath();
     }
     
     public void setStopPath(String path) {
-        options.setStopPath(path);
+        OPTIONS.setStopPath(path);
     }
     
     public String getStopArgs() {
-        return options.getStopArgs();
+        return OPTIONS.getStopArgs();
     }
     
     public void setStopArgs(String args) {
-        options.setStopArgs(args);
+        OPTIONS.setStopArgs(args);
     }
     public String getStartArgs() {
-        return options.getStartArgs();
+        return OPTIONS.getStartArgs();
     }
     
     public void setStartArgs(String args) {
-        options.setStartArgs(args);
+        OPTIONS.setStartArgs(args);
     }
     public String getAdminArgs() {
-        return options.getAdminArgs();
+        return OPTIONS.getAdminArgs();
     }
     
     public void setAdminArgs(String args) {
-        options.setAdminArgs(args);
+        OPTIONS.setAdminArgs(args);
     }
     
     public boolean isAdminCommandsConfirmed() {
-        return options.isAdminCommandsConfirmed();
+        return OPTIONS.isAdminCommandsConfirmed();
     }
     
     public void setAdminCommandsConfirmed(boolean confirmed) {
-        options.setAdminCommandsConfirmed(confirmed);
+        OPTIONS.setAdminCommandsConfirmed(confirmed);
     }
     
     public boolean isConnected() {
@@ -549,6 +549,11 @@ public class ServerInstance implements Node.Cookie {
      * @see #getStartWaitTime()
      */
     public void start() throws DatabaseException {        
+        if ( !Utils.isValidExecutable(getStopPath(), false)) {
+            throw new DatabaseException(NbBundle.getMessage(ServerInstance.class,
+                    "MSG_InvalidStartCommand"));
+        }
+        
         try {
             runProcess(getStartPath(), getStartArgs(),
                     true, NbBundle.getMessage(ServerInstance.class, 
@@ -587,6 +592,11 @@ public class ServerInstance implements Node.Cookie {
     }
     
     public void stop() throws DatabaseException {
+        if ( !Utils.isValidExecutable(getStopPath(), false)) {
+            throw new DatabaseException(NbBundle.getMessage(ServerInstance.class,
+                    "MSG_InvalidStopCommand"));
+        }
+        
         try {
             runProcess(getStopPath(), getStopArgs(), 
                     true, NbBundle.getMessage(ServerInstance.class, 
