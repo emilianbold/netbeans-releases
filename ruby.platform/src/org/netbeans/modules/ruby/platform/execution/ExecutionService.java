@@ -405,11 +405,9 @@ public class ExecutionService {
         try {
             InputForwarder in = new InputForwarder(process.getOutputStream(), ioput.getIn());
             OutputForwarder out =
-                new OutputForwarder(process.getInputStream(), ioput.getOut(), fileLocator,
-                    recognizers, sa, "Output"); // NOI18N
+                new OutputForwarder(process.getInputStream(), ioput.getOut(), fileLocator, recognizers, sa);
             OutputForwarder err =
-                new OutputForwarder(process.getErrorStream(), ioput.getErr(), fileLocator,
-                    recognizers, sa, "Error"); // NOI18N
+                new OutputForwarder(process.getErrorStream(), ioput.getErr(), fileLocator, recognizers, sa);
 
             RequestProcessor PROCESSOR =
                 new RequestProcessor("Process Execution Stream Handler", 3, true); // NOI18N
