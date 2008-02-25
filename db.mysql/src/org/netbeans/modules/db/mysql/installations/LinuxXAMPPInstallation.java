@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * 
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
  * 
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -36,72 +36,82 @@
  * 
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.db.mysql;
 
-import org.netbeans.api.db.explorer.DatabaseException;
-import org.netbeans.modules.db.mysql.DatabaseUtils.ConnectStatus;
-import org.openide.nodes.Node;
-import org.openide.util.HelpCtx;
-import org.openide.util.NbBundle;
-import org.openide.util.actions.CookieAction;
+package org.netbeans.modules.db.mysql.installations;
+
+import org.netbeans.modules.db.mysql.Installation;
+import org.openide.util.Utilities;
 
 /**
- * Connect to a database
+ * Defines the AMP stack distribution called "XAMPP" for Linux
+ * See <a href="http://www.apachefriends.org/en/xampp-linux.html">
+ * http://www.apachefriends.org/en/xampp-linux.html</a>
  * 
  * @author David Van Couvering
  */
-public class ConnectServerAction extends CookieAction {
-    private static final Class[] COOKIE_CLASSES = 
-            new Class[] { ServerInstance.class };
+public class LinuxXAMPPInstallation extends AbstractInstallation {
+    private static final String DEFAULT_BASE_PATH = "/opt/lampp"; // NOI8N
+    private static final String LAMPP_EXE_PATH = "/lampp"; // NOI18N
+    private static final String ADMIN_URL = "http://localhost/phpmyadmin";
+    private static final String DEFAULT_PORT = "3306";
     
-    public ConnectServerAction() {
-        putValue("noIconInMenu", Boolean.TRUE);
-    }
-
-    @Override
-    protected boolean asynchronous() {
-        return false;
-    }
-
-    public String getName() {
-        return NbBundle.getBundle(ConnectServerAction.class).
-                getString("LBL_ConnectServerAction");
-    }
-
-    public HelpCtx getHelpCtx() {
-        return new HelpCtx(ConnectServerAction.class);
-    }
-
-    @Override
-    public boolean enable(Node[] activatedNodes) {
-        if ( activatedNodes == null || activatedNodes.length == 0 ) {
-            return false;
-        }
-        
-        ServerInstance server = activatedNodes[0].getCookie(ServerInstance.class);
-        
-        return server != null && (!server.isConnected()) && server.isRunning();
-    }
-
-    @Override
-    protected void performAction(Node[] activatedNodes) {
-        ServerInstance server = activatedNodes[0].getCookie(ServerInstance.class);
-        try { 
-            server.connect();
-        } catch ( DatabaseException dbe ) {
-            Utils.displayError(NbBundle.getMessage(ConnectServerAction.class,
-                        "MSG_UnableToConnect"), 
-                    dbe);
-        }
+    private String basePath = DEFAULT_BASE_PATH;
+    
+    private static final LinuxXAMPPInstallation DEFAULT = 
+            new LinuxXAMPPInstallation(DEFAULT_BASE_PATH);
+    
+    public static final LinuxXAMPPInstallation getDefault() {
+        return DEFAULT;
     }
     
-    @Override
-    protected int mode() {
-        return MODE_EXACTLY_ONE;
+    private LinuxXAMPPInstallation(String basePath) {
+        this.basePath = basePath;
+    }
+
+    public boolean isStackInstall() {
+        return true;
+    }
+
+    public boolean isValidOnCurrentOS() {
+        return Utilities.isUnix();
+    }
+
+    public String[] getAdminCommand() {
+        return new String[] { ADMIN_URL, "" };
+    }
+
+    public String[] getStartCommand() {
+        String command = basePath + LAMPP_EXE_PATH; // NOI18N
+        return new String[] { command, "startmysql" };
+    }
+
+    public String[] getStopCommand() {
+        String command = basePath + LAMPP_EXE_PATH; // NOI18N
+        return new String[] { command, "stopmysql" };
+    }
+    
+    public String getDefaultPort() {
+        return DEFAULT_PORT;
     }
 
     @Override
-    protected Class<?>[] cookieClasses() {
-        return COOKIE_CLASSES;
+    protected String getBasePath() {
+        return basePath;
     }
+
+    @Override
+    protected String getStartPath() {
+        return LAMPP_EXE_PATH;
+    }
+
+    @Override
+    protected String getStopPath() {
+        return LAMPP_EXE_PATH;
+    }
+
+    @Override
+    protected Installation createInstallation(String basePath) {
+        return new LinuxXAMPPInstallation(basePath);
+    }
+
 }

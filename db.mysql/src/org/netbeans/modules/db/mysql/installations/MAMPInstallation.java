@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * 
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
  * 
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -36,72 +36,85 @@
  * 
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.db.mysql;
 
-import org.netbeans.api.db.explorer.DatabaseException;
-import org.netbeans.modules.db.mysql.DatabaseUtils.ConnectStatus;
-import org.openide.nodes.Node;
-import org.openide.util.HelpCtx;
-import org.openide.util.NbBundle;
-import org.openide.util.actions.CookieAction;
+package org.netbeans.modules.db.mysql.installations;
+
+import org.netbeans.modules.db.mysql.Installation;
+import org.openide.util.Utilities;
 
 /**
- * Connect to a database
+ * Defines the AMP stack distribution called "MAMP" for Mac
+ * See <a href="http://sourceforge.net/projects/mamp">
+ * http://sourceforge.net/projects/mamp</a>
  * 
  * @author David Van Couvering
  */
-public class ConnectServerAction extends CookieAction {
-    private static final Class[] COOKIE_CLASSES = 
-            new Class[] { ServerInstance.class };
+public class MAMPInstallation extends AbstractInstallation {
+    private static final String DEFAULT_BASE_PATH = "/Applications/MAMP"; // NOI8N
+    private static final String START_PATH = "/bin/startMysql.sh"; // NOI18N
+    private static final String STOP_PATH = "/bin/stopMysql.sh"; // NOI18N
+    private static final String DEFAULT_PORT = "8889";
     
-    public ConnectServerAction() {
-        putValue("noIconInMenu", Boolean.TRUE);
-    }
-
-    @Override
-    protected boolean asynchronous() {
-        return false;
-    }
-
-    public String getName() {
-        return NbBundle.getBundle(ConnectServerAction.class).
-                getString("LBL_ConnectServerAction");
-    }
-
-    public HelpCtx getHelpCtx() {
-        return new HelpCtx(ConnectServerAction.class);
-    }
-
-    @Override
-    public boolean enable(Node[] activatedNodes) {
-        if ( activatedNodes == null || activatedNodes.length == 0 ) {
-            return false;
-        }
-        
-        ServerInstance server = activatedNodes[0].getCookie(ServerInstance.class);
-        
-        return server != null && (!server.isConnected()) && server.isRunning();
-    }
-
-    @Override
-    protected void performAction(Node[] activatedNodes) {
-        ServerInstance server = activatedNodes[0].getCookie(ServerInstance.class);
-        try { 
-            server.connect();
-        } catch ( DatabaseException dbe ) {
-            Utils.displayError(NbBundle.getMessage(ConnectServerAction.class,
-                        "MSG_UnableToConnect"), 
-                    dbe);
-        }
+    private String basePath = DEFAULT_BASE_PATH;
+    
+    private static final MAMPInstallation DEFAULT = 
+            new MAMPInstallation(DEFAULT_BASE_PATH);
+    
+    public static final MAMPInstallation getDefault() {
+        return DEFAULT;
     }
     
-    @Override
-    protected int mode() {
-        return MODE_EXACTLY_ONE;
+    private MAMPInstallation(String basePath) {
+        this.basePath = basePath;
+    }
+
+    public boolean isStackInstall() {
+        return true;
+    }
+
+    public boolean isValidOnCurrentOS() {
+        return Utilities.isMac();
+    }
+
+    public String[] getAdminCommand() {
+        return new String[] {
+            "http://localhost:8888/MAMP/frame.php?src=%2FphpMyAdmin%2F%3F",
+            ""
+        };
+    }
+
+    public String[] getStartCommand() {
+        String command = basePath + START_PATH;
+        return new String[] { command, "" };
+    }
+
+    public String[] getStopCommand() {
+        String command = basePath + STOP_PATH;
+        return new String[] { command, "" };
+    }
+    
+    public String getDefaultPort() {
+        return DEFAULT_PORT;
     }
 
     @Override
-    protected Class<?>[] cookieClasses() {
-        return COOKIE_CLASSES;
+    protected String getBasePath() {
+        return basePath;
     }
+
+    @Override
+    protected String getStartPath() {
+        return START_PATH;
+    }
+
+    @Override
+    protected String getStopPath() {
+        return STOP_PATH;
+    }
+
+    @Override
+    protected Installation createInstallation(String basePath) {
+        return new MAMPInstallation(basePath);
+    }
+
 }
