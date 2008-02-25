@@ -209,7 +209,7 @@ public class HibernateMappingDataObject extends XmlMultiViewDataObject {
 
     @Override
     protected Image getXmlViewIcon() {
-        return Utilities.loadImage("org/netbeans/modules/hibernate/resources/hibernateMapping.gif");
+        return Utilities.loadImage("org/netbeans/modules/hibernate/resources/hibernate-mapping.png");
     }
 
     /** 

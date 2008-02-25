@@ -15,7 +15,7 @@ import org.openide.util.Lookup;
 
 public class HibernateMappingDataNode extends DataNode {
 
-    private static final String IMAGE_ICON_BASE = "org/netbeans/modules/hibernate/resources/hibernateMapping.gif";
+    private static final String IMAGE_ICON_BASE = "org/netbeans/modules/hibernate/resources/hibernate-mapping.png";
 
     public HibernateMappingDataNode(HibernateMappingDataObject obj) {
         super(obj, Children.LEAF);

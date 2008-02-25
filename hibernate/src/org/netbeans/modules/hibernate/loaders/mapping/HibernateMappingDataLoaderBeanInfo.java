@@ -67,7 +67,7 @@ public class HibernateMappingDataLoaderBeanInfo extends SimpleBeanInfo {
     @Override
     public Image getIcon(int type) {
         if (type == BeanInfo.ICON_COLOR_16x16 || type == BeanInfo.ICON_MONO_16x16) {
-            return Utilities.loadImage("org/netbeans/modules/hibernate/resources/hibernateMapping.gif");
+            return Utilities.loadImage("org/netbeans/modules/hibernate/resources/hibernate-mapping.png");
         } else {
             return null;
         }
