@@ -43,12 +43,16 @@ package gui.actions;
 
 import gui.EPUtilities;
 
+import java.awt.AWTEvent;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.jellytools.NewFileNameLocationStepOperator;
 import org.netbeans.jellytools.NewFileWizardOperator;
 import org.netbeans.jellytools.actions.CloseAllDocumentsAction;
 
 import org.netbeans.jemmy.EventTool;
 import org.netbeans.jemmy.operators.ComponentOperator;
+import org.netbeans.junit.Log;
 
 /**
  * Test Add New Bpel Process
@@ -82,9 +86,14 @@ public class AddNewBpelProcess extends org.netbeans.performance.test.utilities.P
         WAIT_AFTER_OPEN=4000;
     }
     
+    @Override
     public void initialize(){
+        // The following disables EventTool to hold a reference to DesignView in 
+        // its listeners
+        EventTool.addListeners(EventTool.getCurrentEventMask() & ~AWTEvent.FOCUS_EVENT_MASK);        
+
+        Log.enableInstances(Logger.getLogger("TIMER.bpel"), "BPEL DesignView", Level.FINEST);
         index=1;
-//        new CloseAllDocumentsAction().performAPI();
     }
     
     public void prepare(){
@@ -105,10 +114,20 @@ public class AddNewBpelProcess extends org.netbeans.performance.test.utilities.P
         return null;
     }
     
+    @Override
     public void close(){
         new CloseAllDocumentsAction().performAPI(); //avoid issue 68671 - editors are not closed after closing project by ProjectSupport
     }
     
+    /**
+     * Check of memory leaks. measureTime testcase should be executed before 
+     * this testcase
+     */
+    public void testGC() {
+        // KeyboardFocusManager.focusedWindow
+        Log.assertInstances("Can't GC BPEL DesignView");        
+    }
+
     public static void main(java.lang.String[] args) {
         junit.textui.TestRunner.run(new AddNewBpelProcess("measureTime"));
     }

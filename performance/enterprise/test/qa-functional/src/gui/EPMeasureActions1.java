@@ -56,7 +56,7 @@ public class EPMeasureActions1  {
     public static NbTestSuite suite() {
         NbTestSuite suite = new NbTestSuite();
             
-        // It seems that there is a problem with Application Server unavailability in Runtime tab
+        // TODO: Remove this workaround
         suite.addTest(new EnterpriseSetupTest("closeAllModal"));
 
         suite.addTest(new CreateBPELmodule("measureTime", "Create BPEL module"));
