@@ -382,7 +382,7 @@ public class ImportWebProjectWizardIterator implements WizardDescriptor.Progress
         }
 
         public boolean isFinishPanel() {
-            return true;
+            return false;
         }
 
     }
