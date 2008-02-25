@@ -179,7 +179,6 @@ public class HibernateEnvironment {
             Library hibernateLibrary = libraryManager.getLibrary("hibernate-support");  //NOI18N
             ProjectClassPathModifier projectClassPathModifier = project.getLookup().lookup(ProjectClassPathModifier.class);
             addLibraryResult = projectClassPathModifier.addLibraries(new Library[]{hibernateLibrary}, fileInProject, ClassPath.COMPILE);  
-         //   addLibraryResult &= projectClassPathModifier.addPackageLibraries(new Library[]{hibernateLibrary}, "lib"); //NOI18N
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
             addLibraryResult = false;
