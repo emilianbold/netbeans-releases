@@ -52,10 +52,10 @@ import org.openide.filesystems.FileObject;
  */
 public class HibernateMappingMetadata {
     private static final HibernateMappingMetadata DEFAULT = new HibernateMappingMetadata();
-    private Map ddMap;
+    private Map<FileObject,HibernateMapping> ddMap;
     
     private HibernateMappingMetadata() {
-        ddMap = new WeakHashMap(5);
+        ddMap = new WeakHashMap<FileObject,HibernateMapping>(5);
     }
     
     /**
