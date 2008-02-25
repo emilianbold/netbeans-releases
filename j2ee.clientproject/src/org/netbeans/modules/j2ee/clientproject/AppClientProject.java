@@ -232,7 +232,9 @@ public final class AppClientProject implements Project, AntProjectListener, File
         if (classPathUiSupportCallback == null) {
             classPathUiSupportCallback = new ClassPathUiSupport.Callback() {
                 public void initItem(ClassPathSupport.Item item) {
-                    item.setAdditionalProperty(ClassPathSupportCallbackImpl.INCLUDE_IN_DEPLOYMENT, "true");
+                    if (item.getType() != ClassPathSupport.Item.TYPE_LIBRARY || !item.getLibrary().getType().equals(J2eePlatform.LIBRARY_TYPE)) {
+                        item.setAdditionalProperty(ClassPathSupportCallbackImpl.INCLUDE_IN_DEPLOYMENT, "true");
+                    }
                 }
             };
             

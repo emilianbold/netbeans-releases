@@ -247,7 +247,7 @@ public class SpringWebModuleExtender extends WebModuleExtender implements Change
                 }
             }
             if (welcomeFiles.sizeWelcomeFile() == 0) {
-                welcomeFiles.addWelcomeFile("index.jsp"); // NOI18N
+                welcomeFiles.addWelcomeFile("redirect.jsp"); // NOI18N
             }
             ddRoot.write(dd);
 
@@ -306,13 +306,13 @@ public class SpringWebModuleExtender extends WebModuleExtender implements Change
                 LOGGER.log(Level.WARNING, "Could not find a SpringScope for file {0}", configFile);
             }
 
-            // MODIFY EXISTING INDEX.JSP
+            // MODIFY EXISTING REDIRECT.JSP
             FileObject documentBase = webModule.getDocumentBase();
-            FileObject indexJsp = documentBase.getFileObject("index.jsp"); // NOI18N
-            if (indexJsp == null) {
-                indexJsp = FileUtil.createData(documentBase, "index.jsp"); // NOI18N
+            FileObject redirectJsp = documentBase.getFileObject("redirect.jsp"); // NOI18N
+            if (redirectJsp == null) {
+                redirectJsp = FileUtil.createData(documentBase, "redirect.jsp"); // NOI18N
             }
-            addFileToOpen(copyResource("redirect.jsp", indexJsp)); // NOI18N
+            addFileToOpen(copyResource("redirect.jsp", redirectJsp)); // NOI18N
         }
                
         public void addFileToOpen(FileObject file) {
