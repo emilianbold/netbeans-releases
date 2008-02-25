@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * 
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
  * 
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -36,72 +36,64 @@
  * 
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.db.mysql;
 
-import org.netbeans.api.db.explorer.DatabaseException;
-import org.netbeans.modules.db.mysql.DatabaseUtils.ConnectStatus;
-import org.openide.nodes.Node;
-import org.openide.util.HelpCtx;
-import org.openide.util.NbBundle;
-import org.openide.util.actions.CookieAction;
+package org.netbeans.modules.db.mysql.installations;
+
+import org.netbeans.modules.db.mysql.Installation;
+import org.openide.util.Utilities;
 
 /**
- * Connect to a database
+ * Defines the installation of MySQL from mysql.com or other standalone
+ * mechanism, where it is not installed as a service and you directly
+ * call the commands to start and stop
  * 
  * @author David Van Couvering
  */
-public class ConnectServerAction extends CookieAction {
-    private static final Class[] COOKIE_CLASSES = 
-            new Class[] { ServerInstance.class };
+public abstract class AbstractStandaloneInstallation extends AbstractInstallation {
+    private static final String START_PATH="/mysqld";
+    private static final String STOP_PATH="/mysqladmin";
+    private static final String DEFAULT_PORT = "3306";
     
-    public ConnectServerAction() {
-        putValue("noIconInMenu", Boolean.TRUE);
+    private String basePath;
+    
+    protected AbstractStandaloneInstallation(String basePath) {
+        this.basePath = basePath;
     }
-
-    @Override
-    protected boolean asynchronous() {
+            
+    public boolean isStackInstall() {
         return false;
     }
 
-    public String getName() {
-        return NbBundle.getBundle(ConnectServerAction.class).
-                getString("LBL_ConnectServerAction");
+    public String[] getAdminCommand() {
+        return new String[] { "", "" };
     }
 
-    public HelpCtx getHelpCtx() {
-        return new HelpCtx(ConnectServerAction.class);
+    public String[] getStartCommand() {
+        String command = basePath + START_PATH; // NOI18N
+        return new String[] { command, "" };
     }
 
-    @Override
-    public boolean enable(Node[] activatedNodes) {
-        if ( activatedNodes == null || activatedNodes.length == 0 ) {
-            return false;
-        }
-        
-        ServerInstance server = activatedNodes[0].getCookie(ServerInstance.class);
-        
-        return server != null && (!server.isConnected()) && server.isRunning();
-    }
-
-    @Override
-    protected void performAction(Node[] activatedNodes) {
-        ServerInstance server = activatedNodes[0].getCookie(ServerInstance.class);
-        try { 
-            server.connect();
-        } catch ( DatabaseException dbe ) {
-            Utils.displayError(NbBundle.getMessage(ConnectServerAction.class,
-                        "MSG_UnableToConnect"), 
-                    dbe);
-        }
+    public String[] getStopCommand() {
+        String command = basePath + STOP_PATH; // NOI18N
+        return new String[] { command, "-u root stop" };
     }
     
-    @Override
-    protected int mode() {
-        return MODE_EXACTLY_ONE;
+    public String getDefaultPort() {
+        return DEFAULT_PORT;
     }
 
     @Override
-    protected Class<?>[] cookieClasses() {
-        return COOKIE_CLASSES;
+    protected String getBasePath() {
+        return basePath;
+    }
+
+    @Override
+    protected String getStartPath() {
+        return START_PATH;
+    }
+
+    @Override
+    protected String getStopPath() {
+        return STOP_PATH;
     }
 }

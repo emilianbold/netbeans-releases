@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * 
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
  * 
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -36,72 +36,39 @@
  * 
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.db.mysql;
 
-import org.netbeans.api.db.explorer.DatabaseException;
-import org.netbeans.modules.db.mysql.DatabaseUtils.ConnectStatus;
-import org.openide.nodes.Node;
-import org.openide.util.HelpCtx;
-import org.openide.util.NbBundle;
-import org.openide.util.actions.CookieAction;
+package org.netbeans.modules.db.mysql.installations;
+
+import org.netbeans.modules.db.mysql.Installation;
+import org.openide.util.Utilities;
 
 /**
- * Connect to a database
+ * Standalone version 5.0 on Windows, not installed as a server
  * 
  * @author David Van Couvering
  */
-public class ConnectServerAction extends CookieAction {
-    private static final Class[] COOKIE_CLASSES = 
-            new Class[] { ServerInstance.class };
+public class WindowsStandalone50Installation extends AbstractStandaloneInstallation {
+    private static final String DEFAULT_BASE_PATH = 
+            "C:\\Program Files\\MySQL\\MySQL Server 5.0";
     
-    public ConnectServerAction() {
-        putValue("noIconInMenu", Boolean.TRUE);
+    private static final WindowsStandalone50Installation DEFAULT = new
+            WindowsStandalone50Installation(DEFAULT_BASE_PATH);
+    
+    public static WindowsStandalone50Installation getDefault() {
+        return DEFAULT;
     }
 
-    @Override
-    protected boolean asynchronous() {
-        return false;
-    }
-
-    public String getName() {
-        return NbBundle.getBundle(ConnectServerAction.class).
-                getString("LBL_ConnectServerAction");
-    }
-
-    public HelpCtx getHelpCtx() {
-        return new HelpCtx(ConnectServerAction.class);
-    }
-
-    @Override
-    public boolean enable(Node[] activatedNodes) {
-        if ( activatedNodes == null || activatedNodes.length == 0 ) {
-            return false;
-        }
-        
-        ServerInstance server = activatedNodes[0].getCookie(ServerInstance.class);
-        
-        return server != null && (!server.isConnected()) && server.isRunning();
-    }
-
-    @Override
-    protected void performAction(Node[] activatedNodes) {
-        ServerInstance server = activatedNodes[0].getCookie(ServerInstance.class);
-        try { 
-            server.connect();
-        } catch ( DatabaseException dbe ) {
-            Utils.displayError(NbBundle.getMessage(ConnectServerAction.class,
-                        "MSG_UnableToConnect"), 
-                    dbe);
-        }
+    private WindowsStandalone50Installation(String basePath) {
+        super(basePath);
     }
     
     @Override
-    protected int mode() {
-        return MODE_EXACTLY_ONE;
+    protected Installation createInstallation(String basePath) {
+        return new WindowsStandalone50Installation(basePath);
     }
 
-    @Override
-    protected Class<?>[] cookieClasses() {
-        return COOKIE_CLASSES;
+    public boolean isValidOnCurrentOS() {
+        return Utilities.isWindows();
     }
+
 }
