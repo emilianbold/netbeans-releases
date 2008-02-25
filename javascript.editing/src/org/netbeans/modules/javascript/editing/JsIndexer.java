@@ -45,6 +45,7 @@ import java.net.MalformedURLException;
 import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.List;
+import java.util.Map;
 import javax.swing.text.BadLocationException;
 import org.mozilla.javascript.Node;
 import org.netbeans.modules.gsf.api.ElementKind;
@@ -60,6 +61,7 @@ import org.netbeans.modules.gsf.api.IndexDocumentFactory;
 import org.netbeans.modules.javascript.editing.JsAnalyzer.AnalysisResult;
 import org.netbeans.modules.javascript.editing.lexer.LexUtilities;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileUtil;
 import org.openide.modules.InstalledFileLocator;
 import org.openide.util.Exceptions;
@@ -83,17 +85,50 @@ import org.openide.util.Exceptions;
 public class JsIndexer implements Indexer {
     static final boolean PREINDEXING = Boolean.getBoolean("gsf.preindexing");
     
-    static final String FIELD_FQN_NAME = "fqn"; //NOI18N
-//    static final String FIELD_FUNCTION = "func"; //NOI18N
-    static final String FIELD_JS_FUNCTION = "func"; //NOI18N
-    static final String FIELD_JS_GLOBAL = "global"; //NOI18N
-    static final String FIELD_CLASS_NAME = "class"; //NOI18N
-    static final String FIELD_CASE_INSENSITIVE_CLASS_NAME = "class-ig"; //NOI18N
-    static final String FIELD_IN = "in"; //NOI18N
+    // I need to be able to search several things:
+    // (1) by function root name, e.g. quickly all functions that start
+    //    with "f" should find unknown.foo.
+    // (2) by namespace, e.g. I should be able to quickly find all
+    //    "foo.bar.b*" functions
+    // (3) constructors
+    // (4) global variables, preferably in the same way
+    // (5) extends so I can do inheritance inclusion!
+
+    // Solution: Store the following:
+    // class:name for each class
+    // extend:old:new for each inheritance? Or perhaps do this in the class entry
+    // fqn: f.q.n.function/global;sig; for each function
+    // base: function;fqn;sig
+    // The signature should look like this:
+    // ;flags;;args;offset;docoffset;browsercompat;types;
+    // (between flags and args you have the case sensitive name for flags)
+
+    static final String FIELD_FQN = "fqn"; //NOI18N
+    static final String FIELD_BASE = "base"; //NOI18N
+    static final String FIELD_BASE_LOWER = "lcbase"; //NOI18N   TODO - no longer necessary?
+    static final String FIELD_EXTEND = "extend"; //NOI18N
+    static final String FIELD_CLASS = "clz"; //NOI18N
     
     public boolean isIndexable(ParserFile file) {
-        return JsMimeResolver.isJavaScriptExt(file.getExtension()) ||
-                file.getExtension().equals("rhtml") ||  file.getExtension().equals("html");
+        if (JsMimeResolver.isJavaScriptExt(file.getExtension()) ||
+                file.getExtension().equals("rhtml") ||  file.getExtension().equals("html")) { // NOI18N
+
+            // Skip Gem versions; Rails copies these files into the project anyway! Don't want
+            // duplicate entries.
+            if (PREINDEXING) {
+                try {
+                    //if (file.getRelativePath().startsWith("action_view")) {
+                    if (file.getFileObject().getURL().toExternalForm().indexOf("/gems/") != -1) {
+                        return false;
+                    }
+                } catch (FileStateInvalidException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+            }
+            return true;
+        }
+        
+        return false;
     }
 
     public String getPersistentUrl(File file) {
@@ -108,7 +143,7 @@ public class JsIndexer implements Indexer {
         }
 
     }
-    
+
     public List<IndexDocument> index(ParserResult result, IndexDocumentFactory factory) throws IOException {
         JsParseResult r = (JsParseResult)result;
         Node root = r.getRootNode();
@@ -124,7 +159,7 @@ public class JsIndexer implements Indexer {
     }
     
     public String getIndexVersion() {
-        return "6.102"; // NOI18N
+        return "6.110"; // NOI18N
     }
 
     public String getIndexerName() {
@@ -134,10 +169,8 @@ public class JsIndexer implements Indexer {
     private static class TreeAnalyzer {
         private final ParserFile file;
         private String url;
-        //private String requires;
         private final JsParseResult result;
         private final BaseDocument doc;
-        private int docMode;
         private IndexDocumentFactory factory;
         private List<IndexDocument> documents = new ArrayList<IndexDocument>();
         
@@ -169,127 +202,60 @@ public class JsIndexer implements Indexer {
         }
 
         public void analyze() throws IOException {
-            String fileName = file.getNameExt();
-//            // DB migration?
-//            if (Character.isDigit(fileName.charAt(0)) && fileName.matches("^\\d\\d\\d_.*")) { // NOI18N
-//                FileObject fo = file.getFileObject();
-//                if (fo != null && fo.getParent() != null && fo.getParent().getName().equals("migrate")) { // NOI18N
-//                    handleMigration();
-//                    // Don't exit here - proceed to also index the class as Ruby code
-//                }
-//            } else if ("schema.rb".equals(fileName)) { //NOI18N
-//                FileObject fo = file.getFileObject();
-//                if (fo != null && fo.getParent() != null && fo.getParent().getName().equals("db")) { // NOI18N
-//                    handleMigration();
-//                    // Don't exit here - proceed to also index the class as Ruby code
-//                }
-//            }
-            
-            //Node root = result.getRootNode();
-
-            // Compute the requires for this file first such that
-            // each class or module recorded in the index for this
-            // file can reference their includes
             AnalysisResult ar = result.getStructure();
-          //  requires = getRequireString(ar.getRequires());
-            List<?extends AstElement> structure = ar.getElements();
+            List<?extends AstElement> children = ar.getElements();
 
-            if ((structure == null) || (structure.size() == 0)) {
+            if ((children == null) || (children.size() == 0)) {
                 return;
             }
 
-            analyze(structure);
-        }
-
-        private void analyze(List<?extends AstElement> children) {
             IndexDocument document = factory.createDocument(40); // TODO - measure!
             documents.add(document);
 
-//            String name = "Object";
-//            String in = null;
-//            String fqn = "Object";
-
-            int flags = 0;
-//            notIndexed.put(FIELD_CLASS_ATTRS, IndexedElement.flagToString(flags));
-//            indexed.put(FIELD_FQN_NAME, fqn);
-//            indexed.put(FIELD_CASE_INSENSITIVE_CLASS_NAME, name.toLowerCase());
-//            indexed.put(FIELD_CLASS_NAME, name);
-//            addRequire(indexed);
-//            if (requires != null) {
-//                notIndexed.put(FIELD_REQUIRES, requires);
-//            }
-
-            // TODO - find a way to combine all these methods (from this file) into a single item
-            
             // Add the fields, etc.. Recursively add the children classes or modules if any
             for (AstElement child : children) {
-                if (child.getKind() == ElementKind.CONSTRUCTOR || child.getKind() == ElementKind.METHOD) {
-                    indexMethod(child, document, true, false);
-                } else if (child.getKind() == ElementKind.GLOBAL) {
-                    String global = child.getName();
-                    indexGlobal(global, document);
+                ElementKind childKind = child.getKind();
+                if (childKind == ElementKind.CONSTRUCTOR || childKind == ElementKind.METHOD) {
+                    String signature = computeSignature(child);
+                    indexFuncOrProperty(child, document, signature);
+                    String name = child.getName();
+                    if (Character.isUpperCase(name.charAt(0))) {
+                        indexClass(child, document, signature);
+                    }
+                } else if (childKind == ElementKind.GLOBAL || childKind == ElementKind.PROPERTY) {
+                    indexFuncOrProperty(child, document, computeSignature(child));
                 } else {
-                    assert false : child.getKind();
+                    assert false : childKind;
                 }
                 // XXX what about fields, constants, attributes?
                 
                 assert child.getChildren().size() == 0;
             }
+
+            Map<String,String> classExtends = ar.getExtendsMap();
+            if (classExtends != null) {
+                for (Map.Entry<String,String> entry : classExtends.entrySet()) {
+                    String clz = entry.getKey();
+                    String superClz = entry.getValue();
+                    document.addPair(FIELD_EXTEND, clz.toLowerCase() + ";" + clz + ";" + superClz, true); // NOI18N
+                }
+            }
         }
-        
-        private void indexMethod(AstElement child, IndexDocument document, boolean topLevel, boolean nodoc) {
-//            MethodDefNode childNode = (MethodDefNode)child.getNode();
-//            String signature = AstUtilities.getDefSignature(childNode);
-//            FunctionNode childNode = (FunctionNode)child.getNode();
-            FunctionAstElement func = (FunctionAstElement)child;            
-//            String signature = func.getSignature();
-//            Set<Modifier> modifiers = child.getModifiers();
-            
-//            int flags = getModifiersFlag(modifiers);
-            int flags = 0;
-//
-//            if (nodoc) {
-//                flags |= IndexedElement.NODOC;
-//            }
-//
-//            if (topLevel) {
-//                flags |= IndexedElement.TOPLEVEL;
-//            }
-//
-//            boolean methodIsDocumented = isDocumented(childNode);
-//            if (methodIsDocumented) {
-//                flags |= IndexedElement.DOCUMENTED;
-//            }
-//
-//            if (flags != 0) {
-//                StringBuilder sb = new StringBuilder(signature);
-//                sb.append(';');
-//                sb.append(IndexedElement.flagToFirstChar(flags));
-//                sb.append(IndexedElement.flagToSecondChar(flags));
-//                signature = sb.toString();
-//            }
-            
-//            if (file.isPlatform() || PREINDEXING) {
-//                Node root = AstUtilities.getRoot(result);
-//                signature = RubyIndexerHelper.getMethodSignature(child, root, 
-//                       flags, signature, file.getFileObject(), doc);
-//                if (signature == null) {
-//                    return;
-//                }
-//            }
 
-            int docOffset = getDocumentationOffset(func);
-//            if (docOffset != -1) {
-//                signature = signature + ":" + Integer.toString(docOffset);
-//            }
-//            
-//            ru.put(FIELD_FUNCTION, signature);
-            
+        private void indexClass(AstElement element, IndexDocument document, String signature) {
+            final String name = element.getName();
+            document.addPair(FIELD_CLASS, name+ ";" + signature, true);
+        }
 
+        private String computeSignature(AstElement element) {
             // Look up compatibility
+            int index = IndexedElement.FLAG_INDEX;
+            
+            int docOffset = getDocumentationOffset(element);
+            
             String compatibility = "";
             if (file.getNameExt().startsWith("stub_")) {
-                int astOffset = func.getNode().getSourceStart();
+                int astOffset = element.getNode().getSourceStart();
                 int lexOffset = astOffset;
                 TranslatedSource source = result.getTranslatedSource();
                 if (source != null) {
@@ -309,70 +275,122 @@ public class JsIndexer implements Indexer {
                 }
             }
 
+            assert index == IndexedElement.FLAG_INDEX;
             StringBuilder sb = new StringBuilder();
-            sb.append(func.getName());
-            sb.append(';');
-            if (func.getIn() != null) {
-                sb.append(func.getIn());
-            }
-            sb.append(';');
-            int argIndex = 0;
-            for (String param : func.getParameters()) {
-                if (argIndex > 0) {
-                    sb.append(",");
-                }
-                sb.append(param);
-                argIndex++;
-            }
-            sb.append(";");
+            int flags = IndexedElement.getFlags(element);
             if (docOffset != -1) {
-                sb.append(Integer.toString(docOffset));
+                flags = flags | IndexedElement.DOCUMENTED;
             }
-            sb.append(";");
-            sb.append(compatibility);
-            sb.append(";");
+            sb.append(IndexedElement.encode(flags));
             
-            document.addPair(FIELD_JS_FUNCTION, sb.toString(), true);
-            
-            // Storing a lowercase method name is kinda pointless in
-            // Ruby because the convention is to use all lowercase characters
-            // (using _ to separate words rather than camel case) so we're
-            // bloating the database for very little practical use here...
-            //ru.put(FIELD_CASE_INSENSITIVE_METHOD_NAME, name.toLowerCase());
+            // Parameters
+            sb.append(";");
+            index++;
+            assert index == IndexedElement.ARG_INDEX;
+            if (element instanceof FunctionAstElement) {
+                FunctionAstElement func = (FunctionAstElement)element;            
 
-//            if (child.getName().equals("initialize")) {
-//                // Create static method alias "new"; rdoc also seems to do this
-//                Map<String, String> ru2;
-//                ru2 = new HashMap<String, String>();
-//                indexedList.add(ru2);
-//
-//                // Change signature
-//                // TODO - don't do this for methods annotated :notnew: 
-//                signature = signature.replaceFirst("initialize", "new"); // NOI18N
-//                                                                         // Make it static
-//
-//                if ((flags & IndexedElement.STATIC) == 0) {
-//                    // Add in static flag
-//                    flags |= IndexedElement.STATIC;
-//                    char first = IndexedElement.flagToFirstChar(flags);
-//                    char second = IndexedElement.flagToSecondChar(flags);
-//                    int attributeIndex = signature.indexOf(';');
-//                    if (attributeIndex == -1) {
-//                        signature = ((signature+ ";") + first) + second;
-//                    } else {
-//                        signature = (signature.substring(0, attributeIndex+1) + first) + second + signature.substring(attributeIndex+3);
-//                    }
-//                }
-//                ru2.put(FIELD_METHOD_NAME, signature);
-//            }
+                int argIndex = 0;
+                for (String param : func.getParameters()) {
+                    if (argIndex == 0 && "$super".equals(param)) { // NOI18N
+                        // Prototype inserts these as the first param to handle inheritance/super
+                        argIndex++;
+                        continue;
+                    } 
+                    if (argIndex > 0) {
+                        sb.append(",");
+                    }
+                    sb.append(param);
+                    argIndex++;
+                }
+            }
+
+            // Node offset
+            sb.append(';');
+            index++;
+            assert index == IndexedElement.NODE_INDEX;
+            sb.append("0");
+            //sb.append(IndexedElement.encode(element.getNode().getSourceStart()));
+            
+            // Documentation offset
+            sb.append(';');
+            index++;
+            assert index == IndexedElement.DOC_INDEX;
+            if (docOffset != -1) {
+                sb.append(IndexedElement.encode(docOffset));
+            }
+
+            // Browser compatibility
+            sb.append(";");
+            index++;
+            assert index == IndexedElement.BROWSER_INDEX;
+            sb.append(compatibility);
+            
+            // Types
+            sb.append(";");
+            index++;
+            assert index == IndexedElement.TYPE_INDEX;
+            if (element.getKind() == ElementKind.GLOBAL) {
+                String type = ((GlobalAstElement)element).getType();
+                if (type != null) {
+                    sb.append(type);
+                }
+            }
+            // TBD
+
+            sb.append(';');
+            String signature = sb.toString();
+            return signature;
         }
 
-        private void indexGlobal(String name, IndexDocument document) {
-            document.addPair(FIELD_JS_GLOBAL, name, true);
+        private void indexFuncOrProperty(AstElement element, IndexDocument document, String signature) {
+            String in = element.getIn();
+            String name = element.getName();
+            StringBuilder base = new StringBuilder();
+            base.append(name.toLowerCase());
+            base.append(';');                
+            if (in != null) {
+                base.append(in);
+            }
+            base.append(';');
+            base.append(name);
+            base.append(';');
+            base.append(signature);
+            document.addPair(FIELD_BASE, base.toString(), true);
+            
+            StringBuilder lcbase = new StringBuilder();
+            lcbase.append(name.toLowerCase());
+            lcbase.append(';');
+            if (in != null) {
+                lcbase.append(in);
+                //sb.append(in.toLowerCase());
+            }
+            lcbase.append(';');
+            lcbase.append(name);
+            lcbase.append(';');
+            lcbase.append(signature);
+            document.addPair(FIELD_BASE_LOWER, lcbase.toString(), true);
+            
+            StringBuilder fqn = new StringBuilder();
+            if (in != null && in.length() > 0) {
+                fqn.append(in.toLowerCase());
+                fqn.append('.');
+            }
+            fqn.append(name.toLowerCase());
+            fqn.append(';');
+            fqn.append(';');
+            if (in != null && in.length() > 0) {
+                fqn.append(in);
+                fqn.append('.');
+            }
+            fqn.append(name);
+            fqn.append(';');
+            fqn.append(signature);
+            document.addPair(FIELD_FQN, fqn.toString(), true);
         }
         
-        private int getDocumentationOffset(FunctionAstElement func) {
-            int offset = func.getNode().getSourceStart();
+        private int getDocumentationOffset(AstElement element) {
+            int offset = element.getNode().getSourceStart();
             try {
                 offset = Utilities.getRowStart(doc, offset);
             } catch (BadLocationException ex) {
@@ -385,134 +403,8 @@ public class JsIndexer implements Indexer {
                 return -1;
             }
         }
-
-//        private void indexAttribute(AstElement child, Set<Map<String, String>> indexedList,
-//            Set<Map<String, String>> notIndexedList, boolean nodoc) {
-//            Map<String, String> ru;
-//            ru = new HashMap<String, String>();
-//            indexedList.add(ru);
-//
-//            
-//            String attribute = child.getName();
-//
-//            boolean isDocumented = isDocumented(child.getNode());
-//
-//            int flags = isDocumented ? IndexedMethod.DOCUMENTED : 0;
-//            if (nodoc) {
-//                flags |= IndexedElement.NODOC;
-//            }
-//
-//            char first = IndexedElement.flagToFirstChar(flags);
-//            char second = IndexedElement.flagToSecondChar(flags);
-//            
-//            if (isDocumented) {
-//                attribute = attribute + (";" + first) + second;
-//            }
-//            
-//            ru.put(FIELD_ATTRIBUTE_NAME, attribute);
-//        }
-//
-//        private void indexConstant(AstElement child, Set<Map<String, String>> indexedList,
-//            Set<Map<String, String>> notIndexedList, boolean nodoc) {
-//            Map<String, String> ru;
-//            ru = new HashMap<String, String>();
-//            indexedList.add(ru);
-//
-//            int flags = 0; // TODO
-//            if (nodoc) {
-//                flags |= IndexedElement.NODOC;
-//            }
-//
-//            // TODO - add the RHS on the right
-//            ru.put(FIELD_CONSTANT_NAME, child.getName());
-//        }
-//
-//        private void indexField(AstElement child, Set<Map<String, String>> indexedList,
-//            Set<Map<String, String>> notIndexedList, boolean nodoc) {
-//            Map<String, String> ru;
-//            ru = new HashMap<String, String>();
-//            indexedList.add(ru);
-//
-//            String signature = child.getName();
-//            int flags = getModifiersFlag(child.getModifiers());
-//            if (nodoc) {
-//                flags |= IndexedElement.NODOC;
-//            }
-//
-//            if (flags != 0) {
-//                StringBuilder sb = new StringBuilder(signature);
-//                sb.append(';');
-//                sb.append(IndexedElement.flagToFirstChar(flags));
-//                sb.append(IndexedElement.flagToSecondChar(flags));
-//                signature = sb.toString();
-//            }
-//
-//            // TODO - gather documentation on fields? naeh
-//            ru.put(FIELD_FIELD_NAME, signature);
-//        }
-
-//        private int getDocumentSize(Node node) {
-//            if (doc != null) {
-//                List<String> comments = AstUtilities.gatherDocumentation(null, doc, node);
-//
-//                if ((comments != null) && (comments.size() > 0)) {
-//                    int size = 0;
-//
-//                    for (String line : comments) {
-//                        size += line.length();
-//                    }
-//
-//                    return size;
-//                }
-//            }
-//
-//            return 0;
-//        }
-//
-//        private boolean isDocumented(Node node) {
-//            if (doc != null) {
-//                List<String> comments = AstUtilities.gatherDocumentation(null, doc, node);
-//
-//                if ((comments != null) && (comments.size() > 0)) {
-//                    return true;
-//                }
-//            }
-//
-//            return false;
-//        }
-//
-//        private void addRequire(Map<String, String> ru) {
-//            // Don't generate "require" clauses for anything in generated ruby;
-//            // these classes are all built in and do not require any includes
-//            // (besides, the file names are bogus - they are just derived from
-//            // the class name by the stub generator)
-//            FileObject fo = file.getFileObject();
-//            String folder = (fo.getParent() != null) && fo.getParent().getParent() != null ?
-//                fo.getParent().getParent().getNameExt() : "";
-//
-//            if (folder.equals("rubystubs") && fo.getName().startsWith("stub_")) {
-//                return;
-//            }
-//
-//            // Index for require-completion
-//            String relative = file.getRelativePath();
-//
-//            if (relative != null) {
-//                if (relative.endsWith(".rb")) { // NOI18N
-//                    relative = relative.substring(0, relative.length() - 3);
-//                    ru.put(FIELD_REQUIRE, relative);
-//                }
-//            }
-//        }
     }
     
-    private void applyBrowserCompatibility() {
-        // See DOM: http://www.quirksmode.org/dom/w3c_core.html
-        // Events:  http://www.quirksmode.org/js/events_compinfo.html
-        // HTML: http://www.quirksmode.org/dom/w3c_html.html
-        // Range: http://www.quirksmode.org/dom/w3c_range.html
-    }
-
     public File getPreindexedData() {
         return null;
     }

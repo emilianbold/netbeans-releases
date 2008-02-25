@@ -86,6 +86,7 @@ public final class BiPanel extends TopComponent implements ExplorerManager.Provi
         catch (java.beans.PropertyVetoException e) {
         }
 
+        btv.setMinimumSize(new Dimension(300, 200));
         JSplitPane sp = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, btv, psv);
 
         em.setRootContext ( biNode );

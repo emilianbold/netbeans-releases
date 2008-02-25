@@ -236,7 +236,7 @@ public class J2eeProjectSupport {
                     if (params == null){
                         params = new String[] {DEFAULT_J2EE_LEVEL, DEFAULT_APPSRV_ID, null};
                     }
-                    EarProjectGenerator.createProject(projectDir, name, params[0], params[1], params[2]);
+                    EarProjectGenerator.createProject(projectDir, name, params[0], params[1], params[2], null, null);
                     break;
                 default:
                     throw new IllegalArgumentException("Invalid project type.");

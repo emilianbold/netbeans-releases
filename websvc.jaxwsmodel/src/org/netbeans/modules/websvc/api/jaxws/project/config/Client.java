@@ -161,4 +161,21 @@ public final class Client {
         }
         return use;
     }
+     public WsimportOptions newWsimportOptions(){
+        return new WsimportOptions(client.newWsimportOptions());
+    }
+  
+    public void setWsimportOptions(WsimportOptions options){
+        client.setWsimportOptions(options.getOriginal());
+    }
+    
+    public WsimportOptions getWsImportOptions(){
+        org.netbeans.modules.websvc.jaxwsmodel.project_config1_0.WsimportOptions options = client.getWsimportOptions();
+        if(options == null){
+            options = client.newWsimportOptions();
+            client.setWsimportOptions(options);
+        }
+        return new WsimportOptions(options);
+    }
+ 
 }

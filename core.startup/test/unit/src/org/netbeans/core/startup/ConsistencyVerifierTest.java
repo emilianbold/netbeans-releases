@@ -100,8 +100,10 @@ public class ConsistencyVerifierTest extends NbTestCase {
     public void testStandardProvides() throws Exception {
         assertProblems("{}",
                 "=foo; Requires=org.openide.modules.ModuleFormat1");
-        assertProblems("{foo=[requires org.openide.modules.ModuleFormat2]}",
+        assertProblems("{}",
                 "=foo; Requires=org.openide.modules.ModuleFormat2");
+        assertProblems("{foo=[requires org.openide.modules.ModuleFormat99]}",
+                "=foo; Requires=org.openide.modules.ModuleFormat99");
         assertProblems("{}",
                 "=foo; Requires=org.openide.modules.os.Unix");
         assertProblems("{}",

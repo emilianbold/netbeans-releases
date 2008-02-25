@@ -221,16 +221,5 @@ public final class ClassPathSupportCallbackImpl implements org.netbeans.modules.
         return libraryElement;
     }
 
-    public void initAdditionalProperties(Item item) {
-        switch (item.getType()) {
-            case Item.TYPE_JAR:
-                item.setAdditionalProperty(PATH_IN_DEPLOYMENT, 
-                        item.getResolvedFile().isDirectory() ? PATH_IN_WAR_DIR : PATH_IN_WAR_LIB);
-                break;
-            default:
-                item.setAdditionalProperty(PATH_IN_DEPLOYMENT, PATH_IN_WAR_LIB);
-        }
-    }
-    
 }
 

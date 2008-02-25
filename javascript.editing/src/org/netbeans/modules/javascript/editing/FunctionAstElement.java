@@ -47,23 +47,21 @@ import org.netbeans.modules.gsf.api.ElementKind;
 
 public class FunctionAstElement extends AstElement implements FunctionElement {
     private FunctionNode func;
-    private String signature;
-    private String in;
     private List<String> parameters;
+    private String extend;
 
     FunctionAstElement(CompilationInfo info, FunctionNode func) {
         super(info, func);
         this.func = func;
     }
 
+    @Override
     public void setName(String name, String in) {
         // Prototype.js hack
         if ("Element.Methods".equals(in)) { // NOI18N
             in = "Element"; // NOI18N
         }
-
-        this.name = name;
-        this.in = in;
+        super.setName(name, in);
     }
 
     @Override
@@ -71,23 +69,24 @@ public class FunctionAstElement extends AstElement implements FunctionElement {
         return "JsFunctionElement:" + getSignature();
     }
 
+    @Override
     public String getSignature() {
         if (signature == null) {
             StringBuilder sb = new StringBuilder();
             String clz = getIn();
             if (clz != null && clz.length() > 0) {
                 sb.append(clz);
-                sb.append(".");
+                sb.append("."); // NOI18N
             }
             sb.append(getName());
-            sb.append("(");
+            sb.append("("); // NOI18N
             for (int i = 0, n = func.getParamCount(); i < n; i++) {
                 if (i > 0) {
-                    sb.append(",");
+                    sb.append(","); // NOI18N
                 }
                 sb.append(func.getParamOrVarName(i));
             }
-            sb.append(")");
+            sb.append(")"); // NOI18N
             signature = sb.toString();
         }
 
@@ -145,7 +144,24 @@ public class FunctionAstElement extends AstElement implements FunctionElement {
 
     @Override
     public ElementKind getKind() {
-        // TODO - constructors!
-        return ElementKind.METHOD;
+        if (kind == null) {
+            if (Character.isUpperCase(getName().charAt(0))) {
+                kind = ElementKind.CONSTRUCTOR;
+            } else if (getName().equals("initialize")) { // NOI18N
+                kind = ElementKind.CONSTRUCTOR;
+            } else {
+                return ElementKind.METHOD;
+            }
+        }
+        
+        return kind;
+    }
+    
+    public void setExtends(String extend) {
+        this.extend = extend;
+    }
+    
+    public String getExtends() {
+        return extend;
     }
 }
