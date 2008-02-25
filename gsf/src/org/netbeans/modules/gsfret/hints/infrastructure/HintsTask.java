@@ -43,7 +43,7 @@ package org.netbeans.modules.gsfret.hints.infrastructure;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
-import org.netbeans.fpi.gsf.HintsProvider;
+import org.netbeans.modules.gsf.api.HintsProvider;
 import org.netbeans.modules.gsf.Language;
 import org.netbeans.modules.gsf.LanguageRegistry;
 import org.netbeans.napi.gsfret.source.CompilationInfo;

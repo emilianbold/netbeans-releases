@@ -45,11 +45,14 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.MalformedURLException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.net.URL;
+import javax.swing.ImageIcon;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBElement;
 import javax.xml.bind.JAXBException;
@@ -75,6 +78,7 @@ import org.netbeans.modules.websvc.saas.model.wadl.Resource;
 import org.netbeans.modules.websvc.saas.spi.SaasNodeActionsProvider;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
@@ -429,15 +433,67 @@ public class SaasUtil {
         return sb.toString();
     }
     
-    public static Image loadIcon(Saas saas, int type) {
-        String path = saas.getSaasMetadata().getIcon16();
+    public static Image loadIcon(SaasGroup saasGroup, int type) {
+        String path = saasGroup.getIcon16Path();
         if (type == BeanInfo.ICON_COLOR_32x32 || type == BeanInfo.ICON_MONO_32x32) {
-            path =  saas.getSaasMetadata().getIcon32();
+            path =  saasGroup.getIcon32Path();
         }
         if (path != null) {
+            URL url = Thread.currentThread().getContextClassLoader().getResource(path);
+            if (url != null) {
+                return new ImageIcon(url).getImage();
+            }
             return Utilities.loadImage(path);
         }
         return null;
+    }
+    
+    public static final String CATALOG = "catalog";
+    
+    public static String deriveFileName(String path) {
+        String name = null;
+        try {
+            URL url = new URL(path);
+            name = url.getPath();
+            
+        } catch(MalformedURLException e) {
+        }
+        if (name == null) {
+            name = path;
+        }
+        name = name.substring(name.lastIndexOf('/')+1);   
+        return name;
+    }
+    
+    public static FileObject getWadlFile(WadlSaas saas) throws IOException {
+        InputStream in = Thread.currentThread().getContextClassLoader().getResourceAsStream(saas.getUrl());
+        if (in == null) {
+            return null;
+        }
+        OutputStream out = null;
+        FileObject wadlFile;
+        try {
+            FileObject dir = saas.getSaasFolder();
+            FileObject catalogDir = dir.getFileObject("catalog");
+            if (catalogDir == null) {
+                catalogDir = dir.createFolder(CATALOG);
+            }
+            String wadlFileName = deriveFileName(saas.getUrl());
+            wadlFile = catalogDir.getFileObject(wadlFileName);
+            if (wadlFile == null) {
+                wadlFile = catalogDir.createData(wadlFileName);
+            }
+            out = wadlFile.getOutputStream();
+            FileUtil.copy(in, out);
+        } finally {
+            if (in != null) {
+                in.close();
+            }
+            if (out != null) {
+                out.close();
+            }
+        }
+        return wadlFile;
     }
 }
 

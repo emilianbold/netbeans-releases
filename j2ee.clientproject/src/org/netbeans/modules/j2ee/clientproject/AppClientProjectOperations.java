@@ -51,7 +51,6 @@ import java.util.logging.Logger;
 import org.apache.tools.ant.module.api.support.ActionUtils;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
-import org.netbeans.modules.j2ee.clientproject.classpath.AppClientProjectClassPathExtender;
 import org.netbeans.modules.j2ee.clientproject.ui.customizer.AppClientProjectProperties;
 import org.netbeans.modules.j2ee.dd.api.client.AppClient;
 import org.netbeans.modules.j2ee.dd.api.client.DDProvider;
@@ -159,9 +158,6 @@ public class AppClientProjectOperations implements DeleteOperationImplementation
         assert targetNames.length > 0;
         
         ActionUtils.runTarget(buildXML, targetNames, p).waitFinished();
-        
-        AppClientProjectClassPathExtender extender = project.getLookup().lookup(AppClientProjectClassPathExtender.class);
-        extender.notifyDeleting();
     }
     
     public void notifyDeleted() throws IOException {

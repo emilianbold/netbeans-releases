@@ -40,11 +40,8 @@
  */
 package org.netbeans.modules.javascript.editing;
 
-import java.util.Collections;
-import java.util.Set;
 
-import org.netbeans.fpi.gsf.ElementKind;
-import org.netbeans.fpi.gsf.Modifier;
+import org.netbeans.modules.gsf.api.ElementKind;
 
 
 /**
@@ -52,7 +49,7 @@ import org.netbeans.fpi.gsf.Modifier;
  *
  * @author Tor Norbye
  */
-public class KeywordElement implements Element {
+public class KeywordElement extends JsElement {
     private final String name;
 
     public KeywordElement(String name) {
@@ -65,13 +62,5 @@ public class KeywordElement implements Element {
 
     public ElementKind getKind() {
         return ElementKind.KEYWORD;
-    }
-
-    public Set<Modifier> getModifiers() {
-        return Collections.emptySet();
-    }
-
-    public String getIn() {
-        return null;
     }
 }

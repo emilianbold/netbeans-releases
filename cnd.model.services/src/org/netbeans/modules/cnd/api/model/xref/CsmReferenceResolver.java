@@ -41,7 +41,6 @@
 
 package org.netbeans.modules.cnd.api.model.xref;
 
-import java.util.EnumSet;
 import javax.swing.JEditorPane;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmObject;
@@ -111,7 +110,7 @@ public abstract class CsmReferenceResolver {
      * @param ref reference to analyze
      * @return reference kind
      */
-    public ReferenceKind getReferenceKind(CsmReference ref) {
+    public CsmReferenceKind getReferenceKind(CsmReference ref) {
         // default implementation
         CsmObject target = ref.getReferencedObject();
         assert target != null;
@@ -128,32 +127,19 @@ public abstract class CsmReferenceResolver {
      * @param targetDef definition of target object
      * @return reference kind 
      */
-    public ReferenceKind getReferenceKind(CsmReference ref, CsmObject targetDecl, CsmObject targetDef) {
+    public CsmReferenceKind getReferenceKind(CsmReference ref, CsmObject targetDecl, CsmObject targetDef) {
         // default implementation
         assert targetDecl != null;
         CsmObject owner = ref.getOwner();
-        ReferenceKind kind = ReferenceKind.DIRECT_USAGE;
+        CsmReferenceKind kind = CsmReferenceKind.DIRECT_USAGE;
         if (owner != null) {
             if (owner.equals(targetDecl)) {
-                kind = ReferenceKind.DECLARATION;
+                kind = CsmReferenceKind.DECLARATION;
             } else if (owner.equals(targetDef)) {
-                kind = ReferenceKind.DEFINITION;
+                kind = CsmReferenceKind.DEFINITION;
             }
         }
         return kind;
-    }
-    
-    public static enum ReferenceKind {
-        DEFINITION,
-        DECLARATION,        
-        DIRECT_USAGE,
-        AFTER_DEREFERENCE_USAGE,
-        UNKNOWN;
-        
-        public static final EnumSet ANY_USAGE;
-        static {
-            ANY_USAGE = EnumSet.range(DIRECT_USAGE, AFTER_DEREFERENCE_USAGE);
-        }
     }
     
     /**
@@ -210,25 +196,25 @@ public abstract class CsmReferenceResolver {
         }
 
         @Override
-        public ReferenceKind getReferenceKind(CsmReference ref) {
+        public CsmReferenceKind getReferenceKind(CsmReference ref) {
             for (CsmReferenceResolver resolver : res.allInstances()) {
-                ReferenceKind kind = resolver.getReferenceKind(ref);
-                if (kind != ReferenceKind.UNKNOWN) {
+                CsmReferenceKind kind = resolver.getReferenceKind(ref);
+                if (kind != CsmReferenceKind.UNKNOWN) {
                     return kind;
                 }
             }            
-            return ReferenceKind.UNKNOWN;
+            return CsmReferenceKind.UNKNOWN;
         }
         
         @Override
-        public ReferenceKind getReferenceKind(CsmReference ref, CsmObject targetDecl, CsmObject targetDef) {
+        public CsmReferenceKind getReferenceKind(CsmReference ref, CsmObject targetDecl, CsmObject targetDef) {
             for (CsmReferenceResolver resolver : res.allInstances()) {
-                ReferenceKind kind = resolver.getReferenceKind(ref, targetDecl, targetDef);
-                if (kind != ReferenceKind.UNKNOWN) {
+                CsmReferenceKind kind = resolver.getReferenceKind(ref, targetDecl, targetDef);
+                if (kind != CsmReferenceKind.UNKNOWN) {
                     return kind;
                 }
             }            
-            return ReferenceKind.UNKNOWN;
+            return CsmReferenceKind.UNKNOWN;
         }        
     }    
 }

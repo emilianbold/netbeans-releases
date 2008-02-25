@@ -39,32 +39,61 @@
 package org.netbeans.modules.javascript.editing;
 
 import java.util.Collections;
-import java.util.Set;
 import java.util.List;
 import org.mozilla.javascript.Node;
 import org.mozilla.javascript.Token;
 import org.mozilla.javascript.FunctionNode;
-import org.netbeans.fpi.gsf.Modifier;
-import org.netbeans.fpi.gsf.ElementKind;
+import org.netbeans.modules.gsf.api.CompilationInfo;
+import org.netbeans.modules.gsf.api.ElementKind;
 
 /**
  *
  * @author Tor Norbye
  */
-public class AstElement implements Element {
+public class AstElement extends JsElement {
 
     protected List<AstElement> children;
     protected Node node;
     protected String name;
+    protected String in;
+    protected CompilationInfo info;
+    protected String signature;
+    protected ElementKind kind;
 
-    AstElement(Node node) {
+    AstElement(CompilationInfo info, Node node) {
+        this.info = info;
         this.node = node;
+    }
+
+    public String getSignature() {
+        if (signature == null) {
+            StringBuilder sb = new StringBuilder();
+            String clz = getIn();
+            if (clz != null && clz.length() > 0) {
+                sb.append(clz);
+                sb.append("."); // NOI18N
+            }
+            sb.append(getName());
+            signature = sb.toString();
+        }
+
+        return signature;
     }
     
     public Node getNode() {
         return node;
     }
 
+    public void setName(String name, String in) {
+        // Prototype.js hack
+        if ("Element.Methods".equals(in)) { // NOI18N
+            in = "Element"; // NOI18N
+        }
+
+        this.name = name;
+        this.in = in;
+    }
+    
     public String getName() {
         if (name == null) {
             if (node.getType() == Token.VAR) {
@@ -83,84 +112,34 @@ public class AstElement implements Element {
         return name;
     }
 
+    @Override
     public String getIn() {
-        return "";
-    }
-
-    public ElementKind getKind() {
-        switch (node.getType()) {
-        case Token.NAME:
-        case Token.BINDNAME:
-        case Token.PARAMETER:
-            return ElementKind.VARIABLE;
-        default:
-            return ElementKind.OTHER;
+        if (in == null) {
+            in = ""; // NOI18N
         }
+        return in;
     }
 
-    public Set<Modifier> getModifiers() {
-        return Collections.emptySet();
+    void setKind(ElementKind kind) {
+        this.kind = kind;
+    }
+    
+    public ElementKind getKind() {
+        if (kind == null) {
+            switch (node.getType()) {
+            case Token.NAME:
+            case Token.BINDNAME:
+            case Token.PARAMETER:
+                return ElementKind.VARIABLE;
+            default:
+                return ElementKind.OTHER;
+            }
+        }
+        
+        return kind;
     }
 
     public List<AstElement> getChildren() {
-//        if (children == null) {
-//            // Functions need special treatment: Rhino has a weird thing in the AST
-//            // where the AST for each function is not made part of the overall tree...
-//            // So in these cases I've gotta go looking for it myself...
-//            if (node.getType() == Token.FUNCTION) {
-//                String name;
-//                if (node instanceof FunctionNode) {
-//                    name = ((FunctionNode) node).getFunctionName();
-//                } else {
-//                    name = node.getString();
-//                }
-////                children = new ArrayList<AstElement>();
-////                if (node.getParentNode() instanceof ScriptOrFnNode) {
-////                    ScriptOrFnNode sn = (ScriptOrFnNode) node.getParentNode();
-////                    for (int i = 0,  n = sn.getFunctionCount(); i < n; i++) {
-////                        FunctionNode func = sn.getFunctionNode(i);
-////                        if (name.equals(func.getFunctionName())) {
-////                            // Found the function
-////
-////                            Node current = func.getFirstChild();
-////
-////                            for (; current != null; current = current.getNext()) {
-////                                AstElement child = getElement(current);
-////                                children.add(child);
-////                            }
-////                            return children;
-////                        }
-////                    }
-////                }
-////                System.err.println("SURPRISE! It's not a script node... revisit code--- some kind of error");
-//////                children = new ArrayList<ComObject>(0); // TODO - cache
-//////                return children.iterator();
-//            }
-//            if (node.hasChildren()) {
-//                children = new ArrayList<AstElement>();
-//
-//                Node current = node.getFirstChild();
-//
-//                for (; current != null; current = current.getNext()) {
-//                    // Already added above?
-//                    //if (current.getType() == Token.FUNCTION) {
-//                    //    continue;
-//                    //}
-//                    //JavaScriptNode child = JavaScriptNodeFactory.getComObject(current);
-//                    AstElement child = getElement(current);
-//                    children.add(child);
-//                }
-////            } else {
-////                //children = Collections.emptySet();
-////                children = EMPTY_SET;
-//            }
-//
-//            if (children == null) {
-//                children = Collections.emptyList();
-//            }
-//        }
-//
-//        return children;
         return Collections.emptyList();
     }
     
@@ -168,17 +147,21 @@ public class AstElement implements Element {
     public String toString() {
         return "JsElement:" + getName() + "(" + getKind() + ")"; // NOI18N
     }
+
+    public CompilationInfo getInfo() {
+        return info;
+    }
     
-    public static AstElement getElement(Node node) {
+    public static AstElement getElement(CompilationInfo info, Node node) {
         switch (node.getType()) {
             case Token.FUNCTION:
                 if (node instanceof FunctionNode) {
-                    return new FunctionAstElement((FunctionNode) node);
+                    return new FunctionAstElement(info, (FunctionNode) node);
                 } else {
-                // Fall through
+                    // Fall through
                 }
             default:
-                return new AstElement(node);
+                return new AstElement(info, node);
         }
     }
 }

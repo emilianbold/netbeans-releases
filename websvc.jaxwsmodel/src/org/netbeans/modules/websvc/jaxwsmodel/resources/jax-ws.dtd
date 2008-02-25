@@ -48,7 +48,7 @@ made subject to such option by the copyright holder.
 <!ELEMENT services (service)*>
 
 <!--- Put your DTDDoc comment here. -->
-<!ELEMENT service (implementation-class, wsdl-url?, local-wsdl-file?, service-name?, port-name?, package-name?, catalog-file?, (binding)*, handler-binding-file?, use-provider?)>
+<!ELEMENT service (implementation-class, wsdl-url?, local-wsdl-file?, service-name?, port-name?, package-name?, catalog-file?, (binding)*, handler-binding-file?, use-provider?, wsimport-options?, use-soap12?)>
 <!ATTLIST service
     name CDATA #REQUIRED
   >
@@ -76,6 +76,12 @@ made subject to such option by the copyright holder.
 <!--- Put your DTDDoc comment here. -->
 <!ELEMENT handler-binding-file (#PCDATA)>
 <!ELEMENT use-provider (#PCDATA)>
+<!ELEMENT use-soap12 (#PCDATA)>
+
+<!ELEMENT wsimport-options ((wsimport-option)*)>
+<!ELEMENT wsimport-option (wsimport-option-name, wsimport-option-value)>
+<!ELEMENT wsimport-option-name (#PCDATA)>
+<!ELEMENT wsimport-option-value (#PCDATA)>
 
 <!ELEMENT jsr109 (#PCDATA)>
 
@@ -83,7 +89,7 @@ made subject to such option by the copyright holder.
 <!ELEMENT clients (client)*>
 
 <!--- Put your DTDDoc comment here. -->
-<!ELEMENT client (wsdl-url,local-wsdl-file,package-name?,catalog-file?,(binding)*, handler-binding-file?, use-dispatch?)>
+<!ELEMENT client (wsdl-url,local-wsdl-file,package-name?,catalog-file?,(binding)*, handler-binding-file?, use-dispatch?, wsimport-options?)>
 <!ATTLIST client
     name CDATA #REQUIRED
   >

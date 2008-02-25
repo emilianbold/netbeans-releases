@@ -49,9 +49,9 @@ import java.util.List;
 import javax.swing.text.Document;
 import org.mozilla.javascript.Node;
 import org.netbeans.editor.BaseDocument;
-import org.netbeans.fpi.gsf.CompilationInfo;
-import org.netbeans.fpi.gsf.DeclarationFinder.DeclarationLocation;
-import org.netbeans.fpi.gsf.ElementHandle;
+import org.netbeans.modules.gsf.api.CompilationInfo;
+import org.netbeans.modules.gsf.api.DeclarationFinder.DeclarationLocation;
+import org.netbeans.modules.gsf.api.ElementHandle;
 import org.netbeans.modules.javascript.editing.lexer.LexUtilities;
 import org.openide.ErrorManager;
 import org.openide.util.Exceptions;
@@ -97,14 +97,17 @@ public class ElementUtilities {
         if (element == null) {
             return null;
         }
+
+        if (element instanceof IndexedElement) {
+            IndexedElement indexedElement = (IndexedElement) element;
+            // this was called in code moved to getNode
+            List<String> comments = indexedElement.getComments();
+            if (comments != null || indexedElement.getDocOffset() == -1) {
+                return comments;
+            }
+        }
         
         Node node = getNode(info, element);
-
-        if (node == null && element instanceof IndexedFunction) {
-            // this was called in code moved to getNode
-            List<String> comments = ((IndexedFunction)element).getComments();
-            return comments;
-        }
 
         // Initially, I implemented this by using JsParserResult.getCommentNodes.
         // However, I -still- had to rely on looking in the Document itself, since
@@ -151,27 +154,42 @@ public class ElementUtilities {
     
     public static String getSignature(Element element) {
         StringBuilder sb = new StringBuilder();
-        IndexedFunction func = null;
+        IndexedElement indexedElement = null;
+        if (element instanceof IndexedElement) {
+            indexedElement = (IndexedElement)element;
+        }
         
-        if (element instanceof FunctionElement) {
-            // Insert browser icons... TODO - consult flags etc.
-            sb.append("<table width=\"100%\" border=\"0\"><tr>\n");
+        // Insert browser icons... TODO - consult flags etc.
+        sb.append("<table width=\"100%\" border=\"0\"><tr>\n");
 
-            sb.append("<td>");
+        sb.append("<td>");
 
-            FunctionElement executable = (FunctionElement) element;
-            if (element.getIn() != null) {
-                String in = element.getIn();
+        if (element.getIn() != null) {
+            String in = element.getIn();
+            if (in != null && in.length() > 0) {
                 sb.append("<i>");
                 sb.append(in);
                 sb.append("</i>");
+            
+                if (indexedElement != null) {
+                    String url = indexedElement.getFilenameUrl();
+                    if (url.indexOf("jsstubs/stub_dom_") != -1) { // NOI18N
+                        sb.append(" (DOM)");
+                    } else if (url.indexOf("jsstubs/stub_core_") != -1) { // NOI18N
+                        sb.append(" (Core JavaScript)");
+                    }
+                }
+
                 sb.append("<br>");
             }
-            // TODO - share this between Navigator implementation and here...
-            sb.append("<b>");
-            sb.append(executable.getName());
-            sb.append("</b>");
+        }
+        // TODO - share this between Navigator implementation and here...
+        sb.append("<b>");
+        sb.append(element.getName());
+        sb.append("</b>");
 
+        if (element instanceof FunctionElement) {
+            FunctionElement executable = (FunctionElement) element;
             Collection<String> parameters = executable.getParameters();
 
             if ((parameters != null) && (parameters.size() > 0)) {
@@ -193,61 +211,43 @@ public class ElementUtilities {
 
                 sb.append(")");
             }
-//        } else if (element instanceof ClassElement) {
-//            ClassElement clz = (ClassElement)element;
-//            String name = element.getName();
-//            final String fqn = clz.getFqn();
-//            if (fqn != null && !name.equals(fqn)) {
-//                sb.append("<i>");
-//                sb.append(fqn);
-//                sb.append("</i>");
-//                sb.append("<br>");
-//            }
-//            sb.append("<b>");
-//            sb.append(name);
-//            sb.append("</b>");
-            
-            sb.append("</td>\n");
+        }
+        sb.append("</td>\n");
+        if (indexedElement != null) {
             sb.append("<td width=\"100\">");
-            if (executable instanceof IndexedFunction) {
-                func = (IndexedFunction)executable;
-                EnumSet<BrowserVersion> es = func.getCompatibility();
-                try {
-                    if (es.contains(BrowserVersion.FF3)) {
-                        appendImage(sb, "firefox20.png");
-                    } else {
-                        appendImage(sb, "firefox20-disabled.png");
-                    }
-                    if (es.contains(BrowserVersion.IE7)) {
-                        appendImage(sb, "ie20.png");
-                    } else {
-                        appendImage(sb, "ie20-disabled.png");
-                    }
-                    if (es.contains(BrowserVersion.SAFARI3)) {
-                        appendImage(sb, "safari20.png");
-                    } else {
-                        appendImage(sb, "safari20-disabled.png");
-                    }
-                    if (es.contains(BrowserVersion.OPERA)) {
-                        appendImage(sb, "opera20.png");
-                    } else {
-                        appendImage(sb, "opera20-disabled.png");
-                    }
-                } catch (Exception ex) {
-                    Exceptions.printStackTrace(ex);
+            EnumSet<BrowserVersion> es = indexedElement.getCompatibility();
+            try {
+                if (es.contains(BrowserVersion.FF3)) {
+                    appendImage(sb, "firefox20.png");
+                } else {
+                    appendImage(sb, "firefox20-disabled.png");
                 }
+                if (es.contains(BrowserVersion.IE7)) {
+                    appendImage(sb, "ie20.png");
+                } else {
+                    appendImage(sb, "ie20-disabled.png");
+                }
+                if (es.contains(BrowserVersion.SAFARI3)) {
+                    appendImage(sb, "safari20.png");
+                } else {
+                    appendImage(sb, "safari20-disabled.png");
+                }
+                if (es.contains(BrowserVersion.OPERA)) {
+                    appendImage(sb, "opera20.png");
+                } else {
+                    appendImage(sb, "opera20-disabled.png");
+                }
+            } catch (Exception ex) {
+                Exceptions.printStackTrace(ex);
             }
             sb.append("</td>");
-            sb.append("</tr></table>");
-            
-        } else {
-            sb.append(element.getName());
         }
+        sb.append("</tr></table>");
 
-        if (func != null && func.getFilenameUrl() != null && func.getFilenameUrl().indexOf("jsstubs") == -1) {
+        if (indexedElement != null && indexedElement.getFilenameUrl() != null && indexedElement.getFilenameUrl().indexOf("jsstubs") == -1) {
             sb.append(NbBundle.getMessage(JsCodeCompletion.class, "FileLabel"));
             sb.append(" <tt>");
-            String file = func.getFilenameUrl();
+            String file = indexedElement.getFilenameUrl();
             int baseIndex = file.lastIndexOf('/');
             if (baseIndex != -1) {
                 file = file.substring(baseIndex+1);
@@ -257,7 +257,7 @@ public class ElementUtilities {
         }
         
         // Generate compatibility notes
-        if (func != null && !SupportedBrowsers.getInstance().isSupported(func.getCompatibility())) {
+        if (indexedElement != null && !SupportedBrowsers.getInstance().isSupported(indexedElement.getCompatibility())) {
             sb.append("<hr>");
             sb.append("<p style=\"background:#ffcccc\">");
             sb.append(NbBundle.getMessage(JsCodeCompletion.class, "NotSupportedBr"));
@@ -265,7 +265,7 @@ public class ElementUtilities {
             sb.append("<ul>");
             for (BrowserVersion v : BrowserVersion.ALL) {
                 if (SupportedBrowsers.getInstance().isSupported(v) && 
-                        !func.getCompatibility().contains(v)) {
+                        !indexedElement.getCompatibility().contains(v)) {
                     sb.append("<li>");
                     sb.append(v.getDisplayName());
                 }
@@ -285,20 +285,20 @@ public class ElementUtilities {
 
         if (element instanceof AstElement) {
             node = ((AstElement)element).getNode();
-        } else if (element instanceof IndexedFunction) {
-            IndexedFunction indexedFunction = (IndexedFunction)element;
-            IndexedFunction match = null;
+        } else if (element instanceof IndexedElement) {
+            IndexedElement indexedElement = (IndexedElement)element;
+            IndexedElement match = null;
             Node root = null;
             if (info != null) {
                 root = AstUtilities.getRoot(info);
-                match = findDocumentationEntry(root, indexedFunction);
+                match = findDocumentationEntry(root, indexedElement);
             }
 
             if (match != null) {
-                indexedFunction = match;
+                indexedElement = match;
             }
 
-            node = AstUtilities.getForeignNode(indexedFunction, null);
+            node = AstUtilities.getForeignNode(indexedElement, null);
         } else {
             assert false : element;
         }
@@ -329,7 +329,7 @@ public class ElementUtilities {
     /**
      * @todo is it possible to have multiple sources of documentation fo JavaScript?
      */
-    private static IndexedFunction findDocumentationEntry(Node root, IndexedFunction obj) {
+    private static IndexedElement findDocumentationEntry(Node root, IndexedElement obj) {
         return obj;
     }
     

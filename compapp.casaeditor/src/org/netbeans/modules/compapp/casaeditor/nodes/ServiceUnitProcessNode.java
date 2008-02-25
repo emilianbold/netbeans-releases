@@ -59,6 +59,7 @@ import javax.swing.*;
 import org.netbeans.modules.compapp.casaeditor.Constants;
 import org.netbeans.modules.compapp.casaeditor.model.casa.CasaConsumes;
 import org.netbeans.modules.compapp.casaeditor.model.casa.CasaEndpoint;
+import org.netbeans.modules.compapp.casaeditor.model.casa.CasaEndpointRef;
 import org.netbeans.modules.compapp.casaeditor.model.casa.CasaProvides;
 import org.netbeans.modules.compapp.casaeditor.nodes.actions.GoToSourceAction;
 
@@ -66,6 +67,8 @@ import org.netbeans.modules.compapp.casaeditor.nodes.actions.GoToSourceAction;
  *
  * @author jqian
  */
+// HACK: since there is currently no corresponding model component for process, 
+// we use the endpoint instead. 
 public class ServiceUnitProcessNode extends CasaNode {
     
     private static final Image ICON = Utilities.loadImage(
@@ -73,28 +76,36 @@ public class ServiceUnitProcessNode extends CasaNode {
     
     private static final String CHILD_ID_PROVIDES_LIST = "ProvidesList";        // NOI18N
     private static final String CHILD_ID_CONSUMES_LIST = "ConsumesList";        // NOI18N
-    
-    private String processName;
-    private String filePath;
-    
-    public ServiceUnitProcessNode(CasaServiceEngineServiceUnit component, 
-            String processName, String filePath, CasaNodeFactory factory) {
-        super(component, new MyChildren(component, processName, factory), factory);
-        this.processName = processName;
-        this.filePath = filePath;
+        
+    public ServiceUnitProcessNode(CasaEndpoint component, CasaNodeFactory factory) {
+        super(component, new MyChildren(component, factory), factory);
+        assert component != null;
+        //System.out.println("***CREATING SERVICE_UNIT_PROCESS_NODE: " + this + "  component=" + component);
     }
     
     public String getProcessName() {
-        return processName;
+        return ((CasaEndpoint)getData()).getProcessName();
     }
     
     public String getFilePath() {
-        return filePath;
+        return ((CasaEndpoint)getData()).getFilePath();
+    }
+    
+    public CasaServiceEngineServiceUnit getServiceEngineServiceUnit() {
+        CasaEndpoint endpoint = (CasaEndpoint)getData();
+        return getServiceEngineServiceUnit(endpoint);
+    }
+    
+    private static CasaServiceEngineServiceUnit getServiceEngineServiceUnit(CasaEndpoint endpoint) {
+        CasaWrapperModel model = (CasaWrapperModel) endpoint.getModel();
+        CasaEndpointRef endpointRef = model.getServiceEngineEndpointRef(endpoint);
+        return model.getCasaEngineServiceUnit(endpointRef);
     }
     
     @Override
     protected void addCustomActions(List<Action> actions) {
-        CasaServiceEngineServiceUnit su = (CasaServiceEngineServiceUnit) getData();
+        CasaEndpoint endpoint = (CasaEndpoint)getData();
+        CasaServiceEngineServiceUnit su = getServiceEngineServiceUnit(endpoint);
         if (su != null && su.isInternal()) {
             actions.add(SystemAction.get(GoToSourceAction.class));
         }
@@ -102,7 +113,7 @@ public class ServiceUnitProcessNode extends CasaNode {
 
     @Override
     public String getName() {
-        CasaServiceEngineServiceUnit su = (CasaServiceEngineServiceUnit) getData();
+        CasaServiceEngineServiceUnit su = getServiceEngineServiceUnit();
         if (su != null) {
             return NbBundle.getMessage(getClass(), "LBL_Process");      // NOI18N
         }
@@ -113,11 +124,11 @@ public class ServiceUnitProcessNode extends CasaNode {
     public String getHtmlDisplayName() {
         try {
             String htmlDisplayName = getName();
-            CasaServiceEngineServiceUnit casaSU = (CasaServiceEngineServiceUnit) getData();
+            CasaServiceEngineServiceUnit casaSU = getServiceEngineServiceUnit();
             String decoration = null;
             if (casaSU != null) {
                 decoration = NbBundle.getMessage(WSDLEndpointNode.class, "LBL_NameAttr",        // NOI18N
-                        processName);
+                        getProcessName());
             }
             if (decoration == null) {
                 return htmlDisplayName;
@@ -131,7 +142,7 @@ public class ServiceUnitProcessNode extends CasaNode {
 
     @Override
     protected void setupPropertySheet(Sheet sheet) {
-        final CasaServiceEngineServiceUnit casaSU = (CasaServiceEngineServiceUnit) getData();
+        final CasaServiceEngineServiceUnit casaSU = getServiceEngineServiceUnit();
         if (casaSU == null) {
             return;
         }        
@@ -160,19 +171,16 @@ public class ServiceUnitProcessNode extends CasaNode {
         };
         identificationProperties.put(filePathSupport);        
     }
-
     
     private static class MyChildren extends CasaNodeChildren {
-        
-        private String processName;
-    
-        public MyChildren(CasaComponent component, String processName, CasaNodeFactory factory) {
-            super(component, factory);            
-            this.processName = processName;
+            
+        public MyChildren(CasaEndpoint component,CasaNodeFactory factory) {
+            super(component, factory); 
         }
         protected Node[] createNodes(Object key) {
             assert key instanceof String;
-            CasaServiceEngineServiceUnit serviceUnit = (CasaServiceEngineServiceUnit) getData();
+            CasaEndpoint endpoint = (CasaEndpoint)getData();
+            CasaServiceEngineServiceUnit serviceUnit = getServiceEngineServiceUnit(endpoint);
             if (serviceUnit != null) {
                 CasaWrapperModel model = mNodeFactory.getCasaModel();
                 if (model != null) {
@@ -193,15 +201,20 @@ public class ServiceUnitProcessNode extends CasaNode {
             children.add(CHILD_ID_PROVIDES_LIST);
             return children;
         }
+        private String getProcessName() {
+            CasaEndpoint endpoint = (CasaEndpoint)getData();
+            return endpoint.getProcessName();
+        }
         private List<CasaConsumes> getConsumeEndpointRefs() {
             List<CasaConsumes> ret = new ArrayList<CasaConsumes>();
             
-            CasaServiceEngineServiceUnit serviceUnit = (CasaServiceEngineServiceUnit) getData();
+            CasaEndpoint endpoint = (CasaEndpoint)getData();
+            CasaServiceEngineServiceUnit serviceUnit = getServiceEngineServiceUnit(endpoint);
             if (serviceUnit != null) {
                 for (CasaConsumes endpointRef : serviceUnit.getConsumes()) {
-                    CasaEndpoint endpoint = endpointRef.getEndpoint().get();
-                    String pName = endpoint.getProcessName();
-                    if (pName != null && pName.equals(processName)) {
+                    CasaEndpoint ep = endpointRef.getEndpoint().get();
+                    String pName = ep.getProcessName();
+                    if (pName != null && pName.equals(getProcessName())) {
                         ret.add(endpointRef);
                     }
                 }
@@ -211,12 +224,13 @@ public class ServiceUnitProcessNode extends CasaNode {
         private List<CasaProvides> getProvideEndpointRefs() {
             List<CasaProvides> ret = new ArrayList<CasaProvides>();
             
-            CasaServiceEngineServiceUnit serviceUnit = (CasaServiceEngineServiceUnit) getData();
+            CasaEndpoint endpoint = (CasaEndpoint)getData();
+            CasaServiceEngineServiceUnit serviceUnit = getServiceEngineServiceUnit(endpoint);
             if (serviceUnit != null) {
                 for (CasaProvides endpointRef : serviceUnit.getProvides()) {
-                    CasaEndpoint endpoint = endpointRef.getEndpoint().get();
-                    String pName = endpoint.getProcessName();
-                    if (pName != null && pName.equals(processName)) {
+                    CasaEndpoint ep = endpointRef.getEndpoint().get();
+                    String pName = ep.getProcessName();
+                    if (pName != null && pName.equals(getProcessName())) {
                         ret.add(endpointRef);
                     }
                 }
@@ -237,19 +251,11 @@ public class ServiceUnitProcessNode extends CasaNode {
     
     @Override
     public boolean isEditable(String propertyType) {
-//        CasaServiceEngineServiceUnit su = (CasaServiceEngineServiceUnit) getData();
-//        if (su != null) {
-//            return getModel().isEditable(su, propertyType);
-//        }
         return false;
     }
     
     @Override
     public boolean isDeletable() {
-//        CasaServiceEngineServiceUnit su = (CasaServiceEngineServiceUnit) getData();
-//        if (su != null) {
-//            return getModel().isDeletable(su);
-//        }
         return false;
     }
 }

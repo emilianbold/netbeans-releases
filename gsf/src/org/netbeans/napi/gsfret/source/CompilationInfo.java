@@ -48,9 +48,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import org.netbeans.fpi.gsf.Error;
-import org.netbeans.fpi.gsf.Index;
-import org.netbeans.fpi.gsf.ParserResult;
+import org.netbeans.modules.gsf.api.Error;
+import org.netbeans.modules.gsf.api.Index;
+import org.netbeans.modules.gsf.api.ParserResult;
 import org.netbeans.modules.gsf.Language;
 import org.netbeans.modules.gsf.LanguageRegistry;
 import org.netbeans.modules.gsfret.source.parsing.SourceFileObject;
@@ -71,7 +71,7 @@ import org.openide.filesystems.FileUtil;
  *
  * @author Petr Hrebejk, Tomas Zezula
  */
-public class CompilationInfo extends org.netbeans.fpi.gsf.CompilationInfo {
+public class CompilationInfo extends org.netbeans.modules.gsf.api.CompilationInfo {
     private Phase phase = Phase.MODIFIED;
     private ParserTaskImpl javacTask;
     final SourceFileObject jfo;
@@ -199,6 +199,7 @@ public class CompilationInfo extends org.netbeans.fpi.gsf.CompilationInfo {
     
     public void addEmbeddingResult(String mimeType, ParserResult result) {
         embeddedResults.put(mimeType, result);
+        result.setInfo(this);
     }
 
     @Override

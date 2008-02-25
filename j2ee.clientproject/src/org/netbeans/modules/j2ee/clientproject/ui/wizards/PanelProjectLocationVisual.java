@@ -48,7 +48,7 @@ import javax.swing.JFileChooser;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.text.Document;
-import org.netbeans.modules.j2ee.clientproject.ui.FoldersListSettings;
+import org.netbeans.modules.j2ee.common.project.ui.UserProjectSettings;
 import org.netbeans.spi.project.ui.support.ProjectChooser;
 import org.openide.WizardDescriptor;
 import org.openide.WizardValidationException;
@@ -271,7 +271,7 @@ public class PanelProjectLocationVisual extends SettingsPanel implements Documen
         
         String projectName = (String) settings.getProperty(WizardProperties.NAME); //NOI18N
         if (projectName == null) {
-            int baseCount = FoldersListSettings.getDefault().getNewApplicationCount() + 1;
+            int baseCount = UserProjectSettings.getDefault().getNewApplicationCount() + 1;
             String formater = NbBundle.getMessage(PanelSourceFolders.class, "TXT_JavaApplication");
             while ((projectName=validFreeProjectName(projectLocation, formater, baseCount))==null) {
                 baseCount++;

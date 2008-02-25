@@ -59,17 +59,18 @@ import org.w3c.dom.Node;
  */
 public class FactoryMethodHyperlinkProcessor extends HyperlinkProcessor {
 
-    private static final String FACTORY_BEAN_ATTRIB = "factory-bean"; // NOI18N
-    private static final String FACTORY_METHOD_ATTRIB = "factory-method"; // NOI18N
-    
     public void process(HyperlinkEnv env) {
         Node tag = env.getCurrentTag();
+        SpringBean mergedBean = SpringXMLConfigEditorUtils.getMergedBean(tag, env.getDocument());
+        if(mergedBean == null) {
+            return;
+        }
         Static staticFlag = Static.YES;
-        final String[] className = { SpringXMLConfigEditorUtils.getBeanClassName(tag) };
+        final String[] className = { mergedBean.getClassName() };
         
         // if factory-bean has been defined, resolve it and get it's class name
-        if(SpringXMLConfigEditorUtils.hasAttribute(tag, FACTORY_BEAN_ATTRIB)) { 
-            final String factoryBeanName = SpringXMLConfigEditorUtils.getAttribute(tag, FACTORY_BEAN_ATTRIB);
+        if(mergedBean.getFactoryBean() != null) { 
+            final String factoryBeanName = mergedBean.getFactoryBean();
             FileObject fo = NbEditorUtilities.getFileObject(env.getDocument());
             if(fo == null) {
                 return;
@@ -95,7 +96,7 @@ public class FactoryMethodHyperlinkProcessor extends HyperlinkProcessor {
         }
         
         if (className[0] != null) {
-            String methodName = SpringXMLConfigEditorUtils.getAttribute(tag, FACTORY_METHOD_ATTRIB);
+            String methodName = mergedBean.getFactoryMethod();
             SpringXMLConfigEditorUtils.openMethodInEditor(env.getDocument(), className[0], methodName, -1,
                     Public.DONT_CARE, staticFlag);
         }

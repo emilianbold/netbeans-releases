@@ -43,7 +43,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.ListIterator;
@@ -55,23 +54,23 @@ import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import org.mozilla.javascript.Node;
 import org.netbeans.editor.ext.html.parser.SyntaxElement;
-import org.netbeans.fpi.gsf.CompilationInfo;
-import org.netbeans.fpi.gsf.Completable;
-import org.netbeans.fpi.gsf.CompletionProposal;
-import org.netbeans.fpi.gsf.ElementHandle;
-import org.netbeans.fpi.gsf.ElementKind;
-import org.netbeans.fpi.gsf.HtmlFormatter;
-import org.netbeans.fpi.gsf.Modifier;
-import org.netbeans.fpi.gsf.NameKind;
-import org.netbeans.fpi.gsf.ParameterInfo;
+import org.netbeans.modules.gsf.api.CompilationInfo;
+import org.netbeans.modules.gsf.api.Completable;
+import org.netbeans.modules.gsf.api.CompletionProposal;
+import org.netbeans.modules.gsf.api.ElementHandle;
+import org.netbeans.modules.gsf.api.ElementKind;
+import org.netbeans.modules.gsf.api.HtmlFormatter;
+import org.netbeans.modules.gsf.api.Modifier;
+import org.netbeans.modules.gsf.api.NameKind;
+import org.netbeans.modules.gsf.api.ParameterInfo;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
-import org.netbeans.fpi.gsf.OffsetRange;
-import org.netbeans.fpi.gsf.ParserResult;
+import org.netbeans.modules.gsf.api.OffsetRange;
+import org.netbeans.modules.gsf.api.ParserResult;
 import org.netbeans.modules.html.editor.gsf.HtmlParserResult;
 import org.netbeans.modules.javascript.editing.JsParser.Sanitize;
 import org.netbeans.modules.javascript.editing.lexer.Call;
@@ -297,7 +296,6 @@ public class JsCodeCompletion implements Completable {
             request.fileObject = fileObject;
             request.anchor = lexOffset - prefix.length();
             request.call = Call.getCallType(doc, th, lexOffset);
-            request.fqn = null; // TODO - compute
 
             Token<? extends TokenId> token = LexUtilities.getToken(doc, lexOffset);
             if (token == null) {
@@ -319,6 +317,7 @@ public class JsCodeCompletion implements Completable {
             if (root != null) {
                 final AstPath path = new AstPath(root, astOffset);
                 request.path = path;
+                request.fqn = AstUtilities.getFqn(path);
 
                 final Node closest = path.leaf();
                 request.root = root;
@@ -367,7 +366,7 @@ public class JsCodeCompletion implements Completable {
                     ((kind != NameKind.EXACT_NAME) && startsWith(name, prefix))) {
                 List<Node> nodeList = localVars.get(name);
                 if (nodeList != null && nodeList.size() > 0) {
-                    AstElement element = AstElement.getElement(nodeList.get(0));
+                    AstElement element = AstElement.getElement(request.info, nodeList.get(0));
                     proposals.add(new PlainItem(element, request));
                 }
             }
@@ -462,7 +461,7 @@ public class JsCodeCompletion implements Completable {
         // offer to complete the function ids
         TokenSequence<? extends JsTokenId> ts = LexUtilities.getPositionedSequence(request.doc, request.lexOffset);
         assert ts != null; // or we wouldn't have been called in the first place
-        Token<? extends JsTokenId> stringToken = ts.token();
+        //Token<? extends JsTokenId> stringToken = ts.token();
         int stringOffset = ts.offset();
 
     tokenLoop:
@@ -824,12 +823,29 @@ public class JsCodeCompletion implements Completable {
         String prefix = request.prefix;
         TokenHierarchy<Document> th = request.th;
         NameKind kind = request.kind;
+        String fqn = request.fqn;
         JsParseResult result = request.result;
         
-        Set<IndexedFunction> functions = index.getFunctions(prefix, null, kind, JsIndex.ALL_SCOPE, result, false);
+        Set<IndexedElement> matches;
+        if (fqn != null) {
+            matches = index.getElements(prefix, fqn, kind, JsIndex.ALL_SCOPE, result);
+            // Also add in non-fqn-prefixed elements
+            Set<IndexedElement> top = index.getElements(prefix, null, kind, JsIndex.ALL_SCOPE, result);
+            if (top.size() > 0) {
+                matches.addAll(top);
+            }
+            
+        } else {
+            matches = index.getAllNames(prefix, kind, JsIndex.ALL_SCOPE, result);
+        }
 
-        for (IndexedFunction method : functions) {
-            FunctionItem item = new FunctionItem(method, request);
+        for (IndexedElement element : matches) {
+            JsCompletionItem item;
+            if (element instanceof IndexedFunction) {
+                item = new FunctionItem((IndexedFunction)element, request);
+            } else {
+                item = new PlainItem(request, element);
+            }
             proposals.add(item);
 
         }
@@ -880,9 +896,9 @@ public class JsCodeCompletion implements Completable {
             // If we're not sure we're only looking for a method, don't abort after this
             boolean done = call.isMethodExpected();
 
-            boolean skipInstanceMethods = call.isStatic();
+//            boolean skipInstanceMethods = call.isStatic();
 
-            Set<IndexedFunction> methods = Collections.emptySet();
+            Set<IndexedElement> elements = Collections.emptySet();
 
             String type = call.getType();
             String lhs = call.getLhs();
@@ -901,9 +917,9 @@ public class JsCodeCompletion implements Completable {
             // I'm not doing any data flow analysis at this point, so
             // I can't do anything with a LHS like "foo.". Only actual types.
             if ((type != null) && (type.length() > 0)) {
-//                if ("self".equals(lhs)) {
-//                    type = fqn;
-//                    skipPrivate = false;
+                if ("this".equals(lhs)) {
+                    type = fqn;
+                    skipPrivate = false;
 //                } else if ("super".equals(lhs)) {
 //                    skipPrivate = false;
 //
@@ -922,48 +938,46 @@ public class JsCodeCompletion implements Completable {
 //                    if (type == null) {
 //                        type = "Object"; // NOI18N
 //                    }
-//                }
+                }
 
                 if ((type != null) && (type.length() > 0)) {
                     // Possibly a class on the left hand side: try searching with the class as a qualifier.
                     // Try with the LHS + current FQN recursively. E.g. if we're in
                     // Test::Unit when there's a call to Foo.x, we'll try
                     // Test::Unit::Foo, and Test::Foo
-// TODO JS - I don't have fqn                    
-//                    while (methods.size() == 0) {
-//                        methods = index.getInheritedMethods(fqn + "::" + type, prefix, kind);
-//
-//                        int f = fqn.lastIndexOf("::");
-//
-//                        if (f == -1) {
-//                            break;
-//                        } else {
-//                            fqn = fqn.substring(0, f);
-//                        }
-//                    }
-methods = new HashSet<IndexedFunction>();
+                    while (elements.size() == 0 && fqn != null && !fqn.equals(type)) {
+                        elements = index.getElements(prefix, fqn + "." + type, kind, JsIndex.ALL_SCOPE, result);
 
+                        int f = fqn.lastIndexOf("::");
+
+                        if (f == -1) {
+                            break;
+                        } else {
+                            fqn = fqn.substring(0, f);
+                        }
+                    }
+                    
                     // Add methods in the class (without an FQN)
-                    Set<IndexedFunction> m = index.getFunctions(prefix, type, kind, JsIndex.ALL_SCOPE, result, true);
+                    Set<IndexedElement> m = index.getElements(prefix, type, kind, JsIndex.ALL_SCOPE, result);
 
                     if (m.size() > 0) {
-                        methods.addAll(m);
+                        elements = m;
                     }
                 }
             }
 
             // Try just the method call (e.g. across all classes). This is ignoring the 
             // left hand side because we can't resolve it.
-            if ((methods.size() == 0) && (prefix.length() > 0 || type == null)) {
-                methods = index.getFunctions(prefix, null, kind, JsIndex.ALL_SCOPE, result, true);
+            if ((elements.size() == 0) && (prefix.length() > 0 || type == null)) {
+                elements = index.getAllNames(prefix, kind, JsIndex.ALL_SCOPE, result);
             }
 
-            for (IndexedFunction method : methods) {
+            for (IndexedElement element : elements) {
                 // Skip constructors - you don't want to call
                 //   x.Foo !
-                if (method.getKind() == ElementKind.CONSTRUCTOR) {
-                    continue;
-                }
+//                if (element.getKind() == ElementKind.CONSTRUCTOR) {
+//                    continue;
+//                }
                 
 //                // Don't include private or protected methods on other objects
 //                if (skipPrivate && (method.isPrivate() && !"new".equals(method.getName()))) {
@@ -977,20 +991,17 @@ methods = new HashSet<IndexedFunction>();
 //                    continue;
 //                }
 //
-//                if (method.isNoDoc()) {
-//                    continue;
-//                }
-//
-//                if (method.getMethodType() == IndexedFunction.MethodType.DBCOLUMN) {
-//                    DbItem item = new DbItem(method.getName(), method.getIn(), anchor, request);
-//                    proposals.add(item);
-//                    continue;
-//                }
+                if (element.isNoDoc()) {
+                    continue;
+                }
 
-                FunctionItem funcItem = new FunctionItem(method, request);
-                // Exact matches
-//                funcItem.setSmart(method.isSmart());
-                proposals.add(funcItem);
+                if (element instanceof IndexedFunction) {
+                    FunctionItem item = new FunctionItem((IndexedFunction)element, request);
+                    proposals.add(item);
+                } else {
+                    PlainItem item = new PlainItem(request, element);
+                    proposals.add(item);
+                }
             }
 
             return done;
@@ -1114,7 +1125,7 @@ methods = new HashSet<IndexedFunction>();
         
         // TODO - auto query on ' and " when you're in $() or $F()
         
-        if (c == '\n' || c == '(' || c == '[' || c == '{') {
+        if (c == '\n' || c == '(' || c == '[' || c == '{' || c == ';') {
             return QueryType.STOP;
         }
         
@@ -1242,6 +1253,12 @@ methods = new HashSet<IndexedFunction>();
         }
 
         JsCommentFormatter formatter = new JsCommentFormatter(comments);
+        if (element instanceof IndexedElement) {
+            String url = ((IndexedElement)element).getFilenameUrl();
+            if (url.indexOf("jsstubs/") != -1) { // NOI18N
+                formatter.setFormattedComment(true);
+            }
+        }
         String name = element.getName();
         if (name != null && name.length() > 0) {
             formatter.setSeqName(name);
@@ -1634,13 +1651,18 @@ methods = new HashSet<IndexedFunction>();
     private abstract class JsCompletionItem implements CompletionProposal {
         protected CompletionRequest request;
         protected Element element;
-        protected boolean smart;
+        protected IndexedElement indexedElement;
 
         private JsCompletionItem(Element element, CompletionRequest request) {
             this.element = element;
             this.request = request;
         }
 
+        private JsCompletionItem(CompletionRequest request, IndexedElement element) {
+            this(element, request);
+            this.indexedElement = element;
+        }
+        
         public int getAnchorOffset() {
             return request.anchor;
         }
@@ -1659,7 +1681,7 @@ methods = new HashSet<IndexedFunction>();
 
         public ElementHandle getElement() {
             // XXX Is this called a lot? I shouldn't need it most of the time
-            return JsParser.createHandle(request.info, element);
+            return element;
         }
 
         public ElementKind getKind() {
@@ -1674,14 +1696,50 @@ methods = new HashSet<IndexedFunction>();
             ElementKind kind = getKind();
             HtmlFormatter formatter = request.formatter;
             formatter.reset();
+            boolean emphasize = indexedElement != null ? !indexedElement.isInherited() : false;
+            if (emphasize) {
+                formatter.emphasis(true);
+            }
             formatter.name(kind, true);
             formatter.appendText(getName());
             formatter.name(kind, false);
+            if (emphasize) {
+                formatter.emphasis(false);
+            }
 
             return formatter.getText();
         }
 
         public String getRhsHtml() {
+            HtmlFormatter formatter = request.formatter;
+            formatter.reset();
+
+            String in = element.getIn();
+
+            if (in != null) {
+                formatter.appendText(in);
+                return formatter.getText();
+            } else if (element instanceof IndexedElement) {
+                IndexedElement ie = (IndexedElement)element;
+                String filename = ie.getFilenameUrl();
+                if (filename != null && filename.indexOf("jsstubs") == -1) { // NOI18N
+                    int index = filename.lastIndexOf('/');
+                    if (index != -1) {
+                        filename = filename.substring(index+1);
+                    }
+                    formatter.appendText(filename);
+                    return formatter.getText();
+                } else if (filename.indexOf("/stub_dom_") != -1) {
+                    formatter.appendText("DOM");
+                    return formatter.getText();
+                } else if (filename.indexOf("/stub_core_") != -1) {
+                    formatter.appendText("Core JS");
+                    return formatter.getText();
+                }
+                
+                return null;
+            }
+            
             return null;
         }
 
@@ -1697,12 +1755,8 @@ methods = new HashSet<IndexedFunction>();
             return cls + "(" + getKind() + "): " + getName();
         }
 
-        void setSmart(boolean smart) {
-            this.smart = smart;
-        }
-
         public boolean isSmart() {
-            return smart;
+            return indexedElement != null ? indexedElement.isSmart() : true;
         }
 
         public List<String> getInsertParams() {
@@ -1721,7 +1775,7 @@ methods = new HashSet<IndexedFunction>();
     private class FunctionItem extends JsCompletionItem {
         private IndexedFunction function;
         FunctionItem(IndexedFunction element, CompletionRequest request) {
-            super(element, request);
+            super(request, element);
             this.function = element;
         }
 
@@ -1739,8 +1793,7 @@ methods = new HashSet<IndexedFunction>();
             if (strike) {
                 formatter.deprecated(true);
             }
-//            boolean emphasize = !method.isInherited();
-    boolean emphasize = false;
+            boolean emphasize = !function.isInherited();
             if (emphasize) {
                 formatter.emphasis(true);
             }
@@ -1771,49 +1824,12 @@ methods = new HashSet<IndexedFunction>();
             }
             formatter.appendHtml(")"); // NOI18N
             
-//            if (method.hasBlock() && !method.isBlockOptional()) {
-//                formatter.appendText(" { }");
-//            }
-
             if (strike) {
                 formatter.deprecated(false);
             }
             
             
             return formatter.getText();
-        }
-
-        @Override
-        public String getRhsHtml() {
-            HtmlFormatter formatter = request.formatter;
-            formatter.reset();
-
-            // Top level methods (defined on Object) : print
-            // the defining file instead
-//            if (method.isTopLevel() && method.getRequire() != null) {
-//                formatter.appendText(method.getRequire());
-//
-//                return formatter.getText();
-//            }
-
-            String in = function.getIn();
-
-            if (in != null) {
-                formatter.appendText(in);
-                return formatter.getText();
-            } else {
-                String filename = function.getFilenameUrl();
-                if (filename != null && filename.indexOf("jsstubs") == -1) { // NOI18N
-                    int index = filename.lastIndexOf('/');
-                    if (index != -1) {
-                        filename = filename.substring(index+1);
-                    }
-                    formatter.appendText(filename);
-                    return formatter.getText();
-                }
-                
-                return null;
-            }
         }
 
         @Override
@@ -1864,128 +1880,6 @@ methods = new HashSet<IndexedFunction>();
             
             return sb.toString();
         }
-//        
-//        @Override
-//        public String[] getParamListDelimiters() {
-//            // TODO - convert methods with NO parameters that take a block to insert { <here> }
-//            String n = getName();
-//            String in = element.getIn();
-//            if ("Module".equals(in)) {
-//                // Module.attr_ methods typically shouldn't use parentheses
-//                if (n.startsWith("attr_"))  {
-//                    return new String[] { " :", " " };
-//                } else if (n.equals("include") || n.equals("import")) { // NOI18N
-//                    return new String[] { " ", " " };
-//                } else if (n.equals("include_package")) { // NOI18N
-//                    return new String[] { " '", "'" }; // NOI18N
-//                }
-//            } else if ("Kernel".equals(in)) {
-//                // Module.require: insert quotes!
-//                if (n.equals("require")) { // NOI18N
-//                    return new String[] { " '", "'" }; // NOI18N
-//                } else if (n.equals("p")) {
-//                    return new String[] { " ", " " }; // NOI18N
-//                }
-//            } else if ("Object".equals(in)) {
-//                if (n.equals("include_class")) { // NOI18N
-//                    return new String[] { " '", "'" }; // NOI18N
-//                }
-//            }
-//            
-//            if (forceCompletionSpaces()) {
-//                // Can't have "" as the second arg because a bug causes pressing
-//                // return to complete editing the last field (at he end of a buffer)
-//                // such that the caret ends up BEFORE the last char instead of at the
-//                // end of it
-//                boolean ambiguous = false;
-//                
-//                AstPath path = request.path;
-//                if (path != null) {
-//                    Iterator<Node> it = path.leafToRoot();
-//
-//                    while (it.hasNext()) {
-//                        Node node = it.next();
-//
-//                        if (AstUtilities.isCall(node)) {
-//                            // We're in a call; see if it has parens
-//                            // TODO - no problem with ambiguity if it's on a separate line, correct?
-//                            
-//                            // Is this the method we're trying to complete?
-//                            if (node != request.node) {
-//                                // See if the outer call has parentheses!
-//                                ambiguous = true;
-//                                break;
-//                            }
-//                        }
-//                    }
-//                }
-//                
-//                if (ambiguous) {
-//                    return new String[] { "(", ")" }; // NOI18N
-//                } else {
-//                    return new String[] { " ", " " }; // NOI18N
-//                }
-//            }
-//
-//            if (element instanceof IndexedElement) {
-//                List<String> comments = getComments(null, element);
-//                if (comments != null && comments.size() > 0) {
-//                    // Look through the comment, attempting to identify
-//                    // a usage of the current method and determine whether it
-//                    // is using parentheses or not.
-//                    // We only look for comments that look like code; e.g. they
-//                    // are indented according to rdoc conventions.
-//                    String name = getName();
-//                    boolean spaces = false;
-//                    boolean parens = false;
-//                    for (String line : comments) {
-//                        if (line.startsWith("#  ")) { // NOI18N
-//                            // Look for usages - there could be many
-//                            int i = 0;
-//                            int length = line.length();
-//                            while (true) {
-//                                int index = line.indexOf(name, i);
-//                                if (index == -1) {
-//                                    break;
-//                                }
-//                                index += name.length();
-//                                i = index;
-//                                if (index < length) {
-//                                    char c = line.charAt(index);
-//                                    if (c == ' ') {
-//                                        spaces = true;
-//                                    } else if (c == '(') {
-//                                        parens = true;
-//                                    }
-//                                }
-//                            }
-//                        }
-//                    }
-//                    
-//                    // Only use spaces if no parens were seen and we saw spaces
-//                    if (!parens && spaces) {
-//                        //return new String[] { " ", "" }; // NOI18N
-//                        // HACK because live code template editing doesn't seem to work - it places the caret at theront of the word when the last param is in the text!                        
-//                        return new String[] { " ", " " }; // NOI18N
-//                    }
-//                }
-//                
-//                // Take a look at the method definition itself and look for parens there
-//                
-//            }
-//
-//            // Default - (,)
-//            return super.getParamListDelimiters();
-//        }
-//
-//        @Override
-//        public ElementKind getKind() {
-//            if (method.getMethodType() == IndexedFunction.MethodType.ATTRIBUTE) {
-//                return ElementKind.ATTRIBUTE;
-//            }
-//
-//            return element.getKind();
-//        }
     }
 
     private class KeywordItem extends JsCompletionItem {
@@ -2054,7 +1948,12 @@ methods = new HashSet<IndexedFunction>();
         @Override
         public ElementHandle getElement() {
             // For completion documentation
-            return JsParser.createHandle(request.info, new KeywordElement(keyword));
+            return new KeywordElement(keyword);
+        }
+        
+        @Override
+        public boolean isSmart() {
+            return false;
         }
     }
 
@@ -2116,13 +2015,21 @@ methods = new HashSet<IndexedFunction>();
         @Override
         public ElementHandle getElement() {
             // For completion documentation
-            return JsParser.createHandle(request.info, new KeywordElement(tag));
+            return new KeywordElement(tag);
+        }
+
+        @Override
+        public boolean isSmart() {
+            return true;
         }
     }
     
     private class PlainItem extends JsCompletionItem {
         PlainItem(Element element, CompletionRequest request) {
             super(element, request);
+        }
+        PlainItem(CompletionRequest request, IndexedElement element) {
+            super(request, element);
         }
     }
 

@@ -52,14 +52,14 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.editor.completion.Completion;
-import org.netbeans.fpi.gsf.CompletionProposal;
-import org.netbeans.fpi.gsf.Completable;
-import org.netbeans.fpi.gsf.CancellableTask;
-import org.netbeans.fpi.gsf.Completable.QueryType;
-import org.netbeans.fpi.gsf.ElementHandle;
-import org.netbeans.fpi.gsf.ElementKind;
-import org.netbeans.fpi.gsf.NameKind;
-import org.netbeans.fpi.gsf.ParameterInfo;
+import org.netbeans.modules.gsf.api.CompletionProposal;
+import org.netbeans.modules.gsf.api.Completable;
+import org.netbeans.modules.gsf.api.CancellableTask;
+import org.netbeans.modules.gsf.api.Completable.QueryType;
+import org.netbeans.modules.gsf.api.ElementHandle;
+import org.netbeans.modules.gsf.api.ElementKind;
+import org.netbeans.modules.gsf.api.NameKind;
+import org.netbeans.modules.gsf.api.ParameterInfo;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
@@ -184,7 +184,9 @@ public class GsfCompletionProvider implements CompletionProvider {
             if (!ts.moveNext() || ts.move(offset) == 0) {
                 return true;
             }
-            ts.moveNext(); // Move to the next token after move(offset)
+            if (!ts.moveNext()) { // Move to the next token after move(offset)
+                return false;
+            }
 
             TokenId tokenId = ts.token().id();
             

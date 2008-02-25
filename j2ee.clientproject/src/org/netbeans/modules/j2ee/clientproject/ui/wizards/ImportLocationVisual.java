@@ -64,7 +64,7 @@ import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.j2ee.clientproject.AppClientProvider;
-import org.netbeans.modules.j2ee.clientproject.ui.FoldersListSettings;
+import org.netbeans.modules.j2ee.common.project.ui.UserProjectSettings;
 import org.netbeans.modules.j2ee.dd.api.client.AppClient;
 import org.netbeans.modules.j2ee.dd.api.client.DDProvider;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
@@ -112,7 +112,7 @@ public class ImportLocationVisual extends JPanel /*implements DocumentListener *
         this.panel = panel;
         initComponents ();
         setJ2eeVersionWarningPanel();
-        initServers(FoldersListSettings.getDefault().getLastUsedServer());
+        initServers(UserProjectSettings.getDefault().getLastUsedServer());
         // preselect the first item in the j2ee spec combo
         if (j2eeSpecComboBox.getModel().getSize() > 0) {
             j2eeSpecComboBox.setSelectedIndex(0);
@@ -746,7 +746,7 @@ public class ImportLocationVisual extends JPanel /*implements DocumentListener *
         d.putProperty(WizardProperties.EAR_APPLICATION, getSelectedEarApplication());
         if (warningPanel != null && warningPanel.getDowngradeAllowed()) {
             d.putProperty(WizardProperties.JAVA_PLATFORM, warningPanel.getSuggestedJavaPlatformName());
-            FoldersListSettings fls = FoldersListSettings.getDefault();
+            UserProjectSettings fls = UserProjectSettings.getDefault();
             d.putProperty(WizardProperties.SOURCE_LEVEL, fls.isAgreedSetSourceLevel14()
                     ? "1.4" : fls.isAgreedSetSourceLevel15() ? "1.5" : "1.6"); // NOI18N
         }

@@ -61,28 +61,31 @@ import javax.xml.namespace.QName;
  */
 public class JBIComponentConfigurationDescriptor {
 
+    public static final String XSD_NS = "http://www.w3.org/2001/XMLSchema"; // NOI18N
+    
     // currently supported xsd types
-    public static final QName XSD_INT =
-            new QName("http://www.w3.org/2001/XMLSchema", "int"); // NOI18N
-    public static final QName XSD_POSITIVE_INTEGER =
-            new QName("http://www.w3.org/2001/XMLSchema", "positiveInteger"); // NOI18N
-    public static final QName XSD_NEGATIVE_INTEGER =
-            new QName("http://www.w3.org/2001/XMLSchema", "negativeInteger"); // NOI18N
-    public static final QName XSD_NON_POSITIVE_INTEGER =
-            new QName("http://www.w3.org/2001/XMLSchema", "nonPositiveInteger"); // NOI18N
-    public static final QName XSD_NON_NEGATIVE_INTEGER =
-            new QName("http://www.w3.org/2001/XMLSchema", "nonNegativeInteger"); // NOI18N
-    public static final QName XSD_STRING =
-            new QName("http://www.w3.org/2001/XMLSchema", "string"); // NOI18N
-    public static final QName XSD_BOOLEAN =
-            new QName("http://www.w3.org/2001/XMLSchema", "boolean"); // NOI18N
+    public static final QName XSD_BYTE = new QName(XSD_NS, "byte"); // NOI18N
+    public static final QName XSD_SHORT = new QName(XSD_NS, "short"); // NOI18N
+    public static final QName XSD_INT = new QName(XSD_NS, "int"); // NOI18N
+//    public static final QName XSD_LONG = new QName(XSD_NS, "long"); // NOI18N
+//    public static final QName XSD_FLOAT = new QName(XSD_NS, "float"); // NOI18N
+//    public static final QName XSD_DOUBLE = new QName(XSD_NS, "double"); // NOI18N
+//    public static final QName XSD_DECIMAL = new QName(XSD_NS, "decimal"); // NOI18N
+//    public static final QName XSD_INTEGER = new QName(XSD_NS, "integer"); // NOI18N
+    public static final QName XSD_POSITIVE_INTEGER = new QName(XSD_NS, "positiveInteger"); // NOI18N
+    public static final QName XSD_NEGATIVE_INTEGER = new QName(XSD_NS, "negativeInteger"); // NOI18N
+    public static final QName XSD_NON_POSITIVE_INTEGER = new QName(XSD_NS, "nonPositiveInteger"); // NOI18N
+    public static final QName XSD_NON_NEGATIVE_INTEGER = new QName(XSD_NS, "nonNegativeInteger"); // NOI18N
+    public static final QName XSD_STRING = new QName(XSD_NS, "string"); // NOI18N
+    public static final QName XSD_BOOLEAN = new QName(XSD_NS, "boolean"); // NOI18N
+    
     private static final String SHOWDISPLAY_INSTALLATION = "install"; // NOI18N
     private static final String SHOWDISPLAY_RUNTIME = "runtime"; // NOI18N
     private static final String SHOWDISPLAY_ALL = "all"; // NOI18N
     private static final String PROPERTY = "Property"; // NOI18N
     private static final String PROPERTY_GROUP = "PropertyGroup"; // NOI18N
-    private static final String APPLICATION_VARIABLE = "ApplicationVariable"; // NOI18N
-    private static final String APPLICATION_CONFIGURATION = "ApplicationConfiguration"; // NOI18N
+//    private static final String APPLICATION_VARIABLE = "ApplicationVariable"; // NOI18N
+//    private static final String APPLICATION_CONFIGURATION = "ApplicationConfiguration"; // NOI18N
     private String name;
     private String displayName;
     private String description;

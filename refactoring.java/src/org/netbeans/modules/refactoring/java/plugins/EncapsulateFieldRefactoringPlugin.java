@@ -547,13 +547,12 @@ public final class EncapsulateFieldRefactoringPlugin extends JavaRefactoringPlug
         
         @Override
         public Tree visitClass(ClassTree node, Element field) {
-            if (getCurrentPath().getCompilationUnit() == getCurrentPath().getParentPath().getLeaf()) {
-                // node is toplevel class
-                TypeElement clazz = (TypeElement) workingCopy.getTrees().getElement(getCurrentPath());
-                for (EncapsulateDesc desc : descs) {
-                    desc.useAccessors = resolveAlwaysUseAccessors(clazz, desc);
-                }
-
+            TypeElement clazz = (TypeElement) workingCopy.getTrees().getElement(getCurrentPath());
+            boolean[] origValues = new boolean[descs.size()];
+            int counter = 0;
+            for (EncapsulateDesc desc : descs) {
+                origValues[counter++] = desc.useAccessors;
+                desc.useAccessors = resolveUseAccessor(clazz, desc);
             }
             
             if (sourceFile == workingCopy.getFileObject()) {
@@ -569,10 +568,18 @@ public final class EncapsulateFieldRefactoringPlugin extends JavaRefactoringPlug
                                 desc.refactoring.getSetterName(),
                                 desc.refactoring.getMethodModifiers());
                     }
-                    rewrite(node, nct);
+                    if (nct != null) {
+                        rewrite(node, nct);
+                    }
                 }
             }
-            return scan(node.getMembers(), field);
+            
+            Tree result = scan(node.getMembers(), field);
+            counter = 0;
+            for (EncapsulateDesc desc : descs) {
+                desc.useAccessors = origValues[counter++];
+            }
+            return result;
         }
         
         @Override
@@ -895,7 +902,7 @@ public final class EncapsulateFieldRefactoringPlugin extends JavaRefactoringPlug
             }
         }
         
-        private boolean resolveAlwaysUseAccessors(TypeElement where, EncapsulateDesc desc) {
+        private boolean resolveUseAccessor(TypeElement where, EncapsulateDesc desc) {
             if (desc.refactoring.isAlwaysUseAccessors()) {
                 return true;
             }
@@ -904,7 +911,8 @@ public final class EncapsulateFieldRefactoringPlugin extends JavaRefactoringPlug
             Set<Modifier> mods = desc.refactoring.getFieldModifiers();
             if (mods.contains(Modifier.PRIVATE)) {
                 // check enclosing top level class
-                return SourceUtils.getOutermostEnclosingTypeElement(where) != SourceUtils.getOutermostEnclosingTypeElement(desc.field);
+                // return SourceUtils.getOutermostEnclosingTypeElement(where) != SourceUtils.getOutermostEnclosingTypeElement(desc.field);
+                return where != desc.field.getEnclosingElement();
             }
             
             if (mods.contains(Modifier.PROTECTED)) {

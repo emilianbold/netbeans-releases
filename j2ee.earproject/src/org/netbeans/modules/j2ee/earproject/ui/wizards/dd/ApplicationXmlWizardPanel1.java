@@ -50,6 +50,7 @@ import java.util.Set;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.j2ee.earproject.EarProject;
 import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
@@ -71,7 +72,7 @@ public class ApplicationXmlWizardPanel1 implements WizardDescriptor.Panel {
     private final Set<ChangeListener> listeners = new HashSet<ChangeListener>(1);
     private final ApplicationXmlVisualPanel1 component = new ApplicationXmlVisualPanel1();
     private WizardDescriptor wizardDescriptor;
-    private Project project;
+    private EarProject project;
 
     public ApplicationXmlWizardPanel1() {
         component.addPropertyChangeListener(new PropertyChangeListener() {
@@ -85,7 +86,7 @@ public class ApplicationXmlWizardPanel1 implements WizardDescriptor.Panel {
         return component.getSelectedLocation();
     }
 
-    Project getProject() {
+    EarProject getProject() {
         return project;
     }
 
@@ -134,7 +135,7 @@ public class ApplicationXmlWizardPanel1 implements WizardDescriptor.Panel {
     public void readSettings(Object settings) {
         wizardDescriptor = (WizardDescriptor) settings;
         if (project == null) {
-            project = Templates.getProject(wizardDescriptor);
+            project = (EarProject)Templates.getProject(wizardDescriptor);
             component.setProject(project);
         }
     }

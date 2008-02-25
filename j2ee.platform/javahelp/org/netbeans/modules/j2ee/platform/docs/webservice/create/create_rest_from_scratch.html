@@ -3,107 +3,100 @@
 Inc.  All rights reserved.  
 Use is subject to license terms.  *--> 
 <html> 
-<head> 
-    <title>Generating a RESTful Web Service from Scratch</title>
-    <link rel="stylesheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
-</head> 
-<body>
-<h2>Generating a RESTful Web Service from Scratch</h2>
-<p> <small><a href="#seealso">See Also</a>&nbsp; </small>
-
-<p>Some web services can be described as being RESTful. 
-REpresentational State Transfer (REST) REST is an architectural style. 
-Elements of the REST architectural style are its stateless client-server
-architecture and the fact that web services are viewed as resources that 
-can be identified by their URLs. The application of some or all of the 
-constraints specified by the REST architectural style to a JAX-WS web 
-service makes it a RESTful web service.
-
-    <ul class="note">
-                <li>For a full tutorial that shows how to
-                work with RESTful web services,
-        see:
-         <p><object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-            <param name="content" value="http://www.netbeans.org/kb/60/websvc/rest.html">
-            <param name="text" value="<html><u>Getting Started with RESTful Web Services in NetBeans IDE 6.0</u></html>">
-            <param name="textFontSize" value="medium">
-            <param name="textColor" value="blue">
-        </object>
-                </li>
-            </ul>
-            
-            <p><b>To generate a RESTful web service from scratch:</b>        
+    <head> 
+        <title>Generating a RESTful Web Service from Scratch</title>
+        <link rel="stylesheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
+    </head> 
+    <body>
+        <h2>Generating a RESTful Web Service from Scratch</h2>
+        <p> <small><a href="#seealso">See Also</a>&nbsp; </small>
         
-<ol>
-<li>Use the Plugin Manager under the Tools menu
-    to install the <b>RESTful Web Services</b>
-    module, which will also install the
-    <b>RESTful Web Service Libraries</b> module
-    and the <b>RESTful Web Service Support</b>
-    module.
-</li>
-<li><a href="nbdocs://org.netbeans.modules.visualweb.ravehelp.rave_nbpack/org/netbeans/modules/visualweb/ravehelp/rave_nbpack/docs/web/create/about/create_webapps_proj.html">Create a web application project</a>.
-<li>In the Projects window or Files window, right-click the web application project node
-and choose New. Then choose one of the following:
-
-<ul>
-    <li><b>RESTful Web Services from Entity Classes.</b> Creates RESTful web services from a set of entity classes.</li>
-            <ul class="note">
-                <li>You can use the <a href="nbdocs://org.netbeans.modules.java.helpset/org/netbeans/modules/java/helpset/docs/persistence/general/persistence_fromdb.html">New Entity Classes from Database wizard</a> to generate the entity classes from 
-        a connected database or from a database schema.
-                </li>
-            </ul>
- 
-    <li><b>RESTful Web Services from Patterns.</b>
-        Creates RESTful web services using one of the following patterns:</li>
-      <ul>
-          <li><b>Singleton.</b> Creates a singleton RESTful resource
-          class with GET and PUT methods, using Java API for RESTful 
-          Web Service (JSR-311). This pattern is useful for creating 
-          a simple HelloWorld service and wrapper services for invoking 
-          WSDL-based web services.
-          <li><b>Container-Item.</b> Creates a pair of RESTful resource
-          classes, consisting of an item resource class and its container
-          resource class using Java API for RESTful Web Service (JSR-311). 
-          Item resources can be created and added to the container resource
-          using the POST method on the container resource class. Note 
-          that the URI for the newly created item resource is determined
-          by the container resource.
-          <li><b>Client-Controlled Container-Item.</b> Creates a pair of RESTful
-          resource classes, consisting of an item resource class and its container
-          resource class using Java API for RESTful Web Service (JSR-311).
-          This pattern is a slight variation of the Container-Item pattern.
-          The difference is that there is no POST method on the container
-          resource class for creating item resources. Instead, item resources 
-          are created using the PUT method on the item resource class. 
-          The reason this is called Client-Controlled Container-Item pattern
-          is because the URI for the item resource is determined by the client
-          and not the container resource. 
-      </ul>
-</ul>    
-<p>Alternatively, you can choose the above templates
- by right-clicking the project node, choosing New &gt; Other
- and then selecting them from the Web Services category.
-    
-</li>
-<li>Click Next and complete the wizard.
-</ol>
-<dl>
-    <dt><a name="seealso">See Also</a></dt>
-    <dd><a href="../about/about_ws.html">About Web Services</a></dd>
-    <dd><a href="../consume/wsc_rest.html">Using the Preregistered RESTful Web Service Components</a></dd>
-    <dd><a href="../consume/wsc_stubs.html">Generating RESTful Web Service Client Stubs</a></dd>
-     <dd><a href="../expose/test_rest.html">Testing a RESTful Web Service</a></dd>
-</dl>
-
-
-<hr>
-<small><a href="../../credits.html">Legal Notices</a></small> 
-<table cellpadding="20" border="0"> 
-    <tr><td>&nbsp;</td></tr> 
-    <tr><td>&nbsp;</td></tr> 
-    <tr><td>&nbsp;</td></tr> 
-</table> 
-
-</body>
+        <ul class="note">
+            <li>For a full tutorial that shows how to
+                work with RESTful web services,
+                see:
+                <p><object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+                    <param name="content" value="http://www.netbeans.org/kb/60/websvc/rest.html">
+                    <param name="text" value="<html><u>Getting Started with RESTful Web Services in NetBeans IDE 6.0</u></html>">
+                    <param name="textFontSize" value="medium">
+                    <param name="textColor" value="blue">
+                </object>
+            </li>
+        </ul>
+        
+        <p><b>To generate a RESTful web service from scratch:</b>        
+        
+        <ol>
+            <li>Use the Plugin Manager under the Tools menu
+                to install the <b>RESTful Web Services</b>
+                module, which will also install the
+                <b>RESTful Web Service Libraries</b> module
+                and the <b>RESTful Web Service Support</b>
+                module.
+            </li>
+            <li><a href="nbdocs://org.netbeans.modules.visualweb.ravehelp.rave_nbpack/org/netbeans/modules/visualweb/ravehelp/rave_nbpack/docs/web/create/about/create_webapps_proj.html">Create a web application project</a>.
+            <li>In the Projects window or Files window, right-click the web application project node
+                and choose New. Then choose one of the following:
+                
+                <ul>
+                    <li><b>RESTful Web Services from Entity Classes.</b> Creates RESTful web services from a set of entity classes.</li>
+                    <ul class="note">
+                        <li>You can use the 
+                            <a href="nbdocs://org.netbeans.modules.java.helpset/org/netbeans/modules/java/helpset/docs/persistence/general/persistence_fromdb.html">
+                            New Entity Classes from Database wizard</a> to generate the 
+                            entity classes from a connected database or from a database schema.
+                        </li>
+                    </ul>
+                    
+                    <li><b>RESTful Web Services from Patterns.</b>
+                    Creates RESTful web services using one of the following patterns:</li>
+                    <ul>
+                        <li><b>Singleton.</b> Creates a singleton RESTful resource
+                        class with GET and PUT methods. This pattern is useful for creating 
+                        a simple HelloWorld service and wrapper services for invoking 
+                        WSDL-based web services.
+                        <li><b>Container-Item.</b> Creates a pair of RESTful resource
+                        classes, consisting of an item resource class and its container
+                        resource class. 
+                        Item resources can be created and added to the container resource
+                        using the POST method on the container resource class. Note 
+                        that the URI for the newly created item resource is determined
+                        by the container resource.
+                        <li><b>Client-Controlled Container-Item.</b> Creates a pair of RESTful
+                        resource classes, consisting of an item resource class and its container
+                        resource class.
+                        This pattern is a slight variation of the Container-Item pattern.
+                        The difference is that there is no POST method on the container
+                        resource class for creating item resources. Instead, item resources 
+                        are created using the PUT method on the item resource class. 
+                        The reason this is called Client-Controlled Container-Item pattern
+                        is because the URI for the item resource is determined by the client
+                        and not the container resource. 
+                    </ul>
+                </ul>    
+                <p>Alternatively, you can choose the above templates
+                by right-clicking the project node, choosing New &gt; Other
+                and then selecting them from the Web Services category.
+                
+            </li>
+            <li>Click Next and complete the wizard.
+        </ol>
+        <dl>
+            <dt><a name="seealso">See Also</a></dt>
+            <dd><a href="../about/about_ws.html">About Web Services</a></dd>
+            <dd><a href="../consume/wsc_rest.html">Using the Preregistered RESTful Web Service Components</a></dd>
+            <dd><a href="../consume/wsc_stubs.html">Generating RESTful Web Service Client Stubs</a></dd>
+            <dd><a href="../expose/test_rest.html">Testing a RESTful Web Service</a></dd>
+        </dl>
+        
+        
+        <hr>
+        <small><a href="../../credits.html">Legal Notices</a></small> 
+        <table cellpadding="20" border="0"> 
+            <tr><td>&nbsp;</td></tr> 
+            <tr><td>&nbsp;</td></tr> 
+            <tr><td>&nbsp;</td></tr> 
+        </table> 
+        
+    </body>
 </html>
