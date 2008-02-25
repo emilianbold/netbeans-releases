@@ -4,3 +4,7 @@ OpenIDE-Module-Implementation-Version: 1
 OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/beans/Bundle.properties
 OpenIDE-Module-Layer: org/netbeans/modules/beans/resources/mf-layer.xml
 
+Name: org/netbeans/modules/beans/beaninfo/BIDataLoader.class
+OpenIDE-Module-Class: Loader
+Install-Before: org.netbeans.modules.java.JavaDataObject
+
