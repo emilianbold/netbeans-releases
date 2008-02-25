@@ -570,7 +570,7 @@ public final class RubyParser implements Parser {
             if (oldInfo == info) {
                 return element;
             }
-            Node oldNode = element.getNode(); // XXX Make it work for DefaultComObjects...
+            Node oldNode = element.getNode();
             Node oldRoot = AstUtilities.getRoot(oldInfo);
             
             Node newRoot = AstUtilities.getRoot(info);

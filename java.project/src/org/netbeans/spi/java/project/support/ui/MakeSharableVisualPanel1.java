@@ -124,7 +124,7 @@ final class MakeSharableVisualPanel1 extends JPanel {
         if (loc == null) {
             loc = ".." + File.separator + "libraries"; //NOI18N
         } else {
-            loc.substring(loc.length() - SharableLibrariesUtils.DEFAULT_LIBRARIES_FILENAME.length(), loc.length());
+            loc = loc.substring(0, loc.length() - SharableLibrariesUtils.DEFAULT_LIBRARIES_FILENAME.length());
         }
         setLibraryLocation(loc);
         support.fireChange();
