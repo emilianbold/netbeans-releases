@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -116,7 +116,7 @@ public class RailsLogicalViewProvider implements LogicalViewProvider {
     private final PropertyEvaluator evaluator;
     private final SubprojectProvider spp;
     private final ReferenceHelper resolver;
-    private List changeListeners;
+    private List<ChangeListener> changeListeners;
     
     public RailsLogicalViewProvider(RailsProject project, UpdateHelper helper, PropertyEvaluator evaluator, SubprojectProvider spp, ReferenceHelper resolver) {
         this.project = project;
@@ -180,7 +180,7 @@ public class RailsLogicalViewProvider implements LogicalViewProvider {
     
     public synchronized void addChangeListener(ChangeListener l) {
         if (this.changeListeners == null) {
-            this.changeListeners = new ArrayList();
+            this.changeListeners = new ArrayList<ChangeListener>();
         }
         this.changeListeners.add(l);
     }
@@ -203,8 +203,7 @@ public class RailsLogicalViewProvider implements LogicalViewProvider {
             if (this.changeListeners == null) {
                 return;
             }
-            _listeners = (ChangeListener[]) this.changeListeners.toArray(
-                    new ChangeListener[this.changeListeners.size()]);
+            _listeners = this.changeListeners.toArray(new ChangeListener[this.changeListeners.size()]);
         }
         ChangeEvent event = new ChangeEvent(this);
         for (int i=0; i < _listeners.length; i++) {
@@ -236,14 +235,14 @@ public class RailsLogicalViewProvider implements LogicalViewProvider {
      */
     private final class RailsLogicalViewRootNode extends AbstractNode implements Runnable, FileStatusListener, ChangeListener, PropertyChangeListener {
         
-        private Set files;
-        private Map fileSystemListeners;
+        private Set<FileObject> files;
+        private Map<FileSystem, FileStatusListener> fileSystemListeners;
         private RequestProcessor.Task task;
         private final Object privateLock = new Object();
         private boolean iconChange;
         private boolean nameChange;
         private ChangeListener sourcesListener;
-        private Map groupsListeners;
+        private Map<SourceGroup, PropertyChangeListener> groupsListeners;
         
         public RailsLogicalViewRootNode() {
             super(NodeFactorySupport.createCompositeChildren(project, "Projects/org-netbeans-modules-ruby-railsprojects/Nodes"),  // NOI18N
@@ -281,20 +280,19 @@ public class RailsLogicalViewProvider implements LogicalViewProvider {
         }
         
         
-        private final void setGroups(Collection groups) {
+        private final void setGroups(Collection<SourceGroup> groups) {
             if (groupsListeners != null) {
                 Iterator it = groupsListeners.keySet().iterator();
                 while (it.hasNext()) {
                     SourceGroup group = (SourceGroup) it.next();
-                    PropertyChangeListener pcl = (PropertyChangeListener) groupsListeners.get(group);
+                    PropertyChangeListener pcl = groupsListeners.get(group);
                     group.removePropertyChangeListener(pcl);
                 }
             }
-            groupsListeners = new HashMap();
-            Set roots = new HashSet();
+            groupsListeners = new HashMap<SourceGroup, PropertyChangeListener>();
+            Set<FileObject> roots = new HashSet<FileObject>();
             Iterator it = groups.iterator();
-            while (it.hasNext()) {
-                SourceGroup group = (SourceGroup) it.next();
+            for (SourceGroup group : groups) {
                 PropertyChangeListener pcl = WeakListeners.propertyChange(this, group);
                 groupsListeners.put(group, pcl);
                 group.addPropertyChangeListener(pcl);
@@ -304,24 +302,22 @@ public class RailsLogicalViewProvider implements LogicalViewProvider {
             setFiles(roots);
         }
         
-        protected final void setFiles(Set files) {
+        protected final void setFiles(Set<FileObject> files) {
             if (fileSystemListeners != null) {
-                Iterator it = fileSystemListeners.keySet().iterator();
-                while (it.hasNext()) {
-                    FileSystem fs = (FileSystem) it.next();
-                    FileStatusListener fsl = (FileStatusListener) fileSystemListeners.get(fs);
+                for (FileSystem fs : fileSystemListeners.keySet()) {
+                    FileStatusListener fsl = fileSystemListeners.get(fs);
                     fs.removeFileStatusListener(fsl);
                 }
             }
             
-            fileSystemListeners = new HashMap();
+            fileSystemListeners = new HashMap<FileSystem, FileStatusListener>();
             this.files = files;
             if (files == null) {
                 return;
             }
             
             Iterator it = files.iterator();
-            Set hookedFileSystems = new HashSet();
+            Set<FileSystem> hookedFileSystems = new HashSet<FileSystem>();
             while (it.hasNext()) {
                 FileObject fo = (FileObject) it.next();
                 try {
@@ -358,7 +354,7 @@ public class RailsLogicalViewProvider implements LogicalViewProvider {
             
             if (files != null && files.iterator().hasNext()) {
                 try {
-                    FileObject fo = (FileObject) files.iterator().next();
+                    FileObject fo = files.iterator().next();
                     img = fo.getFileSystem().getStatus().annotateIcon(img, type, files);
                 } catch (FileStateInvalidException e) {
                     ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
@@ -379,7 +375,7 @@ public class RailsLogicalViewProvider implements LogicalViewProvider {
             
             if (files != null && files.iterator().hasNext()) {
                 try {
-                    FileObject fo = (FileObject) files.iterator().next();
+                    FileObject fo = files.iterator().next();
                     img = fo.getFileSystem().getStatus().annotateIcon(img, type, files);
                 } catch (FileStateInvalidException e) {
                     ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);

@@ -98,9 +98,12 @@ public final class FormEditorCustomizer extends JPanel implements  ActionListene
         cbAutoI18n.addItem(loc("CTL_AUTO_RESOURCE_OFF")); // NOI18N
 
         JLabel generateComponetsLabel = new JLabel(loc("Generate_Components")); // NOI18N
-        JLabel variableModifierLabel = new JLabel(loc("Variable_Modifier")); // NOI18N
-        JLabel listenerStyleLabel = new JLabel(loc("Listener_Style")); // NOI18N
-        JLabel autoI18nLabel = new JLabel(loc("Auto_I18n")); // NOI18N
+        JLabel variableModifierLabel = new JLabel();
+        JLabel listenerStyleLabel = new JLabel();
+        JLabel autoI18nLabel = new JLabel();
+        loc(variableModifierLabel, "Variable_Modifier"); // NOI18N
+        loc(listenerStyleLabel, "Listener_Style"); // NOI18N
+        loc(autoI18nLabel, "Auto_I18n"); // NOI18N
 
         generateComponetsLabel.setToolTipText(loc("Generate_Components_Hint")); // NOI18N
         variableModifierLabel.setToolTipText(loc("HINT_VARIABLES_MODIFIER")); // NOI18N
@@ -108,6 +111,8 @@ public final class FormEditorCustomizer extends JPanel implements  ActionListene
         autoI18nLabel.setToolTipText(loc("HINT_AUTO_RESOURCE_GLOBAL")); // NOI18N
         cbFold.setToolTipText(loc("HINT_FOLD_GENERATED_CODE")); // NOI18N
         cbAssistant.setToolTipText(loc("HINT_ASSISTANT_SHOWN")); // NOI18N
+        rbGenerateLocals.getAccessibleContext().setAccessibleDescription(loc("Generate_Locals_ACSD")); // NOI18N
+        rbGenerateFields.getAccessibleContext().setAccessibleDescription(loc("Generate_Fields_ACSD")); // NOI18N
 
         variableModifierLabel.setLabelFor(cbModifier);
         listenerStyleLabel.setLabelFor(cbListenerStyle);
