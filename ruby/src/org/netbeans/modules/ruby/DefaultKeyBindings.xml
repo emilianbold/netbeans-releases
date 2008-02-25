@@ -49,7 +49,6 @@ See http://wiki.netbeans.info/wiki/view/DevFaqLogicalKeybindings for action name
 
 -->
 <bindings>
-    <bind actionName="goto-declaration" key="D-B"/>
     <bind actionName="goto-help" key="O-F1"/>
     <bind actionName="ruby-reflow-paragraph" key="DS-P"/>
     <bind actionName="run-focused-spec" key="OS-F6"/>
