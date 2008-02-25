@@ -134,7 +134,7 @@ public final class RailsServerManager {
     private File dir;
     private boolean debug;
     private boolean switchToDebugMode;
-    
+    RubyInstance instance;
     private Semaphore debugSemaphore;
     
     public RailsServerManager(RailsProject project) {
@@ -220,7 +220,7 @@ public final class RailsServerManager {
         String classPath = project.evaluator().getProperty(RailsProjectProperties.JAVAC_CLASSPATH);
         String serverId = project.evaluator().getProperty(RailsProjectProperties.RAILS_SERVERTYPE);
         RubyPlatform platform = RubyPlatform.platformFor(project);
-        RubyInstance instance = ServerRegistry.getDefault().getServer(serverId, platform);
+        instance = ServerRegistry.getDefault().getServer(serverId, platform);
         if (instance == null) {
             // TODO: need to inform the user somehow
             // fall back to the first available server

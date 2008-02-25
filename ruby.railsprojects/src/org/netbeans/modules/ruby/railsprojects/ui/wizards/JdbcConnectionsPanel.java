@@ -81,11 +81,14 @@ public class JdbcConnectionsPanel extends SettingsPanel {
         productionComboBox = new javax.swing.JComboBox();
         testComboBox = new javax.swing.JComboBox();
 
-        developmentLabel.setText(org.openide.util.NbBundle.getMessage(JdbcConnectionsPanel.class, "LBL_DevelopmentConnection")); // NOI18N
+        developmentLabel.setLabelFor(developmentComboBox);
+        org.openide.awt.Mnemonics.setLocalizedText(developmentLabel, org.openide.util.NbBundle.getMessage(JdbcConnectionsPanel.class, "LBL_DevelopmentConnection")); // NOI18N
 
-        productionLabel.setText(org.openide.util.NbBundle.getMessage(JdbcConnectionsPanel.class, "LBL_ProductionConnection")); // NOI18N
+        productionLabel.setLabelFor(productionComboBox);
+        org.openide.awt.Mnemonics.setLocalizedText(productionLabel, org.openide.util.NbBundle.getMessage(JdbcConnectionsPanel.class, "LBL_ProductionConnection")); // NOI18N
 
-        testLabel.setText(org.openide.util.NbBundle.getMessage(JdbcConnectionsPanel.class, "LBL_TestConnection")); // NOI18N
+        testLabel.setLabelFor(testComboBox);
+        org.openide.awt.Mnemonics.setLocalizedText(testLabel, org.openide.util.NbBundle.getMessage(JdbcConnectionsPanel.class, "LBL_TestConnection")); // NOI18N
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
@@ -121,6 +124,14 @@ public class JdbcConnectionsPanel extends SettingsPanel {
                     .add(productionComboBox, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
+
+        developmentLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(JdbcConnectionsPanel.class, "ACSD_DevelopmentConnection")); // NOI18N
+        productionLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(JdbcConnectionsPanel.class, "ACSD_ProductionConnection")); // NOI18N
+        testLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(JdbcConnectionsPanel.class, "ACSD_TestConnection")); // NOI18N
+
+        getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(JdbcConnectionsPanel.class, "ASCN_JdbcPanel")); // NOI18N
+        getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(JdbcConnectionsPanel.class, "ASCD_JdbcPanel")); // NOI18N
+        getAccessibleContext().setAccessibleParent(this);
     }// </editor-fold>//GEN-END:initComponents
 
 
