@@ -2717,7 +2717,7 @@ public class HgCommand {
     }
 
     private static void handleError(List<String> command, List<String> list, String message, OutputLogger logger) throws HgException{
-        if (command != null && list != null){
+        if (command != null && list != null && logger != null){
             Mercurial.LOG.log(Level.WARNING, "command: " + HgUtils.replaceHttpPassword(command)); // NOI18N        
             Mercurial.LOG.log(Level.WARNING, "output: " + HgUtils.replaceHttpPassword(list)); // NOI18N
             logger.outputInRed(NbBundle.getMessage(HgCommand.class, "MSG_COMMAND_ERR")); // NOI18N
