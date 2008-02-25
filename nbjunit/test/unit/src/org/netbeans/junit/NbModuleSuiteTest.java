@@ -40,8 +40,8 @@
 package org.netbeans.junit;
 
 import java.util.Set;
+import junit.framework.Test;
 import junit.framework.TestCase;
-import junit.framework.TestResult;
 
 /**
  *
@@ -67,14 +67,14 @@ public class NbModuleSuiteTest extends TestCase {
      * Test of run method, of class NbModuleSuite.
      */
     public void testRun() {
-        NbModuleSuite instance = new NbModuleSuite(T.class, "");
+        Test instance = NbModuleSuite.create(T.class, "");
         junit.textui.TestRunner.run(instance);
         
         assertEquals("OK", System.getProperty("t.one"));
     }
     
     public void testModulesForCL() throws Exception {
-        Set<String> s = NbModuleSuite.findEnabledModules(ClassLoader.getSystemClassLoader());
+        Set<String> s = NbModuleSuite.S.findEnabledModules(ClassLoader.getSystemClassLoader());
         assertEquals("Three modules: " + s, 3, s.size());
         
         assertTrue("Util: " + s, s.contains("org.openide.util"));
