@@ -121,6 +121,7 @@
       </Properties>
       <Events>
         <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="txtAdminActionPerformed"/>
+        <EventHandler event="focusLost" listener="java.awt.event.FocusListener" parameters="java.awt.event.FocusEvent" handler="txtAdminFocusLost"/>
       </Events>
     </Component>
     <Component class="javax.swing.JButton" name="btnAdminBrowse">
@@ -151,6 +152,10 @@
           <ResourceString bundle="org/netbeans/modules/db/mysql/ui/Bundle.properties" key="AdminPropertiesPanel.txtStart.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
       </Properties>
+      <Events>
+        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="txtStartActionPerformed"/>
+        <EventHandler event="focusLost" listener="java.awt.event.FocusListener" parameters="java.awt.event.FocusEvent" handler="txtStartFocusLost"/>
+      </Events>
     </Component>
     <Component class="javax.swing.JButton" name="btnStartBrowse">
       <Properties>
