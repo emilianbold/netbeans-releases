@@ -43,6 +43,8 @@ import java.io.IOException;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import org.hibernate.HibernateException;
+import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.project.classpath.ProjectClassPathModifier;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.project.libraries.LibraryManager;
@@ -169,14 +171,15 @@ public class HibernateEnvironment {
      * @return true if the library is registered, false if the library is already registered or 
      * registration fails for some reason.
      */
-    public boolean addHibernateLibraryToProject() {
+    @SuppressWarnings("static-access")  //NOI18N
+    public boolean addHibernateLibraryToProject(FileObject fileInProject) {
         boolean addLibraryResult = false;
         try {
             LibraryManager libraryManager = LibraryManager.getDefault();
             Library hibernateLibrary = libraryManager.getLibrary("hibernate-support");  //NOI18N
-            WebProjectLibrariesModifier webProjectLibrariesModifier = project.getLookup().lookup(WebProjectLibrariesModifier.class);
-            addLibraryResult = webProjectLibrariesModifier.addCompileLibraries(new Library[]{hibernateLibrary});
-            addLibraryResult &= webProjectLibrariesModifier.addPackageLibraries(new Library[]{hibernateLibrary}, "lib"); //NOI18N
+            ProjectClassPathModifier projectClassPathModifier = project.getLookup().lookup(ProjectClassPathModifier.class);
+            addLibraryResult = projectClassPathModifier.addLibraries(new Library[]{hibernateLibrary}, fileInProject, ClassPath.COMPILE);  
+         //   addLibraryResult &= projectClassPathModifier.addPackageLibraries(new Library[]{hibernateLibrary}, "lib"); //NOI18N
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
             addLibraryResult = false;

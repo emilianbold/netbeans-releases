@@ -217,7 +217,7 @@ public class HibernateConfigurationWizard implements WizardDescriptor.Instantiat
             hdo.save();
             // Register Hibernate Library in the project if its not already registered.
             HibernateEnvironment hibernateEnvironment = project.getLookup().lookup(HibernateEnvironment.class);
-            System.out.println("Library registered : " + hibernateEnvironment.addHibernateLibraryToProject());
+            System.out.println("Library registered : " + hibernateEnvironment.addHibernateLibraryToProject(hdo.getPrimaryFile()));
             
             return Collections.singleton(hdo.getPrimaryFile());
 
