@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -43,8 +43,10 @@ package org.netbeans.jellytools.nodes;
 import java.awt.Toolkit;
 import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.NbDialogOperator;
+import org.netbeans.jellytools.actions.DeleteAction;
 import org.netbeans.jellytools.properties.PropertySheetOperator;
 import org.netbeans.jemmy.JemmyException;
+import org.netbeans.jemmy.TimeoutExpiredException;
 import org.netbeans.jemmy.Waitable;
 import org.netbeans.jemmy.Waiter;
 import org.netbeans.jemmy.operators.JDialogOperator;
@@ -99,5 +101,27 @@ public class Utils {
     /** Close properties */
     public static void closeProperties(String objectName) {
         new PropertySheetOperator(objectName).close();
+    }
+    
+    /** Perform delete action and confirm refactoring dialog. */
+    public static void performSafeDelete(Node node) {
+        new DeleteAction().performAPI(node);
+        // "Safe Delete"
+        String safeDeleteTitle = Bundle.getString("org.netbeans.modules.refactoring.spi.impl.Bundle",
+                                                             "LBL_SafeDel"); // NOI18N
+        // wait for Safe Delete dialog
+        NbDialogOperator safeDeleteOper = new NbDialogOperator(safeDeleteTitle);
+        try {
+            // wait only 5 seconds
+            safeDeleteOper.getTimeouts().setTimeout("ComponentOperator.WaitComponentTimeout", 5000);
+            safeDeleteOper.ok();
+        } catch (TimeoutExpiredException e) {
+            // It is "classpath scanning in progress" dialog, wait until it dismiss,
+            // and then wait for regular Safe Delete dialog
+            safeDeleteOper.waitClosed();
+            safeDeleteOper = new NbDialogOperator(safeDeleteTitle);
+            safeDeleteOper.ok();
+        }
+        safeDeleteOper.waitClosed();
     }
 }
