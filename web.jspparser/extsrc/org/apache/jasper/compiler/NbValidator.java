@@ -45,10 +45,11 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.InvocationTargetException;
 
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.servlet.jsp.tagext.PageData;
 
 import org.apache.jasper.JasperException;
-import org.openide.util.Exceptions;
 
 /** This class is similar to org.apache.jasper.compiler.Validator, it only
  * allows getting access to the XML view of the page.
@@ -56,6 +57,8 @@ import org.openide.util.Exceptions;
  * @author Petr Jiricka
  */
 public class NbValidator {
+    
+    private static final Logger LOGGER = Logger.getLogger(NbValidator.class.getName());
 
     private static Method validateXmlViewM;
     private static Field bufF;
@@ -71,9 +74,9 @@ public class NbValidator {
             bufF = PageDataImpl.class.getDeclaredField("buf"); // NOI18N
             bufF.setAccessible(true);
         } catch (NoSuchMethodException e) {
-            Exceptions.printStackTrace(e);
+            LOGGER.log(Level.INFO, null, e);
         } catch (NoSuchFieldException e) {
-            Exceptions.printStackTrace(e);
+            LOGGER.log(Level.INFO, null, e);
         }
     }
     
@@ -143,14 +146,14 @@ public class NbValidator {
             StringBuffer buf = (StringBuffer)bufF.get(pdi);
             return buf.toString();
         } catch (IllegalAccessException e) {
-            Exceptions.printStackTrace(e);
+            LOGGER.log(Level.INFO, null, e);
             throw new JasperException(e.getMessage());
         } catch (InvocationTargetException e) {
             Throwable target = e.getTargetException();
             if (target instanceof JasperException) {
                 throw (JasperException)target;
             } else {
-                Exceptions.printStackTrace(e);
+                LOGGER.log(Level.INFO, null, e);
                 throw new JasperException(e.getMessage());
             }
         }
