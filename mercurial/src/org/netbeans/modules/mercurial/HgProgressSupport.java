@@ -111,14 +111,15 @@ public abstract class HgProgressSupport implements Runnable, Cancellable {
     }
 
     public synchronized boolean cancel() {
+        if(delegate != null) {
+            if(!delegate.cancel()) 
+                return false;
+        }
         if (canceled) {
             return false;
         }        
         if(task != null) {
             task.cancel();
-        }
-        if(delegate != null) {
-            delegate.cancel();
         }
         Mercurial.getInstance().clearRequestProcessor(repositoryRoot);
         getProgressHandle().finish();
@@ -126,7 +127,7 @@ public abstract class HgProgressSupport implements Runnable, Cancellable {
         return true;
     }
 
-    void setCancellableDelegate(Cancellable cancellable) {
+    public void setCancellableDelegate(Cancellable cancellable) {
         this.delegate = cancellable;
     }
 

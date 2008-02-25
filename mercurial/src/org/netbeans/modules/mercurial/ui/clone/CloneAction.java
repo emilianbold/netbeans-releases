@@ -67,6 +67,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
+import org.openide.util.Cancellable;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
@@ -141,7 +142,7 @@ public class CloneAction extends ContextAction {
         final File clonePrjFile = cloneProjFile;
         
         RequestProcessor rp = Mercurial.getInstance().getRequestProcessor(source);
-        HgProgressSupport support = new HgProgressSupport() {
+        final HgProgressSupport support = new HgProgressSupport() {
             Runnable doOpenProject = new Runnable () {
                 public void run()  {
                     // Open and set focus on the cloned project if possible
@@ -240,6 +241,21 @@ public class CloneAction extends ContextAction {
                 }
             }
         };
+        support.setRepositoryRoot(source);
+        support.setCancellableDelegate(new Cancellable(){
+            public boolean cancel() {
+                if(!Utilities.isWindows()) 
+                    return true;
+                
+                OutputLogger logger = support.getLogger();
+                logger.outputInRed(NbBundle.getMessage(CloneAction.class, "MSG_CLONE_CANCEL_ATTEMPT")); // NOI18N
+                JOptionPane.showMessageDialog(null,
+                    NbBundle.getMessage(CloneAction.class, "MSG_CLONE_CANCEL_NOT_SUPPORTED"),// NOI18N
+                    NbBundle.getMessage(CloneAction.class, "MSG_CLONE_CANCEL_NOT_SUPPORTED_TITLE"),// NOI18N
+                    JOptionPane.INFORMATION_MESSAGE);
+                return false;
+            }
+        });
         support.start(rp, source, org.openide.util.NbBundle.getMessage(CloneAction.class, "LBL_Clone_Progress", source)); // NOI18N
     }
 
