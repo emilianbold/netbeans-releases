@@ -474,7 +474,7 @@ implements PropertyChangeListener, CasaValidationListener {
             CasaModelGraphUtilities.updateNodeProperties(mModel, port, widget);
             
             widget.setEditable(mModel.isEditable(port));
-            widget.setWSPolicyAttached(mModel.isWsitEnable(port));
+            widget.setWSPolicyAttached(mModel.isEditable(port)); // mModel.isWsitEnable(port));
             widget.initializeGlassLayer(mGlassLayer);
             mBindingRegion.addChild(widget);
             moveAction = mMoveActionBindingRegion;
