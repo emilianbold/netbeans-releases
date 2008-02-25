@@ -110,14 +110,16 @@ public class NewGrailsProjectWizardIterator implements  WizardDescriptor.Instant
 
             File dirF = new File((String) wiz.getProperty("projectFolder"));
 
-            if (dirF != null) {
-                dirF = FileUtil.normalizeFile(dirF);
-                FileObject dir = FileUtil.toFileObject(dirF);
-                if (dir == null) {
-                    logger.warning("Folder was expected, but not found: " + dirF.getCanonicalPath());
-                }
-                resultSet.add(dir);
-            }
+           if (dirF != null) {
+               dirF = FileUtil.normalizeFile(dirF);
+               FileObject dir = FileUtil.toFileObject(dirF);
+               
+               if (dir == null) {
+                   logger.warning("Folder was expected, but not found: " + dirF.getCanonicalPath());
+               } else {
+                   resultSet.add(dir);
+               }
+           }
 
             return resultSet;
 

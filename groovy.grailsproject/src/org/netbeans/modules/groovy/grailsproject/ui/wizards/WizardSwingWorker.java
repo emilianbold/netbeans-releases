@@ -61,6 +61,7 @@ import org.openide.util.NbBundle;
     public class WizardSwingWorker extends Thread {
         private  final Logger LOG = Logger.getLogger(WizardSwingWorker.class.getName());
         int progressMeter = 0;
+        int PROGRESS_MAX = 100;
         GrailsServer server = GrailsServerFactory.getServer();
         BufferedReader procOutput = null;
         
@@ -89,7 +90,7 @@ import org.openide.util.NbBundle;
             serverRunning = true;
             
             outputReceiver.fireChangeEvent();
-            handle.start(100);
+            handle.start(PROGRESS_MAX);
             
             Process process = server.runCommand(project, serverCommand, null, dirName);
             
@@ -110,6 +111,11 @@ import org.openide.util.NbBundle;
                 while ((errString = procOutput.readLine()) != null) {
                     grailsServerOutputTextArea.append(errString + "\n");
                     progressMeter = progressMeter + 2;
+                    
+                    if(progressMeter > PROGRESS_MAX) {
+                        progressMeter = PROGRESS_MAX;
+                        }
+                    
                     handle.progress(progressMeter);
                     }
                 } catch (Exception e) {
@@ -117,7 +123,7 @@ import org.openide.util.NbBundle;
                     LOG.log(Level.WARNING, "Could not read Process output " +e);
                     }
 
-            handle.progress(100);
+            handle.progress(PROGRESS_MAX);
             handle.finish();
             serverFinished.countDown();
         }   
