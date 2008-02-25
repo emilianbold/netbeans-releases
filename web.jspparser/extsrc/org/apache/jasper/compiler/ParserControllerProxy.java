@@ -48,15 +48,18 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.URL;
 import java.util.jar.JarFile;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.apache.jasper.JasperException;
 import org.apache.jasper.JspCompilationContext;
-import org.openide.util.Exceptions;
 
 /**
  *
  * @author Petr Jiricka
  */
 public class ParserControllerProxy {
+    
+    private static final Logger LOGGER  = Logger.getLogger(ParserControllerProxy.class.getName());
 
     private final JspCompilationContext ctxt;
     private final Compiler compiler;
@@ -105,9 +108,9 @@ public class ParserControllerProxy {
             sourceEncF = ParserController.class.getDeclaredField("sourceEnc"); // NOI18N
             sourceEncF.setAccessible(true);
         } catch (NoSuchMethodException e) {
-            Exceptions.printStackTrace(e);
+            LOGGER.log(Level.INFO, null, e);
         } catch (NoSuchFieldException e) {
-            Exceptions.printStackTrace(e);
+            LOGGER.log(Level.INFO, null, e);
         }
     }
     
@@ -135,7 +138,7 @@ public class ParserControllerProxy {
             isXml = ((Boolean)isXmlF.get(pc)).booleanValue();
             sourceEnc = (String)sourceEncF.get(pc);
         } catch (IllegalAccessException e) {
-            Exceptions.printStackTrace(e);
+            LOGGER.log(Level.INFO, null, e);
             throw new JasperException(e);
         } catch (InvocationTargetException e) {
             Throwable r = e.getTargetException();
@@ -151,7 +154,7 @@ public class ParserControllerProxy {
             if (r instanceof IOException) {
                 throw (IOException)r;
             }
-            Exceptions.printStackTrace(e);
+            LOGGER.log(Level.INFO, null, e);
             throw new JasperException(e);
         }
     }

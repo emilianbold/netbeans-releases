@@ -284,20 +284,25 @@ public class ProjectCustomizerPanel extends javax.swing.JPanel implements HelpCt
             int access = clazz.getAccess();
             if (Modifier.isPublic(access) && !Modifier.isAbstract(access) &&
                     !Modifier.isInterface(access) && !clazz.isAnnotation() &&
-                    !clazz.isEnum() && !clazz.isSynthetic()) {
+                    !clazz.isEnum() && !clazz.isSynthetic()
+                    && (clazz.getSuperClass() != null)) {
                 String superName = clazz.getSuperClass().getExternalName();
                 FileObject fo = jarCP.findResource(superName.replace('.', '/') + ".class"); // NOI18N
-                if ((fo != null && scanClassFile(fo, classList, jarCP) != null)
-                    || (fo == null
-                        && ("javax.swing.plaf.metal.MetalLookAndFeel".equals(superName) // NOI18N
-                            || "javax.swing.plaf.basic.BasicLookAndFeel".equals(superName) // NOI18N
-                            || "javax.swing.plaf.synth.SynthLookAndFeel".equals(superName) // NOI18N
-                            || "javax.swing.LookAndFeel".equals(superName)))) { // NOI18N
+                if (isStandardLAFSuperClass(superName)
+                        || (fo != null && scanClassFile(fo, classList, jarCP) != null)) {
                     return clazz.getName().getExternalName();
                 }
             }
         }
         return null;
+    }
+
+    private static boolean isStandardLAFSuperClass(String name) {
+        return name.startsWith("javax.swing") // performance only // NOI18N
+                && ("javax.swing.LookAndFeel".equals(name) // NOI18N
+                    || "javax.swing.plaf.metal.MetalLookAndFeel".equals(name) // NOI18N
+                    || "javax.swing.plaf.basic.BasicLookAndFeel".equals(name) // NOI18N
+                    || "javax.swing.plaf.synth.SynthLookAndFeel".equals(name)); // NOI18N
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables

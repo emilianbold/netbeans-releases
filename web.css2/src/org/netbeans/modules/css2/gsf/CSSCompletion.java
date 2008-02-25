@@ -41,6 +41,7 @@ package org.netbeans.modules.css2.gsf;
 import java.io.IOException;
 import java.io.StringReader;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -49,6 +50,7 @@ import java.util.Set;
 import java.util.logging.Logger;
 import javax.swing.ImageIcon;
 import javax.swing.text.JTextComponent;
+import org.netbeans.api.lexer.TokenId;
 import org.netbeans.modules.gsf.api.CompilationInfo;
 import org.netbeans.modules.gsf.api.Completable;
 import org.netbeans.modules.gsf.api.CompletionProposal;
@@ -90,6 +92,8 @@ public class CSSCompletion implements Completable {
     
     private final PropertyModel PROPERTIES = PropertyModel.instance();
 
+    private static final Collection<String> AT_RULES = Arrays.asList(new String[]{"@media", "@page", "@import", "@charset", "@font-face"});
+    
     public List<CompletionProposal> complete(CompilationInfo info, int caretOffset, String prefix, NameKind kind, QueryType queryType, boolean caseSensitive, HtmlFormatter formatter) {
         try {
 
@@ -131,10 +135,18 @@ public class CSSCompletion implements Completable {
 
             SimpleNode node = SimpleNodeUtil.findDescendant(root, astCaretOffset);
             if (node == null) {
-                LOGGER.info("cannot find any AST node for position " + caretOffset);
-                return null;
+                //the parse tree is likely broken by some text typed, 
+                //but we still need to provide the completion in some cases
+                
+                if("@".equals(ts.token().text().toString())) {
+                    //complete rules
+                    return wrapValues(AT_RULES, CompletionItemKind.VALUE, ts.offset(), formatter);
+                }
+                
+                return null; //no parse tree, just quit
             }
 
+//            root.dump("");
 //            System.out.println("AST node kind = " + CSSParserTreeConstants.jjtNodeName[node.kind()]);
 
 
@@ -148,7 +160,33 @@ public class CSSCompletion implements Completable {
             //In such case the prefix is empty and the cc would offer all 
             //possible values there
             //
-            if (node.kind() == CSSParserTreeConstants.JJTPROPERTY && (prefix.length() > 0 || astCaretOffset == node.startOffset())) {
+            if(node.kind() == CSSParserTreeConstants.JJTSTYLESHEETRULELIST) {
+                //complete at keywords without prefix
+                return wrapValues(AT_RULES, CompletionItemKind.VALUE, caretOffset, formatter);
+            } else if(node.kind() == CSSParserTreeConstants.JJTSKIP) {
+                //complete at keywords with prefix - parse tree broken
+                SimpleNode parent = (SimpleNode)node.jjtGetParent();
+                if(parent != null && parent.kind() == CSSParserTreeConstants.JJTUNKNOWNRULE) {  //test the parent node
+                    Collection<String> possibleValues = filterValues(AT_RULES, prefix);
+                    return wrapValues(possibleValues, CompletionItemKind.VALUE, AstUtils.documentPosition(parent.startOffset(), source), formatter);
+                }
+            } else if(node.kind() == CSSParserTreeConstants.JJTIMPORTRULE 
+                    || node.kind() == CSSParserTreeConstants.JJTMEDIARULE 
+                    || node.kind() == CSSParserTreeConstants.JJTPAGERULE
+                    || node.kind() == CSSParserTreeConstants.JJTCHARSETRULE
+                    || node.kind() == CSSParserTreeConstants.JJTFONTFACERULE ) {
+                //complete at keywords with prefix - parse tree OK
+                TokenId id = ts.token().id();
+                if(id == CSSTokenId.IMPORT_SYM || id == CSSTokenId.MEDIA_SYM 
+                        || id == CSSTokenId.PAGE_SYM || id == CSSTokenId.CHARSET_SYM 
+                        || id == CSSTokenId.FONT_FACE_SYM) {
+                    //we are on the right place in the node
+                    
+                    Collection<String> possibleValues = filterValues(AT_RULES, prefix);
+                    return wrapValues(possibleValues, CompletionItemKind.VALUE, AstUtils.documentPosition(node.startOffset(), source), formatter);
+                }
+                
+            } else if (node.kind() == CSSParserTreeConstants.JJTPROPERTY && (prefix.length() > 0 || astCaretOffset == node.startOffset())) {
                 //css property name completion with prefix
                 Collection<Property> possibleProps = filterProperties(PROPERTIES.properties(), prefix);
                 return wrapProperties(possibleProps, CompletionItemKind.PROPERTY, AstUtils.documentPosition(node.startOffset(), source), formatter);
