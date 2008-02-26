@@ -48,6 +48,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import org.netbeans.modules.gsf.api.CompilationInfo;
+import org.netbeans.modules.gsf.api.ElementKind;
+import org.netbeans.modules.gsf.api.Index;
 import org.netbeans.modules.gsf.api.IndexDocument;
 import org.netbeans.modules.gsf.api.IndexDocumentFactory;
 
@@ -58,6 +60,7 @@ public class JsIndexerTest extends JsTestBase {
     
     public JsIndexerTest(String testName) {
         super(testName);
+        initializeRegistry();
     }
 
     @Override
@@ -88,41 +91,21 @@ public class JsIndexerTest extends JsTestBase {
         if (value == null) {
             return value;
         }
-//        if (RubyIndexer.FIELD_METHOD_NAME.equals(key)) {
-//            // Decode the attributes
-//            int attributeIndex = value.indexOf(';');
-//            if (attributeIndex != -1) {
-//                int flags = IndexedElement.stringToFlag(value, attributeIndex+1);
-//                if (flags != 0) {
-//                    String desc = IndexedMethod.decodeFlags(flags);
-//                    value = value.substring(0, attributeIndex) + desc + value.substring(attributeIndex+3);
-//                }
-//            }
-//        } else if (RubyIndexer.FIELD_CLASS_ATTRS.equals(key)) {
-//            // Decode the attributes
-//            int flags = IndexedElement.stringToFlag(value, 0);
-//            if (flags != 0) {
-//                String desc = IndexedClass.decodeFlags(flags);
-//                value = desc + value.substring(2);
-//            } else {
-//                value = "|CLASS|";
-//            }
-//        } else if (RubyIndexer.FIELD_FIELD_NAME.equals(key)) {
-//            // Decode the attributes
-//            int attributeIndex = value.indexOf(';');
-//            if (attributeIndex != -1) {
-//                int flags = IndexedElement.stringToFlag(value, attributeIndex+1);
-//                if (flags != 0) {
-//                    String desc = IndexedField.decodeFlags(flags);
-//                    value = value.substring(0, attributeIndex) + desc + value.substring(attributeIndex+3);
-//                }
-//            }
-//        }
+        if (JsIndexer.FIELD_BASE.equals(key) || JsIndexer.FIELD_BASE_LOWER.equals(key) ||
+                JsIndexer.FIELD_FQN.equals(key)) {
+            // Decode the attributes
+            int attributeIndex = 0;
+            for (int i = 0; i < IndexedElement.FLAG_INDEX; i++) {
+                attributeIndex = value.indexOf(';', attributeIndex+1);
+            }
+            int flags = IndexedElement.decode(value, attributeIndex+1,0);
+            String desc = IndexedElement.decodeFlags(flags);
+            value = value.substring(0, attributeIndex) + desc + value.substring(attributeIndex+3);
+        }
 
         return value;
     }
 
-    
     public String prettyPrint(String fileUrl, List<IndexDocument> documents, String localUrl) throws IOException {
         List<String> nonEmptyDocuments = new ArrayList<String>();
         List<String> emptyDocuments = new ArrayList<String>();
@@ -214,11 +197,16 @@ public class JsIndexerTest extends JsTestBase {
         
         
     private class IndexDocumentImpl implements IndexDocument {
+        private Index index;
         private List<String> indexedKeys = new ArrayList<String>();
         private List<String> indexedValues = new ArrayList<String>();
         private List<String> unindexedKeys = new ArrayList<String>();
         private List<String> unindexedValues = new ArrayList<String>();
 
+        IndexDocumentImpl(Index index) {
+            this.index = index;
+        }
+        
         public void addPair(String key, String value, boolean indexed) {
             if (indexed) {
                 indexedKeys.add(key);
@@ -231,16 +219,29 @@ public class JsIndexerTest extends JsTestBase {
     }
 
     private class IndexDocumentFactoryImpl implements IndexDocumentFactory {
+        Index index;
+        IndexDocumentFactoryImpl(Index index) {
+            this.index = index;
+        }
 
         public IndexDocument createDocument(int initialPairs) {
-            return new IndexDocumentImpl();
+            return new IndexDocumentImpl(index);
         }
     }
     
-    private void checkIndexer(String relFilePath) throws Exception {
+    private List<IndexDocument> indexFile(String relFilePath) throws Exception {
         CompilationInfo info = getInfo(relFilePath);
         JsParseResult rpr = AstUtilities.getParseResult(info);
 
+        JsIndexer indexer = new JsIndexer();
+        JsIndex.setClusterUrl("file:/bogus"); // No translation
+        IndexDocumentFactory factory = new IndexDocumentFactoryImpl(info.getIndex(JsMimeResolver.JAVASCRIPT_MIME_TYPE));
+        List<IndexDocument> result = indexer.index(rpr, factory);
+        
+        return result;
+    }
+    
+    private void checkIndexer(String relFilePath) throws Exception {
         File jsFile = new File(getDataDir(), relFilePath);
         String fileUrl = jsFile.toURI().toURL().toExternalForm();
         String localUrl = fileUrl;
@@ -249,13 +250,27 @@ public class JsIndexerTest extends JsTestBase {
             localUrl = localUrl.substring(0, index);
         }
         
-        JsIndexer indexer = new JsIndexer();
-        JsIndex.setClusterUrl("file:/bogus"); // No translation
-        IndexDocumentFactory factory = new IndexDocumentFactoryImpl();
-        List<IndexDocument> result = indexer.index(rpr, factory);
+        List<IndexDocument> result = indexFile(relFilePath);
         String annotatedSource = prettyPrint(fileUrl, result, localUrl);
 
         assertDescriptionMatches(relFilePath, annotatedSource, false, ".indexed");
+    }
+    
+    private IndexedElement findElement(List<IndexDocument> documents, String key, String valuePrefix, JsIndex index) {
+        for (IndexDocument document : documents) {
+            IndexDocumentImpl doc = (IndexDocumentImpl)document;
+            for (int i = 0, n = doc.indexedKeys.size(); i < n; i++) {
+                String k = doc.indexedKeys.get(i);
+                if (k.equals(key)) {
+                    String v = doc.indexedValues.get(i);
+                    if (v.startsWith(valuePrefix)) {
+                        return IndexedElement.create(valuePrefix, v, "file:/bogus", index, false);
+                    }
+                }
+            }
+        }
+        
+        return null;
     }
     
     public void testIndex0() throws Exception {
@@ -276,5 +291,119 @@ public class JsIndexerTest extends JsTestBase {
 
     public void testSimple() throws Exception {
         checkIndexer("testfiles/simple.js");
+    }
+
+    public void testElement() throws Exception {
+        checkIndexer("testfiles/stub_Element.js");
+    }
+
+    public void testWindow() throws Exception {
+        checkIndexer("testfiles/stub_dom_Window.js");
+    }
+    
+    public void testRestore1() throws Exception {
+        List<IndexDocument> docs = indexFile("testfiles/stub_dom_Window.js");
+        assertTrue(docs.size() > 0);
+        JsIndex index = JsIndex.get(((IndexDocumentImpl)docs.get(0)).index);
+        IndexedElement element = findElement(docs, JsIndexer.FIELD_FQN, "window.opendialog", index);
+        assertNotNull(element);
+        assertEquals("Window.openDialog", element.getName());
+        IndexedFunction f = (IndexedFunction)element;
+        String[] args = f.getArgs();
+        String[] expected = new String[] { "url","name","features","arg1","arg2" };
+        assertEquals(expected.length,args.length);
+        for (int i = 0; i < args.length; i++) {
+            assertEquals(expected[i],args[i]);
+        }
+    }
+
+    public void testRestore2() throws Exception {
+        List<IndexDocument> docs = indexFile("testfiles/stub_dom_Window.js");
+        JsIndex index = JsIndex.get(((IndexDocumentImpl)docs.get(0)).index);
+        IndexedElement element = findElement(docs, JsIndexer.FIELD_BASE, "opendialog", index);
+        assertNotNull(element);
+        assertEquals("openDialog", element.getName());
+        assertEquals("Window", element.getIn());
+        IndexedFunction f = (IndexedFunction)element;
+        String[] args = f.getArgs();
+        String[] expected = new String[] { "url","name","features","arg1","arg2" };
+        assertEquals(expected.length,args.length);
+        for (int i = 0; i < args.length; i++) {
+            assertEquals(expected[i],args[i]);
+        }
+    }
+
+    public void testRestore3() throws Exception {
+        List<IndexDocument> docs = indexFile("testfiles/stub_dom_Window.js");
+        JsIndex index = JsIndex.get(((IndexDocumentImpl)docs.get(0)).index);
+        IndexedElement element = findElement(docs, JsIndexer.FIELD_BASE_LOWER, "opendialog", index);
+        assertNotNull(element);
+        assertEquals("openDialog", element.getName());
+        assertEquals("Window", element.getIn());
+        IndexedFunction f = (IndexedFunction)element;
+        String[] args = f.getArgs();
+        String[] expected = new String[] { "url","name","features","arg1","arg2" };
+        assertEquals(expected.length,args.length);
+        for (int i = 0; i < args.length; i++) {
+            assertEquals(expected[i],args[i]);
+        }
+    }
+
+    public void testRestore4() throws Exception {
+        List<IndexDocument> docs = indexFile("testfiles/simple.js");
+        JsIndex index = JsIndex.get(((IndexDocumentImpl)docs.get(0)).index);
+        IndexedElement element = findElement(docs, JsIndexer.FIELD_FQN, "donal", index);
+        assertNotNull(element);
+        assertEquals("DonaldDuck", element.getName());
+    }
+
+    public void testRestore5() throws Exception {
+        List<IndexDocument> docs = indexFile("testfiles/simple.js");
+        JsIndex index = JsIndex.get(((IndexDocumentImpl)docs.get(0)).index);
+        IndexedElement element = findElement(docs, JsIndexer.FIELD_FQN, "donaldduck.m", index);
+        assertNotNull(element);
+        // TODO - transfer logic from JsIndex.getFqn logic into IndexElement.create
+        // so that I get "Mickey" here
+        assertEquals("DonaldDuck.Mickey", element.getName());
+    }
+
+    public void testRestore6() throws Exception {
+        List<IndexDocument> docs = indexFile("testfiles/simple.js");
+        JsIndex index = JsIndex.get(((IndexDocumentImpl)docs.get(0)).index);
+        IndexedElement element = findElement(docs, JsIndexer.FIELD_FQN, "donaldduck.mickey.b", index);
+        assertNotNull(element);
+        // TODO - transfer logic from JsIndex.getFqn logic into IndexElement.create
+        // so that I get "Baz" here
+        assertEquals("DonaldDuck.Mickey.Baz", element.getName());
+    }
+
+    public void testRestore7() throws Exception {
+        List<IndexDocument> docs = indexFile("testfiles/dojo.js.uncompressed.js");
+        JsIndex index = JsIndex.get(((IndexDocumentImpl)docs.get(0)).index);
+        IndexedElement element = findElement(docs, JsIndexer.FIELD_FQN, "dojo.deferred", index);
+        assertNotNull(element);
+        // TODO - transfer logic from JsIndex.getFqn logic into IndexElement.create
+        // so that I get "Baz" here
+        assertEquals("dojo.Deferred", element.getName());
+        assertEquals(ElementKind.CONSTRUCTOR, element.getKind());
+        IndexedFunction func = (IndexedFunction)element;
+        assertEquals(1, func.getArgs().length);
+        assertEquals("canceller", func.getArgs()[0]);
+    }
+    
+    public void testOldPrototypes() throws Exception {
+        checkIndexer("testfiles/oldstyle-prototype.js");
+    }
+
+    public void testNewPrototypes() throws Exception {
+        checkIndexer("testfiles/newstyle-prototype.js");
+    }
+
+    public void testFunctionStyle() throws Exception {
+        checkIndexer("testfiles/class-via-function.js");
+    }
+    
+    public void testExtStyle() throws Exception {
+        checkIndexer("testfiles/class-inheritance-ext.js");
     }
 }

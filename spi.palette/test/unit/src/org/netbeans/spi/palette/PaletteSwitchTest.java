@@ -42,6 +42,7 @@
 package org.netbeans.spi.palette;
 
 import java.io.IOException;
+import javax.swing.SwingUtilities;
 import org.netbeans.core.windows.Constants;
 import org.netbeans.core.windows.SplitConstraint;
 import org.netbeans.core.windows.WindowManagerImpl;
@@ -167,8 +168,84 @@ public class PaletteSwitchTest extends AbstractPaletteTestHid {
         assertEquals( pc.getModel().getName(), foundPalette.getModel().getName() );
     }
     
-    private TopComponent createTopComponentWithPalette( PaletteController pc ) throws IOException {
-        TopComponent tc = new MyTopComponent( pc );
+    public void testVisibilityPerDocumentType() throws Exception {
+        final TopComponent palette = PaletteTopComponent.getDefault();
+        assertNotNull( palette );
+        
+        final PaletteController pc = PaletteFactory.createPalette( lookupPaletteRootName, new DummyActions() );
+        final MyTopComponent paletteTc1 = createTopComponentWithPalette( pc );
+        paletteTc1.open();
+
+        final MyTopComponent paletteTc2 = createTopComponentWithPalette( null );
+        paletteTc2.setActivatedNodes( new Node[] { DataObject.find( dummyDocumentFile ).getNodeDelegate() } );
+        paletteTc2.open();
+        
+        final MyTopComponent noPaletteTc = createTopComponentWithPalette( null );
+        noPaletteTc.open();
+
+        noPaletteTc.requestActive();
+        final PaletteSwitch paletteSwitch = PaletteSwitch.getDefault();
+        paletteSwitch.startListening();
+        
+        assertNull( "No PaletteController for TC which doesn't provide one", 
+                paletteSwitch.getCurrentPalette() );
+        assertFalse( "Palette window cannot be opened when a document without PaletteController is active", 
+                palette.isOpened() );
+        
+        paletteTc1.requestActive();
+        SwingUtilities.invokeLater( new Runnable() {
+            public void run() {
+                assertEquals( TopComponent.getRegistry().getActivated(), paletteTc1 );
+                assertNotNull( "TC with PaletteController is active", 
+                        paletteSwitch.getCurrentPalette() );
+                assertTrue( "Palette window opens by default when a document with PaletteController is active", 
+                        palette.isOpened() );
+                
+                noPaletteTc.requestActive();
+
+                SwingUtilities.invokeLater( new Runnable() {
+                    public void run() {
+                        assertFalse( "Palette window closes when document without PaletteController is active", 
+                                palette.isOpened() );
+                        
+                        paletteTc1.requestActive();
+                        SwingUtilities.invokeLater( new Runnable() {
+                            public void run() {
+                                assertTrue( "Palette window opens by default when a document with PaletteController is active", 
+                                        palette.isOpened() );
+                                
+                                //simulate closing palette window by user
+                                palette.close();
+                                
+                                noPaletteTc.requestActive();
+                                paletteTc1.requestActive();
+
+                                SwingUtilities.invokeLater( new Runnable() {
+                                    public void run() {
+                                        assertFalse( "Palette window doesn't show up even when document with PaletteController is active because the palette window was closed by the user before.", 
+                                                palette.isOpened() );
+                                        
+                                        paletteTc2.requestActive();
+                                
+                                        SwingUtilities.invokeLater( new Runnable() {
+                                            public void run() {
+                                                assertTrue( "Palette window opens by default when a different document with PaletteController is active", 
+                                                        palette.isOpened() );
+                                                paletteSwitch.stopListening();
+                                            }
+                                        });
+                                    }
+                                });
+                            }
+                        });
+                    }
+                });
+            }
+        });
+    }
+    
+    private MyTopComponent createTopComponentWithPalette( PaletteController pc ) throws IOException {
+        MyTopComponent tc = new MyTopComponent( pc );
         
         Mode editorMode = WindowManagerImpl.getInstance().findMode( "unitTestEditorMode" );
         if( null == editorMode ) {
@@ -179,6 +256,8 @@ public class PaletteSwitchTest extends AbstractPaletteTestHid {
     }
     
     private static class MyTopComponent extends TopComponent {
+        private boolean hackIsShowing = false;
+        
         public MyTopComponent( PaletteController palette ) throws DataObjectNotFoundException {
             this( new InstanceContent(), palette );
         }
@@ -187,6 +266,23 @@ public class PaletteSwitchTest extends AbstractPaletteTestHid {
             super( new AbstractLookup( ic ) );
             if( null != palette )
                 ic.add( palette );
+        }
+        
+        @Override
+        public boolean isShowing() {
+            return hackIsShowing;
+        }
+
+        @Override
+        protected void componentActivated() {
+            super.componentActivated();
+            hackIsShowing = true;
+        }
+
+        @Override
+        protected void componentDeactivated() {
+            super.componentDeactivated();
+            hackIsShowing = false;
         }
     }
     

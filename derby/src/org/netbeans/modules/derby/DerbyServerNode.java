@@ -43,6 +43,7 @@ package org.netbeans.modules.derby;
 
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
+import org.openide.nodes.Node;
 import org.openide.util.actions.SystemAction;
 
 /**
@@ -51,7 +52,7 @@ import org.openide.util.actions.SystemAction;
  * 
  * @author David Van Couvering
  */
-public class DerbyServerNode extends AbstractNode {
+public class DerbyServerNode extends AbstractNode implements Comparable {
     private static final DerbyServerNode DEFAULT = new DerbyServerNode();
     
     private SystemAction[] actions = new SystemAction[] {
@@ -108,6 +109,11 @@ public class DerbyServerNode extends AbstractNode {
     @Override
     public SystemAction getDefaultAction() {
         return null;
-    }   
+    } 
+    
+    public int compareTo(Object other) {
+        Node otherNode = (Node)other;
+        return this.getDisplayName().compareTo(otherNode.getDisplayName());
+    }
 
 }

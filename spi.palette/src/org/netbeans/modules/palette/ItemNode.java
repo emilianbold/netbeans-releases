@@ -68,7 +68,6 @@ class ItemNode extends FilterNode {
         super( originalNode, Children.LEAF );
     }
 
-    @Override
     public Action[] getActions(boolean context) {
         if (actions == null) {
             Node n = getParentNode();
@@ -91,7 +90,6 @@ class ItemNode extends FilterNode {
         return actions;
     }
 
-    @Override
     public Transferable clipboardCut() throws java.io.IOException {
         ExTransferable t = ExTransferable.create( super.clipboardCut() );
         
@@ -101,7 +99,6 @@ class ItemNode extends FilterNode {
         return t;
     }
 
-    @Override
     public Transferable clipboardCopy() throws IOException {
         ExTransferable t = ExTransferable.create( super.clipboardCopy() );
         
@@ -111,12 +108,10 @@ class ItemNode extends FilterNode {
         return t;
     }
 
-    @Override
     public PasteType getDropType( Transferable t, int action, int index ) {
         return null;
     }
 
-    @Override
     public Transferable drag() throws IOException {
         ExTransferable t = ExTransferable.create( super.drag() );//NodeTransfer.transferable(this, NodeTransfer.DND_MOVE) );
         
@@ -143,41 +138,31 @@ class ItemNode extends FilterNode {
     }
 
     private PaletteActions getCustomActions() {
-        PaletteActions res = null;
         Node category = getParentNode();
-        if( null != category ) {
-            Node root = category.getParentNode();
-            if( null != root ) {
-                res = root.getLookup().lookup( PaletteActions.class );
-            }
-        }
-        return res;
+        assert null != category;
+        Node root = category.getParentNode();
+        assert null != root;
+        return (PaletteActions)root.getLookup().lookup( PaletteActions.class );
     }
 
     private DragAndDropHandler getTransferableProvider() {
-        DragAndDropHandler res = null;
         Node category = getParentNode();
-        if( null != category ) {
-            Node root = category.getParentNode();
-            if( null != root ) {
-                res = root.getLookup().lookup( DragAndDropHandler.class );
-            }
-        }
-        return res;
+        assert null != category;
+        Node root = category.getParentNode();
+        assert null != root;
+        return (DragAndDropHandler)root.getLookup().lookup( DragAndDropHandler.class );
     }
     
-    @Override
     public Action getPreferredAction() {
 
         PaletteActions customActions = getCustomActions();
         
         if( null == customActions )
-            return null;
+            return null;;
         
         return customActions.getPreferredAction( getLookup() );
     }
 
-    @Override
     public boolean canDestroy() {
 
         return !Utils.isReadonly( getOriginal() );
@@ -187,7 +172,6 @@ class ItemNode extends FilterNode {
         return getOriginal();
     }
 
-    @Override
     public HelpCtx getHelpCtx() {
         return Utils.getHelpCtx( this, super.getHelpCtx() );
     }

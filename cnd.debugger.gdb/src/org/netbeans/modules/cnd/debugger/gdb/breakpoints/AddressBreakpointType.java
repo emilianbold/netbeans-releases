@@ -40,13 +40,14 @@
 package org.netbeans.modules.cnd.debugger.gdb.breakpoints;
 
 import javax.swing.JComponent;
+import org.netbeans.spi.debugger.ui.BreakpointType;
 import org.openide.util.NbBundle;
 
 /**
  *
  * @author eu155513
  */
-public class AddressBreakpointType {
+public class AddressBreakpointType extends BreakpointType {
     public String getCategoryDisplayName() {
         return NbBundle.getMessage(LineBreakpointType.class,
                     "CTL_Gdb_breakpoint_events_category_name"); // NOI18N

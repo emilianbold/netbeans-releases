@@ -94,13 +94,16 @@ public abstract class GsfCompletionItem implements CompletionItem {
             case PARAMETER: return item.isSmart() ? 105 - SMART_TYPE : 105;
             case CALL: return item.isSmart() ? 110 - SMART_TYPE : 110;
             case CONSTRUCTOR: return item.isSmart() ? 400 - SMART_TYPE : 400;
+            case PACKAGE:
             case MODULE: return item.isSmart() ? 900 - SMART_TYPE : 900;
             case CLASS: return item.isSmart() ? 800 - SMART_TYPE : 800;
             case ATTRIBUTE:
             case TAG: return item.isSmart() ? 480 - SMART_TYPE : 480;
+            case PROPERTY:
             case METHOD: return item.isSmart() ? 500 - SMART_TYPE : 500;
             case FIELD: return item.isSmart() ? 300 - SMART_TYPE : 300;
             case CONSTANT:
+            case GLOBAL:
             case VARIABLE: return item.isSmart() ? 200 - SMART_TYPE : 200;
             case KEYWORD: return item.isSmart() ? 600 - SMART_TYPE : 600;
             case OTHER: 
@@ -154,6 +157,7 @@ public abstract class GsfCompletionItem implements CompletionItem {
             return truncateRhs(rhs, length);
         }
         
+        @Override
         public CompletionTask createDocumentationTask() {
             final ElementHandle element = item.getElement();
             if (element != null) {

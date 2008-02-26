@@ -39,7 +39,7 @@
 
 package org.netbeans.modules.db.mysql;
 
-import org.netbeans.modules.db.mysql.ui.PropertiesPanel;
+import org.netbeans.modules.db.mysql.ui.PropertiesDialog;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
@@ -75,7 +75,9 @@ public class PropertiesAction extends CookieAction {
     protected void performAction(Node[] activatedNodes) {
         Node node = activatedNodes[0];
         ServerInstance server = node.getCookie(ServerInstance.class);
-        PropertiesPanel.showMySQLProperties(server);
+        
+        PropertiesDialog dlg = new PropertiesDialog(server);
+        dlg.displayDialog();
     }
 
     @Override

@@ -64,46 +64,29 @@ final class ComponentPanel extends JPanel {
     myHeight = 0;
     myWidth = 0;
 
-    myWidths = new int [components.size()];
-//out();
     for (int i=0; i < myComponents.size(); i++) {
       JComponent component = myComponents.get(i);
-      Dimension dimension = getDimension(component);
+//out();
 //out("see: " + component.getClass().getName() + " " + component.getClientProperty(Integer.class));
+      int width = getWidth(component);
+      int height = getHeight(component);
+//out("   width: " + width);
+//out("  height: " + height);
 
-      int height;
-      int width;
-
-      if (dimension == null) {
-        height = component.getHeight();
-        width = component.getWidth();
-      }
-      else {
-        height = dimension.height;
-        width = dimension.width;
-      }
-      myWidths [i] = width;
       myWidth += width;
 
       if (height > myHeight) {
         myHeight = height;
       }
     }
-//out();
-//out("w: " + myWidth);
-//out("h: " + myHeight);
   }
 
   @Override
   public void print(Graphics g)
   {
-    int x = 0;
-
-    for (int i=0; i < myComponents.size(); i++) {
-      JComponent component = myComponents.get(i);
-      g.translate(x, 0);
+    for (JComponent component : myComponents) {
       component.print(g);
-      x += myWidths [i];
+      g.translate(getWidth(component), 0);
     }
   }
 
@@ -117,6 +100,24 @@ final class ComponentPanel extends JPanel {
   public int getHeight()
   {
     return myHeight;
+  }
+
+  private int getWidth(JComponent component) {
+    Dimension dimension = getDimension(component);
+
+    if (dimension == null) {
+      return component.getWidth();
+    }
+    return dimension.width;
+  }
+
+  private int getHeight(JComponent component) {
+    Dimension dimension = getDimension(component);
+
+    if (dimension == null) {
+      return component.getHeight();
+    }
+    return dimension.height;
   }
 
   private Dimension getDimension(JComponent component) {
@@ -158,6 +159,5 @@ final class ComponentPanel extends JPanel {
 
   private int myWidth;
   private int myHeight;
-  private int [] myWidths;
   private List<JComponent> myComponents;
 }
