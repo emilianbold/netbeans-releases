@@ -251,6 +251,54 @@ public class LexUtilities {
         return 0;
     }
 
+    /**
+     * Tries to skip parenthesis 
+     */
+    static boolean skipParenthesis(TokenSequence<?extends JsTokenId> ts) {
+        int balance = 0;
+
+        Token<?extends JsTokenId> token = ts.token();
+        if (token == null) {
+            return false;
+        }
+
+        TokenId id = token.id();
+            
+//        // skip whitespaces
+//        if (id == JsTokenId.WHITESPACE) {
+//            while (ts.moveNext() && ts.token().id() == JsTokenId.WHITESPACE) {}
+//        }
+        if (id == JsTokenId.WHITESPACE || id == JsTokenId.EOL) {
+            while (ts.moveNext() && (ts.token().id() == JsTokenId.WHITESPACE || ts.token().id() == JsTokenId.EOL)) {}
+        }
+
+        // if current token is not left parenthesis
+        if (ts.token().id() != JsTokenId.LPAREN) {
+            return false;
+        }
+
+        do {
+            token = ts.token();
+            id = token.id();
+
+            if (id == JsTokenId.LPAREN) {
+                balance++;
+            } else if (id == JsTokenId.RPAREN) {
+                if (balance == 0) {
+                    return false;
+                } else if (balance == 1) {
+                    int length = ts.offset() + token.length();
+                    ts.moveNext();
+                    return true;
+                }
+
+                balance--;
+            }
+        } while (ts.moveNext());
+
+        return false;
+    }
+    
     /** Search forwards in the token sequence until a token of type <code>down</code> is found */
     public static OffsetRange findFwd(BaseDocument doc, TokenSequence<?extends JsTokenId> ts, TokenId up,
         TokenId down) {
@@ -390,8 +438,7 @@ public class LexUtilities {
 //        if (id == JsTokenId.DO) {
 //            return isEndmatchingDo(doc, offset);
 //        }
-//        return END_PAIRS.contains(id);
-        return false;
+        return END_PAIRS.contains(id);
     }
 
     /**
@@ -405,17 +452,82 @@ public class LexUtilities {
     }
 
     
+    private static void findMultilineRange(TokenSequence<? extends JsTokenId> ts, Set<OffsetRange> ranges) {
+        int startOffset = ts.offset();
+        JsTokenId id = ts.token().id();
+        switch (id) {
+            case ELSE:
+                ts.moveNext();
+                id = ts.token().id();
+                break;
+            case IF:
+            case FOR:
+            case WHILE:
+                ts.moveNext();
+                if (!skipParenthesis(ts)) {
+                    return;
+                }
+                id = ts.token().id();
+                break;
+            default:
+                return;
+        }
+        int offset = ts.offset();
+        
+        // skip whitespaces
+        if (id == JsTokenId.WHITESPACE) {
+            while (ts.moveNext() && (ts.token().id() == JsTokenId.WHITESPACE)) {
+                offset = ts.offset();
+            }
+        }
+        // if we found end of sequence or end of line
+        if (ts.token() == null || (ts.token().id() == JsTokenId.EOL)) {
+            ranges.add(new OffsetRange(startOffset, offset));
+        }
+    }
+    
+    public static boolean isBracelessMultilineLastLine(BaseDocument doc, int offset, Set<OffsetRange> ranges) {
+
+        TokenSequence<? extends JsTokenId> ts = getPositionedSequence(doc, offset);
+
+        JsTokenId id = ts.token().id();
+        
+        switch (id) {
+            case ELSE:
+            case IF:
+            case FOR:
+            case WHILE:
+                findMultilineRange(ts, ranges);
+        }
+        
+        try {
+            int offsetLine = Utilities.getLineOffset(doc, offset);
+            for (OffsetRange offsetRange : ranges) {
+                if (offsetRange.containsInclusive(offset)) {
+                    int blockEndLine = Utilities.getLineOffset(doc, offsetRange.getEnd());
+                    if (offsetLine == blockEndLine) {
+                        return true;
+                    }
+                }
+            }
+        } catch (BadLocationException ble) {
+            Exceptions.printStackTrace(ble);
+        }
+
+        return false;
+    }
+
     /**
      * Return true iff the given token is a token that should be matched
      * with a corresponding "end" token, such as "begin", "def", "module",
      * etc.
      */
     public static boolean isBeginToken(TokenId id, BaseDocument doc, TokenSequence<?extends JsTokenId> ts) {
-//        if (id == JsTokenId.DO) {
-//            return isEndmatchingDo(doc, ts.offset());
+//        if (id == JsTokenId.IF) {
+            return isBracelessMultilineLastLine(doc, ts.offset(), new HashSet<OffsetRange>());
 //        }
 //        return END_PAIRS.contains(id);
-        return false;
+//        return false;
     }
 
     public static boolean isEndToken(TokenId id, BaseDocument doc, TokenSequence<?extends JsTokenId> ts) {

@@ -41,8 +41,10 @@
 package org.netbeans.modules.javascript.editing;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 
+import java.util.Set;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 
@@ -53,6 +55,7 @@ import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
 import org.netbeans.modules.gsf.api.CompilationInfo;
+import org.netbeans.modules.gsf.api.OffsetRange;
 import org.netbeans.modules.javascript.editing.lexer.LexUtilities;
 import org.netbeans.modules.javascript.editing.lexer.JsTokenId;
 //import org.netbeans.modules.javascript.editing.options.CodeStyle;
@@ -152,25 +155,58 @@ public class JsFormatter implements org.netbeans.modules.gsf.api.Formatter {
         return ts.offset();
     }
     
-    private int getTokenBalanceDelta(TokenId id, Token<? extends JsTokenId> token,
-            BaseDocument doc, TokenSequence<? extends JsTokenId> ts, boolean includeKeywords) {
+    private static int getPreviousLineFirstNonWhiteOffset(BaseDocument doc, int offset) {
+        int offsetPrevLine = -1;
+        try {
+            if (offset > -1) {
+                int o = Utilities.getRowStart(doc, offset);
+                if (o > 0) {
+                    offsetPrevLine = Utilities.getRowStart(doc, o - 1);
+                    if (offsetPrevLine > -1) {
+                        offsetPrevLine = Utilities.getRowFirstNonWhite(doc, offsetPrevLine);
+                    }
+                }
+            }
+        } catch (BadLocationException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        return offsetPrevLine;
+    }
+    
+    private static int getTokenBalanceDelta(TokenId id, Token<? extends JsTokenId> token,
+            BaseDocument doc, TokenSequence<? extends JsTokenId> ts, boolean includeKeywords, Set<OffsetRange> ranges) {
         if ((!includeKeywords && id == JsTokenId.LPAREN) || id == JsTokenId.LBRACKET || (includeKeywords && id == JsTokenId.LBRACE)) {
             return 1;
         } else if ((!includeKeywords && id == JsTokenId.RPAREN) || id == JsTokenId.RBRACKET || (includeKeywords && id == JsTokenId.RBRACE)) {
             return -1;
-//        } else if (includeKeywords) {
-//            if (LexUtilities.isBeginToken(id, doc, ts)) {
-//                return 1;
-//            } else if (id == JsTokenId.END) {
-//                return -1;
-//            }
+        } else if (includeKeywords) {
+            boolean first = false;
+            try {
+                int firstNonWhite = Utilities.getRowFirstNonWhite(doc, ts.offset());
+                first = firstNonWhite == ts.offset();
+            } catch (BadLocationException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+            
+            if (first && LexUtilities.isBracelessMultilineLastLine(doc, ts.offset(), ranges)) {
+                return 1;
+            } else if (first) {
+                int delta = 0;
+                int offsetPrevLine2 = getPreviousLineFirstNonWhiteOffset(doc, ts.offset());
+                while (offsetPrevLine2 > -1 && ranges.size() > 0 && 
+                        LexUtilities.isBracelessMultilineLastLine(doc, offsetPrevLine2, ranges)) {
+                    offsetPrevLine2 = getPreviousLineFirstNonWhiteOffset(doc, offsetPrevLine2);
+                    delta--;
+                }
+                return delta;
+            }
         }
 
         return 0;
     }
     
     // TODO RHTML - there can be many discontiguous sections, I've gotta process all of them on the given line
-    private int getTokenBalance(BaseDocument doc, int begin, int end, boolean includeKeywords) {
+    private int getTokenBalance(BaseDocument doc, int begin, int end, boolean includeKeywords, Set<OffsetRange> ranges) {
         int balance = 0;
 
         if (embeddedJavaScript) {
@@ -206,6 +242,7 @@ public class JsFormatter implements org.netbeans.modules.gsf.api.Formatter {
                             TokenSequence<? extends JsTokenId> ts = hts.embedded(JsTokenId.language());
                             ts.move(begin);
                             ts.moveNext();
+                            
                             do {
                                 Token<?extends JsTokenId> jsToken = ts.token();
                                 if (jsToken == null) {
@@ -213,7 +250,7 @@ public class JsFormatter implements org.netbeans.modules.gsf.api.Formatter {
                                 }
                                 TokenId jsId = jsToken.id();
 
-                                balance += getTokenBalanceDelta(jsId, jsToken, doc, ts, includeKeywords);
+                                balance += getTokenBalanceDelta(jsId, jsToken, doc, ts, includeKeywords, ranges);
                             } while (ts.moveNext() && (ts.offset() < end));
                         }
                     } while (hts.moveNext() && (hts.offset() < end));
@@ -221,6 +258,7 @@ public class JsFormatter implements org.netbeans.modules.gsf.api.Formatter {
                     TokenSequence<? extends JsTokenId> ts = t.embedded(JsTokenId.language());
                     ts.move(begin);
                     ts.moveNext();
+                    
                     do {
                         Token<?extends JsTokenId> jsToken = ts.token();
                         if (jsToken == null) {
@@ -228,7 +266,7 @@ public class JsFormatter implements org.netbeans.modules.gsf.api.Formatter {
                         }
                         TokenId jsId = jsToken.id();
 
-                        balance += getTokenBalanceDelta(jsId, jsToken, doc, ts, includeKeywords);
+                        balance += getTokenBalanceDelta(jsId, jsToken, doc, ts, includeKeywords, ranges);
                     } while (ts.moveNext() && (ts.offset() < end));
                 }
 
@@ -249,7 +287,7 @@ public class JsFormatter implements org.netbeans.modules.gsf.api.Formatter {
                 Token<?extends JsTokenId> token = ts.token();
                 TokenId id = token.id();
                 
-                balance += getTokenBalanceDelta(id, token, doc, ts, includeKeywords);
+                balance += getTokenBalanceDelta(id, token, doc, ts, includeKeywords, ranges);
             } while (ts.moveNext() && (ts.offset() < end));
         }
 
@@ -457,26 +495,15 @@ public class JsFormatter implements org.netbeans.modules.gsf.api.Formatter {
         return 0;
     }
     
-    private boolean isLineContinued(BaseDocument doc, int offset, int bracketBalance) throws BadLocationException {
+    private static boolean isLineContinued(BaseDocument doc, int offset, int bracketBalance) throws BadLocationException {
         // TODO RHTML - this isn't going to work for rhtml embedded strings...
         offset = Utilities.getRowLastNonWhite(doc, offset);
         if (offset == -1) {
             return false;
         }
 
-        
-        TokenSequence<?extends JsTokenId> ts = LexUtilities.getJsTokenSequence(doc, offset);
-
-        if (ts == null) {
-            return false;
-        }
-        ts.move(offset);
-
-        if (!ts.moveNext() && !ts.movePrevious()) {
-            return false;
-        }
-
-        Token<?extends JsTokenId> token = ts.token();
+        TokenSequence<?extends JsTokenId> ts = LexUtilities.getPositionedSequence(doc, offset);
+        Token<?extends JsTokenId> token = (ts != null ? ts.token() : null);
 
         if (token != null) {
             TokenId id = token.id();
@@ -484,8 +511,10 @@ public class JsFormatter implements org.netbeans.modules.gsf.api.Formatter {
             // http://www.netbeans.org/issues/show_bug.cgi?id=115279
             boolean isContinuationOperator = (id == JsTokenId.NONUNARY_OP || id == JsTokenId.DOT);
             
+            // TODO martin: remove this condition completely
             if (ts.offset() == offset && token.length() > 1 && token.text().toString().startsWith("\\")) {
                 // Continued lines have different token types
+                assert false : "I didn't expect this in JavaScript: " + token.text();
                 isContinuationOperator = true;
             }
             
@@ -709,6 +738,8 @@ public class JsFormatter implements org.netbeans.modules.gsf.api.Formatter {
             int originallockCommentIndention = 0;
             int adjustedBlockCommentIndention = 0;
 
+            Set<OffsetRange> ranges = new HashSet<OffsetRange>();
+            
             int endIndents;
             while ((!includeEnd && offset < end) || (includeEnd && offset <= end)) {
                 int indent; // The indentation to be used for the current line
@@ -813,14 +844,10 @@ public class JsFormatter implements org.netbeans.modules.gsf.api.Formatter {
                 int endOfLine = Utilities.getRowEnd(doc, offset) + 1;
 
                 if (lineBegin != -1) {
-                    balance += getTokenBalance(doc, lineBegin, endOfLine, true);
-                    int bracketDelta = getTokenBalance(doc, lineBegin, endOfLine, false);
+                    balance += getTokenBalance(doc, lineBegin, endOfLine, true, ranges);
+                    int bracketDelta = getTokenBalance(doc, lineBegin, endOfLine, false, ranges);
                     bracketBalance += bracketDelta;
                     continued = isLineContinued(doc, offset, bracketBalance);
-                    if (!continued && bracketDelta == 0 && ts != null && LexUtilities.isIndentToken(ts.token().id()) &&
-                        !hasBlockOnLine(doc, lineBegin, endOfLine)) {
-                        continued = true;
-                    }
                 }
 
                 offset = endOfLine;
