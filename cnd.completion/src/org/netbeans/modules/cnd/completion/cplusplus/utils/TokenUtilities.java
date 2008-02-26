@@ -72,7 +72,7 @@ public final class TokenUtilities {
             SyntaxSupport sup = ((BaseDocument) doc).getSyntaxSupport();
             NbCsmSyntaxSupport nbSyntaxSup = (NbCsmSyntaxSupport)sup.get(NbCsmSyntaxSupport.class);
             if (nbSyntaxSup == null) {
-                return null;
+                return Collections.<Token>emptyList();
             }
            
             AllTokensTP tp = new AllTokensTP();
