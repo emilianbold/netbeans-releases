@@ -88,22 +88,32 @@ public class FileChangedManager extends SecurityManager {
     }
     
     private Boolean put(int id, boolean value) {
+        shrinkTime = System.currentTimeMillis();
         return hints.put(id, value);
     }
     
     private Boolean get(int id) {
         usedHints.put(id, true);
         long now = System.currentTimeMillis();
-        if ( (now - shrinkTime) > 60000) {
-            if (usedHints.size() + hints.size() > 1500) {
-                shrinkTime = now; 
-                hints.keySet().retainAll(usedHints.keySet());
-                usedHints.clear();
+        if ((now - shrinkTime) > 5000) {
+            int size = sumSize();
+            if (size > 1500) {                
+                shrink();
             }
-        }
+            shrinkTime = now;
+        } 
         return hints.get(id);
     }
 
+    private int sumSize() {
+        return usedHints.size() + hints.size();
+    }
+    
+    private void shrink() {
+        hints.keySet().retainAll(usedHints.keySet());
+        usedHints.clear();
+    }
+    
     private Boolean remove(int id) {
         return hints.remove(id);
     }                
@@ -129,5 +139,5 @@ public class FileChangedManager extends SecurityManager {
 
     private Boolean get(File file) {
         return get(getKey(file));        
-    }    
+    }
 }
