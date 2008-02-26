@@ -41,9 +41,9 @@
 
 package org.netbeans.modules.spring.webmvc.utils;
 
-import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -113,5 +113,9 @@ public class SpringWebFrameworkUtils {
         }
 
         return lineInTemplate;
+    }
+    
+    public static String setWelcomePageText(String lineInTemplate) {
+        return NbBundle.getMessage(SpringWebFrameworkUtils.class, "MSG_WELCOME_PAGE_TEXT"); // NOI18N
     }
 }

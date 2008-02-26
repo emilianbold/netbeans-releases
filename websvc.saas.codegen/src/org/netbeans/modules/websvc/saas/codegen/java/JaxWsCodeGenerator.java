@@ -151,7 +151,7 @@ public class JaxWsCodeGenerator extends SaasCodeGenerator {
         return methodBody;
     }
     
-    private static final String HINT_INIT_ARGUMENTS = " // TODO initialize WS operation arguments here\n"; //NOI18N
+    public static final String HINT_INIT_ARGUMENTS = " // TODO initialize WS operation arguments here\n"; //NOI18N
     // {0} = service java name (as variable, e.g. "AddNumbersService")
     // {1} = port java name (e.g. "AddNumbersPort")
     // {2} = port getter method (e.g. "getAddNumbersPort")
@@ -186,7 +186,7 @@ public class JaxWsCodeGenerator extends SaasCodeGenerator {
     /**
      * Add JAXWS client code for invoking the given operation at current position.
      */
-    private String getWSInvocationCode(JaxwsOperationInfo info) throws IOException {
+    protected String getWSInvocationCode(JaxwsOperationInfo info) throws IOException {
         //Collect java names for invocation code
         String wsdlUrl = info.getWsdlURL();
         final String serviceJavaName = info.getService().getJavaName();
@@ -338,7 +338,7 @@ public class JaxWsCodeGenerator extends SaasCodeGenerator {
      * @param type Type of the variable
      * @param targetFile FileObject containing the class that declares the type
      */
-    private static String resolveInitValue(String type) {
+    protected static String resolveInitValue(String type) {
         if (type.startsWith("javax.xml.ws.Holder")) {
             //NOI18N
             return "new " + type + "();";
@@ -371,7 +371,7 @@ public class JaxWsCodeGenerator extends SaasCodeGenerator {
         return "null;"; //NOI18N
     }
 
-    private static String resolveResponseType(String argumentType) {
+    protected static String resolveResponseType(String argumentType) {
         int start = argumentType.indexOf("<");
         int end = argumentType.indexOf(">");
         if (start > 0 && end > 0 && start < end) {
@@ -383,7 +383,7 @@ public class JaxWsCodeGenerator extends SaasCodeGenerator {
     
     public static final String SET_HEADER_PARAMS_CALL = SET_HEADER_PARAMS + "(port); \n";
 
-    private String getJavaInvocationBody(WsdlOperation operation, 
+    protected String getJavaInvocationBody(WsdlOperation operation, 
             boolean insertServiceDef, String serviceJavaName, String portJavaName, 
             String portGetterMethod, String argumentInitializationPart, 
             String returnTypeName, String operationJavaName, String argumentDeclarationPart, 
@@ -431,7 +431,7 @@ public class JaxWsCodeGenerator extends SaasCodeGenerator {
         return make.Variable(make.Modifiers(var.getModifiers().getFlags(), var.getModifiers().getAnnotations()), var.getName(), var.getType(), var.getInitializer());
     }
 
-    private static String findProperServiceFieldName(Set serviceFieldNames) {
+    protected static String findProperServiceFieldName(Set serviceFieldNames) {
         String name = "service";
         int i = 0;
         while (serviceFieldNames.contains(name)) {

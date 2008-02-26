@@ -65,8 +65,8 @@ public class WadlSaas extends Saas {
     private List<WadlSaasResource> resources;
     private FileObject wadlFile;
     
-    public WadlSaas(SaasGroup parentGroup, SaasServices services) {
-        super(parentGroup, services);
+    public WadlSaas(SaasGroup topGroup, SaasGroup parentGroup, SaasServices services) {
+        super(topGroup, parentGroup, services);
     }
     
     public Application getWadlModel() throws IOException {

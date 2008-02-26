@@ -134,7 +134,6 @@ public final class RailsServerManager {
     private File dir;
     private boolean debug;
     private boolean switchToDebugMode;
-    
     private Semaphore debugSemaphore;
     
     public RailsServerManager(RailsProject project) {
