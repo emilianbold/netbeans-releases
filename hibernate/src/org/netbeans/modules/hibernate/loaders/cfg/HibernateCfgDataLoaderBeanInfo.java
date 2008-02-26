@@ -66,7 +66,7 @@ public class HibernateCfgDataLoaderBeanInfo extends SimpleBeanInfo {
     @Override
     public Image getIcon(int type) {
         if (type == BeanInfo.ICON_COLOR_16x16 || type == BeanInfo.ICON_MONO_16x16) {
-            return Utilities.loadImage("org/netbeans/modules/hibernate/resources/hibernateCfg.gif");
+            return Utilities.loadImage("org/netbeans/modules/hibernate/resources/hibernate-configuration.png");
         } else {
             return null;
         }

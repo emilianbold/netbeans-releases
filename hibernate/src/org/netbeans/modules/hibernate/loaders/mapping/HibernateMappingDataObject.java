@@ -111,7 +111,7 @@ public class HibernateMappingDataObject extends XmlMultiViewDataObject {
             try {
                 mapping = getHibernateMapping();
             } catch (RuntimeException ex) { // must catch RTE (thrown by schema2beans when document is not valid)
-                ErrorManager.getDefault().notify(org.openide.ErrorManager.INFORMATIONAL, ex);
+                //ErrorManager.getDefault().notify(org.openide.ErrorManager.INFORMATIONAL, ex);
                 return false;
             }
         } else {
@@ -209,7 +209,7 @@ public class HibernateMappingDataObject extends XmlMultiViewDataObject {
 
     @Override
     protected Image getXmlViewIcon() {
-        return Utilities.loadImage("org/netbeans/modules/hibernate/resources/hibernateMapping.gif");
+        return Utilities.loadImage("org/netbeans/modules/hibernate/resources/hibernate-mapping.png");
     }
 
     /** 

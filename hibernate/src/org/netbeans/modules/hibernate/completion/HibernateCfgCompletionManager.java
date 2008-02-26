@@ -64,8 +64,15 @@ public final class HibernateCfgCompletionManager {
 
     private static final String PROPERTY_TAG = "property";
     private static final String MAPPING_TAG = "mapping";
+    private static final String CLASS_CACHE_TAG = "class-cache";
+    private static final String COLLECTION_CACHE_TAG = "collection-cache";
+    private static final String LISTENER_TAG = "listener";
+    
     private static final String RESOURCE_ATTRIB = "resource";
     private static final String NAME_ATTRIB = "name";
+    private static final String CLASS_ATTRIB = "class";
+    private static final String COLLECTION_ATTRIB = "collection";
+    private static final String PACKAGE_ATTRIB = "package";
     
     private static Map<String, Completor> completors = new HashMap<String, Completor>();
 
@@ -150,13 +157,23 @@ public final class HibernateCfgCompletionManager {
         };
 
         // Items for property names 
-        AttributeValueCompletor propertyNamesCompletor = new AttributeValueCompletor(propertyNames);
+        Completor.HbPropertyNameCompletor propertyNamesCompletor = new Completor.HbPropertyNameCompletor(propertyNames);
         registerCompletor(PROPERTY_TAG, NAME_ATTRIB, propertyNamesCompletor);
 
         // Items for mapping xml files
-        HbMappingFileCompletor mappingFilesCompletor = new HbMappingFileCompletor();
+        Completor.HbMappingFileCompletor mappingFilesCompletor = new Completor.HbMappingFileCompletor();
         registerCompletor(MAPPING_TAG, RESOURCE_ATTRIB, mappingFilesCompletor);
+        
+        Completor.JavaClassCompletor javaClassCompletor = new Completor.JavaClassCompletor(false);
+        registerCompletor(CLASS_CACHE_TAG, CLASS_ATTRIB, javaClassCompletor);
+        registerCompletor(COLLECTION_CACHE_TAG, COLLECTION_ATTRIB, javaClassCompletor);
+        registerCompletor(LISTENER_TAG, CLASS_ATTRIB, javaClassCompletor);
+        registerCompletor(MAPPING_TAG, CLASS_ATTRIB, javaClassCompletor);
+        
+        Completor.JavaClassCompletor javaPkgCompletor = new Completor.JavaClassCompletor(true);
+        registerCompletor(MAPPING_TAG, PACKAGE_ATTRIB, javaPkgCompletor);
     }
+    
     private static HibernateCfgCompletionManager INSTANCE = new HibernateCfgCompletionManager();
 
     public static HibernateCfgCompletionManager getDefault() {
@@ -225,20 +242,7 @@ public final class HibernateCfgCompletionManager {
     public void completeElements(CompletionResultSet resultSet, CompletionContext context) {
     }
 
-    private static abstract class Completor {
-
-        private int anchorOffset = -1;
-
-        public abstract List<HibernateCompletionItem> doCompletion(CompletionContext context);
-
-        protected void setAnchorOffset(int anchorOffset) {
-            this.anchorOffset = anchorOffset;
-        }
-
-        public int getAnchorOffset() {
-            return anchorOffset;
-        }
-    }
+    
 
     private void registerCompletor(String tagName, String attribName,
             Completor completor) {
@@ -275,79 +279,5 @@ public final class HibernateCfgCompletionManager {
         }
 
         return null;
-    }
-
-    /**
-     * A simple completor for general attribute value items
-     * 
-     * Takes an array of strings, the even elements being the display text of the items
-     * and the odd ones being the corresponding documentation of the items
-     * 
-     */
-    private static class AttributeValueCompletor extends Completor {
-
-        private String[] itemTextAndDocs;
-
-        public AttributeValueCompletor(String[] itemTextAndDocs) {
-            this.itemTextAndDocs = itemTextAndDocs;
-        }
-
-        public List<HibernateCompletionItem> doCompletion(CompletionContext context) {
-            List<HibernateCompletionItem> results = new ArrayList<HibernateCompletionItem>();
-            int caretOffset = context.getCaretOffset();
-            String typedChars = context.getTypedPrefix();
-            
-            for (int i = 0; i < itemTextAndDocs.length; i += 2) {
-                if (itemTextAndDocs[i].startsWith(typedChars.trim()) 
-                        || itemTextAndDocs[i].startsWith( "hibernate." + typedChars.trim()) ) { // NOI18N
-                    HibernateCompletionItem item = HibernateCompletionItem.createAttribValueItem(caretOffset - typedChars.length(),
-                            itemTextAndDocs[i], itemTextAndDocs[i + 1]);
-                    results.add(item);
-                }
-            }
-
-            setAnchorOffset(context.getCurrentToken().getOffset() + 1);
-            return results;
-        }
-    }
-
-    private static class HbMappingFileCompletor extends Completor {
-
-        public HbMappingFileCompletor() {
-        }
-
-        public List<HibernateCompletionItem> doCompletion(CompletionContext context) {
-            List<HibernateCompletionItem> results = new ArrayList<HibernateCompletionItem>();
-            int caretOffset = context.getCaretOffset();
-            String typedChars = context.getTypedPrefix();
-
-            String[] mappingFiles = getMappingFilesFromProject(context);
-
-            for (int i = 0; i < mappingFiles.length; i++) {
-                if (mappingFiles[i].startsWith(typedChars.trim())) {
-                    HibernateCompletionItem item =
-                            HibernateCompletionItem.createHbMappingFileItem(caretOffset - typedChars.length(),
-                            mappingFiles[i]);
-                    results.add(item);
-                }
-            }
-
-            setAnchorOffset(context.getCurrentToken().getOffset() + 1);
-            return results;
-        }
-        
-        // Gets the list of mapping files from HibernateEnvironment.
-        private String[] getMappingFilesFromProject(CompletionContext context) {
-            ArrayList<String> mappingFiles = new ArrayList<String>();
-            org.netbeans.api.project.Project enclosingProject = org.netbeans.api.project.FileOwnerQuery.getOwner(
-                    org.netbeans.modules.editor.NbEditorUtilities.getFileObject(context.getDocument())
-                    );
-            org.netbeans.modules.hibernate.service.HibernateEnvironment env = enclosingProject.getLookup().lookup(org.netbeans.modules.hibernate.service.HibernateEnvironment.class);
-            ArrayList<FileObject> mappingFileObjects = env.getAllHibernateMappingFileObjects(enclosingProject);
-            for(FileObject fo : mappingFileObjects) {
-                mappingFiles.add(fo.getPath());
-            }
-            return mappingFiles.toArray(new String[]{});
-        }
     }
 }

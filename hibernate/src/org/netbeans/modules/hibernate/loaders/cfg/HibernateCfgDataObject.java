@@ -121,7 +121,7 @@ public class HibernateCfgDataObject extends XmlMultiViewDataObject {
             try {
                 configuration = getHibernateConfiguration();
             } catch (RuntimeException ex) { // must catch RTE (thrown by schema2beans when document is not valid)
-                ErrorManager.getDefault().notify(org.openide.ErrorManager.INFORMATIONAL, ex);
+                //ErrorManager.getDefault().notify(org.openide.ErrorManager.INFORMATIONAL, ex);
                 return false;
             }
         } else {
@@ -261,7 +261,7 @@ public class HibernateCfgDataObject extends XmlMultiViewDataObject {
 
     @Override
     protected Image getXmlViewIcon() {
-        return Utilities.loadImage("org/netbeans/modules/hibernate/resources/hibernateCfg.gif");
+        return Utilities.loadImage("org/netbeans/modules/hibernate/resources/hibernate-configuration.png");
     }
 
     /** 
@@ -315,7 +315,7 @@ public class HibernateCfgDataObject extends XmlMultiViewDataObject {
         }
 
         public Image getIcon() {
-            return Utilities.loadImage("org/netbeans/modules/hibernate/resources/hibernateCfg.gif");
+            return Utilities.loadImage("org/netbeans/modules/hibernate/resources/hibernate-configuration.png");
         }
 
         public String preferredID() {

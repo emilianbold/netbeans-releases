@@ -49,7 +49,7 @@ import org.openide.nodes.Children;
  */
 public class HibernateCfgDataNode extends DataNode {
 
-    private static final String IMAGE_ICON_BASE = "org/netbeans/modules/hibernate/resources/hibernateCfg.gif";
+    private static final String IMAGE_ICON_BASE = "org/netbeans/modules/hibernate/resources/hibernate-configuration.png";
 
     public HibernateCfgDataNode(HibernateCfgDataObject obj) {
         super(obj, Children.LEAF);
