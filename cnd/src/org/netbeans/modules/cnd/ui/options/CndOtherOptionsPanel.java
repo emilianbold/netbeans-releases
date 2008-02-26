@@ -110,7 +110,9 @@ public class CndOtherOptionsPanel extends javax.swing.JPanel implements ActionLi
     private void editExtensionsButtonActionPerformed(ExtensionsElements ee) {
         StringArrayCustomEditor editor = new StringArrayCustomEditor(
                 ee.getValues(), ee.defaultValue,
-                getMessage("EE_ItemLabel"), getMessage("EE_ItemListLabel"), false);
+                getMessage("EE_ItemLabel"), getMessage("EE_ItemLabel_Mnemonic").charAt(0), 
+                getMessage("EE_ItemListLabel"), getMessage("EE_ItemListLabel_Mnemonic").charAt(0), 
+                false);
         
         JPanel outerPanel = new JPanel();
         outerPanel.setLayout(new java.awt.GridBagLayout());
