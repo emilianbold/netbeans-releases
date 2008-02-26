@@ -204,12 +204,13 @@ public class SaasServicesModel {
                 if (child.getChildrenGroups().size() == 0) {
                     Saas service;
                     if (Saas.NS_WADL.equals(ss.getType())) {
-                        service = new WadlSaas(topGroup, parent, ss);
+                        service = new WadlSaas(parent, ss);
                     } else if (Saas.NS_WSDL.equals(ss.getType())) {
-                        service = new WsdlSaas(topGroup, parent, ss);
+                        service = new WsdlSaas(parent, ss);
                     } else {
-                        service = new CustomSaas(topGroup, parent, ss);
+                        service = new CustomSaas(parent, ss);
                     }
+                    service.setTopLevelGroup(topGroup);
                     child.addService(service);
                     service.setUserDefined(userDefined);
                     break;
