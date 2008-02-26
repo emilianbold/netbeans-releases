@@ -55,6 +55,7 @@ import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableCellRenderer;
 import org.netbeans.modules.websvc.saas.codegen.java.Constants;
 import org.netbeans.modules.websvc.saas.codegen.java.model.ParameterInfo;
+import org.netbeans.modules.websvc.saas.codegen.java.model.ParameterInfo.ParamStyle;
 import org.netbeans.modules.websvc.saas.codegen.java.support.Inflector;
 import org.openide.util.NbBundle;
 
@@ -192,7 +193,7 @@ public class CustomCodeSetupPanel extends javax.swing.JPanel {
                 case 2:
                     return info.getDefaultValue();
                 case 3:
-                    return info.isQueryParam();
+                    return info.getStyle() == ParamStyle.QUERY;
             }
 
             return null;
@@ -204,7 +205,10 @@ public class CustomCodeSetupPanel extends javax.swing.JPanel {
             if (column == 2) {
                 info.setDefaultValue(value);
             } else if (column == 3) {
-                info.setIsQueryParam((Boolean) value);
+                if(((Boolean) value))
+                    info.setStyle(ParamStyle.QUERY);
+                else
+                    info.setStyle(ParamStyle.UNKNOWN);
             }
         }
 

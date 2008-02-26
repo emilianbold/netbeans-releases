@@ -40,26 +40,14 @@
  */
 package org.netbeans.modules.websvc.saas.codegen.java;
 
-import javax.swing.text.BadLocationException;
 import org.netbeans.modules.websvc.saas.model.WadlSaasMethod;
-import com.sun.source.tree.MethodTree;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 import javax.swing.text.JTextComponent;
-import org.netbeans.api.java.source.JavaSource;
-import org.netbeans.api.java.source.ModificationResult;
-import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.api.progress.ProgressHandle;
-import org.netbeans.modules.websvc.saas.codegen.java.Constants.MimeType;
-import org.netbeans.modules.websvc.saas.codegen.java.model.ParameterInfo;
-import org.netbeans.modules.websvc.saas.codegen.java.model.WadlSaasBean;
-import org.netbeans.modules.websvc.saas.codegen.java.support.AbstractTask;
-import org.netbeans.modules.websvc.saas.codegen.java.support.JavaSourceHelper;
 import org.openide.filesystems.FileObject;
-import org.openide.util.Exceptions;
 
 /**
  * Code generator for Accessing Saas services.
@@ -68,6 +56,7 @@ import org.openide.util.Exceptions;
  */
 public class JaxRsJavaClientCodeGenerator extends JaxRsCodeGenerator {
 
+    
     public JaxRsJavaClientCodeGenerator(JTextComponent targetComponent,
             FileObject targetFile, WadlSaasMethod m) throws IOException {
         super(targetComponent, targetFile, m);
@@ -78,77 +67,47 @@ public class JaxRsJavaClientCodeGenerator extends JaxRsCodeGenerator {
         initProgressReporting(pHandle);
 
         preGenerate();
+        
+        createAuthenticatorClass();
+        
+        createSaasServiceClass();
+        addSaasServiceMethod();
+        addImportsToSaasService();
+        
         insertSaasServiceAccessCode(isInBlock(getTargetComponent()));
+        addImportsToTargetFile();
         
         finishProgressReporting();
 
         return new HashSet<FileObject>(Collections.EMPTY_LIST);
     }
-
-    /**
-     *  Insert the Saas client call
-     */
-    public void insertSaasServiceAccessCode(boolean isInBlock) throws IOException {
-        try {
-            String code = "";
-            if(isInBlock) {
-                code = getCustomMethodBody();
-            } else {
-                code = "\nprivate String call"+bean.getName()+"Service() {\n";
-                code += getCustomMethodBody()+"\n";
-                code += "return result;\n";
-                code += "}\n";
-            }
-            insert(code, getTargetComponent(), true);
-        } catch (BadLocationException ex) {
-            throw new IOException(ex.getMessage());
-        }
-    }
-
+    
     @Override
     protected String getCustomMethodBody() throws IOException {
-        String paramStr = null;
-        StringBuffer sb1 = new StringBuffer();
-        List<ParameterInfo> params = bean.getInputParameters();
-
-        String paramDecl = ""; //NOI18N
-        for (ParameterInfo param : bean.getQueryParameters()) {
-            String name = param.getName();
-            paramDecl +=  "String " + name + " = \"\";\n";
-        }
-
-        for (ParameterInfo param : params) {
-            String paramName = param.getName();
-            if (param.getType() != String.class) {
-                sb1.append("{\"" + paramName + "\", " + paramName + ".toString()},");
-            } else {
-                sb1.append("{\"" + paramName + "\", " + paramName + "},");
-            }
-        }
-        paramStr = sb1.toString();
-        if (params.size() > 0) {
-            paramStr = paramStr.substring(0, paramStr.length() - 1);
-        }
+        String paramUse = "";
+        String paramDecl = "";
         
-        String methodBody = paramDecl + "\n";
-        methodBody += "String url = \"" + ((WadlSaasBean) bean).getUrl() + "\";\n";
-        methodBody += "        try {\n";
-        methodBody += "             String[][] params = new String[][]{\n";
-        methodBody += "                 " + paramStr + "\n";
-        methodBody += "             };\n";
-        methodBody += "             RestConnection cl = new RestConnection(url, params);\n";
-        methodBody += "             String result = cl.get();\n";
-        methodBody += "             System.out.println(\"The SaasService returned: \"+result);\n";
-        methodBody += "        } catch (java.io.IOException ex) {\n";
-        methodBody += "             ex.printStackTrace();\n";
-        methodBody += "        }\n";
+        //Evaluate template parameters
+        paramUse += getQueryParameterUsage(getBean().getTemplateParameters());
+        paramDecl += getQueryParameterDeclaration(getBean().getTemplateParameters());
+
+        //Evaluate query parameters
+        paramUse += getQueryParameterUsage(getBean().getQueryParameters());
+        paramDecl += getQueryParameterDeclaration(getBean().getQueryParameters());
+
+        if(paramUse.endsWith(", "))
+            paramUse = paramUse.substring(0, paramUse.length()-2);
+        
+        String methodBody = "\n"+paramDecl + "\n";
+        methodBody += "        String result = " + getSaasServiceName() + "." + getSaasServiceMethodName() + "(" + paramUse + ");\n";
+        methodBody += "        System.out.println(\"The SaasService returned: \"+result);\n";
        
         return methodBody;
     }
     
     @Override
-    public boolean showParams() {
-        return getWrapperResourceFile() != null;
+    public boolean canShowParam() {
+        return true;
     }
     
 }

@@ -48,8 +48,8 @@ import org.netbeans.modules.websvc.saas.model.jaxb.SaasServices;
  */
 public class CustomSaas extends Saas {
 
-    public CustomSaas(SaasGroup parentGroup, SaasServices services) {
-        super(parentGroup, services);
+    public CustomSaas(SaasGroup topGroup, SaasGroup parentGroup, SaasServices services) {
+        super(topGroup, parentGroup, services);
     }
     
     @Override

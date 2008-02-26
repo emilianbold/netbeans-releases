@@ -55,6 +55,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.Vector;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.servlet.jsp.JspException;
 import javax.servlet.jsp.PageContext;
 import javax.servlet.jsp.tagext.TagFileInfo;
@@ -62,7 +64,6 @@ import javax.servlet.jsp.tagext.TagLibraryInfo;
 import org.apache.jasper.JasperException;
 import org.apache.jasper.JspCompilationContext;
 import org.apache.jasper.Options;
-import org.openide.util.Exceptions;
 
 
 /**
@@ -71,6 +72,8 @@ import org.openide.util.Exceptions;
  */
 public class GetParseData {
 
+    private static final Logger LOGGER = Logger.getLogger(GetParseData.class.getName());
+    
     private final JspCompilationContext ctxt;
 
     private final Options options;
@@ -359,7 +362,7 @@ public class GetParseData {
             return bd;
         }
         catch (IllegalAccessException e) {
-            Exceptions.printStackTrace(e);
+            LOGGER.log(Level.INFO, null, e);
             throw new RuntimeException();
         }
     }
@@ -451,7 +454,7 @@ public class GetParseData {
                 beanTypesF = BeanRepository.class.getDeclaredField("beanTypes");
                 beanTypesF.setAccessible(true);
             } catch (NoSuchFieldException e) {
-                Exceptions.printStackTrace(e);
+                LOGGER.log(Level.INFO, null, e);
             }
         }
     }
@@ -474,7 +477,7 @@ public class GetParseData {
                 xmlPrefixMapperF = PageInfo.class.getDeclaredField("xmlPrefixMapper");
                 xmlPrefixMapperF.setAccessible(true);
             } catch (NoSuchFieldException e) {
-                Exceptions.printStackTrace(e);
+                LOGGER.log(Level.INFO, null, e);
             }
         }
     }
@@ -484,7 +487,7 @@ public class GetParseData {
         try {
             return (Vector)pluginDclsF.get(pageInfo);
         } catch (IllegalAccessException e) {
-            Exceptions.printStackTrace(e);
+            LOGGER.log(Level.INFO, null, e);
             throw new RuntimeException();
         }
     }
@@ -494,7 +497,7 @@ public class GetParseData {
         try {
             return (HashSet)prefixesF.get(pageInfo);
         } catch (IllegalAccessException e) {
-            Exceptions.printStackTrace(e);
+            LOGGER.log(Level.INFO, null, e);
             throw new RuntimeException();
         }
     }
@@ -560,17 +563,17 @@ public class GetParseData {
                         tagInfosF.setAccessible(true);    
                         tagInfosF.set(libInfo, tagFiles);
                     }
-                } catch (NoSuchFieldException e){
-                    Exceptions.printStackTrace(e);
-                } catch (MalformedURLException e){
-                    Exceptions.printStackTrace(e);
+                } catch (NoSuchFieldException e) {
+                    LOGGER.log(Level.INFO, null, e);
+                } catch (MalformedURLException e) {
+                    LOGGER.log(Level.INFO, null, e);
                 } catch (URISyntaxException e) {
-                    Exceptions.printStackTrace(e);
+                    LOGGER.log(Level.INFO, null, e);
                 }
             }
             return taglibs;
         } catch (IllegalAccessException e) {
-            Exceptions.printStackTrace(e);
+            LOGGER.log(Level.INFO, null, e);
             throw new RuntimeException();
         }
     }
@@ -580,7 +583,7 @@ public class GetParseData {
         try {
             return (Map)jspPrefixMapperF.get(pageInfo);
         } catch (IllegalAccessException e) {
-            Exceptions.printStackTrace(e);
+            LOGGER.log(Level.INFO, null, e);
             throw new RuntimeException();
         }
     }
@@ -590,7 +593,7 @@ public class GetParseData {
         try {
             return (Map)xmlPrefixMapperF.get(pageInfo);
         } catch (IllegalAccessException e) {
-            Exceptions.printStackTrace(e);
+            LOGGER.log(Level.INFO, null, e);
             throw new RuntimeException();
         }
     }

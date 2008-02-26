@@ -51,7 +51,6 @@ import javax.swing.text.JTextComponent;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.modules.websvc.saas.codegen.java.model.ParameterInfo;
 import org.netbeans.modules.websvc.saas.codegen.java.model.CustomSaasBean;
-import org.netbeans.modules.websvc.saas.codegen.java.support.JavaSourceHelper;
 import org.openide.filesystems.FileObject;
 
 /**
@@ -71,6 +70,7 @@ public class CustomJavaClientCodeGenerator extends CustomCodeGenerator {
         initProgressReporting(pHandle);
 
         preGenerate();
+        
         insertSaasServiceAccessCode(isInBlock(getTargetComponent()));
         
         finishProgressReporting();
@@ -113,7 +113,7 @@ public class CustomJavaClientCodeGenerator extends CustomCodeGenerator {
         for (ParameterInfo param : params) {
             String paramName = param.getName();
             if (param.getType() != String.class) {
-                sb1.append("{\"" + paramName + "\", " + paramName + ".toString()},");
+                sb1.append("{\"" + paramName + "\", \"" + paramName + "\"},");
             } else {
                 sb1.append("{\"" + paramName + "\", " + paramName + "},");
             }
@@ -140,8 +140,8 @@ public class CustomJavaClientCodeGenerator extends CustomCodeGenerator {
     }
     
     @Override
-    public boolean showParams() {
-        return getWrapperResourceFile() != null;
+    public boolean canShowParam() {
+        return true;
     }
     
 }
