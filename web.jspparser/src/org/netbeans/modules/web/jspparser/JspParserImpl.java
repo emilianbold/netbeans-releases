@@ -51,8 +51,8 @@ import java.net.URLClassLoader;
 import java.security.AllPermission;
 import java.security.CodeSource;
 import java.security.PermissionCollection;
-import java.util.HashMap;
 import java.util.Map;
+import java.util.WeakHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.web.api.webmodule.WebModule;
@@ -71,8 +71,7 @@ import org.openide.util.NbBundle;
 public class JspParserImpl implements JspParserAPI {
     
     // @GuardedBy(this)
-    final HashMap<JspParserImpl.WAParseSupportKey, WebAppParseProxy> parseSupports =
-            new HashMap<JspParserImpl.WAParseSupportKey, WebAppParseProxy>();
+    final Map<WebModule, WebAppParseProxy> parseSupports = new WeakHashMap<WebModule, WebAppParseProxy>();
     
     private static final Logger LOGGER = Logger.getLogger(JspParserImpl.class.getName());
     private static Constructor webAppParserImplConstructor;
@@ -176,11 +175,15 @@ public class JspParserImpl implements JspParserAPI {
     }
     
     private synchronized WebAppParseProxy getParseProxy(WebModule wm) {
-        JspParserImpl.WAParseSupportKey key = new JspParserImpl.WAParseSupportKey(wm);
-        WebAppParseProxy pp = parseSupports.get(key);
+        WebAppParseProxy pp = parseSupports.get(wm);
+        // #67785 - the document root fileobject has to be valid
+        FileObject wmRoot = wm.getDocumentBase();
+        if (!wmRoot.isValid()) {
+            pp = null;
+        }
         if (pp == null) {
             pp = createParseProxy(wm);
-            parseSupports.put(key, pp);
+            parseSupports.put(wm, pp);
         }
         return pp;
     }
@@ -209,35 +212,6 @@ public class JspParserImpl implements JspParserAPI {
         JspParserAPI.ErrorDescriptor error = new JspParserAPI.ErrorDescriptor(null, jspFile, -1, -1,
                 NbBundle.getMessage(JspParserImpl.class, "MSG_webModuleNotFound", jspFile.getNameExt()), ""); // NOI18N
         return new JspParserAPI.ParseResult(new JspParserAPI.ErrorDescriptor[] {error});
-    }
-    
-    private static class WAParseSupportKey {
-        
-        private final WebModule wm;
-        private final FileObject wmRoot;
-        
-        WAParseSupportKey(WebModule wm) {
-            this.wm = wm;
-            wmRoot = wm.getDocumentBase();
-        }
-        
-        @Override
-        public boolean equals(Object o) {
-            if (o instanceof WAParseSupportKey) {
-                WAParseSupportKey k = (WAParseSupportKey) o;
-                //Two keys are the same only if the document roots are same.
-                //&& the document roots fileobjects are valid (#67785)
-                return wmRoot.isValid() && k.wmRoot.isValid() && wmRoot.getPath().equals(k.wmRoot.getPath());
-            }
-            return false;
-        }
-        
-        @Override
-        public int hashCode() {
-            //return wm.hashCode() + wmRoot.hashCode();
-            // Two keys are the same only if the document roots are same.
-            return 0;
-        }
     }
     
     private static class ExtClassLoader extends URLClassLoader {
