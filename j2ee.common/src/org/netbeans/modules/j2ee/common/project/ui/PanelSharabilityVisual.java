@@ -53,6 +53,7 @@ final class PanelSharabilityVisual extends javax.swing.JPanel {
         this.panel = panel;
         currentLibrariesLocation = ".." + File.separatorChar + "libraries"; // NOI18N
         librariesLocation.setText(currentLibrariesLocation);
+        sharableProjectActionPerformed(null);
         librariesLocation.getDocument().addDocumentListener(new DocumentListener() {
             public void insertUpdate(DocumentEvent e) {
                 changeSupport.fireChange();
@@ -180,7 +181,7 @@ final class PanelSharabilityVisual extends javax.swing.JPanel {
             }
         });
 
-        sharableProject.setSelected(true);
+        sharableProject.setSelected(SharableLibrariesUtils.isLastProjectSharable());
         org.openide.awt.Mnemonics.setLocalizedText(sharableProject, org.openide.util.NbBundle.getMessage(PanelSharabilityVisual.class, "PanelSharabilityVisual.sharableProject.text")); // NOI18N
         sharableProject.setMargin(new java.awt.Insets(0, 0, 0, 0));
         sharableProject.addActionListener(new java.awt.event.ActionListener() {
@@ -217,7 +218,7 @@ final class PanelSharabilityVisual extends javax.swing.JPanel {
                 .add(librariesLocation, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 162, Short.MAX_VALUE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(browseLibraries))
-            .add(jSeparator1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 434, Short.MAX_VALUE)
+            .add(jSeparator1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 444, Short.MAX_VALUE)
             .add(layout.createSequentialGroup()
                 .add(messageLabel)
                 .addContainerGap())
@@ -228,10 +229,10 @@ final class PanelSharabilityVisual extends javax.swing.JPanel {
                 .add(21, 21, 21)
                 .add(libraryNameLabel)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(libraryNameComboBox, 0, 254, Short.MAX_VALUE))
+                .add(libraryNameComboBox, 0, 269, Short.MAX_VALUE))
             .add(layout.createSequentialGroup()
                 .add(libraryRadioButton)
-                .addContainerGap(167, Short.MAX_VALUE))
+                .addContainerGap(177, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)

@@ -274,8 +274,8 @@ made subject to such option by the copyright holder.
               file="${dist.dir}/${app.name}.app/Contents/Resources/${app.name}/${app.name}/etc/${app.name}.icns" 
               tofile="${dist.dir}/${app.name}.app/Contents/Resources/${app.name}.icns"/>
         
-        <delete file="${basedir}/${dist.dir}/${app.name}.app/Contents/MacOS/${app.name}"/>
-        <symlink link="${basedir}/${dist.dir}/${app.name}.app/Contents/MacOS/${app.name}" resource="../Resources/${app.name}/bin/${app.name}"/>
+        <delete file="${dist.dir}/${app.name}.app/Contents/MacOS/${app.name}"/>
+        <symlink link="${dist.dir}/${app.name}.app/Contents/MacOS/${app.name}" resource="../Resources/${app.name}/bin/${app.name}"/>
         <chmod file="${dist.dir}/${app.name}.app/Contents/Resources/${app.name}/bin/${app.name}" perm="755"/>
         <chmod dir="${dist.dir}" includes="${app.name}.app/Contents/Resources/${app.name}/platform*/lib/nbexec" perm="755"/>
         
