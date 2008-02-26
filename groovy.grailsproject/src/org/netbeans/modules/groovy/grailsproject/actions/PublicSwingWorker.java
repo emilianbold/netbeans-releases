@@ -43,6 +43,8 @@ import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.api.progress.ProgressHandle;
+import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.groovy.grails.api.GrailsServer;
 import org.netbeans.modules.groovy.grails.api.GrailsServerFactory;
 import org.netbeans.modules.groovy.grailsproject.StreamInputThread;
@@ -111,6 +113,9 @@ import org.netbeans.api.project.Project;
             //    a snooper an one single thread for stderr or 
             // b) a bunch of threads taking care for I/O.
             
+            ProgressHandle progress = ProgressHandleFactory.createHandle(tabName);
+            progress.start();
+            
             if(snooper != null ) {
                 procOutput = new BufferedReader(new InputStreamReader(process.getInputStream()));
                 assert procOutput != null;
@@ -133,6 +138,8 @@ import org.netbeans.api.project.Project;
 
                 process.waitFor();
             }
+            
+            progress.finish();
             
             writer.close();
             io.getErr().close();
