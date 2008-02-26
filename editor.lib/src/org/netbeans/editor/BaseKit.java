@@ -2372,20 +2372,35 @@ public class BaseKit extends DefaultEditorKit {
     }
 
     /** Select line around caret */
-    public static class SelectLineAction extends KitCompoundAction {
+    public static class SelectLineAction extends LocalBaseAction {
 
         static final long serialVersionUID =-7407681863035740281L;
 
         public SelectLineAction() {
-            super(selectLineAction,
-                  new String[] {
-                      lineFirstColumnAction,
-                      selectionEndLineAction
-                      //selectionForwardAction //#41371
-                  }
-                 );
+            super(selectLineAction);
         }
 
+        public void actionPerformed(ActionEvent evt, JTextComponent target) {
+            if (target != null) {
+                Caret caret = target.getCaret();
+                BaseDocument doc = (BaseDocument)target.getDocument();
+                doc.atomicLock();
+                DocumentUtilities.setTypingModification(doc, true);
+                try {
+                    int dotPos = caret.getDot();
+                    int bolPos = Utilities.getRowStart(target, dotPos);
+                    int eolPos = Utilities.getRowEnd(target, dotPos);
+                    eolPos = Math.min(eolPos + 1, doc.getLength()); // include '\n'
+                    caret.setDot(bolPos);
+                    caret.moveDot(eolPos);
+                } catch (BadLocationException e) {
+                    target.getToolkit().beep();
+                } finally {
+                    DocumentUtilities.setTypingModification(doc, false);
+                    doc.atomicUnlock();
+                }
+            }
+        }
     }
 
     /** Select text of whole document */
