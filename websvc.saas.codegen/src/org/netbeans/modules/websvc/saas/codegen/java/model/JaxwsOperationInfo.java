@@ -55,11 +55,11 @@ import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlParameter;
 import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlPort;
 import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlService;
 import org.netbeans.modules.websvc.saas.codegen.java.Constants;
+import org.netbeans.modules.websvc.saas.codegen.java.model.ParameterInfo.ParamStyle;
 import org.netbeans.modules.websvc.saas.codegen.java.support.Util;
 import org.netbeans.modules.websvc.saas.model.WsdlSaasMethod;
 import org.netbeans.modules.websvc.saas.spi.websvcmgr.WsdlData;
 import org.netbeans.modules.websvc.saas.util.LibrariesHelper;
-import org.netbeans.modules.websvc.saas.util.WsdlUtil;
 import org.netbeans.modules.xml.retriever.catalog.Utilities;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
 import org.netbeans.modules.xml.wsdl.model.WSDLModelFactory;
@@ -260,7 +260,7 @@ public class JaxwsOperationInfo {
             for (Map.Entry<QName,String> entry : params.entrySet()) {
                 Class type = Util.getType(project, entry.getValue());
                 ParameterInfo info = new ParameterInfo(entry.getKey(), type, entry.getValue());
-                info.setIsQueryParam(false);
+                info.setStyle(ParamStyle.UNKNOWN);
                 headerParams.add(info);
             }
         }

@@ -51,6 +51,7 @@ import org.netbeans.modules.j2ee.common.project.classpath.ClassPathSupport;
 import org.netbeans.modules.j2ee.common.project.classpath.ClassPathSupport.Item;
 import org.netbeans.modules.j2ee.common.project.ui.ClassPathUiSupport;
 import org.netbeans.modules.j2ee.common.project.ui.EditMediator;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
 import org.netbeans.modules.j2ee.earproject.classpath.ClassPathSupportCallbackImpl;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
@@ -74,7 +75,9 @@ public class CustomizerJarContent extends JPanel implements HelpCtx.Provider {
         jCheckBoxCompress.setModel( uiProperties.ARCHIVE_COMPRESS_MODEL );
         ClassPathUiSupport.Callback callback = new ClassPathUiSupport.Callback() {
             public void initItem(Item item) {
-                item.setAdditionalProperty(ClassPathSupportCallbackImpl.PATH_IN_DEPLOYMENT, "/"); //NOI18N
+                if (item.getType() != ClassPathSupport.Item.TYPE_LIBRARY || !item.getLibrary().getType().equals(J2eePlatform.LIBRARY_TYPE)) {
+                    item.setAdditionalProperty(ClassPathSupportCallbackImpl.PATH_IN_DEPLOYMENT, "/"); //NOI18N
+                }
             }
         };
         EditMediator.register( uiProperties.getProject(),

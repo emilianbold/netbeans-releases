@@ -70,6 +70,8 @@ import org.openide.util.NbBundle;
 
 /**
  *
+ * @todo Handle $super - jump to the superclass' implementation of the given method
+ * 
  * @author Tor Norbye
  */
 public class JsDeclarationFinder implements DeclarationFinder {
@@ -78,7 +80,7 @@ public class JsDeclarationFinder implements DeclarationFinder {
     public OffsetRange getReferenceSpan(Document document, int lexOffset) {
         TokenHierarchy<Document> th = TokenHierarchy.get(document);
         
-        BaseDocument doc = (BaseDocument)document;
+        //BaseDocument doc = (BaseDocument)document;
         
         TokenSequence<?extends JsTokenId> ts = LexUtilities.getJsTokenSequence(th, lexOffset);
 

@@ -86,8 +86,8 @@ public class CustomizerSources extends javax.swing.JPanel implements HelpCtx.Pro
         
         
         RubySourceRootsUi.EditMediator emSR = RubySourceRootsUi.registerEditMediator(
-            (RubyProject)uiProperties.getProject(),
-            ((RubyProject)uiProperties.getProject()).getSourceRoots(),
+            uiProperties.getProject(),
+            uiProperties.getProject().getSourceRoots(),
             sourceRoots,
             addSourceRoot,
             removeSourceRoot, 

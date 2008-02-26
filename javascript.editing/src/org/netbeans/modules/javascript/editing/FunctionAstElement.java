@@ -48,6 +48,7 @@ import org.netbeans.modules.gsf.api.ElementKind;
 public class FunctionAstElement extends AstElement implements FunctionElement {
     private FunctionNode func;
     private List<String> parameters;
+    private String extend;
 
     FunctionAstElement(CompilationInfo info, FunctionNode func) {
         super(info, func);
@@ -146,11 +147,21 @@ public class FunctionAstElement extends AstElement implements FunctionElement {
         if (kind == null) {
             if (Character.isUpperCase(getName().charAt(0))) {
                 kind = ElementKind.CONSTRUCTOR;
+            } else if (getName().equals("initialize")) { // NOI18N
+                kind = ElementKind.CONSTRUCTOR;
             } else {
                 return ElementKind.METHOD;
             }
         }
         
         return kind;
+    }
+    
+    public void setExtends(String extend) {
+        this.extend = extend;
+    }
+    
+    public String getExtends() {
+        return extend;
     }
 }
