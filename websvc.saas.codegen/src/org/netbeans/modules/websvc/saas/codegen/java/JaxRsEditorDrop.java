@@ -124,7 +124,7 @@ public class JaxRsEditorDrop implements ActiveEditorDrop {
                             codegen.getSubresourceLocatorUriTemplate(),
                             bean.getQualifiedClassName(), 
                             allParams,
-                            showParams);
+                            codegen.canShowResourceInfo(), showParams);
 
                     DialogDescriptor desc = new DialogDescriptor(panel, 
                             NbBundle.getMessage(JaxRsEditorDrop.class,
