@@ -353,7 +353,7 @@ public final class NbModuleSuite extends Object {
                                 xml.substring(matcherEnabled.end(1));
                             writeModule(new File(config, m.getName()), out);
                         } catch (IllegalStateException ex) {
-                            throw (IOException)new IOException("Unparseable:\n" + xml).initCause(ex);
+                            throw (IOException)new IOException("Unparsable:\n" + xml).initCause(ex);
                         }
                     }
                 }
