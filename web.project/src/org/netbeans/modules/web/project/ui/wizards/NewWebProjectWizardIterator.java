@@ -78,6 +78,7 @@ import org.netbeans.modules.web.project.WebProject;
 import org.netbeans.modules.web.project.api.WebProjectCreateData;
 import org.netbeans.modules.web.project.api.WebProjectUtilities;
 import org.netbeans.modules.j2ee.common.project.ui.UserProjectSettings;
+import org.netbeans.spi.java.project.support.ui.SharableLibrariesUtils;
 
 /**
  * Wizard to create a new Web project.
@@ -168,6 +169,7 @@ public class NewWebProjectWizardIterator implements WizardDescriptor.ProgressIns
 
         //remember last used server
         UserProjectSettings.getDefault().setLastUsedServer(servInstID);
+        SharableLibrariesUtils.setLastProjectSharable(createData.getLibrariesDefinition() != null);
 	
         // save last project location
         dirF = (dirF != null) ? dirF.getParentFile() : null;
