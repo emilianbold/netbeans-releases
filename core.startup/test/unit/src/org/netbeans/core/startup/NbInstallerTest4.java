@@ -86,7 +86,7 @@ public class NbInstallerTest4 extends SetupHid {
             assertEquals(null, slurp("foo/file1.txt"));
             assertEquals(null, slurp("foo/file3.txt"));
             assertEquals(null, slurp("foo/file4.txt"));
-            Set m1m2 = new HashSet(Arrays.asList(new Module[] {m1, m2}));
+            Set<Module> m1m2 = new HashSet<Module>(Arrays.asList(m1, m2));
             mgr.enable(m1m2);
             
             Stamps.getModulesJARs().flush(0);

@@ -46,14 +46,14 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import javax.swing.text.StyledDocument;
-import org.netbeans.fpi.gsf.CancellableTask;
-import org.netbeans.fpi.gsf.Error;
-import org.netbeans.fpi.gsf.HintsProvider;
+import org.netbeans.modules.gsf.api.CancellableTask;
+import org.netbeans.modules.gsf.api.Error;
+import org.netbeans.modules.gsf.api.HintsProvider;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
-import org.netbeans.fpi.gsf.ParserResult;
+import org.netbeans.modules.gsf.api.ParserResult;
 import org.netbeans.napi.gsfret.source.CompilationController;
 import org.netbeans.napi.gsfret.source.Phase;
 import org.netbeans.napi.gsfret.source.Source;
@@ -306,7 +306,7 @@ public class GsfTaskProvider extends PushTaskScanner  {
 
                                     int lineno = NbDocument.findLineNumber((StyledDocument)info.getDocument(), lexOffset)+1;
                                     Task task = Task.create(file, 
-                                            error.getSeverity() == org.netbeans.fpi.gsf.Severity.ERROR ? TASKLIST_ERROR : TASKLIST_WARNING,
+                                            error.getSeverity() == org.netbeans.modules.gsf.api.Severity.ERROR ? TASKLIST_ERROR : TASKLIST_WARNING,
                                             error.getDisplayName(),
                                             lineno);
                                     tasks.add(task);

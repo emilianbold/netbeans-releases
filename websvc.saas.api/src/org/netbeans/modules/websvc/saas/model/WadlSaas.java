@@ -39,7 +39,6 @@
 
 package org.netbeans.modules.websvc.saas.model;
 
-import java.awt.Image;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -64,11 +63,10 @@ public class WadlSaas extends Saas {
 
     private Application wadlModel;
     private List<WadlSaasResource> resources;
-    private Image icon16;
-    private Image icon32;
+    private FileObject wadlFile;
     
-    public WadlSaas(SaasGroup parentGroup, SaasServices services) {
-        super(parentGroup, services);
+    public WadlSaas(SaasGroup topGroup, SaasGroup parentGroup, SaasServices services) {
+        super(topGroup, parentGroup, services);
     }
     
     public Application getWadlModel() throws IOException {
@@ -101,8 +99,14 @@ public class WadlSaas extends Saas {
     } 
     
     public FileObject getLocalWadlFile() {
-        //TODO
-        return null;
+        if (wadlFile == null) {
+            try {
+                wadlFile = SaasUtil.getWadlFile(this);
+            } catch(IOException ioe) {
+                Exceptions.printStackTrace(ioe);
+            }
+        }
+        return wadlFile;
     }
     
     @Override
@@ -128,7 +132,7 @@ public class WadlSaas extends Saas {
     private void toStateReady() {
         try {
             getWadlModel();
-            setState(State.RESOLVED);
+            setState(State.READY);
         } catch (IOException ioe) {
             Exceptions.printStackTrace(ioe);
         }

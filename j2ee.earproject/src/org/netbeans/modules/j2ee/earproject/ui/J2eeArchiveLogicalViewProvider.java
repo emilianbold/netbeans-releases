@@ -53,7 +53,6 @@ import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.ResourceBundle;
@@ -73,16 +72,16 @@ import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
 import org.netbeans.modules.j2ee.api.ejbjar.EjbProjectConstants;
+import org.netbeans.modules.j2ee.common.project.ui.ProjectProperties;
 import org.netbeans.modules.j2ee.common.ui.BrokenServerSupport;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.InstanceListener;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
-import org.netbeans.modules.j2ee.earproject.BrokenProjectSupport;
 import org.netbeans.modules.j2ee.earproject.EarProject;
-import org.netbeans.modules.j2ee.earproject.UpdateHelper;
 import org.netbeans.modules.j2ee.earproject.ui.actions.AddModuleAction;
 import org.netbeans.modules.j2ee.earproject.ui.customizer.EarProjectProperties;
 import org.netbeans.modules.j2ee.spi.ejbjar.support.J2eeProjectView;
+import org.netbeans.modules.java.api.common.ant.UpdateHelper;
 import org.netbeans.spi.java.project.support.ui.BrokenReferencesSupport;
 import org.netbeans.spi.java.project.support.ui.PackageView;
 import org.netbeans.spi.project.ActionProvider;
@@ -212,7 +211,6 @@ public class J2eeArchiveLogicalViewProvider implements LogicalViewProvider {
     // Private innerclasses ----------------------------------------------------
     
     private static final String[] BREAKABLE_PROPERTIES = new String[] {
-        EarProjectProperties.JAVAC_CLASSPATH,
         EarProjectProperties.DEBUG_CLASSPATH,
         EarProjectProperties.JAR_CONTENT_ADDITIONAL,
     };
@@ -232,11 +230,8 @@ public class J2eeArchiveLogicalViewProvider implements LogicalViewProvider {
     /** Package private for unit test only. */
     final class ArchiveLogicalViewRootNode extends AbstractNode  implements Runnable, FileStatusListener, ChangeListener, PropertyChangeListener {
         
-        private static final String BROKEN_PROJECT_BADGE = "org/netbeans/modules/j2ee/earproject/ui/resources/brokenProjectBadge.gif"; // NOI18N
-        
         private Action brokenLinksAction;
         private final BrokenServerAction brokenServerAction;
-        private final BrokenProjectSupport brokenProjectSupport;
         private boolean broken;
         
         // icon badging >>>
@@ -262,12 +257,6 @@ public class J2eeArchiveLogicalViewProvider implements LogicalViewProvider {
             J2eeModuleProvider moduleProvider = project.getLookup().lookup(J2eeModuleProvider.class);
             moduleProvider.addInstanceListener(WeakListeners.create(InstanceListener.class, brokenServerAction, moduleProvider));
             refreshProjectFiles();
-            this.brokenProjectSupport = project.getLookup().lookup(BrokenProjectSupport.class);
-            this.brokenProjectSupport.addChangeListener(new ChangeListener() {
-                public void stateChanged(ChangeEvent e) {
-                    checkProjectValidity();
-                }
-            });
         }
         
         private void refreshProjectFiles() {
@@ -349,10 +338,7 @@ public class J2eeArchiveLogicalViewProvider implements LogicalViewProvider {
         
         private synchronized void checkProjectValidity() {
             boolean old = broken;
-            broken = brokenProjectSupport.hasBrokenArtifacts();
-            if (!broken) {
-                broken = hasBrokenLinks(helper.getAntProjectHelper(), resolver);
-            }
+            broken = hasBrokenLinks(helper.getAntProjectHelper(), resolver);
             if (old != broken) {
                 getBrokenLinksAction().setEnabled(broken);
                 fireIconChange();
@@ -476,14 +462,14 @@ public class J2eeArchiveLogicalViewProvider implements LogicalViewProvider {
         public Image getMyIcon(int type) {
             Image original = super.getIcon( type );
             return broken || brokenServerAction.isEnabled()
-            ? Utilities.mergeImages(original, Utilities.loadImage(BROKEN_PROJECT_BADGE), 8, 0)
+            ? Utilities.mergeImages(original, ProjectProperties.ICON_BROKEN_BADGE.getImage(), 8, 0)
             : original;
         }
         
         public Image getMyOpenedIcon(int type) {
             Image original = super.getOpenedIcon(type);
             return broken || brokenServerAction.isEnabled()
-            ? Utilities.mergeImages(original, Utilities.loadImage(BROKEN_PROJECT_BADGE), 8, 0)
+            ? Utilities.mergeImages(original, ProjectProperties.ICON_BROKEN_BADGE.getImage(), 8, 0)
             : original;
         }
         
@@ -572,7 +558,6 @@ public class J2eeArchiveLogicalViewProvider implements LogicalViewProvider {
             
             public void actionPerformed(ActionEvent e) {
                 BrokenReferencesSupport.showCustomizer(helper.getAntProjectHelper(), resolver, BREAKABLE_PROPERTIES, new String[]{ EarProjectProperties.JAVA_PLATFORM});
-                brokenProjectSupport.adjustReferences();
                 checkProjectValidity();
             }
             
@@ -608,12 +593,12 @@ public class J2eeArchiveLogicalViewProvider implements LogicalViewProvider {
             }
             
             public void actionPerformed(ActionEvent e) {
-                EarProjectProperties app = new EarProjectProperties(project, resolver, abpt);
-                String j2eeSpec = (String) app.get(EarProjectProperties.J2EE_PLATFORM);
+                String j2eeSpec = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH).
+                        getProperty(EarProjectProperties.J2EE_PLATFORM);
                 String instance = BrokenServerSupport.selectServer(j2eeSpec, J2eeModule.EAR);
                 if (instance != null) {
-                    app.put(EarProjectProperties.J2EE_SERVER_INSTANCE, instance);
-                    app.store();
+                    EarProjectProperties.setServerInstance(
+                            project, helper, instance);
                 }
                 checkMissingServer();
             }

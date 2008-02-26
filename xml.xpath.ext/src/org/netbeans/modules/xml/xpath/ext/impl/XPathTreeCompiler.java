@@ -34,6 +34,7 @@ import org.netbeans.modules.xml.xpath.ext.XPathExpression;
 import org.netbeans.modules.xml.xpath.ext.XPathExpressionPath;
 import org.netbeans.modules.xml.xpath.ext.XPathExtensionFunction;
 import org.netbeans.modules.xml.xpath.ext.XPathLocationPath;
+import org.netbeans.modules.xml.xpath.ext.XPathModel;
 import org.netbeans.modules.xml.xpath.ext.XPathPredicateExpression;
 import org.netbeans.modules.xml.xpath.ext.XPathVariableReference;
 
@@ -44,9 +45,9 @@ import org.netbeans.modules.xml.xpath.ext.XPathVariableReference;
  */
 public class XPathTreeCompiler implements Compiler {
 
-    private XPathModelImpl myXPathModel;
+    private XPathModel myXPathModel;
     
-    public XPathTreeCompiler(XPathModelImpl xPathModel) {
+    public XPathTreeCompiler(XPathModel xPathModel) {
         myXPathModel = xPathModel;
     }
         

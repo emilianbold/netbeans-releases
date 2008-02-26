@@ -91,8 +91,6 @@ package org.netbeans.modules.visualweb.designer.markup;
 
 import org.netbeans.modules.visualweb.api.designerapi.DesignerServiceHack;
 import org.netbeans.modules.visualweb.api.insync.InSyncService;
-import org.netbeans.modules.visualweb.designer.html.HtmlAttribute;
-import org.netbeans.modules.visualweb.designer.html.HtmlTag;
 import java.net.URL;
 
 import org.apache.batik.css.engine.CSSEngine;
@@ -100,15 +98,9 @@ import org.apache.batik.css.engine.CSSStylableElement;
 import org.apache.batik.css.engine.StyleMap;
 import org.apache.xerces.dom.CoreDocumentImpl;
 import org.w3c.dom.DOMException;
-import org.w3c.dom.Element;
-import org.w3c.dom.Node;
 
-import com.sun.rave.designtime.markup.MarkupDesignBean;
-import com.sun.rave.designtime.markup.MarkupMouseRegion;
-
-// CVS note: This file used to be called XhtmlElement (same directory)
 import java.lang.ref.WeakReference;
-import org.w3c.dom.UserDataHandler;
+import org.w3c.dom.Attr;
 // if you need to look at older CVS history
 
 /**
@@ -207,19 +199,51 @@ implements CSSStylableElement,  CSSEngine.StyleElementLink /*, RaveElement*/ {
 //    // it uses a linear search.
 //    private WeakReference<String> classWRef = new WeakReference(null);
     // XXX Batik
-    /**
-     * Returns the class of this element.
-     */
-    public String getCSSClass() {
-        return getAttributeNS(null, "class");
-//        String cl = classWRef.get();
-//        if (cl == null) {
-//            cl = getAttributeNS(null, "class"); // NOI18N
-//            classWRef = new WeakReference(cl);
-//        }
-//        return cl;
-    }
+    private WeakReference<Attr> attrRef = null;
+    private String cachedValue = null;
+    
+     /**
+      * Returns the class of this element.
+      */
+     public String getCSSClass() {
+        Attr attr = (attrRef == null) ? null : attrRef.get();
+        
+        if (attr == null) {
+            attr = getAttrNS(null, "class");
+            if (attr == null) {
+                return "";
+            }else {
+                attrRef = new WeakReference<Attr>(attr);
+                cachedValue = attr.getValue();
+                return cachedValue;
+            }
+        }else {
+            return cachedValue;
+        }
+ //        String cl = classWRef.get();
+ //        if (cl == null) {
+ //            cl = getAttributeNS(null, "class"); // NOI18N
+     }
+ 
+    public Attr getAttrNS(String namespaceURI, String localName) {
 
+        if (needsSyncData()) {
+            synchronizeData();
+        }
+
+        if (attributes == null) {
+            return null;
+        }
+
+        Attr attr = (Attr)(attributes.getNamedItemNS(namespaceURI, localName));
+        return attr;
+
+    }
+    
+    final boolean needsSyncData() {
+        return (flags & SYNCDATA) != 0;
+    }
+    
     // XXX Batik
     /**
      * Returns the CSS base URL of this element.

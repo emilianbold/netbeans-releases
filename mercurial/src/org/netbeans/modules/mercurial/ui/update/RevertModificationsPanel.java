@@ -116,7 +116,7 @@ public class RevertModificationsPanel extends javax.swing.JPanel {
         revisionsLabel.setLabelFor(revisionsComboBox);
         org.openide.awt.Mnemonics.setLocalizedText(revisionsLabel, org.openide.util.NbBundle.getMessage(RevertModificationsPanel.class, "RevertModificationsPanel.revisionsLabel.text")); // NOI18N
 
-        jLabel1.setFont(new java.awt.Font("Dialog", 1, 11)); // NOI18N
+        jLabel1.setFont(new java.awt.Font("Dialog", 1, 11));
         org.openide.awt.Mnemonics.setLocalizedText(jLabel1, org.openide.util.NbBundle.getMessage(RevertModificationsPanel.class, "RevertModificationsPanel.infoLabel.text")); // NOI18N
 
         jLabel2.setForeground(new java.awt.Color(153, 153, 153));
@@ -139,8 +139,10 @@ public class RevertModificationsPanel extends javax.swing.JPanel {
             jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(jPanel1Layout.createSequentialGroup()
                 .add(doBackupChxBox)
-                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addContainerGap(10, Short.MAX_VALUE))
         );
+
+        doBackupChxBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(RevertModificationsPanel.class, "ACSD_doBackupChxBox")); // NOI18N
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
@@ -152,12 +154,12 @@ public class RevertModificationsPanel extends javax.swing.JPanel {
                         .add(47, 47, 47)
                         .add(revisionsLabel)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(revisionsComboBox, 0, 176, Short.MAX_VALUE))
+                        .add(revisionsComboBox, 0, 182, Short.MAX_VALUE))
                     .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createSequentialGroup()
                         .addContainerGap()
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                             .add(jLabel2)
-                            .add(jLabel1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 356, Short.MAX_VALUE)
+                            .add(jLabel1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 363, Short.MAX_VALUE)
                             .add(jPanel1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))))
                 .addContainerGap())
         );
@@ -175,6 +177,8 @@ public class RevertModificationsPanel extends javax.swing.JPanel {
                 .add(jPanel1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
+
+        revisionsComboBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(RevertModificationsPanel.class, "ACSD_revisionsComboBox")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
     
 

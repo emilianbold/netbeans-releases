@@ -49,6 +49,14 @@ import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlService;
  * @author nam
  */
 public interface WsdlData {
+    /**
+     * Property event name used for firing state property change.
+     */
+    public static final String PROP_STATE = "state";
+    
+    public static enum State {
+        WSDL_UNRETRIEVED, WSDL_RETRIEVING, WSDL_RETRIEVED, WSDL_SERVICE_COMPILING, WSDL_SERVICE_COMPILED, WSDL_SERVICE_COMPILE_FAILED
+    }
     
     /**
      * @return id string that identities the WSDL service in persistence in userdir 
@@ -77,6 +85,8 @@ public interface WsdlData {
     
     boolean isReady();
 
+    State getState();
+    
     /**
      * Returns WSDL Service Proxy Descriptor
      */

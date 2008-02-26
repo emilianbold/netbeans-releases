@@ -58,7 +58,7 @@ import java.util.prefs.Preferences;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreeModel;
-import org.netbeans.fpi.gsf.CompilationInfo;
+import org.netbeans.modules.gsf.api.CompilationInfo;
 import org.netbeans.modules.javascript.hints.StrictWarning;
 import org.netbeans.modules.javascript.hints.options.HintsSettings;
 import org.openide.cookies.InstanceCookie;

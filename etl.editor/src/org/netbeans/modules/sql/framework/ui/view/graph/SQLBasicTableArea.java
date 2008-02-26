@@ -94,6 +94,8 @@ import com.nwoods.jgo.JGoLink;
 import com.nwoods.jgo.JGoPort;
 import com.sun.sql.framework.exception.BaseException;
 import com.sun.sql.framework.utils.StringUtil;
+import java.awt.event.InputEvent;
+import javax.swing.KeyStroke;
 import org.netbeans.modules.etl.logger.Localizer;
 import org.netbeans.modules.etl.logger.LogUtil;
 import org.netbeans.modules.sql.framework.model.DBTable;
@@ -196,6 +198,7 @@ public abstract class SQLBasicTableArea extends BasicTableArea implements IGraph
         String nbBundle1 = mLoc.t("PRSR001: Select Columns...");
         String lbl = Localizer.parse(nbBundle1);
         selectColumnsItem = new JMenuItem(lbl, new ImageIcon(selectColumnsUrl));
+        selectColumnsItem.setAccelerator(KeyStroke.getKeyStroke('C',InputEvent.CTRL_MASK));
         selectColumnsItem.addActionListener(aListener);
         popUpMenu.add(selectColumnsItem);
     }
@@ -205,6 +208,7 @@ public abstract class SQLBasicTableArea extends BasicTableArea implements IGraph
         String nbBundle2 = mLoc.t("PRSR001: Remove");
         String lbl = Localizer.parse(nbBundle2);
         removeItem = new JMenuItem(lbl, new ImageIcon(removeUrl));
+        removeItem.setAccelerator(KeyStroke.getKeyStroke('O',InputEvent.CTRL_MASK));
         removeItem.addActionListener(aListener);
         popUpMenu.add(removeItem);
     }

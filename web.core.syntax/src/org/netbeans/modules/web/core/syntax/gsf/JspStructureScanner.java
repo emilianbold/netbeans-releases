@@ -41,11 +41,11 @@ package org.netbeans.modules.web.core.syntax.gsf;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import org.netbeans.fpi.gsf.CompilationInfo;
-import org.netbeans.fpi.gsf.HtmlFormatter;
-import org.netbeans.fpi.gsf.OffsetRange;
-import org.netbeans.fpi.gsf.StructureItem;
-import org.netbeans.fpi.gsf.StructureScanner;
+import org.netbeans.modules.gsf.api.CompilationInfo;
+import org.netbeans.modules.gsf.api.HtmlFormatter;
+import org.netbeans.modules.gsf.api.OffsetRange;
+import org.netbeans.modules.gsf.api.StructureItem;
+import org.netbeans.modules.gsf.api.StructureScanner;
 
 /**
  * just fake class, we need the parser and the StructureScanner to enable 

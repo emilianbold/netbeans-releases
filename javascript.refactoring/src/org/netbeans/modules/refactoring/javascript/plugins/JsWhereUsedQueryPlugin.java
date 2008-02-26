@@ -48,12 +48,12 @@ import java.util.Set;
 import javax.swing.Icon;
 import javax.swing.text.Document;
 import org.mozilla.javascript.Node;
-import org.netbeans.fpi.gsf.CancellableTask;
-import org.netbeans.fpi.gsf.ElementKind;
-import org.netbeans.fpi.gsf.Error;
-import org.netbeans.fpi.gsf.Modifier;
-import org.netbeans.fpi.gsf.OffsetRange;
-import org.netbeans.fpi.gsf.Severity;
+import org.netbeans.modules.gsf.api.CancellableTask;
+import org.netbeans.modules.gsf.api.ElementKind;
+import org.netbeans.modules.gsf.api.Error;
+import org.netbeans.modules.gsf.api.Modifier;
+import org.netbeans.modules.gsf.api.OffsetRange;
+import org.netbeans.modules.gsf.api.Severity;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenId;
@@ -404,7 +404,7 @@ public class JsWhereUsedQueryPlugin extends JsRefactoringPlugin {
                 return;
             }
             
-            Element element = AstElement.getElement(root);
+            Element element = AstElement.getElement(compiler, root);
             Node node = searchCtx.getNode();
             JsElementCtx fileCtx = new JsElementCtx(root, node, element, compiler.getFileObject(), compiler);
 

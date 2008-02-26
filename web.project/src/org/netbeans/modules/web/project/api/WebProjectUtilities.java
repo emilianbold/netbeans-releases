@@ -83,8 +83,8 @@ import org.netbeans.api.queries.FileEncodingQuery;
 
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
 import org.netbeans.modules.j2ee.common.FileSearchUtility;
+import org.netbeans.modules.j2ee.common.SharabilityUtility;
 import org.netbeans.modules.j2ee.common.project.ui.ProjectProperties;
-import org.netbeans.modules.j2ee.common.sharability.SharabilityUtilities;
 import org.netbeans.modules.j2ee.dd.api.web.DDProvider;
 import org.netbeans.modules.j2ee.dd.api.web.WebApp;
 import org.netbeans.modules.j2ee.dd.api.web.WelcomeFileList;
@@ -608,10 +608,10 @@ public class WebProjectUtilities {
             rh.copyLibrary(LibraryManager.getDefault().getLibrary("junit_4")); // NOI18N
         }
 
-        if (h.isSharableProject() && data.getServerLibraryName() != null  && SharabilityUtilities.getLibrary(
+        if (h.isSharableProject() && data.getServerLibraryName() != null  && SharabilityUtility.findSharedServerLibrary(
                 h.resolveFile(h.getLibrariesLocation()), data.getServerLibraryName()) == null) {
 
-            SharabilityUtilities.createLibrary(
+            SharabilityUtility.createLibrary(
                 h.resolveFile(h.getLibrariesLocation()), data.getServerLibraryName(),
                 data.getServerInstanceID());
         }
@@ -661,27 +661,28 @@ public class WebProjectUtilities {
         ep.setProperty(WebProjectProperties.DIST_WAR, "${"+WebProjectProperties.DIST_DIR+"}/${" + WebProjectProperties.WAR_NAME + "}"); // NOI18N
         ep.setProperty(WebProjectProperties.DIST_WAR_EAR, "${" + WebProjectProperties.DIST_DIR+"}/${" + WebProjectProperties.WAR_EAR_NAME + "}"); //NOI18N
         
-        ep.setProperty(ProjectProperties.JAVAC_CLASSPATH, ""); // NOI18N
         Deployment deployment = Deployment.getDefault();
         String serverType = deployment.getServerID(serverInstanceID);
         
         if (h.isSharableProject() && serverLibraryName != null) {
             // TODO constants
+            ep.setProperty(ProjectProperties.JAVAC_CLASSPATH,
+                    "${libs." + serverLibraryName + "." + "classpath" + "}"); // NOI18N
             ep.setProperty(WebProjectProperties.J2EE_PLATFORM_CLASSPATH,
                     "${libs." + serverLibraryName + "." + "classpath" + "}"); //NOI18N
             ep.setProperty(WebServicesConstants.J2EE_PLATFORM_WSCOMPILE_CLASSPATH,
-                        "${libs." + serverLibraryName + "." + "wscompile" + "}"); //NOI18N
+                    "${libs." + serverLibraryName + "." + "wscompile" + "}"); //NOI18N
             ep.setProperty(WebServicesConstants.J2EE_PLATFORM_WSIMPORT_CLASSPATH,
-                        "${libs." + serverLibraryName + "." + "wsimport" + "}"); //NOI18N
+                    "${libs." + serverLibraryName + "." + "wsimport" + "}"); //NOI18N
             ep.setProperty(WebServicesConstants.J2EE_PLATFORM_WSGEN_CLASSPATH,
-                        "${libs." + serverLibraryName + "." + "wsgenerate" + "}"); //NOI18N
+                    "${libs." + serverLibraryName + "." + "wsgenerate" + "}"); //NOI18N
             ep.setProperty(WebServicesConstants.J2EE_PLATFORM_WSIT_CLASSPATH, 
-                        "${libs." + serverLibraryName + "." + "wsinterop" + "}"); //NOI18N
+                    "${libs." + serverLibraryName + "." + "wsinterop" + "}"); //NOI18N
             ep.setProperty(WebServicesConstants.J2EE_PLATFORM_JWSDP_CLASSPATH, 
-                        "${libs." + serverLibraryName + "." + "wsjwsdp" + "}"); //NOI18N
+                    "${libs." + serverLibraryName + "." + "wsjwsdp" + "}"); //NOI18N
+        } else {
+            ep.setProperty(ProjectProperties.JAVAC_CLASSPATH, ""); // NOI18N
         }
-        ep.setProperty(WebProjectProperties.J2EE_PLATFORM_SHARED,
-                Boolean.toString(h.isSharableProject() && serverLibraryName != null));
         
         
         ep.setProperty(WebProjectProperties.JSPCOMPILATION_CLASSPATH, "${jspc.classpath}:${javac.classpath}");

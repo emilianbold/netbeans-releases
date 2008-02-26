@@ -61,7 +61,8 @@ import org.netbeans.modules.j2ee.clientproject.AppClientProjectType;
 import org.netbeans.modules.j2ee.clientproject.AppClientProvider;
 import org.netbeans.modules.j2ee.clientproject.Utils;
 import org.netbeans.modules.j2ee.clientproject.ui.customizer.AppClientProjectProperties;
-import org.netbeans.modules.j2ee.common.sharability.SharabilityUtilities;
+import org.netbeans.modules.j2ee.common.SharabilityUtility;
+import org.netbeans.modules.j2ee.common.project.ui.ProjectProperties;
 import org.netbeans.modules.j2ee.dd.api.client.AppClient;
 import org.netbeans.modules.j2ee.dd.api.client.DDProvider;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.AntDeploymentHelper;
@@ -356,10 +357,10 @@ public class AppClientProjectGenerator {
             rh.copyLibrary(LibraryManager.getDefault().getLibrary("junit_4")); // NOI18N
         }
 
-        if (h.isSharableProject() && serverlibraryName != null  && SharabilityUtilities.getLibrary(
+        if (h.isSharableProject() && serverlibraryName != null  && SharabilityUtility.findSharedServerLibrary(
                 h.resolveFile(h.getLibrariesLocation()), serverlibraryName) == null) {
 
-            SharabilityUtilities.createLibrary(
+            SharabilityUtility.createLibrary(
                 h.resolveFile(h.getLibrariesLocation()), serverlibraryName, serverInstanceId);
         }
     }
@@ -455,7 +456,6 @@ public class AppClientProjectGenerator {
         ep.setComment("dist.dir", new String[] {"# " + NbBundle.getMessage(AppClientProjectGenerator.class, "COMMENT_dist.dir")}, false); // NOI18N
         //        ep.setProperty("dist.jar", "${dist.dir}/" + PropertyUtils.getUsablePropertyName(name) + ".jar"); // NOI18N
         ep.setProperty(AppClientProjectProperties.DIST_JAR, "${"+AppClientProjectProperties.DIST_DIR+"}/" + "${" + AppClientProjectProperties.JAR_NAME + "}"); // NOI18N
-        ep.setProperty("javac.classpath", new String[0]); // NOI18N
         ep.setProperty("build.sysclasspath", "ignore"); // NOI18N
         ep.setComment("build.sysclasspath", new String[] {"# " + NbBundle.getMessage(AppClientProjectGenerator.class, "COMMENT_build.sysclasspath")}, false); // NOI18N
         ep.setProperty("run.classpath", new String[] { // NOI18N
@@ -545,15 +545,17 @@ public class AppClientProjectGenerator {
         ep.setProperty("manifest.file", "${" +AppClientProjectProperties.META_INF + "}/" + MANIFEST_FILE); // NOI18N
         
         if (h.isSharableProject() && serverLibraryName != null) {
+            ep.setProperty(ProjectProperties.JAVAC_CLASSPATH,
+                    "${libs." + serverLibraryName + "." + "classpath" + "}"); // NOI18N
             ep.setProperty(AppClientProjectProperties.J2EE_PLATFORM_CLASSPATH,
                     "${libs." + serverLibraryName + "." + "classpath" + "}"); //NOI18N
             ep.setProperty(WebServicesClientConstants.J2EE_PLATFORM_WSCOMPILE_CLASSPATH,
-                        "${libs." + serverLibraryName + "." + "wscompile" + "}"); //NOI18N
+                    "${libs." + serverLibraryName + "." + "wscompile" + "}"); //NOI18N
             ep.setProperty(WebServicesClientConstants.J2EE_PLATFORM_WSIMPORT_CLASSPATH,
-                        "${libs." + serverLibraryName + "." + "wsimport" + "}"); //NOI18N
-        }
-        ep.setProperty(AppClientProjectProperties.J2EE_PLATFORM_SHARED,
-                Boolean.toString(h.isSharableProject() && serverLibraryName != null));        
+                    "${libs." + serverLibraryName + "." + "wsimport" + "}"); //NOI18N
+        } else {
+            ep.setProperty(ProjectProperties.JAVAC_CLASSPATH, "");
+        }        
         
         String mainClassArgs = j2eePlatform.getToolProperty(J2eePlatform.TOOL_APP_CLIENT_RUNTIME, J2eePlatform.TOOL_PROP_MAIN_CLASS_ARGS);
         if (mainClassArgs != null && !mainClassArgs.equals("")) {
@@ -608,22 +610,15 @@ public class AppClientProjectGenerator {
                         Utils.toClasspathString(wsClasspath));
             }
         }
-        //WORKAROUND for --retrieve option in asadmin deploy command
-        //works only for local domains
-        //see also http://www.netbeans.org/issues/show_bug.cgi?id=82929
-        if ("J2EE".equals(deployment.getServerID(serverInstanceID))) { // NOI18N
-            File asRoot = j2eePlatform.getPlatformRoots()[0];
-            File exFile = new File(asRoot, "lib/javaee.jar"); // NOI18N
-            InstanceProperties ip = InstanceProperties.getInstanceProperties(serverInstanceID);
-            if (exFile.exists()) {
-                ep.setProperty("wa.copy.client.jar.from", // NOI18N
-                        new File(ip.getProperty("LOCATION"), ip.getProperty("DOMAIN") + "/generated/xml/j2ee-modules").getAbsolutePath()); // NOI18N
-            } else {
-                ep.setProperty("wa.copy.client.jar.from", // NOI18N
-                        new File(ip.getProperty("LOCATION"), ip.getProperty("DOMAIN") + "/applications/j2ee-modules").getAbsolutePath()); // NOI18N
-            }
+
+        // WORKAROUND for --retrieve option in asadmin deploy command
+        // works only for local domains
+        // see also http://www.netbeans.org/issues/show_bug.cgi?id=82929
+        String copyProperty = j2eePlatform.getToolProperty(J2eePlatform.TOOL_APP_CLIENT_RUNTIME, J2eePlatform.TOOL_PROP_CLIENT_JAR_LOCATION);
+        if (copyProperty != null) {
+            ep.setProperty(AppClientProjectProperties.APPCLIENT_TOOL_CLIENT_JAR, copyProperty);
         } else {
-            ep.remove("wa.copy.client.jar.from"); // NOI18N
+            ep.remove(AppClientProjectProperties.APPCLIENT_TOOL_CLIENT_JAR);
         }
         
         // ant deployment support

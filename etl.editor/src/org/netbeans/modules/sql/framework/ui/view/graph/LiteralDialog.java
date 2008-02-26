@@ -139,8 +139,10 @@ public class LiteralDialog extends JDialog implements ActionListener {
         try {
             String nbBundle1 = mLoc.t("PRSR001: Ok");
             mOkButton = new JButton(Localizer.parse(nbBundle1)); //NOI18N
+            mOkButton.getAccessibleContext().setAccessibleName(Localizer.parse(nbBundle1));
             String nbBundle2 = mLoc.t("PRSR001: Cancel");
             mCancelButton = new JButton(Localizer.parse(nbBundle2)); //NOI18N
+            mCancelButton.getAccessibleContext().setAccessibleName(Localizer.parse(nbBundle2));
             initComponents();
         } catch (Exception e) {
             e.printStackTrace();

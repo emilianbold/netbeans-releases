@@ -42,6 +42,7 @@
 package org.netbeans.modules.editor.java;
 
 import com.sun.source.tree.ClassTree;
+import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.IdentifierTree;
 import com.sun.source.tree.ImportTree;
 import com.sun.source.tree.MemberSelectTree;
@@ -75,6 +76,7 @@ import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.AbstractElementVisitor6;
+import javax.lang.model.util.ElementFilter;
 import javax.swing.text.Document;
 import org.netbeans.api.java.lexer.JavaTokenId;
 import org.netbeans.api.java.source.Task;
@@ -183,6 +185,28 @@ public class GoToSupport {
 
                                 if (ee != null) {
                                     el = ee;
+                                } else {
+                                    ExpressionTree select = ((MethodInvocationTree)parentLeaf).getMethodSelect();
+                                    Name methodName = null;
+                                    switch (select.getKind()) {
+                                        case IDENTIFIER:
+                                            Scope s = controller.getTrees().getScope(path);
+                                            el = s.getEnclosingClass();
+                                            methodName = ((IdentifierTree)select).getName();
+                                            break;
+                                        case MEMBER_SELECT:
+                                            el = controller.getTrees().getElement(new TreePath(path, ((MemberSelectTree)select).getExpression()));
+                                            methodName = ((MemberSelectTree)select).getIdentifier();
+                                            break;
+                                    }
+                                    if (el != null) {
+                                        for (ExecutableElement m : ElementFilter.methodsIn(el.getEnclosedElements())) {
+                                            if (m.getSimpleName() == methodName) {
+                                                el = m;
+                                                break;
+                                            }
+                                        }
+                                    }
                                 }
                             }
                         }

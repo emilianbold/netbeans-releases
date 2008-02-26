@@ -232,12 +232,14 @@ public class SAMLHolderOfKeyProfile extends ProfileBase
         String keyLoc = ProprietarySecurityPolicyModelHelper.getStoreLocation(component, false);
         String keyPasswd = ProprietarySecurityPolicyModelHelper.getStorePassword(component, false);
         if (ProfilesModelHelper.XWS_SECURITY_SERVER.equals(keyAlias)) {
-//            if (Util.isTomcat(p)) {
-                if ((Util.getDefaultPassword(p).equals(keyPasswd)) && 
-                    (Util.getStoreLocation(p, false, false).equals(keyLoc))) {
-                        return true;
+                String defPassword = Util.getDefaultPassword(p);
+                String defLocation = Util.getStoreLocation(p, false, false);
+                if ((defPassword != null) && (defLocation != null)) {
+                    if ((defPassword.equals(keyPasswd)) && 
+                        (defLocation.equals(keyLoc))) {
+                            return true;
+                    }
                 }
-//        }
         }
         return false;
     }
@@ -263,14 +265,15 @@ public class SAMLHolderOfKeyProfile extends ProfileBase
         if ((PKGNAME + "." + cbName).equals(cbHandler)) {
             if (ProfilesModelHelper.XWS_SECURITY_CLIENT.equals(keyAlias) && 
                 ProfilesModelHelper.XWS_SECURITY_SERVER.equals(trustAlias)) {
-//                    if (Util.isTomcat(p)) {
-                    if ((Util.getDefaultPassword(p).equals(keyPasswd)) && 
-                        (Util.getDefaultPassword(p).equals(trustPasswd)) && 
-                        (Util.getStoreLocation(p, false, true).equals(keyLoc)) && 
-                        (Util.getStoreLocation(p, true, true).equals(trustLoc))) {
-                            return true;
+                    String defPassword = Util.getDefaultPassword(p);
+                    String defKeyLocation = Util.getStoreLocation(p, false, true);
+                    String defTrustLocation = Util.getStoreLocation(p, true, true);
+                    if ((defPassword != null) && (defKeyLocation != null) && (defTrustLocation != null)) {
+                        if ((defPassword.equals(keyPasswd)) && defPassword.equals(trustPasswd) &&
+                            (defKeyLocation.equals(keyLoc)) && (defTrustLocation.equals(trustLoc))) {
+                                return true;
+                        }
                     }
-//                }
             }
         }
         

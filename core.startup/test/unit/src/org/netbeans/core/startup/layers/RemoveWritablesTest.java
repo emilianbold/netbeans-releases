@@ -46,7 +46,6 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
 import java.util.concurrent.Callable;
 import java.util.jar.JarEntry;
 import java.util.jar.JarOutputStream;
@@ -72,15 +71,13 @@ public class RemoveWritablesTest extends NbTestCase {
                 + "OpenIDE-Module: org.netbeans.modules.foo\n"
                 + "OpenIDE-Module-Specification-Version: 1.0\n"
                 + "OpenIDE-Module-Implementation-Version: today\n"
-                + "OpenIDE-Module-Layer: mf-layer.xml\n";
+                + "OpenIDE-Module-Layer: foo/mf-layer.xml\n";
 
-
-    
     public RemoveWritablesTest(String testName) {
         super(testName);
     }
 
-    protected void setUp() throws Exception {
+    protected @Override void setUp() throws Exception {
         clearWorkDir();
         
         File u = new File(getWorkDir(), "userdir");
@@ -104,7 +101,7 @@ public class RemoveWritablesTest extends NbTestCase {
         
     }
 
-    protected void tearDown() throws Exception {
+    protected @Override void tearDown() throws Exception {
         if( null != myModule ) {
             Main.getModuleSystem().getManager().disable( myModule );
             Main.getModuleSystem().getManager().delete( myModule );
@@ -130,7 +127,6 @@ public class RemoveWritablesTest extends NbTestCase {
     }
     
     public void testRemovedFile() throws Exception {
-        FileObject folder = sfs.findResource( "foo" );
         FileObject existingFile = sfs.findResource( "foo/test1" );
         
         assertNotNull( existingFile );
@@ -152,7 +148,6 @@ public class RemoveWritablesTest extends NbTestCase {
     }
     
     public void testRenamedFile() throws Exception {
-        FileObject folder = sfs.findResource( "foo" );
         FileObject existingFile = sfs.findResource( "foo/test1" );
         
         assertNotNull( existingFile );
@@ -179,7 +174,6 @@ public class RemoveWritablesTest extends NbTestCase {
     }
 
     public void testModifiedAttributesFile() throws Exception {
-        FileObject folder = sfs.findResource( "foo" );
         FileObject existingFile = sfs.findResource( "foo/test1" );
         
         assertNotNull( existingFile );
@@ -191,12 +185,13 @@ public class RemoveWritablesTest extends NbTestCase {
 
 
     private File createModuleJar(String manifest) throws IOException {
+        // XXX use TestFileUtils.writeZipFile
         File jarFile = new File( getWorkDir(), "mymodule.jar" );
         
         JarOutputStream os = new JarOutputStream(new FileOutputStream(jarFile), new Manifest(
             new ByteArrayInputStream(manifest.getBytes())
         ));
-        JarEntry entry = new JarEntry("mf-layer.xml");
+        JarEntry entry = new JarEntry("foo/mf-layer.xml");
         os.putNextEntry( entry );
         InputStream is = RemoveWritablesTest.class.getResourceAsStream( "data/layer3.xml" );
         FileUtil.copy( is, os );

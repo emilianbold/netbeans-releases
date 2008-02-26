@@ -487,7 +487,21 @@ public abstract class ModelSet implements FileChangeListener {
                 String platformVersion = JsfProjectUtils.getJ2eePlatformVersion(project);
                 if (platformVersion.equals(JsfProjectUtils.J2EE_1_3) || 
                         platformVersion.equals(JsfProjectUtils.J2EE_1_4)) {
-                    if (jaxrpc16Library != null) {           
+                    if (jaxrpc16Library == null) {
+                    	// Hmmm...project does not have a reference to the jaxrpc16 
+                    	// library so we need to get it from global library manager                    	
+                    	Library[] globalLibraries = LibraryManager.getDefault().getLibraries();
+                        for (Library library : globalLibraries) {                                                      
+                            if (library.getType().equals("j2se")) {
+                                if (library.getName().equals("jaxrpc16")) {
+                                    // cache
+                                    jaxrpc16Library = library;
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                    if (jaxrpc16Library != null) {
                         // Add the jars from jaxrpc16Library
                         addEntriesInLibraryVolume(jaxrpc16Library, "classpath", urls1Set); // NOI18N
                     }

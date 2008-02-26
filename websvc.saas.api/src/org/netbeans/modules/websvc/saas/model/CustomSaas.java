@@ -39,6 +39,7 @@
 
 package org.netbeans.modules.websvc.saas.model;
 
+import org.netbeans.modules.websvc.saas.model.jaxb.Method;
 import org.netbeans.modules.websvc.saas.model.jaxb.SaasServices;
 
 /**
@@ -47,9 +48,13 @@ import org.netbeans.modules.websvc.saas.model.jaxb.SaasServices;
  */
 public class CustomSaas extends Saas {
 
-    public CustomSaas(SaasGroup parentGroup, SaasServices services) {
-        super(parentGroup, services);
+    public CustomSaas(SaasGroup topGroup, SaasGroup parentGroup, SaasServices services) {
+        super(topGroup, parentGroup, services);
     }
     
-    //no override implementation at this time.
+    @Override
+    protected CustomSaasMethod createSaasMethod(Method method) {
+        return new CustomSaasMethod(this, method);
+    }
+    
 }

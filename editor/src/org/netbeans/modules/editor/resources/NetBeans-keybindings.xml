@@ -106,6 +106,7 @@ made subject to such option by the copyright holder.
     <bind actionName="incremental-search-forward" key="D-F"/>
     <bind actionName="format" key="OS-F"/>
     <bind actionName="goto" key="D-G"/>
+    <bind actionName="goto-declaration" key="D-B"/>
     <bind actionName="insert-break" key="ENTER"/>
     <bind actionName="insert-tab" key="TAB"/>
     <bind actionName="jump-list-last-edit" key="D-Q"/>

@@ -44,6 +44,7 @@ import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.cnd.api.lexer.CppTokenId;
 import static org.netbeans.cnd.api.lexer.CppTokenId.*;
 import org.netbeans.modules.cnd.editor.api.CodeStyle;
+import org.netbeans.modules.cnd.editor.reformat.DiffLinkedList.DiffResult;
 import org.netbeans.modules.cnd.editor.reformat.Reformatter.Diff;
 
 /**
@@ -141,10 +142,20 @@ public class PreprocessorFormatter {
     }
 
     private void indentBefore(Token<CppTokenId> previous, String spaces) {
-        Diff diff = diffs.getFirst();
-        if (diff != null && diff.getEndOffset() == ts.offset()) {
-            diff.replaceSpaces(spaces);
-        } else if (previous != null && previous.id() == WHITESPACE) {
+        DiffResult diff = diffs.getDiffs(ts, -1);
+        if (diff != null) {
+            if (diff.after != null) {
+                diff.after.replaceSpaces(spaces); // NOI18N
+                if (diff.replace != null && !diff.after.hasNewLine()){
+                    diff.replace.replaceSpaces(""); // NOI18N
+                }
+                return;
+            } else if (diff.replace != null) {
+                diff.replace.replaceSpaces(spaces); // NOI18N
+                return;
+            }
+        }
+        if (previous != null && previous.id() == WHITESPACE) {
             if (!spaces.equals(previous.text().toString())){
                 ts.replacePrevious(previous, spaces);
             }

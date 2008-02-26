@@ -2231,7 +2231,7 @@ public class ADProjectTreeEngine
                     //addDiagram(parent, new ProjectTreeDiagramNode(curDiagram));
                     ITreeDiagram newItem = factory.createDiagramNode(curDiagram);
                     String diagramName = diagrams.get(index).getNameWithAlias();
-                    logger.info("*** addAllDiagramsInProjec: diagramNameWithAlias = "+ diagramName);
+                    logger.fine("*** addAllDiagramsInProjec: diagramNameWithAlias = "+ diagramName);
                     if ( diagramName != null && diagramName.trim().length() > 0)
                     {
                         newItem.setDisplayedName(diagramName, false);
@@ -3108,7 +3108,7 @@ public class ADProjectTreeEngine
               public void run()
               {
                   String formattedValue = getFormattedString(element);
-                  //logger.info("*** notifyElementChanged(IElement): name=" + formattedValue);
+                  //logger.fine("*** notifyElementChanged(IElement): name=" + formattedValue);
                   IProjectTreeModel model = getTreeModel();
                   if (model != null && formattedValue.trim().length() > 0)
                   {
@@ -3131,7 +3131,7 @@ public class ADProjectTreeEngine
       if(element != null)
       {
          String formattedValue = element.getNameWithAlias();
-         //logger.info( "*** notifyElementChanged(IProxyDiagram): diagramName=" + formattedValue);
+         //logger.fine( "*** notifyElementChanged(IProxyDiagram): diagramName=" + formattedValue);
          IProjectTreeModel model = getTreeModel();
          if(model != null)
          {

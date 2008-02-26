@@ -45,9 +45,9 @@ import java.util.Collections;
 import java.util.Set;
 import javax.swing.Icon;
 import javax.swing.text.Position.Bias;
-import org.netbeans.fpi.gsf.Modifier;
+import org.netbeans.modules.gsf.api.Modifier;
 
-import org.netbeans.fpi.gsf.OffsetRange;
+import org.netbeans.modules.gsf.api.OffsetRange;
 import org.netbeans.napi.gsfret.source.CompilationInfo;
 import org.netbeans.napi.gsfret.source.UiUtils;
 import org.netbeans.editor.BaseDocument;

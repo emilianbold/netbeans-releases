@@ -49,16 +49,20 @@ import static org.netbeans.cnd.api.lexer.CppTokenId.*;
  * @author Alexander Simon
  */
 class BracesStack {
-
+    
+    private static final boolean TRACE_STACK = true;
+    private static final boolean TRACE_STATEMENT = true;
+    
     private Stack<StackEntry> stack = new Stack<StackEntry>();
-    private StatementContinuetion statementContinuation = StatementContinuetion.STOP;
+    private StatementContinuation statementContinuation = StatementContinuation.STOP;
+    private int lastStatementStart = -1;
 
     BracesStack() {
         super();
     }
 
     public void push(StackEntry entry) {
-        statementContinuation = StatementContinuetion.STOP;
+        statementContinuation = StatementContinuation.STOP;
         if (entry.getKind() == ELSE){
             if (stack.size() > 0 && 
                 (stack.peek().getKind() == IF || stack.peek().getKind() == ELSE)) {
@@ -66,21 +70,29 @@ class BracesStack {
             }
         }
         if (!(entry.getImportantKind() != null ||
-              entry.isLikeToArrayInitialization() ||
               entry.isLikeToArrayInitialization())) {
             if (peek() != null && peek().isLikeToArrayInitialization()){
                 // this is two dimensiomal arry initialization
                 entry.setLikeToArrayInitialization(true);
             }
         }
+        if (entry.getKind() == LBRACE){
+            if(!entry.isLikeToArrayInitialization()) {
+                clearLastStatementStart();
+            }
+        } else if (lastStatementStart != entry.getIndex()) {
+            lastStatementStart = entry.getIndex();
+            if (TRACE_STATEMENT) System.out.println("start of Statement/Declaration:"+entry.getText());
+        }
         stack.push(entry);
-        System.out.println("push: "+toString()); // NOI18N
+        if (TRACE_STACK) System.out.println("push: "+toString()); // NOI18N
     }
 
     public int pop(ExtendedTokenSequence ts) {
-        statementContinuation = StatementContinuetion.STOP;
+        clearLastStatementStart();
+        statementContinuation = StatementContinuation.STOP;
         int res = popImpl(ts);
-        System.out.println("pop "+ts.token().id().name()+": "+toString()); // NOI18N
+        if (TRACE_STACK) System.out.println("pop "+ts.token().id().name()+": "+toString()); // NOI18N
         return res;
     }
 
@@ -174,6 +186,21 @@ class BracesStack {
         return false;
     }
     
+    public boolean isDeclarationLevel(){
+        StackEntry top = peek();
+        if (top == null) {
+            return true;
+        }
+        if (isStatement(top)){
+            return false;
+        }
+        CppTokenId id = top.getImportantKind();
+        if (id == null){
+            return false;
+        }
+        return id == CppTokenId.NAMESPACE || id == CppTokenId.CLASS;
+    }
+    
     public StackEntry peek() {
         if (stack.empty()) {
             return null;
@@ -187,8 +214,15 @@ class BracesStack {
         for(int i = 0; i < stack.size(); i++){
             StackEntry entry = stack.get(i);
             if (entry.getKind() == LBRACE) {
-                if (prev == null || prev.getKind()==LBRACE) {
+                if (prev == null) {
                     res++;
+                } else {
+                    if (prev.getKind()==LBRACE){
+                        CppTokenId kind = prev.getImportantKind();
+                        if (kind != SWITCH) {
+                            res++;
+                        }
+                    }
                 }
             } else if (entry.getKind() == IF){
                 if (prev == null || prev.getKind()!=ELSE) {
@@ -202,7 +236,29 @@ class BracesStack {
         return res;
     }
     
+    public int switchDepth(){
+        int res = 0;
+        StackEntry prev = null;
+        for(int i = 0; i < stack.size(); i++){
+            StackEntry entry = stack.get(i);
+            if (entry.getKind() == LBRACE) {
+                if (prev != null && prev.getKind() == SWITCH) {
+                    res++;
+                }
+            }
+            prev = entry;
+        }
+        return res;
+    }
 
+    public StackEntry lookPerevious(){
+        if (stack.size() < 2) {
+            return null;
+        }
+        return stack.get(stack.size()-2);
+        
+    }
+    
     private Token<CppTokenId> getNextImportant(ExtendedTokenSequence ts) {
         int i = ts.index();
         try {
@@ -252,17 +308,160 @@ class BracesStack {
         return buf.toString();
     }
 
-    public StatementContinuetion getStatementContinuation() {
+    public StatementContinuation getStatementContinuation() {
         return statementContinuation;
     }
 
-    public void setStatementContinuation(StatementContinuetion statementContinuation) {
+    public void setStatementContinuation(StatementContinuation statementContinuation) {
         this.statementContinuation = statementContinuation;
     }
+
+    public StatementKind getLastStatementKind(ExtendedTokenSequence ts) {
+        if (lastStatementStart < 0) {
+            return null;
+        }
+        int i = ts.index();
+        try {
+            int paren = 0;
+            int curly = 0;
+            int triangle = 0;
+            ts.moveIndex(lastStatementStart);
+            StatementKind res = null;
+            while (true) {
+                if (!ts.moveNext()) {
+                    return null;
+                }
+                Token<CppTokenId> current = ts.token();
+                switch (current.id()) {
+                    case RPAREN: //(")", "separator"),
+                    {
+                        paren--;
+                        break;
+                    }
+                    case LPAREN: //("(", "separator"),
+                    {
+                        if (paren == 0 && curly == 0 && triangle == 0) {
+                            if (isDeclarationLevel()){
+                                return StatementKind.FUNCTION;
+                            } else {
+                                return StatementKind.EXPRESSION_STATEMENT;
+                            }
+                        }
+                        paren++;
+                        break;
+                    }
+                    case RBRACE: //("}", "separator"),
+                    case LBRACE: //("{", "separator"),
+                    case SEMICOLON: //(";", "separator"),
+                    {
+                       if (isDeclarationLevel()){
+                           if (res != null){
+                               return res;
+                           }
+                           return StatementKind.FUNCTION;
+                        } else {
+                            return StatementKind.DECLARATION_STATEMENT;
+                        }
+                    }
+                    case EQ: //("=", "operator"),
+                    {
+                       if (isDeclarationLevel()){
+                            return StatementKind.DECLARATION_STATEMENT;
+                        } else {
+                            return StatementKind.EXPRESSION_STATEMENT;
+                        }
+                    }
+                    case PLUSEQ: //("+=", "operator"),
+                    case MINUSEQ: //("-=", "operator"),
+                    case STAREQ: //("*=", "operator"),
+                    case SLASHEQ: //("/=", "operator"),
+                    case AMPEQ: //("&=", "operator"),
+                    case BAREQ: //("|=", "operator"),
+                    case CARETEQ: //("^=", "operator"),
+                    case PERCENTEQ: //("%=", "operator"),
+                    case LTLTEQ: //("<<=", "operator"),
+                    case GTGTEQ: //(">>=", "operator"),
+                    {
+                        if (paren == 0) {
+                            return StatementKind.EXPRESSION_STATEMENT;
+                        }
+                        break;
+                    }
+                    case GT: //(">", "operator"),
+                    {
+                        if (paren == 0 && curly == 0) {
+                            triangle--;
+                        }
+                        break;
+                    }
+                    case LT: //("<", "operator"),
+                    {
+                        if (paren == 0 && curly == 0) {
+                            triangle++;
+                        }
+                        break;
+                    }
+                    case NAMESPACE: //("namespace", "keyword"), //C++
+                        return StatementKind.NAMESPACE;
+                    case CLASS: //("class", "keyword"), //C++
+                        return StatementKind.CLASS;
+                    case STRUCT: //("struct", "keyword"),
+                    case ENUM: //("enum", "keyword"),
+                    case UNION: //("union", "keyword"),
+                    {
+                        if (paren == 0 && curly == 0 && triangle == 0) {
+                            res = StatementKind.CLASS;
+                        }
+                        break;
+                    }
+                    case EXTERN: //EXTERN("extern", "keyword"),
+                    {
+                        if (paren == 0 && curly == 0 && triangle == 0) {
+                            res = StatementKind.NAMESPACE;
+                        }
+                        break;
+                    }
+                    case ASM: //("if", "keyword-directive"),
+                    case IF: //("if", "keyword-directive"),
+                    case ELSE: //("else", "keyword-directive"),
+                    case SWITCH: //("switch", "keyword-directive"),
+                    case WHILE: //("while", "keyword-directive"),
+                    case DO: //("do", "keyword-directive"),
+                    case FOR: //("for", "keyword-directive"),
+                    case TRY: //("try", "keyword-directive"), // C++
+                    case CATCH: //("catch", "keyword-directive"), //C++
+                       return StatementKind.COMPAUND_STATEMENT;
+                }
+            }
+        } finally {
+            ts.moveIndex(i);
+            ts.moveNext();
+        }
+    }
     
-    public static enum StatementContinuetion {
+    public void clearLastStatementStart() {
+        lastStatementStart = -1;
+    }
+    
+    public void setLastStatementStart(ExtendedTokenSequence ts) {
+        if (lastStatementStart == -1) {
+            lastStatementStart = ts.index();
+            if (TRACE_STATEMENT) System.out.println("start of Statement/Declaration:"+ts.token().text());
+        }
+    }
+    
+    public static enum StatementContinuation {
         START,
         CONTINUE,
         STOP;
+    }
+
+    public static enum StatementKind {
+        NAMESPACE,
+        CLASS,
+        FUNCTION,
+        DECLARATION_STATEMENT,
+        COMPAUND_STATEMENT,
+        EXPRESSION_STATEMENT;
     }
 }

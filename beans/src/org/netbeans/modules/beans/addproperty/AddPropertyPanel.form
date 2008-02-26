@@ -62,7 +62,7 @@
                                   <Group type="102" alignment="0" attributes="0">
                                       <Component id="boundCheckBox" min="-2" max="-2" attributes="0"/>
                                       <EmptySpace min="-2" pref="35" max="-2" attributes="0"/>
-                                      <Component id="propNameTextField" pref="528" max="32767" attributes="0"/>
+                                      <Component id="propNameTextField" pref="546" max="32767" attributes="0"/>
                                       <EmptySpace min="-2" pref="27" max="-2" attributes="0"/>
                                   </Group>
                                   <Group type="102" alignment="0" attributes="0">
@@ -107,7 +107,7 @@
                       <EmptySpace min="-2" max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="0" attributes="0">
                           <Component id="errorLabel" alignment="0" min="-2" max="-2" attributes="0"/>
-                          <Component id="previewScrollPane" alignment="0" pref="651" max="32767" attributes="2"/>
+                          <Component id="previewScrollPane" alignment="0" pref="673" max="32767" attributes="2"/>
                       </Group>
                   </Group>
               </Group>
@@ -237,7 +237,7 @@
             <StringItem index="2" value="boolean"/>
             <StringItem index="3" value="long"/>
             <StringItem index="4" value="double"/>
-            <StringItem index="5" value="long"/>
+            <StringItem index="5" value="byte"/>
             <StringItem index="6" value="char"/>
             <StringItem index="7" value="short"/>
             <StringItem index="8" value="float"/>

@@ -73,7 +73,7 @@ import org.xml.sax.SAXException;
  */
 public final class KeyMapsStorage implements StorageDescription<Collection<KeyStroke>, MultiKeyBinding> {
 
-    // -J-Dorg.netbeans.modules.editor.settings.storage.KeyMapsStorage.level=FINE
+    // -J-Dorg.netbeans.modules.editor.settings.storage.keybindings.KeyMapsStorage.level=FINE
     private static final Logger LOG = Logger.getLogger(KeyMapsStorage.class.getName());
 
     public static final String ID = "Keybindings"; //NOI18N
@@ -176,6 +176,7 @@ public final class KeyMapsStorage implements StorageDescription<Collection<KeySt
                         String actionName = attributes.getValue(A_ACTION_NAME);
                         if (actionName != null) {
                             MultiKeyBinding mkb = new MultiKeyBinding(shortcut, actionName);
+                            LOG.fine("Adding: Key: '" + key + "' Action: '" + mkb.getActionName() + "'");
                             MultiKeyBinding duplicate = keyMap.put(mkb.getKeyStrokeList(), mkb);
                             if (duplicate != null && !duplicate.getActionName().equals(mkb.getActionName())) {
                                 LOG.warning("Duplicate shortcut '" + key + "' definition; rebound from '" + duplicate.getActionName() //NOI18N

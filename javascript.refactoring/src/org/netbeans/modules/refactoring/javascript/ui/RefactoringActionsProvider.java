@@ -51,7 +51,7 @@ import java.util.List;
 import javax.swing.JOptionPane;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.fileinfo.NonRecursiveFolder;
-import org.netbeans.fpi.gsf.CancellableTask;
+import org.netbeans.modules.gsf.api.CancellableTask;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.napi.gsfret.source.CompilationController;
 import org.netbeans.napi.gsfret.source.CompilationInfo;
@@ -72,7 +72,6 @@ import org.netbeans.modules.javascript.editing.lexer.LexUtilities;
 import org.openide.ErrorManager;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
-import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
 import org.openide.util.Lookup;
@@ -148,11 +147,14 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider{
         if (RetoucheUtils.isRefactorable(fo)) { //NOI18N
             return true;
         }
-        if ((dob instanceof DataFolder) && 
-                RetoucheUtils.isFileInOpenProject(fo) && 
-                RetoucheUtils.isOnSourceClasspath(fo) &&
-                !RetoucheUtils.isClasspathRoot(fo))
-            return true;
+
+        // No "package" renaming for JavaScript
+        //if ((dob instanceof DataFolder) && 
+        //        RetoucheUtils.isFileInOpenProject(fo) && 
+        //        RetoucheUtils.isOnSourceClasspath(fo) &&
+        //        !RetoucheUtils.isClasspathRoot(fo))
+        //    return true;
+
         return false;
     }
     
@@ -578,7 +580,7 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider{
             info.toPhase(Phase.ELEMENTS_RESOLVED);
             org.mozilla.javascript.Node root = AstUtilities.getRoot(info);
             if (root != null) {
-                Element element = AstElement.getElement(root);
+                Element element = AstElement.getElement(info, root);
                 JsElementCtx fileCtx = new JsElementCtx(root, root, element, info.getFileObject(), info);
                 ui = createRefactoringUI(fileCtx, info);
             }
@@ -645,6 +647,9 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider{
                 if (dob!=null) {
                     fobs[i] = dob.getPrimaryFile();
                     Source source = RetoucheUtils.getSource(fobs[i]);
+                    if (source == null) {
+                        continue;
+                    }
                     assert source != null;
                     try {
                         source.runUserActionTask(this, false);

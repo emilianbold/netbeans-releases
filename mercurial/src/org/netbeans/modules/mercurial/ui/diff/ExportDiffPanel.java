@@ -58,6 +58,7 @@ import org.openide.util.NbBundle;
 import org.netbeans.modules.versioning.util.AccessibleJFileChooser;
 import org.netbeans.modules.mercurial.util.HgCommand;
 import org.netbeans.modules.mercurial.HgModuleConfig;
+import org.netbeans.modules.mercurial.ui.log.RepositoryRevision;
 
 /**
  *
@@ -69,11 +70,12 @@ public class ExportDiffPanel extends javax.swing.JPanel implements ActionListene
     private RequestProcessor.Task           refreshViewTask;
     private Thread                          refreshViewThread;
     private static final RequestProcessor   rp = new RequestProcessor("MercurialExportDiff", 1);  // NOI18N
-
+    private RepositoryRevision              repoRev;
     private static final int HG_REVISION_TARGET_LIMIT = 100;
 
     /** Creates new form ExportDiffPanel */
-    public ExportDiffPanel(File repo) {
+    public ExportDiffPanel(File repo, RepositoryRevision repoRev) {
+        this.repoRev = repoRev;
         repository = repo;
         refreshViewTask = rp.create(new RefreshViewTask());
         initComponents();
@@ -109,6 +111,7 @@ public class ExportDiffPanel extends javax.swing.JPanel implements ActionListene
         revisionsComboBox = new javax.swing.JComboBox();
         fileLabel = new javax.swing.JLabel();
         browseButton = new javax.swing.JButton();
+        jLabel1 = new javax.swing.JLabel();
 
         revisionsLabel.setLabelFor(revisionsComboBox);
         org.openide.awt.Mnemonics.setLocalizedText(revisionsLabel, org.openide.util.NbBundle.getMessage(ExportDiffPanel.class, "ExportDiffPanel.revisionsLabel.text")); // NOI18N
@@ -117,6 +120,9 @@ public class ExportDiffPanel extends javax.swing.JPanel implements ActionListene
         org.openide.awt.Mnemonics.setLocalizedText(fileLabel, org.openide.util.NbBundle.getMessage(ExportDiffPanel.class, "ExportDiffPanel.fileLabel.text")); // NOI18N
 
         org.openide.awt.Mnemonics.setLocalizedText(browseButton, org.openide.util.NbBundle.getMessage(ExportDiffPanel.class, "ExportDiffPanel.browseButtonl.text")); // NOI18N
+
+        jLabel1.setForeground(java.awt.Color.gray);
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel1, org.openide.util.NbBundle.getMessage(ExportDiffPanel.class, "LBL_EXPORT_INFO")); // NOI18N
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
@@ -134,7 +140,9 @@ public class ExportDiffPanel extends javax.swing.JPanel implements ActionListene
                     .add(layout.createSequentialGroup()
                         .add(revisionsLabel)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(revisionsComboBox, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 297, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
+                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING, false)
+                            .add(org.jdesktop.layout.GroupLayout.TRAILING, jLabel1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .add(org.jdesktop.layout.GroupLayout.TRAILING, revisionsComboBox, 0, 297, Short.MAX_VALUE))))
                 .addContainerGap(20, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
@@ -144,13 +152,19 @@ public class ExportDiffPanel extends javax.swing.JPanel implements ActionListene
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(revisionsLabel)
                     .add(revisionsComboBox, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 27, Short.MAX_VALUE)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(jLabel1)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 22, Short.MAX_VALUE)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(fileLabel)
                     .add(outputFileTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                     .add(browseButton))
                 .add(26, 26, 26))
         );
+
+        revisionsComboBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ExportDiffPanel.class, "ACSD_revisionsComboBox")); // NOI18N
+        outputFileTextField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ExportDiffPanel.class, "ACSD_outputFileTextField")); // NOI18N
+        browseButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ExportDiffPanel.class, "ACSD_browseButton")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
     
 
@@ -162,15 +176,25 @@ public class ExportDiffPanel extends javax.swing.JPanel implements ActionListene
         final ProgressHandle ph = ProgressHandleFactory.createHandle(NbBundle.getMessage(ExportDiffPanel.class, "MSG_Fetching_Revisions")); // NOI18N
         try {
             Set<String>  initislRevsSet = new LinkedHashSet<String>();
+            ComboBoxModel targetsModel;
+            if(repoRev != null){
+                initislRevsSet.add(repoRev.getLog().getRevision() + " (" + repoRev.getLog().getCSetShortID() + ")" ); // NOI18N
+                targetsModel = new DefaultComboBoxModel(new Vector<String>(initislRevsSet));              
+                revisionsComboBox.setModel(targetsModel);
+                revisionsComboBox.setEditable(false);
+                refreshViewThread = Thread.currentThread();
+                Thread.interrupted();  // clear interupted status
+                ph.start();
+            }else{
+                initislRevsSet.add(NbBundle.getMessage(ExportDiffPanel.class, "MSG_Fetching_Revisions")); // NOI18N
+                targetsModel = new DefaultComboBoxModel(new Vector<String>(initislRevsSet));
+                revisionsComboBox.setModel(targetsModel);
+                refreshViewThread = Thread.currentThread();
+                Thread.interrupted();  // clear interupted status
+                ph.start();
 
-            initislRevsSet.add(NbBundle.getMessage(ExportDiffPanel.class, "MSG_Fetching_Revisions")); // NOI18N
-            ComboBoxModel targetsModel = new DefaultComboBoxModel(new Vector<String>(initislRevsSet));
-            revisionsComboBox.setModel(targetsModel);
-            refreshViewThread = Thread.currentThread();
-            Thread.interrupted();  // clear interupted status
-            ph.start();
-
-            refreshRevisions();
+                refreshRevisions();
+            }
             getDefaultOutputFile();
         } finally {
             SwingUtilities.invokeLater(new Runnable() {
@@ -248,6 +272,7 @@ public class ExportDiffPanel extends javax.swing.JPanel implements ActionListene
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton browseButton;
     private javax.swing.JLabel fileLabel;
+    private javax.swing.JLabel jLabel1;
     final javax.swing.JTextField outputFileTextField = new javax.swing.JTextField();
     private javax.swing.JComboBox revisionsComboBox;
     private javax.swing.JLabel revisionsLabel;

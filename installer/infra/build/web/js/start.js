@@ -216,6 +216,7 @@ function write_download_info() {
 
 function omniture_download_link() {
     var anchorElement = document.getElementById("download_link_p").getElementsByTagName("a")[0];//there is only one anchor in that paragraph
+    if(option_id!="" && platform_id!="" && lang_id!="") {
     if(s_siteid) { // this variable is defined only if s_code_remote.js was downloaded
         s_linkType = "d";
         s_linkName = s_siteid + option_id;
@@ -230,5 +231,6 @@ function omniture_download_link() {
         s_linkTrackEvents = "event7";
         s_lnk=s_co(anchorElement);
         s_gs(s_account); 
+    }
     }
 }

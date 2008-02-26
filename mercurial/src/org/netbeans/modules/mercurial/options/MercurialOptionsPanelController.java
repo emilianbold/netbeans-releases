@@ -320,8 +320,7 @@ final class MercurialOptionsPanelController extends OptionsPanelController imple
 
         final PropertiesTable propTable;
 
-        propTable = new PropertiesTable(PropertiesTable.PROPERTIES_COLUMNS, new
-String[] { PropertiesTableModel.COLUMN_NAME_VALUE});
+        propTable = new PropertiesTable(panel.labelForTable, PropertiesTable.PROPERTIES_COLUMNS, new String[] { PropertiesTableModel.COLUMN_NAME_VALUE});
 
         panel.setPropertiesTable(propTable);
 
@@ -335,12 +334,16 @@ String[] { PropertiesTableModel.COLUMN_NAME_VALUE});
 
         DialogDescriptor dd = new DialogDescriptor(panel, NbBundle.getMessage(MercurialOptionsPanelController.class, "CTL_PropertiesDialog_Title", null), true, null); // NOI18N
         final JButton okButton =  new JButton(NbBundle.getMessage(MercurialOptionsPanelController.class, "CTL_Properties_Action_OK")); // NOI18N
-        dd.setOptions(new Object[] {okButton,
-                                    NbBundle.getMessage(MercurialOptionsPanelController.class, "CTL_Properties_Action_Cancel")}); // NOI18N
+        okButton.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(MercurialOptionsPanelController.class, "CTL_Properties_Action_OK")); // NOI18N
+        final JButton cancelButton =  new JButton(NbBundle.getMessage(MercurialOptionsPanelController.class, "CTL_Properties_Action_Cancel")); // NOI18N
+        cancelButton.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(MercurialOptionsPanelController.class, "CTL_Properties_Action_Cancel")); // NOI18N
+        dd.setOptions(new Object[] {okButton, cancelButton}); // NOI18N
         dd.setHelpCtx(new HelpCtx(MercurialOptionsPanelController.class));
         panel.putClientProperty("contentTitle", null);  // NOI18N
         panel.putClientProperty("DialogDescriptor", dd); // NOI18N
         Dialog dialog = DialogDisplayer.getDefault().createDialog(dd);
+        dialog.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(MercurialOptionsPanelController.class, "CTL_PropertiesDialog_Title")); // NOI18N
+
         dialog.pack();
         dialog.setVisible(true);
         if (dd.getValue() == okButton) {

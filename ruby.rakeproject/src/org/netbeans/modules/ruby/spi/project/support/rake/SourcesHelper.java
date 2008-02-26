@@ -205,7 +205,7 @@ public final class SourcesHelper {
      * Add a typed source root which will be considered only in certain contexts.
      * @param location a project-relative or absolute path giving the location
      *                 of a source tree; may contain Ant property substitutions
-     * @param type a source root type such as <a href="@JAVA/PROJECT@/org/netbeans/fpi/gsfpath/project/JavaProjectConstants.html#SOURCES_TYPE_JAVA"><code>JavaProjectConstants.SOURCES_TYPE_JAVA</code></a>
+     * @param type a source root type such as <a href="@JAVA/PROJECT@/org/netbeans/modules/gsfpath/api/project/JavaProjectConstants.html#SOURCES_TYPE_JAVA"><code>JavaProjectConstants.SOURCES_TYPE_JAVA</code></a>
      * @param displayName a display name (for {@link SourceGroup#getDisplayName})
      * @param icon a regular icon for the source root, or null
      * @param openedIcon an opened variant icon for the source root, or null

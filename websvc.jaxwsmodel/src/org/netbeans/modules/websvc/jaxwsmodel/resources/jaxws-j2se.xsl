@@ -49,7 +49,7 @@ made subject to such option by the copyright holder.
     <xsl:template match="/">
         
         <project>
-
+            
             
             <xsl:comment>
                 ===================
@@ -95,6 +95,16 @@ made subject to such option by the copyright holder.
                             wsdl="${{basedir}}/xml-resources/web-service-references/{$wsname}/wsdl/{$wsdl_url}"
                             wsdlLocation="{$wsdl_url_actual}"
                             catalog="{$catalog}">
+                            <xsl:if test="jaxws:wsimport-options">
+                                <xsl:for-each select="jaxws:wsimport-options/jaxws:wsimport-option">
+                                    <xsl:variable name="wsoptionname" select="jaxws:wsimport-option-name"/>
+                                    <xsl:variable name="wsoptionvalue" select="jaxws:wsimport-option-value"/>
+                                    <xsl:variable name="wsoption">
+                                        <xsl:text><xsl:value-of select="$wsoptionname"/></xsl:text>
+                                    </xsl:variable>
+                                    <xsl:attribute name="{$wsoption}"><xsl:value-of select="$wsoptionvalue"/></xsl:attribute>
+                                </xsl:for-each>
+                            </xsl:if>
                             <xsl:if test="jaxws:binding">
                                 <binding dir="xml-resources/web-service-references/{$wsname}/bindings">
                                     <xsl:attribute name="includes">
@@ -118,6 +128,16 @@ made subject to such option by the copyright holder.
                             wsdl="${{basedir}}/xml-resources/web-service-references/{$wsname}/wsdl/{$wsdl_url}"
                             wsdlLocation="{$wsdl_url_actual}"
                             catalog="{$catalog}">
+                            <xsl:if test="jaxws:wsimport-options">
+                                <xsl:for-each select="jaxws:wsimport-options/jaxws:wsimport-option">
+                                    <xsl:variable name="wsoptionname" select="jaxws:wsimport-option-name"/>
+                                    <xsl:variable name="wsoptionvalue" select="jaxws:wsimport-option-value"/>
+                                    <xsl:variable name="wsoption">
+                                        <xsl:text><xsl:value-of select="$wsoptionname"/></xsl:text>
+                                    </xsl:variable>
+                                    <xsl:attribute name="{$wsoption}"><xsl:value-of select="$wsoptionvalue"/></xsl:attribute>
+                                </xsl:for-each>
+                            </xsl:if>
                             <xsl:if test="jaxws:binding">
                                 <binding dir="xml-resources/web-service-references/{$wsname}/bindings">
                                     <xsl:attribute name="includes">
@@ -161,5 +181,5 @@ made subject to such option by the copyright holder.
         </project>
         
     </xsl:template>
-
+    
 </xsl:stylesheet>

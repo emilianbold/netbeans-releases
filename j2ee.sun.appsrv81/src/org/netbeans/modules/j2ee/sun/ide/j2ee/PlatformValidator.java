@@ -61,7 +61,7 @@ public class PlatformValidator {
     public boolean isDescriminatorPresent(File loc, String serverVersion) {
         boolean retVal = ServerLocationManager.isGoodAppServerLocation(loc);
         if (retVal) {
-            File sipDescriminator = new File(loc, "lib/sip-stack.jar"); //NOI18N
+            File sipDescriminator = new File(loc, "lib/comms-appserv-rt.jar"); //NOI18N
             if(serverVersion.equals(SAILFIN_V1)){
                 if (!sipDescriminator.exists() || !sipDescriminator.isFile()) { //NOI18N
                    return false;

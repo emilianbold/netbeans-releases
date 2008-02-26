@@ -39,7 +39,7 @@
  * made subject to such option by the copyright holder.
  */
 package org.netbeans.modules.gsfret.editor.semantic;
-import org.netbeans.fpi.gsf.CancellableTask;
+import org.netbeans.modules.gsf.api.CancellableTask;
 
 /**
  * This file is originally from Retouche, the Java Support 

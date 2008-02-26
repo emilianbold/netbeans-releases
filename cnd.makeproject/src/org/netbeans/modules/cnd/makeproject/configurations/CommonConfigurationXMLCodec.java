@@ -297,6 +297,7 @@ public abstract class CommonConfigurationXMLCodec
     private void writeToolsSetBlock(XMLEncoderStream xes, MakeConfiguration makeConfiguration) {
 	xes.elementOpen(TOOLS_SET_ELEMENT);
         xes.element(COMPILER_SET_ELEMENT, "" + makeConfiguration.getCompilerSet().getOption());
+        xes.element(COMPILER_SET_ELEMENT+"2", "" + makeConfiguration.getCompilerSet2().getOption());
         xes.element(C_REQUIRED_ELEMENT, "" + makeConfiguration.getCRequired().getValue());
         xes.element(CPP_REQUIRED_ELEMENT, "" + makeConfiguration.getCppRequired().getValue());
         xes.element(FORTRAN_REQUIRED_ELEMENT, "" + makeConfiguration.getFortranRequired().getValue());

@@ -139,6 +139,8 @@ public class OnMessageNode extends BpelNode<OnMessage> {
 //            ActionType.GO_TO_DIAGRAMM,
             ActionType.GO_TO,
             ActionType.SEPARATOR,
+            ActionType.TOGGLE_BREAKPOINT,
+            ActionType.SEPARATOR,
 //            ActionType.CYCLE_MEX, // Issue 85553
             ActionType.SHOW_POPERTY_EDITOR,
             ActionType.SEPARATOR,

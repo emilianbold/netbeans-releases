@@ -47,11 +47,15 @@ import javax.swing.text.JTextComponent;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
-import org.netbeans.fpi.gsf.BracketCompletion;
-import org.netbeans.fpi.gsf.CompilationInfo;
-import org.netbeans.fpi.gsf.OffsetRange;
+import org.netbeans.editor.BaseDocument;
+import org.netbeans.editor.Utilities;
+import org.netbeans.modules.gsf.api.BracketCompletion;
+import org.netbeans.modules.gsf.api.CompilationInfo;
+import org.netbeans.modules.gsf.api.OffsetRange;
 import org.netbeans.modules.css2.editor.LexerUtils;
 import org.netbeans.modules.css2.lexer.api.CSSTokenId;
+import org.netbeans.modules.editor.indent.api.Reformat;
+import org.openide.util.Exceptions;
 
 /**
  *
@@ -60,6 +64,7 @@ import org.netbeans.modules.css2.lexer.api.CSSTokenId;
 public class CssBracketCompleter implements BracketCompletion {
 
     private static final char[][] PAIRS = new char[][]{{'{', '}'}, {'"', '"'}, {'\'', '\''}};
+    private char justAddedPair;
 
     private int pairIndex(char ch) {
         for (int i = 0; i < PAIRS.length; i++) {
@@ -73,11 +78,28 @@ public class CssBracketCompleter implements BracketCompletion {
 
     public boolean beforeCharInserted(Document doc, int dot, JTextComponent target, char ch) throws BadLocationException {
         Caret caret = target.getCaret();
+
+        if (justAddedPair == ch) {
+            //skip
+            justAddedPair = 0;
+            caret.setDot(dot + 1);
+            return true;
+        }
+
+        justAddedPair = 0;
+
+        //test if we care about the typed character
+        int pairIdx = pairIndex(ch);
+        if (pairIdx == -1) {
+            return false;
+        }
+
         if (target.getSelectionStart() != dot) {
             /** @todo implement the adding quotes around selected text
              */
             return false;
         }
+
 
         if (ch == '\'' || ch == '"') {
             //handle quotations
@@ -85,67 +107,100 @@ public class CssBracketCompleter implements BracketCompletion {
             TokenSequence<CSSTokenId> ts = LexerUtils.getCssTokenSequence(doc, dot);
             if (ts != null) {
                 int diff = ts.move(dot);
-                System.out.println("diff " + diff);
-                if(ts.moveNext() || ts.movePrevious()) {
+                if (ts.moveNext()) {
                     Token t = ts.token();
-                    if(t.id() == CSSTokenId.STRING) {
-                        //there is already a string, do nothing
-                        return false;
+                    if (t.id() == CSSTokenId.STRING) {
+                        //we are in or at a string
+                        char front = t.text().charAt(diff);
+                        if (front == ch) {
+                            //do not insert, just move caret
+                            caret.setDot(dot + 1);
+                            return true;
+                        } else {
+                            //do nothing
+                            return false;
+                        }
+                    }
+                }
+
+                //cover "text| and user types "
+                //in such case just the quotation should be added
+
+                //go back until we find " or ; { or } and test of the 
+                //found quotation is a part of a string or not
+                ts.move(dot);
+                while (ts.movePrevious()) {
+                    Token t = ts.token();
+                    if (t.text().charAt(0) == ch) {
+                        if (t.id() == CSSTokenId.STRING || t.id() == CSSTokenId.STRING1 || t.id() == CSSTokenId.STRING2) {
+                            //no unmatched quotation mark
+                            break;
+                        } else {
+                            //found unmatched quotation mark - do nothing
+                            return false;
+                        }
+                    }
+                    if (t.id() == CSSTokenId.LBRACE || t.id() == CSSTokenId.RBRACE || t.id() == CSSTokenId.SEMICOLON) {
+                        //break the loop, not quotation found - we can complete
+                        break;
                     }
                 }
             }
-
-            int pairIdx = pairIndex(ch);
-            
-            doc.insertString(dot, String.valueOf(PAIRS[pairIdx][0]), null);
-            doc.insertString(dot + 1, String.valueOf(PAIRS[pairIdx][1]), null);
-            caret.setDot(dot + 1);
-            return true;
-
         }
 
-        return false;
+        justAddedPair = PAIRS[pairIdx][1];
+
+        doc.insertString(dot, String.valueOf(PAIRS[pairIdx][0]), null);
+        doc.insertString(dot + 1, String.valueOf(justAddedPair), null);
+        caret.setDot(dot + 1);
+        return true;
+
     }
 
     public boolean afterCharInserted(Document doc, int caretOffset, JTextComponent target, char ch) throws BadLocationException {
         return false;
     }
 
-    public boolean charBackspaced(Document doc, int caretOffset, JTextComponent target, char ch) throws BadLocationException {
-
-        int index = pairIndex(ch);
-        if (index == -1) {
-            //not interested
-            return false;
-        }
-
-
-        TokenSequence<CSSTokenId> ts = LexerUtils.getCssTokenSequence(doc, caretOffset);
-        if (ts == null) {
-            //no css
-            return false;
-        }
-
-        int diff = ts.move(caretOffset);
-        System.out.println("diff = " + diff);
-
-        if (ts.moveNext() || ts.movePrevious()) {
-            Token t = ts.token();
-
-            if (t.id() == CSSTokenId.STRING) {
-            }
-        }
-
-
+    public boolean charBackspaced(Document doc, int dot, JTextComponent target, char ch) throws BadLocationException {
         return false;
 
     }
 
-    public int beforeBreak(Document doc, int caretOffset, JTextComponent caret) throws BadLocationException {
+    public int beforeBreak(Document doc, int dot, JTextComponent jtc) throws BadLocationException {
+        if (dot == 0 || dot == doc.getLength()) { //check corners
+            return -1;
+        }
+        String context = doc.getText(dot - 1, 2); //get char before and after
+
+        if ("{}".equals(context)) {
+            Reformat reformatter = Reformat.get(doc);
+            BaseDocument bdoc = (BaseDocument) doc;
+
+            reformatter.lock();
+            try {
+                bdoc.atomicLock();
+                //smart indent
+                doc.insertString(dot, "\n", null);
+                //move caret
+                jtc.getCaret().setDot(dot);
+                //and indent the line
+                try {
+                    reformatter.reformat(dot - 1, dot + 2);
+                } finally {
+                    bdoc.atomicUnlock();
+                }
+            } finally {
+                reformatter.unlock();
+            }
+
+        }
+
         return -1;
+
     }
 
     public OffsetRange findMatching(Document doc, int caretOffset) {
+        //XXX returning null or the default should cause GSF to use the IDE default matcher
         return OffsetRange.NONE;
     }
 
@@ -156,4 +211,5 @@ public class CssBracketCompleter implements BracketCompletion {
     public int getNextWordOffset(Document doc, int caretOffset, boolean reverse) {
         return -1;
     }
+    
 }

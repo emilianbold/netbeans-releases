@@ -48,20 +48,22 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.URL;
 import java.util.jar.JarFile;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.apache.jasper.JasperException;
 import org.apache.jasper.JspCompilationContext;
-import org.apache.jasper.compiler.Compiler;
-import org.openide.ErrorManager;
 
 /**
  *
  * @author Petr Jiricka
  */
 public class ParserControllerProxy {
+    
+    private static final Logger LOGGER  = Logger.getLogger(ParserControllerProxy.class.getName());
 
-    private JspCompilationContext ctxt;
-    private Compiler compiler;
-    private ParserController pc;
+    private final JspCompilationContext ctxt;
+    private final Compiler compiler;
+    private final ParserController pc;
     
     boolean isXml;
     String sourceEnc;
@@ -87,30 +89,28 @@ public class ParserControllerProxy {
     public static void initMethodsAndFields() {
         try {
             // getJarFile method
-            getJarFileM = ParserController.class.getDeclaredMethod("getJarFile", new Class[] {URL.class});
+            getJarFileM = ParserController.class.getDeclaredMethod("getJarFile", new Class[] {URL.class}); // NOI18N
             getJarFileM.setAccessible(true);
             // resolveFileName method
-            resolveFileNameM = ParserController.class.getDeclaredMethod("resolveFileName", new Class[] {String.class});
+            resolveFileNameM = ParserController.class.getDeclaredMethod("resolveFileName", new Class[] {String.class}); // NOI18N
             resolveFileNameM.setAccessible(true);
             // getJspConfigPageEncoding method
-            getJspConfigPageEncodingM = ParserController.class.getDeclaredMethod("getJspConfigPageEncoding", new Class[] {String.class});
+            getJspConfigPageEncodingM = ParserController.class.getDeclaredMethod("getJspConfigPageEncoding", new Class[] {String.class}); // NOI18N
             getJspConfigPageEncodingM.setAccessible(true);
             // determineSyntaxAndEncoding method
-            determineSyntaxAndEncodingM = ParserController.class.getDeclaredMethod("determineSyntaxAndEncoding", new Class[] 
+            determineSyntaxAndEncodingM = ParserController.class.getDeclaredMethod("determineSyntaxAndEncoding", new Class[]  // NOI18N
                 {String.class, JarFile.class, String.class});
             determineSyntaxAndEncodingM.setAccessible(true);
             // isXML field
-            isXmlF = ParserController.class.getDeclaredField("isXml");
+            isXmlF = ParserController.class.getDeclaredField("isXml"); // NOI18N
             isXmlF.setAccessible(true);
             // sourceEnc field
-            sourceEncF = ParserController.class.getDeclaredField("sourceEnc");
+            sourceEncF = ParserController.class.getDeclaredField("sourceEnc"); // NOI18N
             sourceEncF.setAccessible(true);
-        }
-        catch (NoSuchMethodException e) {
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
-        }
-        catch (NoSuchFieldException e) {
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+        } catch (NoSuchMethodException e) {
+            LOGGER.log(Level.INFO, null, e);
+        } catch (NoSuchFieldException e) {
+            LOGGER.log(Level.INFO, null, e);
         }
     }
     
@@ -137,12 +137,10 @@ public class ParserControllerProxy {
             // now the isXml and sourceEnc variables of ParserController have values
             isXml = ((Boolean)isXmlF.get(pc)).booleanValue();
             sourceEnc = (String)sourceEncF.get(pc);
-        }
-        catch (IllegalAccessException e) {
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+        } catch (IllegalAccessException e) {
+            LOGGER.log(Level.INFO, null, e);
             throw new JasperException(e);
-        }
-        catch (InvocationTargetException e) {
+        } catch (InvocationTargetException e) {
             Throwable r = e.getTargetException();
             if (r instanceof RuntimeException) {
                 throw (RuntimeException)r;
@@ -156,9 +154,8 @@ public class ParserControllerProxy {
             if (r instanceof IOException) {
                 throw (IOException)r;
             }
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+            LOGGER.log(Level.INFO, null, e);
             throw new JasperException(e);
         }
     }
-    
 }

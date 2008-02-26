@@ -41,11 +41,10 @@
 package org.netbeans.modules.javascript.editing;
 
 import org.mozilla.javascript.Node;
-import org.netbeans.fpi.gsf.ElementHandle;
-import org.netbeans.fpi.gsf.OffsetRange;
-import org.netbeans.fpi.gsf.ParserFile;
-import org.netbeans.fpi.gsf.ParserResult;
-import org.netbeans.fpi.gsf.annotations.NonNull;
+import org.netbeans.modules.gsf.api.OffsetRange;
+import org.netbeans.modules.gsf.api.ParserFile;
+import org.netbeans.modules.gsf.api.ParserResult;
+import org.netbeans.modules.gsf.api.annotations.NonNull;
 import org.netbeans.modules.javascript.editing.embedding.JsModel;
 
 
@@ -57,21 +56,17 @@ public class JsParseResult extends ParserResult {
     JsModel model;
     private AstTreeNode ast;
     private Node rootNode;
-//    private AstRootElement rootElement;
-    private AstElement rootElement;
     private String source;
     private OffsetRange sanitizedRange = OffsetRange.NONE;
     private String sanitizedContents;
     private JsAnalyzer.AnalysisResult analysisResult;
     private JsParser.Sanitize sanitized;
-//    private JsParserResult jrubyResult;
     private boolean commentsAdded;
 
     
-    public JsParseResult(JsParser parser, ParserFile file, AstElement rootElement, Node rootNode, AstTreeNode ast) {
+    public JsParseResult(JsParser parser, ParserFile file, Node rootNode, AstTreeNode ast) {
         super(parser, file, JsMimeResolver.JAVASCRIPT_MIME_TYPE);
         this.rootNode = rootNode;
-        this.rootElement = rootElement;
         this.ast = ast;
     }
     
@@ -93,11 +88,6 @@ public class JsParseResult extends ParserResult {
         this.ast = ast;
     }
 
-    @Override
-    public ElementHandle getRoot() {
-        return JsParser.createHandle(this, rootElement);
-    }
-    
     /** The root node of the AST produced by the parser.
      * Later, rip out the getAst part etc.
      */
@@ -147,7 +137,7 @@ public class JsParseResult extends ParserResult {
     @NonNull
     public JsAnalyzer.AnalysisResult getStructure() {
         if (analysisResult == null) {
-            analysisResult = JsAnalyzer.analyze(this);
+            analysisResult = JsAnalyzer.analyze(this, getInfo());
         }
         return analysisResult;
     }

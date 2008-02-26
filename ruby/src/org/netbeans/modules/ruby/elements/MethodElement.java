@@ -42,9 +42,6 @@ package org.netbeans.modules.ruby.elements;
 
 import java.util.List;
 
-import org.netbeans.modules.ruby.elements.Element;
-
-
 /**
  * RubyElements that correspond to methods will implement this interface
  * whether they are from an AST or from an index

@@ -232,6 +232,10 @@ private void checkScanCommentsOnlyStateChanged(javax.swing.event.ChangeEvent evt
 }//GEN-LAST:event_checkScanCommentsOnlyStateChanged
 
 private void btnRemoveActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnRemoveActionPerformed
+    TableCellEditor editor = table.getCellEditor();
+    if( null != editor )
+        editor.cancelCellEditing();
+    
     boolean wasValid = isDataValid();
     
     int selRow = table.getSelectedRow();
