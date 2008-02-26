@@ -135,6 +135,11 @@ public final class NbModuleSuite extends Object {
                     bootCP.add(u);
                 }
             }
+            
+            File tools = new File(new File(new File(System.getProperty("java.home")).getParentFile(), "lib"), "tools.jar");
+            Assert.assertTrue(tools.exists());
+            bootCP.add(tools.toURL());
+            
             // loader that does not see our current classloader
             ClassLoader parent = ClassLoader.getSystemClassLoader().getParent();
             URLClassLoader loader = new URLClassLoader(bootCP.toArray(new URL[0]), parent);

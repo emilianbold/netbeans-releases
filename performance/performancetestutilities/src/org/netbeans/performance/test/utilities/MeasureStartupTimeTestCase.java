@@ -204,7 +204,10 @@ public class MeasureStartupTimeTestCase extends org.netbeans.junit.NbPerformance
      * @throws IOException
      */
     protected static long runIDE(File ideHome, File userdir, File measureFile, long timeout) throws IOException {
+        return runIDE(ideHome, userdir, measureFile, timeout, null);
+    }
         
+    static long runIDE(File ideHome, File userdir, File measureFile, long timeout, File[] clusters) throws IOException {
         //check <userdir>/lock file
         if(new File(userdir, "lock").exists())
             fail("Original Userdir is locked!");
@@ -290,7 +293,7 @@ public class MeasureStartupTimeTestCase extends org.netbeans.junit.NbPerformance
      * @throws IOException
      * @return IDE home directory
      */
-    protected File getIdeHome() throws IOException {
+    protected static File getIdeHome() throws IOException {
         String nbHome = System.getProperty("netbeans.dest.dir");
         File ideHome = new File(nbHome);
         if (!ideHome.isDirectory()) {

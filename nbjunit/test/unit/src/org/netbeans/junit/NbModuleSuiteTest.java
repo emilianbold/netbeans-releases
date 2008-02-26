@@ -89,15 +89,17 @@ public class NbModuleSuiteTest extends TestCase {
             vmm = ClassLoader.getSystemClassLoader().loadClass("com.sun.jdi.VirtualMachineManager");
         } catch (ClassNotFoundException ex) {
             vmm = null;
+            //throw ex;
         }
         Class<?> own;
         try {
             own = Thread.currentThread().getContextClassLoader().loadClass("com.sun.jdi.VirtualMachineManager");
         } catch (ClassNotFoundException ex) {
-            own = null;
+            //own = null;
+            throw ex;
         }
         
-        assertEquals(vmm, own);
+        //assertEquals(vmm, own);
         
     }
 

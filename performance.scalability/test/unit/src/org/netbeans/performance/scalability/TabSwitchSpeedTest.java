@@ -39,17 +39,24 @@
 
 package org.netbeans.performance.scalability;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
+import java.io.InputStream;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import javax.swing.SwingUtilities;
-import javax.swing.text.BadLocationException;
 import junit.framework.Test;
 import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.junit.NbTestCase;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.Repository;
 import org.openide.loaders.DataObject;
+import org.openide.modules.ModuleInfo;
+import org.openide.util.Lookup;
 import org.openide.windows.Mode;
 import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
@@ -61,33 +68,49 @@ import org.openide.windows.WindowManager;
 public class TabSwitchSpeedTest extends NbTestCase {
 
     private static final long SWITCH_LIMIT = 100; // ms
-    private FileObject[] openFiles;
+    private static TopComponent[] openTC;
+    
     
     public TabSwitchSpeedTest(String name) {
         super(name);
     }
 
     public static Test suite() {
-        return NbModuleSuite.create(TabSwitchSpeedTest.class);
+        return NbModuleSuite.create(TabSwitchSpeedTest.class, ".*");
     }
 
     @Override
     public void setUp() throws Exception {
-        FileObject root = FileUtil.toFileObject(getWorkDir());
-        
-        openFiles = new FileObject[30];
-        for (int i = 0; i < openFiles.length; i++) {
-            openFiles[i] = FileUtil.createData(root, "empty" + i + ".txt");
+        if (openTC == null) {
+            FileObject root = FileUtil.toFileObject(getWorkDir());
+            assertNotNull("Cannot find dir for " + getWorkDir() + " exists: " + getWorkDir().exists(), root);
+
+            FileObject[] openFiles = new FileObject[30];
+            for (int i = 0; i < openFiles.length; i++) {
+                openFiles[i] = FileUtil.createData(root, "empty" + i + ".txt");
+            }
+
+            openTC = new TopComponent[openFiles.length];
+            for (int i = 0; i < openFiles.length; i++) {
+                DataObject dobj = DataObject.find(openFiles[i]);
+                EditorCookie cookie = dobj.getLookup().lookup(EditorCookie.class);
+                cookie.open();
+            }
         }
     }
 
-    public void testSimpleSwitch() throws InterruptedException, InvocationTargetException, IOException {
-        for (int i = 0; i < openFiles.length; i++) {
-            DataObject dobj = DataObject.find(openFiles[i]);
-            EditorCookie cookie = dobj.getCookie(EditorCookie.class);
-            cookie.open();
-        }
+    public void testSimpleSwitch() throws Exception {
+        doSwitchTest();
+    }
+    
+    public void testAllPlatform() throws Exception {
+        enableModulesFromCluster(".*");
+        doSwitchTest();
+    }
+    
+    private void doSwitchTest() throws Exception {
         Thread.sleep(5000);
+        
         final TopComponent[][] ref = new TopComponent[1][0];
         SwingUtilities.invokeAndWait(new Runnable() {
 
@@ -119,57 +142,94 @@ public class TabSwitchSpeedTest extends NbTestCase {
             public void run() {
             }
         });
-        long b = System.currentTimeMillis();
-        fail("Result: " + (b - a));
+        long time = System.currentTimeMillis() - a;
+        System.err.println("Result time: " + time);
+        if (time > 300) {
+            fail("Failed, too long: " + time);
+        }
     }
     
-    public void testSwitchAfterModification() throws InterruptedException, InvocationTargetException, IOException {
-        for (int i = 0; i < openFiles.length; i++) {
-            DataObject dobj = DataObject.find(openFiles[i]);
-            EditorCookie cookie = dobj.getCookie(EditorCookie.class);
-            cookie.open();
-        }
-        Thread.sleep(5000);
-        final TopComponent[][] ref = new TopComponent[1][0];
-        SwingUtilities.invokeAndWait(new Runnable() {
-
-            public void run() {
-                TopComponent tc = TopComponent.getRegistry().getActivated();
-                Mode mode = WindowManager.getDefault().findMode(tc);
-                ref[0] = mode.getTopComponents();
+   private static void enableModulesFromCluster(String cluster) throws Exception {
+        Pattern p = Pattern.compile(cluster);
+        String dirs = System.getProperty("netbeans.dirs");
+        int cnt = 0;
+        for (String c : dirs.split(File.pathSeparator)) {
+            if (!p.matcher(c).find()) {
+                continue;
             }
             
-        });
-        final TopComponent[] openedComponents = ref[0];
+            File cf = new File(c);
+            File ud = new File(System.getProperty("netbeans.user"));
+            turnModules(ud, cf);
+            cnt++;
+        }
+        if (cnt == 0) {
+            fail("Cannot find cluster " + cluster + " in " + dirs);
+        }
         
-        for (int i = openedComponents.length - 1; i > 0; i--) {
-            final int index = i;
-            final long[] time = new long[2];
-            SwingUtilities.invokeLater(new Runnable() {
+        Repository.getDefault().getDefaultFileSystem().refresh(false);
+        LOOP: for (int i = 0; i < 20; i++) {
+            Thread.sleep(1000);
+            for (ModuleInfo info : Lookup.getDefault().lookupAll(ModuleInfo.class)) {
+                if (!info.isEnabled()) {
+                    System.err.println("not enabled yet " + info);
+                    continue LOOP;
+                }
+            }
+        }
+    }
+    private static void turnModules(File ud, File... clusterDirs) throws IOException {
+        File config = new File(new File(ud, "config"), "Modules");
+        config.mkdirs();
 
-                public void run() {
+        for (File c : clusterDirs) {
+            File modulesDir = new File(new File(c, "config"), "Modules");
+            for (File m : modulesDir.listFiles()) {
+                String n = m.getName();
+                if (n.endsWith(".xml")) {
+                    n = n.substring(0, n.length() - 4);
+                }
+                n = n.replace('-', '.');
+
+                String xml = asString(new FileInputStream(m), true);
+                Matcher matcherEnabled = ENABLED.matcher(xml);
+             //   Matcher matcherEager = EAGER.matcher(xml);
+
+                boolean found = matcherEnabled.find();
+
+                if (found) {
+                    assert matcherEnabled.groupCount() == 1 : "Groups: " + matcherEnabled.groupCount() + " for:\n" + xml;
+
                     try {
-                        time[0] = System.currentTimeMillis();
-                        openedComponents[index].requestActive();
-                        DataObject dob = openedComponents[index].getLookup().lookup(DataObject.class);
-                        EditorCookie cookie = dob.getCookie(EditorCookie.class);
-                        cookie.getDocument().insertString(0, "Test", null);
-                    } catch (BadLocationException ex) {
-                        System.err.println(ex);
+                        String out = 
+                            xml.substring(0, matcherEnabled.start(1)) +
+                            "true" +
+                            xml.substring(matcherEnabled.end(1));
+                        writeModule(new File(config, m.getName()), out);
+                    } catch (IllegalStateException ex) {
+                        throw (IOException)new IOException("Unparsable:\n" + xml).initCause(ex);
                     }
                 }
-            });
-            Thread.sleep(SWITCH_LIMIT);
-        }
-        long a = System.currentTimeMillis();
-        
-        SwingUtilities.invokeAndWait(new Runnable() {
-
-            public void run() {
             }
-        });
-        long b = System.currentTimeMillis();
-        fail("Result: " + (b - a));
+        }
+    }
+    private static Pattern ENABLED = Pattern.compile("<param name=[\"']enabled[\"']>([^<]*)</param>", Pattern.MULTILINE);
+
+    private static void writeModule(File file, String xml) throws IOException {
+        FileOutputStream os = new FileOutputStream(file);
+        os.write(xml.getBytes("UTF-8"));
+        os.close();
+    }
+    private static String asString(InputStream is, boolean close) throws IOException {
+        byte[] arr = new byte[is.available()];
+        int len = is.read(arr);
+        if (len != arr.length) {
+            throw new IOException("Not fully read: " + arr.length + " was " + len);
+        }
+        if (close) {
+            is.close();
+        }
+        return new String(arr, "UTF-8"); // NOI18N
     }
 }
 
