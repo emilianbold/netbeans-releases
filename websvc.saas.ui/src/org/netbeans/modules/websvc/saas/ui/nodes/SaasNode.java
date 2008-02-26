@@ -39,6 +39,7 @@
 
 package org.netbeans.modules.websvc.saas.ui.nodes;
 
+import java.awt.Image;
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.Action;
@@ -79,6 +80,13 @@ public abstract class SaasNode extends AbstractNode {
         return saas.getDescription();
     }
 
+    @Override
+    public Image getIcon(int type) {
+        return getGenericIcon(type);
+    }
+    
+    protected abstract Image getGenericIcon(int type);
+
     public static List<Action> getActions(Lookup lookup) {
         List<Action> actions = new ArrayList<Action>();
         for (SaasNodeActionsProvider ext : SaasUtil.getSaasNodeActionsProviders()) {
@@ -91,7 +99,6 @@ public abstract class SaasNode extends AbstractNode {
     
     @Override
     public Action[] getActions(boolean context) {
-        saas.toStateReady();
         List<Action> actions = getActions(getLookup());
         actions.add(SystemAction.get(ViewApiDocAction.class));
         actions.add(SystemAction.get(DeleteServiceAction.class));

@@ -42,7 +42,6 @@
 package org.netbeans.modules.websvc.saas.codegen.java;
 
 import javax.lang.model.element.Modifier;
-import org.netbeans.modules.websvc.rest.model.api.RestConstants;
 
 /**
  *
@@ -58,17 +57,61 @@ public class Constants {
     
     public static final String XML_ATTRIBUTE_ANNOTATION = "XmlAttribute";  //NOI18N
     
-    public static final String WEB_APPLICATION_EXCEPTION = RestConstants.REST_API_PACKAGE + "WebApplicationException";
+    public static final String PATH_ANNOTATION = "Path"; //NOI18N
     
-    public static final String HTTP_RESPONSE = RestConstants.REST_API_PACKAGE + "core.Response"; //NOI18N
+    public static final String URI_PARAM_ANNOTATION = "UriParam";       //NOI18N
     
-    public static final String RESPONSE_BUILDER = RestConstants.REST_API_PACKAGE + "core.Response.Builder";       //NOI8N
+    public static final String QUERY_PARAM_ANNOTATION = "QueryParam";       //NOI18N
     
-    public static final String ENTITY_TYPE = RestConstants.REST_API_PACKAGE + "Entity";
+    public static final String DEFAULT_VALUE_ANNOTATION = "DefaultValue";       //NOI18N
     
-    public static final String HTTP_CONTEXT = RestConstants.REST_API_PACKAGE + "core.HttpContext";    //NOI18N
+    public static final String GET_ANNOTATION = "GET";   //NOI18N
     
-    public static final String URI_INFO = RestConstants.REST_API_PACKAGE + "core.UriInfo";     //NOI18N
+    public static final String POST_ANNOTATION = "POST";   //NOI18N
+    
+    public static final String PUT_ANNOTATION = "PUT";   //NOI18N
+    
+    public static final String DELETE_ANNOTATION = "DELETE";   //NOI18N
+    
+    public static final String PRODUCE_MIME_ANNOTATION = "ProduceMime"; //NOI18N
+    
+    public static final String CONSUME_MIME_ANNOTATION = "ConsumeMime"; //NOI18N
+    
+    public static final String HTTP_CONTEXT_ANNOTATION = "HttpContext";     //NOI18N
+
+    public static final String REST_API_PACKAGE = "javax.ws.rs.";       //NOI18N
+    
+    public static final String PATH = REST_API_PACKAGE + PATH_ANNOTATION;
+    
+    public static final String GET = REST_API_PACKAGE + GET_ANNOTATION;
+    
+    public static final String POST = REST_API_PACKAGE + POST_ANNOTATION;
+    
+    public static final String PUT = REST_API_PACKAGE + PUT_ANNOTATION;
+    
+    public static final String DELETE = REST_API_PACKAGE + DELETE_ANNOTATION;
+    
+    public static final String PRODUCE_MIME = REST_API_PACKAGE + PRODUCE_MIME_ANNOTATION;
+    
+    public static final String CONSUME_MIME = REST_API_PACKAGE + CONSUME_MIME_ANNOTATION;
+    
+    public static final String URI_PARAM = REST_API_PACKAGE + URI_PARAM_ANNOTATION;
+    
+    public static final String QUERY_PARAM = REST_API_PACKAGE + QUERY_PARAM_ANNOTATION;
+    
+    public static final String DEFAULT_VALUE = REST_API_PACKAGE + DEFAULT_VALUE_ANNOTATION;
+
+    public static final String WEB_APPLICATION_EXCEPTION = REST_API_PACKAGE + "WebApplicationException";
+    
+    public static final String HTTP_RESPONSE = REST_API_PACKAGE + "core.Response"; //NOI18N
+    
+    public static final String RESPONSE_BUILDER = REST_API_PACKAGE + "core.Response.Builder";       //NOI8N
+    
+    public static final String ENTITY_TYPE = REST_API_PACKAGE + "Entity";
+    
+    public static final String HTTP_CONTEXT = REST_API_PACKAGE + "core.HttpContext";    //NOI18N
+    
+    public static final String URI_INFO = REST_API_PACKAGE + "core.UriInfo";     //NOI18N
     
     public static final String URI_TYPE = "java.net.URI";       //NOI18N
     
@@ -155,10 +198,10 @@ public class Constants {
     }
     
     public enum HttpMethodType {
-        GET("get", "GET"),   //NOI18N
-        PUT("put", "PUT"), //NOI18N
-        POST("post", "POST"), //NOI18N
-        DELETE("delete", "DELETE"); //NOI18N
+        GET("get", Constants.GET), 
+        PUT("put", Constants.PUT),
+        POST("post", Constants.POST),
+        DELETE("delete", Constants.DELETE);
         
         private String prefix; 
         private String annotationType;
@@ -178,6 +221,22 @@ public class Constants {
         
         public String getAnnotationType() {
             return annotationType;
+        }
+    }
+    
+    public enum SaasAuthenticationType {
+        HTTP_BASIC("http-basic"), 
+        API_KEY("api-key"),
+        CUSTOM("custom");
+        
+        private String value;
+        
+        SaasAuthenticationType(String value) {
+            this.value = value;
+        }
+        
+        public String value() {
+            return value;
         }
     }
    

@@ -42,20 +42,17 @@
 package org.netbeans.modules.gsfret.source.usages;
 
 import java.io.IOException;
-import java.io.PrintWriter;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
-import org.netbeans.api.gsf.Indexer;
-import org.netbeans.api.gsf.ParserFile;
-import org.netbeans.api.gsf.ParserResult;
-import org.netbeans.napi.gsfret.source.ParserTaskImpl;
+import org.netbeans.modules.gsf.api.IndexDocument;
+import org.netbeans.modules.gsf.api.IndexDocumentFactory;
+import org.netbeans.modules.gsf.api.Indexer;
+import org.netbeans.modules.gsf.api.ParserFile;
+import org.netbeans.modules.gsf.api.ParserResult;
 import org.netbeans.napi.gsfret.source.ParserTaskImpl;
 import org.netbeans.modules.gsf.Language;
 import org.netbeans.modules.gsf.LanguageRegistry;
-import org.openide.filesystems.FileObject;
 
 /**
  * This file is originally from Retouche, the Java Support 
@@ -66,18 +63,18 @@ import org.openide.filesystems.FileObject;
  *
  * @author Tomas Zezula
  */
-public class SourceAnalyser {    
+public class SourceAnalyser implements IndexDocumentFactory {    
     
     private final Index index;
     private final Map<String, List<String>> references;
-    private final Set<String> toDelete;
+    //private final Set<String> toDelete;
     
     /** Creates a new instance of SourceAnalyser */
     public SourceAnalyser (final Index index) {
         assert index != null;
         this.index = index;
         this.references = new HashMap<String, List<String>> ();
-        this.toDelete = new HashSet<String> ();
+        //this.toDelete = new HashSet<String> ();
     }
     
     public final boolean isUpToDate(String resourceName, long resourceMTime) throws IOException {
@@ -91,40 +88,53 @@ public class SourceAnalyser {
         return this.index.isValid(true);
     }
 
-    public void analyse (final Iterable<ParserResult/*? extends CompilationUnitTree*/> data, ParserTaskImpl jt, /*JavaFileManager manager, */ParserFile sibling) throws IOException {
+    public void analyse(Language language, final Iterable<ParserResult/*? extends CompilationUnitTree*/> data, ParserTaskImpl jt, /*JavaFileManager manager, */ParserFile sibling) throws IOException {
         // I should stash some shit into this.references here such that I can try storing them later, for example
         // all the class names I can find. This would be a good place to look for the desired language...
         // Of course, I can have multiple, so I have to index these by the language type, right? Otherwise
         // how do I choose which one to ask?
         // Actually, do it once per filetype - it's cheap compared to all the other crap I do per file anyway
-        for (ParserResult result : data) {
-            FileObject fo = result.getFile().getFileObject();
-            Language language = LanguageRegistry.getInstance().getLanguageByMimeType(fo.getMIMEType());
-            if (language != null) {
-                Indexer indexer = language.getIndexer();
-                if (indexer != null) {
-                    indexer.updateIndex(index, result);
-                }
-                
+        Indexer indexer = language.getIndexer();
+        if (indexer != null) {
+            for (ParserResult result : data) {
+                String fileUrl = indexer.getPersistentUrl(result.getFile().getFile());
+                List<IndexDocument> documents = indexer.index(result, this);
+                index.store(fileUrl, documents);
             }
         }
     }
     
-    void analyseUnitAndStore (ParserResult result/*final CompilationUnitTree cu*/, final ParserTaskImpl/*JavacTaskImpl*/ jt) throws IOException {
-            FileObject fo = result.getFile().getFileObject();
-            Language language = LanguageRegistry.getInstance().getLanguageByMimeType(fo.getMIMEType());
-            if (language != null) {
-                Indexer indexer = language.getIndexer();
-                if (indexer != null) {
-                    indexer.updateIndex(index, result);
-                }
-            }
+    void analyseUnitAndStore (Indexer indexer, ParserResult result) throws IOException {
+        String fileUrl = indexer.getPersistentUrl(result.getFile().getFile());
+        List<IndexDocument> documents = indexer.index(result, this);
+        index.store(fileUrl, documents);
     }
     
-    public void delete (final String className) throws IOException {
+    public void delete (final ParserFile parserFile) throws IOException {
         if (!this.index.isValid(false)) {
             return;
         }
-        this.toDelete.add(className);
+        //this.toDelete.add(className);
+
+        for (Language language : LanguageRegistry.getInstance()) {
+            Indexer indexer = language.getIndexer();
+            if (indexer != null && indexer.isIndexable(parserFile)) {
+                String fileUrl = indexer.getPersistentUrl(parserFile.getFile());
+                index.store(fileUrl, null);
+            }
+        }
+    }
+
+    Map<String,String> getTimeStamps() throws IOException {
+        return index.getTimeStamps();
+    }
+    
+    public IndexDocument createDocument(int initialPairs) {
+        return new IndexDocumentImpl(initialPairs);
+    }
+
+    @Override
+    public String toString() {
+        return "SourceAnalyzer(" + this.index.toString().substring(this.index.toString().indexOf("@")+1) + ")";
     }
 }

@@ -42,12 +42,98 @@
 package org.netbeans.modules.cnd.api.model;
 
 import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  *
  * @author Vladimir Kvashin
  */
 public interface CsmFunction<T> extends CsmOffsetableDeclaration<T>, CsmScope {
+    
+    public enum OperatorKind {
+        COMMA(",", true),
+        NOT("!", false), 
+        NOT_EQ("!=", true), 
+        MOD("%", true), 
+        MOD_EQ("%=", true), 
+        AND("&", true), 
+        ADDRESS("&", false),
+        AND_AND("&&", true),
+        AND_EQ("&=", true),
+        FUN_CALL("()", null),
+        CAST("()", false),
+        MUL("*", true),
+        POINTER("*", false),
+        MUL_EQ("*=", true),
+        PLUS("+", true),
+        PLUS_EQ("+=", true),
+        PLUS_UNARY("+", false),
+        PLUS_PLUS("++", false),
+        MINUS("-", true),
+        MINUS_EQ("-=", true),
+        MINUS_UNARY("-", false),
+        MINUS_MINUS("--", false),
+        ARROW("->", true),
+        ARROW_MBR("->*", true),
+        DIV("/", true),
+        DIV_EQ("/=", true),
+        LESS("<", true),
+        LEFT_SHIFT("<<", true), // often as serialize
+        LEFT_SHIFT_EQ("<<=", true),
+        LESS_EQ("<=", true),
+        EQ("=", true),
+        EQ_EQ("==", true),
+        GREATER(">", true),
+        GREATER_EQ(">=", true),
+        RIGHT_SHIFT(">>", true),
+        RIGHT_EQ(">>=", true),
+        ARRAY("[]", null),
+        XOR("^", true),
+        XOR_EQ("^=", true),
+        OR("|", true),
+        OR_EQ("|=", true),
+        OR_OR("||", true),
+        TILDE("~", false),
+        DELETE("delete", null),
+        NEW("new", null),
+        CONVERSION("", false),
+        NONE("", null);
+        
+        private final String img;
+        private final Boolean binary;
+        private OperatorKind(String img, Boolean binary) {
+            this.img = img;
+            this.binary = binary;
+        }
+        
+        public String getImage() {
+            return img;
+        }
+        
+        public Boolean isBinary() {
+            return binary;
+        }
+        
+        private static boolean inited = false;
+        private static Map<String, OperatorKind> kinds = new HashMap<String, OperatorKind>();
+        public static OperatorKind getKindByImage(String image) {
+            if (!inited) {
+                for (OperatorKind kind : OperatorKind.values()) {
+                    String img = kind.getImage();
+                    if (img.length() > 0) {
+                        kinds.put(img, kind);
+                    }
+                }
+                inited = true;
+            }
+            OperatorKind kind = kinds.get(image);
+            if (kind == null) {
+                kind = NONE;
+            }
+            return kind;
+        }
+    }
 
     /** Gets this function's declaration text */
     CharSequence getDeclarationText();
@@ -62,6 +148,8 @@ public interface CsmFunction<T> extends CsmOffsetableDeclaration<T>, CsmScope {
     CsmFunction getDeclaration();
     
     boolean isOperator();
+    
+    OperatorKind getOperatorKind();
     
     /**
      * Returns true if this class is template, otherwise false.

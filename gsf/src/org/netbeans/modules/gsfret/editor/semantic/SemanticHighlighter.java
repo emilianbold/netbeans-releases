@@ -49,15 +49,14 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.text.Document;
-import org.netbeans.api.gsf.OffsetRange;
-import org.netbeans.api.gsf.Parser;
-import org.netbeans.api.gsf.ColoringAttributes;
-import org.netbeans.api.gsf.SemanticAnalyzer;
+import org.netbeans.modules.gsf.api.OffsetRange;
+import org.netbeans.modules.gsf.api.ColoringAttributes;
+import org.netbeans.modules.gsf.api.SemanticAnalyzer;
 import org.netbeans.napi.gsfret.source.CompilationInfo;
-//import org.netbeans.api.timers.TimesCollector;
 import org.netbeans.modules.editor.highlights.spi.Highlight;
 import org.netbeans.modules.editor.highlights.spi.Highlighter;
 import org.netbeans.modules.gsf.Language;
+import org.netbeans.modules.gsf.LanguageRegistry;
 import org.openide.ErrorManager;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
@@ -125,22 +124,28 @@ public class SemanticHighlighter extends ScanningCancellableTask<CompilationInfo
         long start = System.currentTimeMillis();        
         Set<Highlight> result = new HashSet();
 
-        // Allow language plugins to do their own analysis too
-        Parser parser = info.getParser();
-        if (parser != null) {
-            SemanticAnalyzer task = parser.getSemanticAnalysisTask();
+        Set<String> mimeTypes = info.getEmbeddedMimeTypes();
+        LanguageRegistry registry = LanguageRegistry.getInstance();
+        
+        for (String mimeType : mimeTypes) {
+            Language language = registry.getLanguageByMimeType(mimeType);
+            if (language == null) {
+                continue;
+            }
+            SemanticAnalyzer task = language.getSemanticAnalyzer();
             if (task != null) {
+                // Allow language plugins to do their own analysis too
                 try {
                     task.run(info);
                 } catch (Exception ex) {
                     ErrorManager.getDefault().notify(ex);
                 }
-                
+
                 if (isCancelled()) {
                     task.cancel();
                     return Collections.emptySet();
                 }
-                
+
                 Map<OffsetRange,ColoringAttributes> highlights = task.getHighlights();
                 if (highlights != null) {
 
@@ -148,7 +153,6 @@ public class SemanticHighlighter extends ScanningCancellableTask<CompilationInfo
                         if (isCancelled())
                             return result;
 
-                        Language language = info.getLanguage();
                         ColoringAttributes colors = highlights.get(range);
                         Collection<ColoringAttributes> c = Collections.singletonList(colors);
                         Highlight h = Utilities.createHighlight(language, doc, range.getStart(), range.getEnd(), c, null);

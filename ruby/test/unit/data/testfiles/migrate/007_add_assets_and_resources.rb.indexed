@@ -3,13 +3,9 @@
 Document 0
 Delete:  source : <TESTURL>/007_add_assets_and_resources.rb
 
-Indexed:
-
-Not Indexed:
 
 
 Document 1
-Delete:
 Indexed:
   class : AddAssetsAndResources
   class-ig : addassetsandresources
@@ -17,20 +13,17 @@ Indexed:
   fqn : AddAssetsAndResources
   method : down|STATIC|
   method : up|STATIC|
-  source : <TESTURL>/007_add_assets_and_resources.rb
 
 Not Indexed:
   attrs : |CLASS|
 
 
 Document 2
-Delete:
 Indexed:
   class : OldTemplate
   class-ig : oldtemplate
   extends : ActiveRecord::Base
   fqn : AddAssetsAndResources::OldTemplate
-  source : <TESTURL>/007_add_assets_and_resources.rb
 
 Not Indexed:
   attrs : |CLASS|
@@ -38,13 +31,11 @@ Not Indexed:
 
 
 Document 3
-Delete:
 Indexed:
   class : Template
   class-ig : template
   extends : ActiveRecord::Base
   fqn : AddAssetsAndResources::Template
-  source : <TESTURL>/007_add_assets_and_resources.rb
 
 Not Indexed:
   attrs : |CLASS|
@@ -52,10 +43,8 @@ Not Indexed:
 
 
 Document 4
-Delete:
 Indexed:
   dbtable : assets
-  source : <TESTURL>/007_add_assets_and_resources.rb
 
 Not Indexed:
   dbcolumn : content_type;string
@@ -71,10 +60,8 @@ Not Indexed:
 
 
 Document 5
-Delete:
 Indexed:
   dbtable : db_files
-  source : <TESTURL>/007_add_assets_and_resources.rb
 
 Not Indexed:
   dbcolumn : data;binary

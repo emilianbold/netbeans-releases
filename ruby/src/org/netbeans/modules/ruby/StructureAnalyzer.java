@@ -74,15 +74,15 @@ import org.jruby.ast.types.INameNode;
 import org.jruby.lexer.yacc.ISourcePosition;
 import org.jruby.parser.RubyParserResult;
 import org.jruby.util.ByteList;
-import org.netbeans.api.gsf.CompilationInfo;
-import org.netbeans.api.gsf.Element;
-import org.netbeans.api.gsf.ElementHandle;
-import org.netbeans.api.gsf.ElementKind;
-import org.netbeans.api.gsf.HtmlFormatter;
-import org.netbeans.api.gsf.Modifier;
-import org.netbeans.api.gsf.OffsetRange;
-import org.netbeans.api.gsf.StructureItem;
-import org.netbeans.api.gsf.StructureScanner;
+import org.netbeans.modules.gsf.api.CompilationInfo;
+import org.netbeans.modules.ruby.elements.Element;
+import org.netbeans.modules.gsf.api.ElementHandle;
+import org.netbeans.modules.gsf.api.ElementKind;
+import org.netbeans.modules.gsf.api.HtmlFormatter;
+import org.netbeans.modules.gsf.api.Modifier;
+import org.netbeans.modules.gsf.api.OffsetRange;
+import org.netbeans.modules.gsf.api.StructureItem;
+import org.netbeans.modules.gsf.api.StructureScanner;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
 import org.netbeans.modules.ruby.elements.AstAttributeElement;
@@ -121,13 +121,15 @@ public class StructureAnalyzer implements StructureScanner {
     private List<AstMethodElement> methods;
     private Map<AstClassElement, Set<AstAttributeElement>> attributes;
     private HtmlFormatter formatter;
+    private CompilationInfo info;
     private RubyParseResult result;
 
     public StructureAnalyzer() {
     }
 
     public List<?extends StructureItem> scan(CompilationInfo info, HtmlFormatter formatter) {
-        this.result = (RubyParseResult)info.getParserResult();
+        this.result = AstUtilities.getParseResult(info);
+        this.info = info;
         this.formatter = formatter;
 
         AnalysisResult ar = result.getStructure();
@@ -214,7 +216,7 @@ public class StructureAnalyzer implements StructureScanner {
 
                 // Add unique fields
                 for (InstAsgnNode field : names.values()) {
-                    AstFieldElement co = new AstFieldElement(field);
+                    AstFieldElement co = new AstFieldElement(info, field);
                     //co.setIn(AstUtilities.getClassOrModuleName(clz));
                     co.setIn(clz.getFqn());
 
@@ -302,7 +304,7 @@ public class StructureAnalyzer implements StructureScanner {
             return Collections.emptyMap();
         }
 
-        RubyParseResult rpr = (RubyParseResult)info.getParserResult();
+        RubyParseResult rpr = AstUtilities.getParseResult(info);
         AnalysisResult analysisResult = rpr.getStructure();
 
         Map<String,List<OffsetRange>> folds = new HashMap<String,List<OffsetRange>>();
@@ -359,7 +361,7 @@ public class StructureAnalyzer implements StructureScanner {
         // Recursively search for methods or method calls that match the name and arity
         switch (node.nodeId) {
         case NodeTypes.CLASSNODE: {
-            AstClassElement co = new AstClassElement(node);
+            AstClassElement co = new AstClassElement(info, node);
             co.setIn(in);
 
             String fqn = AstUtilities.getFqnName(path);
@@ -379,7 +381,7 @@ public class StructureAnalyzer implements StructureScanner {
             break;
         }
         case NodeTypes.MODULENODE: {
-            AstModuleElement co = new AstModuleElement(node);
+            AstModuleElement co = new AstModuleElement(info, node);
             co.setIn(in);
             co.setFqn(AstUtilities.getFqnName(path));
             in = AstUtilities.getClassOrModuleName((ModuleNode)node);
@@ -398,7 +400,7 @@ public class StructureAnalyzer implements StructureScanner {
         }
         case NodeTypes.SCLASSNODE: {
             // Singleton class, e.g.   class << self, or class << File, etc.
-            AstClassElement co = new AstClassElement(node);
+            AstClassElement co = new AstClassElement(info, node);
             co.setIn(in);
             co.setFqn(AstUtilities.getFqnName(path));
 
@@ -426,7 +428,7 @@ public class StructureAnalyzer implements StructureScanner {
         }
         case NodeTypes.DEFNNODE:
         case NodeTypes.DEFSNODE: {
-            AstMethodElement co = new AstMethodElement(node);
+            AstMethodElement co = new AstMethodElement(info, node);
             methods.add(co);
             co.setIn(in);
 
@@ -465,7 +467,7 @@ public class StructureAnalyzer implements StructureScanner {
             break;
         }
         case NodeTypes.CONSTDECLNODE: {
-            AstConstantElement co = new AstConstantElement((ConstDeclNode)node);
+            AstConstantElement co = new AstConstantElement(info, (ConstDeclNode)node);
             co.setIn(in);
 
             if (parent != null) {
@@ -477,7 +479,7 @@ public class StructureAnalyzer implements StructureScanner {
             break;
         }
         case NodeTypes.CLASSVARDECLNODE: {
-            AstFieldElement co = new AstFieldElement(node);
+            AstFieldElement co = new AstFieldElement(info, node);
             co.setIn(in);
 
             if (parent != null) {
@@ -565,7 +567,7 @@ public class StructureAnalyzer implements StructureScanner {
 
                 if ((symbols != null) && (symbols.length > 0)) {
                     for (SymbolNode s : symbols) {
-                        AstAttributeElement co = new AstAttributeElement(s, node);
+                        AstAttributeElement co = new AstAttributeElement(info, s, node);
                         
                         if (parent instanceof AstClassElement) {
                             Set<AstAttributeElement> attrsInClass = attributes.get(parent);
@@ -620,7 +622,7 @@ public class StructureAnalyzer implements StructureScanner {
                                 if (method != null) {
                                     // Make a new static version of the named function
                                     Node dupeNode = method.getNode();
-                                    AstMethodElement co = new AstMethodElement(dupeNode);
+                                    AstMethodElement co = new AstMethodElement(info, dupeNode);
                                     co.setIn(in);
 
                                     // "initialize" methods are private
@@ -750,7 +752,8 @@ public class StructureAnalyzer implements StructureScanner {
         return null;
     }
     
-    AnalysisResult analyze(RubyParseResult result) {
+    AnalysisResult analyze(RubyParseResult result, CompilationInfo info) {
+        this.info = info;
         return scan(result);
     }
 
@@ -852,8 +855,8 @@ public class StructureAnalyzer implements StructureScanner {
             return formatter.getText();
         }
 
-        public ElementHandle<?extends Element> getElementHandle() {
-            return info.getParser().createHandle(info, node);
+        public ElementHandle getElementHandle() {
+            return node;
         }
 
         public ElementKind getKind() {

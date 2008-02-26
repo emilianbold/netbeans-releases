@@ -83,6 +83,7 @@ import java.util.Stack;
 import java.util.logging.Logger;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
+import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.ArrayType;
 import javax.lang.model.type.DeclaredType;
@@ -93,6 +94,7 @@ import javax.tools.JavaFileObject;
 import javax.tools.StandardLocation;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.source.ElementHandle;
+import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.modules.java.source.ElementHandleAccessor;
 import org.netbeans.modules.java.source.parsing.FileObjects;
 import org.netbeans.modules.java.source.parsing.OutputFileManager;
@@ -132,11 +134,12 @@ public class SourceAnalyser {
         return this.index.isValid(true);
     }
 
-    public void analyse (final Iterable<? extends CompilationUnitTree> data, JavacTaskImpl jt, JavaFileManager manager, javax.tools.JavaFileObject sibling, Set<? super ElementHandle<TypeElement>> newTypes) throws IOException {
+    public void analyse (final Iterable<? extends CompilationUnitTree> data, JavacTaskImpl jt, JavaFileManager manager, javax.tools.JavaFileObject sibling, Set<? super ElementHandle<TypeElement>> newTypes, /*out*/boolean[] mainMethod) throws IOException {
         final Map<Pair<String, String>,Map<String,Set<ClassIndexImpl.UsageType>>> usages = new HashMap<Pair<String,String>,Map<String,Set<ClassIndexImpl.UsageType>>>();
         for (CompilationUnitTree cu : data) {
             UsagesVisitor uv = new UsagesVisitor (jt, cu, manager, sibling, newTypes);
             uv.scan(cu,usages);
+            mainMethod[0] |= uv.mainMethod;
             if (uv.rsList != null && uv.rsList.size()>0) {
                 final int index = uv.sourceName.lastIndexOf('.');              //NOI18N
                 final String pkg = index == -1 ? "" : uv.sourceName.substring(0,index);    //NOI18N
@@ -255,6 +258,7 @@ public class SourceAnalyser {
         private State state;        
         private Element enclosingElement = null;
         private Set<String> rsList;        
+        private boolean mainMethod;
         
         
         
@@ -586,6 +590,9 @@ public class SourceAnalyser {
             Element old = enclosingElement;
             try {
                 enclosingElement = ((JCMethodDecl) node).sym;
+                if (enclosingElement != null && enclosingElement.getKind() == ElementKind.METHOD) {
+                    mainMethod |= SourceUtils.isMainMethod((ExecutableElement) enclosingElement);
+                }
                 return super.visitMethod(node, p);
             } finally {
                 enclosingElement = old;

@@ -76,7 +76,7 @@ public abstract class SaasNodeChildren<T> extends Children.Keys<T> implements Pr
     
     @Override
     protected void addNotify() {
-        saas.toStateReady();
+        saas.toStateReady(false);
         updateKeys();
         super.addNotify();
     }
@@ -99,6 +99,6 @@ public abstract class SaasNodeChildren<T> extends Children.Keys<T> implements Pr
     }
 
     public boolean needsWaiting() {
-        return saas.getState() != Saas.State.RESOLVED;
+        return saas.getState() == Saas.State.INITIALIZING;
     }
 }

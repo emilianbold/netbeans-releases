@@ -47,7 +47,7 @@ import javax.swing.*;
  * @author Libor Kramolis
  * @version 0.2
  */
-class Util {
+public class Util {
 
     public static final NameCheck JAVA_CHECK = new JavaIdentifierNameCheck();
 

@@ -44,8 +44,6 @@ import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -60,14 +58,16 @@ import java.util.Properties;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
+import org.netbeans.modules.gsf.api.IndexDocument;
+import org.netbeans.modules.gsf.api.Indexer;
+import org.netbeans.modules.gsf.Language;
+import org.netbeans.modules.gsf.LanguageRegistry;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
-import org.openide.modules.InstalledFileLocator;
 import org.openide.util.Exceptions;
 
 /**
@@ -80,7 +80,13 @@ import org.openide.util.Exceptions;
  * @author Tomas Zezula
  */
 // BEGIN TOR MODIFICATIONS
-public abstract class Index extends org.netbeans.api.gsf.Index {    
+public abstract class Index extends org.netbeans.modules.gsf.api.Index {    
+    protected Language language;
+    
+    protected Index(Language language) {
+        this.language = language;
+    }
+
 // END TOR MODIFICATIONS
     
     public enum BooleanOperator {
@@ -96,65 +102,117 @@ public abstract class Index extends org.netbeans.api.gsf.Index {
     private static final String SLICE_PREFIX = "s";              //NOI18N    
     private static final String INDEX_DIR = "var"+File.separatorChar+"cache"+File.separatorChar+"gsf-index"+File.separatorChar+VERSION+'.'+SUBVERSION;    //NOI18N
     // BEGIN TOR MODIFICATIONS
-    protected static final String PREINDEXED = "netbeans-index-" + VERSION + '.' + SUBVERSION; // NOI18N
+    protected static final String PREINDEXED = "netbeans-index-"; // NOI18N
     private static final String PREINDEXED_MARKER = "static";
     private static final boolean COMPUTE_INDEX = Boolean.getBoolean("ruby.computeindex");
+    public abstract Map<String,String> getTimeStamps() throws IOException;
+    // Store map of class names, where each entry has a map of fields and values (fields might be "name", "fqn", "case insensitive name", etc.
+    // The same fields can be looked up later.
+    public abstract void store(String fileUrl, List<IndexDocument> documents) throws IOException;
     // END TOR MODIFICATIONS
-    
-    private static Properties segments;
-    private static Map<String, String> invertedSegments;
-    private static File cacheFolder;
-    private static File segmentsFile;
-    private static int index = 0;
     
     public abstract boolean isValid (boolean tryOpen) throws IOException;    
     public abstract boolean isUpToDate (String resourceName, long timeStamp) throws IOException;
     public abstract void clear () throws IOException;
     public abstract void close () throws IOException;
     
+    private static class LanguageContext {
+        private Properties segments;
+        private Map<String, String> invertedSegments;
+        private File cacheFolder;
+        private File segmentsFile;
+        private int index = 0;
+        private Language language;
+
+        private LanguageContext(Language language) {
+            this.language = language;
+        }
     
-    private static void loadSegments () throws IOException {
-        if (segments == null) {
-            File cacheFolder = getCacheFolder();
-            assert cacheFolder != null;           
-            segments = new Properties ();
-            invertedSegments = new HashMap<String,String> ();
-            segmentsFile = FileUtil.normalizeFile(new File (cacheFolder, SEGMENTS_FILE));
-            if (segmentsFile.exists()) {
-                InputStream in = new FileInputStream (segmentsFile);
-                try {
-                    segments.load (in);
-                } finally {
-                    in.close();
+        private void loadSegments () throws IOException {
+            if (segments == null) {
+                File cacheFolder = getCacheFolder();
+                assert cacheFolder != null;           
+                segments = new Properties ();
+                invertedSegments = new HashMap<String,String> ();
+                segmentsFile = FileUtil.normalizeFile(new File (cacheFolder, SEGMENTS_FILE));
+                if (segmentsFile.exists()) {
+                    InputStream in = new FileInputStream (segmentsFile);
+                    try {
+                        segments.load (in);
+                    } finally {
+                        in.close();
+                    }
+                }
+                for (Map.Entry entry : segments.entrySet()) {
+                    String segment = (String) entry.getKey();
+                    String root = (String) entry.getValue();
+                    invertedSegments.put(root,segment);
+                    try {
+                        index = Math.max (index,Integer.parseInt(segment.substring(SLICE_PREFIX.length())));
+                    } catch (NumberFormatException nfe) {
+                        ErrorManager.getDefault().notify(nfe);
+                    }
+                }
+                assert segmentsFile != null;
+            }        
+        }
+
+
+        private void storeSegments () throws IOException {
+            assert segmentsFile != null;       
+            OutputStream out = new FileOutputStream (segmentsFile);
+            try {
+                segments.store(out,null);
+            } finally {
+                out.close();
+            }            
+        }
+
+        private synchronized File getCacheFolder () {
+            if (cacheFolder == null) {
+                final String nbUserDirProp = getNbUserDir();
+                assert nbUserDirProp != null;
+                final File nbUserDir = new File (nbUserDirProp);
+                cacheFolder = FileUtil.normalizeFile(new File (nbUserDir, INDEX_DIR));
+                Indexer indexer = language.getIndexer();
+                assert indexer != null : language;
+                cacheFolder = new File(cacheFolder, indexer.getIndexerName() + File.separator + indexer.getIndexVersion());
+                if (!cacheFolder.exists()) {
+                    boolean created = cacheFolder.mkdirs();                
+                    assert created : "Cannot create cache folder";  //NOI18N
+                }
+                else {
+                    assert cacheFolder.isDirectory() && cacheFolder.canRead() && cacheFolder.canWrite();
                 }
             }
-            for (Map.Entry entry : segments.entrySet()) {
-                String segment = (String) entry.getKey();
-                String root = (String) entry.getValue();
-                invertedSegments.put(root,segment);
-                try {
-                    index = Math.max (index,Integer.parseInt(segment.substring(SLICE_PREFIX.length())));
-                } catch (NumberFormatException nfe) {
-                    ErrorManager.getDefault().notify(nfe);
-                }
-            }
-            assert segmentsFile != null;
-        }        
+            return cacheFolder;
+        }
+
+        /**
+         * Only for unit tests!
+         *
+         */
+        synchronized void setCacheFolder (final File folder) {
+            assert folder != null && folder.exists() && folder.canRead() && folder.canWrite();
+            cacheFolder = folder;
+        }
+    
+    } 
+
+    // BEGIN TOR MODIFICTIONS
+    private static Map<Language,LanguageContext> contexts = new HashMap<Language, Index.LanguageContext>();
+    static synchronized LanguageContext getContext(Language language) {
+        LanguageContext context = contexts.get(language);
+        if (context == null) {
+            context = new LanguageContext(language);
+            contexts.put(language, context);
+        }
+
+        return context;
     }
+    // END TOR MODIFICTIONS
     
-    
-    private static void storeSegments () throws IOException {
-        assert segmentsFile != null;       
-        OutputStream out = new FileOutputStream (segmentsFile);
-        try {
-            segments.store(out,null);
-        } finally {
-            out.close();
-        }            
-    }
-    
-    
-    public static URL getSourceRootForClassFolder (final URL classFolder) {
+    public static URL getSourceRootForClassFolder (final Language language, final URL classFolder) {
         if ("file".equals(classFolder.getProtocol())) {           //NOI18N
             try {
                 final File file = FileUtil.normalizeFile(new File (classFolder.toURI()));            
@@ -162,11 +220,12 @@ public abstract class Index extends org.netbeans.api.gsf.Index {
                 if (segFolder == null) {
                     return null;
                 }
+                LanguageContext context = getContext(language);
                 final Object cFolder = segFolder.getParentFile();
-                if (cFolder == null || !cFolder.equals(cacheFolder)) {
+                if (cFolder == null || !cFolder.equals(context.cacheFolder)) {
                     return null;
                 }   
-                String source = segments.getProperty(segFolder.getName());
+                String source = context.segments.getProperty(segFolder.getName());
                 if (source != null) {
                     try {            
                         return new URL (source);
@@ -182,52 +241,53 @@ public abstract class Index extends org.netbeans.api.gsf.Index {
     }
       
     // BEGIN TOR MODIFICATIONS
-    private static List<FileObject> preindexRoots = new ArrayList<FileObject>();
-    private static FileObject clusterLoc;
+    private static List<FileObject> preindexRoots;
     public static void addPreindexRoot(FileObject root) {
+        getPreindexRoots();
         if (!preindexRoots.contains(root)) {
             preindexRoots.add(root);
         }
     }
-
-    /** For testing only */
-    public static void setClusterLoc(FileObject clusterLoc) {
-        Index.clusterLoc = clusterLoc;
-    }
-
-    private static FileObject getPreindexedDb() {
-        if (clusterLoc == null) {
-            File preindexed = InstalledFileLocator.getDefault().locate(
-                    "preindexed", "org.netbeans.modules.gsf", false); // NOI18N
-            if (preindexed == null || !preindexed.isDirectory()) {
-                throw new RuntimeException("Can't locate preindexed directory. Installation might be damaged"); // NOI18N
-            }
-            clusterLoc = FileUtil.toFileObject(preindexed);
+    
+    private static List<FileObject> getPreindexRoots() {
+        if (preindexRoots == null) {
+             preindexRoots = new ArrayList<FileObject>();
+             // Add in the libraries
+             for (FileObject fo : LanguageRegistry.getInstance().getLibraryFos()) {
+                preindexRoots.add(fo);
+             }
         }
-        return clusterLoc;
+        
+        return preindexRoots;
     }
     // END TOR MODIFICATIONS
     
-    public static synchronized File getDataFolder (final URL root) throws IOException {
-        loadSegments ();
+    public static synchronized File getDataFolder (Language language, final URL root) throws IOException {
+        // BEGIN TOR MODIFICTIONS
+        //loadSegments ();
+        LanguageContext context = getContext(language);
+        context.loadSegments();
+        // END TOR MODIFICTIONS
         final String rootName = root.toExternalForm();
-        String slice = invertedSegments.get (rootName);
+        String slice = context.invertedSegments.get (rootName);
         // BEGIN TOR MODIFICATIONS
         FileObject extract = null;
         // END TOR MODIFICATIONS
         if ( slice == null) {
-            slice = SLICE_PREFIX + (++index);
-            while (segments.getProperty(slice) != null) {                
-                slice = SLICE_PREFIX + (++index);
+            slice = SLICE_PREFIX + (++context.index);
+            while (context.segments.getProperty(slice) != null) {                
+                slice = SLICE_PREFIX + (++context.index);
             }
-            segments.put (slice,rootName);
-            invertedSegments.put(rootName, slice);
+            context.segments.put (slice,rootName);
+            context.invertedSegments.put(rootName, slice);
             
             // BEGIN TOR MODIFICATIONS
             // See if I have pre-indexed data for this file
             FileObject rootFo = URLMapper.findFileObject(root);
             if (rootFo != null) {
-                extract = rootFo.getFileObject(PREINDEXED, "zip"); // NOI18N
+                Indexer indexer = language.getIndexer();
+                String indexedFileName = PREINDEXED + indexer.getIndexerName() + "-" + indexer.getIndexVersion();
+                extract = rootFo.getFileObject(indexedFileName, "zip"); // NOI18N
                 if (extract == null && !COMPUTE_INDEX) {
                     // There's no co-located index data, but perhaps we have
                     // it within the larger preindexed bundles (these are
@@ -236,14 +296,14 @@ public abstract class Index extends org.netbeans.api.gsf.Index {
 
                     // Compute relative path
                     rootSearch:
-                    for (FileObject fo : preindexRoots) {
+                    for (FileObject fo : getPreindexRoots()) {
                         if (FileUtil.isParentOf(fo, rootFo)) {
                             // getRelativePath performs a isParentOf check and returns null if not
                             String relative = FileUtil.getRelativePath(fo, rootFo);
                             if (relative != null && relative.length() > 0) {
-                                FileObject cluster = getPreindexedDb();
-                                if (cluster != null) {
-                                    extract = cluster.getFileObject(relative + "/" + PREINDEXED + ".zip"); // NOI18N
+                                FileObject db = indexer.getPreindexedDb();
+                                if (db != null) {
+                                    extract = db.getFileObject(relative + "/" + indexedFileName + ".zip"); // NOI18N
                                 }
                                 break rootSearch;
                             }
@@ -252,9 +312,9 @@ public abstract class Index extends org.netbeans.api.gsf.Index {
                 }
             }
             // END TOR MODIFICATIONS
-            storeSegments ();
+            context.storeSegments ();
         }        
-        File result = FileUtil.normalizeFile (new File (cacheFolder, slice));
+        File result = FileUtil.normalizeFile (new File (context.cacheFolder, slice));
         if (!result.exists()) {
             result.mkdir();
             // BEGIN TOR MODIFICATIONS
@@ -331,16 +391,17 @@ public abstract class Index extends org.netbeans.api.gsf.Index {
     }
 
     // Only done at build time / ahead of time.
-    static void preindex(URL root) {
+    static void preindex(Language language, URL root) {
         try {
             FileObject rootFo = URLMapper.findFileObject(root);
-            File dataFile = Index.getDataFolder(root);
+            File dataFile = getDataFolder(language, root);
             // Create "preindexed" file
             // Zip contents of data folder up and store it as a preindexed file in the rootFo
-            
-            File output = new File(FileUtil.toFile(rootFo), PREINDEXED + ".zip"); // NOI18N
+            Indexer indexer = language.getIndexer();
+            String indexedFileName = PREINDEXED + indexer.getIndexerName() + "-" + indexer.getIndexVersion();
+            File output = new File(FileUtil.toFile(rootFo), indexedFileName + ".zip"); // NOI18N
             OutputStream os = new BufferedOutputStream(new FileOutputStream(output));
-            
+
             ZipEntry je;
 
             ZipOutputStream jis = new ZipOutputStream(os);
@@ -351,6 +412,14 @@ public abstract class Index extends org.netbeans.api.gsf.Index {
             
             File gsf = new File(dataFile, LuceneIndex.REFERENCES); // NOI18N
             assert gsf.exists();
+            
+            ClassIndexImpl classIndexImpl = ClassIndexManager.get(language).getUsagesQuery(root);
+            classIndexImpl.close();
+            if (gsf.list().length == 0) {
+                // Hmmm, empty... We need -something- in there to avoid reindexing next time
+                classIndexImpl.storeEmpty();
+                classIndexImpl.close();
+            }
             
             File[] files = gsf.listFiles();
             for (File f : files) {
@@ -372,25 +441,6 @@ public abstract class Index extends org.netbeans.api.gsf.Index {
     }
     // END TOR MODIFICATIONS
     
-    public static File getClassFolder (final URL url) throws IOException {                
-        return getClassFolderImpl(url);        
-    }
-    
-    public static File getClassFolder (final File root) throws IOException {
-        return getClassFolderImpl(root.toURI().toURL());
-    }        
-    
-    private static File getClassFolderImpl (final URL url) throws IOException {
-        final File dataFolder = getDataFolder (url);
-        final File result = FileUtil.normalizeFile(new File (dataFolder, CLASSES));
-        if (!result.exists()) {
-            result.mkdir();
-        }
-        return result;
-    }
-    
-    
-    
     /**
      *  Returns non cached netbeans user dir.
      *  For performance reasons the returned {@link File} is not normalized.
@@ -402,31 +452,4 @@ public abstract class Index extends org.netbeans.api.gsf.Index {
         final String nbUserProp = System.getProperty(NB_USER_DIR);
         return nbUserProp;
     }
-    
-    private static synchronized File getCacheFolder () {
-        if (cacheFolder == null) {
-            final String nbUserDirProp = getNbUserDir();
-            assert nbUserDirProp != null;
-            final File nbUserDir = new File (nbUserDirProp);
-            cacheFolder = FileUtil.normalizeFile(new File (nbUserDir, INDEX_DIR));
-            if (!cacheFolder.exists()) {
-                boolean created = cacheFolder.mkdirs();                
-                assert created : "Cannot create cache folder";  //NOI18N
-            }
-            else {
-                assert cacheFolder.isDirectory() && cacheFolder.canRead() && cacheFolder.canWrite();
-            }
-        }
-        return cacheFolder;
-    }
-    
-    /**
-     * Only for unit tests!
-     *
-     */
-    static synchronized void setCacheFolder (final File folder) {
-        assert folder != null && folder.exists() && folder.canRead() && folder.canWrite();
-        cacheFolder = folder;
-    }
-    
 }

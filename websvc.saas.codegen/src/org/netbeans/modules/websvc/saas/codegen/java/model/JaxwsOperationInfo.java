@@ -54,11 +54,12 @@ import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlOperation;
 import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlParameter;
 import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlPort;
 import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlService;
-import org.netbeans.modules.websvc.manager.model.WebServiceData;
-import org.netbeans.modules.websvc.manager.model.WebServiceListModel;
-import org.netbeans.modules.websvc.manager.util.WebServiceLibReferenceHelper;
 import org.netbeans.modules.websvc.saas.codegen.java.Constants;
+import org.netbeans.modules.websvc.saas.codegen.java.model.ParameterInfo.ParamStyle;
 import org.netbeans.modules.websvc.saas.codegen.java.support.Util;
+import org.netbeans.modules.websvc.saas.model.WsdlSaasMethod;
+import org.netbeans.modules.websvc.saas.spi.websvcmgr.WsdlData;
+import org.netbeans.modules.websvc.saas.util.LibrariesHelper;
 import org.netbeans.modules.xml.retriever.catalog.Utilities;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
 import org.netbeans.modules.xml.wsdl.model.WSDLModelFactory;
@@ -71,25 +72,33 @@ import org.openide.filesystems.FileUtil;
  * @author nam
  */
 public class JaxwsOperationInfo {
-
+    private WsdlSaasMethod method;
     private String categoryName;
     private String serviceName;
     private String portName;
     private String operationName;
     private String wsdlUrl;
     private Project project;
-    private WebServiceData webServiceData;
+    private WsdlData webServiceData;
     private WsdlService service;
     private WsdlOperation operation;
     private WsdlPort port;
 
-    public JaxwsOperationInfo(String categoryName, String serviceName, String portName, String operationName, String wsdlURL, Project project) {
-        this.categoryName = categoryName;
-        this.serviceName = serviceName;
-        this.portName = portName;
-        this.operationName = operationName;
-        this.wsdlUrl = wsdlURL;
+    public JaxwsOperationInfo(WsdlSaasMethod m, Project project) {
+        this.method = m;
+        this.categoryName = m.getSaas().getParentGroup().getName();
+        this.serviceName = m.getSaas().getDefaultServiceName();
         this.project = project;
+
+        method.getSaas().toStateReady(true);
+
+        this.webServiceData = method.getSaas().getWsdlData();
+        this.portName = method.getWsdlPort().getName();
+        this.operationName = method.getWsdlOperation().getName();
+        this.wsdlUrl = method.getSaas().getUrl();
+        this.service = method.getSaas().getWsdlModel();
+        this.port = method.getWsdlPort();
+        this.operation = method.getWsdlOperation();
     }
 
     public String getCategoryName() {
@@ -114,30 +123,11 @@ public class JaxwsOperationInfo {
 
     public String getWsdlLocation() {
         initWsdlModelInfo();
-        return webServiceData.getURL();
+        return webServiceData.getWsdlFile();
     }
 
     public void initWsdlModelInfo() {
-        if (webServiceData != null) return;
-        
-        webServiceData = WebServiceListModel.getInstance().getWebServiceData(wsdlUrl, serviceName);
-        if (webServiceData == null) {
-            throw new IllegalStateException("There might have been earlier errors in initializing Web Services");
-        }
-        
-        service = webServiceData.getWsdlService();
-        if (service == null) {
-            throw new IllegalArgumentException("Service " + serviceName + " does not exists");
-        }
-        port = service.getPortByName(portName);
-        if (port == null) {
-            throw new IllegalArgumentException("Port " + portName + " does not exists");
-        }
-        operation = findOperationByName(port, operationName);
-        if (operation == null) {
-            throw new IllegalArgumentException("Operation " + operationName + " does not exists");
-        }
-        WebServiceLibReferenceHelper.addDefaultJaxWsClientJar(project, webServiceData);
+        LibrariesHelper.addDefaultJaxWsClientJars(project, null, method.getSaas());
     }
 
     public static WsdlOperation findOperationByName(WsdlPort port, String name) {
@@ -270,7 +260,7 @@ public class JaxwsOperationInfo {
             for (Map.Entry<QName,String> entry : params.entrySet()) {
                 Class type = Util.getType(project, entry.getValue());
                 ParameterInfo info = new ParameterInfo(entry.getKey(), type, entry.getValue());
-                info.setIsQueryParam(false);
+                info.setStyle(ParamStyle.UNKNOWN);
                 headerParams.add(info);
             }
         }
@@ -279,7 +269,7 @@ public class JaxwsOperationInfo {
 
     public WSDLModel getXamWsdlModel() {
         try {
-            FileObject wsdlFO = FileUtil.toFileObject(new File(webServiceData.getURL()));;
+            FileObject wsdlFO = FileUtil.toFileObject(new File(webServiceData.getWsdlFile()));;
             return WSDLModelFactory.getDefault().getModel(Utilities.createModelSource(wsdlFO, true));
         } catch(CatalogModelException ex) {
             Logger.global.log(Level.INFO, "", ex);

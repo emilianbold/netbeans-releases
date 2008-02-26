@@ -132,6 +132,7 @@ public class CasaWrapperModel extends CasaModel {
     public static final String PROPERTY_CONNECTION_ADDED = PROPERTY_PREFIX + "connection_added";        // NOI18N
     public static final String PROPERTY_CASA_PORT_REMOVED = PROPERTY_PREFIX + "casa_port_removed";       // NOI18N
     public static final String PROPERTY_CASA_PORT_ADDED = PROPERTY_PREFIX + "casa_port_added";         // NOI18N
+    public static final String PROPERTY_CASA_PORT_REFRESH = PROPERTY_PREFIX + "casa_port_refresh";         // NOI18N
     public static final String PROPERTY_ENDPOINT_REMOVED = PROPERTY_PREFIX + "endpoint_removed";        // NOI18N
     public static final String PROPERTY_ENDPOINT_ADDED = PROPERTY_PREFIX + "endpoint_added";          // NOI18N
     public static final String PROPERTY_ENDPOINT_NAME_CHANGED = PROPERTY_PREFIX + "endpoint_renamed";        // NOI18N
@@ -143,6 +144,7 @@ public class CasaWrapperModel extends CasaModel {
     public static final String PROPERTY_SERVICE_ENGINE_SERVICE_UNIT_REMOVED = PROPERTY_PREFIX + "service_unit_removed"; // NOI18N
     private static final String CASA_WSDL_RELATIVE_LOCATION = "../jbiasa/";     // NOI18N
     private static final String JBI_SERVICE_UNITS_DIR = "jbiServiceUnits";      // NOI18N
+    private static final String JBI_SOURCE_DIR = "jbiasa";      // NOI18N
     private static final String DUMMY_PORTTYPE_NAME = "dummyCasaPortType";      // NOI18N
     
     private CasaComponentFactory factory;
@@ -529,6 +531,28 @@ public class CasaWrapperModel extends CasaModel {
 
         return null;
     }
+    
+    /**
+     * Gets the service engine service unit endpoint reference that references 
+     * the given endpoint.
+     * 
+     * @param endpoint an endpoint
+     * @return  the service endinge service unit endpoint reference referencing 
+     *          the given endpoint; or null if there is no service engine 
+     *          service unit endpoint reference referencing the given endpoint.
+     */
+    public CasaEndpointRef getServiceEngineEndpointRef(final CasaEndpoint endpoint) {
+
+        for (CasaServiceEngineServiceUnit seSU : getServiceEngineServiceUnits()) {
+            for (CasaEndpointRef endpointRef : seSU.getEndpoints()) {
+                if (endpointRef.getEndpoint().get() == endpoint) {
+                    return endpointRef;
+                }
+            }
+        }
+        
+        return null;
+     }
 
     /**
      * Sets the location of an internal/external service engine service unit.
@@ -1456,8 +1480,14 @@ public class CasaWrapperModel extends CasaModel {
             String newServiceName = ((Service) (port.getParent())).getName();
             String newPortName = port.getName();
             String fname = wsdlFile.getCanonicalPath();
-            String relativePath = "../" + // NOI18N
+            String relativePath = fname;
+            if (fname.indexOf(JBI_SERVICE_UNITS_DIR) > 0) { // standard SU wsdl...
+              relativePath = "../" + // NOI18N
                     fname.substring(fname.indexOf(JBI_SERVICE_UNITS_DIR)).replace('\\', '/'); // NOI18N
+            } else if (fname.indexOf(JBI_SOURCE_DIR) > 0) { // CompApp wsdl...
+                relativePath = "../" + // NOI18N
+                    fname.substring(fname.indexOf(JBI_SOURCE_DIR)).replace('\\', '/'); // NOI18N
+            }
             String portHref = getPortHref(relativePath, newServiceName, newPortName);
 
             for (CasaBindingComponentServiceUnit bcSU : getBindingComponentServiceUnits()) {
@@ -3448,6 +3478,68 @@ public class CasaWrapperModel extends CasaModel {
     public CasaComponentFactory getFactory() {
         return factory;
     }
+
+    //------------------------------------------------------------------------
+    // 02/06/08, T. Li CASA usability enhancements
+    //  - wsit config badge update
+    //  - clone wsdl port (from SU.jar to CompApp) to edit
+    //------------------------------------------------------------------------
+
+    /**
+     * Check to see if the port has any WS policy attached
+     * @param casaPort
+     * @return true if has WS policies
+     */
+    public boolean isWsitEnable(final CasaPort casaPort) {
+        Port port = getLinkedWSDLPort(casaPort);
+        Binding binding = port.getBinding().get();
+        for (ExtensibilityElement ex : binding.getExtensibilityElements()) {
+            String exNS = ex.getQName().getNamespaceURI();
+            if (exNS.equals("http://schemas.xmlsoap.org/ws/2004/09/policy")) { // NOI18N
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public void refershWsitStatus(final CasaPort casaPort) {
+        startTransaction();
+        try {
+            if (casaPort != null) {
+                // no CASA model change is needed for now...
+            }
+        } finally {
+            if (isIntransaction()) {
+                if (casaPort != null) {
+                    fireChangeEvent(casaPort, PROPERTY_CASA_PORT_REFRESH);
+                }
+                endTransaction();
+            }
+        }
+
+    }
+
+    /**
+     * Change the xlink reference of a casa WSDL port
+     * @param casaPort selected WSDL port
+     * @param href xlink reference
+     */
+    public void setEndpointLink(CasaPort casaPort, String href) {
+        if ((casaPort == null) || (casaPort.getLink().getHref().equals(href))) {
+            return;
+        }
+
+        startTransaction();
+        try {
+            casaPort.getLink().setHref(href);
+        } finally {
+            if (isIntransaction()) {
+                fireChangeEvent(casaPort, PROPERTY_CASA_PORT_REFRESH);
+                endTransaction();
+            }
+        }
+    }
+
 }
 
 

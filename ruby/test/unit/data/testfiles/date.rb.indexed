@@ -3,13 +3,9 @@
 Document 0
 Delete:  source : <TESTURL>/date.rb
 
-Indexed:
-
-Not Indexed:
 
 
 Document 1
-Delete:
 Indexed:
   class : Date
   class-ig : date
@@ -111,7 +107,6 @@ Indexed:
   method : yday|DOCUMENTED|
   method : year|DOCUMENTED|
   method : zone|PRIVATE|
-  source : <TESTURL>/date.rb
 
 Not Indexed:
   attrs : |DOCUMENTED|;1362
@@ -120,12 +115,10 @@ Not Indexed:
 
 
 Document 2
-Delete:
 Indexed:
   class : Date
   class-ig : date
   fqn : Date
-  source : <TESTURL>/date.rb
 
 Not Indexed:
   attrs : |CLASS|
@@ -133,7 +126,18 @@ Not Indexed:
 
 
 Document 3
-Delete:
+Indexed:
+  class : DateTime
+  class-ig : datetime
+  extends : Date
+  fqn : DateTime
+
+Not Indexed:
+  attrs : |CLASS|
+  requires : date/format,rational
+
+
+Document 4
 Indexed:
   class : DateTime
   class-ig : datetime
@@ -148,22 +152,7 @@ Indexed:
   method : parse(str,comp,sg)|DOCUMENTED|STATIC|
   method : strptime(str,fmt,sg)|DOCUMENTED|STATIC|
   method : valid_time?(h,min,s)|DOCUMENTED|STATIC|
-  source : <TESTURL>/date.rb
 
 Not Indexed:
   attrs : |DOCUMENTED|;1138
-  requires : date/format,rational
-
-
-Document 4
-Delete:
-Indexed:
-  class : DateTime
-  class-ig : datetime
-  extends : Date
-  fqn : DateTime
-  source : <TESTURL>/date.rb
-
-Not Indexed:
-  attrs : |CLASS|
   requires : date/format,rational

@@ -45,14 +45,15 @@ import java.awt.Toolkit;
 import java.io.IOException;
 import java.util.Set;
 import javax.swing.text.JTextComponent;
-import org.netbeans.api.gsf.CancellableTask;
-import org.netbeans.api.gsf.Completable;
+import org.netbeans.modules.gsf.api.CancellableTask;
+import org.netbeans.modules.gsf.api.Completable;
 import org.netbeans.napi.gsfret.source.CompilationController;
 import org.netbeans.napi.gsfret.source.Phase;
 import org.netbeans.napi.gsfret.source.Source;
 import org.netbeans.napi.gsfret.source.SourceUtils;
 import org.netbeans.lib.editor.codetemplates.api.CodeTemplate;
 import org.netbeans.lib.editor.codetemplates.spi.CodeTemplateFilter;
+import org.netbeans.modules.gsfret.editor.completion.GsfCompletionProvider;
 import org.openide.awt.StatusDisplayer;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
@@ -106,12 +107,10 @@ public class GsfCodeTemplateFilter implements CodeTemplateFilter, CancellableTas
     public synchronized void run(CompilationController controller) throws IOException {
         controller.toPhase(Phase.PARSED);
         
-        if (controller.getLanguage().getParser() != null) {
-            Completable completer = controller.getLanguage().getCompletionProvider();
+        Completable completer = GsfCompletionProvider.getCompletable(controller,  startOffset);
             
-            if (completer != null) {
-                templates = completer.getApplicableTemplates(controller, startOffset, endOffset);
-            }
+        if (completer != null) {
+            templates = completer.getApplicableTemplates(controller, startOffset, endOffset);
         }
     }
 

@@ -39,7 +39,6 @@
 
 package org.netbeans.modules.websvc.saas.model;
 
-import java.awt.Image;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -64,11 +63,10 @@ public class WadlSaas extends Saas {
 
     private Application wadlModel;
     private List<WadlSaasResource> resources;
-    private Image icon16;
-    private Image icon32;
+    private FileObject wadlFile;
     
-    public WadlSaas(SaasGroup parentGroup, SaasServices services) {
-        super(parentGroup, services);
+    public WadlSaas(SaasGroup topGroup, SaasGroup parentGroup, SaasServices services) {
+        super(topGroup, parentGroup, services);
     }
     
     public Application getWadlModel() throws IOException {
@@ -101,8 +99,14 @@ public class WadlSaas extends Saas {
     } 
     
     public FileObject getLocalWadlFile() {
-        //TODO
-        return null;
+        if (wadlFile == null) {
+            try {
+                wadlFile = SaasUtil.getWadlFile(this);
+            } catch(IOException ioe) {
+                Exceptions.printStackTrace(ioe);
+            }
+        }
+        return wadlFile;
     }
     
     @Override
@@ -111,21 +115,29 @@ public class WadlSaas extends Saas {
     }
     
     @Override
-    public void toStateReady() {
+    public void toStateReady(boolean synchronous) {
         if (wadlModel == null) {
-            RequestProcessor.getDefault().post(new Runnable() {
-                public void run() {
-                    try {
-                        getWadlModel();
-                        setState(State.RESOLVED);  
-                    } catch(IOException ioe) {
-                        Exceptions.printStackTrace(ioe);
+            if (synchronous) {
+                toStateReady();
+            } else {
+                RequestProcessor.getDefault().post(new Runnable() {
+                    public void run() {
+                        toStateReady();
                     }
-                }
-            });
+                });
+            }
         }
     }
     
+    private void toStateReady() {
+        try {
+            getWadlModel();
+            setState(State.READY);
+        } catch (IOException ioe) {
+            Exceptions.printStackTrace(ioe);
+        }
+    }
+
     /**
      * Returns either a list of resources defined by associated WADL model or
      * a list of filtered resource methods.

@@ -87,7 +87,9 @@ public class SQLLogView extends TopComponent implements IMessageView, ETLOutputP
         //add refresh button
         URL url = getClass().getResource("/org/netbeans/modules/sql/framework/ui/resources/images/rerun.png");
         refreshButton = new JButton(new ImageIcon(url));
-        refreshButton.setToolTipText("Refresh Log");
+        String nbBundle2 = mLoc.t("PRSR001: Refresh Log");
+        refreshButton.setToolTipText(Localizer.parse(nbBundle2));
+        refreshButton.getAccessibleContext().setAccessibleName(viewLabel);
         refreshButton.addActionListener(aListener);
         btn[0] = refreshButton;
 

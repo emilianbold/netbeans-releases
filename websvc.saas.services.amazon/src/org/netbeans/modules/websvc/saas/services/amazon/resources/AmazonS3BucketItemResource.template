@@ -36,9 +36,9 @@ public class AmazonS3ItemResource {
     
     private static final String HOST = "s3.amazonaws.com";
     
-    private String accessKey = "04KK4AENM7FWVT06RF82";
+    private String accessKey = "";
    
-    private String secretAccessKey = "5ErlY2f/TuijDabdpr2F267SHYOmDJDaDsHqF4Bb";
+    private String secretAccessKey = "";
 
     @HttpMethod("GET")
     @ProduceMime("image/gif")

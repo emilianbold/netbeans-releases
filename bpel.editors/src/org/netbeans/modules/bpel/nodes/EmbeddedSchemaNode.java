@@ -18,6 +18,7 @@
  */
 package org.netbeans.modules.bpel.nodes;
 
+import org.netbeans.modules.bpel.nodes.BpelNode;
 import org.netbeans.modules.bpel.editors.api.nodes.NodeType;
 import static org.netbeans.modules.bpel.properties.PropertyType.*;
 import org.netbeans.modules.xml.schema.model.Schema;

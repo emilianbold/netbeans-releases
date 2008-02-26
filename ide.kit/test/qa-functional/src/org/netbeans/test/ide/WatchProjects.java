@@ -39,9 +39,13 @@
 
 package org.netbeans.test.ide;
 
+import java.awt.Component;
+import java.awt.Container;
+import java.awt.Frame;
 import java.lang.reflect.Method;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.JTree;
 import junit.framework.Assert;
 import org.netbeans.junit.Log;
 import org.openide.util.Lookup;
@@ -89,8 +93,26 @@ final class WatchProjects {
             getProjects.invoke(projectManager)
         );
         
+        if (System.getProperty("java.version").startsWith("1.5")) {
+            // hopefully this hack will be needed just on 1.5
+            resetJTreeUIs(Frame.getFrames());
+        }
+        
         System.setProperty("assertgc.paths", "20");
-     // disabled due to issue 124038
-     // Log.assertInstances("Checking if all projects are really garbage collected");
+        // disabled due to issue 124038
+        //Log.assertInstances("Checking if all projects are really garbage collected");
+    }
+    
+    private static void resetJTreeUIs(Component[] arr) {
+        for (Component c : arr) {
+            if (c instanceof JTree) {
+                JTree jt = (JTree)c;
+                jt.updateUI();
+            }
+            if (c instanceof Container) {
+                Container o = (Container)c;
+                resetJTreeUIs(o.getComponents());
+            }
+        }
     }
 }

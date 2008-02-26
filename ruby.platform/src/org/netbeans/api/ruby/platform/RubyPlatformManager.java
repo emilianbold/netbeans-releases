@@ -74,6 +74,7 @@ import org.openide.util.Utilities;
  * Represents one Ruby platform, i.e. installation of a Ruby interpreter.
  */
 public final class RubyPlatformManager {
+    public static final boolean PREINDEXING = Boolean.getBoolean("gsf.preindexing");
     
     private static final String[] RUBY_EXECUTABLE_NAMES = { "ruby", "jruby" }; // NOI18N
     
@@ -114,6 +115,9 @@ public final class RubyPlatformManager {
     }
 
     public static void performPlatformDetection() {
+        if (PREINDEXING) {
+            return;
+        }
         // Check the path to see if we find any other Ruby installations
         String path = System.getenv("PATH"); // NOI18N
         if (path == null) {

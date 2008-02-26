@@ -64,6 +64,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
+import org.openide.util.Utilities;
 import org.openide.util.actions.SystemAction;
 
 /**
@@ -79,7 +80,7 @@ public final class FileBasedFileSystem extends FileSystem {
 
     public boolean isWarningEnabled() {
         Boolean isRefreshOn = refreshIsOn.get();
-        return WARNINGS && (isRefreshOn == null || !isRefreshOn.booleanValue());
+        return WARNINGS && !Utilities.isMac() &&(isRefreshOn == null || !isRefreshOn.booleanValue());
     }    
 
     //only for tests purposes

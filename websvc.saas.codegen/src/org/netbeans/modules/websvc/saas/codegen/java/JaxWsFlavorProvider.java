@@ -40,9 +40,17 @@
  */
 package org.netbeans.modules.websvc.saas.codegen.java;
 
+import java.net.URL;
 import java.awt.datatransfer.Transferable;
+import java.io.File;
+import java.io.IOException;
+import java.net.MalformedURLException;
+import org.netbeans.modules.websvc.core.WebServiceReference;
+import org.netbeans.modules.websvc.core.WebServiceTransferable;
+import org.netbeans.modules.websvc.saas.model.WsdlSaas;
 import org.netbeans.modules.websvc.saas.model.WsdlSaasMethod;
 import org.netbeans.modules.websvc.saas.spi.ConsumerFlavorProvider;
+import org.openide.util.Exceptions;
 import org.openide.util.datatransfer.ExTransferable;
 
 /**
@@ -56,22 +64,56 @@ public class JaxWsFlavorProvider implements ConsumerFlavorProvider {
 
     public Transferable addDataFlavors(Transferable transferable) {
         try {
-            Object data = transferable.getTransferData(ConsumerFlavorProvider.WSDL_METHOD_FLAVOR);
-            if (data instanceof WsdlSaasMethod) {
-                WsdlSaasMethod method = (WsdlSaasMethod) data;
-                ExTransferable t = ExTransferable.create(transferable);
-                JaxWsEditorDrop editorDrop = new JaxWsEditorDrop(method);
-                ActiveEditorDropTransferable s = new ActiveEditorDropTransferable(editorDrop);
-                t.put(s);
-                return t;
+            if (transferable.isDataFlavorSupported(ConsumerFlavorProvider.WSDL_METHOD_FLAVOR)) {
+                Object data = transferable.getTransferData(ConsumerFlavorProvider.WSDL_METHOD_FLAVOR);
+                if (data instanceof WsdlSaasMethod) {
+                    WsdlSaasMethod method = (WsdlSaasMethod) data;
+                    ExTransferable t = ExTransferable.create(transferable);
+                    JaxWsEditorDrop editorDrop = new JaxWsEditorDrop(method);
+                    ActiveEditorDropTransferable s = new ActiveEditorDropTransferable(editorDrop);
+                    t.put(s);
+                    return t;
+                }
+            } else if (transferable.isDataFlavorSupported(ConsumerFlavorProvider.WSDL_SERVICE_FLAVOR)) {
+                Object data = transferable.getTransferData(ConsumerFlavorProvider.WSDL_SERVICE_FLAVOR);
+                if (data instanceof WsdlSaas) {
+                    WsdlSaas saas = (WsdlSaas) data;
+                    URL url = getWsdlLocationURL(saas);
+                    if (url == null) {
+                        return transferable;
+                    }
+                    WebServiceReference ref = new WebServiceReference(getWsdlLocationURL(saas), saas.getWsdlModel().getName(), "");
+                    ExTransferable t = ExTransferable.create(new WebServiceTransferable(ref));
+                    return t;
+                }
             }
         } catch (Exception ex) {
-            //Exceptions.printStackTrace(ex);
+            Exceptions.printStackTrace(ex);
         }
 
         return transferable;
     }
 
+    private URL getWsdlLocationURL(WsdlSaas saas){
+        URL url = null;
+        java.lang.String wsdlURL = saas.getWsdlData().getWsdlFile();
+        if (wsdlURL == null) {
+            return null;
+        }
+        try {
+            url = new URL(wsdlURL);
+        } catch (MalformedURLException ex) {
+            //attempt to recover
+            File f = new File(wsdlURL);
+            try{
+                url = f.getCanonicalFile().toURI().normalize().toURL();
+            } catch (IOException exc) {
+                Exceptions.printStackTrace(exc);
+            }
+        }
+        return url;
+    }
+    
     private static class ActiveEditorDropTransferable extends ExTransferable.Single {
 
         private JaxWsEditorDrop drop;

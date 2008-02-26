@@ -373,6 +373,11 @@ public class CorrelationPTablePanel extends BaseTablePanel
         //
         this.add(scrollPane, BorderLayout.CENTER);
         //
+        getAccessibleContext().setAccessibleName(NbBundle.getMessage(
+                FormBundle.class, "ACSN_LBL_Correlations_Tab")); // NOI18N
+        getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(
+                FormBundle.class, "ACSD_LBL_Correlations_Tab")); // NOI18N
+        //
         setTableView(tableView);
     }
     

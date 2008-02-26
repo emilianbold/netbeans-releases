@@ -185,6 +185,7 @@ derby\.log
 ^php.doc/libdoc/doc\.html$
 ^o.jruby.distro/unpatched_source$
 ^o.jruby/patched_source$
+^o.mozilla.rhino.patched/patched_source$
 ^schema2beans/anttask/s2banttask\.jar$
 ^schema2beans/dev/schema2beansdev\.jar$
 ^schema2beans/dev/manifest-subst\.mf$

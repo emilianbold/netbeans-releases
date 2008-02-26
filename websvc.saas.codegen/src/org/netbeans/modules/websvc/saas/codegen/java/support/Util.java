@@ -44,6 +44,7 @@ package org.netbeans.modules.websvc.saas.codegen.java.support;
 import java.awt.Component;
 import javax.swing.JLabel;
 import java.awt.Container;
+import java.io.IOException;
 import javax.swing.JComponent;
 import java.util.Vector;
 import java.util.Iterator;
@@ -72,12 +73,15 @@ import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.websvc.api.jaxws.project.GeneratedFilesHelper;
-import org.netbeans.modules.websvc.rest.model.api.RestConstants;
+import org.netbeans.modules.websvc.saas.codegen.java.Constants;
 import org.openide.ErrorManager;
 import org.openide.cookies.EditorCookie;
 import org.openide.cookies.LineCookie;
 import org.openide.cookies.SaveCookie;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileSystem;
+import org.openide.filesystems.Repository;
+import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.text.Line;
 import org.openide.util.Lookup;
@@ -92,11 +96,11 @@ import org.openide.util.Lookup;
 public class Util {
     public static final String TYPE_DOC_ROOT="doc_root"; //NOI18N
     public static final String AT = "@"; //NOI18N
-    public static final String APATH = AT + RestConstants.PATH_ANNOTATION;      //NOI18N
-    public static final String AGET = AT + RestConstants.GET_ANNOTATION;      //NOI18N
-    public static final String APOST = AT + RestConstants.POST_ANNOTATION;      //NOI18N
-    public static final String APUT = AT + RestConstants.PUT_ANNOTATION;      //NOI18N
-    public static final String ADELETE = AT + RestConstants.DELETE_ANNOTATION;      //NOI18N
+    public static final String APATH = AT + Constants.PATH_ANNOTATION;      //NOI18N
+    public static final String AGET = AT + Constants.GET_ANNOTATION;      //NOI18N
+    public static final String APOST = AT + Constants.POST_ANNOTATION;      //NOI18N
+    public static final String APUT = AT + Constants.PUT_ANNOTATION;      //NOI18N
+    public static final String ADELETE = AT + Constants.DELETE_ANNOTATION;      //NOI18N
     /*
      * Check if the primary file of d is a REST Resource
      */ 
@@ -516,5 +520,18 @@ public class Util {
 
     public static FileObject findBuildXml(Project project) {
         return project.getProjectDirectory().getFileObject(GeneratedFilesHelper.BUILD_XML_PATH);
+    }
+    
+    public static DataObject createDataObjectFromTemplate(String template, 
+            FileObject targetFolder, String targetName) throws IOException {
+        assert template != null;
+        assert targetFolder != null;
+        
+        FileSystem defaultFS = Repository.getDefault().getDefaultFileSystem();
+        FileObject templateFO = defaultFS.findResource(template);
+        DataObject templateDO = DataObject.find(templateFO);
+        DataFolder dataFolder = DataFolder.findFolder(targetFolder);
+
+        return templateDO.createFromTemplate(dataFolder, targetName);
     }
 }

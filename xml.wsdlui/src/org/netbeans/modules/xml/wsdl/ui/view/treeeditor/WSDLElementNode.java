@@ -74,6 +74,7 @@ import org.netbeans.modules.xml.wsdl.ui.commands.CommonAttributePropertyAdapter;
 import org.netbeans.modules.xml.wsdl.ui.commands.OtherAttributePropertyAdapter;
 import org.netbeans.modules.xml.wsdl.ui.commands.XMLAttributePropertyAdapter;
 import org.netbeans.modules.xml.wsdl.ui.cookies.WSDLAttributeCookie;
+import org.netbeans.modules.xml.wsdl.ui.model.StringAttribute;
 import org.netbeans.modules.xml.wsdl.ui.netbeans.module.UIUtilities;
 import org.netbeans.modules.xml.wsdl.ui.netbeans.module.Utility;
 import org.netbeans.modules.xml.wsdl.ui.view.DesignGotoType;
@@ -554,14 +555,24 @@ public abstract class WSDLElementNode<T extends WSDLComponent> extends AbstractN
             }
 
             Set<QName> attributes = mElement.getAttributeMap().keySet();
-
+            
             if (attributes.contains(qname)) {
-                firePropertyChange(propName, event.getOldValue(),
+                String mappedName = getMappedPropertyName(propName);
+                firePropertyChange(mappedName, event.getOldValue(),
                         event.getNewValue());
             }
         }
     }
 
+    /**
+     * Return the property sheet property name for the element attribute name.
+     * Overriding classes can return a different name. by default, same is returned.
+     * @param propName
+     * @return mapped name on the property sheet
+     */
+    public String getMappedPropertyName(String propName) {
+        return propName;
+    }
     
     /*
      * Recursively finds prefixes used by child extensibility elements and tries to clean them.
@@ -607,9 +618,13 @@ public abstract class WSDLElementNode<T extends WSDLComponent> extends AbstractN
         if (isValid()) {
             // Automatically keep the name in sync for named components.
             if (mElement instanceof Named) {
-                String name = ((Named) mElement).getName();
+                //IZ 126908; setting name from any child calls refactoring.
+                String name = mElement.getAttribute(new StringAttribute(Named.NAME_PROPERTY));
                 // Prevent getting an NPE from ExplorerManager.
                 super.setName(name == null ? "" : name);
+                if (name == null) {
+                    name = ((Named) mElement).getName();
+                }
                 if (name == null || name.length() == 0) {
                     name = mElement.getPeer().getLocalName();
                 }

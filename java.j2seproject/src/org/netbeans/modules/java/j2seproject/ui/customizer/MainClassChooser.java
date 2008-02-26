@@ -85,10 +85,28 @@ public class MainClassChooser extends JPanel {
         dialogSubtitle = subtitle;
         initComponents();
         jMainClassList.setCellRenderer(new MainClassRenderer());
-        initClassesView (sourcesRoots);
+        initClassesView();
+        initClassesModel(sourcesRoots);
     }
     
-    private void initClassesView (final FileObject[] sourcesRoots) {
+    public MainClassChooser (final Collection<ElementHandle<TypeElement>> mainClassesInFile) {
+        assert mainClassesInFile != null;
+        this.initComponents();
+        jMainClassList.setCellRenderer(new MainClassRenderer());
+        initClassesView();
+        initClassesModel (mainClassesInFile);
+    }
+    
+    public MainClassChooser (final Collection<ElementHandle<TypeElement>> mainClassesInFile, final String subtitle) {
+        assert mainClassesInFile != null;
+        dialogSubtitle = subtitle;
+        this.initComponents();
+        jMainClassList.setCellRenderer(new MainClassRenderer());
+        initClassesView();
+        initClassesModel (mainClassesInFile);
+    }
+    
+    private void initClassesView () {
         possibleMainClasses = null;
         jMainClassList.setSelectionMode (ListSelectionModel.SINGLE_SELECTION);
         jMainClassList.setListData (getWarmupList ());
@@ -115,7 +133,12 @@ public class MainClassChooser extends JPanel {
             public void mouseEntered (MouseEvent e) {}
             public void mouseExited (MouseEvent e) {}
         });
-        
+        if (dialogSubtitle != null) {
+            Mnemonics.setLocalizedText (jLabel1, dialogSubtitle);
+        }
+    }
+    
+    private void initClassesModel (final FileObject[] sourcesRoots) {
         RequestProcessor.getDefault ().post (new Runnable () {
             public void run () {
                 
@@ -139,10 +162,14 @@ public class MainClassChooser extends JPanel {
                 }
             }
         });
-        
-        if (dialogSubtitle != null) {
-            Mnemonics.setLocalizedText (jLabel1, dialogSubtitle);
-        }
+    }
+    
+    private void initClassesModel (final Collection<ElementHandle<TypeElement>> mainClasses) {
+        final ElementHandle<TypeElement>[] arr = mainClasses.toArray(new ElementHandle[mainClasses.size()]);
+        Arrays.sort (arr, new MainClassComparator());
+        possibleMainClasses = mainClasses;
+        jMainClassList.setListData (arr);
+        jMainClassList.setSelectedIndex (0);
     }
     
     private Object[] getWarmupList () {        
@@ -159,14 +186,15 @@ public class MainClassChooser extends JPanel {
 
     /** Returns the selected main class.
      *
-     * @return name of class or null if no class with the main method is selected
+     * @return a binary name of class or null if no class with the main method is selected
      */    
+    @SuppressWarnings("unchecked")
     public String getSelectedMainClass () {
+        ElementHandle<TypeElement> te = null;
         if (isValidMainClassName (jMainClassList.getSelectedValue ())) {
-            return ((ElementHandle)jMainClassList.getSelectedValue()).getQualifiedName();
-        } else {
-            return null;
+            te = (ElementHandle<TypeElement>)jMainClassList.getSelectedValue();
         }
+        return te == null ? null : te.getBinaryName();
     }
     
     public void addChangeListener (ChangeListener l) {

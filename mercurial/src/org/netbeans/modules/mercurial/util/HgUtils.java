@@ -50,7 +50,6 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
-import java.net.URL;
 import java.text.SimpleDateFormat;
 import java.util.List;
 import java.util.Arrays;
@@ -78,9 +77,6 @@ import org.openide.nodes.Node;
 import org.openide.windows.OutputEvent;
 import org.openide.windows.TopComponent;
 import org.netbeans.modules.versioning.spi.VCSContext;
-import org.openide.windows.IOProvider;
-import org.openide.windows.InputOutput;
-import org.openide.windows.OutputWriter;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
@@ -98,9 +94,6 @@ import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.queries.SharabilityQuery;
-import org.netbeans.modules.mercurial.HgProgressSupport;
-import org.openide.awt.HtmlBrowser;
-import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
 import org.openide.windows.OutputListener;
 
@@ -116,17 +109,14 @@ public class HgUtils {
     
     // IGNORE SUPPORT HG: following file patterns are added to {Hg repos}/.hgignore and Hg will ignore any files
     // that match these patterns, reporting "I"status for them // NOI18N
-    private static final String [] HG_IGNORE_FILES = { "\\.orig$", "\\.orig\\..*$", "\\.chg\\..*$", "\\.rej$"}; // NOI18N
+    private static final String [] HG_IGNORE_FILES = { "\\.orig$", "\\.orig\\..*$", "\\.chg\\..*$", "\\.rej$", "\\.conflict\\~$"}; // NOI18N
     private static final String HG_IGNORE_ORIG_FILES = "\\.orig$"; // NOI18N
     private static final String HG_IGNORE_ORIG_ANY_FILES = "\\.orig\\..*$"; // NOI18N
     private static final String HG_IGNORE_CHG_ANY_FILES = "\\.chg\\..*$"; // NOI18N
     private static final String HG_IGNORE_REJ_ANY_FILES = "\\.rej$"; // NOI18N
+    private static final String HG_IGNORE_CONFLICT_ANY_FILES = "\\.conflict\\~$"; // NOI18N
     
     private static final String FILENAME_HGIGNORE = ".hgignore"; // NOI18N
-
-    public static final int MAX_LINES_TO_PRINT = 500;
-
-    private static final String MSG_TOO_MANY_LINES = "The number of output lines is greater than 500; see message log for complete output";
 
     private static HashMap<String, Set<Pattern>> ignorePatterns;
 
@@ -388,7 +378,7 @@ public class HgUtils {
         }
     }
     
-    private static int HG_NUM_PATTERNS_TO_CHECK = 4;
+    private static int HG_NUM_PATTERNS_TO_CHECK = 5;
     private static void addToExistingIgnoredFile(File hgignoreFile) {
         if(hgignoreFile == null || !hgignoreFile.exists() || !hgignoreFile.canWrite()) return;
         File tempFile = null;
@@ -398,6 +388,7 @@ public class HgUtils {
         boolean bOrigPresent = false;
         boolean bChgAnyPresent = false;
         boolean bRejAnyPresent = false;
+        boolean bConflictAnyPresent = false;
         
         // If new patterns are added to HG_IGNORE_FILES, following code needs to
         // check for these new patterns
@@ -420,6 +411,8 @@ public class HgUtils {
                     bChgAnyPresent = true;
                 }else if (!bRejAnyPresent && line.equals(HG_IGNORE_REJ_ANY_FILES)){
                     bRejAnyPresent = true;
+                }else if (!bConflictAnyPresent && line.equals(HG_IGNORE_CONFLICT_ANY_FILES)){
+                    bConflictAnyPresent = true;
                 }
                 pw.println(line);
                 pw.flush();
@@ -441,6 +434,10 @@ public class HgUtils {
                 pw.println(HG_IGNORE_REJ_ANY_FILES );
                 pw.flush();
             }     
+            if (!bConflictAnyPresent) {
+                pw.println(HG_IGNORE_CONFLICT_ANY_FILES );
+                pw.flush();
+            }     
             
         } catch (IOException ex) {
             // Ignore
@@ -449,7 +446,8 @@ public class HgUtils {
                 if(pw != null) pw.close();
                 if(br != null) br.close();
 
-                boolean bAnyAdditions = !bOrigAnyPresent || !bOrigPresent  || !bChgAnyPresent || !bRejAnyPresent;               
+                boolean bAnyAdditions = !bOrigAnyPresent || !bOrigPresent  || 
+                        !bChgAnyPresent || !bRejAnyPresent || !bConflictAnyPresent;               
                 if(bAnyAdditions){
                     if (!confirmDialog(HgUtils.class, "MSG_IGNORE_FILES_TITLE", "MSG_IGNORE_FILES")) { // NOI18N 
                         tempFile.delete();
@@ -743,6 +741,9 @@ itor tabs #66700).
         File [] files = context.getRootFiles().toArray(new File[context.getRootFiles().size()]);
 
         for (File file : files) {
+            /* We may be committing a LocallyDeleted file */
+            if (!file.exists()) file = file.getParentFile();
+
             Project p = FileOwnerQuery.getOwner(FileUtil.toFileObject(file));
             if (p != null) {
                 return p;
@@ -1063,127 +1064,6 @@ itor tabs #66700).
         }
     }
 
-
-    /**
-     * Print contents of list to Mercurial Output Tab
-     *
-     * @param list to print out
-     * 
-     */
-     public static void outputMercurialTab(List<String> list){
-        if( list.isEmpty()) return;
-
-        InputOutput io = IOProvider.getDefault().getIO(Mercurial.MERCURIAL_OUTPUT_TAB_TITLE, false);
-        io.select();
-        OutputWriter out = io.getOut();
-        
-        int lines = list.size();
-        if (lines > MAX_LINES_TO_PRINT) {
-            out.println(list.get(1));
-            out.println(list.get(2));
-            out.println(list.get(3));
-            out.println("...");
-            out.println(list.get(list.size() -1));
-            out.println(MSG_TOO_MANY_LINES);
-            for (String s : list){
-                Mercurial.LOG.log(Level.WARNING, s);
-            }
-        } else {
-            for (String s : list){
-                out.println(s);
-
-            }
-        }
-        out.close();
-    }
-
-     /**
-     * Print msg to Mercurial Output Tab
-     *
-     * @param String msg to print out
-     * 
-     */
-     public static void outputMercurialTab(String msg){
-        if( msg == null) return;
-
-        InputOutput io = IOProvider.getDefault().getIO(Mercurial.MERCURIAL_OUTPUT_TAB_TITLE, false);
-        io.select();
-        OutputWriter out = io.getOut();
-        
-        out.println(msg);
-        out.close();
-    }
-
-    /**
-     * Print msg to Mercurial Output Tab in Red
-     *
-     * @param String msg to print out
-     * 
-     */
-     public static void outputMercurialTabInRed(String msg){
-        if( msg == null) return;
-
-        InputOutput io = IOProvider.getDefault().getIO(Mercurial.MERCURIAL_OUTPUT_TAB_TITLE, false);
-        io.select();
-        OutputWriter out = io.getErr();
-        
-        out.println(msg);
-        out.close();
-    }
-
-    /**
-     * Print URL to Mercurial Output Tab as an active Hyperlink
-     *
-     * @param String sURL to print out
-     * 
-     */
-     public static void outputMercurialTabLink(final String sURL){
-         if (sURL == null) return;
-         
-         try {
-             InputOutput io = IOProvider.getDefault().getIO(Mercurial.MERCURIAL_OUTPUT_TAB_TITLE, false);
-             io.select();
-             OutputWriter out = io.getOut();
-
-             OutputListener listener = new OutputListener() {
-                         public void outputLineAction(OutputEvent ev) {
-                             try {
-                                 HtmlBrowser.URLDisplayer.getDefault().showURL(new URL(sURL));
-                             } catch (IOException ex) {
-                             // Ignore
-                             }
-                         }
-                         public void outputLineSelected(OutputEvent ev) {}
-                         public void outputLineCleared(OutputEvent ev) {}
-                     };
-             out.println(sURL, listener, true);
-             out.close();
-         } catch (IOException ex) {
-         // Ignore
-         }
-     }
-
-    /**
-     * Select and Clear Mercurial Output Tab
-     *
-     * @param list to print out
-     * 
-     */
-     public static void clearOutputMercurialTab(){
-         InputOutput io = IOProvider.getDefault().getIO(
-                 Mercurial.MERCURIAL_OUTPUT_TAB_TITLE, false);
-         
-         io.select();
-         OutputWriter out = io.getOut();
-         
-         try {
-             out.reset();
-         } catch (IOException ex) {
-             // Ignore Exception
-         }
-         out.close();
-    }
-     
     /**
      * This utility class should not be instantiated anywhere.
      */

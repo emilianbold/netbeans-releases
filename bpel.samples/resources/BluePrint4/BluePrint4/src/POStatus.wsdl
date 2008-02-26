@@ -39,6 +39,7 @@
              xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/"
              xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"
              xmlns:sns="http://manufacturing.org/xsd/purchase">
+    
     <import namespace="http://manufacturing.org/wsdl/purchase/bp4"
             location="POService.wsdl"></import>
     <types>
@@ -46,14 +47,17 @@
             <xsd:import schemaLocation="purchaseOrder.xsd" namespace="http://manufacturing.org/xsd/purchase"/>
         </xsd:schema>
     </types>
+    
     <message name="POConfirmMesg">
         <part name="purchaseOrder"
               element="sns:purchaseOrder"></part>
     </message>
+    
     <message name="POCancelMesg">
         <part name="purchaseOrder"
               element="sns:purchaseOrder"></part>
     </message>
+    
     <message name="POStatusMesg">
         <part name="status"
               type="xsd:boolean"></part>
@@ -69,6 +73,7 @@
                    message="ns:orderFaultType"></fault>
         </operation>
     </portType>
+    
     <portType name="POCancelPortType">
         <operation name="cancelPO">
             <input name="cancelPO"
@@ -79,6 +84,7 @@
                    message="ns:orderFaultType"></fault>
         </operation>
     </portType>
+    
     <binding name="POConfirmBinding"
              type="tns:POConfirmPortType">
         <soap:binding style="document"
@@ -99,6 +105,7 @@
             </fault>
         </operation>
     </binding>
+
     <binding name="POCancelBinding"
              type="tns:POCancelPortType">
         <soap:binding style="document"
@@ -119,6 +126,7 @@
             </fault>
         </operation>
     </binding>
+    
     <service name="POStatusService">
         <port name="POConfirmPort"
               binding="tns:POConfirmBinding">
@@ -129,14 +137,17 @@
               <soap:address location="http://localhost:18181/wsdl/purchase/PurchaseOrderStatus/Servicelocation/cancel/bp4"/>
         </port>
     </service>
+    
     <plink:partnerLinkType name="confirmPOLinkType">
         <plink:role name="confirmPORole"
                     portType="tns:POConfirmPortType"></plink:role>
     </plink:partnerLinkType>
+    
     <plink:partnerLinkType name="cancelPOLinkType">
         <plink:role name="cancelPORole"
                     portType="tns:POCancelPortType"></plink:role>
     </plink:partnerLinkType>
+    
     <vprop:property name="OrderID"
                    type="xsd:int"/>
     <vprop:propertyAlias part="purchaseOrder"
@@ -144,11 +155,13 @@
                         messageType="tns:POConfirmMesg">
         <vprop:query>/sns:purchaseOrder/sns:orderId</vprop:query>
     </vprop:propertyAlias>
+
     <vprop:propertyAlias part="purchaseOrder"
                         propertyName="tns:OrderID"
                         messageType="tns:POCancelMesg">
         <vprop:query>/sns:purchaseOrder/sns:orderId</vprop:query>
     </vprop:propertyAlias>
+    
     <vprop:propertyAlias part="purchaseOrder"
                         propertyName="tns:OrderID"
                         messageType="ns:POMessage">

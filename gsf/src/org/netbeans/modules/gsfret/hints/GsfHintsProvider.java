@@ -49,8 +49,8 @@ import java.util.List;
 import java.util.Map;
 import javax.swing.text.Document;
 import javax.swing.text.StyledDocument;
-import org.netbeans.api.gsf.CancellableTask;
-import org.netbeans.api.gsf.Error;
+import org.netbeans.modules.gsf.api.CancellableTask;
+import org.netbeans.modules.gsf.api.Error;
 import org.netbeans.spi.editor.hints.Fix;
 import org.netbeans.spi.editor.hints.LazyFixList;
 import org.netbeans.spi.editor.hints.Severity;
@@ -60,12 +60,15 @@ import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.text.Line;
 import java.util.EnumMap;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Position;
 import javax.swing.text.Position.Bias;
-import org.netbeans.api.gsf.HintsProvider;
+import org.netbeans.modules.gsf.api.HintsProvider;
+import org.netbeans.modules.gsf.api.ParserResult;
+import org.netbeans.modules.gsf.LanguageRegistry;
 import org.netbeans.napi.gsfret.source.CompilationInfo;
 import org.netbeans.napi.gsfret.source.Source;
 import org.netbeans.spi.editor.hints.ErrorDescription;
@@ -103,18 +106,18 @@ public final class GsfHintsProvider implements CancellableTask<CompilationInfo> 
         this.file = file;
     }
     
-    private static final Map<org.netbeans.api.gsf.Severity, Severity> errorKind2Severity;
+    private static final Map<org.netbeans.modules.gsf.api.Severity, Severity> errorKind2Severity;
     
     static {
-        errorKind2Severity = new EnumMap<org.netbeans.api.gsf.Severity, Severity>(org.netbeans.api.gsf.Severity.class);
-        errorKind2Severity.put(org.netbeans.api.gsf.Severity.ERROR, Severity.ERROR);
-        errorKind2Severity.put(org.netbeans.api.gsf.Severity.WARNING, Severity.WARNING);
+        errorKind2Severity = new EnumMap<org.netbeans.modules.gsf.api.Severity, Severity>(org.netbeans.modules.gsf.api.Severity.class);
+        errorKind2Severity.put(org.netbeans.modules.gsf.api.Severity.ERROR, Severity.ERROR);
+        errorKind2Severity.put(org.netbeans.modules.gsf.api.Severity.WARNING, Severity.WARNING);
 //        errorKind2Severity.put(Error/*Diagnostic*/.Kind.WARNING, Severity.WARNING);
 //        errorKind2Severity.put(Error/*Diagnostic*/.Kind.NOTE, Severity.WARNING);
 //        errorKind2Severity.put(Error/*Diagnostic*/.Kind.OTHER, Severity.WARNING);
     }
     
-    List<ErrorDescription> computeErrors(CompilationInfo info, Document doc, List<Error> errors, List<ErrorDescription> descs) {
+    List<ErrorDescription> computeErrors(CompilationInfo info, Document doc, ParserResult result, List<Error> errors, List<ErrorDescription> descs) {
         Source js = Source.forFileObject(file);
         
         if (ERR.isLoggable(ErrorManager.INFORMATIONAL)) {
@@ -142,8 +145,21 @@ public final class GsfHintsProvider implements CancellableTask<CompilationInfo> 
             //}
             
             //int position = (int)d.getPosition();
-            int position = d.getStartPosition().getOffset();
-            int endPosition = d.getEndPosition().getOffset();
+            int astOffset = d.getStartPosition();
+            int astEndOffset = d.getEndPosition();
+            
+            int position, endPosition;
+            if (result.getTranslatedSource() != null) {
+                position = result.getTranslatedSource().getLexicalOffset(astOffset);
+                if (position == -1) {
+                    continue;
+                }
+                endPosition = position+(astEndOffset-astOffset);
+            } else {
+                position = astOffset;
+                endPosition = astEndOffset;
+            }
+            
             LazyFixList ehm;
             
             //if (rules != null) {
@@ -293,20 +309,31 @@ public final class GsfHintsProvider implements CancellableTask<CompilationInfo> 
         long start = System.currentTimeMillis();
         
         
-        HintsProvider provider = info.getLanguage().getHintsProvider();
 
-        List<Error> errors = info.getDiagnostics();
+        Set<String> mimeTypes = info.getEmbeddedMimeTypes();
+        LanguageRegistry registry = LanguageRegistry.getInstance();
         List<ErrorDescription> descriptions = new ArrayList<ErrorDescription>();
-        if (provider != null) {
-            errors = provider.computeErrors(info, descriptions);
-        }
-        // Process errors without codes
-        descriptions = computeErrors(info, doc, errors, descriptions);
-        if (descriptions == null) {
-            //meaning: cancelled
-            return;
-        }
         
+        for (String mimeType : mimeTypes) {
+            for (ParserResult result : info.getEmbeddedResults(mimeType)) {
+                assert result != null;
+
+                HintsProvider provider = registry.getLanguageByMimeType(mimeType).getHintsProvider();
+                List<Error> errors = result.getDiagnostics();
+                List<ErrorDescription> desc = new ArrayList<ErrorDescription>();
+                if (provider != null) {
+                    errors = provider.computeErrors(info, desc);
+                }
+                // Process errors without codes
+                desc = computeErrors(info, doc, result, errors, desc);
+                if (desc == null) {
+                    //meaning: cancelled
+                    return;
+                }
+
+                descriptions.addAll(desc);
+            }
+        }
         HintsController.setErrors(doc, "gsf-hints", descriptions);
         
         long end = System.currentTimeMillis();

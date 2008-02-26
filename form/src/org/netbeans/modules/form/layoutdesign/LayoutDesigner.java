@@ -2235,12 +2235,16 @@ public class LayoutDesigner implements LayoutConstants {
                                 dim);
                 LayoutComponent container = comp.getParent();
                 if (container != null && root.getSubIntervalCount() == 0) {
-                    // empty root - keep if it is default (eliminate if additional
-                    // or if default with just one additional - will become default)
+                    // Empty root - eliminate if it is an additional layer or
+                    // default layer with just one additional (which then
+                    // becomes default).
+                    // Hack #127988: don't remove layout roots during resizing
+                    // (resized component stays in additional layer - unlike moved).
+                    boolean resizing = (dragger != null && dragger.isResizing());
                     if (root == getActiveLayoutRoots(container)[dim]
-                            && container.getLayoutRootCount() != 2) {
+                            && (container.getLayoutRootCount() != 2 || resizing)) {
                         propEmptyContainer(root, dim);
-                    } else {
+                    } else if (!resizing) {
                         layoutModel.removeLayoutRoots(container, root);
                     }
                 }

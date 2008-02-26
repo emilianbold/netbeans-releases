@@ -7,10 +7,18 @@
     <Component class="javax.swing.ButtonGroup" name="getterSetterGroup">
     </Component>
   </NonVisualComponents>
+  <AccessibilityProperties>
+    <Property name="AccessibleContext.accessibleName" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+      <ResourceString bundle="org/netbeans/modules/beans/addproperty/Bundle.properties" key="AddPropertyPanel.AccessibleContext.accessibleName" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+    </Property>
+    <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+      <ResourceString bundle="org/netbeans/modules/beans/addproperty/Bundle.properties" key="AddPropertyPanel.AccessibleContext.accessibleDescription" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+    </Property>
+  </AccessibilityProperties>
   <AuxValues>
     <AuxValue name="FormSettings_autoResourcing" type="java.lang.Integer" value="1"/>
     <AuxValue name="FormSettings_autoSetComponentName" type="java.lang.Boolean" value="false"/>
-    <AuxValue name="FormSettings_generateMnemonicsCode" type="java.lang.Boolean" value="false"/>
+    <AuxValue name="FormSettings_generateMnemonicsCode" type="java.lang.Boolean" value="true"/>
     <AuxValue name="FormSettings_i18nAutoMode" type="java.lang.Boolean" value="true"/>
     <AuxValue name="FormSettings_layoutCodeTarget" type="java.lang.Integer" value="2"/>
     <AuxValue name="FormSettings_listenerGenerationStyle" type="java.lang.Integer" value="0"/>
@@ -54,7 +62,7 @@
                                   <Group type="102" alignment="0" attributes="0">
                                       <Component id="boundCheckBox" min="-2" max="-2" attributes="0"/>
                                       <EmptySpace min="-2" pref="35" max="-2" attributes="0"/>
-                                      <Component id="propNameTextField" pref="524" max="32767" attributes="0"/>
+                                      <Component id="propNameTextField" pref="546" max="32767" attributes="0"/>
                                       <EmptySpace min="-2" pref="27" max="-2" attributes="0"/>
                                   </Group>
                                   <Group type="102" alignment="0" attributes="0">
@@ -87,7 +95,7 @@
                               <EmptySpace max="-2" attributes="0"/>
                               <Component id="equalsLabel" min="-2" max="-2" attributes="0"/>
                               <EmptySpace max="-2" attributes="0"/>
-                              <Component id="initializerTextField" pref="374" max="32767" attributes="0"/>
+                              <Component id="initializerTextField" pref="396" max="32767" attributes="0"/>
                               <EmptySpace max="-2" attributes="0"/>
                               <Component id="semicolonLabel" min="-2" max="-2" attributes="0"/>
                           </Group>
@@ -99,7 +107,7 @@
                       <EmptySpace min="-2" max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="0" attributes="0">
                           <Component id="errorLabel" alignment="0" min="-2" max="-2" attributes="0"/>
-                          <Component id="previewScrollPane" alignment="0" pref="651" max="32767" attributes="2"/>
+                          <Component id="previewScrollPane" alignment="0" pref="673" max="32767" attributes="2"/>
                       </Group>
                   </Group>
               </Group>
@@ -175,6 +183,9 @@
   <SubComponents>
     <Component class="javax.swing.JLabel" name="nameLabel">
       <Properties>
+        <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
+          <ComponentRef name="nameTextField"/>
+        </Property>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
           <ResourceString bundle="org/netbeans/modules/beans/addproperty/Bundle.properties" key="AddPropertyPanel.nameLabel.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
@@ -189,6 +200,9 @@
     </Component>
     <Component class="javax.swing.JLabel" name="equalsLabel">
       <Properties>
+        <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
+          <ComponentRef name="initializerTextField"/>
+        </Property>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
           <ResourceString bundle="org/netbeans/modules/beans/addproperty/Bundle.properties" key="AddPropertyPanel.equalsLabel.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
@@ -205,6 +219,9 @@
     </Component>
     <Component class="javax.swing.JLabel" name="typeLabel">
       <Properties>
+        <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
+          <ComponentRef name="typeComboBox"/>
+        </Property>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
           <ResourceString bundle="org/netbeans/modules/beans/addproperty/Bundle.properties" key="AddPropertyPanel.typeLabel.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
@@ -220,7 +237,7 @@
             <StringItem index="2" value="boolean"/>
             <StringItem index="3" value="long"/>
             <StringItem index="4" value="double"/>
-            <StringItem index="5" value="long"/>
+            <StringItem index="5" value="byte"/>
             <StringItem index="6" value="char"/>
             <StringItem index="7" value="short"/>
             <StringItem index="8" value="float"/>
@@ -276,6 +293,7 @@
         <Property name="buttonGroup" type="javax.swing.ButtonGroup" editor="org.netbeans.modules.form.RADComponent$ButtonGroupPropertyEditor">
           <ComponentRef name="accessGroup"/>
         </Property>
+        <Property name="selected" type="boolean" value="true"/>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
           <ResourceString bundle="org/netbeans/modules/beans/addproperty/Bundle.properties" key="AddPropertyPanel.protectedRadioButton.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>

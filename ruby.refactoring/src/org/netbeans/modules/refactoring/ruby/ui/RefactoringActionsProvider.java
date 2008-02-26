@@ -51,9 +51,8 @@ import java.util.List;
 import javax.swing.JOptionPane;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.fileinfo.NonRecursiveFolder;
-import org.netbeans.api.gsf.CancellableTask;
-import org.netbeans.api.gsf.Element;
-import org.netbeans.napi.gsfret.source.ClasspathInfo;
+import org.netbeans.modules.gsf.api.CancellableTask;
+import org.netbeans.editor.BaseDocument;
 import org.netbeans.napi.gsfret.source.CompilationController;
 import org.netbeans.napi.gsfret.source.CompilationInfo;
 import org.netbeans.napi.gsfret.source.Phase;
@@ -66,14 +65,13 @@ import org.netbeans.modules.refactoring.spi.ui.RefactoringUI;
 import org.netbeans.modules.ruby.AstUtilities;
 import org.netbeans.modules.ruby.RubyParseResult;
 import org.netbeans.modules.ruby.RubyUtils;
-import org.netbeans.modules.ruby.StructureAnalyzer;
 import org.netbeans.modules.ruby.StructureAnalyzer.AnalysisResult;
 import org.netbeans.modules.ruby.elements.AstElement;
-import org.netbeans.modules.ruby.elements.AstElement;
+import org.netbeans.modules.ruby.elements.Element;
+import org.netbeans.modules.ruby.lexer.LexUtilities;
 import org.openide.ErrorManager;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
-import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
 import org.openide.util.Lookup;
@@ -141,14 +139,20 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider{
             return false;
         }
         FileObject fo = dob.getPrimaryFile();
+        
+        if (isOutsideRuby(lookup, fo)) {
+            return false;
+        }
+        
         if (RetoucheUtils.isRefactorable(fo)) { //NOI18N
             return true;
         }
-        if ((dob instanceof DataFolder) && 
-                RetoucheUtils.isFileInOpenProject(fo) && 
-                RetoucheUtils.isOnSourceClasspath(fo) &&
-                !RetoucheUtils.isClasspathRoot(fo))
-            return true;
+        // No "package" renaming for JavaScript
+        //if ((dob instanceof DataFolder) && 
+        //        RetoucheUtils.isFileInOpenProject(fo) && 
+        //        RetoucheUtils.isOnSourceClasspath(fo) &&
+        //        !RetoucheUtils.isClasspathRoot(fo))
+        //    return true;
         return false;
     }
     
@@ -219,6 +223,28 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider{
 //
         return false;
     }    
+    
+    private boolean isOutsideRuby(Lookup lookup, FileObject fo) {
+        if (RubyUtils.isRhtmlFile(fo)) {
+            // We're attempting to refactor in an RHTML file... If it's in
+            // the editor, make sure we're trying to refactoring in a Ruby section;
+            // if not, we shouldn't grab it. (JavaScript refactoring won't get
+            // invoked if Ruby returns true for canRename even when the caret is
+            // in the caret section
+            EditorCookie ec = lookup.lookup(EditorCookie.class);
+            if (isFromEditor(ec)) {
+                JTextComponent textC = ec.getOpenedPanes()[0];
+                int caret = textC.getCaretPosition();
+                if (LexUtilities.getToken((BaseDocument) textC.getDocument(), caret) == null) {
+                    // Not in Ruby code!
+                    return true;
+                }
+                
+            }
+        }
+        
+        return false;
+    }
 
     @Override
     public boolean canFindUsages(Lookup lookup) {
@@ -227,8 +253,19 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider{
             return false;
         }
         Node n = nodes.iterator().next();
+
         DataObject dob = n.getCookie(DataObject.class);
-        if ((dob!=null) && RubyUtils.isRubyOrRhtmlFile(dob.getPrimaryFile())) { //NOI18N
+        if (dob == null) {
+            return false;
+        }
+
+        FileObject fo = dob.getPrimaryFile();
+        
+        if (isOutsideRuby(lookup, fo)) {
+            return false;
+        }
+        
+        if ((dob!=null) && RubyUtils.isRubyOrRhtmlFile(fo)) { //NOI18N
             return true;
         }
         return false;
@@ -545,7 +582,7 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider{
             info.toPhase(Phase.ELEMENTS_RESOLVED);
             org.jruby.ast.Node root = AstUtilities.getRoot(info);
             if (root != null) {
-                Element element = AstElement.create(root);
+                Element element = AstElement.create(info, root);
                 RubyElementCtx fileCtx = new RubyElementCtx(root, root, element, info.getFileObject(), info);
                 ui = createRefactoringUI(fileCtx, info);
             }
@@ -585,7 +622,7 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider{
             info.toPhase(Phase.ELEMENTS_RESOLVED);
             org.jruby.ast.Node root = AstUtilities.getRoot(info);
             if (root != null) {
-                RubyParseResult rpr = (RubyParseResult)info.getParserResult();
+                RubyParseResult rpr = AstUtilities.getParseResult(info);
                 if (rpr != null) {
                     AnalysisResult ar = rpr.getStructure();
                     List<? extends AstElement> els = ar.getElements();
@@ -613,8 +650,6 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider{
                     fobs[i] = dob.getPrimaryFile();
                     Source source = RetoucheUtils.getSource(fobs[i]);
                     if (source == null) {
-                        // http://www.netbeans.org/issues/show_bug.cgi?id=125181
-                        // TODO - log this? What's the problem?
                         continue;
                     }
                     assert source != null;

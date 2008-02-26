@@ -72,6 +72,7 @@ import org.netbeans.editor.TokenID;
 import org.netbeans.editor.ext.CompletionQuery;
 import org.netbeans.editor.ext.ExtSettingsDefaults;
 import org.netbeans.editor.ext.ExtSettingsNames;
+import org.netbeans.modules.cnd.api.model.CsmMember;
 import org.netbeans.modules.cnd.api.model.CsmNamespaceAlias;
 import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
 import org.netbeans.modules.cnd.editor.cplusplus.CCTokenContext;
@@ -529,6 +530,23 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
         NONE, SCOPE, ARROW, DOT
     }
     
+
+    private static CsmClassifier getClassifier(CsmType type, boolean resolveArrow) {
+        CsmClassifier cls = type.getClassifier();
+        cls = cls != null ? CsmBaseUtilities.getOriginalClassifier(cls) : cls;
+        if (resolveArrow) {
+            CsmFunction op = CsmBaseUtilities.getOperator((CsmClass)cls, CsmFunction.OperatorKind.ARROW);
+            if (op != null) {
+                CsmType opType = op.getReturnType();
+                CsmClassifier opCls = getClassifier(opType, true);
+                if (opCls != null) {
+                    cls = opCls;
+                }
+            }
+        }
+        return cls;
+    }       
+    
     class Context {
 
         private boolean sort;
@@ -661,6 +679,13 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
                     ok = resolveItem(exp.getParameter(i), (i == 0),
                                      (!lastDot && i == parmCnt - 1),
                                     kind);
+            
+                    if ((i == 0) && lastType != null && lastType.getArrayDepth() == 0 && kind == ExprKind.ARROW) {
+                        CsmClassifier cls = getClassifier(lastType, true);
+                        if (cls != null) {
+                            lastType = CsmCompletion.getType(cls, 0);
+                        }
+                    }                    
                 }
 
                 if (ok && lastDot) { // Found either type or package help
@@ -1066,12 +1091,21 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
                     cont = false;
                     if (lastType != null) { // must be type
                         if (item.getParameterCount() == 2) { // index in array follows
-                            CsmType arrayType = resolveType(item.getParameter(1));
-                            if (arrayType != null && arrayType.equals(CsmCompletion.INT_TYPE)) {
+//                            CsmType arrayType = resolveType(item.getParameter(0));
+//                            if (arrayType != null && arrayType.equals(CsmCompletion.INT_TYPE)) {
+                               if (lastType.getArrayDepth() == 0) {
+                                   CsmClassifier cls = getClassifier(lastType, false);
+                                   if (cls != null) {
+                                       CsmFunction opArray = CsmBaseUtilities.getOperator(cls, CsmFunction.OperatorKind.ARRAY);
+                                       if (opArray != null) {
+                                           lastType = opArray.getReturnType();
+                                       }
+                                   }
+                               }
                                lastType = CsmCompletion.getType(lastType.getClassifier(),
                                                     Math.max(lastType.getArrayDepth() - 1, 0));
                                 cont = true;
-                            }
+//                            }
                         } else { // no index, increase array depth
                             lastType = CsmCompletion.getType(lastType.getClassifier(),
                                                               lastType.getArrayDepth() + 1);

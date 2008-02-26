@@ -61,7 +61,6 @@ import org.netbeans.modules.sql.framework.ui.output.SQLLogView;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.nodes.Node;
-import org.openide.util.NbBundle;
 import com.sun.etl.engine.ETLEngine;
 import com.sun.etl.engine.ETLEngineExecEvent;
 import com.sun.etl.engine.ETLEngineListener;
@@ -166,7 +165,7 @@ public class ExecuteTestCookie implements Node.Cookie {
 
             logView.appendToView(msg);
             DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(msg, NotifyDescriptor.WARNING_MESSAGE));
-            mLogger.errorNoloc(mLoc.t("PRSR011: Problem in executing engine.{0}", logCategory), e);
+            mLogger.errorNoloc(mLoc.t("PRSR011: Problem in executing engine."), e);
         }
     }
 
@@ -186,7 +185,7 @@ public class ExecuteTestCookie implements Node.Cookie {
          */
         public synchronized void executionPerformed(ETLEngineExecEvent event) {
             if ((event.getStatus() == ETLEngine.STATUS_COLLAB_COMPLETED) || (event.getStatus() == ETLEngine.STATUS_COLLAB_EXCEPTION)) {
-                mLogger.infoNoloc(mLoc.t("PRSR012: eTL engine execution completed...{0}", logCategory));
+                mLogger.infoNoloc(mLoc.t("PRSR012: eTL engine execution completed..."));
                 // Ensure GUI change occurs in the event-dispatch thread.
                 SwingUtilities.invokeLater(new CloseProgressBarTask());
                 try {
@@ -210,7 +209,7 @@ public class ExecuteTestCookie implements Node.Cookie {
                         DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(msgBuf.toString(), NotifyDescriptor.INFORMATION_MESSAGE));
                     }
                 } catch (Exception ex) {
-                    mLogger.errorNoloc(mLoc.t("PRSR013: Problem while handling ETLEngineExecEvent for current execution.{0}", logCategory), ex);
+                    mLogger.errorNoloc(mLoc.t("PRSR013: Problem while handling ETLEngineExecEvent for current execution."), ex);
                 } finally {
                     // Ensure dialog box is removed from display - should be harmless if called twice.
                     SwingUtilities.invokeLater(new CloseProgressBarTask());
@@ -225,7 +224,7 @@ public class ExecuteTestCookie implements Node.Cookie {
                 String nbBundle7 = mLoc.t("PRSR001: {0}: {1}",evt.getSourceName(),evt.getLogMessage());
                 String msg = Localizer.parse(nbBundle7);
                 logView.appendToView(msg);
-                mLogger.infoNoloc(mLoc.t("PRSR014: evt.getLogLevel(){0}{1}", logCategory, msg));
+                mLogger.infoNoloc(mLoc.t("PRSR014: evt.getLogLevel(){0}", msg));
             }
         }
     }
@@ -264,7 +263,7 @@ public class ExecuteTestCookie implements Node.Cookie {
                     }
                     throwableList = engine.getContext().getThrowableList();
                 } catch (Exception ex) {
-                    mLogger.errorNoloc(mLoc.t("PRSR015: Exception:{0}", logCategory), ex);
+                    mLogger.errorNoloc(mLoc.t("PRSR015: Exception: "), ex);
                     throwableList.add(ex);
                 } finally {
                     Thread.currentThread().setContextClassLoader(origLoader);

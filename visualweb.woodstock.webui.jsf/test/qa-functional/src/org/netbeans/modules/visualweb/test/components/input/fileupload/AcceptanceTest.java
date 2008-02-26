@@ -43,6 +43,7 @@ package org.netbeans.modules.visualweb.test.components.input.fileupload;
 
 import junit.framework.Test;
 import junit.framework.TestSuite;
+import org.netbeans.jemmy.operators.JEditorPaneOperator;
 import org.netbeans.junit.NbTestSuite;
 import org.netbeans.jellytools.OutputOperator;
 import org.netbeans.jemmy.Waiter;
@@ -353,10 +354,10 @@ public class AcceptanceTest extends RaveTestCase {
         log("**double click button to get to action method()");
         designer = new DesignerPaneOperator(RaveWindowOperator.getDefaultRave());
         designer.clickMouse(_x, _button1y, 2);
-        EditorOperator editor = new EditorOperator(Util.getMainWindow(), _page1);
+        JEditorPaneOperator editor = new JEditorPaneOperator(Util.getMainWindow(), "Page1");
         //For some reason, doing all of them at once doesn't work
         editor.pushKey(KeyEvent.VK_END);
-        editor.txtEditorPane().typeText("\nlog(\"Upload action performed\");\n");
+        editor.typeText("\nlog(\"Upload action performed\");\n");
         log("Editor Dump:");
         log(editor.getText());
         log("**Go back to designer");

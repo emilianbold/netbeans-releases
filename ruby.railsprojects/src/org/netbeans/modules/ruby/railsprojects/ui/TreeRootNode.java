@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -80,7 +80,7 @@ import org.openide.util.lookup.ProxyLookup;
 // XXX need unit test
 
 /**
- * (Copied from Java Project Source (org.netbeans.spi.gsfpath.project.support.ui)
+ * (Copied from Java Project Source (org.netbeans.modules.gsfpath.spi.project.support.ui)
  * Displays a package root in a tree.
  * @see "#42151"
  * @author Jesse Glick
@@ -172,16 +172,16 @@ public final class TreeRootNode extends FilterNode implements PropertyChangeList
     
     @Override
     public Action[] getActions(boolean context) {
-        Action[] result = initActions();
+        Action[] result = initActions(context);
         return result;
     }
 
     // From ActionFilterNode
     private Action[] actionCache;
     
-    private Action[] initActions () {
+    private Action[] initActions (boolean context) {
         if (actionCache == null) {
-            Action[] existing = super.getActions();
+            Action[] existing = super.getActions(context);
             Action[] additional;
             if (generator == Generator.NONE) {
                 additional = new Action[] { CommonProjectActions.newFileAction(), null }; // null: separator

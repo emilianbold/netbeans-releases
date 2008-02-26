@@ -48,8 +48,6 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.Enumeration;
 import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -60,18 +58,19 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import org.apache.lucene.document.FieldSelectorResult;
 import org.apache.lucene.store.NoLockFactory;
 import org.apache.lucene.analysis.KeywordAnalyzer;
 import org.apache.lucene.document.DateTools;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field;
+import org.apache.lucene.document.FieldSelector;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.index.TermDocs;
 import org.apache.lucene.index.TermEnum;
 import org.apache.lucene.search.BooleanClause;
-import org.apache.lucene.search.BooleanQuery;
 import org.apache.lucene.search.BooleanQuery;
 import org.apache.lucene.search.Hit;
 import org.apache.lucene.search.Hits;
@@ -80,10 +79,11 @@ import org.apache.lucene.search.Searcher;
 import org.apache.lucene.search.TermQuery;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
-import org.apache.lucene.store.LockFactory;
 import org.apache.lucene.store.RAMDirectory;
-import org.netbeans.api.gsf.Index.SearchResult;
-import org.netbeans.api.gsf.NameKind;
+import org.netbeans.modules.gsf.api.IndexDocument;
+import org.netbeans.modules.gsf.api.Index.SearchResult;
+import org.netbeans.modules.gsf.api.NameKind;
+import org.netbeans.modules.gsf.Language;
 import org.netbeans.napi.gsfret.source.ClassIndex;
 import org.netbeans.modules.gsfret.source.util.LowMemoryEvent;
 import org.netbeans.modules.gsfret.source.util.LowMemoryListener;
@@ -124,10 +124,10 @@ class LuceneIndex extends Index {
     private ClassIndexImpl classIndex;
     private File cacheRoot;
         
-    public static Index create (final File cacheRoot, ClassIndexImpl classIndex) throws IOException { 
+    public static Index create (final Language language, final File cacheRoot, ClassIndexImpl classIndex) throws IOException { 
 
         assert cacheRoot != null && cacheRoot.exists() && cacheRoot.canRead() && cacheRoot.canWrite();
-        LuceneIndex index = new LuceneIndex (getReferencesCacheFolder(cacheRoot));
+        LuceneIndex index = new LuceneIndex (language, getReferencesCacheFolder(cacheRoot));
         
         // For debugging (lucene browser) only
         index.classIndex = classIndex;
@@ -137,7 +137,8 @@ class LuceneIndex extends Index {
     }
 
     /** Creates a new instance of LuceneIndex */
-    private LuceneIndex (final File refCacheRoot) throws IOException {
+    private LuceneIndex (final Language language, final File refCacheRoot) throws IOException {
+        super(language);
         assert refCacheRoot != null;
         this.directory = FSDirectory.getDirectory(refCacheRoot, NoLockFactory.getNoLockFactory());      //Locking controlled by rwlock
     }
@@ -189,7 +190,7 @@ class LuceneIndex extends Index {
         final TermEnum en = in.terms(nameTerm);
         try {
             do {
-                Term term = en.term();                
+                Term term = en.term();
                 if (term != null && prefixField == term.field() && term.text().startsWith(name)) {
                     toSearch.add (term);
                 }
@@ -253,7 +254,55 @@ class LuceneIndex extends Index {
             return false;
         }
     }
+    
+    
+    private FieldSelector FILE_AND_TIMESTAMP = new FieldSelector() {
+        public FieldSelectorResult accept(String key) {
+            return DocumentUtil.FIELD_FILENAME.equals(key) || DocumentUtil.FIELD_TIME_STAMP.equals(key) ?
+                FieldSelectorResult.LOAD : FieldSelectorResult.NO_LOAD;
+        }
+    };
+    
+    private class CustomFieldSelector implements FieldSelector {
+        private Set<String> includeFields;
         
+        CustomFieldSelector(Set<String> includeFields) {
+            this.includeFields = includeFields;
+        }
+        public FieldSelectorResult accept(String key) {
+            // Always load the filename since clients don't know about it but it's needed
+            // to call getPersistentUrl()
+            boolean include = includeFields.contains(key) || key.equals(DocumentUtil.FIELD_FILENAME);
+            return include ? FieldSelectorResult.LOAD : FieldSelectorResult.NO_LOAD;
+        }
+    }
+    
+    public Map<String,String> getTimeStamps() throws IOException {
+        if (!isValid(false)) {
+            return null;
+        }
+        final IndexReader in = getReader();
+        Map<String,String> result = new HashMap(2*in.numDocs());
+        for (int i = 0, n = in.numDocs(); i < n; i++) {
+            if (in.isDeleted(i)) {
+                continue;
+            }
+            Document document = in.document(i, FILE_AND_TIMESTAMP);
+            // TODO - use a query instead! Faster iteration!
+            String timestamp = document.get(DocumentUtil.FIELD_TIME_STAMP);
+            String filename = document.get(DocumentUtil.FIELD_FILENAME);
+            if (timestamp != null && filename != null) {
+                // Ugh - what if I already have another document for the same file
+                // in here - shouldn't I pick the oldest timestamp? Or is it 
+                // the responsibility of the clients to always update all documents 
+                // at the same time for a given file?
+                result.put(filename, timestamp);
+            }
+        }
+        
+        return result;
+    }
+
     public boolean isValid (boolean tryOpen) throws IOException {  
         boolean res = IndexReader.indexExists(this.directory);
         if (res && tryOpen) {
@@ -325,44 +374,40 @@ class LuceneIndex extends Index {
     
 
     // BEGIN TOR MODIFICATIONS
-    public void gsfStore(final Set<Map<String,String>> fieldsSet,  Set<Map<String,String>> noIndexFields, final Map<String,String> toDelete) throws IOException {
-        assert ClassIndexManager.getDefault().holdsWriteLock();
+    public void store(String fileUrl, List<IndexDocument> documents) throws IOException {
+        assert ClassIndexManager.holdsWriteLock();
         this.rootPkgCache = null;
         boolean create = !isValid(false);
         if (!create) {
             IndexReader in = getReader();
             
-            if (toDelete.size() > 0) {
-                final Searcher searcher = new IndexSearcher (in);
-                try {
-                    for (String key : toDelete.keySet()) {
-                        BooleanQuery query = new BooleanQuery ();
-                        String value = toDelete.get(key);
-                        query.add (new TermQuery (new Term (key, value)),BooleanClause.Occur.MUST);
+            final Searcher searcher = new IndexSearcher (in);
+            try {
+                if (fileUrl != null) {
+                    BooleanQuery query = new BooleanQuery ();
+                    query.add (new TermQuery (new Term (DocumentUtil.FIELD_FILENAME, fileUrl)),BooleanClause.Occur.MUST);
 
-                        Hits hits = searcher.search(query);
-                        //if (hits.length()>1) {
-                        //    // Uhm -- don't we put MULTIPLE documents into the same item now?
-                        //    // This isn't abnormal, is it?
-                        //    LOGGER.getLogger("global").warning("Multiple(" + hits.length() + ") index entries for key: " + key + " where value: " + value + " where cacheRoot=" + cacheRoot); //NOI18N
-                        //}
-                        for (int i=0; i<hits.length(); i++) {
-                            in.deleteDocument (hits.id(i));
-                        }
+                    Hits hits = searcher.search(query);
+                    //if (hits.length()>1) {
+                    //    // Uhm -- don't we put MULTIPLE documents into the same item now?
+                    //    // This isn't abnormal, is it?
+                    //    LOGGER.getLogger("global").warning("Multiple(" + hits.length() + ") index entries for key: " + key + " where value: " + value + " where cacheRoot=" + cacheRoot); //NOI18N
+                    //}
+                    for (int i=0; i<hits.length(); i++) {
+                        in.deleteDocument (hits.id(i));
                     }
-                    in.deleteDocuments (DocumentUtil.rootDocumentTerm());
-                } finally {
-                    searcher.close();
                 }
-            } else {
                 in.deleteDocuments (DocumentUtil.rootDocumentTerm());
+            } finally {
+                searcher.close();
             }
         }
         long timeStamp = System.currentTimeMillis();
-        gsfStore(fieldsSet, noIndexFields, create, timeStamp);
+        store(documents, create, timeStamp, fileUrl);
     }    
-
-    private void gsfStore (final Set<Map<String,String>> fieldsSet, Set<Map<String,String>> noIndexFields, final boolean create, final long timeStamp) throws IOException {        
+    
+    private void store (List<IndexDocument> d, final boolean create, final long timeStamp, final String filename) throws IOException {        
+        List<IndexDocumentImpl> documents = (List<IndexDocumentImpl>)(List)d;
         final IndexWriter out = getWriter(create);
         try {
             if (debugIndexMerging) {
@@ -388,34 +433,39 @@ class LuceneIndex extends Index {
             }        
             try {
                 activeOut.addDocument (DocumentUtil.createRootTimeStampDocument (timeStamp));
+                if (documents != null && documents.size() > 0) {
+                    for (IndexDocumentImpl document : documents) {
+                        Document newDoc = new Document();
+                        newDoc.add(new Field (DocumentUtil.FIELD_TIME_STAMP,DateTools.timeToString(timeStamp,DateTools.Resolution.MILLISECOND),Field.Store.YES,Field.Index.NO));
+                        if (filename != null) {
+                            newDoc.add(new Field (DocumentUtil.FIELD_FILENAME, filename, Field.Store.YES, Field.Index.UN_TOKENIZED));
+                        }
 
-                Document newDoc = new Document ();
-                newDoc.add(new Field (DocumentUtil.FIELD_TIME_STAMP,DateTools.timeToString(timeStamp,DateTools.Resolution.MILLISECOND),Field.Store.YES,Field.Index.NO));
+                        for (int i = 0, n = document.indexedKeys.size(); i < n; i++) {
+                            String key = document.indexedKeys.get(i);
+                            String value = document.indexedValues.get(i);
+                            assert key != null && value != null : "key=" + key + ", value=" + value;
+                            Field field = new Field(key, value, Field.Store.YES, Field.Index.UN_TOKENIZED);
+                            newDoc.add(field);
+                        }
 
-                for (Map<String,String> fields : fieldsSet) {
-                    for (Iterator<Map.Entry<String,String>> it = fields.entrySet().iterator(); it.hasNext();) {
-                        Map.Entry<String,String> fieldEntry = it.next();
-                        it.remove(); // Uhm.. why?
-                        String key = fieldEntry.getKey();
-                        String value = fieldEntry.getValue();
-                        Field field = new Field(key, value, Field.Store.YES, Field.Index.UN_TOKENIZED);
-                        newDoc.add(field);
+                        for (int i = 0, n = document.unindexedKeys.size(); i < n; i++) {
+                            String key = document.unindexedKeys.get(i);
+                            String value = document.unindexedValues.get(i);
+                            assert key != null && value != null : "key=" + key + ", value=" + value;
+                            Field field = new Field(key, value, Field.Store.YES, Field.Index.NO);
+                            newDoc.add(field);
+                        }
+
+                        activeOut.addDocument(newDoc);
                     }
+                } else if (filename != null) {
+                    Document newDoc = new Document();
+                    newDoc.add(new Field (DocumentUtil.FIELD_TIME_STAMP,DateTools.timeToString(timeStamp,DateTools.Resolution.MILLISECOND),Field.Store.YES,Field.Index.NO));
+                    newDoc.add(new Field (DocumentUtil.FIELD_FILENAME, filename, Field.Store.YES, Field.Index.UN_TOKENIZED));
+                    activeOut.addDocument(newDoc);
                 }
 
-                for (Map<String,String> fields : noIndexFields) {
-                    for (Iterator<Map.Entry<String,String>> it = fields.entrySet().iterator(); it.hasNext();) {
-                        Map.Entry<String,String> fieldEntry = it.next();
-                        it.remove();
-                        String key = fieldEntry.getKey();
-                        String value = fieldEntry.getValue();
-                        assert key != null && value != null : "key=" + key + ", value=" + value;
-                        Field field = new Field(key, value, Field.Store.YES, Field.Index.NO);
-                        newDoc.add(field);
-                    }
-                }
-
-                activeOut.addDocument(newDoc);
                 if (memDir != null && lmListener.lowMemory.getAndSet(false)) {                       
                     activeOut.close();
                     out.addIndexes(new Directory[] {memDir});                        
@@ -441,8 +491,8 @@ class LuceneIndex extends Index {
     
     
     @SuppressWarnings ("unchecked") // NOI18N, unchecked - lucene has source 1.4
-    public void gsfSearch(final String primaryField, final String name, final NameKind kind, final Set<ClassIndex.SearchScope> scope, 
-            final Set<SearchResult> result) throws IOException {
+    public void search(final String primaryField, final String name, final NameKind kind, final Set<ClassIndex.SearchScope> scope, 
+            final Set<SearchResult> result, final Set<String> terms) throws IOException {
         if (!isValid(false)) {
             LOGGER.fine(String.format("LuceneIndex[%s] is invalid!\n", this.toString()));
             return;
@@ -490,7 +540,7 @@ class LuceneIndex extends Index {
                 }
             case CAMEL_CASE:
                 if (name.length() == 0) {
-                    gsfSearch(primaryField, name, NameKind.CASE_INSENSITIVE_PREFIX, scope, result);
+                    search(primaryField, name, NameKind.CASE_INSENSITIVE_PREFIX, scope, result, terms);
                     return;
                 }
                 {
@@ -518,7 +568,7 @@ class LuceneIndex extends Index {
                 break;
             case CASE_INSENSITIVE_REGEXP:
                 if (name.length() == 0) {
-                    gsfSearch(primaryField, name, NameKind.CASE_INSENSITIVE_PREFIX, scope, result);
+                    search(primaryField, name, NameKind.CASE_INSENSITIVE_PREFIX, scope, result, terms);
                     return;
                 }
                 else {   
@@ -533,7 +583,7 @@ class LuceneIndex extends Index {
                 }
             case REGEXP:
                 if (name.length() == 0) {
-                    gsfSearch(primaryField, name, NameKind.PREFIX, scope, result);
+                    search(primaryField, name, NameKind.PREFIX, scope, result, terms);
                     return;
                 } else {
                     final Pattern pattern = Pattern.compile(name);
@@ -647,6 +697,10 @@ class LuceneIndex extends Index {
         public File getSegment() {
             return LuceneIndex.this.cacheRoot;
         }
+
+        public String getPersistentUrl() {
+            return getValue(DocumentUtil.FIELD_FILENAME);
+        }
     }
     
     private class FilteredDocumentSearchResult implements SearchResult {
@@ -680,6 +734,11 @@ class LuceneIndex extends Index {
             return doc.getValues(key);
         }
         
+        public String getPersistentUrl() {
+            return getValue(DocumentUtil.FIELD_FILENAME);
+        }
+        
+        @Override
         public String toString() {
             StringBuilder sb = new StringBuilder();
             Enumeration en = doc.fields();

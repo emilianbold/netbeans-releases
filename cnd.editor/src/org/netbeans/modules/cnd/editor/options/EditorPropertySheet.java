@@ -78,6 +78,9 @@ import org.openide.util.NbBundle;
  * @author  as204739
  */
 public class EditorPropertySheet extends javax.swing.JPanel implements ActionListener, PropertyChangeListener, PreferenceChangeListener {
+    
+    private static final boolean USE_NEW_FORMATTER = false;
+    
     private EditorOptionsPanelController topControler;
     private boolean loaded = false;
     private CodeStyle.Language currentLanguage;
@@ -485,7 +488,7 @@ public class EditorPropertySheet extends javax.swing.JPanel implements ActionLis
     public void refreshPreview(JEditorPane pane, Preferences p) {
         pane.setText(getPreviwText());
         BaseDocument bd = (BaseDocument) pane.getDocument();
-        if (false) {
+        if (USE_NEW_FORMATTER) {
             CodeStyle codeStyle = EditorOptions.createCodeStyle(currentLanguage, p);
             try {
                 new Reformatter(bd, codeStyle).reformat();

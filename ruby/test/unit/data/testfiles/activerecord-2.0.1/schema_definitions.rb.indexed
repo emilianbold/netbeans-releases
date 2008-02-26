@@ -3,13 +3,9 @@
 Document 0
 Delete:  source : <TESTURL>/schema_definitions.rb
 
-Indexed:
-
-Not Indexed:
 
 
 Document 1
-Delete:
 Indexed:
   attribute : columns
   class : TableDefinition
@@ -25,7 +21,6 @@ Indexed:
   method : references(*args)
   method : timestamps|DOCUMENTED|
   method : to_sql|DOCUMENTED|
-  source : <TESTURL>/schema_definitions.rb
 
 Not Indexed:
   attrs : |DOCUMENTED|;113
@@ -34,7 +29,6 @@ Not Indexed:
 
 
 Document 2
-Delete:
 Indexed:
   attribute : default
   attribute : limit
@@ -75,7 +69,6 @@ Indexed:
   method : type_cast_code(var_name)
   method : value_to_boolean(value)|DOCUMENTED|STATIC|
   method : value_to_decimal(value)|DOCUMENTED|STATIC|
-  source : <TESTURL>/schema_definitions.rb
 
 Not Indexed:
   attrs : |DOCUMENTED|;48
@@ -84,12 +77,10 @@ Not Indexed:
 
 
 Document 3
-Delete:
 Indexed:
   class : ActiveRecord
   class-ig : activerecord
   fqn : ActiveRecord
-  source : <TESTURL>/schema_definitions.rb
 
 Not Indexed:
   attrs : |MODULE|
@@ -97,7 +88,6 @@ Not Indexed:
 
 
 Document 4
-Delete:
 Indexed:
   class : ColumnDefinition
   class-ig : columndefinition
@@ -106,7 +96,6 @@ Indexed:
   method : add_column_options!(sql,options)|PRIVATE|
   method : sql_type
   method : to_sql
-  source : <TESTURL>/schema_definitions.rb
 
 Not Indexed:
   attrs : |CLASS|
@@ -115,12 +104,10 @@ Not Indexed:
 
 
 Document 5
-Delete:
 Indexed:
   class : ConnectionAdapters
   class-ig : connectionadapters
   fqn : ActiveRecord::ConnectionAdapters
-  source : <TESTURL>/schema_definitions.rb
 
 Not Indexed:
   attrs : |MODULE|
@@ -129,14 +116,12 @@ Not Indexed:
 
 
 Document 6
-Delete:
 Indexed:
   class : Format
   class-ig : format
   constant : ISO_DATE
   constant : ISO_DATETIME
   fqn : ActiveRecord::ConnectionAdapters::Column::Format
-  source : <TESTURL>/schema_definitions.rb
 
 Not Indexed:
   attrs : |MODULE|
@@ -145,13 +130,11 @@ Not Indexed:
 
 
 Document 7
-Delete:
 Indexed:
   class : IndexDefinition
   class-ig : indexdefinition
   extends : new
   fqn : ActiveRecord::ConnectionAdapters::IndexDefinition
-  source : <TESTURL>/schema_definitions.rb
 
 Not Indexed:
   attrs : |CLASS|
@@ -160,7 +143,6 @@ Not Indexed:
 
 
 Document 8
-Delete:
 Indexed:
   class : TableDefinition
   class-ig : tabledefinition
@@ -176,7 +158,6 @@ Indexed:
   method : text(names,options);00;;;options(=>limit|default:nil|null:bool|precision|scale)
   method : time(names,options);00;;;options(=>limit|default:nil|null:bool|precision|scale)
   method : timestamp(names,options);00;;;options(=>limit|default:nil|null:bool|precision|scale)
-  source : <TESTURL>/schema_definitions.rb
 
 Not Indexed:
   attrs : |CLASS|

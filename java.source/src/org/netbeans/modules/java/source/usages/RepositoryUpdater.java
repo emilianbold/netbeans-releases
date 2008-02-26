@@ -159,7 +159,7 @@ import org.openide.util.Utilities;
  *
  * @author Tomas Zezula
  */
-public class RepositoryUpdater implements PropertyChangeListener, FileChangeListener {
+public class RepositoryUpdater implements PropertyChangeListener, FileChangeListener, ClassPathRootsListener.ClassPathRootsChangedListener {
         
     private static final Logger LOGGER = Logger.getLogger(RepositoryUpdater.class.getName());
     private static final Set<String> warnedIgnoredRoots = Collections.synchronizedSet(new HashSet<String>());
@@ -271,46 +271,7 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
         if (ClassPath.PROP_ROOTS.equals(evt.getPropertyName())) {
             if (evt.getSource() == this.cp) {
                 submitBatch();
-            } else {
-                ClassPath changedCp = (ClassPath) evt.getSource();
-                assert changedCp != null;
-                if (LOGGER.isLoggable(Level.FINER))
-                    LOGGER.log(Level.FINER, "modified roots changedCp={0}", changedCp.toString());
-
-                URL root = classPath2Root.get(changedCp);
-        
-        if (root != null) {
-            List<URL> oldDeps = this.deps.get(root);
-            if (oldDeps != null) {
-                final FileObject rootFo = URLMapper.findFileObject(root);
-                if (rootFo != null) {
-                    final ClassPath bootPath = ClassPath.getClassPath(rootFo, ClassPath.BOOT);
-                    final ClassPath compilePath = ClassPath.getClassPath(rootFo, ClassPath.COMPILE);
-                            final ClassPath[] pathsToResolve = new ClassPath[] {bootPath,compilePath};
-                            final List<URL> newDeps = new LinkedList<URL> ();
-                            for (int i=0; i< pathsToResolve.length; i++) {
-                        final ClassPath pathToResolve = pathsToResolve[i];
-                        if (pathToResolve != null) {
-                            for (ClassPath.Entry entry : pathToResolve.entries()) {
-                                final URL url = entry.getURL();
-                                final URL[] sourceRoots = RepositoryUpdater.this.cpImpl.getSourceRootForBinaryRoot(url, pathToResolve, false);
-                                if (sourceRoots != null) {
-                                    for (URL sourceRoot : sourceRoots) {
-                                                if (!sourceRoot.equals (root)) {
-                                                    newDeps.add (sourceRoot);
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                    this.deps.put(root, newDeps);
-                }
             }
-            submit(Work.filterChange(Collections.singletonList(root), false));
-        }
-            }
-            return ;
         }
         
         if (   GlobalSourcePath.PROP_INCLUDES.equals(evt.getPropertyName())
@@ -329,6 +290,56 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
         }
         
         
+    }
+    
+    public void rootsChanged(Collection<ClassPath> changedCp) {
+        assert changedCp != null;
+        if (LOGGER.isLoggable(Level.FINER)) {
+            LOGGER.log(Level.FINER, "modified roots changedCp={0}", changedCp.toString());
+        }
+        
+        List<URL> roots = new LinkedList<URL>();
+
+        for (ClassPath cp : changedCp) {
+            URL root = classPath2Root.get(cp);
+
+            if (root != null) {
+                List<URL> oldDeps = this.deps.get(root);
+                if (oldDeps != null) {
+                    final FileObject rootFo = URLMapper.findFileObject(root);
+                    if (rootFo != null) {
+                        final ClassPath bootPath = ClassPath.getClassPath(rootFo, ClassPath.BOOT);
+                        final ClassPath compilePath = ClassPath.getClassPath(rootFo, ClassPath.COMPILE);
+                        final ClassPath[] pathsToResolve = new ClassPath[]{bootPath, compilePath};
+                        final List<URL> newDeps = new LinkedList<URL>();
+                        for (int i = 0; i < pathsToResolve.length; i++) {
+                            final ClassPath pathToResolve = pathsToResolve[i];
+                            if (pathToResolve != null) {
+                                for (ClassPath.Entry entry : pathToResolve.entries()) {
+                                    final URL url = entry.getURL();
+                                    final URL[] sourceRoots = RepositoryUpdater.this.cpImpl.getSourceRootForBinaryRoot(url, pathToResolve, false);
+                                    if (sourceRoots != null) {
+                                        for (URL sourceRoot : sourceRoots) {
+                                            if (!sourceRoot.equals(root)) {
+                                                newDeps.add(sourceRoot);
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                        this.deps.put(root, newDeps);
+                    }
+                }
+
+                roots.add(root);
+            }
+        }
+
+        if (LOGGER.isLoggable(Level.FINER)) {
+            LOGGER.log(Level.FINER, "roots for filter change={0}", roots.toString());
+        }
+        submit(Work.filterChange(roots, false));
     }
     
     private void submitBatch () {
@@ -693,7 +704,7 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
     
     private void registerClassPath(URL root, ClassPath cp, ClasspathInfo.PathKind kind) {
         if (!classPath2Root.containsKey(cp)) {
-            ClassPathRootsListener.getDefault().addPropertyChangeListener(cp, kind != ClasspathInfo.PathKind.SOURCE, RepositoryUpdater.this);
+            ClassPathRootsListener.getDefault().addClassPathRootsListener(cp, kind != ClasspathInfo.PathKind.SOURCE, RepositoryUpdater.this);
             classPath2Root.put(cp, root);
         }
     }
@@ -1893,7 +1904,7 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                 } else {
                     if (TasklistSettings.isTasklistEnabled()) {
                         //excluded file, make sure any errors attached to it are deleted:
-                        errorBadgesToRefresh.addAll(TaskCache.getDefault().dumpErrors(root, child.toURL(), child, Collections.<Diagnostic>emptyList()));
+                        errorBadgesToRefresh.addAll(TaskCache.getDefault().dumpErrors(root, child.toURI().toURL(), child, Collections.<Diagnostic>emptyList()));
                     }
                 }
             }
@@ -2092,7 +2103,10 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                                 com.sun.tools.javac.code.Types.instance(jt.getContext()),
                                 TransTypes.instance(jt.getContext()),
                                 com.sun.tools.javac.util.Name.Table.instance(jt.getContext()), cpInfo);
-                        sa.analyse(trees, jt, fm, active, added);
+                        boolean[] main = new boolean[1];
+                        sa.analyse(trees, jt, fm, active, added, main);
+                        
+                        ExecutableFilesIndex.DEFAULT.setMainClass(root, fo.getURL(), main[0]);
 
                         for (Pair<String,String> s : classNamesToDelete) {
                             sa.delete(s);
@@ -2352,123 +2366,127 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
         private Map<URL, Collection<File>> compileFileFromRoots(Map<URL, Collection<File>> toRecompile, boolean cancellable,  Map<URL, Collection<File>> depsToRecompile) throws IOException {
             List<URL> handledRoots = new LinkedList<URL>();
             
-            ProgressHandle handle = ProgressHandleFactory.createHandle("Refreshing Workspace");
+            ProgressHandle handle = ProgressHandleFactory.createHandle(NbBundle.getMessage(RepositoryUpdater.class,"MSG_RefreshingWorkspace"));
             
             handle.start();
             
-            for (Iterator<URL> it = toRecompile.keySet().iterator(); it.hasNext(); ) {
-                URL root = it.next();
-                handledRoots.add(root);
-                FileObject rootFO = URLMapper.findFileObject(root);
-                if (rootFO == null) {
-                    LOGGER.info("Root folder: " + root +" doesn't exist.");    //NOI18N
-                    it.remove();
-                    continue;
-                }
-                long start = System.currentTimeMillis();
-                final JavaFileFilterImplementation filter = JavaFileFilterQuery.getFilter(rootFO);
-                final File cacheRoot = Index.getClassFolder(root);
-                Collection<File> files = toRecompile.get(root);
-                
-                long cur = System.currentTimeMillis();
-                
-                Set<File> compiledFiles = cancellable ? new HashSet<File>() : null;
-                Map<String, List<File>> resources = new HashMap<String, List<File>>();
-                File rootFile = FileUtil.toFile(rootFO);
-                String rootName = cacheRoot.getAbsolutePath();
-                int len = rootName.length();
-                if (rootName.charAt(len-1)!=File.separatorChar) {
-                    len++;
-                }
-                
-                if (LOGGER.isLoggable(Level.FINE)) {
-                    LOGGER.log(Level.FINE, "going to compute resources");
-                    LOGGER.log(Level.FINE, "files={0}", files);
-                }
-                
-                for (File toProcess : files) {
-                    String relative = FileObjects.stripExtension(FileObjects.getRelativePath(rootFile, toProcess));
-                    
-                    LOGGER.log(Level.FINE, "relative={0}", relative);
-                    
-                    File f = new File(cacheRoot, relative + '.' + FileObjects.RS);
-                    
-                    LOGGER.log(Level.FINE, "f={0}, exists={1}", new Object[] {f.getAbsolutePath(), f.exists()});
-                    
-                    if (f.exists()) {
-                        gatherResources(cacheRoot, f, len, resources);
+            try {
+                for (Iterator<URL> it = toRecompile.keySet().iterator(); it.hasNext(); ) {
+                    URL root = it.next();
+                    handledRoots.add(root);
+                    FileObject rootFO = URLMapper.findFileObject(root);
+                    if (rootFO == null) {
+                        LOGGER.info("Root folder: " + root +" doesn't exist.");    //NOI18N
+                        it.remove();
                         continue;
                     }
-                    
-                    f = new File(cacheRoot, relative + '.' + FileObjects.SIG);
-                    
-                    LOGGER.log(Level.FINE, "f={0}, exists={1}", new Object[] {f.getAbsolutePath(), f.exists()});
-                    
-                    if (f.exists()) {
-                        gatherResources(cacheRoot, f, len, resources);
-                        
-                        File folder = f.getParentFile();
-                        File[] children = folder.listFiles();
-                        
-                        if (children == null) {
-                            LOGGER.info("IO error while listing folder: " + folder.getAbsolutePath() +" isDirectory: " + folder.isDirectory() +" canRead: " + folder.canRead());    //NOI18N
+                    long start = System.currentTimeMillis();
+                    final JavaFileFilterImplementation filter = JavaFileFilterQuery.getFilter(rootFO);
+                    final File cacheRoot = Index.getClassFolder(root);
+                    Collection<File> files = toRecompile.get(root);
+
+                    long cur = System.currentTimeMillis();
+
+                    Set<File> compiledFiles = cancellable ? new HashSet<File>() : null;
+                    Map<String, List<File>> resources = new HashMap<String, List<File>>();
+                    File rootFile = FileUtil.toFile(rootFO);
+                    String rootName = cacheRoot.getAbsolutePath();
+                    int len = rootName.length();
+                    if (rootName.charAt(len-1)!=File.separatorChar) {
+                        len++;
+                    }
+
+                    if (LOGGER.isLoggable(Level.FINE)) {
+                        LOGGER.log(Level.FINE, "going to compute resources");
+                        LOGGER.log(Level.FINE, "files={0}", files);
+                    }
+
+                    for (File toProcess : files) {
+                        String relative = FileObjects.stripExtension(FileObjects.getRelativePath(rootFile, toProcess));
+
+                        LOGGER.log(Level.FINE, "relative={0}", relative);
+
+                        File f = new File(cacheRoot, relative + '.' + FileObjects.RS);
+
+                        LOGGER.log(Level.FINE, "f={0}, exists={1}", new Object[] {f.getAbsolutePath(), f.exists()});
+
+                        if (f.exists()) {
+                            gatherResources(cacheRoot, f, len, resources);
                             continue;
                         }
-                        
-                        String prefix = FileObjects.stripExtension(f.getName()) + "$";
-                        
-                        for (File child : children) {
-                            if (child.getName().startsWith(prefix)) {
-                                gatherResources(cacheRoot, child, len, resources);
+
+                        f = new File(cacheRoot, relative + '.' + FileObjects.SIG);
+
+                        LOGGER.log(Level.FINE, "f={0}, exists={1}", new Object[] {f.getAbsolutePath(), f.exists()});
+
+                        if (f.exists()) {
+                            gatherResources(cacheRoot, f, len, resources);
+
+                            File folder = f.getParentFile();
+                            File[] children = folder.listFiles();
+
+                            if (children == null) {
+                                LOGGER.info("IO error while listing folder: " + folder.getAbsolutePath() +" isDirectory: " + folder.isDirectory() +" canRead: " + folder.canRead());    //NOI18N
+                                continue;
+                            }
+
+                            String prefix = FileObjects.stripExtension(f.getName()) + "$";
+
+                            for (File child : children) {
+                                if (child.getName().startsWith(prefix)) {
+                                    gatherResources(cacheRoot, child, len, resources);
+                                }
                             }
                         }
                     }
-                }
-                
-                if (LOGGER.isLoggable(Level.FINE)) {
-                    LOGGER.log(Level.FINE, "resources={0}", resources);
-                }
-                
-                try {
-                    Set<File> thisDepsToRecompile;
-                    
-                    if (depsToRecompile != null) {
-                        thisDepsToRecompile = new LinkedHashSet<File>();
-                    } else {
-                        thisDepsToRecompile = null;
-                    }
-                    
-                    parseFiles(root, cacheRoot, false, files, true, handle, filter, resources, compiledFiles, thisDepsToRecompile);
-                    
-                    if (thisDepsToRecompile != null && !thisDepsToRecompile.isEmpty()) {
-                        depsToRecompile.put(root, thisDepsToRecompile);
+
+                    if (LOGGER.isLoggable(Level.FINE)) {
+                        LOGGER.log(Level.FINE, "resources={0}", resources);
                     }
 
-                    if (compiledFiles != null) {
-                        files.removeAll(compiledFiles);
+                    try {
+                        Set<File> thisDepsToRecompile;
 
-                        if (!files.isEmpty()) {
-                            toRecompile.put(root, files);
-                            break;
+                        if (depsToRecompile != null) {
+                            thisDepsToRecompile = new LinkedHashSet<File>();
+                        } else {
+                            thisDepsToRecompile = null;
+                        }
+
+                        parseFiles(root, cacheRoot, false, files, true, handle, filter, resources, compiledFiles, thisDepsToRecompile);
+
+                        if (thisDepsToRecompile != null && !thisDepsToRecompile.isEmpty()) {
+                            depsToRecompile.put(root, thisDepsToRecompile);
+                        }
+
+                        if (compiledFiles != null) {
+                            files.removeAll(compiledFiles);
+
+                            if (!files.isEmpty()) {
+                                toRecompile.put(root, files);
+                                break;
+                            } else {
+                                it.remove();
+                            }
                         } else {
                             it.remove();
                         }
-                    } else {
+                    } catch (OutputFileManager.InvalidSourcePath e) {
+                        //Deleted project
                         it.remove();
                     }
-                } catch (OutputFileManager.InvalidSourcePath e) {
-                    //Deleted project
-                    it.remove();
+
+                    Logger.getLogger("TIMER").log(Level.FINE, "Deps - Reparse",
+                        new Object[] {rootFO, System.currentTimeMillis() - cur});
+                    Logger.getLogger("TIMER").log(Level.FINE, "Deps - Total",
+                        new Object[] {rootFO, System.currentTimeMillis() - start});
                 }
-                
-                Logger.getLogger("TIMER").log(Level.FINE, "Deps - Reparse",
-                    new Object[] {rootFO, System.currentTimeMillis() - cur});
-                Logger.getLogger("TIMER").log(Level.FINE, "Deps - Total",
-                    new Object[] {rootFO, System.currentTimeMillis() - start});
+
+                handle.finish();
+                return toRecompile;
+            } finally {
+                handle.finish();
             }
-            
-            handle.finish();
-            return toRecompile;
         }
         
     }
@@ -2835,7 +2853,10 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                             continue;
                         }
                         if (sa != null) {
-                            sa.analyse(trees,jt, ClasspathInfoAccessor.getINSTANCE().getFileManager(cpInfo), active, added);
+                            boolean[] main = new boolean[1];
+                            sa.analyse(trees,jt, ClasspathInfoAccessor.getINSTANCE().getFileManager(cpInfo), active, added, main);
+                            
+                            ExecutableFilesIndex.DEFAULT.setMainClass(rootFo.getURL(), activeFile.toURI().toURL(), main[0]);
                         }                                
                         List<Diagnostic> diag = new ArrayList<Diagnostic>();
                         URI u = active.toUri();
@@ -3229,5 +3250,5 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                     "clean all *.dump files in that directory."); // NOI18N
         }
     }
-    
+
 }

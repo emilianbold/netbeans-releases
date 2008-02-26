@@ -39,9 +39,11 @@
     <import namespace="http://localhost/BluePrint5/HotelReservation"
             location="HotelReservation.wsdl"
             importType="http://schemas.xmlsoap.org/wsdl/"></import>
+    
     <import namespace="http://localhost/BluePrint5/Reservation" 
             location="Reservation.wsdl" 
             importType="http://schemas.xmlsoap.org/wsdl/"/>
+    
     <import namespace="http://ReservationSystem.org/xsd/reserve"
             location="reservation.xsd"
             importType="http://www.w3.org/2001/XMLSchema"></import>
@@ -54,12 +56,14 @@
                      partnerLinkType="ns0:HotelReservStatusPLinkType"
                      partnerRole="statusReceivingRole"/>
     </partnerLinks>
+    
     <variables>
         <variable name="reserveHotel"
                   messageType="ns0:HotelReservation"></variable>
         <variable name="sendHotelStatus"
                   messageType="ns0:HotelReservationStatus"></variable>
     </variables>
+    
     <sequence>
         <receive name="reserveHotel"
                  partnerLink="hotelReservationPLink"

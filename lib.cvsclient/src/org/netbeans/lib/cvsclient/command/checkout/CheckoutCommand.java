@@ -816,8 +816,12 @@ public class CheckoutCommand extends BasicCommand
         // for updating
         if (pruneDirectories &&
                 e.getMessage().indexOf(UPDATING) > 0) {
-            File file = new File(getLocalDirectory(), e.getMessage().substring(e.getMessage().indexOf(UPDATING) + UPDATING.length()));
-            emptyDirectories.add(file);
+            String relPath = e.getMessage().substring(e.getMessage().indexOf(UPDATING) + UPDATING.length());
+            File file = new File(getLocalDirectory(), relPath);
+            // do not consider the topmost directory for pruning
+            if (relPath.indexOf('/') != -1) {
+                emptyDirectories.add(file);
+            }
         }
     }
 

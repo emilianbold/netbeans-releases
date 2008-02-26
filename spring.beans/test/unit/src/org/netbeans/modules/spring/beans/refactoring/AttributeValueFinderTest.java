@@ -65,11 +65,11 @@ public class AttributeValueFinderTest extends TestCase {
             public void run() {
                 int beanOffset = contents.indexOf("<bean ");
                 int classOffset = contents.indexOf("'org.example.Foo'");
-                AttributeValueFinder finder = new AttributeValueFinder(syntaxSupport, "class", beanOffset);
+                AttributeValueFinder finder = new AttributeValueFinder(syntaxSupport, beanOffset);
                 try {
-                    assertTrue(finder.find());
+                    assertTrue(finder.find("class"));
                     assertEquals(classOffset, finder.getFoundOffset());
-                    assertEquals("'org.example.Foo'", finder.getFoundValue());
+                    assertEquals("'org.example.Foo'", finder.getValue());
                 } catch (BadLocationException e) {
                     fail(e.toString());
                 }

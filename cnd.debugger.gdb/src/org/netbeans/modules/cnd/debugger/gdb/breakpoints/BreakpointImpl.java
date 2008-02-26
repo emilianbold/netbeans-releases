@@ -162,7 +162,12 @@ public abstract class BreakpointImpl implements PropertyChangeListener {
     }
 
     protected abstract void setRequests();
-    protected abstract void suspend();
+    
+    protected void suspend() {
+        getDebugger().getGdbProxy().break_delete(getBreakpointNumber());
+        setState(BPSTATE_UNVALIDATED);
+        setRequests();
+    }
 
     /**
      * Called when Fix&Continue is invoked. Reqritten in LineBreakpointImpl.
@@ -184,7 +189,8 @@ public abstract class BreakpointImpl implements PropertyChangeListener {
         String pname = evt.getPropertyName();
         if (pname.equals(Breakpoint.PROP_DISPOSED)) {
             remove();
-        } else if (pname.equals(GdbBreakpoint.PROP_SUSPEND)) {
+        }
+        if (pname.equals(GdbBreakpoint.PROP_SUSPEND)) {
             suspend();
         } else if (!pname.equals(GdbBreakpoint.PROP_LINE_NUMBER)) {
             update();

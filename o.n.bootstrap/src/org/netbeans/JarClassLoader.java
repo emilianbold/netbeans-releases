@@ -44,6 +44,7 @@ package org.netbeans;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -839,6 +840,9 @@ public class JarClassLoader extends ProxyClassLoader {
         public void connect() throws IOException {
             if (data == null) {
                 data = src.getClassData(name);
+                if (data == null) {
+                    throw new FileNotFoundException(getURL().toString());
+                }
             }
         }
 

@@ -59,6 +59,7 @@ import org.netbeans.modules.soa.mappercore.model.TreeSourcePin;
 import org.netbeans.modules.soa.mappercore.search.Navigation;
 import org.netbeans.modules.soa.mappercore.utils.ScrollPaneWrapper;
 import org.netbeans.modules.soa.mappercore.utils.Utils;
+import org.openide.util.NbBundle;
 
 /**
  * @author anjeleevich
@@ -141,6 +142,11 @@ public class LeftTree extends JTree implements
         iMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_F10, KeyEvent.SHIFT_DOWN_MASK), "show-popupMenu");
         iMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_CONTEXT_MENU, 0), "show-popupMenu");
         aMap.put("show-popupMenu", new ShowPopupMenuAction());
+        
+        getAccessibleContext().setAccessibleName(NbBundle
+                .getMessage(LeftTree.class, "ACSN_LeftTree")); // NOI18N
+        getAccessibleContext().setAccessibleDescription(NbBundle
+                .getMessage(LeftTree.class, "ACSD_LeftTree")); // NOI18N
     }
     
     public void registrAction(MapperKeyboardAction action) {

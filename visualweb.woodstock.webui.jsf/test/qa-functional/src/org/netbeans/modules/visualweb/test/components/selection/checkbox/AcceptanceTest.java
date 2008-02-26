@@ -104,14 +104,6 @@ public class AcceptanceTest extends RaveTestCase {
     String image1= imageDir + "red.gif";
     String image2= imageDir + "white.gif";
     String image3= imageDir + "blue.gif";
-    String[] javaCode = {"String selection=\"Your selection:\";",
-    "if (colorCheckbox1.isChecked())  " ,
-    "selection+=\"Red is checked; \";",
-    "if (colorCheckbox2.isChecked()) ",
-    "selection+=\"White is checked; \"; " ,
-    "if (colorCheckbox3.isChecked()) ",
-    "selection+=\"Blue is checked;  \"; ",
-    "info(selection);" };
     
     public AcceptanceTest(String testName) {
         super(testName);
@@ -262,24 +254,7 @@ public class AcceptanceTest extends RaveTestCase {
         editor.requestFocus();
         TestUtils.wait(2000);
         editor.pushKey(KeyEvent.VK_ENTER);
-        ComponentUtils.insertJavaCode(editor, javaCode);
-        
-      /*  editor.pushKey(KeyEvent.VK_ENTER);
-        editor.typeText("String selection=\"Your selection:\";\n");
-        editor.typeText("if (colorCheckbox1.isChecked()) \n");
-        editor.typeText("selection+=\"Red is checked; \n");
-        editor.typeText("if (colorCheckbox2.isChecked()) \n");
-        editor.typeText("selection+=\"White is checked;\n");
-        editor.typeText("if (colorCheckbox3.isChecked()) \n");
-        editor.typeText("selection+=\"Blue is checked; \n");
-        editor.typeText("info(selection); \n");
-        TestUtils.wait(200);*/
-        
-//        log("Reformat code");
-//        editor.clickForPopup();
-//        new JPopupMenuOperator().pushMenu("Reformat Code");
-//        TestUtils.wait(200);
-//
+        editor.insert("log(\"Action Performed.\");\n");        
         // Switch to design panel
         designer.makeComponentVisible();
         TestUtils.wait(10000);

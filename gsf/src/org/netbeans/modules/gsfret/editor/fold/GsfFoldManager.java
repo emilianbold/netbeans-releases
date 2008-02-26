@@ -48,6 +48,7 @@ import java.util.ConcurrentModificationException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.TreeMap;
 import java.util.WeakHashMap;
 import java.util.logging.Level;
@@ -60,8 +61,9 @@ import javax.swing.text.JTextComponent;
 import javax.swing.text.Position;
 import org.netbeans.api.editor.fold.Fold;
 import org.netbeans.api.editor.fold.FoldType;
-import org.netbeans.api.gsf.OffsetRange;
-import org.netbeans.api.gsf.StructureScanner;
+import org.netbeans.modules.gsf.api.OffsetRange;
+import org.netbeans.modules.gsf.api.ParserResult;
+import org.netbeans.modules.gsf.api.StructureScanner;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenId;
@@ -78,6 +80,8 @@ import org.netbeans.editor.SettingsChangeEvent;
 import org.netbeans.editor.SettingsUtil;
 import org.netbeans.modules.gsf.GsfEditorOptionsFactory;
 import org.netbeans.modules.gsf.GsfOptions;
+import org.netbeans.modules.gsf.Language;
+import org.netbeans.modules.gsf.LanguageRegistry;
 import org.openide.loaders.DataObject;
 
 /**
@@ -308,8 +312,13 @@ public class GsfFoldManager implements FoldManager {
             if (doc == null) {
                 return false;
             }
-            if (info.getParserResult() != null && info.getParserResult().getRoot() != null) {
-               scan(manager, info, folds, doc);
+            
+            Set<String> mimeTypes = info.getEmbeddedMimeTypes();
+            for (String mimeType : mimeTypes) {
+                Language language = LanguageRegistry.getInstance().getLanguageByMimeType(mimeType);
+                if (language != null) {
+                    scan(manager, info, folds, doc, language);
+                }
             }
 
             if (isCancelled()) {
@@ -383,15 +392,15 @@ public class GsfFoldManager implements FoldManager {
             return true;
         }
         
-        private void scan(GsfFoldManager manager, CompilationInfo info, List<FoldInfo> folds, BaseDocument doc) {
-            addTree(manager, folds, info, doc);
+        private void scan(GsfFoldManager manager, CompilationInfo info, List<FoldInfo> folds, BaseDocument doc, Language language) {
+            addTree(manager, folds, info, doc, language);
         }
         
         private void addTree(GsfFoldManager manager, List<FoldInfo> result, CompilationInfo info,
-           BaseDocument doc) {
-            StructureScanner scanner = info.getLanguage().getStructure();
+           BaseDocument doc, Language language) {
+            StructureScanner scanner = language.getStructure();
             if (scanner != null) {
-                 Map<String,List<OffsetRange>> folds = scanner.folds(info);
+                Map<String,List<OffsetRange>> folds = scanner.folds(info);
                 if (isCancelled()) {
                     return;
                 }

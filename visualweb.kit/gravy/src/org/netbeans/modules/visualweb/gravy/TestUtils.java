@@ -374,6 +374,8 @@ public class TestUtils {
         if (new JButtonOperator(po, "Next").isEnabled()) {
             po.next();
             wait(1000);
+            po.next();
+            wait(1000);
             //TODO clicked on Down button and then Brake Space pressed to select needed checkbox
             po.pushKey(KeyEvent.VK_DOWN);
             wait(2000);

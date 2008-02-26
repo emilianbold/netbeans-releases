@@ -9,6 +9,9 @@ except ImportError:
     # platform module does not seem to be included in the Python installation
     # bundled with common Windows distros of Hg
     pass
+except ValueError:
+    # e.g. Python 2.5.2a0, dev version on Ubuntu; never mind
+    pass
 
 # Workaround for a Python bug (in linecache.py?):
 # http://bugs.python.org/issue1728

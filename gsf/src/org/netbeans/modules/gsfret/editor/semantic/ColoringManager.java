@@ -59,8 +59,8 @@ import org.netbeans.api.editor.settings.EditorStyleConstants;
 import org.netbeans.api.editor.settings.FontColorSettings;
 import org.netbeans.editor.Coloring;
 import org.netbeans.editor.SettingsDefaults;
-import org.netbeans.api.gsf.ColoringAttributes;
-import static org.netbeans.api.gsf.ColoringAttributes.*;
+import org.netbeans.modules.gsf.api.ColoringAttributes;
+import static org.netbeans.modules.gsf.api.ColoringAttributes.*;
 
 /**
  * This file is originally from Retouche, the Java Support 
@@ -105,6 +105,7 @@ public final class ColoringManager {
         put("mod-annotation-type", ANNOTATION_TYPE);
         put("mod-interface", INTERFACE);
         put("mod-class", CLASS);
+        put("mod-global", GLOBAL);
         put("mod-constructor", CONSTRUCTOR);
         put("mod-method", METHOD);
         put("mod-parameter", PARAMETER);
@@ -136,6 +137,10 @@ public final class ColoringManager {
         put("mod-operation-use", OPERATION_USE);
         put("mod-attribute-use", ATTRIBUTE_USE);
         put("mod-functions-use", FUNCTION_USE); 
+
+        put("mod-static-field", STATICFIELD); 
+        put("mod-static-method", STATICMETHOD); 
+        put("mod-regexp", REGEXP); 
     }
     
     private void put(String coloring, ColoringAttributes... attributes) {

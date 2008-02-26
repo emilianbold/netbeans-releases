@@ -347,7 +347,8 @@ public class Reformatter implements ReformatTask {
                 tokens.movePrevious();
             } else {
                 tokens.move((int)sp.getEndPosition(path.getCompilationUnit(), tree));
-                tokens.moveNext();
+                if (!tokens.moveNext())
+                    tokens.movePrevious();
             }
             this.endPos = tokens.offset();
             if (tree.getKind() == Tree.Kind.COMPILATION_UNIT) {

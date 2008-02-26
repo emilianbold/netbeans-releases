@@ -103,19 +103,6 @@ public class AcceptanceTest extends RaveTestCase {
     String image1= imageDir + "red.gif";
     String image2= imageDir + "white.gif";
     String image3= imageDir + "blue.gif";
-    String[] javaCode = {
-        "com.sun.webui.jsf.component.RadioButton colorRadioButton1, colorRadioButton2;",
-        "colorRadioButton1 = (com.sun.webui.jsf.component.RadioButton)",
-        "        FacesContext.getCurrentInstance().getViewRoot().findComponent(\"colorRadioButton1\");",
-        "colorRadioButton2 = (com.sun.webui.jsf.component.RadioButton)",
-        "        FacesContext.getCurrentInstance().getViewRoot().findComponent(\"colorRadioButton2\");",
-        "String selection=\"Your selection: \";",
-        "if (colorRadioButton1.isChecked()) ",
-        "selection+=\"Red is checked\"; ", 
-        "if (colorRadioButton2.isChecked()) ",
-        "selection+=\"White is checked \"; ", 
-        "info(selection); " };    
-    
     
     public AcceptanceTest(String testName) {
         super(testName);
@@ -267,7 +254,7 @@ public class AcceptanceTest extends RaveTestCase {
         editor.requestFocus();
         TestUtils.wait(2000);
         editor.pushKey(KeyEvent.VK_ENTER);
-        ComponentUtils.insertJavaCode(editor, javaCode);
+        editor.insert("log(\"Action Performed.\");\n");
      
         TestUtils.wait(200);
         

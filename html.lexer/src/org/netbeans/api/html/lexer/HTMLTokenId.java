@@ -45,7 +45,6 @@ import java.util.EnumSet;
 import java.util.Map;
 import org.netbeans.api.lexer.InputAttributes;
 import org.netbeans.api.lexer.Language;
-import org.netbeans.api.lexer.Language;
 import org.netbeans.api.lexer.LanguagePath;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenId;
@@ -82,6 +81,8 @@ public enum HTMLTokenId implements TokenId {
     OPERATOR("operator"),
     /** Attribute value in HTML tag: <code> &lt;BODY bgcolor="red"&gt;</code>.*/
     VALUE("value"),
+    /** HTML javascript attribute value, such as one following onclick etc. */
+    VALUE_JAVASCRIPT("value"),
     /** HTML block comment: <code> &lt;!-- xxx --&gt; </code>.*/
     BLOCK_COMMENT("block-comment"),
     /** HTML/SGML comment.*/
@@ -125,11 +126,28 @@ public enum HTMLTokenId implements TokenId {
             return new HTMLLexer(info);
         }
         
+        @SuppressWarnings("unchecked")
         @Override
         protected LanguageEmbedding embedding(
         Token<HTMLTokenId> token, LanguagePath languagePath, InputAttributes inputAttributes) {
             String mimeType = null;
             switch(token.id()) {
+                // BEGIN TOR MODIFICATIONS
+                case VALUE_JAVASCRIPT:
+                    mimeType = JAVASCRIPT_MIMETYPE;
+                    if(mimeType != null) {
+                        Language lang = Language.find(mimeType);
+                        if(lang == null) {
+                            return null; //no language found
+                        } else {
+                            // TODO:
+                            // XXX Don't handle JavaScript for non-quoted attributes
+                            // (Or use separate state so I can do 0,0 as offsets there
+                            return LanguageEmbedding.create(lang, 1, 1, true);
+                        }
+                    }
+                    break;
+                // END TOR MODIFICATIONS
                 case SCRIPT:
                     mimeType = JAVASCRIPT_MIMETYPE;
                     break;

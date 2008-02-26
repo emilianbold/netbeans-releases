@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -41,7 +41,9 @@
 
 package org.netbeans.modules.web.jsps.parserapi;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
 import javax.servlet.jsp.tagext.FunctionInfo;
 import javax.servlet.jsp.JspException;
 
@@ -66,19 +68,19 @@ public abstract class ELNode {
      */
     public static class Root extends ELNode {
 
-	private ELNode.Nodes expr;
+        private ELNode.Nodes expr;
 
-	public Root(ELNode.Nodes expr) {
-	    this.expr = expr;
-	}
+        public Root(ELNode.Nodes expr) {
+            this.expr = expr;
+        }
 
-	public void accept(Visitor v) throws JspException {
-	    v.visit(this);
-	}
+        public void accept(Visitor v) throws JspException {
+            v.visit(this);
+        }
 
-	public ELNode.Nodes getExpression() {
-	    return expr;
-	}
+        public ELNode.Nodes getExpression() {
+            return expr;
+        }
     }
 
     /**
@@ -86,19 +88,19 @@ public abstract class ELNode {
      */
     public static class Text extends ELNode {
 
-	private String text;
+        private final String text;
 
-	public Text(String text) {
-	    this.text = text;
-	}
+        public Text(String text) {
+            this.text = text;
+        }
 
 	public void accept(Visitor v) throws JspException {
-	    v.visit(this);
+            v.visit(this);
 	}
 
-	public String getText() {
-	    return text;
-	}
+        public String getText() {
+            return text;
+        }
     }
 
     /**
@@ -106,19 +108,19 @@ public abstract class ELNode {
      */
     public static class ELText extends ELNode {
 
-	private String text;
+        private final String text;
 
-	public ELText(String text) {
-	    this.text = text;
-	}
+        public ELText(String text) {
+            this.text = text;
+        }
 
 	public void accept(Visitor v) throws JspException {
-	    v.visit(this);
+            v.visit(this);
 	}
 
-	public String getText() {
-	    return text;
-	}
+        public String getText() {
+            return text;
+        }
     }
 
     /**
@@ -127,61 +129,61 @@ public abstract class ELNode {
      */
     public static class Function extends ELNode {
 
-	private String prefix;
-	private String name;
-	private String uri;
-	private FunctionInfo functionInfo;
-	private String methodName;
-	private String[] parameters;
+        private final String prefix;
+        private final String name;
+        private String uri;
+        private FunctionInfo functionInfo;
+        private String methodName;
+        private String[] parameters;
 
-	Function(String prefix, String name) {
-	    this.prefix = prefix;
-	    this.name = name;
-	}
+        Function(String prefix, String name) {
+            this.prefix = prefix;
+            this.name = name;
+        }
 
-	public void accept(Visitor v) throws JspException {
-	    v.visit(this);
-	}
+        public void accept(Visitor v) throws JspException {
+            v.visit(this);
+        }
 
-	public String getPrefix() {
-	    return prefix;
-	}
+        public String getPrefix() {
+            return prefix;
+        }
 
-	public String getName() {
-	    return name;
-	}
+        public String getName() {
+            return name;
+        }
 
-	public void setUri(String uri) {
-	    this.uri = uri;
-	}
+        public void setUri(String uri) {
+            this.uri = uri;
+        }
 
-	public String getUri() {
-	    return uri;
-	}
+        public String getUri() {
+            return uri;
+        }
 
-	public void setFunctionInfo(FunctionInfo f) {
-	    this.functionInfo = f;
-	}
+        public void setFunctionInfo(FunctionInfo f) {
+            this.functionInfo = f;
+        }
 
-	public FunctionInfo getFunctionInfo() {
-	    return functionInfo;
-	}
+        public FunctionInfo getFunctionInfo() {
+            return functionInfo;
+        }
 
-	public void setMethodName(String methodName) {
-	    this.methodName = methodName;
-	}
+        public void setMethodName(String methodName) {
+            this.methodName = methodName;
+        }
 
-	public String getMethodName() {
-	    return methodName;
-	}
+        public String getMethodName() {
+            return methodName;
+        }
 
-	public void setParameters(String[] parameters) {
-	    this.parameters = parameters;
-	}
+        public void setParameters(String[] parameters) {
+            this.parameters = parameters;
+        }
 
-	public String[] getParameters() {
-	    return parameters;
-	}
+        public String[] getParameters() {
+            return parameters;
+        }
     }
 
     /**
@@ -189,75 +191,75 @@ public abstract class ELNode {
      */
     public static class Nodes {
 
-	/* Name used for creating a map for the functions in this
-	   EL expression, for communication to Generator.
-	 */
-	String mapName = null;
-	private List<ELNode> list;
+        /* Name used for creating a map for the functions in this
+        EL expression, for communication to Generator.
+        */
+        String mapName = null;
+        private final List<ELNode> list;
 
-	public Nodes() {
-	    list = new ArrayList<ELNode>();
-	}
+        public Nodes() {
+            list = new ArrayList<ELNode>();
+        }
 
-	public void add(ELNode en) {
-	    list.add(en);
-	}
+        public void add(ELNode en) {
+            list.add(en);
+        }
 
-	/**
-	 * Visit the nodes in the list with the supplied visitor
-	 * @param v The visitor used
-	 */
-	public void visit(Visitor v) throws JspException {
+        /**
+        * Visit the nodes in the list with the supplied visitor
+        * @param v The visitor used
+        */
+        public void visit(Visitor v) throws JspException {
             for (ELNode n: list) {
-		n.accept(v);
-	    }
-	}
+                n.accept(v);
+            }
+        }
 
-	public Iterator<ELNode> iterator() {
-	    return list.iterator();
-	}
+        public Iterator<ELNode> iterator() {
+            return list.iterator();
+        }
 
-	public boolean isEmpty() {
-	    return list.size() == 0;
-	}
+        public boolean isEmpty() {
+            return list.size() == 0;
+        }
 
-	/**
-	 * @return true if the expression contains a ${...}
-	 */
-	public boolean containsEL() {
-	    Iterator<ELNode> iter = list.iterator();
-	    while (iter.hasNext()) {
-		ELNode n = iter.next();
-		if (n instanceof Root) {
-		    return true;
-		}
-	    }
-	    return false;
-	}
+        /**
+        * @return true if the expression contains a ${...}
+        */
+        public boolean containsEL() {
+            Iterator<ELNode> iter = list.iterator();
+            while (iter.hasNext()) {
+                ELNode n = iter.next();
+                if (n instanceof Root) {
+                    return true;
+                }
+            }
+            return false;
+        }
 
-	public void setMapName(String name) {
-	    this.mapName = name;
-	}
+        public void setMapName(String name) {
+            this.mapName = name;
+        }
 
-	public String getMapName() {
-	    return mapName;
-	}
+        public String getMapName() {
+            return mapName;
+        }
     }
 
     public static class Visitor {
 
-	public void visit(Root n) throws JspException {
-	    n.getExpression().visit(this);
-	}
+        public void visit(Root n) throws JspException {
+            n.getExpression().visit(this);
+        }
 
-	public void visit(Function n) throws JspException {
-	}
+        public void visit(Function n) throws JspException {
+        }
 
-	public void visit(Text n) throws JspException {
-	}
+        public void visit(Text n) throws JspException {
+        }
 
-	public void visit(ELText n) throws JspException {
-	}
+        public void visit(ELText n) throws JspException {
+        }
     }
 }
 

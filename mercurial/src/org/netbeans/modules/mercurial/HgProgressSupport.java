@@ -63,6 +63,7 @@ public abstract class HgProgressSupport implements Runnable, Cancellable {
     private ProgressHandle progressHandle = null;    
     private String displayName = ""; // NOI18N
     private String originalDisplayName = ""; // NOI18N
+    private OutputLogger logger;
     private String repositoryRoot;
     private RequestProcessor.Task task;
     
@@ -82,6 +83,7 @@ public abstract class HgProgressSupport implements Runnable, Cancellable {
 
     public void setRepositoryRoot(String repositoryRoot) {
         this.repositoryRoot = repositoryRoot;
+        logger = null;
     }
 
     public void run() {        
@@ -98,6 +100,7 @@ public abstract class HgProgressSupport implements Runnable, Cancellable {
             Mercurial.LOG.log(Level.FINE, "End - {0}", displayName); // NOI18N
         } finally {            
             finnishProgress();
+            if (logger != null) logger.closeLog();
         }
     }
 
@@ -108,14 +111,15 @@ public abstract class HgProgressSupport implements Runnable, Cancellable {
     }
 
     public synchronized boolean cancel() {
+        if(delegate != null) {
+            if(!delegate.cancel()) 
+                return false;
+        }
         if (canceled) {
             return false;
         }        
         if(task != null) {
             task.cancel();
-        }
-        if(delegate != null) {
-            delegate.cancel();
         }
         Mercurial.getInstance().clearRequestProcessor(repositoryRoot);
         getProgressHandle().finish();
@@ -123,7 +127,7 @@ public abstract class HgProgressSupport implements Runnable, Cancellable {
         return true;
     }
 
-    void setCancellableDelegate(Cancellable cancellable) {
+    public void setCancellableDelegate(Cancellable cancellable) {
         this.delegate = cancellable;
     }
 
@@ -166,7 +170,13 @@ public abstract class HgProgressSupport implements Runnable, Cancellable {
         getProgressHandle().finish();
     }
     
-    
+    public OutputLogger getLogger() {
+        if (logger == null) {
+            logger = Mercurial.getInstance().getLogger(repositoryRoot);
+        }
+        return logger;
+    }
+
     public void annotate(HgException ex) {        
         ExceptionHandler eh = new ExceptionHandler(ex);
         if(isCanceled()) {

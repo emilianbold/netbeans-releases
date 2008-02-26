@@ -41,6 +41,7 @@
 
 package org.netbeans.modules.spring.beans.hyperlink;
 
+import org.netbeans.modules.spring.beans.editor.BeanClassFinder;
 import org.netbeans.modules.spring.beans.editor.SpringXMLConfigEditorUtils;
 import org.netbeans.modules.spring.beans.editor.SpringXMLConfigEditorUtils.Public;
 import org.netbeans.modules.spring.beans.editor.SpringXMLConfigEditorUtils.Static;
@@ -62,7 +63,7 @@ public class JavaMethodHyperlinkProcessor extends HyperlinkProcessor {
     }
     
     public void process(HyperlinkEnv env) {
-        String className = SpringXMLConfigEditorUtils.getBeanClassName(env.getCurrentTag());
+        String className = new BeanClassFinder(env.getCurrentTag(), env.getDocument()).findImplementationClass();
         if(className == null) {
             return;
         }

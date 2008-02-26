@@ -41,7 +41,8 @@ package org.netbeans.modules.gsfret.hints.infrastructure;
 
 import java.util.ArrayList;
 import java.util.List;
-import org.netbeans.api.gsf.HintsProvider;
+import javax.swing.text.Document;
+import org.netbeans.modules.gsf.api.HintsProvider;
 import org.netbeans.napi.gsfret.source.CompilationInfo;
 import org.netbeans.napi.gsfret.source.support.CaretAwareSourceTaskFactory;
 import org.netbeans.modules.gsfret.editor.semantic.ScanningCancellableTask;
@@ -61,13 +62,21 @@ public class SelectionHintsTask extends ScanningCancellableTask<CompilationInfo>
     public void run(CompilationInfo info) throws Exception {
         resume();
         
+        Document doc = info.getDocument();
+        if (doc == null) {
+            return;
+        }
+
         int[] range = SelectionAwareSourceTaskFactory.getLastSelection(info.getFileObject());
         
         if (range == null || range.length != 2 || range[0] == -1 || range[1] == -1) {
             return;
         }
 
-        HintsProvider provider = info.getLanguage().getHintsProvider();
+        int start = range[0];
+        int end = range[1];
+        
+        HintsProvider provider = SuggestionsTask.getHintsProvider(doc, start);
 
         if (provider == null) {
             return;
@@ -75,8 +84,8 @@ public class SelectionHintsTask extends ScanningCancellableTask<CompilationInfo>
         
         List<ErrorDescription> result = new ArrayList<ErrorDescription>();
         
-        if (range[0] != range[1]) {
-            provider.computeSelectionHints(info, result, Math.min(range[0], range[1]), Math.max(range[0], range[1]));
+        if (start != end) {
+            provider.computeSelectionHints(info, result, Math.min(start,end), Math.max(start,end));
         }
         
         if (isCancelled()) {

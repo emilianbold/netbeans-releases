@@ -39,6 +39,7 @@
 
 package org.netbeans.modules.websvc.saas.model;
 
+import java.awt.Image;
 import org.netbeans.modules.websvc.saas.model.jaxb.Group;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -62,6 +63,8 @@ public class SaasGroup {
     private boolean userDefined = true; //once set to false, remain false.
     private SortedMap<String, Saas> services;
     private SortedMap<String, SaasGroup> children;
+    private String icon16Path;
+    private String icon32Path;
     
     public SaasGroup(SaasGroup parent, Group group) {
         this.parent = parent;
@@ -76,7 +79,7 @@ public class SaasGroup {
     public FileObject getGroupFolder() {
         if (groupFolder == null) {
             if (parent == null) {
-                return SaasServicesModel.getInstance().getWebServiceHome();
+                return SaasServicesModel.getWebServiceHome();
             }
             groupFolder = parent.getGroupFolder().getFileObject(getName(), null);
             if (groupFolder == null) {
@@ -173,6 +176,23 @@ public class SaasGroup {
         }
     }
 
+    public String getIcon16Path() {
+        return icon16Path;
+    }
+
+    protected void setIcon16Path(String icon16Path) {
+        this.icon16Path = icon16Path;
+    }
+
+    public String getIcon32Path() {
+        return icon32Path;
+    }
+
+    protected void setIcon32Path(String icon32Path) {
+        this.icon32Path = icon32Path;
+    }
+
+    
     public List<SaasGroup> getChildrenGroups() {
         if (children == null) {
             children = Collections.synchronizedSortedMap(new TreeMap<String,SaasGroup>());
@@ -261,9 +281,13 @@ public class SaasGroup {
      * @return
      */
     public Group getPathFromRoot() {
+        SaasGroup parentGroup = getParent();
+        if (parentGroup == null) {
+            return null;
+        }
+        
         Group group = new Group();
         group.setName(getName());
-        SaasGroup parentGroup = getParent();
         while(parentGroup != SaasServicesModel.getInstance().getRootGroup()) {
             Group p = new Group();
             p.setName(parentGroup.getName());
@@ -292,4 +316,5 @@ public class SaasGroup {
     public String toString() {
         return getName();
     }
+
 }

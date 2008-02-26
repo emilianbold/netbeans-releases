@@ -70,16 +70,14 @@ import org.netbeans.spi.project.ui.support.ProjectChooser;
 import org.netbeans.api.progress.ProgressHandle;
 
 import org.netbeans.modules.j2ee.api.ejbjar.Ear;
-import org.netbeans.modules.j2ee.common.sharability.PanelSharability;
-import org.netbeans.modules.j2ee.common.sharability.SharabilityUtilities;
+import org.netbeans.modules.j2ee.common.SharabilityUtility;
+import org.netbeans.modules.j2ee.common.project.ui.PanelSharability;
 import org.netbeans.modules.web.api.webmodule.WebFrameworks;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.project.WebProject;
 import org.netbeans.modules.web.project.api.WebProjectCreateData;
 import org.netbeans.modules.web.project.api.WebProjectUtilities;
 import org.netbeans.modules.j2ee.common.project.ui.UserProjectSettings;
-import org.netbeans.modules.web.project.ui.customizer.WebProjectProperties;
-import org.netbeans.spi.java.project.support.ui.SharableLibrariesUtils;
 
 /**
  * Wizard to create a new Web project.
@@ -144,7 +142,7 @@ public class NewWebProjectWizardIterator implements WizardDescriptor.ProgressIns
         createData.setSourceLevel((String) wiz.getProperty(WizardProperties.SOURCE_LEVEL));
         
         createData.setLibrariesDefinition(
-                SharabilityUtilities.getLibraryLocation((String) wiz.getProperty(PanelSharability.WIZARD_SHARED_LIBRARIES)));
+                SharabilityUtility.getLibraryLocation((String) wiz.getProperty(PanelSharability.WIZARD_SHARED_LIBRARIES)));
         createData.setServerLibraryName((String) wiz.getProperty(PanelSharability.WIZARD_SERVER_LIBRARY));
         
         AntProjectHelper h = WebProjectUtilities.createProject(createData);
