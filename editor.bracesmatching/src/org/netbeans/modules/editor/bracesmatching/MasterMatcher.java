@@ -52,7 +52,6 @@ import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.lib.editor.util.swing.DocumentUtilities;
 import org.netbeans.spi.editor.bracesmatching.BracesMatcher;
 import org.netbeans.spi.editor.bracesmatching.BracesMatcherFactory;
-import org.netbeans.spi.editor.bracesmatching.BracesMatcherFactory;
 import org.netbeans.spi.editor.bracesmatching.MatcherContext;
 import org.netbeans.spi.editor.highlighting.support.OffsetsBag;
 import org.openide.util.RequestProcessor;
@@ -322,13 +321,20 @@ public final class MasterMatcher {
             
             if (newDotBackwardIdx != -1) {
                 if (select) {
+                    int set, move;
+                    
                     if (caretOffset < origin[1]) {
-                        caret.setDot(origin[0]);
-                        caret.moveDot(matches[2 * newDotBackwardIdx + 1]);
+                        set = origin[0];
+                        move = matches[2 * newDotBackwardIdx + 1];
                     } else {
-                        caret.setDot(origin[1]);
-                        caret.moveDot(matches[2 * newDotBackwardIdx]);
+                        set = origin[1];
+                        move = matches[2 * newDotBackwardIdx];
                     }
+
+                    if (caret.getDot() == caret.getMark() || (move <= caret.getMark() && caret.getMark() <= set)) {
+                        caret.setDot(set);
+                    }
+                    caret.moveDot(move);
                 } else {
                     if (B_BACKWARD.equalsIgnoreCase(caretBias.toString())) {
                         caret.setDot(matches[2 * newDotBackwardIdx + 1]);
@@ -338,13 +344,20 @@ public final class MasterMatcher {
                 }
             } else if (newDotForwardIdx != -1) {
                 if (select) {
+                    int set, move;
+
                     if (caretOffset > origin[0]) {
-                        caret.setDot(origin[1]);
-                        caret.moveDot(matches[2 * newDotForwardIdx]);
+                        set = origin[1];
+                        move = matches[2 * newDotForwardIdx];
                     } else {
-                        caret.setDot(origin[0]);
-                        caret.moveDot(matches[2 * newDotForwardIdx + 1]);
+                        set = origin[0];
+                        move = matches[2 * newDotForwardIdx + 1];
                     }
+                    
+                    if (caret.getDot() == caret.getMark() || (set <= caret.getMark() && caret.getMark() <= move)) {
+                        caret.setDot(set);
+                    }
+                    caret.moveDot(move);
                 } else {
                     if (B_BACKWARD.equalsIgnoreCase(caretBias.toString())) {
                         caret.setDot(matches[2 * newDotForwardIdx + 1]);
@@ -620,7 +633,9 @@ public final class MasterMatcher {
                         break;
                     }
                 }
-
+            }
+            
+            if (matcher[0] != null) {
                 // Find the original area
                 int [] origin = null;
                 try {
