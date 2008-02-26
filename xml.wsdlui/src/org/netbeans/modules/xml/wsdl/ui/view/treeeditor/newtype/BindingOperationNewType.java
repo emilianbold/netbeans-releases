@@ -108,14 +108,16 @@ public class BindingOperationNewType extends NewType {
                         DialogDescriptor.OK_CANCEL_OPTION, 
                         DialogDescriptor.CANCEL_OPTION, 
                         null);
+            dd.setValid(operationView.isStateValid());
             operationView.addPropertyChangeListener(new PropertyChangeListener() {
             
                 public void propertyChange(PropertyChangeEvent evt) {
-                    if (evt.getPropertyName().equals("ENABLE_OK") && evt.getNewValue() instanceof Boolean) {
+                    if (evt.getPropertyName().equals(BindingOperationView.ENABLE_OK) && evt.getNewValue() instanceof Boolean) {
                         dd.setValid(((Boolean) evt.getNewValue()).booleanValue());
                     }            
                 }
             });
+            
             Dialog dlg = DialogDisplayer.getDefault().createDialog(dd);
             dlg.getAccessibleContext().setAccessibleDescription(dlg.getTitle());
             dlg.pack();

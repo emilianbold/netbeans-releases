@@ -186,10 +186,45 @@ public class CCNewFormatterUnitTestCase extends CCFormatterBaseUnitTestCase {
     public void testReformatArrayInitializerWithNewline() {
         setDefaultsOptions();
         setLoadDocumentText(
-                "int[] foo = new int[] {1, 2, 3};");
+                "int[] foo =  {1, 2, 3};\n" +
+                "int[] foo2 =  {1,\n" +
+                "2, 3};\n" +
+                "int[] foo3 = {\n" +
+                "1, 2, 3\n" +
+                "};\n" +
+                "\n");
         reformat();
         assertDocumentText("Incorrect array initializer with newline reformatting",
-                "int[] foo = new int[] {1, 2, 3};");
+                "int[] foo = {1, 2, 3};\n" +
+                "int[] foo2 = {1,\n" +
+                "    2, 3};\n" +
+                "int[] foo3 = {\n" +
+                "    1, 2, 3\n" +
+                "};\n" +
+                "\n");
+    }
+
+    /**
+     * Test reformatting of array initializer with newlines on
+     * @see http://www.netbeans.org/issues/show_bug.cgi?id=47069
+     */
+    public void testReformatArrayInitializerWithNewline2() {
+        setDefaultsOptions();
+        setLoadDocumentText(
+                "int[][] foo4 =  {\n" +
+                "{1, 2, 3},\n" +
+                "{3,4,5},\n" +
+                "{7,8,9}\n" +
+                "};\n" +
+                "\n");
+        reformat();
+        assertDocumentText("Incorrect array initializer with newline reformatting",
+                "int[][] foo4 = {\n" +
+                "    {1, 2, 3},\n" +
+                "    {3, 4, 5},\n" +
+                "    {7, 8, 9}\n" +
+                "};\n" +
+                "\n");
     }
     
     /**
@@ -198,6 +233,8 @@ public class CCNewFormatterUnitTestCase extends CCFormatterBaseUnitTestCase {
      */
     public void testReformatNewlineBracesToNormalOnes() {
         setDefaultsOptions();
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
+                putBoolean(EditorOptions.newLineCatch, true);
         setLoadDocumentText(
                 "try\n" +
                 "{\n" +
@@ -289,13 +326,76 @@ public class CCNewFormatterUnitTestCase extends CCFormatterBaseUnitTestCase {
                 "if (count == 0)\n" +
                 "return 0.0f;\n" +
                 "else\n" +
-                "return performanceSum / getCount()");
+                "return performanceSum / getCount();\n");
         reformat();
         assertDocumentText("Incorrect reformatting of if-else without brackets",
                 "if (count == 0)\n" +
                 "    return 0.0f;\n" +
                 "else\n" +
-                "    return performanceSum / getCount()");
+                "    return performanceSum / getCount();\n");
+    }
+    
+    /**
+     * Test reformatting of if else without brackets
+     * @see http://www.netbeans.org/issues/show_bug.cgi?id=50523
+     */
+    public void testReformatIfElseWithoutBrackets2() {
+        setDefaultsOptions();
+        setLoadDocumentText(
+                "if (count == 0)\n" +
+                "return 0.0f;\n" +
+                "else  {\n" +
+                "return performanceSum / getCount();\n"+
+                "}\n");
+        reformat();
+        assertDocumentText("Incorrect reformatting of if-else without brackets",
+                "if (count == 0)\n" +
+                "    return 0.0f;\n" +
+                "else {\n" +
+                "    return performanceSum / getCount();\n" +
+                "}\n");
+    }
+    
+    /**
+     * Test reformatting of if else without brackets
+     * @see http://www.netbeans.org/issues/show_bug.cgi?id=50523
+     */
+    public void testReformatIfElseWithoutBrackets3() {
+        setDefaultsOptions();
+        setLoadDocumentText(
+                "if (true) if (true) if (true)\n" +
+                "else return;\n" +
+                "else return;\n" +
+                "else return;\n");
+        reformat();
+        assertDocumentText("Incorrect reformatting of if-else without brackets",
+                "if (true) if (true) if (true)\n" +
+                "        else return;\n" +
+                "    else return;\n" +
+                "else return;\n");
+    }
+    
+    /**
+     * Test reformatting of if else without brackets
+     * @see http://www.netbeans.org/issues/show_bug.cgi?id=50523
+     */
+    public void testReformatIfElseWithoutBrackets4() {
+        setDefaultsOptions();
+        setLoadDocumentText(
+                "if (true)\n" +
+                "    if (true)\n" +
+                "    if (true)\n" +
+                "else return;\n" +
+                "else return;\n" +
+                "else return;\n");
+        reformat();
+        assertDocumentText("Incorrect reformatting of if-else without brackets",
+                "if (true)\n" +
+                "    if (true)\n" +
+                "        if (true)\n" +
+                "        else return;\n" +
+                "    else return;\n" +
+                "else return;\n");
     }
     
     /**
@@ -1151,4 +1251,198 @@ public class CCNewFormatterUnitTestCase extends CCFormatterBaseUnitTestCase {
                 "        break;\n" +
                 "}\n");
     }
+
+    public void testSwitchFormatting2() {
+        setDefaultsOptions();
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
+                putBoolean(EditorOptions.indentCasesFromSwitch, false);
+        setLoadDocumentText(
+                "switch (GetTypeID()) {\n" +
+                "case FAST:\n" +
+                "metric += 100;\n" +
+                "break;\n" +
+                "case ULTRA:\n" +
+                "case SLOW:\n" +
+                "metric += 200;\n" +
+                "break;\n" +
+                "default:\n" +
+                "break;\n" +
+                "}\n");
+        reformat();
+        assertDocumentText("Incorrect formatting for macro define with paren",
+                "switch (GetTypeID()) {\n" +
+                "case FAST:\n" +
+                "    metric += 100;\n" +
+                "    break;\n" +
+                "case ULTRA:\n" +
+                "case SLOW:\n" +
+                "    metric += 200;\n" +
+                "    break;\n" +
+                "default:\n" +
+                "    break;\n" +
+                "}\n");
+    }
+
+    public void testSwitchFormatting3() {
+        setDefaultsOptions();
+        setLoadDocumentText(
+                "int main(int i)\n" +
+                "{\n" +
+                "    switch (i) {\n" +
+                "        case 1:\n" +
+                "        return 1;\n" +
+                "        case 4 :\n" +
+                "                   if (true)return;\n" +
+                "                   else {break;}\n" +
+                "        break;\n" +
+                "        case 14 :\n" +
+                "        {\n" +
+                "        i++;\n" +
+                "        }\n" +
+                "        case 6:\n" +
+                "        return;\n" +
+                "    default:\n" +
+                "        break;\n" +
+                "    }\n" +
+                "    if (i != 8)\n" +
+                "        switch (i) {\n" +
+                "        case 1:\n" +
+                "        return 1;\n" +
+                "        case 2:\n" +
+                "        break;\n" +
+                "        case 4 :\n" +
+                "                i++;\n" +
+                "           case 6:\n" +
+                "               switch (i * 2) {\n" +
+                "            case 10:\n" +
+                "                   if (true)return;\n" +
+                "                   else {break;}\n" +
+                "       case 12:\n" +
+                "                {\n" +
+                "                break;\n" +
+                "                }\n" +
+                "        }\n" +
+                "     default :\n" +
+                "            break;\n" +
+                "     }\n" +
+                "}\n");
+        reformat();
+        assertDocumentText("Incorrect formatting for macro define with paren",
+                "int main(int i)\n" +
+                "{\n" +
+                "    switch (i) {\n" +
+                "        case 1:\n" +
+                "            return 1;\n" +
+                "        case 4:\n" +
+                "            if (true)return;\n" +
+                "            else {\n" +
+                "                break;\n" +
+                "            }\n" +
+                "            break;\n" +
+                "        case 14:\n" +
+                "        {\n" +
+                "            i++;\n" +
+                "        }\n" +
+                "        case 6:\n" +
+                "            return;\n" +
+                "        default:\n" +
+                "            break;\n" +
+                "    }\n" +
+                "    if (i != 8)\n" +
+                "        switch (i) {\n" +
+                "            case 1:\n" +
+                "                return 1;\n" +
+                "            case 2:\n" +
+                "                break;\n" +
+                "            case 4:\n" +
+                "                i++;\n" +
+                "            case 6:\n" +
+                "                switch (i * 2) {\n" +
+                "                    case 10:\n" +
+                "                        if (true)return;\n" +
+                "                        else {\n" +
+                "                            break;\n" +
+                "                        }\n" +
+                "                    case 12:\n" +
+                "                    {\n" +
+                "                        break;\n" +
+                "                    }\n" +
+                "                }\n" +
+                "            default:\n" +
+                "                break;\n" +
+                "        }\n" +
+                "}\n");
+    }
+
+    public void testSwitchFormatting4() {
+        setDefaultsOptions();
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
+                putBoolean(EditorOptions.indentCasesFromSwitch, false);
+        setLoadDocumentText(
+                "int main(int i)\n" +
+                "{\n" +
+                "    switch (i) {\n" +
+                "        case 1:\n" +
+                "        return 1;\n" +
+                "        case 4 :\n" +
+                "        i++;\n" +
+                "        case 6:\n" +
+                "        return;\n" +
+                "    default:\n" +
+                "        break;\n" +
+                "    }\n" +
+                "    if (i != 8)\n" +
+                "        switch (i) {\n" +
+                "        case 1:\n" +
+                "        return 1;\n" +
+                "        case 2:\n" +
+                "        break;\n" +
+                "        case 4 :\n" +
+                "                i++;\n" +
+                "           case 6:\n" +
+                "               switch (i * 2) {\n" +
+                "            case 10:\n" +
+                "                   return;\n" +
+                "       case 12:\n" +
+                "                break;\n" +
+                "        }\n" +
+                "     default :\n" +
+                "            break;\n" +
+                "     }\n" +
+                "}\n");
+        reformat();
+        assertDocumentText("Incorrect formatting for macro define with paren",
+                "int main(int i)\n" +
+                "{\n" +
+                "    switch (i) {\n" +
+                "    case 1:\n" +
+                "        return 1;\n" +
+                "    case 4:\n" +
+                "        i++;\n" +
+                "    case 6:\n" +
+                "        return;\n" +
+                "    default:\n" +
+                "        break;\n" +
+                "    }\n" +
+                "    if (i != 8)\n" +
+                "        switch (i) {\n" +
+                "        case 1:\n" +
+                "            return 1;\n" +
+                "        case 2:\n" +
+                "            break;\n" +
+                "        case 4:\n" +
+                "            i++;\n" +
+                "        case 6:\n" +
+                "            switch (i * 2) {\n" +
+                "            case 10:\n" +
+                "                return;\n" +
+                "            case 12:\n" +
+                "                break;\n" +
+                "            }\n" +
+                "        default:\n" +
+                "            break;\n" +
+                "        }\n" +
+                "}\n");
+    }
+
 }

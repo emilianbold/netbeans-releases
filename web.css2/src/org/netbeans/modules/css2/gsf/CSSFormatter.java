@@ -97,7 +97,8 @@ public class CSSFormatter implements Formatter {
                     for (TokenSequence ts : (List<TokenSequence>) th.tokenSequenceList(languagePath, 0, bdoc.getLength())) {
                         TextBounds tsBounds = findTokenSequenceBounds(bdoc, ts);
                         
-                        if (tsBounds.getAbsoluteEnd() < startOffset || tsBounds.getAbsoluteStart() > endOffset){
+                        if (tsBounds.getAbsoluteEnd() < startOffset || tsBounds.getAbsoluteStart() > endOffset
+                                || tsBounds.getStartPos() == -1){ // empty CSS section
                             continue;
                         }
                         
