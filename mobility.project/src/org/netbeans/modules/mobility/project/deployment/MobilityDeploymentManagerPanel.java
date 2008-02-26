@@ -264,6 +264,8 @@ public class MobilityDeploymentManagerPanel extends JPanel implements ExplorerMa
         NewInstanceDialog nid = new NewInstanceDialog(props, d);
         DialogDescriptor dd = new DialogDescriptor(nid, NbBundle.getMessage(MobilityDeploymentManagerPanel.class, "TitleNewInstance"), true, DialogDescriptor.OK_CANCEL_OPTION, DialogDescriptor.OK_OPTION, DialogDescriptor.DEFAULT_ALIGN, new HelpCtx(NewInstanceDialog.class), null); //NOI18N
         nid.setDialogDescriptor(dd);
+        nid.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(MobilityDeploymentManagerPanel.class, "TitleNewInstance"));
+        nid.getAccessibleContext().setAccessibleName(NbBundle.getMessage(MobilityDeploymentManagerPanel.class, "TitleNewInstance"));
         if (DialogDescriptor.OK_OPTION.equals(DialogDisplayer.getDefault().notify(dd))) {
             DeploymentPlugin dp = nid.getDeploymentPlugin();
             if (dp != null) {

@@ -126,4 +126,8 @@ public final class HDataLoader extends CndAbstractDataLoaderExt {
     public ExtensionList getDefaultExtensionList() {
         return arrayToExtensionList(hdrExtensions);
     }
+
+    public String getDisplayNameForExtensionList() {
+	return NbBundle.getMessage(HDataLoader.class, "HDataLoader_Name_ForExtList"); // NOI18N
+    }
 }
