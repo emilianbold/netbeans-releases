@@ -48,6 +48,7 @@ import org.openide.loaders.ExtensionList;
  */
 public interface CndHandlableExtensions {
     ExtensionList getDefaultExtensionList();
+    String getDefaultDefaultExtension();
     String getSettingsName();
     String getDisplayNameForExtensionList();
     //FileEntry.Format getFormat();
