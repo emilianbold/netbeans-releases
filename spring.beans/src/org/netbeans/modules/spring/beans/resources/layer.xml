@@ -148,16 +148,31 @@ made subject to such option by the copyright holder.
     </folder>
     <folder name="Projects">
         <folder name="org-codehaus-mevenide-netbeans">
+            <folder name="Customizer">
+                <file name="org.netbeans.modules.spring.beans.ui.customizer.CustomizerCategoryProvider.instance">
+                    <attr name="position" intvalue="278"/>
+                </file>
+            </folder>
             <folder name="Lookup">
                 <file name="org-netbeans-modules-spring-beans-ProjectLookupProvider.instance"/>
             </folder>
         </folder>
         <folder name="org-netbeans-modules-j2ee-ejbjarproject">
+            <folder name="Customizer">
+                <file name="org.netbeans.modules.spring.beans.ui.customizer.CustomizerCategoryProvider.instance">
+                    <attr name="position" intvalue="250"/>
+                </file>
+            </folder>
             <folder name="Lookup">
                 <file name="org-netbeans-modules-spring-beans-ProjectLookupProvider.instance"/>
             </folder>
         </folder>
         <folder name="org-netbeans-modules-java-j2seproject">
+            <folder name="Customizer">
+                <file name="org.netbeans.modules.spring.beans.ui.customizer.CustomizerCategoryProvider.instance">
+                    <attr name="position" intvalue="250"/>
+                </file>
+            </folder>
             <folder name="Lookup">
                 <file name="org-netbeans-modules-spring-beans-ProjectLookupProvider.instance"/>
             </folder>
