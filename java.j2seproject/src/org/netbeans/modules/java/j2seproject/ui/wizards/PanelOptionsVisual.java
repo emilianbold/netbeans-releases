@@ -79,6 +79,7 @@ public class PanelOptionsVisual extends SettingsPanel implements ActionListener,
         this.panel = panel;
         currentLibrariesLocation = ".." + File.separatorChar + "libraries"; // NOI18N
         librariesLocation.setText(currentLibrariesLocation);
+        sharableProjectActionPerformed(null);
 
         switch (type) {
             case LIB:
@@ -181,7 +182,7 @@ public class PanelOptionsVisual extends SettingsPanel implements ActionListener,
 
         mainClassTextField.setText("com.myapp.Main");
 
-        sharableProject.setSelected(true);
+        sharableProject.setSelected(SharableLibrariesUtils.isLastProjectSharable());
         org.openide.awt.Mnemonics.setLocalizedText(sharableProject, org.openide.util.NbBundle.getMessage(PanelOptionsVisual.class, "LBL_PanelOptions_SharableProject_Checkbox")); // NOI18N
         sharableProject.setMargin(new java.awt.Insets(0, 0, 0, 0));
         sharableProject.addActionListener(new java.awt.event.ActionListener() {
