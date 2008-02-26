@@ -360,9 +360,11 @@ CaretListener, KeyListener, FocusListener, ListSelectionListener, PropertyChange
     }
 
     public void focusLost(FocusEvent e) {
-        hideAll();
+        //hideAll(); // removed because of copy-from-javadoc-popup purposes
+                     // does not seem to hurt anything
     }
 
+    @Override
     public void mouseClicked(MouseEvent e) {
         hideAll();
     }

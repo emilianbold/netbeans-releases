@@ -45,6 +45,8 @@ import java.awt.Dimension;
 import java.awt.GraphicsConfiguration;
 import java.awt.Point;
 import java.awt.Rectangle;
+import java.awt.event.FocusEvent;
+import java.awt.event.FocusListener;
 import java.awt.event.KeyEvent;
 import javax.swing.JComponent;
 import javax.swing.Popup;
@@ -61,7 +63,7 @@ import org.openide.util.Utilities;
  *
  *  @author Dusan Balek, Miloslav Metelka
  */
-abstract class CompletionLayoutPopup {
+abstract class CompletionLayoutPopup implements FocusListener {
     
     private CompletionLayout layout;
     
@@ -84,6 +86,8 @@ abstract class CompletionLayoutPopup {
     
     private boolean showRetainedPreferredSize;
     
+    private JComponent focusListeningComponent;
+    
     public final boolean isVisible() {
         return (popup != null);
     }
@@ -97,11 +101,31 @@ abstract class CompletionLayoutPopup {
             popup.hide();
             popup = null;
             popupBounds = null;
+            if(focusListeningComponent != null) {
+                focusListeningComponent.removeFocusListener(this);
+                focusListeningComponent = null;
+            }
             contentComponent = null;
             anchorOffset = -1;
             // Reset screen bounds as well to not cache too long
             screenBounds = null;
         }
+    }
+    
+    /**
+     * Return true if this popup should be focusable (there is a focusable
+     * component in it). The popupFactory.getPopup() will use non-null parent
+     * editor pane in such case.
+     */
+    protected boolean isFocusable() {
+        return false; // By default not focusable
+    }
+    
+    /**
+     * Get the component to which the focus 
+     */
+    protected JComponent getFocusListeningComponent() {
+        return null;
     }
     
     public final boolean isDisplayAboveCaret() {
@@ -272,19 +296,25 @@ abstract class CompletionLayoutPopup {
         }
         contComp.setPreferredSize(newPrefSize);
         showRetainedPreferredSize = newPrefSize.equals(origPrefSize);
+        
+        focusListeningComponent = getFocusListeningComponent();
+        if(focusListeningComponent != null) {
+            focusListeningComponent.addFocusListener(this);
+        }
 
         PopupFactory factory = PopupFactory.getSharedInstance();
         // Lightweight completion popups don't work well on the Mac - trying
         // to click on its scrollbars etc. will cause the window to be hidden,
         // so force a heavyweight parent by passing in owner==null. (#96717)
+        
         JTextComponent owner = Utilities.isMac() ? null : layout.getEditorComponent();
-
+        
         // #76648: Autocomplete box is too close to text
         if(displayAboveCaret && Utilities.isMac()) {
             popupBounds.y -= 10;
         }
         
-        popup = factory.getPopup(owner, contComp, popupBounds.x, popupBounds.y);
+        popup = factory.getPopup(isFocusable() ? null : owner, contComp, popupBounds.x, popupBounds.y);
         popup.show();
 
         this.popupBounds = popupBounds;
@@ -376,4 +406,11 @@ abstract class CompletionLayoutPopup {
     }
 
     public abstract void processKeyEvent(KeyEvent evt);
+
+    public void focusGained(FocusEvent e) {
+    }
+
+    public void focusLost(FocusEvent e) {
+    }
+    
 }
