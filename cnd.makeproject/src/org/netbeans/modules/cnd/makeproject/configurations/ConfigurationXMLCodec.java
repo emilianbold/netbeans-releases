@@ -309,6 +309,8 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
 		currentText = currentText.equals("1") ? "GNU" : "Sun"; // NOI18N
             }
             ((MakeConfiguration) currentConf).getCompilerSet().setValue(currentText);
+        } else if (element.equals(COMPILER_SET_ELEMENT+"2")) {
+            ((MakeConfiguration) currentConf).getCompilerSet2().setValue(currentText);
         } else if (element.equals(C_REQUIRED_ELEMENT)) {
             ((MakeConfiguration) currentConf).getCRequired().setValue(currentText.equals(TRUE_VALUE));
         } else if (element.equals(CPP_REQUIRED_ELEMENT)) {

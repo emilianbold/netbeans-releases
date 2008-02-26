@@ -612,25 +612,30 @@ public class BracketCompleter implements org.netbeans.modules.gsf.api.BracketCom
                     if (firstChar != ch) {
                         int start = target.getSelectionStart();
                         int end = target.getSelectionEnd();
-                        int lastChar = selection.charAt(selection.length()-1);
-                        // Replace the surround-with chars?
-                        if (selection.length() > 1 && 
-                                ((firstChar == '"' || firstChar == '\'' || firstChar == '(' || 
-                                firstChar == '{' || firstChar == '[' || firstChar == '/') &&
-                                lastChar == matching(firstChar))) {
-                            doc.remove(end-1, 1);
-                            doc.insertString(end-1, Character.toString(matching(ch)), null);
-                            doc.remove(start, 1);
-                            doc.insertString(start, Character.toString(ch), null);
-                            target.getCaret().setDot(end);
-                        } else {
-                            // No, insert around
-                            doc.remove(start,end-start);
-                            doc.insertString(start, ch + selection + matching(ch), null);
-                            target.getCaret().setDot(start+selection.length()+2);
-                        }
+                        TokenSequence<? extends RubyTokenId> ts = LexUtilities.getPositionedSequence(doc, start);
+                        if (ts != null && ts.token().id() != RubyTokenId.STRING_LITERAL &&
+                            ts.token().id() != RubyTokenId.QUOTED_STRING_LITERAL &&
+                            ts.token().id() != RubyTokenId.REGEXP_LITERAL) {
+                            int lastChar = selection.charAt(selection.length()-1);
+                            // Replace the surround-with chars?
+                            if (selection.length() > 1 && 
+                                    ((firstChar == '"' || firstChar == '\'' || firstChar == '(' || 
+                                    firstChar == '{' || firstChar == '[' || firstChar == '/') &&
+                                    lastChar == matching(firstChar))) {
+                                doc.remove(end-1, 1);
+                                doc.insertString(end-1, Character.toString(matching(ch)), null);
+                                doc.remove(start, 1);
+                                doc.insertString(start, Character.toString(ch), null);
+                                target.getCaret().setDot(end);
+                            } else {
+                                // No, insert around
+                                doc.remove(start,end-start);
+                                doc.insertString(start, ch + selection + matching(ch), null);
+                                target.getCaret().setDot(start+selection.length()+2);
+                            }
 
-                        return true;
+                            return true;
+                        }
                     }
                 }
             } else if (ch == '#' && 

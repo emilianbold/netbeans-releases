@@ -433,10 +433,10 @@ public class SaasUtil {
         return sb.toString();
     }
     
-    public static Image loadIcon(Saas saas, int type) {
-        String path = saas.getSaasMetadata().getIcon16();
+    public static Image loadIcon(SaasGroup saasGroup, int type) {
+        String path = saasGroup.getIcon16Path();
         if (type == BeanInfo.ICON_COLOR_32x32 || type == BeanInfo.ICON_MONO_32x32) {
-            path =  saas.getSaasMetadata().getIcon32();
+            path =  saasGroup.getIcon32Path();
         }
         if (path != null) {
             URL url = Thread.currentThread().getContextClassLoader().getResource(path);

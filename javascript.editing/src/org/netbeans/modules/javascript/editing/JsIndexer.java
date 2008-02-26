@@ -45,6 +45,7 @@ import java.net.MalformedURLException;
 import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.List;
+import java.util.Map;
 import javax.swing.text.BadLocationException;
 import org.mozilla.javascript.Node;
 import org.netbeans.modules.gsf.api.ElementKind;
@@ -60,6 +61,7 @@ import org.netbeans.modules.gsf.api.IndexDocumentFactory;
 import org.netbeans.modules.javascript.editing.JsAnalyzer.AnalysisResult;
 import org.netbeans.modules.javascript.editing.lexer.LexUtilities;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileUtil;
 import org.openide.modules.InstalledFileLocator;
 import org.openide.util.Exceptions;
@@ -101,11 +103,11 @@ public class JsIndexer implements Indexer {
     // ;flags;;args;offset;docoffset;browsercompat;types;
     // (between flags and args you have the case sensitive name for flags)
 
-    static final String FIELD_FQN = "fqn2"; //NOI18N
-    static final String FIELD_BASE = "base2"; //NOI18N
-    static final String FIELD_BASE_LOWER = "lcbase2"; //NOI18N
-    static final String FIELD_EXTEND = "extend2"; //NOI18N
-    static final String FIELD_CLASS = "clz2"; //NOI18N
+    static final String FIELD_FQN = "fqn"; //NOI18N
+    static final String FIELD_BASE = "base"; //NOI18N
+    static final String FIELD_BASE_LOWER = "lcbase"; //NOI18N   TODO - no longer necessary?
+    static final String FIELD_EXTEND = "extend"; //NOI18N
+    static final String FIELD_CLASS = "clz"; //NOI18N
     
     public boolean isIndexable(ParserFile file) {
         if (JsMimeResolver.isJavaScriptExt(file.getExtension()) ||
@@ -113,8 +115,15 @@ public class JsIndexer implements Indexer {
 
             // Skip Gem versions; Rails copies these files into the project anyway! Don't want
             // duplicate entries.
-            if (file.getRelativePath().startsWith("action_view")) {
-                return false;
+            if (PREINDEXING) {
+                try {
+                    //if (file.getRelativePath().startsWith("action_view")) {
+                    if (file.getFileObject().getURL().toExternalForm().indexOf("/gems/") != -1) {
+                        return false;
+                    }
+                } catch (FileStateInvalidException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
             }
             return true;
         }
@@ -150,7 +159,7 @@ public class JsIndexer implements Indexer {
     }
     
     public String getIndexVersion() {
-        return "6.107"; // NOI18N
+        return "6.110"; // NOI18N
     }
 
     public String getIndexerName() {
@@ -222,20 +231,27 @@ public class JsIndexer implements Indexer {
                 
                 assert child.getChildren().size() == 0;
             }
+
+            Map<String,String> classExtends = ar.getExtendsMap();
+            if (classExtends != null) {
+                for (Map.Entry<String,String> entry : classExtends.entrySet()) {
+                    String clz = entry.getKey();
+                    String superClz = entry.getValue();
+                    document.addPair(FIELD_EXTEND, clz.toLowerCase() + ";" + clz + ";" + superClz, true); // NOI18N
+                }
+            }
         }
 
         private void indexClass(AstElement element, IndexDocument document, String signature) {
             final String name = element.getName();
             document.addPair(FIELD_CLASS, name+ ";" + signature, true);
-            String ext = result.getStructure().getExtends(name);
-            if (ext != null) {
-                document.addPair(FIELD_EXTEND, name + ";" + ext, false);
-            }
         }
 
         private String computeSignature(AstElement element) {
             // Look up compatibility
-            int index = 3;
+            int index = IndexedElement.FLAG_INDEX;
+            
+            int docOffset = getDocumentationOffset(element);
             
             String compatibility = "";
             if (file.getNameExt().startsWith("stub_")) {
@@ -261,7 +277,11 @@ public class JsIndexer implements Indexer {
 
             assert index == IndexedElement.FLAG_INDEX;
             StringBuilder sb = new StringBuilder();
-            sb.append(IndexedElement.encode(IndexedElement.getFlags(element)));
+            int flags = IndexedElement.getFlags(element);
+            if (docOffset != -1) {
+                flags = flags | IndexedElement.DOCUMENTED;
+            }
+            sb.append(IndexedElement.encode(flags));
             
             // Parameters
             sb.append(";");
@@ -272,6 +292,11 @@ public class JsIndexer implements Indexer {
 
                 int argIndex = 0;
                 for (String param : func.getParameters()) {
+                    if (argIndex == 0 && "$super".equals(param)) { // NOI18N
+                        // Prototype inserts these as the first param to handle inheritance/super
+                        argIndex++;
+                        continue;
+                    } 
                     if (argIndex > 0) {
                         sb.append(",");
                     }
@@ -291,7 +316,6 @@ public class JsIndexer implements Indexer {
             sb.append(';');
             index++;
             assert index == IndexedElement.DOC_INDEX;
-            int docOffset = getDocumentationOffset(element);
             if (docOffset != -1) {
                 sb.append(IndexedElement.encode(docOffset));
             }
@@ -302,11 +326,6 @@ public class JsIndexer implements Indexer {
             assert index == IndexedElement.BROWSER_INDEX;
             sb.append(compatibility);
             
-//    protected static final int NAME_INDEX = 0;
-//    protected static final int IN_INDEX = 1;
-//    protected static final int ARG_INDEX = 2;
-//    protected static final int DOC_INDEX = 3;
-//    protected static final int BROWSER_INDEX = 4;
             // Types
             sb.append(";");
             index++;

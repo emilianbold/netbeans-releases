@@ -832,7 +832,7 @@ public class AppClientProjectProperties {
 
         List<ClassPathSupport.Item> serverItems = new ArrayList<ClassPathSupport.Item>();
         for (ClassPathSupport.Item item : items) {
-            if (item.getLibrary() != null && item.getLibrary().getType().equals(J2eePlatform.LIBRARY_TYPE)) {
+            if (item.getType() == ClassPathSupport.Item.TYPE_LIBRARY && item.getLibrary().getType().equals(J2eePlatform.LIBRARY_TYPE)) {
                 serverItems.add(ClassPathSupport.Item.create(item.getLibrary(), null));
             }
         }

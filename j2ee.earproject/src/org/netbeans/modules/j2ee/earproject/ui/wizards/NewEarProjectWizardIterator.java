@@ -70,6 +70,7 @@ import org.netbeans.modules.j2ee.ejbjarproject.api.EjbJarProjectGenerator;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.project.api.WebProjectCreateData;
 import org.netbeans.modules.web.project.api.WebProjectUtilities;
+import org.netbeans.spi.java.project.support.ui.SharableLibrariesUtils;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.ReferenceHelper;
@@ -148,8 +149,10 @@ public class NewEarProjectWizardIterator implements WizardDescriptor.ProgressIns
         String sourceLevel = (String)wiz.getProperty(WizardProperties.SOURCE_LEVEL);
         // remember last used server
         UserProjectSettings.getDefault().setLastUsedServer(serverInstanceID);
+        
         String librariesDefinition =
                 SharabilityUtility.getLibraryLocation((String) wiz.getProperty(PanelSharability.WIZARD_SHARED_LIBRARIES));
+        SharableLibrariesUtils.setLastProjectSharable(librariesDefinition != null);
         String serverLibraryName = (String) wiz.getProperty(PanelSharability.WIZARD_SERVER_LIBRARY);
         return testableInstantiate(dirF,name,j2eeLevel, serverInstanceID, warName,
                 ejbJarName, carName, mainClass, platformName, sourceLevel, handle, 

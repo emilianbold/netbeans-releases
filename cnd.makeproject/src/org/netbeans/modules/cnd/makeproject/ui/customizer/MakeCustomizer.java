@@ -472,7 +472,7 @@ public class MakeCustomizer extends javax.swing.JPanel implements HelpCtx.Provid
                         panel.add(currentConfigurationNode.getPanel(project, projectDescriptor), fillConstraints);
                         configurationLabel.setEnabled(false);
                         configurationComboBox.setEnabled(false);
-                        configurationsButton.setEnabled(false);
+                        configurationsButton.setEnabled(true);
                     }
                     else if (currentConfigurationNode.custumizerStyle() == CustomizerNode.CustomizerStyle.SHEET) {
                         panel.setBorder(new javax.swing.border.EtchedBorder());

@@ -91,11 +91,14 @@ public class RailsAdaptersPanel extends SettingsPanel {
         passwordLabel = new javax.swing.JLabel();
         passwordField = new javax.swing.JPasswordField();
 
-        developmentLabel.setText(org.openide.util.NbBundle.getMessage(RailsAdaptersPanel.class, "LBL_DatabaseAdapter")); // NOI18N
+        developmentLabel.setLabelFor(developmentComboBox);
+        org.openide.awt.Mnemonics.setLocalizedText(developmentLabel, org.openide.util.NbBundle.getMessage(RailsAdaptersPanel.class, "LBL_DatabaseAdapter")); // NOI18N
 
-        databaseNameLabel.setText(org.openide.util.NbBundle.getMessage(RailsAdaptersPanel.class, "RailsAdaptersPanel.databaseNameLabel.text")); // NOI18N
+        databaseNameLabel.setLabelFor(databaseNameField);
+        org.openide.awt.Mnemonics.setLocalizedText(databaseNameLabel, org.openide.util.NbBundle.getMessage(RailsAdaptersPanel.class, "LBL_DatabaseName")); // NOI18N
 
-        userNameLabel.setText(org.openide.util.NbBundle.getMessage(RailsAdaptersPanel.class, "RailsAdaptersPanel.userNameLabel.text")); // NOI18N
+        userNameLabel.setLabelFor(userNameField);
+        org.openide.awt.Mnemonics.setLocalizedText(userNameLabel, org.openide.util.NbBundle.getMessage(RailsAdaptersPanel.class, "LBL_UserName")); // NOI18N
 
         userNameField.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -103,7 +106,8 @@ public class RailsAdaptersPanel extends SettingsPanel {
             }
         });
 
-        passwordLabel.setText(org.openide.util.NbBundle.getMessage(RailsAdaptersPanel.class, "RailsAdaptersPanel.passwordLabel.text")); // NOI18N
+        passwordLabel.setLabelFor(passwordField);
+        org.openide.awt.Mnemonics.setLocalizedText(passwordLabel, org.openide.util.NbBundle.getMessage(RailsAdaptersPanel.class, "LBL_Password")); // NOI18N
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
@@ -145,6 +149,15 @@ public class RailsAdaptersPanel extends SettingsPanel {
                     .add(passwordField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 22, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addContainerGap(23, Short.MAX_VALUE))
         );
+
+        developmentLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(RailsAdaptersPanel.class, "ACSD_DatabaseAdapter")); // NOI18N
+        databaseNameLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(RailsAdaptersPanel.class, "ASCD_DatabaseName")); // NOI18N
+        userNameLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(RailsAdaptersPanel.class, "ASCD_UserName")); // NOI18N
+        passwordLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(RailsAdaptersPanel.class, "ASCD_Password")); // NOI18N
+
+        getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(RailsAdaptersPanel.class, "ASCN_RailsAdapterPanel")); // NOI18N
+        getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(RailsAdaptersPanel.class, "ASCD_RailsAdapterPanel")); // NOI18N
+        getAccessibleContext().setAccessibleParent(this);
     }// </editor-fold>//GEN-END:initComponents
 
 private void userNameFieldActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_userNameFieldActionPerformed

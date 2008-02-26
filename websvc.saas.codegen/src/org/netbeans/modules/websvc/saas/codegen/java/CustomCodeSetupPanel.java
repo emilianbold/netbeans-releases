@@ -55,6 +55,7 @@ import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableCellRenderer;
 import org.netbeans.modules.websvc.saas.codegen.java.Constants;
 import org.netbeans.modules.websvc.saas.codegen.java.model.ParameterInfo;
+import org.netbeans.modules.websvc.saas.codegen.java.model.ParameterInfo.ParamStyle;
 import org.netbeans.modules.websvc.saas.codegen.java.support.Inflector;
 import org.openide.util.NbBundle;
 
@@ -73,7 +74,8 @@ public class CustomCodeSetupPanel extends javax.swing.JPanel {
     private boolean methodNameModified = false;
 
     /** Creates new form InputValuesJPanel */
-    public CustomCodeSetupPanel(String uriTemplate, String resourceName, List<ParameterInfo> inputParams, boolean resourceExists) {
+    public CustomCodeSetupPanel(String uriTemplate, String resourceName, List<ParameterInfo> inputParams, 
+			boolean showResourceInfo, boolean showParams) {
         initComponents();
 
         uriTemplateTF.setText(uriTemplate);
@@ -84,12 +86,23 @@ public class CustomCodeSetupPanel extends javax.swing.JPanel {
         tableModel = new ParamTableModel();
         paramTable.setModel(tableModel);
 
-        if (resourceExists) {
+        if (!showResourceInfo) {
+            methodNameLabel.setVisible(false);
+            methodNameTF.setVisible(false);
+            resourceNameLabel.setVisible(false);
+            resourceNameTF.setVisible(false);
+            subresourceLabel.setVisible(false);
+            subresourceLocatorLabel.setVisible(false);
+            uriTemplateLabel.setVisible(false);
+            uriTemplateTF.setVisible(false);
+        }
+        
+        if (showParams) {
+            messageLabel.setVisible(false);
+        } else {
             paramLabel.setVisible(false);
             paramScrollPane.setVisible(false);
             messageLabel.setVisible(true);
-        } else {
-            messageLabel.setVisible(false);
         }
     }
 
@@ -192,7 +205,7 @@ public class CustomCodeSetupPanel extends javax.swing.JPanel {
                 case 2:
                     return info.getDefaultValue();
                 case 3:
-                    return info.isQueryParam();
+                    return info.getStyle() == ParamStyle.QUERY;
             }
 
             return null;
@@ -204,7 +217,10 @@ public class CustomCodeSetupPanel extends javax.swing.JPanel {
             if (column == 2) {
                 info.setDefaultValue(value);
             } else if (column == 3) {
-                info.setIsQueryParam((Boolean) value);
+                if(((Boolean) value))
+                    info.setStyle(ParamStyle.QUERY);
+                else
+                    info.setStyle(ParamStyle.UNKNOWN);
             }
         }
 
