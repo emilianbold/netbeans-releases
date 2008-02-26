@@ -54,7 +54,7 @@ import java.io.File;
 import java.io.IOException;
 import javax.swing.JFileChooser;
 import javax.swing.filechooser.FileFilter;
-import org.netbeans.modules.web.api.webmodule.WebModule;
+//import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
@@ -81,9 +81,11 @@ public class BackgroundImageUrlDialog { //extends URLPanel{
         JFileChooser fileChooser = Utilities.getJFileChooser();
         try {
             //try to find a web module for the edited css
-            WebModule webModule = WebModule.getWebModule(base);
-            FileObject webModuleDocumentBase = webModule == null ? null : webModule.getDocumentBase();
-
+            
+//            WebModule webModule = WebModule.getWebModule(base);
+//            FileObject webModuleDocumentBase = webModule == null ? null : webModule.getDocumentBase();
+            FileObject webModuleDocumentBase = null;
+            
             //identify a starting directory for the file chooser
             FileObject currDir = base.getParent();
 
