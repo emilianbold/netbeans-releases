@@ -87,7 +87,8 @@ public class VariablesActionsProvider implements NodeActionsProvider {
         }
         if (node instanceof Field )
             return new Action [] {
-                GO_TO_SOURCE_ACTION
+                // Disabled until IZ 115585 is fixed
+                //GO_TO_SOURCE_ACTION
             };
         if (node instanceof Variable)
             return new Action [] {
