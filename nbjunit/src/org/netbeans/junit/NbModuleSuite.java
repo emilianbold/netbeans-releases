@@ -115,7 +115,7 @@ public final class NbModuleSuite extends Object {
      * @return runtime container ready test
      */
     public static Test create(Class<? extends Test> clazz, String clustersRegExp) {
-        return new S(clazz);
+        return new S(clazz, clustersRegExp);
     }
 
     static final class S extends NbTestSuite {
@@ -187,6 +187,8 @@ public final class NbModuleSuite extends Object {
             }
             System.setProperty("netbeans.dirs", sb.toString());
 
+            System.setProperty("netbeans.security.nocheck", "true");
+            
             List<String> args = new ArrayList<String>();
             args.add("--nosplash");
             m.invoke(null, (Object)args.toArray(new String[0]));
@@ -341,15 +343,20 @@ public final class NbModuleSuite extends Object {
                     Matcher matcherEnabled = ENABLED.matcher(xml);
                  //   Matcher matcherEager = EAGER.matcher(xml);
 
-                    boolean enabled = matcherEnabled.find() && "true".equals(matcherEnabled.group(1));
+                    boolean found = matcherEnabled.find();
+                    boolean contains = modules.contains(n);
+                    boolean enabled = found && "true".equals(matcherEnabled.group(1));
+                    if (contains == enabled) {
+                        continue;
+                    }
 
-                    if (modules.contains(n) != enabled) {
+                    if (found) {
                         assert matcherEnabled.groupCount() == 1 : "Groups: " + matcherEnabled.groupCount() + " for:\n" + xml;
 
                         try {
                             String out = 
                                 xml.substring(0, matcherEnabled.start(1)) +
-                                (enabled ? "false" : "true") +
+                                (contains ? "true" : "false") +
                                 xml.substring(matcherEnabled.end(1));
                             writeModule(new File(config, m.getName()), out);
                         } catch (IllegalStateException ex) {
