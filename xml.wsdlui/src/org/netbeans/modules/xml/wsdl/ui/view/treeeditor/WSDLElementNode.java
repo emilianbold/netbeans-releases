@@ -74,6 +74,7 @@ import org.netbeans.modules.xml.wsdl.ui.commands.CommonAttributePropertyAdapter;
 import org.netbeans.modules.xml.wsdl.ui.commands.OtherAttributePropertyAdapter;
 import org.netbeans.modules.xml.wsdl.ui.commands.XMLAttributePropertyAdapter;
 import org.netbeans.modules.xml.wsdl.ui.cookies.WSDLAttributeCookie;
+import org.netbeans.modules.xml.wsdl.ui.model.StringAttribute;
 import org.netbeans.modules.xml.wsdl.ui.netbeans.module.UIUtilities;
 import org.netbeans.modules.xml.wsdl.ui.netbeans.module.Utility;
 import org.netbeans.modules.xml.wsdl.ui.view.DesignGotoType;
@@ -617,9 +618,13 @@ public abstract class WSDLElementNode<T extends WSDLComponent> extends AbstractN
         if (isValid()) {
             // Automatically keep the name in sync for named components.
             if (mElement instanceof Named) {
-                String name = ((Named) mElement).getName();
+                //IZ 126908; setting name from any child calls refactoring.
+                String name = mElement.getAttribute(new StringAttribute(Named.NAME_PROPERTY));
                 // Prevent getting an NPE from ExplorerManager.
                 super.setName(name == null ? "" : name);
+                if (name == null) {
+                    name = ((Named) mElement).getName();
+                }
                 if (name == null || name.length() == 0) {
                     name = mElement.getPeer().getLocalName();
                 }

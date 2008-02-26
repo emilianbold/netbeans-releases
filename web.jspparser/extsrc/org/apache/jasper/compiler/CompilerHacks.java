@@ -44,15 +44,18 @@ package org.apache.jasper.compiler;
 import java.lang.reflect.Field;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.apache.jasper.JasperException;
 import org.apache.jasper.JspCompilationContext;
-import org.openide.util.Exceptions;
 
 /** Reflection stuff for org.apache.jasper.compiler.Compiler.
  *
  * @author Petr Jiricka
  */
 public class CompilerHacks {
+    
+    private static final Logger LOGGER = Logger.getLogger(CompilerHacks.class.getName());
 
     // @GuardedBy(this)
     private Compiler comp;
@@ -79,7 +82,7 @@ public class CompilerHacks {
             errDispatcherF = Compiler.class.getDeclaredField("errDispatcher"); // NOI18N
             errDispatcherF.setAccessible(true);
         } catch (NoSuchFieldException e) {
-            Exceptions.printStackTrace(e);
+            LOGGER.log(Level.INFO, null, e);
         }
     }
     

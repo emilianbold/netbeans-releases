@@ -21,7 +21,7 @@
             <artifacts targets="java,servlet"/>
         </code-gen>
         <!-- http-basic, api-key, custom -->
-        <authentication profile="Templates/WebServices/profile.properties">
+        <authentication profile="SaaSServices/Google/profile.properties">
             <api-key id="zwsid"/>
         </authentication>
     </saas-metadata>

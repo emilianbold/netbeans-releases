@@ -1667,8 +1667,8 @@ public class FormUtils
         public boolean equals(Object o) {
             if (o instanceof TypeHelper) {
                 TypeHelper t = (TypeHelper)o;
-                return ((name == null) ? (t.name == null) : t.name.equals(name))
-                        && ((type == null) ? (t.type == null) : t.type.equals(type));
+                return ((name == null) ? (t.name == null) : name.equals(t.name))
+                        && ((type == null) ? (t.type == null) : type.equals(t.type));
             } else {
                 return false;
             }
