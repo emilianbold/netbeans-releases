@@ -79,7 +79,7 @@ public class MappingsTablePanel extends DefaultTablePanel {
 
         public void actionPerformed(java.awt.event.ActionEvent evt) {
             final int row = (add ? -1 : getTable().getSelectedRow());
-            final MappingPanel dialogPanel = new MappingPanel();
+            final MappingPanel dialogPanel = new MappingPanel(configDataObject);
 
             if (!add) {
                 String resourceName = (String) model.getValueAt(row, 0);
@@ -117,8 +117,9 @@ public class MappingsTablePanel extends DefaultTablePanel {
             };
 
             if (add) {
-                dialog.setValid(false);
-            } // disable OK button
+                // enambe/disable OK button
+                dialog.setValid(dialogPanel.isValid()); 
+            } 
 
             javax.swing.event.DocumentListener docListener = new EditDialog.DocListener(dialog);
             dialogPanel.getResourceTextField().getDocument().addDocumentListener(docListener);
@@ -154,22 +155,6 @@ public class MappingsTablePanel extends DefaultTablePanel {
 
         private void addActionListeners(final MappingPanel dialogPanel) {
             
-            // Action listener for the Browse resource button
-            dialogPanel.addResourceButtonActionListener(new java.awt.event.ActionListener() {
-
-                public void actionPerformed(java.awt.event.ActionEvent evt) {
-                    try {
-                        org.netbeans.api.project.SourceGroup[] groups = Util.getJavaSourceGroups(configDataObject);
-                        org.openide.filesystems.FileObject fo = BrowseFolders.showDialog(groups);
-                        if (fo != null) {
-                            String resourceName = Util.getResourcePath(groups, fo, '/', true); // NOI18N
-                            dialogPanel.getResourceTextField().setText(resourceName);
-                        }
-                    } catch (java.io.IOException ex) {
-                    }
-                }
-            });
-
             // Action listener for the Browse file button
             /*dialogPanel.addFileButtonActionListener(new java.awt.event.ActionListener() {
 

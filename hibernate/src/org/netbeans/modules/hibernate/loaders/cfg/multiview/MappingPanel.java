@@ -7,7 +7,9 @@
 package org.netbeans.modules.hibernate.loaders.cfg.multiview;
 
 import java.awt.event.ActionListener;
+import javax.swing.DefaultComboBoxModel;
 import javax.swing.JTextField;
+import org.netbeans.modules.hibernate.loaders.cfg.HibernateCfgDataObject;
 
 /**
  *
@@ -16,8 +18,11 @@ import javax.swing.JTextField;
 public class MappingPanel extends javax.swing.JPanel {
     
     /** Creates new form MappingPanel */
-    public MappingPanel() {
+    public MappingPanel(HibernateCfgDataObject dObj) {
         initComponents();
+        
+        String[] mappingFiles = Util.getMappingFilesFromProject(dObj.getPrimaryFile());
+        this.resourceComboBox.setModel( new DefaultComboBoxModel(mappingFiles) );
         
         // TODO: enable them later
         this.jarButton.setEnabled(false);
@@ -25,15 +30,24 @@ public class MappingPanel extends javax.swing.JPanel {
     }
     
     public void initValues( String resourceName, String fileName, String jarName, String packageName, String className ) {
-        this.resourceTextField.setText( resourceName );
+        this.resourceComboBox.setSelectedItem(resourceName);
         this.fileTextField.setText( fileName );
         this.jarTextField.setText( jarName );
         this.pacakgeTextField.setText( packageName );
         this.classTextField.setText( className );
     }
     
-    public void addResourceButtonActionListener( ActionListener listener ) {
-        this.resourceButton.addActionListener(listener);
+    public boolean isValid() {
+        // At least one field should be filled to make it valid
+        if( getResourceName().length() != 0 
+                || getJarName().length() != 0 
+                || getFileName().length() != 0 
+                || getPackageName().length() != 0 
+                || getClassName().length() != 0 ) {
+            return true;
+        } else
+            return false;
+            
     }
     
     public void addClassButtonActionListener( ActionListener listener ) {
@@ -53,7 +67,7 @@ public class MappingPanel extends javax.swing.JPanel {
     }
     
     public JTextField getResourceTextField() {
-        return this.resourceTextField;
+        return (JTextField)resourceComboBox.getEditor().getEditorComponent();
     }
     
     public JTextField getFileTextField() {
@@ -73,7 +87,7 @@ public class MappingPanel extends javax.swing.JPanel {
     }
     
     public String getResourceName() {
-        return this.resourceTextField.getText().trim();
+        return getResourceTextField().getText().trim();
     }
     
     public String getFileName() {
@@ -114,8 +128,7 @@ public class MappingPanel extends javax.swing.JPanel {
         fileButton = new javax.swing.JButton();
         packageButton = new javax.swing.JButton();
         classButton = new javax.swing.JButton();
-        resourceTextField = new javax.swing.JTextField();
-        resourceButton = new javax.swing.JButton();
+        resourceComboBox = new javax.swing.JComboBox();
 
         setLayout(new java.awt.GridBagLayout());
 
@@ -236,17 +249,11 @@ public class MappingPanel extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(5, 12, 0, 12);
         add(classButton, gridBagConstraints);
 
-        resourceTextField.setText(org.openide.util.NbBundle.getMessage(MappingPanel.class, "MappingPanel.resourceTextField.text")); // NOI18N
+        resourceComboBox.setEditable(true);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.insets = new java.awt.Insets(5, 12, 0, 0);
-        add(resourceTextField, gridBagConstraints);
-
-        resourceButton.setText(org.openide.util.NbBundle.getMessage(MappingPanel.class, "MappingPanel.resourceButton.text")); // NOI18N
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(5, 12, 0, 12);
-        add(resourceButton, gridBagConstraints);
+        add(resourceComboBox, gridBagConstraints);
     }// </editor-fold>//GEN-END:initComponents
 
     private void pacakgeTextFieldActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_pacakgeTextFieldActionPerformed
@@ -271,9 +278,8 @@ public class MappingPanel extends javax.swing.JPanel {
     private javax.swing.JTextField pacakgeTextField;
     private javax.swing.JButton packageButton;
     private javax.swing.JLabel packageLabel;
-    private javax.swing.JButton resourceButton;
+    private javax.swing.JComboBox resourceComboBox;
     private javax.swing.JLabel resourceLabel;
-    private javax.swing.JTextField resourceTextField;
     // End of variables declaration//GEN-END:variables
 
     

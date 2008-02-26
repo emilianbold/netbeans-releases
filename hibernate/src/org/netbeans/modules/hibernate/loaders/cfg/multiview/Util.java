@@ -107,6 +107,18 @@ public class Util {
         return new String[0];
     }
     
+    // Gets the list of mapping files from HibernateEnvironment.
+    public static String[] getMappingFilesFromProject(FileObject fileObj) {
+        ArrayList<String> mappingFiles = new ArrayList<String>();
+        org.netbeans.api.project.Project enclosingProject = org.netbeans.api.project.FileOwnerQuery.getOwner(fileObj);
+        org.netbeans.modules.hibernate.service.HibernateEnvironment env = enclosingProject.getLookup().lookup(org.netbeans.modules.hibernate.service.HibernateEnvironment.class);
+        ArrayList<FileObject> mappingFileObjects = env.getAllHibernateMappingFileObjects(enclosingProject);
+        for (FileObject fo : mappingFileObjects) {
+            mappingFiles.add(fo.getPath());
+        }
+        return mappingFiles.toArray(new String[]{});
+    }
+
     
     public static SourceGroup[] getJavaSourceGroups(HibernateCfgDataObject dObj) throws java.io.IOException {
         Project proj = FileOwnerQuery.getOwner(dObj.getPrimaryFile());
