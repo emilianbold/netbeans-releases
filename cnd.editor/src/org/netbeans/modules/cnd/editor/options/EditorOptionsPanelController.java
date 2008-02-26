@@ -58,27 +58,33 @@ public class EditorOptionsPanelController extends OptionsPanelController {
 
     
     public EditorOptionsPanelController(){
+        System.out.println("EditorOptionsPanelController.ctor()");
          panel = new EditorPropertySheet(this);
     }
     
     public void update() {
+        System.out.println("EditorOptionsPanelController.update()");
         changed = false;
 	panel.load();
     }
     
     public void applyChanges() {
+        System.out.println("EditorOptionsPanelController.applyChanges()");
 	panel.store();
     }
     
     public void cancel() {
+        System.out.println("EditorOptionsPanelController.cancel()");
 	panel.cancel();
     }
     
     public boolean isValid() {
+        System.out.println("EditorOptionsPanelController.isValid()");
         return true;
     }
     
     public boolean isChanged() {
+        System.out.println("EditorOptionsPanelController.isChanged()");
 	return changed;
     }
 
