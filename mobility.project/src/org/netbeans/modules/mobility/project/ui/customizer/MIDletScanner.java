@@ -329,7 +329,7 @@ public class MIDletScanner implements Runnable {
                         return;
                     }
                     Set<Modifier> modifiers = xtype.getModifiers();
-                    if (modifiers.contains(Modifier.ABSTRACT) || modifiers.contains(Modifier.PRIVATE) || modifiers.contains(Modifier.PROTECTED)){
+                    if (modifiers.contains(Modifier.ABSTRACT) || !modifiers.contains(Modifier.PUBLIC) ){
                         return;
                     }
                     Types types = control.getTypes();
