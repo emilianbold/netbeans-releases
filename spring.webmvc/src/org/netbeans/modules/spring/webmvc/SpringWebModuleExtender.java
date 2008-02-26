@@ -52,9 +52,7 @@ import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.io.UnsupportedEncodingException;
 import java.math.BigInteger;
-import java.net.URL;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
@@ -68,7 +66,6 @@ import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.libraries.Library;
-import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.modules.j2ee.core.api.support.SourceGroups;
 import org.netbeans.modules.j2ee.dd.api.common.CommonDDBean;
 import org.netbeans.modules.j2ee.dd.api.common.CreateCapability;
@@ -79,6 +76,7 @@ import org.netbeans.modules.j2ee.dd.api.web.Servlet;
 import org.netbeans.modules.j2ee.dd.api.web.ServletMapping;
 import org.netbeans.modules.j2ee.dd.api.web.WebApp;
 import org.netbeans.modules.j2ee.dd.api.web.WelcomeFileList;
+import org.netbeans.modules.spring.api.SpringUtilities;
 import org.netbeans.modules.spring.api.beans.ConfigFileGroup;
 import org.netbeans.modules.spring.api.beans.ConfigFileManager;
 import org.netbeans.modules.spring.api.beans.SpringScope;
@@ -86,7 +84,6 @@ import org.netbeans.modules.spring.webmvc.utils.SpringWebFrameworkUtils;
 import org.netbeans.modules.web.api.webmodule.ExtenderController;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.spi.webmodule.WebModuleExtender;
-import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
@@ -220,8 +217,6 @@ public class SpringWebModuleExtender extends WebModuleExtender implements Change
 
     private class CreateSpringConfig implements FileSystem.AtomicAction {
 
-        public static final String SPRING_CLASS_NAME = "org.springframework.core.SpringVersion"; // NOI18N
-        public static final String JSTL_CLASS_NAME = "javax.servlet.jsp.jstl.core.Config"; // NOI18N
         public static final String CONTEXT_LOADER = "org.springframework.web.context.ContextLoaderListener"; // NOI18N
         public static final String DISPATCHER_SERVLET = "org.springframework.web.servlet.DispatcherServlet"; // NOI18N        
         public static final String ENCODING = "UTF-8"; // NOI18N
@@ -255,15 +250,15 @@ public class SpringWebModuleExtender extends WebModuleExtender implements Change
 
             // ADD JSTL LIBRARY IF ENABLED AND SPRING LIBRARY
             if (includeJstl) {
-                Library jstlLibrary = getLibrary(JSTL_CLASS_NAME);            
+                Library jstlLibrary = SpringUtilities.findJSTLibrary();
                 assert jstlLibrary != null; 
-                Library springLibrary = getLibrary(SPRING_CLASS_NAME);
+                Library springLibrary = SpringUtilities.findSpringLibrary();
                 assert springLibrary != null;
                 Library[] libraries = {springLibrary, jstlLibrary};                
                 addLibrariesToWebModule(libraries, webModule);                
             } else {
                 // JUST ADD SPRING LIBRARY
-                Library springLibrary = getLibrary(SPRING_CLASS_NAME);
+                Library springLibrary = SpringUtilities.findSpringLibrary();
                 assert springLibrary != null;
                 Library[] libraries = {springLibrary};
                 addLibrariesToWebModule(libraries, webModule);
@@ -430,36 +425,5 @@ public class SpringWebModuleExtender extends WebModuleExtender implements Change
             }
             return bean;
         }
-        
-        private boolean containsPath(List<URL> roots, String relativePath) {
-             // workaround for #126307
-            List<URL> validRoots = new ArrayList<URL>();            
-            URL url = null;
-            Iterator it = roots.iterator();
-            while (it.hasNext()) {
-                url = (URL)it.next();
-                if ((url.getPath().startsWith("nbinst://"))) { // NOI18N
-                    validRoots.add(url);
-                }
-            }                        
-            ClassPath cp = ClassPathSupport.createClassPath((validRoots.toArray(new URL[validRoots.size()])));
-            return cp.findResource(relativePath) != null;
-        }
-                        
-        private boolean containsClass(List<URL> libraryContent, String className) {   
-            String classRelativePath = className.replace('.', '/') + ".class"; //NOI18N
-            return containsPath(libraryContent, classRelativePath); //NOI18N
-        }            
-        
-        protected Library getLibrary(String className) {
-            for (Library eachLibrary : LibraryManager.getDefault().getLibraries()) {              
-                if (containsClass(eachLibrary.getContent("classpath"), className)) { // NOI18N
-                    return eachLibrary;
-                }
-            }
-
-            //Library wasn't found
-            return null;
-        }     
     }
 }

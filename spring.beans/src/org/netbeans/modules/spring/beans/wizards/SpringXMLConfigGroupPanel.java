@@ -52,7 +52,7 @@ import org.openide.util.HelpCtx;
 public class SpringXMLConfigGroupPanel implements WizardDescriptor.Panel<WizardDescriptor> {
 
     public static final String CONFIG_FILE_GROUPS = "configFileGroups"; // NOI18N
-    
+
     private SpringXMLConfigGroupVisual component;
     private Project p;
 
