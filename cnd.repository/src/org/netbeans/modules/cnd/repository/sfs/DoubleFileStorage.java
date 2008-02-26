@@ -91,7 +91,8 @@ public class DoubleFileStorage extends FileStorage {
         this(new File(StorageAllocator.getInstance().getUnitStorageName(unitName)));        
     }
     
-    private DoubleFileStorage(final File basePath) throws IOException {
+    // package-local - for test purposes
+    DoubleFileStorage(final File basePath) throws IOException {
         this (basePath, false);
     }
     /**
@@ -100,7 +101,8 @@ public class DoubleFileStorage extends FileStorage {
      * @param basePath  A File representing path to the storage
      * @param createCleanExistent    A flag if the storage should be created, not opened
      */
-    private DoubleFileStorage (final File basePath, boolean createCleanExistent) throws IOException {
+    // package-local - for test purposes
+    DoubleFileStorage (final File basePath, boolean createCleanExistent) throws IOException {
         this.basePath = basePath;
 
         cache_0_dataFile = new IndexedStorageFile(basePath, "cache-0", createCleanExistent); // NOI18N
@@ -218,7 +220,8 @@ public class DoubleFileStorage extends FileStorage {
             int size = chunk.getSize();
             long newOffset = getFileByFlag(activeFlag).getSize();
             getFileByFlag(activeFlag).moveDataFromOtherFile(getFileByFlag(!activeFlag).getDataFile(), chunk.getOffset(), size, newOffset, key);
-            it.remove();
+	    getFileByFlag(!activeFlag).remove(key);
+            // it.remove(); // some of the implementations does not support removal
             cnt++;
             
             if( (timeout > 0) && (cnt % 10 == 0) ) {

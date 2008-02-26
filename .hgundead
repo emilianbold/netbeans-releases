@@ -1,0 +1,19 @@
+# List of files which are supposed to be deleted and should not be resurrected accidentally.
+# See: http://wiki.netbeans.org/HgHowTos#section-HgHowTos-ServerHooksAbortPretxnchangegroup.somethingHookFailed
+
+websvc.saas.api/build/classes/org/netbeans/modules/websvc/saas/Bundle.properties
+websvc.saas.api/build/classes/org/netbeans/modules/websvc/saas/resources/layer.xml
+websvc.saas.ui/build/classes/org/netbeans/modules/websvc/saas/ui/Bundle.properties
+websvc.saas.ui/build/classes/org/netbeans/modules/websvc/saas/ui/resources/ActionIcon.gif
+websvc.saas.ui/build/classes/org/netbeans/modules/websvc/saas/ui/resources/folder-closed.png
+websvc.saas.ui/build/classes/org/netbeans/modules/websvc/saas/ui/resources/folder-open.png
+websvc.saas.ui/build/classes/org/netbeans/modules/websvc/saas/ui/resources/methodicon.png
+websvc.saas.ui/build/classes/org/netbeans/modules/websvc/saas/ui/resources/table_dp_badge.png
+websvc.saas.ui/build/classes/org/netbeans/modules/websvc/saas/ui/resources/wait.gif
+websvc.saas.ui/build/classes/org/netbeans/modules/websvc/saas/ui/resources/warning.png
+websvc.saas.ui/build/classes/org/netbeans/modules/websvc/saas/ui/resources/webservice.png
+websvc.saas.ui/build/classes/org/netbeans/modules/websvc/saas/ui/resources/webservice24.png
+websvc.saas.ui/build/classes/org/netbeans/modules/websvc/saas/ui/resources/webservicegroup.png
+websvc.saas.ui/build/classes/org/netbeans/modules/websvc/saas/ui/resources/wsport-closed.png
+websvc.saas.ui/build/classes/org/netbeans/modules/websvc/saas/ui/resources/wsport-open.png
+websvc.saas.ui/build/classes/org/netbeans/modules/websvc/saas/ui/wizards/Bundle.properties

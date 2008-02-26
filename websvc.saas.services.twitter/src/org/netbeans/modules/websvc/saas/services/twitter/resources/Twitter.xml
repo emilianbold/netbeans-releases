@@ -61,7 +61,7 @@
         <group name="Twitter">
         </group>
 
-        <authentication profile="Templates/WebServices/profile.properties">
+        <authentication profile="SaaSServices/Twitter/profile.properties">
             <http-basic/>
         </authentication>
 

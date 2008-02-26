@@ -26,7 +26,7 @@
                   <Component id="sizePanel" alignment="0" max="32767" attributes="1"/>
                   <Component id="timeLinePanel" alignment="0" max="32767" attributes="1"/>
                   <Component id="exportPanel" alignment="0" max="32767" attributes="1"/>
-                  <Component id="optionsPanel" alignment="0" min="0" pref="221" max="32767" attributes="1"/>
+                  <Component id="optionsPanel" alignment="0" min="0" pref="248" max="32767" attributes="1"/>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
           </Group>
@@ -64,6 +64,14 @@
           </Border>
         </Property>
       </Properties>
+      <AccessibilityProperties>
+        <Property name="AccessibleContext.accessibleName" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/mobility/svgcore/export/Bundle.properties" key="ACCESSIBLE_NAME_sizePanel" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+        <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/mobility/svgcore/export/Bundle.properties" key="ACCESSIBLE_DESCRIPTION_sizePanel" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+      </AccessibilityProperties>
 
       <Layout>
         <DimensionLayout dim="0">
@@ -87,7 +95,7 @@
                           <Component id="keepRatio" min="-2" max="-2" attributes="0"/>
                       </Group>
                   </Group>
-                  <EmptySpace pref="91" max="32767" attributes="0"/>
+                  <EmptySpace pref="104" max="32767" attributes="0"/>
               </Group>
           </Group>
         </DimensionLayout>
@@ -120,6 +128,14 @@
             </Property>
             <Property name="name" type="java.lang.String" value="" noResource="true"/>
           </Properties>
+          <AccessibilityProperties>
+            <Property name="AccessibleContext.accessibleName" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+              <ResourceString bundle="org/netbeans/modules/mobility/svgcore/export/Bundle.properties" key="ACCESSIBLE_NAME_jLabel11" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+            </Property>
+            <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+              <ResourceString bundle="org/netbeans/modules/mobility/svgcore/export/Bundle.properties" key="ACCESSIBLE_DESCRIPTION_jLabel11" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+            </Property>
+          </AccessibilityProperties>
           <AuxValues>
             <AuxValue name="JavaCodeGenerator_VariableLocal" type="java.lang.Boolean" value="true"/>
             <AuxValue name="JavaCodeGenerator_VariableModifier" type="java.lang.Integer" value="0"/>
@@ -128,7 +144,12 @@
         </Component>
         <Component class="javax.swing.JSpinner" name="spinnerWidth">
           <AccessibilityProperties>
-            <Property name="AccessibleContext.accessibleName" type="java.lang.String" value="Image width"/>
+            <Property name="AccessibleContext.accessibleName" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+              <ResourceString bundle="org/netbeans/modules/mobility/svgcore/export/Bundle.properties" key="ACCESSIBLE_NAME_spinnerWidth" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+            </Property>
+            <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+              <ResourceString bundle="org/netbeans/modules/mobility/svgcore/export/Bundle.properties" key="ACCESSIBLE_DESCRIPTION_spinnerWidth" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+            </Property>
           </AccessibilityProperties>
         </Component>
         <Component class="javax.swing.JLabel" name="jLabel12">
@@ -140,6 +161,14 @@
               <ResourceString bundle="org/netbeans/modules/mobility/svgcore/export/Bundle.properties" key="LBL_AnimationImageHeight" replaceFormat="org.openide.util.NbBundle.getBundle({sourceFileName}.class).getString(&quot;{key}&quot;)"/>
             </Property>
           </Properties>
+          <AccessibilityProperties>
+            <Property name="AccessibleContext.accessibleName" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+              <ResourceString bundle="org/netbeans/modules/mobility/svgcore/export/Bundle.properties" key="ACCESSIBLE_NAME_jLabel12" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+            </Property>
+            <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+              <ResourceString bundle="org/netbeans/modules/mobility/svgcore/export/Bundle.properties" key="ACCESSIBLE_DESCRIPTION_jLabel12" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+            </Property>
+          </AccessibilityProperties>
           <AuxValues>
             <AuxValue name="JavaCodeGenerator_VariableLocal" type="java.lang.Boolean" value="true"/>
             <AuxValue name="JavaCodeGenerator_VariableModifier" type="java.lang.Integer" value="0"/>
@@ -161,17 +190,17 @@
               <ResourceString bundle="org/netbeans/modules/mobility/svgcore/export/Bundle.properties" key="LBL_AnimationKeepRatio" replaceFormat="org.openide.util.NbBundle.getBundle({sourceFileName}.class).getString(&quot;{key}&quot;)"/>
             </Property>
             <Property name="toolTipText" type="java.lang.String" value="Images for other configurations are transformed using screen ratio."/>
-            <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
-              <Border info="org.netbeans.modules.form.compat2.border.EmptyBorderInfo">
-                <EmptyBorder bottom="0" left="0" right="0" top="0"/>
-              </Border>
-            </Property>
             <Property name="margin" type="java.awt.Insets" editor="org.netbeans.beaninfo.editors.InsetsEditor">
               <Insets value="[0, 0, 0, 0]"/>
             </Property>
           </Properties>
           <AccessibilityProperties>
-            <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" value=""/>
+            <Property name="AccessibleContext.accessibleName" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+              <ResourceString bundle="org/netbeans/modules/mobility/svgcore/export/Bundle.properties" key="ACCESSIBLE_NAME_keepRatio" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+            </Property>
+            <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+              <ResourceString bundle="org/netbeans/modules/mobility/svgcore/export/Bundle.properties" key="ACCESSIBLE_DESCRIPTION_keepRatio" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+            </Property>
           </AccessibilityProperties>
           <Events>
             <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="keepRatioActionPerformed"/>
@@ -192,6 +221,14 @@
           </Border>
         </Property>
       </Properties>
+      <AccessibilityProperties>
+        <Property name="AccessibleContext.accessibleName" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/mobility/svgcore/export/Bundle.properties" key="ACCESSIBLE_NAME_optionsPanel" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+        <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/mobility/svgcore/export/Bundle.properties" key="ACCESSIBLE_DESCRIPTION_optionsPanel" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+      </AccessibilityProperties>
 
       <Layout>
         <DimensionLayout dim="0">
@@ -201,29 +238,29 @@
                   <Group type="103" groupAlignment="0" attributes="0">
                       <Group type="102" alignment="0" attributes="0">
                           <EmptySpace min="-2" pref="245" max="-2" attributes="0"/>
-                          <Component id="jPanel1" pref="43" max="32767" attributes="0"/>
+                          <Component id="jPanel1" pref="48" max="32767" attributes="0"/>
                       </Group>
                       <Group type="102" alignment="0" attributes="0">
                           <Component id="transparentCheckBox" min="-2" max="-2" attributes="0"/>
-                          <EmptySpace pref="102" max="32767" attributes="0"/>
+                          <EmptySpace pref="119" max="32767" attributes="0"/>
                       </Group>
                       <Group type="102" attributes="0">
                           <Component id="compressionLabel" min="-2" max="-2" attributes="1"/>
-                          <EmptySpace pref="76" max="32767" attributes="0"/>
+                          <EmptySpace pref="89" max="32767" attributes="0"/>
                       </Group>
                       <Group type="102" alignment="0" attributes="0">
                           <Group type="103" groupAlignment="1" max="-2" attributes="0">
                               <Component id="reductionCombo" alignment="0" max="32767" attributes="1"/>
                               <Component id="reductionLabel" alignment="0" max="32767" attributes="1"/>
                           </Group>
-                          <EmptySpace pref="54" max="32767" attributes="0"/>
+                          <EmptySpace pref="62" max="32767" attributes="0"/>
                       </Group>
                       <Group type="102" alignment="1" attributes="0">
                           <Group type="103" groupAlignment="1" attributes="0">
                               <Group type="102" alignment="0" attributes="0">
                                   <Component id="jLabel2" min="-2" max="-2" attributes="0"/>
                                   <EmptySpace type="unrelated" max="-2" attributes="0"/>
-                                  <Component id="formatComboBox" pref="87" max="32767" attributes="0"/>
+                                  <Component id="formatComboBox" pref="88" max="32767" attributes="0"/>
                               </Group>
                               <Component id="progressiveCheckBox" alignment="0" min="-2" max="-2" attributes="0"/>
                               <Group type="102" alignment="1" attributes="0">
@@ -281,6 +318,14 @@
               <ResourceString bundle="org/netbeans/modules/mobility/svgcore/export/Bundle.properties" key="LBL_OptionsFormat" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
             </Property>
           </Properties>
+          <AccessibilityProperties>
+            <Property name="AccessibleContext.accessibleName" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+              <ResourceString bundle="org/netbeans/modules/mobility/svgcore/export/Bundle.properties" key="ACCESSIBLE_NAME_jLabel2" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+            </Property>
+            <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+              <ResourceString bundle="org/netbeans/modules/mobility/svgcore/export/Bundle.properties" key="ACCESSIBLE_DESCRIPTION_jLabel2" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+            </Property>
+          </AccessibilityProperties>
           <AuxValues>
             <AuxValue name="JavaCodeGenerator_VariableLocal" type="java.lang.Boolean" value="true"/>
             <AuxValue name="JavaCodeGenerator_VariableModifier" type="java.lang.Integer" value="0"/>
@@ -294,8 +339,12 @@
             </Property>
           </Properties>
           <AccessibilityProperties>
-            <Property name="AccessibleContext.accessibleName" type="java.lang.String" value="Image format"/>
-            <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" value="Image format"/>
+            <Property name="AccessibleContext.accessibleName" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+              <ResourceString bundle="org/netbeans/modules/mobility/svgcore/export/Bundle.properties" key="ACCESSIBLE_NAME_formatComboBox" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+            </Property>
+            <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+              <ResourceString bundle="org/netbeans/modules/mobility/svgcore/export/Bundle.properties" key="ACCESSIBLE_DESCRIPTION_formatComboBox" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+            </Property>
           </AccessibilityProperties>
           <Events>
             <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="formatComboBoxActionPerformed"/>
@@ -310,17 +359,17 @@
             <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
               <ResourceString bundle="org/netbeans/modules/mobility/svgcore/export/Bundle.properties" key="LBL_OptionsProgressive" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
             </Property>
-            <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
-              <Border info="org.netbeans.modules.form.compat2.border.EmptyBorderInfo">
-                <EmptyBorder bottom="0" left="0" right="0" top="0"/>
-              </Border>
-            </Property>
             <Property name="margin" type="java.awt.Insets" editor="org.netbeans.beaninfo.editors.InsetsEditor">
               <Insets value="[0, 0, 0, 0]"/>
             </Property>
           </Properties>
           <AccessibilityProperties>
-            <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" value="Progressive display"/>
+            <Property name="AccessibleContext.accessibleName" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+              <ResourceString bundle="org/netbeans/modules/mobility/svgcore/export/Bundle.properties" key="ACCESSIBLE_NAME_progressiveCheckBox" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+            </Property>
+            <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+              <ResourceString bundle="org/netbeans/modules/mobility/svgcore/export/Bundle.properties" key="ACCESSIBLE_DESCRIPTION_progressiveCheckBox" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+            </Property>
           </AccessibilityProperties>
           <AuxValues>
             <AuxValue name="generateMnemonicsCode" type="java.lang.Boolean" value="true"/>
@@ -335,6 +384,14 @@
               <ResourceString bundle="org/netbeans/modules/mobility/svgcore/export/Bundle.properties" key="LBL_OptionsQuality" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
             </Property>
           </Properties>
+          <AccessibilityProperties>
+            <Property name="AccessibleContext.accessibleName" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+              <ResourceString bundle="org/netbeans/modules/mobility/svgcore/export/Bundle.properties" key="ACCESSIBLE_NAME_compressionLabel" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+            </Property>
+            <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+              <ResourceString bundle="org/netbeans/modules/mobility/svgcore/export/Bundle.properties" key="ACCESSIBLE_DESCRIPTION_compressionLabel" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+            </Property>
+          </AccessibilityProperties>
           <AuxValues>
             <AuxValue name="generateMnemonicsCode" type="java.lang.Boolean" value="true"/>
           </AuxValues>
@@ -346,7 +403,9 @@
             </Property>
           </Properties>
           <AccessibilityProperties>
-            <Property name="AccessibleContext.accessibleName" type="java.lang.String" value="Compression level"/>
+            <Property name="AccessibleContext.accessibleName" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+              <ResourceString bundle="org/netbeans/modules/mobility/svgcore/export/Bundle.properties" key="ACCESSIBLE_NAME_compressionLevelCombo" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+            </Property>
             <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" value="Compression level"/>
           </AccessibilityProperties>
           <AuxValues>
@@ -362,6 +421,14 @@
               <ResourceString bundle="org/netbeans/modules/mobility/svgcore/export/Bundle.properties" key="LBL_OptionsRate" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
             </Property>
           </Properties>
+          <AccessibilityProperties>
+            <Property name="AccessibleContext.accessibleName" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+              <ResourceString bundle="org/netbeans/modules/mobility/svgcore/export/Bundle.properties" key="ACCESSIBLE_NAME_compressionQualityLevel" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+            </Property>
+            <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+              <ResourceString bundle="org/netbeans/modules/mobility/svgcore/export/Bundle.properties" key="ACCESSIBLE_DESCRIPTION_compressionQualityLevel" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+            </Property>
+          </AccessibilityProperties>
           <AuxValues>
             <AuxValue name="generateMnemonicsCode" type="java.lang.Boolean" value="true"/>
           </AuxValues>
@@ -371,17 +438,17 @@
             <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
               <ResourceString bundle="org/netbeans/modules/mobility/svgcore/export/Bundle.properties" key="LBL_OptionsTransparent" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
             </Property>
-            <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
-              <Border info="org.netbeans.modules.form.compat2.border.EmptyBorderInfo">
-                <EmptyBorder bottom="0" left="0" right="0" top="0"/>
-              </Border>
-            </Property>
             <Property name="margin" type="java.awt.Insets" editor="org.netbeans.beaninfo.editors.InsetsEditor">
               <Insets value="[0, 0, 0, 0]"/>
             </Property>
           </Properties>
           <AccessibilityProperties>
-            <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" value="Transparent background"/>
+            <Property name="AccessibleContext.accessibleName" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+              <ResourceString bundle="org/netbeans/modules/mobility/svgcore/export/Bundle.properties" key="ACCESSIBLE_NAME_transparentCheckBox" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+            </Property>
+            <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+              <ResourceString bundle="org/netbeans/modules/mobility/svgcore/export/Bundle.properties" key="ACCESSIBLE_DESCRIPTION_transparentCheckBox" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+            </Property>
           </AccessibilityProperties>
           <Events>
             <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="transparencyChanged"/>
@@ -392,7 +459,12 @@
         </Component>
         <Component class="javax.swing.JSpinner" name="compressionQualitySpinner">
           <AccessibilityProperties>
-            <Property name="AccessibleContext.accessibleName" type="java.lang.String" value="Compression quality"/>
+            <Property name="AccessibleContext.accessibleName" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+              <ResourceString bundle="org/netbeans/modules/mobility/svgcore/export/Bundle.properties" key="ACCESSIBLE_NAME_compressionQualitySpinner" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+            </Property>
+            <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+              <ResourceString bundle="org/netbeans/modules/mobility/svgcore/export/Bundle.properties" key="ACCESSIBLE_DESCRIPTION_compressionQualitySpinner" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+            </Property>
           </AccessibilityProperties>
         </Component>
         <Component class="javax.swing.JLabel" name="reductionLabel">
@@ -405,8 +477,12 @@
             </Property>
           </Properties>
           <AccessibilityProperties>
-            <Property name="AccessibleContext.accessibleName" type="java.lang.String" value="Color reduction method:"/>
-            <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" value="Color reduction method"/>
+            <Property name="AccessibleContext.accessibleName" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+              <ResourceString bundle="org/netbeans/modules/mobility/svgcore/export/Bundle.properties" key="ACCESSIBLE_NAME_reductionLabel" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+            </Property>
+            <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+              <ResourceString bundle="org/netbeans/modules/mobility/svgcore/export/Bundle.properties" key="ACCESSIBLE_DESCRIPTION_reductionLabel" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+            </Property>
           </AccessibilityProperties>
           <AuxValues>
             <AuxValue name="generateMnemonicsCode" type="java.lang.Boolean" value="true"/>
@@ -419,7 +495,12 @@
             </Property>
           </Properties>
           <AccessibilityProperties>
-            <Property name="AccessibleContext.accessibleName" type="java.lang.String" value="Color reduction method"/>
+            <Property name="AccessibleContext.accessibleName" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+              <ResourceString bundle="org/netbeans/modules/mobility/svgcore/export/Bundle.properties" key="ACCESSIBLE_NAME_reductionCombo" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+            </Property>
+            <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+              <ResourceString bundle="org/netbeans/modules/mobility/svgcore/export/Bundle.properties" key="ACCESSIBLE_DESCRIPTION_reductionCombo" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+            </Property>
           </AccessibilityProperties>
           <Events>
             <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="colorReductionChanged"/>
@@ -440,6 +521,14 @@
           </Border>
         </Property>
       </Properties>
+      <AccessibilityProperties>
+        <Property name="AccessibleContext.accessibleName" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/mobility/svgcore/export/Bundle.properties" key="ACCESSIBLE_NAME_timeLinePanel" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+        <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/mobility/svgcore/export/Bundle.properties" key="ACCESSIBLE_DESCRIPTION_timeLinePanel" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+      </AccessibilityProperties>
 
       <Layout>
         <DimensionLayout dim="0">
@@ -452,7 +541,7 @@
                           <EmptySpace max="-2" attributes="0"/>
                           <Component id="currentTimeSpinner" min="-2" pref="56" max="-2" attributes="0"/>
                       </Group>
-                      <Component id="animationSlider" alignment="0" pref="181" max="32767" attributes="0"/>
+                      <Component id="animationSlider" alignment="0" pref="202" max="32767" attributes="0"/>
                   </Group>
                   <EmptySpace max="-2" attributes="0"/>
               </Group>
@@ -473,6 +562,14 @@
       </Layout>
       <SubComponents>
         <Component class="javax.swing.JSpinner" name="currentTimeSpinner">
+          <AccessibilityProperties>
+            <Property name="AccessibleContext.accessibleName" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+              <ResourceString bundle="org/netbeans/modules/mobility/svgcore/export/Bundle.properties" key="ACCESSIBLE_NAME_currentTimeSpinner" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+            </Property>
+            <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+              <ResourceString bundle="org/netbeans/modules/mobility/svgcore/export/Bundle.properties" key="ACCESSIBLE_DESCRIPTION_startTimeLabel" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+            </Property>
+          </AccessibilityProperties>
           <AuxValues>
             <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value="new JSpinner( new SpinnerNumberModel( 0.0, 0.0, 30.0, 1.0))"/>
           </AuxValues>
@@ -486,6 +583,14 @@
               <ResourceString bundle="org/netbeans/modules/mobility/svgcore/export/Bundle.properties" key="LBL_AnimationTime" replaceFormat="org.openide.util.NbBundle.getBundle({sourceFileName}.class).getString(&quot;{key}&quot;)"/>
             </Property>
           </Properties>
+          <AccessibilityProperties>
+            <Property name="AccessibleContext.accessibleName" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+              <ResourceString bundle="org/netbeans/modules/mobility/svgcore/export/Bundle.properties" key="ACCESSIBLE_NAME_startTimeLabel" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+            </Property>
+            <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+              <ResourceString bundle="org/netbeans/modules/mobility/svgcore/export/Bundle.properties" key="ACCESSIBLE_DESCRIPTION_startTimeLabel" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+            </Property>
+          </AccessibilityProperties>
           <AuxValues>
             <AuxValue name="JavaCodeGenerator_VariableLocal" type="java.lang.Boolean" value="true"/>
             <AuxValue name="JavaCodeGenerator_VariableModifier" type="java.lang.Integer" value="0"/>
@@ -494,8 +599,12 @@
         </Component>
         <Component class="javax.swing.JSlider" name="animationSlider">
           <AccessibilityProperties>
-            <Property name="AccessibleContext.accessibleName" type="java.lang.String" value="Current time selector"/>
-            <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" value="Current time selector"/>
+            <Property name="AccessibleContext.accessibleName" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+              <ResourceString bundle="org/netbeans/modules/mobility/svgcore/export/Bundle.properties" key="ACCESSIBLE_NAME_animationSlider" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+            </Property>
+            <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+              <ResourceString bundle="org/netbeans/modules/mobility/svgcore/export/Bundle.properties" key="ACCESSIBLE_DESCRIPTION_animationSlider" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+            </Property>
           </AccessibilityProperties>
         </Component>
       </SubComponents>
@@ -510,6 +619,14 @@
           </Border>
         </Property>
       </Properties>
+      <AccessibilityProperties>
+        <Property name="AccessibleContext.accessibleName" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/mobility/svgcore/export/Bundle.properties" key="ACCESSIBLE_NAME_exportPanel" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+        <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/mobility/svgcore/export/Bundle.properties" key="ACCESSIBLE_DESCRIPTION_exportPanel" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+      </AccessibilityProperties>
 
       <Layout>
         <DimensionLayout dim="0">
@@ -544,15 +661,18 @@
             <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
               <ResourceString bundle="org/netbeans/modules/mobility/svgcore/export/Bundle.properties" key="LBL_AnimationOnlyActiveConfiguration" replaceFormat="org.openide.util.NbBundle.getBundle({sourceFileName}.class).getString(&quot;{key}&quot;)"/>
             </Property>
-            <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
-              <Border info="org.netbeans.modules.form.compat2.border.EmptyBorderInfo">
-                <EmptyBorder bottom="0" left="0" right="0" top="0"/>
-              </Border>
-            </Property>
             <Property name="margin" type="java.awt.Insets" editor="org.netbeans.beaninfo.editors.InsetsEditor">
               <Insets value="[0, 0, 0, 0]"/>
             </Property>
           </Properties>
+          <AccessibilityProperties>
+            <Property name="AccessibleContext.accessibleName" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+              <ResourceString bundle="org/netbeans/modules/mobility/svgcore/export/Bundle.properties" key="ACCESSIBLE_NAME_radioExportCurrent" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+            </Property>
+            <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+              <ResourceString bundle="org/netbeans/modules/mobility/svgcore/export/Bundle.properties" key="ACCESSIBLE_DESCRIPTION_radioExportCurrent" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+            </Property>
+          </AccessibilityProperties>
           <AuxValues>
             <AuxValue name="generateMnemonicsCode" type="java.lang.Boolean" value="true"/>
           </AuxValues>
@@ -565,15 +685,18 @@
             <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
               <ResourceString bundle="org/netbeans/modules/mobility/svgcore/export/Bundle.properties" key="LBL_AnimationAllConfigurations" replaceFormat="org.openide.util.NbBundle.getBundle({sourceFileName}.class).getString(&quot;{key}&quot;)"/>
             </Property>
-            <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
-              <Border info="org.netbeans.modules.form.compat2.border.EmptyBorderInfo">
-                <EmptyBorder bottom="0" left="0" right="0" top="0"/>
-              </Border>
-            </Property>
             <Property name="margin" type="java.awt.Insets" editor="org.netbeans.beaninfo.editors.InsetsEditor">
               <Insets value="[0, 0, 0, 0]"/>
             </Property>
           </Properties>
+          <AccessibilityProperties>
+            <Property name="AccessibleContext.accessibleName" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+              <ResourceString bundle="org/netbeans/modules/mobility/svgcore/export/Bundle.properties" key="ACCESSIBLE_NAME_radioExportAll" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+            </Property>
+            <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+              <ResourceString bundle="org/netbeans/modules/mobility/svgcore/export/Bundle.properties" key="ACCESSIBLE_DESCRIPTION_radioExportAll" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+            </Property>
+          </AccessibilityProperties>
           <AuxValues>
             <AuxValue name="generateMnemonicsCode" type="java.lang.Boolean" value="true"/>
           </AuxValues>
@@ -584,12 +707,20 @@
       <Properties>
         <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
           <Border info="org.netbeans.modules.form.compat2.border.TitledBorderInfo">
-            <TitledBorder title="Preview">
+            <TitledBorder title="&amp;Preview">
               <ResourceString PropertyName="titleX" bundle="org/netbeans/modules/mobility/svgcore/export/Bundle.properties" key="LBL_PreviewTitle" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
             </TitledBorder>
           </Border>
         </Property>
       </Properties>
+      <AccessibilityProperties>
+        <Property name="AccessibleContext.accessibleName" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/mobility/svgcore/export/Bundle.properties" key="ACCESSIBLE_NAME_jPanel3" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+        <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/mobility/svgcore/export/Bundle.properties" key="ACCESSIBLE_DESCRIPTION_jpanel3" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+      </AccessibilityProperties>
 
       <Layout>
         <DimensionLayout dim="0">
@@ -597,7 +728,7 @@
               <Group type="102" alignment="0" attributes="0">
                   <EmptySpace max="-2" attributes="0"/>
                   <Group type="103" groupAlignment="0" attributes="0">
-                      <Component id="imageHolder" alignment="1" pref="332" max="32767" attributes="1"/>
+                      <Component id="imageHolder" alignment="1" pref="371" max="32767" attributes="1"/>
                       <Component id="jPanel4" alignment="1" max="32767" attributes="1"/>
                   </Group>
                   <EmptySpace max="-2" attributes="0"/>
@@ -624,6 +755,14 @@
               </Border>
             </Property>
           </Properties>
+          <AccessibilityProperties>
+            <Property name="AccessibleContext.accessibleName" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+              <ResourceString bundle="org/netbeans/modules/mobility/svgcore/export/Bundle.properties" key="ACCESSIBLE_NAME_imageHolder" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+            </Property>
+            <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+              <ResourceString bundle="org/netbeans/modules/mobility/svgcore/export/Bundle.properties" key="ACCESSIBLE_DESCRIPTION_imageHolder" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+            </Property>
+          </AccessibilityProperties>
 
           <Layout class="org.netbeans.modules.form.compat2.layouts.support.JScrollPaneSupportLayout"/>
         </Container>
@@ -649,7 +788,7 @@
                       <EmptySpace type="unrelated" max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="0" attributes="0">
                           <Component id="previewSizeText" alignment="0" min="-2" pref="82" max="-2" attributes="0"/>
-                          <Component id="previewFileText" pref="251" max="32767" attributes="0"/>
+                          <Component id="previewFileText" pref="269" max="32767" attributes="0"/>
                           <Component id="previewFormatText" alignment="0" min="-2" pref="64" max="-2" attributes="0"/>
                       </Group>
                       <EmptySpace max="-2" attributes="0"/>
@@ -689,6 +828,14 @@
                   <ResourceString bundle="org/netbeans/modules/mobility/svgcore/export/Bundle.properties" key="LBL_PreviewFormat" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
                 </Property>
               </Properties>
+              <AccessibilityProperties>
+                <Property name="AccessibleContext.accessibleName" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+                  <ResourceString bundle="org/netbeans/modules/mobility/svgcore/export/Bundle.properties" key="ACCESSIBLE_NAME_previewFormatLabel" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+                </Property>
+                <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+                  <ResourceString bundle="org/netbeans/modules/mobility/svgcore/export/Bundle.properties" key="ACCESSIBLE_DESCRIPTION_previewFormatLabel" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+                </Property>
+              </AccessibilityProperties>
               <AuxValues>
                 <AuxValue name="JavaCodeGenerator_VariableLocal" type="java.lang.Boolean" value="true"/>
                 <AuxValue name="JavaCodeGenerator_VariableModifier" type="java.lang.Integer" value="0"/>
@@ -703,6 +850,14 @@
                   <ResourceString bundle="org/netbeans/modules/mobility/svgcore/export/Bundle.properties" key="LBL_PreviewSize" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
                 </Property>
               </Properties>
+              <AccessibilityProperties>
+                <Property name="AccessibleContext.accessibleName" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+                  <ResourceString bundle="org/netbeans/modules/mobility/svgcore/export/Bundle.properties" key="ACCESSIBLE_NAME_previewSizeLabel" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+                </Property>
+                <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+                  <ResourceString bundle="org/netbeans/modules/mobility/svgcore/export/Bundle.properties" key="ACCESSIBLE_DESCRIPTION_previewSizeLabel" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+                </Property>
+              </AccessibilityProperties>
               <AuxValues>
                 <AuxValue name="JavaCodeGenerator_VariableLocal" type="java.lang.Boolean" value="true"/>
                 <AuxValue name="JavaCodeGenerator_VariableModifier" type="java.lang.Integer" value="0"/>
@@ -717,6 +872,14 @@
                   <ResourceString bundle="org/netbeans/modules/mobility/svgcore/export/Bundle.properties" key="LBL_PreviewFile" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
                 </Property>
               </Properties>
+              <AccessibilityProperties>
+                <Property name="AccessibleContext.accessibleName" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+                  <ResourceString bundle="org/netbeans/modules/mobility/svgcore/export/Bundle.properties" key="ACCESSIBLE_NAME_previewFileLabel" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+                </Property>
+                <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+                  <ResourceString bundle="org/netbeans/modules/mobility/svgcore/export/Bundle.properties" key="ACCESSIBLE_DESCRIPTION_previewFileLabel" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+                </Property>
+              </AccessibilityProperties>
               <AuxValues>
                 <AuxValue name="JavaCodeGenerator_VariableLocal" type="java.lang.Boolean" value="true"/>
                 <AuxValue name="JavaCodeGenerator_VariableModifier" type="java.lang.Integer" value="0"/>
@@ -728,7 +891,12 @@
                 <Property name="text" type="java.lang.String" value="JPEG"/>
               </Properties>
               <AccessibilityProperties>
-                <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" value="File format"/>
+                <Property name="AccessibleContext.accessibleName" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+                  <ResourceString bundle="org/netbeans/modules/mobility/svgcore/export/Bundle.properties" key="ACCESSIBLE_NAME_previewFormatText" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+                </Property>
+                <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+                  <ResourceString bundle="org/netbeans/modules/mobility/svgcore/export/Bundle.properties" key="ACCESSIBLE_DESCRIPTION_previewFormatLabel" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+                </Property>
               </AccessibilityProperties>
             </Component>
             <Component class="javax.swing.JTextField" name="previewSizeText">
@@ -737,7 +905,12 @@
                 <Property name="text" type="java.lang.String" value="200 KBytes"/>
               </Properties>
               <AccessibilityProperties>
-                <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" value="File size"/>
+                <Property name="AccessibleContext.accessibleName" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+                  <ResourceString bundle="org/netbeans/modules/mobility/svgcore/export/Bundle.properties" key="ACCESSIBLE_NAME_previewSizeText" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+                </Property>
+                <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+                  <ResourceString bundle="org/netbeans/modules/mobility/svgcore/export/Bundle.properties" key="ACCESSIBLE_DESCRIPTION_previewSizeText" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+                </Property>
               </AccessibilityProperties>
             </Component>
             <Component class="javax.swing.JTextField" name="previewFileText">
@@ -746,7 +919,12 @@
                 <Property name="text" type="java.lang.String" value="C:\Program Files\about.svg"/>
               </Properties>
               <AccessibilityProperties>
-                <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" value="File location"/>
+                <Property name="AccessibleContext.accessibleName" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+                  <ResourceString bundle="org/netbeans/modules/mobility/svgcore/export/Bundle.properties" key="ACCESSIBLE_NAME_previewFileText" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+                </Property>
+                <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+                  <ResourceString bundle="org/netbeans/modules/mobility/svgcore/export/Bundle.properties" key="ACCESSIBLE_DESCRIPTION_previewFileText" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+                </Property>
               </AccessibilityProperties>
             </Component>
           </SubComponents>

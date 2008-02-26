@@ -48,9 +48,7 @@ import java.util.Set;
 import org.netbeans.api.ruby.platform.RubyPlatform;
 import org.netbeans.api.ruby.platform.RubyPlatformManager;
 import org.netbeans.api.ruby.platform.RubyTestBase;
-import org.netbeans.api.ruby.platform.RubyTestBase.IFL;
 import org.netbeans.api.ruby.platform.TestUtil;
-import org.netbeans.junit.MockServices;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Utilities;
@@ -59,7 +57,6 @@ public class GemManagerTest extends RubyTestBase {
 
     public GemManagerTest(final String testName) {
         super(testName);
-        MockServices.setServices(IFL.class);
         TestUtil.getXTestJRubyHome();
     }
 
@@ -110,7 +107,7 @@ public class GemManagerTest extends RubyTestBase {
     }
     
     public void testGetRepositories() throws Exception {
-        final RubyPlatform platform = RubyPlatformManager.getDefaultPlatform();
+        RubyPlatform platform = RubyPlatformManager.getDefaultPlatform();
         GemManager gemManager = platform.getGemManager();
         Set<? extends File> paths = gemManager.getRepositories();
         assertEquals("one path element", 1, paths.size());
@@ -119,7 +116,7 @@ public class GemManagerTest extends RubyTestBase {
     }
     
     public void testAddRemoveRepository() throws Exception {
-        final RubyPlatform platform = RubyPlatformManager.getDefaultPlatform();
+        RubyPlatform platform = RubyPlatformManager.getDefaultPlatform();
         GemManager gemManager = platform.getGemManager();
         File dummyRepo = new File(getWorkDirPath(), "/a");
         gemManager.addGemPath(dummyRepo);
@@ -131,7 +128,7 @@ public class GemManagerTest extends RubyTestBase {
     }
     
     public void testAddTheSameRepositoryTwice() {
-        final RubyPlatform platform = RubyPlatformManager.getDefaultPlatform();
+        RubyPlatform platform = RubyPlatformManager.getDefaultPlatform();
         GemManager gemManager = platform.getGemManager();
         File dummyRepo = new File(getWorkDirPath(), "/a");
         assertTrue("successfuly added", gemManager.addGemPath(dummyRepo));
@@ -151,7 +148,7 @@ public class GemManagerTest extends RubyTestBase {
     }
     
     public void testGetVersionForPlatform() throws IOException {
-        final RubyPlatform platform = RubyPlatformManager.getDefaultPlatform();
+        RubyPlatform platform = RubyPlatformManager.getDefaultPlatform();
         GemManager gemManager = platform.getGemManager();
         RubyPlatform jruby = RubyPlatformManager.getDefaultPlatform();
         FileObject gemRepo = FileUtil.toFileObject(getWorkDir()).createFolder("gem-repo");
@@ -233,7 +230,7 @@ public class GemManagerTest extends RubyTestBase {
     }
     
     public void testInstallLocal() throws IOException {
-        final RubyPlatform platform = RubyPlatformManager.getDefaultPlatform();
+        RubyPlatform platform = RubyPlatformManager.getDefaultPlatform();
         GemManager gemManager = platform.getGemManager();
         RubyPlatform jruby = RubyPlatformManager.getDefaultPlatform();
         FileObject gemRepo = FileUtil.toFileObject(getWorkDir()).createFolder("gem-repo");

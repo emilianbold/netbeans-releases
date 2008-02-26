@@ -149,7 +149,7 @@ public class AddSubItemAction extends NodeAction {
             });
             for (PaletteItem item : PaletteUtils.getAllItems()) {
                 Class clazz = item.getComponentClass();
-                if (!classes.contains(clazz) &&
+                if ((clazz != null) && !classes.contains(clazz) &&
                         (JMenuItem.class.isAssignableFrom(clazz) || JSeparator.class.isAssignableFrom(clazz))) {
                     classes.add(clazz);
                     items.add(item);

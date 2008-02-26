@@ -44,7 +44,7 @@
 <!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.1//EN" "http://www.netbeans.org/dtds/filesystem-1_1.dtd">
 <filesystem>
     
-    <folder name="SaasServices">
+    <folder name="SaaSServices">
         <folder name="Zillow">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.websvc.saas.services.zillow.Bundle"/>
             <file name="profile.properties" url="/org/netbeans/modules/websvc/saas/services/zillow/resources/profile.properties"/>
