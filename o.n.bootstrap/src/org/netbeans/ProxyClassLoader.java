@@ -75,7 +75,7 @@ public class ProxyClassLoader extends ClassLoader implements Util.PackageAccessi
 
     private static final Logger LOGGER = Logger.getLogger(ProxyClassLoader.class.getName());
     private static final boolean LOG_LOADING;
-    private static final ClassLoader TOP_CL = MainImpl.class.getClassLoader();
+    private static final ClassLoader TOP_CL = ProxyClassLoader.class.getClassLoader();
 
     static {
         boolean prop1 = System.getProperty("org.netbeans.ProxyClassLoader.level") != null;
