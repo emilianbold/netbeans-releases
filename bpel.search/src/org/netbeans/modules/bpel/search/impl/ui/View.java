@@ -58,15 +58,6 @@ public final class View extends TopComponent {
     setIcon(icon(Util.class, "find").getImage()); // NOI18N
     setLayout(new GridBagLayout());
     setFocusable(true);
-
-    GridBagConstraints c = new GridBagConstraints();
-    c.anchor = GridBagConstraints.NORTHWEST;
-    c.fill = GridBagConstraints.BOTH;
-
-    c.weightx = 1.0;
-    c.weighty = 1.0;
-    myTabbed = new Tabbed();
-    add(myTabbed, c);
   }
 
   void show(Tree tree) {
@@ -76,9 +67,24 @@ public final class View extends TopComponent {
   }
 
   private void addTab(Tree tree) {
+    createTabbed();
     myTabbed.addTree(tree);
     revalidate();
     repaint();
+  }
+
+  private void createTabbed() {
+    if (myTabbed != null) {
+      return;
+    }
+    GridBagConstraints c = new GridBagConstraints();
+    c.anchor = GridBagConstraints.NORTHWEST;
+    c.fill = GridBagConstraints.BOTH;
+
+    c.weightx = 1.0;
+    c.weighty = 1.0;
+    myTabbed = new Tabbed();
+    add(myTabbed, c);
   }
 
   @Override

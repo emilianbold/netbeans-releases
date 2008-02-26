@@ -189,28 +189,30 @@ public final class ElementOpen {
         
         
         JavaSource js = JavaSource.forFileObject(fo);
-        js.runUserActionTask(new Task<CompilationController>() {
-            public void run(CompilationController info) {
-                try {
-                    info.toPhase(JavaSource.Phase.RESOLVED);
-                } catch (IOException ioe) {
-                    Exceptions.printStackTrace(ioe);
-                }
-                Element el = handle.resolve(info);                
-                if (el == null)
-                    throw new IllegalArgumentException();
-                
-                FindDeclarationVisitor v = new FindDeclarationVisitor(el, info);
-                
-                CompilationUnitTree cu = info.getCompilationUnit();
+        if (js != null) {
+            js.runUserActionTask(new Task<CompilationController>() {
+                public void run(CompilationController info) {
+                    try {
+                        info.toPhase(JavaSource.Phase.RESOLVED);
+                    } catch (IOException ioe) {
+                        Exceptions.printStackTrace(ioe);
+                    }
+                    Element el = handle.resolve(info);                
+                    if (el == null)
+                        throw new IllegalArgumentException();
 
-                v.scan(cu, null);                
-                Tree elTree = v.declTree;
-                
-                if (elTree != null)
-                    result[0] = (int)info.getTrees().getSourcePositions().getStartPosition(cu, elTree);
-            }
-        },true);
+                    FindDeclarationVisitor v = new FindDeclarationVisitor(el, info);
+
+                    CompilationUnitTree cu = info.getCompilationUnit();
+
+                    v.scan(cu, null);                
+                    Tree elTree = v.declTree;
+
+                    if (elTree != null)
+                        result[0] = (int)info.getTrees().getSourcePositions().getStartPosition(cu, elTree);
+                }
+            },true);
+        }
         return result[0];
     }
     
