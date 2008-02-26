@@ -42,15 +42,12 @@
 package org.netbeans.modules.cnd.debugger.gdb.models;
 
 import javax.swing.Action;
-import javax.swing.SwingUtilities;
 import org.netbeans.spi.debugger.ContextProvider;
 import org.netbeans.spi.viewmodel.Models;
 import org.netbeans.spi.viewmodel.NodeActionsProvider;
 import org.netbeans.spi.viewmodel.TreeModel;
 import org.netbeans.spi.viewmodel.ModelListener;
 import org.netbeans.spi.viewmodel.UnknownTypeException;
-import org.netbeans.modules.cnd.debugger.gdb.CallStackFrame;
-import org.netbeans.modules.cnd.debugger.gdb.EditorContextBridge;
 import org.netbeans.modules.cnd.debugger.gdb.Field;
 import org.netbeans.modules.cnd.debugger.gdb.GdbDebugger;
 import org.netbeans.modules.cnd.debugger.gdb.Variable;
@@ -134,13 +131,6 @@ public class VariablesActionsProvider implements NodeActionsProvider {
     }
     
     public void goToSource( Field variable ) {
-        final CallStackFrame frame = debugger.getCurrentCallStackFrame();
-        if (frame != null) {
-            SwingUtilities.invokeLater(new Runnable() {
-                public void run() {
-                    EditorContextBridge.showSource(frame);
-                }
-            });
-        }
+        debugger.showCurrentSource();
     }
 }
