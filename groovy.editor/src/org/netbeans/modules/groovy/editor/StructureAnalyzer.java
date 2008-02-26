@@ -40,6 +40,7 @@
  */
 package org.netbeans.modules.groovy.editor;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -71,6 +72,10 @@ import org.netbeans.modules.groovy.editor.parser.GroovyParserResult;
 import org.openide.util.Exceptions;
 import org.netbeans.modules.groovy.editor.lexer.LexUtilities;
 import org.netbeans.modules.groovy.editor.lexer.GroovyTokenId;
+import java.util.Collection;
+import java.util.Iterator;
+import org.netbeans.modules.gsf.api.Modifier;
+import org.netbeans.modules.gsf.api.ElementHandle;
 
 /**
  * @author Martin Adamek
@@ -80,13 +85,29 @@ public class StructureAnalyzer implements StructureScanner {
     private List<AstElement> structure;
     private Map<AstClassElement, Set<FieldNode>> fields;
     private List<AstMethodElement> methods;
+    
+    private HtmlFormatter formatter;
+    private GroovyParserResult result;  
+    private CompilationInfo info;
 
     public AnalysisResult analyze(GroovyParserResult result) {
         return scan(result);
     }
 
     public List<? extends StructureItem> scan(CompilationInfo info, HtmlFormatter formatter) {
-        return Collections.<StructureItem>emptyList();
+        this.result = AstUtilities.getParseResult(info);
+        this.info = info;
+        this.formatter = formatter;
+        
+        AnalysisResult ar = result.getStructure();
+        List<?extends AstElement> elements = ar.getElements();
+        List<StructureItem> itemList = new ArrayList<StructureItem>(elements.size());
+        
+        for (AstElement e : elements) {
+            itemList.add(new GroovyStructureItem(e, info));
+        }
+
+        return itemList;
     }
 
     private AnalysisResult scan(GroovyParserResult result) {
@@ -333,6 +354,166 @@ public class StructureAnalyzer implements StructureScanner {
             this.elements = elements;
         }
         
+    }
+    
+    private class GroovyStructureItem implements StructureItem {
+        AstElement node;
+        ElementKind kind;
+        CompilationInfo info;
+        BaseDocument doc;
+
+        private GroovyStructureItem(AstElement node, CompilationInfo info) {
+            this.node = node;
+            this.kind = node.getKind();
+            this.info = info;
+            
+            try {
+                this.doc = (BaseDocument) info.getDocument();
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        }
+
+        public String getName() {
+            return node.getName();
+        }
+
+        public String getHtml() {
+            formatter.reset();
+            formatter.appendText(node.getName());
+
+            if ((kind == ElementKind.METHOD) || (kind == ElementKind.CONSTRUCTOR)) {
+                // Append parameters
+                AstMethodElement jn = (AstMethodElement)node;
+
+                Collection<String> parameters = jn.getParameters();
+
+                if ((parameters != null) && (parameters.size() > 0)) {
+                    formatter.appendHtml("(");
+                    formatter.parameters(true);
+
+                    for (Iterator<String> it = parameters.iterator(); it.hasNext();) {
+                        String ve = it.next();
+                        // TODO - if I know types, list the type here instead. For now, just use the parameter name instead
+                        formatter.appendText(ve);
+
+                        if (it.hasNext()) {
+                            formatter.appendHtml(", ");
+                        }
+                    }
+
+                    formatter.parameters(false);
+                    formatter.appendHtml(")");
+                }
+            }
+
+            return formatter.getText();
+        }
+
+        public ElementHandle getElementHandle() {
+            // FIXME: our AstElement is not an ElementHandle (yet)
+            // return node;
+            return null;
+        }
+
+        public ElementKind getKind() {
+            return kind;
+        }
+
+        public Set<Modifier> getModifiers() {
+            return node.getModifiers();
+        }
+
+        public boolean isLeaf() {
+            switch (kind) {
+            case ATTRIBUTE:
+            case CONSTANT:
+            case CONSTRUCTOR:
+            case METHOD:
+            case FIELD:
+            case KEYWORD:
+            case VARIABLE:
+            case OTHER:
+                return true;
+
+            case MODULE:
+            case CLASS:
+                return false;
+
+            default:
+                throw new RuntimeException("Unhandled kind: " + kind);
+            }
+        }
+
+        public List<?extends StructureItem> getNestedItems() {
+            List<AstElement> nested = node.getChildren();
+
+            if ((nested != null) && (nested.size() > 0)) {
+                List<GroovyStructureItem> children = new ArrayList<GroovyStructureItem>(nested.size());
+
+                // FIXME: the same old problem: AstElement != ElementHandle.
+                
+                for (AstElement co : nested) {
+                    children.add(new GroovyStructureItem(co, info));
+                }
+
+                return children;
+            } else {
+                return Collections.emptyList();
+            }
+        }
+
+        public long getPosition() {
+            OffsetRange range = AstUtilities.getRange(node.getNode(), doc);
+            return (long) range.getStart();
+        }
+
+        public long getEndPosition() {
+            OffsetRange range = AstUtilities.getRange(node.getNode(), doc);
+            return (long) range.getEnd();
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (o == null) {
+                return false;
+            }
+
+            if (!(o instanceof GroovyStructureItem)) {
+                // System.out.println("- not a desc");
+                return false;
+            }
+
+            GroovyStructureItem d = (GroovyStructureItem)o;
+
+            if (kind != d.kind) {
+                // System.out.println("- kind");
+                return false;
+            }
+
+            if (!getName().equals(d.getName())) {
+                // System.out.println("- name");
+                return false;
+            }
+          
+            return true;
+        }
+
+        @Override
+        public int hashCode() {
+            int hash = 7;
+
+            hash = (29 * hash) + ((this.getName() != null) ? this.getName().hashCode() : 0);
+            hash = (29 * hash) + ((this.kind != null) ? this.kind.hashCode() : 0);
+
+            // hash = 29 * hash + (this.modifiers != null ? this.modifiers.hashCode() : 0);
+            return hash;
+        }
+
+        @Override
+        public String toString() {
+            return getName();
+        }
     }
     
 }
