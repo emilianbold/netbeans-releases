@@ -165,8 +165,13 @@ public class FileStatusCache {
                     }
                 } else {
                     if (Utils.isAncestorOrEqual(root, file)) {
-                        bContainsFile = true;
-                        break;
+                        File fileRoot = hg.getTopmostManagedParent(file);
+                        File rootRoot = hg.getTopmostManagedParent(root);
+                        // Make sure that file is in same repository as root
+                        if (rootRoot.equals(fileRoot)) {
+                            bContainsFile = true;
+                            break;
+                        }
                     }
                 }
             }
@@ -215,8 +220,13 @@ public class FileStatusCache {
                     }
                 } else {
                     if (Utils.isAncestorOrEqual(root, file)) {
-                        set.add(file);
-                        break;
+                        File fileRoot = hg.getTopmostManagedParent(file);
+                        File rootRoot = hg.getTopmostManagedParent(root);
+                        // Make sure that file is in same repository as root
+                        if (rootRoot.equals(fileRoot)) {
+                            set.add(file);
+                            break;
+                        }
                     }
                 }
             }
