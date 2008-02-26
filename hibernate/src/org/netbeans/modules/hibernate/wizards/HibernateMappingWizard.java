@@ -123,6 +123,8 @@ public class HibernateMappingWizard implements WizardDescriptor.InstantiatingIte
         this.wizard = wizard;
         project = Templates.getProject(wizard);
         descriptor = new HibernateMappingWizardDescriptor(project);
+        FileObject sourceRoot = Util.getSourceRoot(project);        
+        Templates.setTargetFolder(wizard, sourceRoot);      
     }
 
     public void uninitialize(WizardDescriptor wizard) {

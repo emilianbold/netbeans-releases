@@ -40,7 +40,13 @@ package org.netbeans.modules.hibernate.wizards;
 
 import java.util.HashMap;
 import java.util.Map;
+import org.netbeans.api.java.project.JavaProjectConstants;
+import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.api.project.SourceGroup;
+import org.netbeans.api.project.Sources;
 import org.netbeans.modules.hibernate.HibernateCfgProperties;
+import org.openide.filesystems.FileObject;
 
 /**
  * This class lists all the database dialects, drivers and URLs * 
@@ -131,6 +137,31 @@ public class Util {
 
     public static String getSelectedURLConnection(String code) {
         return (String) urlConnectionMap.get(code);
+    }
+    
+    /**
+     * Convenience method to obtain the source root folder.
+     * @param project the Project object
+     * @return the FileObject of the source root folder
+     */
+    public static FileObject getSourceRoot(Project project) {
+        if (project == null) {
+            return null;
+        }
+
+        // Search the ${src.dir} Source Package Folder first, use the first source group if failed.
+        Sources src = ProjectUtils.getSources(project);
+        SourceGroup[] grp = src.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
+        for (int i = 0; i < grp.length; i++) {
+            if ("${src.dir}".equals(grp[i].getName())) { // NOI18N
+                return grp[i].getRootFolder();
+            }
+        }
+        if (grp.length != 0) {
+            return grp[0].getRootFolder();
+        }
+
+        return null;
     }
   
 }

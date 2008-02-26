@@ -180,7 +180,9 @@ public class HibernateConfigurationWizard implements WizardDescriptor.Instantiat
     public void initialize(WizardDescriptor wizard) {
         this.wizard = wizard;
         project = Templates.getProject(wizard);
-        descriptor = new HibernateConfigurationWizardDescriptor(project);
+        descriptor = new HibernateConfigurationWizardDescriptor(project);        
+        FileObject sourceRoot = Util.getSourceRoot(project);        
+        Templates.setTargetFolder(wizard, sourceRoot);         
     }
 
     public void uninitialize(WizardDescriptor wizard) {
