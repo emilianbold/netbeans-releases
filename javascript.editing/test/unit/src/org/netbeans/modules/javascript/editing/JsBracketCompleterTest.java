@@ -854,6 +854,10 @@ public class JsBracketCompleterTest extends JsTestBase {
         insertChar("'(^position:absolute;'", '{', "'{^position:absolute;'", "(");
     }
 
+    public void testReplaceSelection6() throws Exception {
+        insertChar("'position^:absolute;'", '{', "'pos{^:absolute;'", "ition");
+    }
+
     public void testReplaceSelectionChangeType1() throws Exception {
         insertChar("x = \"foo\"^", '\'', "x = 'foo'^", "\"foo\"");
     }
