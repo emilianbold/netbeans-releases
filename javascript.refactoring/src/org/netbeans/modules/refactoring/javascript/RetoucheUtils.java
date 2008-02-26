@@ -159,12 +159,14 @@ public class RetoucheUtils {
     public static String[] getNodeNames(Node node) {
         String name = null;
         String simpleName = null;
-        
-        if (node.getType() == org.mozilla.javascript.Token.CALL) {
+        int type = node.getType();
+        if (type == org.mozilla.javascript.Token.CALL) {
             name = AstUtilities.getCallName(node, true);
             simpleName = AstUtilities.getCallName(node, false);
-        } else {
+        } else if (node instanceof Node.StringNode) {
             name = node.getString();
+        } else {
+            return new String[] { null, null};
         }
         // TODO - FUNCTION - also get full name!
         

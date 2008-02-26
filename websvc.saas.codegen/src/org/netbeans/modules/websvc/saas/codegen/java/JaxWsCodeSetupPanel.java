@@ -67,14 +67,14 @@ import org.openide.util.NbBundle;
  * the user modifies it.
  * 
  */
-public class CustomCodeSetupPanel extends javax.swing.JPanel {
+public class JaxWsCodeSetupPanel extends javax.swing.JPanel {
 
     private ParamTableModel tableModel;
     private List<ParameterInfo> inputParams;
     private boolean methodNameModified = false;
 
     /** Creates new form InputValuesJPanel */
-    public CustomCodeSetupPanel(String uriTemplate, String resourceName, List<ParameterInfo> inputParams, 
+    public JaxWsCodeSetupPanel(String uriTemplate, String resourceName, List<ParameterInfo> inputParams, 
 			boolean showResourceInfo, boolean showParams) {
         initComponents();
 
@@ -158,7 +158,7 @@ public class CustomCodeSetupPanel extends javax.swing.JPanel {
             String paramName = (String) tableModel.getValueAt(row, 0);
 
             if (value == null) {
-                return new JLabel(NbBundle.getMessage(CustomCodeSetupPanel.class, "LBL_NotSet"));
+                return new JLabel(NbBundle.getMessage(JaxWsCodeSetupPanel.class, "LBL_NotSet"));
             } else if (value instanceof Class) {
                 return new JLabel(((Class) value).getName());
             } else if (value instanceof Boolean) {
@@ -178,7 +178,7 @@ public class CustomCodeSetupPanel extends javax.swing.JPanel {
 
         public ParamTableModel() {
         }
-        String[] columnNames = new String[]{NbBundle.getMessage(CustomCodeSetupPanel.class, "LBL_Name"), NbBundle.getMessage(CustomCodeSetupPanel.class, "LBL_Type"), NbBundle.getMessage(CustomCodeSetupPanel.class, "LBL_DefaultValue"), NbBundle.getMessage(CustomCodeSetupPanel.class, "LBL_MapToQueryParam")};
+        String[] columnNames = new String[]{NbBundle.getMessage(JaxWsCodeSetupPanel.class, "LBL_Name"), NbBundle.getMessage(JaxWsCodeSetupPanel.class, "LBL_Type"), NbBundle.getMessage(JaxWsCodeSetupPanel.class, "LBL_DefaultValue"), NbBundle.getMessage(JaxWsCodeSetupPanel.class, "LBL_MapToQueryParam")};
         Class[] types = new Class[]{String.class, Class.class, Object.class, Boolean.class};
         boolean[] canEdit = new boolean[]{false, false, true, true};
 
@@ -272,15 +272,15 @@ public class CustomCodeSetupPanel extends javax.swing.JPanel {
         messageLabel = new javax.swing.JLabel();
 
         paramLabel.setLabelFor(paramTable);
-        paramLabel.setText(org.openide.util.NbBundle.getMessage(CustomCodeSetupPanel.class, "LBL_Parameters")); // NOI18N
+        paramLabel.setText(org.openide.util.NbBundle.getMessage(JaxWsCodeSetupPanel.class, "LBL_Parameters")); // NOI18N
 
         paramTable.setAutoResizeMode(javax.swing.JTable.AUTO_RESIZE_LAST_COLUMN);
         paramScrollPane.setViewportView(paramTable);
 
         uriTemplateLabel.setLabelFor(uriTemplateTF);
-        org.openide.awt.Mnemonics.setLocalizedText(uriTemplateLabel, org.openide.util.NbBundle.getMessage(CustomCodeSetupPanel.class, "LBL_UriTemplate")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(uriTemplateLabel, org.openide.util.NbBundle.getMessage(JaxWsCodeSetupPanel.class, "LBL_UriTemplate")); // NOI18N
 
-        uriTemplateTF.setText(org.openide.util.NbBundle.getMessage(CustomCodeSetupPanel.class, "JaxRsCodeSetupPanel.uriTemplateTF.text")); // NOI18N
+        uriTemplateTF.setText(org.openide.util.NbBundle.getMessage(JaxWsCodeSetupPanel.class, "JaxRsCodeSetupPanel.uriTemplateTF.text")); // NOI18N
         uriTemplateTF.addKeyListener(new java.awt.event.KeyAdapter() {
             public void keyReleased(java.awt.event.KeyEvent evt) {
                 uriTemplateTFKeyReleased(evt);
@@ -288,26 +288,26 @@ public class CustomCodeSetupPanel extends javax.swing.JPanel {
         });
 
         methodNameLabel.setLabelFor(methodNameTF);
-        org.openide.awt.Mnemonics.setLocalizedText(methodNameLabel, org.openide.util.NbBundle.getMessage(CustomCodeSetupPanel.class, "LBL_MethodName")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(methodNameLabel, org.openide.util.NbBundle.getMessage(JaxWsCodeSetupPanel.class, "LBL_MethodName")); // NOI18N
 
-        methodNameTF.setText(org.openide.util.NbBundle.getMessage(CustomCodeSetupPanel.class, "JaxRsCodeSetupPanel.methodNameTF.text")); // NOI18N
+        methodNameTF.setText(org.openide.util.NbBundle.getMessage(JaxWsCodeSetupPanel.class, "JaxRsCodeSetupPanel.methodNameTF.text")); // NOI18N
         methodNameTF.addKeyListener(new java.awt.event.KeyAdapter() {
             public void keyReleased(java.awt.event.KeyEvent evt) {
                 methodNameTFKeyReleased(evt);
             }
         });
 
-        subresourceLocatorLabel.setText(org.openide.util.NbBundle.getMessage(CustomCodeSetupPanel.class, "LBL_SubresourceLocator")); // NOI18N
+        subresourceLocatorLabel.setText(org.openide.util.NbBundle.getMessage(JaxWsCodeSetupPanel.class, "LBL_SubresourceLocator")); // NOI18N
 
-        subresourceLabel.setText(org.openide.util.NbBundle.getMessage(CustomCodeSetupPanel.class, "LBL_Subresource")); // NOI18N
+        subresourceLabel.setText(org.openide.util.NbBundle.getMessage(JaxWsCodeSetupPanel.class, "LBL_Subresource")); // NOI18N
 
         resourceNameLabel.setLabelFor(resourceNameTF);
-        org.openide.awt.Mnemonics.setLocalizedText(resourceNameLabel, org.openide.util.NbBundle.getMessage(CustomCodeSetupPanel.class, "LBL_ResourceName")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(resourceNameLabel, org.openide.util.NbBundle.getMessage(JaxWsCodeSetupPanel.class, "LBL_ResourceName")); // NOI18N
 
-        resourceNameTF.setText(org.openide.util.NbBundle.getMessage(CustomCodeSetupPanel.class, "JaxRsCodeSetupPanel.resourceNameTF.text")); // NOI18N
+        resourceNameTF.setText(org.openide.util.NbBundle.getMessage(JaxWsCodeSetupPanel.class, "JaxRsCodeSetupPanel.resourceNameTF.text")); // NOI18N
         resourceNameTF.setEnabled(false);
 
-        messageLabel.setText(org.openide.util.NbBundle.getMessage(CustomCodeSetupPanel.class, "MSG_AlreadyGenerated")); // NOI18N
+        messageLabel.setText(org.openide.util.NbBundle.getMessage(JaxWsCodeSetupPanel.class, "MSG_AlreadyGenerated")); // NOI18N
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
@@ -367,7 +367,7 @@ public class CustomCodeSetupPanel extends javax.swing.JPanel {
                 .addContainerGap())
         );
 
-        paramLabel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(CustomCodeSetupPanel.class, "MSG_SetConstantValues")); // NOI18N
+        paramLabel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(JaxWsCodeSetupPanel.class, "MSG_SetConstantValues")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
 
     private void uriTemplateTFKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_uriTemplateTFKeyReleased

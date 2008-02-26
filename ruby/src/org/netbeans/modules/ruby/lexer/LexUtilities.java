@@ -48,7 +48,6 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import org.netbeans.modules.gsf.api.CompilationInfo;
 
-import org.netbeans.modules.ruby.lexer.RubyTokenId;
 import org.netbeans.modules.gsf.api.OffsetRange;
 import org.netbeans.modules.gsf.api.ParserResult;
 import org.netbeans.modules.gsf.api.TranslatedSource;
@@ -58,12 +57,10 @@ import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.api.ruby.platform.RubyInstallation;
 import org.netbeans.editor.BaseDocument;
-import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
 import org.netbeans.modules.ruby.RubyMimeResolver;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
-import org.openide.util.Exceptions;
 import org.openide.util.Exceptions;
 
 
@@ -225,7 +222,7 @@ public class LexUtilities {
         return ts;
     }
 
-    public static Token<?extends RubyTokenId> getToken(BaseDocument doc, int offset) {
+    public static TokenSequence<?extends RubyTokenId> getPositionedSequence(BaseDocument doc, int offset) {
         TokenSequence<?extends RubyTokenId> ts = getRubyTokenSequence(doc, offset);
 
         if (ts != null) {
@@ -245,9 +242,18 @@ public class LexUtilities {
                 return null;
             }
 
-            Token<?extends RubyTokenId> token = ts.token();
+            return ts;
+        }
 
-            return token;
+        return null;
+    }
+
+    
+    public static Token<?extends RubyTokenId> getToken(BaseDocument doc, int offset) {
+        TokenSequence<?extends RubyTokenId> ts = getPositionedSequence(doc, offset);
+        
+        if (ts != null) {
+            return ts.token();
         }
 
         return null;
