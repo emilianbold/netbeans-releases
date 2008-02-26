@@ -196,7 +196,7 @@ public final class NbModuleSuite extends Object {
             Assert.assertNotNull("Global classloader is initialized", global);
 
             URL[] testCP = preparePath(clazz);
-            JunitLoader testLoader = new JunitLoader(testCP, global, NbTestSuite.class.getClassLoader());
+            JUnitLoader testLoader = new JUnitLoader(testCP, global, NbTestSuite.class.getClassLoader());
             Class<?> sndClazz = testLoader.loadClass(clazz.getName());
 
             new NbTestSuite(sndClazz).run(result);
@@ -277,10 +277,10 @@ public final class NbModuleSuite extends Object {
             return new String(arr, "UTF-8"); // NOI18N
         }
 
-        private static final class JunitLoader extends URLClassLoader {
+        private static final class JUnitLoader extends URLClassLoader {
             private final ClassLoader junit;
 
-            public JunitLoader(URL[] urls, ClassLoader parent, ClassLoader junit) {
+            public JUnitLoader(URL[] urls, ClassLoader parent, ClassLoader junit) {
                 super(urls, parent);
                 this.junit = junit;
             }
