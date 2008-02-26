@@ -5,12 +5,15 @@
  */
 package org.netbeans.modules.hibernate.wizards;
 
+import java.awt.event.ActionEvent;
 import org.netbeans.api.project.Project;
-import org.openide.WizardDescriptor;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
-import org.openide.util.ChangeSupport;
+import org.netbeans.api.java.project.JavaProjectConstants;
+import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.api.project.SourceGroup;
+import org.netbeans.api.project.Sources;
 import org.openide.util.NbBundle;
+import org.netbeans.modules.hibernate.loaders.cfg.multiview.Util;
+import org.netbeans.modules.hibernate.loaders.cfg.multiview.BrowseFolders;
 
 /**
  *
@@ -24,6 +27,18 @@ public class HibernateMappingWizardPanel extends javax.swing.JPanel {
     public HibernateMappingWizardPanel(Project project) {
         this.project = project;
         initComponents();
+        this.browseButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(ActionEvent arg0) {
+                try {
+                    org.netbeans.api.project.SourceGroup[] groups = getJavaSourceGroups();
+                        org.openide.filesystems.FileObject fo = BrowseFolders.showDialog(groups);
+                        if (fo!=null) {
+                            String className = Util.getResourcePath(groups,fo);
+                            txtClassName.setText(className);
+                        }
+                    } catch (java.io.IOException ex) {}          
+            }
+        });
     }
 
     @Override
@@ -32,7 +47,13 @@ public class HibernateMappingWizardPanel extends javax.swing.JPanel {
     }
     
     public String getClassName() {
-        return jTextField1.getText();
+        return txtClassName.getText();
+    }
+    
+    private SourceGroup[] getJavaSourceGroups() throws java.io.IOException {        
+        if (project==null) return new SourceGroup[]{};
+        Sources sources = ProjectUtils.getSources(project);
+        return sources.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
     }
 
     /** This method is called from within the constructor to
@@ -44,18 +65,18 @@ public class HibernateMappingWizardPanel extends javax.swing.JPanel {
     private void initComponents() {
 
         jLabel1 = new javax.swing.JLabel();
-        jTextField1 = new javax.swing.JTextField();
-        jButton1 = new javax.swing.JButton();
+        txtClassName = new javax.swing.JTextField();
+        browseButton = new javax.swing.JButton();
 
         setName(org.openide.util.NbBundle.getMessage(HibernateMappingWizardPanel.class, "LBL_HibernateMappingPanel_Name")); // NOI18N
 
-        jLabel1.setLabelFor(jTextField1);
+        jLabel1.setLabelFor(txtClassName);
         jLabel1.setText(org.openide.util.NbBundle.getMessage(HibernateMappingWizardPanel.class, "HibernateMappingWizardPanel.jLabel1.text")); // NOI18N
 
-        jTextField1.setColumns(30);
-        jTextField1.setText(org.openide.util.NbBundle.getMessage(HibernateMappingWizardPanel.class, "HibernateMappingWizardPanel.jTextField1.text")); // NOI18N
+        txtClassName.setColumns(30);
+        txtClassName.setText(org.openide.util.NbBundle.getMessage(HibernateMappingWizardPanel.class, "HibernateMappingWizardPanel.txtClassName.text")); // NOI18N
 
-        jButton1.setText(org.openide.util.NbBundle.getMessage(HibernateMappingWizardPanel.class, "HibernateMappingWizardPanel.jButton1.text")); // NOI18N
+        browseButton.setText(org.openide.util.NbBundle.getMessage(HibernateMappingWizardPanel.class, "HibernateMappingWizardPanel.browseButton.text")); // NOI18N
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
@@ -64,9 +85,9 @@ public class HibernateMappingWizardPanel extends javax.swing.JPanel {
             .add(layout.createSequentialGroup()
                 .add(jLabel1)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(jTextField1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 367, Short.MAX_VALUE)
+                .add(txtClassName, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 355, Short.MAX_VALUE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(jButton1)
+                .add(browseButton)
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -75,14 +96,14 @@ public class HibernateMappingWizardPanel extends javax.swing.JPanel {
                 .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(jLabel1)
-                    .add(jButton1)
-                    .add(jTextField1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                    .add(browseButton)
+                    .add(txtClassName, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addContainerGap(16, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JButton jButton1;
+    private javax.swing.JButton browseButton;
     private javax.swing.JLabel jLabel1;
-    private javax.swing.JTextField jTextField1;
+    private javax.swing.JTextField txtClassName;
     // End of variables declaration//GEN-END:variables
 }
