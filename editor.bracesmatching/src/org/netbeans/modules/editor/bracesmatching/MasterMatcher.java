@@ -633,7 +633,9 @@ public final class MasterMatcher {
                         break;
                     }
                 }
-
+            }
+            
+            if (matcher[0] != null) {
                 // Find the original area
                 int [] origin = null;
                 try {
