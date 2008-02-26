@@ -143,6 +143,7 @@ public final class NbModuleSuite extends Object {
             Method m = main.getDeclaredMethod("main", String[].class); // NOI18N
 
             System.setProperty("java.util.logging.config", "-");
+            System.setProperty("netbeans.logger.console", "true");
             System.setProperty("netbeans.home", platform.getPath());
 
             File ud = new File(new File(Manager.getWorkDirPath()), "userdir");
