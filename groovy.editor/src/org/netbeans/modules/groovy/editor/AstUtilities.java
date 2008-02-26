@@ -206,7 +206,20 @@ public class AstUtilities {
             // FIXME: have to check what happens with other whitespaces between
             // the keyword and the identifier (like newline)
             
-            int start = getOffset(doc, node.getLineNumber(), node.getColumnNumber())
+            // Warning! The implicit class has line/column numbers below 1
+            
+            int lineNumber = node.getLineNumber();
+            int columnNumber = node.getColumnNumber();
+
+            if (lineNumber < 1) {
+                lineNumber = 1;
+            }
+
+            if (columnNumber < 1) {
+                columnNumber = 1;
+            }
+            
+            int start = getOffset(doc, lineNumber, columnNumber)
                         + "class".length();
             
             try {

@@ -76,6 +76,9 @@ import java.util.Collection;
 import java.util.Iterator;
 import org.netbeans.modules.gsf.api.Modifier;
 import org.netbeans.modules.gsf.api.ElementHandle;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 
 /**
  * @author Martin Adamek
@@ -89,6 +92,8 @@ public class StructureAnalyzer implements StructureScanner {
     private HtmlFormatter formatter;
     private GroovyParserResult result;  
     private CompilationInfo info;
+    
+    Logger LOG = Logger.getLogger(StructureAnalyzer.class.getName());
 
     public AnalysisResult analyze(GroovyParserResult result) {
         return scan(result);
@@ -290,8 +295,6 @@ public class StructureAnalyzer implements StructureScanner {
         return folds;
     }
     
-    private String aaa;
-    
     private void addFolds(BaseDocument doc, List<? extends AstElement> elements, 
             Map<String,List<OffsetRange>> folds, List<OffsetRange> codeblocks) throws BadLocationException {
         for (AstElement element : elements) {
@@ -465,11 +468,13 @@ public class StructureAnalyzer implements StructureScanner {
 
         public long getPosition() {
             OffsetRange range = AstUtilities.getRange(node.getNode(), doc);
+            LOG.log(Level.WARNING, "getPosition(), start: " + range.getStart());
             return (long) range.getStart();
         }
 
         public long getEndPosition() {
             OffsetRange range = AstUtilities.getRange(node.getNode(), doc);
+            LOG.log(Level.WARNING, "getEndPosition(), end: " + range.getEnd());
             return (long) range.getEnd();
         }
 
@@ -506,7 +511,6 @@ public class StructureAnalyzer implements StructureScanner {
             hash = (29 * hash) + ((this.getName() != null) ? this.getName().hashCode() : 0);
             hash = (29 * hash) + ((this.kind != null) ? this.kind.hashCode() : 0);
 
-            // hash = 29 * hash + (this.modifiers != null ? this.modifiers.hashCode() : 0);
             return hash;
         }
 
