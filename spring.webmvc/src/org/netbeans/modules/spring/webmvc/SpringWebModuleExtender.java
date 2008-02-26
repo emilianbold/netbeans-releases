@@ -247,7 +247,7 @@ public class SpringWebModuleExtender extends WebModuleExtender implements Change
                 }
             }
             if (welcomeFiles.sizeWelcomeFile() == 0) {
-                welcomeFiles.addWelcomeFile("index.jsp"); // NOI18N
+                welcomeFiles.addWelcomeFile("redirect.jsp"); // NOI18N
             }
             ddRoot.write(dd);
 
@@ -291,7 +291,7 @@ public class SpringWebModuleExtender extends WebModuleExtender implements Change
                         List<File> files = manager.getConfigFiles();
                         files.addAll(newFiles);
                         List<ConfigFileGroup> groups = manager.getConfigFileGroups();
-                        String groupName = NbBundle.getMessage(SpringWebModuleExtender.class, "LBL_DefaultGroup");
+                        String groupName = NbBundle.getMessage(SpringWebModuleExtender.class, "LBL_DefaultGroup"); // NOI18N
                         ConfigFileGroup newGroup = ConfigFileGroup.create(groupName, newFiles);
                         groups.add(newGroup);
                         manager.putConfigFilesAndGroups(files, groups);
@@ -303,16 +303,16 @@ public class SpringWebModuleExtender extends WebModuleExtender implements Change
                     }
                 });
             } else {
-                LOGGER.log(Level.WARNING, "Could not find a SpringScope for file {0}", configFile);
+                LOGGER.log(Level.WARNING, "Could not find a SpringScope for file {0}", configFile); // NOI18N
             }
 
-            // MODIFY EXISTING INDEX.JSP
+            // MODIFY EXISTING REDIRECT.JSP
             FileObject documentBase = webModule.getDocumentBase();
-            FileObject indexJsp = documentBase.getFileObject("index.jsp"); // NOI18N
-            if (indexJsp == null) {
-                indexJsp = FileUtil.createData(documentBase, "index.jsp"); // NOI18N
+            FileObject redirectJsp = documentBase.getFileObject("redirect.jsp"); // NOI18N
+            if (redirectJsp == null) {
+                redirectJsp = FileUtil.createData(documentBase, "redirect.jsp"); // NOI18N
             }
-            addFileToOpen(copyResource("redirect.jsp", indexJsp)); // NOI18N
+            addFileToOpen(copyResource("redirect.jsp", redirectJsp)); // NOI18N
         }
                
         public void addFileToOpen(FileObject file) {
@@ -337,6 +337,9 @@ public class SpringWebModuleExtender extends WebModuleExtender implements Change
                     }
                     if (resourceName.equals("redirect.jsp")) { // NOI18N
                         line = SpringWebFrameworkUtils.reviseRedirectJsp(line, dispatcherMapping);
+                    }
+                    if (resourceName.equals("index.jsp")) { // NOI18N
+                        line = SpringWebFrameworkUtils.setWelcomePageText(line);
                     }
                     buffer.append(line);
                     buffer.append(lineSeparator);

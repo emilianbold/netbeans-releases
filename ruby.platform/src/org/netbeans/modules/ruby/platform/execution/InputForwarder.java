@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -44,13 +44,9 @@ import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
-import java.io.OutputStreamWriter;
 import java.io.Reader;
-import java.lang.InterruptedException;
-import java.util.List;
 
 import org.openide.util.Exceptions;
-
 
 /**
  * <p>An InputForwarder takes user input in for example a Program I/O window,
@@ -67,6 +63,7 @@ import org.openide.util.Exceptions;
  * @author Tor Norbye
  */
 class InputForwarder implements Runnable {
+    
     private OutputStream out;
     private Reader reader;
     private boolean cancelled;

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -62,6 +62,7 @@ import org.netbeans.modules.ruby.railsprojects.UpdateHelper;
 import org.netbeans.modules.ruby.railsprojects.server.spi.RubyInstance;
 import org.netbeans.modules.ruby.rubyproject.JavaClassPathUi;
 import org.netbeans.modules.ruby.rubyproject.ProjectPropertyExtender;
+import org.netbeans.modules.ruby.rubyproject.ProjectPropertyExtender.Item;
 import org.netbeans.modules.ruby.rubyproject.SharedRubyProjectProperties;
 import org.netbeans.modules.ruby.spi.project.support.rake.RakeProjectHelper;
 import org.netbeans.modules.ruby.spi.project.support.rake.EditableProperties;
@@ -181,7 +182,7 @@ public class RailsProjectProperties extends SharedRubyProjectProperties {
         CLASS_PATH_LIST_RENDERER = new JavaClassPathUi.ClassPathListCellRenderer( evaluator );
 
         EditableProperties projectProperties = updateHelper.getProperties( RakeProjectHelper.PROJECT_PROPERTIES_PATH );         
-        String cp = (String)projectProperties.get( JAVAC_CLASSPATH )  ;
+        String cp = projectProperties.get( JAVAC_CLASSPATH )  ;
         JAVAC_CLASSPATH_MODEL = /*ClassPathUiSupport.*/createListModel(cs.itemsIterator(cp) );
         INCLUDE_JAVA_MODEL = projectGroup.createToggleButtonModel( evaluator, INCLUDE_JAVA );
         
@@ -205,28 +206,27 @@ public class RailsProjectProperties extends SharedRubyProjectProperties {
         return model;
     }
     // From ClassPathUiSupport:
-    public static Iterator getIterator( DefaultListModel model ) {        
+    public static Iterator<Item> getIterator( DefaultListModel model ) {        
         // XXX Better performing impl. would be nice
         return getList( model ).iterator();        
     }
     
     // From ClassPathUiSupport:
-    public static List getList( DefaultListModel model ) {
-        return Collections.list( model.elements() );
+    @SuppressWarnings("unchecked")
+    public static List<Item> getList( DefaultListModel model ) {
+        return (List<Item>) Collections.list( model.elements() );
     }
-
     
     public void save() {
         try {                        
             // Store properties 
-            Boolean result = (Boolean) ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction() {
+            Boolean result = ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction<Boolean>() {
                 final FileObject projectDir = updateHelper.getRakeProjectHelper().getProjectDirectory();
-                public Object run() throws IOException {
+                public Boolean run() throws IOException {
                     if ((genFileHelper.getBuildScriptState(GeneratedFilesHelper.BUILD_IMPL_XML_PATH,
-                        RailsProject.class.getResource("resources/build-impl.xsl") //NOI18N
-                        )
-                        & GeneratedFilesHelper.FLAG_MODIFIED) == GeneratedFilesHelper.FLAG_MODIFIED) {  //NOI18N
-                        if (showModifiedMessage (NbBundle.getMessage(RailsProjectProperties.class,"TXT_ModifiedTitle"))) {
+                            RailsProject.class.getResource("resources/build-impl.xsl")) //NOI18N
+                            & GeneratedFilesHelper.FLAG_MODIFIED) == GeneratedFilesHelper.FLAG_MODIFIED) {  //NOI18N
+                        if (showModifiedMessage(NbBundle.getMessage(RailsProjectProperties.class, "TXT_ModifiedTitle"))) {
                             //Delete user modified build-impl.xml
                             FileObject fo = projectDir.getFileObject(GeneratedFilesHelper.BUILD_IMPL_XML_PATH);
                             if (fo != null) {
@@ -234,11 +234,11 @@ public class RailsProjectProperties extends SharedRubyProjectProperties {
                             }
                         }
                         else {
-                            return Boolean.FALSE;
+                            return false;
                         }
                     }
                     storeProperties();
-                    return Boolean.TRUE;
+                    return true;
                 }
             });
             // and save the project
@@ -260,7 +260,6 @@ public class RailsProjectProperties extends SharedRubyProjectProperties {
         // Encode all paths (this may change the project properties)
         //this.cs = new ClassPathSupport( evaluator, refHelper, updateHelper.getAntProjectHelper(), WELL_KNOWN_PATHS, LIBRARY_PREFIX, LIBRARY_SUFFIX, ANT_ARTIFACT_PREFIX );
         String[] javac_cp = cs.encodeToStrings(/*ClassPathUiSupport.*/getIterator( JAVAC_CLASSPATH_MODEL ) );
-        
         
         // Store standard properties
         EditableProperties projectProperties = updateHelper.getProperties( RakeProjectHelper.PROJECT_PROPERTIES_PATH );        

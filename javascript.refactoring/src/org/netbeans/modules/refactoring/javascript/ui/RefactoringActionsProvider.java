@@ -72,7 +72,6 @@ import org.netbeans.modules.javascript.editing.lexer.LexUtilities;
 import org.openide.ErrorManager;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
-import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
 import org.openide.util.Lookup;
@@ -148,11 +147,14 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider{
         if (RetoucheUtils.isRefactorable(fo)) { //NOI18N
             return true;
         }
-        if ((dob instanceof DataFolder) && 
-                RetoucheUtils.isFileInOpenProject(fo) && 
-                RetoucheUtils.isOnSourceClasspath(fo) &&
-                !RetoucheUtils.isClasspathRoot(fo))
-            return true;
+
+        // No "package" renaming for JavaScript
+        //if ((dob instanceof DataFolder) && 
+        //        RetoucheUtils.isFileInOpenProject(fo) && 
+        //        RetoucheUtils.isOnSourceClasspath(fo) &&
+        //        !RetoucheUtils.isClasspathRoot(fo))
+        //    return true;
+
         return false;
     }
     
@@ -645,6 +647,9 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider{
                 if (dob!=null) {
                     fobs[i] = dob.getPrimaryFile();
                     Source source = RetoucheUtils.getSource(fobs[i]);
+                    if (source == null) {
+                        continue;
+                    }
                     assert source != null;
                     try {
                         source.runUserActionTask(this, false);
