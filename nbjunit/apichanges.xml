@@ -67,8 +67,9 @@ made subject to such option by the copyright holder.
                 It always used to be hard to setup the right environment for test
                 execution. In case this NetBeans this is even harder. The module
                 system is ready to work without classpath isolation, however 
-                not every feature is available and every behaviour stays the
-                same. That is why there is now the new <code>NbModuleSuite</code>
+                not every feature is available and not every
+                behavior remains the same
+                That is why there is now the new <code>NbModuleSuite</code>
                 support class that allows to really start the whole NetBeans 
                 Runtime Container, satisfy all the dependencies and only then 
                 load the testing class and execute it.
