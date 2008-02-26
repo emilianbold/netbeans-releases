@@ -88,6 +88,7 @@ public class RicohProjectCategoryCustomizer extends JPanel implements Customizer
     /** Creates new form RicohProjectCategoryCustomizer */
     public RicohProjectCategoryCustomizer() {
         initComponents();
+        postInit();
         this.invertBitmapCheckBox.setVisible(false);
         installLocationTextField.setVisible(false);
         this.add(installLocationTextField);
@@ -960,7 +961,14 @@ public class RicohProjectCategoryCustomizer extends JPanel implements Customizer
         faxNumber.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(RicohProjectCategoryCustomizer.class, "ACSD_faxNumber")); // NOI18N
         email.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(RicohProjectCategoryCustomizer.class, "ACSD_email")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
-
+    
+    private void postInit() {
+        installLocationComboBox.getAccessibleContext().setAccessibleName(NbBundle.getMessage(RicohProjectCategoryCustomizer.class, "ACSN_installLocationComboBox")); //NOI18N
+        installLocationComboBox.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(RicohProjectCategoryCustomizer.class, "ACSN_installLocationComboBox")); //NOI18N
+        workingDirComboBox.getAccessibleContext().setAccessibleName(NbBundle.getMessage(RicohProjectCategoryCustomizer.class, "ACSN_workingDirComboBox")); //NOI18N
+        workingDirComboBox.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(RicohProjectCategoryCustomizer.class, "ACSN_workingDirComboBox")); //NOI18N
+    }
+    
     private void dalpSpecSDKJ2RadioButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_dalpSpecSDKJ2RadioButtonActionPerformed
 // TODO add your handling code here:
         colorEnableCheckBox.setEnabled(true);
@@ -1161,8 +1169,7 @@ private void disableDalpManagementCheckBoxActionPerformed(java.awt.event.ActionE
             startListening();
         }
     };
-
-
+    
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JTextField abbrevationTextField;
     private javax.swing.JRadioButton adminRadioButton;

@@ -44,6 +44,7 @@ import java.io.File;
 import com.sun.source.tree.*;
 import java.util.EnumSet;
 import javax.lang.model.element.Modifier;
+import javax.lang.model.util.Elements;
 import org.netbeans.api.java.source.*;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.junit.NbTestSuite;
@@ -79,6 +80,7 @@ public class FieldGroupTest extends GeneratorTestMDRCompat {
 //        suite.addTest(new FieldGroupTest("testFieldGroupInBodyCast2"));
 //        suite.addTest(new FieldGroupTest("test114571"));
 //        suite.addTest(new FieldGroupTest("testFieldGroupModifiers"));
+//        suite.addTest(new FieldGroupTest("testNoFieldGroup"));
         return suite;
     }
     
@@ -735,6 +737,43 @@ public class FieldGroupTest extends GeneratorTestMDRCompat {
                 
                 VariableTree var = (VariableTree) clazz.getMembers().get(1);
                 workingCopy.rewrite(var.getModifiers(), make.Modifiers(EnumSet.of(Modifier.PRIVATE)));
+            }
+        };
+        testSource.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        assertEquals(golden, res);
+    }
+    
+    public void testNoFieldGroup() throws Exception {
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile, 
+            "package javaapplication1;\n" +
+            "\n" +
+            "class MyOuterClass {\n" +
+            "}\n"
+            );
+        String golden = 
+            "package javaapplication1;\n" +
+            "\n" +
+            "class MyOuterClass {\n" +
+            "    private Exception a;\n" + 
+            "    private String b;\n" + 
+            "    private Object c;\n" + 
+            "}\n";
+        JavaSource testSource = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
+            public void run(WorkingCopy workingCopy) throws java.io.IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                TreeMaker make = workingCopy.getTreeMaker();
+                ClassTree clazz = (ClassTree) workingCopy.getCompilationUnit().getTypeDecls().get(0);
+                ModifiersTree mods = make.Modifiers(EnumSet.of(Modifier.PRIVATE));
+                Elements e = workingCopy.getElements();
+                
+                ClassTree nue = make.insertClassMember(clazz, 0, make.Variable(mods, "c", make.QualIdent(e.getTypeElement("java.lang.Object")), null));
+                nue = make.insertClassMember(nue, 0, make.Variable(mods, "b", make.QualIdent(e.getTypeElement("java.lang.String")), null));
+                nue = make.insertClassMember(nue, 0, make.Variable(mods, "a", make.QualIdent(e.getTypeElement("java.lang.Exception")), null));
+                workingCopy.rewrite(clazz, nue);
             }
         };
         testSource.runModificationTask(task).commit();
