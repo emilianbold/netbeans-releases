@@ -87,6 +87,7 @@ public class EditorPropertySheet extends javax.swing.JPanel implements ActionLis
     private String lastChangedproperty;
     private Map<CodeStyle.Language, String> defaultStyles = new HashMap<CodeStyle.Language, String>();
     private Map<CodeStyle.Language, Map<String,PreviewPreferences>> allPreferences = new HashMap<CodeStyle.Language, Map<String, PreviewPreferences>>();
+    private PropertySheet holder = new PropertySheet();
 
 
     EditorPropertySheet(EditorOptionsPanelController topControler) {
@@ -120,20 +121,22 @@ public class EditorPropertySheet extends javax.swing.JPanel implements ActionLis
         map.put(styleId, clone);
     }
     
-    
-    private void initLanguages(){
-        DefaultComboBoxModel model = new DefaultComboBoxModel();
 
-        model.addElement(CodeStyle.Language.C);
+    private void initLanguageMap(){
         initLanguageStylePreferences(CodeStyle.Language.C, EditorOptions.DEFAULT_PROFILE);
         initLanguageStylePreferences(CodeStyle.Language.C, EditorOptions.APACHE_PROFILE);
         defaultStyles.put(CodeStyle.Language.C, EditorOptions.getCurrentProfileId(CodeStyle.Language.C));
-        
-        model.addElement(CodeStyle.Language.CPP);
+
         initLanguageStylePreferences(CodeStyle.Language.CPP, EditorOptions.DEFAULT_PROFILE);
         initLanguageStylePreferences(CodeStyle.Language.CPP, EditorOptions.APACHE_PROFILE);
         defaultStyles.put(CodeStyle.Language.CPP, EditorOptions.getCurrentProfileId(CodeStyle.Language.CPP));
-        
+    }
+    
+    private void initLanguages(){
+        DefaultComboBoxModel model = new DefaultComboBoxModel();
+        model.addElement(CodeStyle.Language.C);
+        model.addElement(CodeStyle.Language.CPP);
+        initLanguageMap();
         languagesComboBox.setModel(model);
         currentLanguage = CodeStyle.Language.C;
         languagesComboBox.setSelectedIndex(0);
@@ -159,7 +162,7 @@ public class EditorPropertySheet extends javax.swing.JPanel implements ActionLis
         EntryWrapper entry = (EntryWrapper)styleComboBox.getSelectedItem();
         initSheets(entry.preferences);
         styleComboBox.addActionListener(this);
-        actionPerformed(new ActionEvent(styleComboBox, 0, null));
+        //actionPerformed(new ActionEvent(styleComboBox, 0, null));
     }
     
     private void initSheets(PreviewPreferences preferences){
@@ -173,7 +176,6 @@ public class EditorPropertySheet extends javax.swing.JPanel implements ActionLis
 	set.put(new BooleanNodeProp(currentLanguage, preferences, EditorOptions.sharpAtStartLine));
 	set.put(new BooleanNodeProp(currentLanguage, preferences, EditorOptions.indentCasesFromSwitch));
         sheet.put(set);
-        set.addPropertyChangeListener(this);
         
 	set = new Sheet.Set();
 	set.setName("BracesPlacement"); // NOI18N
@@ -184,7 +186,6 @@ public class EditorPropertySheet extends javax.swing.JPanel implements ActionLis
 	set.put(new BracePlacementProperty(currentLanguage, preferences, EditorOptions.newLineBeforeBraceDeclaration));
 	set.put(new BracePlacementProperty(currentLanguage, preferences, EditorOptions.newLineBeforeBrace));
         sheet.put(set);
-        set.addPropertyChangeListener(this);
         
 	set = new Sheet.Set();
 	set.setName("MultilineAlignment"); // NOI18N
@@ -194,7 +195,6 @@ public class EditorPropertySheet extends javax.swing.JPanel implements ActionLis
 	set.put(new BooleanNodeProp(currentLanguage, preferences, EditorOptions.alignMultilineCallArgs));
 	set.put(new BooleanNodeProp(currentLanguage, preferences, EditorOptions.alignMultilineArrayInit));
         sheet.put(set);
-        set.addPropertyChangeListener(this);
 
         set = new Sheet.Set();
 	set.setName("NewLine"); // NOI18N
@@ -204,7 +204,6 @@ public class EditorPropertySheet extends javax.swing.JPanel implements ActionLis
 	set.put(new BooleanNodeProp(currentLanguage, preferences, EditorOptions.newLineElse));
 	set.put(new BooleanNodeProp(currentLanguage, preferences, EditorOptions.newLineWhile));
         sheet.put(set);
-        set.addPropertyChangeListener(this);
         
         set = new Sheet.Set();
 	set.setName("SpacesBeforeKeywords"); // NOI18N
@@ -214,7 +213,6 @@ public class EditorPropertySheet extends javax.swing.JPanel implements ActionLis
 	set.put(new BooleanNodeProp(currentLanguage, preferences, EditorOptions.spaceBeforeElse));
 	set.put(new BooleanNodeProp(currentLanguage, preferences, EditorOptions.spaceBeforeCatch));
         sheet.put(set);
-        set.addPropertyChangeListener(this);
         
         set = new Sheet.Set();
 	set.setName("SpacesBeforeParentheses"); // NOI18N
@@ -228,7 +226,6 @@ public class EditorPropertySheet extends javax.swing.JPanel implements ActionLis
 	set.put(new BooleanNodeProp(currentLanguage, preferences, EditorOptions.spaceBeforeCatchParen));
 	set.put(new BooleanNodeProp(currentLanguage, preferences, EditorOptions.spaceBeforeSwitchParen));
         sheet.put(set);
-        set.addPropertyChangeListener(this);
         
         set = new Sheet.Set();
 	set.setName("SpacesAroundOperators"); // NOI18N
@@ -239,7 +236,6 @@ public class EditorPropertySheet extends javax.swing.JPanel implements ActionLis
 	set.put(new BooleanNodeProp(currentLanguage, preferences, EditorOptions.spaceAroundTernaryOps));
 	set.put(new BooleanNodeProp(currentLanguage, preferences, EditorOptions.spaceAroundAssignOps));
         sheet.put(set);
-        set.addPropertyChangeListener(this);
     
         set = new Sheet.Set();
 	set.setName("SpacesBeforeLeftBracess"); // NOI18N
@@ -257,7 +253,6 @@ public class EditorPropertySheet extends javax.swing.JPanel implements ActionLis
 	set.put(new BooleanNodeProp(currentLanguage, preferences, EditorOptions.spaceBeforeCatchLeftBrace));
 	set.put(new BooleanNodeProp(currentLanguage, preferences, EditorOptions.spaceBeforeArrayInitLeftBrace));
         sheet.put(set);
-        set.addPropertyChangeListener(this);
 
         set = new Sheet.Set();
 	set.setName("SpacesWithinParentheses"); // NOI18N
@@ -275,7 +270,6 @@ public class EditorPropertySheet extends javax.swing.JPanel implements ActionLis
 	set.put(new BooleanNodeProp(currentLanguage, preferences, EditorOptions.spaceWithinBraces));
 	set.put(new BooleanNodeProp(currentLanguage, preferences, EditorOptions.spaceWithinArrayInitBrackets));
         sheet.put(set);
-        set.addPropertyChangeListener(this);
                 
         set = new Sheet.Set();
 	set.setName("SpacesOther"); // NOI18N
@@ -289,7 +283,6 @@ public class EditorPropertySheet extends javax.swing.JPanel implements ActionLis
 	set.put(new BooleanNodeProp(currentLanguage, preferences, EditorOptions.spaceAfterColon));
 	set.put(new BooleanNodeProp(currentLanguage, preferences, EditorOptions.spaceAfterTypeCast));
         sheet.put(set);
-        set.addPropertyChangeListener(this);
         
         set = new Sheet.Set();
 	set.setName("BlankLines"); // NOI18N
@@ -303,7 +296,6 @@ public class EditorPropertySheet extends javax.swing.JPanel implements ActionLis
 	set.put(new IntNodeProp(currentLanguage, preferences, EditorOptions.blankLinesBeforeMethods));
 	set.put(new IntNodeProp(currentLanguage, preferences, EditorOptions.blankLinesAfterMethods));
         sheet.put(set);
-        set.addPropertyChangeListener(this);
         
         set = new Sheet.Set();
 	set.setName("Other"); // NOI18N
@@ -311,11 +303,12 @@ public class EditorPropertySheet extends javax.swing.JPanel implements ActionLis
 	set.setShortDescription(getString("HINT_Other")); // NOI18N
 	set.put(new BooleanNodeProp(currentLanguage, preferences, EditorOptions.addLeadingStarInComment));
         sheet.put(set);
-        set.addPropertyChangeListener(this);
 
+        categoryPanel.setVisible(false);
+        categoryPanel.removeAll();
+        holder.removeNotify();
         DummyNode[] dummyNodes = new DummyNode[1];
         dummyNodes[0] = new DummyNode(sheet, "Sheet"); // NOI18N
-        PropertySheet holder = new PropertySheet();
         holder.setNodes(dummyNodes);
         GridBagConstraints fillConstraints = new GridBagConstraints();
         fillConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
@@ -326,15 +319,13 @@ public class EditorPropertySheet extends javax.swing.JPanel implements ActionLis
         categoryPanel.add(holder, fillConstraints);
         categoryPanel.validate();
         categoryPanel.repaint();
-        holder.validate();
-        holder.repaint();
+        categoryPanel.setVisible(true);
     }
 
     void load() {
         loaded = false;
-//        for (Category category : categories) {
-//            category.update();
-//        }
+        initLanguageMap();
+        initLanguageCategory();
         loaded = true;
         repaintPreview();        
     }
@@ -364,10 +355,13 @@ public class EditorPropertySheet extends javax.swing.JPanel implements ActionLis
                 }
             }
         }
+        defaultStyles.clear();
+        allPreferences.clear();
     }
     
     void cancel() {
-        //EditorOptions.lastValues = null;
+        defaultStyles.clear();
+        allPreferences.clear();
     }
 
     // Change in the combo
@@ -377,10 +371,7 @@ public class EditorPropertySheet extends javax.swing.JPanel implements ActionLis
             EntryWrapper category = (EntryWrapper)styleComboBox.getSelectedItem();
             if (category != null) {
                 defaultStyles.put(currentLanguage,category.name);
-                categoryPanel.setVisible(false);
-                categoryPanel.removeAll();
                 initSheets(category.preferences);
-                categoryPanel.setVisible(true);
                 if (CodeStyle.Language.C.equals(currentLanguage)){
                     previewPane.setContentType("text/x-c"); // NOI18N
                 } else {
