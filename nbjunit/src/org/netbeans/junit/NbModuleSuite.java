@@ -78,33 +78,17 @@ import junit.framework.TestResult;
  * }
  * </pre>
  *
+ * @since 1.46
  * @author Jaroslav Tulach <jaroslav.tulach@netbeans.org>
  */
 public final class NbModuleSuite extends Object {
-
-    /** Wraps the provided class into a test that set ups properly the
+    /** Factory method to create wrapper test that knows how to setup proper
+     * NetBeans Runtime Container environment. 
+     * Wraps the provided class into a test that set ups properly the
      * testing environment. The set of enabled modules is going to be
      * determined from the actual classpath of a module, which is common
      * when in all NetBeans tests. All other modules are kept disabled.
-     * <p>
-     * 
-     * Warning: because the NetBeans Runtime Environment
-     * plays various tricks with classloaders, the class provided as argument
-     * is just a <quote>template</quote>, the one that will really be executed
-     * is loaded by another classloader. As such it is not recommended to
-     * do any static initializations in the class, as that would be run twice,
-     * in different modes and could cause quite a big mishmash.
-     * 
-     * @param clazz the class with bunch of testXYZ methods
-     * @return test that starts the NetBeans Runtime Container and then runs the 
-     */
-    public static Test create(Class<? extends Test> clazz) {
-        return new S(clazz);
-    }
-
-    /** Factory method to create wrapper test that knows how to setup proper
-     * NetBeans Runtime Container environment. In addition to other factory 
-     * methods, it allows one limit the clusters that shall be made available.
+     * In addition,it allows one limit the clusters that shall be made available.
      * For example <code>ide.*|java.*</code> will start the container just
      * with platform, ide and java clusters.
      * 
@@ -123,7 +107,7 @@ public final class NbModuleSuite extends Object {
         private final String clusterRegExp;
 
         public S(Class<?> aClass) {
-            this(aClass, ".*");
+            this(aClass, "");
         }
 
         public S(Class<?> aClass, String clusterRegExp) {

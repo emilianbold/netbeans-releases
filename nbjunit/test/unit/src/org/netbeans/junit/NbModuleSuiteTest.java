@@ -79,7 +79,26 @@ public class NbModuleSuiteTest extends TestCase {
         
         assertTrue("Util: " + s, s.contains("org.openide.util"));
         assertTrue("nbjunit: " + s, s.contains("org.netbeans.modules.nbjunit"));
-        assertTrue("insanse: " + s, s.contains("org.netbeans.insane"));
+        assertTrue("insane: " + s, s.contains("org.netbeans.insane"));
+    }
+    
+    public void testIfOneCanLoadFromToolsJarOneShallDoThatInTheFrameworkAsWell() throws Exception {
+        
+        Class<?> vmm;
+        try {
+            vmm = ClassLoader.getSystemClassLoader().loadClass("com.sun.jdi.VirtualMachineManager");
+        } catch (ClassNotFoundException ex) {
+            vmm = null;
+        }
+        Class<?> own;
+        try {
+            own = Thread.currentThread().getContextClassLoader().loadClass("com.sun.jdi.VirtualMachineManager");
+        } catch (ClassNotFoundException ex) {
+            own = null;
+        }
+        
+        assertEquals(vmm, own);
+        
     }
 
     public void testModulesForMe() throws Exception {
