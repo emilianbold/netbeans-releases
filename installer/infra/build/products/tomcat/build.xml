@@ -74,9 +74,9 @@
 
 	<!-- In default ZIP distribution of tomcat bin/*.sh files do not have executable permissions-->
 	<!-- Do not fail on error e.g if running on windows with no cygwin installed -->
-        <exec executable="chmod" failonerror="false" dir="${data.directory}">
-            <arg value="a+x"/>
-            <arg value="bin/*.sh"/>
+        <exec executable="sh" failonerror="false" dir="${data.directory}">
+            <arg value="-c"/>
+            <arg value="chmod a+x bin/*.sh"/>
         </exec>
     </target>
     

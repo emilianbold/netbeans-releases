@@ -41,8 +41,10 @@
 
 package org.netbeans.modules.websvc.saas.codegen.java.model;
 
+import java.util.List;
 import javax.xml.namespace.QName;
 import org.netbeans.modules.websvc.saas.codegen.java.support.Util;
+import org.netbeans.modules.websvc.saas.model.wadl.Option;
 
 /**
  *
@@ -54,8 +56,12 @@ public class ParameterInfo {
     private Class type;
     private String typeName;
     private Object defaultValue;
-    private boolean isQueryParam;
     private QName qname;
+    private ParamStyle style;
+    private List<Option> option;
+    private boolean required;
+    private boolean repeating;
+    private String fixed;
 
     public ParameterInfo(String name, Class type) {
         this(name, type, null);
@@ -71,7 +77,10 @@ public class ParameterInfo {
         this.type = type;
         this.typeName = typeName;
         this.defaultValue = null;
-        this.isQueryParam = isQualifiedParameterType(type);
+        if(isQualifiedParameterType(type))
+            this.style = ParamStyle.QUERY;
+        else
+            this.style = ParamStyle.UNKNOWN;
     }
 
     private static boolean isQualifiedParameterType(Class type) {
@@ -117,12 +126,44 @@ public class ParameterInfo {
         return defaultValue;
     }
 
-    public boolean isQueryParam() {
-        return isQueryParam;
+    public String getFixed() {
+        return fixed;
     }
 
-    public void setIsQueryParam(boolean flag) {
-        this.isQueryParam = flag;
+    public void setFixed(String fixed) {
+        this.fixed = fixed;
+    }
+    
+    public boolean isRepeating() {
+        return repeating;
+    }
+    
+    public void setIsRepeating(boolean repeating) {
+        this.repeating = repeating;
+    }
+
+    public boolean isRequired() {
+        return required;
+    }
+    
+    public void setIsRequired(boolean required) {
+        this.required = required;
+    }
+
+    public List<Option> getOption() {
+        return option;
+    }
+    
+    public void setOption(List<Option> option) {
+        this.option = option;
+    }
+    
+    public ParamStyle getStyle() {
+        return style;
+    }
+    
+    public void setStyle(ParamStyle style) {
+        this.style = style;
     }
     
     private Object generateDefaultValue() {
@@ -144,5 +185,35 @@ public class ParameterInfo {
         }
         
         return null;
+    }
+    
+    public enum ParamStyle {
+        UNKNOWN(""), 
+        PLAIN("plain"),
+        TEMPLATE("template"),
+        MATRIX("matrix"),
+        HEADER("header"),
+        QUERY("query"), 
+        QUERY_APIKEY("query_apikey"),
+        QUERY_FIXED("query_fixed");
+        
+        private String value;
+        
+        ParamStyle(String value) {
+            this.value = value;
+        }
+        
+        public String value() {
+            return value;
+        }
+        
+        public static ParamStyle fromValue(String v) {
+            for (ParamStyle c: ParamStyle.values()) {
+                if (c.value.equals(v)) {
+                    return c;
+                }
+            }
+            throw new IllegalArgumentException(v);
+        }
     }
 }

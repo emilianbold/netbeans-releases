@@ -127,6 +127,29 @@ TEMP_FILE=${WORK_DIR}/temp.sh.tmp
 # define the environment for running ant
 export ANT_OPTS
 
+if [ -z "$BUILD_NETBEANS" ] ; then
+    #build NetBeans bundles by default
+    BUILD_NETBEANS=1
+fi
+
+if [ -z "$BUILD_NBJDK5" ] ; then
+    #do not build NetBeans/JDK5 bundles by default
+    BUILD_NBJDK5=0
+fi
+
+if [ -z "$BUILD_NBJDK6" ] ; then
+    #do not build NetBeans/JDK6 bundles by default
+    BUILD_NBJDK6=0
+fi
+
+if [ -z "$EN_BUILD" ] ; then
+    EN_BUILD=1
+fi
+
+if [ -z "$ML_BUILD" ] ; then
+    ML_BUILD=0
+fi
+
 run() {
     ################################################################################
     # run the build
@@ -147,9 +170,9 @@ run() {
             \"-Dcvs.root=${CVS_ROOT}\" \
             \"-Dcvs.timestamp=${CVS_STAMP}\" \
             \"-Dcvs.branch=${CVS_BRANCH}\" \
-            \"-Dbuild.jdk5=${BUILD_JDK5}\" \
-            \"-Dbuild.jdk6=${BUILD_JDK6}\" \
-            \"-Ddisable.build.netbeans=${DISABLE_NETBEANS_BUILD}\" \
+            \"-Dbuild.jdk5=${BUILD_NBJDK5}\" \
+            \"-Dbuild.jdk6=${BUILD_NBJDK6}\" \
+            \"-Dbuild.netbeans.bundles=${BUILD_NETBEANS}\" \
             \"-Dglassfish.home=${GLASSFISH_HOME}\" \
             \"-Dglassfish.asadmin=${GLASSFISH_ASADMIN}\" \
             \"-Dglassfish.http.port=${GLASSFISH_HTTP_PORT}\" \
@@ -207,8 +230,10 @@ setNetBeansBuildsHost() {
     fi
 }
 
-setNetBeansBuildsHost
-run $*
+if [ 1 == "$EN_BUILD" ] ; then
+        setNetBeansBuildsHost
+        run $*
+fi
 
 if [ 1 == "$ML_BUILD" ] ; then
 	setNetBeansBuildsHost $ML_BUILD

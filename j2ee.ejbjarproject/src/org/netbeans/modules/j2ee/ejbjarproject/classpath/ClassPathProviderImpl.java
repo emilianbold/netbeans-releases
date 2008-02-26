@@ -188,15 +188,13 @@ public final class ClassPathProviderImpl implements ClassPathProvider, AntProjec
         if ( cp == null) {
             if (type == 0) {
                 cp = ClassPathFactory.createClassPath(
-                new ProjectClassPathImplementation(helper, "${javac.classpath}:${" //NOI18N
-                        + EjbJarProjectProperties.J2EE_PLATFORM_CLASSPATH 
-                        + "}", evaluator, false));  //NOI18N
+                    ProjectClassPathSupport.createPropertyBasedClassPathImplementation(
+                    projectDirectory, evaluator, new String[] {"javac.classpath", EjbJarProjectProperties.J2EE_PLATFORM_CLASSPATH})); // NOI18N
             }
             else {
                 cp = ClassPathFactory.createClassPath(
-                new ProjectClassPathImplementation(helper, "${javac.test.classpath}:${" // NOI18N
-                        + EjbJarProjectProperties.J2EE_PLATFORM_CLASSPATH
-                        + "}", evaluator, false)); // NOI18N
+                    ProjectClassPathSupport.createPropertyBasedClassPathImplementation(
+                    projectDirectory, evaluator, new String[] {"javac.test.classpath", EjbJarProjectProperties.J2EE_PLATFORM_CLASSPATH})); // NOI18N
             }
             cache[2+type] = cp;
         }
@@ -275,9 +273,8 @@ public final class ClassPathProviderImpl implements ClassPathProvider, AntProjec
         ClassPath cp = cache[8];
         if (cp == null) {
                 cp = ClassPathFactory.createClassPath(
-                new ProjectClassPathImplementation(helper,  "${" + //NOI18N
-                        EjbJarProjectProperties.J2EE_PLATFORM_CLASSPATH  +  
-                        "}", evaluator, false));  //NOI18N
+                    ProjectClassPathSupport.createPropertyBasedClassPathImplementation(
+                    projectDirectory, evaluator, new String[] {EjbJarProjectProperties.J2EE_PLATFORM_CLASSPATH})); // NOI18N
             cache[8] = cp;
         }
         return cp;

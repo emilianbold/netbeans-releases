@@ -180,15 +180,13 @@ public final class ClassPathProviderImpl implements ClassPathProvider, PropertyC
         if ( cp == null) {
             if (type == 0) {
                 cp = ClassPathFactory.createClassPath(
-                new ProjectClassPathImplementation(helper, "${javac.classpath}:${" //NOI18N
-                        + AppClientProjectProperties.J2EE_PLATFORM_CLASSPATH 
-                        + "}", evaluator, false));  //NOI18N
+                    ProjectClassPathSupport.createPropertyBasedClassPathImplementation(
+                    projectDirectory, evaluator, new String[] {"javac.classpath", AppClientProjectProperties.J2EE_PLATFORM_CLASSPATH})); // NOI18N
             }
             else {
                 cp = ClassPathFactory.createClassPath(
-                new ProjectClassPathImplementation(helper, "${javac.test.classpath}:${" // NOI18N
-                        + AppClientProjectProperties.J2EE_PLATFORM_CLASSPATH
-                        + "}", evaluator, false)); // NOI18N
+                    ProjectClassPathSupport.createPropertyBasedClassPathImplementation(
+                    projectDirectory, evaluator, new String[] {"javac.test.classpath", AppClientProjectProperties.J2EE_PLATFORM_CLASSPATH})); // NOI18N
             }
             cache[2+type] = cp;
         }

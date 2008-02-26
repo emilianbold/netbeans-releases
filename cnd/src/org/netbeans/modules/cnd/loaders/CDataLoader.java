@@ -95,4 +95,8 @@ public class CDataLoader extends CndAbstractDataLoaderExt {
     public ExtensionList getDefaultExtensionList() {
         return arrayToExtensionList(cExtensions);
     }
+
+    public String getDisplayNameForExtensionList() {
+	return NbBundle.getMessage(CDataLoader.class, "CDataLoader_Name_ForExtList"); // NOI18N
+    }
 }
