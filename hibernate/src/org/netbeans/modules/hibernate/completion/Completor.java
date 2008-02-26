@@ -331,7 +331,7 @@ public abstract class Completor {
             int caretOffset = context.getCaretOffset();
             String typedChars = context.getTypedPrefix();
 
-            List<String> tableNames = getDatabaseTableNamesFromProject(context);
+            List<String> tableNames = getDatabaseTableNamesForThisMappingFile(context);
 
             for (String tableName : tableNames) {
                 HibernateCompletionItem item = HibernateCompletionItem.createDatabaseTableItem(
@@ -344,12 +344,13 @@ public abstract class Completor {
             return results;
         }
 
-        private List<String> getDatabaseTableNamesFromProject(CompletionContext context) {
+        private List<String> getDatabaseTableNamesForThisMappingFile(CompletionContext context) {
             List<String> tableNames = new ArrayList<String>();
+            FileObject mappingFile = org.netbeans.modules.editor.NbEditorUtilities.getFileObject(context.getDocument());
             org.netbeans.api.project.Project enclosingProject = org.netbeans.api.project.FileOwnerQuery.getOwner(
-                    org.netbeans.modules.editor.NbEditorUtilities.getFileObject(context.getDocument()));
+                    mappingFile);
             org.netbeans.modules.hibernate.service.HibernateEnvironment env = enclosingProject.getLookup().lookup(org.netbeans.modules.hibernate.service.HibernateEnvironment.class);
-            tableNames = env.getAllDatabaseTablesForProject();
+            tableNames = env.getDatabaseTables(mappingFile);
             return tableNames;
         }
     }
