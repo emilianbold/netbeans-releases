@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * 
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
  * 
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -37,18 +37,69 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.editor.filecreation;
+package org.netbeans.modules.cnd.api.model.services;
 
-import org.openide.loaders.ExtensionList;
+import javax.swing.text.Document;
+import org.openide.util.Lookup;
 
 /**
- * Marker for DataLoaders what their files extensions would be handled by cnd
  *
- * @author sg155630
+ * @author Alexander Simon
  */
-public interface CndHandlableExtensions {
-    ExtensionList getDefaultExtensionList();
-    String getSettingsName();
-    String getDisplayNameForExtensionList();
-    //FileEntry.Format getFormat();
+public abstract class CsmStatementKindResolver {
+    /**
+     * default instance
+     */
+    private static CsmStatementKindResolver DEFAULT = new Default();
+    
+    protected CsmStatementKindResolver() {
+    }
+    
+    /**
+     * Static method to obtain the CsmStatementKindResolver implementation.
+     * @return the resolver
+     */
+    public static synchronized CsmStatementKindResolver getDefault() {
+        return DEFAULT;
+    }
+    
+    public enum StatementKind {
+        NAMESPACE,
+        CLASS,
+        STRIUCT,
+        ENUM,
+        UNION,
+        FUNCTION,
+        DECLARATION,
+        EXPRESSION,
+        COMPOUND,
+        OTHER,
+        UNKNOWN;
+    }
+    
+    /**
+     * Detect statement kind
+     */
+    public abstract StatementKind getKind(Document doc, int offset);
+
+    
+    /**
+     * Implementation of the default resolver
+     */  
+    private static final class Default extends CsmStatementKindResolver {
+        private final Lookup.Result<CsmStatementKindResolver> res;
+        Default() {
+            res = Lookup.getDefault().lookupResult(CsmStatementKindResolver.class);
+        }
+
+        public StatementKind getKind(Document doc, int offset) {
+            for (CsmStatementKindResolver resolver : res.allInstances()) {
+                StatementKind out = resolver.getKind(doc, offset);
+                if (out != StatementKind.UNKNOWN) {
+                    return out;
+                }
+            }
+            return StatementKind.UNKNOWN;
+        }
+    }
 }
