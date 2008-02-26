@@ -50,7 +50,7 @@ public class Replace extends JDialogOperator {
      */
     public JLabelOperator lblFindWhat() {
         if (_lblFindWhat==null) {
-            _lblFindWhat = new JLabelOperator(this, java.util.ResourceBundle.getBundle("org.netbeans.editor.Bundle").getString("find-what"));
+            _lblFindWhat = new JLabelOperator(this, java.util.ResourceBundle.getBundle("org.netbeans.editor.Bundle").getString("find-what").replace("&", ""));
         }
         return _lblFindWhat;
     }
@@ -70,7 +70,7 @@ public class Replace extends JDialogOperator {
      */
     public JLabelOperator lblReplaceWith() {
         if (_lblReplaceWith==null) {
-            _lblReplaceWith = new JLabelOperator(this, java.util.ResourceBundle.getBundle("org.netbeans.editor.Bundle").getString("find-replace-with"));
+            _lblReplaceWith = new JLabelOperator(this, java.util.ResourceBundle.getBundle("org.netbeans.editor.Bundle").getString("find-replace-with").replace("&", ""));
         }
         return _lblReplaceWith;
     }
@@ -90,7 +90,7 @@ public class Replace extends JDialogOperator {
      */
     public JCheckBoxOperator cbHighlightSearch() {
         if (_cbHighlightSearch==null) {
-            _cbHighlightSearch = new JCheckBoxOperator(this, java.util.ResourceBundle.getBundle("org.netbeans.editor.Bundle").getString("find-highlight-search"));
+            _cbHighlightSearch = new JCheckBoxOperator(this, java.util.ResourceBundle.getBundle("org.netbeans.editor.Bundle").getString("find-highlight-search").replace("&", ""));
         }
         return _cbHighlightSearch;
     }
@@ -100,7 +100,7 @@ public class Replace extends JDialogOperator {
      */
     public JCheckBoxOperator cbIncrementalSearch() {
         if (_cbIncrementalSearch==null) {
-            _cbIncrementalSearch = new JCheckBoxOperator(this, java.util.ResourceBundle.getBundle("org.netbeans.editor.Bundle").getString("find-inc-search"));            
+            _cbIncrementalSearch = new JCheckBoxOperator(this, java.util.ResourceBundle.getBundle("org.netbeans.editor.Bundle").getString("find-inc-search").replace("&", ""));            
         }
         return _cbIncrementalSearch;
     }
@@ -110,7 +110,7 @@ public class Replace extends JDialogOperator {
      */
     public JCheckBoxOperator cbMatchCase() {
         if (_cbMatchCase==null) {
-            _cbMatchCase = new JCheckBoxOperator(this, java.util.ResourceBundle.getBundle("org.netbeans.editor.Bundle").getString("find-match-case"));
+            _cbMatchCase = new JCheckBoxOperator(this, java.util.ResourceBundle.getBundle("org.netbeans.editor.Bundle").getString("find-match-case").replace("&", ""));
         }
         return _cbMatchCase;
     }
@@ -120,7 +120,7 @@ public class Replace extends JDialogOperator {
      */
     public JCheckBoxOperator cbMatchWholeWordsOnly() {
         if (_cbMatchWholeWordsOnly==null) {
-            _cbMatchWholeWordsOnly = new JCheckBoxOperator(this, java.util.ResourceBundle.getBundle("org.netbeans.editor.Bundle").getString("find-whole-words"));
+            _cbMatchWholeWordsOnly = new JCheckBoxOperator(this, java.util.ResourceBundle.getBundle("org.netbeans.editor.Bundle").getString("find-whole-words").replace("&", ""));
         }
         return _cbMatchWholeWordsOnly;
     }
@@ -130,7 +130,7 @@ public class Replace extends JDialogOperator {
      */
     public JCheckBoxOperator cbBackwardSearch() {
         if (_cbBackwardSearch==null) {
-            _cbBackwardSearch = new JCheckBoxOperator(this, java.util.ResourceBundle.getBundle("org.netbeans.editor.Bundle").getString("find-backward-search"));
+            _cbBackwardSearch = new JCheckBoxOperator(this, java.util.ResourceBundle.getBundle("org.netbeans.editor.Bundle").getString("find-backward-search").replace("&", ""));
         }
         return _cbBackwardSearch;
     }
@@ -140,7 +140,7 @@ public class Replace extends JDialogOperator {
      */
     public JCheckBoxOperator cbWrapSearch() {
         if (_cbWrapSearch==null) {
-            _cbWrapSearch = new JCheckBoxOperator(this, java.util.ResourceBundle.getBundle("org.netbeans.editor.Bundle").getString("find-wrap-search"));
+            _cbWrapSearch = new JCheckBoxOperator(this, java.util.ResourceBundle.getBundle("org.netbeans.editor.Bundle").getString("find-wrap-search").replace("&", ""));
         }
         return _cbWrapSearch;
     }
@@ -150,7 +150,7 @@ public class Replace extends JDialogOperator {
      */
     public JCheckBoxOperator cbRegularExpressions() {
         if (_cbRegularExpressions==null) {
-            _cbRegularExpressions = new JCheckBoxOperator(this, java.util.ResourceBundle.getBundle("org.netbeans.editor.Bundle").getString("find-reg-exp"));
+            _cbRegularExpressions = new JCheckBoxOperator(this, java.util.ResourceBundle.getBundle("org.netbeans.editor.Bundle").getString("find-reg-exp").replace("&", ""));
         }
         return _cbRegularExpressions;
     }
@@ -160,7 +160,7 @@ public class Replace extends JDialogOperator {
      */
     public JCheckBoxOperator cbSearchSelection() {
         if (_cbSearchSelection==null) {
-            _cbSearchSelection = new JCheckBoxOperator(this, java.util.ResourceBundle.getBundle("org.netbeans.editor.Bundle").getString("find-block-search"));
+            _cbSearchSelection = new JCheckBoxOperator(this, java.util.ResourceBundle.getBundle("org.netbeans.editor.Bundle").getString("find-block-search").replace("&", ""));
         }
         return _cbSearchSelection;
     }
@@ -170,7 +170,7 @@ public class Replace extends JDialogOperator {
      */
     public JButtonOperator btFind() {
         if (_btFind==null) {
-            _btFind = new JButtonOperator(this, java.util.ResourceBundle.getBundle("org.netbeans.editor.Bundle").getString("find-button-find"));
+            _btFind = new JButtonOperator(this, java.util.ResourceBundle.getBundle("org.netbeans.editor.Bundle").getString("find-button-find").replace("&", ""));
         }
         return _btFind;
     }
@@ -180,7 +180,7 @@ public class Replace extends JDialogOperator {
      */
     public JButtonOperator btReplace() {
         if (_btReplace==null) {
-            _btReplace = new JButtonOperator(this, java.util.ResourceBundle.getBundle("org.netbeans.editor.Bundle").getString("find-button-replace"));
+            _btReplace = new JButtonOperator(this, java.util.ResourceBundle.getBundle("org.netbeans.editor.Bundle").getString("find-button-replace").replace("&", ""));
         }
         return _btReplace;
     }
@@ -190,7 +190,7 @@ public class Replace extends JDialogOperator {
      */
     public JButtonOperator btReplaceAll() {
         if (_btReplaceAll==null) {
-            _btReplaceAll = new JButtonOperator(this, java.util.ResourceBundle.getBundle("org.netbeans.editor.Bundle").getString("find-button-replace-all"));
+            _btReplaceAll = new JButtonOperator(this, java.util.ResourceBundle.getBundle("org.netbeans.editor.Bundle").getString("find-button-replace-all").replace("&", ""));
         }
         return _btReplaceAll;
     }
@@ -200,7 +200,7 @@ public class Replace extends JDialogOperator {
      */
     public JButtonOperator btClose() {
         if (_btClose==null) {
-            _btClose = new JButtonOperator(this, java.util.ResourceBundle.getBundle("org.netbeans.editor.Bundle").getString("find-button-cancel"));
+            _btClose = new JButtonOperator(this, java.util.ResourceBundle.getBundle("org.netbeans.editor.Bundle").getString("find-button-cancel").replace("&", ""));
         }
         return _btClose;
     }
@@ -210,7 +210,7 @@ public class Replace extends JDialogOperator {
      */
     public JButtonOperator btHelp() {
         if (_btHelp==null) {
-            _btHelp = new JButtonOperator(this, java.util.ResourceBundle.getBundle("org.openide.explorer.propertysheet.Bundle").getString("CTL_Help"));
+            _btHelp = new JButtonOperator(this, java.util.ResourceBundle.getBundle("org.openide.explorer.propertysheet.Bundle").getString("CTL_Help").replace("&", ""));
         }
         return _btHelp;
     }

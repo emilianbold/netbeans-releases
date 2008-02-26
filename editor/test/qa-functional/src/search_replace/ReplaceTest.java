@@ -131,10 +131,10 @@ public class ReplaceTest extends EditorTestCase {
         try {
             EditorOperator editor = getDefaultSampleEditorOperator();
             
-            // choose the "testReplaceSelectionRepeated" word
-            editor.select(13, 14, 41);
+            // choose the "testReplaceSelectionRepeated" word            
+            editor.setCaretPosition(12,1);            
             new EventTool().waitNoEvent(REPLACE_TIMEOUT);
-            openReplaceDialog();
+            openReplaceDialog();            
             Replace replace = new Replace();
             
             // check only selected checkboxes
@@ -142,7 +142,7 @@ public class ReplaceTest extends EditorTestCase {
             replace.cbHighlightSearch().doClick();
             replace.cbIncrementalSearch().doClick();
             replace.cbWrapSearch().doClick();
-            
+            replace.cboFindWhat().getTextField().typeText("testReplaceSelectionRepeated");
             String text = replace.cboFindWhat().getTextField().getText();
             // compare
             assertEquals(text, "testReplaceSelectionRepeated");
@@ -154,15 +154,17 @@ public class ReplaceTest extends EditorTestCase {
             replace.close();
             // check status bar
             log(editor.lblStatusBar().getText());
-            waitForLabel("'testReplaceSelectionRepeated' found at 15:35");
-            
+            waitForLabel("'testReplaceSelectionRepeated' found at 15:35");            
             // choose the "testReplaceSelectionRepeated" word
-            editor.select(15, 35, 62);
+            editor.setCaretPosition(15,1);            
+            //editor.select(15, 35, 62);
             openReplaceDialog();
+            replace.cboFindWhat().getTextField().typeText("testReplaceSelectionRepeated");
+            replace.cboReplaceWith().typeText("testReplaceSelectionRepeated2");   
             Replace replace2 = new Replace();
             text = replace2.cboFindWhat().getTextField().getText();
             // compare
-            assertEquals(text, "testReplaceSelectionRepeated");
+            assertEquals(text, "testReplaceSelectionRepeated");            
             replace2.replace();
             new EventTool().waitNoEvent(REPLACE_TIMEOUT);
             replace2.close();
@@ -401,7 +403,7 @@ public class ReplaceTest extends EditorTestCase {
             if (editor.lblStatusBar().getText().equals(label)) break;
             new EventTool().waitNoEvent(REPLACE_TIMEOUT);
         }
-        assertEquals(editor.lblStatusBar().getText(), label);
+        assertEquals(label, editor.lblStatusBar().getText());
     }
     
     /**
