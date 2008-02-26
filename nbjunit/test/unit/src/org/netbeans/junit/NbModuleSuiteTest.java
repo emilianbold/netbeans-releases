@@ -81,6 +81,15 @@ public class NbModuleSuiteTest extends TestCase {
         assertTrue("nbjunit: " + s, s.contains("org.netbeans.modules.nbjunit"));
         assertTrue("insanse: " + s, s.contains("org.netbeans.insane"));
     }
+
+    public void testModulesForMe() throws Exception {
+        Set<String> s = NbModuleSuite.S.findEnabledModules(getClass().getClassLoader());
+        assertEquals("Three modules: " + s, 3, s.size());
+        
+        assertTrue("Util: " + s, s.contains("org.openide.util"));
+        assertTrue("nbjunit: " + s, s.contains("org.netbeans.modules.nbjunit"));
+        assertTrue("insanse: " + s, s.contains("org.netbeans.insane"));
+    }
     
     public static class T extends TestCase {
         public T(String t) {
