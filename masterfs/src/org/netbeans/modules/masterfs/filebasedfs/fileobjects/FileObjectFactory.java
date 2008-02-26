@@ -56,6 +56,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.Stack;
 import java.util.WeakHashMap;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.masterfs.filebasedfs.children.ChildrenCache;
 import org.netbeans.modules.masterfs.filebasedfs.naming.FileNaming;
@@ -73,7 +74,7 @@ import org.openide.util.Utilities;
  */
 public final class FileObjectFactory {
     public static Map AllFactories = new HashMap();
-    public static boolean WARNINGS = false;
+    public static boolean WARNINGS = true;
     final Map allIBaseFileObjects = Collections.synchronizedMap(new WeakHashMap());
     private BaseFileObj root;
     public static enum Caller {
@@ -192,7 +193,7 @@ public final class FileObjectFactory {
     }
 
 
-    private boolean checkCacheState(boolean exist, File file, Caller caller) {
+    private boolean checkCacheState(boolean exist, File file, Caller caller) {        
         return checkCacheState(exist, file, caller, false);
     }
 
@@ -233,7 +234,8 @@ public final class FileObjectFactory {
         sb.append(file.isDirectory() ? "folder: " : "file: "); //NOI18N
         sb.append(file.getAbsolutePath());
         sb.append("  (For additional information see: http://wiki.netbeans.org/wiki/view/FileSystems)");//NOI18N        
-        throw new AssertionError(sb.toString());
+        IllegalStateException ise = new IllegalStateException(sb.toString());
+        Logger.getLogger(getClass().getName()).log(Level.INFO, ise.getMessage(), ise);
     }
 
     private BaseFileObj issueIfExist(File file, Caller caller, FileObject parent, FileNaming child, int initTouch) {

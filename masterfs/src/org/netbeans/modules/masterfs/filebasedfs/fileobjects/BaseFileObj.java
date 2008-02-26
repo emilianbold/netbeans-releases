@@ -822,32 +822,7 @@ public abstract class BaseFileObj extends FileObject {
             }
         }        
     }    
-    
-    boolean checkCacheState(boolean exist, File file) {        
-        if (getFactory().isWarningEnabled()) {
-            boolean notsame = exist != FileChangedManager.getInstance().exists(file);
-            if (notsame) {
-                printWarning(file);
-            } 
-        }
-        return true;
-    }
-    
-    boolean printWarning(File file) {
-            ByteArrayOutputStream bos = new ByteArrayOutputStream();
-            PrintStream ps = new PrintStream(bos);
-            new Exception().printStackTrace(ps);
-            ps.close();
-            String h = file.exists() ? "WARNING: externally created " : "WARNING: externally deleted "; //NOI18N
-            h += (file.isDirectory() ? "folder: " : "file: ") + file.getAbsolutePath(); //NOI18N
-            h += "  - please report. (For additional information see: http://wiki.netbeans.org/wiki/view/FileSystems)";//NOI18N
-            if (Utilities.isWindows()) {
-                h = h.replace('\\', '/');//NOI18N
-            }
-            Logger.getLogger("org.netbeans.modules.masterfs.filebasedfs.fileobjects.FolderObj").log(Level.WARNING, bos.toString().replaceAll("java[.]lang[.]Exception", h));//NOI18N
-        return true;
-    }    
-    
+        
     private static class FileEventImpl extends FileEvent implements Enumeration<FileEvent> {
         private FileEventImpl next;
         public boolean hasMoreElements() {
