@@ -72,7 +72,6 @@ import org.netbeans.modules.ruby.lexer.LexUtilities;
 import org.openide.ErrorManager;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
-import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
 import org.openide.util.Lookup;
@@ -148,11 +147,12 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider{
         if (RetoucheUtils.isRefactorable(fo)) { //NOI18N
             return true;
         }
-        if ((dob instanceof DataFolder) && 
-                RetoucheUtils.isFileInOpenProject(fo) && 
-                RetoucheUtils.isOnSourceClasspath(fo) &&
-                !RetoucheUtils.isClasspathRoot(fo))
-            return true;
+        // No "package" renaming for JavaScript
+        //if ((dob instanceof DataFolder) && 
+        //        RetoucheUtils.isFileInOpenProject(fo) && 
+        //        RetoucheUtils.isOnSourceClasspath(fo) &&
+        //        !RetoucheUtils.isClasspathRoot(fo))
+        //    return true;
         return false;
     }
     
@@ -650,8 +650,6 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider{
                     fobs[i] = dob.getPrimaryFile();
                     Source source = RetoucheUtils.getSource(fobs[i]);
                     if (source == null) {
-                        // http://www.netbeans.org/issues/show_bug.cgi?id=125181
-                        // TODO - log this? What's the problem?
                         continue;
                     }
                     assert source != null;

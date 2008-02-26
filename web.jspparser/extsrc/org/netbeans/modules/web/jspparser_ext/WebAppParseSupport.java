@@ -45,6 +45,8 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.IOException;
+import java.lang.ref.Reference;
+import java.lang.ref.WeakReference;
 import java.lang.reflect.Field;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -118,13 +120,14 @@ import org.openide.util.WeakListeners;
  * the whole cache).
  * @author Petr Jiricka, Tomas Mysik
  */
-public class WebAppParseSupport implements WebAppParseProxy, PropertyChangeListener {
+public class WebAppParseSupport implements WebAppParseProxy, PropertyChangeListener, ParserServletContext.WebModuleProvider {
     
     static final Logger LOG = Logger.getLogger(WebAppParseSupport.class.getName());
     private static final JspParserAPI.JspOpenInfo DEFAULT_JSP_OPEN_INFO = new JspParserAPI.JspOpenInfo(false, "8859_1"); // NOI18N
     private static final Pattern RE_PATTERN_COMMONS_LOGGING = Pattern.compile(".*commons-logging.*\\.jar.*"); // NOI18N
     
-    private final WebModule wm;
+    // #85817
+    private final Reference<WebModule> wm;
     final FileObject wmRoot;
     final FileObject webInf;
     private final FileSystemListener fileSystemListener;
@@ -152,7 +155,7 @@ public class WebAppParseSupport implements WebAppParseProxy, PropertyChangeListe
 
     /** Creates a new instance of WebAppParseSupport */
     public WebAppParseSupport(WebModule wm) {
-        this.wm = wm;
+        this.wm = new WeakReference<WebModule>(wm);
         wmRoot = wm.getDocumentBase();
         webInf = wm.getWebInf();
         fileSystemListener = new FileSystemListener();
@@ -207,8 +210,13 @@ public class WebAppParseSupport implements WebAppParseProxy, PropertyChangeListe
         if (LOG.isLoggable(Level.FINE)) {
             LOG.fine("JSP parser " + (firstTime ? "" : "re") + "initialized for WM " + FileUtil.toFile(wmRoot));
         }
-        editorContext = new ParserServletContext(wmRoot, wm, true);
-        diskContext = new ParserServletContext(wmRoot, wm, false);
+        WebModule webModule = wm.get();
+        if (webModule == null) {
+            // already gced
+            return;
+        }
+        editorContext = new ParserServletContext(wmRoot, this, true);
+        diskContext = new ParserServletContext(wmRoot, this, false);
         editorOptions = new OptionsImpl(editorContext);
         diskOptions = new OptionsImpl(diskContext);
         rctxt = null;
@@ -848,5 +856,9 @@ System.out.println("--------ENDSTACK------");        */
                 }
             }
         }
+    }
+
+    public WebModule getWebModule() {
+        return wm.get();
     }
 }

@@ -66,6 +66,7 @@ import org.openide.filesystems.FileUtil;
 
 import org.netbeans.modules.j2ee.ejbjarproject.api.EjbJarProjectGenerator;
 import org.netbeans.modules.j2ee.ejbjarproject.Utils;
+import org.netbeans.spi.java.project.support.ui.SharableLibrariesUtils;
 import org.openide.util.NbBundle;
 
 /**
@@ -129,6 +130,7 @@ public class NewEjbJarProjectWizardIterator implements WizardDescriptor.Progress
         
         // remember last used server
     	UserProjectSettings.getDefault().setLastUsedServer(serverInstanceID);
+        SharableLibrariesUtils.setLastProjectSharable(librariesDefinition != null);
         
         // downgrade the Java platform or src level to 1.4        
         String platformName = (String)wiz.getProperty(WizardProperties.JAVA_PLATFORM);
