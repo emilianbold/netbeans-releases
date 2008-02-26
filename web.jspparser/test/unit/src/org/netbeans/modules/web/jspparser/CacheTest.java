@@ -40,6 +40,8 @@
 package org.netbeans.modules.web.jspparser;
 
 import java.io.File;
+import java.lang.ref.Reference;
+import java.lang.ref.WeakReference;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.Map;
@@ -85,6 +87,23 @@ public class CacheTest extends NbTestCase {
         jspParser.analyzePage(jspFo1, webModule2, JspParserAPI.ERROR_IGNORE);
 
         assertTrue("Only 1 web module should be cached", jspParser.parseSupports.size() == 1);
+    }
+
+    public void testGCedWebModules() throws Exception {
+        JspParserImpl jspParser = getJspParser();
+
+        FileObject jspFo = TestUtil.getProjectFile(this, "project2", "/web/basic.jspx");
+        WebModule webModule = TestUtil.createWebModule(jspFo.getParent());
+        jspParser.analyzePage(jspFo, webModule, JspParserAPI.ERROR_IGNORE);
+
+        Reference<WebAppParseProxy> proxy = new WeakReference<WebAppParseProxy>(jspParser.parseSupports.get(webModule));
+        assertNotNull("WebModule should be cached", proxy.get());
+
+        Reference<WebModule> wmRef = new WeakReference<WebModule>(webModule);
+        webModule = null;
+        assertGC("web module should be garbage collected", wmRef);
+        jspParser.parseSupports.size();
+        assertGC("parse proxy should be garbage collected", proxy);
     }
 
     public void testCachedTagLibMaps() throws Exception {
@@ -163,7 +182,7 @@ public class CacheTest extends NbTestCase {
 
         String[] url = taglibMap1.get("http://java.sun.com/jstl/xml");
         assertNull("Url should not be found", url);
-        
+
         // add file
         addXmlTld();
 

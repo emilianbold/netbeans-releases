@@ -50,6 +50,7 @@ import java.beans.PropertyVetoException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Set;
+import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JPanel;
@@ -97,11 +98,13 @@ public class MobilityDeploymentManagerPanel extends JPanel implements ExplorerMa
                 Lookup.Result deployments = Lookup.getDefault().lookup(new Lookup.Template<DeploymentPlugin>(DeploymentPlugin.class));
                 DeploymentPropertiesHandler.loadDeploymentProperties(deployments.allInstances());
                 SwingUtilities.invokeLater(r2 = new Thread() {
-
                     @Override
                     public void run() {
+                        JButton closeButton = new JButton(NbBundle.getMessage(MobilityDeploymentManagerPanel.class, "LBL_closeButton")); //NOI18N
+                        closeButton.getAccessibleContext().setAccessibleDescription("ACCESSIBLE_NAME_closeButton"); //NOI18N
+                        closeButton.getAccessibleContext().setAccessibleDescription("ACCESSIBLE_DESCRIPTION_closeButton"); //NOI18N
                         MobilityDeploymentManagerPanel mdmp = new MobilityDeploymentManagerPanel(deploymentTypeDisplayName, instance);
-                        DialogDisplayer.getDefault().notify(new DialogDescriptor(mdmp, NbBundle.getMessage(MobilityDeploymentManagerAction.class, "Title_DeploymentManager"), true, new Object[]{DialogDescriptor.CLOSED_OPTION}, DialogDescriptor.CLOSED_OPTION, DialogDescriptor.DEFAULT_ALIGN, new HelpCtx(MobilityDeploymentManagerPanel.class), null));  //NOI18N
+                        DialogDisplayer.getDefault().notify(new DialogDescriptor(mdmp, NbBundle.getMessage(MobilityDeploymentManagerAction.class, "Title_DeploymentManager"), true, new Object[]{closeButton}, DialogDescriptor.CLOSED_OPTION, DialogDescriptor.DEFAULT_ALIGN, new HelpCtx(MobilityDeploymentManagerPanel.class), null));  //NOI18N
                         instanceName[0] = mdmp.getSelectedInstanceName();
                     }
                 });
