@@ -73,27 +73,18 @@ public class NbModuleProjectTest extends TestBase {
     protected void setUp() throws Exception {
         super.setUp();
         userPropertiesFile = TestBase.initializeBuildProperties(getWorkDir(), getDataDir());
-        FileObject dir = nbCVSRoot().getFileObject("java/project");
-        assertNotNull("have java/project checked out", dir);
+        FileObject dir = nbRoot().getFileObject("java.project");
+        assertNotNull("have java.project checked out", dir);
         Project p = ProjectManager.getDefault().findProject(dir);
         javaProjectProject = (NbModuleProject)p;
-        dir = nbCVSRoot().getFileObject("openide/loaders");
-        assertNotNull("have openide/loaders checked out", dir);
+        dir = nbRoot().getFileObject("openide.loaders");
+        assertNotNull("have openide.loaders checked out", dir);
         p = ProjectManager.getDefault().findProject(dir);
         loadersProject = (NbModuleProject)p;
     }
 
     /** #56457 */
-    public void testExternalSourceRoots() throws Exception {
-        FileObject documentFinderJava = nbCVSRoot().getFileObject("editor/libsrc/org/netbeans/editor/DocumentFinder.java");
-        assertNotNull("have DocumentFinder.java", documentFinderJava);
-        FileObject editorLib = nbCVSRoot().getFileObject("editor/lib");
-        assertNotNull("have editor/lib", editorLib);
-        Project editorLibProject = ProjectManager.getDefault().findProject(editorLib);
-        assertNotNull("have editor/lib project", editorLibProject);
-        Thread.sleep(1000); // XXX why?
-        assertEquals("correct owner of DocumentFinder.java", editorLibProject, FileOwnerQuery.getOwner(documentFinderJava));
-    }
+    // XXX no longer have editor/libsrc test case: testExternalSourceRoots
 
     public void testExternalModules() throws Exception {
         FileObject suite1 = resolveEEP("suite1");
@@ -125,7 +116,7 @@ public class NbModuleProjectTest extends TestBase {
 
     public void testSupportsJavadoc() throws Exception {
         assertTrue(javaProjectProject.supportsJavadoc());
-        FileObject dir = nbCVSRoot().getFileObject("beans");
+        FileObject dir = nbRoot().getFileObject("beans");
         assertNotNull("have beans checked out", dir);
         Project p = ProjectManager.getDefault().findProject(dir);
         NbModuleProject beansProject = (NbModuleProject) p;

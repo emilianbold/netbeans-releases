@@ -445,26 +445,46 @@ public class BpelMapperModel implements MapperModel, MapperTcContext.Provider {
         if ( !isConnectable(treePath)) {
             return null;
         }
-        if (myHandler != null) {
-            if (myHandler.canAddGraphSubset()) {
-                graphSubset = myHandler.createGraphSubset();
-            } else {
-                graphSubset = null;
+        if (graphSubset == null) {
+            if (myHandler != null) {
+                if (myHandler.canAddGraphSubset()) {
+                    graphSubset = myHandler.createGraphSubset();
+                } else {
+                    graphSubset = null;
+                }
             }
+        } else {
+            graphSubset = new GraphSubset(graphSubset);
         }
+        
         if (graphSubset == null) {
             return null;
         }
+        
         Graph graph = graphRequired(treePath);
-        int nextX = x;
-                        
-        for (int i=0; i < graphSubset.getVertexCount(); i++) {
-            Vertex vertex = graphSubset.getVertex(i);
-            vertex.setLocation(nextX, y);
-            graph.addVertex(vertex);
-            nextX = vertex.getX() + vertex.getWidth() + 3;
+       // int nextX = x;
+        int x0 = 0;
+        int y0 = 0;
+        if (graphSubset.getVertexCount() > 0) {
+            x0 = graphSubset.getVertex(0).getX();
+            y0 = graphSubset.getVertex(0).getY();
         }
-        for (int i=0; i < graphSubset.getLinkCount(); i++) {
+        for (int i = 0; i < graphSubset.getVertexCount(); i++) {
+            Vertex vertex = graphSubset.getVertex(i);
+
+            int xi = graphSubset.getVertex(i).getX();
+            int yi = graphSubset.getVertex(i).getY();
+            vertex.setLocation(xi - x0 + x, yi - y0 + y);
+       //   vertex.setLocation(nextX, y);
+       //   nextX = vertex.getX() + vertex.getWidth() + 3;
+        }
+        for (int i = 0; i < graphSubset.getVertexCount(); i++) {
+            Vertex vertex = graphSubset.getVertex(i);
+            graph.addVertex(vertex);
+
+        }
+        
+        for (int i = 0; i < graphSubset.getLinkCount(); i++) {
             Link link = graphSubset.getLink(i);
             graph.addLink(link);
         }
@@ -483,20 +503,63 @@ public class BpelMapperModel implements MapperModel, MapperTcContext.Provider {
             return;
         }
         Graph graph = graphRequired(treePath);
-
+        Graph oldGraph = null;
+        List<Link> links = new ArrayList<Link>();
+        int x0 = 0;
+        int y0 = 0;
+        if (graphSubset.getVertexCount() > 0) {
+            x0 = graphSubset.getVertex(0).getX();
+            y0 = graphSubset.getVertex(0).getY();
+        }
         for (int i = graphSubset.getVertexCount() - 1; i >= 0; i--) {
             Vertex vertex = graphSubset.getVertex(i);
-            //FIXME Only moving inside the same graph
-            if (vertex.getGraph() == null) {
-                graph.addVertex(vertex);
-            }
-            int x0 = graphSubset.getVertex(0).getX();
-            int y0 = graphSubset.getVertex(0).getY();
-            int xi = graphSubset.getVertex(i).getX();
-            int yi = graphSubset.getVertex(i).getY();
 
-            if (graph == vertex.getGraph()) {
+            if (vertex.getGraph() != null) {
+                oldGraph = vertex.getGraph();
+                if (oldGraph != graph) {
+               //     oldGraph.removeVertex(vertex);
+                    graph.addVertex(vertex);
+                    Link link = vertex.getOutgoingLink();
+                    if (link != null && oldGraph == link.getGraph()) {
+                        oldGraph.removeLink(link);
+                        links.add(link);
+                    }
+                    for (int j = vertex.getItemCount() - 1; j >= 0; j--) {
+                        link = vertex.getItem(j).getIngoingLink();
+                        if (link != null && oldGraph == link.getGraph()) {
+                            oldGraph.removeLink(link);
+                            links.add(link);
+                        }
+                    }
+                }
+
+                int xi = graphSubset.getVertex(i).getX();
+                int yi = graphSubset.getVertex(i).getY();
                 vertex.setLocation(xi - x0 + newX, yi - y0 + newY);
+            }
+        }
+        
+        if (oldGraph != graph) {
+            for (int i = graphSubset.getLinkCount() - 1; i >= 0; i--) {
+                Link link = graphSubset.getLink(i);
+                TargetPin target = link.getTarget();
+                SourcePin source = link.getSource();
+                if (!(target instanceof Graph) && 
+                        graphSubset.containVertex(((VertexItem) target).getVertex()) &&
+                        (source instanceof TreeSourcePin || 
+                        graphSubset.containVertex((Vertex) source))) 
+                {
+                    graph.addLink(link);
+                } else {
+                    link.setSource(null);
+                    link.setTarget(null);
+           
+                }
+                links.remove(link);
+            }
+            for (Link l : links) {
+                l.setSource(null);
+                l.setTarget(null);
             }
         }
         //

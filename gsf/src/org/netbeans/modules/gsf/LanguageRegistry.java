@@ -56,18 +56,18 @@ import java.util.Map;
 import java.util.RandomAccess;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenId;
-import org.netbeans.fpi.gsf.EmbeddingModel;
-import org.netbeans.fpi.gsf.GsfLanguage;
-import org.netbeans.fpi.gsf.annotations.CheckForNull;
-import org.netbeans.fpi.gsf.annotations.NonNull;
+import org.netbeans.modules.gsf.api.EmbeddingModel;
+import org.netbeans.modules.gsf.api.GsfLanguage;
+import org.netbeans.modules.gsf.api.annotations.CheckForNull;
+import org.netbeans.modules.gsf.api.annotations.NonNull;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
-import org.netbeans.fpi.gsfpath.classpath.ClassPath;
+import org.netbeans.modules.gsfpath.api.classpath.ClassPath;
 import org.netbeans.modules.gsfret.source.usages.ClassIndexManager;
-import org.netbeans.sfpi.gsfpath.classpath.ClassPathFactory;
-import org.netbeans.sfpi.gsfpath.classpath.ClassPathImplementation;
-import org.netbeans.sfpi.gsfpath.classpath.PathResourceImplementation;
+import org.netbeans.modules.gsfpath.spi.classpath.ClassPathFactory;
+import org.netbeans.modules.gsfpath.spi.classpath.ClassPathImplementation;
+import org.netbeans.modules.gsfpath.spi.classpath.PathResourceImplementation;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileSystem.AtomicAction;
@@ -230,7 +230,7 @@ public class LanguageRegistry implements Iterable<Language> {
                 }
             }
 
-            mimeMap.put(targetMimeType, result);
+            mimeMap.put(fileMimeType, result);
         }
         
         return result.booleanValue();

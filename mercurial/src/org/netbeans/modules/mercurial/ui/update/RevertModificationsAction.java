@@ -129,8 +129,9 @@ public class RevertModificationsAction extends ContextAction {
                     NbBundle.getMessage(RevertModificationsAction.class,
                     "MSG_REVERT_TITLE_SEP")); // NOI18N
             
+            // revStr == null => no -r REV in hg revert command
             // No revisions to revert too
-            if (NbBundle.getMessage(RevertModificationsAction.class,
+            if (revStr != null && NbBundle.getMessage(RevertModificationsAction.class,
                     "MSG_Revision_Default").startsWith(revStr)) {
                 logger.output(
                         NbBundle.getMessage(RevertModificationsAction.class,

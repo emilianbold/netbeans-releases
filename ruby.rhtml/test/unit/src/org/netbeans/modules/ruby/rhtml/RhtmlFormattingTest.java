@@ -31,7 +31,7 @@ import javax.swing.JEditorPane;
 import org.netbeans.api.ruby.platform.RubyInstallation;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.BaseKit;
-import org.netbeans.fpi.gsf.CompilationInfo;
+import org.netbeans.modules.gsf.api.CompilationInfo;
 import org.netbeans.modules.ruby.Formatter;
 import org.netbeans.modules.ruby.IndentPrefs;
 import org.openide.filesystems.FileObject;

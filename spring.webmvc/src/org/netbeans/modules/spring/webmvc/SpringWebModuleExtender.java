@@ -247,7 +247,7 @@ public class SpringWebModuleExtender extends WebModuleExtender implements Change
                 }
             }
             if (welcomeFiles.sizeWelcomeFile() == 0) {
-                welcomeFiles.addWelcomeFile("index.jsp"); // NOI18N
+                welcomeFiles.addWelcomeFile("redirect.jsp"); // NOI18N
             }
             ddRoot.write(dd);
 
@@ -274,25 +274,27 @@ public class SpringWebModuleExtender extends WebModuleExtender implements Change
             // COPY TEMPLATE SPRING RESOURCES (JSP, XML, PROPERTIES)
             copyResource("index.jsp", FileUtil.createData(jsp, "index.jsp")); // NOI18N
             copyResource("jdbc.properties", FileUtil.createData(webInf, "jdbc.properties")); // NOI18N
-            final List<File> configFiles = new ArrayList<File>(2);
+            final List<File> newFiles = new ArrayList<File>(2);
             FileObject configFile;
             configFile = copyResource("applicationContext.xml", FileUtil.createData(webInf, "applicationContext.xml")); // NOI18N
             addFileToOpen(configFile);
-            configFiles.add(FileUtil.toFile(configFile));
+            newFiles.add(FileUtil.toFile(configFile));
             configFile = copyResource("dispatcher-servlet.xml", FileUtil.createData(webInf, getComponent().getDispatcherName() + "-servlet.xml")); // NOI18N
             addFileToOpen(configFile);
-            configFiles.add(FileUtil.toFile(configFile));
+            newFiles.add(FileUtil.toFile(configFile));
 
             SpringScope scope = SpringScope.getSpringScope(configFile);
             if (scope != null) {
                 final ConfigFileManager manager = scope.getConfigFileManager();
                 manager.mutex().writeAccess(new Runnable() {
                     public void run() {
+                        List<File> files = manager.getConfigFiles();
+                        files.addAll(newFiles);
                         List<ConfigFileGroup> groups = manager.getConfigFileGroups();
-                        String groupName = NbBundle.getMessage(SpringWebModuleExtender.class, "LBL_DefaultGroup");
-                        ConfigFileGroup newGroup = ConfigFileGroup.create(groupName, configFiles);
+                        String groupName = NbBundle.getMessage(SpringWebModuleExtender.class, "LBL_DefaultGroup"); // NOI18N
+                        ConfigFileGroup newGroup = ConfigFileGroup.create(groupName, newFiles);
                         groups.add(newGroup);
-                        manager.putConfigFileGroups(groups);
+                        manager.putConfigFilesAndGroups(files, groups);
                         try {
                             manager.save();
                         } catch (IOException e) {
@@ -301,16 +303,16 @@ public class SpringWebModuleExtender extends WebModuleExtender implements Change
                     }
                 });
             } else {
-                LOGGER.log(Level.WARNING, "Could not find a SpringScope for file {0}", configFile);
+                LOGGER.log(Level.WARNING, "Could not find a SpringScope for file {0}", configFile); // NOI18N
             }
 
-            // MODIFY EXISTING INDEX.JSP
+            // MODIFY EXISTING REDIRECT.JSP
             FileObject documentBase = webModule.getDocumentBase();
-            FileObject indexJsp = documentBase.getFileObject("index.jsp"); // NOI18N
-            if (indexJsp == null) {
-                indexJsp = FileUtil.createData(documentBase, "index.jsp"); // NOI18N
+            FileObject redirectJsp = documentBase.getFileObject("redirect.jsp"); // NOI18N
+            if (redirectJsp == null) {
+                redirectJsp = FileUtil.createData(documentBase, "redirect.jsp"); // NOI18N
             }
-            addFileToOpen(copyResource("redirect.jsp", indexJsp)); // NOI18N
+            addFileToOpen(copyResource("redirect.jsp", redirectJsp)); // NOI18N
         }
                
         public void addFileToOpen(FileObject file) {
@@ -332,6 +334,12 @@ public class SpringWebModuleExtender extends WebModuleExtender implements Change
                     // If an extension mapping is entered by the user, then update filename extensions in the Spring bean config file and index.jsp
                     if ((resourceName.contains("-servlet.xml") || ((resourceName.equals("redirect.jsp"))))) { // NOI18N
                         line = SpringWebFrameworkUtils.replaceExtensionInTemplates(line, dispatcherMapping);
+                    }
+                    if (resourceName.equals("redirect.jsp")) { // NOI18N
+                        line = SpringWebFrameworkUtils.reviseRedirectJsp(line, dispatcherMapping);
+                    }
+                    if (resourceName.equals("index.jsp")) { // NOI18N
+                        line = SpringWebFrameworkUtils.setWelcomePageText(line);
                     }
                     buffer.append(line);
                     buffer.append(lineSeparator);

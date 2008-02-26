@@ -104,7 +104,7 @@ public class CliJbiGenerator {
     public static final String XSI_ATTR_NAME = "xsi:schemaLocation"; // NOI18N
     public static final String XSI_ATTR_VALUE ="http://java.sun.com/xml/ns/jbi jbi.xsd"; // NOI18N
     
-    public static final String JBI_EXT_NS = "http://enterprise.netbeans.org/bpel/jbi-extensions"; // NOI18N
+    public static final String JBI_EXT_NS = "http://enterprise.netbeans.org/jbi-extensions"; // NOI18N
     
     public static final String JBI_EXT_DISPLAY_NAME = "display-name";
     public static final String JBI_EXT_PROC_NAME_ATTR = "process-name";

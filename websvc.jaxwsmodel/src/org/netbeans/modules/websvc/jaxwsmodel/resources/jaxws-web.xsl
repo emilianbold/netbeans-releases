@@ -63,6 +63,7 @@ made subject to such option by the copyright holder.
                 <xsl:if test="count(/jaxws:jax-ws/jaxws:services/jaxws:service[not(jaxws:wsdl-url)]) > 0">
                     <target name="wsgen-init" depends="init, -do-compile">
                         <mkdir dir="${{build.generated.dir}}/wsgen/service"/>
+                        <mkdir dir="${{build.generated.dir}}/wsgen/service/resources/"/>
                         <mkdir dir="${{build.generated.dir}}/wsgen/binaries"/>
                         <mkdir dir="${{build.classes.dir}}"/>
                         <taskdef name="wsgen" classname="com.sun.tools.ws.ant.WsGen">
@@ -75,12 +76,12 @@ made subject to such option by the copyright holder.
                         <xsl:variable name="wsname" select="@name"/>                        
                         <xsl:variable name="seiclass" select="jaxws:implementation-class"/>                      
                         <target name="wsgen-{$wsname}" depends="wsgen-init">
-                            <mkdir dir="${{build.generated.dir}}/wsgen/service/{$wsname}/"/>
+                            
                             <wsgen
                                 fork="true"
                                 xendorsed="true"
                                 sourcedestdir="${{build.generated.dir}}/wsgen/service"
-                                resourcedestdir="${{build.generated.dir}}/wsgen/service/{$wsname}/"
+                                resourcedestdir="${{build.generated.dir}}/wsgen/service/resources/"
                                 destdir="${{build.generated.dir}}/wsgen/binaries"
                                 keep="true"
                                 genwsdl="true"
@@ -170,6 +171,7 @@ made subject to such option by the copyright holder.
                         <xsl:with-param name="wsdlUrl" select="$wsdl_url"/>
                         <xsl:with-param name="wsdlUrlActual" select="$wsdl_url_actual"/>
                         <xsl:with-param name="Catalog" select="$catalog"/>  
+                        <xsl:with-param name="wsimportoptions" select="jaxws:wsimport-options"/>
                     </xsl:call-template>                       
                     <copy todir="${{build.classes.dir}}">
                         <fileset dir="${{build.generated.dir}}/wsimport/binaries" includes="**/*.xml"/>
@@ -219,7 +221,8 @@ made subject to such option by the copyright holder.
                             <xsl:with-param name="packageName" select="$package_name"/>                         
                             <xsl:with-param name="wsName" select="$wsname" />
                             <xsl:with-param name="wsdlUrl" select="$wsdl_url"/>
-                            <xsl:with-param name="Catalog" select="$catalog"/>  
+                            <xsl:with-param name="Catalog" select="$catalog"/>
+                            <xsl:with-param name="wsimportoptions" select="jaxws:wsimport-options"/>
                         </xsl:call-template>
                         <copy todir="${{build.web.dir}}/WEB-INF/wsdl/{$wsname}">
                             <fileset dir="${{basedir}}/${{conf-dir}}xml-resources/web-services/{$wsname}/wsdl/" />
@@ -281,7 +284,9 @@ made subject to such option by the copyright holder.
         <xsl:param name="wsdlUrl"/>
         <xsl:param name="wsdlUrlActual"/>
         <xsl:param name="Catalog"/>
+        <xsl:param name="wsimportoptions"/>
         <wsimport>
+            
             <xsl:if test="$isJaxws21 or $isJSR109 = 'false'">
                 <xsl:attribute name="xendorsed">true</xsl:attribute>  
             </xsl:if>
@@ -320,6 +325,17 @@ made subject to such option by the copyright holder.
                 <xsl:attribute name="wsdlLocation"><xsl:value-of select="$wsdlUrlActual" /></xsl:attribute>
             </xsl:if> 
             <xsl:attribute name="catalog"><xsl:value-of select="$Catalog" /></xsl:attribute>
+            
+            <xsl:if test="$wsimportoptions">
+                <xsl:for-each select="$wsimportoptions/jaxws:wsimport-option">
+                    <xsl:variable name="wsoptionname" select="jaxws:wsimport-option-name"/>
+                    <xsl:variable name="wsoptionvalue" select="jaxws:wsimport-option-value"/>
+                    <xsl:variable name="wsoption">
+                        <xsl:text><xsl:value-of select="$wsoptionname"/></xsl:text>
+                    </xsl:variable>
+                    <xsl:attribute name="{$wsoption}"><xsl:value-of select="$wsoptionvalue"/></xsl:attribute>
+                </xsl:for-each>
+            </xsl:if>
             
             <xsl:if test="jaxws:binding">
                 <binding>

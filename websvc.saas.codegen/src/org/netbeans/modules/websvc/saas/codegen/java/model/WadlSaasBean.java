@@ -41,8 +41,8 @@ package org.netbeans.modules.websvc.saas.codegen.java.model;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
+import org.netbeans.modules.websvc.saas.codegen.java.AbstractGenerator;
 import org.netbeans.modules.websvc.saas.model.WadlSaasMethod;
 import org.netbeans.modules.websvc.saas.model.wadl.Param;
 import org.netbeans.modules.websvc.saas.model.wadl.RepresentationType;
@@ -51,8 +51,8 @@ import org.netbeans.modules.websvc.saas.model.wadl.Resource;
 import org.netbeans.modules.websvc.saas.model.wadl.Response;
 import org.netbeans.modules.websvc.saas.codegen.java.Constants.HttpMethodType;
 import org.netbeans.modules.websvc.saas.codegen.java.Constants.MimeType;
-import org.netbeans.modules.websvc.saas.codegen.java.JaxRsCodeGenerator;
-import org.netbeans.modules.websvc.saas.codegen.java.support.Inflector;
+import org.netbeans.modules.websvc.saas.codegen.java.Constants.SaasAuthenticationType;
+import org.netbeans.modules.websvc.saas.codegen.java.model.ParameterInfo.ParamStyle;
 
 /**
  *
@@ -60,12 +60,10 @@ import org.netbeans.modules.websvc.saas.codegen.java.support.Inflector;
  */
 public class WadlSaasBean extends SaasBean {
 
-    private String outputWrapperName;
-    private String wrapperPackageName;
-    private List<ParameterInfo> queryParams;
+    public static final String SAAS_SERVICE_TEMPLATE = AbstractGenerator.TEMPLATES_SAAS+"SaasService.java"; //NOI18N
     private String url;
     private WadlSaasMethod m;
-    private List<ParameterInfo> inputParams;
+    private List<ParameterInfo> pathParams;
     
     public WadlSaasBean(WadlSaasMethod m)  throws IOException {
         super(deriveResourceName(m.getName()), null, 
@@ -74,37 +72,101 @@ public class WadlSaasBean extends SaasBean {
                 new HttpMethodType[]{HttpMethodType.GET});
     
         this.m = m;
-       
-        setResourceClassTemplate(m.getHref());
-        inputParams = new ArrayList<ParameterInfo>();
+        setResourceClassTemplate(RESOURCE_TEMPLATE);
+        init();
+    }
+
+    public WadlSaasMethod getMethod() {
+        return m;
+    }
+    
+    private void init() {    
+        findAuthentication(m);
+        initUrl();        
+        initInputParameters();
+        initTemplateParameters();
+        initQueryParameters();
+        initMimeTypes();
+    }
+    
+    private void initUrl() {
         List<MimeType> mimeTypes = new ArrayList<MimeType>();
         try {
             Resource[] rArray = m.getResourcePath();
+            if(rArray == null || rArray.length == 0)
+                throw new IllegalArgumentException("Method do not belong to any resource in the WADL.");
             Resource currResource = rArray[rArray.length-1];
             String url2 = m.getSaas().getWadlModel().getResources().getBase();
             if(url2 != null && url2.length() > 1 && url2.endsWith("/")) {
                 url2 = url2.substring(0, url2.length()-1);
             }
-            for(Resource r:rArray) {
-                url2 += "/"+r.getPath();
-            }
+            url2 += "/"+currResource.getPath();
             this.url = url2;
+        } catch (Exception ex) {
+        } 
+    }
+    
+    protected List<ParameterInfo> initInputParameters() {
+        ArrayList<ParameterInfo> inputParams = new ArrayList<ParameterInfo>();
+        try {
+            Resource[] rArray = m.getResourcePath();
+            if(rArray == null || rArray.length == 0)
+                throw new IllegalArgumentException("Method do not belong to any resource in the WADL.");
+            Resource currResource = rArray[rArray.length-1];
             
             findParams(inputParams, currResource.getParam());
             Request req = m.getWadlMethod().getRequest();
             findParams(inputParams, req.getParam());
+        } catch (Exception ex) {
+        } 
+        return inputParams;
+    }
+    
+    private void initTemplateParameters() {
+        ArrayList<ParameterInfo> params = new ArrayList<ParameterInfo>();
+        String url2 = this.url;
+        String[] paths = url2.split("/");
+        for(String path:paths) {
+            if(path.startsWith("{") && path.endsWith("}")) {
+                ParameterInfo paramInfo = new ParameterInfo(path, String.class);
+                if(path.length() > 2)
+                    paramInfo.setDefaultValue(path.substring(1, path.length()-1));
+                params.add(paramInfo);
+            }
+        }
+        this.pathParams = params;
+    }
+    
+    private void initQueryParameters() {
+        String apiKeyName = "";
+        boolean isApiKey = getAuthenticationType() == SaasAuthenticationType.API_KEY;
+        if(isApiKey)
+            apiKeyName = ((ApiKeyAuthentication)getAuthentication()).getApiKeyName();
+        for (ParameterInfo param : getInputParameters()) {
+            String paramName = param.getName();
+            if((isApiKey && paramName.equals(apiKeyName))) {
+                param.setStyle(ParamStyle.QUERY_APIKEY);
+            } else if(param.getFixed() != null){
+                param.setStyle(ParamStyle.QUERY_FIXED);
+            } else {
+                param.setStyle(ParamStyle.QUERY);
+            }
+        }
+    }
+    
+    private void initMimeTypes() {
+        List<MimeType> mimeTypes = new ArrayList<MimeType>();
+        try {
             Response response = m.getWadlMethod().getResponse();
             findMediaType(response, mimeTypes);
-
             if(mimeTypes.size() > 0)
                 this.setMimeTypes(mimeTypes.toArray(new MimeType[mimeTypes.size()]));
         } catch (Exception ex) {
-            throw new IOException(ex.getMessage());
         } 
     }
-
-    protected List<ParameterInfo> initInputParameters() {
-        return inputParams;
+    
+    public List<ParameterInfo> getTemplateParameters() {
+        return pathParams;
     }
     
     public String getUrl() {
@@ -131,10 +193,16 @@ public class WadlSaasBean extends SaasBean {
     private void findParams(List<ParameterInfo> paramInfos, List<Param> params) {
         if (params != null) {
             for (Param param:params) {
+                //<param name="replace" type="xsd:boolean" style="query" required="false" default="some value">
                 String paramName = param.getName();
                 Class paramType = findJavaType(param.getType().getLocalPart());
                 Object defaultValue = param.getDefault();
                 ParameterInfo paramInfo = new ParameterInfo(paramName, paramType);
+                paramInfo.setStyle(ParamStyle.fromValue(param.getStyle().value()));
+                paramInfo.setIsRequired(param.isRequired());
+                paramInfo.setIsRepeating(param.isRepeating());
+                paramInfo.setFixed(param.getFixed());
+                paramInfo.setOption(param.getOption());
                 paramInfo.setDefaultValue(defaultValue);
                 paramInfos.add(paramInfo);
             }
@@ -159,94 +227,7 @@ public class WadlSaasBean extends SaasBean {
         return String.class;
     }
     
-    private Object getDefaultValue(String value, Class type) {
-        if (type == String.class) {
-            return value;
-        } else if (type == Integer.class) {
-            return new Integer(Integer.parseInt(value));
-        }
-        
-        return null;
-    }
-
-    public void setInputParameters(List<ParameterInfo> inputParams) {
-        this.inputParams = inputParams;
-    }
-
-    @Override
-    public List<ParameterInfo> getInputParameters() {
-        if (inputParams == null) {
-            inputParams = initInputParameters();
-        }
-
-        return inputParams;
-    }
-
-    public List<ParameterInfo> getHeaderParameters() {
-        return Collections.emptyList();
-    }
-
-    @Override
-    public List<ParameterInfo> getQueryParameters() {
-        if (queryParams == null) {
-            queryParams = new ArrayList<ParameterInfo>();
-
-            for (ParameterInfo param : getInputParameters()) {
-                if (param.isQueryParam()) {
-                    queryParams.add(param);
-                }
-            }
-        }
-        return queryParams;
-    }
-
-    public String getOutputWrapperName() {
-        if (outputWrapperName == null) {
-            outputWrapperName = getName();
-
-            if (outputWrapperName.endsWith(RESOURCE_SUFFIX)) {
-                outputWrapperName = outputWrapperName.substring(0, outputWrapperName.length() - 8);
-            }
-            outputWrapperName += JaxRsCodeGenerator.CONVERTER_SUFFIX;
-        }
-        return outputWrapperName;
-    }
-
-    public String getOutputWrapperPackageName() {
-        return wrapperPackageName;
-    }
-
-    public void setOutputWrapperPackageName(String packageName) {
-        wrapperPackageName = packageName;
-    }
-
-    protected static String deriveResourceName(String componentName) {
-        return Inflector.getInstance().camelize(componentName + GenericResourceBean.RESOURCE_SUFFIX);
-    }
-
-    protected static String deriveUriTemplate(String name) {
-        return Inflector.getInstance().camelize(name, true) + "/"; //NOI18N
-    }
-
-    public String[] getRepresentationTypes() {
-        if (getMimeTypes().length == 1 && getMimeTypes()[0] == MimeType.HTML) {
-            return new String[]{String.class.getName()};
-        } else {
-            String rep = getOutputWrapperPackageName() + "." + getOutputWrapperName();
-            List<String> repList = new ArrayList<String>();
-            for(MimeType m:getMimeTypes()) {//stuff rep with as much mimetype length
-                repList.add(rep);
-            }
-            return repList.toArray(new String[0]);
-        }
-    }
-
-    public String[] getOutputTypes() {
-        String[] types = new String[]{"java.lang.String"}; //NOI18N
-        return types;
-    }
-
-    public String getResourceClassTemplate() {
-        return RESOURCE_TEMPLATE;
+    public String getSaasServiceTemplate() {
+        return SAAS_SERVICE_TEMPLATE;
     }
 }

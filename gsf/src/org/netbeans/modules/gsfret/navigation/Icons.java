@@ -47,8 +47,8 @@ import java.util.HashMap;
 import java.util.Map;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
-import org.netbeans.fpi.gsf.ElementKind;
-import org.netbeans.fpi.gsf.Modifier;
+import org.netbeans.modules.gsf.api.ElementKind;
+import org.netbeans.modules.gsf.api.Modifier;
 import org.openide.util.Utilities;
 
 
@@ -139,6 +139,7 @@ public final class Icons {
         case ERROR:
             img = Utilities.loadImage( ICON_BASE + "error-glyph" + GIF_EXTENSION );
             break;
+        case PACKAGE:
         case MODULE:
             img = Utilities.loadImage( ICON_BASE + "package" + GIF_EXTENSION );
             break;
@@ -149,6 +150,7 @@ public final class Icons {
             img = Utilities.loadImage( ICON_BASE + "html_element" + PNG_EXTENSION );
             break;
         case VARIABLE:
+        case PROPERTY:
         case GLOBAL:
         case ATTRIBUTE:
         case FIELD:

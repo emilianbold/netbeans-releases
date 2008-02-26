@@ -111,8 +111,26 @@ is the proper place.
     <!-- ACTUAL CHANGES BEGIN HERE: -->
 
     <changes>
-        <change id="isCommonUIRequired">
+        <change id="createLibrary">
 	    <api name="plugins"/>
+	    <summary>
+                Method that creates the library based on content of the platform.
+	    </summary>
+	    <version major="1" minor="40"/>
+	    <date day="21" month="2" year="2008"/>
+	    <author login="phejl"/>
+	    <compatibility binary="compatible" source="compatible" semantic="compatible" addition="yes"/>
+	    <description>
+                <p>
+                    Methods allows creation of the library form the platform all
+                    required files are copied to the new location. Requirement
+                    introduced by java ee sharability.
+                </p>
+	    </description>
+	    <class package="org.netbeans.modules.j2ee.deployment.devmodules.api" name="J2eePlatform"/>
+	</change>         
+        <change id="isCommonUIRequired">
+	    <api name="j2eeserver"/>
 	    <summary>
                 OptionalDeploymentManagerFactory declares whether j2eeserver
                 should provide common UI (like wizard for example).

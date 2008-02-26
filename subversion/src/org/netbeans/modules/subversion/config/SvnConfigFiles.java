@@ -177,9 +177,7 @@ public class SvnConfigFiles {
         Ini nbServers = new Ini();
         Ini.Section nbGlobalSection = nbServers.add(GLOBAL_SECTION);
         Ini.Section svnGlobalSection = svnServers.get(GLOBAL_SECTION);
-        if(proxySettings.isDirect()) {
-            mergeNonProxyKeys(host, svnGlobalSection, nbGlobalSection);
-        } else {                        
+        if(!proxySettings.isDirect()) {
             String proxyHost = "";
             int proxyPort = -1;                       
             if(url.getProtocol().startsWith("https")) {
@@ -208,20 +206,13 @@ public class SvnConfigFiles {
 
                     nbGlobalSection.put("http-proxy-username", username);                               // NOI18N
                     nbGlobalSection.put("http-proxy-password", password);                               // NOI18N            
-                }            
-            
-                // we have a proxy for the host, so check 
-                // if in there are also some no proxy settings 
-                // we should get from the original svn servers file     
-                mergeNonProxyKeys(host, svnGlobalSection, nbGlobalSection);                
-            } else {
-                // no proxy host means no proxy at all                                                
-                if(svnGlobalSection != null) {
-                    // if there is a global section than get the no proxy settings                                                                 
-                    mergeNonProxyKeys(svnGlobalSection, nbGlobalSection);                
-                }
-            }
+                }                        
+            } 
         }        
+        // check if there are also some no proxy settings 
+        // we should get from the original svn servers file     
+        mergeNonProxyKeys(host, svnGlobalSection, nbGlobalSection);                
+        
         storeIni(nbServers, "servers");                                                       // NOI18N    
     }        
     

@@ -1655,6 +1655,9 @@ public class CasaBuilder {
 
         List<Endpoint> suEndpoints = su2Endpoints.get(bcName);
 
+        // 02/12/08, used to skip ports from duplicate copies of wsdl files
+        Map<String, Port> portMap = new HashMap<String, Port>();
+
         // Loop through all WSDLs and add casa port elements of the given 
         // BC type. This includes:
         // (1) BC endpoints in the corresponding SU's jbi.xml, 
@@ -1679,53 +1682,57 @@ public class CasaBuilder {
                 for (Port p : s.getPorts()) {
                     String portName = p.getName();
                     debugLog("          Endpoint: " + serviceQName + ":" + portName);
+                    String key = tns+":"+serviceName+":"+portName;
+                    if (portMap.get(key) == null) {
+                        portMap.put(key, p);
 
-                    boolean isSUEndpoint = isInEndpointList(suEndpoints, serviceQName, portName);
-                    boolean isLiveDeletedBCEndpoint = false;
-                    boolean isLiveUnconnectedEndpoint = false;
+                        boolean isSUEndpoint = isInEndpointList(suEndpoints, serviceQName, portName);
+                        boolean isLiveDeletedBCEndpoint = false;
+                        boolean isLiveUnconnectedEndpoint = false;
 
-                    if (isSUEndpoint) {
-                        debugLog("              is a SU endpoint.");
-                    } else {
-                        List<Endpoint> deletedBCEndpoints = deletedBCEndpointsMap.get(bcName);
-                        if (isInEndpointList(deletedBCEndpoints, serviceQName, portName) &&
-                                isInEndpointList(newWsdlEndpoints, serviceQName, portName)) {
-                            isLiveDeletedBCEndpoint = true;
-                            debugLog("              is a live deleted endpoint.");
-                        }
-
-                        if (!isLiveDeletedBCEndpoint) {
-                            List<Endpoint> unconnectedBCEndpoints = oldUnconnectedBCEndpointsMap.get(bcName);
-                            if (isInEndpointList(unconnectedBCEndpoints, serviceQName, portName) &&
-                                    isInEndpointList(newWsdlEndpoints, serviceQName, portName)) {
-                                isLiveUnconnectedEndpoint = true;
-                                debugLog("              is a live unconnected endpoint.");
-                            }
-                        }
-                    }
-
-                    if (isSUEndpoint || isLiveDeletedBCEndpoint || isLiveUnconnectedEndpoint) {
-                        // Instead of creating a new casa port every time, check
-                        // if a casa port has already been created. This allows
-                        // multiple (duplicate) WSDL Ports to share the same
-                        // CASA Port element.
-                        String fullyQualifiedPortName = serviceQName.toString() + "." + portName;
-                        Element port = casaPortMap.get(fullyQualifiedPortName);
-                        if (port == null) {
-                            // Create new casa port
-                            port = createPort(relativePath, serviceQName, portName);
-                            ports.appendChild(port);
-                            casaPortMap.put(fullyQualifiedPortName, port);
-
-                            // Mark casa port as "deleted" if the old casa says so.
-                            if (isLiveDeletedBCEndpoint) {
-                                port.setAttribute(CASA_STATE_ATTR_NAME, CASA_DELETED_ATTR_VALUE);
-                            }
+                        if (isSUEndpoint) {
+                            debugLog("              is a SU endpoint.");
                         } else {
-                            // Reuse old casa port by adding a new link
-                            Element casaLinkElement = createLinkForWsdlPort(
-                                    relativePath, serviceName, portName);
-                            port.appendChild(casaLinkElement);
+                            List<Endpoint> deletedBCEndpoints = deletedBCEndpointsMap.get(bcName);
+                            if (isInEndpointList(deletedBCEndpoints, serviceQName, portName) &&
+                                    isInEndpointList(newWsdlEndpoints, serviceQName, portName)) {
+                                isLiveDeletedBCEndpoint = true;
+                                debugLog("              is a live deleted endpoint.");
+                            }
+
+                            if (!isLiveDeletedBCEndpoint) {
+                                List<Endpoint> unconnectedBCEndpoints = oldUnconnectedBCEndpointsMap.get(bcName);
+                                if (isInEndpointList(unconnectedBCEndpoints, serviceQName, portName) &&
+                                        isInEndpointList(newWsdlEndpoints, serviceQName, portName)) {
+                                    isLiveUnconnectedEndpoint = true;
+                                    debugLog("              is a live unconnected endpoint.");
+                                }
+                            }
+                        }
+
+                        if (isSUEndpoint || isLiveDeletedBCEndpoint || isLiveUnconnectedEndpoint) {
+                            // Instead of creating a new casa port every time, check
+                            // if a casa port has already been created. This allows
+                            // multiple (duplicate) WSDL Ports to share the same
+                            // CASA Port element.
+                            String fullyQualifiedPortName = serviceQName.toString() + "." + portName;
+                            Element port = casaPortMap.get(fullyQualifiedPortName);
+                            if (port == null) {
+                                // Create new casa port
+                                port = createPort(relativePath, serviceQName, portName);
+                                ports.appendChild(port);
+                                casaPortMap.put(fullyQualifiedPortName, port);
+
+                                // Mark casa port as "deleted" if the old casa says so.
+                                if (isLiveDeletedBCEndpoint) {
+                                    port.setAttribute(CASA_STATE_ATTR_NAME, CASA_DELETED_ATTR_VALUE);
+                                }
+                            } else {
+                                // Reuse old casa port by adding a new link
+                                Element casaLinkElement = createLinkForWsdlPort(
+                                        relativePath, serviceName, portName);
+                                port.appendChild(casaLinkElement);
+                            }
                         }
                     }
                 }

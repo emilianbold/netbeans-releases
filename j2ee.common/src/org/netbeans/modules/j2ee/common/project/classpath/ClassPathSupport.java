@@ -59,6 +59,7 @@ import org.netbeans.api.project.ant.AntArtifact;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.modules.j2ee.common.project.ui.ProjectProperties;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
 import org.netbeans.modules.java.api.common.ant.UpdateHelper;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
@@ -204,12 +205,23 @@ public final class ClassPathSupport {
     public String[] encodeToStrings(List<Item> classpath) {
         return encodeToStrings(classpath, null);
     }
+    public String[] encodeToStrings( List<Item> classpath, String projectXMLElement) {
+        return encodeToStrings(classpath, projectXMLElement, "classpath");
+    }
     
-    public String[] encodeToStrings( List<Item> classpath, String projectXMLElement ) {
+    /**
+     * 
+     * @param classpath
+     * @param projectXMLElement
+     * @param libraryVolumeType
+     * @return
+     * @since 1.22
+     */
+    public String[] encodeToStrings( List<Item> classpath, String projectXMLElement, String libraryVolumeType ) {
         List<String> items = new ArrayList<String>();
         for (Item item : classpath) {
             String reference = null;
-            
+
             switch( item.getType() ) {
 
                 case Item.TYPE_JAR:
@@ -253,7 +265,7 @@ public final class ClassPathSupport {
                         if ( library == null ) {
                             break;
                         }
-                        reference = getLibraryReference( item );
+                        reference = getLibraryReference( item, libraryVolumeType );
                         item.setReference(reference);
                     }
                     break;    
@@ -311,11 +323,22 @@ public final class ClassPathSupport {
     }
     
     public String getLibraryReference( Item item ) {
-        if ( item.getType() != Item.TYPE_LIBRARY ) {
-            throw new IllegalArgumentException( "Item must be of type LIBRARY" );
-        }
-        return referenceHelper.createLibraryReference(item.getLibrary(), "classpath"); // NOI18N
+        return getLibraryReference(item, "classpath");
     }
+    
+    /**
+     * 
+     * @param item
+     * @param volumeType
+     * @return
+     * @since 1.22
+     */
+    public String getLibraryReference( Item item, String volumeType ) {
+        if ( item.getType() != Item.TYPE_LIBRARY ) {
+            throw new IllegalArgumentException( "Item must be of type LIBRARY" ); // NOI18N
+        }
+        return referenceHelper.createLibraryReference(item.getLibrary(), volumeType); // NOI18N
+    }    
     
     // Private methods ---------------------------------------------------------
 
@@ -794,10 +817,6 @@ public final class ClassPathSupport {
          */
         void storeAdditionalProperties(List<Item> items, String projectXMLElement);
         
-        /**
-         * Initializes additional information to a default state.
-         */
-        void initAdditionalProperties(Item item);
     }
     
 }

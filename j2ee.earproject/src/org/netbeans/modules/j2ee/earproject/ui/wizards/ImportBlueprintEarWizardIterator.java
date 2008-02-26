@@ -52,9 +52,11 @@ import java.util.Set;
 import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.progress.ProgressHandle;
+import org.netbeans.modules.j2ee.common.SharabilityUtility;
+import org.netbeans.modules.j2ee.common.project.ui.PanelSharability;
+import org.netbeans.modules.j2ee.common.project.ui.UserProjectSettings;
 import org.netbeans.modules.j2ee.earproject.EarProjectGenerator;
 import org.netbeans.modules.j2ee.earproject.ModuleType;
-import org.netbeans.modules.j2ee.earproject.ui.FoldersListSettings;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -80,6 +82,7 @@ public class ImportBlueprintEarWizardIterator implements WizardDescriptor.Progre
             new PanelConfigureProject(PROP_NAME_INDEX,
                     NbBundle.getBundle(ImportBlueprintEarWizardIterator.class),
                     new HelpCtx(this.getClass()), true),
+            new PanelSharability(WizardProperties.PROJECT_DIR, WizardProperties.SERVER_INSTANCE_ID, false),
             new PanelModuleDetection()
         };
     }
@@ -87,6 +90,7 @@ public class ImportBlueprintEarWizardIterator implements WizardDescriptor.Progre
     private String[] createSteps() {
         return new String[] {
             NbBundle.getMessage(ImportBlueprintEarWizardIterator.class, "LBL_NWP1_ProjectTitleName"),
+            NbBundle.getMessage(ImportBlueprintEarWizardIterator.class, "PanelShareabilityVisual.label"), 
             NbBundle.getMessage(ImportBlueprintEarWizardIterator.class, "LBL_IW_ApplicationModulesStep")
         };
     }
@@ -117,18 +121,23 @@ public class ImportBlueprintEarWizardIterator implements WizardDescriptor.Progre
         @SuppressWarnings("unchecked")
         Map<FileObject, ModuleType> userModules = (Map<FileObject, ModuleType>)
                 wiz.getProperty(WizardProperties.USER_MODULES);
+        String librariesDefinition =
+                SharabilityUtility.getLibraryLocation((String) wiz.getProperty(PanelSharability.WIZARD_SHARED_LIBRARIES));
+        String serverLibraryName = (String) wiz.getProperty(PanelSharability.WIZARD_SERVER_LIBRARY);
         return testableInstantiate(platformName, sourceLevel, j2eeLevel, dirF,
-                srcF, serverInstanceID, name, userModules, handle);
+                srcF, serverInstanceID, name, userModules, handle, librariesDefinition, serverLibraryName);
     }
     
     /** <strong>Package private for unit test only</strong>. */
     static Set<FileObject> testableInstantiate(final String platformName,
             final String sourceLevel, final String j2eeLevel, final File dirF,
             final File srcF, final String serverInstanceID, final String name,
-            final Map<FileObject, ModuleType> userModules, ProgressHandle handle) throws IOException {
+            final Map<FileObject, ModuleType> userModules, ProgressHandle handle,
+            String librariesDefinition, String serverLibraryName) throws IOException {
         
         EarProjectGenerator.importProject(dirF, srcF, name, j2eeLevel,
-                serverInstanceID, platformName, sourceLevel, userModules);
+                serverInstanceID, platformName, sourceLevel, userModules, 
+                librariesDefinition, serverLibraryName);
         if (handle != null) {
             handle.progress(2);
         }
@@ -136,7 +145,7 @@ public class ImportBlueprintEarWizardIterator implements WizardDescriptor.Progre
         FileObject dir = FileUtil.toFileObject(dirF);
         
         // remember last used server
-        FoldersListSettings.getDefault().setLastUsedServer(serverInstanceID);
+        UserProjectSettings.getDefault().setLastUsedServer(serverInstanceID);
         Set<FileObject> resultSet = new HashSet<FileObject>();
         resultSet.add(dir);
         

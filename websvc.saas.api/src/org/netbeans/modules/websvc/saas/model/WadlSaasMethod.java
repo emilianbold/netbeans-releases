@@ -43,6 +43,8 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import org.netbeans.modules.websvc.saas.model.jaxb.Method;
+import org.netbeans.modules.websvc.saas.model.jaxb.Method.Input;
+import org.netbeans.modules.websvc.saas.model.jaxb.Method.Output;
 import org.netbeans.modules.websvc.saas.model.wadl.Application;
 import org.netbeans.modules.websvc.saas.model.wadl.Resource;
 import org.netbeans.modules.websvc.saas.model.wadl.Resources;
@@ -68,6 +70,15 @@ public class WadlSaasMethod extends SaasMethod {
         this.wadlMethod = wadlMethod;
     }
 
+    @Override
+    public String getName() {
+        if (getMethod() == null) {
+            return wadlMethod.getId();
+        }
+        return super.getName();
+    }
+
+    @Override
     public WadlSaas getSaas() {
         return (WadlSaas) super.getSaas();
     }

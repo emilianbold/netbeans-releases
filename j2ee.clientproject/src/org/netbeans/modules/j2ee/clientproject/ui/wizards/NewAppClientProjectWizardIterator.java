@@ -56,9 +56,10 @@ import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.j2ee.api.ejbjar.Ear;
 import org.netbeans.modules.j2ee.clientproject.AppClientProject;
 import org.netbeans.modules.j2ee.clientproject.api.AppClientProjectGenerator;
-import org.netbeans.modules.j2ee.clientproject.ui.FoldersListSettings;
+import org.netbeans.modules.j2ee.common.project.ui.UserProjectSettings;
 import org.netbeans.modules.j2ee.common.project.ui.PanelSharability;
 import org.netbeans.modules.j2ee.common.SharabilityUtility;
+import org.netbeans.spi.java.project.support.ui.SharableLibrariesUtils;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.ui.support.ProjectChooser;
 import org.openide.WizardDescriptor;
@@ -148,7 +149,8 @@ public class NewAppClientProjectWizardIterator implements WizardDescriptor.Progr
         }
         
         // remember last used server
-        FoldersListSettings.getDefault().setLastUsedServer(serverInstanceID);
+        UserProjectSettings.getDefault().setLastUsedServer(serverInstanceID);
+        SharableLibrariesUtils.setLastProjectSharable(librariesDefinition != null);
         
         // downgrade the Java platform or src level to 1.4
         String platformName = (String)wiz.getProperty(WizardProperties.JAVA_PLATFORM);
@@ -160,7 +162,7 @@ public class NewAppClientProjectWizardIterator implements WizardDescriptor.Progr
         // Returning FileObject of project diretory.
         // Project will be open and set as main
         Integer index = (Integer) wiz.getProperty(PROP_NAME_INDEX);
-        FoldersListSettings.getDefault().setNewApplicationCount(index.intValue());
+        UserProjectSettings.getDefault().setNewApplicationCount(index.intValue());
         resultSet.add(dir);
         
         dirF = (dirF != null) ? dirF.getParentFile() : null;

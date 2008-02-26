@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -51,7 +51,6 @@ import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Set;
 import java.util.Vector;
-import java.net.URL;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -340,7 +339,7 @@ public class ParserServletContext implements ServletContext {
                 return url.openStream();
             }
         } catch (Throwable t) {
-            Logger.getLogger("global").log(Level.INFO, null, t);
+            LOGGER.log(Level.INFO, null, t);
             return (null);
         }
         
@@ -358,13 +357,13 @@ public class ParserServletContext implements ServletContext {
         try {
             ec = DataObject.find(fo).getCookie(EditorCookie.class);
         } catch (DataObjectNotFoundException e) {
-            Logger.getLogger("global").log(Level.INFO, null, e);
+            LOGGER.log(Level.INFO, null, e);
         }
         if (ec != null && (ec instanceof CloneableEditorSupport)) {
             try {
                 result = ((CloneableEditorSupport) ec).getInputStream();
             } catch (IOException e) {
-                Logger.getLogger("global").log(Level.INFO, null, e);
+                LOGGER.log(Level.INFO, null, e);
             }
         }
         return result;
@@ -465,7 +464,7 @@ public class ParserServletContext implements ServletContext {
      * @param message The message to be logged
      */
     public void log(String message) {
-        Logger.getLogger("global").log(Level.INFO, message);
+        LOGGER.log(Level.INFO, message);
     }
     
     
@@ -491,8 +490,8 @@ public class ParserServletContext implements ServletContext {
      * @param exception The exception to be logged
      */
     public void log(String message, Throwable exception) {
-        Logger.getLogger("global").log(Level.INFO, message);
-        Logger.getLogger("global").log(Level.INFO, null, exception);
+        LOGGER.log(Level.INFO, message);
+        LOGGER.log(Level.INFO, null, exception);
     }
     
     

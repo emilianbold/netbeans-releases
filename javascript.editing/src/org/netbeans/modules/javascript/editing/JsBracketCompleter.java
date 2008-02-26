@@ -52,16 +52,16 @@ import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 
 import org.mozilla.javascript.Node;
-import org.netbeans.fpi.gsf.CompilationInfo;
-import org.netbeans.fpi.gsf.EditorOptions;
-import org.netbeans.fpi.gsf.OffsetRange;
+import org.netbeans.modules.gsf.api.CompilationInfo;
+import org.netbeans.modules.gsf.api.EditorOptions;
+import org.netbeans.modules.gsf.api.OffsetRange;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
-import org.netbeans.fpi.gsf.BracketCompletion;
+import org.netbeans.modules.gsf.api.BracketCompletion;
 import org.netbeans.modules.javascript.editing.lexer.JsTokenId;
 import org.netbeans.modules.javascript.editing.lexer.LexUtilities;
 import org.openide.util.Exceptions;
@@ -606,25 +606,28 @@ public class JsBracketCompleter implements BracketCompletion {
                     if (firstChar != ch) {
                         int start = target.getSelectionStart();
                         int end = target.getSelectionEnd();
-                        int lastChar = selection.charAt(selection.length()-1);
-                        // Replace the surround-with chars?
-                        if (selection.length() > 1 && 
-                                ((firstChar == '"' || firstChar == '\'' || firstChar == '(' || 
-                                firstChar == '{' || firstChar == '[' || firstChar == '/') &&
-                                lastChar == matching(firstChar))) {
-                            doc.remove(end-1, 1);
-                            doc.insertString(end-1, ""+matching(ch), null);
-                            doc.remove(start, 1);
-                            doc.insertString(start, ""+ch, null);
-                            target.getCaret().setDot(end);
-                        } else {
-                            // No, insert around
-                            doc.remove(start,end-start);
-                            doc.insertString(start, ch + selection + matching(ch), null);
-                            target.getCaret().setDot(start+selection.length()+2);
-                        }
+                        TokenSequence<? extends JsTokenId> ts = LexUtilities.getPositionedSequence(doc, start);
+                        if (ts != null && ts.token().id() != JsTokenId.STRING_LITERAL) { // Not inside strings!
+                            int lastChar = selection.charAt(selection.length()-1);
+                            // Replace the surround-with chars?
+                            if (selection.length() > 1 && 
+                                    ((firstChar == '"' || firstChar == '\'' || firstChar == '(' || 
+                                    firstChar == '{' || firstChar == '[' || firstChar == '/') &&
+                                    lastChar == matching(firstChar))) {
+                                doc.remove(end-1, 1);
+                                doc.insertString(end-1, ""+matching(ch), null);
+                                doc.remove(start, 1);
+                                doc.insertString(start, ""+ch, null);
+                                target.getCaret().setDot(end);
+                            } else {
+                                // No, insert around
+                                doc.remove(start,end-start);
+                                doc.insertString(start, ch + selection + matching(ch), null);
+                                target.getCaret().setDot(start+selection.length()+2);
+                            }
 
-                        return true;
+                            return true;
+                        }
                     }
                 }
             }

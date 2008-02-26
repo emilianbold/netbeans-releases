@@ -46,10 +46,14 @@ import java.net.URI;
 import java.net.URL;
 import java.util.*;
 import javax.swing.ImageIcon;
+import javax.swing.ListCellRenderer;
+import javax.swing.table.TableCellRenderer;
 import org.netbeans.modules.j2ee.common.project.classpath.ClassPathSupport;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
 import org.netbeans.modules.java.api.common.util.CommonProjectUtils;
 import org.netbeans.spi.project.libraries.support.LibrariesSupport;
 import org.netbeans.spi.project.support.ant.EditableProperties;
+import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -74,8 +78,7 @@ public final class ProjectProperties {
     public static final String BUILD_CLASSES_DIR = "build.classes.dir"; //NOI18N
     public static final String BUILD_TEST_CLASSES_DIR = "build.test.classes.dir"; // NOI18N
 
-    public static final String J2EE_PLATFORM_SHARED = "j2ee.platform.shared"; //NOI18N
-
+    public static final String J2EE_PLATFORM_CLASSPATH = "j2ee.platform.classpath"; //NOI18N
     public static final String[] WELL_KNOWN_PATHS = new String[] {
         "${" + JAVAC_CLASSPATH + "}", // NOI18N
         "${" + JAVAC_TEST_CLASSPATH + "}", // NOI18N
@@ -94,14 +97,16 @@ public final class ProjectProperties {
     private static String RESOURCE_ICON_BROKEN_BADGE = "org/netbeans/modules/j2ee/common/project/ui/resources/brokenProjectBadge.gif"; //NOI18N
     private static String RESOURCE_ICON_SOURCE_BADGE = "org/netbeans/modules/j2ee/common/project/ui/resources/jarSourceBadge.png"; //NOI18N
     private static String RESOURCE_ICON_JAVADOC_BADGE = "org/netbeans/modules/j2ee/common/project/ui/resources/jarJavadocBadge.png"; //NOI18N
-
-
+    private static String RESOURCE_ICON_CLASSPATH = "org/netbeans/modules/j2ee/common/project/ui/resources/referencedClasspath.gif"; //NOI18N
+        
+        
     public static ImageIcon ICON_JAR = new ImageIcon( Utilities.loadImage( RESOURCE_ICON_JAR ) );
     public static ImageIcon ICON_LIBRARY = new ImageIcon( Utilities.loadImage( RESOURCE_ICON_LIBRARY ) );
     public static ImageIcon ICON_ARTIFACT  = new ImageIcon( Utilities.loadImage( RESOURCE_ICON_ARTIFACT ) );
     public static ImageIcon ICON_BROKEN_BADGE  = new ImageIcon( Utilities.loadImage( RESOURCE_ICON_BROKEN_BADGE ) );
     public static ImageIcon ICON_JAVADOC_BADGE  = new ImageIcon( Utilities.loadImage( RESOURCE_ICON_JAVADOC_BADGE ) );
     public static ImageIcon ICON_SOURCE_BADGE  = new ImageIcon( Utilities.loadImage( RESOURCE_ICON_SOURCE_BADGE ) );
+    public static ImageIcon ICON_CLASSPATH  = new ImageIcon( Utilities.loadImage( RESOURCE_ICON_CLASSPATH ) );
     
     /** Store locations of libraries in the classpath param that have more the one
      * file into the properties in the following format:
@@ -216,5 +221,26 @@ public final class ProjectProperties {
             }
         }
     }
+
+    public static ListCellRenderer createClassPathListRendered(PropertyEvaluator evaluator, FileObject projectFolder) {
+        return new ClassPathListCellRenderer(evaluator, projectFolder);
+    }
     
+    public static TableCellRenderer createClassPathTableRendered(PropertyEvaluator evaluator, FileObject projectFolder) {
+        return new ClassPathListCellRenderer.ClassPathTableCellRenderer(evaluator, projectFolder);
+    }
+    
+    /**
+     * Returns <code>true</code> if the server library is used for j2ee instead
+     * of the classpath pointing to the server installation.
+     *
+     * @param projectProperties project properties
+     * @param j2eePlatformClasspathProperty name of the classpath property
+     * @return <code>true</code> if the server library is used for j2ee instead
+     *             of the classpath pointing to the server installation
+     */
+    public static boolean isUsingServerLibrary(EditableProperties projectProperties, String j2eePlatformClasspathProperty) {
+        String value = projectProperties.getProperty(j2eePlatformClasspathProperty);
+        return (value != null && !"".equals(value.trim()));
+    }
 }

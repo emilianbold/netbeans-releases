@@ -42,9 +42,9 @@ package org.netbeans.modules.languages.php;
 
 import java.util.Set;
 
-import org.netbeans.fpi.gsf.CompilationInfo;
-import org.netbeans.fpi.gsf.InstantRenamer;
-import org.netbeans.fpi.gsf.OffsetRange;
+import org.netbeans.modules.gsf.api.CompilationInfo;
+import org.netbeans.modules.gsf.api.InstantRenamer;
+import org.netbeans.modules.gsf.api.OffsetRange;
 
 
 /**
@@ -54,7 +54,7 @@ import org.netbeans.fpi.gsf.OffsetRange;
 public class RenameHandler implements InstantRenamer {
 
     /* (non-Javadoc)
-     * @see org.netbeans.fpi.gsf.InstantRenamer#getRenameRegions(org.netbeans.fpi.gsf.CompilationInfo, int)
+     * @see org.netbeans.modules.gsf.api.InstantRenamer#getRenameRegions(org.netbeans.modules.gsf.api.CompilationInfo, int)
      */
     public Set<OffsetRange> getRenameRegions( CompilationInfo info,
             int caretOffset )
@@ -64,7 +64,7 @@ public class RenameHandler implements InstantRenamer {
     }
 
     /* (non-Javadoc)
-     * @see org.netbeans.fpi.gsf.InstantRenamer#isRenameAllowed(org.netbeans.fpi.gsf.CompilationInfo, int, java.lang.String[])
+     * @see org.netbeans.modules.gsf.api.InstantRenamer#isRenameAllowed(org.netbeans.modules.gsf.api.CompilationInfo, int, java.lang.String[])
      */
     public boolean isRenameAllowed( CompilationInfo info, int caretOffset,
             String[] explanationRetValue )

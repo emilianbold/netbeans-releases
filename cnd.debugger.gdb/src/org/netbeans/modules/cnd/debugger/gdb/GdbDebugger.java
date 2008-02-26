@@ -67,6 +67,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.modules.cnd.debugger.gdb.breakpoints.BreakpointImpl;
 import org.netbeans.modules.cnd.debugger.gdb.breakpoints.GdbBreakpoint;
+import org.netbeans.modules.cnd.debugger.gdb.disassembly.Disassembly;
 import org.netbeans.modules.cnd.debugger.gdb.event.GdbBreakpointEvent;
 import org.netbeans.modules.cnd.debugger.gdb.expr.Expression;
 import org.netbeans.modules.cnd.debugger.gdb.profiles.GdbProfile;
@@ -125,7 +126,6 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
     
     /* Some breakpoint flags used only on Windows XP (with Cygwin) */
     public static final int             GDB_TMP_BREAKPOINT = GdbBreakpoint.SUSPEND_ALL + 1;
-    public static final int             GDB_INVISIBLE_BREAKPOINT = GdbBreakpoint.SUSPEND_ALL + 2;
     
     /** ID of GDB Debugger Engine for C */
     public static final String          ENGINE_ID = "netbeans-cnd-GdbSession/C"; // NOI18N
@@ -135,6 +135,9 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
 
     /** ID of GDB Debugger SessionProvider */
     public static final String          SESSION_PROVIDER_ID = "netbeans-cnd-GdbSessionProvider"; // NOI18N
+    
+    /** Dis update */
+    public static final String          DIS_UPDATE = "dis_update"; // NOI18N
     
     private GdbProxy gdb;
     private ContextProvider lookupProvider;
@@ -168,6 +171,7 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
     private boolean dlopenPending;
     private String lastShare;
     private int shareToken;
+    private final Disassembly disassembly;
         
     public GdbDebugger(ContextProvider lookupProvider) {
         this.lookupProvider = lookupProvider;
@@ -187,6 +191,7 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
                     "GdbEngineProvider must be used to start GdbDebugger!"); // NOI18N
         }
         threadsViewInit();
+        disassembly = new Disassembly(this);
     }
     
     public ContextProvider getLookup() {
@@ -316,7 +321,19 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
                     ((Session) lookupProvider.lookupFirst(null, Session.class)).kill();
                 }
                 if (Utilities.isWindows()) {
-                    gdb.info_threads(); // we get the PID from this...
+                    CommandBuffer cb = new CommandBuffer();
+                    gdb.info_threads(cb); // we get the PID from this...
+                    String msg = cb.waitForCompletion();
+                    if (msg.startsWith("* 1 thread ")) { // NOI18N
+                        int pos = msg.indexOf('.');
+                        if (pos > 0) {
+                            try {
+                                programPID = Long.valueOf(msg.substring(11, pos));
+                            } catch (NumberFormatException ex) {
+                                log.warning("Failed to get PID from \"info threads\""); // NOI18N
+                            }
+                        }
+                    }
                 } else if (Utilities.getOperatingSystem() != Utilities.OS_MAC) {
                     gdb.info_proc(); // we get the PID from this...
                 }
@@ -595,6 +612,7 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
             setState(STATE_NONE);
             programPID = 0;
             gdbEngineProvider.getDestructor().killEngine();
+            Disassembly.close();
             GdbTimer.getTimer("Step").reset(); // NOI18N
         }
     }
@@ -700,6 +718,8 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
             if (cb != null) {
                 cb.done();
             }
+        } else if (msg.startsWith(Disassembly.RESPONSE_HEADER)) { // NOI18N
+            disassembly.update(msg);
         } else if (msg.equals("^done") && getState().equals(STATE_SILENT_STOP)) { // NOI18N
             log.fine("GD.resultRecord[" + token + "]: Got \"^done\" in silent stop");
             setRunning();
@@ -760,6 +780,10 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
                 log.warning("Unexpected gdb error: " + msg);
             }
         }
+    }
+    
+    public void fireDisUpdate() {
+        firePropertyChange(DIS_UPDATE, 0, 1);
     }
     
     /** Handle gdb responses starting with '*' */
@@ -1040,17 +1064,27 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
     }
     
     /**
+     */
+    public void stepI() {
+        setState(STATE_RUNNING);
+        gdb.exec_instruction();
+    }
+    
+    /**
      * Resumes execution of the inferior program until
-     * the current function is exited.
+     * the top function is exited.
+     * Note: Slight cemantic change in NB 6.1. In NB 6.0 the current
+     * frame was stepped out of. In NB 6.1, the top frame is stepped
+     * out of. This makes the behavior match the Java debugger in NB.
      */
     public void stepOut() {
-        int idx = getCurrentCallStackIndex();
-        if (callstack.size() == (idx + 1) || isValidStackFrame(callstack.get(idx + 1))) {
+        if (callstack.size() > 0 || isValidStackFrame(callstack.get(1))) {
             setState(STATE_RUNNING);
+            gdb.stack_select_frame(0);
             gdb.exec_finish();
         } else {
-                DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(NbBundle.getMessage(GdbDebugger.class,
-                           "ERR_InvalidCallStackFrame"))); // NOI18N
+            DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(NbBundle.getMessage(GdbDebugger.class,
+                       "ERR_InvalidCallStackFrame"))); // NOI18N
         }
     }
     
@@ -1430,7 +1464,8 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
         
         int k = i;
         synchronized (callstack) {
-            while (i++ < callstack.size()) {
+            int size = callstack.size();
+            while (i++ < size) {
                 callstack.remove(k);
             }
         }
@@ -1683,15 +1718,9 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
         return csf.getFileName() != null && csf.getFullname() != null && csf.getFunctionName() != null;
     }
     
-    private int getCurrentCallStackIndex() {
-        int idx = 0;
-        for (CallStackFrame f : callstack) {
-            if (f == currentCallStackFrame) {
-                return idx;
-            }
-            idx++;
-        }
-        return idx;
+    public boolean isStepOutValid() {
+        return callstack.size() == 1 || 
+                (callstack.size() > 1 && isValidStackFrame(callstack.get(1)));
     }
     
     public void popTopmostCall() {
@@ -1853,5 +1882,9 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
     
     public boolean isCplusPlus() {
         return cplusplus;
+    }
+
+    public Disassembly getDisassembly() {
+        return disassembly;
     }
 }
