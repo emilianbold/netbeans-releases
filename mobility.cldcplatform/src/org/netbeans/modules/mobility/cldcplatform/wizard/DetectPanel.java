@@ -1018,7 +1018,12 @@ public class DetectPanel extends javax.swing.JPanel {
             add(searchLabel, gbc);
             gbc = new GridBagConstraints(0, 1, 1, 1, 1.0, 0.0, GridBagConstraints.CENTER, GridBagConstraints.HORIZONTAL, new Insets(0, 12, 6, 12), 0, 0);
             progress = ProgressHandleFactory.createHandle(NbBundle.getMessage(SearchRunnable.class, "Title_DetectRunnable_Searching")); //NOI18N
-            add(ProgressHandleFactory.createProgressComponent(progress), gbc);
+            this.getAccessibleContext().setAccessibleName(NbBundle.getMessage(SearchRunnable.class, "ACSN_detectingPlatform")); //NOI18N
+            this.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(SearchRunnable.class, "ACSD_detectingPlatform")); //NOI18N
+            JComponent component = ProgressHandleFactory.createProgressComponent(progress);
+            component.getAccessibleContext().setAccessibleName(NbBundle.getMessage(SearchRunnable.class, "ACSN_detectingPlatform")); //NOI18N
+            component.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(SearchRunnable.class, "ACSD_detectingPlatform")); //NOI18N
+            add(component, gbc);
             setPreferredSize(new Dimension(400, 70));
         }
         
