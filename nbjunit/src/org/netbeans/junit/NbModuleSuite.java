@@ -155,7 +155,6 @@ public final class NbModuleSuite extends Object {
             }
             // loader that does not see our current classloader
             ClassLoader parent = ClassLoader.getSystemClassLoader().getParent();
-            Assert.assertNotNull("Parent", parent);
             URLClassLoader loader = new URLClassLoader(bootCP.toArray(new URL[0]), parent);
             Class<?> main = loader.loadClass("org.netbeans.Main"); // NOI18N
             Assert.assertEquals("Loaded by our classloader", loader, main.getClassLoader());
