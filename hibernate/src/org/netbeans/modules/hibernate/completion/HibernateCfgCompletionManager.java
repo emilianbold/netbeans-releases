@@ -64,8 +64,15 @@ public final class HibernateCfgCompletionManager {
 
     private static final String PROPERTY_TAG = "property";
     private static final String MAPPING_TAG = "mapping";
+    private static final String CLASS_CACHE_TAG = "class-cache";
+    private static final String COLLECTION_CACHE_TAG = "collection-cache";
+    private static final String LISTENER_TAG = "listener";
+    
     private static final String RESOURCE_ATTRIB = "resource";
     private static final String NAME_ATTRIB = "name";
+    private static final String CLASS_ATTRIB = "class";
+    private static final String COLLECTION_ATTRIB = "collection";
+    private static final String PACKAGE_ATTRIB = "package";
     
     private static Map<String, Completor> completors = new HashMap<String, Completor>();
 
@@ -156,7 +163,17 @@ public final class HibernateCfgCompletionManager {
         // Items for mapping xml files
         Completor.HbMappingFileCompletor mappingFilesCompletor = new Completor.HbMappingFileCompletor();
         registerCompletor(MAPPING_TAG, RESOURCE_ATTRIB, mappingFilesCompletor);
+        
+        Completor.JavaClassCompletor javaClassCompletor = new Completor.JavaClassCompletor(false);
+        registerCompletor(CLASS_CACHE_TAG, CLASS_ATTRIB, javaClassCompletor);
+        registerCompletor(COLLECTION_CACHE_TAG, COLLECTION_ATTRIB, javaClassCompletor);
+        registerCompletor(LISTENER_TAG, CLASS_ATTRIB, javaClassCompletor);
+        registerCompletor(MAPPING_TAG, CLASS_ATTRIB, javaClassCompletor);
+        
+        Completor.JavaClassCompletor javaPkgCompletor = new Completor.JavaClassCompletor(true);
+        registerCompletor(MAPPING_TAG, PACKAGE_ATTRIB, javaPkgCompletor);
     }
+    
     private static HibernateCfgCompletionManager INSTANCE = new HibernateCfgCompletionManager();
 
     public static HibernateCfgCompletionManager getDefault() {
