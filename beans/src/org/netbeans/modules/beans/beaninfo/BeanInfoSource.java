@@ -41,15 +41,15 @@
 
 package org.netbeans.modules.beans.beaninfo;
 
+import org.netbeans.api.editor.guards.GuardedSectionManager;
+import org.netbeans.api.editor.guards.InteriorSection;
+import org.netbeans.api.editor.guards.SimpleSection;
+import org.netbeans.modules.beans.GenerateBeanException;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.Repository;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataFolder;
-
-import org.netbeans.modules.java.JavaEditor;
-import org.netbeans.modules.javacore.internalapi.JavaMetamodel;
-import org.netbeans.jmi.javamodel.JavaClass;
-import org.netbeans.jmi.javamodel.Resource;
-import org.openide.filesystems.Repository;
+import org.openide.loaders.DataObjectNotFoundException;
 
 /**
  * Finds or creates BeanInfo source elemnet for the class.
@@ -69,18 +69,14 @@ public final class BeanInfoSource extends Object {
     private static final String METHODS_SECTION = "Methods"; // NOI18N
     private static final String SUPERCLASS_SECTION = "Superclass";  // NOI18N
     
-    private JavaClass classElement;
-
+    private DataObject javaDataObject;
     private DataObject   biDataObject = null;
-    private JavaEditor   javaEditor =  null;
-    //private PatternAnalyser pa = null;
+    private BIEditorSupport   javaEditor =  null;
 
     /** Creates new BeanInfoSource */
-    public BeanInfoSource (JavaClass classElement ) {
-        this.classElement = classElement;
-        //this.pa = pa;
+    public BeanInfoSource (FileObject javafile) throws GenerateBeanException {
 
-        findBeanInfo();
+        findBeanInfo(javafile);
     }
 
     /** Returns wether the bean info exists or not */
@@ -93,23 +89,28 @@ public final class BeanInfoSource extends Object {
      */
     boolean isNbBeanInfo() {
 
-        if ( !exists() || javaEditor == null ) {
+        GuardedSectionManager guards = null;
+        if ( !exists() || javaEditor == null || null == (guards = javaEditor.getGuardedSectionManager())) {
             return false;
         }
 
         //JavaEditor.InteriorSection dis = javaEditor.findInteriorSection( DESCRIPTOR_SECTION );
-        JavaEditor.InteriorSection pis = javaEditor.findInteriorSection( PROPERTIES_SECTION );
-        JavaEditor.InteriorSection eis = javaEditor.findInteriorSection( EVENTSETS_SECTION );
+        InteriorSection pis = guards.findInteriorSection( PROPERTIES_SECTION );
+        InteriorSection eis = guards.findInteriorSection( EVENTSETS_SECTION );
 //        JavaEditor.InteriorSection mis = javaEditor.findInteriorSection( METHODS_SECTION );
         //JavaEditor.SimpleSection iss = javaEditor.findSimpleSection( ICONS_SECTION );
-        JavaEditor.SimpleSection dss = javaEditor.findSimpleSection( IDX_SECTION );
+        SimpleSection dss = guards.findSimpleSection( IDX_SECTION );
 
         //return ( pis != null && eis != null && iss != null && dss != null);
         return ( pis != null && eis != null && dss != null);
     }
 
     boolean hasIconInfo(){
-        JavaEditor.SimpleSection iss = javaEditor.findSimpleSection( ICONS_SECTION );
+        GuardedSectionManager guards = javaEditor.getGuardedSectionManager();
+        if (guards == null) {
+            return false;
+        }
+        SimpleSection iss = guards.findSimpleSection( ICONS_SECTION );
         return ( iss != null );
     }
     /** Checks wether the bean descriptor object has Guarded sections i.e.
@@ -117,10 +118,11 @@ public final class BeanInfoSource extends Object {
      */
     boolean isNbBeanInfoDescriptor() {
 
-        if ( !exists() || javaEditor == null ) {
+        GuardedSectionManager guards = null;
+        if ( !exists() || javaEditor == null || null == (guards = javaEditor.getGuardedSectionManager())) {
             return false;
         }
-        JavaEditor.InteriorSection dis = javaEditor.findInteriorSection( DESCRIPTOR_SECTION );
+        InteriorSection dis = guards.findInteriorSection( DESCRIPTOR_SECTION );
         return ( dis != null );
     }
 
@@ -129,48 +131,31 @@ public final class BeanInfoSource extends Object {
      */
     boolean isNbSuperclass() {
 
-        if ( !exists() || javaEditor == null ) {
+        GuardedSectionManager guards = null;
+        if ( !exists() || javaEditor == null || null == (guards = javaEditor.getGuardedSectionManager())) {
             return false;
         }
-        JavaEditor.InteriorSection dis = javaEditor.findInteriorSection( SUPERCLASS_SECTION );
+        InteriorSection dis = guards.findInteriorSection( SUPERCLASS_SECTION );
         return ( dis != null );
     }
 
     /** Finds the bean info for classElement asspciated with this
         object */
-    void findBeanInfo() {
+    void findBeanInfo(FileObject javafile) throws GenerateBeanException {
 
         javaEditor = null;
-        
-        Resource sc = classElement.getResource();
-        if ( sc == null ) {
-            return;
-        }
-        
-        DataObject dataObject = JavaMetamodel.getManager().getDataObject(sc);
-        if ( dataObject == null ) {
-            return;
-        }
-
-        FileObject folder = dataObject.getFolder().getPrimaryFile();
-        if ( folder == null ) {
-            return;
-        }
-        
-        FileObject biFile = folder.getFileObject( dataObject.getName() + BEANINFO_NAME_EXT, "java" ); // NOI18N
-        if ( biFile == null ) {
-            return;
-        }
-        
         try {
-            biDataObject = DataObject.find( biFile );
-            javaEditor = (JavaEditor)biDataObject.getCookie( JavaEditor.class );
-            //System.out.println("ClassElem : " + biDataObject ); // NOI18N
-        }
-        catch ( org.openide.loaders.DataObjectNotFoundException e ) {
+            this.javaDataObject = DataObject.find(javafile);
+            FileObject parent = javafile.getParent();
+            FileObject bifile = parent.getFileObject(javafile.getName() + BEANINFO_NAME_EXT, "java"); // NOI18N
+            if (bifile != null) {
+                biDataObject = DataObject.find(bifile);
+                javaEditor = biDataObject.getLookup().lookup(BIEditorSupport.class);
+            }
+        } catch (DataObjectNotFoundException ex) {
+            throw new GenerateBeanException();
             // Do nothing if no data object is found
         }
-
     }
 
     /** Deletes the BeanInfo */
@@ -197,7 +182,7 @@ public final class BeanInfoSource extends Object {
             foBiTemplate = foClassTemplates.getFileObject( "BeanInfo", "java" ); // NOI18N
         }
         else {
-            foBiTemplate = foClassTemplates.getFileObject( "BeanInfoNoIcon", "java" ); // NOI18N
+            foBiTemplate = foClassTemplates.getFileObject( "NoIconBeanInfo", "java" ); // NOI18N
         }
 
         if ( foBiTemplate == null ) {
@@ -206,20 +191,9 @@ public final class BeanInfoSource extends Object {
 
         try {
             DataObject doBiTemplate = DataObject.find ( foBiTemplate );
-             
-            Resource sc = classElement.getResource();
-            if ( sc == null )
-                return;
-
-            DataObject dataObject = JavaMetamodel.getManager().getDataObject(sc);
-
-            if ( dataObject == null ) {
-                return;
-            }
-            
-            DataFolder folder = dataObject.getFolder();
-            biDataObject = doBiTemplate.createFromTemplate( folder, dataObject.getName() + BEANINFO_NAME_EXT );
-            javaEditor = (JavaEditor)biDataObject.getCookie( JavaEditor.class );
+            DataFolder folder = this.javaDataObject.getFolder();
+            biDataObject = doBiTemplate.createFromTemplate( folder, this.javaDataObject.getName() + BEANINFO_NAME_EXT );
+            javaEditor = biDataObject.getLookup().lookup(BIEditorSupport.class);
         }
         catch ( org.openide.loaders.DataObjectNotFoundException e ) {
             //System.out.println ( e );
@@ -235,6 +209,10 @@ public final class BeanInfoSource extends Object {
     DataObject getDataObject() {
         return biDataObject;
     }
+    
+    DataObject getSourceDataObject() {
+        return javaDataObject;
+    }
 
     /** opens the source */
     void open() {
@@ -243,17 +221,13 @@ public final class BeanInfoSource extends Object {
 
     /** Sets the header and bottom of properties section */
     void setDescriptorSection( String header, String bottom ) {
-        JavaEditor.InteriorSection is = javaEditor.findInteriorSection( DESCRIPTOR_SECTION );
-
-        if ( is != null ) {
-            is.setHeader( header );
-            is.setBottom( bottom );
-        }
+        setInteriorSection(DESCRIPTOR_SECTION, header, bottom);
     }
 
     /** Gets the header of properties setion */
     String getDescriptorSection() {
-        JavaEditor.InteriorSection is = javaEditor.findInteriorSection( DESCRIPTOR_SECTION );
+        GuardedSectionManager guards = javaEditor.getGuardedSectionManager();
+        InteriorSection is = guards.findInteriorSection( DESCRIPTOR_SECTION );
 
         if ( is != null ) {
             return is.getText();
@@ -265,124 +239,105 @@ public final class BeanInfoSource extends Object {
 
     /** Sets the header and bottom of properties section */
     void setPropertiesSection( String header, String bottom ) {
-        JavaEditor.InteriorSection is = javaEditor.findInteriorSection( PROPERTIES_SECTION );
-
-        if ( is != null ) {
-            is.setHeader( header );
-            is.setBottom( bottom );
-        }
+        setInteriorSection(PROPERTIES_SECTION, header, bottom);
     }
 
     /** Gets the header of properties setion */
     String getPropertiesSection() {
-        JavaEditor.InteriorSection is = javaEditor.findInteriorSection( PROPERTIES_SECTION );
-
-        if ( is != null ) {
-            return is.getText();
-        }
-        else
-            return null;
-
+        return getInteriorSection(PROPERTIES_SECTION);
     }
 
     /** Sets the header and bottom of methods section */
     void setMethodsSection( String header, String bottom ) {
-        JavaEditor.InteriorSection is = javaEditor.findInteriorSection( METHODS_SECTION );
-
-        if ( is != null ) {
-            is.setHeader( header );
-            is.setBottom( bottom );
-        }
+        setInteriorSection(METHODS_SECTION, header, bottom);
     }
 
     /** Gets the header of properties setion */
     String getMethodsSection() {
-        JavaEditor.InteriorSection is = javaEditor.findInteriorSection( METHODS_SECTION );
-
-        if ( is != null ) {
-            return is.getText();
-        }
-        else {
-          return null;
-        }
-
+        return getInteriorSection(METHODS_SECTION);
     }
 
     /** Sets the header and bottom of event sets section */
     void setEventSetsSection( String header, String bottom ) {
-        JavaEditor.InteriorSection is = javaEditor.findInteriorSection( EVENTSETS_SECTION );
-        if ( is != null ) {
-            is.setHeader( header );
-            is.setBottom( bottom );
-        }
+        setInteriorSection(EVENTSETS_SECTION, header, bottom);
     }
 
     /** Gets the header of properties setion */
     String getEventSetsSection() {
-        JavaEditor.InteriorSection is = javaEditor.findInteriorSection( EVENTSETS_SECTION );
-
-        if ( is != null ) {
-            return is.getText();
-        }
-        else
-            return null;
+        return getInteriorSection(EVENTSETS_SECTION);
     }
 
     /** Gets the header of properties setion */
     String getIconsSection() {
-        JavaEditor.SimpleSection ss = javaEditor.findSimpleSection( ICONS_SECTION );
-
-        if ( ss != null ) {
-            return ss.getText();
-        }
-        else
-            return null;
+        return getSimpleSection(ICONS_SECTION);
     }
 
     /** Sets the header of properties setion */
     void setIconsSection( String text ) {
-        JavaEditor.SimpleSection ss = javaEditor.findSimpleSection( ICONS_SECTION );
-        if ( ss != null )
-            ss.setText( text );
+        setSimpleSection(ICONS_SECTION, text);
     }
 
     /** Gets the header of properties setion */
     String getDefaultIdxSection() {
-        JavaEditor.SimpleSection ss = javaEditor.findSimpleSection( IDX_SECTION );
-
-        if ( ss != null ) {
-            return ss.getText();
-        }
-        else
-            return null;
+        return getSimpleSection(IDX_SECTION);
     }
 
     /** Sets the header of properties setion */
     void setDefaultIdxSection( String text ) {
-        JavaEditor.SimpleSection ss = javaEditor.findSimpleSection( IDX_SECTION );
-        if ( ss != null )
-            ss.setText( text );
+        setSimpleSection(IDX_SECTION, text);
     }
 
     /** Sets the header and bottom of properties section */
     void setSuperclassSection( String header, String bottom ) {
-        JavaEditor.InteriorSection is = javaEditor.findInteriorSection( SUPERCLASS_SECTION );
-
-        if ( is != null ) {
-            is.setHeader( header );
-            is.setBottom( bottom );
-        }
+        setInteriorSection(SUPERCLASS_SECTION, header, bottom);
     }
 
     /** Gets the header of properties setion */
     String getSuperclassSection() {
-        JavaEditor.InteriorSection is = javaEditor.findInteriorSection( SUPERCLASS_SECTION );
+        return getInteriorSection(SUPERCLASS_SECTION);
+    }
+    
+    private void setInteriorSection(String section, String header, String bottom) {
+        GuardedSectionManager guards = javaEditor.getGuardedSectionManager();
+        if (guards == null) {
+            return;
+        }
+        InteriorSection is = guards.findInteriorSection(section);
 
         if ( is != null ) {
-            return is.getText();
+            is.setHeader( header );
+            is.setFooter( bottom );
         }
-        else
+    }
+    
+    private String getInteriorSection(String section) {
+        GuardedSectionManager guards = javaEditor.getGuardedSectionManager();
+        if (guards == null) {
             return null;
+        }
+        InteriorSection is = guards.findInteriorSection(section);
+        return is == null? null: is.getText();
+    }
+    
+    private void setSimpleSection(String section, String text) {
+        GuardedSectionManager guards = javaEditor.getGuardedSectionManager();
+        if (guards == null) {
+            return;
+        }
+        SimpleSection ss = guards.findSimpleSection(section);
+
+        if (ss != null) {
+            ss.setText(text);
+        }
+    }
+    
+    private String getSimpleSection(String section) {
+        GuardedSectionManager guards = javaEditor.getGuardedSectionManager();
+        if (guards == null) {
+            return null;
+        }
+        SimpleSection ss = guards.findSimpleSection(section);
+        return ss == null? null: ss.getText();
     }
 
     /*

@@ -684,9 +684,6 @@ public class WebProjectUtilities {
             ep.setProperty(ProjectProperties.JAVAC_CLASSPATH, ""); // NOI18N
         }
         
-        ep.setProperty(WebProjectProperties.J2EE_PLATFORM_SHARED,
-                Boolean.toString(h.isSharableProject() && serverLibraryName != null));
-        
         
         ep.setProperty(WebProjectProperties.JSPCOMPILATION_CLASSPATH, "${jspc.classpath}:${javac.classpath}");
         

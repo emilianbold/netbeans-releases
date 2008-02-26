@@ -97,7 +97,8 @@ public class CSSFormatter implements Formatter {
                     for (TokenSequence ts : (List<TokenSequence>) th.tokenSequenceList(languagePath, 0, bdoc.getLength())) {
                         TextBounds tsBounds = findTokenSequenceBounds(bdoc, ts);
                         
-                        if (tsBounds.getAbsoluteEnd() < startOffset || tsBounds.getAbsoluteStart() > endOffset){
+                        if (tsBounds.getAbsoluteEnd() < startOffset || tsBounds.getAbsoluteStart() > endOffset
+                                || tsBounds.getStartPos() == -1){ // empty CSS section
                             continue;
                         }
                         
@@ -209,9 +210,11 @@ public class CSSFormatter implements Formatter {
 
             }
 
+            int firstLineWithinFormattingRange = Utilities.getLineOffset(bdoc, startOffset);
+            int lastLineWithinFormattingRange = Utilities.getLineOffset(bdoc, endOffset);
 
             //apply the formatting
-            for (int line = 0; line <= lastLine; line++) {
+            for (int line = firstLineWithinFormattingRange; line <= lastLineWithinFormattingRange; line++) {
                 if (formattableLines[line]) {
                     int lStart = Utilities.getRowStartFromLineOffset(bdoc, line);
                     editorFormatter.changeRowIndent(bdoc, lStart, indents[line] + indentShift[line]);

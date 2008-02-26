@@ -263,7 +263,9 @@ public class GuardedBlockHandlerFactoryImpl implements GuardedBlockHandlerFactor
                 int lastOrigPos = 0;
                 for (ChangeInfo change : changes) {
                     buf.append(originalText.substring(lastOrigPos, change.startPos));
-                    buf.append(change.newText);
+                    if (change.newText != null) {
+                        buf.append(change.newText);
+                    }
                     lastOrigPos = change.startPos + change.length;
                 }
                 buf.append(originalText.substring(lastOrigPos));

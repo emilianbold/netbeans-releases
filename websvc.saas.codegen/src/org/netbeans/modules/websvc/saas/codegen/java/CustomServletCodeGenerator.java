@@ -41,22 +41,8 @@
 package org.netbeans.modules.websvc.saas.codegen.java;
 
 import org.netbeans.modules.websvc.saas.model.CustomSaasMethod;
-import com.sun.source.tree.MethodTree;
 import java.io.IOException;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
 import javax.swing.text.JTextComponent;
-import org.netbeans.api.java.source.JavaSource;
-import org.netbeans.api.java.source.ModificationResult;
-import org.netbeans.api.java.source.WorkingCopy;
-import org.netbeans.api.progress.ProgressHandle;
-import org.netbeans.modules.websvc.saas.codegen.java.Constants.MimeType;
-import org.netbeans.modules.websvc.saas.codegen.java.model.ParameterInfo;
-import org.netbeans.modules.websvc.saas.codegen.java.model.CustomSaasBean;
-import org.netbeans.modules.websvc.saas.codegen.java.support.AbstractTask;
-import org.netbeans.modules.websvc.saas.codegen.java.support.JavaSourceHelper;
 import org.openide.filesystems.FileObject;
 
 /**
@@ -64,83 +50,10 @@ import org.openide.filesystems.FileObject;
  *
  * @author nam
  */
-public class CustomServletCodeGenerator extends CustomCodeGenerator {
+public class CustomServletCodeGenerator extends CustomJavaClientCodeGenerator {
 
     public CustomServletCodeGenerator(JTextComponent targetComponent,
             FileObject targetFile, CustomSaasMethod m) throws IOException {
         super(targetComponent, targetFile, m);
-    }
-    
-    @Override
-    public Set<FileObject> generate(ProgressHandle pHandle) throws IOException {
-        initProgressReporting(pHandle);
-
-        preGenerate();
-        insertSaasServiceAccessCode();
-        
-        finishProgressReporting();
-
-        return new HashSet<FileObject>(Collections.EMPTY_LIST);
-    }
-
-    /**
-     *  Return target and generated file objects
-     */
-    protected void insertSaasServiceAccessCode() throws IOException {
-        JavaSource targetFileJS = JavaSource.forFileObject(getTargetFile());
-        ModificationResult result = targetFileJS.runModificationTask(new AbstractTask<WorkingCopy>() {
-
-            public void run(WorkingCopy copy) throws IOException {
-                copy.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
-                
-                String methodBody = "{" + getOverridingStatements(); //NOI18N
-                methodBody += getCustomMethodBody();
-
-                methodBody += "}"; //NOI18N
-                for(MimeType mime:bean.getMimeTypes()) {
-                    MethodTree methodTree = JavaSourceHelper.getMethodByName(copy, bean.getGetMethodName(mime));
-                    JavaSourceHelper.replaceMethodBody(copy, methodTree, methodBody);
-                }
-            }
-        });
-        result.commit();
-    }
-
-    @Override
-    protected String getCustomMethodBody() throws IOException {
-        String paramStr = null;
-        StringBuffer sb1 = new StringBuffer();
-        List<ParameterInfo> params = bean.getInputParameters();
-
-        for (ParameterInfo param : params) {
-            String paramName = param.getName();
-            if (param.getType() != String.class) {
-                sb1.append("{\"" + paramName + "\", " + paramName + ".toString()},");
-            } else {
-                sb1.append("{\"" + paramName + "\", " + paramName + "},");
-            }
-        }
-        paramStr = sb1.toString();
-        if (params.size() > 0) {
-            paramStr = paramStr.substring(0, paramStr.length() - 1);
-        }
-        
-        String methodBody = "String url = \"" + ((CustomSaasBean) bean).getUrl() + "\";\n";
-        methodBody += "        try {\n";
-        methodBody += "             String[][] params = new String[][]{\n";
-        methodBody += "                 " + paramStr + "\n";
-        methodBody += "             };\n";
-        methodBody += "             RestConnection cl = new RestConnection(url, params);\n";
-        methodBody += "             String result = cl.get();\n";
-        methodBody += "        } catch (java.io.IOException ex) {\n";
-        methodBody += "             ex.printStackTrace();\n";
-        methodBody += "        }\n }";
-       
-        return methodBody;
-    }
-    
-    @Override
-    public boolean showParams() {
-        return getWrapperResourceFile() != null;
     }
 }

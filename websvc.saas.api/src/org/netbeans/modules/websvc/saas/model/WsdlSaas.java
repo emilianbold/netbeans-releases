@@ -65,8 +65,8 @@ public class WsdlSaas extends Saas implements PropertyChangeListener {
     
     private List<WsdlSaasPort> ports;
 
-    public WsdlSaas(SaasGroup parentGroup, SaasServices services) {
-        super(parentGroup, services);
+    public WsdlSaas(SaasGroup topGroup, SaasGroup parentGroup, SaasServices services) {
+        super(topGroup, parentGroup, services);
     }
 
     public WsdlSaas(SaasGroup parentGroup, String displayName, String url, String packageName) {

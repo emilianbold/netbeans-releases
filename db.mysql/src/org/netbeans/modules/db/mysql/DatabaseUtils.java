@@ -59,12 +59,38 @@ import org.openide.util.NbBundle;
  *
  * @author David
  */
-public class DatabaseUtils {   
+public class DatabaseUtils {
+    // MySQL's SQL State for a communication error.  
+    public static final String SQLSTATE_COMM_ERROR = "08S01";
+    // The SQL State prefix (class) used for client-side exceptions
+    private static final String SQLSTATE_CLIENT_PREFIX = "20";
+    
     private static final Logger LOGGER = 
             Logger.getLogger(DatabaseUtils.class.getName());
     
     // A cache of the driver class so we don't have to load it each time
     private static Driver driver;
+    
+    /**
+     * An enumeration indicating the status after attempting to connect to the
+     * server
+     * 
+     * @author David Van Couvering
+     */
+    public enum ConnectStatus {
+        /** The server was not detected at the given host/port */
+        NO_SERVER, 
+
+        /** We could establish a connection, but authentication failed with
+         * the given user and password
+         */
+        SERVER_RUNNING, 
+
+        /** We were able to connect and authenticate */
+        CONNECT_SUCCEEDED
+
+    }
+    
     
     public static JDBCDriver getJDBCDriver() {
         JDBCDriver[]  drivers = JDBCDriverManager.getDefault().
@@ -141,13 +167,33 @@ public class DatabaseUtils {
      * @throws DatabaseException if there were issues getting the MySQL driver
      */
     public static Connection connect(String url, String user, String password)
-            throws SQLException, DatabaseException {
+            throws DatabaseException {
         Driver driver = getDriver();
         Properties props = new Properties();
         props.put("user", user == null ? "" : user);                
         props.put("password", password == null ? "" : password);
 
-        return driver.connect(url, props);        
+        try {
+            return driver.connect(url, props);
+        } catch ( SQLException sqle ) {
+            if ( DatabaseUtils.SQLSTATE_COMM_ERROR.equals(sqle.getSQLState())) {
+                // On a communications failure (e.g. the server's not running)
+                // the message horribly includes the entire stack trace of the
+                // exception chain.  We don't want to display this to our users,
+                // so let's provide our own message...
+                //
+                // If other MySQL exceptions exhibit this behavior we'll have to
+                // address this in a more general way...
+                String msg = NbBundle.getMessage(DatabaseUtils.class,
+                        "ERR_MySQLCommunicationFailure");
+
+                DatabaseException dbe = new DatabaseException(msg);
+                dbe.initCause(sqle);
+                throw dbe;
+            } else {
+                throw new DatabaseException(sqle);
+            }
+        }
     }
 
     /**
@@ -251,6 +297,67 @@ public class DatabaseUtils {
             return false;
         }
     }
+    
+    public static boolean isServerException(SQLException e) {
+        //
+        // See http://dev.mysql.com/doc/refman/5.0/en/error-handling.html
+        // for info on MySQL errors and sql states.
+        //
+        String sqlstate = e.getSQLState();
+        SQLException nexte = e.getNextException();
+
+        if ( SQLSTATE_COMM_ERROR.equals(sqlstate)) { // Communications exception
+            return false;
+        }
+
+        if ( sqlstate.startsWith(SQLSTATE_CLIENT_PREFIX))  {
+            // An exception whose SQL state starts with this prefix is
+            // client side-only.  So any SQL state that *doesn't*
+            // start with this prefix must have come from a live server
+            return false;
+        }
+
+        if ( nexte != null ) {
+            return ( isServerException(nexte) );
+        } 
+
+        return true;
+    }
+    
+    public static ConnectStatus testConnection(String url, String user, 
+            String password) {
+        Connection conn;
+        try {
+            conn = connect(url, user, password);
+        } catch ( DatabaseException e ) {
+            if ( e.getCause() instanceof SQLException ) {
+                LOGGER.log(Level.FINE, null, e);
+                if ( DatabaseUtils.isServerException(
+                        (SQLException)e.getCause()) ) {
+                    return ConnectStatus.SERVER_RUNNING;
+                } else {
+                    return ConnectStatus.NO_SERVER;
+                }
+            } else {
+                Exceptions.printStackTrace(e);
+                return ConnectStatus.NO_SERVER;
+            }
+        }
+
+        // Issue 127994 - driver sometimes silently returns null (??)
+        if ( conn == null ) {
+            return ConnectStatus.NO_SERVER;
+        }
+
+        try { 
+            conn.close();
+        } catch (SQLException sqle) {
+            LOGGER.log(Level.FINE, null, sqle);
+        }
+
+        return ConnectStatus.CONNECT_SUCCEEDED;            
+    }
+
     
     public static class URLParser {
         private static final String MYSQL_PROTOCOL = "jdbc:mysql://";

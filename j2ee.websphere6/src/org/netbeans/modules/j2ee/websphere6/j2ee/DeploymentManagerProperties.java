@@ -221,8 +221,8 @@ public class DeploymentManagerProperties {
     public void setIsLocal(String isLocal) {
         WSDM.setIsLocal(isLocal);
     }
-    public String getIsLocal() {
-        return WSDM.getIsLocal();
+    public boolean isLocal() {
+        return WSDM.isLocal();
     }
     
     

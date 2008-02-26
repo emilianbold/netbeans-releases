@@ -103,7 +103,7 @@ final class ImportLocation implements WizardDescriptor.Panel, WizardDescriptor.V
     }
     
     public boolean isFinishPanel() {
-        return true;
+        return false;
     }
     
     public void validate() throws WizardValidationException {

@@ -17,6 +17,43 @@ Droppables:CLASS:[]:ESCAPED{Droppables}:
   remove:METHOD:[]:ESCAPED{remove}(PARAMETERS{ESCAPED{element}}):
   reset:METHOD:[]:ESCAPED{reset}:
   show:METHOD:[]:ESCAPED{show}(PARAMETERS{ESCAPED{point}, ESCAPED{element}}):
+options:CLASS:[]:ESCAPED{options}:
+  constraint:PROPERTY:[]:ESCAPED{constraint}:
+  containment:PROPERTY:[]:ESCAPED{containment}:
+  dropOnEmpty:PROPERTY:[]:ESCAPED{dropOnEmpty}:
+  element:PROPERTY:[]:ESCAPED{element}:
+  endeffect:METHOD:[]:ESCAPED{endeffect}(PARAMETERS{ESCAPED{element}}):
+  format:PROPERTY:[]:ESCAPED{format}:
+  format:PROPERTY:[]:ESCAPED{format}:
+  ghosting:PROPERTY:[]:ESCAPED{ghosting}:
+  greedy:PROPERTY:[]:ESCAPED{greedy}:
+  handle:PROPERTY:[]:ESCAPED{handle}:
+  handle:PROPERTY:[]:ESCAPED{handle}:
+  hoverclass:PROPERTY:[]:ESCAPED{hoverclass}:
+  hoverclass:PROPERTY:[]:ESCAPED{hoverclass}:
+  name:PROPERTY:[]:ESCAPED{name}:
+  onChange:PROPERTY:[]:ESCAPED{onChange}:
+  onUpdate:PROPERTY:[]:ESCAPED{onUpdate}:
+  only:PROPERTY:[]:ESCAPED{only}:
+  only:PROPERTY:[]:ESCAPED{only}:
+  overlap:PROPERTY:[]:ESCAPED{overlap}:
+  revert:PROPERTY:[]:ESCAPED{revert}:
+  reverteffect:METHOD:[]:ESCAPED{reverteffect}(PARAMETERS{ESCAPED{element}, ESCAPED{top_offset}, ESCAPED{left_offset}}):
+  scroll:PROPERTY:[]:ESCAPED{scroll}:
+  scroll:PROPERTY:[]:ESCAPED{scroll}:
+  scrollSensitivity:PROPERTY:[]:ESCAPED{scrollSensitivity}:
+  scrollSensitivity:PROPERTY:[]:ESCAPED{scrollSensitivity}:
+  scrollSpeed:PROPERTY:[]:ESCAPED{scrollSpeed}:
+  scrollSpeed:PROPERTY:[]:ESCAPED{scrollSpeed}:
+  snap:PROPERTY:[]:ESCAPED{snap}:
+  starteffect:METHOD:[]:ESCAPED{starteffect}(PARAMETERS{ESCAPED{element}}):
+  tag:PROPERTY:[]:ESCAPED{tag}:
+  tag:PROPERTY:[]:ESCAPED{tag}:
+  tree:PROPERTY:[]:ESCAPED{tree}:
+  tree:PROPERTY:[]:ESCAPED{tree}:
+  treeTag:PROPERTY:[]:ESCAPED{treeTag}:
+  treeTag:PROPERTY:[]:ESCAPED{treeTag}:
+  zindex:PROPERTY:[]:ESCAPED{zindex}:
 Draggables:CLASS:[]:ESCAPED{Draggables}:
   _cacheObserverCallbacks:METHOD:[]:ESCAPED{_cacheObserverCallbacks}:
   activate:METHOD:[]:ESCAPED{activate}(PARAMETERS{ESCAPED{draggable}}):
@@ -39,7 +76,7 @@ Draggable:CLASS:[]:ESCAPED{Draggable}:
   endDrag:METHOD:[]:ESCAPED{endDrag}(PARAMETERS{ESCAPED{event}}):
   finishDrag:METHOD:[]:ESCAPED{finishDrag}(PARAMETERS{ESCAPED{event}, ESCAPED{success}}):
   initDrag:METHOD:[]:ESCAPED{initDrag}(PARAMETERS{ESCAPED{event}}):
-  initialize:METHOD:[]:ESCAPED{initialize}(PARAMETERS{ESCAPED{element}}):
+  initialize:CONSTRUCTOR:[]:ESCAPED{initialize}(PARAMETERS{ESCAPED{element}}):
   keyPress:METHOD:[]:ESCAPED{keyPress}(PARAMETERS{ESCAPED{event}}):
   scroll:METHOD:[]:ESCAPED{scroll}:
   startDrag:METHOD:[]:ESCAPED{startDrag}(PARAMETERS{ESCAPED{event}}):
@@ -47,7 +84,7 @@ Draggable:CLASS:[]:ESCAPED{Draggable}:
   stopScrolling:METHOD:[]:ESCAPED{stopScrolling}:
   updateDrag:METHOD:[]:ESCAPED{updateDrag}(PARAMETERS{ESCAPED{event}, ESCAPED{pointer}}):
 SortableObserver:CLASS:[]:ESCAPED{SortableObserver}:
-  initialize:METHOD:[]:ESCAPED{initialize}(PARAMETERS{ESCAPED{element}, ESCAPED{observer}}):
+  initialize:CONSTRUCTOR:[]:ESCAPED{initialize}(PARAMETERS{ESCAPED{element}, ESCAPED{observer}}):
   onEnd:METHOD:[]:ESCAPED{onEnd}:
   onStart:METHOD:[]:ESCAPED{onStart}:
 Sortable:CLASS:[]:ESCAPED{Sortable}:

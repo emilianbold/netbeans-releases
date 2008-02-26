@@ -41,65 +41,95 @@
 
 package org.netbeans.modules.compapp.casaeditor.graph.actions;
 
-import java.awt.Dialog;
 import java.awt.Rectangle;
+import java.awt.Dialog;
+import java.awt.Point;
 import java.awt.event.MouseEvent;
+import java.util.Set;
+import java.util.HashSet;
+import javax.swing.Action;
 import javax.swing.SwingUtilities;
+import javax.swing.JPopupMenu;
+import javax.swing.JMenuItem;
+
 import org.netbeans.api.visual.action.WidgetAction;
-import org.netbeans.api.visual.action.WidgetAction.State;
 import org.netbeans.api.visual.widget.Widget;
 import org.netbeans.modules.compapp.casaeditor.Constants;
+import org.netbeans.modules.compapp.casaeditor.nodes.actions.WsitServerConfigAction;
+import org.netbeans.modules.compapp.casaeditor.nodes.actions.WsitClientConfigAction;
 import org.netbeans.modules.compapp.casaeditor.design.CasaModelGraphScene;
 import org.netbeans.modules.compapp.casaeditor.graph.CasaBindingBadges;
 import org.netbeans.modules.compapp.casaeditor.graph.CasaNodeWidgetBinding;
 import org.netbeans.modules.compapp.casaeditor.model.casa.CasaPort;
+import org.netbeans.modules.compapp.casaeditor.model.casa.CasaComponent;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
+import org.openide.awt.Actions;
 import org.openide.explorer.propertysheet.PropertySheet;
 import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
-
+import org.openide.util.actions.SystemAction;
 
 
 public class CasaBadgeEditAction extends WidgetAction.Adapter {
-    
+
     private CasaModelGraphScene mScene;
     private Node mEditNode;
-    
-    
+
+
     public CasaBadgeEditAction(CasaModelGraphScene scene) {
         mScene = scene;
     }
-    
+
+    private boolean inBadge(WidgetMouseEvent event, CasaBindingBadges.Badge badge, CasaNodeWidgetBinding nodeWidget) {
+        Rectangle badgeBounds = nodeWidget.getBadges().getBadgeBoundsForParent(badge, nodeWidget);
+        return (badgeBounds.contains(event.getPoint()));
+    }
+
     public State mousePressed(Widget widget, WidgetMouseEvent event) {
         mEditNode = null;
-        
+
         if (event.getButton () != MouseEvent.BUTTON1) {
             return State.REJECTED;
         }
-        
+
         CasaNodeWidgetBinding nodeWidget = (CasaNodeWidgetBinding) widget;
-        Rectangle badgeBounds = nodeWidget.getBadges().getBadgeBoundsForParent(
-                CasaBindingBadges.Badge.IS_EDITABLE, 
-                nodeWidget);
-        if (!badgeBounds.contains(event.getPoint())) {
-            return State.REJECTED;
+        if (inBadge(event, CasaBindingBadges.Badge.IS_EDITABLE, nodeWidget)) {
+
+            CasaPort endpoint = (CasaPort) mScene.findObject(widget);
+            if (endpoint == null || !mScene.getModel().isEditable(endpoint)) {
+                return State.REJECTED;
+            }
+
+            mEditNode = mScene.getNodeFactory().createNodeFor(endpoint);
+            if (mEditNode == null) {
+                return State.REJECTED;
+            }
+
+            nodeWidget.getBadges().setBadgePressed(CasaBindingBadges.Badge.IS_EDITABLE, true);
+
+            return State.CONSUMED;
+
+        } else if (inBadge(event, CasaBindingBadges.Badge.WS_POLICY, nodeWidget)) {
+
+            CasaPort endpoint = (CasaPort) mScene.findObject(widget);
+            if (endpoint == null || !mScene.getModel().isEditable(endpoint)) {
+                return State.REJECTED;
+            }
+
+            mEditNode = mScene.getNodeFactory().createNodeFor(endpoint);
+            if (mEditNode == null) {
+                return State.REJECTED;
+            }
+
+            nodeWidget.getBadges().setBadgePressed(CasaBindingBadges.Badge.WS_POLICY, true);
+
+            return State.CONSUMED;
+
         }
-        
-        CasaPort endpoint = (CasaPort) mScene.findObject(widget);
-        if (endpoint == null || !mScene.getModel().isEditable(endpoint)) {
-            return State.REJECTED;
-        }
-        
-        mEditNode = mScene.getNodeFactory().createNodeFor(endpoint);
-        if (mEditNode == null) {
-            return State.REJECTED;
-        }
-        
-        nodeWidget.getBadges().setBadgePressed(CasaBindingBadges.Badge.IS_EDITABLE, true);
-        
-        return State.CONSUMED;
+         return State.REJECTED;
     }
+
 
     // If the mouse is ever moved off of the widget, either from a drag/move, then
     // we must lock the state so that we get the mouseReleased event.
@@ -109,7 +139,7 @@ public class CasaBadgeEditAction extends WidgetAction.Adapter {
         }
         return State.createLocked(widget, this);
     }
-    
+
     // If the mouse is ever moved off of the widget, either from a drag/move, then
     // we must lock the state so that we get the mouseReleased event.
     public WidgetAction.State mouseExited(Widget widget, WidgetAction.WidgetMouseEvent event) {
@@ -118,7 +148,7 @@ public class CasaBadgeEditAction extends WidgetAction.Adapter {
         }
         return State.createLocked(widget, this);
     }
-    
+
     // If the mouse is ever moved off of the widget, either from a drag/move, then
     // we must lock the state so that we get the mouseReleased event.
     public WidgetAction.State mouseDragged(Widget widget, WidgetAction.WidgetMouseEvent event) {
@@ -127,48 +157,72 @@ public class CasaBadgeEditAction extends WidgetAction.Adapter {
         }
         return State.createLocked (widget, this);
     }
-    
+
     protected boolean isLocked() {
         return mEditNode != null;
     }
-    
+
     public State mouseReleased(Widget widget, WidgetMouseEvent event) {
         if (mEditNode == null) {
             return State.REJECTED;
         }
-        
+
         final PropertySheet propertySheetPanel = new PropertySheet();
         final Node editNodeRef = mEditNode;
         mEditNode = null;
-        
-        CasaNodeWidgetBinding nodeWidget = (CasaNodeWidgetBinding) widget;
-        nodeWidget.getBadges().setBadgePressed(CasaBindingBadges.Badge.IS_EDITABLE, false);
-        
-        propertySheetPanel.setNodes(new Node[] { editNodeRef });
 
-        final Object[] options = new Object[] {Constants.CLOSE};
-        final DialogDescriptor descriptor = new DialogDescriptor(
-                propertySheetPanel,
-                NbBundle.getMessage(getClass(), "STR_PROPERTIES", editNodeRef.getDisplayName()),
-                true,
-                options,
-                null, 
-                DialogDescriptor.DEFAULT_ALIGN, 
-                null,
-                null); 
-        descriptor.setClosingOptions(options);
-                
-        
-        final Dialog dlg = DialogDisplayer.getDefault().createDialog(descriptor);
-        
-        // The dialog is modal, allow the action chain to continue while
-        // we open the dialog later.
-        SwingUtilities.invokeLater(new Runnable() {
-            public void run() {
-                dlg.setVisible(true);
-            }
-        });
-        
+        CasaNodeWidgetBinding nodeWidget = (CasaNodeWidgetBinding) widget;
+        if (inBadge(event, CasaBindingBadges.Badge.IS_EDITABLE, nodeWidget)) {
+
+            nodeWidget.getBadges().setBadgePressed(CasaBindingBadges.Badge.IS_EDITABLE, false);
+
+            propertySheetPanel.setNodes(new Node[] { editNodeRef });
+
+            final Object[] options = new Object[] {Constants.CLOSE};
+            final DialogDescriptor descriptor = new DialogDescriptor(
+                    propertySheetPanel,
+                    NbBundle.getMessage(getClass(), "STR_PROPERTIES", editNodeRef.getDisplayName()),
+                    true,
+                    options,
+                    null,
+                    DialogDescriptor.DEFAULT_ALIGN,
+                    null,
+                    null);
+            descriptor.setClosingOptions(options);
+
+
+            final Dialog dlg = DialogDisplayer.getDefault().createDialog(descriptor);
+
+            // The dialog is modal, allow the action chain to continue while
+            // we open the dialog later.
+            SwingUtilities.invokeLater(new Runnable() {
+                public void run() {
+                    dlg.setVisible(true);
+                }
+            });
+
+        } else if (inBadge(event, CasaBindingBadges.Badge.WS_POLICY, nodeWidget)) {
+
+            nodeWidget.getBadges().setBadgePressed(CasaBindingBadges.Badge.WS_POLICY, false);
+
+            // select the port
+            CasaPort widgetData = (CasaPort) mScene.findObject(widget);
+            Set<CasaComponent> objectsToSelect = new HashSet<CasaComponent>();
+            objectsToSelect.add((CasaComponent) widgetData);
+            mScene.userSelectionSuggested(objectsToSelect, false);
+
+            // show popup menu
+            JPopupMenu popupMenu = new JPopupMenu();
+            JMenuItem serverItem = new JMenuItem();
+            JMenuItem clientItem = new JMenuItem();
+            Actions.connect(serverItem, (Action) SystemAction.get(WsitServerConfigAction.class), true);
+            Actions.connect(clientItem, (Action) SystemAction.get(WsitClientConfigAction.class), true);
+            popupMenu.add(serverItem);
+            popupMenu.add(clientItem);
+            Point point = mScene.convertSceneToView (widget.convertLocalToScene(event.getPoint()));
+            popupMenu.show(mScene.getView(), point.x, point.y);
+        }
+
         return State.CONSUMED;
     }
 }

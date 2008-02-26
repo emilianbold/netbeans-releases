@@ -43,8 +43,6 @@ package org.netbeans.modules.versioning.system.cvss.ui.history;
 
 import org.netbeans.lib.cvsclient.command.log.LogInformation;
 import org.netbeans.lib.cvsclient.command.update.UpdateCommand;
-import org.netbeans.lib.cvsclient.command.CommandException;
-import org.netbeans.lib.cvsclient.connection.AuthenticationException;
 import org.netbeans.modules.versioning.system.cvss.util.Utils;
 import org.netbeans.modules.versioning.system.cvss.util.Context;
 import org.netbeans.modules.versioning.system.cvss.ui.actions.log.SearchHistoryAction;
@@ -60,7 +58,6 @@ import org.netbeans.api.editor.settings.FontColorSettings;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileStateInvalidException;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 
@@ -75,8 +72,6 @@ import java.awt.geom.Rectangle2D;
 import java.awt.event.*;
 import java.text.DateFormat;
 import java.io.File;
-import java.io.IOException;
-import java.io.FileOutputStream;
 import java.io.FileInputStream;
 
 /**
@@ -538,30 +533,7 @@ class SummaryView implements MouseListener, ComponentListener, MouseMotionListen
             SearchHistoryPanel.DispRevision drev = (SearchHistoryPanel.DispRevision) o;
             File file = drev.getRevision().getLogInfoHeader().getFile();
             Project project = master.getProject(file);                
-            Context context = Utils.getProjectsContext(new Project[] { master.getProject(file) });
-            if (context.getRootFiles().length == 0) {
-                // the project itself is not versioned, try to search in the broadest context possible
-                FileStatusCache cache = CvsVersioningSystem.getInstance().getStatusCache();
-                for (;;) {
-                    File parent = file.getParentFile();
-                    assert parent != null;
-                    if ((cache.getStatus(parent).getStatus() & FileInformation.STATUS_IN_REPOSITORY) == 0) {
-                        Set<File> files = new HashSet<File>(1);
-                        files.add(file);
-                        try {
-                            String cvsRoot = Utils.getCVSRootFor(file);
-                            ClientRuntime cr = CvsVersioningSystem.getInstance().getClientRuntime(cvsRoot);
-                            cr.logError(NbBundle.getMessage(SummaryView.class, "MSG_AlternativeSearch1", ProjectUtils.getInformation(project).getDisplayName()));
-                            cr.logError(NbBundle.getMessage(SummaryView.class, "MSG_AlternativeSearch2", file.getAbsolutePath()));
-                        } catch (IOException e) {
-                            // oops, no root for the file, we'll catch it later anyway
-                        }
-                        context = new Context(files, files, Collections.emptySet());
-                        break;
-                    }
-                    file = parent;
-                }
-            }
+            Context context = Utils.getProjectContext(master.getProject(file), file);
             SearchHistoryAction.openSearch(
                     context, 
                     ProjectUtils.getInformation(project).getDisplayName(),

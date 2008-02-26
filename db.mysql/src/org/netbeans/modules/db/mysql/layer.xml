@@ -55,5 +55,13 @@ made subject to such option by the copyright holder.
                 <attr name="instanceOf" stringvalue="org.netbeans.modules.db.api.explorer.ActionProvider"/>
             </file>
         </folder>
+        <folder name="MySQL">
+            <folder name="Installations">
+                <file name="MAMPInstallation.instance">
+                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.db.mysql.installations.MAMPInstallation.getDefault"/>
+                    <attr name="instanceOf" stringvalue="org.netbeans.modules.db.mysql.Installation"/>
+                </file>
+            </folder>
+        </folder>
     </folder>
 </filesystem>

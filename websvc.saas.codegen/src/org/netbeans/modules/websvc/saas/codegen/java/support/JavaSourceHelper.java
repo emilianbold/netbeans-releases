@@ -206,7 +206,8 @@ public class JavaSourceHelper {
                 public void run(CompilationController controller) throws IOException {
                     controller.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
                     ExpressionTree packageTree = controller.getCompilationUnit().getPackageName();
-                    packageName[0] = packageTree.toString();
+                    if(packageTree != null)
+                        packageName[0] = packageTree.toString();
                 }
             }, true);
         } catch (IOException ex) {

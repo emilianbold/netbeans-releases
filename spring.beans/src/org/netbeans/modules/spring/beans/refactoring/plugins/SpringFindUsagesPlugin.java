@@ -68,18 +68,20 @@ public class SpringFindUsagesPlugin implements RefactoringPlugin {
     private static final Logger LOGGER = Logger.getLogger(SpringFindUsagesPlugin.class.getName());
 
     private WhereUsedQuery springBeansWhereUsed;
-    private TreePathHandle treePathHandle = null;
+    private TreePathHandle treePathHandle = null;    
     
     SpringFindUsagesPlugin(WhereUsedQuery query) {
         springBeansWhereUsed = query;
     }
    
     public Problem prepare(RefactoringElementsBag refactoringElementsBag) {
-        treePathHandle = springBeansWhereUsed.getRefactoringSource().lookup(TreePathHandle.class);
-        if (treePathHandle != null && treePathHandle.getKind() == Kind.CLASS) {
-            SpringScope scope = SpringScope.getSpringScope(treePathHandle.getFileObject());
-            if (scope != null) {
-                fillElementsBag(springBeansWhereUsed, treePathHandle.getFileObject(), scope, refactoringElementsBag);
+        if (isFindReferences()) {
+            treePathHandle = springBeansWhereUsed.getRefactoringSource().lookup(TreePathHandle.class);
+            if (treePathHandle != null && treePathHandle.getKind() == Kind.CLASS) {
+                SpringScope scope = SpringScope.getSpringScope(treePathHandle.getFileObject());
+                if (scope != null) {
+                    fillElementsBag(springBeansWhereUsed, treePathHandle.getFileObject(), scope, refactoringElementsBag);
+                }
             }
         }
         return null;
@@ -120,4 +122,8 @@ public class SpringFindUsagesPlugin implements RefactoringPlugin {
             Exceptions.printStackTrace(exception);
         }
     }
+    
+    private boolean isFindReferences() {
+        return springBeansWhereUsed.getBooleanValue(WhereUsedQuery.FIND_REFERENCES);          
+    }   
 }
