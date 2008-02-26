@@ -601,7 +601,7 @@ public class JsBracketCompleter implements BracketCompletion {
             } else if (ch == '"' || ch == '\'' || ch == '(' || ch == '{' || ch == '[' || ch == '/') {
                 // Bracket the selection
                 String selection = target.getSelectedText();
-                if (selection != null && selection.length() > 0) {
+                if (selection != null && selection.length() > 1) {
                     char firstChar = selection.charAt(0);
                     if (firstChar != ch) {
                         int start = target.getSelectionStart();

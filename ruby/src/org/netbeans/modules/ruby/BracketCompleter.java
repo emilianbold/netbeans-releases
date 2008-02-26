@@ -607,7 +607,7 @@ public class BracketCompleter implements org.netbeans.modules.gsf.api.BracketCom
             } else if (ch == '"' || ch == '\'' || ch == '(' || ch == '{' || ch == '[' || ch == '/') {
                 // Bracket the selection
                 String selection = target.getSelectedText();
-                if (selection != null && selection.length() > 0) {
+                if (selection != null && selection.length() > 1) {
                     char firstChar = selection.charAt(0);
                     if (firstChar != ch) {
                         int start = target.getSelectionStart();

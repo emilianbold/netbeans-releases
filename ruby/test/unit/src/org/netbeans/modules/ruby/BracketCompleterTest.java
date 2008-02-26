@@ -960,6 +960,10 @@ public class BracketCompleterTest extends RubyTestBase {
         insertChar("x = 'foo^bar'", '#', "x = '#^bar'", "foo");
     }
 
+    public void testReplaceSelection5() throws Exception {
+        insertChar("'(^position:absolute;'", '{', "'{^position:absolute;'", "(");
+    }
+
     public void testReplaceSelectionChangeType1() throws Exception {
         insertChar("x = \"foo\"^", '\'', "x = 'foo'^", "\"foo\"");
     }
