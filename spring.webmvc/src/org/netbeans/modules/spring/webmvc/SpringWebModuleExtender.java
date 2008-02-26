@@ -95,6 +95,8 @@ import org.openide.filesystems.FileUtil;
 import org.openide.util.ChangeSupport;
 import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
+import org.openide.util.Mutex.ExceptionAction;
+import org.openide.util.MutexException;
 import org.openide.util.NbBundle;
 
 /**
@@ -286,22 +288,23 @@ public class SpringWebModuleExtender extends WebModuleExtender implements Change
             SpringScope scope = SpringScope.getSpringScope(configFile);
             if (scope != null) {
                 final ConfigFileManager manager = scope.getConfigFileManager();
-                manager.mutex().writeAccess(new Runnable() {
-                    public void run() {
-                        List<File> files = manager.getConfigFiles();
-                        files.addAll(newFiles);
-                        List<ConfigFileGroup> groups = manager.getConfigFileGroups();
-                        String groupName = NbBundle.getMessage(SpringWebModuleExtender.class, "LBL_DefaultGroup");
-                        ConfigFileGroup newGroup = ConfigFileGroup.create(groupName, newFiles);
-                        groups.add(newGroup);
-                        manager.putConfigFilesAndGroups(files, groups);
-                        try {
+                try {
+                    manager.mutex().writeAccess(new ExceptionAction<Void>() {
+                        public Void run() throws IOException {
+                            List<File> files = manager.getConfigFiles();
+                            files.addAll(newFiles);
+                            List<ConfigFileGroup> groups = manager.getConfigFileGroups();
+                            String groupName = NbBundle.getMessage(SpringWebModuleExtender.class, "LBL_DefaultGroup");
+                            ConfigFileGroup newGroup = ConfigFileGroup.create(groupName, newFiles);
+                            groups.add(newGroup);
+                            manager.putConfigFilesAndGroups(files, groups);
                             manager.save();
-                        } catch (IOException e) {
-                            Exceptions.printStackTrace(e);
+                            return null;
                         }
-                    }
-                });
+                    });
+                } catch (MutexException e) {
+                    throw (IOException)e.getException();
+                }
             } else {
                 LOGGER.log(Level.WARNING, "Could not find a SpringScope for file {0}", configFile);
             }
