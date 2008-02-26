@@ -73,7 +73,7 @@ import org.openide.util.Utilities;
  */
 public final class FileObjectFactory {
     public static Map AllFactories = new HashMap();
-    public static boolean WARNINGS = true;
+    public static boolean WARNINGS = false;
     final Map allIBaseFileObjects = Collections.synchronizedMap(new WeakHashMap());
     private BaseFileObj root;
     public static enum Caller {
