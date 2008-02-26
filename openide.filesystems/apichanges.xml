@@ -46,9 +46,9 @@ made subject to such option by the copyright holder.
         <apidef name="filesystems">Filesystems API</apidef>
     </apidefs>
     <changes> 	
-        <change id="FileUtil.addFileChangesListener">
+        <change id="FileUtil.addFileChangeListener">
             <api name="filesystems"/>
-            <summary>Add methods: addFileChangesListener, removeFileChangesListener, refreshAll</summary>
+            <summary>Add methods: addFileChangeListener, removeFileChangeListener, refreshAll</summary>
             <version major="7" minor="7"/>
             <date day="26" month="2" year="2008"/>
             <author login="rmatous"/>
@@ -56,10 +56,10 @@ made subject to such option by the copyright holder.
             <description>
                 Added utility methods:  
                 <ul>
-                    <li><code>public static FileObject addFileChangeListener (final FileChangeListeners fcl)</code> to receive
+                    <li><code>public static FileObject addFileChangeListener (final FileChangeListener fcl)</code> to receive
                         <code>FileEvents</code> from <code>FileSystems</code> providing instances
                     of <code>FileObject</code> convertible to <code>java.io.File</code></li>
-                    <li><code>public static FileObject removeFileChangeListener (final FileChangeListeners fcl)</code> to no longer receive
+                    <li><code>public static FileObject removeFileChangeListener (final FileChangeListener fcl)</code> to no longer receive
                         <code>FileEvents</code> from <code>FileSystems</code> providing instances
                     of <code>FileObject</code> convertible to <code>java.io.File</code></li>
                     <li><code>public static FileObject refreshAll ()</code> to refreshes all <code>FileObject</code> that represent files <code>File.listRoots()</code> 

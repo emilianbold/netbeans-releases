@@ -168,7 +168,7 @@ public final class FileUtil extends Object {
     
     /**
      * Registers <code>listener</code> so that it will receive
-     * <code>FileEvents</code> from <code>FileSystems</code> providing instances
+     * <code>FileEvent</code>s from <code>FileSystem</code>s providing instances
      * of <code>FileObject</code> convertible to <code>java.io.File</code>. 
      * @param fcl
      * @see #toFileObject
@@ -184,7 +184,7 @@ public final class FileUtil extends Object {
     
     /**
      * Unregisters <code>listener</code> so that it will no longer receive
-     * <code>FileEvents</code> from <code>FileSystems</code> providing instances
+     * <code>FileEvent</code>s from <code>FileSystem</code>s providing instances
      * of <code>FileObject</code> convertible to <code>java.io.File</code>      
      * @param fcl
      * @see #toFileObject
