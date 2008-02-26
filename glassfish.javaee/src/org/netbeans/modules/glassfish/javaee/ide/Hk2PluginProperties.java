@@ -52,6 +52,8 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.StringTokenizer;
+import java.util.jar.JarFile;
+import java.util.jar.Manifest;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.api.java.platform.Specification;
@@ -146,30 +148,27 @@ public class Hk2PluginProperties {
                     return list;
                 }
             }
-            File ee5lib = new File(jarDir, "javaee.jar");
-            if (ee5lib.exists()) {
-                list.add(fileToUrl(ee5lib));
-            } else {
-                list.add(fileToUrl(new File(jarDir, "jars/servlet-api-2.5.jar")));
-                list.add(fileToUrl(new File(jarDir, "jars/transaction-api-1.1.jar")));
-                list.add(fileToUrl(new File(jarDir, "jars/activation-1.1.jar")));
-//                list.add(fileToUrl(new File(jarDir, "jars/mail-1.4.1ea-SNAPSHOT.jar")));
-                list.add(fileToUrl(new File(jarDir, "jars/jsp-api-2.1.1-SNAPSHOT.jar")));
-                list.add(fileToUrl(new File(jarDir, "jars/ejb-api-3.0.jar")));
-                list.add(fileToUrl(new File(jarDir, "jars/jaxws-api-2.0.jar")));
-                list.add(fileToUrl(new File(jarDir, "jars/jaxrpc-api-1.1.jar")));
-                list.add(fileToUrl(new File(jarDir, "jars/jaxb-api-2.1.jar")));
-                list.add(fileToUrl(new File(jarDir, "jars/jms-api-1.1.jar")));
-                list.add(fileToUrl(new File(jarDir, "jars/persistence-api-1.0.jar")));
-                list.add(fileToUrl(new File(jarDir, "jars/saaj-api-1.3.jar")));
-                list.add(fileToUrl(new File(jarDir, "jars/deployment-api-1.2.jar")));
-                list.add(fileToUrl(new File(jarDir, "jars/jsr250-api-1.0.jar")));
-                list.add(fileToUrl(new File(jarDir, "jars/connector-api-1.5.jar")));
-                list.add(fileToUrl(new File(jarDir, "jars/security-api-1.1.jar")));
-                list.add(fileToUrl(new File(jarDir, "jars/jsr173_api-1.0.jar")));
-                list.add(fileToUrl(new File(jarDir, "jars/jsr181-api-1.0-MR1.jar")));
+
+            File ee5lib = new File(jarDir, "javaee-5.0-SNAPSHOT.jar");  // V3 P2 M2
+            if (!ee5lib.exists()) {
+                ee5lib = new File(jarDir, "javaee-5.0.jar"); // V1 P2 M1 uses an older name.
+                if (!ee5lib.exists()) {
+                    return list;
+                }
+            }
+            
+            Manifest m = new JarFile(ee5lib).getManifest();
+            String dependentJars = m.getMainAttributes().getValue("Class-Path");
+            dependentJars.split(" ");
+            StringTokenizer token = new StringTokenizer(dependentJars, " ");
+            while (token.hasMoreTokens()) {
+                String jar = token.nextToken();
+                File j = new File(jarDir, jar);
+                list.add(fileToUrl(j));
             }
         } catch(MalformedURLException ex) {
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+        } catch(IOException ex) {
             ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
         }
         return list;
