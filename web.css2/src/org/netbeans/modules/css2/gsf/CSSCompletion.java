@@ -253,6 +253,10 @@ public class CSSCompletion implements Completable {
                 SimpleNode property = result[0];
 
                 Property prop = PROPERTIES.getProperty(property.image());
+                if(prop == null) {
+                    return null;
+                }
+                
                 Collection<String> values = prop.values();
                 return wrapValues(filterValues(values, prefix), CompletionItemKind.VALUE, AstUtils.documentPosition(node.startOffset(), source), formatter);
 

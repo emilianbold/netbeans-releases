@@ -8,6 +8,7 @@
 
 
 <toc version="2.0">
+    <tocitem text="IDE Basics" >
 	<tocitem text="Servers and Databases">
 		<tocitem text="Servers">
 			<tocitem text="IBM WebSphere Application Server">
@@ -15,4 +16,5 @@
 			</tocitem>
 		</tocitem>
 	</tocitem>
+        </tocitem>
 </toc>
