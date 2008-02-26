@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- *
- * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
- *
+ * 
+ * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * 
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,13 +20,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
+ * 
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -37,51 +31,74 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ * 
+ * Contributor(s):
+ * 
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.ruby.debugger;
+package org.netbeans.modules.cnd.api.model.services;
 
-import org.openide.text.Annotatable;
-import org.openide.text.Annotation;
-import org.openide.util.NbBundle;
+import javax.swing.text.Document;
+import org.openide.util.Lookup;
 
 /**
- * Debugger Annotation class.
+ *
+ * @author Alexander Simon
  */
-public final class DebuggerAnnotation extends Annotation {
+public abstract class CsmOperatorKindResolver {
+    /**
+     * default instance
+     */
+    private static CsmOperatorKindResolver DEFAULT = new Default();
     
-    public static final String BREAKPOINT_ANNOTATION_TYPE = "Breakpoint";
-    public static final String DISABLED_BREAKPOINT_ANNOTATION_TYPE = "DisabledBreakpoint";
-    public static final String CURRENT_LINE_ANNOTATION_TYPE = "CurrentPC";
-    public static final String CALL_STACK_FRAME_ANNOTATION_TYPE = "CallSite";
-    
-    private final String type;
-    
-    public DebuggerAnnotation(final String type, final Annotatable annotatable) {
-        this.type = type;
-        attach(annotatable);
+    protected CsmOperatorKindResolver() {
     }
     
-    public String getAnnotationType() {
-        return type;
+    /**
+     * Static method to obtain the CsmOperatorKindResolver implementation.
+     * @return the resolver
+     */
+    public static synchronized CsmOperatorKindResolver getDefault() {
+        return DEFAULT;
     }
     
-    public String getShortDescription() {
-        if (type.equals(BREAKPOINT_ANNOTATION_TYPE)) {
-            return getMessage("TOOLTIP_BREAKPOINT"); // NOI18N
-        } else if (type.equals(DISABLED_BREAKPOINT_ANNOTATION_TYPE)) {
-            return getMessage("TOOLTIP_DISABLED_BREAKPOINT"); // NOI18N
-        } else if (type.equals(CURRENT_LINE_ANNOTATION_TYPE)) {
-            return getMessage("TOOLTIP_CURRENT_LINE"); // NOI18N
-        } else if (type.equals(CALL_STACK_FRAME_ANNOTATION_TYPE)) {
-            return getMessage("TOOLTIP_CALL_STACK_FRAME"); // NOI18N
-        } else {
-            return null;
+    public enum OperatorKind {
+        BINARY,
+        UNARY,
+        SEPARATOR,
+        TYPEMODIFIER,
+        UNKNOWN;
+    }
+    
+    /**
+     * Detect operator kind
+     * for example:
+     * Document a*b;
+     * Offset point to * (start position)
+     * Result is TypeModifier or Binary
+     * Possible requestes about:
+     * *, &, +, -, <, >.
+     */
+    public abstract OperatorKind getKind(Document doc, int offset);
+    
+    /**
+     * Implementation of the default resolver
+     */  
+    private static final class Default extends CsmOperatorKindResolver {
+        private final Lookup.Result<CsmOperatorKindResolver> res;
+        Default() {
+            res = Lookup.getDefault().lookupResult(CsmOperatorKindResolver.class);
+        }
+
+        public OperatorKind getKind(Document doc, int offset) {
+            for (CsmOperatorKindResolver resolver : res.allInstances()) {
+                OperatorKind out = resolver.getKind(doc, offset);
+                if (out != OperatorKind.UNKNOWN) {
+                    return out;
+                }
+            }
+            return OperatorKind.UNKNOWN;
         }
     }
-    
-    private static String getMessage(final String key) {
-        return NbBundle.getBundle(DebuggerAnnotation.class).getString(key);
-    }
-    
 }

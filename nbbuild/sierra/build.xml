@@ -103,6 +103,7 @@
                 <include name="netbeans/bin/**"/>
                 <include name="netbeans/enterprise5/**"/>
                 <include name="netbeans/etc/**"/>
+                <include name="netbeans/gsf1/**"/>
                 <include name="netbeans/harness/**"/>
                 <include name="netbeans/ide9/**"/>
                 <include name="netbeans/java2/**"/>
@@ -391,7 +392,6 @@
     <target name="do-print">
         <subant target="${action}" inheritAll="false">
             <buildpath location="${home}/print"/>
-            <buildpath location="${home}/xml.wsdl.extensions"/> <!-- todo r -->
         </subant>
     </target>
 

@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- *
- * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
- *
+ * 
+ * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * 
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,13 +20,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
+ * 
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -37,51 +31,75 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ * 
+ * Contributor(s):
+ * 
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.ruby.debugger;
+package org.netbeans.modules.cnd.api.model.services;
 
-import org.openide.text.Annotatable;
-import org.openide.text.Annotation;
-import org.openide.util.NbBundle;
+import javax.swing.text.Document;
+import org.openide.util.Lookup;
 
 /**
- * Debugger Annotation class.
+ *
+ * @author Alexander Simon
  */
-public final class DebuggerAnnotation extends Annotation {
+public abstract class CsmStatementKindResolver {
+    /**
+     * default instance
+     */
+    private static CsmStatementKindResolver DEFAULT = new Default();
     
-    public static final String BREAKPOINT_ANNOTATION_TYPE = "Breakpoint";
-    public static final String DISABLED_BREAKPOINT_ANNOTATION_TYPE = "DisabledBreakpoint";
-    public static final String CURRENT_LINE_ANNOTATION_TYPE = "CurrentPC";
-    public static final String CALL_STACK_FRAME_ANNOTATION_TYPE = "CallSite";
-    
-    private final String type;
-    
-    public DebuggerAnnotation(final String type, final Annotatable annotatable) {
-        this.type = type;
-        attach(annotatable);
+    protected CsmStatementKindResolver() {
     }
     
-    public String getAnnotationType() {
-        return type;
+    /**
+     * Static method to obtain the CsmStatementKindResolver implementation.
+     * @return the resolver
+     */
+    public static synchronized CsmStatementKindResolver getDefault() {
+        return DEFAULT;
     }
     
-    public String getShortDescription() {
-        if (type.equals(BREAKPOINT_ANNOTATION_TYPE)) {
-            return getMessage("TOOLTIP_BREAKPOINT"); // NOI18N
-        } else if (type.equals(DISABLED_BREAKPOINT_ANNOTATION_TYPE)) {
-            return getMessage("TOOLTIP_DISABLED_BREAKPOINT"); // NOI18N
-        } else if (type.equals(CURRENT_LINE_ANNOTATION_TYPE)) {
-            return getMessage("TOOLTIP_CURRENT_LINE"); // NOI18N
-        } else if (type.equals(CALL_STACK_FRAME_ANNOTATION_TYPE)) {
-            return getMessage("TOOLTIP_CALL_STACK_FRAME"); // NOI18N
-        } else {
-            return null;
+    public enum StatementKind {
+        NAMESPACE,
+        CLASS,
+        STRIUCT,
+        ENUM,
+        UNION,
+        FUNCTION,
+        DECLARATION,
+        EXPRESSION,
+        COMPOUND,
+        OTHER,
+        UNKNOWN;
+    }
+    
+    /**
+     * Detect statement kind
+     */
+    public abstract StatementKind getKind(Document doc, int offset);
+
+    
+    /**
+     * Implementation of the default resolver
+     */  
+    private static final class Default extends CsmStatementKindResolver {
+        private final Lookup.Result<CsmStatementKindResolver> res;
+        Default() {
+            res = Lookup.getDefault().lookupResult(CsmStatementKindResolver.class);
+        }
+
+        public StatementKind getKind(Document doc, int offset) {
+            for (CsmStatementKindResolver resolver : res.allInstances()) {
+                StatementKind out = resolver.getKind(doc, offset);
+                if (out != StatementKind.UNKNOWN) {
+                    return out;
+                }
+            }
+            return StatementKind.UNKNOWN;
         }
     }
-    
-    private static String getMessage(final String key) {
-        return NbBundle.getBundle(DebuggerAnnotation.class).getString(key);
-    }
-    
 }
