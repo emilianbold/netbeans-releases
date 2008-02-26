@@ -41,6 +41,7 @@
 
 package org.netbeans.modules.j2ee.common.project.classpath;
 
+import java.awt.EventQueue;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
@@ -82,6 +83,9 @@ public final class LibrariesLocationUpdater implements PropertyChangeListener {
     private final ClassPathSupport cs;    
     private final AntProjectHelper antHelper;
     
+    private String oldValue;
+    private String oldAdditionalValue;
+    
     private final PropertyChangeListener listener = WeakListeners.propertyChange(this, null);
     
     private static final Logger LOG = Logger.getLogger(LibrariesLocationUpdater.class.getName());
@@ -102,12 +106,30 @@ public final class LibrariesLocationUpdater implements PropertyChangeListener {
         this.projectXMLElement = projectXMLElement;
         this.additionalClassPathProperty = additionalClassPathProperty;
         this.additionalProjectXMLElement = additionalProjectXMLElement;
+
+        EditableProperties props = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
+        this.oldValue = props.getProperty(classPathProperty);
+        if (additionalClassPathProperty != null) {
+            this.oldAdditionalValue = props.getProperty(additionalClassPathProperty);
+        }
         
         //#56140
         eval.addPropertyChangeListener(listener); //listen for changes of libraries list
         registerLibraryListeners();
     }
     
+    private synchronized boolean needsUpdate(String value, String additionalValue) {
+        boolean needsUpdate = false;
+        if (!stringEquals(value, oldValue)) {
+            oldValue = value;
+            needsUpdate = true;
+        }
+        if (additionalClassPathProperty != null && !stringEquals(additionalValue, oldAdditionalValue)) {
+            oldAdditionalValue = additionalValue;
+            needsUpdate = true;
+        }
+        return needsUpdate;
+    }
     
     private void reRegisterLibraryListeners() {
         unregisterLibraryListeners();
@@ -160,24 +182,40 @@ public final class LibrariesLocationUpdater implements PropertyChangeListener {
         if (!ProjectManager.getDefault().isValid(project)) {
             return;
         }
-        if (e.getSource().equals(eval) && e.getPropertyName().equals(classPathProperty)) {
-            // if project property changed then update listeners and store locations
-            reRegisterLibraryListeners();
-            storeLibLocations();
+        if (e.getSource().equals(eval)) {
+            if (e.getPropertyName().equals(classPathProperty) || 
+                (additionalClassPathProperty != null && e.getPropertyName().equals(additionalClassPathProperty))) {
+                EditableProperties props = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
+                if (needsUpdate(props.getProperty(classPathProperty), props.getProperty(additionalClassPathProperty))) {
+                    // if project property changed then update listeners and store locations
+                    reRegisterLibraryListeners();
+                    storeLibLocations();
+                }
+            }
         } else if (e.getPropertyName().equals(Library.PROP_CONTENT)) {
             storeLibLocations();
         }
+    }
+    
+    private static boolean stringEquals(String str1, String str2) {
+        return (str1 == null || str1.trim().length() == 0) ? 
+            (str2 == null || str2.trim().length() == 0) : str1.equals(str2);
     }
     
     private void storeLibLocations() {
         if (!ProjectManager.getDefault().isValid(project)) {
             return;
         }
-        RequestProcessor.getDefault().post(new Runnable() {
+        // ear and appclient project seems to be doing project modification without write lock
+        // and if code below is executed in parallel there is assert faling at 
+        // org.netbeans.spi.project.support.ant.ProjectProperties$PP.write(ProjectProperties.java:216)
+        // until projcet types are fixed I'm posting this to AWT thread to sort of synchronize with project types
+        // which do their changes in AWT too.
+        EventQueue.invokeLater(new Runnable() {
             public void run() {
                 ProjectManager.mutex().writeAccess(new Runnable() {
                     public void run() {
-                        EditableProperties props = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);    //Reread the properties, PathParser changes them
+                        EditableProperties props = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
                         List wmLibs = cs.itemsList(props.getProperty(classPathProperty),  projectXMLElement);
                         cs.encodeToStrings(wmLibs, projectXMLElement);
                         HashSet set = new HashSet();
@@ -187,6 +225,7 @@ public final class LibrariesLocationUpdater implements PropertyChangeListener {
                             cs.encodeToStrings(additionalLibs, additionalProjectXMLElement);
                             set.addAll(additionalLibs);
                         }
+                        props = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);    //Reread the properties
                         ProjectProperties.storeLibrariesLocations(set.iterator(), props, project.getProjectDirectory());
                         helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, props);
                         try {

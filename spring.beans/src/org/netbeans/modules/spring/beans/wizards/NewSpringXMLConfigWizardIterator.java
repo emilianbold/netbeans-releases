@@ -49,7 +49,6 @@ import java.io.File;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.NoSuchElementException;
@@ -76,8 +75,10 @@ import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 import org.openide.text.CloneableEditorSupport;
 import org.openide.util.Exceptions;
+import org.openide.util.Mutex.ExceptionAction;
+import org.openide.util.MutexException;
 
-public final class NewSpringXMLConfigWizardIterator implements WizardDescriptor.InstantiatingIterator {
+public final class NewSpringXMLConfigWizardIterator implements WizardDescriptor.AsynchronousInstantiatingIterator {
 
     private int index;
     private WizardDescriptor wizard;
@@ -139,7 +140,8 @@ public final class NewSpringXMLConfigWizardIterator implements WizardDescriptor.
             }
         });
         
-        Collection<ConfigFileGroup> selectedGroups = (Collection<ConfigFileGroup>) wizard.getProperty(SpringXMLConfigGroupPanel.CONFIG_FILE_GROUPS);
+        @SuppressWarnings("unchecked")
+        Set<ConfigFileGroup> selectedGroups = (Set<ConfigFileGroup>) wizard.getProperty(SpringXMLConfigGroupPanel.CONFIG_FILE_GROUPS);
         if(selectedGroups.size() > 0) {
             addFileToSelectedGroups(selectedGroups, FileUtil.toFile(createdFile[0]));
         }
@@ -147,8 +149,11 @@ public final class NewSpringXMLConfigWizardIterator implements WizardDescriptor.
         return Collections.singleton(createdFile[0]);
     }
     
-    private void addFileToSelectedGroups(Collection<ConfigFileGroup> selectedGroups, File file) {
+    private void addFileToSelectedGroups(Set<ConfigFileGroup> selectedGroups, File file) throws IOException {
         final ConfigFileManager manager = getConfigFileManager(Templates.getProject(wizard));
+        final List<File> origFiles = manager.getConfigFiles();
+        final List<File> newFiles = new ArrayList<File>(origFiles);
+        newFiles.add(file);
         final List<ConfigFileGroup> origGroups = manager.getConfigFileGroups();
         final List<ConfigFileGroup> newGroups = new ArrayList<ConfigFileGroup>(origGroups.size());
         
@@ -161,11 +166,17 @@ public final class NewSpringXMLConfigWizardIterator implements WizardDescriptor.
             }
         }
         
-        manager.mutex().postWriteRequest(new Runnable() {
-            public void run() {
-                manager.putConfigFileGroups(newGroups);
-            }
-        });
+        try {
+            manager.mutex().writeAccess(new ExceptionAction<Void>() {
+                public Void  run() throws IOException {
+                    manager.putConfigFilesAndGroups(newFiles, newGroups);
+                    manager.save();
+                    return null;
+                }
+            });
+        } catch (MutexException e) {
+            throw (IOException) e.getException();
+        }
     }
     
     private ConfigFileGroup addFileToConfigGroup(ConfigFileGroup cfg, File file) {

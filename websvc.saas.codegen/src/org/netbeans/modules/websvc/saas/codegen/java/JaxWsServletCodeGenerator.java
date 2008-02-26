@@ -51,7 +51,7 @@ import org.openide.filesystems.FileObject;
  *
  * @author nam
  */
-public class JaxWsServletCodeGenerator extends JaxWsCodeGenerator {
+public class JaxWsServletCodeGenerator extends JaxWsJavaClientCodeGenerator {
 
     private Collection<String> existingUriTemplates;
 

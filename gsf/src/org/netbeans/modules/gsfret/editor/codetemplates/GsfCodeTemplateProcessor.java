@@ -45,8 +45,8 @@ import java.util.*;
 
 import javax.swing.text.JTextComponent;
 
-import org.netbeans.fpi.gsf.CancellableTask;
-import org.netbeans.fpi.gsf.Completable;
+import org.netbeans.modules.gsf.api.CancellableTask;
+import org.netbeans.modules.gsf.api.Completable;
 import org.netbeans.napi.gsfret.source.CompilationController;
 import org.netbeans.napi.gsfret.source.CompilationInfo;
 import org.netbeans.napi.gsfret.source.Phase;

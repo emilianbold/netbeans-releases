@@ -170,7 +170,20 @@ public final class CodeStyle {
         return getOption(EditorOptions.sharpAtStartLine,
                          EditorOptions.sharpAtStartLineDefault);
     }
-            
+       //NewLine
+    public boolean newLineCatch(){
+        return getOption(EditorOptions.newLineCatch,
+                         EditorOptions.newLineCatchDefault);
+    }
+    public boolean newLineElse(){
+        return getOption(EditorOptions.newLineElse,
+                         EditorOptions.newLineElseDefault);
+    }
+    public boolean newLineWhile(){
+        return getOption(EditorOptions.newLineWhile,
+                         EditorOptions.newLineWhileDefault);
+    }
+         
     public boolean getFormatLeadingStarInComment() {
         return getOption(EditorOptions.addLeadingStarInComment,
                          EditorOptions.addLeadingStarInCommentDefault);

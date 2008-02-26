@@ -183,7 +183,6 @@ public class ServiceUnitNode extends CasaNode {
 
     
     private static class MyChildren extends CasaNodeChildren {
-        public static final String SEPARATOR = "+";
         public MyChildren(CasaComponent component, CasaNodeFactory factory) {
             super(component, factory);
         }
@@ -199,10 +198,8 @@ public class ServiceUnitNode extends CasaNode {
                     } else if (keyName.equals(CHILD_ID_PROVIDES_LIST)) {
                         return new Node[] { mNodeFactory.createNode_providesList(serviceUnit.getProvides()) };
                     } else {
-                        assert keyName.contains(SEPARATOR);
-                        String processName = keyName.substring(0, keyName.indexOf(SEPARATOR));
-                        String filePath = keyName.substring(keyName.indexOf(SEPARATOR) + 1);
-                        return new Node[] { mNodeFactory.createNode_process(serviceUnit, processName, filePath) };
+                        CasaEndpoint endpoint = getEndpoint(keyName);
+                        return new Node[] { mNodeFactory.createNode_process(endpoint) };
                     }
                 }
             }
@@ -211,7 +208,7 @@ public class ServiceUnitNode extends CasaNode {
         @Override
         public Object getChildKeys(Object data)  {
             List<String> children = new ArrayList<String>();
-            Set<String> processInfo = getProcessInfo();
+            Set<String> processInfo = getProcessNames();
             if (processInfo.size() == 0) {
                 children.add(CHILD_ID_CONSUMES_LIST);
                 children.add(CHILD_ID_PROVIDES_LIST);
@@ -220,7 +217,7 @@ public class ServiceUnitNode extends CasaNode {
             }
             return children;
         }
-        private Set<String> getProcessInfo() {
+        private Set<String> getProcessNames() {
             Set<String> ret = new HashSet<String>();
             
             List<CasaEndpointRef> endpointRefs = new ArrayList<CasaEndpointRef>();
@@ -231,13 +228,30 @@ public class ServiceUnitNode extends CasaNode {
                 for (CasaEndpointRef endpointRef : endpointRefs) {
                     CasaEndpoint endpoint = endpointRef.getEndpoint().get();
                     String processName = endpoint.getProcessName();
-                    String filePath = endpoint.getFilePath();
-                    if (processName != null && !processName.equals("")) {
-                        ret.add(processName + SEPARATOR + filePath);
+                    if (processName != null && processName.length() > 0) { 
+                        ret.add(processName);
                     }
                 }
             }
             return ret;
+        }
+        
+        private CasaEndpoint getEndpoint(String processName) {
+            
+            List<CasaEndpointRef> endpointRefs = new ArrayList<CasaEndpointRef>();
+            CasaServiceEngineServiceUnit serviceUnit = (CasaServiceEngineServiceUnit) getData();
+            if (serviceUnit != null) {
+                endpointRefs.addAll(serviceUnit.getConsumes());
+                endpointRefs.addAll(serviceUnit.getProvides());
+                for (CasaEndpointRef endpointRef : endpointRefs) {
+                    CasaEndpoint endpoint = endpointRef.getEndpoint().get();
+                    String myProcessName = endpoint.getProcessName();
+                    if (myProcessName != null && myProcessName.equals(processName)) { 
+                        return endpoint;
+                    }
+                }
+            }
+            return null;
         }
     }
     

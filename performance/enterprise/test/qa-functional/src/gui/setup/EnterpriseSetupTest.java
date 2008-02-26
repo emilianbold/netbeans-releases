@@ -49,12 +49,17 @@ import java.io.File;
  * Test suite that actually does not perform any test but sets up user directory
  * for UI responsiveness tests
  *
- * @author  mmirilovic@netbeans.org
+ * @author  mmirilovic@netbeans.org, mrkam@netbeans.org
  */
 public class EnterpriseSetupTest extends IDESetupTest {
     
     public EnterpriseSetupTest(java.lang.String testName) {
         super(testName);
+    }
+    
+    // FIXME: Remove this workaround
+    public void addApplicationServer() {
+        EPUtilities.addApplicationServer();
     }
     
     public void openReservationPartnerServicesProject() {

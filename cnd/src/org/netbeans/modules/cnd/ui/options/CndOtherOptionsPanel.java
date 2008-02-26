@@ -110,7 +110,9 @@ public class CndOtherOptionsPanel extends javax.swing.JPanel implements ActionLi
     private void editExtensionsButtonActionPerformed(ExtensionsElements ee) {
         StringArrayCustomEditor editor = new StringArrayCustomEditor(
                 ee.getValues(), ee.defaultValue,
-                getMessage("EE_ItemLabel"), getMessage("EE_ItemListLabel"), false);
+                getMessage("EE_ItemLabel"), getMessage("EE_ItemLabel_Mnemonic").charAt(0), 
+                getMessage("EE_ItemListLabel"), getMessage("EE_ItemListLabel_Mnemonic").charAt(0), 
+                false);
         
         JPanel outerPanel = new JPanel();
         outerPanel.setLayout(new java.awt.GridBagLayout());
@@ -143,7 +145,8 @@ public class CndOtherOptionsPanel extends javax.swing.JPanel implements ActionLi
             ExtensionsSettings es = ExtensionsSettings.getInstance(che);
             final ExtensionsElements ee = new ExtensionsElements(es);
 
-            ee.label.setText(che.getDisplayName());
+            ee.label.setText(NbBundle.getMessage(CndOtherOptionsPanel.class,
+			"EE_ExtensionListTitle", che.getDisplayNameForExtensionList()));
             ee.button.addActionListener(new java.awt.event.ActionListener() {
                 public void actionPerformed(java.awt.event.ActionEvent evt) {
                     editExtensionsButtonActionPerformed(ee);
@@ -222,13 +225,11 @@ public class CndOtherOptionsPanel extends javax.swing.JPanel implements ActionLi
         jPanel1 = new javax.swing.JPanel();
         jPanel2 = new javax.swing.JPanel();
 
-        jPanel1.setBorder(javax.swing.BorderFactory.createTitledBorder(org.openide.util.NbBundle.getMessage(CndOtherOptionsPanel.class, "CndOtherOptionsPanel.ExtensionsTitle"))); // NOI18N
-
         org.jdesktop.layout.GroupLayout jPanel1Layout = new org.jdesktop.layout.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
         jPanel1Layout.setHorizontalGroup(
             jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(0, 389, Short.MAX_VALUE)
+            .add(0, 399, Short.MAX_VALUE)
         );
         jPanel1Layout.setVerticalGroup(
             jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -243,7 +244,7 @@ public class CndOtherOptionsPanel extends javax.swing.JPanel implements ActionLi
         );
         jPanel2Layout.setVerticalGroup(
             jPanel2Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(0, 251, Short.MAX_VALUE)
+            .add(0, 276, Short.MAX_VALUE)
         );
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);

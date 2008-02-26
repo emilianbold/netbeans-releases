@@ -204,20 +204,35 @@ public final class WebModule {
     }
     
     @Override
-    public boolean equals (Object obj) {
+    public boolean equals(Object obj) {
         if (obj == null) {
             return false;
         }
-        if (!WebModule.class.isAssignableFrom(obj.getClass()))
+        if (!WebModule.class.isAssignableFrom(obj.getClass())) {
             return false;
+        }
         WebModule wm = (WebModule) obj;
-        return getDocumentBase().equals(wm.getDocumentBase())
-            && getJ2eePlatformVersion().equals (wm.getJ2eePlatformVersion())
-            && getContextPath().equals(wm.getContextPath());
+        if (!getDocumentBase().equals(wm.getDocumentBase())) {
+            return false;
+        }
+        if (!getJ2eePlatformVersion().equals(wm.getJ2eePlatformVersion())) {
+            return false;
+        }
+        String contextPath = getContextPath();
+        String wmContextPath = wm.getContextPath();
+        if (contextPath != null && wmContextPath != null) {
+            return contextPath.equals(wmContextPath);
+        }
+        return true;
     }
     
     @Override
-    public int hashCode () {
-        return getDocumentBase ().getPath ().length () + getContextPath ().length ();
+    public int hashCode() {
+        int hashCode = getDocumentBase().getPath().hashCode();
+        String contextPath = getContextPath();
+        if (contextPath != null) {
+            hashCode += contextPath.hashCode();
+        }
+        return hashCode;
     }
 }

@@ -40,15 +40,15 @@ package org.netbeans.modules.css2.gsf;
 
 import java.util.ArrayList;
 import java.util.List;
-import org.netbeans.fpi.gsf.Error;
-import org.netbeans.fpi.gsf.Severity;
+import org.netbeans.modules.gsf.api.Error;
+import org.netbeans.modules.gsf.api.Severity;
 import org.netbeans.modules.css2.editor.Property;
 import org.netbeans.modules.css2.editor.PropertyModel;
 import org.netbeans.modules.css2.parser.CSSParserTreeConstants;
 import org.netbeans.modules.css2.parser.NodeVisitor;
 import org.netbeans.modules.css2.parser.SimpleNode;
 import org.netbeans.modules.css2.parser.SimpleNodeUtil;
-import org.netbeans.sfpi.gsf.DefaultError;
+import org.netbeans.modules.gsf.spi.DefaultError;
 import org.openide.util.NbBundle;
 
 /**

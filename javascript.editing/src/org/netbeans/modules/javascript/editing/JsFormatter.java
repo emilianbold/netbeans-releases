@@ -52,7 +52,7 @@ import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
-import org.netbeans.fpi.gsf.CompilationInfo;
+import org.netbeans.modules.gsf.api.CompilationInfo;
 import org.netbeans.modules.javascript.editing.lexer.LexUtilities;
 import org.netbeans.modules.javascript.editing.lexer.JsTokenId;
 //import org.netbeans.modules.javascript.editing.options.CodeStyle;
@@ -73,7 +73,7 @@ import org.openide.util.Exceptions;
  *
  * @author Tor Norbye
  */
-public class JsFormatter implements org.netbeans.fpi.gsf.Formatter {
+public class JsFormatter implements org.netbeans.modules.gsf.api.Formatter {
     private boolean embeddedJavaScript;
     private CodeStyle codeStyle;
     private int rightMarginOverride = -1;

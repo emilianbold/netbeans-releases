@@ -41,14 +41,26 @@
 
 package gui.action;
 
+import gui.window.WebFormDesignerOperator;
+import org.netbeans.jellytools.EditorOperator;
+import org.netbeans.jellytools.ProjectsTabOperator;
+import org.netbeans.jellytools.actions.OpenAction;
+import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jemmy.operators.ComponentOperator;
+import org.netbeans.junit.NbTestSuite;
 
 /**
  *
  * @author mkhramov@netbeans.org
  */
 public class PageSwitchTest extends org.netbeans.performance.test.utilities.PerformanceTestCase {
-
+    
+    private String targetProject = "UltraLargeWA";
+    private ProjectsTabOperator pto;
+    private String[] pagesToOpen = new String[] {"Page1", "Page1_1"};
+    private WebFormDesignerOperator page1Op;
+    private WebFormDesignerOperator page2Op;
+    
     public PageSwitchTest(String testName) {
         super(testName);
         expectedTime = WINDOW_OPEN;
@@ -63,15 +75,52 @@ public class PageSwitchTest extends org.netbeans.performance.test.utilities.Perf
     
     @Override
     public void initialize() {
-        super.initialize(); 
+        //super.initialize(); 
+        log("::initialize");  
+        EditorOperator.closeDiscardAll();
+        pto = ProjectsTabOperator.invoke();
+        for(String namme: pagesToOpen) {
+            new OpenAction().performAPI(new Node(pto.getProjectRootNode(targetProject),gui.VWPUtilities.WEB_PAGES + "|"+namme+".jsp"));           
+            WebFormDesignerOperator.findWebFormDesignerOperator(namme);
+        }
+        
     }
     public void prepare() {
-        throw new UnsupportedOperationException("Not supported yet.");
+        page2Op = WebFormDesignerOperator.findWebFormDesignerOperator("Page1_1");
+        page1Op = WebFormDesignerOperator.findWebFormDesignerOperator("Page1");
+        System.out.println("prepare completed");
     }
 
     
     public ComponentOperator open() {
-        throw new UnsupportedOperationException("Not supported yet.");
+        System.out.println(System.currentTimeMillis());        
+        page1Op.setVisible(true);
+        System.out.println(System.currentTimeMillis());
+        return null;
     }
-
+    @Override
+    public void close() {
+        log("::close");
+        EditorOperator.closeDiscardAll();  
+    }
+    
+    @Override
+    public void shutdown() {
+        EditorOperator.closeDiscardAll();        
+    }
+    
+    public void testPageSwitch() {
+        System.out.println("Do test");
+        doMeasurement();
+    }
+    /** Creates suite from particular test cases. You can define order of testcases here. */
+    public static NbTestSuite suite() { 
+        NbTestSuite suite = new NbTestSuite();
+        suite.addTest(new PageSwitchTest("testPageSwitch"));
+        return suite;        
+    }
+    
+    public static void main(String[] args) {
+        junit.textui.TestRunner.run(suite());
+    }
 }

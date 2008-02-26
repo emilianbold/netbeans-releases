@@ -1,0 +1,111 @@
+<html>
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--
+ * Copyright © 2007 Sun Microsystems, Inc.
+ * All rights reserved. 
+ * Use is subject to license terms.
+-->
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<title>JSF 1.2 Accordion Component Properties Window</title>
+<link rel="stylesheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
+</head>
+<body>
+
+<h2>JSF 1.2 Accordion Component Properties Window </h2>
+<p><small><a href="#seealso">See Also | Tutorials  </a></small><small><a href="#tutorials"></a></small></p>
+
+
+<p>You see the Properties window for an Accordion Component <img src="../../../../images/accordion.png" alt="Alert Component icon">&nbsp;when you select the component on a page that you are editing in the Visual Designer. Most of the component's properties are both JSP attributes and properties of the <code>Accordion</code> Java component in the page bean.</p>
+<p>This JavaServer Faces 1.2 component has the following properties. </p>
+
+<h3>General</h3>
+<ul>
+	<li><b>id.</b><code> Type: String</code><br>
+	The name of the Accordion Component in the page bean and the JSP file. </li>
+    <li><strong>multipleSelect.</strong> <code> Type: String</code><br>
+  Returns true if multiple tabs can be selected at the same time. By default this is set to false and only one accordion tab can be selected at any given time. Note that when only a single tab is selected the accordion will not supply expand/collapse icons even if the application developer provides facets for these. </li>
+    <li><strong>refreshIcon.</strong><code> Type: Boolean</code><br>Should be set to true if the accordion container is to display a refresh icon. A refresh icon would generally be provided on the accordion header. When clicked it would refresh the accordion and its tabs asynchronously.
+  </li>
+    <li><strong>toggleControls.</strong><code> Type: Boolean</code><br>Should be set to true if the accordion container should display expandAll and collapseAll control features. Note that this makes sense only in the case wehere multipleSelect has been set to true. In the case of single select accordions only one tab can be open at any given time.
+  </li>
+    <li><strong>visible.</strong><code> Type: Boolean</code><br>Use the visible attribute to indicate whether the component should be viewable by the user in the rendered HTML page. If set to false, the HTML code for the component is present in the page, but the component is hidden with style attributes. By default, visible is set to true, so HTML for the component HTML is included and visible to the user. If the component is not visible, it can still be processed on subsequent form submissions because the HTML is present.
+  </li>
+</ul>
+
+<h3>Appearance</h3>
+<ul>
+  <li><b>htmlTemplate.</b><code> Type: String</code><br>
+Alternative HTML template to be used by this component.</li>
+  <li><b>style.</b><code> Type: String</code><br>
+		Cascading Style Sheet rules (CSS level 2) to be applied to the component.  For example:
+		<p><code>&nbsp;&nbsp;&nbsp;position: absolute; left: 288px; top: 312px</code></p>
+<p>You can enter values directly or click the ellipsis (...) button to use the <a href="../../../propeditors/style_prop_ed_main.html">Style Editor</a>.
+    <ul class="note">
+          <li>This property overrides any settings in the theme or the project CSS file for this component. If a style specified in this property does not appear to take effect, it is because an area of the component is obscured by a child component that has different style settings.</li>
+    </ul>
+
+	  <p>For a list of CSS2 style attributes, see the web page at<br>
+        <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+	      <param name="content" value="http://www.w3.org/TR/REC-CSS2/propidx.html">
+	      <param name="text" value="http://www.w3.org/TR/REC-CSS2/propidx.html"></object>
+      </p>
+  </li>
+	<li><b>styleClass.<a name="themecss"></a></b><code> Type: String</code><br>A space-separated list of CSS2 style classes to be applied when the component is rendered. The style classes must be defined in the project's style sheet or in the theme's CSS file. If you click the ellipsis button (...), you see a list of all styles you can add to this property. For information on adding CSS classes and rules to the project's cascading style sheet, see <a href="../../../editors/about_css_editor.html">CSS Editor</a>.
+      <ul class="note">
+        <li>See the note above under the <code>style</code> property description for an explanation of why a class added to this property might appear to have no effect on the component. </li>
+        <li> If you add a CSS style class from the current <a href="../../../../components/aboutthemes.html">theme</a> to your project CSS file and you redefine the style class, the change affects all components that use this style class. However, you can add your own style classes to the project CSS file that redefine the default style classes, and then when you add them to this property, the changes affect only this instance of this component.</li>
+     </ul>
+</ul>
+
+<h3>Accessibility</h3>
+<ul><li><b>tabIndex.</b><code> Type: String</code><br> 
+Position of this element is in the tabbing order of the current document.
+</li>
+</ul>
+<h3>Advanced</h3>
+<ul>
+  <li><b>rendered.</b><code> Type: Boolean</code><br>
+If selected, the component is to be rendered and processed on any subsequent page submission. If not selected, the component does not appear on the page at all, not even as a hidden component. If you need the component to be hidden but still processed when the page is submitted, deselect the <code>visible</code> property instead of this property. </li>
+  <li><b>selectedTabs.</b><code> Type: TabContent </code><br>
+An array of selected tabs. In some cases only a single tab can be selected in which case the array would contain just one tab.</li>
+</ul>
+  </li>
+</ul>
+<dl>
+<dt><a name="seealso">See Also</a></dt>
+<dd><a href="../accordion.html">Accordion Component</a></dd>
+<dd><a href="propsheets/accordiontab.html">Accordion Tab Component</a></dd>
+<dd><a href="propsheets/accordiontab_props.html">Accordion Tab Component Properties Window</a></dd>
+	<dd><a href="../../../../components/component_process.html">Working With Components</a></dd>
+	<dd><a href="../../../../components/howtocomponents/components_quickref.html">Component Tasks: Quick Reference</a></dd>
+</dl>
+<dl>
+<dt><a name="tutorials">Tutorials</a></dt>
+
+<dd>
+<object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+		<param name="content" value="http://www.netbeans.org/kb/60/web/intro.html
+		<param name="text" value="Getting Started with NetBeans 6.0">
+</object>
+</dd>
+
+
+</dl>
+<hr>
+<!-- Start Customer Feedback Link -->
+<!-- <p><b>Comments or questions?</b><br>
+Use the link below to connect to the Visual Web Development contact page. </p>
+  <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+    <param name="viewerActivator" value="javax.help.LinkButton">
+    <param name="content" value="http://www.netbeans.org/about/contact_form.html?to=4&subject=Feedback:%20Web%20Application%20Help:%20Alert Component Properties Window">
+    <param name="text" value="<html><u>Click here to send feedback</u></html>"></object><br> --> 
+<!-- End Customer Feedback Link -->
+  <small><a href="../../../../credits.html">Legal Notices</a></small>
+<table cellpadding="50" border="0">
+<tr>
+<td>&nbsp;</td>
+</tr>
+</table>
+</body>
+</html>

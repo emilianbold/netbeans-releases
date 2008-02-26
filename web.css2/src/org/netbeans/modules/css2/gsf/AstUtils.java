@@ -39,7 +39,7 @@
 
 package org.netbeans.modules.css2.gsf;
 
-import org.netbeans.fpi.gsf.TranslatedSource;
+import org.netbeans.modules.gsf.api.TranslatedSource;
 
 /**
  *

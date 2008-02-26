@@ -349,7 +349,12 @@ public class GlyphGutter extends JComponent implements Annotations.AnnotationsLi
         int lineCnt;
         try {
             if (doc != null) {
-                lineCnt = Utilities.getLineOffset(doc, doc.getLength()) + 1;
+                doc.readLock();
+                try {
+                    lineCnt = Utilities.getLineOffset(doc, doc.getLength()) + 1;
+                } finally {
+                    doc.readUnlock();
+                }
             } else { // deactivated
                 lineCnt = 1;
             }
