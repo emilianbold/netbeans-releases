@@ -1186,7 +1186,6 @@ public class BaseKit extends DefaultEditorKit {
 
                 BaseDocument doc = (BaseDocument)target.getDocument();
                 Caret caret = target.getCaret();
-                int dotPos = caret.getDot();
 
                 Formatter formatter = doc.getFormatter();
                 formatter.indentLock();
@@ -1194,9 +1193,9 @@ public class BaseKit extends DefaultEditorKit {
                 DocumentUtilities.setTypingModification(doc, true);
                 try{
                     target.replaceSelection("");
-                    int newDotPos = dotPos; 		  // dot stays where it was
+                    final int dotPos = caret.getDot();      // dot stays where it was
                     formatter.indentNewLine(doc, dotPos);   // newline
-                    caret.setDot(newDotPos);
+                    caret.setDot(dotPos);
                 } finally {
                     DocumentUtilities.setTypingModification(doc, false);
                     doc.atomicUnlock();
