@@ -130,7 +130,7 @@ public class SaasServicesModel {
 
     private void loadFromDefaultFileSystem() {
         FileSystem sfs = Repository.getDefault().getDefaultFileSystem();
-        FileObject f = sfs.findResource("SaasServices"); // NOI18N
+        FileObject f = sfs.findResource("SaaSServices"); // NOI18N
         if (f != null && f.isFolder()) {
             Enumeration<? extends FileObject> en = f.getFolders(false);
             while (en.hasMoreElements()) {
@@ -192,6 +192,7 @@ public class SaasServicesModel {
             SaasServices ss = SaasUtil.loadSaasServices(saasFile);
             Group g = ss.getSaasMetadata().getGroup();
             SaasGroup parent = rootGroup;
+            SaasGroup topGroup = new SaasGroup(parent, g);
             while (g != null) {
                 SaasGroup child = parent.getChildGroup(g.getName());
                 if (child == null) {
@@ -209,6 +210,7 @@ public class SaasServicesModel {
                     } else {
                         service = new CustomSaas(parent, ss);
                     }
+                    service.setTopLevelGroup(topGroup);
                     child.addService(service);
                     service.setUserDefined(userDefined);
                     break;

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -118,31 +118,31 @@ public final class TreeRootNode extends FilterNode implements PropertyChangeList
         }
     }
     
-    public Image getIcon(int type) {
+    public @Override Image getIcon(int type) {
         return computeIcon(false, type);
     }
 
-    public Image getOpenedIcon(int type) {
+    public @Override Image getOpenedIcon(int type) {
         return computeIcon(true, type);
     }
 
-    public String getName() {
+    public @Override String getName() {
         return g.getName();
     }
 
-    public String getDisplayName() {
+    public @Override String getDisplayName() {
         return g.getDisplayName();
     }
 
-    public boolean canRename() {
+    public @Override boolean canRename() {
         return false;
     }
 
-    public boolean canDestroy() {
+    public @Override boolean canDestroy() {
         return false;
     }
 
-    public boolean canCut() {
+    public @Override boolean canCut() {
         return false;
     }
 

@@ -156,7 +156,8 @@ public class WsitServerConfigAction extends NodeAction {
                 // todo: 08/24, we need to decide how to back out changes when CANCEL is selected..
                 if(dialogDesc.getValue() == NotifyDescriptor.OK_OPTION){
                     // refresh wsit badge..
-                    ((CasaWrapperModel) cp.getModel()).refershWsitStatus(cp);
+                    // 02/22/08, disabled upon request
+                    // ((CasaWrapperModel) cp.getModel()).refershWsitStatus(cp);
                 } else { // cancle
                     try {
                         if (undoManager != null) {

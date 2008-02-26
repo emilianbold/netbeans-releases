@@ -224,7 +224,7 @@ public class DefaultProjectActionHandler implements ActionListener {
                     if (tabNames.contains(tabName)) {
                         int seq = 2;
                         while (true) {
-                            tabNameSeq = tabName + " #" + seq;
+                            tabNameSeq = tabName + " #" + seq; // NOI18N
                             if (!tabNames.contains(tabNameSeq)) {
                                 break;
                             }

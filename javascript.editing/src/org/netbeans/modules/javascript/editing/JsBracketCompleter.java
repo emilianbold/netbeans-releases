@@ -606,25 +606,28 @@ public class JsBracketCompleter implements BracketCompletion {
                     if (firstChar != ch) {
                         int start = target.getSelectionStart();
                         int end = target.getSelectionEnd();
-                        int lastChar = selection.charAt(selection.length()-1);
-                        // Replace the surround-with chars?
-                        if (selection.length() > 1 && 
-                                ((firstChar == '"' || firstChar == '\'' || firstChar == '(' || 
-                                firstChar == '{' || firstChar == '[' || firstChar == '/') &&
-                                lastChar == matching(firstChar))) {
-                            doc.remove(end-1, 1);
-                            doc.insertString(end-1, ""+matching(ch), null);
-                            doc.remove(start, 1);
-                            doc.insertString(start, ""+ch, null);
-                            target.getCaret().setDot(end);
-                        } else {
-                            // No, insert around
-                            doc.remove(start,end-start);
-                            doc.insertString(start, ch + selection + matching(ch), null);
-                            target.getCaret().setDot(start+selection.length()+2);
-                        }
+                        TokenSequence<? extends JsTokenId> ts = LexUtilities.getPositionedSequence(doc, start);
+                        if (ts != null && ts.token().id() != JsTokenId.STRING_LITERAL) { // Not inside strings!
+                            int lastChar = selection.charAt(selection.length()-1);
+                            // Replace the surround-with chars?
+                            if (selection.length() > 1 && 
+                                    ((firstChar == '"' || firstChar == '\'' || firstChar == '(' || 
+                                    firstChar == '{' || firstChar == '[' || firstChar == '/') &&
+                                    lastChar == matching(firstChar))) {
+                                doc.remove(end-1, 1);
+                                doc.insertString(end-1, ""+matching(ch), null);
+                                doc.remove(start, 1);
+                                doc.insertString(start, ""+ch, null);
+                                target.getCaret().setDot(end);
+                            } else {
+                                // No, insert around
+                                doc.remove(start,end-start);
+                                doc.insertString(start, ch + selection + matching(ch), null);
+                                target.getCaret().setDot(start+selection.length()+2);
+                            }
 
-                        return true;
+                            return true;
+                        }
                     }
                 }
             }

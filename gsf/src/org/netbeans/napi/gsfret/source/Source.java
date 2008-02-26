@@ -314,7 +314,7 @@ public final class Source {
         if (fileObject == null) {
             throw new IllegalArgumentException ("fileObject == null");  //NOI18N
         }
-        if (!fileObject.isValid()) {
+        if (!fileObject.isValid() || fileObject.isFolder()) {
             return null;
         }
         if (!LanguageRegistry.getInstance().isSupported(fileObject.getMIMEType())) {
