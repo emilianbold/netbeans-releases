@@ -63,9 +63,6 @@ import org.netbeans.modules.websvc.saas.model.jaxb.SaasMetadata.CodeGen;
 public class CustomSaasBean extends SaasBean {
 
     public static final String ARTIFACT_TYPE_TEMPLATE = "template";
-    private String outputWrapperName;
-    private String wrapperPackageName;
-    private List<ParameterInfo> queryParams;
     private String url;
     private CustomSaasMethod m;
     private List<ParameterInfo> inputParams;

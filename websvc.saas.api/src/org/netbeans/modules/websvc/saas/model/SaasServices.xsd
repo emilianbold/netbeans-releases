@@ -110,7 +110,7 @@
                         </xsd:element>
                         <xsd:element name="custom"/>
                     </xsd:choice>
-                    <xsd:attribute name="profile" type="xsd:string" default="Templates/WebServices/profile.properties"/>
+                    <xsd:attribute name="profile" type="xsd:string" default="Templates/SaaSServices/profile.properties"/>
                 </xsd:complexType>
             </xsd:element>
         </xsd:sequence>

@@ -58,6 +58,7 @@ import org.netbeans.modules.websvc.saas.codegen.java.Constants.HttpMethodType;
 import org.netbeans.modules.websvc.saas.codegen.java.Constants.MimeType;
 import org.netbeans.modules.websvc.saas.codegen.java.model.GenericResourceBean;
 import org.netbeans.modules.websvc.saas.codegen.java.model.ParameterInfo;
+import org.netbeans.modules.websvc.saas.codegen.java.model.ParameterInfo.ParamStyle;
 import org.netbeans.modules.websvc.saas.codegen.java.support.AbstractTask;
 import org.netbeans.modules.websvc.saas.codegen.java.support.JavaSourceHelper;
 import org.openide.filesystems.FileObject;
@@ -72,7 +73,7 @@ import org.openide.util.NbBundle;
  * @author nam
  */
 public class GenericResourceGenerator extends AbstractGenerator {
-    public static final String RESOURCE_TEMPLATE = "Templates/SaaSServices/GenericResource.java"; //NOI18N
+    public static final String RESOURCE_TEMPLATE = TEMPLATES_SAAS+"GenericResource.java"; //NOI18N
     public static final String COMMENT_END_OF_GET = "TODO return proper representation object";
     
     private FileObject destDir;
@@ -554,7 +555,7 @@ public class GenericResourceGenerator extends AbstractGenerator {
         for (ParameterInfo param : params) {
             Object defaultValue = null;
             
-            if (!param.isQueryParam()) {
+            if (param.getStyle() != ParamStyle.QUERY) {
                 defaultValue = param.getDefaultValue();
             }
             
