@@ -49,12 +49,12 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Iterator;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.api.db.explorer.ConnectionManager;
 import org.netbeans.api.db.explorer.DatabaseConnection;
 import org.netbeans.api.db.explorer.DatabaseException;
 import org.netbeans.modules.db.api.sql.execute.SQLExecuteCookie;
@@ -473,6 +473,13 @@ public class ServerInstance implements Node.Cookie {
             adminConn.getConnection()
                     .prepareStatement(DROP_DATABASE_SQL + dbname)
                     .executeUpdate();
+            
+            DatabaseConnection dbconn = DatabaseUtils.findDatabaseConnection(
+                    getURL(dbname), getUser());
+            
+            if ( dbconn != null ) {
+                ConnectionManager.getDefault().removeConnection(dbconn);
+            }
             
             refreshDatabaseList();
         } catch ( SQLException sqle ) {

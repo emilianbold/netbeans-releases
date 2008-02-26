@@ -210,6 +210,28 @@ public class RootNodeInfo extends DatabaseNodeInfo implements
         children.createSubnode(ninfo, true);
     }
     
+    public void removeConnection(DatabaseConnection dbconn) throws DatabaseException {
+        if ( dbconn == null ) {
+            throw new NullPointerException();
+        }
+        
+        ConnectionList.getDefault().remove(dbconn);
+        
+        DatabaseNode node = getNode();
+        DatabaseNodeChildren children = (DatabaseNodeChildren)node.getChildren();
+        Node[] nodes = children.getNodes();
+        
+        for ( Node childNode : nodes ) {
+            if ( childNode instanceof ConnectionNode ) {
+                ConnectionNodeInfo connInfo = (ConnectionNodeInfo)
+                        ((ConnectionNode)childNode).getInfo();
+                if ( ! connInfo.getDatabaseConnection().equals(dbconn)) {
+                    children.removeSubNode(childNode);
+                }
+            }
+        }
+    }
+    
     public void addConnection(DBConnection cinfo) throws DatabaseException {
         DatabaseConnection dbconn = (DatabaseConnection)cinfo;
         getChildren(); // force restore

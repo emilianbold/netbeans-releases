@@ -272,6 +272,21 @@ public class DatabaseNodeChildren extends Children.Array {
         }
 
     }
+    
+    public void removeSubNode(Node subnode) {
+        //workaround for issue #31617, children should be initialized if they are not
+        //            getNodes();
+        if (isInitialized()) {
+            synchronized (additionalNodes) {
+                if (initialized) {
+                    this.remove(new Node[] {subnode});
+                } else {
+                    additionalNodes.remove(subnode);
+                }
+            }
+        }
+    }
+    
     public DatabaseNode createSubnode(DatabaseNodeInfo info, boolean addToChildrenFlag) throws DatabaseException {
         DatabaseNode subnode = createNode(info);
         if (subnode != null && addToChildrenFlag) {
