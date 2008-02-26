@@ -67,7 +67,7 @@ final class PanelSharabilityVisual extends javax.swing.JPanel {
                 changeSupport.fireChange();
             }
         });
-        
+
         libraryRadioButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 changeSupport.fireChange();
@@ -138,7 +138,7 @@ final class PanelSharabilityVisual extends javax.swing.JPanel {
     }
 
     public String getServerLibraryName() {
-        return libraryRadioButton.isSelected() ? libraryNameComboBox.getSelectedItem().toString() : null;
+        return libraryRadioButton.isSelected() ? (String) libraryNameComboBox.getSelectedItem() : null;
     }
 
     /** This method is called from within the constructor to
