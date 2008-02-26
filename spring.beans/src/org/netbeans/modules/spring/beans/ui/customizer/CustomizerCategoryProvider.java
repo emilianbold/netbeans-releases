@@ -69,12 +69,12 @@ public class CustomizerCategoryProvider implements ProjectCustomizer.CompositeCa
     public Category createCategory(Lookup context) {
         Project project = getProject(context);
         ConfigFileManager manager = getConfigFileManager(project);
-        // Do not display the customizer if there are no Spring config file groups
+        // Do not display the customizer if there are no Spring config files
         // or the Spring library is not on the classpath. It is not enough to look
         // at the config file groups alone. If the user has already defined some, but
         // removed the Spring library from the classpath, we still want to
         // allow him to edit them.
-        if (manager.getConfigFileGroups().size() <= 0) {
+        if (manager.getConfigFiles().size() <= 0) {
             SourceGroup[] javaSources = ProjectUtils.getSources(project).getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
             if (javaSources.length <= 0) {
                 return null;
