@@ -49,8 +49,12 @@ import org.openide.util.Lookup;
  */
 public class FileChangedManager extends SecurityManager {
     private static  FileChangedManager INSTANCE;
-    private final ConcurrentHashMap<Integer,Boolean> hints = new ConcurrentHashMap<Integer,Boolean>();
-    private final ConcurrentHashMap<Integer, Boolean> usedHints = new ConcurrentHashMap<Integer, Boolean>();
+    private static final int CREATE_HINT = 2;
+    private static final int DELETE_HINT = 1;
+    private static final int AMBIGOUS_HINT = 3;
+    
+    
+    private final ConcurrentHashMap<Integer,Integer> hints = new ConcurrentHashMap<Integer,Integer>();
     private long shrinkTime = System.currentTimeMillis();
     
     public FileChangedManager() {
@@ -66,7 +70,7 @@ public class FileChangedManager extends SecurityManager {
     }
     
     @Override
-    public void checkDelete(String file) {        
+    public void checkDelete(String file) {
         put(file, false);
     }
 
@@ -76,27 +80,57 @@ public class FileChangedManager extends SecurityManager {
     }
         
     public boolean impeachExistence(File f, boolean expectedExixts) {
-        Boolean hint = get(f);
-        boolean retval = (hint == null) ? false : !hint.equals(expectedExixts);
+        Integer hint = remove(getKey(f));
+        boolean retval = (hint == null) ? false : true;
+        if (retval) {
+            if (hint == AMBIGOUS_HINT) {
+                return true;
+            } else {
+                retval = (expectedExixts != toState(hint));
+            }
+        }
         return retval;
     }    
     
     public boolean exists(File file) {
         boolean retval = file.exists();
+        remove(getKey(file));
         put(file,retval);
         return retval;
     }
     
-    private Boolean put(int id, boolean value) {
+    private Integer put(int id, boolean state) {
         shrinkTime = System.currentTimeMillis();
-        return hints.put(id, value);
+        int val = toValue(state);
+        Integer retval = hints.putIfAbsent(id,val);
+        if (retval != null) {
+            if (retval != AMBIGOUS_HINT && retval != val) {
+                hints.put(id,AMBIGOUS_HINT);
+            } 
+        }                
+        return retval;
     }
     
-    private Boolean get(int id) {
-        usedHints.put(id, true);
+    private int toValue(boolean state) {
+        return state ? CREATE_HINT : DELETE_HINT;
+    }
+    
+    private boolean toState(int value) {
+        switch(value) {
+            case DELETE_HINT:
+                return false;
+            case CREATE_HINT:
+                return true;
+        }  
+        return false;
+    }
+    
+    
+    
+    private Integer get(int id) {
         long now = System.currentTimeMillis();
         if ((now - shrinkTime) > 5000) {
-            int size = sumSize();
+            int size = hints.size();
             if (size > 1500) {                
                 shrink();
             }
@@ -105,16 +139,12 @@ public class FileChangedManager extends SecurityManager {
         return hints.get(id);
     }
 
-    private int sumSize() {
-        return usedHints.size() + hints.size();
-    }
     
     private void shrink() {
-        hints.keySet().retainAll(usedHints.keySet());
-        usedHints.clear();
+        hints.keySet().clear();
     }
     
-    private Boolean remove(int id) {
+    private Integer remove(int id) {
         return hints.remove(id);
     }                
     
@@ -125,19 +155,19 @@ public class FileChangedManager extends SecurityManager {
         return getKey(new File(f));
     }  
 
-    private Boolean put(String f, boolean value) {
+    private Integer put(String f, boolean value) {
         return put(getKey(f), value);
     }
     
-    private Boolean put(File f, boolean value) {
+    private Integer put(File f, boolean value) {
         return put(getKey(f), value);
     }
     
-    private Boolean get(String file) {
+    private Integer get(String file) {
         return get(getKey(file));
     }
 
-    private Boolean get(File file) {
+    private Integer get(File file) {
         return get(getKey(file));        
     }
 }

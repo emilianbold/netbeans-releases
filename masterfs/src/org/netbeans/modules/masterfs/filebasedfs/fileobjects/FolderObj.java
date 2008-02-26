@@ -390,9 +390,7 @@ public final class FolderObj extends BaseFileObj {
                     }
                 }
 
-            } else {
-                assert !(new FileInfo(child.getFile()).isConvertibleToFileObject());
-            }
+            } 
 
         }
         boolean validityFlag = FileChangedManager.getInstance().exists(getFileName().getFile());
