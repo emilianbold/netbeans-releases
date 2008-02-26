@@ -63,6 +63,7 @@ made subject to such option by the copyright holder.
                 <xsl:if test="count(/jaxws:jax-ws/jaxws:services/jaxws:service[not(jaxws:wsdl-url)]) > 0">
                     <target name="wsgen-init" depends="init, -do-compile">
                         <mkdir dir="${{build.generated.dir}}/wsgen/service"/>
+                        <mkdir dir="${{build.generated.dir}}/wsgen/service/resources/"/>
                         <mkdir dir="${{build.generated.dir}}/wsgen/binaries"/>
                         <mkdir dir="${{build.classes.dir}}"/>
                         <taskdef name="wsgen" classname="com.sun.tools.ws.ant.WsGen">
@@ -75,12 +76,12 @@ made subject to such option by the copyright holder.
                         <xsl:variable name="wsname" select="@name"/>                        
                         <xsl:variable name="seiclass" select="jaxws:implementation-class"/>                      
                         <target name="wsgen-{$wsname}" depends="wsgen-init">
-                            <mkdir dir="${{build.generated.dir}}/wsgen/service/{$wsname}/"/>
+                            
                             <wsgen
                                 fork="true"
                                 xendorsed="true"
                                 sourcedestdir="${{build.generated.dir}}/wsgen/service"
-                                resourcedestdir="${{build.generated.dir}}/wsgen/service/{$wsname}/"
+                                resourcedestdir="${{build.generated.dir}}/wsgen/service/resources/"
                                 destdir="${{build.generated.dir}}/wsgen/binaries"
                                 keep="true"
                                 genwsdl="true"

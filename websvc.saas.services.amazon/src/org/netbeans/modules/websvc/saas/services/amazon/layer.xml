@@ -44,14 +44,33 @@
 <!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.1//EN" "http://www.netbeans.org/dtds/filesystem-1_1.dtd">
 <filesystem>
     
-    <folder name="SaasServices">
-        <folder name="AmazonS3">
+    <folder name="Templates">
+        <folder name="SaaSServices">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.websvc.saas.services.amazon.Bundle"/>
+            <file name="AmazonS3BucketsResource.java" url="/org/netbeans/modules/websvc/saas/services/amazon/resources/AmazonS3BucketsResource.template">
+                <attr name="position" intvalue="3310"/>
+            </file>
+            <file name="AmazonS3BucketResource.java" url="/org/netbeans/modules/websvc/saas/services/amazon/resources/AmazonS3BucketResource.template">
+                <attr name="position" intvalue="3320"/>
+            </file>
+            <file name="AmazonS3BucketItemResource.java" url="/org/netbeans/modules/websvc/saas/services/amazon/resources/AmazonS3BucketItemResource.template">
+                <attr name="position" intvalue="3330"/>
+            </file>
+        </folder>
+    </folder>
+    
+    <folder name="SaaSServices">
+        <folder name="AmazonS3">
+            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.websvc.saas.services.SaaSServices.Bundle"/>
             <file name="profile.properties" url="/org/netbeans/modules/websvc/saas/services/amazon/resources/profile.properties"/>
-            <file name="AmazonECS.xml" url="/org/netbeans/modules/websvc/saas/services/amazon/resources/AmazonECS.xml"/>
             <file name="AmazonS3Buckets.xml" url="/org/netbeans/modules/websvc/saas/services/amazon/resources/AmazonS3Buckets.xml"/>
             <file name="AmazonS3Bucket.xml" url="/org/netbeans/modules/websvc/saas/services/amazon/resources/AmazonS3Bucket.xml"/>
             <file name="AmazonS3BucketItem.xml" url="/org/netbeans/modules/websvc/saas/services/amazon/resources/AmazonS3BucketItem.xml"/>
+        </folder>
+        <folder name="AmazonECS">
+            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.websvc.saas.services.SaaSServices.Bundle"/>
+            <file name="profile.properties" url="/org/netbeans/modules/websvc/saas/services/amazon/resources/profile.properties"/>
+            <file name="AmazonECS.xml" url="/org/netbeans/modules/websvc/saas/services/amazon/resources/AmazonECS.xml"/>
         </folder>
     </folder>
     

@@ -40,7 +40,6 @@
  */
 package org.netbeans.modules.websvc.saas.codegen.java;
 
-import org.netbeans.modules.websvc.saas.model.CustomSaasMethod;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.MethodTree;
 import java.io.File;
@@ -74,20 +73,16 @@ import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.project.SourceGroup;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.websvc.saas.codegen.java.Constants.MimeType;
-import org.netbeans.modules.websvc.saas.codegen.java.model.CustomSaasBean;
 import org.netbeans.modules.websvc.saas.codegen.java.model.ParameterInfo;
 import org.netbeans.modules.websvc.saas.codegen.java.model.SaasBean;
 import org.netbeans.modules.websvc.saas.codegen.java.support.AbstractTask;
 import org.netbeans.modules.websvc.saas.codegen.java.support.Inflector;
 import org.netbeans.modules.websvc.saas.codegen.java.support.JavaSourceHelper;
 import org.netbeans.modules.websvc.saas.codegen.java.support.SourceGroupSupport;
-import org.netbeans.modules.websvc.saas.codegen.java.support.Util;
-import org.netbeans.modules.websvc.saas.model.SaasMethod;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileSystem;
-import org.openide.filesystems.FileUtil;
 
 /**
  * Code generator for REST services wrapping WSDL-based web service.
@@ -95,6 +90,9 @@ import org.openide.filesystems.FileUtil;
  * @author nam
  */
 abstract public class SaasCodeGenerator extends AbstractGenerator {
+    
+    public static final String RESTCONNECTION_PACKAGE = "org.netbeans.saas";
+    
     private FileObject targetFile; // resource file target of the drop
     private FileObject destDir;
     private FileObject wrapperResourceFile;
@@ -147,7 +145,7 @@ abstract public class SaasCodeGenerator extends AbstractGenerator {
         this.wrapperResourceFile = wrapperResourceFile;
     }
     
-    protected JavaSource getTargetResourceSource() {
+    protected JavaSource getTargetSource() {
         return targetResourceJS;
     }
     
@@ -165,6 +163,10 @@ abstract public class SaasCodeGenerator extends AbstractGenerator {
     
     protected void setJaxbOutputWrapperSource(JavaSource jaxbOutputWrapperJS) {
        this.jaxbOutputWrapperJS = jaxbOutputWrapperJS;
+    }
+    
+    protected Project getProject() {
+        return this.project;
     }
     
     protected void preGenerate() throws IOException {
@@ -202,7 +204,11 @@ abstract public class SaasCodeGenerator extends AbstractGenerator {
         return bean;
     }
 
-    public boolean showParams() {
+    public boolean canShowResourceInfo() {
+        return true;
+    }
+
+    public boolean canShowParam() {
         return wrapperResourceFile == null;
     }
 
@@ -215,7 +221,7 @@ abstract public class SaasCodeGenerator extends AbstractGenerator {
         if (outputWrapperFO != null) {
             jaxbOutputWrapperJS = JavaSource.forFileObject(outputWrapperFO);
         }
-        generateComponentResourceClass();
+        generateSaasServiceResourceClass();
         addSubresourceLocator();
         FileObject refConverterFO = getOrCreateGenericRefConverter().getFileObjects().iterator().next();
         modifyTargetConverter();
@@ -246,7 +252,7 @@ abstract public class SaasCodeGenerator extends AbstractGenerator {
         return null;
     }
 
-    protected void generateComponentResourceClass() throws IOException {
+    protected void generateSaasServiceResourceClass() throws IOException {
         if (wrapperResourceFile == null) {
             GenericResourceGenerator delegate = new GenericResourceGenerator(destDir, bean);
             delegate.setTemplate(bean.getResourceClassTemplate());
@@ -257,11 +263,22 @@ abstract public class SaasCodeGenerator extends AbstractGenerator {
             }
             wrapperResourceFile = files.iterator().next();
             wrapperResourceJS = JavaSource.forFileObject(wrapperResourceFile);
+            addImportsToWrapperResource();
             addSupportingMethods();
             modifyGetMethod();
         } else {
             wrapperResourceJS = JavaSource.forFileObject(wrapperResourceFile);
         }
+    }
+    
+    protected void addImportsToWrapperResource() throws IOException {
+        ModificationResult result = wrapperResourceJS.runModificationTask(new AbstractTask<WorkingCopy>() {
+            public void run(WorkingCopy copy) throws IOException {
+                copy.toPhase(JavaSource.Phase.RESOLVED);
+                JavaSourceHelper.addImports(copy, new String[] {RESTCONNECTION_PACKAGE+"."+REST_CONNECTION});
+            }
+        });
+        result.commit();
     }
 
     protected void addSubresourceLocator() throws IOException {
@@ -534,7 +551,7 @@ abstract public class SaasCodeGenerator extends AbstractGenerator {
         return s10.indexOf(lower) > -1 || lower.indexOf(s10) > -1;
     }
 
-    private void modifyTargetConverter() throws IOException {
+    protected void modifyTargetConverter() throws IOException {
         TypeElement targetResourceType = JavaSourceHelper.getTypeElement(targetResourceJS);
         TypeElement representationType = JavaSourceHelper.getXmlRepresentationClass(targetResourceType, CONVERTER_SUFFIX);
         if (representationType != null) {
@@ -682,5 +699,12 @@ abstract public class SaasCodeGenerator extends AbstractGenerator {
         int p0 = Math.min(caret.getDot(), caret.getMark());
         int p1 = Math.max(caret.getDot(), caret.getMark());
         return true;
+    }
+    
+    public static void createRestConnectionFile(Project project) throws IOException {
+        SourceGroup[] srcGrps = SourceGroupSupport.getJavaSourceGroups(project);
+        String pkg = RESTCONNECTION_PACKAGE;
+        FileObject targetFolder = SourceGroupSupport.getFolderForPackage(srcGrps[0],pkg , true);
+        JavaSourceHelper.createJavaSource(REST_CONNECTION_TEMPLATE, targetFolder, pkg, REST_CONNECTION);
     }
 }

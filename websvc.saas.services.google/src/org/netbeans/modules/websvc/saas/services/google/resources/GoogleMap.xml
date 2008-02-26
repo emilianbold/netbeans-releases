@@ -56,22 +56,21 @@
     <saas-metadata>
         <localizing-bundle>org.netbeans.modules.websvc.components.google.Bundle</localizing-bundle>
         <group name="Google">
-            <group name="..."/>
         </group>
         <code-gen>
             <artifacts targets="java,servlet">
                 <artifact id="GoogleMap" type="template"
-                    url="Templates/WebServices/GoogleMapResource.java"/>
+                    url="Templates/SaaSServices/GoogleMapResource.java"/>
             </artifacts>
         </code-gen>
         <!-- http-basic, api-key, custom -->
-        <authentication profile="Templates/WebServices/profile.properties">
+        <authentication profile="SaaSServices/Google/profile.properties">
             <api-key id="key"/>
         </authentication>
     </saas-metadata>
 
     <methods>
-        <method name="generateGoogleMapCode" href="GoogleMap">      
+        <method name="getGoogleMap" href="GoogleMap">      
             <input>
                 <params>
                     <param name="apiKey" type="string"/>

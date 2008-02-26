@@ -59,7 +59,7 @@
         
         <group name="Delicious"/>
         
-        <authentication profile="Templates/WebServices/profile.properties">
+        <authentication profile="SaaSServices/Delicious/profile.properties">
             <http-basic/>
         </authentication>
         
