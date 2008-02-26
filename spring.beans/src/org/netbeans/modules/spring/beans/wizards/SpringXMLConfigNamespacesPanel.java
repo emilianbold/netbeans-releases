@@ -45,7 +45,7 @@ import javax.swing.event.ChangeListener;
 import org.openide.WizardDescriptor;
 import org.openide.util.HelpCtx;
 
-public class SpringXMLConfigNamespacesPanel implements WizardDescriptor.Panel {
+public class SpringXMLConfigNamespacesPanel implements WizardDescriptor.Panel<WizardDescriptor> {
 
     public static final String INCLUDED_NAMESPACES = "includedNamespaces"; // NOI18N
 
@@ -72,11 +72,10 @@ public class SpringXMLConfigNamespacesPanel implements WizardDescriptor.Panel {
     public final void removeChangeListener(ChangeListener l) {
     }
 
-    public void readSettings(Object settings) {
+    public void readSettings(WizardDescriptor settings) {
     }
 
-    public void storeSettings(Object settings) {
-        WizardDescriptor wd = (WizardDescriptor) settings;
-        wd.putProperty(INCLUDED_NAMESPACES, getComponent().getIncludedNamespaces());
+    public void storeSettings(WizardDescriptor settings) {
+        settings.putProperty(INCLUDED_NAMESPACES, getComponent().getIncludedNamespaces());
     }
 }
