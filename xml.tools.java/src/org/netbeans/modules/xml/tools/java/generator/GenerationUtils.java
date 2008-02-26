@@ -310,6 +310,19 @@ public final class GenerationUtils {
                 body.toString());
     }
 
+    public MethodTree createConstructor(ModifiersTree modifiersTree, String constructorName, List parameters, String body) {
+        Parameters.notNull("modifiersTree", modifiersTree);
+        Parameters.javaIdentifier("constructorName", constructorName); // NOI18N
+        Parameters.notNull("parameters", parameters); // NOI18N
+
+        TreeMaker make = getTreeMaker();
+        return make.Constructor(
+                modifiersTree,
+                Collections.emptyList(),
+                parameters,
+                Collections.emptyList(),
+                body);
+    }
     /**
      * Creates a new field.
      *

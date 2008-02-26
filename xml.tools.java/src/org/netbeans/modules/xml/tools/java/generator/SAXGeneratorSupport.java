@@ -40,22 +40,33 @@
  */
 package org.netbeans.modules.xml.tools.java.generator;
 
+import com.sun.source.tree.ClassTree;
+import com.sun.source.tree.CompilationUnitTree;
+import com.sun.source.tree.MethodTree;
+import com.sun.source.tree.ModifiersTree;
+import com.sun.source.tree.Tree;
+import com.sun.source.tree.VariableTree;
+import java.awt.Dialog;
+import java.awt.Dimension;
 import org.netbeans.modules.xml.tools.generator.*;
 import java.io.*;
-import java.awt.*;
-import java.util.*;
-import java.beans.*;
-import java.lang.reflect.Modifier;
 
-import javax.swing.*;
-import javax.swing.text.Document;
-import javax.swing.text.BadLocationException;
 
+import java.util.ArrayList;
+import java.util.EnumSet;
+import java.util.Iterator;
+import java.util.List;
+import javax.lang.model.element.Modifier;
+import org.netbeans.api.java.source.CancellableTask;
+import org.netbeans.api.java.source.Comment;
+import org.netbeans.api.java.source.JavaSource;
+import org.netbeans.api.java.source.JavaSource.Phase;
+import org.netbeans.api.java.source.TreeMaker;
+import org.netbeans.api.java.source.WorkingCopy;
 import org.xml.sax.*;
 
 import org.openide.*;
 import org.openide.nodes.*;
-//import org.openide.src.*;
 import org.openide.cookies.*;
 import org.openide.filesystems.*;
 import org.openide.filesystems.FileSystem; // override java.io.FileSystem
@@ -68,6 +79,7 @@ import org.netbeans.modules.xml.lib.GuiUtil;
 import org.netbeans.modules.xml.lib.FileUtilities;
 import org.netbeans.modules.xml.tax.cookies.TreeEditorCookie;
 import org.netbeans.tax.*;
+import org.openide.util.NbBundle;
 
 /**
  * Generates handler that traces context. It consists from:
@@ -89,93 +101,93 @@ import org.netbeans.tax.*;
 public final class SAXGeneratorSupport implements XMLGenerateCookie {
 
     //TODO: Retouche
-//    private static final String JAVA_EXT = "java"; // NOI18N
-//
-//    private static final String SAX_PACKAGE = ""; // we import it // NOI18N
-//    private static final String SAX_EXCEPTION        = SAX_PACKAGE + "SAXException"; // NOI18N
-//    private static final String SAX_DOCUMENT_HANDLER = SAX_PACKAGE + "DocumentHandler"; // NOI18N
-//    private static final String SAX2_CONTENT_HANDLER  = SAX_PACKAGE + "ContentHandler"; // NOI18N
-//    private static final String SAX_LOCATOR          = SAX_PACKAGE + "Locator"; // NOI18N
-//    private static final String SAX_ATTRIBUTE_LIST   = SAX_PACKAGE + "AttributeList"; // NOI18N
-//    private static final String SAX2_ATTRIBUTES       = SAX_PACKAGE + "Attributes"; // NOI18N
-//
-//    private static final String SAX_INPUT_SOURCE = SAX_PACKAGE + "InputSource"; // NOI18N
-//
-//    private static final String JAXP_PACKAGE = "javax.xml.parsers."; // NOI18N
-//    private static final String JAXP_PARSER_CONFIGURATION_EXCEPTION = JAXP_PACKAGE + "ParserConfigurationException"; // NOI18N
-//    private static final String JAXP_FACTORY_CONFIGURATION_ERROR = JAXP_PACKAGE + "FactoryConfigurationRrror"; // NOI18N
-//
-//    private static final String JAVA_IOEXCEPTION = "java.io.IOException"; // NOI18N
-//
-//    // generated methods names
-//
-//    private static final String M_SET_DOCUMENT_LOCATOR   = "setDocumentLocator"; // NOI18N
-//    private static final String M_START_DOCUMENT         = "startDocument"; // NOI18N
-//    private static final String M_END_DOCUMENT           = "endDocument"; // NOI18N
-//    private static final String M_START_ELEMENT          = "startElement"; // NOI18N
-//    private static final String M_END_ELEMENT            = "endElement"; // NOI18N
-//    private static final String M_CHARACTERS             = "characters"; // NOI18N
-//    private static final String M_IGNORABLE_WHITESPACE   = "ignorableWhitespace"; // NOI18N
-//    private static final String M_PROCESSING_INSTRUCTION = "processingInstruction"; // NOI18N
-//    private static final String M_SKIPPED_ENTITY         = "skippedEntity"; // NOI18N
-//    private static final String M_START_PREFIX_MAPPING   = "startPrefixMapping"; // NOI18N
-//    private static final String M_END_PREFIX_MAPPING     = "endPrefixMapping"; // NOI18N
-//
-//    /** emmit (dispatch) method name.*/
-//    private static final String EMMIT_BUFFER = "dispatch"; // NOI18N
-//    private static final String M_PARSE = "parse"; // NOI18N
-//    private static final String HANDLE_PREFIX = "handle_";  // NOI18N
-//    private static final String START_PREFIX = "start_"; // NOI18N
-//    private static final String END_PREFIX = "end_"; // NOI18N
-//
-//    private static final String FILE_COMMENT_MARK = "Mark"; // NOI18N
-//
-//    //src hiearchy constants
-//    private static final Type Type_STRING = Type.createFromClass (String.class);
-//    private static final MethodParameter[] STRING_PARAM = new MethodParameter[] {
-//        new MethodParameter("data",Type.createFromClass(String.class), true) // NOI18N
-//    };
-//
-//    private static final Identifier[] JAXP_PARSE_EXCEPTIONS = new Identifier[] {
-//        Identifier.create(SAX_EXCEPTION),
-//        Identifier.create(JAXP_PARSER_CONFIGURATION_EXCEPTION),
-//        Identifier.create(JAVA_IOEXCEPTION)
-//    };
-//
-//    private static final String JAXP_PARSE_EXCEPTIONS_DOC =
-//        "@throws " + JAVA_IOEXCEPTION + " on I/O error\n" + // NOI18N
-//        "@throws " + SAX_EXCEPTION + " propagated exception thrown by a DocumentHandler\n" + // NOI18N
-//        "@throws " + JAXP_PARSER_CONFIGURATION_EXCEPTION + " a parser satisfying the requested configuration cannot be created\n" + // NOI18N
-//        "@throws " + JAXP_FACTORY_CONFIGURATION_ERROR + " if the implementation cannot be instantiated\n"; // NOI18N
-//
-//
-//    // input fields - these control generation process
-//
-//    private DataObject DO;  //model DataObject
-//    private TreeDTDRoot dtd;    //model DTD
-//
-//    private ElementBindings elementMapping = new ElementBindings();  //model mapping
-//    private ParsletBindings parsletsMap = new ParsletBindings();    //model mapping
-//
-//    private int sax = 1; // SAX version to be used supported {1, 2}
-//
-//    private SAXGeneratorModel model;  //holds strategy
-//
-////    private final MapFormat generator;
-//
-//    //
-//    // init
-//    //
-//
-//    public SAXGeneratorSupport (DTDDataObject DO) {
-//        this (DO, null);
-//    }
-//
-//    public SAXGeneratorSupport (DataObject DO, TreeDTDRoot dtd) {
-//        if (DO == null) throw new IllegalArgumentException("null"); // NOI18N
-//        this.DO = DO;
-//        this.dtd = dtd;
-//    }
+    private static final String JAVA_EXT = "java"; // NOI18N
+
+    private static final String SAX_PACKAGE = ""; // we import it // NOI18N
+    private static final String SAX_EXCEPTION        = SAX_PACKAGE + "SAXException"; // NOI18N
+    private static final String SAX_DOCUMENT_HANDLER = SAX_PACKAGE + "DocumentHandler"; // NOI18N
+    private static final String SAX2_CONTENT_HANDLER  = SAX_PACKAGE + "ContentHandler"; // NOI18N
+    private static final String SAX_LOCATOR          = SAX_PACKAGE + "Locator"; // NOI18N
+    private static final String SAX_ATTRIBUTE_LIST   = SAX_PACKAGE + "AttributeList"; // NOI18N
+    private static final String SAX2_ATTRIBUTES       = SAX_PACKAGE + "Attributes"; // NOI18N
+
+    private static final String SAX_INPUT_SOURCE = SAX_PACKAGE + "InputSource"; // NOI18N
+
+    private static final String JAXP_PACKAGE = "javax.xml.parsers."; // NOI18N
+    private static final String JAXP_PARSER_CONFIGURATION_EXCEPTION = JAXP_PACKAGE + "ParserConfigurationException"; // NOI18N
+    private static final String JAXP_FACTORY_CONFIGURATION_ERROR = JAXP_PACKAGE + "FactoryConfigurationRrror"; // NOI18N
+
+    private static final String JAVA_IOEXCEPTION = "java.io.IOException"; // NOI18N
+
+    // generated methods names
+
+    private static final String M_SET_DOCUMENT_LOCATOR   = "setDocumentLocator"; // NOI18N
+    private static final String M_START_DOCUMENT         = "startDocument"; // NOI18N
+    private static final String M_END_DOCUMENT           = "endDocument"; // NOI18N
+    private static final String M_START_ELEMENT          = "startElement"; // NOI18N
+    private static final String M_END_ELEMENT            = "endElement"; // NOI18N
+    private static final String M_CHARACTERS             = "characters"; // NOI18N
+    private static final String M_IGNORABLE_WHITESPACE   = "ignorableWhitespace"; // NOI18N
+    private static final String M_PROCESSING_INSTRUCTION = "processingInstruction"; // NOI18N
+    private static final String M_SKIPPED_ENTITY         = "skippedEntity"; // NOI18N
+    private static final String M_START_PREFIX_MAPPING   = "startPrefixMapping"; // NOI18N
+    private static final String M_END_PREFIX_MAPPING     = "endPrefixMapping"; // NOI18N
+
+    /** emmit (dispatch) method name.*/
+    private static final String EMMIT_BUFFER = "dispatch"; // NOI18N
+    private static final String M_PARSE = "parse"; // NOI18N
+    private static final String HANDLE_PREFIX = "handle_";  // NOI18N
+    private static final String START_PREFIX = "start_"; // NOI18N
+    private static final String END_PREFIX = "end_"; // NOI18N
+
+    private static final String FILE_COMMENT_MARK = "Mark"; // NOI18N
+
+    //src hiearchy constants
+  /*  private static final Type Type_STRING = Type.createFromClass (String.class);
+    private static final MethodParameter[] STRING_PARAM = new MethodParameter[] {
+        new MethodParameter("data",Type.createFromClass(String.class), true) // NOI18N
+    };
+
+    private static final Identifier[] JAXP_PARSE_EXCEPTIONS = new Identifier[] {
+        Identifier.create(SAX_EXCEPTION),
+        Identifier.create(JAXP_PARSER_CONFIGURATION_EXCEPTION),
+        Identifier.create(JAVA_IOEXCEPTION)
+    };*/
+
+    private static final String JAXP_PARSE_EXCEPTIONS_DOC =
+        "@throws " + JAVA_IOEXCEPTION + " on I/O error\n" + // NOI18N
+        "@throws " + SAX_EXCEPTION + " propagated exception thrown by a DocumentHandler\n" + // NOI18N
+        "@throws " + JAXP_PARSER_CONFIGURATION_EXCEPTION + " a parser satisfying the requested configuration cannot be created\n" + // NOI18N
+        "@throws " + JAXP_FACTORY_CONFIGURATION_ERROR + " if the implementation cannot be instantiated\n"; // NOI18N
+
+
+    // input fields - these control generation process
+
+    private DataObject DO;  //model DataObject
+    private TreeDTDRoot dtd;    //model DTD
+
+    private ElementBindings elementMapping = new ElementBindings();  //model mapping
+    private ParsletBindings parsletsMap = new ParsletBindings();    //model mapping
+
+    private int sax = 1; // SAX version to be used supported {1, 2}
+
+    private SAXGeneratorModel model;  //holds strategy
+
+ //   private final MapFormat generator;
+
+
+    // init
+
+
+    public SAXGeneratorSupport (DTDDataObject DO) {
+        this (DO, null);
+    }
+
+    public SAXGeneratorSupport (DataObject DO, TreeDTDRoot dtd) {
+        if (DO == null) throw new IllegalArgumentException("null"); // NOI18N
+        this.DO = DO;
+        this.dtd = dtd;
+    }
 //
 //    /**
 //     * The entry method coresponding to GenerateCookie.
@@ -183,96 +195,97 @@ public final class SAXGeneratorSupport implements XMLGenerateCookie {
 //     * in editor mode.
 //     */
     public void generate () {
-//
-//        try {
-//            dtd = null;  // invalidate cache #26745
-//            if (getDTD() == null) {
-//                String msg = org.openide.util.NbBundle.getMessage(SAXGeneratorSupport.class, "MSG_invalid_dtd");
-//                GuiUtil.notifyWarning(msg);
-//                return;
-//            }
-//
-//            FileObject primFile = DO.getPrimaryFile();
-//
-//            String rawName = primFile.getName();
-//            String name = rawName.substring(0,1).toUpperCase() + rawName.substring(1);
-//
-//            final FileObject folder = primFile.getParent();
-//            final String packageName = Util.findJavaPackage(folder);
-//
-//            // prepare inital model
-//
-//            elementMapping.clear();
-//            parsletsMap.clear();
-//
-//            initMappings();
-//
-//            model = new SAXGeneratorModel(
-//                name, new ElementDeclarations (dtd.getElementDeclarations().iterator()),
-//                elementMapping, parsletsMap
-//            );
-//
-//            // load previous settings
-//
-//            loadPrevious(folder);
-//
-//            // initialize wizard panels
-//
-//            final WizardDescriptor.Panel[] panels = new WizardDescriptor.Panel[] {
-//                new SAXGeneratorAbstractPanel.WizardStep(SAXGeneratorVersionPanel.class),
-//                new SAXGeneratorAbstractPanel.WizardStep(SAXGeneratorMethodPanel.class),
-//                new SAXGeneratorAbstractPanel.WizardStep(SAXGeneratorParsletPanel.class),
-//                new SAXGeneratorAbstractPanel.WizardStep(SAXGeneratorFilePanel.class)
-//            };
-//
-//            for (int i = 0; i< panels.length; i++) {
-//                ((SAXGeneratorAbstractPanel.WizardStep)panels[i]).setBean(model);
-//                ((SAXGeneratorAbstractPanel.WizardStep)panels[i]).setIndex(i);
-//            }
-//
-//            // setup wizard properties
-//
-//            WizardDescriptor descriptor = new WizardDescriptor(panels, model);
-//
-//            descriptor.setTitle(Util.THIS.getString ("SAXGeneratorSupport.title"));
-//            descriptor.putProperty("WizardPanel_contentDisplayed", Boolean.TRUE); // NOI18N
-////            descriptor.putProperty("WizardPanel_helpDisplayed", Boolean.TRUE); // NOI18N
-//            descriptor.putProperty("WizardPanel_contentNumbered", Boolean.TRUE); // NOI18N
-//            descriptor.putProperty("WizardPanel_autoWizardStyle", Boolean.TRUE); // NOI18N
-//            descriptor.putProperty("WizardPanel_leftDimension", new Dimension(500,400)); // NOI18N
-//            descriptor.putProperty("WizardPanel_contentData", new String[] { // NOI18N
-//                Util.THIS.getString ("SAXGeneratorVersionPanel.step"),
-//                Util.THIS.getString ("SAXGeneratorMethodPanel.step"),
-//                Util.THIS.getString ("SAXGeneratorParsletPanel.step"),
-//                Util.THIS.getString ("SAXGeneratorFilePanel.step")
-//
-//            });
-//
-//            String fmt = Util.THIS.getString ("SAXGeneratorSupport.subtitle");
-//            descriptor.setTitleFormat(new java.text.MessageFormat(fmt));
-//
-//            // launch the wizard
-//
-//            Dialog dlg = DialogDisplayer.getDefault().createDialog(descriptor);
-//            dlg.show();
-//
-//            if ( ( descriptor.CANCEL_OPTION.equals (descriptor.getValue()) ) ||
-//                 ( descriptor.CLOSED_OPTION.equals (descriptor.getValue()) ) ) {
-//                return;
-//            }
-//
-//            // wizard finished
-//
-//            GuiUtil.setStatusText(Util.THIS.getString("MSG_sax_progress_1"));
-//
+
+        try {
+            dtd = null;  // invalidate cache #26745
+            if (getDTD() == null) {
+                String msg = org.openide.util.NbBundle.getMessage(SAXGeneratorSupport.class, "MSG_invalid_dtd");
+                GuiUtil.notifyWarning(msg);
+                return;
+            }
+
+            FileObject primFile = DO.getPrimaryFile();
+
+            String rawName = primFile.getName();
+            String name = rawName.substring(0,1).toUpperCase() + rawName.substring(1);
+
+            final FileObject folder = primFile.getParent();
+         //   final String packageName = Util.findJavaPackage(folder);
+
+            // prepare inital model
+
+            elementMapping.clear();
+            parsletsMap.clear();
+
+            initMappings();
+
+            model = new SAXGeneratorModel(
+                name, new ElementDeclarations (dtd.getElementDeclarations().iterator()),
+                elementMapping, parsletsMap
+            );
+
+            // load previous settings
+
+            loadPrevious(folder);
+
+            // initialize wizard panels
+
+            final WizardDescriptor.Panel[] panels = new WizardDescriptor.Panel[] {
+                new SAXGeneratorAbstractPanel.WizardStep(SAXGeneratorVersionPanel.class),
+                new SAXGeneratorAbstractPanel.WizardStep(SAXGeneratorMethodPanel.class),
+                new SAXGeneratorAbstractPanel.WizardStep(SAXGeneratorParsletPanel.class),
+                new SAXGeneratorAbstractPanel.WizardStep(SAXGeneratorFilePanel.class)
+            };
+
+            for (int i = 0; i< panels.length; i++) {
+                ((SAXGeneratorAbstractPanel.WizardStep)panels[i]).setBean(model);
+                ((SAXGeneratorAbstractPanel.WizardStep)panels[i]).setIndex(i);
+            }
+
+            // setup wizard properties
+
+            WizardDescriptor descriptor = new WizardDescriptor(panels, model);
+
+            descriptor.setTitle(NbBundle.getMessage (SAXGeneratorSupport.class, "SAXGeneratorSupport.title"));
+            descriptor.putProperty("WizardPanel_contentDisplayed", Boolean.TRUE); // NOI18N
+            descriptor.putProperty("WizardPanel_helpDisplayed", Boolean.TRUE); // NOI18N
+            descriptor.putProperty("WizardPanel_contentNumbered", Boolean.TRUE); // NOI18N
+            descriptor.putProperty("WizardPanel_autoWizardStyle", Boolean.TRUE); // NOI18N
+            descriptor.putProperty("WizardPanel_leftDimension", new Dimension(500,400)); // NOI18N
+            descriptor.putProperty("WizardPanel_contentData", new String[] { // NOI18N
+                NbBundle.getMessage (SAXGeneratorSupport.class, "SAXGeneratorVersionPanel.step"),
+                NbBundle.getMessage (SAXGeneratorSupport.class, "SAXGeneratorMethodPanel.step"),
+                NbBundle.getMessage (SAXGeneratorSupport.class, "SAXGeneratorParsletPanel.step"),
+                NbBundle.getMessage (SAXGeneratorSupport.class, "SAXGeneratorFilePanel.step")
+
+            });
+
+            String fmt = NbBundle.getMessage (SAXGeneratorSupport.class, "SAXGeneratorSupport.subtitle");
+            descriptor.setTitleFormat(new java.text.MessageFormat(fmt));
+
+            // launch the wizard
+
+            Dialog dlg = DialogDisplayer.getDefault().createDialog(descriptor);
+            dlg.show();
+
+            if ( ( descriptor.CANCEL_OPTION.equals (descriptor.getValue()) ) ||
+                 ( descriptor.CLOSED_OPTION.equals (descriptor.getValue()) ) ) {
+                return;
+            }
+
+            // wizard finished
+
+            GuiUtil.setStatusText(NbBundle.getMessage (SAXGeneratorSupport.class,"MSG_sax_progress_1"));
+
 //            if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug(model.toString());
-//
-//            sax = model.getSAXversion();
-//
-//            // prepare source elements and dataobjects
-//
-//            DataObject stubDataObject = FileUtilities.createDataObject(folder, model.getStub(), JAVA_EXT, true);
-//            SourceElement stubSrc = openSource(stubDataObject);
+
+            sax = model.getSAXversion();
+
+            // prepare source elements and dataobjects
+
+            //DataObject stubDataObject = FileUtilities.createDataObject(folder, model.getStub(), JAVA_EXT, true);
+            FileObject fObj = GenerationUtils.createClass(folder, model.getStub(), null); 
+   //         SourceElement stubSrc = openSource(stubDataObject);
 //
 //            DataObject interfaceImplDataObject = FileUtilities.createDataObject( folder, model.getHandlerImpl(), JAVA_EXT, false);
 //            SourceElement interfaceImplSrc = openSource(interfaceImplDataObject);
@@ -296,12 +309,12 @@ public final class SAXGeneratorSupport implements XMLGenerateCookie {
 //
 //            }
 //
-//            // generate code by a model
-//
-//            GuiUtil.setStatusText(Util.THIS.getString("MSG_sax_progress_1_5"));
-//
-//            CodeGenerator stubGenerator = new StubGenerator(model.getStub(), model.getHandler(), model.getParslet());
-//            generateCode( stubGenerator, stubSrc, packageName);
+            // generate code by a model
+
+            GuiUtil.setStatusText(NbBundle.getMessage (SAXGeneratorSupport.class,"MSG_sax_progress_1_5"));
+
+            CodeGenerator stubGenerator = new StubGenerator(model.getStub(), model.getHandler(), model.getParslet());
+            stubGenerator.generate(fObj);//generateCode( stubGenerator, stubSrc, packageName);
 //
 //            CodeGenerator interfaceGenerator = new InterfaceGenerator(model.getHandler());
 //            generateCode( interfaceGenerator, interfaceSrc, packageName);
@@ -359,64 +372,64 @@ public final class SAXGeneratorSupport implements XMLGenerateCookie {
 //        } catch (SourceException e) {
 //            String msg = Util.THIS.getString("MSG_wizard_fail", e);
 //            GuiUtil.notifyWarning(msg);
-//        } catch (TreeException e) {
-//            String msg = Util.THIS.getString("MSG_wizard_fail", e);
-//            GuiUtil.notifyWarning(msg);
-//        } catch (IOException e) {
-//            String msg = Util.THIS.getString("MSG_wizard_fail", e);
-//            GuiUtil.notifyWarning(msg);
-//        } finally {
-//            String msg = org.openide.util.NbBundle.getMessage(SAXGeneratorSupport.class, "MSG_sax_progress_done");
-//            GuiUtil.setStatusText(msg); // NOI18N
-//        }
+        } catch (TreeException e) {
+            String msg = NbBundle.getMessage(SAXGeneratorSupport.class,"MSG_wizard_fail");
+            GuiUtil.notifyWarning(msg);
+        } catch (IOException e) {
+           // String msg = Util.THIS.getString("MSG_wizard_fail", e);
+         //   GuiUtil.notifyWarning(msg);
+        } finally {
+            String msg = org.openide.util.NbBundle.getMessage(SAXGeneratorSupport.class, "MSG_sax_progress_done");
+            GuiUtil.setStatusText(msg); // NOI18N
+        }
     }
-//
-//    /*
-//     * Try to locate previous settings and reuse it.
-//     */
-//    private void loadPrevious(FileObject folder) {
-//        InputStream in = null;
-//
-//        try {
-//            FileObject previous = folder.getFileObject(model.getBindings(), "xml"); // NOI18N
-//            if (previous == null) return;
-//
-//            if ( previous.isVirtual() ) {
-//                // file is virtual -- not available
-//                return;
-//            }
-//
-//            in = previous.getInputStream();
-//            InputSource input = new InputSource(previous.getURL().toExternalForm());
-//            input.setByteStream(in);
-//
-//            SAXBindingsHandlerImpl handler = new SAXBindingsHandlerImpl();
-//            SAXBindingsParser parser = new SAXBindingsParser(handler);
-//
-//            XMLReader reader = XMLUtil.createXMLReader(true);
-//            reader.setEntityResolver(EntityCatalog.getDefault());
-//            reader.setContentHandler(parser);
-//            reader.parse(input);
-//
-//            model.loadElementBindings(handler.getElementBindings());
-//            model.loadParsletBindings(handler.getParsletBindings());
-//
-//        } catch (IOException ex) {
-//            // last settings are not restored
-//            if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug("Cannot read settings", ex); // NOI18N
-//        } catch (SAXException ex) {
-//            // last settings are not restored
-//            if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug("Cannot read settings", ex); // NOI18N
-//        } finally {
-//            try {
-//                if (in != null) in.close();
-//            } catch (IOException e) {
-//                // let it be
-//            }
-//        }
-//
-//    }
-//
+
+    /*
+     * Try to locate previous settings and reuse it.
+     */
+    private void loadPrevious(FileObject folder) {
+        InputStream in = null;
+
+        try {
+            FileObject previous = folder.getFileObject(model.getBindings(), "xml"); // NOI18N
+            if (previous == null) return;
+
+            if ( previous.isVirtual() ) {
+                // file is virtual -- not available
+                return;
+            }
+
+            in = previous.getInputStream();
+            InputSource input = new InputSource(previous.getURL().toExternalForm());
+            input.setByteStream(in);
+
+            SAXBindingsHandlerImpl handler = new SAXBindingsHandlerImpl();
+            SAXBindingsParser parser = new SAXBindingsParser(handler);
+
+            XMLReader reader = XMLUtil.createXMLReader(true);
+            reader.setEntityResolver(EntityCatalog.getDefault());
+            reader.setContentHandler(parser);
+            reader.parse(input);
+
+            model.loadElementBindings(handler.getElementBindings());
+            model.loadParsletBindings(handler.getParsletBindings());
+
+        } catch (IOException ex) {
+            // last settings are not restored
+           // if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug("Cannot read settings", ex); // NOI18N
+        } catch (SAXException ex) {
+            // last settings are not restored
+          //  if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug("Cannot read settings", ex); // NOI18N
+        } finally {
+            try {
+                if (in != null) in.close();
+            } catch (IOException e) {
+                // let it be
+            }
+        }
+
+    }
+
 //    /*
 //     * Prepend to document file header and save it.
 //     */
@@ -446,20 +459,20 @@ public final class SAXGeneratorSupport implements XMLGenerateCookie {
 //        if (cake != null) cake.save();
 //    }
 //
-//    /*
-//     * Wait until source cookie and return SourceElement.
-//     */
-//    private SourceElement openSource(DataObject obj) {
-//        if (obj == null) return null;
-//
-//        SourceCookie cake = null;
-//        while (cake == null) {
-//            cake = (SourceCookie) obj.getCookie(SourceCookie.class);
-//        }
-//
-//        return cake.getSource();
-//    }
-//
+    /*
+     * Wait until source cookie and return SourceElement.
+     */
+   // private SourceElement openSource(DataObject obj) {
+     //   if (obj == null) return null;
+
+       // SourceCookie cake = null;
+        //while (cake == null) {
+          //  cake = (SourceCookie) obj.getCookie(SourceCookie.class);
+        //}
+
+        //return cake.getSource();
+    //}
+
 //    /**
 //     * Generate code using given generator.
 //     * @param target SourceElement where to place result, a null value indicates to skip
@@ -486,15 +499,92 @@ public final class SAXGeneratorSupport implements XMLGenerateCookie {
 //    }
 //
 //
-//    /**
-//     * Generate stub using parslet and dispatching to given handler.
-//     */
-//    private ClassElement generateStub(String name, String face, String let) throws SourceException {
-//
-//        ClassElement clazz = new ClassElement();
+    /**
+     * Generate stub using parslet and dispatching to given handler.
+     */
+    private void generateStub(FileObject clazz, String name, final String face, String let) throws IOException  {
+
+ //     ClassElement clazz = new ClassElement();
 //	clazz.setModifiers (Modifier.PUBLIC);
 //	clazz.setName (Identifier.create (name));
 //	clazz.setInterfaces (new Identifier[] { getSAXHandlerInterface() });
+        final String constructorName = clazz.getName();
+        JavaSource targetSource = JavaSource.forFileObject(clazz);
+            
+          CancellableTask task = new CancellableTask() {
+
+                public void cancel() {
+                  
+                }
+
+               
+                public void run(Object parameter) throws Exception {
+                    WorkingCopy workingCopy = (WorkingCopy)parameter;
+                    workingCopy.toPhase(Phase.RESOLVED);
+                    ClassTree javaClass = SourceUtils.getPublicTopLevelTree(workingCopy);
+                    
+                    if (javaClass!=null) {
+                        TreeMaker make = workingCopy.getTreeMaker();
+                        GenerationUtils genUtils = GenerationUtils.newInstance(workingCopy);
+                       // CompilationUnitTree cut = workingCopy.getCompilationUnit();
+                      //  CompilationUnitTree copy = cut;
+                      //  copy = make.addCompUnitImport(copy, make.Import(make.Identifier("org.xml.sax.*"), false));
+                      //  workingCopy.rewrite(cut, copy);
+                        
+                        // add implementation clause
+                        String interfaceName = getSAXHandlerInterface();
+                        ClassTree modifiedClass = genUtils.addImplementsClause(javaClass, "org.xml.sax.DocumentHandler");
+                        
+                        //add private class fields
+                        List varTree = new ArrayList();
+                        ModifiersTree mods = make.Modifiers(EnumSet.of(Modifier.PRIVATE));
+                        
+                        Tree tree = make.Identifier(face);
+                        VariableTree var = make.Variable(mods, "handler", tree, null);
+                        varTree.add(var);
+                        modifiedClass = genUtils.addClassFields(modifiedClass, varTree);
+                        
+                      //  varTree = new ArrayList();
+                       // tree = make.Identifier("java.util.Stack");
+                       // var = make.Variable(mods, "context", tree, null);
+                      //  varTree.add(var);                        
+                      //  modifiedClass = genUtils.addClassFields(modifiedClass, varTree);
+                        
+                         //add Constructor
+                        mods = make.Modifiers(EnumSet.of(Modifier.PUBLIC));
+                        StringBuffer sb = new StringBuffer();
+                        String parsletInit = model.hasParslets() ? "\nthis.parslet = parslet;" : ""; // NOI18N
+                        
+                        sb.append("{\n" + parsletInit + "\nthis.handler = handler;\n" + // NOI18N
+                                                 "this.resolver = resolver;\n" + // NOI18N
+                                                  "buffer = new StringBuffer(111);\ncontext = new java.util.Stack();\n"    // NOI18N
+                        );
+                        sb.append("}");
+                        
+                        if (model.hasParslets()) {
+                            
+                        } else {
+                            
+                        }
+                        tree = make.Identifier(face);
+                        var = make.Variable(make.Modifiers(EnumSet.of(Modifier.FINAL)), "handler", tree, null);
+                        varTree = new ArrayList();
+                        varTree.add(var);
+                        MethodTree newConstructor = genUtils.createAssignmentConstructor(mods, constructorName, varTree);
+                        modifiedClass = make.addClassMember(modifiedClass, newConstructor);
+                        String commentText =  "\nCreates a parser instance.\n" +  // NOI18N
+                                              "@param handler handler interface implementation (never <code>null</code>\n" +  // NOI18N
+                                              "@param resolver SAX entity resolver implementation or <code>null</code>.\n" +  // NOI18N
+                                              "It is recommended that it could be able to resolve at least the DTD.";  // NOI18N
+                        Comment comment = Comment.create(Comment.Style.JAVADOC, -2, -2, -2, commentText);
+                        make.addComment(newConstructor, comment, true);
+                         
+                       workingCopy.rewrite(javaClass, modifiedClass);
+                    }
+                }
+       
+           };
+             targetSource.runModificationTask(task).commit();
 //
 //        clazz.getJavaDoc().setRawText(
 //            "\nThe class reads XML documents according to specified DTD and " + // NOI18N
@@ -555,7 +645,7 @@ public final class SAXGeneratorSupport implements XMLGenerateCookie {
 //        genStubClass(clazz);
 //
 //        return clazz;
-//    }
+    }
 //
 //
 //    /**
@@ -835,43 +925,43 @@ public final class SAXGeneratorSupport implements XMLGenerateCookie {
 //
 //    //~~~~~~~~~~~~~~~~~~~~ guess initial mapping ~~~~~~~~~~~~~~~~~~~~~~
 //
-//    private void initMappings() {
-//        try {
-//            getDTD();
-//
-//            Iterator it = dtd.getElementDeclarations().iterator();
-//            while (it.hasNext()) {
-//                TreeElementDecl next = (TreeElementDecl) it.next();
-//                addElementMapping(next);
-//            }
-//        } catch (IOException ex) {
-//            // let the map empty
-//        } catch (TreeException ex) {
-//            // let the map empty
-//        }
-//    }
-//
-//    private void addElementMapping(TreeElementDecl decl) {
-//        String name = decl.getName();
-//        String javaName = GenerateSupportUtils.getJavaName(name);
-//
-//        String defaultMapping = ElementBindings.Entry.DATA;
-//
-//        if (decl.isMixed()) {
-//            defaultMapping = ElementBindings.Entry.MIXED;
-//        } else if (decl.allowElements()) {
-//            defaultMapping = ElementBindings.Entry.CONTAINER;
-//        } else if (decl.isEmpty()) {
-//            defaultMapping = ElementBindings.Entry.EMPTY;
-//        }
-//
-//        elementMapping.put(name, javaName, null, defaultMapping);
-//    }
-//
-//
-//    //~~~~~~~~~~~~~~~~~~~~~~~~ generator methods ~~~~~~~~~~~~~~~~~~~~~~~~
-//
-//
+    private void initMappings() {
+        try {
+            getDTD();
+
+            Iterator it = dtd.getElementDeclarations().iterator();
+            while (it.hasNext()) {
+                TreeElementDecl next = (TreeElementDecl) it.next();
+                addElementMapping(next);
+            }
+        } catch (IOException ex) {
+            // let the map empty
+        } catch (TreeException ex) {
+            // let the map empty
+        }
+    }
+
+    private void addElementMapping(TreeElementDecl decl) {
+        String name = decl.getName();
+        String javaName = GenerateSupportUtils.getJavaName(name);
+
+        String defaultMapping = ElementBindings.Entry.DATA;
+
+        if (decl.isMixed()) {
+            defaultMapping = ElementBindings.Entry.MIXED;
+        } else if (decl.allowElements()) {
+            defaultMapping = ElementBindings.Entry.CONTAINER;
+        } else if (decl.isEmpty()) {
+            defaultMapping = ElementBindings.Entry.EMPTY;
+        }
+
+        elementMapping.put(name, javaName, null, defaultMapping);
+    }
+
+
+    //~~~~~~~~~~~~~~~~~~~~~~~~ generator methods ~~~~~~~~~~~~~~~~~~~~~~~~
+
+
 //    /**
 //     * Stub's startElement() method has two forms one for SAX 1.0 and one for SAX 2.0
 //     */
@@ -1511,35 +1601,35 @@ public final class SAXGeneratorSupport implements XMLGenerateCookie {
 //        return method;
 //    }
 //
-//    /** Get Schema. */
-//    private TreeDTDRoot getDTD () throws IOException, TreeException {
-//	if (dtd == null) {
-//        TreeDocumentRoot result;
-//
-//        TreeEditorCookie cake = (TreeEditorCookie) ((DTDDataObject)DO).getCookie(TreeEditorCookie.class);
-//        if (cake != null) {
-//            result = cake.openDocumentRoot();
-//        } else {
-//            throw new TreeException("DTDDataObject:INTERNAL ERROR"); // NOI18N
-//        }
-//        dtd = (TreeDTDRoot)result;
-//	}
-//        return dtd;
-//    }
-//
-//    /**
-//     * Return a Identifier of content handler interface in current sax version.
-//     */
-//    private Identifier getSAXHandlerInterface() {
-//        if (sax == 1) {
-//            return Identifier.create (SAX_DOCUMENT_HANDLER);
-//        } else if (sax == 2) {
-//            return Identifier.create (SAX2_CONTENT_HANDLER);
-//        } else {
-//            return null;
-//        }
-//    }
-//
+    /** Get Schema. */
+    private TreeDTDRoot getDTD () throws IOException, TreeException {
+	if (dtd == null) {
+        TreeDocumentRoot result;
+
+        TreeEditorCookie cake = (TreeEditorCookie) ((DTDDataObject)DO).getCookie(TreeEditorCookie.class);
+        if (cake != null) {
+            result = cake.openDocumentRoot();
+        } else {
+            throw new TreeException("DTDDataObject:INTERNAL ERROR"); // NOI18N
+        }
+        dtd = (TreeDTDRoot)result;
+	}
+        return dtd;
+    }
+
+    /**
+     * Return a Identifier of content handler interface in current sax version.
+     */
+    private String getSAXHandlerInterface() {
+        if (sax == 1) {
+            return SAX_DOCUMENT_HANDLER;
+        } else if (sax == 2) {
+            return SAX2_CONTENT_HANDLER;
+        } else {
+            return null;
+        }
+    }
+
 //    /**
 //     * Return a name of attributes class in current sax version.
 //     */
@@ -1557,32 +1647,32 @@ public final class SAXGeneratorSupport implements XMLGenerateCookie {
 //
 //
 //
-//    /**
-//     * A factory of ClassElement producers used in code generation code.
-//     * @see generateCode
-//     */
-//    private interface CodeGenerator {
-//
-//        public void generate(SourceElement target) throws SourceException;
-//
-//    }
-//
-//    private class StubGenerator implements CodeGenerator {
-//        private final String name;
-//        private final String face;
-//        private final String let;
-//
-//        StubGenerator(String name, String face, String let) {
-//            this.name = name;
-//            this.face = face;
-//            this.let = let;
-//        }
-//
-//        public void generate(SourceElement target) throws SourceException {
-//            target.addClass(generateStub(name, face, let));
-//        }
-//    }
-//
+    /**
+     * A factory of ClassElement producers used in code generation code.
+     * @see generateCode
+     */
+    private interface CodeGenerator {
+
+        public void generate(FileObject target) throws IOException;
+
+    }
+
+    private class StubGenerator implements CodeGenerator {
+        private final String name;
+        private final String face;
+        private final String let;
+
+        StubGenerator(String name, String face, String let) {
+            this.name = name;
+            this.face = face;
+            this.let = let;
+        }
+
+        public void generate(FileObject target)  throws IOException {
+            generateStub(target, name, face, let);
+        }
+    }
+
 //    private class InterfaceGenerator implements CodeGenerator {
 //
 //        private final String name;
