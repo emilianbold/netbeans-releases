@@ -96,4 +96,8 @@ public class CCDataLoader extends CndAbstractDataLoaderExt {
     public ExtensionList getDefaultExtensionList() {
         return arrayToExtensionList(cppExtensions);
     }
+
+    public String getDisplayNameForExtensionList() {
+	return NbBundle.getMessage(CCDataLoader.class, "CCDataLoader_Name_ForExtList"); // NOI18N
+    }
 }
