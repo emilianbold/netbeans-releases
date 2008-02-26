@@ -191,7 +191,7 @@ public class Disassembly implements PropertyChangeListener, DocumentListener {
     public static File getFile() {
         if (file == null) {
             try {
-                file = File.createTempFile("disasm", ".s"); // NOI18N
+                file = FileUtil.normalizeFile(File.createTempFile("disasm", ".s")); // NOI18N
             } catch (IOException ex) {
                 ex.printStackTrace();
             }
