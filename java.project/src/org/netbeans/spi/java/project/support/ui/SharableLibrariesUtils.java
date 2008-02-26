@@ -76,6 +76,7 @@ import org.openide.util.Exceptions;
 import org.openide.util.Mutex;
 import org.openide.util.MutexException;
 import org.openide.util.NbBundle;
+import org.openide.util.NbPreferences;
 
 /**
  * Utility methods related to sharable libraries UI.
@@ -94,8 +95,28 @@ public final class SharableLibrariesUtils {
     /**
      * The default filename for sharable library definition file.
      */
-    public static final String DEFAULT_LIBRARIES_FILENAME = "nblibraries.properties";
+    public static final String DEFAULT_LIBRARIES_FILENAME = "nblibraries.properties"; //NOI18N
     
+    private static String PROP_LAST_SHARABLE = "lastSharable"; //NOI18N
+    
+    /**
+     * boolean value representing the state of library sharability of the last created project.
+     * To be used by new project wizards.
+     * @return true if last created project was created sharable, false if not.
+     */
+    public static boolean isLastProjectSharable() {
+        return NbPreferences.root().node("org.netbeans.modules.java.project.share").getBoolean(PROP_LAST_SHARABLE, false); //NOI18N
+    }
+    /**
+     * Setter for boolean value representing the state of library sharability of the last created project.
+     * To be used by new project wizards.
+     * 
+     * @param sharable
+     */
+    public static void setLastProjectSharable(boolean sharable) {
+        NbPreferences.root().node("org.netbeans.modules.java.project.share").putBoolean(PROP_LAST_SHARABLE, sharable); //NOI18N
+    }
+
     
     
     /**
