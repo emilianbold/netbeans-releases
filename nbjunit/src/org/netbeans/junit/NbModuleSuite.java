@@ -60,7 +60,6 @@ import java.util.regex.Pattern;
 import junit.framework.Assert;
 import junit.framework.Test;
 import junit.framework.TestResult;
-import org.openide.util.Lookup;
 
 /**
  * Wraps a test class with proper NetBeans Runtime Container environment.
@@ -193,7 +192,7 @@ public final class NbModuleSuite extends Object {
             args.add("--nosplash");
             m.invoke(null, (Object)args.toArray(new String[0]));
 
-            ClassLoader global = Lookup.getDefault().lookup(ClassLoader.class);
+            ClassLoader global = Thread.currentThread().getContextClassLoader();
             Assert.assertNotNull("Global classloader is initialized", global);
 
             URL[] testCP = preparePath(clazz);
@@ -216,11 +215,12 @@ public final class NbModuleSuite extends Object {
 
         private File findPlatform() {
             try {
-                File util = new File(Lookup.class.getProtectionDomain().getCodeSource().getLocation().toURI());
+                Class<?> lookup = Class.forName("org.openide.util.Lookup"); // NOI18N
+                File util = new File(lookup.getProtectionDomain().getCodeSource().getLocation().toURI());
                 Assert.assertTrue("Util exists: " + util, util.exists());
 
                 return util.getParentFile().getParentFile();
-            } catch (URISyntaxException ex) {
+            } catch (Exception ex) {
                 Assert.fail("Cannot find utilities JAR");
                 return null;
             }
