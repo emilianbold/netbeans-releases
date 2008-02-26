@@ -229,6 +229,7 @@ public class PanelBodyContainer extends javax.swing.JPanel {
         tpPanelHeader.setContentType("text/html"); // NOI18N
         tpPanelHeader.setEditable(false);
         spPanelHeader.setViewportView(tpPanelHeader);
+        tpPanelHeader.getAccessibleContext().setAccessibleName(head);
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
@@ -244,6 +245,9 @@ public class PanelBodyContainer extends javax.swing.JPanel {
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(pBodyPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
+
+        getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(PanelBodyContainer.class, "PanelBodyContainer_ACN")); // NOI18N
+        getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(PanelBodyContainer.class, "PanelBodyContainer_ACD")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
     
     

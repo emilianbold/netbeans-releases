@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * 
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
  * 
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -37,24 +37,69 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.websvc.saas.model;
+package org.netbeans.modules.cnd.api.model.services;
 
-import org.netbeans.modules.websvc.saas.model.jaxb.Method;
-import org.netbeans.modules.websvc.saas.model.jaxb.SaasServices;
+import javax.swing.text.Document;
+import org.openide.util.Lookup;
 
 /**
- * Typing purpose
- * @author nam
+ *
+ * @author Alexander Simon
  */
-public class CustomSaas extends Saas {
+public abstract class CsmStatementKindResolver {
+    /**
+     * default instance
+     */
+    private static CsmStatementKindResolver DEFAULT = new Default();
+    
+    protected CsmStatementKindResolver() {
+    }
+    
+    /**
+     * Static method to obtain the CsmStatementKindResolver implementation.
+     * @return the resolver
+     */
+    public static synchronized CsmStatementKindResolver getDefault() {
+        return DEFAULT;
+    }
+    
+    public enum StatementKind {
+        NAMESPACE,
+        CLASS,
+        STRIUCT,
+        ENUM,
+        UNION,
+        FUNCTION,
+        DECLARATION,
+        EXPRESSION,
+        COMPOUND,
+        OTHER,
+        UNKNOWN;
+    }
+    
+    /**
+     * Detect statement kind
+     */
+    public abstract StatementKind getKind(Document doc, int offset);
 
-    public CustomSaas(SaasGroup parentGroup, SaasServices services) {
-        super(parentGroup, services);
-    }
     
-    @Override
-    protected CustomSaasMethod createSaasMethod(Method method) {
-        return new CustomSaasMethod(this, method);
+    /**
+     * Implementation of the default resolver
+     */  
+    private static final class Default extends CsmStatementKindResolver {
+        private final Lookup.Result<CsmStatementKindResolver> res;
+        Default() {
+            res = Lookup.getDefault().lookupResult(CsmStatementKindResolver.class);
+        }
+
+        public StatementKind getKind(Document doc, int offset) {
+            for (CsmStatementKindResolver resolver : res.allInstances()) {
+                StatementKind out = resolver.getKind(doc, offset);
+                if (out != StatementKind.UNKNOWN) {
+                    return out;
+                }
+            }
+            return StatementKind.UNKNOWN;
+        }
     }
-    
 }

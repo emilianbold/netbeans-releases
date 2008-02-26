@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * 
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
  * 
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -37,24 +37,68 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.websvc.saas.model;
+package org.netbeans.modules.cnd.api.model.services;
 
-import org.netbeans.modules.websvc.saas.model.jaxb.Method;
-import org.netbeans.modules.websvc.saas.model.jaxb.SaasServices;
+import javax.swing.text.Document;
+import org.openide.util.Lookup;
 
 /**
- * Typing purpose
- * @author nam
+ *
+ * @author Alexander Simon
  */
-public class CustomSaas extends Saas {
+public abstract class CsmOperatorKindResolver {
+    /**
+     * default instance
+     */
+    private static CsmOperatorKindResolver DEFAULT = new Default();
+    
+    protected CsmOperatorKindResolver() {
+    }
+    
+    /**
+     * Static method to obtain the CsmOperatorKindResolver implementation.
+     * @return the resolver
+     */
+    public static synchronized CsmOperatorKindResolver getDefault() {
+        return DEFAULT;
+    }
+    
+    public enum OperatorKind {
+        BINARY,
+        UNARY,
+        SEPARATOR,
+        TYPEMODIFIER,
+        UNKNOWN;
+    }
+    
+    /**
+     * Detect operator kind
+     * for example:
+     * Document a*b;
+     * Offset point to * (start position)
+     * Result is TypeModifier or Binary
+     * Possible requestes about:
+     * *, &, +, -, <, >.
+     */
+    public abstract OperatorKind getKind(Document doc, int offset);
+    
+    /**
+     * Implementation of the default resolver
+     */  
+    private static final class Default extends CsmOperatorKindResolver {
+        private final Lookup.Result<CsmOperatorKindResolver> res;
+        Default() {
+            res = Lookup.getDefault().lookupResult(CsmOperatorKindResolver.class);
+        }
 
-    public CustomSaas(SaasGroup parentGroup, SaasServices services) {
-        super(parentGroup, services);
+        public OperatorKind getKind(Document doc, int offset) {
+            for (CsmOperatorKindResolver resolver : res.allInstances()) {
+                OperatorKind out = resolver.getKind(doc, offset);
+                if (out != OperatorKind.UNKNOWN) {
+                    return out;
+                }
+            }
+            return OperatorKind.UNKNOWN;
+        }
     }
-    
-    @Override
-    protected CustomSaasMethod createSaasMethod(Method method) {
-        return new CustomSaasMethod(this, method);
-    }
-    
 }
