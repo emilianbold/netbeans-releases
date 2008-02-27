@@ -77,6 +77,7 @@ made subject to such option by the copyright holder.
         <testset dir="qa-functional/src">
             <patternset>
                 <include name="gui/EPMeasureActions3.class"/>
+                <include name="gui/EPMeasureActions3.class/Schema Navigator Schema View" expectedFail="128585"/>
             </patternset>
         </testset>
     </testbag>
