@@ -383,7 +383,6 @@ public class SQLObjectUtil {
             conn = DBExplorerUtil.createConnection(conDef.getConnectionProperties());
             Statement stmt = conn.createStatement();
             String query = "select PROPERTY_NAME, PROPERTY_VALUE from AXION_TABLE_PROPERTIES " + "where TABLE_NAME = '" + sTable.getName() + "'";
-            java.util.logging.Logger.getLogger(SQLObjectUtil.class.getName()).info("thsi is the tablename............."+query);
             stmt.execute(query);
             
             ResultSet rs = stmt.getResultSet();

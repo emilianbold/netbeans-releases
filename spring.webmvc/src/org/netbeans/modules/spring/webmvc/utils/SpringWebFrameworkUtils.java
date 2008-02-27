@@ -41,9 +41,8 @@
 
 package org.netbeans.modules.spring.webmvc.utils;
 
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import java.util.regex.Pattern;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -51,10 +50,16 @@ import java.util.regex.Pattern;
  */
 public class SpringWebFrameworkUtils {
     private static final String DISPATCHER_MAPPING = ".htm"; // NOI18N
-    private static final Logger LOGGER = Logger.getLogger(SpringWebFrameworkUtils.class.getName());        
     
     public static boolean isDispatcherNameValid(String name) {
-        return Pattern.matches("\\w+", name);
+        boolean isNameValid = (name.length() > 0); // an empty string for the dispatcher name is not considered invalid
+        for (int charPosition = 0; charPosition < name.length(); charPosition++) {
+            if (!Character.isUnicodeIdentifierPart(name.toCharArray()[charPosition])) {
+                isNameValid = false;
+                break;
+            }
+        }                
+        return isNameValid;
     }
     
     public static boolean isDispatcherMappingPatternValid(String pattern){
@@ -113,5 +118,9 @@ public class SpringWebFrameworkUtils {
         }
 
         return lineInTemplate;
+    }
+    
+    public static String getWelcomePageText() {
+        return NbBundle.getMessage(SpringWebFrameworkUtils.class, "MSG_WELCOME_PAGE_TEXT"); 
     }
 }

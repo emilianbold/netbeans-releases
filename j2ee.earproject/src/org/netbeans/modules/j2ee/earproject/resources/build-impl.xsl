@@ -224,6 +224,7 @@ is divided into following sections:
                 <fail unless="dist.dir">Must set dist.dir</fail>
                 <fail unless="build.classes.excludes">Must set build.classes.excludes</fail>
                 <fail unless="dist.jar">Must set dist.jar</fail>
+                <!-- No j2ee.platform.classpath here as it is used only for app client runtime -->
             </target>
 
             <target name="init">

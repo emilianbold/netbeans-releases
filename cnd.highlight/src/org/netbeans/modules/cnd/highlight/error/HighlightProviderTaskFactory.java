@@ -69,7 +69,7 @@ public class HighlightProviderTaskFactory extends EditorAwareCsmFileTaskFactory 
                         if (phase == Phase.PARSED || phase == Phase.INIT) {
                             HighlightProvider.getInstance().update(file, doc);
                         } else if (phase == Phase.CLEANUP) {
-                            HighlightProvider.getInstance().clear(file, doc);
+                            HighlightProvider.getInstance().clear(doc);
                         }
                     }
                     public boolean isValid() {

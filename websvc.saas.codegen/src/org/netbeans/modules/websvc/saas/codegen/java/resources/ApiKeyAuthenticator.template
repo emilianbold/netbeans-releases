@@ -18,18 +18,18 @@ import java.util.logging.Logger;
  *
  * @author __USER__
  */
-public class ApiKeyAuthenticator {
+public class __NAME__ {
 
     private static String apiKey;
     
     static {
         try {
             Properties props = new Properties();
-            props.load(${name}.class.getResourceAsStream(
+            props.load(__NAME__.class.getResourceAsStream(
                     "profile.properties"));
             apiKey = props.getProperty("api_key");
         } catch (IOException ex) {
-            Logger.getLogger(${name}.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(__NAME__.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
 

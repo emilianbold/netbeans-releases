@@ -173,6 +173,8 @@ public final class VisualConfigSupport {
         }
         final NewConfigurationPanel ncp = new NewConfigurationPanel(allNames);
         final DialogDescriptor dd = new DialogDescriptor(ncp, NbBundle.getMessage(VisualConfigSupport.class, "LBL_VCS_AddConfiguration"), true, NotifyDescriptor.OK_CANCEL_OPTION, NotifyDescriptor.OK_OPTION, null); //NOI18N
+        ncp.getAccessibleContext().setAccessibleName(NbBundle.getMessage(VisualConfigSupport.class, "LBL_VCS_AddConfiguration"));
+        ncp.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(VisualConfigSupport.class, "LBL_VCS_AddConfiguration"));
         ncp.setDialogDescriptor(dd);
         final String newName = NotifyDescriptor.OK_OPTION.equals(DialogDisplayer.getDefault().notify(dd)) ? ncp.getName() : null;
         if (newName != null) {
@@ -196,6 +198,8 @@ public final class VisualConfigSupport {
             allNames.add(cfgs[i].getDisplayName());
         }
         final ConfigurationsSelectionPanelGUI ncp = new ConfigurationsSelectionPanelGUI(allNames);
+        ncp.getAccessibleContext().setAccessibleName(NbBundle.getMessage(VisualConfigSupport.class, "LBL_VCS_AddConfiguration"));
+        ncp.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(VisualConfigSupport.class, "LBL_VCS_AddConfiguration"));
         final ErrorPanel ep = new ErrorPanel();
         final JPanel p = new JPanel(new BorderLayout());
         p.add(ncp, BorderLayout.CENTER);

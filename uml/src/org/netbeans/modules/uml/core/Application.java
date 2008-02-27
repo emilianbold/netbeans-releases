@@ -48,6 +48,9 @@ import java.util.Iterator;
 import org.dom4j.Document;
 import org.dom4j.Node;
 
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
+
 import org.netbeans.modules.uml.core.coreapplication.ICoreProduct;
 import org.netbeans.modules.uml.core.coreapplication.ICoreProductEventDispatcher;
 import org.netbeans.modules.uml.core.coreapplication.ICoreProductInitEventsSink;
@@ -244,7 +247,11 @@ public class Application implements IApplication,
                                 {
                                     try
                                     {
-                                        qcFile.delete();
+                                        FileObject qcFO = FileUtil.toFileObject(new File(qcFile.getCanonicalPath()));
+                                        if (qcFO != null) 
+                                        {
+                                            qcFO.delete();
+                                        }
                                     }
                                     catch (Exception e)
                                     {

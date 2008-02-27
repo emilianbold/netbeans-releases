@@ -59,10 +59,9 @@
     <saas-metadata>
         <localizing-bundle>org.netbeans.modules.websvc.saas.services.youtube.Bundle</localizing-bundle>
         <group name="YouTube">
-            <group name="Videos"/>
         </group>
 
-        <authentication profile="Templates/WebServices/profile.properties">
+        <authentication profile="SaaSServices/YouTube/profile.properties">
             <api-key id="dev_id"/>
         </authentication>
     </saas-metadata>

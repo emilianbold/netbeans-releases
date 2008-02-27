@@ -50,6 +50,7 @@ import org.netbeans.api.debugger.ActionsManager;
 import org.netbeans.modules.ruby.debugger.EditorUtil;
 import org.netbeans.modules.ruby.debugger.Util;
 import org.netbeans.spi.debugger.ActionsProviderSupport;
+import org.openide.text.Line;
 import org.openide.util.WeakListeners;
 import org.openide.windows.TopComponent;
 import org.rubyforge.debugcommons.RubyDebuggerException;
@@ -81,7 +82,10 @@ public final class RubyBreakpointActionProvider extends ActionsProviderSupport
             RubyBreakpointManager.removeBreakpoint(breakpoint);
         } else { // new breakpoint
             try {
-                RubyBreakpointManager.addBreakpoint(EditorUtil.getCurrentLine());
+                Line line = EditorUtil.getCurrentLine();
+                if (line != null) {
+                    RubyBreakpointManager.addBreakpoint(line);
+                }
             } catch (RubyDebuggerException e) {
                 Util.LOGGER.log(Level.WARNING, "Unable to add breakpoint.", e);
             }
