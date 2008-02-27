@@ -106,9 +106,10 @@ public class SaasServicesModel {
             return;
         }
         setState(State.INITIALIZING);
-        loadUserDefinedGroups();
+        getInitialRootGroup();
         loadFromDefaultFileSystem();
         loadFromWebServicesHome();
+        WsdlUtil.ensureImportExisting60Services();
         setState(State.READY);
     }
 
@@ -153,7 +154,7 @@ public class SaasServicesModel {
         }
     }
 
-    private void saveRootGroup() {
+    public void saveRootGroup() {
         try {
             SaasUtil.saveSaasGroup(rootGroup, new File(WEBSVC_HOME, SERVICE_GROUP_XML));
         } catch (Exception ex) {
@@ -204,12 +205,13 @@ public class SaasServicesModel {
                 if (child.getChildrenGroups().size() == 0) {
                     Saas service;
                     if (Saas.NS_WADL.equals(ss.getType())) {
-                        service = new WadlSaas(topGroup, parent, ss);
+                        service = new WadlSaas(parent, ss);
                     } else if (Saas.NS_WSDL.equals(ss.getType())) {
-                        service = new WsdlSaas(topGroup, parent, ss);
+                        service = new WsdlSaas(parent, ss);
                     } else {
-                        service = new CustomSaas(topGroup, parent, ss);
+                        service = new CustomSaas(parent, ss);
                     }
+                    service.setTopLevelGroup(topGroup);
                     child.addService(service);
                     service.setUserDefined(userDefined);
                     break;
@@ -269,6 +271,10 @@ public class SaasServicesModel {
      * @param parent
      * @param child
      */
+    public synchronized SaasGroup createTopGroup(String groupName) {
+        return createGroup(getInitialRootGroup(), groupName);
+    }
+    
     public synchronized SaasGroup createGroup(SaasGroup parent, String groupName) {
         initRootGroup();
         SaasGroup group = parent.createGroup(groupName);
