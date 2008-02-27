@@ -81,9 +81,9 @@ public final class JsfTable implements ActiveEditorDrop {
     private static String [] ITEM = {
         "",
         "<h:column>\n <f:facet name=\"header\">\n <h:outputText value=\"{0}\"/>\n </f:facet>\n <h:outputText value=\"#'{'item.{2}'}'\"/>\n</h:column>\n",
-        "<h:column>\n <f:facet name=\"header\">\n <h:outputText value=\"{0}\"/>\n </f:facet>\n <h:outputText value=\"#'{'item.{2}'}'\">\n <f:convertDateTime type=\"{3}\" pattern=\"{4}\" />\n</h:outputText>\n</h:column>\n",
-        "<h:column>\n <f:facet name=\"header\">\n <h:outputText value=\"{0}\"/>\n </f:facet>\n"
-                + "<h:commandLink action=\"#'{'{4}'}'\" value=\"#'{'item.{2}'}'\"/>\n </h:column>\n",
+        "<h:column>\n <f:facet name=\"header\">\n <h:outputText value=\"{0}\"/>\n </f:facet>\n <h:outputText value=\"#'{'item.{2}'}'\">\n <f:convertDateTime type=\"{3}\" pattern=\"{4}\" />\n</h:outputText>\n</h:column>\n"
+//        "<h:column>\n <f:facet name=\"header\">\n <h:outputText value=\"{0}\"/>\n </f:facet>\n"
+//                + "<h:commandLink action=\"#'{'{4}'}'\" value=\"#'{'item.{2}'}'\"/>\n </h:column>\n",
     };
     
     private String variable = "";
@@ -156,7 +156,7 @@ public final class JsfTable implements ActiveEditorDrop {
                 String propName = name.substring(0,1).toLowerCase() + name.substring(1);
                 if (setupDetail != null && JsfForm.isId(controller, method, fieldAccess)) {
                     String managedBeanName = JSFClientGenerator.getManagedBeanName(bean.getSimpleName().toString());
-                    stringBuffer.append(MessageFormat.format(ITEM [3], new Object [] {name, variable, propName, propName, managedBeanName + "." + setupDetail}));
+                    stringBuffer.append(MessageFormat.format(ITEM [1], new Object [] {name, variable, propName}));
                 } else if (controller.getTypes().isSameType(dateTypeMirror, method.getReturnType())) {
                     //param 3 - temporal, param 4 - date/time format
                     String temporal = JsfForm.getTemporal(controller, method, fieldAccess);

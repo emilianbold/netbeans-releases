@@ -43,7 +43,6 @@ package org.netbeans.modules.cnd.debugger.gdb.actions;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Set;
 import org.netbeans.api.debugger.ActionsManager;
@@ -91,12 +90,11 @@ public class MakeCallerCurrentActionProvider extends ActionsProviderSupport impl
     
     static int getCurrentCallStackFrameIndex(GdbDebugger debugger) {
 	CallStackFrame csf = debugger.getCurrentCallStackFrame();
-	if (csf != null) {
-	    ArrayList callstack = debugger.getCallStack();
-	    return callstack.indexOf(csf);
-	} else {
-	    return -1;
-	}
+        if (csf != null) {
+            return csf.getFrameNumber();
+        } else {
+            return -1;
+        }
     }
     
     static void setCurrentCallStackFrameIndex(GdbDebugger debugger, int index) {

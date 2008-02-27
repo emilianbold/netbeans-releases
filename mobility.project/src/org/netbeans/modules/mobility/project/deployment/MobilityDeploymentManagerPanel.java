@@ -38,7 +38,6 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.mobility.project.deployment;
 
 import java.awt.BorderLayout;
@@ -51,6 +50,7 @@ import java.beans.PropertyVetoException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Set;
+import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JPanel;
@@ -69,7 +69,6 @@ import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.nodes.Node.Cookie;
-import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
@@ -80,7 +79,7 @@ import org.openide.util.RequestProcessor;
  * @author  Adam Sotona
  */
 public class MobilityDeploymentManagerPanel extends JPanel implements ExplorerManager.Provider, PropertyChangeListener {
-    
+
     private final ExplorerManager manager = new ExplorerManager();
     private final BeanTreeView btw = new BeanTreeView();
     private final MobilityDeploymentProperties props = new MobilityDeploymentProperties();
@@ -92,22 +91,26 @@ public class MobilityDeploymentManagerPanel extends JPanel implements ExplorerMa
         Thread r1;
         //do not block AWT, but block the dialog until properties are loaded!
         RequestProcessor.getDefault().post(r1 = new Thread() {
+
             @Override
             public void run() {
                 Thread r2;
-                Lookup.Result deployments = Lookup.getDefault().lookup(new Lookup.Template<DeploymentPlugin>(DeploymentPlugin.class));                
+                Lookup.Result deployments = Lookup.getDefault().lookup(new Lookup.Template<DeploymentPlugin>(DeploymentPlugin.class));
                 DeploymentPropertiesHandler.loadDeploymentProperties(deployments.allInstances());
                 SwingUtilities.invokeLater(r2 = new Thread() {
                     @Override
                     public void run() {
+                        JButton closeButton = new JButton(NbBundle.getMessage(MobilityDeploymentManagerPanel.class, "LBL_closeButton")); //NOI18N
+                        closeButton.getAccessibleContext().setAccessibleDescription("ACCESSIBLE_NAME_closeButton"); //NOI18N
+                        closeButton.getAccessibleContext().setAccessibleDescription("ACCESSIBLE_DESCRIPTION_closeButton"); //NOI18N
                         MobilityDeploymentManagerPanel mdmp = new MobilityDeploymentManagerPanel(deploymentTypeDisplayName, instance);
-                        DialogDisplayer.getDefault().notify(new DialogDescriptor(mdmp, NbBundle.getMessage(MobilityDeploymentManagerAction.class, "Title_DeploymentManager"), true, new Object[] {DialogDescriptor.CLOSED_OPTION}, DialogDescriptor.CLOSED_OPTION, DialogDescriptor.DEFAULT_ALIGN, new HelpCtx(MobilityDeploymentManagerPanel.class), null));  //NOI18N
+                        DialogDisplayer.getDefault().notify(new DialogDescriptor(mdmp, NbBundle.getMessage(MobilityDeploymentManagerAction.class, "Title_DeploymentManager"), true, new Object[]{closeButton}, DialogDescriptor.CLOSED_OPTION, DialogDescriptor.DEFAULT_ALIGN, new HelpCtx(MobilityDeploymentManagerPanel.class), null));  //NOI18N
                         instanceName[0] = mdmp.getSelectedInstanceName();
                     }
                 });
                 try {
                     r2.join();
-                } catch (InterruptedException ex) {                    
+                } catch (InterruptedException ex) {
                 }
             }
         });
@@ -117,8 +120,7 @@ public class MobilityDeploymentManagerPanel extends JPanel implements ExplorerMa
         }
         return instanceName[0];
     }
-    
-    
+
     /**
      * Creates new form MobilityDeploymentManagerPanel
      */
@@ -126,14 +128,18 @@ public class MobilityDeploymentManagerPanel extends JPanel implements ExplorerMa
         this.initialTypeName = deploymentTypeDisplayName;
         initComponents();
         btw.setRootVisible(false);
-        btw.setPopupAllowed( false );
+        btw.setPopupAllowed(false);
+        btw.getAccessibleContext().setAccessibleDescription( NbBundle.getMessage(MobilityDeploymentManagerPanel.class, "MobilityDeploymentManager.jLabel1.text")); //NOI18N
+        btw.getAccessibleContext().setAccessibleName( NbBundle.getMessage(MobilityDeploymentManagerPanel.class, "MobilityDeploymentManager.jLabel1.text")); //NOI18N   
         manager.addPropertyChangeListener(this);
         jPanel1.add(btw, BorderLayout.CENTER);
         Children.Array ch = new Children.Array() {
             protected Collection<Node> initCollection() {
                 Collection<Node> nodes = new ArrayList();
                 for (DeploymentPlugin d : Lookup.getDefault().lookupAll(DeploymentPlugin.class)) {
-                    if (d.getGlobalPropertyDefaultValues().size() > 0) nodes.add(new DeploymentTypeNode(d));
+                    if (d.getGlobalPropertyDefaultValues().size() > 0) {
+                        nodes.add(new DeploymentTypeNode(d));
+                    }
                 }
                 return nodes;
             }
@@ -141,9 +147,12 @@ public class MobilityDeploymentManagerPanel extends JPanel implements ExplorerMa
         manager.setRootContext(new AbstractNode(ch));
         Node selType = deploymentTypeDisplayName != null ? ch.findChild(deploymentTypeDisplayName) : null;
         Node selInstance = selType != null && instanceName != null ? selType.getChildren().findChild(instanceName) : null;
-        if (selType != null || selInstance != null) try {
-            manager.setExploredContextAndSelection(selType, new Node[]{selInstance == null ? selType : selInstance});
-        } catch (PropertyVetoException pve) {}
+        if (selType != null || selInstance != null) {
+            try {
+                manager.setExploredContextAndSelection(selType, new Node[]{selInstance == null ? selType : selInstance});
+            } catch (PropertyVetoException pve) {
+            }
+        }
     }
 
     public void addNotify() {
@@ -154,19 +163,21 @@ public class MobilityDeploymentManagerPanel extends JPanel implements ExplorerMa
             btw.getViewport().setViewPosition(p);
         }
     }
-    
+
     public String getSelectedInstanceName() {
-        if (initialTypeName == null) return null;
+        if (initialTypeName == null) {
+            return null;
+        }
         Node[] n = manager.getSelectedNodes();
         return n.length != 1 || !initialTypeName.equals(n[0].getParentNode().getDisplayName()) ? null : n[0].getName();
     }
-    
+
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
      * always regenerated by the Form Editor.
      */
-    // <editor-fold defaultstate="collapsed" desc=" Generated Code ">//GEN-BEGIN:initComponents
+    // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
         java.awt.GridBagConstraints gridBagConstraints;
 
@@ -186,6 +197,8 @@ public class MobilityDeploymentManagerPanel extends JPanel implements ExplorerMa
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(11, 11, 0, 11);
         add(jLabel1, gridBagConstraints);
+        jLabel1.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(MobilityDeploymentManagerPanel.class, "ACCESSIBLE_NAME_jLabel1")); // NOI18N
+        jLabel1.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(MobilityDeploymentManagerPanel.class, "ACCESSIBLE_DESCRIPTION_jLabel1")); // NOI18N
 
         jPanel1.setBorder(javax.swing.BorderFactory.createEtchedBorder());
         jPanel1.setMaximumSize(new java.awt.Dimension(270, 350));
@@ -213,6 +226,8 @@ public class MobilityDeploymentManagerPanel extends JPanel implements ExplorerMa
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(11, 11, 11, 0);
         add(jButton1, gridBagConstraints);
+        jButton1.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(MobilityDeploymentManagerPanel.class, "ACCESSIBLE_NAME_jButton1")); // NOI18N
+        jButton1.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(MobilityDeploymentManagerPanel.class, "ACCESSIBLE_DESCRIPTION_jButton1")); // NOI18N
 
         org.openide.awt.Mnemonics.setLocalizedText(jButton2, NbBundle.getMessage(MobilityDeploymentManagerPanel.class, "MobilityDeploymentManager.jButton2.text")); // NOI18N
         jButton2.addActionListener(new java.awt.event.ActionListener() {
@@ -227,6 +242,8 @@ public class MobilityDeploymentManagerPanel extends JPanel implements ExplorerMa
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(11, 5, 11, 11);
         add(jButton2, gridBagConstraints);
+        jButton2.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(MobilityDeploymentManagerPanel.class, "ACCESSIBLE_NAME_jButton2")); // NOI18N
+        jButton2.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(MobilityDeploymentManagerPanel.class, "ACCESSIBLE_DESCRIPTION_jButton2")); // NOI18N
 
         jPanel2.setBorder(javax.swing.BorderFactory.createEmptyBorder(1, 12, 1, 1));
         jPanel2.setPreferredSize(new java.awt.Dimension(500, 350));
@@ -240,8 +257,10 @@ public class MobilityDeploymentManagerPanel extends JPanel implements ExplorerMa
         gridBagConstraints.weighty = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(5, 11, 0, 11);
         add(jPanel2, gridBagConstraints);
-    }// </editor-fold>//GEN-END:initComponents
 
+        getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(MobilityDeploymentManagerPanel.class, "ACCESSIBLE_NAME_jPanel")); // NOI18N
+        getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(MobilityDeploymentManagerPanel.class, "ACCESSIBLE_DESCRIPTION_jPanel")); // NOI18N
+    }// </editor-fold>//GEN-END:initComponents
     private void removeInstance(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_removeInstance
         Node n[] = manager.getSelectedNodes();
         if (n.length == 1 && n[0].hasCustomizer()) {
@@ -252,35 +271,40 @@ public class MobilityDeploymentManagerPanel extends JPanel implements ExplorerMa
     private void createInstance(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_createInstance
         Node n[] = manager.getSelectedNodes();
         if (n.length == 1) {
-            if (n[0].hasCustomizer()) n[0] = n[0].getParentNode();
+            if (n[0].hasCustomizer()) {
+                n[0] = n[0].getParentNode();
+            }
             createNewInstance(n[0].getCookie(DeploymentTypeNode.class).getPlugin());
         } else {
             createNewInstance(null);
         }
     }//GEN-LAST:event_createInstance
 
-            
     private void createNewInstance(DeploymentPlugin d) {
         NewInstanceDialog nid = new NewInstanceDialog(props, d);
         DialogDescriptor dd = new DialogDescriptor(nid, NbBundle.getMessage(MobilityDeploymentManagerPanel.class, "TitleNewInstance"), true, DialogDescriptor.OK_CANCEL_OPTION, DialogDescriptor.OK_OPTION, DialogDescriptor.DEFAULT_ALIGN, new HelpCtx(NewInstanceDialog.class), null); //NOI18N
         nid.setDialogDescriptor(dd);
+        nid.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(MobilityDeploymentManagerPanel.class, "TitleNewInstance"));
+        nid.getAccessibleContext().setAccessibleName(NbBundle.getMessage(MobilityDeploymentManagerPanel.class, "TitleNewInstance"));
         if (DialogDescriptor.OK_OPTION.equals(DialogDisplayer.getDefault().notify(dd))) {
             DeploymentPlugin dp = nid.getDeploymentPlugin();
             if (dp != null) {
                 String name = nid.getInstanceName();
                 props.createInstance(dp.getDeploymentMethodName(), name);
                 Node n = manager.getRootContext().getChildren().findChild(dp.getDeploymentMethodDisplayName());
-                if (n != null) try {
-                    DeploymentTypeNode dtn = n.getCookie(DeploymentTypeNode.class);
-                    dtn.refresh();
-                    Node selInstance = n.getChildren().findChild(name);
-                    manager.setExploredContextAndSelection(n, new Node[]{selInstance == null ? n : selInstance});
-                } catch (PropertyVetoException pve) {}
+                if (n != null) {
+                    try {
+                        DeploymentTypeNode dtn = n.getCookie(DeploymentTypeNode.class);
+                        dtn.refresh();
+                        Node selInstance = n.getChildren().findChild(name);
+                        manager.setExploredContextAndSelection(n, new Node[]{selInstance == null ? n : selInstance});
+                    } catch (PropertyVetoException pve) {
+                    }
+                }
             }
         }
     }
 
-    
     public ExplorerManager getExplorerManager() {
         return manager;
     }
@@ -300,8 +324,6 @@ public class MobilityDeploymentManagerPanel extends JPanel implements ExplorerMa
         jPanel2.validate();
         jPanel2.repaint();
     }
-    
-    
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton jButton1;
     private javax.swing.JButton jButton2;
@@ -309,12 +331,10 @@ public class MobilityDeploymentManagerPanel extends JPanel implements ExplorerMa
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel2;
     // End of variables declaration//GEN-END:variables
-    
-    
     private class DeploymentTypeNode extends AbstractNode implements Cookie {
-        
+
         private final DeploymentPlugin d;
-        
+
         public DeploymentTypeNode(DeploymentPlugin d) {
             super(createChildren(d));
             this.d = d;
@@ -322,32 +342,33 @@ public class MobilityDeploymentManagerPanel extends JPanel implements ExplorerMa
             setName(d.getDeploymentMethodDisplayName());
             setIconBaseWithExtension("org/netbeans/modules/mobility/project/ui/resources/deploy.gif");//NOI18N
         }
-        
+
         public void refresh() {
             setChildren(createChildren(d));
         }
-        
+
         public DeploymentPlugin getPlugin() {
             return d;
         }
     }
-    
+
     private Children.Array createChildren(DeploymentPlugin d) {
-        final ArrayList<Node> ch = new ArrayList(); 
+        final ArrayList<Node> ch = new ArrayList();
         for (String name : props.getInstanceList(d.getDeploymentMethodName())) {
             ch.add(new InstanceNode(d, name));
         }
         return new Children.Array() {
+
             protected Collection<Node> initCollection() {
                 return ch;
             }
         };
     }
-    
+
     private class InstanceNode extends AbstractNode implements Cookie {
-        
+
         private final DeploymentPlugin d;
-        
+
         public InstanceNode(DeploymentPlugin d, String name) {
             super(Children.LEAF);
             getCookieSet().add(this);
@@ -358,45 +379,47 @@ public class MobilityDeploymentManagerPanel extends JPanel implements ExplorerMa
         public DeploymentPlugin getPlugin() {
             return d;
         }
-        
+
         public boolean hasCustomizer() {
             return true;
         }
 
         public Component getCustomizer() {
             Component c = d.createGlobalCustomizerPanel();
-            registerSubcomponents(c, MobilityDeploymentProperties.DEPLOYMENT_PREFIX+d.getDeploymentMethodName()+'.'+getName()+'.', d.getGlobalPropertyDefaultValues().keySet());
+            registerSubcomponents(c, MobilityDeploymentProperties.DEPLOYMENT_PREFIX + d.getDeploymentMethodName() + '.' + getName() + '.', d.getGlobalPropertyDefaultValues().keySet());
             return c;
         }
-        
+
         public void remove() {
             props.removeInstance(d.getDeploymentMethodName(), getName());
-            ((DeploymentTypeNode)getParentNode()).refresh();
+            ((DeploymentTypeNode) getParentNode()).refresh();
         }
     }
-    
-        
+
     private void registerSubcomponents(Component c, String prefix, Set propertyNames) {
         String prop = c.getName();
         if (prop != null && propertyNames.contains(prop)) {
             prop = prefix + prop;
             if (c instanceof JCheckBox) {
-                vps.register((JCheckBox)c, prop);
+                vps.register((JCheckBox) c, prop);
             } else if (c instanceof JRadioButton) {
-                vps.register((JRadioButton)c, prop);
+                vps.register((JRadioButton) c, prop);
             } else if (c instanceof JComboBox) {
-                vps.register((JComboBox)c, null, prop);
+                vps.register((JComboBox) c, null, prop);
             } else if (c instanceof JSlider) {
-                vps.register((JSlider)c, prop);
+                vps.register((JSlider) c, prop);
             } else if (c instanceof JSpinner) {
-                vps.register((JSpinner)c, prop);
+                vps.register((JSpinner) c, prop);
             } else if (c instanceof JTextComponent) {
-                vps.register((JTextComponent)c, prop);
-            } else assert false : "Unknown component type for registration"; //NOI18N
+                vps.register((JTextComponent) c, prop);
+            } else {
+                assert false : "Unknown component type for registration";
+            } //NOI18N
         }
         if (c instanceof Container) {
-            for (Component sub : ((Container)c).getComponents()) registerSubcomponents(sub, prefix, propertyNames);
+            for (Component sub : ((Container) c).getComponents()) {
+                registerSubcomponents(sub, prefix, propertyNames);
+            }
         }
     }
-
 }
