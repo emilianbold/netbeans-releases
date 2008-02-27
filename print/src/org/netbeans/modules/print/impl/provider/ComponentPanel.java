@@ -86,6 +86,8 @@ final class ComponentPanel extends JPanel {
   {
     for (JComponent component : myComponents) {
       component.print(g);
+//    g.setColor(java.awt.Color.green);
+//    g.drawRect(0, 0, getWidth(component), getHeight(component));
       g.translate(getWidth(component), 0);
     }
   }

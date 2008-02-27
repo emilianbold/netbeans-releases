@@ -495,5 +495,14 @@ public class SaasUtil {
         }
         return wadlFile;
     }
+
+    public static Saas getServiceByUrl(SaasGroup group, String url) {
+        for (Saas s : group.getServices()) {
+            if (s.getUrl().equals(url)) {
+                return s;
+            }
+        }
+        return null;
+    }
 }
 

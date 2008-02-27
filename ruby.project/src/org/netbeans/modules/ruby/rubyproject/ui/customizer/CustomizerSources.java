@@ -55,16 +55,16 @@ import javax.swing.ListCellRenderer;
 import javax.swing.plaf.UIResource;
 import java.io.File;
 import java.nio.charset.Charset;
+import javax.swing.JPanel;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.HelpCtx;
-import org.netbeans.modules.ruby.rubyproject.RubyProject;
 
 /**
  *
  * @author  Tomas Zezula
  */
-public class CustomizerSources extends javax.swing.JPanel implements HelpCtx.Provider {
+public class CustomizerSources extends JPanel implements HelpCtx.Provider {
     
     private String originalEncoding;
     private final RubyProjectProperties uiProperties;
@@ -72,8 +72,8 @@ public class CustomizerSources extends javax.swing.JPanel implements HelpCtx.Pro
     public CustomizerSources( RubyProjectProperties uiProperties ) {
         this.uiProperties = uiProperties;
         initComponents();
-        jScrollPane1.getViewport().setBackground( sourceRoots.getBackground() );
-        jScrollPane2.getViewport().setBackground( testRoots.getBackground() );
+        sourceSP.getViewport().setBackground( sourceRoots.getBackground() );
+        testSP.getViewport().setBackground( testRoots.getBackground() );
         
         sourceRoots.setModel( uiProperties.SOURCE_ROOTS_MODEL );
         testRoots.setModel( uiProperties.TEST_ROOTS_MODEL );
@@ -223,58 +223,56 @@ public class CustomizerSources extends javax.swing.JPanel implements HelpCtx.Pro
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        jLabel1 = new javax.swing.JLabel();
+        prjFolderLabel = new javax.swing.JLabel();
         projectLocation = new javax.swing.JTextField();
-        jPanel3 = new javax.swing.JPanel();
+        encodingPanel = new javax.swing.JPanel();
         encodingLabel = new javax.swing.JLabel();
         encoding = new javax.swing.JComboBox();
-        jLabel2 = new javax.swing.JLabel();
-        jScrollPane1 = new javax.swing.JScrollPane();
+        sourceFolderLabel = new javax.swing.JLabel();
+        sourceSP = new javax.swing.JScrollPane();
         sourceRoots = new javax.swing.JTable();
         addSourceRoot = new javax.swing.JButton();
         removeSourceRoot = new javax.swing.JButton();
         upSourceRoot = new javax.swing.JButton();
         downSourceRoot = new javax.swing.JButton();
-        jLabel3 = new javax.swing.JLabel();
+        testFolderLabel = new javax.swing.JLabel();
         addTestRoot = new javax.swing.JButton();
         removeTestRoot = new javax.swing.JButton();
         upTestRoot = new javax.swing.JButton();
         downTestRoot = new javax.swing.JButton();
-        jScrollPane2 = new javax.swing.JScrollPane();
+        testSP = new javax.swing.JScrollPane();
         testRoots = new javax.swing.JTable();
 
-        jLabel1.setLabelFor(projectLocation);
+        prjFolderLabel.setLabelFor(projectLocation);
         java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/netbeans/modules/ruby/rubyproject/ui/customizer/Bundle"); // NOI18N
-        org.openide.awt.Mnemonics.setLocalizedText(jLabel1, bundle.getString("CTL_ProjectFolder")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(prjFolderLabel, bundle.getString("CTL_ProjectFolder")); // NOI18N
 
         projectLocation.setEditable(false);
 
         encodingLabel.setLabelFor(encoding);
         org.openide.awt.Mnemonics.setLocalizedText(encodingLabel, org.openide.util.NbBundle.getMessage(CustomizerSources.class, "TXT_Encoding")); // NOI18N
 
-        encoding.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
-
-        org.jdesktop.layout.GroupLayout jPanel3Layout = new org.jdesktop.layout.GroupLayout(jPanel3);
-        jPanel3.setLayout(jPanel3Layout);
-        jPanel3Layout.setHorizontalGroup(
-            jPanel3Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(jPanel3Layout.createSequentialGroup()
+        org.jdesktop.layout.GroupLayout encodingPanelLayout = new org.jdesktop.layout.GroupLayout(encodingPanel);
+        encodingPanel.setLayout(encodingPanelLayout);
+        encodingPanelLayout.setHorizontalGroup(
+            encodingPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(encodingPanelLayout.createSequentialGroup()
                 .add(encodingLabel)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(encoding, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 137, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap(405, Short.MAX_VALUE))
         );
-        jPanel3Layout.setVerticalGroup(
-            jPanel3Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(jPanel3Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+        encodingPanelLayout.setVerticalGroup(
+            encodingPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(encodingPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                 .add(encodingLabel)
                 .add(encoding, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
         );
 
         encodingLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CustomizerSources.class, "CustomizerSources.encodingLabel.AccessibleContext.accessibleDescription")); // NOI18N
 
-        jLabel2.setLabelFor(sourceRoots);
-        org.openide.awt.Mnemonics.setLocalizedText(jLabel2, bundle.getString("CTL_SourceRoots")); // NOI18N
+        sourceFolderLabel.setLabelFor(sourceRoots);
+        org.openide.awt.Mnemonics.setLocalizedText(sourceFolderLabel, bundle.getString("CTL_SourceRoots")); // NOI18N
 
         sourceRoots.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
@@ -302,7 +300,7 @@ public class CustomizerSources extends javax.swing.JPanel implements HelpCtx.Pro
                 return canEdit [columnIndex];
             }
         });
-        jScrollPane1.setViewportView(sourceRoots);
+        sourceSP.setViewportView(sourceRoots);
         sourceRoots.getAccessibleContext().setAccessibleDescription(bundle.getString("AD_CustomizerSources_sourceRoots")); // NOI18N
 
         org.openide.awt.Mnemonics.setLocalizedText(addSourceRoot, bundle.getString("CTL_AddSourceRoot")); // NOI18N
@@ -313,8 +311,8 @@ public class CustomizerSources extends javax.swing.JPanel implements HelpCtx.Pro
 
         org.openide.awt.Mnemonics.setLocalizedText(downSourceRoot, bundle.getString("CTL_DownSourceRoot")); // NOI18N
 
-        jLabel3.setLabelFor(testRoots);
-        org.openide.awt.Mnemonics.setLocalizedText(jLabel3, bundle.getString("CTL_TestRoots")); // NOI18N
+        testFolderLabel.setLabelFor(testRoots);
+        org.openide.awt.Mnemonics.setLocalizedText(testFolderLabel, bundle.getString("CTL_TestRoots")); // NOI18N
 
         org.openide.awt.Mnemonics.setLocalizedText(addTestRoot, bundle.getString("CTL_AddTestRoot")); // NOI18N
 
@@ -350,27 +348,27 @@ public class CustomizerSources extends javax.swing.JPanel implements HelpCtx.Pro
                 return canEdit [columnIndex];
             }
         });
-        jScrollPane2.setViewportView(testRoots);
+        testSP.setViewportView(testRoots);
         testRoots.getAccessibleContext().setAccessibleDescription(bundle.getString("AD_CustomizerSources_testRoots")); // NOI18N
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(jPanel3, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+            .add(encodingPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
             .add(layout.createSequentialGroup()
-                .add(jLabel1)
+                .add(prjFolderLabel)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(projectLocation, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 514, Short.MAX_VALUE))
             .add(layout.createSequentialGroup()
-                .add(jLabel2, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 131, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .add(sourceFolderLabel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 131, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap())
             .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(jLabel3, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 147, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(testFolderLabel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 147, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                     .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
-                        .add(org.jdesktop.layout.GroupLayout.LEADING, jScrollPane2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 494, Short.MAX_VALUE)
-                        .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 494, Short.MAX_VALUE)))
+                        .add(org.jdesktop.layout.GroupLayout.LEADING, testSP, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 494, Short.MAX_VALUE)
+                        .add(sourceSP, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 494, Short.MAX_VALUE)))
                 .add(9, 9, 9)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING, false)
                     .add(addSourceRoot, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
@@ -386,10 +384,10 @@ public class CustomizerSources extends javax.swing.JPanel implements HelpCtx.Pro
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(jLabel1)
+                    .add(prjFolderLabel)
                     .add(projectLocation, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .add(2, 2, 2)
-                .add(jLabel2)
+                .add(sourceFolderLabel)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(layout.createSequentialGroup()
@@ -400,9 +398,9 @@ public class CustomizerSources extends javax.swing.JPanel implements HelpCtx.Pro
                         .add(upSourceRoot)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(downSourceRoot))
-                    .add(jScrollPane1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 169, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                    .add(sourceSP, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 169, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(jLabel3)
+                .add(testFolderLabel)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(layout.createSequentialGroup()
@@ -413,9 +411,9 @@ public class CustomizerSources extends javax.swing.JPanel implements HelpCtx.Pro
                         .add(upTestRoot)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(downTestRoot))
-                    .add(jScrollPane2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 182, Short.MAX_VALUE))
+                    .add(testSP, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 182, Short.MAX_VALUE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(jPanel3, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .add(encodingPanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
         );
 
         projectLocation.getAccessibleContext().setAccessibleDescription(bundle.getString("AD_CustomizerSources_projectLocation")); // NOI18N
@@ -437,17 +435,17 @@ public class CustomizerSources extends javax.swing.JPanel implements HelpCtx.Pro
     private javax.swing.JButton downTestRoot;
     private javax.swing.JComboBox encoding;
     private javax.swing.JLabel encodingLabel;
-    private javax.swing.JLabel jLabel1;
-    private javax.swing.JLabel jLabel2;
-    private javax.swing.JLabel jLabel3;
-    private javax.swing.JPanel jPanel3;
-    private javax.swing.JScrollPane jScrollPane1;
-    private javax.swing.JScrollPane jScrollPane2;
+    private javax.swing.JPanel encodingPanel;
+    private javax.swing.JLabel prjFolderLabel;
     private javax.swing.JTextField projectLocation;
     private javax.swing.JButton removeSourceRoot;
     private javax.swing.JButton removeTestRoot;
+    private javax.swing.JLabel sourceFolderLabel;
     private javax.swing.JTable sourceRoots;
+    private javax.swing.JScrollPane sourceSP;
+    private javax.swing.JLabel testFolderLabel;
     private javax.swing.JTable testRoots;
+    private javax.swing.JScrollPane testSP;
     private javax.swing.JButton upSourceRoot;
     private javax.swing.JButton upTestRoot;
     // End of variables declaration//GEN-END:variables
