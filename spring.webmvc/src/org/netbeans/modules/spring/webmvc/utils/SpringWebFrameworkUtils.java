@@ -121,6 +121,6 @@ public class SpringWebFrameworkUtils {
     }
     
     public static String getWelcomePageText() {
-        return NbBundle.getMessage(SpringWebFrameworkUtils.class, "MSG_WELCOME_PAGE_TEXT"); // NOI18N
+        return NbBundle.getMessage(SpringWebFrameworkUtils.class, "MSG_WELCOME_PAGE_TEXT"); 
     }
 }
