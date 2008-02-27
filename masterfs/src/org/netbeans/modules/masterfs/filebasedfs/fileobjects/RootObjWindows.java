@@ -41,7 +41,6 @@
 
 package org.netbeans.modules.masterfs.filebasedfs.fileobjects;
 
-import java.io.File;
 import org.netbeans.modules.masterfs.filebasedfs.utils.FSException;
 import org.openide.filesystems.*;
 
@@ -50,34 +49,35 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.Collection;
 import java.util.Date;
 import java.util.Enumeration;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 import org.netbeans.modules.masterfs.filebasedfs.FileBasedFileSystem;
-import org.netbeans.modules.masterfs.filebasedfs.fileobjects.FileObjectFactory;
+import org.netbeans.modules.masterfs.filebasedfs.utils.FileInfo;
+import org.openide.util.Enumerations;
 
-public final class RootObj<T extends FileObject> extends FileObject {
-    private T realRoot = null;
-
-    public RootObj(final T realRoot) {
-        this.realRoot = realRoot;
+public final class RootObjWindows extends FileObject {
+    public RootObjWindows() {
     }
 
     public final String getName() {
-        return getRealRoot().getName();//NOI18N
+        return "";//NOI18N
     }
 
     public final String getExt() {
-        return getRealRoot().getExt();//NOI18N
+        return "";//NOI18N
     }
 
     public final FileSystem getFileSystem() throws FileStateInvalidException {
-        return getRealRoot().getFileSystem();
+        return FileBasedFileSystem.getInstance();
     }
 
+    @Override
+    public FileObject getFileObject(String relativePath) {
+        return super.getFileObject(relativePath);
+    }
+
+    
     public final FileObject getParent() {
         return null;
     }
@@ -119,87 +119,23 @@ public final class RootObj<T extends FileObject> extends FileObject {
     }
 
     public final Object getAttribute(final String attrName) {        
-        if (attrName.equals("SupportsRefreshForNoPublicAPI")) {
-            return true;
-        }
-        return getRealRoot().getAttribute(attrName);
+        return null;
     }
 
-    public final void setAttribute(final String attrName, final Object value) throws IOException {
-        if ("request_for_refreshing_files_be_aware_this_is_not_public_api".equals(attrName) && (value instanceof File[])) {//NOI18N
-            invokeRefreshFor((File[])value);
-            return;
-        }        
-        getRealRoot().setAttribute(attrName, value);
+    public final void setAttribute(final String attrName, final Object value) throws IOException {  
+        throw new FileStateInvalidException(); // NOI18N        
     }
-    
-    private void invokeRefreshFor(File[] files) {
-        //first normalize
-        for (int i = 0; i < files.length; i++) {
-            File file = files[i];
-            files[i] = FileUtil.normalizeFile(file);
-        }
-        Map<FileObjectFactory, List<File>> files2Factory = new HashMap<FileObjectFactory, List<File>>();
-        Map<File, ? extends FileObjectFactory> roots2Factory = FileBasedFileSystem.getInstance().factories();
-        Arrays.sort(files);
-        for (File file : files) {
-            FileObjectFactory factory =  roots2Factory.get(file);
-            if (factory == null) {
-                File tmp = file;
-                while (tmp.getParentFile() != null) {
-                    tmp = tmp.getParentFile();
-                }
-                factory =  roots2Factory.get(tmp);
-            }
-            if (factory != null) {
-                List<File> lf = files2Factory.get(factory);
-                if (lf == null) {
-                    lf = new ArrayList<File>();
-                    files2Factory.put(factory, lf);
-                } else {
-                    File tmp = file;
-                    while (tmp.getParentFile() != null) {
-                        if (lf.contains(tmp)) {
-                            tmp = null;
-                            break;
-                        }
-                        tmp = tmp.getParentFile();
-                    }                    
-                    if (tmp == null) {
-                        continue;
-                    }
-                }
-                lf.add(file);
-            }
-        }        
-        for (Map.Entry<FileObjectFactory, List<File>> entry : files2Factory.entrySet()) {
-            FileObjectFactory factory = entry.getKey();
-            List<File> lf = entry.getValue();
-            if (lf.size() == 1) {
-                for (File file : lf) {
-                    if (file.getParentFile() == null) {
-                        factory.refresh(true);
-                    } else {
-                        factory.refreshFor(file);
-                    }
-                }
-            } else if (lf.size() > 1) {
-                factory.refreshFor(lf.toArray(new File[lf.size()]));
-            }
-        }
-    }
-    
 
     public final Enumeration getAttributes() {
-        return getRealRoot().getAttributes();
+        return Enumerations.empty();
     }
 
     public final void addFileChangeListener(final FileChangeListener fcl) {
-        getRealRoot().addFileChangeListener(fcl);
+        //TODO: adding new FileBasedFS into allInstances should lead to firing event
     }
 
     public final void removeFileChangeListener(final FileChangeListener fcl) {
-        getRealRoot().removeFileChangeListener(fcl);
+        //TODO: adding new FileBasedFS into allInstances should lead to firing event
     }
 
     public final long getSize() {
@@ -207,47 +143,51 @@ public final class RootObj<T extends FileObject> extends FileObject {
     }
 
     public final InputStream getInputStream() throws FileNotFoundException {
-        return getRealRoot().getInputStream();
+        throw new FileNotFoundException(); // NOI18N        
     }
 
     public final OutputStream getOutputStream(final FileLock lock) throws IOException {
-        return getRealRoot().getOutputStream(lock);
+        throw new FileNotFoundException(); // NOI18N 
     }
 
     public final FileLock lock() throws IOException {
-        return getRealRoot().lock();
+        throw new FileStateInvalidException(); // NOI18N        
     }
 
     public final void setImportant(final boolean b) {
-        getRealRoot().setImportant(b); 
     }
 
     public final FileObject[] getChildren() {
-        return getRealRoot().getChildren();
+        Collection<? extends FileObjectFactory> all = FileBasedFileSystem.factories().values();
+        ArrayList<FileObject> rootChildren = new ArrayList<FileObject>();         
+        for (FileObjectFactory fs : all) {
+            rootChildren.add(fs.getRoot());
+        }
+        return rootChildren.toArray(new FileObject[rootChildren.size()]);
     }
 
     public final FileObject getFileObject(final String name, final String ext) {
-        return getRealRoot().getFileObject(name, ext);
+        FileObject[] rootChildren =  getChildren();
+        for (int i = 0; i < rootChildren.length; i++) {
+            FileObject fileObject = rootChildren[i];            
+            if (FileInfo.composeName(name, ext).equals(fileObject.getNameExt())) {
+                return fileObject;
+            }
+        }
+        return null;
     }
 
-    public final FileObject getFileObject(String relativePath) {
-        return getRealRoot().getFileObject(relativePath);
-    }
-
+    
     public final FileObject createFolder(final String name) throws IOException {
-        return getRealRoot().createFolder(name);
+        throw new FileStateInvalidException(); // NOI18N        
     }
 
     public final FileObject createData(final String name, final String ext) throws IOException {
-        return getRealRoot().createData(name, ext);
+        throw new FileStateInvalidException(); // NOI18N        
     }
 
     public final boolean isReadOnly() {
-        return getRealRoot().isReadOnly();
-    }
-
-    public final T getRealRoot() {
-        return realRoot;
+        return true;
     }
 
     @Override
@@ -257,6 +197,6 @@ public final class RootObj<T extends FileObject> extends FileObject {
 
     
     public String toString() {
-        return getRealRoot().toString();
+        return "";
     }
 }

@@ -41,7 +41,6 @@ package org.netbeans.modules.cnd.debugger.gdb.disassembly;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.io.File;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.util.ArrayList;
@@ -59,6 +58,7 @@ import org.openide.cookies.OpenCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
+import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.text.DataEditorSupport;
 
 /**
@@ -81,7 +81,7 @@ public class Disassembly implements PropertyChangeListener, DocumentListener {
     public static final String RESPONSE_HEADER="^done,asm_insns=["; // NOI18N
     private static final String COMBINED_HEADER="src_and_asm_line={"; // NOI18N
     
-    private static File file = null;
+    private static FileObject fo = null;
     
     private BreakpointAnnotationListener breakAnnotationListener = null;
     
@@ -188,19 +188,15 @@ public class Disassembly implements PropertyChangeListener, DocumentListener {
         }
     }
     
-    public static File getFile() {
-        if (file == null) {
+    public static FileObject getFileObject() {
+        if (fo == null) {
             try {
-                file = FileUtil.normalizeFile(File.createTempFile("disasm", ".s")); // NOI18N
-            } catch (IOException ex) {
-                ex.printStackTrace();
+                fo = FileUtil.createMemoryFileSystem().getRoot().createData("disasm", "s"); // NOI18N
+            } catch (IOException ioe) {
+                ioe.printStackTrace();
             }
         }
-        return file;
-    }
-    
-    public static FileObject getFileObject() {
-        return FileUtil.toFileObject(getFile());
+        return fo;
     }
     
     public String getLineAddress(int idx) {
@@ -285,18 +281,26 @@ public class Disassembly implements PropertyChangeListener, DocumentListener {
 
         @Override
         public String toString() {
-            //return "0x" + Integer.toHexString(address) + ": " + instruction; // NOI18N
-            return function + "+" + offset + ": (" + address + ") " + instruction; // NOI18N
+            //return function + "+" + offset + ": (" + address + ") " + instruction; // NOI18N
+            return function + "+" + offset + ": 00 00 " + instruction; // NOI18N
         }
     }
     
     public static boolean isInDisasm() {
-        //TODO: check that we are only in disassembly, not in any asm file
-        return "text/x-asm".equals(EditorContextBridge.getContext().getCurrentMIMEType());
+        //TODO: optimize
+        DataObject dobj = EditorContextBridge.getContext().getCurrentDataObject();
+        if (dobj == null) {
+            return false;
+        }
+        try {
+            return dobj.equals(DataObject.find(getFileObject()));
+        } catch(DataObjectNotFoundException doe) {
+            doe.printStackTrace();
+        }
+        return false;
     }
     
     public static void open() {
-        getFileObject();
         try {
             DataObject dobj = DataObject.find(getFileObject());
             dobj.getNodeDelegate().setDisplayName(getHeader());
@@ -319,7 +323,6 @@ public class Disassembly implements PropertyChangeListener, DocumentListener {
     }
     
     public static void close() {
-        getFileObject();
         try {
             DataObject dobj = DataObject.find(getFileObject());
             dobj.getCookie(CloseCookie.class).close();
