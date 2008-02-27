@@ -748,10 +748,9 @@ public class MakeActionProvider implements ActionProvider {
         String csname;
         String csdirs;
         File file;
-        pd.updateLanguages();
-        boolean cRequired = conf.getCRequired().getValue();
-        boolean cppRequired = conf.getCppRequired().getValue();
-        boolean fRequired = CppSettings.getDefault().isFortranEnabled() && conf.getFortranRequired().getValue();
+        boolean cRequired = conf.hasCFiles(pd);
+        boolean cppRequired = conf.hasCPPFiles(pd);
+        boolean fRequired = CppSettings.getDefault().isFortranEnabled() && conf.hasFortranFiles(pd);
         
         if (validated) {
             return lastValidation;
