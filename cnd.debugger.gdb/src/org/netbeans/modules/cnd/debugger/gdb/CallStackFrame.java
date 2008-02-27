@@ -189,4 +189,11 @@ public class CallStackFrame {
             return cachedLocalVariables;
         }
     }
+
+    @Override
+    public int hashCode() {
+        // currently default hash code and equals are the optimal ones,
+        // because CallStackFrames can not be equal if they are not the same object
+        return super.hashCode();
+    }
 }
