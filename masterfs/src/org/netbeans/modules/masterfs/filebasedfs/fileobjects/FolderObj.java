@@ -102,7 +102,7 @@ public final class FolderObj extends BaseFileObj {
     public final FileObject getFileObject(final String name, final String ext) {
         File file = BaseFileObj.getFile(getFileName().getFile(), name, ext);
         FileObjectFactory factory = getFactory();
-        return factory.getValidFileObject(file, FileObjectFactory.Caller.GetFileObject);
+        return (name.indexOf("/") == -1) ? factory.getValidFileObject(file, FileObjectFactory.Caller.GetFileObject) : null;
     }
 
   
