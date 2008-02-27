@@ -346,7 +346,6 @@ public class RicohProjectCategoryCustomizer extends JPanel implements Customizer
         abbrevationTextField.setNextFocusableComponent(startupArgumentsTextField);
 
         org.openide.awt.Mnemonics.setLocalizedText(useAbbreviationCheckBox, bundle.getString("LBL_UseAbbrevCheckBox")); // NOI18N
-        useAbbreviationCheckBox.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         useAbbreviationCheckBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
         useAbbreviationCheckBox.setNextFocusableComponent(invertBitmapCheckBox);
         useAbbreviationCheckBox.addActionListener(new java.awt.event.ActionListener() {
@@ -369,7 +368,6 @@ public class RicohProjectCategoryCustomizer extends JPanel implements Customizer
         dalpVersionSpecButtonGroup.add(dalpSpecSDKJ1RadioButton);
         org.openide.awt.Mnemonics.setLocalizedText(dalpSpecSDKJ1RadioButton, bundle.getString("LBL_SDKJ_Spec_1_0")); // NOI18N
         dalpSpecSDKJ1RadioButton.setActionCommand("1.0"); // NOI18N
-        dalpSpecSDKJ1RadioButton.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         dalpSpecSDKJ1RadioButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
         dalpSpecSDKJ1RadioButton.setNextFocusableComponent(dalpSpecSDKJ2RadioButton);
         dalpSpecSDKJ1RadioButton.addActionListener(new java.awt.event.ActionListener() {
@@ -382,7 +380,6 @@ public class RicohProjectCategoryCustomizer extends JPanel implements Customizer
         dalpSpecSDKJ2RadioButton.setSelected(true);
         org.openide.awt.Mnemonics.setLocalizedText(dalpSpecSDKJ2RadioButton, bundle.getString("LBL_SDKJ_Spec_2_0")); // NOI18N
         dalpSpecSDKJ2RadioButton.setActionCommand("2.0"); // NOI18N
-        dalpSpecSDKJ2RadioButton.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         dalpSpecSDKJ2RadioButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
         dalpSpecSDKJ2RadioButton.setNextFocusableComponent(guestRadioButton);
         dalpSpecSDKJ2RadioButton.addActionListener(new java.awt.event.ActionListener() {
@@ -399,14 +396,12 @@ public class RicohProjectCategoryCustomizer extends JPanel implements Customizer
         execLevelButtonGroup.add(guestRadioButton);
         org.openide.awt.Mnemonics.setLocalizedText(guestRadioButton, bundle.getString("LBL_AppExecLvlGuest")); // NOI18N
         guestRadioButton.setActionCommand("guest"); // NOI18N
-        guestRadioButton.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         guestRadioButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
         guestRadioButton.setNextFocusableComponent(adminRadioButton);
 
         execLevelButtonGroup.add(adminRadioButton);
         org.openide.awt.Mnemonics.setLocalizedText(adminRadioButton, bundle.getString("LBL_AppExecLvlAdmin")); // NOI18N
         adminRadioButton.setActionCommand("admin"); // NOI18N
-        adminRadioButton.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         adminRadioButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
         adminRadioButton.setNextFocusableComponent(hvgaCheckBox);
 
@@ -415,48 +410,39 @@ public class RicohProjectCategoryCustomizer extends JPanel implements Customizer
 
         hvgaCheckBox.setSelected(true);
         org.openide.awt.Mnemonics.setLocalizedText(hvgaCheckBox, bundle.getString("LBL_HVGA")); // NOI18N
-        hvgaCheckBox.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         hvgaCheckBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
         hvgaCheckBox.setNextFocusableComponent(vgaCheckBox);
 
         org.openide.awt.Mnemonics.setLocalizedText(vgaCheckBox, bundle.getString("LBL_VGA")); // NOI18N
-        vgaCheckBox.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         vgaCheckBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
         vgaCheckBox.setNextFocusableComponent(wvgaCheckBox);
 
         org.openide.awt.Mnemonics.setLocalizedText(wvgaCheckBox, bundle.getString("LBL_WVGA")); // NOI18N
-        wvgaCheckBox.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         wvgaCheckBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
         wvgaCheckBox.setNextFocusableComponent(lcdCheckBox);
 
         org.openide.awt.Mnemonics.setLocalizedText(lcdCheckBox, bundle.getString("LBL_4LineLED")); // NOI18N
-        lcdCheckBox.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         lcdCheckBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
         lcdCheckBox.setNextFocusableComponent(autoRunCheckBox);
 
         org.openide.awt.Mnemonics.setLocalizedText(autoRunCheckBox, bundle.getString("LBL_EnableAutoRun")); // NOI18N
-        autoRunCheckBox.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         autoRunCheckBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
         autoRunCheckBox.setNextFocusableComponent(autoInstallCheckBox);
 
         autoInstallCheckBox.setSelected(true);
         org.openide.awt.Mnemonics.setLocalizedText(autoInstallCheckBox, bundle.getString("LBL_EnableAutoInstall")); // NOI18N
-        autoInstallCheckBox.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         autoInstallCheckBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
         autoInstallCheckBox.setNextFocusableComponent(colorEnableCheckBox);
 
         org.openide.awt.Mnemonics.setLocalizedText(colorEnableCheckBox, bundle.getString("LBL_EnableColorDisplay")); // NOI18N
-        colorEnableCheckBox.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         colorEnableCheckBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
         colorEnableCheckBox.setNextFocusableComponent(visibleCheckBox);
 
         visibleCheckBox.setSelected(true);
         org.openide.awt.Mnemonics.setLocalizedText(visibleCheckBox, bundle.getString("LBL_Visible")); // NOI18N
-        visibleCheckBox.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         visibleCheckBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
 
         invertBitmapCheckBox.setText(bundle.getString("LBL_InvertIconBitmap")); // NOI18N
-        invertBitmapCheckBox.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         invertBitmapCheckBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
         invertBitmapCheckBox.setNextFocusableComponent(abbrevationTextField);
 
@@ -469,21 +455,18 @@ public class RicohProjectCategoryCustomizer extends JPanel implements Customizer
         installHDDRadioButton.setSelected(true);
         org.openide.awt.Mnemonics.setLocalizedText(installHDDRadioButton, bundle.getString("LBL_InstallLocHDD")); // NOI18N
         installHDDRadioButton.setActionCommand("hdd"); // NOI18N
-        installHDDRadioButton.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         installHDDRadioButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
         installHDDRadioButton.setNextFocusableComponent(installSDVMRadioButton);
 
         installLocationButtonGroup.add(installSDVMRadioButton);
         org.openide.awt.Mnemonics.setLocalizedText(installSDVMRadioButton, bundle.getString("LBL_InstallLocVM")); // NOI18N
         installSDVMRadioButton.setActionCommand("sdcard"); // NOI18N
-        installSDVMRadioButton.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         installSDVMRadioButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
         installSDVMRadioButton.setNextFocusableComponent(installOtherSDRadioButton);
 
         installLocationButtonGroup.add(installOtherSDRadioButton);
         org.openide.awt.Mnemonics.setLocalizedText(installOtherSDRadioButton, bundle.getString("LBL_InstallLocOther")); // NOI18N
         installOtherSDRadioButton.setActionCommand("sdcard0"); // NOI18N
-        installOtherSDRadioButton.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         installOtherSDRadioButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
 
         installLocationComboBox.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "SD Card Slot 1", "SD Card Slot 2", "SD Card Slot 3" }));
@@ -500,7 +483,7 @@ public class RicohProjectCategoryCustomizer extends JPanel implements Customizer
                     .add(jPanel2Layout.createSequentialGroup()
                         .add(installOtherSDRadioButton)
                         .add(6, 6, 6)
-                        .add(installLocationComboBox, 0, 131, Short.MAX_VALUE))
+                        .add(installLocationComboBox, 0, 141, Short.MAX_VALUE))
                     .add(installHDDRadioButton)
                     .add(installSDVMRadioButton))
                 .addContainerGap())
@@ -518,7 +501,7 @@ public class RicohProjectCategoryCustomizer extends JPanel implements Customizer
                 .add(jPanel2Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(installOtherSDRadioButton)
                     .add(installLocationComboBox, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(22, Short.MAX_VALUE))
+                .addContainerGap(21, Short.MAX_VALUE))
         );
 
         jPanel2Layout.linkSize(new java.awt.Component[] {installHDDRadioButton, installSDVMRadioButton}, org.jdesktop.layout.GroupLayout.VERTICAL);
@@ -545,21 +528,18 @@ public class RicohProjectCategoryCustomizer extends JPanel implements Customizer
         workingDirHDDRadioButton.setSelected(true);
         org.openide.awt.Mnemonics.setLocalizedText(workingDirHDDRadioButton, bundle.getString("LBL_WorkingDirHDD")); // NOI18N
         workingDirHDDRadioButton.setActionCommand("hdd"); // NOI18N
-        workingDirHDDRadioButton.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         workingDirHDDRadioButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
         workingDirHDDRadioButton.setNextFocusableComponent(workingDirSDVMRadioButton);
 
         workingDirectoryButtonGroup.add(workingDirSDVMRadioButton);
         org.openide.awt.Mnemonics.setLocalizedText(workingDirSDVMRadioButton, bundle.getString("LBL_WorkingDirVM")); // NOI18N
         workingDirSDVMRadioButton.setActionCommand("sdcard"); // NOI18N
-        workingDirSDVMRadioButton.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         workingDirSDVMRadioButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
         workingDirSDVMRadioButton.setNextFocusableComponent(workingDirOtherSDRadioButton);
 
         workingDirectoryButtonGroup.add(workingDirOtherSDRadioButton);
         org.openide.awt.Mnemonics.setLocalizedText(workingDirOtherSDRadioButton, bundle.getString("LBL_WorkingDirOther")); // NOI18N
         workingDirOtherSDRadioButton.setActionCommand("sdcard0"); // NOI18N
-        workingDirOtherSDRadioButton.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         workingDirOtherSDRadioButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
 
         workingDirComboBox.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "SD Card Slot 1", "SD Card Slot 2", "SD Card Slot 3" }));
@@ -578,7 +558,7 @@ public class RicohProjectCategoryCustomizer extends JPanel implements Customizer
                     .add(jPanel3Layout.createSequentialGroup()
                         .add(workingDirOtherSDRadioButton)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(workingDirComboBox, 0, 120, Short.MAX_VALUE)))
+                        .add(workingDirComboBox, 0, 132, Short.MAX_VALUE)))
                 .addContainerGap())
         );
         jPanel3Layout.setVerticalGroup(
@@ -594,7 +574,7 @@ public class RicohProjectCategoryCustomizer extends JPanel implements Customizer
                 .add(jPanel3Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(workingDirOtherSDRadioButton)
                     .add(workingDirComboBox, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(22, Short.MAX_VALUE))
+                .addContainerGap(21, Short.MAX_VALUE))
         );
 
         jLabel31.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(RicohProjectCategoryCustomizer.class, "ACSN_WorkingDir")); // NOI18N
@@ -613,7 +593,6 @@ public class RicohProjectCategoryCustomizer extends JPanel implements Customizer
         jPanel1.add(jPanel3, gridBagConstraints);
 
         org.openide.awt.Mnemonics.setLocalizedText(disableDalpManagementCheckBox, bundle.getString("LBL_DalpManagement")); // NOI18N
-        disableDalpManagementCheckBox.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         disableDalpManagementCheckBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
         disableDalpManagementCheckBox.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -628,7 +607,7 @@ public class RicohProjectCategoryCustomizer extends JPanel implements Customizer
             .add(org.jdesktop.layout.GroupLayout.TRAILING, advancedOptionConfigPanelLayout.createSequentialGroup()
                 .addContainerGap()
                 .add(advancedOptionConfigPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(org.jdesktop.layout.GroupLayout.TRAILING, jPanel1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 488, Short.MAX_VALUE)
+                    .add(org.jdesktop.layout.GroupLayout.TRAILING, jPanel1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 497, Short.MAX_VALUE)
                     .add(jLabel15)
                     .add(jLabel22)
                     .add(jLabel28)
@@ -638,7 +617,7 @@ public class RicohProjectCategoryCustomizer extends JPanel implements Customizer
                             .add(advancedOptionConfigPanelLayout.createSequentialGroup()
                                 .add(iconPathOrAbbrevLabel)
                                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                                .add(abbrevationTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 394, Short.MAX_VALUE))
+                                .add(abbrevationTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 418, Short.MAX_VALUE))
                             .add(advancedOptionConfigPanelLayout.createSequentialGroup()
                                 .add(useAbbreviationCheckBox)
                                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
@@ -653,8 +632,8 @@ public class RicohProjectCategoryCustomizer extends JPanel implements Customizer
                             .add(advancedOptionConfigPanelLayout.createSequentialGroup()
                                 .add(dalpVersionTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 71, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                                 .add(259, 259, 259))
-                            .add(codeBaseTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 367, Short.MAX_VALUE)))
-                    .add(startupArgumentsTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 488, Short.MAX_VALUE)
+                            .add(codeBaseTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 382, Short.MAX_VALUE)))
+                    .add(startupArgumentsTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 497, Short.MAX_VALUE)
                     .add(disableDalpManagementCheckBox))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(jSeparator1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
@@ -832,6 +811,7 @@ public class RicohProjectCategoryCustomizer extends JPanel implements Customizer
                 .add(165, 165, 165))
         );
 
+        advancedOptionsPanel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(RicohProjectCategoryCustomizer.class, "ACSD_ProjectAdvancedCustomizerPanel")); // NOI18N
         advancedOptionsPanel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(RicohProjectCategoryCustomizer.class, "ACSD_ProjectAdvancedCustomizerPanel")); // NOI18N
 
         jLabel1.setLabelFor(applicationUID);
@@ -877,7 +857,6 @@ public class RicohProjectCategoryCustomizer extends JPanel implements Customizer
         });
 
         org.openide.awt.Mnemonics.setLocalizedText(jCheckBox1, NbBundle.getMessage(RicohProjectCategoryCustomizer.class, "LBL_UseDefault")); // NOI18N
-        jCheckBox1.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         jCheckBox1.setMargin(new java.awt.Insets(0, 0, 0, 0));
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
@@ -894,15 +873,15 @@ public class RicohProjectCategoryCustomizer extends JPanel implements Customizer
                             .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createSequentialGroup()
                                 .add(jLabel1)
                                 .add(25, 25, 25)
-                                .add(applicationUID, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 270, Short.MAX_VALUE))
+                                .add(applicationUID, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 273, Short.MAX_VALUE))
                             .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createSequentialGroup()
                                 .add(jLabel2)
                                 .add(22, 22, 22)
-                                .add(applicationIcon, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 269, Short.MAX_VALUE)))
+                                .add(applicationIcon, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 273, Short.MAX_VALUE)))
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(changeApplicationUID, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 130, Short.MAX_VALUE)
-                            .add(browseApplicationIcon, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 130, Short.MAX_VALUE)))
+                            .add(changeApplicationUID, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 134, Short.MAX_VALUE)
+                            .add(browseApplicationIcon, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 134, Short.MAX_VALUE)))
                     .add(jLabel7)
                     .add(org.jdesktop.layout.GroupLayout.TRAILING, advancedButton)
                     .add(layout.createSequentialGroup()
@@ -912,9 +891,9 @@ public class RicohProjectCategoryCustomizer extends JPanel implements Customizer
                             .add(jLabel4))
                         .add(28, 28, 28)
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(org.jdesktop.layout.GroupLayout.TRAILING, faxNumber, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 407, Short.MAX_VALUE)
-                            .add(telephoneNumber, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 407, Short.MAX_VALUE)
-                            .add(email, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 407, Short.MAX_VALUE))))
+                            .add(org.jdesktop.layout.GroupLayout.TRAILING, faxNumber, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 413, Short.MAX_VALUE)
+                            .add(telephoneNumber, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 413, Short.MAX_VALUE)
+                            .add(email, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 413, Short.MAX_VALUE))))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -955,11 +934,32 @@ public class RicohProjectCategoryCustomizer extends JPanel implements Customizer
 
         layout.linkSize(new java.awt.Component[] {email, faxNumber, telephoneNumber}, org.jdesktop.layout.GroupLayout.VERTICAL);
 
+        jLabel1.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(RicohProjectCategoryCustomizer.class, "ACSN_ApplicationUID")); // NOI18N
+        jLabel1.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(RicohProjectCategoryCustomizer.class, "ACSD_ApplicationUID")); // NOI18N
         applicationUID.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(RicohProjectCategoryCustomizer.class, "ACSD_applicationUID")); // NOI18N
+        changeApplicationUID.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(RicohProjectCategoryCustomizer.class, "ACSN_ChangeUID")); // NOI18N
+        changeApplicationUID.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(RicohProjectCategoryCustomizer.class, "ACSD_ChangeUID")); // NOI18N
+        jLabel2.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(RicohProjectCategoryCustomizer.class, "ACSN_ApplicationIcon")); // NOI18N
+        jLabel2.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(RicohProjectCategoryCustomizer.class, "ACSD_ApplicationIcon")); // NOI18N
+        browseApplicationIcon.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(RicohProjectCategoryCustomizer.class, "ACSN_BrowseIcon")); // NOI18N
+        browseApplicationIcon.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(RicohProjectCategoryCustomizer.class, "ACSD_BrowseIcon")); // NOI18N
         applicationIcon.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(RicohProjectCategoryCustomizer.class, "ACSD_applicationIcon")); // NOI18N
+        jLabel3.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(RicohProjectCategoryCustomizer.class, "ACSN_PhoneNumber")); // NOI18N
+        jLabel3.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(RicohProjectCategoryCustomizer.class, "ACSD_PhoneNumber")); // NOI18N
+        jLabel4.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(RicohProjectCategoryCustomizer.class, "ACSN_FaxNumber")); // NOI18N
+        jLabel4.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(RicohProjectCategoryCustomizer.class, "ACSD_FaxNumber")); // NOI18N
+        jLabel5.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(RicohProjectCategoryCustomizer.class, "ACSN_Email")); // NOI18N
+        jLabel5.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(RicohProjectCategoryCustomizer.class, "ACSD_Email")); // NOI18N
         telephoneNumber.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(RicohProjectCategoryCustomizer.class, "ACSD_telephoneNumber")); // NOI18N
         faxNumber.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(RicohProjectCategoryCustomizer.class, "ACSD_faxNumber")); // NOI18N
         email.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(RicohProjectCategoryCustomizer.class, "ACSD_email")); // NOI18N
+        advancedButton.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(RicohProjectCategoryCustomizer.class, "ACSN_BUTTON_Advanced")); // NOI18N
+        advancedButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(RicohProjectCategoryCustomizer.class, "ACSD_BUTTON_Advanced")); // NOI18N
+        jCheckBox1.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(RicohProjectCategoryCustomizer.class, "ACSN_UseDefault")); // NOI18N
+        jCheckBox1.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(RicohProjectCategoryCustomizer.class, "ACSD_UseDefault")); // NOI18N
+
+        getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(RicohProjectCategoryCustomizer.class, "ACSD_ProjectCustomizerPanel")); // NOI18N
+        getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(RicohProjectCategoryCustomizer.class, "ACSD_ProjectCustomizerPanel")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
     
     private void postInit() {
