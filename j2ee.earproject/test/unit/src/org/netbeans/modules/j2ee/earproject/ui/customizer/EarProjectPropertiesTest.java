@@ -177,7 +177,7 @@ public class EarProjectPropertiesTest extends NbTestCase {
         EditableProperties projectProperties = earProject.getUpdateHelper().getProperties( AntProjectHelper.PROJECT_PROPERTIES_PATH );        
         List<ClassPathSupport.Item> vcpis = EarProjectProperties.getJarContentAdditional(earProject);
         vcpis.get(0).setAdditionalProperty(ClassPathSupportCallbackImpl.PATH_IN_DEPLOYMENT, "otherPath");
-        epp.updateContentDependency(
+        EarProjectProperties.updateContentDependency(earProject,
                 vcpis, vcpis,
                 projectProperties);
         

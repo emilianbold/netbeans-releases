@@ -1863,10 +1863,6 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
         pcs.firePropertyChange(name, o, n);
     }
     
-    public void break_disable(int breakpointNumber) {
-        gdb.break_disable(breakpointNumber);
-    }
-    
     public int getCurrentToken() {
         return currentToken;
     }

@@ -102,6 +102,14 @@ public class ExecutionDescriptor {
             GemManager.adjustEnvironment(platform, env);
             addAdditionalEnv(env);
         }
+        if (platform.isJRuby()) {
+            Map<String, String> env = new HashMap<String, String>();
+            String home = platform.getHome().getAbsolutePath();
+            env.put("JRUBY_HOME", home); // NOI18N
+            env.put("JRUBY_BASE", home); // NOI18N
+            env.put("JAVA_HOME", RubyExecution.getJavaHome()); // NOI18N
+            addAdditionalEnv(env);
+        }
     }
     
     public ExecutionDescriptor cmd(final File cmd) {
@@ -278,7 +286,7 @@ public class ExecutionDescriptor {
         this.additionalEnv.putAll(additionalEnv);
     }
 
-    Map<String, String> getAdditionalEnvironment() {
+    public Map<String, String> getAdditionalEnvironment() {
         return additionalEnv;
     }
 }
