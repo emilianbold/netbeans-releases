@@ -503,7 +503,7 @@ public class Utilities {
         
         new JButtonOperator(addServerInstanceDialog,nextButtonCaption).push();
         
-        new JTextFieldOperator(addServerInstanceDialog, "glassfish").enterText(appServerPath);
+        new JTextFieldOperator(addServerInstanceDialog).enterText(appServerPath);
         
         new JButtonOperator(addServerInstanceDialog,finishButtonCaption).push();
         
