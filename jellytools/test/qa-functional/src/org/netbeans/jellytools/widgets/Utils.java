@@ -312,7 +312,6 @@ public class Utils {
             }
 
             public void actionPerformed(ActionEvent e) {
-                System.out.println("EVENT=" + e);
                 if (OPEN_ACTION.equals(e.getActionCommand())) {
                     JDialog dialog = new JDialog((Frame) null, "Open");
                     Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
