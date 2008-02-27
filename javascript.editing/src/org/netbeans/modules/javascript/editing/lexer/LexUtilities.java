@@ -474,9 +474,12 @@ public class LexUtilities {
         }
         int offset = ts.offset();
         
-        // skip whitespaces
-        if (id == JsTokenId.WHITESPACE) {
-            while (ts.moveNext() && (ts.token().id() == JsTokenId.WHITESPACE)) {
+        // skip whitespaces and comments
+        if (id == JsTokenId.WHITESPACE || id == JsTokenId.LINE_COMMENT || id == JsTokenId.BLOCK_COMMENT) {
+            while (ts.moveNext() && (
+                    ts.token().id() == JsTokenId.WHITESPACE ||
+                    ts.token().id() == JsTokenId.LINE_COMMENT ||
+                    ts.token().id() == JsTokenId.BLOCK_COMMENT)) {
                 offset = ts.offset();
             }
         }

@@ -358,6 +358,12 @@ public class JsFormatterTest extends JsTestBase {
                 "else\n" +
                 "    bar();", null
                 );
+        format(
+                " if (true) // comment\n" +
+                " foo();",
+                "if (true) // comment\n" +
+                "    foo();", null
+                );
         // What about thesed: do? with?
     }
     
