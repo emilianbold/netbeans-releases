@@ -46,22 +46,6 @@ made subject to such option by the copyright holder.
         <apidef name="masterfs">MasterFileSystem API</apidef>
     </apidefs>
     <changes>
-        <change id="one-drive-one-instance-of-filesystem-on-windows">
-            <api name="masterfs"/>
-            <summary>One drive == one instance of filesystem on windows</summary>
-            <version major="2" minor="13"/>
-            <date day="8" month="1" year="2008"/>
-            <author login="rmatous"/>
-            <compatibility binary="compatible" source="compatible" semantic="incompatible"/>
-            <description>
-                For every individual drive on windows now exists one filesystem. Every
-                instance of filesystem is created on demand. Before this change there was
-                one filesystem with virtual root containing all reachable drives as its
-                children.
-            </description>
-            <issue number="123542"/>
-        </change>                        
-        
         <change id="fileobject-instances-are-not-issued-after-external-changes">
             <api name="masterfs"/>
             <summary>Fileobject instances are not issued after external changes</summary>
