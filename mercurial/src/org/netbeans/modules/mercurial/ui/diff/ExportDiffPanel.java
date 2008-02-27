@@ -49,6 +49,7 @@ import javax.swing.ComboBoxModel;
 import javax.swing.DefaultComboBoxModel;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.Dialog;
 import javax.swing.JFileChooser;
 import javax.swing.filechooser.FileFilter;
 import org.netbeans.api.progress.ProgressHandleFactory;
@@ -59,6 +60,9 @@ import org.netbeans.modules.versioning.util.AccessibleJFileChooser;
 import org.netbeans.modules.mercurial.util.HgCommand;
 import org.netbeans.modules.mercurial.HgModuleConfig;
 import org.netbeans.modules.mercurial.ui.log.RepositoryRevision;
+import org.openide.DialogDisplayer;
+import org.openide.DialogDescriptor;
+
 
 /**
  *
@@ -246,7 +250,7 @@ public class ExportDiffPanel extends javax.swing.JPanel implements ActionListene
 
     private void onBrowseClick() {
         File oldFile = null;
-        JFileChooser fileChooser = new AccessibleJFileChooser(NbBundle.getMessage(ExportDiffPanel.class, "ACSD_BrowseFolder"), oldFile);   // NO I18N
+        final JFileChooser fileChooser = new AccessibleJFileChooser(NbBundle.getMessage(ExportDiffPanel.class, "ACSD_BrowseFolder"), oldFile);   // NO I18N
         fileChooser.setDialogTitle(NbBundle.getMessage(ExportDiffPanel.class, "Browse_title"));                                            // NO I18N
         fileChooser.setMultiSelectionEnabled(false);
         FileFilter[] old = fileChooser.getChoosableFileFilters();
@@ -255,12 +259,25 @@ public class ExportDiffPanel extends javax.swing.JPanel implements ActionListene
             fileChooser.removeChoosableFileFilter(fileFilter);
 
         }
+        fileChooser.setApproveButtonMnemonic(NbBundle.getMessage(ExportDiffPanel.class, "OK_Button").charAt(0));                      // NO I18N
+        fileChooser.setApproveButtonText(NbBundle.getMessage(ExportDiffPanel.class, "OK_Button"));                                        // NO I18N
         fileChooser.setCurrentDirectory(new File(HgModuleConfig.getDefault().getExportFolder()));
-        fileChooser.showDialog(this, NbBundle.getMessage(ExportDiffPanel.class, "OK_Button"));                                            // NO I18N
-        File f = fileChooser.getSelectedFile();
-        if (f != null) {
-            outputFileTextField.setText(f.getAbsolutePath());
-        }
+        DialogDescriptor dd = new DialogDescriptor(fileChooser, NbBundle.getMessage(ExportDiffPanel.class, "Browse_title"));              // NO I18N
+        dd.setOptions(new Object[0]);
+        final Dialog dialog = DialogDisplayer.getDefault().createDialog(dd);
+        fileChooser.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                String state = e.getActionCommand();
+                if (state.equals(JFileChooser.APPROVE_SELECTION)) {
+                    File f = fileChooser.getSelectedFile();
+                    if (f != null) {
+                        outputFileTextField.setText(f.getAbsolutePath());
+                    }
+                }
+                dialog.dispose();
+            }
+        });
+        dialog.setVisible(true);
     }
 
     private class RefreshViewTask implements Runnable {
