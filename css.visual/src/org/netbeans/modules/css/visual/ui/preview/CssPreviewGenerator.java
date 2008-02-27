@@ -45,8 +45,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.StringTokenizer;
-import org.netbeans.modules.css2.editor.model.CssModel;
-import org.netbeans.modules.css2.editor.model.CssRule;
+import org.netbeans.modules.css.editor.model.CssModel;
+import org.netbeans.modules.css.editor.model.CssRule;
 import org.netbeans.modules.css.visual.api.CssRuleContext;
 import org.openide.util.NbBundle;
 
