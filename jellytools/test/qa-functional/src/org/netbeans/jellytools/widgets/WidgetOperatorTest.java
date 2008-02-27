@@ -104,7 +104,6 @@ public class WidgetOperatorTest extends JellyTestCase {
         super.setUp();
         System.out.println("### " + getName() + " ###");
     }
-
     protected static TopComponentOperator tco;
     protected static Scene scene;
 
@@ -147,7 +146,7 @@ public class WidgetOperatorTest extends JellyTestCase {
     /** Tests getCenter method. */
     public void testGetCenter() {
         // remember center will change if you change label
-        assertEquals("Wrong center of widget calculated.", new Point(120, 95), new LabelWidgetOperator(tco, "Label 0").getCenter());
+        assertTrue("Wrong center of widget calculated.", new Point(120, 95).distance(new LabelWidgetOperator(tco, "Label 0").getCenter()) < 5.0);
     }
 
     /** Tests getLocation method. */
@@ -157,7 +156,12 @@ public class WidgetOperatorTest extends JellyTestCase {
 
     /** Tests getBounds method. */
     public void testGetBounds() {
-        assertEquals("Wrong bounds of widget calculated.", new Rectangle(-4, -17, 49, 25), new LabelWidgetOperator(tco, "Label 0").getBounds());
+        // bounds can slightly differ on some platforms => we check it with some tolerance
+        Rectangle bounds = new LabelWidgetOperator(tco, "Label 0").getBounds();
+        assertTrue("Wrong bounds of widget calculated.",
+                bounds.getLocation().distance(new Point(-4, -17)) < 5.0 &&
+                new Point((int) bounds.getWidth(), (int) bounds.getHeight()).distance(new Point(49, 25)) < 5.0);
+
     }
 
     /** Tests printDump method. */
