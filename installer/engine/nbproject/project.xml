@@ -42,7 +42,7 @@
             <minimum-ant-version>1.6.5</minimum-ant-version>
             <source-roots>
                 <root id="src.dir"/>
-                <root id="reglib.src.dir"/>
+                <root id="reglib.src.dir" name="RegLib Source Packages"/>
             </source-roots>
             <test-roots>
                 <root id="test.src.dir"/>

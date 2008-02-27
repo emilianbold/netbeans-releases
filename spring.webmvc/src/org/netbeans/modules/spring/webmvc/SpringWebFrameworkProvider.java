@@ -87,19 +87,8 @@ public class SpringWebFrameworkProvider extends WebFrameworkProvider {
 
     @Override
     public File[] getConfigurationFiles(WebModule webModule) {
-        FileObject webInf = webModule.getWebInf();
-        List<File> files = new ArrayList<File>();
-        if (webModule.getDeploymentDescriptor() != null) {
-            FileObject file = webInf.getFileObject("applicationContext.xml"); // NOI18N
-            if (file != null) {
-                files.add(FileUtil.toFile(file));
-            }
-            file = webInf.getFileObject("dispatcher-servlet.xml"); // NOI18N
-            if (file != null) {
-                files.add(FileUtil.toFile(file));
-            }
-        }
-        return files.toArray(new java.io.File[0]);
+        // Don't add configuration files to the Configuration Files node.       
+        return null;
     }
     
     @Override

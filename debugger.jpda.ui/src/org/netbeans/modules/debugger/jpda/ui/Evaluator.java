@@ -41,10 +41,14 @@
 
 package org.netbeans.modules.debugger.jpda.ui;
 
+import java.awt.AWTKeyStroke;
 import java.awt.Component;
+import java.awt.Container;
 import java.awt.Dialog;
 import java.awt.Dimension;
 import java.awt.EventQueue;
+import java.awt.FocusTraversalPolicy;
+import java.awt.KeyboardFocusManager;
 import java.awt.datatransfer.Transferable;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -59,11 +63,13 @@ import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 import javax.swing.ComboBoxEditor;
 import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JEditorPane;
 import javax.swing.JScrollPane;
+import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.debugger.DebuggerEngine;
@@ -245,6 +251,18 @@ public class Evaluator extends javax.swing.JPanel {
     
     private void initResult() {
         javax.swing.JComponent tree = Models.createView (Models.EMPTY_MODEL);
+        Container hackedFCR = (Container) ((Container) ((Container) tree.getComponents()[0]).getComponents()[0]).getComponents()[0];
+        hackedFCR = (Container) tree.getComponents()[0];
+        try {
+            java.lang.reflect.Field treeTableField = hackedFCR.getClass().getSuperclass().getDeclaredField("treeTable");
+            treeTableField.setAccessible(true);
+            hackedFCR = (Container) treeTableField.get(hackedFCR);
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+        hackedFCR.setFocusCycleRoot(false);
+        hackedFCR.setFocusTraversalPolicy(null);
+        hackedFCR.setFocusTraversalPolicyProvider(false);
         resultPanel.add (tree, "Center");  //NOI18N
         viewModelListener = new EvaluatorModelListener (
             tree
@@ -256,6 +274,11 @@ public class Evaluator extends javax.swing.JPanel {
         tree.getAccessibleContext().setAccessibleDescription(
                 NbBundle.getMessage(Evaluator.class, "Evaluator.ResultA11YDescr"));
         resultLabel.setLabelFor(tree);
+        JTextField referenceTextField = new JTextField();
+        Set<AWTKeyStroke> tfkeys = referenceTextField.getFocusTraversalKeys(KeyboardFocusManager.FORWARD_TRAVERSAL_KEYS);
+        tree.setFocusTraversalKeys(KeyboardFocusManager.FORWARD_TRAVERSAL_KEYS, tfkeys);
+        tfkeys = referenceTextField.getFocusTraversalKeys(KeyboardFocusManager.BACKWARD_TRAVERSAL_KEYS);
+        tree.setFocusTraversalKeys(KeyboardFocusManager.BACKWARD_TRAVERSAL_KEYS, tfkeys);
     }
     
     private void destroy() {
@@ -376,8 +399,35 @@ public class Evaluator extends javax.swing.JPanel {
         evalDialog.getAccessibleContext().setAccessibleName(
                 NbBundle.getMessage(Evaluator.class, "Evaluator.A11YName"));
         currentEvaluator = evaluatorPanel;
+        //traverseComponents(evalDialog, evalDialog, evalDialog.getFocusTraversalPolicy());
         evalDialog.setVisible(true);
+        //traverseComponents(evalDialog, evalDialog, evalDialog.getFocusTraversalPolicy());
         requestFocusForExpression();
+        currentEvaluator.setNextFocusableComponent(evalBtn);
+    }
+    
+    private static void traverseComponents(Component c, Container fcr, FocusTraversalPolicy ftp) {
+        if (c instanceof Container) {
+            Container cc = (Container) c;
+            System.err.println("\nComponent "+c);
+            System.err.println("isFocusable: "+cc.isFocusable()+", isFocusCycleRoot: "+cc.isFocusCycleRoot()+", is PolicySet: "+cc.isFocusTraversalPolicySet()+", is PolicyProvider: "+cc.isFocusTraversalPolicyProvider());
+            if (cc.isFocusCycleRoot()) {
+                System.err.println("DEFAULT component: "+ftp.getDefaultComponent(fcr)+", first component: "+ftp.getFirstComponent(fcr));
+                if (cc != fcr) {
+                    cc.setFocusCycleRoot(false);
+                    cc.setFocusTraversalPolicyProvider(false);
+                    cc.setFocusTraversalPolicy(null);
+                }
+            }
+            if (cc instanceof JComponent) {
+                System.err.println("NEXT Focusable: "+((JComponent) cc).getNextFocusableComponent());
+                System.err.println("NEXT After:     "+ftp.getComponentAfter(fcr, c));
+            }
+            Component[] subComponents = cc.getComponents();
+            for (Component sc : subComponents) {
+                traverseComponents(sc, fcr, ftp);
+            }
+        }
     }
     
     private static void requestFocusForExpression() {
@@ -463,6 +513,9 @@ public class Evaluator extends javax.swing.JPanel {
             editor = new JEditorPane();
             editor.setBorder(null);
             editor.setKeymap(new FilteredKeymap(editor));
+            editor.setFocusCycleRoot(false);
+            editor.setFocusTraversalPolicy(null);
+            editor.setFocusTraversalPolicyProvider(false);
             component = new JScrollPane(editor,
                                         JScrollPane.VERTICAL_SCROLLBAR_NEVER,
                                         JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
@@ -473,6 +526,11 @@ public class Evaluator extends javax.swing.JPanel {
                 public void focusLost(FocusEvent e) {
                 }
             });
+            JTextField referenceTextField = new JTextField();
+            Set<AWTKeyStroke> tfkeys = referenceTextField.getFocusTraversalKeys(KeyboardFocusManager.FORWARD_TRAVERSAL_KEYS);
+            editor.setFocusTraversalKeys(KeyboardFocusManager.FORWARD_TRAVERSAL_KEYS, tfkeys);
+            tfkeys = referenceTextField.getFocusTraversalKeys(KeyboardFocusManager.BACKWARD_TRAVERSAL_KEYS);
+            editor.setFocusTraversalKeys(KeyboardFocusManager.BACKWARD_TRAVERSAL_KEYS, tfkeys);
         }
         
         public void setupContext() {

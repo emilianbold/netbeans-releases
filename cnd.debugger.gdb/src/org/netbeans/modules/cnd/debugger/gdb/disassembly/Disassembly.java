@@ -191,7 +191,7 @@ public class Disassembly implements PropertyChangeListener, DocumentListener {
     public static File getFile() {
         if (file == null) {
             try {
-                file = File.createTempFile("disasm", ".s"); // NOI18N
+                file = FileUtil.normalizeFile(File.createTempFile("disasm", ".s")); // NOI18N
             } catch (IOException ex) {
                 ex.printStackTrace();
             }
@@ -285,8 +285,8 @@ public class Disassembly implements PropertyChangeListener, DocumentListener {
 
         @Override
         public String toString() {
-            //return "0x" + Integer.toHexString(address) + ": " + instruction; // NOI18N
-            return function + "+" + offset + ": (" + address + ") " + instruction; // NOI18N
+            //return function + "+" + offset + ": (" + address + ") " + instruction; // NOI18N
+            return function + "+" + offset + ": 00 00 " + instruction; // NOI18N
         }
     }
     
