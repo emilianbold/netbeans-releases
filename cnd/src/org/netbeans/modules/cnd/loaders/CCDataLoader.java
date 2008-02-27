@@ -64,7 +64,7 @@ public class CCDataLoader extends CndAbstractDataLoaderExt {
 
     /** The suffix list for C++ primary files */
     private static final String[] cppExtensions =
-				{ "cc", "cpp", "c++", "cxx", "C", "mm" }; // NOI18N
+				{ "cpp", "cc", "c++", "cxx", "C", "mm" }; // NOI18N
 
     protected CCDataLoader() {
 	super("org.netbeans.modules.cnd.loaders.CCDataObject"); // NOI18N
@@ -95,6 +95,10 @@ public class CCDataLoader extends CndAbstractDataLoaderExt {
 
     public ExtensionList getDefaultExtensionList() {
         return arrayToExtensionList(cppExtensions);
+    }
+
+    public String getDefaultDefaultExtension() {
+        return cppExtensions[0];
     }
 
     public String getDisplayNameForExtensionList() {

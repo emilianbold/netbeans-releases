@@ -252,7 +252,10 @@ final class TaskListTopComponent extends TopComponent {
             }
         }
         
-        taskManager.addPropertyChangeListener( TaskManagerImpl.PROP_WORKING_STATUS, getChangeListener() );
+        if( null == changeListener ) {
+            changeListener = createChangeListener();
+            taskManager.addPropertyChangeListener( TaskManagerImpl.PROP_WORKING_STATUS, changeListener );
+        }
         
         if( null == model ) {
             table = new TaskListTable();
@@ -283,7 +286,10 @@ final class TaskListTopComponent extends TopComponent {
         ScannerList.getFileScannerList().removePropertyChangeListener( getScannerListListener() );
         ScannerList.getPushScannerList().removePropertyChangeListener( getScannerListListener() );
         taskManager.observe( null, null );
-        taskManager.removePropertyChangeListener( TaskManagerImpl.PROP_WORKING_STATUS, getChangeListener() );
+        if( null != changeListener ) {
+            taskManager.removePropertyChangeListener( TaskManagerImpl.PROP_WORKING_STATUS, changeListener );
+            changeListener = null;
+        }
         if( null != progress )
             progress.finish();
         progress = null;
@@ -406,34 +412,31 @@ final class TaskListTopComponent extends TopComponent {
     }
     
     private ProgressHandle progress;
-    private PropertyChangeListener getChangeListener() {
-        if( null == changeListener ) {
-            changeListener = new PropertyChangeListener() {
-                public void propertyChange( PropertyChangeEvent e ) {
-                    synchronized( this ) {
-                        if( ((Boolean)e.getNewValue()).booleanValue() ) {
-                            if( null == progress ) {
-                                progress = ProgressHandleFactory.createHandle( 
-                                        NbBundle.getMessage( TaskListTopComponent.class, "LBL_ScanProgress" ), //NOI18N
-                                        new Cancellable() { //NOI18N
-                                            public boolean cancel() {
-                                                taskManager.abort();
-                                                return true;
-                                            }
-                                        });                            
-                            }
-                            progress.start();
-                            progress.switchToIndeterminate();
-                        } else {
-                            if( null != progress )
-                                progress.finish();
-                            progress = null;
+    private PropertyChangeListener createChangeListener() {
+        return new PropertyChangeListener() {
+            public void propertyChange( PropertyChangeEvent e ) {
+                synchronized( TaskListTopComponent.this ) {
+                    if( ((Boolean)e.getNewValue()).booleanValue() ) {
+                        if( null == progress ) {
+                            progress = ProgressHandleFactory.createHandle( 
+                                    NbBundle.getMessage( TaskListTopComponent.class, "LBL_ScanProgress" ), //NOI18N
+                                    new Cancellable() { //NOI18N
+                                        public boolean cancel() {
+                                            taskManager.abort();
+                                            return true;
+                                        }
+                                    });                            
                         }
+                        progress.start();
+                        progress.switchToIndeterminate();
+                    } else {
+                        if( null != progress )
+                            progress.finish();
+                        progress = null;
                     }
                 }
-            };
-        }
-        return changeListener;
+            }
+        };
     }
     
     final static class ResolvableHelper implements Serializable {
