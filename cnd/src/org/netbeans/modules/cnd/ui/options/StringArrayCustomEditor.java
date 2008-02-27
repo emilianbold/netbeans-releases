@@ -56,7 +56,7 @@ import org.openide.awt.Mnemonics;
  *
  * @author  Ian Formanek
  * 
- * Improved to have isEmptyAllowed and isSortingRequired
+ * Improved to have isEmptyAllowed and default value 
  */
 public class StringArrayCustomEditor extends javax.swing.JPanel {
 
@@ -72,9 +72,14 @@ public class StringArrayCustomEditor extends javax.swing.JPanel {
     private String[] array;
     private final boolean isEmptyAllowed;
     private String defaultValue;
+
+    public StringArrayCustomEditor(String[] array, String defaultValue, boolean isEmptyAllowed) {
+        this(array, defaultValue, null, '\0', null, '\0', isEmptyAllowed);
+    }
     
-    /** Initializes the Form */
-    public StringArrayCustomEditor(String[] array, String defaultValue, String customItemLabel, String customItemListLabel,
+    public StringArrayCustomEditor(String[] array, String defaultValue, 
+            String customItemLabel, char customItemLabelMnemonic, 
+            String customItemListLabel, char customItemListLabelMnemonic, 
             boolean isEmptyAllowed) {
         this.defaultValue = defaultValue;
         this.isEmptyAllowed = isEmptyAllowed;
@@ -98,6 +103,13 @@ public class StringArrayCustomEditor extends javax.swing.JPanel {
         Mnemonics.setLocalizedText(removeButton, bundle.getString("CTL_Remove")); // NOI18N
         Mnemonics.setLocalizedText(setDefaultButton, bundle.getString("CTL_SetDefault")); // NOI18N
 
+        if (customItemLabel != null) {
+            itemLabel.setDisplayedMnemonic(customItemLabelMnemonic);
+        }
+        if (customItemListLabel != null) {
+            itemListLabel.setDisplayedMnemonic(customItemListLabelMnemonic);
+        }
+        
         getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_StringArrayCustomEditor")); // NOI18N
         itemField.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_CTL_Item")); // NOI18N
         itemList.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_CTL_ItemList")); // NOI18N
