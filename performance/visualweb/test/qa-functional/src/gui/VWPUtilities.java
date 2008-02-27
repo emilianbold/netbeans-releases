@@ -49,7 +49,6 @@ import org.netbeans.jellytools.actions.OpenAction;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.nodes.ProjectRootNode;
 import org.netbeans.jemmy.JemmyException;
-import org.netbeans.jemmy.operators.JDialogOperator;
 import org.netbeans.jemmy.operators.JListOperator;
 
 /**
@@ -87,7 +86,8 @@ public class VWPUtilities extends gui.Utilities{
         
         NbDialogOperator missingServerDialog = new NbDialogOperator(dialogName);
         JListOperator serversList = new JListOperator(missingServerDialog);
-        serversList.selectItem(serverName);
+        //serversList.selectItem(serverName);
+        serversList.selectItem(0);
         missingServerDialog.ok();
         
     }
