@@ -70,18 +70,18 @@ import org.openide.util.NbBundle;
  */
 public class PanelSourceFolders extends SettingsPanel implements PropertyChangeListener {
 
-    private Panel firer;
+    private final Panel firer;
     private WizardDescriptor wizardDescriptor;
 
     // key to action value that influence folder list current directory
     public static final String INITIAL_SOURCE_ROOT = "EXISTING_SOURCES_CURRENT_DIRECTORY"; // NOI18N
 
     /** Creates new form PanelSourceFolders */
-    public PanelSourceFolders(Panel panel) {
+    PanelSourceFolders(Panel panel) {
         this.firer = panel;
         initComponents();
-        this.setName(NbBundle.getMessage(PanelConfigureProjectVisual.class,"LAB_ConfigureSourceRoots"));
-        this.putClientProperty ("NewProjectWizard_Title", NbBundle.getMessage(PanelSourceFolders.class,"TXT_JavaExtSourcesProjectLocation")); // NOI18N
+        this.setName(NbBundle.getMessage(PanelSourceFolders.class, "LAB_ConfigureSourceRoots"));
+        this.putClientProperty("NewProjectWizard_Title", NbBundle.getMessage(PanelSourceFolders.class,"TXT_JavaExtSourcesProjectLocation")); // NOI18N
         this.getAccessibleContext().setAccessibleName(NbBundle.getMessage(PanelSourceFolders.class,"AN_PanelSourceFolders"));
         this.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(PanelSourceFolders.class,"AD_PanelSourceFolders"));
         this.sourcePanel.addPropertyChangeListener (this);
@@ -244,20 +244,20 @@ public class PanelSourceFolders extends SettingsPanel implements PropertyChangeL
     private void initComponents() {
         java.awt.GridBagConstraints gridBagConstraints;
 
-        jLabel3 = new javax.swing.JLabel();
+        description = new javax.swing.JLabel();
         sourcePanel = createSourcePanel();
         testsPanel = createTestPanel();
 
         setLayout(new java.awt.GridBagLayout());
 
-        org.openide.awt.Mnemonics.setLocalizedText(jLabel3, org.openide.util.NbBundle.getMessage(PanelSourceFolders.class, "LBL_SourceDirectoriesLabel")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(description, org.openide.util.NbBundle.getMessage(PanelSourceFolders.class, "LBL_SourceDirectoriesLabel")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        add(jLabel3, gridBagConstraints);
-        jLabel3.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getBundle(PanelSourceFolders.class).getString("ACSN_jLabel3")); // NOI18N
-        jLabel3.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getBundle(PanelSourceFolders.class).getString("ACSD_jLabel3")); // NOI18N
+        add(description, gridBagConstraints);
+        description.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getBundle(PanelSourceFolders.class).getString("ACSN_jLabel3")); // NOI18N
+        description.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getBundle(PanelSourceFolders.class).getString("ACSD_jLabel3")); // NOI18N
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
@@ -282,7 +282,7 @@ public class PanelSourceFolders extends SettingsPanel implements PropertyChangeL
     
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JLabel jLabel3;
+    private javax.swing.JLabel description;
     private javax.swing.JPanel sourcePanel;
     private javax.swing.JPanel testsPanel;
     // End of variables declaration//GEN-END:variables

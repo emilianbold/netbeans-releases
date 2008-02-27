@@ -41,7 +41,10 @@
 
 package org.netbeans.modules.ruby.rubyproject.ui.customizer;
 
-import java.awt.*;
+import java.awt.Component;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
@@ -52,8 +55,20 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.Vector;
 import java.text.MessageFormat;
-import javax.swing.*;
+import javax.swing.DefaultCellEditor;
+import javax.swing.DefaultListCellRenderer;
 import javax.swing.JButton;
+import javax.swing.JComponent;
+import javax.swing.JFileChooser;
+import javax.swing.JLabel;
+import javax.swing.JList;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JTable;
+import javax.swing.JTextField;
+import javax.swing.ListSelectionModel;
+import javax.swing.SwingUtilities;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.event.CellEditorListener;
@@ -178,7 +193,7 @@ public final class RubySourceRootsUi {
         private final Project project;
         private final SourceRoots sourceRoots;
         private final Set<File> ownedFolders;
-        private DefaultTableModel rootsModel;
+        private final DefaultTableModel rootsModel;
         private EditMediator relatedEditMediator;
         private File lastUsedDir;       //Last used current folder in JFileChooser  
 
@@ -275,10 +290,8 @@ public final class RubySourceRootsUi {
         
         // Selection listener implementation  ----------------------------------
         
-        /** Handles changes in the selection
-         */        
+        /** Handles changes in the selection */        
         public void valueChanged( ListSelectionEvent e ) {
-            
             int[] si = rootsList.getSelectedRows();
             
             // addJar allways enabled
@@ -287,9 +300,6 @@ public final class RubySourceRootsUi {
             
             // addArtifact allways enabled
             
-            // edit enabled only if selection is not empty
-            boolean edit = si != null && si.length > 0;            
-
             // remove enabled only if selection is not empty
             boolean remove = si != null && si.length > 0;
             // and when the selection does not contain unremovable item
@@ -305,9 +315,6 @@ public final class RubySourceRootsUi {
             removeButton.setEnabled( remove );
             upButton.setEnabled( up );
             downButton.setEnabled( down );       
-                        
-            //System.out.println("Selection changed " + edit + ", " + remove + ", " +  + ", " + + ", ");
-            
         }
 
         public void editingCanceled(ChangeEvent e) {
@@ -376,7 +383,7 @@ out:        for( int i = 0; i < files.length; i++ ) {
                 selectionModel.addSelectionInterval(current,current);
                 this.ownedFolders.add (normalizedFile);
             }
-            if (rootsFromOtherProjects.size() > 0 || rootsFromRelatedSourceRoots.size() > 0) {
+            if (!rootsFromOtherProjects.isEmpty() || !rootsFromRelatedSourceRoots.isEmpty()) {
                 rootsFromOtherProjects.addAll(rootsFromRelatedSourceRoots);
                 showIllegalRootsDialog (rootsFromOtherProjects);
             }
@@ -480,7 +487,7 @@ out:        for( int i = 0; i < files.length; i++ ) {
     
     private static class FileRenderer extends DefaultTableCellRenderer {
         
-        private File projectFolder;
+        private final File projectFolder;
         
         public FileRenderer (File projectFolder) {
             this.projectFolder = projectFolder;
@@ -562,7 +569,7 @@ out:        for( int i = 0; i < files.length; i++ ) {
 
         private static class InvalidRootRenderer extends DefaultListCellRenderer {
 
-            private boolean projectConflict;
+            private final boolean projectConflict;
 
             public InvalidRootRenderer (boolean projectConflict) {
                 this.projectConflict = projectConflict;

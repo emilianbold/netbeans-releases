@@ -63,11 +63,10 @@ import org.netbeans.spi.project.ui.support.ProjectChooser;
  */
 public class PanelProjectLocationExtSrc extends SettingsPanel {
 
-    private PanelConfigureProject firer;
+    private final PanelConfigureProject firer;
     private WizardDescriptor wizardDescriptor;
     private boolean calculatePF;
 
-    /** Creates new form PanelSourceFolders */
     public PanelProjectLocationExtSrc (PanelConfigureProject panel) {
         this.firer = panel;
         initComponents();
@@ -124,21 +123,20 @@ public class PanelProjectLocationExtSrc extends SettingsPanel {
 
     void read (WizardDescriptor settings) {
         this.wizardDescriptor = settings;
-        String path = null;        
         String projectName = null;
         File projectLocation = (File) settings.getProperty ("projdir");  //NOI18N
         if (projectLocation == null) {
             projectLocation = ProjectChooser.getProjectsFolder();                
             int index = FoldersListSettings.getDefault().getNewProjectCount();
-            String formater = NbBundle.getMessage(PanelSourceFolders.class,"TXT_JavaProject");
+            String formater = NbBundle.getMessage(PanelProjectLocationExtSrc.class,"TXT_JavaProject");
             File file;
             do {
-                index++;                            
-                projectName = MessageFormat.format (formater, new Object[]{new Integer (index)});                
-                file = new File (projectLocation, projectName);                
-            } while (file.exists());                                
-            settings.putProperty (NewRubyProjectWizardIterator.PROP_NAME_INDEX, new Integer(index));                        
-            this.projectLocation.setText (projectLocation.getAbsolutePath());        
+                index++;
+                projectName = MessageFormat.format(formater, index);
+                file = new File(projectLocation, projectName);
+            } while (file.exists());
+            settings.putProperty(NewRubyProjectWizardIterator.PROP_NAME_INDEX, index);
+            this.projectLocation.setText(projectLocation.getAbsolutePath());
             this.setCalculateProjectFolder(true);
         }
         else {
@@ -167,7 +165,7 @@ public class PanelProjectLocationExtSrc extends SettingsPanel {
             // might be a Rails project
             File environment = new File(this.projectLocation.getText(), "config" + File.separator + "environment.rb");
             if (environment.exists()) {
-                String message = NbBundle.getMessage (PanelSourceFolders.class,"ProbablyRails");
+                String message = NbBundle.getMessage (PanelProjectLocationExtSrc.class,"ProbablyRails");
                 wizardDescriptor.putProperty( "WizardPanel_errorMessage", message);       //NOI18N
             }
             return true;
@@ -184,20 +182,20 @@ public class PanelProjectLocationExtSrc extends SettingsPanel {
              || projectName.indexOf('\\') > 0           //NOI18N
              || projectName.indexOf(':')  > 0) {        //NOI18N
             // Display name not specified
-            return NbBundle.getMessage(PanelSourceFolders.class,"MSG_IllegalProjectName");
+            return NbBundle.getMessage(PanelProjectLocationExtSrc.class,"MSG_IllegalProjectName");
         }
 
         File projLoc = new File (projectLocation).getAbsoluteFile();
 
         if (PanelProjectLocationVisual.getCanonicalFile(projLoc) == null) {
-            return NbBundle.getMessage (PanelProjectLocationVisual.class,"MSG_IllegalProjectLocation");
+            return NbBundle.getMessage (PanelProjectLocationExtSrc.class,"MSG_IllegalProjectLocation");
         }
 
         while (projLoc != null && !projLoc.exists()) {
             projLoc = projLoc.getParentFile();
         }
         if (projLoc == null || !projLoc.canWrite()) {
-            return NbBundle.getMessage(PanelSourceFolders.class,"MSG_ProjectFolderReadOnly");
+            return NbBundle.getMessage(PanelProjectLocationExtSrc.class,"MSG_ProjectFolderReadOnly");
         }
 
         File destFolder = FileUtil.normalizeFile(new File( projectLocation ));
@@ -207,10 +205,10 @@ public class PanelProjectLocationExtSrc extends SettingsPanel {
             for (int i=0; i< kids.length; i++) {
                 String childName = kids[i].getName();
                 if ("nbproject".equals(childName)) {   //NOI18N
-                    file = NbBundle.getMessage (PanelSourceFolders.class,"TXT_NetBeansProject");
+                    file = NbBundle.getMessage (PanelProjectLocationExtSrc.class,"TXT_NetBeansProject");
                 }
                 if (file != null) {
-                    String format = NbBundle.getMessage (PanelSourceFolders.class,"MSG_ProjectFolderInvalid");
+                    String format = NbBundle.getMessage (PanelProjectLocationExtSrc.class,"MSG_ProjectFolderInvalid");
                     return MessageFormat.format(format, new Object[] {file});
                 }
             }
@@ -227,7 +225,7 @@ public class PanelProjectLocationExtSrc extends SettingsPanel {
                 // need not report here; clear remains false -> error
             }
             if (!clear) {
-                return NbBundle.getMessage(PanelSourceFolders.class, "MSG_ProjectFolderHasDeletedProject");
+                return NbBundle.getMessage(PanelProjectLocationExtSrc.class, "MSG_ProjectFolderHasDeletedProject");
             }
         }
         return null;
@@ -245,56 +243,55 @@ public class PanelProjectLocationExtSrc extends SettingsPanel {
     private void initComponents() {
         java.awt.GridBagConstraints gridBagConstraints;
 
-        jPanel2 = new javax.swing.JPanel();
-        jLabel4 = new javax.swing.JLabel();
-        jLabel5 = new javax.swing.JLabel();
+        projectInfoPanel = new javax.swing.JPanel();
+        description = new javax.swing.JLabel();
+        projectNameLabel = new javax.swing.JLabel();
         projectName = new javax.swing.JTextField();
-        jLabel6 = new javax.swing.JLabel();
+        projectLocationLabel = new javax.swing.JLabel();
         projectLocation = new javax.swing.JTextField();
-        jButton3 = new javax.swing.JButton();
-        jPanel1 = new javax.swing.JPanel();
+        browseButton = new javax.swing.JButton();
 
         setLayout(new java.awt.GridBagLayout());
 
-        jPanel2.setLayout(new java.awt.GridBagLayout());
+        projectInfoPanel.setLayout(new java.awt.GridBagLayout());
 
-        jLabel4.setLabelFor(jPanel2);
-        org.openide.awt.Mnemonics.setLocalizedText(jLabel4, org.openide.util.NbBundle.getMessage(PanelProjectLocationExtSrc.class, "LBL_ProjectNameAndLocationLabel")); // NOI18N
+        description.setLabelFor(projectInfoPanel);
+        org.openide.awt.Mnemonics.setLocalizedText(description, org.openide.util.NbBundle.getMessage(PanelProjectLocationExtSrc.class, "LBL_ProjectNameAndLocationLabel")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.weightx = 1.0;
-        jPanel2.add(jLabel4, gridBagConstraints);
-        jLabel4.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(PanelProjectLocationExtSrc.class, "ACSN_jLabel4")); // NOI18N
-        jLabel4.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(PanelProjectLocationExtSrc.class, "ACSD_jLabel4")); // NOI18N
+        projectInfoPanel.add(description, gridBagConstraints);
+        description.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(PanelProjectLocationExtSrc.class, "ACSN_jLabel4")); // NOI18N
+        description.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(PanelProjectLocationExtSrc.class, "ACSD_jLabel4")); // NOI18N
 
-        jLabel5.setLabelFor(projectName);
-        org.openide.awt.Mnemonics.setLocalizedText(jLabel5, org.openide.util.NbBundle.getMessage(PanelProjectLocationExtSrc.class, "LBL_NWP1_ProjectName_Label")); // NOI18N
+        projectNameLabel.setLabelFor(projectName);
+        org.openide.awt.Mnemonics.setLocalizedText(projectNameLabel, org.openide.util.NbBundle.getMessage(PanelProjectLocationExtSrc.class, "LBL_NWP1_ProjectName_Label")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(12, 0, 0, 0);
-        jPanel2.add(jLabel5, gridBagConstraints);
-        jLabel5.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(PanelProjectLocationExtSrc.class, "ACSN_projectNameLabel")); // NOI18N
-        jLabel5.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(PanelProjectLocationExtSrc.class, "ACSD_projectNameLabel")); // NOI18N
+        projectInfoPanel.add(projectNameLabel, gridBagConstraints);
+        projectNameLabel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(PanelProjectLocationExtSrc.class, "ACSN_projectNameLabel")); // NOI18N
+        projectNameLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(PanelProjectLocationExtSrc.class, "ACSD_projectNameLabel")); // NOI18N
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(12, 6, 0, 0);
-        jPanel2.add(projectName, gridBagConstraints);
+        projectInfoPanel.add(projectName, gridBagConstraints);
 
-        jLabel6.setLabelFor(projectLocation);
-        org.openide.awt.Mnemonics.setLocalizedText(jLabel6, org.openide.util.NbBundle.getMessage(PanelProjectLocationExtSrc.class, "LBL_NWP1_CreatedProjectFolder_Lablel")); // NOI18N
+        projectLocationLabel.setLabelFor(projectLocation);
+        org.openide.awt.Mnemonics.setLocalizedText(projectLocationLabel, org.openide.util.NbBundle.getMessage(PanelProjectLocationExtSrc.class, "LBL_NWP1_CreatedProjectFolder_Lablel")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 2;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(12, 0, 0, 0);
-        jPanel2.add(jLabel6, gridBagConstraints);
-        jLabel6.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(PanelProjectLocationExtSrc.class, "ACSN_projectLocationLabel")); // NOI18N
-        jLabel6.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(PanelProjectLocationExtSrc.class, "ACSD_projectLocationLabel")); // NOI18N
+        projectInfoPanel.add(projectLocationLabel, gridBagConstraints);
+        projectLocationLabel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(PanelProjectLocationExtSrc.class, "ACSN_projectLocationLabel")); // NOI18N
+        projectLocationLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(PanelProjectLocationExtSrc.class, "ACSD_projectLocationLabel")); // NOI18N
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridy = 2;
@@ -302,10 +299,10 @@ public class PanelProjectLocationExtSrc extends SettingsPanel {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(12, 6, 0, 0);
-        jPanel2.add(projectLocation, gridBagConstraints);
+        projectInfoPanel.add(projectLocation, gridBagConstraints);
 
-        org.openide.awt.Mnemonics.setLocalizedText(jButton3, org.openide.util.NbBundle.getMessage(PanelProjectLocationExtSrc.class, "LBL_NWP1_BrowseLocation_Button3")); // NOI18N
-        jButton3.addActionListener(new java.awt.event.ActionListener() {
+        org.openide.awt.Mnemonics.setLocalizedText(browseButton, org.openide.util.NbBundle.getMessage(PanelProjectLocationExtSrc.class, "LBL_NWP1_BrowseLocation_Button3")); // NOI18N
+        browseButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 browseProjectLocation(evt);
             }
@@ -315,28 +312,20 @@ public class PanelProjectLocationExtSrc extends SettingsPanel {
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(12, 6, 0, 0);
-        jPanel2.add(jButton3, gridBagConstraints);
-        jButton3.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(PanelProjectLocationExtSrc.class, "ACSN_browseButton")); // NOI18N
-        jButton3.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(PanelProjectLocationExtSrc.class, "ACSD_browseButton")); // NOI18N
+        projectInfoPanel.add(browseButton, gridBagConstraints);
+        browseButton.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(PanelProjectLocationExtSrc.class, "ACSN_browseButton")); // NOI18N
+        browseButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(PanelProjectLocationExtSrc.class, "ACSD_browseButton")); // NOI18N
 
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.weightx = 1.0;
-        add(jPanel2, gridBagConstraints);
-
-        jPanel1.setLayout(new java.awt.GridBagLayout());
-        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 0;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.gridheight = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.SOUTHWEST;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
-        add(jPanel1, gridBagConstraints);
-        jPanel1.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(PanelProjectLocationExtSrc.class, "ACSN_jPanel1")); // NOI18N
-        jPanel1.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(PanelProjectLocationExtSrc.class, "ACSD_jPanel1")); // NOI18N
+        add(projectInfoPanel, gridBagConstraints);
 
         getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(PanelProjectLocationExtSrc.class, "ACSN_PanelSourceFolders")); // NOI18N
         getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(PanelProjectLocationExtSrc.class, "ACSD_PanelSourceFolders")); // NOI18N
@@ -346,7 +335,7 @@ public class PanelProjectLocationExtSrc extends SettingsPanel {
         // TODO add your handling code here:
         JFileChooser chooser = new JFileChooser();
         FileUtil.preventFileChooserSymlinkTraversal(chooser, null);
-        chooser.setDialogTitle(NbBundle.getMessage(PanelSourceFolders.class,"LBL_NWP1_SelectProjectLocation"));
+        chooser.setDialogTitle(NbBundle.getMessage(PanelProjectLocationExtSrc.class,"LBL_NWP1_SelectProjectLocation"));
         chooser.setFileSelectionMode (JFileChooser.DIRECTORIES_ONLY);
         String path = this.projectLocation.getText();
         if (path.length() > 0) {
@@ -366,14 +355,13 @@ public class PanelProjectLocationExtSrc extends SettingsPanel {
     
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JButton jButton3;
-    private javax.swing.JLabel jLabel4;
-    private javax.swing.JLabel jLabel5;
-    private javax.swing.JLabel jLabel6;
-    private javax.swing.JPanel jPanel1;
-    private javax.swing.JPanel jPanel2;
+    private javax.swing.JButton browseButton;
+    private javax.swing.JLabel description;
+    private javax.swing.JPanel projectInfoPanel;
     private javax.swing.JTextField projectLocation;
+    private javax.swing.JLabel projectLocationLabel;
     private javax.swing.JTextField projectName;
+    private javax.swing.JLabel projectNameLabel;
     // End of variables declaration//GEN-END:variables
 
 

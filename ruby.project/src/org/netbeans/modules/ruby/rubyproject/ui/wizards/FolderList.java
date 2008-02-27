@@ -71,7 +71,7 @@ public final class FolderList extends javax.swing.JPanel {
     public static final String PROP_FILES = "files";    //NOI18N
     public static final String PROP_LAST_USED_DIR = "lastUsedDir";  //NOI18N
 
-    private String fcMessage;
+    private final String fcMessage;
     private File projectFolder;
     private File lastUsedFolder;
     private FolderList relatedFolderList;
@@ -256,7 +256,7 @@ public final class FolderList extends javax.swing.JPanel {
             if (cd != null) {
                 this.setLastUsedDir(FileUtil.normalizeFile(cd));
             }
-            if (invalidRoots.size()>0) {
+            if (!invalidRoots.isEmpty()) {
                 RubySourceRootsUi.showIllegalRootsDialog(invalidRoots);
             }
         }
@@ -312,10 +312,8 @@ public final class FolderList extends javax.swing.JPanel {
     private static class Renderer extends DefaultListCellRenderer {
         public @Override Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
             File f = (File) value;
-            Project p = FileOwnerQuery.getOwner(f.toURI());
             String message = f.getAbsolutePath();            
-            Component result = super.getListCellRendererComponent(list, message, index, isSelected, cellHasFocus);
-            return result;
+            return super.getListCellRendererComponent(list, message, index, isSelected, cellHasFocus);
         }
         
     }
