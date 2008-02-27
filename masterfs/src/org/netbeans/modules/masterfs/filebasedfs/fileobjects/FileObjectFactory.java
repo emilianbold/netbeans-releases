@@ -46,6 +46,7 @@ import java.io.IOException;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -202,7 +203,18 @@ public final class FileObjectFactory {
             return true;
         }
         if (isWarningEnabled() && caller != null && !caller.equals(Caller.GetChildern)) {
-            boolean notsame = exist != file.exists();
+            boolean realExists = file.exists();
+            boolean notsame = exist != realExists;
+            if (!realExists) {
+                //test for broken symlinks
+                File p = file.getParentFile();
+                if (p != null) {
+                    File[] childs = p.listFiles();
+                    if (childs != null && Arrays.asList(childs).contains(p)) {                    
+                        return true;
+                    }
+                }                    
+            }
             if (notsame) {
                 if (afterRecovering) {
                     printWarning(file, Status.RecoverFail);
