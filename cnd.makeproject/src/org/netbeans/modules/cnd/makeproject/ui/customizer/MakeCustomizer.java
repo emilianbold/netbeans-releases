@@ -232,12 +232,6 @@ public class MakeCustomizer extends javax.swing.JPanel implements HelpCtx.Provid
             }
         });
         configurationPanel.add(configurationComboBox, new java.awt.GridBagConstraints());
-
-        allConfigurationComboBox.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                allConfigurationComboBoxActionPerformed(evt);
-            }
-        });
         configurationPanel.add(allConfigurationComboBox, new java.awt.GridBagConstraints());
 
         configurationsButton.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/makeproject/ui/customizer/Bundle").getString("CONFIGURATIONS_BUTTON_MNE").charAt(0));
@@ -326,10 +320,6 @@ public class MakeCustomizer extends javax.swing.JPanel implements HelpCtx.Provid
         calculateSelectedConfs();
         refresh();
     }//GEN-LAST:event_configurationComboBoxActionPerformed
-
-private void allConfigurationComboBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_allConfigurationComboBoxActionPerformed
-// TODO add your handling code here:
-}//GEN-LAST:event_allConfigurationComboBoxActionPerformed
     
     public void refresh() {
         if (currentCategoryView != null) {
