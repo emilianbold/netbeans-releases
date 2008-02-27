@@ -135,8 +135,8 @@ public abstract class AbstractComponent<C extends Component<C>> implements Compo
      * representations of the DOM children. The returned list is unmodifiable.
      */
     public List<C> getChildren() {
-        _getChildren();
-        return Collections.unmodifiableList(children);
+        List<C> result = new ArrayList<C>(_getChildren());
+        return Collections.unmodifiableList(result);
     }
     
     /**

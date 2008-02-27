@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -22,7 +22,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -96,7 +96,7 @@ public final class RubyPlatform {
         }
     }
 
-    private Info info;
+    private final Info info;
     
     private final String id;
     private final String interpreter;
@@ -381,7 +381,7 @@ public final class RubyPlatform {
     }
 
     private static void showWarning(final RubyPlatform platform) {
-        String msg = NbBundle.getMessage(RubyInstallation.class, "InvalidRubyPlatform", platform.getLabel());
+        String msg = NbBundle.getMessage(RubyPlatform.class, "InvalidRubyPlatform", platform.getLabel());
         JButton closeButton = getCloseButton();
 
         Object[] options = new Object[]{closeButton};
@@ -390,14 +390,14 @@ public final class RubyPlatform {
     
     private static void showWarning(final Project project) {
         String msg =
-                NbBundle.getMessage(RubyInstallation.class, "InvalidRubyPlatformForProject",
+                NbBundle.getMessage(RubyPlatform.class, "InvalidRubyPlatformForProject",
                 ProjectUtils.getInformation(project).getDisplayName());
         JButton closeButton = getCloseButton();
 
         CustomizerProvider customizer = project.getLookup().lookup(CustomizerProvider.class);
         Object[] options;
         JButton propertiesButton =
-                new JButton(NbBundle.getMessage(RubyInstallation.class, "Properties"));
+                new JButton(NbBundle.getMessage(RubyPlatform.class, "Properties"));
         if (customizer != null) {
             options = new Object[]{propertiesButton, closeButton};
         } else {
@@ -412,9 +412,9 @@ public final class RubyPlatform {
     private static Object showDialog(String msg, Object[] options) {
         DialogDescriptor descriptor =
                 new DialogDescriptor(msg,
-                NbBundle.getMessage(RubyInstallation.class, "MissingRuby"), true, options,
+                NbBundle.getMessage(RubyPlatform.class, "MissingRuby"), true, options,
                 options[0],
-                DialogDescriptor.DEFAULT_ALIGN, new HelpCtx(RubyInstallation.class), null);
+                DialogDescriptor.DEFAULT_ALIGN, new HelpCtx(RubyPlatform.class), null);
         descriptor.setMessageType(NotifyDescriptor.Message.ERROR_MESSAGE);
         descriptor.setModal(true);
         Dialog dlg = null;
@@ -431,9 +431,9 @@ public final class RubyPlatform {
 
     private static JButton getCloseButton() {
         JButton closeButton =
-                new JButton(NbBundle.getMessage(RubyInstallation.class, "CTL_Close"));
+                new JButton(NbBundle.getMessage(RubyPlatform.class, "CTL_Close"));
         closeButton.getAccessibleContext().setAccessibleDescription(
-                NbBundle.getMessage(RubyInstallation.class, "AD_Close"));
+                NbBundle.getMessage(RubyPlatform.class, "AD_Close"));
         return closeButton;
     }
 
@@ -630,7 +630,7 @@ public final class RubyPlatform {
         //        }
 
         while (file != null) {
-            if (file == rubyLibFo || file == rubyStubs || file == gemHome) {
+            if (file.equals(rubyLibFo) || file.equals(rubyStubs) || file.equals(gemHome)) {
                 return file;
             }
 
@@ -742,7 +742,7 @@ public final class RubyPlatform {
     }
 
     public @Override String toString() {
-        return "RubyPlatform[id:" + getID() + ", label:" + getLabel() + ", " + getInterpreter() + "]"; // NOI18N
+        return "RubyPlatform[id:" + getID() + ", label:" + getLabel() + ", " + getInterpreter() + ", info: " + info + "]"; // NOI18N
     }
 
     public static class Info {
@@ -758,12 +758,11 @@ public final class RubyPlatform {
         static final String GEM_PATH = "gem_path"; // NOI18N
         static final String GEM_VERSION = "gem_version"; // NOI18N
 
-        private String kind;
-        private String version;
+        private final String kind;
+        private final String version;
         private String jversion;
         private String patchlevel;
         private String releaseDate;
-        private String executable;
         private String platform;
         private String gemHome;
         private String gemPath;
@@ -775,7 +774,6 @@ public final class RubyPlatform {
             this.jversion = props.getProperty(JRUBY_VERSION);
             this.patchlevel = props.getProperty(RUBY_PATCHLEVEL);
             this.releaseDate = props.getProperty(RUBY_RELEASE_DATE);
-            this.executable = props.getProperty(RUBY_EXECUTABLE);
             this.platform = props.getProperty(RUBY_PLATFORM);
             this.gemHome = props.getProperty(GEM_HOME);
             this.gemPath = props.getProperty(GEM_PATH);
@@ -793,7 +791,6 @@ public final class RubyPlatform {
             info.jversion = "1.1RC1"; // NOI18N
             info.patchlevel = "5512"; // NOI18N
             info.releaseDate = "2008-01-12"; // NOI18N
-            info.executable = null;
             info.platform = "java"; // NOI18N
             File jrubyHome = InstalledFileLocator.getDefault().locate(
                     "jruby-1.1RC1", "org.netbeans.modules.ruby.platform", false);  // NOI18N
@@ -824,10 +821,6 @@ public final class RubyPlatform {
         public boolean isJRuby() {
             return "JRuby".equals(kind); // NOI18N
         }
-
-//        public String getExecutable() {
-//            return executable;
-//        }
 
         public void setGemHome(String gemHome) {
             this.gemHome = gemHome;
@@ -871,6 +864,10 @@ public final class RubyPlatform {
         
         public String getVersion() {
             return version;
+        }
+
+        public @Override String toString() {
+            return "RubyPlatform$Info[GEM_HOME:" + getGemHome() + ", GEM_PATH: " + getGemPath() + "]"; // NOI18N
         }
 
     }
