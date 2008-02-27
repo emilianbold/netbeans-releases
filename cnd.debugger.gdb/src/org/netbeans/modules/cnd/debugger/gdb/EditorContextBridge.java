@@ -498,6 +498,14 @@ public class EditorContextBridge {
             }
             return s;
         }
+
+        public DataObject getCurrentDataObject() {
+            DataObject dobj = cp1.getCurrentDataObject();
+            if (dobj == null) {
+                dobj = cp2.getCurrentDataObject();
+            }
+            return dobj;
+        }
         
         public String getSelectedFunctionName () {
             String s = cp1.getSelectedFunctionName ();
