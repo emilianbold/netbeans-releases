@@ -101,7 +101,7 @@ public class CSSStructureScanner implements StructureScanner {
                     int so = AstUtils.documentPosition(node.startOffset(), source);
                     int eo = AstUtils.documentPosition(node.endOffset(), source);
                     if (eo != so) {
-                        items.add(new CSSStructureItem(node, source));
+                        items.add(new CSSStructureItem(new CssElementHandle(node, info), source));
                     }
                 }
             }
@@ -159,46 +159,24 @@ public class CSSStructureScanner implements StructureScanner {
     private static final class CSSStructureItem implements StructureItem {
 
         private TranslatedSource source;
-        private SimpleNode selectorsList;
+        private CssElementHandle handle;
         private String name;
 
-        private CSSStructureItem(SimpleNode selectorsList, TranslatedSource source) {
-            this.selectorsList = selectorsList;
+        private CSSStructureItem(CssElementHandle handle, TranslatedSource source) {
+            this.handle = handle;
             this.source = source;
-            //find selectors and generate item name
-//            final StringBuffer selectors = new StringBuffer();
-//            NodeVisitor selectorSearch = new NodeVisitor() {
-//
-//                public void visit(SimpleNode node2) {
-//                    if (node2.kind() == CSSParserTreeConstants.JJTSELECTOR) {
-//                        String selectorName = node2.jjtGetFirstToken().image;
-//                        selectors.append(selectorName);
-//                        selectors.append(',');
-//                        selectors.append(' ');
-//                    }
-//                }
-//            };
-//            selectorsList.visitChildren(selectorSearch);
-//            name = selectors.toString();
-//            //cut off the last ", "
-//            if(name.length() > 0) {
-//                name = name.substring(0, name.length() - 2);
-//            }
-
-            name = selectorsList.image();
-
         }
 
         public String getName() {
-            return name;
+            return handle.getName();
         }
 
         public String getHtml() {
-            return name;
+            return getName();
         }
 
         public ElementHandle getElementHandle() {
-            return null;
+            return handle;
         }
 
         public ElementKind getKind() {
@@ -219,11 +197,11 @@ public class CSSStructureScanner implements StructureScanner {
         }
 
         public long getPosition() {
-            return AstUtils.documentPosition(selectorsList.startOffset(), source);
+            return AstUtils.documentPosition(handle.node().startOffset(), source);
         }
 
         public long getEndPosition() {
-            return AstUtils.documentPosition(selectorsList.endOffset(), source);
+            return AstUtils.documentPosition(handle.node().endOffset(), source);
         }
     }
 }

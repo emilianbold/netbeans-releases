@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- *
+ * 
  * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
- *
+ * 
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,13 +20,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
+ * 
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -37,53 +31,74 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ * 
+ * Contributor(s):
+ * 
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.masterfs;
+package org.netbeans.modules.css.gsf;
 
-import java.io.IOException;
-import org.netbeans.junit.NbTestCase;
-import org.netbeans.modules.masterfs.filebasedfs.FileBasedFileSystem;
+import java.util.Collections;
+import java.util.Set;
+import org.netbeans.modules.css.editor.Css;
+import org.netbeans.modules.css.parser.SimpleNode;
+import org.netbeans.modules.gsf.api.CompilationInfo;
+import org.netbeans.modules.gsf.api.ElementHandle;
+import org.netbeans.modules.gsf.api.ElementKind;
+import org.netbeans.modules.gsf.api.Modifier;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileSystem;
-import org.openide.filesystems.FileUtil;
-import org.openide.util.Exceptions;
-import org.openide.util.Lookup;
-import org.openide.util.lookup.Lookups;
 
 /**
- * @author Radek Matous
+ *
+ * @author marek
  */
-public class URLMapperTest extends NbTestCase {
-    private static FileSystem mfs;
-    public URLMapperTest(String name) {
-        super(name);
-        mfs = FileBasedFileSystem.getInstance();
+public class CssElementHandle implements ElementHandle {
+
+    private SimpleNode node;
+    private CompilationInfo ci;
+    
+    CssElementHandle(SimpleNode node, CompilationInfo ci) {
+        this.node = node;
+        this.ci = ci;
+    }
+    
+    public FileObject getFileObject() {
+        return ci.getFileObject();
     }
 
-    public void testURLMapperCallingFromMetaInfLookup() {
-        Lookup lkp = Lookups.metaInfServices(Thread.currentThread().getContextClassLoader());
-        Object obj = lkp.lookup(Object.class);
-        assertNotNull(obj);
-        assertEquals(MyInstance2.class, obj.getClass());
+    public String getMimeType() {
+        return Css.CSS_MIME_TYPE;
     }
 
-    public static class MyInstance2 {
-        public MyInstance2() {
-            super();
-            testURLMapper();
-        }
-
-        private static void testURLMapper() {            
-            assertNotNull(mfs);
-            FileObject[] children = mfs.getRoot().getChildren();
-            for (int i = 0; i < children.length; i++) {
-                java.io.File file = FileUtil.toFile(children[i]);
-                assertNotNull(file);
-                assertNotNull(FileUtil.toFileObject(file));
-            }
-        }
-
+    public String getName() {
+        return node.image();
     }
 
+    //XXX what's that????
+    public String getIn() {
+        return null;
+    }
+
+    public ElementKind getKind() {
+        return ElementKind.FIELD;
+    }
+
+    public Set<Modifier> getModifiers() {
+        return Collections.emptySet();
+    }
+
+    public boolean signatureEquals(ElementHandle handle) {
+        //TODO implement
+        return false;
+    }
+
+    public SimpleNode node() {
+        return node;
+    }
+    
+    public CompilationInfo compilationInfo() {
+        return ci;
+    }
+    
 }
