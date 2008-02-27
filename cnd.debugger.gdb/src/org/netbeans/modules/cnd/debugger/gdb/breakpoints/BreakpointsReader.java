@@ -79,6 +79,7 @@ public class BreakpointsReader implements Properties.Reader {
         }
         
         b.setCondition(properties.getString(GdbBreakpoint.PROP_CONDITION, "")); // NOI18N
+        b.setSkipCount(properties.getInt(GdbBreakpoint.PROP_SKIP_COUNT, 0));
         b.setPrintText(properties.getString(GdbBreakpoint.PROP_PRINT_TEXT, "")); // NOI18N
         b.setGroupName(properties.getString(GdbBreakpoint.PROP_GROUP_NAME, "")); // NOI18N
         b.setSuspend(properties.getInt(GdbBreakpoint.PROP_SUSPEND, GdbBreakpoint.SUSPEND_ALL),
@@ -100,6 +101,7 @@ public class BreakpointsReader implements Properties.Reader {
         properties.setString(GdbBreakpoint.PROP_THREAD_ID, b.getThreadID());
         properties.setBoolean(GdbBreakpoint.PROP_ENABLED, b.isEnabled());
         properties.setString(GdbBreakpoint.PROP_CONDITION, b.getCondition());
+        properties.setInt(GdbBreakpoint.PROP_SKIP_COUNT, b.getSkipCount());
         
         if (object instanceof LineBreakpoint) {
             LineBreakpoint lb = (LineBreakpoint) object;
