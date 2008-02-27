@@ -85,10 +85,9 @@ public class Saas {
     private FileObject moduleJar; // NBM this saas was loaded from
     private boolean userDefined = true;
 
-    public Saas(SaasGroup topGroup, SaasGroup parentGroup, SaasServices services) {
+    public Saas(SaasGroup parentGroup, SaasServices services) {
         this.delegate = services;
         this.parentGroup = parentGroup;
-        this.topGroup = topGroup;
     }
     
     public Saas(SaasGroup parent, String url, String displayName, String packageName) {
@@ -125,6 +124,10 @@ public class Saas {
     
     public SaasGroup getTopLevelGroup() {
         return topGroup;
+    }
+    
+    public void setTopLevelGroup(SaasGroup topGroup) {
+        this.topGroup = topGroup;
     }
     
     protected void computePathFromRoot() {
