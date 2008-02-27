@@ -495,17 +495,24 @@ public class Utilities {
         TreePath path = runtimeTree.findPath("Servers");
         runtimeTree.selectPath(path);
         
-        new JPopupMenuOperator(runtimeTree.callPopupOnPath(path)).pushMenuNoBlock(addServerMenuItem);
-       
-        NbDialogOperator addServerInstanceDialog = new NbDialogOperator(addServerInstanceDialogTitle);
-        
-        new JListOperator(addServerInstanceDialog, 1).selectItem(glassFishV2ListItem);
-        
-        new JButtonOperator(addServerInstanceDialog,nextButtonCaption).push();
-        
-        new JTextFieldOperator(addServerInstanceDialog, "glassfish").enterText(appServerPath);
-        
-        new JButtonOperator(addServerInstanceDialog,finishButtonCaption).push();
+        try {
+            //log("Let's check whether GlassFish V2 is already added");
+            runtimeTree.findPath("Servers|GlassFish V2");
+        } catch (TimeoutExpiredException tee) {
+            //log("There is no GlassFish V2 node so we'll add it");
+            
+            new JPopupMenuOperator(runtimeTree.callPopupOnPath(path)).pushMenuNoBlock(addServerMenuItem);
+
+            NbDialogOperator addServerInstanceDialog = new NbDialogOperator(addServerInstanceDialogTitle);
+
+            new JListOperator(addServerInstanceDialog, 1).selectItem(glassFishV2ListItem);
+
+            new JButtonOperator(addServerInstanceDialog,nextButtonCaption).push();
+
+            new JTextFieldOperator(addServerInstanceDialog).enterText(appServerPath);
+
+            new JButtonOperator(addServerInstanceDialog,finishButtonCaption).push();
+        }
         
         runtimeTree.getTimeouts().setTimeout("JTreeOperator.WaitNextNodeTimeout", oldTimeout);
     }
