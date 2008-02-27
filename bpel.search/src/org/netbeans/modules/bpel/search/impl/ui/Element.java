@@ -38,86 +38,48 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.bpel.search.impl.model;
+package org.netbeans.modules.bpel.search.impl.ui;
 
-import javax.swing.Icon;
-import org.netbeans.modules.xml.xam.Component;
-
-import org.netbeans.modules.bpel.editors.api.utils.Util;
-import org.netbeans.modules.bpel.editors.api.utils.RefactorUtil;
 import org.netbeans.modules.bpel.search.api.SearchElement;
 
 /**
  * @author Vladimir Yaroslavskiy
- * @version 2006.11.17
+ * @version 2008.02.27
  */
 final class Element extends SearchElement.Adapter {
 
-  Element(Component component, Object cookie, Object view) {
+  Element(SearchElement element) {
     super(
-      getName(component),
-      getToolTip(component),
-      getIcon(component),
-      getParent(component, cookie, view));
+      getName(element),
+      element.getToolTip(),
+      element.getIcon(),
+      null);
 
-    myComponent = component;
-    myCookie = cookie;
-    myView = view;
+    myElement = element;
   }
 
   @Override
   public void gotoSource()
   {
-    Util.goToSource(myComponent);
+    myElement.gotoSource();
   }
 
   @Override
   public void select()
   {
-    Util.goToDesign(myComponent, myCookie, myView);
+    myElement.select();
   }
 
-  @Override
-  public boolean equals(Object object)
-  {
-    if ( !(object instanceof Element)) {
-      return false;
+  private static String getName(SearchElement element) {
+    StringBuffer name = new StringBuffer(element.getName());
+    SearchElement parent = element.getParent();
+
+    while (parent != null) {
+      name.insert(0, parent.getName() + "."); // NOI18N
+      parent = parent.getParent();
     }
-    return ((Element) object).myComponent.equals(myComponent);
+    return name.toString();
   }
 
-  @Override
-  public int hashCode()
-  {
-    return myComponent.hashCode();
-  }
-
-  private static String getName(Component component) {
-    return RefactorUtil.getName(component);
-  }
-
-  private static String getToolTip(Component component) {
-    return RefactorUtil.getToolTip(component);
-  }
-
-  private static SearchElement getParent(
-    Component component,
-    Object cookie,
-    Object view)
-  {
-    Component parent = component.getParent();
-
-    if (parent == null) {
-      return null;
-    }
-    return new Element(parent, cookie, view);
-  }
-
-  private static Icon getIcon(Component component) {
-    return RefactorUtil.getIcon(component);
-  }
-
-  private Component myComponent;
-  private Object myCookie;
-  private Object myView;
+  private SearchElement myElement;
 }
