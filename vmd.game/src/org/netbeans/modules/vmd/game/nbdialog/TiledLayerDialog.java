@@ -76,6 +76,7 @@ import org.netbeans.api.project.SourceGroup;
 import org.netbeans.modules.vmd.game.dialog.AbstractImagePreviewComponent;
 import org.netbeans.modules.vmd.game.dialog.FullImageGridPreview;
 import org.netbeans.modules.vmd.game.dialog.PartialImageGridPreview;
+import org.netbeans.modules.vmd.game.model.CodeUtils;
 import org.netbeans.modules.vmd.game.model.GlobalRepository;
 import org.netbeans.modules.vmd.game.model.ImageResource;
 import org.netbeans.modules.vmd.game.model.Scene;
@@ -589,6 +590,29 @@ public class TiledLayerDialog extends javax.swing.JPanel implements ActionListen
 		else if (this.listImageFileName.getSelectedValue() == null) {
 			errMsg = NbBundle.getMessage(TiledLayerDialog.class, "SpriteDialog.labelSelectImgFile.txt");
 		}
+        else {
+            Map.Entry<FileObject, String> entry = (Map.Entry<FileObject, String>) this.listImageFileName.getSelectedValue();
+            URL imageURL = null;
+            try {
+                imageURL = entry.getKey().getURL();
+            }
+            catch (Exception e) {
+                e.printStackTrace();
+            }
+            String relativeResourcePath = entry.getValue();
+
+            assert (imageURL != null);
+            assert (relativeResourcePath != null);
+
+            String imgName = CodeUtils.getIdealImageName(relativeResourcePath);
+            
+            List<String> derivedImageNames = GlobalRepository.deriveUsedNames(imgName);
+            for (String derivedName : derivedImageNames) {
+                if (derivedName.equals(this.fieldLayerName.getText())) {
+                    errMsg = NbBundle.getMessage(SpriteDialog.class, "SpriteDialog.imgFileSameAsLayerName.txt");
+                }                
+            }
+        }
 		return errMsg;
 	}
 	
@@ -604,20 +628,22 @@ public class TiledLayerDialog extends javax.swing.JPanel implements ActionListen
 		private void handleImageSelectionChange() {
 			TiledLayerDialog.this.sliderWidth.setEnabled(true);
 			TiledLayerDialog.this.sliderHeight.setEnabled(true);
-			
-			String errMsg = TiledLayerDialog.this.getFieldImageFileNameError();
-			if (errMsg == null) {
-				errMsg = TiledLayerDialog.this.getFieldLayerNameError();
-				try {
-					TiledLayerDialog.this.loadImagePreview();
-				} catch (MalformedURLException e) {
-					errMsg = NbBundle.getMessage(TiledLayerDialog.class, "SpriteDialog.labelInvalidImgLoc.txt");
-					e.printStackTrace();
-				} catch (IllegalArgumentException iae) {
-					errMsg = NbBundle.getMessage(TiledLayerDialog.class, "SpriteDialog.labelInvalidImgFomat.txt");
-					iae.printStackTrace();
-				}					
-			}
+			String errMsg = null;
+            
+            errMsg = TiledLayerDialog.this.getFieldLayerNameError();
+            try {
+                TiledLayerDialog.this.loadImagePreview();
+            } catch (MalformedURLException e) {
+                errMsg = NbBundle.getMessage(TiledLayerDialog.class, "SpriteDialog.labelInvalidImgLoc.txt");
+                e.printStackTrace();
+            } catch (IllegalArgumentException iae) {
+                errMsg = NbBundle.getMessage(TiledLayerDialog.class, "SpriteDialog.labelInvalidImgFomat.txt");
+                iae.printStackTrace();
+            }
+            
+            if (errMsg == null) {
+    			errMsg = TiledLayerDialog.this.getFieldImageFileNameError();
+            }
 			
 			if (errMsg != null) {
 				TiledLayerDialog.this.labelError.setText(errMsg);

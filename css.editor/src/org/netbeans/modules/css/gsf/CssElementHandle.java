@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * 
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
  * 
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -37,37 +37,68 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.javascript.editing;
+package org.netbeans.modules.css.gsf;
 
+import java.util.Collections;
+import java.util.Set;
+import org.netbeans.modules.css.editor.Css;
+import org.netbeans.modules.css.parser.SimpleNode;
+import org.netbeans.modules.gsf.api.CompilationInfo;
+import org.netbeans.modules.gsf.api.ElementHandle;
 import org.netbeans.modules.gsf.api.ElementKind;
+import org.netbeans.modules.gsf.api.Modifier;
+import org.openide.filesystems.FileObject;
 
 /**
  *
- * @author Tor Norbye
+ * @author marek
  */
-public class IndexedProperty extends IndexedElement {
+public class CssElementHandle implements ElementHandle {
+
+    private SimpleNode node;
+    private CompilationInfo ci;
     
-    IndexedProperty(String name, String in, JsIndex index, String fileUrl, String attributes, int flags, ElementKind kind) {
-        super(name, in, index, fileUrl, attributes, flags, kind);
+    CssElementHandle(SimpleNode node, CompilationInfo ci) {
+        this.node = node;
+        this.ci = ci;
     }
     
-    @Override
-    public String toString() {
-        return getSignature() + ":" + getFilenameUrl() + ";" + decodeFlags(flags);
+    public FileObject getFileObject() {
+        return ci.getFileObject();
     }
 
-    @Override
-    public String getSignature() {
-        if (signature == null) {
-            StringBuilder sb = new StringBuilder();
-            if (in != null) {
-                sb.append(in);
-                sb.append('.');
-            }
-            sb.append(name);
-            signature = sb.toString();
-        }
-
-        return signature;
+    public String getMimeType() {
+        return Css.CSS_MIME_TYPE;
     }
+
+    public String getName() {
+        return node.image();
+    }
+
+    //XXX what's that????
+    public String getIn() {
+        return null;
+    }
+
+    public ElementKind getKind() {
+        return ElementKind.FIELD;
+    }
+
+    public Set<Modifier> getModifiers() {
+        return Collections.emptySet();
+    }
+
+    public boolean signatureEquals(ElementHandle handle) {
+        //TODO implement
+        return false;
+    }
+
+    public SimpleNode node() {
+        return node;
+    }
+    
+    public CompilationInfo compilationInfo() {
+        return ci;
+    }
+    
 }
