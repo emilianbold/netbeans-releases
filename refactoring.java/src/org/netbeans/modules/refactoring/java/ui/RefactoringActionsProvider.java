@@ -898,14 +898,13 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider{
             try {
                 DataObject dobj = DataObject.find(children[x]);
                 FileObject fobj = dobj.getPrimaryFile();
-                if (dobj instanceof DataFolder) {
-                    if (containsJavaFile(fobj)) {
-                        return true;
-                    }
-                } else {
-                    if (RetoucheUtils.isJavaFile(fobj)) {
-                        return true;
-                    }
+//                if (dobj instanceof DataFolder) {
+//                    if (containsJavaFile(fobj)) {
+//                        return true;
+//                    }
+//                } else {
+                if (RetoucheUtils.isJavaFile(fobj)) {
+                    return true;
                 }
             } catch (DataObjectNotFoundException ex) {
             }
