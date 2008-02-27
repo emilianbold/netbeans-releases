@@ -43,8 +43,8 @@ package org.netbeans.modules.javascript.editing;
 
 import org.mozilla.javascript.Node;
 import org.mozilla.javascript.Token;
-import org.netbeans.fpi.gsf.CompilationInfo;
-import org.netbeans.fpi.gsf.OffsetRange;
+import org.netbeans.modules.gsf.api.CompilationInfo;
+import org.netbeans.modules.gsf.api.OffsetRange;
 
 /**
  *

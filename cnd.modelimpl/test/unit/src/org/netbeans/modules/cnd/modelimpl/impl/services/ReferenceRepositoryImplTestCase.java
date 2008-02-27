@@ -44,10 +44,12 @@ package org.netbeans.modules.cnd.modelimpl.impl.services;
 import java.io.File;
 import java.io.PrintStream;
 import java.util.Collection;
+import java.util.EnumSet;
 import org.netbeans.junit.Manager;
 import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.util.CsmTracer;
 import org.netbeans.modules.cnd.api.model.xref.CsmReference;
+import org.netbeans.modules.cnd.api.model.xref.CsmReferenceKind;
 import org.netbeans.modules.cnd.api.model.xref.CsmReferenceResolver;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
 import org.netbeans.modules.cnd.modelimpl.trace.TraceModelTestBase;
@@ -76,6 +78,7 @@ public class ReferenceRepositoryImplTestCase extends TraceModelTestBase {
         return Manager.normalizeFile(new File(dataDir, filePath));
     }
     
+    @Override
     protected void postSetUp() throws Exception {
         super.postSetUp();
         log("postSetUp preparing project.");
@@ -90,7 +93,7 @@ public class ReferenceRepositoryImplTestCase extends TraceModelTestBase {
         int line = (Integer) params[0];
         int column = (Integer) params[1];
         boolean inProject = (Boolean)params[2];
-        boolean includeSelfDeclarations = (Boolean) params[3];
+        EnumSet<CsmReferenceKind> kinds = (EnumSet<CsmReferenceKind>) params[3];
         int offset = fileImpl.getOffset(line, column);
         CsmReference tgtRef = CsmReferenceResolver.getDefault().findReference(fileImpl, offset);
         assertNotNull("reference is not found for " + testFile.getAbsolutePath() + "; line="+line+";column="+column, tgtRef);
@@ -100,17 +103,17 @@ public class ReferenceRepositoryImplTestCase extends TraceModelTestBase {
         ReferenceRepositoryImpl xRefRepository = new ReferenceRepositoryImpl();
         Collection<CsmReference> out;
         if (inProject) {
-            out = xRefRepository.getReferences(target, fileImpl.getProject(), includeSelfDeclarations);
+            out = xRefRepository.getReferences(target, fileImpl.getProject(), kinds);
         } else {
-            out = xRefRepository.getReferences(target, fileImpl, includeSelfDeclarations);
+            out = xRefRepository.getReferences(target, fileImpl, kinds);
         }
         TraceXRef.traceRefs(out, target, streamOut);
     }
     
     private void performTest(String source, int line, int column) throws Exception {
-        boolean includeSelfDeclarations = true;
+        EnumSet<CsmReferenceKind> kinds = CsmReferenceKind.ALL;
         boolean inProject = true;
         super.performTest(source, getName() + ".res", null, // NOI18N
-                            line, column, inProject, includeSelfDeclarations);
+                            line, column, inProject, kinds);
     }        
 }

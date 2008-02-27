@@ -174,12 +174,12 @@ public class WsdlSaas extends Saas implements PropertyChangeListener {
             } else if (wsData.isReady()) {
                 setState(State.READY); // compiled in previous IDE run
             }
-        } else if (WsdlData.State.WSDL_SERVICE_COMPILED.equals(newValue)) {
+        } else if (WsdlData.Status.WSDL_SERVICE_COMPILED.equals(newValue)) {
             setState(State.READY);
             WsdlUtil.saveWsdlData(getWsdlData());
-        } else if (WsdlData.State.WSDL_SERVICE_COMPILE_FAILED.equals(newValue)) {
+        } else if (WsdlData.Status.WSDL_SERVICE_COMPILE_FAILED.equals(newValue)) {
             setState(State.RETRIEVED);
-        } else if (WsdlData.State.WSDL_UNRETRIEVED.equals(newValue)) {
+        } else if (WsdlData.Status.WSDL_UNRETRIEVED.equals(newValue)) {
             setState(State.UNINITIALIZED);
         }
     }

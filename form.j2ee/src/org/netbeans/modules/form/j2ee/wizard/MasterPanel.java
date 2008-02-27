@@ -295,6 +295,8 @@ public class MasterPanel implements WizardDescriptor.Panel {
         removeAllButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(MasterPanel.class, "LBL_MasterRemoveAll_ACSD")); // NOI18N
         upButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(MasterPanel.class, "LBL_MasterUp_ACSD")); // NOI18N
         downButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(MasterPanel.class, "LBL_MasterDown_ACSD")); // NOI18N
+
+        masterPanel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(MasterPanel.class, "TITLE_MasterPanel")); // NOI18N
     }
 
     // Code for dispatching events from components to event handlers.

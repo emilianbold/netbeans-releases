@@ -47,7 +47,7 @@
                xsi:schemaLocation='http://xml.netbeans.org/websvc/saas/services/1.0 
                     ../../../../../../../../../../websvc.saas.api/src/org/netbeans/modules/websvc/saas/model/SaasServices.xsd'
                type="http://research.sun.com/wadl/2006/10"
-               api-doc="http://api.facebook.com"
+               api-doc="http://wiki.developers.facebook.com/index.php/API"
                url="org/netbeans/modules/websvc/saas/services/facebook/resources/FacebookSecureWadl.xml">
     
     <description>Facebook Secure Service</description>
@@ -55,7 +55,6 @@
     
     <saas-metadata>
         <localizing-bundle>org.netbeans.modules.websvc.saas.services.facebook.Bundle</localizing-bundle>
-        <icon16>org/netbeans/modules/websvc/saas/services/facebook/resources/facebook16.png</icon16>
         <group name="Facebook"/>
     </saas-metadata>
     

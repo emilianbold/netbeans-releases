@@ -99,7 +99,9 @@ public class ConsistencyVerifier {
         mgr.mutexPrivileged().enterWriteAccess();
         Manifest dummy = new Manifest();
         dummy.getMainAttributes().putValue("OpenIDE-Module", "__dummy__"); // NOI18N
-        dummy.getMainAttributes().putValue("OpenIDE-Module-Provides", "org.openide.modules.ModuleFormat1, " + // NOI18N
+        dummy.getMainAttributes().putValue("OpenIDE-Module-Provides",
+                "org.openide.modules.ModuleFormat1, " + // NOI18N
+                "org.openide.modules.ModuleFormat2, " + // NOI18N
                 "org.openide.modules.os.Unix, " + // NOI18N
                 "org.openide.modules.os.PlainUnix, " + // NOI18N
                 "org.openide.modules.os.Windows, " + // NOI18N

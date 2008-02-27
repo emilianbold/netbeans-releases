@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -53,10 +53,10 @@ import org.apache.jasper.Options;
  */
 public class ExtractPageData {
 
-    protected JspCompilationContext ctxt;
+    private final JspCompilationContext ctxt;
 
-    protected Options options;
-    private CompilerHacks compHacks;
+    private final Options options;
+    private final CompilerHacks compHacks;
 
     private boolean isXml;
     private String sourceEnc;
@@ -64,8 +64,8 @@ public class ExtractPageData {
     /** Creates a new instance of ExtractPageData */
     public ExtractPageData(JspCompilationContext ctxt) {
         this.ctxt = ctxt;
-        this.options = ctxt.getOptions();
-        this.compHacks = new CompilerHacks(ctxt);
+        options = ctxt.getOptions();
+        compHacks = new CompilerHacks(ctxt);
     }
     
     
@@ -90,23 +90,22 @@ public class ExtractPageData {
         Compiler comp = compHacks.getCompiler();
         PageInfo pageInfo = comp.getPageInfo();
         
-	JspConfig jspConfig = options.getJspConfig();
-	JspProperty jspProperty =
-			jspConfig.findJspProperty(ctxt.getJspFile());
+        JspConfig jspConfig = options.getJspConfig();
+        JspProperty jspProperty = jspConfig.findJspProperty(ctxt.getJspFile());
 
-    /*
-     * If the current uri is matched by a pattern specified in
-     * a jsp-property-group in web.xml, initialize pageInfo with
-     * those properties.
-     */
-    pageInfo.setELIgnored(JspUtil.booleanValue(jspProperty.isELIgnored()));
-    pageInfo.setScriptingInvalid(JspUtil.booleanValue(jspProperty.isScriptingInvalid()));
-    if (jspProperty.getIncludePrelude() != null) {
-        pageInfo.setIncludePrelude(jspProperty.getIncludePrelude());
-    }
-	if (jspProperty.getIncludeCoda() != null) {
-	    pageInfo.setIncludeCoda(jspProperty.getIncludeCoda());
-	}
+        /*
+         * If the current uri is matched by a pattern specified in
+         * a jsp-property-group in web.xml, initialize pageInfo with
+         * those properties.
+         */
+        pageInfo.setELIgnored(JspUtil.booleanValue(jspProperty.isELIgnored()));
+        pageInfo.setScriptingInvalid(JspUtil.booleanValue(jspProperty.isScriptingInvalid()));
+        if (jspProperty.getIncludePrelude() != null) {
+            pageInfo.setIncludePrelude(jspProperty.getIncludePrelude());
+        }
+        if (jspProperty.getIncludeCoda() != null) {
+            pageInfo.setIncludeCoda(jspProperty.getIncludeCoda());
+        }
         /*String javaFileName = ctxt.getServletJavaFileName();
 
         // Setup the ServletWriter

@@ -80,9 +80,9 @@ import org.apache.lucene.search.TermQuery;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
 import org.apache.lucene.store.RAMDirectory;
-import org.netbeans.fpi.gsf.IndexDocument;
-import org.netbeans.fpi.gsf.Index.SearchResult;
-import org.netbeans.fpi.gsf.NameKind;
+import org.netbeans.modules.gsf.api.IndexDocument;
+import org.netbeans.modules.gsf.api.Index.SearchResult;
+import org.netbeans.modules.gsf.api.NameKind;
 import org.netbeans.modules.gsf.Language;
 import org.netbeans.napi.gsfret.source.ClassIndex;
 import org.netbeans.modules.gsfret.source.util.LowMemoryEvent;
@@ -263,7 +263,6 @@ class LuceneIndex extends Index {
         }
     };
     
-    // TODO - use this one
     private class CustomFieldSelector implements FieldSelector {
         private Set<String> includeFields;
         
@@ -271,7 +270,10 @@ class LuceneIndex extends Index {
             this.includeFields = includeFields;
         }
         public FieldSelectorResult accept(String key) {
-            return includeFields.contains(key) ? FieldSelectorResult.LOAD : FieldSelectorResult.NO_LOAD;
+            // Always load the filename since clients don't know about it but it's needed
+            // to call getPersistentUrl()
+            boolean include = includeFields.contains(key) || key.equals(DocumentUtil.FIELD_FILENAME);
+            return include ? FieldSelectorResult.LOAD : FieldSelectorResult.NO_LOAD;
         }
     }
     

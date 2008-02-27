@@ -41,9 +41,9 @@ package org.netbeans.modules.javascript.editing;
 
 import java.util.Collections;
 import java.util.Set;
-import org.netbeans.fpi.gsf.ElementHandle;
-import org.netbeans.fpi.gsf.ElementKind;
-import org.netbeans.fpi.gsf.Modifier;
+import org.netbeans.modules.gsf.api.ElementHandle;
+import org.netbeans.modules.gsf.api.ElementKind;
+import org.netbeans.modules.gsf.api.Modifier;
 import org.openide.filesystems.FileObject;
 
 /**

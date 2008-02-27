@@ -106,10 +106,12 @@
                               <tr>
                                   <td class="title"><script type="text/javascript">message(NETBEANS_DOWNLOAD_HEADER)</script></td>
                                   <td class="menu">
-                                      <a href="http://download.netbeans.org/netbeans/6.0/final/">6.0.1</a> |
-                                      <a href="http://bits.netbeans.org/download/6.1/m1/latest/">6.1M1</a>|
-                                      <script type="text/javascript">message(DEVELOPMENT_TITLE)</script> |
-                                      <script type="text/javascript">writeUrl(ARCHIVE_BUILDS_LINK,ARCHIVE_TITLE)</script></a>
+                                      <script type="text/javascript">
+				          add_download_tab("6.0.1", "http://download.netbeans.org/netbeans/6.0/final/");
+                                          add_download_tab("6.1M1","http://bits.netbeans.org/download/6.1/m1/latest/");
+                                          add_download_tab(DEVELOPMENT_TITLE /*,DEVELOPMENT_BUILDS_LINK*/);
+                                          add_download_tab(ARCHIVE_TITLE,ARCHIVE_BUILDS_LINK);
+				     </script>
                                   </td>
                               </tr>
                         </table>

@@ -49,12 +49,16 @@ import java.net.URL;
 import java.util.List;
 import java.util.logging.Logger;
 import org.netbeans.api.debugger.DebuggerManager;
+import org.netbeans.modules.cnd.debugger.gdb.breakpoints.AddressBreakpoint;
 import org.netbeans.modules.cnd.debugger.gdb.breakpoints.FunctionBreakpoint;
 import org.netbeans.modules.cnd.debugger.gdb.breakpoints.GdbBreakpoint;
 import org.netbeans.modules.cnd.debugger.gdb.breakpoints.LineBreakpoint;
+import org.netbeans.modules.cnd.debugger.gdb.disassembly.Disassembly;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileUtil;
+import org.openide.loaders.DataObject;
+import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.Utilities;
 
 /*
@@ -86,31 +90,64 @@ public class EditorContextBridge {
     }
     
     public static boolean showSource(CallStackFrame csf) {
+        if (Disassembly.isInDisasm()) {
+            return showDis(csf);
+        } else {
+            return showCode(csf);
+        }
+    }
+    
+    public static boolean showCode(CallStackFrame csf) {
         String fullname = csf.getFullname();
         
         if (fullname != null) {
             File file = new File(fullname);
 	    if (file.exists()) {
-                try {
-                    File f2 = file.getCanonicalFile();
-                    file = f2;
-                } catch (IOException ioe) {
+                FileObject fo = FileUtil.toFileObject(file);
+                if (fo != null) {
+                    try {
+                        return getContext().showSource(DataObject.find(fo), csf.getLineNumber(), null);
+                    } catch (DataObjectNotFoundException dex) {
+                        // do nothing
+                    }
                 }
-		FileObject fo = FileUtil.toFileObject(file);
-		String url;
-		try {
-		    url = fo.getURL().toExternalForm();
-		} catch (FileStateInvalidException ex) {
-		    if (Utilities.isWindows()) {
-			url = "file:/" + fo.getPath().replace(" ", "%20"); // NOI18N
-		    } else {
-			url = "file:/" + fo.getPath(); // NOI18N
-		    }
-		}
-		return getContext().showSource(url, csf.getLineNumber(), null);
 	    }
         }
 	return false;
+    }
+    
+    public static boolean showDis(CallStackFrame csf) {
+        int line = Disassembly.getCurrent().getAddressLine(csf.getAddr());
+        if (line != -1) {
+            FileObject fo = Disassembly.getFileObject();
+            if (fo != null) {
+                try {
+                    return getContext().showSource(DataObject.find(fo), line, null);
+                } catch (DataObjectNotFoundException dex) {
+                    // do nothing
+                }
+            }
+        }
+        return false;
+    }
+    
+    public static String getUrl(File file) {
+        try {
+            file = file.getCanonicalFile();
+        } catch (IOException ioe) {
+        }
+        FileObject fo = FileUtil.toFileObject(file);
+        String url;
+        try {
+            url = fo.getURL().toExternalForm();
+        } catch (FileStateInvalidException ex) {
+            if (Utilities.isWindows()) {
+                url = "file:/" + fo.getPath().replace(" ", "%20"); // NOI18N
+            } else {
+                url = "file:/" + fo.getPath(); // NOI18N
+            }
+        }
+        return url;
     }
     
     /**
@@ -155,27 +192,32 @@ public class EditorContextBridge {
         if (fullname != null) {
             File file = new File(fullname);
 	    if (file.exists()) {
-                try {
-                    File f2 = file.getCanonicalFile();
-                    file = f2;
-                } catch (IOException ioe) {
+                FileObject fo = FileUtil.toFileObject(file);
+                if (fo != null) {
+                    try {
+                        return getContext().annotate(DataObject.find(fo), csf.getLineNumber(), annotationType, null);
+                    } catch (DataObjectNotFoundException dex) {
+                        // do nothing
+                    }
                 }
-		FileObject fo = FileUtil.toFileObject(file);
-		String url;
-		try {
-		    url = fo.getURL().toExternalForm();
-		} catch (FileStateInvalidException ex) {
-		    /* Best guesses */
-		    if (Utilities.isWindows()) {
-			url = "file:/" + fo.getPath().replace(" ", "%20"); // NOI18N
-		    } else {
-			url = "file:" + fo.getPath(); // NOI18N
-		    }
-		}
-		return getContext().annotate(url, csf.getLineNumber(), annotationType, null);
 	    }
 	}
 	return null;
+    }
+    
+    public static Object annotateDis(CallStackFrame csf, String annotationType) {
+        int line = Disassembly.getCurrent().getAddressLine(csf.getAddr());
+        if (line != -1) {
+            FileObject fo = Disassembly.getFileObject();
+            if (fo != null) {
+                try {
+                    return getContext().annotate(DataObject.find(fo), line, annotationType, null);
+                } catch (DataObjectNotFoundException dex) {
+                    // do nothing
+                }
+            }
+        }
+        return null;
     }
     
     /**
@@ -297,7 +339,7 @@ public class EditorContextBridge {
     
     // utility methods .........................................................
 
-    public static String getFileName(LineBreakpoint b) { 
+    public static String getFileName(GdbBreakpoint b) { 
         try {
             return basename(new File(new URL(b.getURL()).getFile()).getName());
         } catch (MalformedURLException e) {
@@ -335,15 +377,40 @@ public class EditorContextBridge {
         }
         String condition = b.getCondition();
         boolean isConditional = condition.trim().length() > 0;
-        boolean isFunctionBreakpoint = b instanceof FunctionBreakpoint;
         String annotationType;
-        if (isFunctionBreakpoint) {
+        DataObject dobj = null;
+        if (b instanceof FunctionBreakpoint) {
             if (b.isEnabled()) {
                 annotationType = isConditional ? EditorContext.CONDITIONAL_FUNCTION_BREAKPOINT_ANNOTATION_TYPE :
                              EditorContext.FUNCTION_BREAKPOINT_ANNOTATION_TYPE;
             } else {
                 annotationType =  isConditional ? EditorContext.DISABLED_CONDITIONAL_FUNCTION_BREAKPOINT_ANNOTATION_TYPE :
                              EditorContext.DISABLED_FUNCTION_BREAKPOINT_ANNOTATION_TYPE;
+            }
+        } else if (b instanceof AddressBreakpoint) {
+            Disassembly dis = Disassembly.getCurrent();
+            if (dis == null) {
+                return null;
+            }
+            lineNumber = dis.getAddressLine(((AddressBreakpoint)b).getAddress());
+            if (lineNumber == -1) {
+                return null;
+            }
+            FileObject fo = Disassembly.getFileObject();
+            if (fo == null) {
+                return null;
+            }
+            try {
+                dobj = DataObject.find(fo);
+            } catch(DataObjectNotFoundException ex) {
+                return null;
+            }
+            if (b.isEnabled()) {
+                annotationType = isConditional ? EditorContext.CONDITIONAL_ADDRESS_BREAKPOINT_ANNOTATION_TYPE :
+                             EditorContext.ADDRESS_BREAKPOINT_ANNOTATION_TYPE;
+            } else {
+                annotationType = isConditional ? EditorContext.DISABLED_CONDITIONAL_ADDRESS_BREAKPOINT_ANNOTATION_TYPE :
+                             EditorContext.DISABLED_ADDRESS_BREAKPOINT_ANNOTATION_TYPE;
             }
         } else {
             if (b.isEnabled()) {
@@ -431,6 +498,14 @@ public class EditorContextBridge {
             }
             return s;
         }
+
+        public DataObject getCurrentDataObject() {
+            DataObject dobj = cp1.getCurrentDataObject();
+            if (dobj == null) {
+                dobj = cp2.getCurrentDataObject();
+            }
+            return dobj;
+        }
         
         public String getSelectedFunctionName () {
             String s = cp1.getSelectedFunctionName ();
@@ -452,6 +527,13 @@ public class EditorContextBridge {
             ca.annotation2 = cp2.annotate(sourceName, lineNumber, annotationType, timeStamp);
             return ca;
         }
+        
+        public Object annotate(DataObject dobj, int lineNumber, String annotationType, Object timeStamp) {
+            CompoundAnnotation ca = new CompoundAnnotation();
+            ca.annotation1 = cp1.annotate(dobj, lineNumber, annotationType, timeStamp);
+            ca.annotation2 = cp2.annotate(dobj, lineNumber, annotationType, timeStamp);
+            return ca;
+        }
 
         public int getLineNumber(Object annotation, Object timeStamp) {
             CompoundAnnotation ca = new CompoundAnnotation();
@@ -465,6 +547,11 @@ public class EditorContextBridge {
         public boolean showSource(String sourceName, int lineNumber, Object timeStamp) {
             return cp1.showSource(sourceName, lineNumber, timeStamp) |
                    cp2.showSource(sourceName, lineNumber, timeStamp);
+        }
+        
+        public boolean showSource(DataObject dobj, int lineNumber, Object timeStamp) {
+            return cp1.showSource(dobj, lineNumber, timeStamp) |
+                   cp2.showSource(dobj, lineNumber, timeStamp);
         }
     
         public int getFieldLineNumber(String url, String className, String fieldName) {

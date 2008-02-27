@@ -49,6 +49,7 @@ import javax.swing.ComboBoxModel;
 import javax.swing.DefaultComboBoxModel;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.api.progress.ProgressHandle;
+import org.netbeans.modules.mercurial.ui.log.RepositoryRevision;
 import org.openide.util.RequestProcessor;
 import org.openide.util.NbBundle;
 import org.netbeans.modules.mercurial.util.HgCommand;
@@ -63,18 +64,24 @@ public class BackoutPanel extends javax.swing.JPanel {
     private RequestProcessor.Task           refreshViewTask;
     private static final RequestProcessor   rp = new RequestProcessor("MercurialBackout", 1);  // NOI18N
     private Thread                          refreshViewThread;
+    private RepositoryRevision              repoRev;
 
     private static final int HG_REVERT_TARGET_LIMIT = 100;
 
     /** Creates new form ReverModificationsPanel */
-     public BackoutPanel(File repo) {
+     public BackoutPanel(File repo, RepositoryRevision repoRev) {
+        this.repoRev = repoRev;
         repository = repo;
         refreshViewTask = rp.create(new RefreshViewTask());
         initComponents();
         commitMsgField.setText(
-                NbBundle.getMessage(BackoutPanel.class, "BackoutPanel.commitMsgField.text") + 
+                NbBundle.getMessage(BackoutPanel.class, "BackoutPanel.commitMsgField.text") +  // NOI18N
                 BackoutAction.HG_BACKOUT_REVISION); // NOI18N
         refreshViewTask.schedule(0);
+        if(repoRev != null){
+            org.openide.awt.Mnemonics.setLocalizedText(revisionsLabel, 
+                    org.openide.util.NbBundle.getMessage(BackoutPanel.class, "CTL_ChoosenRevision")); // NOI18N
+        }
     }
 
     public String getSelectedRevision() {
@@ -136,6 +143,7 @@ public class BackoutPanel extends javax.swing.JPanel {
 
         commitMsgField.setText(org.openide.util.NbBundle.getMessage(BackoutPanel.class, "BackoutPanel.commitMsgField.text")); // NOI18N
 
+        commitLabel.setLabelFor(commitMsgField);
         org.openide.awt.Mnemonics.setLocalizedText(commitLabel, org.openide.util.NbBundle.getMessage(BackoutPanel.class, "BackoutPanel.commitLabel.text")); // NOI18N
 
         org.jdesktop.layout.GroupLayout jPanel1Layout = new org.jdesktop.layout.GroupLayout(jPanel1);
@@ -146,7 +154,7 @@ public class BackoutPanel extends javax.swing.JPanel {
                 .addContainerGap()
                 .add(commitLabel)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(commitMsgField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 269, Short.MAX_VALUE)
+                .add(commitMsgField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 271, Short.MAX_VALUE)
                 .addContainerGap())
         );
         jPanel1Layout.setVerticalGroup(
@@ -157,6 +165,8 @@ public class BackoutPanel extends javax.swing.JPanel {
                     .add(commitMsgField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
+
+        commitMsgField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(BackoutPanel.class, "ACSD_commitMsgField")); // NOI18N
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
@@ -169,7 +179,7 @@ public class BackoutPanel extends javax.swing.JPanel {
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
                             .add(org.jdesktop.layout.GroupLayout.LEADING, jPanel1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                             .add(org.jdesktop.layout.GroupLayout.LEADING, infoLabel2)
-                            .add(org.jdesktop.layout.GroupLayout.LEADING, infoLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 390, Short.MAX_VALUE)))
+                            .add(org.jdesktop.layout.GroupLayout.LEADING, infoLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 391, Short.MAX_VALUE)))
                     .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createSequentialGroup()
                         .add(48, 48, 48)
                         .add(revisionsLabel)
@@ -191,6 +201,8 @@ public class BackoutPanel extends javax.swing.JPanel {
                 .add(jPanel1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap(14, Short.MAX_VALUE))
         );
+
+        revisionsComboBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(BackoutPanel.class, "ACSD_revisionsComboBoxBackout")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
 
     private void doMergeChxBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_doMergeChxBoxActionPerformed
@@ -213,15 +225,26 @@ public class BackoutPanel extends javax.swing.JPanel {
         // XXX attach Cancelable hook
         final ProgressHandle ph = ProgressHandleFactory.createHandle(NbBundle.getMessage(Backout.class, "MSG_Refreshing_Backout_Versions")); // NOI18N
         try {
-            Set<String>  initialRevsSet = new LinkedHashSet<String>();
-            initialRevsSet.add(NbBundle.getMessage(Backout.class, "MSG_Fetching_Revisions")); // NOI18N
-            ComboBoxModel targetsModel = new DefaultComboBoxModel(new Vector<String>(initialRevsSet));
-            revisionsComboBox.setModel(targetsModel);
-            refreshViewThread = Thread.currentThread();
-            Thread.interrupted();  // clear interupted status
-            ph.start();
+            Set<String> initialRevsSet = new LinkedHashSet<String>();
+            ComboBoxModel targetsModel;
+            if (repoRev != null) {
+                initialRevsSet.add(repoRev.getLog().getRevision() + " (" + repoRev.getLog().getCSetShortID() + ")"); // NOI18N
+                targetsModel = new DefaultComboBoxModel(new Vector<String>(initialRevsSet));
+                revisionsComboBox.setModel(targetsModel);
+                revisionsComboBox.setEditable(false);
+                refreshViewThread = Thread.currentThread();
+                Thread.interrupted();  // clear interupted status
+                ph.start();
+            } else {
+                initialRevsSet.add(NbBundle.getMessage(Backout.class, "MSG_Fetching_Revisions")); // NOI18N
+                targetsModel = new DefaultComboBoxModel(new Vector<String>(initialRevsSet));
+                revisionsComboBox.setModel(targetsModel);
+                refreshViewThread = Thread.currentThread();
+                Thread.interrupted();  // clear interupted status
+                ph.start();
 
-            refreshRevisions();
+                refreshRevisions();
+            }
         } finally {
             SwingUtilities.invokeLater(new Runnable() {
                 public void run() {

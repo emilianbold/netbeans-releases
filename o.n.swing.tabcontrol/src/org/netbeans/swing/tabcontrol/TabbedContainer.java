@@ -40,6 +40,7 @@
  */
 
 package org.netbeans.swing.tabcontrol;
+
 import javax.accessibility.Accessible;
 import org.netbeans.swing.tabcontrol.event.TabActionEvent;
 import org.netbeans.swing.tabcontrol.plaf.DefaultTabbedContainerUI;
@@ -358,8 +359,6 @@ public class TabbedContainer extends JComponent implements Accessible {
         putClientProperty ("viewType", new Integer(type)); //NOI18N
     }
     
-    
-
     /**
      * Overridden as follows:  When called by the superclass constructor (before
      * the <code>type</code> field is set), it will simply return; the  
@@ -893,6 +892,12 @@ public class TabbedContainer extends JComponent implements Accessible {
                                 || ke.getKeyCode() == KeyEvent.VK_CONTROL) ) {
                             setTransparent( false );
                         }
+                    } else if( event.getID() == MouseEvent.MOUSE_PRESSED ) {
+                        setTransparent( false );
+                    } else if( event.getID() == KeyEvent.KEY_PRESSED ) {
+                        KeyEvent ke = (KeyEvent)event;
+                        if( !(ke.getKeyCode() == KeyEvent.VK_ALT || ke.getKeyCode() == KeyEvent.VK_SHIFT) )
+                            setTransparent( false );
                     }
                 }
             };

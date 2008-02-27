@@ -309,12 +309,14 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
 		currentText = currentText.equals("1") ? "GNU" : "Sun"; // NOI18N
             }
             ((MakeConfiguration) currentConf).getCompilerSet().setValue(currentText);
+        } else if (element.equals(COMPILER_SET_ELEMENT+"2")) {
+            ((MakeConfiguration) currentConf).getCompilerSet2().setValue(currentText);
         } else if (element.equals(C_REQUIRED_ELEMENT)) {
-            ((MakeConfiguration) currentConf).getCRequired().setValue(currentText.equals(TRUE_VALUE));
+            ((MakeConfiguration) currentConf).getCRequired().setValue(currentText.equals(TRUE_VALUE), !currentText.equals(TRUE_VALUE));
         } else if (element.equals(CPP_REQUIRED_ELEMENT)) {
-            ((MakeConfiguration) currentConf).getCppRequired().setValue(currentText.equals(TRUE_VALUE));
+            ((MakeConfiguration) currentConf).getCppRequired().setValue(currentText.equals(TRUE_VALUE), !currentText.equals(TRUE_VALUE));
         } else if (element.equals(FORTRAN_REQUIRED_ELEMENT)) {
-            ((MakeConfiguration) currentConf).getFortranRequired().setValue(currentText.equals(TRUE_VALUE));
+            ((MakeConfiguration) currentConf).getFortranRequired().setValue(currentText.equals(TRUE_VALUE), !currentText.equals(TRUE_VALUE));
         } else if (element.equals(PLATFORM_ELEMENT)) {
             int set = new Integer(currentText).intValue();
             if (descriptorVersion <= 37 && set == 4) {

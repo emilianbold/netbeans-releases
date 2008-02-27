@@ -63,7 +63,8 @@ public class ExtensionsSettings {
         DEFAULT_EXTENSION_PREFIX = "def-ext-"; //NOI18N
         defaultExtensionsList = che.getDefaultExtensionList();
         assert defaultExtensionsList.extensions().hasMoreElements();
-        this.defaultExtension = defaultExtensionsList.extensions().nextElement();
+        this.defaultExtension = che.getDefaultDefaultExtension();
+        assert defaultExtensionsList.isRegistered("." + defaultExtension);
         this.name = name;
     }
     

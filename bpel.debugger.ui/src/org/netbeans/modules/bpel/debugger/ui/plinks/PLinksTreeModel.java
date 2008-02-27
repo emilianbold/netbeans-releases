@@ -27,7 +27,6 @@ import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Vector;
-import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.modules.bpel.debugger.api.BpelDebugger;
 import org.netbeans.modules.bpel.debugger.api.ProcessInstance;
 import org.netbeans.modules.bpel.debugger.api.RuntimePartnerLink;
@@ -39,6 +38,7 @@ import org.netbeans.modules.bpel.debugger.ui.util.VariablesUtil;
 import org.netbeans.modules.bpel.debugger.ui.util.XmlUtil;
 import org.netbeans.modules.bpel.model.api.BpelModel;
 import org.netbeans.modules.bpel.model.api.PartnerLink;
+import org.netbeans.modules.bpel.model.api.PartnerLinkContainer;
 import org.netbeans.modules.bpel.model.api.Scope;
 import org.netbeans.spi.debugger.ContextProvider;
 import org.netbeans.spi.viewmodel.ModelEvent;
@@ -271,8 +271,13 @@ public class PLinksTreeModel implements TreeModel {
         final List<PartnerLink> pLinks = new LinkedList<PartnerLink>();
         
         // Add the variables from the process
-        pLinks.addAll(Arrays.asList(model.getProcess().
-                getPartnerLinkContainer().getPartnerLinks()));
+        PartnerLinkContainer pLinksContainer = 
+                model.getProcess().getPartnerLinkContainer();
+        if ((pLinksContainer != null) && 
+                (pLinksContainer.sizeOfPartnerLink() > 0)) {
+            
+            pLinks.addAll(Arrays.asList(pLinksContainer.getPartnerLinks()));
+        }
         
         final String xpath = myDebugger.getCurrentProcessInstance().
                 getProcessExecutionModel().getLastStartedEntity().
@@ -287,8 +292,13 @@ public class PLinksTreeModel implements TreeModel {
             
             final Scope scope = helper.getScopeEntity(scopeXpath);
             if (scope != null) {
-                pLinks.addAll(Arrays.asList(
-                        scope.getPartnerLinkContainer().getPartnerLinks()));
+                pLinksContainer = scope.getPartnerLinkContainer();
+                if ((pLinksContainer != null) && 
+                        (pLinksContainer.sizeOfPartnerLink() > 0)) {
+                        
+                    pLinks.addAll(
+                            Arrays.asList(pLinksContainer.getPartnerLinks()));
+                }
             }
             
             scopeIndex = index == -1 ? 

@@ -1,4 +1,4 @@
-TMP:METHOD:[]:ESCAPED{TMP}:
+TMP:CONSTRUCTOR:[]:ESCAPED{TMP}:
 cb:METHOD:[]:ESCAPED{cb}(PARAMETERS{ESCAPED{res}}):
 fp:METHOD:[]:ESCAPED{fp}(PARAMETERS{ESCAPED{e}}):
 gcs:METHOD:[]:ESCAPED{gcs}(PARAMETERS{ESCAPED{node}}):
@@ -17,12 +17,22 @@ left:GLOBAL:[]:ESCAPED{left}:
 top:GLOBAL:[]:ESCAPED{top}:
 width:GLOBAL:[]:ESCAPED{width}:
 height:GLOBAL:[]:ESCAPED{height}:
+_config:CLASS:[]:ESCAPED{_config}:
+  delayMozLoadingFix:PROPERTY:[]:ESCAPED{delayMozLoadingFix}:
+  isDebug:PROPERTY:[]:ESCAPED{isDebug}:
+  libraryScriptUri:PROPERTY:[]:ESCAPED{libraryScriptUri}:
+  preventBackButtonFix:PROPERTY:[]:ESCAPED{preventBackButtonFix}:
 dojo.version:CLASS:[]:ESCAPED{dojo.version}:
+  flag:PROPERTY:[]:ESCAPED{flag}:
+  major:PROPERTY:[]:ESCAPED{major}:
+  minor:PROPERTY:[]:ESCAPED{minor}:
+  patch:PROPERTY:[]:ESCAPED{patch}:
+  revision:PROPERTY:[]:ESCAPED{revision}:
   toString:METHOD:[]:ESCAPED{toString}:
 dojo:CLASS:[]:ESCAPED{dojo}:
-  Color:METHOD:[]:ESCAPED{Color}(PARAMETERS{ESCAPED{color}}):
-  Deferred:METHOD:[]:ESCAPED{Deferred}(PARAMETERS{ESCAPED{canceller}}):
-  NodeList:METHOD:[]:ESCAPED{NodeList}:
+  Color:CONSTRUCTOR:[]:ESCAPED{Color}(PARAMETERS{ESCAPED{color}}):
+  Deferred:CONSTRUCTOR:[]:ESCAPED{Deferred}(PARAMETERS{ESCAPED{canceller}}):
+  NodeList:CONSTRUCTOR:[]:ESCAPED{NodeList}:
   _Line:METHOD:[]:ESCAPED{_Line}(PARAMETERS{ESCAPED{start}, ESCAPED{end}}):
   _Url:METHOD:[]:ESCAPED{_Url}:
   _abs:METHOD:[]:ESCAPED{_abs}(PARAMETERS{ESCAPED{node}, ESCAPED{includeScroll}}):
@@ -155,6 +165,23 @@ dojo._listener:CLASS:[]:ESCAPED{dojo._listener}:
   add:METHOD:[]:ESCAPED{add}(PARAMETERS{ESCAPED{source}, ESCAPED{method}, ESCAPED{listener}}):
   getDispatcher:METHOD:[]:ESCAPED{getDispatcher}:
   remove:METHOD:[]:ESCAPED{remove}(PARAMETERS{ESCAPED{source}, ESCAPED{method}, ESCAPED{handle}}):
+dojo.Color.named:CLASS:[]:ESCAPED{dojo.Color.named}:
+  aqua:PROPERTY:[]:ESCAPED{aqua}:
+  black:PROPERTY:[]:ESCAPED{black}:
+  blue:PROPERTY:[]:ESCAPED{blue}:
+  fuchsia:PROPERTY:[]:ESCAPED{fuchsia}:
+  gray:PROPERTY:[]:ESCAPED{gray}:
+  green:PROPERTY:[]:ESCAPED{green}:
+  lime:PROPERTY:[]:ESCAPED{lime}:
+  maroon:PROPERTY:[]:ESCAPED{maroon}:
+  navy:PROPERTY:[]:ESCAPED{navy}:
+  olive:PROPERTY:[]:ESCAPED{olive}:
+  purple:PROPERTY:[]:ESCAPED{purple}:
+  red:PROPERTY:[]:ESCAPED{red}:
+  silver:PROPERTY:[]:ESCAPED{silver}:
+  teal:PROPERTY:[]:ESCAPED{teal}:
+  white:PROPERTY:[]:ESCAPED{white}:
+  yellow:PROPERTY:[]:ESCAPED{yellow}:
 dojo._event_listener:CLASS:[]:ESCAPED{dojo._event_listener}:
   _fixCallback:METHOD:[]:ESCAPED{_fixCallback}(PARAMETERS{ESCAPED{name}, ESCAPED{fp}}):
   _fixCallback:METHOD:[]:ESCAPED{_fixCallback}(PARAMETERS{ESCAPED{fp}}):
@@ -163,14 +190,105 @@ dojo._event_listener:CLASS:[]:ESCAPED{dojo._event_listener}:
   _setKeyChar:METHOD:[]:ESCAPED{_setKeyChar}(PARAMETERS{ESCAPED{evt}}):
   add:METHOD:[]:ESCAPED{add}(PARAMETERS{ESCAPED{node}, ESCAPED{name}, ESCAPED{fp}}):
   remove:METHOD:[]:ESCAPED{remove}(PARAMETERS{ESCAPED{node}, ESCAPED{event}, ESCAPED{handle}}):
+dojo.keys:CLASS:[]:ESCAPED{dojo.keys}:
+  ALT:PROPERTY:[]:ESCAPED{ALT}:
+  BACKSPACE:PROPERTY:[]:ESCAPED{BACKSPACE}:
+  CAPS_LOCK:PROPERTY:[]:ESCAPED{CAPS_LOCK}:
+  CLEAR:PROPERTY:[]:ESCAPED{CLEAR}:
+  CTRL:PROPERTY:[]:ESCAPED{CTRL}:
+  DELETE:PROPERTY:[]:ESCAPED{DELETE}:
+  DOWN_ARROW:PROPERTY:[]:ESCAPED{DOWN_ARROW}:
+  END:PROPERTY:[]:ESCAPED{END}:
+  ENTER:PROPERTY:[]:ESCAPED{ENTER}:
+  ESCAPE:PROPERTY:[]:ESCAPED{ESCAPE}:
+  F1:PROPERTY:[]:ESCAPED{F1}:
+  F10:PROPERTY:[]:ESCAPED{F10}:
+  F11:PROPERTY:[]:ESCAPED{F11}:
+  F12:PROPERTY:[]:ESCAPED{F12}:
+  F13:PROPERTY:[]:ESCAPED{F13}:
+  F14:PROPERTY:[]:ESCAPED{F14}:
+  F15:PROPERTY:[]:ESCAPED{F15}:
+  F2:PROPERTY:[]:ESCAPED{F2}:
+  F3:PROPERTY:[]:ESCAPED{F3}:
+  F4:PROPERTY:[]:ESCAPED{F4}:
+  F5:PROPERTY:[]:ESCAPED{F5}:
+  F6:PROPERTY:[]:ESCAPED{F6}:
+  F7:PROPERTY:[]:ESCAPED{F7}:
+  F8:PROPERTY:[]:ESCAPED{F8}:
+  F9:PROPERTY:[]:ESCAPED{F9}:
+  HELP:PROPERTY:[]:ESCAPED{HELP}:
+  HOME:PROPERTY:[]:ESCAPED{HOME}:
+  INSERT:PROPERTY:[]:ESCAPED{INSERT}:
+  LEFT_ARROW:PROPERTY:[]:ESCAPED{LEFT_ARROW}:
+  LEFT_WINDOW:PROPERTY:[]:ESCAPED{LEFT_WINDOW}:
+  NUMPAD_0:PROPERTY:[]:ESCAPED{NUMPAD_0}:
+  NUMPAD_1:PROPERTY:[]:ESCAPED{NUMPAD_1}:
+  NUMPAD_2:PROPERTY:[]:ESCAPED{NUMPAD_2}:
+  NUMPAD_3:PROPERTY:[]:ESCAPED{NUMPAD_3}:
+  NUMPAD_4:PROPERTY:[]:ESCAPED{NUMPAD_4}:
+  NUMPAD_5:PROPERTY:[]:ESCAPED{NUMPAD_5}:
+  NUMPAD_6:PROPERTY:[]:ESCAPED{NUMPAD_6}:
+  NUMPAD_7:PROPERTY:[]:ESCAPED{NUMPAD_7}:
+  NUMPAD_8:PROPERTY:[]:ESCAPED{NUMPAD_8}:
+  NUMPAD_9:PROPERTY:[]:ESCAPED{NUMPAD_9}:
+  NUMPAD_DIVIDE:PROPERTY:[]:ESCAPED{NUMPAD_DIVIDE}:
+  NUMPAD_ENTER:PROPERTY:[]:ESCAPED{NUMPAD_ENTER}:
+  NUMPAD_MINUS:PROPERTY:[]:ESCAPED{NUMPAD_MINUS}:
+  NUMPAD_MULTIPLY:PROPERTY:[]:ESCAPED{NUMPAD_MULTIPLY}:
+  NUMPAD_PERIOD:PROPERTY:[]:ESCAPED{NUMPAD_PERIOD}:
+  NUMPAD_PLUS:PROPERTY:[]:ESCAPED{NUMPAD_PLUS}:
+  NUM_LOCK:PROPERTY:[]:ESCAPED{NUM_LOCK}:
+  PAGE_DOWN:PROPERTY:[]:ESCAPED{PAGE_DOWN}:
+  PAGE_UP:PROPERTY:[]:ESCAPED{PAGE_UP}:
+  PAUSE:PROPERTY:[]:ESCAPED{PAUSE}:
+  RIGHT_ARROW:PROPERTY:[]:ESCAPED{RIGHT_ARROW}:
+  RIGHT_WINDOW:PROPERTY:[]:ESCAPED{RIGHT_WINDOW}:
+  SCROLL_LOCK:PROPERTY:[]:ESCAPED{SCROLL_LOCK}:
+  SELECT:PROPERTY:[]:ESCAPED{SELECT}:
+  SHIFT:PROPERTY:[]:ESCAPED{SHIFT}:
+  SPACE:PROPERTY:[]:ESCAPED{SPACE}:
+  TAB:PROPERTY:[]:ESCAPED{TAB}:
+  UP_ARROW:PROPERTY:[]:ESCAPED{UP_ARROW}:
 dojo._ie_listener:CLASS:[]:ESCAPED{dojo._ie_listener}:
   add:METHOD:[]:ESCAPED{add}(PARAMETERS{ESCAPED{source}, ESCAPED{method}, ESCAPED{listener}}):
+  handlers:PROPERTY:[]:ESCAPED{handlers}:
   remove:METHOD:[]:ESCAPED{remove}(PARAMETERS{ESCAPED{source}, ESCAPED{method}, ESCAPED{handle}}):
 del:CLASS:[]:ESCAPED{del}:
   _synthesizeEvent:METHOD:[]:ESCAPED{_synthesizeEvent}(PARAMETERS{ESCAPED{evt}, ESCAPED{props}}):
 faux:CLASS:[]:ESCAPED{faux}:
   preventDefault:METHOD:[]:ESCAPED{preventDefault}:
   stopPropagation:METHOD:[]:ESCAPED{stopPropagation}:
+identifierMap:CLASS:[]:ESCAPED{identifierMap}:
+  Down:PROPERTY:[]:ESCAPED{Down}:
+  Left:PROPERTY:[]:ESCAPED{Left}:
+  PageDown:PROPERTY:[]:ESCAPED{PageDown}:
+  PageUp:PROPERTY:[]:ESCAPED{PageUp}:
+  Right:PROPERTY:[]:ESCAPED{Right}:
+  Up:PROPERTY:[]:ESCAPED{Up}:
+_pixelNamesCache:CLASS:[]:ESCAPED{_pixelNamesCache}:
+  height:PROPERTY:[]:ESCAPED{height}:
+  left:PROPERTY:[]:ESCAPED{left}:
+  top:PROPERTY:[]:ESCAPED{top}:
+  width:PROPERTY:[]:ESCAPED{width}:
+_nilExtents:CLASS:[]:ESCAPED{_nilExtents}:
+  h:PROPERTY:[]:ESCAPED{h}:
+  l:PROPERTY:[]:ESCAPED{l}:
+  t:PROPERTY:[]:ESCAPED{t}:
+  w:PROPERTY:[]:ESCAPED{w}:
+ret:CLASS:[]:ESCAPED{ret}:
+  x:PROPERTY:[]:ESCAPED{x}:
+  y:PROPERTY:[]:ESCAPED{y}:
+currentPart:CLASS:[]:ESCAPED{currentPart}:
+  attrs:PROPERTY:[]:ESCAPED{attrs}:
+  classes:PROPERTY:[]:ESCAPED{classes}:
+  id:PROPERTY:[]:ESCAPED{id}:
+  oper:PROPERTY:[]:ESCAPED{oper}:
+  pseudos:PROPERTY:[]:ESCAPED{pseudos}:
+  query:PROPERTY:[]:ESCAPED{query}:
+  tag:PROPERTY:[]:ESCAPED{tag}:
+_cp:CLASS:[]:ESCAPED{_cp}:
+  name:PROPERTY:[]:ESCAPED{name}:
+  value:PROPERTY:[]:ESCAPED{value}:
 xPathAttrs:CLASS:[]:ESCAPED{xPathAttrs}:
   $=:METHOD:[]:ESCAPED{$=}(PARAMETERS{ESCAPED{attr}, ESCAPED{value}}):
   *=:METHOD:[]:ESCAPED{*=}(PARAMETERS{ESCAPED{attr}, ESCAPED{value}}):
@@ -192,6 +310,7 @@ pseudos:CLASS:[]:ESCAPED{pseudos}:
   not:METHOD:[]:ESCAPED{not}(PARAMETERS{ESCAPED{name}, ESCAPED{condition}}):
   nth-child:METHOD:[]:ESCAPED{nth-child}(PARAMETERS{ESCAPED{name}, ESCAPED{condition}}):
 _queryFuncCache:CLASS:[]:ESCAPED{_queryFuncCache}:
+  *:PROPERTY:[]:ESCAPED{*}:
   >:METHOD:[]:ESCAPED{>}(PARAMETERS{ESCAPED{root}}):
 dojo._contentHandlers:CLASS:[]:ESCAPED{dojo._contentHandlers}:
   javascript:METHOD:[]:ESCAPED{javascript}(PARAMETERS{ESCAPED{xhr}}):
@@ -199,6 +318,9 @@ dojo._contentHandlers:CLASS:[]:ESCAPED{dojo._contentHandlers}:
   json-comment-filtered:METHOD:[]:ESCAPED{json-comment-filtered}(PARAMETERS{ESCAPED{xhr}}):
   text:METHOD:[]:ESCAPED{text}(PARAMETERS{ESCAPED{xhr}}):
   xml:METHOD:[]:ESCAPED{xml}(PARAMETERS{ESCAPED{xhr}}):
+ioArgs:CLASS:[]:ESCAPED{ioArgs}:
+  args:PROPERTY:[]:ESCAPED{args}:
+  url:PROPERTY:[]:ESCAPED{url}:
 _d:CLASS:[]:ESCAPED{_d}:
   _ioWatch:METHOD:[]:ESCAPED{_ioWatch}(PARAMETERS{ESCAPED{dfd}, ESCAPED{validCheck}, ESCAPED{ioCheck}, ESCAPED{resHandle}}):
 runner:CLASS:[]:ESCAPED{runner}:

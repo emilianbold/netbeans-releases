@@ -134,11 +134,8 @@ public final class WebServiceManager {
             Throwable exc = wsdlModeler.getCreationException();
             String cause = (exc != null) ? exc.getLocalizedMessage() : null;
             String excString = (exc != null) ? exc.getClass().getName() + " - " + cause : null;
-
             String message = NbBundle.getMessage(WebServiceManager.class, "WS_MODELER_ERROR") + "\n\n" + excString; // NOI18N
-
-            NotifyDescriptor d = new NotifyDescriptor.Message(message);
-            DialogDisplayer.getDefault().notify(d);
+            Exceptions.printStackTrace(Exceptions.attachLocalizedMessage(exc, message));
             return;
         } else if (model.getServices().isEmpty()) {
             // If there are no services in the WSDL, warn the user
