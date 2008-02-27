@@ -62,7 +62,7 @@ public class EPMeasureActions3  {
 
 //TODO there is an password dialog solve before enable to run again        suite.addTest(new DeployProject("measureTime","Deploy Project"));
         suite.addTest(new OpenComplexDiagram("measureTime","Open Complex Diagram"));         
-        suite.addTest(new OpenComplexDiagram("testGC"));         
+//        suite.addTest(new OpenComplexDiagram("testGC","Open Complex Diagram - Test GC"));         
         suite.addTest(new OpenBPELproject("measureTime","OpenBPELproject"));
 
         suite.addTest(new StartAppserver("measureTime","Start Appserver"));

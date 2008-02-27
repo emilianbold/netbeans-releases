@@ -184,7 +184,6 @@ class ChooseBeansWizardPanel implements WizardDescriptor.Panel<AddToPaletteWizar
             JLabel label1 = new JLabel();
             org.openide.awt.Mnemonics.setLocalizedText(
                 label1, PaletteUtils.getBundleString("CTL_SelectBeans")); // NOI18N
-            label1.setLabelFor(list);
             gridBagConstraints = new java.awt.GridBagConstraints();
             gridBagConstraints.gridwidth = 3;
             gridBagConstraints.insets = new java.awt.Insets(0, 0, 6, 0);
@@ -197,6 +196,7 @@ class ChooseBeansWizardPanel implements WizardDescriptor.Panel<AddToPaletteWizar
             list.setCellRenderer(new ItemInfoRenderer());
             list.getAccessibleContext().setAccessibleDescription(
                 PaletteUtils.getBundleString("ACSD_CTL_SelectBeans")); // NOI18N
+            label1.setLabelFor(list);
 
             JScrollPane scrollPane = new JScrollPane();
             scrollPane.setViewportView(list);

@@ -94,6 +94,10 @@ public class Canvas extends MapperPanel implements VertexCanvas,
     public Canvas(Mapper mapper) {
         super(mapper);
 
+        // vlv: print
+        putClientProperty(java.awt.print.Printable.class, ""); // NOI18N
+        putClientProperty(java.lang.Integer.class, new Integer(1));
+        
         setBackground(Mapper.CANVAS_BACKGROUND_COLOR);
 
         scrollPane = new CanvasScrollPane();
@@ -110,12 +114,7 @@ public class Canvas extends MapperPanel implements VertexCanvas,
 
         add(cellRendererPane);
         eventHandler = new CanvasEventHandler(this);
-
-        // vlv: print
-        putClientProperty(java.awt.print.Printable.class, "BPEL Mapper"); // NOI18N
-        
         inplaceEditor = new InplaceEditor(this);
-        
         getSelectionModel().addSelectionListener(this);
                    
 //        ToolTipManager.sharedInstance().registerComponent(this);

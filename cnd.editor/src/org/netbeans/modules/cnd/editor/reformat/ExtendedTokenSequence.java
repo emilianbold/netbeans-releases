@@ -165,6 +165,33 @@ public class ExtendedTokenSequence {
             ts.moveNext();
         }
     }
+
+    /*package local*/ Token<CppTokenId> lookNextLineImportant(){
+        int index = ts.index();
+        try {
+            while(ts.moveNext()){
+                switch (ts.token().id()) {
+                    case LINE_COMMENT:
+                    case PREPROCESSOR_DIRECTIVE:
+                    case NEW_LINE:
+                        return null;
+                    case BLOCK_COMMENT:
+                        if (ts.token().text().toString().indexOf('\n')>=0) {
+                            return null;
+                        }
+                        break;
+                    case WHITESPACE:
+                        break;
+                    default:
+                        return ts.token();
+                }
+            }
+            return null;
+        } finally {
+            ts.moveIndex(index);
+            ts.moveNext();
+        }
+    }
     
     /*package local*/ Token<CppTokenId> lookPreviousStatement(){
         int index = ts.index();
@@ -266,6 +293,32 @@ public class ExtendedTokenSequence {
         }
     }
 
+    /*package local*/ Token<CppTokenId> lookPreviousLineImportant(){
+        int index = ts.index();
+        try {
+            while(ts.movePrevious()){
+                switch (ts.token().id()) {
+                    case LINE_COMMENT:
+                    case PREPROCESSOR_DIRECTIVE:
+                    case NEW_LINE:
+                        return null;
+                    case BLOCK_COMMENT:
+                        if (ts.token().text().toString().indexOf('\n')>=0) {
+                            return null;
+                        }
+                        break;
+                    case WHITESPACE:
+                        break;
+                    default:
+                        return ts.token();
+                }
+            }
+            return null;
+        } finally {
+            ts.moveIndex(index);
+            ts.moveNext();
+        }
+    }
 
     /*package local*/ Token<CppTokenId> lookPreviousImportant(){
         int index = ts.index();
@@ -302,7 +355,7 @@ public class ExtendedTokenSequence {
                         break;
                     default:
                         i--;
-                        if (i <=0 ) {
+                        if (i <= 0 ) {
                             return ts.token();
                         }
                 }
