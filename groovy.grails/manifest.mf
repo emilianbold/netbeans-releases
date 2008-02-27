@@ -4,5 +4,5 @@ OpenIDE-Module: org.netbeans.modules.groovy.grails
 OpenIDE-Module-Install: org/netbeans/modules/groovy/grails/Installer.class
 OpenIDE-Module-Layer: org/netbeans/modules/groovy/grails/layer.xml
 OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/groovy/grails/Bundle.properties
-OpenIDE-Module-Specification-Version: 1.0
+OpenIDE-Module-Specification-Version: 1.1
 

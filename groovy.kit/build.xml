@@ -4,23 +4,32 @@
     <import file="../../nbbuild/templates/projectized.xml"/>
     
     <target name="groovy-build" description="Builds all the modules constituting the Groovy/Grails support">
-        <ant dir="../../contrib/groovy.editor"/>
-        <ant dir="../../contrib/groovy.grails"/>
-        <ant dir="../../contrib/groovy.support"/>
-        <ant dir="../../contrib/groovy.grailsproject"/>
-        <ant dir="../../contrib/groovy.groovyproject"/>
-        <ant dir="../../contrib/groovy.gsp"/>
-        <antcall target="netbeans"/>
+        <ant dir="../../contrib/groovy.editor" inheritAll="false" target="netbeans"/>
+        <ant dir="../../contrib/groovy.grails" inheritAll="false" target="netbeans"/>
+        <ant dir="../../contrib/groovy.support" inheritAll="false" target="netbeans"/>
+        <ant dir="../../contrib/groovy.grailsproject" inheritAll="false" target="netbeans"/>
+        <ant dir="../../contrib/groovy.gsp" inheritAll="false" target="netbeans"/>
     </target>
 
     <target name="groovy-clean" description="Cleans all the modules constituting the Groovy/Grails support">
         <ant dir="../../contrib/groovy.gsp" inheritAll="false" target="clean"/>
-        <ant dir="../../contrib/groovy.groovyproject" inheritAll="false" target="clean"/>
         <ant dir="../../contrib/groovy.grailsproject" inheritAll="false" target="clean"/>
         <ant dir="../../contrib/groovy.support" inheritAll="false" target="clean"/>
         <ant dir="../../contrib/groovy.grails" inheritAll="false" target="clean"/>
         <ant dir="../../contrib/groovy.editor" inheritAll="false" target="clean"/>
-        <ant target="clean"/>
+    </target>
+
+    <target name="groovy-nbm" description="Creates nbm archives for all Groovy/Grails modules">
+        <ant dir="../../contrib/groovy.editor" inheritAll="false" target="nbm"/>
+        <ant dir="../../contrib/groovy.grails" inheritAll="false" target="nbm"/>
+        <ant dir="../../contrib/groovy.support" inheritAll="false" target="nbm"/>
+        <ant dir="../../contrib/groovy.grailsproject" inheritAll="false" target="nbm"/>
+        <ant dir="../../contrib/groovy.gsp" inheritAll="false" target="nbm"/>
+        <move todir="." flatten="true">
+            <fileset dir="../../contrib">
+                <include name="groovy.*/**/*.nbm"/>
+            </fileset>
+        </move>
     </target>
 
 </project>
