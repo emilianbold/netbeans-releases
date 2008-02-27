@@ -59,6 +59,7 @@ import org.netbeans.modules.cnd.apt.structure.APTFile;
 import org.netbeans.modules.cnd.apt.structure.APTIf;
 import org.netbeans.modules.cnd.apt.structure.APTIfdef;
 import org.netbeans.modules.cnd.apt.structure.APTIfndef;
+import org.netbeans.modules.cnd.apt.structure.APTUndefine;
 import org.netbeans.modules.cnd.apt.support.APTMacro;
 import org.netbeans.modules.cnd.apt.support.APTPreprocHandler;
 import org.netbeans.modules.cnd.apt.support.APTToken;
@@ -67,6 +68,7 @@ import org.netbeans.modules.cnd.modelimpl.csm.MacroImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.core.OffsetableBase;
 import org.netbeans.modules.cnd.modelimpl.csm.core.ProjectBase;
 import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
+import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
 
 
@@ -106,16 +108,22 @@ public class APTFindMacrosWalker extends APTDefinesCollectorWalker {
 
     @Override
     protected boolean onIfndef(APT apt) {
-        addReference((APTToken) ((APTIfndef)apt).getMacroName());
+        analyzeToken((APTToken) ((APTIfndef)apt).getMacroName());
         return super.onIfndef(apt);
     }
 
     @Override
     protected boolean onIfdef(APT apt) {
-        addReference((APTToken) ((APTIfdef)apt).getMacroName());
+        analyzeToken((APTToken) ((APTIfdef)apt).getMacroName());
         return super.onIfdef(apt);
     }
     private final List<CsmReference> references = new ArrayList<CsmReference>();
+
+    @Override
+    protected void onUndef(APT apt) {
+        analyzeToken((APTToken) ((APTUndefine)apt).getName());
+        super.onUndef(apt);
+    }
 
     public List<CsmReference> getCollectedData() {
         return references;
@@ -129,16 +137,19 @@ public class APTFindMacrosWalker extends APTDefinesCollectorWalker {
     }
 
     private void analyzeToken(Token token) {
-        if (token != null) {
-            APTMacro m = getMacroMap().getMacro(token);
+        APTToken apttoken = (APTToken) token;
+        if (apttoken != null) {
+            APTMacro m = getMacroMap().getMacro(apttoken);
             if (m != null) {
-                APTToken apttoken = (APTToken) token;
                 if (m.isSystem()) {
                     addSysReference(apttoken, m);
                 } else {
                     addReference(apttoken, macroRefMap.get(apttoken.getText()));
                 }
             }
+//            else if (apttoken.getType() == CPPTokenTypes.ID_DEFINED) {
+//                addReference(apttoken, macroRefMap.get(apttoken.getText()));
+//            }
         }
     }
 
