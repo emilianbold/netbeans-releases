@@ -224,8 +224,8 @@ public class ExportDiffPanel extends javax.swing.JPanel implements ActionListene
                     repoRev.getLog().getCSetShortID(); //NOI18N
         }else if (repoRev != null && repoRev.getLog() != null && repository != null){
             fileName = HgModuleConfig.getDefault().getExportFilename().replace("%b", repository.getName()); //NOI18N
-            fileName = HgModuleConfig.getDefault().getExportFilename().replace("%r", repoRev.getLog().getRevision()); //NOI18N
-            fileName = HgModuleConfig.getDefault().getExportFilename().replace("%h", repoRev.getLog().getCSetShortID()); //NOI18N
+            fileName = fileName.replace("%r", repoRev.getLog().getRevision()); //NOI18N
+            fileName = fileName.replace("%h", repoRev.getLog().getCSetShortID()); //NOI18N
         }else if (repository != null){
             fileName = HgModuleConfig.getDefault().getExportFilename().replace("%b", repository.getName()); //NOI18N
         }else{
