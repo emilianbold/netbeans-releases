@@ -46,19 +46,20 @@ import java.io.IOException;
 import java.io.StringWriter;
 import java.io.Writer;
 import javax.swing.SwingUtilities;
-import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.xml.cookies.CheckXMLCookie;
 import org.netbeans.api.xml.cookies.ValidateXMLCookie;
 import org.netbeans.core.spi.multiview.MultiViewElement;
 import org.netbeans.modules.hibernate.cfg.model.HibernateConfiguration;
 import org.netbeans.modules.hibernate.cfg.model.Security;
 import org.netbeans.modules.hibernate.cfg.model.SessionFactory;
+import org.netbeans.modules.hibernate.loaders.HbXmlMultiViewEditorSupport;
 import org.netbeans.modules.schema2beans.BaseBean;
 import org.netbeans.modules.schema2beans.Schema2BeansException;
 import org.netbeans.modules.xml.multiview.DesignMultiViewDesc;
 import org.netbeans.modules.xml.multiview.ToolBarMultiViewElement;
 import org.netbeans.modules.xml.multiview.XmlMultiViewDataObject;
 import org.netbeans.modules.xml.multiview.XmlMultiViewDataSynchronizer;
+import org.netbeans.modules.xml.multiview.XmlMultiViewEditorSupport;
 import org.netbeans.spi.xml.cookies.CheckXMLSupport;
 import org.netbeans.spi.xml.cookies.DataObjectAdapters;
 import org.netbeans.spi.xml.cookies.ValidateXMLSupport;
@@ -97,6 +98,7 @@ public class HibernateCfgDataObject extends XmlMultiViewDataObject {
         super(pf, loader);
         
         // Make sure to reset the MIME type here. See bug 127051
+        
         getEditorSupport().setMIMEType(HibernateCfgDataLoader.REQUIRED_MIME);
 
         // Synchronize between the vew and XML file
@@ -229,7 +231,19 @@ public class HibernateCfgDataObject extends XmlMultiViewDataObject {
             }
         }
     }
-
+    /**
+     * Override this method to workaround issue 
+     * http://www.netbeans.org/issues/show_bug.cgi?id=128211
+     */
+    @Override
+    protected synchronized XmlMultiViewEditorSupport getEditorSupport() {
+        if(editorSupport == null) {
+            editorSupport = new HbXmlMultiViewEditorSupport(this);
+            editorSupport.getMultiViewDescriptions();
+        }
+        return editorSupport;
+    }
+    
     @Override
     protected Node createNodeDelegate() {
         return new HibernateCfgDataNode(this);

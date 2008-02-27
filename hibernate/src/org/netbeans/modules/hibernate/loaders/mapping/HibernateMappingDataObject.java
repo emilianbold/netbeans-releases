@@ -48,6 +48,7 @@ import org.openide.ErrorManager;
 import org.netbeans.api.xml.cookies.CheckXMLCookie;
 import org.netbeans.api.xml.cookies.ValidateXMLCookie;
 import org.netbeans.core.spi.multiview.MultiViewElement;
+import org.netbeans.modules.hibernate.loaders.HbXmlMultiViewEditorSupport;
 import org.netbeans.modules.hibernate.loaders.mapping.multiview.HibernateMappingToolBarMVElement;
 import org.netbeans.modules.hibernate.mapping.model.HibernateMapping;
 import org.netbeans.modules.hibernate.mapping.model.MyClass;
@@ -57,6 +58,7 @@ import org.netbeans.modules.xml.multiview.DesignMultiViewDesc;
 import org.netbeans.modules.xml.multiview.ToolBarMultiViewElement;
 import org.netbeans.modules.xml.multiview.XmlMultiViewDataObject;
 import org.netbeans.modules.xml.multiview.XmlMultiViewDataSynchronizer;
+import org.netbeans.modules.xml.multiview.XmlMultiViewEditorSupport;
 import org.netbeans.spi.xml.cookies.CheckXMLSupport;
 import org.netbeans.spi.xml.cookies.DataObjectAdapters;
 import org.netbeans.spi.xml.cookies.ValidateXMLSupport;
@@ -181,6 +183,19 @@ public class HibernateMappingDataObject extends XmlMultiViewDataObject {
                 Exceptions.printStackTrace(ex);
             }
         }
+    }
+    
+    /**
+     * Override this method to workaround issue 
+     * http://www.netbeans.org/issues/show_bug.cgi?id=128211
+     */
+    @Override
+    protected synchronized XmlMultiViewEditorSupport getEditorSupport() {
+        if(editorSupport == null) {
+            editorSupport = new HbXmlMultiViewEditorSupport(this);
+            editorSupport.getMultiViewDescriptions();
+        }
+        return editorSupport;
     }
 
     protected String getPrefixMark() {
