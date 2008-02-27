@@ -41,34 +41,30 @@ package org.netbeans.modules.css.gsf;
 import java.io.IOException;
 import java.io.StringReader;
 import java.util.List;
+import org.netbeans.modules.css.editor.Css;
 import org.netbeans.modules.gsf.api.CompilationInfo;
-import org.netbeans.modules.gsf.api.Element;
 import org.netbeans.modules.gsf.api.ElementHandle;
 import org.netbeans.modules.gsf.api.Error;
-import org.netbeans.modules.gsf.api.OccurrencesFinder;
+import org.netbeans.modules.gsf.api.OffsetRange;
 import org.netbeans.modules.gsf.api.ParseEvent;
-import org.netbeans.modules.gsf.api.ParseListener;
 import org.netbeans.modules.gsf.api.Parser;
 import org.netbeans.modules.gsf.api.ParserFile;
 import org.netbeans.modules.gsf.api.ParserResult;
 import org.netbeans.modules.gsf.api.PositionManager;
-import org.netbeans.modules.gsf.api.SemanticAnalyzer;
 import org.netbeans.modules.gsf.api.Severity;
-import org.netbeans.modules.gsf.api.SourceFileReader;
 import org.netbeans.modules.css.parser.ASCII_CharStream;
 import org.netbeans.modules.css.parser.CSSParser;
 import org.netbeans.modules.css.parser.ParseException;
 import org.netbeans.modules.css.parser.SimpleNode;
 import org.netbeans.modules.css.parser.Token;
+import org.netbeans.modules.gsf.api.TranslatedSource;
 import org.netbeans.modules.gsf.spi.DefaultError;
-import org.netbeans.modules.gsf.spi.DefaultPosition;
-import org.openide.util.Exceptions;
 
 /**
  *
  * @author marek
  */
-public class CSSGSFParser implements Parser {
+public class CSSGSFParser implements Parser, PositionManager {
 
     private static CSSParser PARSER;
 
@@ -133,9 +129,6 @@ public class CSSGSFParser implements Parser {
                     job.listener.error(err);
                 }
 
-
-
-
 //                Context context = new Context(file, listener, source, caretOffset);
 //                result = parseBuffer(context, Sanitize.NONE);
             } catch (ParseException ex) {
@@ -149,7 +142,7 @@ public class CSSGSFParser implements Parser {
                         from, from, Severity.ERROR);
 
                 result = new CSSParserResult(this, file, null);
-                
+
                 job.listener.error(error);
             } catch (IOException ioe) {
                 job.listener.exception(ioe);
@@ -161,22 +154,18 @@ public class CSSGSFParser implements Parser {
     }
 
     public PositionManager getPositionManager() {
-        return new CSSPositionManager();
+        return this;
     }
 
-//    public SemanticAnalyzer getSemanticAnalysisTask() {
-//        return new CSSSemanticAnalyzer();
-//    }
-//
-//    public OccurrencesFinder getMarkOccurrencesTask(int caretPosition) {
-//        return new CSSOccurancesFinder();
-//    }
-//
-//    public <T extends Element> ElementHandle<T> createHandle(CompilationInfo info, T element) {
-//        return null;
-//    }
-//
-//    public <T extends Element> T resolveHandle(CompilationInfo info, ElementHandle<T> handle) {
-//        return null;
-//    }
+    public OffsetRange getOffsetRange(CompilationInfo info, ElementHandle object) {
+        if (object instanceof CssElementHandle) {
+            ParserResult presult = info.getEmbeddedResults(Css.CSS_MIME_TYPE).iterator().next();
+            final TranslatedSource source = presult.getTranslatedSource();
+            SimpleNode node = ((CssElementHandle) object).node();
+            return new OffsetRange(AstUtils.documentPosition(node.startOffset(), source), AstUtils.documentPosition(node.endOffset(), source));
+        } else {
+            throw new IllegalArgumentException((("Foreign element: " + object + " of type " +
+                    object) != null) ? object.getClass().getName() : "null"); //NOI18N
+        }
+    }
 }
