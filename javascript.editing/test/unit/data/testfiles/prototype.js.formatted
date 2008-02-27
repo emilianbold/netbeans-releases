@@ -845,7 +845,7 @@ Ajax.Request.prototype = Object.extend(new Ajax.Base(), {
     params = Hash.toQueryString(params);
     if (params && /Konqueror|Safari|KHTML/.test(navigator.userAgent)) params += '&_='
 
-      // when GET, append parameters to URL
+    // when GET, append parameters to URL
     if (this.method == 'get' && params)
       this.url += (this.url.indexOf('?') > -1 ? '&' : '?') + params;
 
@@ -898,7 +898,7 @@ Ajax.Request.prototype = Object.extend(new Ajax.Base(), {
        */
       if (this.transport.overrideMimeType &&
         (navigator.userAgent.match(/Gecko\/(\d{4})/) || [0,2005])[1] < 2005)
-      headers['Connection'] = 'close';
+        headers['Connection'] = 'close';
     }
 
     // user-defined headers
@@ -907,7 +907,7 @@ Ajax.Request.prototype = Object.extend(new Ajax.Base(), {
 
       if (typeof extras.push == 'function')
         for (var i = 0, length = extras.length; i < length; i += 2)
-        headers[extras[i]] = extras[i+1];
+          headers[extras[i]] = extras[i+1];
       else
         $H(extras).each(function(pair) { headers[pair.key] = pair.value });
     }
@@ -937,7 +937,7 @@ Ajax.Request.prototype = Object.extend(new Ajax.Base(), {
 
       if ((this.getHeader('Content-type') || 'text/javascript').strip().
         match(/^(text|application)\/(x-)?(java|ecma)script(;.*)?$/i))
-      this.evalResponse();
+        this.evalResponse();
     }
 
     try {
@@ -1203,7 +1203,7 @@ Element.Methods = {
     var elements = [];
     while (element = element[property])
       if (element.nodeType == 1)
-      elements.push(Element.extend(element));
+        elements.push(Element.extend(element));
     return elements;
   },
 
@@ -1296,7 +1296,7 @@ Element.Methods = {
     if (elementClassName.length == 0) return false;
     if (elementClassName == className ||
       elementClassName.match(new RegExp("(^|\\s)" + className + "(\\s|$)")))
-    return true;
+      return true;
     return false;
   },
 
@@ -1579,11 +1579,11 @@ var _nativeExtensions = false;
 
 if(/Konqueror|Safari|KHTML/.test(navigator.userAgent))
   ['', 'Form', 'Input', 'TextArea', 'Select'].each(function(tag) {
-  var className = 'HTML' + tag + 'Element';
-  if(window[className]) return;
-  var klass = window[className] = {};
-  klass.prototype = document.createElement(tag ? tag.toLowerCase() : 'div').__proto__;
-});
+    var className = 'HTML' + tag + 'Element';
+    if(window[className]) return;
+    var klass = window[className] = {};
+    klass.prototype = document.createElement(tag ? tag.toLowerCase() : 'div').__proto__;
+  });
 
 Element.addMethods = function(methods) {
   Object.extend(Element.Methods, methods || {});
@@ -1790,7 +1790,7 @@ Selector.prototype = {
       conditions.push('element.tagName.toUpperCase() == ' + clause.inspect());
     if ((clause = params.classNames).length > 0)
       for (var i = 0, length = clause.length; i < length; i++)
-      conditions.push('element.hasClassName(' + clause[i].inspect() + ')');
+        conditions.push('element.hasClassName(' + clause[i].inspect() + ')');
     if (clause = params.attributes) {
       clause.each(function(attribute) {
         var value = 'element.readAttribute(' + attribute.name.inspect() + ')';
@@ -1826,15 +1826,15 @@ Selector.prototype = {
 
     if (element = $(this.params.id))
       if (this.match(element))
-      if (!scope || Element.childOf(element, scope))
-      return [element];
+        if (!scope || Element.childOf(element, scope))
+          return [element];
 
     scope = (scope || document).getElementsByTagName(this.params.tagName || '*');
 
     var results = [];
     for (var i = 0, length = scope.length; i < length; i++)
       if (this.match(element = scope[i]))
-      results.push(Element.extend(element));
+        results.push(Element.extend(element));
 
     return results;
   },
@@ -2007,7 +2007,7 @@ Form.Element.Methods = {
     element.focus();
     if (element.select && ( element.tagName.toLowerCase() != 'input' ||
       !['button', 'reset', 'submit'].include(element.type) ) )
-    element.select();
+      element.select();
     return element;
   },
 
@@ -2228,7 +2228,7 @@ Object.extend(Event, {
     var element = Event.element(event);
     while (element.parentNode && (!element.tagName ||
       (element.tagName.toUpperCase() != tagName.toUpperCase())))
-    element = element.parentNode;
+      element = element.parentNode;
     return element;
   },
 
@@ -2261,7 +2261,7 @@ Object.extend(Event, {
     if (name == 'keypress' &&
       (navigator.appVersion.match(/Konqueror|Safari|KHTML/)
       || element.attachEvent))
-    name = 'keydown';
+      name = 'keydown';
 
     Event._observeAndCache(element, name, observer, useCapture);
   },
@@ -2273,7 +2273,7 @@ Object.extend(Event, {
     if (name == 'keypress' &&
       (navigator.appVersion.match(/Konqueror|Safari|KHTML/)
       || element.detachEvent))
-    name = 'keydown';
+      name = 'keydown';
 
     if (element.removeEventListener) {
       element.removeEventListener(name, observer, useCapture);
@@ -2348,7 +2348,7 @@ var Position = {
 
     while ((element = element.parentNode) && element != document.body)
       if (Element.getStyle(element, 'position') != 'static')
-      return element;
+        return element;
 
     return document.body;
   },

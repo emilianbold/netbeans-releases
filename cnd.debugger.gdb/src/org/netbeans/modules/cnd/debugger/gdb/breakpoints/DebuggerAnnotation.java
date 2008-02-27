@@ -54,13 +54,10 @@ import org.netbeans.modules.cnd.debugger.gdb.EditorContext;
  * @author   Gordon Prieur (copied from Jan Jancura's JPDA implementation)
  */
 public class DebuggerAnnotation extends Annotation {
-
-    private Line        line;
     private String      type;
     
     public DebuggerAnnotation(String type, Line line) {
         this.type = type;
-        this.line = line;
         attach(line);
     }
     
@@ -69,24 +66,24 @@ public class DebuggerAnnotation extends Annotation {
     }
     
     public Line getLine() {
-        return line;
+        return (Line)getAttachedAnnotatable();
     }
     
     public String getShortDescription() {
-        if (type == EditorContext.BREAKPOINT_ANNOTATION_TYPE) {
+        if (EditorContext.BREAKPOINT_ANNOTATION_TYPE.equals(type)) {
             return NbBundle.getBundle(DebuggerAnnotation.class).getString("TOOLTIP_BREAKPOINT"); // NOI18N
-        } else if (type == EditorContext.DISABLED_BREAKPOINT_ANNOTATION_TYPE) {
+        } else if (EditorContext.DISABLED_BREAKPOINT_ANNOTATION_TYPE.equals(type)) {
             return NbBundle.getBundle(DebuggerAnnotation.class).getString 
                     ("TOOLTIP_DISABLED_BREAKPOINT"); // NOI18N
-        } else if (type == EditorContext.CONDITIONAL_BREAKPOINT_ANNOTATION_TYPE) {
+        } else if (EditorContext.CONDITIONAL_BREAKPOINT_ANNOTATION_TYPE.equals(type)) {
             return NbBundle.getBundle(DebuggerAnnotation.class).getString 
                     ("TOOLTIP_CONDITIONAL_BREAKPOINT"); // NOI18N
-        } else if (type == EditorContext.DISABLED_CONDITIONAL_BREAKPOINT_ANNOTATION_TYPE) {
+        } else if (EditorContext.DISABLED_CONDITIONAL_BREAKPOINT_ANNOTATION_TYPE.equals(type)) {
             return NbBundle.getBundle(DebuggerAnnotation.class).getString 
                     ("TOOLTIP_DISABLED_CONDITIONAL_BREAKPOINT"); // NOI18N
-        } else if (type == EditorContext.CURRENT_LINE_ANNOTATION_TYPE) {
+        } else if (EditorContext.CURRENT_LINE_ANNOTATION_TYPE.equals(type)) {
             return NbBundle.getMessage(DebuggerAnnotation.class, "TOOLTIP_CURRENT_PC"); // NOI18N
-        } else if (type == EditorContext.CALL_STACK_FRAME_ANNOTATION_TYPE) {
+        } else if (EditorContext.CALL_STACK_FRAME_ANNOTATION_TYPE.equals(type)) {
             return NbBundle.getBundle(DebuggerAnnotation.class).getString("TOOLTIP_CALLSITE"); // NOI18N
         }
         return NbBundle.getBundle(DebuggerAnnotation.class).getString("TOOLTIP_ANNOTATION"); // NOI18N
