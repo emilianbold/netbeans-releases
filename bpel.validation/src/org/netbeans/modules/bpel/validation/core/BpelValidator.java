@@ -65,7 +65,11 @@ public abstract class BpelValidator extends CoreValidator {
       }
     };
     bpelModel.invoke(run);
-
+//out();
+//out();
+//out("!!! ERRORS: " + getResultItems().size());
+//out();
+//out();
     return new ValidationResult(getResultItems(), Collections.singleton(model));
   }
 }
