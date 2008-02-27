@@ -61,7 +61,18 @@ public class SpringWebFrameworkUtilsTest extends NbTestCase {
     public void testDispatcherNameEntry_EmptyWordCharacterPattern() throws Exception {
         assert(SpringWebFrameworkUtils.isDispatcherNameValid("") == false);
     }
+    
+    public void testDispatcherNameEntry_ValidPattern() throws Exception {
+        assert(SpringWebFrameworkUtils.isDispatcherNameValid("Dispatcher") == true);
+    }  
             
+    public void testDispatcherNameEntry_NonWordUnicodeCharacterPattern() throws Exception {       
+        assert(SpringWebFrameworkUtils.isDispatcherNameValid("あｂ３＿^え") == false);  // ^ is the invalid character
+    }        
+    
+    public void testDispatcherNameEntry_ValidUnicodePattern() throws Exception {
+        assert(SpringWebFrameworkUtils.isDispatcherNameValid("あおうえｂ３＿え") == true);
+    }  
     public void testDispatcherMappingEntry_ExtensionSpacePattern() throws Exception {
         assert(SpringWebFrameworkUtils.isDispatcherMappingPatternValid("*.h tm") == false);
     }
@@ -100,11 +111,7 @@ public class SpringWebFrameworkUtilsTest extends NbTestCase {
         
     public void testDispatcherMappingEntry_ValidPattern() throws Exception {
         assert(SpringWebFrameworkUtils.isDispatcherMappingPatternValid("*.htm") == true);
-    }   
-    
-    public void testDispatcherNameEntry_ValidPattern() throws Exception {
-        assert(SpringWebFrameworkUtils.isDispatcherNameValid("Dispatcher") == true);
-    }  
+    }                   
     
     public void testReplaceExtensionInTemplatesExtensionPattern_Positive() throws Exception {      
         assert ("index.html".equals(SpringWebFrameworkUtils.replaceExtensionInTemplates("index.htm", "*.html")) == true);

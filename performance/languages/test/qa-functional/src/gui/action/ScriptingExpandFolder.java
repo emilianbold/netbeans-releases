@@ -42,6 +42,9 @@
 package gui.action;
 
 import gui.Projects;
+import org.netbeans.jellytools.ProjectsTabOperator;
+import org.netbeans.jellytools.actions.MaximizeWindowAction;
+import org.netbeans.performance.test.guitracker.LoggingRepaintManager;
 
 /**
  *
@@ -58,8 +61,13 @@ public class ScriptingExpandFolder extends ExpandNodesProjectsView {
 
     @Override
     public void initialize() {
-        super.initialize();
-        projectTab.getProjectRootNode(project).collapse();        
+        projectTab = new ProjectsTabOperator();
+        new MaximizeWindowAction().performAPI(projectTab);
+        
+        projectTab.getProjectRootNode(project).collapse();
+        
+        turnBadgesOff();
+        repaintManager().addRegionFilter( LoggingRepaintManager.EXPLORER_FILTER);        
     }
     public void testExpandRubyProjectNode() {
         WAIT_AFTER_OPEN = 3000;

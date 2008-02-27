@@ -318,10 +318,13 @@ class LibraryChooserGUI extends JPanel implements ExplorerManager.Provider, Help
                 .add(manageLibrariesButton))
         );
 
+        librariesLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(LibraryChooserGUI.class, "ACSD_AvailableLibraries")); // NOI18N
+        tree.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(LibraryChooserGUI.class, "ACSD_AvailableLibrariesTree")); // NOI18N
         createButton.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(LibraryChooserGUI.class, "LibraryChooserGUI.create.a11y.name")); // NOI18N
         createButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(LibraryChooserGUI.class, "LibraryChooserGUI.create.a11y.desc")); // NOI18N
         importButton.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(LibraryChooserGUI.class, "LibraryChooserGUI.import.a11y.name")); // NOI18N
         importButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(LibraryChooserGUI.class, "LibraryChooserGUI.import.a11y.desc")); // NOI18N
+        manageLibrariesButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(LibraryChooserGUI.class, "ACSD_ManageLibraries")); // NOI18N
 
         getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(LibraryChooserGUI.class, "LibraryChooserGUI.AccessibleContext.accessibleName")); // NOI18N
         getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(LibraryChooserGUI.class, "LibraryChooserGUI.accessibleDescription")); // NOI18N

@@ -55,6 +55,7 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.w3c.dom.Text;
 import org.netbeans.modules.j2ee.ejbjarproject.EjbJarProjectType;
+import org.netbeans.modules.java.api.common.util.CommonProjectUtils;
 import org.openide.filesystems.FileObject;
 
 /**
@@ -92,7 +93,8 @@ public class ClassPathSupportCallbackImpl implements ClassPathSupport.Callback {
         List<String> libraries = new ArrayList<String>(libs.getLength());
         for ( int i = 0; i < libs.getLength(); i++ ) {
             Element item = (Element)libs.item( i );
-            libraries.add( findText( item ));
+            // ejbjar is different from other j2ee projects - it stores reference without ${ and }
+            libraries.add( "${"+findText( item )+"}"); // NOI18N
         }
         return libraries;
     }
@@ -192,7 +194,8 @@ public class ClassPathSupportCallbackImpl implements ClassPathSupport.Callback {
             libraryElement.setAttribute(ATTR_DIRS, "" + dirs.size());
         }
         
-        libraryElement.appendChild( doc.createTextNode( item.getReference() ) );
+        // ejbjar is different from other j2ee projects - it stores reference without ${ and }
+        libraryElement.appendChild( doc.createTextNode( CommonProjectUtils.getAntPropertyName(item.getReference()) ) );
         return libraryElement;
     }
        
