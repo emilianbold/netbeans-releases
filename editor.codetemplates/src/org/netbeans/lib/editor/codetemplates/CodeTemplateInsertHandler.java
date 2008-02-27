@@ -55,16 +55,19 @@ import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import javax.swing.text.AttributeSet;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Caret;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import javax.swing.text.Position;
+import javax.swing.text.SimpleAttributeSet;
 import org.netbeans.api.editor.completion.Completion;
+import org.netbeans.api.editor.mimelookup.MimeLookup;
+import org.netbeans.api.editor.mimelookup.MimePath;
+import org.netbeans.api.editor.settings.FontColorSettings;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.BaseKit;
-import org.netbeans.editor.DrawLayer;
-import org.netbeans.editor.EditorUI;
 import org.netbeans.editor.Formatter;
 import org.netbeans.editor.Utilities;
 import org.netbeans.lib.editor.codetemplates.api.CodeTemplate;
@@ -77,6 +80,10 @@ import org.netbeans.lib.editor.util.CharacterConversions;
 import org.netbeans.lib.editor.util.swing.DocumentUtilities;
 import org.netbeans.lib.editor.util.swing.MutablePositionRegion;
 import org.netbeans.lib.editor.util.swing.PositionRegion;
+import org.netbeans.spi.editor.highlighting.HighlightsLayer;
+import org.netbeans.spi.editor.highlighting.HighlightsLayerFactory;
+import org.netbeans.spi.editor.highlighting.ZOrder;
+import org.netbeans.spi.editor.highlighting.support.PositionsBag;
 import org.openide.ErrorManager;
 
 /**
@@ -130,8 +137,6 @@ implements DocumentListener, KeyListener {
     private int activeMasterIndex;
     
     private ActionMap componentOrigActionMap;
-    
-    private List<DrawLayer> drawLayers;
     
     private Document doc;
 
@@ -382,15 +387,6 @@ implements DocumentListener, KeyListener {
             componentOrigActionMap = CodeTemplateOverrideAction.installOverrideActionMap(
                     component, this);
 
-            EditorUI editorUI = Utilities.getEditorUI(component);
-            drawLayers = new ArrayList<DrawLayer>(editableMasters.size());
-            for (Iterator<CodeTemplateParameter> it = editableMasters.iterator(); it.hasNext();) {
-                CodeTemplateParameterImpl paramImpl = paramImpl(it.next());
-                CodeTemplateDrawLayer drawLayer = new CodeTemplateDrawLayer(paramImpl);
-                drawLayers.add(drawLayer);
-                editorUI.addLayer(drawLayer, CodeTemplateDrawLayer.VISIBILITY);
-            }
-
             component.addKeyListener(this);
             tabUpdate();
 
@@ -626,18 +622,23 @@ implements DocumentListener, KeyListener {
     }
     
     private void requestRepaint() {
-        int startOffset = Integer.MAX_VALUE;
-        int endOffset = 0;
-        for (Iterator it = editableMasters.iterator(); it.hasNext();) {
-            SyncDocumentRegion region = paramImpl(((CodeTemplateParameter)it.next())).getRegion();
-            startOffset = Math.min(startOffset,
-                    region.getSortedRegion(0).getStartOffset());
-            endOffset = Math.max(endOffset, region.getSortedRegion(
-                    region.getRegionCount() - 1).getEndOffset());
-        }
-        JTextComponent c = getComponent();
-        if (endOffset != 0) {
-            c.getUI().damageRange(c, startOffset, endOffset);
+        if (released) {
+            PositionsBag bag = getBag(doc);
+            bag.clear();
+        } else {
+            CodeTemplateParameterImpl ctpi = getActiveMasterImpl();
+            if (ctpi != null) {
+                PositionsBag nue = new PositionsBag(doc);
+                SyncDocumentRegion sdr = ctpi.getRegion();
+                
+                for(int i = 0; i < sdr.getRegionCount(); i++) {
+                    PositionRegion reqion = sdr.getSortedRegion(i);
+                    nue.addHighlight(reqion.getStartPosition(), reqion.getEndPosition(), getSyncedTextBlocksHighlight());
+                }
+
+                PositionsBag bag = getBag(doc);
+                bag.setHighlights(nue);
+            }
         }
     }
 
@@ -660,16 +661,6 @@ implements DocumentListener, KeyListener {
             JTextComponent c = getComponent();
             c.setActionMap(componentOrigActionMap);
 
-            // Free the draw layers
-            EditorUI editorUI = Utilities.getEditorUI(c);
-            if (editorUI != null) {
-                for (DrawLayer drawLayer : drawLayers) {
-                    editorUI.removeLayer(drawLayer.getName());
-                }
-            }
-            c.putClientProperty(DrawLayer.TEXT_FRAME_START_POSITION_COMPONENT_PROPERTY, null);
-            c.putClientProperty(DrawLayer.TEXT_FRAME_END_POSITION_COMPONENT_PROPERTY, null);
-
             if (outerHandler != null) {
                 outerHandler.suspended = false;
                 if (doc instanceof BaseDocument)
@@ -685,8 +676,10 @@ implements DocumentListener, KeyListener {
                 activeMasterImpl.markUserModified();
                 outerHandler.notifyParameterUpdate(activeMasterImpl.getParameter(), true);
                 outerHandler.updateLastRegionBounds();
+                outerHandler.requestRepaint();
+            } else {
+                requestRepaint();
             }
-            requestRepaint();
         }
         doc.putProperty(CT_HANDLER_DOC_PROPERTY, outerHandler);
 
@@ -786,5 +779,33 @@ implements DocumentListener, KeyListener {
     private String buildInsertText() {
         return parametrizedTextParser.buildInsertText(allParameters);
     }
+
+    private static synchronized PositionsBag getBag(Document document) {
+        String propName = CodeTemplateInsertHandler.class.getName() + "-PositionsBag"; //NOI18N
+        PositionsBag bag = (PositionsBag) document.getProperty(propName);
+        if (bag == null) {
+            bag = new PositionsBag(document);
+            document.putProperty(propName, bag);
+        }
+        return bag;
+    }
+
+    private static AttributeSet getSyncedTextBlocksHighlight() {
+        FontColorSettings fcs = MimeLookup.getLookup(MimePath.EMPTY).lookup(FontColorSettings.class);
+        AttributeSet as = fcs.getFontColors("synchronized-text-blocks"); //NOI18N
+        return as == null ? SimpleAttributeSet.EMPTY : as;
+    }
     
+    public static final class HLFactory implements HighlightsLayerFactory {
+        public HighlightsLayer[] createLayers(Context context) {
+            return new HighlightsLayer[] {
+                HighlightsLayer.create(
+                    "org.netbeans.lib.editor.codetemplates.CodeTemplateParametersHighlights", //NOI18N
+                    ZOrder.SHOW_OFF_RACK.forPosition(490), 
+                    true, 
+                    getBag(context.getDocument())
+                )
+            };
+        }
+    } // End of HLFactory class
 }

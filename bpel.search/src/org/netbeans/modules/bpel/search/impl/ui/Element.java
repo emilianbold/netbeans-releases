@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
+ * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,7 +20,13 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
+ * Contributor(s):
+ *
+ * The Original Software is NetBeans. The Initial Developer of the Original
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Microsystems, Inc. All Rights Reserved.
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -31,43 +37,49 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
- * Contributor(s):
- * 
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.bpel.search.impl.ui;
 
-package org.netbeans.modules.javascript.editing;
-
-import org.netbeans.modules.gsf.api.ElementKind;
+import org.netbeans.modules.bpel.search.api.SearchElement;
 
 /**
- *
- * @author Tor Norbye
+ * @author Vladimir Yaroslavskiy
+ * @version 2008.02.27
  */
-public class IndexedProperty extends IndexedElement {
-    
-    IndexedProperty(String name, String in, JsIndex index, String fileUrl, String attributes, int flags, ElementKind kind) {
-        super(name, in, index, fileUrl, attributes, flags, kind);
-    }
-    
-    @Override
-    public String toString() {
-        return getSignature() + ":" + getFilenameUrl() + ";" + decodeFlags(flags);
-    }
+final class Element extends SearchElement.Adapter {
 
-    @Override
-    public String getSignature() {
-        if (signature == null) {
-            StringBuilder sb = new StringBuilder();
-            if (in != null) {
-                sb.append(in);
-                sb.append('.');
-            }
-            sb.append(name);
-            signature = sb.toString();
-        }
+  Element(SearchElement element) {
+    super(
+      getName(element),
+      element.getToolTip(),
+      element.getIcon(),
+      null);
 
-        return signature;
+    myElement = element;
+  }
+
+  @Override
+  public void gotoSource()
+  {
+    myElement.gotoSource();
+  }
+
+  @Override
+  public void select()
+  {
+    myElement.select();
+  }
+
+  private static String getName(SearchElement element) {
+    StringBuffer name = new StringBuffer(element.getName());
+    SearchElement parent = element.getParent();
+
+    while (parent != null) {
+      name.insert(0, parent.getName() + "."); // NOI18N
+      parent = parent.getParent();
     }
+    return name.toString();
+  }
+
+  private SearchElement myElement;
 }
