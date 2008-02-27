@@ -181,7 +181,7 @@ public class CanvasEventHandler extends AbstractMapperEventHandler {
             if (node != null  && node.getGraph() != null 
                     && !node.getGraph().isEmptyOrOneLink()) 
             {
-                if (item != null) {
+                if (item == null) {
                     mapper.setExpandedGraphState(node.getTreePath(), 
                             node.isGraphCollapsed());
                 } 

@@ -369,7 +369,6 @@ public class GdbAttachPanel extends JPanel implements Controller, ProcessListRea
         projectCB = new javax.swing.JComboBox();
 
         processTable.setModel(processModel);
-        processTable.setCellSelectionEnabled(false);
         processTable.setColumnSelectionAllowed(false);
         processTable.setRowSelectionAllowed(true);
         processTable.setShowVerticalLines(false);
@@ -382,6 +381,8 @@ public class GdbAttachPanel extends JPanel implements Controller, ProcessListRea
         filterCB.setEditable(true);
         filterCB.setSelectedItem(selectedFilter);
 
+        procLabel.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/debugger/gdb/attach/Bundle").getString("GdbAttachProcessMNEM").charAt(0));
+        procLabel.setLabelFor(jScrollPane1);
         procLabel.setText(org.openide.util.NbBundle.getMessage(GdbAttachPanel.class, "GdbAttachProcessLabel")); // NOI18N
 
         projectLabel.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/debugger/gdb/attach/Bundle").getString("GdbAttachProjectMNEM").charAt(0));
@@ -395,15 +396,15 @@ public class GdbAttachPanel extends JPanel implements Controller, ProcessListRea
             .add(layout.createSequentialGroup()
                 .add(filterLabel)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
-                .add(filterCB, 0, 486, Short.MAX_VALUE))
+                .add(filterCB, 0, 495, Short.MAX_VALUE))
             .add(layout.createSequentialGroup()
                 .add(projectLabel)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(projectCB, 0, 482, Short.MAX_VALUE))
+                .add(projectCB, 0, 488, Short.MAX_VALUE))
             .add(layout.createSequentialGroup()
                 .add(procLabel)
                 .addContainerGap())
-            .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 530, Short.MAX_VALUE)
+            .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 544, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)

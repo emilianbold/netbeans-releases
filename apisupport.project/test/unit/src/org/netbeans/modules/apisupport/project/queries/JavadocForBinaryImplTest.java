@@ -75,7 +75,7 @@ public class JavadocForBinaryImplTest extends TestBase {
     
     public void testJavadocForNetBeansOrgModules() throws Exception {
         // Have to load at least one module to get the scan going.
-        ClassPath.getClassPath(nbCVSRoot().getFileObject("ant/src"), ClassPath.COMPILE);
+        ClassPath.getClassPath(nbRoot().getFileObject("o.apache.tools.ant.module/src"), ClassPath.COMPILE);
         File classfileJar = file("nbbuild/netbeans/" + TestBase.CLUSTER_IDE + "/modules/org-netbeans-modules-classfile.jar");
         URL[] roots = JavadocForBinaryQuery.findJavadoc(Util.urlForJar(classfileJar)).getRoots();
         URL[] expectedRoots = {

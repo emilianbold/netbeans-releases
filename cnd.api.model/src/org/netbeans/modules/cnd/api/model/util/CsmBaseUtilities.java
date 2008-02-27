@@ -112,6 +112,20 @@ public class CsmBaseUtilities {
     
     private static boolean TRACE_XREF_REPOSITORY = Boolean.getBoolean("cnd.modelimpl.trace.xref.repository");
     
+    public static CsmFunction getOperator(CsmClassifier cls, CsmFunction.OperatorKind opKind) {
+        if (!CsmKindUtilities.isClass(cls)) {
+            return null;
+        }
+        for (CsmMember member : ((CsmClass)cls).getMembers()) {
+            if (CsmKindUtilities.isOperator(member)) {
+                if (((CsmFunction)member).getOperatorKind() == opKind) {
+                    return (CsmFunction)member;
+                }
+            }
+        }        
+        return null;
+    }
+    
     /**
      * 
      * @param target

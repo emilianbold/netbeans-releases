@@ -46,6 +46,7 @@ import org.netbeans.modules.compapp.casaeditor.model.casa.CasaComponent;
 import org.netbeans.modules.compapp.casaeditor.model.casa.CasaWrapperModel;
 import org.netbeans.modules.compapp.casaeditor.model.casa.CasaConnection;
 import org.netbeans.modules.compapp.casaeditor.model.casa.CasaConsumes;
+import org.netbeans.modules.compapp.casaeditor.model.casa.CasaEndpoint;
 import org.netbeans.modules.compapp.casaeditor.model.casa.CasaPort;
 import org.netbeans.modules.compapp.casaeditor.model.casa.CasaProvides;
 import org.netbeans.modules.compapp.casaeditor.model.casa.CasaServiceEngineServiceUnit;
@@ -92,9 +93,8 @@ public class CasaNodeFactory {
         return new ProvidesListNode(data, this);
     }
     
-    public CasaNode createNode_process(CasaServiceEngineServiceUnit data, 
-            String processName, String filePath) {
-        return new ServiceUnitProcessNode(data, processName, filePath, this);
+    public CasaNode createNode_process(CasaEndpoint data) {
+        return new ServiceUnitProcessNode(data, this);
     }
     
     public CasaNode createNode_suList(List<CasaServiceEngineServiceUnit> data) {
@@ -116,7 +116,7 @@ public class CasaNodeFactory {
      * Checks if the classes from source array are assignable to the
      * corresponding classes from target array.
      * Both arrays has to have the same quantity of elements.
-     */
+     *
     private boolean isAssignable(Class<?>[] source, Class<?>[] target) {
         if (source == null || target == null || source.length != target.length) {
             return false;
@@ -128,4 +128,5 @@ public class CasaNodeFactory {
         }
         return true;
     }
+    */
 }

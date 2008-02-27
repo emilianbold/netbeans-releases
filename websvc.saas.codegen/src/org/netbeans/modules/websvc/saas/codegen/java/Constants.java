@@ -198,10 +198,10 @@ public class Constants {
     }
     
     public enum HttpMethodType {
-        GET("get", "GET"),   //NOI18N
-        PUT("put", "PUT"), //NOI18N
-        POST("post", "POST"), //NOI18N
-        DELETE("delete", "DELETE"); //NOI18N
+        GET("get", Constants.GET), 
+        PUT("put", Constants.PUT),
+        POST("post", Constants.POST),
+        DELETE("delete", Constants.DELETE);
         
         private String prefix; 
         private String annotationType;
@@ -221,6 +221,22 @@ public class Constants {
         
         public String getAnnotationType() {
             return annotationType;
+        }
+    }
+    
+    public enum SaasAuthenticationType {
+        HTTP_BASIC("http-basic"), 
+        API_KEY("api-key"),
+        CUSTOM("custom");
+        
+        private String value;
+        
+        SaasAuthenticationType(String value) {
+            this.value = value;
+        }
+        
+        public String value() {
+            return value;
         }
     }
    

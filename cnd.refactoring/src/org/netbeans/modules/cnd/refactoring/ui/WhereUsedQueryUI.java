@@ -123,14 +123,14 @@ public class WhereUsedQueryUI implements RefactoringUI {
             if (refObj == null) {
                 query.setRefactoringSource(Lookup.EMPTY);
             } else {
-                query.setRefactoringSource(Lookups.fixed(refObj, CsmRefactoringUtils.getHandler(refObj)));
+                query.setRefactoringSource(Lookups.singleton(CsmRefactoringUtils.getHandler(refObj)));
             }            
         } else {
             CsmObject refObj = panel.getReferencedObject();
             if (refObj == null) {
                 query.setRefactoringSource(Lookup.EMPTY);
             } else {
-                query.setRefactoringSource(Lookups.fixed(refObj, CsmRefactoringUtils.getHandler(refObj)));
+                query.setRefactoringSource(Lookups.singleton(CsmRefactoringUtils.getHandler(refObj)));
             }
         }
         query.putValue(WhereUsedQueryConstants.FIND_OVERRIDING_METHODS,panel.isMethodOverriders());
@@ -188,33 +188,6 @@ public class WhereUsedQueryUI implements RefactoringUI {
             }
             description = description.replace("<html>", "").replace("</html>", ""); // NOI18N
             return getString(key, description);
-//            if (CsmKindUtilities.isClass(origCsmObject)/*kind == ElementKind.MODULE || kind == ElementKind.CLASS*/) {
-//                if (!panel.isClassFindUsages())
-//                    if (!panel.isClassSubTypesDirectOnly()) {
-//                        return getFormattedString("DSC_WhereUsedFindAllSubTypes", name);
-//                    } else {
-//                        return getFormattedString("DSC_WhereUsedFindDirectSubTypes", name);
-//                    }
-//            } else {
-//                if (CsmKindUtilities.isFunction(origCsmObject)/*kind == ElementKind.METHOD*/) {
-//                    String description = null;
-//                    if (panel.isMethodFindUsages()) {
-//                        description = getString("DSC_FindUsages");
-//                    }
-//                    
-//                    if (panel.isMethodOverriders()) {
-//                        if (description != null) {
-//                            description += " " + getString("DSC_And") + " ";
-//                        } else {
-//                            description = "";
-//                        }
-//                        description += getString("DSC_WhereUsedMethodOverriders");
-//                    }
-//                    
-//                    description += " " + getFormattedString("DSC_WhereUsedOf", panel.getMethodDeclaringClass() + '.' + name); //NOI18N
-//                    return description;
-//                }
-//            }
         }
         return getString("DSC_WhereUsed", name); // NOI18N
     }

@@ -210,6 +210,7 @@ public class OutputPanel extends javax.swing.JPanel implements HelpCtx.Provider 
             }
         });
         jScrollPane1.setViewportView(output);
+        output.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(OutputPanel.class, "ACSN_OutputPanel_output")); // NOI18N
         output.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(OutputPanel.class, "ACSD_OutputPanel_output")); // NOI18N
 
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -337,6 +338,9 @@ public class OutputPanel extends javax.swing.JPanel implements HelpCtx.Provider 
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.insets = new java.awt.Insets(8, 0, 0, 0);
         add(jPanel3, gridBagConstraints);
+
+        getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(OutputPanel.class, "ACSN_OutputPanel")); // NOI18N
+        getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(OutputPanel.class, "ACSD_OutputPanel")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
 
     private void javadocBrowseActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_javadocBrowseActionPerformed

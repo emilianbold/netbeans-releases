@@ -46,10 +46,10 @@ import org.netbeans.editor.ext.html.parser.AstNode;
 import org.netbeans.editor.ext.html.parser.SyntaxElement;
 import org.netbeans.editor.ext.html.parser.SyntaxElement.TagAttribute;
 import org.netbeans.editor.ext.html.parser.SyntaxTree;
-import org.netbeans.fpi.gsf.ElementHandle;
-import org.netbeans.fpi.gsf.Parser;
-import org.netbeans.fpi.gsf.ParserFile;
-import org.netbeans.fpi.gsf.ParserResult;
+import org.netbeans.modules.gsf.api.ElementHandle;
+import org.netbeans.modules.gsf.api.Parser;
+import org.netbeans.modules.gsf.api.ParserFile;
+import org.netbeans.modules.gsf.api.ParserResult;
 import org.netbeans.modules.editor.html.HTMLKit;
 
 /**
@@ -105,10 +105,4 @@ public class HtmlParserResult extends ParserResult {
     public AstTreeNode getAst() {
         return  null;
     }
-
-    @Override
-    public ElementHandle getRoot() {
-        return null;
-    }
-
 }

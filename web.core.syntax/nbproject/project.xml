@@ -64,7 +64,7 @@ made subject to such option by the copyright holder.
                     </run-dependency>
                 </dependency>
                 <dependency>
-                    <code-name-base>org.netbeans.fpi.gsf</code-name-base>
+                    <code-name-base>org.netbeans.modules.gsf.api</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
@@ -309,7 +309,7 @@ made subject to such option by the copyright holder.
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
-                        <release-version>2</release-version>
+                        <release-version>3</release-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -478,9 +478,11 @@ made subject to such option by the copyright holder.
                     </test-dependency>
                 </test-type>
             </test-dependencies>
-            <public-packages>
+            <friend-packages>
+                <friend>org.netbeans.modules.web.core</friend>
+                <friend>org.netbeans.modules.web.jsf</friend>
                 <package>org.netbeans.modules.web.core.syntax.spi</package>
-            </public-packages>
+            </friend-packages>
         </data>
     </configuration>
 </project>

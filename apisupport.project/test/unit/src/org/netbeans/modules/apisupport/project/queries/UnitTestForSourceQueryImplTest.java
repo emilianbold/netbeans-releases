@@ -62,37 +62,37 @@ public class UnitTestForSourceQueryImplTest extends TestBase {
     }   
 
     public void testFindUnitTest() throws Exception {
-        URL[] testRoots = UnitTestForSourceQuery.findUnitTests(nbCVSRoot());
+        URL[] testRoots = UnitTestForSourceQuery.findUnitTests(nbRoot());
         assertEquals("Test root for non project folder should be null", Collections.EMPTY_LIST, Arrays.asList(testRoots));
-        FileObject srcRoot = nbCVSRoot().getFileObject("apisupport/project");
+        FileObject srcRoot = nbRoot().getFileObject("apisupport.project");
         testRoots = UnitTestForSourceQuery.findUnitTests(srcRoot);
         assertEquals("Test root for project should be null", Collections.EMPTY_LIST, Arrays.asList(testRoots));
-        srcRoot = nbCVSRoot().getFileObject("apisupport/project/test/unit/src");
+        srcRoot = nbRoot().getFileObject("apisupport.project/test/unit/src");
         testRoots = UnitTestForSourceQuery.findUnitTests(srcRoot);
         assertEquals("Test root for tests should be null", Collections.EMPTY_LIST, Arrays.asList(testRoots));
-        srcRoot = nbCVSRoot().getFileObject("apisupport/project/src");
+        srcRoot = nbRoot().getFileObject("apisupport.project/src");
         testRoots = UnitTestForSourceQuery.findUnitTests(srcRoot);
         assertEquals("Test root defined", 1, testRoots.length);
         assertTrue("Test root exists", new File(URI.create(testRoots[0].toExternalForm())).exists());
-        assertEquals("Test root", URLMapper.findFileObject(testRoots[0]), nbCVSRoot().getFileObject("apisupport/project/test/unit/src"));
-        assertEquals("One test for this project", 1, UnitTestForSourceQuery.findUnitTests(nbCVSRoot().getFileObject("openide/windows/src")).length);
+        assertEquals("Test root", URLMapper.findFileObject(testRoots[0]), nbRoot().getFileObject("apisupport.project/test/unit/src"));
+        assertEquals("One test for this project", 1, UnitTestForSourceQuery.findUnitTests(nbRoot().getFileObject("openide.windows/src")).length);
     }
 
     public void testFindSource() {
-        URL[] srcRoots = UnitTestForSourceQuery.findSources(nbCVSRoot());
+        URL[] srcRoots = UnitTestForSourceQuery.findSources(nbRoot());
         assertEquals("Source root for non project folder should be null", Collections.EMPTY_LIST, Arrays.asList(srcRoots));
-        FileObject testRoot = nbCVSRoot().getFileObject("apisupport/project");
+        FileObject testRoot = nbRoot().getFileObject("apisupport.project");
         srcRoots = UnitTestForSourceQuery.findSources(testRoot);
         assertEquals("Source root for project should be null", Collections.EMPTY_LIST, Arrays.asList(srcRoots));
-        testRoot = nbCVSRoot().getFileObject("apisupport/project/src");
+        testRoot = nbRoot().getFileObject("apisupport.project/src");
         srcRoots = UnitTestForSourceQuery.findSources(testRoot);
         assertEquals("Source root for sources should be null", Collections.EMPTY_LIST, Arrays.asList(srcRoots));
-        assertEquals("No sources for this project's sources", Collections.EMPTY_LIST, Arrays.asList(UnitTestForSourceQuery.findSources(nbCVSRoot().getFileObject("openide/windows/src"))));
-        testRoot = nbCVSRoot().getFileObject("apisupport/project/test/unit/src");
+        assertEquals("No sources for this project's sources", Collections.EMPTY_LIST, Arrays.asList(UnitTestForSourceQuery.findSources(nbRoot().getFileObject("openide.windows/src"))));
+        testRoot = nbRoot().getFileObject("apisupport.project/test/unit/src");
         srcRoots = UnitTestForSourceQuery.findSources(testRoot);
         assertEquals("Source root defined", 1, srcRoots.length);
         assertTrue("Source root exists", new File(URI.create(srcRoots[0].toExternalForm())).exists());
-        assertEquals("Source root", URLMapper.findFileObject(srcRoots[0]), nbCVSRoot().getFileObject("apisupport/project/src"));
+        assertEquals("Source root", URLMapper.findFileObject(srcRoots[0]), nbRoot().getFileObject("apisupport.project/src"));
     }        
     
 }

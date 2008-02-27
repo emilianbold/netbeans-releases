@@ -40,7 +40,6 @@
  */
 package org.netbeans.modules.visualweb.test.components.composite;
 
-import java.awt.Point;
 import junit.framework.Test;
 import junit.framework.TestSuite;
 import org.netbeans.jellytools.Bundle;
@@ -54,14 +53,13 @@ import org.netbeans.junit.ide.ProjectSupport;
 import org.netbeans.modules.visualweb.gravy.Action;
 import org.netbeans.modules.visualweb.gravy.EditorOperator;
 import org.netbeans.modules.visualweb.gravy.RaveTestCase;
-import org.netbeans.modules.visualweb.gravy.RaveWindowOperator;
 import org.netbeans.modules.visualweb.gravy.TestUtils;
 import org.netbeans.modules.visualweb.gravy.Util;
-import org.netbeans.modules.visualweb.gravy.designer.DesignerPaneOperator;
 import org.netbeans.modules.visualweb.gravy.properties.SheetTableOperator;
-import org.netbeans.modules.visualweb.gravy.toolbox.PaletteContainerOperator;
 import org.netbeans.modules.visualweb.test.components.util.ComponentUtils;
+import org.netbeans.modules.visualweb.test.components.util.PaletteHelper;
 
+import static org.netbeans.modules.visualweb.test.components.util.ComponentUtils.selectForm1Component;
 import static org.netbeans.modules.visualweb.gravy.designer.DesignerPaneOperator.switchToDesignerPane;
 import static org.netbeans.modules.visualweb.gravy.designer.DesignerPaneOperator.switchToJSPSource;
 
@@ -114,7 +112,7 @@ public class CompositeComponentsTest extends RaveTestCase {
     @Override
     protected void tearDown() {
         // Close and Undeploy the project
-        new SaveAllAction().perform(); // Prevents from Save Modified Files dialog.
+        new SaveAllAction().performAPI(); // Prevents from Save Modified Files dialog.
         Node prjNode = new ProjectsTabOperator().getProjectRootNode(projectName);
         new Action(null, CLOSE).perform(prjNode);
         if (projectDeployed) {
@@ -127,43 +125,29 @@ public class CompositeComponentsTest extends RaveTestCase {
 
     public void testAccordion() {
         try {
-            String[][] properties;
             // Add Accordion component
-            properties = new String[][]{
-                {"id", "testAcrd"}
-            };
-            // XXX add static methods for adding all components
-            addComponent(COMPOSITE, ACCORDION, 50, 50, properties);
+            PaletteHelper.COMPOSITE.addComponent("Accordion", 50, 50, "id=testAcrd");
             // Add Accordion Tab component
-            properties = new String[][]{
-                {"id", "testAccrdTab"},
-                {"contentHeight", "133px"}
-            };
-            addComponent(COMPOSITE, ACCORDION_TAB, 75, 100, properties);
+            PaletteHelper.COMPOSITE.addComponent("AccordionTab", 75, 100,
+                    "id=testAccrdTab\n" +
+                    "contentHeight=133px");
             // Add a Static Text into the tab
-            properties = new String[][]{
-                {"id", "stext1"},
-                {"text", "Accordion Tab Text"},
-                {"toolTip", "Accordion Tab Text Tooltip"}
-            };
-            addComponent(BASIC, STATIC_TEXT, 75, 150, properties);
+            PaletteHelper.BASIC.addComponent("StaticText", 75, 150,
+                    "id=stext1\n" +
+                    "text=Accordion Tab Text\n" +
+                    "toolTip=Accordion Tab Text Tooltip");
             new SaveAllAction().perform();
             // Verify JSP source
             switchToJSPSource();
-            EditorOperator editor = getEditorOperator("Page1");
-            String[] checkFor = new String[]{
-                "<webuijsf:accordion ",
-                "<webuijsf:accordionTab ",
-                "<webuijsf:staticText ",
-                " id=\"testAcrd\"",
-                " id=\"testAccrdTab\"",
-                " id=\"stext1\"",
-                " contentHeight=\"133px\""
-            };
-            for (String str : checkFor) {
-                assertTrue("JSP source does not contain: " + str + "\n\nSOURCE DUMP:\n" + editor.getText(),
-                        editor.contains(str));
-            }
+            assertEditorContains(getEditorOperator("Page1"), new String[]{
+                        "<webuijsf:accordion ",
+                        "<webuijsf:accordionTab ",
+                        "<webuijsf:staticText ",
+                        " id=\"testAcrd\"",
+                        " id=\"testAccrdTab\"",
+                        " id=\"stext1\"",
+                        " contentHeight=\"133px\""
+                    });
             switchToDesignerPane();
             deployProject(projectName);
         } catch (Exception ex) {
@@ -172,62 +156,43 @@ public class CompositeComponentsTest extends RaveTestCase {
     }
 
     public void testBubbleHelp() {
-        String[][] properties;
         // Add Bubble Help component
-        properties = new String[][]{
-            {"id", "testBubble"},
-            {"title", "Bubble Help Test"}
-        };
-        addComponent(COMPOSITE, BUBBLE_HELP, 50, 50, properties);
+        PaletteHelper.COMPOSITE.addComponent("BubbleHelp", 50, 50,
+                "id=testBubble\n" +
+                "title=Bubble Help Test");
         // Add a Static Text into the component
-        properties = new String[][]{
-            {"id", "stext1"},
-            {"text", "Bubble Help Text"},
-            {"toolTip", "Bubble Help Text Tooltip"}
-        };
-        addComponent(BASIC, STATIC_TEXT, 50+36, 50+59, properties);
+        PaletteHelper.BASIC.addComponent("StaticText", 50 + 36, 50 + 59,
+                "id=stext1\n" +
+                "text=Bubble Help Text\n" +
+                "toolTip=Bubble Help Text Tooltip");
         new SaveAllAction().perform();
         // Verify JSP source
         switchToJSPSource();
-        EditorOperator editor = getEditorOperator("Page1");
-        String[] checkFor = new String[]{
-            "<webuijsf:bubble ",
-            " id=\"testBubble\"",
-            "<webuijsf:staticText ",
-            " id=\"stext1\""
-        };
-        for (String str : checkFor) {
-            assertTrue("JSP source does not contain: " + str + "\n\nSOURCE DUMP:\n" + editor.getText(),
-                    editor.contains(str));
-        }
+        assertEditorContains(getEditorOperator("Page1"), new String[]{
+                    "<webuijsf:bubble ",
+                    " id=\"testBubble\"",
+                    "<webuijsf:staticText ",
+                    " id=\"stext1\""
+                });
         switchToDesignerPane();
         deployProject(projectName);
     }
 
     public void testMenu() {
-        String[][] properties;
         // Add Menu component
-// XXX
-//        properties = new String[][]{
-//            {"id", "testMenu"}
-//        };
-        properties = null;
-        addComponent(COMPOSITE, MENU, 50, 50, properties);
-        // TODO set visible on true
-        //SheetTableOperator sheet = new SheetTableOperator();
-        //sheet.setValue("visible", true);
+        PaletteHelper.COMPOSITE.addComponent("Menu", 50, 50, null);
+        selectForm1Component("menu1");
+        SheetTableOperator sheet = new SheetTableOperator();
+        sheet.setTextValue("id", "testMenu");
+        sheet.setCheckBoxValue("visible", "true");
         new SaveAllAction().perform();
         // Verify JSP source
         switchToJSPSource();
-        EditorOperator editor = getEditorOperator("Page1");
-        String[] checkFor = new String[]{
-            "<webuijsf:menu ",
-            " id=\"menu1\""
-        };
-        for (String str : checkFor) {
-            assertTrue("JSP source does not contain: " + str + "\n\nSOURCE DUMP:\n" + editor.getText(),
-                    editor.contains(str));
-        }
+        assertEditorContains(getEditorOperator("Page1"), new String[]{
+                    "<webuijsf:menu ",
+                    " id=\"testMenu\"",
+                    " visible=\"true\""
+                });
         switchToDesignerPane();
         deployProject(projectName);
     }
@@ -238,20 +203,7 @@ public class CompositeComponentsTest extends RaveTestCase {
         System.out.println(msg);
     }
 
-    private void addComponent(String palette, String component, int x, int y, String[][] properties) {
-        log("** Adding component " + palette + " > " + component);
-        DesignerPaneOperator designerOp = new DesignerPaneOperator(RaveWindowOperator.getDefaultRave());
-        PaletteContainerOperator paleteOp = new PaletteContainerOperator(palette);
-        paleteOp.addComponent(component, designerOp, new Point(x, y));
-        if (properties != null) {
-            SheetTableOperator sheet = new SheetTableOperator();
-            for (String[] property : properties) {
-                log("** Setting property: " + property[0] + "=" + property[1]);
-                sheet.setTextValue(property[0], property[1]);
-            }
-        }
-    }
-
+    // TODO: move all this private utility methods into parent or Util clases
     private void waitBuildSuccessful(String projectName) {
         OutputTabOperator console = new OutputTabOperator(projectName);
         console.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 180000);
@@ -279,22 +231,14 @@ public class CompositeComponentsTest extends RaveTestCase {
     private EditorOperator getEditorOperator(String name) {
         return new EditorOperator(Util.getMainWindow(), name);
     }
-    private static final String RES_BUNDLE =
-            "org.netbeans.modules.visualweb.woodstock.webui.jsf.designtime.resources.Bundle";
-    private static final String ACCORDION = Bundle.getStringTrimmed(RES_BUNDLE,
-            "NAME_com-sun-webui-jsf-component-Accordion");
-    private static final String ACCORDION_TAB = Bundle.getStringTrimmed(RES_BUNDLE,
-            "NAME_com-sun-webui-jsf-component-AccordionTab");
-    private static final String BASIC = Bundle.getStringTrimmed(RES_BUNDLE,
-            "CreatorDesignerPalette5/Basic");
-    private static final String BUBBLE_HELP = Bundle.getStringTrimmed(RES_BUNDLE,
-            "NAME_com-sun-webui-jsf-component-Bubble");
-    private static final String COMPOSITE = Bundle.getStringTrimmed(RES_BUNDLE,
-            "CreatorDesignerPalette5/Composite");
-    private static final String MENU = Bundle.getStringTrimmed(RES_BUNDLE,
-            "NAME_com-sun-webui-jsf-component-Menu");
-    private static final String STATIC_TEXT = Bundle.getStringTrimmed(RES_BUNDLE,
-            "NAME_com-sun-webui-jsf-component-StaticText");
+
+    private void assertEditorContains(EditorOperator editor, String[] checkedItems) {
+        for (String str : checkedItems) {
+            assertTrue("Editor soource does not contain: " + str + "\n\nSOURCE DUMP:\n" + editor.getText(),
+                    editor.contains(str));
+        }
+    }
+
     private static final String UNDEPLOY_AND_DEPLOY = Bundle.getStringTrimmed(
             "org.netbeans.modules.web.project.ui.Bundle",
             "LBL_RedeployAction_Name");

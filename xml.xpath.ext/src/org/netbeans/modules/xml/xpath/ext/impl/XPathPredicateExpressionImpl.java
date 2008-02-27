@@ -57,9 +57,12 @@ public class XPathPredicateExpressionImpl extends XPathExpressionImpl
     }
     
     public XPathSchemaContext getSchemaContext() {
-        if (!((XPathModelImpl)myModel).isInResolveMode() && 
-                mSchemaContext == null) {
-            myModel.resolveExtReferences(false);
+        if (mSchemaContext == null) {
+            if (myModel.getRootExpression() != null) {
+                myModel.resolveExtReferences(false);
+            } else {
+                myModel.resolveExpressionExtReferences(this);
+            }
         }
         return mSchemaContext;
     }

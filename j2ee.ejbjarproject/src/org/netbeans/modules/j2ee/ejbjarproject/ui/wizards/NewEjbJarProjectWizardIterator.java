@@ -54,9 +54,9 @@ import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.j2ee.api.ejbjar.Ear;
+import org.netbeans.modules.j2ee.common.SharabilityUtility;
 import org.netbeans.modules.j2ee.common.project.ui.UserProjectSettings;
-import org.netbeans.modules.j2ee.common.sharability.PanelSharability;
-import org.netbeans.modules.j2ee.common.sharability.SharabilityUtilities;
+import org.netbeans.modules.j2ee.common.project.ui.PanelSharability;
 import org.netbeans.modules.j2ee.ejbjarproject.EjbJarProject;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 
@@ -66,6 +66,7 @@ import org.openide.filesystems.FileUtil;
 
 import org.netbeans.modules.j2ee.ejbjarproject.api.EjbJarProjectGenerator;
 import org.netbeans.modules.j2ee.ejbjarproject.Utils;
+import org.netbeans.spi.java.project.support.ui.SharableLibrariesUtils;
 import org.openide.util.NbBundle;
 
 /**
@@ -109,7 +110,7 @@ public class NewEjbJarProjectWizardIterator implements WizardDescriptor.Progress
         String serverInstanceID = (String) wiz.getProperty(WizardProperties.SERVER_INSTANCE_ID);
         String j2eeLevel = (String) wiz.getProperty(WizardProperties.J2EE_LEVEL);
         String librariesDefinition =
-                SharabilityUtilities.getLibraryLocation((String) wiz.getProperty(PanelSharability.WIZARD_SHARED_LIBRARIES));
+                SharabilityUtility.getLibraryLocation((String) wiz.getProperty(PanelSharability.WIZARD_SHARED_LIBRARIES));
         String serverLibraryName = (String) wiz.getProperty(PanelSharability.WIZARD_SERVER_LIBRARY);
         
         AntProjectHelper h = EjbJarProjectGenerator.createProject(dirF, name,
@@ -129,6 +130,7 @@ public class NewEjbJarProjectWizardIterator implements WizardDescriptor.Progress
         
         // remember last used server
     	UserProjectSettings.getDefault().setLastUsedServer(serverInstanceID);
+        SharableLibrariesUtils.setLastProjectSharable(librariesDefinition != null);
         
         // downgrade the Java platform or src level to 1.4        
         String platformName = (String)wiz.getProperty(WizardProperties.JAVA_PLATFORM);

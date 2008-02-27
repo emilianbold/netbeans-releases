@@ -2102,7 +2102,7 @@ public class CasualDiff {
                     if (!fieldGroup.isEmpty()) {
                         int oldPos = getOldPos(fieldGroup.get(0));
                         
-                        if (oldPos != (-1) && oldPos == getOldPos(var) && fieldGroup.get(0).getModifiers() == var.getModifiers()) {
+                        if (oldPos != (-1) && oldPos != NOPOS && oldPos == getOldPos(var) && fieldGroup.get(0).getModifiers() == var.getModifiers()) {
                             //seems like a field group:
                             fieldGroup.add(var);
                         } else {

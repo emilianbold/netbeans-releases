@@ -58,13 +58,21 @@ public class WsdlDataManagerImpl implements WsdlDataManager {
 
     public void save(WsdlData data) {
         WebServicePersistenceManager mgr = new WebServicePersistenceManager();
-        WsdlServiceProxyDescriptor desc = data.getJaxWsDescriptor();
-        if (desc instanceof WebServiceDescriptor) {
-            mgr.saveWebServiceDescriptor((WebServiceDescriptor)desc);
-        }
-        desc = data.getJaxRpcDescriptor();
-        if (desc instanceof WebServiceDescriptor) {
-            mgr.saveWebServiceDescriptor((WebServiceDescriptor)desc);
+        try {
+            WsdlServiceProxyDescriptor desc = data.getJaxWsDescriptor();
+            if (desc instanceof WebServiceDescriptor) {
+                mgr.saveDescriptor((WebServiceDescriptor)desc);
+            }
+            desc = data.getJaxRpcDescriptor();
+            if (desc instanceof WebServiceDescriptor) {
+                mgr.saveDescriptor((WebServiceDescriptor)desc);
+            }
+        } catch(Exception ex) {
+            try {
+                mgr.save();
+            } catch(Exception e) {
+                //at this point, just leave it to save on ide exit 
+            }
         }
     }
 

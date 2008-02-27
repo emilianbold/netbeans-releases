@@ -50,7 +50,7 @@ public class RefreshServiceAction extends NodeAction {
             return false;
         }
         WsdlSaas saas = nodes[0].getLookup().lookup(WsdlSaas.class);
-        return saas != null && saas.getState() != Saas.State.INITIALIZING && saas.getWsdlData() != null;
+        return saas != null && saas.getState() != Saas.State.INITIALIZING;
     }
 
     public org.openide.util.HelpCtx getHelpCtx() {

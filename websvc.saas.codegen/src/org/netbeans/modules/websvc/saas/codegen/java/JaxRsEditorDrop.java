@@ -42,8 +42,6 @@ package org.netbeans.modules.websvc.saas.codegen.java;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
@@ -60,6 +58,7 @@ import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.text.ActiveEditorDrop;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 
@@ -116,16 +115,16 @@ public class JaxRsEditorDrop implements ActiveEditorDrop {
                         JaxRsCodeGeneratorFactory.create(targetComponent, targetFO, method);
                 
                     WadlSaasBean bean = codegen.getBean();
-                    boolean showParams = codegen.showParams();
+                    boolean showParams = codegen.canShowParam();
                     List<ParameterInfo> allParams = new ArrayList<ParameterInfo>(bean.getHeaderParameters());
-                    if (showParams) {
+                    if (showParams && bean.getInputParameters() != null) {
                         allParams.addAll(bean.getInputParameters());
                     }
                     JaxRsCodeSetupPanel panel = new JaxRsCodeSetupPanel(
                             codegen.getSubresourceLocatorUriTemplate(),
                             bean.getQualifiedClassName(), 
                             allParams,
-                            !showParams);
+                            codegen.canShowResourceInfo(), showParams);
 
                     DialogDescriptor desc = new DialogDescriptor(panel, 
                             NbBundle.getMessage(JaxRsEditorDrop.class,
@@ -155,9 +154,7 @@ public class JaxRsEditorDrop implements ActiveEditorDrop {
         dialog.open();
 
         if (errors.size() > 0) {
-            for (Exception e : errors) {
-                Logger.getLogger(getClass().getName()).log(Level.INFO, "handleTransfer", e);
-            }
+            Exceptions.printStackTrace(errors.get(0));
             return false;
         }
         return true;

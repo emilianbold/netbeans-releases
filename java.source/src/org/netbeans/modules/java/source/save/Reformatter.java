@@ -65,7 +65,7 @@ import org.netbeans.modules.editor.indent.spi.ReformatTask;
  */
 public class Reformatter implements ReformatTask {
     
-    private static final Object EDITING_TEMPLATE_DOC_PROPERTY = "processing-code-template"; // NOI18N
+    private static final Object CT_HANDLER_DOC_PROPERTY = "code-template-insert-handler"; // NOI18N
 
     private JavaSource javaSource;
     private Context context;
@@ -125,7 +125,7 @@ public class Reformatter implements ReformatTask {
     }
     
     private void reformatImpl(Context.Region region) throws BadLocationException {
-        boolean templateEdit = Boolean.TRUE.equals(doc.getProperty(EDITING_TEMPLATE_DOC_PROPERTY));
+        boolean templateEdit = doc.getProperty(CT_HANDLER_DOC_PROPERTY) != null;
         int startOffset = region.getStartOffset() - shift;
         int endOffset = region.getEndOffset() - shift;
         int originalEndOffset = endOffset;
@@ -347,7 +347,8 @@ public class Reformatter implements ReformatTask {
                 tokens.movePrevious();
             } else {
                 tokens.move((int)sp.getEndPosition(path.getCompilationUnit(), tree));
-                tokens.moveNext();
+                if (!tokens.moveNext())
+                    tokens.movePrevious();
             }
             this.endPos = tokens.offset();
             if (tree.getKind() == Tree.Kind.COMPILATION_UNIT) {

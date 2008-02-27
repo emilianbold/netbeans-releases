@@ -137,6 +137,7 @@ public class HgCommand {
     private static final String HG_LOG_TEMPLATE_SHORT_CMD = "--template={rev}\\n{desc|firstline}\\n{date|hgdate}\\n{node|short}\\n"; // NOI18N
     private static final String HG_LOG_TEMPLATE_LONG_CMD = "--template={rev}\\n{desc}\\n{date|hgdate}\\n{node|short}\\n"; // NOI18N
 
+    private static final String HG_LOG_NO_MERGES_CMD = "-M";
     private static final String HG_LOG_DEBUG_CMD = "--debug";
     private static final String HG_LOG_TEMPLATE_HISTORY_CMD = 
             "--template=rev:{rev}\\nauth:{author}\\ndesc:{desc}\\ndate:{date|hgdate}\\nid:{node|short}\\n" + // NOI18N
@@ -831,15 +832,14 @@ public class HgCommand {
         return messages;
     }
     
-    public static HgLogMessage[] getIncomingMessages(final String rootUrl) {
+    public static HgLogMessage[] getIncomingMessages(final String rootUrl, String toRevision, boolean bShowMerges,  OutputLogger logger) {
         final List<HgLogMessage> messages = new ArrayList<HgLogMessage>(0);  
         final File root = new File(rootUrl);
         
-        OutputLogger logger = OutputLogger.getLogger(rootUrl);
         try {
 
             List<String> list = new LinkedList<String>();
-            list = HgCommand.doIncomingForSearch(root, logger);
+            list = HgCommand.doIncomingForSearch(root, toRevision, bShowMerges, logger);
             processLogMessages(list, messages);
 
         } catch (HgException ex) {
@@ -852,15 +852,14 @@ public class HgCommand {
         return messages.toArray(new HgLogMessage[0]);
     }       
    
-    public static HgLogMessage[] getOutMessages(final String rootUrl) {
+    public static HgLogMessage[] getOutMessages(final String rootUrl, String toRevision, boolean bShowMerges, OutputLogger logger) {
         final List<HgLogMessage> messages = new ArrayList<HgLogMessage>(0);  
         final File root = new File(rootUrl);
         
-        OutputLogger logger = OutputLogger.getLogger(rootUrl);
         try {
 
             List<String> list = new LinkedList<String>();
-            list = HgCommand.doOut(root, logger);
+            list = HgCommand.doOutForSearch(root, toRevision, bShowMerges, logger);
             processLogMessages(list, messages);
 
         } catch (HgException ex) {
@@ -873,11 +872,11 @@ public class HgCommand {
         return messages.toArray(new HgLogMessage[0]);
     }       
    
-    public static HgLogMessage[] getLogMessages(final String rootUrl, final Set<File> files, String fromRevision, String toRevision) {
+    public static HgLogMessage[] getLogMessages(final String rootUrl, 
+            final Set<File> files, String fromRevision, String toRevision, boolean bShowMerges,  OutputLogger logger) {
         final List<HgLogMessage> messages = new ArrayList<HgLogMessage>(0);  
         final File root = new File(rootUrl);
         
-        OutputLogger logger = OutputLogger.getLogger(rootUrl);
         try {
             String headRev = HgCommand.getLastRevision(root, null);
             if (headRev == null) {
@@ -887,7 +886,7 @@ public class HgCommand {
             List<String> list = new LinkedList<String>();
             list = HgCommand.doLogForHistory(root, 
                     files != null ? new ArrayList<File>(files) : null,
-                    fromRevision, toRevision, headRev, logger);
+                    fromRevision, toRevision, headRev, bShowMerges, logger);
             processLogMessages(list, messages);
             
         } catch (HgException ex) {
@@ -1128,7 +1127,7 @@ public class HgCommand {
      * @throws org.netbeans.modules.mercurial.HgException
      */
     public static List<String> doLogForHistory(File repository, List<File> files, 
-            String from, String to, String headRev, OutputLogger logger) throws HgException {
+            String from, String to, String headRev, boolean bShowMerges, OutputLogger logger) throws HgException {
         if (repository == null ) return null;
         if (files != null && files.isEmpty()) return null;
         
@@ -1148,6 +1147,9 @@ public class HgCommand {
         }
         if (doFollow) {
             command.add(HG_OPT_FOLLOW);
+        }
+        if(!bShowMerges){
+            command.add(HG_LOG_NO_MERGES_CMD);
         }
         command.add(HG_OPT_REPOSITORY);
         command.add(repository.getAbsolutePath());
@@ -1188,7 +1190,7 @@ public class HgCommand {
      * @return List<String> list of the out entries for the specified repo.
      * @throws org.netbeans.modules.mercurial.HgException
      */
-    public static List<String> doOut(File repository, OutputLogger logger) throws HgException {
+    public static List<String> doOutForSearch(File repository, String to, boolean bShowMerges, OutputLogger logger) throws HgException {
         if (repository == null ) return null;
         
         List<String> command = new ArrayList<String>();
@@ -1197,8 +1199,15 @@ public class HgCommand {
         command.add(HG_OUT_CMD);
         command.add(HG_OPT_REPOSITORY);
         command.add(repository.getAbsolutePath());
-        command.add(HG_LOG_DEBUG_CMD);
-        
+        if(!bShowMerges){
+            command.add(HG_LOG_NO_MERGES_CMD);
+        }
+        command.add(HG_LOG_DEBUG_CMD);       
+        String revStr = handleIncomingRevNumber(to);
+        if(revStr != null){
+            command.add(HG_FLAG_REV_CMD);
+            command.add(revStr);
+        }        
         command.add(HG_LOG_TEMPLATE_HISTORY_CMD);
 
         List<String> list;
@@ -1230,7 +1239,7 @@ public class HgCommand {
      * @return List<String> list of the out entries for the specified repo.
      * @throws org.netbeans.modules.mercurial.HgException
      */
-    public static List<String> doIncomingForSearch(File repository, OutputLogger logger) throws HgException {
+    public static List<String> doIncomingForSearch(File repository, String to, boolean bShowMerges, OutputLogger logger) throws HgException {
         if (repository == null ) return null;
         
         List<String> command = new ArrayList<String>();
@@ -1239,7 +1248,15 @@ public class HgCommand {
         command.add(HG_INCOMING_CMD);
         command.add(HG_OPT_REPOSITORY);
         command.add(repository.getAbsolutePath());
+        if(!bShowMerges){
+            command.add(HG_LOG_NO_MERGES_CMD);
+        }
         command.add(HG_LOG_DEBUG_CMD);        
+        String revStr = handleIncomingRevNumber(to);
+        if(revStr != null){
+            command.add(HG_FLAG_REV_CMD);
+            command.add(revStr);
+        }        
         command.add(HG_LOG_TEMPLATE_HISTORY_CMD);
 
         List<String> list = exec(command);
@@ -1335,6 +1352,23 @@ public class HgCommand {
         }
         return null;
     }
+
+    private static String handleIncomingRevNumber(String to) {
+        int toInt = -1;
+
+        // Handle users entering head or tip for revision, instead of a number
+        if (to != null && (to.equalsIgnoreCase(HG_STATUS_FLAG_TIP_CMD) || to.equalsIgnoreCase(HG_HEAD_STR))) {
+            to = HG_STATUS_FLAG_TIP_CMD;
+        }
+        try {
+            toInt = Integer.parseInt(to);
+        } catch (NumberFormatException e) {
+            // ignore invalid numbers
+        }
+
+        return (toInt > -1) ? to : HG_STATUS_FLAG_TIP_CMD;
+    }
+
     private static String handleRevNumbers(String from, String to, String headRev){
         int fromInt = -1;
         int toInt = -1;
@@ -2687,7 +2721,7 @@ public class HgCommand {
     }
 
     private static void handleError(List<String> command, List<String> list, String message, OutputLogger logger) throws HgException{
-        if (command != null && list != null){
+        if (command != null && list != null && logger != null){
             Mercurial.LOG.log(Level.WARNING, "command: " + HgUtils.replaceHttpPassword(command)); // NOI18N        
             Mercurial.LOG.log(Level.WARNING, "output: " + HgUtils.replaceHttpPassword(list)); // NOI18N
             logger.outputInRed(NbBundle.getMessage(HgCommand.class, "MSG_COMMAND_ERR")); // NOI18N

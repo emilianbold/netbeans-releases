@@ -32,10 +32,10 @@ pack_all_components()
 
     #find netbeans | egrep "netbeans/(platform|harness)" | zip -q $DIST_DIR/zip/$NAME-platform.zip -@ || exit 1
     find netbeans | egrep -v "netbeans/(extra|testtools|xml|mobility|enterprise|visualweb|uml|ruby|soa|cnd|identity|php)" | zip -q $DIST_DIR/zip/$NAME-javase.zip -@ || exit 1
-    find netbeans | egrep -v "netbeans/(extra|testtools|xml|enterprise|visualweb|uml|ruby|soa|cnd|identity|php|gsf)" | egrep -v "(org-netbeans-modules-mobility-end2end|org-netbeans-modules-mobility-jsr172)" | zip -q $DIST_DIR/zip/$NAME-mobility.zip -@ || exit 1
+    find netbeans | egrep -v "netbeans/(extra|testtools|xml|enterprise|visualweb|uml|ruby|soa|cnd|identity|php)" | egrep -v "(org-netbeans-modules-mobility-end2end|org-netbeans-modules-mobility-jsr172)" | zip -q $DIST_DIR/zip/$NAME-mobility.zip -@ || exit 1
     find netbeans | egrep -v "netbeans/(extra|testtools|mobility|uml|ruby|soa|cnd|identity|php)" | zip -q $DIST_DIR/zip/$NAME-javaee.zip -@ || exit 1
-    find netbeans | egrep -v "netbeans/(extra|testtools|xml|java|apisupport|harness|profiler|mobility|enterprise|visualweb|uml|soa|identity|cnd|php|gsf)" | zip -q $DIST_DIR/zip/$NAME-ruby.zip -@ || exit 1
-    find netbeans | egrep -v "netbeans/(extra|testtools|xml|java|apisupport|harness|profiler|mobility|enterprise|visualweb|uml|ruby|soa|identity|php|gsf)" | zip -q $DIST_DIR/zip/$NAME-cpp.zip -@ || exit 1
+    find netbeans | egrep -v "netbeans/(extra|testtools|xml|java|apisupport|harness|profiler|mobility|enterprise|visualweb|uml|soa|identity|cnd|php)" | zip -q $DIST_DIR/zip/$NAME-ruby.zip -@ || exit 1
+    find netbeans | egrep -v "netbeans/(extra|testtools|xml|java|apisupport|harness|profiler|mobility|enterprise|visualweb|uml|ruby|soa|identity|php)" | zip -q $DIST_DIR/zip/$NAME-cpp.zip -@ || exit 1
 
     mkdir $DIST_DIR/zip/moduleclusters
 
@@ -92,8 +92,11 @@ pack_all_components()
     pack_component $DIST_DIR/zip/moduleclusters $NAME cnd "cnd*"
     rm -rf cnd*
 
-    pack_component $DIST_DIR/zip/moduleclusters $NAME php "php*"
-    rm -rf php*
+#    pack_component $DIST_DIR/zip/moduleclusters $NAME php "php*"
+#    rm -rf php*
+
+    pack_component $DIST_DIR/zip/moduleclusters $NAME gsf "gsf*"
+    rm -rf gsf*
 
     pack_component $DIST_DIR/zip/moduleclusters $NAME nb6.0-etc "*"
 }

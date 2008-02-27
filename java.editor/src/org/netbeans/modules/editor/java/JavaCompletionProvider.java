@@ -2747,7 +2747,7 @@ public class JavaCompletionProvider implements CompletionProvider {
                     TypeElement elem = (TypeElement)head.asElement();
                     if (!elems.add(elem))
                         continue;
-                    if (startsWith(env, elem.getSimpleName().toString(), prefix) && trees.isAccessible(scope, elem))
+                    if (startsWith(env, elem.getSimpleName().toString(), prefix))
                         subtypes.add(head);
                     List<? extends TypeMirror> tas = head.getTypeArguments();
                     boolean isRaw = !tas.iterator().hasNext();

@@ -108,12 +108,14 @@ public class Repository implements ActionListener, DocumentListener, FocusListen
     private String message;            
     private int modeMask;
     private Dimension maxNeededSize;
+    private boolean bPushPull;
+    private static int HG_PUSH_PULL_VERT_PADDING = 30;
     
     public Repository(String titleLabel) {
-        this(0, titleLabel);
+        this(0, titleLabel, false);
     }
             
-    public Repository(int modeMask, String titleLabel) {
+    public Repository(int modeMask, String titleLabel, boolean bPushPull) {
         
         this.modeMask = modeMask;
         
@@ -130,7 +132,10 @@ public class Repository implements ActionListener, DocumentListener, FocusListen
         //repositoryPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 0, 0));
         
         // retrieve the dialog size for the largest configuration
-        updateVisibility("https:");                                                                       // NOI18N
+        if(bPushPull)
+            updateVisibility("foo:"); // NOI18N
+        else
+            updateVisibility("https:"); // NOI18N            
         maxNeededSize = repositoryPanel.getPreferredSize();
 
         repositoryPanel.savePasswordCheckBox.setSelected(HgModuleConfig.getDefault().getSavePassword());
@@ -644,6 +649,9 @@ public class Repository implements ActionListener, DocumentListener, FocusListen
         corectPanel.panel.setLayout(new BorderLayout());
         JPanel p = getPanel();
         if(setMaxNeddedSize) {
+            if(bPushPull){
+                maxNeededSize.setSize(maxNeededSize.width, maxNeededSize.height + HG_PUSH_PULL_VERT_PADDING);
+            }
             p.setPreferredSize(maxNeededSize);
         }        
         corectPanel.panel.add(p, BorderLayout.NORTH);
@@ -659,6 +667,9 @@ public class Repository implements ActionListener, DocumentListener, FocusListen
         DialogDescriptor dialogDescriptor = new DialogDescriptor(corectPanel, title); // NOI18N        
         JPanel p = getPanel();
         if(setMaxNeededSize) {
+            if(bPushPull){
+                maxNeededSize.setSize(maxNeededSize.width, maxNeededSize.height + HG_PUSH_PULL_VERT_PADDING);
+            }
             p.setPreferredSize(maxNeededSize);
         }        
         if(options!= null) {
@@ -676,6 +687,8 @@ public class Repository implements ActionListener, DocumentListener, FocusListen
         if (name != null) {
             dialog.addWindowListener(new DialogBoundsPreserver(HgModuleConfig.getDefault().getPreferences(), name)); // NOI18N
         }
+        dialog.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(Repository.class, "ACSD_RepositoryPanel"));
+
         dialog.setVisible(true);
     }
 

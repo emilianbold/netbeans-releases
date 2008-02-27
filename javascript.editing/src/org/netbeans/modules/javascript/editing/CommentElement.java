@@ -41,13 +41,10 @@
 
 package org.netbeans.modules.javascript.editing;
 
-import java.util.Collections;
-import java.util.Set;
 
-import org.netbeans.fpi.gsf.ElementKind;
-import org.netbeans.fpi.gsf.Modifier;
+import org.netbeans.modules.gsf.api.ElementKind;
 
-public class CommentElement implements Element {
+public class CommentElement extends JsElement {
 
     private final String text;
 
@@ -62,13 +59,5 @@ public class CommentElement implements Element {
 
     public ElementKind getKind() {
         return ElementKind.KEYWORD;
-    }
-
-    public Set<Modifier> getModifiers() {
-        return Collections.emptySet();
-    }
-
-    public String getIn() {
-        return null;
     }
 }

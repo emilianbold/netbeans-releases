@@ -63,6 +63,7 @@ import org.netbeans.modules.soa.mappercore.Mapper;
 import org.netbeans.modules.xml.xpath.ext.CoreFunctionType;
 import org.netbeans.modules.xml.xpath.ext.CoreOperationType;
 import org.netbeans.modules.bpel.model.api.support.BpelXPathExtFunctionMetadata;
+import org.openide.util.NbBundle;
 import static org.netbeans.modules.soa.ui.util.UI.*;
 
 /**
@@ -130,6 +131,10 @@ public final class Palette {
                     }
                 });
         setImageSize(button);
+        button.getAccessibleContext().setAccessibleName(NbBundle
+                .getMessage(Palette.class, "ACSN_ExpandCollapseButton")); // NOI18N
+        button.getAccessibleContext().setAccessibleDescription(NbBundle
+                .getMessage(Palette.class, "ACSD_ExpandCollapseButton")); // NOI18N
 
         return button;
     }

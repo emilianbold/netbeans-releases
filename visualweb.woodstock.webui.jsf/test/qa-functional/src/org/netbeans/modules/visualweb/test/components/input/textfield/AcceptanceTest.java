@@ -483,11 +483,10 @@ public class AcceptanceTest extends RaveTestCase {
         try { Thread.sleep(3000); } catch(Exception e) {}
  
         log("**Add code to textfield4_processValueChange");
-        String code = "staticText1.setValue(textField4.getValue());\n";
         EditorOperator editor = new EditorOperator(Util.getMainWindow(), _page1);
         editor.requestFocus();
         editor.pushDownArrowKey();
-        editor.txtEditorPane().typeText("staticText1.setValue(textField4.getValue());\n");
+        editor.txtEditorPane().typeText("log(\"Action Performed\");\n");
         try { Thread.sleep(2000); } catch(Exception e) {}
         designer.switchToDesignerPane();
 

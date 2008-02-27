@@ -49,8 +49,8 @@ import java.util.List;
 import java.util.Map;
 import javax.swing.text.Document;
 import javax.swing.text.StyledDocument;
-import org.netbeans.fpi.gsf.CancellableTask;
-import org.netbeans.fpi.gsf.Error;
+import org.netbeans.modules.gsf.api.CancellableTask;
+import org.netbeans.modules.gsf.api.Error;
 import org.netbeans.spi.editor.hints.Fix;
 import org.netbeans.spi.editor.hints.LazyFixList;
 import org.netbeans.spi.editor.hints.Severity;
@@ -66,8 +66,8 @@ import java.util.logging.Logger;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Position;
 import javax.swing.text.Position.Bias;
-import org.netbeans.fpi.gsf.HintsProvider;
-import org.netbeans.fpi.gsf.ParserResult;
+import org.netbeans.modules.gsf.api.HintsProvider;
+import org.netbeans.modules.gsf.api.ParserResult;
 import org.netbeans.modules.gsf.LanguageRegistry;
 import org.netbeans.napi.gsfret.source.CompilationInfo;
 import org.netbeans.napi.gsfret.source.Source;
@@ -106,12 +106,12 @@ public final class GsfHintsProvider implements CancellableTask<CompilationInfo> 
         this.file = file;
     }
     
-    private static final Map<org.netbeans.fpi.gsf.Severity, Severity> errorKind2Severity;
+    private static final Map<org.netbeans.modules.gsf.api.Severity, Severity> errorKind2Severity;
     
     static {
-        errorKind2Severity = new EnumMap<org.netbeans.fpi.gsf.Severity, Severity>(org.netbeans.fpi.gsf.Severity.class);
-        errorKind2Severity.put(org.netbeans.fpi.gsf.Severity.ERROR, Severity.ERROR);
-        errorKind2Severity.put(org.netbeans.fpi.gsf.Severity.WARNING, Severity.WARNING);
+        errorKind2Severity = new EnumMap<org.netbeans.modules.gsf.api.Severity, Severity>(org.netbeans.modules.gsf.api.Severity.class);
+        errorKind2Severity.put(org.netbeans.modules.gsf.api.Severity.ERROR, Severity.ERROR);
+        errorKind2Severity.put(org.netbeans.modules.gsf.api.Severity.WARNING, Severity.WARNING);
 //        errorKind2Severity.put(Error/*Diagnostic*/.Kind.WARNING, Severity.WARNING);
 //        errorKind2Severity.put(Error/*Diagnostic*/.Kind.NOTE, Severity.WARNING);
 //        errorKind2Severity.put(Error/*Diagnostic*/.Kind.OTHER, Severity.WARNING);

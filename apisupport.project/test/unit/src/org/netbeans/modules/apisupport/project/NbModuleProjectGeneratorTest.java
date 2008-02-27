@@ -66,7 +66,7 @@ import org.openide.filesystems.FileUtil;
  * @author Martin Krauskopf, Jesse Glick
  */
 public class NbModuleProjectGeneratorTest extends TestBase {
-    // TODO test suite module and also NetBeans CVS tree modules
+    // TODO test suite module and also NetBeans source tree modules
     // XXX also should test content of created files (XMLs, properties)
     
     public NbModuleProjectGeneratorTest(String testName) {
@@ -195,8 +195,8 @@ public class NbModuleProjectGeneratorTest extends TestBase {
     }
     
     // XXX hmmm, don't know yet how to fully test this case since I don't want
-    // to touch the netbeans.org CVS tree. Probably somehow simulating
-    // netbeans.org CVS tree would help. I'll try to investigate it later.
+    // to touch the netbeans.org source tree. Probably somehow simulating
+    // netbeans.org source tree would help. I'll try to investigate it later.
 //    public void testCreateNetBeansModule() throws Exception {
 //        File prjDir = new File("/usr/share/java/netbeans-cvs-current/ide/projectimport/testModule");
 //        NbModuleProjectGenerator.createNetBeansOrgModule(

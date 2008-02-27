@@ -41,6 +41,8 @@
 package org.netbeans.modules.j2ee.common.project.ui;
 
 
+import org.netbeans.modules.j2ee.common.project.ui.RemoveClassPathRootAction;
+import org.netbeans.modules.j2ee.common.project.ui.ShowJavadocAction;
 import java.net.URL;
 import java.util.List;
 import java.util.ArrayList;

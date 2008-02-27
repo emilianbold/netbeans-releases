@@ -43,7 +43,7 @@ package org.netbeans.modules.refactoring.ruby.ui;
 import java.text.MessageFormat;
 import java.util.ResourceBundle;
 import javax.swing.event.ChangeListener;
-import org.netbeans.fpi.gsf.ElementKind;
+import org.netbeans.modules.gsf.api.ElementKind;
 import org.netbeans.napi.gsfret.source.CompilationInfo;
 import org.netbeans.modules.refactoring.api.AbstractRefactoring;
 import org.netbeans.modules.refactoring.api.WhereUsedQuery;

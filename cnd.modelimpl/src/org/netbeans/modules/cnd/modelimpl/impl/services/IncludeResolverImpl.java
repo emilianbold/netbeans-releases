@@ -165,7 +165,7 @@ public class IncludeResolverImpl extends CsmIncludeResolver {
     public boolean isObjectVisible(CsmFile currentFile, CsmObject item) {
         if (CsmKindUtilities.isOffsetable(item)) {
             CsmFile file = ((CsmOffsetable) item).getContainingFile();
-            if (!file.equals(currentFile)) {
+             if (!file.equals(currentFile)) {
                 if (file.isHeaderFile()) {
                     HashSet<CsmFile> scannedfiles = new HashSet();
                     if (isFileVisibleInIncludeFiles(currentFile.getIncludes(), file, scannedfiles)) {
@@ -210,7 +210,9 @@ public class IncludeResolverImpl extends CsmIncludeResolver {
     private boolean isVariableDeclarationsVisible(CsmFile currentFile, Collection<CsmOffsetableDeclaration> decls) {
         for (CsmOffsetableDeclaration decl : decls) {
             HashSet<CsmFile> scannedFiles = new HashSet();
-            if (isFileVisibleInIncludeFiles(currentFile.getIncludes(), decl.getContainingFile(), scannedFiles)) {
+            if(decl.getContainingFile().equals(currentFile)) {
+                return true;
+            } else if (isFileVisibleInIncludeFiles(currentFile.getIncludes(), decl.getContainingFile(), scannedFiles)) {
                 return true;
             }
         }

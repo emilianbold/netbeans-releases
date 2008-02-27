@@ -229,4 +229,24 @@ public class CCBasicCompletionTestCase extends CompletionBaseTestCase {
     public void testCompletionInEmptySysInclude() throws Exception {
         super.performTest("file.cc", 1, 1, "#include <>", -1);
     }
+
+    ////////////////////////////////////////////////////////////////////////////
+    // tests for static function completion
+    // IZ#126622 : Static function is missed in Code Completion listbox
+    
+    public void testCompletionForStaticFunctions1() throws Exception {
+        super.performTest("static.cc", 18, 5);
+    }
+
+    public void testCompletionForStaticFunctions2() throws Exception {
+        super.performTest("static.cc", 18, 5, "func");
+    }
+
+    public void testCompletionForStaticFunctions3() throws Exception {
+        super.performTest("static.cc", 18, 5, "b");
+    }
+
+    public void testCompletionForStaticFunctions4() throws Exception {
+        super.performTest("static.cc", 23, 1);
+    }
 }

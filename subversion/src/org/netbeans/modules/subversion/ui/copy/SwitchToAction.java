@@ -41,9 +41,9 @@
 
 package org.netbeans.modules.subversion.ui.copy;
 
+import java.awt.EventQueue;
 import java.io.File;
 import org.netbeans.modules.subversion.FileInformation;
-import org.netbeans.modules.subversion.FileStatusCache;
 import org.netbeans.modules.subversion.RepositoryFile;
 import org.netbeans.modules.subversion.Subversion;
 import org.netbeans.modules.subversion.client.SvnClient;
@@ -54,7 +54,11 @@ import org.netbeans.modules.subversion.util.Context;
 import org.netbeans.modules.subversion.util.SvnUtils;
 import org.netbeans.modules.versioning.util.Utils;
 import org.openide.nodes.Node;
+import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
+import org.tigris.subversion.svnclientadapter.ISVNInfo;
 import org.tigris.subversion.svnclientadapter.SVNClientException;
+import org.tigris.subversion.svnclientadapter.SVNNodeKind;
 import org.tigris.subversion.svnclientadapter.SVNRevision;
 import org.tigris.subversion.svnclientadapter.SVNUrl;
 
@@ -111,17 +115,59 @@ public class SwitchToAction extends ContextAction {
         File[] files = Subversion.getInstance().getStatusCache().listFiles(ctx, FileInformation.STATUS_LOCAL_CHANGE);       
         boolean hasChanges = files.length > 0;
 
+        final RequestProcessor rp = createRequestProcessor(nodes);
         final SwitchTo switchTo = new SwitchTo(repositoryRoot, root, hasChanges);
-        if(switchTo.showDialog()) {
-            ContextAction.ProgressSupport support = new ContextAction.ProgressSupport(this, nodes) {
-                public void perform() {
-                    RepositoryFile toRepositoryFile = switchTo.getRepositoryFile();
-                    performSwitch(toRepositoryFile, root, this);
-                }
-            };
-            support.start(createRequestProcessor(nodes));
-        }        
+                
+        showDialog(switchTo, root, rp, nodes);
     }
+
+    private void showDialog(final SwitchTo switchTo, final File root, final RequestProcessor rp, final Node[] nodes) {        
+        boolean ret = switchTo.showDialog();
+        if(!ret) {
+            return;
+        }
+        rp.post(new Runnable() {
+            public void run() {
+                if(!validateInput(root, switchTo.getRepositoryFile().getFileUrl())) {
+                    EventQueue.invokeLater(new Runnable() {
+                        public void run() {
+                            showDialog(switchTo, root, rp, nodes);
+                        }
+                    });
+                } else {
+                    ContextAction.ProgressSupport support = new ContextAction.ProgressSupport(SwitchToAction.this, nodes) {
+                        public void perform() {
+                            RepositoryFile toRepositoryFile = switchTo.getRepositoryFile();
+                            performSwitch(toRepositoryFile, root, this);
+                        }
+                    };
+                    support.start(rp);                            
+                }
+            }
+        });
+    }
+    
+    private boolean validateInput(File root, SVNUrl fileURL) {
+        boolean ret = false;
+        SvnClient client;
+        try {                   
+            client = Subversion.getInstance().getClient(fileURL);
+            ISVNInfo info = client.getInfo(fileURL);
+            if(info.getNodeKind() == SVNNodeKind.DIR && root.isFile()) {
+                SvnClientExceptionHandler.annotate(NbBundle.getMessage(SwitchToAction.class, "LBL_SwitchFileToFolderError"));
+                ret = false;
+            } else if(info.getNodeKind() == SVNNodeKind.FILE && root.isDirectory()) {
+                SvnClientExceptionHandler.annotate(NbBundle.getMessage(SwitchToAction.class, "LBL_SwitchFolderToFileError"));
+                ret = false;
+            } else {
+                ret = true;
+            }
+        } catch (SVNClientException ex) {
+            SvnClientExceptionHandler.notifyException(ex, true, true);
+            return ret;
+        }                            
+        return ret;
+    }        
 
     static void performSwitch(RepositoryFile toRepositoryFile, File root, SvnProgressSupport support) {
         File[][] split = Utils.splitFlatOthers(new File[] {root} );

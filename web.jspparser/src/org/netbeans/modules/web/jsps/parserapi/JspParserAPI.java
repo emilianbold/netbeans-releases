@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -41,12 +41,11 @@
 
 package org.netbeans.modules.web.jsps.parserapi;
 
-import java.beans.PropertyChangeListener;
-import java.io.File;
 import java.io.IOException;
 import java.net.URLClassLoader;
 import java.util.Map;
 
+import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.openide.filesystems.FileObject;
 
 import org.netbeans.modules.web.jspparser.ContextUtil;
@@ -58,66 +57,16 @@ import org.netbeans.modules.web.jspparser.ContextUtil;
  */
 public interface JspParserAPI {
 
-    public static abstract class WebModule {
-
-        /**
-         * Property name that denotes the libraries of the web module. A PropertyChangeEvent with this property is fired if
-         * the list of libraries changes, or if the timestamp of any of these libraries changes.
-         * @deprecated use classpath API to obtain classpath for document base folder
-         */
-        public static final String PROP_LIBRARIES = "libraries"; // NOI18N
-        
-        /**
-         * Property name that denotes the package root directories of the web module. A PropertyChangeEvent with this property is fired if
-         * the list of package roots changes, or if the timestamp of any of the files contained in these package roots changes.
-         * @deprecated use classpath API to obtain classpath for document base folder
-         */
-        public static final String PROP_PACKAGE_ROOTS = "package_roots"; // NOI18N
-        
-        /** Returns the document base directory of the web module.
-         * May return null if we are parsing a tag file that is outside a web module
-         * (that will be packaged into a tag library).
-         */
-        public abstract FileObject getDocumentBase();
-        
-        
-        /** This method returns the entries, which are needed for parsing jsp files, but are
-         *  not directly included in the project (as library). For example there are taglibraries
-         *  which are offered by the target server(J2EE Platform), so the project has these entries
-         *  on the classpath, but they are not defined by the project. It can return null.   
-         */
-        public abstract File[] getExtraClasspathEntries();
-        
-        /** Returns InputStream for the file open in editor or null
-         * if the file is not open.
-         */
-        public abstract java.io.InputStream getEditorInputStream (FileObject fo);
-        
-        public abstract void addPropertyChangeListener(PropertyChangeListener l);
-        
-        public abstract void removePropertyChangeListener(PropertyChangeListener l);
-        
-        // XXX needs to be abstract, WEB-INF can be located anywhere
-        public FileObject getWebInf() {
-            FileObject webInfFO = null;
-            FileObject documentBase = getDocumentBase();
-            if (documentBase != null) {
-                webInfFO = documentBase.getFileObject("WEB-INF");
-            }
-            return webInfFO;
-        };
-    }
-    
     /** Mode in which some errors (such as error parsing a tag library) are ignored. */
-    public static final int ERROR_IGNORE = 1;
-    /** Mode in which some errors (such as error parsing a tag library) are reported, 
+    int ERROR_IGNORE = 1;
+    /** Mode in which some errors (such as error parsing a tag library) are reported,
      * but no accurate error description is needed. */
-    public static final int ERROR_REPORT_ANY = 2;
+    int ERROR_REPORT_ANY = 2;
     /** Mode in which an accurate description of all errors is required, so an actual attempt to parse all
      * tag libraries is done, so the parser throws a root cause exception. */
-    public static final int ERROR_REPORT_ACCURATE = 3;
+    int ERROR_REPORT_ACCURATE = 3;
     
-    public static final String TAG_MIME_TYPE = "text/x-tag"; // NOI18N
+    String TAG_MIME_TYPE = "text/x-tag"; // NOI18N
     
     /** Returns the information necessary for opening a JSP page in the editor.
      * 
@@ -126,7 +75,7 @@ public interface JspParserAPI {
      * @param useEditor whether to use data from the existing open JSP document, or from the file on the disk
      * @return open information, using either the editor, or the file on the disk
      */    
-    public JspOpenInfo getJspOpenInfo(FileObject jspFile, WebModule wm, boolean useEditor);
+    JspOpenInfo getJspOpenInfo(FileObject jspFile, WebModule wm, boolean useEditor);
     
     /** Analyzes JSP and returns the parsed data about the page.
      * 
@@ -137,14 +86,12 @@ public interface JspParserAPI {
      * @param errorReportingMode mode for reporting errors, see above
      * @return Parsing results.
      */    
-    public JspParserAPI.ParseResult analyzePage(FileObject jspFile, WebModule wm,
-        int errorReportingMode);
-    
+    JspParserAPI.ParseResult analyzePage(FileObject jspFile, WebModule wm, int errorReportingMode);
     
     /** Returns the classloader which loads classes from the given web module 
      * (within a project context).
      */
-    public URLClassLoader getModuleClassLoader(WebModule wm);
+    URLClassLoader getModuleClassLoader(WebModule wm);
     
     /** Creates a description of a tag library. */
     //public TagLibParseSupport.TagLibData createTagLibData(JspInfo.TagLibraryData info, FileSystem fs);
@@ -159,32 +106,32 @@ public interface JspParserAPI {
      *    [0] The location
      *    [1] If the location is a jar file, this is the location of the tld.
      */
-    public Map getTaglibMap(WebModule wm) throws IOException;
+    Map<String, String[]> getTaglibMap(WebModule wm) throws IOException;
     
     /** This class represents a result of parsing. It indicates either success
      * or failure. In case of success, provides information about the parsed page,
      * in case of failure, provides information about parsing errors.
      */
-    public static class ParseResult {
+    public static final class ParseResult {
         
-        protected PageInfo   pageInfo;
-        protected Node.Nodes nodes;
-        protected JspParserAPI.ErrorDescriptor[] errors;
-        protected boolean parsedOK;
+        protected final PageInfo pageInfo;
+        protected final Node.Nodes nodes;
+        protected final JspParserAPI.ErrorDescriptor[] errors;
+        protected final boolean parsedOK;
        
         /** Creates a new ParseResult in case of parse success.
          * @param pageInfo information about the parsed page (from Jasper)
          * @param node exact structure of the  (from Jasper)
          */
         public ParseResult(PageInfo pageInfo, Node.Nodes nodes) {
-            this (pageInfo, nodes, null);
+            this(pageInfo, nodes, null);
         }
         
         /** Creates a new ParseResult in case of parse failure.
          * @param errors information about parse errors
          */
         public ParseResult(JspParserAPI.ErrorDescriptor[] errors) {
-            this (null, null, errors);
+            this(null, null, errors);
         }
         
         /** Creates a new ParseResult. If the errors array is null or empty,
@@ -230,39 +177,39 @@ public interface JspParserAPI {
             throw new IllegalStateException();
         }
         
+        @Override
         public String toString() {
             StringBuilder result = new StringBuilder();
-            result.append("--------- JspParserAPI.parseResult(), success: ");
+            result.append("--------- JspParserAPI.parseResult(), success: "); // NOI18N
             result.append(isParsingSuccess());
-            result.append("\n");
+            result.append("\n"); // NOI18N
             if (pageInfo != null) {
-                result.append(" ---- PAGEINFO\n");
+                result.append(" ---- PAGEINFO\n"); // NOI18N
                 result.append(pageInfo.toString());
             }
             if (nodes != null) {
-                result.append("\n ---- NODES\n");
+                result.append("\n ---- NODES\n"); // NOI18N
                 result.append(nodes.toString());
-                result.append("\n");
+                result.append("\n"); // NOI18N
             }
             if (!isParsingSuccess()) {
-                result.append("\n ---- ERRORS\n");
+                result.append("\n ---- ERRORS\n"); // NOI18N
                 for (int i = 0; i < errors.length; i++) {
                     result.append(errors[i].toString());
                 }
             }
             return result.toString();
         }
-        
     }
     
     /** Contains data important for opening the page
      * in the editor, e.g. whether the page is in classic
      * or XML syntax, or what is the file encoding.
      */
-    public static class JspOpenInfo {
+    public static final class JspOpenInfo {
         
-        private boolean isXml;
-        private String encoding;
+        private final boolean isXml;
+        private final String encoding;
         
         public JspOpenInfo(boolean isXml, String encoding) {
             this.isXml = isXml;
@@ -277,37 +224,38 @@ public interface JspParserAPI {
             return encoding;
         }
         
+        @Override
         public boolean equals(Object o) {
             if (o instanceof JspOpenInfo) {
-                JspOpenInfo openInfo2 = (JspOpenInfo)o;
-                return (getEncoding().equals(openInfo2.getEncoding()) &&
-                        isXmlSyntax() == openInfo2.isXmlSyntax());
+                JspOpenInfo openInfo2 = (JspOpenInfo) o;
+                return getEncoding().equals(openInfo2.getEncoding())
+                        && isXmlSyntax() == openInfo2.isXmlSyntax();
             }
-            else {
-                return false;
-            }
+            return false;
         }
         
+        @Override
         public int hashCode() {
             return encoding.hashCode() + (isXml ? 1 : 0);
         }
         
+        @Override
         public String toString() {
-            return super.toString() + " [isXml: " + isXml + ", encoding: " + encoding + "]";
+            return super.toString() + " [isXml: " + isXml + ", encoding: " + encoding + "]"; // NOI18N
         }
         
     }
 
     /** Represents a description of a parse error.
      */
-    public static class ErrorDescriptor {
+    public static final class ErrorDescriptor {
 
-        protected FileObject wmRoot;
-        protected FileObject source;
-        protected int line;
-        protected int column;
-        protected String errorMessage;
-        protected String referenceText;
+        protected final FileObject wmRoot;
+        protected final FileObject source;
+        protected final int line;
+        protected final int column;
+        protected final String errorMessage;
+        protected final String referenceText;
 
         /** Creates a new ErrorDescriptor. 
          * @param wmRoot the web module in which the error occurs. May be null in some (unusual) cases.
@@ -318,8 +266,8 @@ public interface JspParserAPI {
          * @param errorMessage message containing the description of the error
          * @param rererenceText a piece of code (line) that contains the error. May be empty.
          */
-        public ErrorDescriptor(FileObject wmRoot, FileObject source, int line, 
-        int column, String errorMessage, String referenceText) {
+        public ErrorDescriptor(FileObject wmRoot, FileObject source, int line, int column, String errorMessage,
+                String referenceText) {
             this.wmRoot = wmRoot;
             this.source = source;
             this.line = line;
@@ -353,19 +301,20 @@ public interface JspParserAPI {
             return referenceText;
         }
         
+        @Override
         public String toString() {
             StringBuilder result = new StringBuilder();
-            result.append("ERROR in ")
+            result.append("ERROR in ") // NOI18N
                   .append(getSourcePath())
-                  .append(" at [")
+                  .append(" at [") // NOI18N
                   .append(getLine())
-                  .append(", ")
+                  .append(", ") // NOI18N
                   .append(getColumn())
-                  .append("] ")
+                  .append("] ") // NOI18N
                   .append(getErrorMessage())
-                  .append("\n")
+                  .append("\n") // NOI18N
                   .append(getReferenceText())
-                  .append("\n");
+                  .append("\n"); // NOI18N
             return result.toString();
         }
         
@@ -373,11 +322,7 @@ public interface JspParserAPI {
             if (wmRoot == null) {
                 return getSource().getNameExt();
             }
-            else {
-                return ContextUtil.findRelativeContextPath(wmRoot, getSource());
-            }
+            return ContextUtil.findRelativeContextPath(wmRoot, getSource());
         }
     }
-    
-    
 }

@@ -43,6 +43,7 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.Future;
 import java.util.regex.Pattern;
 import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
@@ -165,27 +166,31 @@ class WEBrick implements RubyServer, ServerInstanceImplementation {
         return "WEBRICK"; //NOI18N
     }
 
-    public String getServerState() {
+    public ServerState getServerState() {
         // TODO: currently handled in Rails project
         return null;
     }
 
-    public boolean startServer(RubyPlatform platform) {
+    public Future<OperationState> startServer(RubyPlatform platform) {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
-    public boolean stopServer() {
+    public Future<OperationState> stopServer() {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
-    public boolean deploy(String applicationName, File applicationDir) {
+    public Future<OperationState> deploy(String applicationName, File applicationDir) {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
-    public boolean stop(String applicationName) {
+    public Future<OperationState> stop(String applicationName) {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
+    public Future<OperationState> runApplication(RubyPlatform platform, String applicationName, File applicationDir) {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+    
     public boolean isPlatformSupported(RubyPlatform platform) {
         return this.platform.equals(platform);
     }

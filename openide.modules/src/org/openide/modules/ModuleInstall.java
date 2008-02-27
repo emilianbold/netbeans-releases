@@ -141,8 +141,12 @@ public class ModuleInstall extends SharedClassObject {
     }
 
     /**
-     * Called when the module is uninstalled (from a running NetBeans instance).
+     * Called when the module is disabled or uninstalled (from a running NetBeans instance).
      * Should remove whatever functionality that it had registered.
+     * @deprecated In practice there is no way to ensure that this method will really be called.
+     *             The module might simply be deleted or disabled while the IDE is not running.
+     *             <span class="nonnormative">(In fact this is always the case in NetBeans 6.0;
+     *             the Plugin Manager only uninstalls or disables modules between restarts.)</span>
     */
     public void uninstalled() {
     }

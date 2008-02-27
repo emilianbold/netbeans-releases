@@ -46,6 +46,8 @@ import java.beans.PropertyEditor;
 import java.beans.PropertyEditorSupport;
 import java.lang.reflect.InvocationTargetException;
 
+import javax.swing.Action;
+import javax.swing.GrayFilter;
 import org.openide.util.actions.SystemAction;
 import org.openide.nodes.Node;
 import org.openide.nodes.Children;
@@ -113,7 +115,7 @@ final class BiFeatureNode extends AbstractNode implements Node.Cookie {
     static javax.swing.GrayFilter grayFilter = null;
     
     static{
-        grayFilter = new javax.swing.GrayFilter(true, 5);
+        grayFilter = new GrayFilter(true, 5);
     }
     
     // constructors .......................................................................
@@ -131,22 +133,23 @@ final class BiFeatureNode extends AbstractNode implements Node.Cookie {
         init ();
     }
 
+    @Override
     public java.awt.Image getIcon( int type ){        
         if( biFeature instanceof BiFeature.Descriptor  && biAnalyser.isNullDescriptor() ) {
             //setIconBase( biFeature.getIconBase(true));
-            return grayFilter.createDisabledImage(super.getIcon(type));
+            return GrayFilter.createDisabledImage(super.getIcon(type));
         }
         if( ( biFeature instanceof BiFeature.Property || biFeature instanceof BiFeature.IdxProperty ) && biAnalyser.isNullProperties() ) {
             //setIconBase( biFeature.getIconBase(true));
-            return grayFilter.createDisabledImage(super.getIcon(type));
+            return GrayFilter.createDisabledImage(super.getIcon(type));
         }
         if( biFeature instanceof BiFeature.EventSet && biAnalyser.isNullEventSets() ) {
             //setIconBase( biFeature.getIconBase(true));
-            return grayFilter.createDisabledImage(super.getIcon(type));
+            return GrayFilter.createDisabledImage(super.getIcon(type));
         }
         if( biFeature instanceof BiFeature.Method && biAnalyser.isNullMethods() ) {
             //setIconBase( biFeature.getIconBase(true));
-            return grayFilter.createDisabledImage(super.getIcon(type));
+            return GrayFilter.createDisabledImage(super.getIcon(type));
         }
         //setIconBase( biFeature.getIconBase(false));
         return super.getIcon(type);
@@ -165,9 +168,10 @@ final class BiFeatureNode extends AbstractNode implements Node.Cookie {
         */
     }
 
-    public Node.Cookie getCookie( Class type ) {
+    @Override
+    public <T extends Node.Cookie> T getCookie(Class<T> type) {
         if ( type == BiFeatureNode.class )
-            return this;
+            return type.cast(this);
 
         return getCookieSet().getCookie( type );
     }
@@ -179,16 +183,17 @@ final class BiFeatureNode extends AbstractNode implements Node.Cookie {
         Sheet sheet = Sheet.createDefault();
         Sheet.Set ps = sheet.get(Sheet.PROPERTIES);
 
-        ps.put(new PropertySupport.ReadOnly (
+        ps.put(new PropertySupport.ReadOnly<String> (
                    PROP_NAME,
                    String.class,
                    GenerateBeanInfoAction.getString ("PROP_Bi_" + PROP_NAME ),
                    GenerateBeanInfoAction.getString ("HINT_Bi_" + PROP_NAME )
                ) {
-                   public Object getValue () {
+                   public String getValue () {
                        return (!(biFeature instanceof BiFeature.Descriptor )) ? biFeature.getName () : ((BiFeature.Descriptor)biFeature).getBeanName();
                    }
-                   public void setValue (Object val) throws IllegalAccessException {
+                   @Override
+                   public void setValue (String val) throws IllegalAccessException {
                        throw new IllegalAccessException(GenerateBeanInfoAction.getString("MSG_Cannot_Write"));
                    }
                });
@@ -209,43 +214,43 @@ final class BiFeatureNode extends AbstractNode implements Node.Cookie {
                                         GenerateBeanInfoAction.getString ("HINT_Bi_" + PROP_PREFERRED ),
                                         "isPreferred", "setPreferred" )); // NOI18N
 
-        ps.put(new CodePropertySupportRW(
+        ps.put(new CodePropertySupportRW<String>(
                    PROP_DISPLAY_NAME,
                    String.class,
                    GenerateBeanInfoAction.getString ("PROP_Bi_" + PROP_DISPLAY_NAME ),
                    GenerateBeanInfoAction.getString ("HINT_Bi_" + PROP_DISPLAY_NAME )
                ) {
-                   public Object getValue () {
+                   public String getValue () {
                        return biFeature.getDisplayName() != null ? biFeature.getDisplayName() : "null"; // NOI18N
                    }
-                   public void setValue (Object val) throws
+                   public void setValue (String val) throws
                        IllegalAccessException, IllegalArgumentException, InvocationTargetException {
                        try {
-                           if( "null".equals((String)val) ) // NOI18N
+                           if( "null".equals(val) ) // NOI18N
                                 val = null;
-                           biFeature.setDisplayName ( (String)val );
+                           biFeature.setDisplayName ( val );
                        } catch (ClassCastException e) {
                            throw new IllegalArgumentException ();
                        }
                    }
                });
 
-        ps.put(new CodePropertySupportRW (//PropertySupport.ReadWrite (
+        ps.put(new CodePropertySupportRW<String>(//PropertySupport.ReadWrite (
                    PROP_SHORT_DESCRIPTION,
                    String.class,
                    GenerateBeanInfoAction.getString ("PROP_Bi_" + PROP_SHORT_DESCRIPTION ),
                    GenerateBeanInfoAction.getString ("HINT_Bi_" + PROP_SHORT_DESCRIPTION )
                ) {
-                   public Object getValue () {
+                   public String getValue () {
                        String toRet = biFeature.getShortDescription () != null ? biFeature.getShortDescription () : "null"; // NOI18N
                        return toRet;
                    }
-                   public void setValue (Object val) throws
+                   public void setValue (String val) throws
                        IllegalAccessException, IllegalArgumentException, InvocationTargetException {
                        try {
-                           if( "null".equals((String)val) ) // NOI18N
+                           if( "null".equals(val) ) // NOI18N
                                 val = null;
-                           biFeature.setShortDescription ( (String)val );
+                           biFeature.setShortDescription ( val );
                        } catch (ClassCastException e) {
                            throw new IllegalArgumentException ();
                        }
@@ -267,19 +272,19 @@ final class BiFeatureNode extends AbstractNode implements Node.Cookie {
     }
 
     protected void addIncludedProperty( Sheet.Set ps ) {    
-        ps.put(new PropertySupport.ReadWrite (
+        ps.put(new PropertySupport.ReadWrite<Boolean> (
                    PROP_INCLUDED,
                    Boolean.TYPE,
                    GenerateBeanInfoAction.getString ("PROP_Bi_" + PROP_INCLUDED ),
                    GenerateBeanInfoAction.getString ("HINT_Bi_" + PROP_INCLUDED )
                ) {
-                   public Object getValue () {
-                       return biFeature.isIncluded () ? Boolean.TRUE : Boolean.FALSE;
+                   public Boolean getValue () {
+                       return biFeature.isIncluded ();
                    }
-                   public void setValue (Object val) throws
+                   public void setValue (Boolean val) throws
                        IllegalAccessException, IllegalArgumentException, InvocationTargetException {
                        try {
-                           biFeature.setIncluded ( ((Boolean)val).booleanValue() );
+                           biFeature.setIncluded ( val );
                            setIconBaseWithExtension( biFeature.getIconBase(false) + ".gif" );
                        } catch (ClassCastException e) {
                            throw new IllegalArgumentException ();
@@ -291,23 +296,23 @@ final class BiFeatureNode extends AbstractNode implements Node.Cookie {
     protected void addCustomizerProperty( Sheet sheet ) {
         Sheet.Set ps = Sheet.createExpertSet();
     
-          ps.put(new CodePropertySupportRW(//PropertySupport.ReadWrite (
+          ps.put(new CodePropertySupportRW<String>(//PropertySupport.ReadWrite (
           //ps.put(new PropertySupport.ReadWrite (
                PROP_DISPLAY_NAME,
                    String.class,
                    GenerateBeanInfoAction.getString ("PROP_Bi_" + PROP_CUSTOMIZER ),
                    GenerateBeanInfoAction.getString ("HINT_Bi_" + PROP_CUSTOMIZER )
                ) {
-                   public Object getValue () {
+                   public String getValue () {
                        String toRet = ((BiFeature.Descriptor)biFeature).getCustomizer() != null ? ((BiFeature.Descriptor)biFeature).getCustomizer() : "null"; // NOI18N
                        return toRet;
                    }
-                   public void setValue (Object val) throws
+                   public void setValue (String val) throws
                        IllegalAccessException, IllegalArgumentException, InvocationTargetException {
                        try {
-                           if( "null".equals((String)val) ) // NOI18N
+                           if( "null".equals(val) ) // NOI18N
                                 val = null;
-                           ((BiFeature.Descriptor)biFeature).setCustomizer( (String)val );
+                           ((BiFeature.Descriptor)biFeature).setCustomizer( val );
                        } catch (ClassCastException e) {
                            throw new IllegalArgumentException ();
                        }
@@ -329,7 +334,7 @@ final class BiFeatureNode extends AbstractNode implements Node.Cookie {
                                         GenerateBeanInfoAction.getString ("PROP_Bi_" + PROP_CONSTRAINED ),
                                         GenerateBeanInfoAction.getString ("HINT_Bi_" + PROP_CONSTRAINED ),
                                         "isConstrained", "setConstrained" )); // NOI18N
-        ps.put(new PropertySupport (
+        ps.put(new PropertySupport<Integer> (
                    PROP_MODE,
                    Integer.TYPE,    //int.class !!!!????,
                    GenerateBeanInfoAction.getString ("PROP_Bi_" + PROP_MODE ),
@@ -337,18 +342,19 @@ final class BiFeatureNode extends AbstractNode implements Node.Cookie {
                    true,
                    ((BiFeature.Property)biFeature).modeChangeable()
                ) {
-                   public Object getValue () {
-                       return new Integer( ((BiFeature.Property)biFeature).getMode() );
+                   public Integer getValue () {
+                       return ((BiFeature.Property)biFeature).getMode();
                    }
-                   public void setValue (Object val) throws
+                   public void setValue (Integer val) throws
                        IllegalAccessException, IllegalArgumentException, InvocationTargetException {
                        try {
-                           ((BiFeature.Property)biFeature).setMode ( ((Integer)val).intValue() );
+                           ((BiFeature.Property)biFeature).setMode ( val );
                            setIconBaseWithExtension( biFeature.getIconBase(false) + ".gif" );
                        } catch (ClassCastException e) {
                            throw new IllegalArgumentException ();
                        }
                    }
+                   @Override
                    public PropertyEditor getPropertyEditor () {
                        return new org.netbeans.modules.beans.ModePropertyEditor();
                    }
@@ -360,7 +366,7 @@ final class BiFeatureNode extends AbstractNode implements Node.Cookie {
                                         "getPropertyEditorClass", "setPropertyEditorClass" ));
 
         if ( biFeature instanceof BiFeature.IdxProperty ) {
-            ps.put(new PropertySupport (
+            ps.put(new PropertySupport<Boolean> (
                        PROP_NI_GETTER,
                        Boolean.TYPE,
                        GenerateBeanInfoAction.getString ("PROP_Bi_" + PROP_NI_GETTER ),
@@ -368,21 +374,21 @@ final class BiFeatureNode extends AbstractNode implements Node.Cookie {
                        true,
                        ((BiFeature.IdxProperty)biFeature).hasNiGetter()
                    ) {
-                       public Object getValue () {
-                           return ((BiFeature.IdxProperty)biFeature).isNiGetter () ? Boolean.TRUE : Boolean.FALSE;
+                       public Boolean getValue () {
+                           return ((BiFeature.IdxProperty)biFeature).isNiGetter ();
                        }
-                       public void setValue (Object val) throws
+                       public void setValue (Boolean val) throws
                            IllegalAccessException, IllegalArgumentException, InvocationTargetException {
                            if ( !((BiFeature.IdxProperty)biFeature).hasNiGetter() )
                                throw new IllegalAccessException ();
                            try {
-                               ((BiFeature.IdxProperty)biFeature).setNiGetter ( ((Boolean)val).booleanValue() );
+                               ((BiFeature.IdxProperty)biFeature).setNiGetter ( val );
                            } catch (ClassCastException e) {
                                throw new IllegalArgumentException ();
                            }
                        }
                    });
-            ps.put(new PropertySupport (
+            ps.put(new PropertySupport<Boolean> (
                        PROP_NI_SETTER,
                        Boolean.TYPE,
                        GenerateBeanInfoAction.getString ("PROP_Bi_" + PROP_NI_SETTER ),
@@ -390,15 +396,15 @@ final class BiFeatureNode extends AbstractNode implements Node.Cookie {
                        true,
                        ((BiFeature.IdxProperty)biFeature).hasNiSetter()
                    ) {
-                       public Object getValue () {
-                           return ((BiFeature.IdxProperty)biFeature).isNiSetter () ? Boolean.TRUE : Boolean.FALSE;
+                       public Boolean getValue () {
+                           return ((BiFeature.IdxProperty)biFeature).isNiSetter ();
                        }
-                       public void setValue (Object val) throws
+                       public void setValue (Boolean val) throws
                            IllegalAccessException, IllegalArgumentException, InvocationTargetException {
                            if ( !((BiFeature.IdxProperty)biFeature).hasNiSetter() )
                                throw new IllegalAccessException ();
                            try {
-                               ((BiFeature.IdxProperty)biFeature).setNiSetter ( ((Boolean)val).booleanValue() );
+                               ((BiFeature.IdxProperty)biFeature).setNiSetter ( val );
                            } catch (ClassCastException e) {
                                throw new IllegalArgumentException ();
                            }
@@ -436,11 +442,12 @@ final class BiFeatureNode extends AbstractNode implements Node.Cookie {
     *
     * @return array of system actions that should be in popup menu
     */
-    public SystemAction[] getActions () {
-        SystemAction [] staticActions = null;
+    @Override
+    public Action[] getActions(boolean context) {
+        Action[] staticActions = null;
         //if (staticActions == null) {
             if( ! (biFeature instanceof BiFeature.Descriptor) ){
-                staticActions = new SystemAction[] {
+                staticActions = new Action[] {
                                     SystemAction.get (BiToggleAction.class),
                                     null
                                     /*
@@ -452,7 +459,7 @@ final class BiFeatureNode extends AbstractNode implements Node.Cookie {
                                 };
             }
             else {                
-                staticActions = new SystemAction[0];
+                staticActions = new Action[0];
             }
         //}
         return staticActions;
@@ -463,6 +470,7 @@ final class BiFeatureNode extends AbstractNode implements Node.Cookie {
     *
     * @return <CODE>true</CODE>
     */
+    @Override
     public boolean canDestroy () {
         return false;
     }
@@ -471,6 +479,7 @@ final class BiFeatureNode extends AbstractNode implements Node.Cookie {
     * Deletes breakpoint and removes the node too.
     * Ovverrides destroy() from abstract node.
     */
+    @Override
     public void destroy () throws IOException {
         // remove node
         // super.destroy ();
@@ -486,7 +495,7 @@ final class BiFeatureNode extends AbstractNode implements Node.Cookie {
     /** Toggles the selection of bi feature */
     public void toggleSelection() {
         biFeature.setIncluded ( !biFeature.isIncluded() );
-        firePropertyChange( PROP_INCLUDED, Boolean.valueOf(!biFeature.isIncluded()), Boolean.valueOf(biFeature.isIncluded()) );
+        firePropertyChange( PROP_INCLUDED, !biFeature.isIncluded(), biFeature.isIncluded() );
         setIconBaseWithExtension( biFeature.getIconBase(false) + ".gif" );
     }
 
@@ -497,7 +506,7 @@ final class BiFeatureNode extends AbstractNode implements Node.Cookie {
             return;
 
         biFeature.setIncluded ( value );
-        firePropertyChange( PROP_INCLUDED, Boolean.valueOf(!biFeature.isIncluded()), Boolean.valueOf(biFeature.isIncluded()) );
+        firePropertyChange( PROP_INCLUDED, !biFeature.isIncluded(), biFeature.isIncluded() );
         setIconBaseWithExtension( biFeature.getIconBase(false) + ".gif" );
     }
 
@@ -538,6 +547,7 @@ final class BiFeatureNode extends AbstractNode implements Node.Cookie {
     *
     * @return human presentable name of this breakpoint.
     */
+    @Override
     public String getName () {
         return (!(biFeature instanceof BiFeature.Descriptor )) ? biFeature.getName () : ((BiFeature.Descriptor)biFeature).getBeanName();
         //return biFeature.getName();
@@ -561,19 +571,22 @@ final class BiFeatureNode extends AbstractNode implements Node.Cookie {
         fireIconChange();
     }
     
-    abstract class CodePropertySupportRW extends PropertySupport.ReadWrite
+    abstract class CodePropertySupportRW<T> extends PropertySupport.ReadWrite<T>
     {
-        CodePropertySupportRW(String name, Class type,
+        CodePropertySupportRW(String name, Class<T> type,
                               String displayName, String shortDescription) {
             super(name, type, displayName, shortDescription);
         }
 
+        @Override
         public PropertyEditor getPropertyEditor() {
             return new PropertyEditorSupport() {
+                @Override
                 public java.awt.Component getCustomEditor() {
                     return new CustomCodeEditor(CodePropertySupportRW.this);
                 }
 
+                @Override
                 public boolean supportsCustomEditor() {
                     return true;
                 }
