@@ -52,6 +52,7 @@ import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
+import org.netbeans.modules.spring.api.SpringUtilities;
 import org.netbeans.modules.spring.api.beans.ConfigFileGroup;
 import org.netbeans.modules.spring.api.beans.ConfigFileManager;
 import org.netbeans.modules.spring.beans.ProjectSpringScopeProvider;
@@ -70,20 +71,9 @@ public class CustomizerCategoryProvider implements ProjectCustomizer.CompositeCa
         Project project = getProject(context);
         ConfigFileManager manager = getConfigFileManager(project);
         // Do not display the customizer if there are no Spring config files
-        // or the Spring library is not on the classpath. It is not enough to look
-        // at the config file groups alone. If the user has already defined some, but
-        // removed the Spring library from the classpath, we still want to
-        // allow him to edit them.
+        // and the Spring library is not on the classpath.
         if (manager.getConfigFiles().size() <= 0) {
-            SourceGroup[] javaSources = ProjectUtils.getSources(project).getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
-            if (javaSources.length <= 0) {
-                return null;
-            }
-            ClassPath compileCp = ClassPath.getClassPath(javaSources[0].getRootFolder(), ClassPath.COMPILE);
-            if (compileCp == null) {
-                return null;
-            }
-            if (compileCp.findResource("org/springframework/core/SpringVersion.class") == null) {
+            if (!hasSpringOnClassPath(project)) {
                 return null;
             }
         }
@@ -115,6 +105,19 @@ public class CustomizerCategoryProvider implements ProjectCustomizer.CompositeCa
         // projects for which we also extend the lookup with a ProjectSpringScopeProvider.
         assert scopeProvider != null;
         return scopeProvider.getSpringScope().getConfigFileManager();
+    }
+
+    private static boolean hasSpringOnClassPath(Project project) {
+        SourceGroup[] javaSources = ProjectUtils.getSources(project).getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
+        for (SourceGroup javaSource : javaSources) {
+            ClassPath compileCp = ClassPath.getClassPath(javaSource.getRootFolder(), ClassPath.COMPILE);
+            if (compileCp != null) {
+                if (SpringUtilities.containsSpring(compileCp)) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 
     private static final class CategoryListener implements ActionListener {
