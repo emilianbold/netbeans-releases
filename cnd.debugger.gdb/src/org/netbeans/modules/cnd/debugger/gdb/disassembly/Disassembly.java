@@ -285,8 +285,8 @@ public class Disassembly implements PropertyChangeListener, DocumentListener {
 
         @Override
         public String toString() {
-            //return "0x" + Integer.toHexString(address) + ": " + instruction; // NOI18N
-            return function + "+" + offset + ": (" + address + ") " + instruction; // NOI18N
+            //return function + "+" + offset + ": (" + address + ") " + instruction; // NOI18N
+            return function + "+" + offset + ": 00 00 " + instruction; // NOI18N
         }
     }
     
