@@ -56,9 +56,13 @@ import org.netbeans.modules.xml.text.syntax.XMLSyntaxSupport;
 public class HibernateCfgHyperlinkProvider implements HyperlinkProvider {
 
     private static final String MAPPING_TAG = "mapping";  // NOI18N
+    private static final String CLASS_CACHE_TAG = "class-cache";
+    private static final String COLLECTION_CACHE_TAG = "collection-cache";
+    private static final String LISTENER_TAG = "listener";
     
     private static final String RESOURCE_ATTRIB = "resource";  // NOI18N
     private static final String CLASS_ATTRIB = "class"; // NOI18N
+    private static final String COLLECTION_ATTRIB = "collection";
     
     private BaseDocument lastDocument;
 
@@ -71,14 +75,14 @@ public class HibernateCfgHyperlinkProvider implements HyperlinkProvider {
     public HibernateCfgHyperlinkProvider() {
         this.lastDocument = null;
         
-        JavaClassHyperlinkProcessor classHyperlinkProcessor = new JavaClassHyperlinkProcessor();
-        registerAttribValueHyperlinkPoint(MAPPING_TAG, CLASS_ATTRIB, classHyperlinkProcessor);
-        
         ResourceHyperlinkProcessor resourceHyperlinkProcessor = new ResourceHyperlinkProcessor();
         registerAttribValueHyperlinkPoint(MAPPING_TAG, RESOURCE_ATTRIB, resourceHyperlinkProcessor);
         
-        //PropertyHyperlinkProcessor propertyHyperlinkProcessor = new PropertyHyperlinkProcessor();
-        //registerAttribValueHyperlinkPoint(PROPERTY_TAG, NAME_ATTRIB, propertyHyperlinkProcessor);
+        JavaClassHyperlinkProcessor classHyperlinkProcessor = new JavaClassHyperlinkProcessor();
+        registerAttribValueHyperlinkPoint(MAPPING_TAG, CLASS_ATTRIB, classHyperlinkProcessor);
+        registerAttribValueHyperlinkPoint(CLASS_CACHE_TAG, CLASS_ATTRIB, classHyperlinkProcessor);
+        registerAttribValueHyperlinkPoint(COLLECTION_CACHE_TAG, COLLECTION_ATTRIB, classHyperlinkProcessor);
+        registerAttribValueHyperlinkPoint(LISTENER_TAG, CLASS_ATTRIB, classHyperlinkProcessor);
     }
     
     private void registerAttribValueHyperlinkPoint(String tagName, String attribName, 
@@ -98,20 +102,6 @@ public class HibernateCfgHyperlinkProvider implements HyperlinkProvider {
 
         HyperlinkEnv env = new HyperlinkEnv(document, offset);
         currentProcessor = locateHyperlinkProcessor(env.getTagName(), env.getAttribName(), attribValueProcessors);
-        /*if(env.getType().isValueHyperlink()) {
-            currentProcessor = locateHyperlinkProcessor(env.getTagName(), env.getAttribName(), attribValueProcessors);
-            if(currentProcessor == null && isPNamespaceName(env.getDocumentContext(), env.getAttribName())) {
-                currentProcessor = pHyperlinkProcessor;
-            }
-        } else if(env.getType().isAttributeHyperlink()) {
-            if (isPNamespaceName(env.getDocumentContext(), env.getAttribName())) {
-                currentProcessor = pHyperlinkProcessor;
-            } else {
-                currentProcessor = null;
-            }
-        } else {
-            currentProcessor = null;
-        }*/
         
         return currentProcessor != null;
     }
