@@ -170,4 +170,8 @@ public class LocalToolsPanelModel extends ToolsPanelModel {
     public void setFortranRequired(boolean enabled) {
         fortranRequired = enabled;
     }
+    
+    public boolean showRequiredTools() {
+        return true;
+    }
 }
