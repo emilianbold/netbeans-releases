@@ -200,9 +200,7 @@ public class HibernateEditorUtil {
                             opened = ElementOpen.open(js.getClasspathInfo(), element);
                         }
                         if (!opened) {
-                            // TODO: I18N
-                            //String msg = NbBundle.getMessage(HibernateCompletionEditorUtil.class, "LBL_SourceNotFound", classBinaryName);
-                            String msg = "Source not found (TODO: I18N)";
+                            String msg = NbBundle.getMessage(HibernateEditorUtil.class, "LBL_SourceNotFound", classBinaryName);
                             StatusDisplayer.getDefault().setStatusText(msg);
                         }
                     }
