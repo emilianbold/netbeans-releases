@@ -71,6 +71,8 @@ var IMAGE_WARNING_WHITE = '<img src="' + WARNING_WHITE_SRC + '"/>';
 var IMAGE_CHECKED_BEIGE = '<img src="' + CHECKED_BEIGE_SRC + '"/>';
 var IMAGE_WARNING_BEIGE = '<img src="' + WARNING_BEIGE_SRC + '"/>';
 
+var download_tabs_number = 0;
+
 function handle_keyup(event) {
     //if (event.keyCode == 13) {
     //    download('standard');
@@ -621,6 +623,18 @@ function is_compatible(index, platform) {
     }    
     
     return false;
+}
+
+function add_download_tab(name, url) {
+   if(download_tabs_number!=0) {
+       document.write(" | ");
+   }
+   if(url) {
+	writeUrl(url,name);
+   } else { 
+	message(name);
+   }
+   download_tabs_number++;
 }
 
 function download(option) {

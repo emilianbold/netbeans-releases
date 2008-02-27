@@ -98,7 +98,7 @@ public class ParserServletContext implements ServletContext {
     protected FileObject wmRoot;
     
     
-    protected WebModule myWm;
+    private final WebModuleProvider webModuleProvider;
     
     /** If true, takes the data from the editor; otherwise
      * from the disk.
@@ -116,11 +116,11 @@ public class ParserServletContext implements ServletContext {
      * @param wm JspParserAPI.WebModule in which we are parsing the file - this is used to
      *    find the editor for objects which are open in the editor
      */
-    public ParserServletContext(FileObject wmRoot, WebModule wm, boolean useEditor) {
+    public ParserServletContext(FileObject wmRoot, WebModuleProvider WebModuleProvider, boolean useEditor) {
         LOGGER.log(Level.FINE, "ParserServletContext created");
         myAttributes = new Hashtable<String, Object>();
         this.wmRoot = wmRoot;
-        this.myWm = wm;
+        this.webModuleProvider = WebModuleProvider;
         this.useEditorVersion = useEditor;
         
         setAttribute(JSP_TAGLIBRARY_CACHE, new ConcurrentHashMap<String, TagLibraryInfo>());
@@ -236,14 +236,15 @@ public class ParserServletContext implements ServletContext {
     protected FileObject getResourceAsObject(String path) {
         LOGGER.log(Level.FINE,  "getResourceAsObject({0})", path);
         FileObject fileObject = wmRoot.getFileObject(path);
-        if (fileObject == null && path != null) {
+        WebModule webModule = webModuleProvider.getWebModule();
+        if (fileObject == null && path != null && webModule != null) {
             int index = path.toLowerCase().indexOf("web-inf");
             if (index > -1) {
                 String newPath = path.substring(index + 7);
-                fileObject = myWm.getWebInf().getFileObject(newPath);
+                fileObject = webModule.getWebInf().getFileObject(newPath);
             }
             else {
-                fileObject = myWm.getWebInf().getFileObject(path);
+                fileObject = webModule.getWebInf().getFileObject(path);
             }
         }
         return fileObject;
@@ -319,14 +320,12 @@ public class ParserServletContext implements ServletContext {
     public InputStream getResourceAsStream(String path) {
         LOGGER.log(Level.FINE,  "getResourceAsStream({0})", path);
         // first try from the opened editor - if fails read from file
-        if (myWm != null) {
-            FileObject fo = getResourceAsObject(path);
-            if ((fo != null) && (useEditorVersion)) {
-                // reading from the editor
-                InputStream result = getEditorInputStream(fo);
-                if (result != null) {
-                    return result;
-                }
+        FileObject fo = getResourceAsObject(path);
+        if ((fo != null) && (useEditorVersion)) {
+            // reading from the editor
+            InputStream result = getEditorInputStream(fo);
+            if (result != null) {
+                return result;
             }
         }
         
@@ -522,4 +521,15 @@ public class ParserServletContext implements ServletContext {
         return "";
     }
     
+    /**
+     * This interface delegates lifecycle of {@link WebModule} to the caller.
+     * See issue #85817 for more information.
+     */
+    public interface WebModuleProvider {
+        /**
+         * Get {@link WebModule} instance.
+         * @return {@link WebModule} instance or <code>null</code> if WebModule has already been garbage collected.
+         */
+        WebModule getWebModule();
+    }
 }

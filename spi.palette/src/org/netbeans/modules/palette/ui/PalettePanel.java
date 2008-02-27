@@ -345,6 +345,7 @@ public class PalettePanel extends JPanel implements Scrollable {
             model = newModel;
             settings = newSettings;
             controller = newController;
+            selectedCategory = null;
             if( model != null ) {
                 model.addModelListener( getModelListener() );
             }

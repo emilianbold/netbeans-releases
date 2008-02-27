@@ -83,6 +83,10 @@ public class RightTree extends MapperPanel implements
     RightTree(Mapper mapper) {
         super(mapper);
 
+        // vlv: print
+        putClientProperty(java.awt.print.Printable.class, ""); // NOI18N
+        putClientProperty(java.lang.Integer.class, new Integer(2));
+        
         setBackground(Color.WHITE);
         setComponentOrientation(ComponentOrientation.RIGHT_TO_LEFT);
 

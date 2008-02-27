@@ -31,3 +31,27 @@ org.netbeans.modules.mobility.deployment.webdav.WebDAVCustomizerPanel
 org.netbeans.modules.mobility.deployment.webdav.WebDAVDeploymentPlugin
 org.netbeans.modules.mobility.deployment.webdav.WebDAVProjectCustomizerPanel
 
+#IZ 128447
+org.mozilla.javascript.ErrorReporter
+org.mozilla.javascript.Node
+org.mozilla.javascript.ScriptOrFnNode
+org.netbeans.modules.css2.gsf.CSSGSFParser
+org.netbeans.modules.css2.gsf.CSSLanguage
+org.netbeans.modules.css2.gsf.CSSParserResult
+org.netbeans.modules.css2.parser.CharStream
+org.netbeans.modules.css2.parser.ParseException
+org.netbeans.modules.css2.parser.Token
+org.netbeans.modules.javascript.editing.Element
+org.netbeans.modules.javascript.editing.JsLanguage
+org.netbeans.modules.javascript.editing.JsParseResult
+org.netbeans.modules.javascript.editing.JsParser
+org.netbeans.modules.javascript.editing.JsPositionManager
+org.netbeans.modules.javascript.editing.JsUtils
+org.netbeans.modules.gsf.api.ElementHandle
+org.netbeans.modules.gsf.api.Error
+org.netbeans.modules.gsf.api.GsfLanguage
+org.netbeans.modules.gsf.api.Parser
+org.netbeans.modules.gsf.api.ParserResult$AstTreeNode
+org.netbeans.modules.gsf.api.ParserResult
+org.netbeans.modules.gsf.api.PositionManager
+
