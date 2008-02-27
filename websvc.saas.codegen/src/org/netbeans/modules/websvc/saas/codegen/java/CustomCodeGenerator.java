@@ -44,9 +44,11 @@ import org.netbeans.modules.websvc.saas.model.CustomSaasMethod;
 import java.io.IOException;
 import java.util.List;
 import javax.swing.text.JTextComponent;
+import org.netbeans.api.project.SourceGroup;
 import org.netbeans.modules.websvc.saas.codegen.java.model.CustomSaasBean;
 import org.netbeans.modules.websvc.saas.codegen.java.model.ParameterInfo;
 import org.netbeans.modules.websvc.saas.codegen.java.support.JavaSourceHelper;
+import org.netbeans.modules.websvc.saas.codegen.java.support.SourceGroupSupport;
 import org.netbeans.modules.websvc.saas.codegen.java.support.Util;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
@@ -71,7 +73,7 @@ public class CustomCodeGenerator extends SaasCodeGenerator {
     
     @Override
     protected void preGenerate() throws IOException {
-        JavaSourceHelper.createJavaSource(REST_CONNECTION_TEMPLATE, getTargetFolder(), bean.getPackageName(), REST_CONNECTION);
+        createRestConnectionFile(getProject());
         getTargetFolder().getFileSystem().runAtomicAction(new FileSystem.AtomicAction() {
             public void run() throws IOException {
                 try {

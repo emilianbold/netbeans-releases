@@ -136,9 +136,6 @@ public final class ProjectProperties {
         }
         while (classpath.hasNext()) {
             ClassPathSupport.Item item = (ClassPathSupport.Item)classpath.next();
-            if (item.getType() == ClassPathSupport.Item.TYPE_LIBRARY && item.getLibrary().getType().equals(J2eePlatform.LIBRARY_TYPE)) {
-                continue;
-            }
             ArrayList<String> files = new ArrayList<String>();
             ArrayList<String> dirs = new ArrayList<String>();
             getFilesForItem (item, files, dirs, projectFolder);

@@ -52,9 +52,10 @@ import org.openide.filesystems.FileObject;
  */
 public abstract class AbstractGenerator {
     public static final String REST_CONNECTION = "RestConnection"; //NOI18N
-    public static final String REST_CONNECTION_TEMPLATE = "Templates/SaaSServices/RestConnection.java"; //NOI18N
+    public static final String TEMPLATES_SAAS = "Templates/SaaSServices/"; //NOI18N
+    public static final String REST_CONNECTION_TEMPLATE = TEMPLATES_SAAS+"RestConnection.java"; //NOI18N
     public static final String COMMENT_END_OF_HTTP_MEHTOD_GET = "TODO return proper representation object";      //NOI18N
-    public static final String GENERIC_REF_CONVERTER_TEMPLATE = "Templates/SaaSServices/RefConverter.java"; //NOI18N
+    public static final String GENERIC_REF_CONVERTER_TEMPLATE = TEMPLATES_SAAS+"RefConverter.java"; //NOI18N
     public static final String GENERIC_REF_CONVERTER = "GenericRefConverter"; //NOI18N
     public static final String CONVERTER_SUFFIX = "Converter";      //NOI18N
     public static final String CONVERTER_FOLDER = "converter";      //NOI18N

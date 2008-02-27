@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -70,7 +70,6 @@ import org.openide.filesystems.URLMapper;
 import org.openide.modules.InstalledFileLocator;
 import org.openide.util.Exceptions;
 
-
 /**
  * Access to the index of known Ruby classes - core, libraries, gems, user projects, etc.
  *
@@ -96,6 +95,7 @@ public final class RubyIndex {
     private static final String CLUSTER_URL = "cluster:"; // NOI18N
     private static final String RUBYHOME_URL = "ruby:"; // NOI18N
     private static final String GEM_URL = "gem:"; // NOI18N
+
     private final Index index;
 
     /** Creates a new instance of RubyIndex */
@@ -231,7 +231,7 @@ public final class RubyIndex {
                     if (in != null) {
                         // Superslow, make faster 
                         StringBuilder sb = new StringBuilder();
-                        String prefix = null;
+//                        String prefix = null;
                         int lastIndex = 0;
                         int index;
                         do {
@@ -245,9 +245,9 @@ public final class RubyIndex {
                             }
                             index = nextUpper;
                             String token = classFqn.substring(lastIndex, index == -1 ? classFqn.length(): index);
-                            if ( lastIndex == 0 ) {
-                                prefix = token;
-                            }
+//                            if ( lastIndex == 0 ) {
+//                                prefix = token;
+//                            }
                             sb.append(token); 
                             // TODO - add in Ruby chars here?
                             sb.append( index != -1 ?  "[\\p{javaLowerCase}\\p{Digit}_\\$]*" : ".*"); // NOI18N         
@@ -1718,7 +1718,7 @@ public final class RubyIndex {
             Iterator<RubyPlatform> it = RubyPlatformManager.platformIterator();
             while (it.hasNext()) {
                 RubyPlatform platform = it.next();
-                String s = platform.getGemManager().getGemHomeUrl();
+                String s = getGemHomeURL(platform);
                 
                 if (s != null && url.startsWith(s)) {
                     return GEM_URL + url.substring(s.length());
@@ -1735,7 +1735,7 @@ public final class RubyIndex {
         } else {
             // FIXME: use right platform
             RubyPlatform platform = RubyPlatformManager.getDefaultPlatform();
-            String s = platform.getGemManager().getGemHomeUrl();
+            String s = getGemHomeURL(platform);
 
             if (s != null && url.startsWith(s)) {
                 return GEM_URL + url.substring(s.length());
@@ -1781,6 +1781,9 @@ public final class RubyIndex {
                 Iterator<RubyPlatform> it = RubyPlatformManager.platformIterator();
                 while (it.hasNext()) {
                     RubyPlatform platform = it.next();
+                    if (!platform.hasRubyGemsInstalled()) {
+                        continue;
+                    }
                     url = platform.getGemManager().getGemHomeUrl() + url.substring(GEM_URL.length());
                     FileObject fo = URLMapper.findFileObject(new URL(url));
                     if (fo != null) {
@@ -1799,5 +1802,9 @@ public final class RubyIndex {
         }
 
         return null;
+    }
+
+    private static String getGemHomeURL(RubyPlatform platform) {
+        return platform.hasRubyGemsInstalled() ? platform.getGemManager().getGemHomeUrl() : null;
     }
 }
