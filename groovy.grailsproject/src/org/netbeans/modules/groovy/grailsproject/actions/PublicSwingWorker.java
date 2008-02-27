@@ -55,12 +55,13 @@ import org.openide.windows.IOProvider;
 import org.openide.windows.InputOutput;
 import org.openide.windows.OutputWriter;
 import org.netbeans.api.project.Project;
+import org.openide.util.Cancellable;
 
 /**
  *
  * @author schmidtm
  */
-    public class PublicSwingWorker extends Thread {
+    public class PublicSwingWorker extends Thread implements Cancellable {
 
         private final Logger LOG = Logger.getLogger(PublicSwingWorker.class.getName());
     
@@ -69,8 +70,9 @@ import org.netbeans.api.project.Project;
         String command = null;
         Project prj = null;
         LineSnooper snooper = null;
+        Process process;
+        ProgressHandle progress;
         
-
         public PublicSwingWorker(Project prj, String command) {
             this.prj = prj;
             this.command = command;
@@ -99,7 +101,7 @@ import org.netbeans.api.project.Project;
             writer = io.getOut();
 
             GrailsServer server = GrailsServerFactory.getServer();
-            Process process = server.runCommand(prj, command, io, null);
+            process = server.runCommand(prj, command, io, null);
 
             if (process == null) {
                 displayGrailsProcessError(server.getLastError());
@@ -113,7 +115,7 @@ import org.netbeans.api.project.Project;
             //    a snooper an one single thread for stderr or 
             // b) a bunch of threads taking care for I/O.
             
-            ProgressHandle progress = ProgressHandleFactory.createHandle(tabName);
+            progress = ProgressHandleFactory.createHandle(tabName, this);
             progress.start();
             
             if(snooper != null ) {
@@ -162,6 +164,12 @@ import org.netbeans.api.project.Project;
             "Problem creating Process: " + reason.getLocalizedMessage(),
             NotifyDescriptor.Message.WARNING_MESSAGE
             ));
-        }        
+        }
+
+    public boolean cancel() {
+        process.destroy();
+        progress.finish();
+        return true;
+    }
         
     }
