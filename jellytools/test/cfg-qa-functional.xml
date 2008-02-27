@@ -163,10 +163,10 @@ made subject to such option by the copyright holder.
     
     <!-- Testbag with test of jellytools widget operators.
          Use ant runtests -Dxtest.attribs=widgets to run only this testbag  -->
-    <testbag name="Test properties" testattribs="stable,all,widgets" executor="ide">
+    <testbag name="Test widgets" testattribs="stable,all,widgets" executor="ide">
         <testset dir="qa-functional/src">
             <patternset>
-                <include name="**/widgets/*.class"/>
+                <include name="**/widgets/*Test.class"/>
             </patternset>
         </testset>
     </testbag>

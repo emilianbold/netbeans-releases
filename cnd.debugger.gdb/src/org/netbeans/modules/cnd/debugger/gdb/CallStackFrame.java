@@ -189,21 +189,4 @@ public class CallStackFrame {
             return cachedLocalVariables;
         }
     }
-    
-    @Override
-    public boolean equals(Object obj) {
-        if (obj == this) {
-            return true;
-        }
-        if (obj instanceof CallStackFrame) {
-            return address.equals(((CallStackFrame)obj).address);
-        } else {
-            return false;
-        }
-    }
-
-    @Override
-    public int hashCode() {
-        return address.hashCode();
-    }
 }
