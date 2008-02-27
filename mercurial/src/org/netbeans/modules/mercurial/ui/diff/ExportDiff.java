@@ -62,12 +62,14 @@ public class ExportDiff implements PropertyChangeListener {
     private JButton cancelButton;
     private final DocumentListener          listener;
     private RepositoryRevision repoRev;
+    private File fileToDiff;
 
     
     /** Creates a new instance of ExportDiff */
-    public ExportDiff(File repository, RepositoryRevision repoRev) {
+    public ExportDiff(File repository, RepositoryRevision repoRev, File fileToDiff) {
+        this.fileToDiff = fileToDiff;
         this.repoRev = repoRev;
-        panel = new ExportDiffPanel(repository, repoRev);
+        panel = new ExportDiffPanel(repository, repoRev, fileToDiff);
         okButton = new JButton();
         org.openide.awt.Mnemonics.setLocalizedText(okButton, org.openide.util.NbBundle.getMessage(ExportDiff.class, "CTL_ExportForm_Action_Export")); // NOI18N
         okButton.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(ExportDiff.class, "ACSN_ExportForm_Action_Export")); // NOI18N
@@ -83,12 +85,24 @@ public class ExportDiff implements PropertyChangeListener {
         };
         panel.outputFileTextField.getDocument().addDocumentListener(listener);
     } 
+    
+    public ExportDiff(File repository, RepositoryRevision repoRev) {
+        this(repository, repoRev, null);
+    }
+    
     public ExportDiff(File repository) {
-        this(repository, null);
-     }
+        this(repository, null, null);
+    }
     
     public boolean showDialog() {
-        DialogDescriptor dialogDescriptor = new DialogDescriptor(panel, org.openide.util.NbBundle.getMessage(ExportDiff.class, "CTL_ExportDialog")); // NOI18N
+        DialogDescriptor dialogDescriptor;
+        if(fileToDiff != null){
+            dialogDescriptor = new DialogDescriptor(panel, org.openide.util.NbBundle.getMessage(ExportDiff.class, 
+                "CTL_ExportFileDialog")); // NOI18N
+        }else{
+            dialogDescriptor = new DialogDescriptor(panel, org.openide.util.NbBundle.getMessage(ExportDiff.class, 
+                "CTL_ExportDialog")); // NOI18N
+        }
         dialogDescriptor.setOptions(new Object[] {okButton, cancelButton});
         
         dialogDescriptor.setModal(true);
@@ -96,7 +110,13 @@ public class ExportDiff implements PropertyChangeListener {
         dialogDescriptor.setValid(false);
         
         Dialog dialog = DialogDisplayer.getDefault().createDialog(dialogDescriptor);     
-        dialog.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ExportDiff.class, "ACSD_ExportDialog")); // NOI18N
+        if(fileToDiff != null){
+            dialog.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ExportDiff.class, 
+                "ACSD_ExportFileDialog")); // NOI18N
+        }else{
+            dialog.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ExportDiff.class, 
+                "ACSD_ExportDialog")); // NOI18N
+        }
         dialog.setVisible(true);
         dialog.setResizable(false);
         boolean ret = dialogDescriptor.getValue() == okButton;

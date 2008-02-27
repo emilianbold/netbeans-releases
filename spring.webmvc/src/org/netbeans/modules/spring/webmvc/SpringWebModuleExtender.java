@@ -339,7 +339,7 @@ public class SpringWebModuleExtender extends WebModuleExtender implements Change
                         line = SpringWebFrameworkUtils.reviseRedirectJsp(line, dispatcherMapping);
                     }
                     if (resourceName.equals("index.jsp")) { // NOI18N
-                        line = SpringWebFrameworkUtils.setWelcomePageText(line);
+                        line = SpringWebFrameworkUtils.getWelcomePageText();
                     }
                     buffer.append(line);
                     buffer.append(lineSeparator);

@@ -56,9 +56,4 @@ public class CustomServletCodeGenerator extends CustomJavaClientCodeGenerator {
             FileObject targetFile, CustomSaasMethod m) throws IOException {
         super(targetComponent, targetFile, m);
     }
-    
-    @Override
-    public boolean canShowParam() {
-        return true;
-    }
 }

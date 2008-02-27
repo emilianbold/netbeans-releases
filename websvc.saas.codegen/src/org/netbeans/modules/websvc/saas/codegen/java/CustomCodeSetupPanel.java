@@ -74,7 +74,8 @@ public class CustomCodeSetupPanel extends javax.swing.JPanel {
     private boolean methodNameModified = false;
 
     /** Creates new form InputValuesJPanel */
-    public CustomCodeSetupPanel(String uriTemplate, String resourceName, List<ParameterInfo> inputParams, boolean resourceExists) {
+    public CustomCodeSetupPanel(String uriTemplate, String resourceName, List<ParameterInfo> inputParams, 
+			boolean showResourceInfo, boolean showParams) {
         initComponents();
 
         uriTemplateTF.setText(uriTemplate);
@@ -85,12 +86,23 @@ public class CustomCodeSetupPanel extends javax.swing.JPanel {
         tableModel = new ParamTableModel();
         paramTable.setModel(tableModel);
 
-        if (resourceExists) {
+        if (!showResourceInfo) {
+            methodNameLabel.setVisible(false);
+            methodNameTF.setVisible(false);
+            resourceNameLabel.setVisible(false);
+            resourceNameTF.setVisible(false);
+            subresourceLabel.setVisible(false);
+            subresourceLocatorLabel.setVisible(false);
+            uriTemplateLabel.setVisible(false);
+            uriTemplateTF.setVisible(false);
+        }
+        
+        if (showParams) {
+            messageLabel.setVisible(false);
+        } else {
             paramLabel.setVisible(false);
             paramScrollPane.setVisible(false);
             messageLabel.setVisible(true);
-        } else {
-            messageLabel.setVisible(false);
         }
     }
 

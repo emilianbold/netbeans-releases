@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -46,6 +46,7 @@ import javax.swing.event.HyperlinkEvent.EventType;
 import javax.swing.event.HyperlinkListener;
 import org.jdesktop.layout.GroupLayout;
 import org.netbeans.modules.autoupdate.ui.Utilities;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -56,6 +57,7 @@ public class OperationDescriptionPanel extends javax.swing.JPanel {
     private String tpPrimaryPluginsText;
     private String tpDependingTitleText;
     private String tpDependingPluginsText;
+    private static String ACD_TEXT_HTML;
     /** Creates new form OperationDescriptionPanel */
     public OperationDescriptionPanel (String primary, String primaryU, String depending, String dependingU, boolean hasRequired) {
         this.tpPrimaryTitleText = primary;
@@ -67,6 +69,7 @@ public class OperationDescriptionPanel extends javax.swing.JPanel {
     
     // XXX: cannot be designed by mattise
     private void customInitComponents (boolean hasRequired) {
+        ACD_TEXT_HTML = NbBundle.getMessage (OperationDescriptionPanel.class, "ACD_Text_Html");
         tpPrimaryTitle = new javax.swing.JTextPane();
         tpPrimaryPlugins = new javax.swing.JTextPane();
         tpDependingTitle = new javax.swing.JTextPane();
@@ -75,6 +78,8 @@ public class OperationDescriptionPanel extends javax.swing.JPanel {
         tpPrimaryTitle.setContentType("text/html"); // NOI18N
         tpPrimaryTitle.setEditable(false);
         tpPrimaryTitle.setOpaque (false);
+        tpPrimaryTitle.getAccessibleContext ().setAccessibleName (tpPrimaryTitleText);
+        tpPrimaryTitle.getAccessibleContext ().setAccessibleName (ACD_TEXT_HTML);
 
         tpPrimaryPlugins.setContentType ("text/html"); // NOI18N
         tpPrimaryPlugins.setEditable(false);
@@ -87,15 +92,21 @@ public class OperationDescriptionPanel extends javax.swing.JPanel {
                 }
             }
         });
+        tpPrimaryPlugins.getAccessibleContext ().setAccessibleName (tpPrimaryPluginsText);
+        tpPrimaryPlugins.getAccessibleContext ().setAccessibleName (ACD_TEXT_HTML);
 
 
         tpDependingTitle.setContentType ("text/html"); // NOI18N
         tpDependingTitle.setEditable(false);
         tpDependingTitle.setOpaque (false);
+        tpDependingTitle.getAccessibleContext ().setAccessibleName (tpDependingTitleText);
+        tpDependingTitle.getAccessibleContext ().setAccessibleName (ACD_TEXT_HTML);
 
         tpDependingPlugins.setContentType ("text/html"); // NOI18N
         tpDependingPlugins.setEditable(false);
         tpDependingPlugins.setOpaque (false);
+        tpDependingPlugins.getAccessibleContext ().setAccessibleName (tpDependingPluginsText);
+        tpDependingPlugins.getAccessibleContext ().setAccessibleName (ACD_TEXT_HTML);
 
         tpPrimaryTitle.setText(tpPrimaryTitleText);
         tpPrimaryPlugins.setText(tpPrimaryPluginsText);

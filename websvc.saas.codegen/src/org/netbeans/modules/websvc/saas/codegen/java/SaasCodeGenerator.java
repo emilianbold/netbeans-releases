@@ -204,6 +204,10 @@ abstract public class SaasCodeGenerator extends AbstractGenerator {
         return bean;
     }
 
+    public boolean canShowResourceInfo() {
+        return true;
+    }
+
     public boolean canShowParam() {
         return wrapperResourceFile == null;
     }

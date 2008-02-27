@@ -140,6 +140,11 @@ public class CustomJavaClientCodeGenerator extends CustomCodeGenerator {
     }
     
     @Override
+    public boolean canShowResourceInfo() {
+        return false;
+    }
+    
+    @Override
     public boolean canShowParam() {
         return true;
     }

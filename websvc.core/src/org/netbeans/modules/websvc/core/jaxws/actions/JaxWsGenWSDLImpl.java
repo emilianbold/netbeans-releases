@@ -99,7 +99,7 @@ public class JaxWsGenWSDLImpl implements JaxWsGenWSDLCookie {
                 String propValue = props.get("build.generated.dir");  //NOI18N
                 PropertyEvaluator evaluator = helper.getStandardPropertyEvaluator();
                 String buildGenDir = evaluator.evaluate(propValue);
-                String relativePath = buildGenDir + File.separator + "wsgen" + File.separator + "service" + File.separator + serviceName; //NOI18N
+                String relativePath = buildGenDir + File.separator + "wsgen" + File.separator + "service" + File.separator + "resources"; //NOI18N
                 FileObject wsdlDir = project.getProjectDirectory().getFileObject(relativePath);
                 if (wsdlDir != null) {
                     FileObject[] wsdlArtifacts = wsdlDir.getChildren();
@@ -111,7 +111,8 @@ public class JaxWsGenWSDLImpl implements JaxWsGenWSDLCookie {
                             FileObject testFO = selectedFolder.getFileObject(wsdlArtifact.getNameExt());
                             if (testFO != null) {
                                 NotifyDescriptor.Confirmation notifyDescriptor =
-                                        new NotifyDescriptor.Confirmation(NbBundle.getMessage(JaxWsGenWSDLImpl.class, "MSG_FILE_EXISTS", testFO.getNameExt(), selectedFolder.getName()), NotifyDescriptor.YES_NO_OPTION);
+                                        new NotifyDescriptor.Confirmation(NbBundle.getMessage(JaxWsGenWSDLImpl.class, "MSG_FILE_EXISTS", testFO.getNameExt(), 
+                                        selectedFolder.getName()), NotifyDescriptor.YES_NO_OPTION);   //NOI18N
                                 DialogDisplayer.getDefault().notify(notifyDescriptor);
                                 if (notifyDescriptor.getValue() == NotifyDescriptor.YES_OPTION) {
                                     FileLock lock = null;
@@ -136,7 +137,7 @@ public class JaxWsGenWSDLImpl implements JaxWsGenWSDLCookie {
                         }
                     }
                 } else {
-                    throw new IOException(NbBundle.getMessage(JaxWsGenWSDLImpl.class, "ERROR_WSDL_NOT_FOUND"));
+                    throw new IOException(NbBundle.getMessage(JaxWsGenWSDLImpl.class, "ERROR_WSDL_NOT_FOUND"));  //NOI18N
                 }
             }
         }
