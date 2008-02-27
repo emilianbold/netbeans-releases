@@ -448,6 +448,19 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor impleme
     public void setModified(boolean modified) {
         //System.out.println("setModified - " + modified);
         this.modified = modified;
+        if (modified && getConfs() != null) {
+            Configuration[] confs = getConfs().getConfs();
+            for (int i = 0; i < confs.length; i++)
+                ((MakeConfiguration)confs[i]).setLanguagesDirty(true);
+        }
+    }
+    
+    public void updateLanguages() {
+        if (getConfs() != null) {
+            Configuration[] confs = getConfs().getConfs();
+            for (int i = 0; i < confs.length; i++)
+                ((MakeConfiguration)confs[i]).reCountLanguages(this);
+        }
     }
     
     public boolean save() {

@@ -142,6 +142,9 @@ public class MakeCustomizerProvider implements CustomizerProvider {
                 folder.getFolderConfiguration(configurations[i]);
             }
         }
+        
+        // Make sure all languages are update
+        ((MakeConfigurationDescriptor)projectDescriptorProvider.getConfigurationDescriptor()).updateLanguages();
 
         // Create options
         JButton options[] = new JButton[] { 

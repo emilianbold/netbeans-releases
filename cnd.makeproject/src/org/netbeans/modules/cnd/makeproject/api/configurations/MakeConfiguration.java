@@ -88,10 +88,9 @@ public class MakeConfiguration extends Configuration {
     private MakefileConfiguration makefileConfiguration;
     private CompilerSetConfiguration compilerSet;
     private CompilerSet2Configuration compilerSet2;
-    private BooleanConfiguration gdbRequired; // GRP - FIXME: Do we need gdb here?
-    private BooleanConfiguration cRequired;
-    private BooleanConfiguration cppRequired;
-    private BooleanConfiguration fortranRequired;
+    private LanguageBooleanConfiguration cRequired;
+    private LanguageBooleanConfiguration cppRequired;
+    private LanguageBooleanConfiguration fortranRequired;
     private IntConfiguration platform;
     private BooleanConfiguration dependencyChecking;
     private CCompilerConfiguration cCompilerConfiguration;
@@ -100,6 +99,8 @@ public class MakeConfiguration extends Configuration {
     private LinkerConfiguration linkerConfiguration;
     private ArchiverConfiguration archiverConfiguration;
     private RequiredProjectsConfiguration requiredProjectsConfiguration;
+    
+    private boolean languagesDirty = true;
     
     // Constructors
     public MakeConfiguration(MakeConfigurationDescriptor makeConfigurationDescriptor, String name, int configurationTypeValue) {
@@ -111,9 +112,9 @@ public class MakeConfiguration extends Configuration {
         configurationType = new IntConfiguration(null, configurationTypeValue, TYPE_NAMES, null);
         compilerSet = new CompilerSetConfiguration(null, getDefaultCompilerSetIndex(), getCompilerSetDisplayNames(), getCompilerSetNames());
         compilerSet2 = new CompilerSet2Configuration(this, null);
-        cRequired = new BooleanConfiguration(null, CppSettings.getDefault().isCRequired());
-        cppRequired = new BooleanConfiguration(null, CppSettings.getDefault().isCppRequired());
-        fortranRequired = new BooleanConfiguration(null, CppSettings.getDefault().isFortranRequired());
+        cRequired = new LanguageBooleanConfiguration();
+        cppRequired = new LanguageBooleanConfiguration();
+        fortranRequired = new LanguageBooleanConfiguration();
         platform = new IntConfiguration(null, MakeOptions.getInstance().getPlatform(), Platforms.getPlatformDisplayNames(), null);
         makefileConfiguration = new MakefileConfiguration(this);
         dependencyChecking = new BooleanConfiguration(null, isMakefileConfiguration() ? false : MakeOptions.getInstance().getDepencyChecking());
@@ -165,28 +166,28 @@ public class MakeConfiguration extends Configuration {
         this.compilerSet2 = compilerSet2;
     }
     
-    public BooleanConfiguration getCRequired() {
+    public LanguageBooleanConfiguration getCRequired() {
         return cRequired;
     }
     
-    public BooleanConfiguration getCppRequired() {
+    public LanguageBooleanConfiguration getCppRequired() {
         return cppRequired;
     }
     
-    public BooleanConfiguration getFortranRequired() {
+    public LanguageBooleanConfiguration getFortranRequired() {
         return fortranRequired;
     }
     
     
-    public void setCRequired(BooleanConfiguration cRequired) {
+    public void setCRequired(LanguageBooleanConfiguration cRequired) {
         this.cRequired = cRequired;
     }
     
-    public void setCppRequired(BooleanConfiguration cppRequired) {
+    public void setCppRequired(LanguageBooleanConfiguration cppRequired) {
         this.cppRequired = cppRequired;
     }
     
-    public void setFortranRequired(BooleanConfiguration fortranRequired) {
+    public void setFortranRequired(LanguageBooleanConfiguration fortranRequired) {
         this.fortranRequired = fortranRequired;
     }
     
@@ -333,6 +334,7 @@ public class MakeConfiguration extends Configuration {
     }
     
     // Cloning
+    @Override
     public Object clone() {
         MakeConfiguration clone = new MakeConfiguration(getBaseDir(), getName(), getConfigurationType().getValue());
         super.cloneConf(clone);
@@ -340,9 +342,9 @@ public class MakeConfiguration extends Configuration {
         
         clone.setCompilerSet2((CompilerSet2Configuration) getCompilerSet().clone());
         clone.setCompilerSet((CompilerSetConfiguration) getCompilerSet2().clone());
-        clone.setCRequired((BooleanConfiguration) getCRequired().clone());;
-        clone.setCppRequired((BooleanConfiguration) getCppRequired().clone());;
-        clone.setFortranRequired((BooleanConfiguration) getFortranRequired().clone());
+        clone.setCRequired((LanguageBooleanConfiguration) getCRequired().clone());
+        clone.setCppRequired((LanguageBooleanConfiguration) getCppRequired().clone());
+        clone.setFortranRequired((LanguageBooleanConfiguration) getFortranRequired().clone());
         clone.setPlatform((IntConfiguration)getPlatform().clone());
         clone.setMakefileConfiguration((MakefileConfiguration)getMakefileConfiguration().clone());
         clone.setDependencyChecking((BooleanConfiguration)getDependencyChecking().clone());
@@ -423,30 +425,127 @@ public class MakeConfiguration extends Configuration {
 	return sheet;
     }
     
+    public void setLanguagesDirty(boolean b) {
+        languagesDirty = b;
+    }
+    
+    public boolean getLanguagesDirty() {
+        return languagesDirty;
+    }
+    
+    public boolean hasCFiles(MakeConfigurationDescriptor configurationDescriptor) {
+        reCountLanguages(configurationDescriptor);
+        return cRequired.getValue();
+    }
+    
     public boolean hasCPPFiles(MakeConfigurationDescriptor configurationDescriptor) {
-        Item[] items = configurationDescriptor.getProjectItems();
-        for (int x = 0; x < items.length; x++) {
-            ItemConfiguration itemConfiguration = items[x].getItemConfiguration(this);//ItemConfiguration)getAuxObject(ItemConfiguration.getId(items[x].getPath()));
-            if (itemConfiguration.getExcluded().getValue())
-                continue;
-            if (itemConfiguration.getTool() == Tool.CCCompiler) {
-                return true;
-            }
-        }
-        return false;
+        reCountLanguages(configurationDescriptor);
+        return cppRequired.getValue();
     }
     
     public boolean hasFortranFiles(MakeConfigurationDescriptor configurationDescriptor) {
+        reCountLanguages(configurationDescriptor);
+        return fortranRequired.getValue();
+    }
+    
+//    public boolean hasAsmFiles(MakeConfigurationDescriptor configurationDescriptor) {
+//        if (getLanguagesDirty())
+//            reCountLanguages(configurationDescriptor);
+//        return asmRequired.getValue();
+//    }
+    
+    public void reCountLanguages(MakeConfigurationDescriptor configurationDescriptor) {
+        boolean hasCFiles = false;
+        boolean hasCPPFiles = false;
+        boolean hasFortranFiles = false;
+        //boolean hasCAsmFiles = false;
+        
+        
+        if (!getLanguagesDirty())
+            return;
+        
         Item[] items = configurationDescriptor.getProjectItems();
-        for (int x = 0; x < items.length; x++) {
-            ItemConfiguration itemConfiguration = items[x].getItemConfiguration(this);//(ItemConfiguration)getAuxObject(ItemConfiguration.getId(items[x].getPath()));
-            if (itemConfiguration.getExcluded().getValue())
-                continue;
-            if (itemConfiguration.getTool() == Tool.FortranCompiler) {
-                return true;
+        if (items.length == 0 && isMakefileConfiguration()) {
+            // This may not be true but is our best guess. No way to know since no files have been added to project.
+            hasCFiles = true;
+            hasCPPFiles = true;
+        }
+        else {
+            // Base it on actual files added to project
+            for (int x = 0; x < items.length; x++) {
+                ItemConfiguration itemConfiguration = items[x].getItemConfiguration(this);
+                if (itemConfiguration.getExcluded().getValue())
+                    continue;
+                if (itemConfiguration.getTool() == Tool.CCompiler) {
+                    hasCFiles = true;
+                }
+                if (itemConfiguration.getTool() == Tool.CCCompiler) {
+                    hasCPPFiles = true;
+                }
+                if (itemConfiguration.getTool() == Tool.FortranCompiler) {
+                    hasFortranFiles = true;
+                }
+    //            if (itemConfiguration.getTool() == Tool.AsmCompiler) {
+    //                hasCAsmFiles = false;
+    //            }
             }
         }
-        return false;
+        cRequired.setDefault(hasCFiles);
+        cppRequired.setDefault(hasCPPFiles);
+        fortranRequired.setDefault(hasFortranFiles);
+        //asmRequired.setValueDef(hasCAsmFiles);
+        
+        
+        languagesDirty = false;
+    }
+    
+    public class LanguageBooleanConfiguration extends BooleanConfiguration {
+        private boolean notYetSet = true;
+        
+        LanguageBooleanConfiguration() {
+            super(null, false);
+        }
+
+        @Override
+        public void setValue(boolean b) {
+            if (notYetSet) {
+                setValue(b, b);
+            }
+            else {
+                super.setValue(b);
+            }
+            notYetSet = false;
+        }
+        
+        @Override
+        public void setDefault(boolean b) {
+            if (getValue() == getDefault()) {
+                setValue(b, b);
+            }
+            else {
+                super.setDefault(b);
+            }
+            notYetSet = false;
+        }
+        
+        public void setValue(boolean v, boolean d) {
+            super.setValue(v);
+            super.setDefault(d);
+            notYetSet = false;
+        }
+        
+        @Override
+        public Object clone() {
+            LanguageBooleanConfiguration clone = new LanguageBooleanConfiguration();
+            clone.setValue(getValue(), getDefault());
+            clone.setModified(getModified());
+            return clone;
+        }
+        
+        public void assign(LanguageBooleanConfiguration conf) {
+            setValue(conf.getValue(), conf.getDefault());
+            setModified(conf.getModified());
+        }
     }
     
     public String getVariant() {
@@ -467,7 +566,7 @@ public class MakeConfiguration extends Configuration {
                 if (project != null) {
                     subProjects.add(project);
                 } else {
-                    ; // FIXUP ERROR
+                    // FIXUP ERROR
                 }
             }
         }
