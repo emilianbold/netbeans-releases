@@ -244,7 +244,7 @@ public class FileObjectFactoryTest extends NbTestCase {
             assertTrue(external.createNewFile());
             assertNull(foWorkDir.getFileObject(external.getName()));
             fdc.assertDataCreated(0);
-            FileUtil.refreshFor(external);        
+            FileUtil.refreshFor(external.getParentFile());        
             fdc.assertDataCreated(1);
             assertNotNull(foWorkDir.getFileObject(external.getName()));
             
@@ -252,7 +252,7 @@ public class FileObjectFactoryTest extends NbTestCase {
             fdc.assertDeleted(0);                                
             assertTrue(external.delete());
             assertNotNull(foWorkDir.getFileObject(external.getName()));
-            FileUtil.refreshFor(external);   
+            FileUtil.refreshFor(external.getParentFile());   
             assertNull(foWorkDir.getFileObject(external.getName()));
             fdc.assertDeleted(1);                                
             
@@ -261,7 +261,7 @@ public class FileObjectFactoryTest extends NbTestCase {
             assertTrue(external.mkdir());
             assertNull(foWorkDir.getFileObject(external.getName()));
             fdc.assertFolderCreated(0);                        
-            FileUtil.refreshFor(external);   
+            FileUtil.refreshFor(external.getParentFile());   
             fdc.assertFolderCreated(1);
             assertNotNull(foWorkDir.getFileObject(external.getName()));                        
             

@@ -100,7 +100,7 @@ public class StatFilesTest extends NbTestCase {
         monitor.reset();
         monitor();
         assertNotNull(FileUtil.toFileObject(workDir));
-        assertEquals(2, monitor.getResults().statResult(StatFiles.ALL));
+        assertEquals(3, monitor.getResults().statResult(StatFiles.ALL));
     }
 
     public void testGetFileObject23() throws IOException {      
@@ -183,8 +183,8 @@ public class StatFilesTest extends NbTestCase {
         monitor.reset();        
         assertGC("", new WeakReference(fs.getFileObject(testFile)));        
         assertNotNull(fs.getFileObject(testFile));
-        assertEquals(0, monitor.getResults().statResult(testFile, StatFiles.ALL));
-        assertEquals(0, monitor.getResults().statResult(testFile, StatFiles.READ));
+        assertEquals(1, monitor.getResults().statResult(testFile, StatFiles.ALL));
+        assertEquals(1, monitor.getResults().statResult(testFile, StatFiles.READ));
         
         //parent not exists + testFile not exists
         monitor.reset();        
@@ -221,8 +221,8 @@ public class StatFilesTest extends NbTestCase {
         FileObject fobj = getFileObject(testFile);
         monitor.reset();        
         FileObject parent = fobj.getParent();        
-        assertEquals(0, monitor.getResults().statResult(StatFiles.ALL));
-        assertEquals(0, monitor.getResults().statResult(StatFiles.READ));
+        assertEquals(1, monitor.getResults().statResult(StatFiles.ALL));
+        assertEquals(1, monitor.getResults().statResult(StatFiles.READ));
         monitor.reset();        
         parent = fobj.getParent();        
         assertEquals(0, monitor.getResults().statResult(StatFiles.ALL));
