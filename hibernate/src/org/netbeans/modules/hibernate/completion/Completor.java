@@ -38,6 +38,7 @@
  */
 package org.netbeans.modules.hibernate.completion;
 
+import org.netbeans.modules.hibernate.editor.HibernateEditorUtil;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -170,7 +171,7 @@ public abstract class Completor {
                 Document doc = context.getDocument();
                 final String typedChars = context.getTypedPrefix();
 
-                JavaSource js = HibernateCompletionEditorUtil.getJavaSource(doc);
+                JavaSource js = HibernateEditorUtil.getJavaSource(doc);
                 if (js == null) {
                     return Collections.emptyList();
                 }
@@ -280,14 +281,14 @@ public abstract class Completor {
             final int caretOffset = context.getCaretOffset();
             final String typedChars = context.getTypedPrefix();
 
-            final String className = HibernateCompletionEditorUtil.getClassName(context.getTag());
+            final String className = HibernateEditorUtil.getClassName(context.getTag());
             if (className == null) {
                 return Collections.emptyList();
             }
 
             try {
                 // Compile the class and find the fiels
-                JavaSource classJavaSrc = HibernateCompletionEditorUtil.getJavaSource(context.getDocument());
+                JavaSource classJavaSrc = HibernateEditorUtil.getJavaSource(context.getDocument());
                 classJavaSrc.runUserActionTask(new Task<CompilationController>() {
 
                     public void run(CompilationController cc) throws Exception {
@@ -366,7 +367,7 @@ public abstract class Completor {
             int caretOffset = context.getCaretOffset();
             String typedChars = context.getTypedPrefix();
 
-            final String tableName = HibernateCompletionEditorUtil.getTableName(context.getTag());
+            final String tableName = HibernateEditorUtil.getTableName(context.getTag());
 
             if (tableName == null) {
                 return Collections.emptyList();

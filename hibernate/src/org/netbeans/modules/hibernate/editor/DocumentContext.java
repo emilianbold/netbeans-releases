@@ -39,8 +39,9 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.hibernate.completion;
+package org.netbeans.modules.hibernate.editor;
 
+import org.netbeans.modules.hibernate.editor.ContextUtilities;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;

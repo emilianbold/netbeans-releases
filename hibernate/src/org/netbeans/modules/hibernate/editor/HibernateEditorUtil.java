@@ -36,18 +36,30 @@
  * 
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.hibernate.completion;
+package org.netbeans.modules.hibernate.editor;
 
+import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.lang.model.element.Element;
+import javax.lang.model.element.PackageElement;
+import javax.lang.model.element.TypeElement;
+import javax.lang.model.util.SimpleElementVisitor6;
 import javax.swing.text.Document;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.java.source.ClasspathInfo;
+import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.JavaSource;
+import org.netbeans.api.java.source.Task;
+import org.netbeans.api.java.source.ui.ElementOpen;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.modules.editor.NbEditorUtilities;
+import org.openide.awt.StatusDisplayer;
 import org.openide.filesystems.FileObject;
+import org.openide.util.NbBundle;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 
@@ -55,7 +67,7 @@ import org.w3c.dom.Node;
  *
  * @author Dongmei Cao
  */
-public class HibernateCompletionEditorUtil {
+public class HibernateEditorUtil {
 
     public static JavaSource getJavaSource(Document doc) {
         FileObject fileObject = NbEditorUtilities.getFileObject(doc);
@@ -83,9 +95,9 @@ public class HibernateCompletionEditorUtil {
         if (tag.getNodeName().equalsIgnoreCase("class")) { // NOI18N
             return tag;
         }
-        
+
         Node current = tag;
-        while( true ) {
+        while (true) {
             Node parent = current.getParentNode();
             if (parent.getNodeName().equalsIgnoreCase("class")) {
                 // Found it
@@ -111,7 +123,7 @@ public class HibernateCompletionEditorUtil {
 
         return null;
     }
-    
+
     public static String getTableName(Node tag) {
         Node classNode = getClassNode(tag);
         if (classNode != null) {
@@ -123,17 +135,82 @@ public class HibernateCompletionEditorUtil {
 
         return null;
     }
-    
+
     public static String getHbPropertyName(Node tag) {
-        if(!tag.getNodeName().equalsIgnoreCase("property"))
+        if (!tag.getNodeName().equalsIgnoreCase("property")) {
             return null;
-        else {
+        } else {
             NamedNodeMap attribs = tag.getAttributes();
-            if(attribs != null && attribs.getNamedItem("name") != null) { // NOI18N
+            if (attribs != null && attribs.getNamedItem("name") != null) { // NOI18N
                 return attribs.getNamedItem("name").getNodeValue();
             }
         }
-           
+
         return null;
     }
-}
+
+    public static TypeElement findClassElementByBinaryName(final String binaryName, CompilationController cc) {
+        if (!binaryName.contains("$")) { // NOI18N
+            // fast search based on fqn
+            return cc.getElements().getTypeElement(binaryName);
+        } else {
+            // get containing package
+            String packageName = ""; // NOI18N
+            int dotIndex = binaryName.lastIndexOf("."); // NOI18N
+            if (dotIndex != -1) {
+                packageName = binaryName.substring(0, dotIndex);
+            }
+            PackageElement packElem = cc.getElements().getPackageElement(packageName);
+            if (packElem == null) {
+                return null;
+            }
+
+            // scan for element matching the binaryName
+            return new BinaryNameTypeScanner().visit(packElem, binaryName);
+        }
+    }
+
+    private static class BinaryNameTypeScanner extends SimpleElementVisitor6<TypeElement, String> {
+
+        @Override
+        public TypeElement visitPackage(PackageElement packElem, String binaryName) {
+            for (Element e : packElem.getEnclosedElements()) {
+                if (e.getKind().isClass()) {
+                    TypeElement ret = e.accept(this, binaryName);
+                    if (ret != null) {
+                        return ret;
+                    }
+                }
+            }
+
+            return null;
+        }
+    }
+
+    public static void findAndOpenJavaClass(final String classBinaryName, Document doc) {
+        final JavaSource js = getJavaSource(doc);
+        if (js != null) {
+            try {
+                js.runUserActionTask(new Task<CompilationController>() {
+
+                    public void run(CompilationController cc) throws Exception {
+                        boolean opened = false;
+                        TypeElement element = findClassElementByBinaryName(classBinaryName, cc);
+                        if (element != null) {
+                            opened = ElementOpen.open(js.getClasspathInfo(), element);
+                        }
+                        if (!opened) {
+                            // TODO: I18N
+                            //String msg = NbBundle.getMessage(HibernateCompletionEditorUtil.class, "LBL_SourceNotFound", classBinaryName);
+                            String msg = "Source not found (TODO: I18N)";
+                            StatusDisplayer.getDefault().setStatusText(msg);
+                        }
+                    }
+                    }, false);
+            } catch (IOException ex) {
+                Logger.getLogger("global").log(Level.SEVERE, ex.getMessage(), ex);
+            }
+        }
+    }
+    }
+

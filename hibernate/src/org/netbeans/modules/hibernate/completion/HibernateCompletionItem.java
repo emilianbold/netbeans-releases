@@ -38,6 +38,7 @@
  */
 package org.netbeans.modules.hibernate.completion;
 
+import org.netbeans.modules.hibernate.editor.HibernateEditorUtil;
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.Graphics;
@@ -319,7 +320,7 @@ public abstract class HibernateCompletionItem implements CompletionItem {
                 @Override
                 protected void query(final CompletionResultSet resultSet, Document doc, int caretOffset) {
                     try {
-                        JavaSource js = HibernateCompletionEditorUtil.getJavaSource(doc);
+                        JavaSource js = HibernateEditorUtil.getJavaSource(doc);
                         if (js == null) {
                             return;
                         }
@@ -455,7 +456,7 @@ public abstract class HibernateCompletionItem implements CompletionItem {
                 @Override
                 protected void query(final CompletionResultSet resultSet, Document doc, int caretOffset) {
                     try {
-                        JavaSource js = HibernateCompletionEditorUtil.getJavaSource(doc);
+                        JavaSource js = HibernateEditorUtil.getJavaSource(doc);
                         if (js == null) {
                             return;
                         }

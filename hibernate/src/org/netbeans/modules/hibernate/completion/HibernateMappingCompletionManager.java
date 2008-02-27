@@ -40,6 +40,7 @@
  */
 package org.netbeans.modules.hibernate.completion;
 
+import org.netbeans.modules.hibernate.editor.ContextUtilities;
 import java.util.HashMap;
 import java.util.Map;
 import org.netbeans.editor.TokenItem;

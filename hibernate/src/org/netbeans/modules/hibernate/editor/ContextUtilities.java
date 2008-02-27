@@ -39,8 +39,9 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.hibernate.completion;
+package org.netbeans.modules.hibernate.editor;
 
+import org.netbeans.modules.hibernate.completion.*;
 import javax.xml.XMLConstants;
 import org.netbeans.editor.TokenItem;
 import org.netbeans.modules.xml.text.api.XMLDefaultTokenContext;

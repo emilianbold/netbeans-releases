@@ -41,6 +41,8 @@
 
 package org.netbeans.modules.hibernate.completion;
 
+import org.netbeans.modules.hibernate.editor.EditorContextFactory;
+import org.netbeans.modules.hibernate.editor.DocumentContext;
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.text.Document;

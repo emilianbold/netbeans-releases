@@ -40,6 +40,9 @@
  */
 package org.netbeans.modules.hibernate.completion;
 
+import org.netbeans.modules.hibernate.editor.HibernateEditorUtil;
+import org.netbeans.modules.hibernate.editor.DocumentContext;
+import org.netbeans.modules.hibernate.editor.ContextUtilities;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -212,7 +215,7 @@ public final class HibernateCfgCompletionManager {
             return;
         }
         
-        String propName = HibernateCompletionEditorUtil.getHbPropertyName(propTag);
+        String propName = HibernateEditorUtil.getHbPropertyName(propTag);
         int caretOffset = context.getCaretOffset();
         String typedChars = context.getTypedPrefix();
         

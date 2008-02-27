@@ -39,82 +39,29 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.hibernate.completion;
+package org.netbeans.modules.hibernate.editor;
 
-import java.net.URL;
-import javax.lang.model.element.Element;
-import javax.swing.Action;
-import org.netbeans.api.java.source.CompilationController;
-import org.netbeans.api.java.source.ui.ElementJavadoc;
-import org.netbeans.spi.editor.completion.CompletionDocumentation;
+import java.util.Map;
+import java.util.WeakHashMap;
+import javax.swing.text.Document;
 
 /**
  *
- * 
+ * @author Rohan Ranade
  */
-public abstract class HibernateMappingCompletionDocumentation implements CompletionDocumentation {
+public final class EditorContextFactory {
+    private static Map<Document, DocumentContext> contextCache = 
+            new WeakHashMap<Document, DocumentContext>();
 
-    public static HibernateMappingCompletionDocumentation getAttribValueDoc(String text) {
-        return new AttribValueDoc(text);
-    }
-    
-     public static HibernateMappingCompletionDocumentation createJavaDoc(CompilationController cc, Element element) {
-        return new JavaElementDoc(ElementJavadoc.create(cc, element));
-    }
-    
-    public URL getURL() {
-        return null;
-    }
-
-    public CompletionDocumentation resolveLink(String link) {
-        return null;
-    }
-
-    public Action getGotoSourceAction() {
-        return null;
-    }
-    
-    
-    
-    private static class AttribValueDoc extends HibernateMappingCompletionDocumentation {
-
-        private String text;
-
-        public AttribValueDoc(String text) {
-            this.text = text;
+    public static DocumentContext getDocumentContext(Document document, int caretOffset) {
+        DocumentContext context = contextCache.get(document);
+        if(context == null) {
+            context = new DocumentContext(document);
+            contextCache.put(document, context);
         }
-
-        public String getText() {
-            return text;
-        }
-    }
-    
-    private static class JavaElementDoc extends HibernateMappingCompletionDocumentation {
-
-        private ElementJavadoc elementJavadoc;
-
-        public JavaElementDoc(ElementJavadoc elementJavadoc) {
-            this.elementJavadoc = elementJavadoc;
-        }
-
-        @Override
-        public JavaElementDoc resolveLink(String link) {
-            ElementJavadoc doc = elementJavadoc.resolveLink(link);
-            return doc != null ? new JavaElementDoc(doc) : null;
-        }
-
-        @Override
-        public URL getURL() {
-            return elementJavadoc.getURL();
-        }
-
-        public String getText() {
-            return elementJavadoc.getText();
-        }
-
-        @Override
-        public Action getGotoSourceAction() {
-            return elementJavadoc.getGotoSourceAction();
-        }
+        
+        context.reset(caretOffset);
+        
+        return context;
     }
 }
