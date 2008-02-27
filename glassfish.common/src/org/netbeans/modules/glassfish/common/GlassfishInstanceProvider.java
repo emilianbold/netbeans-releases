@@ -207,9 +207,11 @@ public final class GlassfishInstanceProvider implements ServerInstanceProvider {
 
         String homeFolder = getStringAttribute(instanceFO, GlassfishModule.HOME_FOLDER_ATTR);
         String displayName = getStringAttribute(instanceFO, GlassfishModule.DISPLAY_NAME_ATTR);
+        int httpPort = getIntAttribute(instanceFO, GlassfishModule.HTTPPORT_ATTR, GlassfishInstance.DEFAULT_HTTP_PORT);
+        int adminPort = getIntAttribute(instanceFO, GlassfishModule.ADMINPORT_ATTR, GlassfishInstance.DEFAULT_ADMIN_PORT);
 
         if(isValidHomeFolder(homeFolder)) {
-            instance = GlassfishInstance.create(displayName, homeFolder);
+            instance = GlassfishInstance.create(displayName, homeFolder, httpPort, adminPort);
         } else {
             Logger.getLogger("glassfish").finer("GlassFish folder " + instanceFO.getPath() + " is not a valid V3 install.");
             instanceFO.delete();
@@ -248,35 +250,6 @@ public final class GlassfishInstanceProvider implements ServerInstanceProvider {
             instanceFO.setAttribute(GlassfishModule.HOME_FOLDER_ATTR, homeFolder);
             instanceFO.setAttribute(GlassfishModule.DISPLAY_NAME_ATTR, instance.getDisplayName());
         }
-
-// !PW OBSOLETE = replaced by code in glassfish - javaee module.        
-//        // J2eeServer managed instance files
-//        {
-//            FileObject dir = getRepositoryDir(DIR_J2EESERVER_INSTANCES, true);
-//            FileObject[] instanceFOs = dir.getChildren();
-//            FileObject instanceFO = null;
-//
-//            for(int i = 0; i < instanceFOs.length; i++) {
-//                if(url.equals(instanceFOs[i].getAttribute(GlassfishModule.URL_ATTR))) {
-//                    instanceFO = instanceFOs[i];
-//                }
-//            }
-//
-//            if(instanceFO == null) {
-//                String name = FileUtil.findFreeFileName(dir, "instance", null);
-//                instanceFO = dir.createData(name);
-//            }
-//
-//            instanceFO.setAttribute(GlassfishModule.URL_ATTR, instance.getDeployerUri());
-//            instanceFO.setAttribute(GlassfishModule.HOME_FOLDER_ATTR, homeFolder);
-//            instanceFO.setAttribute(GlassfishModule.DISPLAY_NAME_ATTR, instance.getDisplayName());
-//            
-//            instanceFO.setAttribute(GlassfishModule.USERNAME_ATTR, instance.getUserName());
-//            instanceFO.setAttribute(GlassfishModule.PASSWORD_ATTR, instance.getPassword());
-//            instanceFO.setAttribute(GlassfishModule.ADMINPORT_ATTR, instance.getAdminPort());
-//            instanceFO.setAttribute(GlassfishModule.HTTPPORT_ATTR, instance.getHttpPort());
-//            instanceFO.setAttribute(GlassfishModule.HOSTNAME_ATTR, instance.getHostName());
-//        }        
     }
 
     private void removeInstanceFromFile(String url) {
@@ -335,4 +308,18 @@ public final class GlassfishInstanceProvider implements ServerInstanceProvider {
         }
         return result;
     }
+    
+    private static int getIntAttribute(FileObject fo, String attrName, int defValue) {
+        int result = defValue;
+        String value = getStringAttribute(fo, attrName);
+        if(value != null) {
+            try {
+                result = Integer.parseInt(value);
+            } catch(NumberFormatException ex) {
+                Logger.getLogger("glassfish").log(Level.FINER, ex.getLocalizedMessage(), ex);
+            }
+        }
+        return result;
+    }
+    
 }

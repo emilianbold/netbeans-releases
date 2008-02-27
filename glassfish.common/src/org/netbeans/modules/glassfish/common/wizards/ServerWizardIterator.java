@@ -119,12 +119,9 @@ public class ServerWizardIterator implements WizardDescriptor.InstantiatingItera
     
     public Set instantiate() throws IOException {
         Set<ServerInstance> result = new HashSet<ServerInstance>();
-//        result.add(GlassfishInstance.create(
-//                (String) wizard.getProperty("ServInstWizard_displayName"), // NOI18N
-//                glassfishHomeLocation));
         GlassfishInstance instance = GlassfishInstance.create(
                 (String) wizard.getProperty("ServInstWizard_displayName"), // NOI18N
-                glassfishHomeLocation);
+                glassfishHomeLocation, httpPort, adminPort);
         GlassfishInstanceProvider.getDefault().addServerInstance(instance);
         result.add(instance.getCommonInstance());
         return result;
@@ -204,21 +201,26 @@ public class ServerWizardIterator implements WizardDescriptor.InstantiatingItera
         }
     }
     
-//    private String host = "localhost";
-//    private int httpPort;
-//    private int adminPort;
+    // !PW All servers local for now...
+    private int httpPort = GlassfishInstance.DEFAULT_HTTP_PORT;
+    private int httpsPort = GlassfishInstance.DEFAULT_HTTPS_PORT;
+    private int adminPort = GlassfishInstance.DEFAULT_ADMIN_PORT;
 //    private String userName;
 //    private String password;
     private String glassfishHomeLocation;
     
-//    public void setHttpPort(int httpPort) {
-//        this.httpPort = httpPort;
-//    }
-//    
-//    public void setAdminPort(int adminPort) {
-//        this.adminPort = adminPort;
-//    }
-//    
+    public void setHttpPort(int httpPort) {
+        this.httpPort = httpPort;
+    }
+    
+    public void setAdminPort(int adminPort) {
+        this.adminPort = adminPort;
+    }
+   
+    public void setHttpsPort(int httpsPort) {
+        this.httpsPort = httpsPort;
+    }
+    
 //    public void setUserName(String userName) {
 //        this.userName = userName;
 //    }
@@ -235,5 +237,4 @@ public class ServerWizardIterator implements WizardDescriptor.InstantiatingItera
         return glassfishHomeLocation;
     }
     
-
 }
