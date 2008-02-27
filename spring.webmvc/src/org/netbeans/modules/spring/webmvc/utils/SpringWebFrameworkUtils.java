@@ -120,7 +120,7 @@ public class SpringWebFrameworkUtils {
         return lineInTemplate;
     }
     
-    public static String setWelcomePageText(String lineInTemplate) {
+    public static String getWelcomePageText() {
         return NbBundle.getMessage(SpringWebFrameworkUtils.class, "MSG_WELCOME_PAGE_TEXT"); // NOI18N
     }
 }
