@@ -56,6 +56,7 @@ import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.WizardDescriptor;
 import org.openide.WizardValidationException;
+import org.openide.awt.Mnemonics;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
@@ -100,7 +101,7 @@ public class RailsInstallationPanel extends JPanel {
     private void updateLabel() {
         if (gemManager().isValidRails(false)) {
             descLabel.setText(NbBundle.getMessage(RailsInstallationPanel.class, "RailsOk"));
-            railsButton.setText(NbBundle.getMessage(RailsInstallationPanel.class, "UpdateRails"));
+            Mnemonics.setLocalizedText(railsButton, org.openide.util.NbBundle.getMessage(RailsInstallationPanel.class, "UpdateRails")); // NOI18N
             String version = gemManager().getVersion("rails"); // NOI18N
             if (version == null) {
                 version = "?";
@@ -108,11 +109,11 @@ public class RailsInstallationPanel extends JPanel {
             installedLabel.setText(NbBundle.getMessage(RailsInstallationPanel.class, "RailsVersion", version));
         } else if (!platform().isValidRuby(false)) {
             descLabel.setText(NbBundle.getMessage(RailsInstallationPanel.class, "NoRuby"));
-            railsButton.setText(NbBundle.getMessage(RailsInstallationPanel.class, "InstallRails"));
+            Mnemonics.setLocalizedText(railsButton, org.openide.util.NbBundle.getMessage(RailsInstallationPanel.class, "InstallRails")); // NOI18N
             installedLabel.setText("");
         } else {
             descLabel.setText(NbBundle.getMessage(RailsInstallationPanel.class, "NoRails"));
-            railsButton.setText(NbBundle.getMessage(RailsInstallationPanel.class, "InstallRails"));
+            Mnemonics.setLocalizedText(railsButton, org.openide.util.NbBundle.getMessage(RailsInstallationPanel.class, "InstallRails")); // NOI18N
             installedLabel.setText("");
         }
     }
@@ -202,7 +203,7 @@ public class RailsInstallationPanel extends JPanel {
                         .add(railsButton)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(installedLabel))
-                    .add(org.jdesktop.layout.GroupLayout.TRAILING, jSeparator1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 377, Short.MAX_VALUE)
+                    .add(org.jdesktop.layout.GroupLayout.TRAILING, jSeparator1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 569, Short.MAX_VALUE)
                     .add(jrubyLabel)
                     .add(proxyButton)
                     .add(jrubySslLabel)
