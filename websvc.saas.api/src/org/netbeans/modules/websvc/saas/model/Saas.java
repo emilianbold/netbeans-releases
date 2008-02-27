@@ -147,7 +147,7 @@ public class Saas {
         return saasFile;
     }
     
-    void save() {
+    public void save() {
         try {
             SaasUtil.saveSaas(this, getSaasFile());
         } catch(Exception e) {

@@ -159,6 +159,10 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
         if (model == null) {
             model = new GlobalToolsPanelModel();
         }
+        if (!model.showRequiredTools()) {
+            jLabel1.setVisible(false); // Required Tools label!
+            jPanel1.setVisible(false); // Required Tools panel!
+        }
         dirlist = model.getPath();
         if (csm == null) {
             csm = CompilerSetManager.getDefault();
