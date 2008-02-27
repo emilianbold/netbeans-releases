@@ -77,6 +77,7 @@ import org.netbeans.api.project.SourceGroup;
 import org.netbeans.modules.vmd.game.dialog.AbstractImagePreviewComponent;
 import org.netbeans.modules.vmd.game.dialog.FullImageGridPreview;
 import org.netbeans.modules.vmd.game.dialog.PartialImageGridPreview;
+import org.netbeans.modules.vmd.game.model.CodeUtils;
 import org.netbeans.modules.vmd.game.model.GlobalRepository;
 import org.netbeans.modules.vmd.game.model.ImageResource;
 import org.netbeans.modules.vmd.game.model.Scene;
@@ -597,6 +598,30 @@ public class SpriteDialog extends javax.swing.JPanel implements ActionListener {
 		else if (this.listImageFileName.getSelectedValue() == null) {
 			errMsg = NbBundle.getMessage(SpriteDialog.class, "SpriteDialog.labelSelectImgFile.txt");
 		}
+        else {
+            Map.Entry<FileObject, String> entry = (Map.Entry<FileObject, String>) this.listImageFileName.getSelectedValue();
+            URL imageURL = null;
+            try {
+                imageURL = entry.getKey().getURL();
+            }
+            catch (Exception e) {
+                e.printStackTrace();
+            }
+            String relativeResourcePath = entry.getValue();
+
+            assert (imageURL != null);
+            assert (relativeResourcePath != null);
+
+            String imgName = CodeUtils.getIdealImageName(relativeResourcePath);
+            
+            List<String> derivedImageNames = GlobalRepository.deriveUsedNames(imgName);
+            for (String derivedName : derivedImageNames) {
+                if (derivedName.equals(this.fieldLayerName.getText())) {
+                    errMsg = NbBundle.getMessage(SpriteDialog.class, "SpriteDialog.imgFileSameAsLayerName.txt");
+                }                
+            }
+
+        }
 		return errMsg;
 	}
 	
@@ -612,21 +637,22 @@ public class SpriteDialog extends javax.swing.JPanel implements ActionListener {
 		private void handleImageSelectionChange() {
 			SpriteDialog.this.sliderWidth.setEnabled(true);
 			SpriteDialog.this.sliderHeight.setEnabled(true);
+			String errMsg = null;
+            
+            errMsg = SpriteDialog.this.getFieldLayerNameError();
+            try {
+                SpriteDialog.this.loadImagePreview();
+            } catch (MalformedURLException e) {
+                errMsg = NbBundle.getMessage(SpriteDialog.class, "SpriteDialog.labelInvalidImgLoc.txt");
+                e.printStackTrace();
+            } catch (IllegalArgumentException iae) {
+                errMsg = NbBundle.getMessage(SpriteDialog.class, "SpriteDialog.labelInvalidImgFomat.txt");
+                iae.printStackTrace();
+            }
 			
-			String errMsg = SpriteDialog.this.getFieldImageFileNameError();
-			if (errMsg == null) {
-				errMsg = SpriteDialog.this.getFieldLayerNameError();
-				try {
-					SpriteDialog.this.loadImagePreview();
-				} catch (MalformedURLException e) {
-					errMsg = NbBundle.getMessage(SpriteDialog.class, "SpriteDialog.labelInvalidImgLoc.txt");
-					e.printStackTrace();
-				} catch (IllegalArgumentException iae) {
-					errMsg = NbBundle.getMessage(SpriteDialog.class, "SpriteDialog.labelInvalidImgFomat.txt");
-					iae.printStackTrace();
-				}					
-					
-			}
+            if (errMsg == null) {
+                errMsg = SpriteDialog.this.getFieldImageFileNameError();
+            }
 			
 			if (errMsg != null) {
 				SpriteDialog.this.labelError.setText(errMsg);
@@ -712,14 +738,8 @@ public class SpriteDialog extends javax.swing.JPanel implements ActionListener {
 				ex.printStackTrace();
             }
 		}
-//		else if (e.getSource() == this.checkBoxShowTiles) {			
-//		}
 	}
-	
-	private void handleCheckBoxShowTiles() {
 		
-	}
-	
 	private void handleImportImagesButton() throws IOException {
 		InputStream inImgPlatformTiles = SpriteDialog.class.getResourceAsStream("res/platform_tiles.png"); // NOI18N
 		assert inImgPlatformTiles != null;

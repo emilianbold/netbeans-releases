@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -38,52 +38,48 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
+package org.netbeans.modules.bpel.search.impl.ui;
 
-package org.netbeans.modules.masterfs;
-
-import java.io.IOException;
-import org.netbeans.junit.NbTestCase;
-import org.netbeans.modules.masterfs.filebasedfs.FileBasedFileSystem;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileSystem;
-import org.openide.filesystems.FileUtil;
-import org.openide.util.Exceptions;
-import org.openide.util.Lookup;
-import org.openide.util.lookup.Lookups;
+import org.netbeans.modules.bpel.search.api.SearchElement;
 
 /**
- * @author Radek Matous
+ * @author Vladimir Yaroslavskiy
+ * @version 2008.02.27
  */
-public class URLMapperTest extends NbTestCase {
-    private static FileSystem mfs;
-    public URLMapperTest(String name) {
-        super(name);
-        mfs = FileBasedFileSystem.getInstance();
+final class Element extends SearchElement.Adapter {
+
+  Element(SearchElement element) {
+    super(
+      getName(element),
+      element.getToolTip(),
+      element.getIcon(),
+      null);
+
+    myElement = element;
+  }
+
+  @Override
+  public void gotoSource()
+  {
+    myElement.gotoSource();
+  }
+
+  @Override
+  public void select()
+  {
+    myElement.select();
+  }
+
+  private static String getName(SearchElement element) {
+    StringBuffer name = new StringBuffer(element.getName());
+    SearchElement parent = element.getParent();
+
+    while (parent != null) {
+      name.insert(0, parent.getName() + "."); // NOI18N
+      parent = parent.getParent();
     }
+    return name.toString();
+  }
 
-    public void testURLMapperCallingFromMetaInfLookup() {
-        Lookup lkp = Lookups.metaInfServices(Thread.currentThread().getContextClassLoader());
-        Object obj = lkp.lookup(Object.class);
-        assertNotNull(obj);
-        assertEquals(MyInstance2.class, obj.getClass());
-    }
-
-    public static class MyInstance2 {
-        public MyInstance2() {
-            super();
-            testURLMapper();
-        }
-
-        private static void testURLMapper() {            
-            assertNotNull(mfs);
-            FileObject[] children = mfs.getRoot().getChildren();
-            for (int i = 0; i < children.length; i++) {
-                java.io.File file = FileUtil.toFile(children[i]);
-                assertNotNull(file);
-                assertNotNull(FileUtil.toFileObject(file));
-            }
-        }
-
-    }
-
+  private SearchElement myElement;
 }

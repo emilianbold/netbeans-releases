@@ -37,36 +37,24 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.css.gsf;
+package org.netbeans.modules.html.editor.gsf;
 
-import org.netbeans.modules.gsf.api.CompilationInfo;
-import org.netbeans.modules.gsf.api.Element;
-import org.netbeans.modules.gsf.api.ElementHandle;
-import org.netbeans.modules.gsf.api.OffsetRange;
-import org.netbeans.modules.gsf.api.ParserResult;
-import org.netbeans.modules.gsf.api.PositionManager;
+import org.netbeans.modules.gsf.api.TranslatedSource;
 
 /**
  *
  * @author marek
  */
-public class CSSPositionManager implements PositionManager {
+public class AstUtils {
 
-
-    public boolean isTranslatingSource() {
-        return false;
+    /** Recomputes the offset if source != null otherwise simply returns the astPostion
+     * 
+     * @param astPosition
+     * @param source
+     * @return real offset in the document
+     */
+    public static int documentPosition(int astOffset, TranslatedSource source) {
+        return source == null ? astOffset : source.getLexicalOffset(astOffset);
     }
-
-    public int getLexicalOffset(ParserResult result, int astOffset) {
-        return astOffset;
-    }
-
-    public int getAstOffset(ParserResult result, int lexicalOffset) {
-        return lexicalOffset;
-    }
-
-    public OffsetRange getOffsetRange(CompilationInfo info, ElementHandle object) {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
+    
 }
