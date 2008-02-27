@@ -280,7 +280,7 @@ public class JsFormatterTest extends JsTestBase {
 //    public void testFormat4() throws Exception {
 //        reformatFileContents("testfiles/dojo.js.uncompressed.js",new IndentPrefs(2,2));
 //    }
-//    
+    
     public void testSimpleBlock() throws Exception {
         format("if (true) {\nfoo();\n  }\n",
                "if (true) {\n    foo();\n}\n", null);
@@ -294,6 +294,31 @@ public class JsFormatterTest extends JsTestBase {
                "if (true){\n    foo();\n}\n", null);
     }
 
+    public void testCombinedBlocks() throws Exception {
+        format(
+                " if (true)\n" +
+                " if (false) {\n" +
+                " foo();\n" +
+                " }\n" +
+                " bar();",
+                "if (true)\n" +
+                "    if (false) {\n" +
+                "        foo();\n" +
+                "    }\n" +
+                "bar();", null
+                );
+        format(
+                " if (true) {\n" +
+                " if (map[0])\n" +
+                " foo();\n" +
+                " }",
+                "if (true) {\n" +
+                "    if (map[0])\n" +
+                "        foo();\n" +
+                "}", null
+                );
+    }
+    
     public void testBraceFreeBlock() throws Exception {
         // it's good to start lines with space, it discovers some potential problems
         format(

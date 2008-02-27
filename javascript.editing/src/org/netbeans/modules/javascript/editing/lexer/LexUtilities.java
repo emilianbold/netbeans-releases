@@ -451,8 +451,7 @@ public class LexUtilities {
         return false;
     }
 
-    
-    private static void findMultilineRange(TokenSequence<? extends JsTokenId> ts, Set<OffsetRange> ranges) {
+    private static OffsetRange findMultilineRange(TokenSequence<? extends JsTokenId> ts) {
         int startOffset = ts.offset();
         JsTokenId id = ts.token().id();
         switch (id) {
@@ -465,12 +464,12 @@ public class LexUtilities {
             case WHILE:
                 ts.moveNext();
                 if (!skipParenthesis(ts)) {
-                    return;
+                    return OffsetRange.NONE;
                 }
                 id = ts.token().id();
                 break;
             default:
-                return;
+                return OffsetRange.NONE;
         }
         int offset = ts.offset();
         
@@ -483,43 +482,19 @@ public class LexUtilities {
                 offset = ts.offset();
             }
         }
+        offset = ts.offset();
         // if we found end of sequence or end of line
         if (ts.token() == null || (ts.token().id() == JsTokenId.EOL)) {
-            ranges.add(new OffsetRange(startOffset, offset));
+            return new OffsetRange(startOffset, offset);
         }
+        return  OffsetRange.NONE;
     }
     
-    public static boolean isBracelessMultilineLastLine(BaseDocument doc, int offset, Set<OffsetRange> ranges) {
-
+    public static OffsetRange getMultilineRange(BaseDocument doc, int offset) {
         TokenSequence<? extends JsTokenId> ts = getPositionedSequence(doc, offset);
-
-        JsTokenId id = ts.token().id();
-        
-        switch (id) {
-            case ELSE:
-            case IF:
-            case FOR:
-            case WHILE:
-                findMultilineRange(ts, ranges);
-        }
-        
-        try {
-            int offsetLine = Utilities.getLineOffset(doc, offset);
-            for (OffsetRange offsetRange : ranges) {
-                if (offsetRange.containsInclusive(offset)) {
-                    int blockEndLine = Utilities.getLineOffset(doc, offsetRange.getEnd());
-                    if (offsetLine == blockEndLine) {
-                        return true;
-                    }
-                }
-            }
-        } catch (BadLocationException ble) {
-            Exceptions.printStackTrace(ble);
-        }
-
-        return false;
+        return findMultilineRange(ts);
     }
-
+    
     /**
      * Return true iff the given token is a token that should be matched
      * with a corresponding "end" token, such as "begin", "def", "module",
@@ -527,10 +502,9 @@ public class LexUtilities {
      */
     public static boolean isBeginToken(TokenId id, BaseDocument doc, TokenSequence<?extends JsTokenId> ts) {
 //        if (id == JsTokenId.IF) {
-            return isBracelessMultilineLastLine(doc, ts.offset(), new HashSet<OffsetRange>());
 //        }
 //        return END_PAIRS.contains(id);
-//        return false;
+        return false;
     }
 
     public static boolean isEndToken(TokenId id, BaseDocument doc, TokenSequence<?extends JsTokenId> ts) {
