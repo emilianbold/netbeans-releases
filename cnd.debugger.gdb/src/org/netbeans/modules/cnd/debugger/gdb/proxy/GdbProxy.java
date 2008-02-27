@@ -480,6 +480,14 @@ public class GdbProxy implements GdbMiDefinitions {
     public int break_disable(int number) {
         return engine.sendCommand("-break-disable " + Integer.toString(number)); // NOI18N
     }
+    
+    public int break_condition(int number, String condition) {
+        return engine.sendCommand("-break-condition " + Integer.toString(number) + " " + condition); // NOI18N
+    }
+    
+    public int break_after(int number, String count) {
+        return engine.sendCommand("-break-after " + Integer.toString(number) + " " + count); // NOI18N
+    }
 
     /** Send "-stack-list-locals" to the debugger */
     public int stack_list_locals() {

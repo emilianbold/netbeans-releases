@@ -58,7 +58,7 @@ final class Element extends SearchElement.Adapter {
       getName(component),
       getToolTip(component),
       getIcon(component),
-      getParent(component, cookie, view)); 
+      getParent(component, cookie, view));
 
     myComponent = component;
     myCookie = cookie;

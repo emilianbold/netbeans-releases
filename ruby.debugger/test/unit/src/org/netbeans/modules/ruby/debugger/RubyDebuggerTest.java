@@ -355,19 +355,45 @@ public final class RubyDebuggerTest extends TestBase {
         assertTrue("default setting OK with JRuby", RubyDebugger.checkAndTuneSettings(descriptor));
         FileObject gemRepo = FileUtil.toFileObject(getWorkDir()).createFolder("gem-repo");
         GemManager.initializeRepository(gemRepo);
-        jruby.setGemHome(FileUtil.toFile(gemRepo));
-        jruby.getInfo().setGemPath("");
-        assertFalse("does not have fast debugger", jruby.hasFastDebuggerInstalled());
-        
-        forceClassicDebugger(false);
+        File origGemHome = jruby.getGemManager().getGemHomeF();
         try {
-            assertTrue("fail when no fast debugger available", RubyDebugger.checkAndTuneSettings(descriptor));
-        } catch (AssertionFailedError afe) {
-            // OK, expected
+            jruby.setGemHome(FileUtil.toFile(gemRepo));
+            jruby.getInfo().setGemPath("");
+            assertFalse("does not have fast debugger", jruby.hasFastDebuggerInstalled());
+
+            forceClassicDebugger(false);
+            try {
+                assertTrue("fail when no fast debugger available", RubyDebugger.checkAndTuneSettings(descriptor));
+            } catch (AssertionFailedError afe) {
+                // OK, expected
+            }
+
+            installFakeFastRubyDebugger(jruby);
+            assertTrue("succeed when fast debugger available", RubyDebugger.checkAndTuneSettings(descriptor));
+        } finally {
+            jruby.setGemHome(origGemHome);
         }
-        
-        installFakeFastRubyDebugger(jruby);
-        assertTrue("succeed when fast debugger available", RubyDebugger.checkAndTuneSettings(descriptor));
+    }
+    
+    public void testJRubyFastDebugging() throws Exception {
+        forceClassicDebugger(false);
+        String[] testContent = {
+            "puts 'aaa'",
+            "puts 'bbb'",
+            "puts 'ccc'",
+            "puts 'ddd'",
+            "puts 'eee'",
+        };
+        File testF = createScript(testContent);
+        FileObject testFO = FileUtil.toFileObject(testF);
+        addBreakpoint(testFO, 2);
+        addBreakpoint(testFO, 4);
+        System.out.println("jruby: " + RubyPlatformManager.getDefaultPlatform());
+        Process p = startDebugging(testF, RubyPlatformManager.getDefaultPlatform());
+        doContinue(); // 2 -> 4
+        doAction(ActionsManager.ACTION_STEP_OVER); // 4 -> 5
+        doContinue(); // finish
+        p.waitFor();
     }
 
     private DebuggerEngine getEngineManager() {
