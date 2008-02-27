@@ -47,7 +47,7 @@
 
 package org.netbeans.modules.css.visual.model;
 
-import org.netbeans.modules.css2.editor.model.CssRuleContent;
+import org.netbeans.modules.css.editor.model.CssRuleContent;
 import javax.swing.DefaultComboBoxModel;
 
 /**
