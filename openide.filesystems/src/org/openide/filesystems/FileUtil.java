@@ -123,7 +123,7 @@ public final class FileUtil extends Object {
     private static final Map<FileObject, Boolean> archiveFileCache = new WeakHashMap<FileObject,Boolean>();
     private static FileSystem diskFileSystem;
 
-    private static FileSystem getDiskFileSystem(File... files) {
+    private static FileSystem getDiskFileSystemFor(File... files) {
         FileSystem fs = getDiskFileSystem();
         if (fs == null) {
             for (File file : files) {
@@ -147,7 +147,7 @@ public final class FileUtil extends Object {
      * @since 7.6
      */
     public static void refreshFor(File... files) {
-        FileSystem fs = getDiskFileSystem(files);
+        FileSystem fs = getDiskFileSystemFor(files);
         if (fs != null) {
             try {
                 fs.getRoot().setAttribute("request_for_refreshing_files_be_aware_this_is_not_public_api", files);
@@ -176,7 +176,7 @@ public final class FileUtil extends Object {
      */
     public static void addFileChangeListener(FileChangeListener fcl) {
         FileSystem fs = getDiskFileSystem();
-        if (fs == null) {fs = getDiskFileSystem(File.listRoots());}
+        if (fs == null) {fs = getDiskFileSystemFor(File.listRoots());}
         if (fs != null) {
             fs.addFileChangeListener(fcl);
         }
@@ -192,7 +192,7 @@ public final class FileUtil extends Object {
      */
     public static void removeFileChangeListener(FileChangeListener fcl) {
         FileSystem fs = getDiskFileSystem();
-        if (fs == null) {fs = getDiskFileSystem(File.listRoots());}
+        if (fs == null) {fs = getDiskFileSystemFor(File.listRoots());}
         if (fs != null) {
             fs.addFileChangeListener(fcl);
         }
