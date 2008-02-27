@@ -225,8 +225,8 @@ class J2SEActionProvider implements ActionProvider {
     };
     
     
-    public void startFSListener () {
-        //Listener has to be started 
+    void startFSListener () {
+        //Listener has to be started when the project's lookup is initialized
         try {
             FileSystem fs = project.getProjectDirectory().getFileSystem();
             // XXX would be more efficient to only listen while DO_DEPEND=false (though this is the default)
