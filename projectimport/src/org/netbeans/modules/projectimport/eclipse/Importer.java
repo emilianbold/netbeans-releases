@@ -144,7 +144,7 @@ final class Importer {
                             }
                         } catch (IOException ioe) {
                             Throwable t = ErrorManager.getDefault().annotate(ioe,
-                                    "Error occured during project importing"); // NOI18N
+                                    "Error occurred during project importing"); // NOI18N
                             ErrorManager.getDefault().notify(ErrorManager.USER, t);
                         } finally {
                             done = true;
