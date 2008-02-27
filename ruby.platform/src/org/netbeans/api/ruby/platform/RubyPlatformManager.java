@@ -308,6 +308,10 @@ public final class RubyPlatformManager {
         if (info == null) {
             return null;
         }
+        if (info.getKind() == null) { // # see #128354
+            LOGGER.warning("Getting platform information for " + interpreter + " failed.");
+            return null;
+        }
 
         final String id = computeID(info.getKind());
         try {
