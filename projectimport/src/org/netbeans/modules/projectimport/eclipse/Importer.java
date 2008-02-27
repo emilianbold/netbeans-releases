@@ -51,6 +51,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.JavaPlatformManager;
@@ -142,10 +143,8 @@ final class Importer {
                                 EclipseProject eclPrj = (EclipseProject) it.next();
                                 nbProjects[pos++] = importProject(eclPrj);
                             }
-                        } catch (IOException ioe) {
-                            Throwable t = ErrorManager.getDefault().annotate(ioe,
-                                    "Error occured during project importing"); // NOI18N
-                            ErrorManager.getDefault().notify(ErrorManager.USER, t);
+                        } catch (Exception ex) {
+                            logger.log(Level.WARNING, "Error occured during project importing", ex); // NOI18N
                         } finally {
                             done = true;
                         }
