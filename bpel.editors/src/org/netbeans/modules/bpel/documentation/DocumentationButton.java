@@ -64,6 +64,9 @@ public final class DocumentationButton extends AbstractGlassPaneButton {
 //out();
 //out("event: '" + event.getSource().toString() + "'");
         try {
+          if (element.getModel() == null) { // is deleted
+            return;
+          }
           element.setDocumentation(event.getSource().toString());
 //out("get: '" + element.getDocumentation() + "'");
         }

@@ -46,6 +46,29 @@ made subject to such option by the copyright holder.
         <apidef name="filesystems">Filesystems API</apidef>
     </apidefs>
     <changes> 	
+        <change id="FileUtil.addFileChangeListener">
+            <api name="filesystems"/>
+            <summary>Add methods: addFileChangeListener, removeFileChangeListener, refreshAll</summary>
+            <version major="7" minor="7"/>
+            <date day="26" month="2" year="2008"/>
+            <author login="rmatous"/>
+            <compatibility addition="yes"/>
+            <description>
+                Added utility methods:  
+                <ul>
+                    <li><code>public static FileObject addFileChangeListener (final FileChangeListener fcl)</code> to receive
+                        <code>FileEvents</code> from <code>FileSystems</code> providing instances
+                    of <code>FileObject</code> convertible to <code>java.io.File</code></li>
+                    <li><code>public static FileObject removeFileChangeListener (final FileChangeListener fcl)</code> to no longer receive
+                        <code>FileEvents</code> from <code>FileSystems</code> providing instances
+                    of <code>FileObject</code> convertible to <code>java.io.File</code></li>
+                    <li><code>public static FileObject refreshAll ()</code> to refreshes all <code>FileObject</code> that represent files <code>File.listRoots()</code> 
+                    and their children recursively.</li>
+                </ul>
+            </description>
+            <class package="org.openide.filesystems" name="FileUtil"/>
+            <issue number="127121"/>
+        </change>                            
         <change id="FileUtil.refreshFor">
             <api name="filesystems"/>
             <summary>Add method FileUtil.refreshFor(File... files)</summary>
