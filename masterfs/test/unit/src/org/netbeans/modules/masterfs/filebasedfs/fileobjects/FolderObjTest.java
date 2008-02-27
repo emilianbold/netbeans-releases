@@ -119,6 +119,23 @@ public class FolderObjTest extends NbTestCase {
         public void close() { flush(); }
     }
 
+    public void testBug127256() throws Exception {
+        final FileObject workDirFo = FileBasedFileSystem.getFileObject(getWorkDir());
+        workDirFo.createFolder("a").delete();
+        assertNotNull(workDirFo.createData("a"));
+    }
+    
+    public void testBug128234() throws Exception {
+        final FileObject workDirFo = FileBasedFileSystem.getFileObject(getWorkDir());
+        FileObject fo = workDirFo.createData("a");
+        assertNotNull(fo);
+        File f = FileUtil.toFile(fo);
+        assertNotNull(f);
+        FileUtil.toFileObject(new File(f,f.getName()));
+    }
+    
+    
+    
     public void testMove85336() throws Exception {
         final FileObject workDirFo = FileBasedFileSystem.getFileObject(getWorkDir());
         FolderObj to =  (FolderObj)FileUtil.createFolder(workDirFo, "a/b/c");
@@ -183,7 +200,7 @@ public class FolderObjTest extends NbTestCase {
         Logger.getLogger("org.netbeans.modules.masterfs.filebasedfs.fileobjects.FolderObj").addHandler(handler);
         try {
             File f = testFile;
-            FileSystem fs = FileBasedFileSystem.getInstance(f);
+            FileSystem fs = FileBasedFileSystem.getInstance();
             assertNotNull(fs);
 
             FileObject fo = FileBasedFileSystem.getFileObject(f);
@@ -212,7 +229,7 @@ public class FolderObjTest extends NbTestCase {
         Logger.getLogger("org.netbeans.modules.masterfs.filebasedfs.fileobjects.FolderObj").addHandler(handler);
         try {
             File f = testFile;
-            FileSystem fs = FileBasedFileSystem.getInstance(f);
+            FileSystem fs = FileBasedFileSystem.getInstance();
             assertNotNull(fs);
 
             FileObject fo = FileBasedFileSystem.getFileObject(f);
@@ -227,6 +244,18 @@ public class FolderObjTest extends NbTestCase {
         }
     }
     
+    public void testGetRoot() throws IOException {
+        FileSystem fs = FileBasedFileSystem.getInstance();
+        FileObject workDirFo = FileBasedFileSystem.getFileObject(getWorkDir());
+        while (workDirFo != null && !workDirFo.isRoot()) {
+            assertFalse(workDirFo.isRoot());
+            workDirFo = workDirFo.getParent();
+        }
+        assertNotNull(workDirFo);
+        assertTrue(workDirFo.isRoot());
+        assertSame(workDirFo, fs.getRoot());
+    }
+    
 
    public void testFileObjectDistributionWorksAccuratelyAccordingToChildrenCache() throws IOException  {
         final FileObject workDirFo = FileBasedFileSystem.getFileObject(getWorkDir());
@@ -238,7 +267,7 @@ public class FolderObjTest extends NbTestCase {
         assertNotNull(foldFo);
         
         foldFo.delete();
-        assertNull(((FileBasedFileSystem)workDirFo.getFileSystem()).findFileObject(fold));        
+        assertNull(((FileBasedFileSystem)workDirFo.getFileSystem()).getFileObject(fold));        
         assertNull(FileBasedFileSystem.getFileObject(fold));
         assertNull(workDirFo.getFileObject(fold.getName()));                
         assertFalse(existsChild(workDirFo, fold.getName()));
@@ -266,7 +295,7 @@ public class FolderObjTest extends NbTestCase {
         assertFalse(existsChild(workDirFo, fold.getName()));        
         fold.mkdir();
         //assertNull(((FileBasedFileSystem)workDirFo.getFileSystem()).findFileObject(fold));                
-        //assertNull(FileBasedFileSystem.getFileObject(fold));                                
+        //assertNull(MasterFileSystem.getFileObject(fold));                                
         assertNotNull(workDirFo.getFileObject(fold.getName()));                                        
         assertTrue(existsChild(workDirFo, fold.getName()));        
         workDirFo.getFileSystem().refresh(false);
@@ -385,9 +414,9 @@ public class FolderObjTest extends NbTestCase {
     
     public void testSimulatesRefactoringRename() throws Exception {
         if (!Utilities.isWindows()) return;
-        FileBasedFileSystem fs = FileBasedFileSystem.getInstance(getWorkDir());
+        FileBasedFileSystem fs = FileBasedFileSystem.getInstance();
         assertNotNull(fs);
-        final FileObject root = fs.findFileObject(getWorkDir());
+        final FileObject root = fs.getFileObject(getWorkDir());
         assertNotNull(root);
         FileObject main = root.createData("Main.java");
         FileUtil.createData(root,"subpackage/newclass.java");
@@ -448,7 +477,7 @@ public class FolderObjTest extends NbTestCase {
     
     public void testRename() throws Exception {
         File f = testFile;
-        FileSystem fs = FileBasedFileSystem.getInstance(f);
+        FileSystem fs = FileBasedFileSystem.getInstance();
         assertNotNull(fs);
 
         final List l = new ArrayList ();
@@ -494,10 +523,10 @@ public class FolderObjTest extends NbTestCase {
             assertTrue(test.createNewFile());
         }
         
-        FileBasedFileSystem fs = FileBasedFileSystem.getInstance(test);
+        FileBasedFileSystem fs = FileBasedFileSystem.getInstance();
         assertNotNull(fs);
         
-        FileObject testFo = fs.findFileObject(test);
+        FileObject testFo = fs.getFileObject(test);
         assertNotNull (testFo);
 
         FileLock lock = testFo.lock();
@@ -514,9 +543,9 @@ public class FolderObjTest extends NbTestCase {
      */
     public void testGetChildren() throws Exception {
         File f = testFile;
-        FileSystem fs = FileBasedFileSystem.getInstance(f);
+        FileSystem fs = FileBasedFileSystem.getInstance();
         assertNotNull(fs);
-        assertNotNull(f.getAbsolutePath(),FileBasedFileSystem.getInstance(f));
+        assertNotNull(f.getAbsolutePath(),FileBasedFileSystem.getInstance());
         
         while (f != null) {
             if (new FileInfo (f).isWindowsFloppy()) continue;
@@ -562,7 +591,7 @@ public class FolderObjTest extends NbTestCase {
         File f = testFile;
         assertTrue(f.exists());
         assertTrue(f.isDirectory());        
-        FileSystem fs = FileBasedFileSystem.getInstance(f);
+        FileSystem fs = FileBasedFileSystem.getInstance();
         assertNotNull(fs);
         final FileObject fo = FileBasedFileSystem.getFileObject(f); 
         assertNotNull(f.getAbsolutePath(),fo);        
@@ -602,7 +631,7 @@ public class FolderObjTest extends NbTestCase {
      */
     public void testIsData() {
         File f = testFile;
-        FileSystem fs = FileBasedFileSystem.getInstance(f);
+        FileSystem fs = FileBasedFileSystem.getInstance();
         assertNotNull(fs);
         
         while (f != null) {            
@@ -622,7 +651,7 @@ public class FolderObjTest extends NbTestCase {
      */
     public void testIsFolder() {
         File f = testFile;
-        FileSystem fs = FileBasedFileSystem.getInstance(f);
+        FileSystem fs = FileBasedFileSystem.getInstance();
         assertNotNull(fs);
         
         while (f != null) {            
@@ -641,7 +670,7 @@ public class FolderObjTest extends NbTestCase {
      */
     public void testIsRoot() {
         File f = testFile;
-        FileSystem fs = FileBasedFileSystem.getInstance(f);
+        FileSystem fs = FileBasedFileSystem.getInstance();
         assertNotNull(fs);
         FileObject fo = null;
         while (f != null) {            
@@ -653,6 +682,10 @@ public class FolderObjTest extends NbTestCase {
         FileObject root = fo;// fo.getParent ();
         
         assertNotNull(root.toString(), root);                        
+        if (Utilities.isWindows()) {
+            assertNotNull(root.getParent());
+            root = root.getParent();
+        } 
         assertTrue(root.isRoot());
         assertTrue(root instanceof RootObj);
         assertSame(root, fs.getRoot());        
@@ -663,7 +696,7 @@ public class FolderObjTest extends NbTestCase {
      */
     public void testGetFileObject() {
         File f = testFile;
-        FileSystem fs = FileBasedFileSystem.getInstance(f);
+        FileSystem fs = FileBasedFileSystem.getInstance();
         assertNotNull(fs);
         
         while (f != null) {            
@@ -692,7 +725,7 @@ public class FolderObjTest extends NbTestCase {
      */
     public void testCreateFolder() throws Exception {
         File f = testFile;
-        FileSystem fs = FileBasedFileSystem.getInstance(f);
+        FileSystem fs = FileBasedFileSystem.getInstance();
         assertNotNull(fs);
 
         FileObject fo = FileBasedFileSystem.getFileObject(f);
@@ -719,7 +752,7 @@ public class FolderObjTest extends NbTestCase {
      */
     public void testCreateData() throws Exception {
         File f = testFile;
-        FileSystem fs = FileBasedFileSystem.getInstance(f);
+        FileSystem fs = FileBasedFileSystem.getInstance();
         assertNotNull(fs);
 
         final FileObject fo = FileBasedFileSystem.getFileObject(f);
@@ -755,9 +788,9 @@ public class FolderObjTest extends NbTestCase {
      */
     public void testDelete() throws IOException {
         File f = testFile;
-        FileBasedFileSystem fs = FileBasedFileSystem.getInstance(f);
+        FileBasedFileSystem fs = FileBasedFileSystem.getInstance();
         
-        FileObject testFo = fs.findFileObject(testFile);
+        FileObject testFo = fs.getFileObject(testFile);
         assertNotNull(testFo);
         
         final List l = new ArrayList ();
@@ -789,9 +822,9 @@ public class FolderObjTest extends NbTestCase {
 
     public void testDelete2() throws IOException {
         File f = testFile;
-        FileBasedFileSystem fs = FileBasedFileSystem.getInstance(f);
+        FileBasedFileSystem fs = FileBasedFileSystem.getInstance();
         
-        FileObject testFo = fs.findFileObject(testFile);
+        FileObject testFo = fs.getFileObject(testFile);
         assertNotNull(testFo);
         assertEquals(0,testFo.getChildren().length);
         
@@ -811,9 +844,9 @@ public class FolderObjTest extends NbTestCase {
         assert f.mkdirs() : f.getAbsolutePath();
         assert f.exists() : f.getAbsolutePath();
         
-        FileBasedFileSystem fs = FileBasedFileSystem.getInstance(f);
+        FileBasedFileSystem fs = FileBasedFileSystem.getInstance();
         
-        FileObject testFo = fs.findFileObject(f);
+        FileObject testFo = fs.getFileObject(f);
         assertNotNull(testFo);
         assertTrue(testFo.isFolder());
 
@@ -843,10 +876,10 @@ public class FolderObjTest extends NbTestCase {
         assert f.mkdirs() : f.getAbsolutePath();
         assert f.exists() : f.getAbsolutePath();
         
-        FileBasedFileSystem fs = FileBasedFileSystem.getInstance(f);
+        FileBasedFileSystem fs = FileBasedFileSystem.getInstance();
         FileObject fo = FileUtil.toFileObject(f.getParentFile());
         
-        final FileObject testFo = fs.findFileObject(f);
+        final FileObject testFo = fs.getFileObject(f);
         assertNotNull(testFo);
         assertTrue(testFo.isFolder());
 
@@ -879,9 +912,9 @@ public class FolderObjTest extends NbTestCase {
         assert f.mkdirs() : f.getAbsolutePath();
         assert f.exists() : f.getAbsolutePath();
         
-        FileBasedFileSystem fs = FileBasedFileSystem.getInstance(f);
+        FileBasedFileSystem fs = FileBasedFileSystem.getInstance();
         
-        FileObject testFo = fs.findFileObject(f);
+        FileObject testFo = fs.getFileObject(f);
         assertNotNull(testFo);
         assertTrue(testFo.isFolder());
 
@@ -915,9 +948,9 @@ public class FolderObjTest extends NbTestCase {
         assert f.exists() : f.getAbsolutePath();
         
         
-        FileBasedFileSystem fs = FileBasedFileSystem.getInstance(f);
+        FileBasedFileSystem fs = FileBasedFileSystem.getInstance();
         
-        FileObject testFo = fs.findFileObject(f);
+        FileObject testFo = fs.getFileObject(f);
         assertNotNull(testFo);
         assertTrue(testFo.isData());
 
@@ -957,10 +990,10 @@ public class FolderObjTest extends NbTestCase {
         assert f.exists() : f.getAbsolutePath();
         
         
-        FileBasedFileSystem fs = FileBasedFileSystem.getInstance(f);
+        FileBasedFileSystem fs = FileBasedFileSystem.getInstance();
         FileObject fo = FileUtil.toFileObject(f.getParentFile());        
         
-        FileObject testFo = fs.findFileObject(f);
+        FileObject testFo = fs.getFileObject(f);
         assertNotNull(testFo);
         assertTrue(testFo.isData());
 
@@ -997,9 +1030,9 @@ public class FolderObjTest extends NbTestCase {
         assert f.exists() : f.getAbsolutePath();
         
         
-        FileBasedFileSystem fs = FileBasedFileSystem.getInstance(f);
+        FileBasedFileSystem fs = FileBasedFileSystem.getInstance();
         
-        FileObject testFo = fs.findFileObject(f);
+        FileObject testFo = fs.getFileObject(f);
         assertNotNull(testFo);
         assertTrue(testFo.isData());
 
@@ -1030,8 +1063,8 @@ public class FolderObjTest extends NbTestCase {
         assert f.mkdirs() : f.getAbsolutePath();
         assert f.exists() : f.getAbsolutePath();
 
-        FileBasedFileSystem fs = FileBasedFileSystem.getInstance(f);        
-        FileObject testFolder = fs.findFileObject(f);        
+        FileBasedFileSystem fs = FileBasedFileSystem.getInstance();        
+        FileObject testFolder = fs.getFileObject(f);        
         assertNotNull(testFolder);
         assertTrue(testFolder.isFolder());
         
@@ -1071,8 +1104,8 @@ public class FolderObjTest extends NbTestCase {
         assert f.mkdirs() : f.getAbsolutePath();
         assert f.exists() : f.getAbsolutePath();
 
-        FileBasedFileSystem fs = FileBasedFileSystem.getInstance(f);        
-        FileObject testFolder = fs.findFileObject(f);        
+        FileBasedFileSystem fs = FileBasedFileSystem.getInstance();        
+        FileObject testFolder = fs.getFileObject(f);        
         assertNotNull(testFolder);
         assertTrue(testFolder.isFolder());
         
@@ -1114,8 +1147,8 @@ public class FolderObjTest extends NbTestCase {
         assert f.mkdirs() : f.getAbsolutePath();
         assert f.exists() : f.getAbsolutePath();
 
-        FileBasedFileSystem fs = FileBasedFileSystem.getInstance(f);        
-        FileObject testFolder = fs.findFileObject(f);        
+        FileBasedFileSystem fs = FileBasedFileSystem.getInstance();        
+        FileObject testFolder = fs.getFileObject(f);        
         assertNotNull(testFolder);
         assertTrue(testFolder.isFolder());
         
@@ -1124,7 +1157,7 @@ public class FolderObjTest extends NbTestCase {
         assert f.createNewFile() : f.getAbsolutePath();
         assert f.exists() : f.getAbsolutePath();
 
-        FileObject testFile = fs.findFileObject(f);//!!!!!!
+        FileObject testFile = fs.getFileObject(f);//!!!!!!
         assertNotNull(testFile);
         assertTrue(testFile.isData());
                         
@@ -1157,8 +1190,8 @@ public class FolderObjTest extends NbTestCase {
         assert f.mkdirs() : f.getAbsolutePath();
         assert f.exists() : f.getAbsolutePath();
 
-        FileBasedFileSystem fs = FileBasedFileSystem.getInstance(f);        
-        FileObject testFolder = fs.findFileObject(f);        
+        FileBasedFileSystem fs = FileBasedFileSystem.getInstance();        
+        FileObject testFolder = fs.getFileObject(f);        
         assertNotNull(testFolder);
         assertTrue(testFolder.isFolder());
         
@@ -1200,7 +1233,7 @@ public class FolderObjTest extends NbTestCase {
      */
     public void testGetInputStream() {
         File f = testFile;
-        FileSystem fs = FileBasedFileSystem.getInstance(f);
+        FileSystem fs = FileBasedFileSystem.getInstance();
         
         FileObject root = fs.getRoot();
         assertNotNull(root);
@@ -1222,7 +1255,7 @@ public class FolderObjTest extends NbTestCase {
 
     /*public void testRefresh () throws Exception {
         File f = testFile;
-        FileSystem fs = FileBasedFileSystem.getInstance(f);
+        FileSystem fs = MasterFileSystem.getInstance();
         FileObject testFo = fs.findResource(f.getAbsolutePath().replace('\\', '/'));
         assertNotNull(testFo);
         assertTrue(testFo.isFolder());
@@ -1333,8 +1366,8 @@ public class FolderObjTest extends NbTestCase {
         assert f.mkdirs() : f.getAbsolutePath();
         assert f.exists() : f.getAbsolutePath();
         
-        FileBasedFileSystem fs = FileBasedFileSystem.getInstance(testFile);
-        FileObject parent = fs.findFileObject(testFile);
+        FileBasedFileSystem fs = FileBasedFileSystem.getInstance();
+        FileObject parent = fs.getFileObject(testFile);
         
         assertNotNull(parent);
         assertTrue(parent.isFolder());
@@ -1346,14 +1379,14 @@ public class FolderObjTest extends NbTestCase {
         assertNotNull(fo);
         assertTrue(fo != fo2);
         
-        fo2 = fs.findFileObject(f);
+        fo2 = fs.getFileObject(f);
         assertNotNull(fo);
         assertTrue(fo != fo2);
     }
     
     public void testRefresh2 () throws Exception {
         String childName = "refreshtest.txt";
-        FileSystem fs = FileBasedFileSystem.getInstance(testFile);
+        FileSystem fs = FileBasedFileSystem.getInstance();
         final File file = new File (testFile, childName);
         FileObject parent = FileBasedFileSystem.getFileObject(testFile);
         assertNotNull(parent);
@@ -1402,7 +1435,7 @@ public class FolderObjTest extends NbTestCase {
 
     public void testRefresh3 () throws Exception {
         String childName = "refreshtest2.txt";
-        FileBasedFileSystem fs = FileBasedFileSystem.getInstance(testFile);
+        FileBasedFileSystem fs = FileBasedFileSystem.getInstance();
         final File file = new File (testFile, childName);
         FileObject parent = FileBasedFileSystem.getFileObject(testFile);
         assertNotNull(parent);
@@ -1458,20 +1491,20 @@ public class FolderObjTest extends NbTestCase {
         parent.getFileObject(childName).addFileChangeListener(fcl);        
         parent = null;
         int stepsCount = 10;
-        Reference ref2 = new WeakReference (fs.findFileObject(file.getParentFile()));
+        Reference ref2 = new WeakReference (fs.getFileObject(file.getParentFile()));
         assertGC("", ref2);                                
         
         for (int i = 0; i < stepsCount; i++) {
             assertTrue(file.delete());
             fs.refresh(true);
-            Reference ref = new WeakReference (fs.findFileObject(file));
+            Reference ref = new WeakReference (fs.getFileObject(file));
             assertGC("", ref);                    
             
             
             assertTrue(file.createNewFile());
             fs.refresh(true);            
                         
-            ref = new WeakReference (fs.findFileObject(file.getParentFile()));
+            ref = new WeakReference (fs.getFileObject(file.getParentFile()));
             assertGC(file.getParentFile().getAbsolutePath(), ref);                                                
         }
         
@@ -1536,7 +1569,7 @@ public class FolderObjTest extends NbTestCase {
      */
     public void testGetOutputStream() {
         File f = testFile;
-        FileSystem fs = FileBasedFileSystem.getInstance(f);
+        FileSystem fs = FileBasedFileSystem.getInstance();
         
         FileObject root = fs.getRoot();
         assertNotNull(root);
@@ -1561,7 +1594,7 @@ public class FolderObjTest extends NbTestCase {
     public void testReadWrite ( ) throws Exception{
         String content = "content of data file";
         File f = testFile;
-        FileSystem fs = FileBasedFileSystem.getInstance(f);
+        FileSystem fs = FileBasedFileSystem.getInstance();
         
         BaseFileObj fo = (BaseFileObj)FileBasedFileSystem.getFileObject(f);
         assertNotNull(fo);
@@ -1586,9 +1619,9 @@ public class FolderObjTest extends NbTestCase {
     
 
     public void testDeleteNoParent() throws IOException {
-        FileBasedFileSystem fs = FileBasedFileSystem.getInstance(testFile);
-        FileObject parent = fs.findFileObject(testFile).getParent();
-        FileObject fobj = fs.findFileObject(testFile);
+        FileBasedFileSystem fs = FileBasedFileSystem.getInstance();
+        FileObject parent = fs.getFileObject(testFile).getParent();
+        FileObject fobj = fs.getFileObject(testFile);
         assertNotNull(fobj);
         //parent not exists + testFile not exists
         EventsEvaluator ev = new EventsEvaluator(fobj.getFileSystem());
