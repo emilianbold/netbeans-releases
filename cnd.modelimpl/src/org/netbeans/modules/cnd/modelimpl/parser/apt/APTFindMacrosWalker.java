@@ -218,7 +218,7 @@ public class APTFindMacrosWalker extends APTDefinesCollectorWalker {
                     List<CsmMacro> macros = new ArrayList<CsmMacro>(macrosCollection);
                     for (int i = macros.size() - 1; i >= 0; i--) {
                         CsmMacro macro = macros.get(i);
-                        if (mi.offset == macro.getStartOffset()) {
+                        if (macro!=null && mi.offset == macro.getStartOffset()) {
                             ref = macro;
                             break;
                         }
