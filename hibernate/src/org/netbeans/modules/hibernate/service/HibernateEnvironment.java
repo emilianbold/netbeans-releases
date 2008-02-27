@@ -133,12 +133,24 @@ public class HibernateEnvironment {
     /**
      * Returns all mapping files defined under this project.
      * 
-     * @param project the project for ehcih the mapping files need to be found.
+     * @param project the project for all the mapping files need to be found.
      * @return List of FileObjects for mapping files.
      */
     public ArrayList<FileObject> getAllHibernateMappingFileObjects(Project project) {
         return HibernateUtil.getAllHibernateMappingFileObjects(project);
     }        
+    
+     /**
+     * Returns relaive source paths of all mapping files present in this project.
+     * 
+     * @param project the project for all the mapping files need to be found.
+     * @return List of FileObjects for mapping files.
+     */
+    public ArrayList<String> getAllHibernateMappings(Project project) {
+        return HibernateUtil.getAllHibernateMappingsRelativeToSourcePath(project);
+    }        
+    
+    
     /**
      * Connects to the DB using supplied HibernateConfigurations and gets the list of
      * all table names.

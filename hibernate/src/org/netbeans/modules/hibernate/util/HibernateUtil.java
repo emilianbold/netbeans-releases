@@ -174,6 +174,36 @@ public class HibernateUtil {
     }
 
     /**
+     * Seaches mapping files under the given project and returns the list of 
+     * mapping files relative to the source path. This method is intendeed to be 
+     * used in code completion of mapping files in config files.
+     * 
+     * @param project the project for whcih the mapping files are to be found.
+     * @return list of relative paths of actual mapping files.
+     */
+    public static ArrayList<String> getAllHibernateMappingsRelativeToSourcePath(Project project) {
+        ArrayList<String> mappingFiles = new ArrayList<String>();
+        Sources projectSources = ProjectUtils.getSources(project);
+        SourceGroup[] javaSourceGroup = projectSources.getSourceGroups(
+                JavaProjectConstants.SOURCES_TYPE_JAVA
+                );
+        
+        for(SourceGroup sourceGroup : javaSourceGroup) {
+            FileObject root = sourceGroup.getRootFolder();
+            Enumeration<? extends FileObject> enumeration = root.getChildren(true);
+            while(enumeration.hasMoreElements()) {
+                FileObject fo = enumeration.nextElement();
+                if(fo.getNameExt() != null && fo.getNameExt().endsWith("hbm.xml")) { //NOI18N
+                        mappingFiles.add(
+                                getRelativeSourcePath(fo, root)
+                                );
+                }
+            }
+        }
+        return mappingFiles;
+    }
+    
+    /**
      * Returns Column information for the given table defined under the given 
      * configuration.
      * 
@@ -284,6 +314,19 @@ public class HibernateUtil {
             Exceptions.printStackTrace(ex);
         }
         return null;
+    }
+     
+    public static String getRelativeSourcePath(FileObject file, FileObject sourceRoot) {
+        String relativePath = "";
+        try{
+            String absolutePath = file.getPath();
+            String sourceRootPath = sourceRoot.getPath();
+            int index = absolutePath.indexOf(sourceRootPath);
+            relativePath = absolutePath.substring(index + sourceRootPath.length() + 1);
+        } catch(Exception e) {
+          System.out.println("exception while parsing relative path " + e);  
+        }
+        return relativePath;
     }
 
 }
