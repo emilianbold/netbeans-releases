@@ -320,8 +320,7 @@ public class Mercurial {
         try {
             File original = VersionsCache.getInstance().getFileRevision(workingCopy, Setup.REVISION_BASE);
             if (original == null) {
-                Logger.getLogger(Mercurial.class.getName()).log(Level.INFO, "Unable to get original file {0}", workingCopy); // NOI18N
-                 return;
+                throw new IOException("Unable to get BASE revision of " + workingCopy);
             }
             org.netbeans.modules.versioning.util.Utils.copyStreamsCloseAll(new FileOutputStream(originalFile), new FileInputStream(original));
             original.delete();

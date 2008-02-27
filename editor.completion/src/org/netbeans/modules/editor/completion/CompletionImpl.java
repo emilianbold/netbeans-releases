@@ -364,6 +364,7 @@ CaretListener, KeyListener, FocusListener, ListSelectionListener, PropertyChange
         hideAll();
     }
 
+    @Override
     public void mouseClicked(MouseEvent e) {
         hideAll();
     }

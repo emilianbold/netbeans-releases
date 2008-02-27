@@ -84,7 +84,6 @@
                 <exclude name="infra/server/**/build/**/*.*"/>
                 <exclude name="infra/server/**/dist/**/*.*"/>
                 <exclude name="infra/server/**/private/**/*.*"/>
-		<exclude name="${nbi.all.dir}"/>
             </fileset>
         </copy>
         <copy todir="${nbi.netbeans.dir}">
@@ -92,7 +91,7 @@
                 <exclude name="infra/server/**/build/**/*.*"/>
                 <exclude name="infra/server/**/dist/**/*.*"/>
                 <exclude name="infra/server/**/private/**/*.*"/>
-		<exclude name="${nbi.all.dir}"/>
+                <exclude name="${nbi.all.relative.path}/**/*.*"/>
                 <include name="components/**/*.*"/>
                 <include name="infra/**/*.*"/>
                 <include name="engine/**/*.*"/>
@@ -101,7 +100,6 @@
         <mkdir dir="${nbi.all.dir}/reglib"/>
         <copy todir="${nbi.all.dir}/reglib">
             <fileset dir="${hg.root}/reglib">
-		<exclude name="${nbi.all.dir}"/>
 		<include name="**/*.*"/>
                 <exclude name="build/**/*.*"/>
                 <exclude name="dist/**/*.*"/>                
@@ -297,9 +295,7 @@
 	     <equals arg1="${build.jdk6}" arg2="1"/>
         </condition>
         <condition property="do.build.netbeans">
-	     <not>
-	         <equals arg1="${disable.build.netbeans}" arg2="1"/>
-             </not>
+	     <equals arg1="${build.netbeans.bundles}" arg2="1"/>
         </condition>
 
         <condition property="do.build.jdk.no.netbeans">

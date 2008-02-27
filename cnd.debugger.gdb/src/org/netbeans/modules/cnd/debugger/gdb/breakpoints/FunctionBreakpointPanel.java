@@ -61,6 +61,7 @@ import org.openide.util.NbBundle;
 //
 public class FunctionBreakpointPanel extends JPanel implements Controller {
     
+    private ConditionsPanel             conditionsPanel;
     private ActionsPanel                actionsPanel; 
     private FunctionBreakpoint          breakpoint;
     private boolean                     createBreakpoint = false;
@@ -94,8 +95,9 @@ public class FunctionBreakpointPanel extends JPanel implements Controller {
         initComponents();
 
         tfFunctionName.setText(b.getFunctionName());
-        tfCondition.setText(b.getCondition());
         
+        conditionsPanel = new ConditionsPanel(b);
+        pConditions.add(conditionsPanel);
         actionsPanel = new ActionsPanel(b);
         pActions.add(actionsPanel, "Center"); // NOI18N
     }
@@ -110,13 +112,10 @@ public class FunctionBreakpointPanel extends JPanel implements Controller {
         java.awt.GridBagConstraints gridBagConstraints;
 
         pSettings = new javax.swing.JPanel();
-        lCondition = new javax.swing.JLabel();
         lFunctionName = new javax.swing.JLabel();
         tfFunctionName = new javax.swing.JTextField();
-        spCondition = new javax.swing.JScrollPane();
-        tfCondition = new javax.swing.JEditorPane();
+        pConditions = new javax.swing.JPanel();
         pActions = new javax.swing.JPanel();
-        jPanel1 = new javax.swing.JPanel();
 
         setLayout(new java.awt.GridBagLayout());
 
@@ -125,24 +124,12 @@ public class FunctionBreakpointPanel extends JPanel implements Controller {
         pSettings.setMinimumSize(new java.awt.Dimension(249, 80));
         pSettings.setLayout(new java.awt.GridBagLayout());
 
-        lCondition.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/debugger/gdb/breakpoints/Bundle").getString("MN_L_Function_Breakpoint_Condition").charAt(0));
-        lCondition.setLabelFor(tfCondition);
-        lCondition.setText(bundle.getString("L_Function_Breakpoint_Condition")); // NOI18N
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 5;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(3, 3, 3, 3);
-        pSettings.add(lCondition, gridBagConstraints);
-        lCondition.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_L_Function_Breakpoint_Condition")); // NOI18N
-
         lFunctionName.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/debugger/gdb/breakpoints/Bundle").getString("MN_L_Function_Breakpoint_Function_Name").charAt(0));
         lFunctionName.setLabelFor(tfFunctionName);
         lFunctionName.setText(bundle.getString("L_Function_Breakpoint_Function_Name")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 3;
+        gridBagConstraints.gridy = 0;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(3, 3, 3, 3);
@@ -152,7 +139,7 @@ public class FunctionBreakpointPanel extends JPanel implements Controller {
         tfFunctionName.setToolTipText(bundle.getString("TTT_TF_Function_Breakpoint_Function_Name")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 3;
+        gridBagConstraints.gridy = 0;
         gridBagConstraints.gridwidth = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.weightx = 1.0;
@@ -161,43 +148,28 @@ public class FunctionBreakpointPanel extends JPanel implements Controller {
         tfFunctionName.getAccessibleContext().setAccessibleName(bundle.getString("ACSD_TF_Function_Breakpoint_Function_Name")); // NOI18N
         tfFunctionName.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_TF_Function_Breakpoint_Function_Name")); // NOI18N
 
-        spCondition.setHorizontalScrollBarPolicy(javax.swing.ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
-        spCondition.setToolTipText(org.openide.util.NbBundle.getMessage(FunctionBreakpointPanel.class, "ACSD_TF_Function_Breakpoint_Condition")); // NOI18N
-
-        tfCondition.setBackground(new java.awt.Color(238, 238, 238));
-        tfCondition.setEditable(false);
-        tfCondition.setToolTipText(org.openide.util.NbBundle.getMessage(FunctionBreakpointPanel.class, "HINT_UnimplementedCondition")); // NOI18N
-        tfCondition.setEnabled(false);
-        spCondition.setViewportView(tfCondition);
-        tfCondition.getAccessibleContext().setAccessibleName(bundle.getString("ACSD_TF_Function_Breakpoint_Condition")); // NOI18N
-        tfCondition.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_TF_Function_Breakpoint_Condition")); // NOI18N
-
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 5;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(3, 3, 3, 3);
-        pSettings.add(spCondition, gridBagConstraints);
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.weightx = 1.0;
         add(pSettings, gridBagConstraints);
 
-        pActions.setLayout(new java.awt.BorderLayout());
+        pConditions.setLayout(new java.awt.BorderLayout());
         gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 1;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.weightx = 1.0;
-        add(pActions, gridBagConstraints);
+        gridBagConstraints.weighty = 1.0;
+        add(pConditions, gridBagConstraints);
+
+        pActions.setLayout(new java.awt.BorderLayout());
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 2;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.weighty = 1.0;
-        add(jPanel1, gridBagConstraints);
+        add(pActions, gridBagConstraints);
     }// </editor-fold>//GEN-END:initComponents
 
     
@@ -214,11 +186,10 @@ public class FunctionBreakpointPanel extends JPanel implements Controller {
             DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(msg));
             return false;
         }
+        conditionsPanel.ok();
         actionsPanel.ok();
         String functionName = tfFunctionName.getText().trim();
-        String Condition = tfCondition.getText();
         breakpoint.setFunctionName(functionName);
-        breakpoint.setCondition(Condition);
         
         // Check if this breakpoint already set
         DebuggerManager dm = DebuggerManager.getDebuggerManager();
@@ -277,8 +248,8 @@ public class FunctionBreakpointPanel extends JPanel implements Controller {
     private String valiadateMsg() {
         String function = tfFunctionName.getText().trim();
         // Empty string is not a valid function name
-        if ((function == null) || (function.equals(""))) { // NOI18N
-            return NbBundle.getBundle (FunctionBreakpointPanel.class).getString 
+        if (function.length() == 0) {
+            return NbBundle.getBundle(FunctionBreakpointPanel.class).getString 
                 ("MSG_No_Function_Name_Spec"); // NOI18N
         }
         return null;
@@ -286,13 +257,10 @@ public class FunctionBreakpointPanel extends JPanel implements Controller {
     
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JPanel jPanel1;
-    private javax.swing.JLabel lCondition;
     private javax.swing.JLabel lFunctionName;
     private javax.swing.JPanel pActions;
+    private javax.swing.JPanel pConditions;
     private javax.swing.JPanel pSettings;
-    private javax.swing.JScrollPane spCondition;
-    private javax.swing.JEditorPane tfCondition;
     private javax.swing.JTextField tfFunctionName;
     // End of variables declaration//GEN-END:variables
     
