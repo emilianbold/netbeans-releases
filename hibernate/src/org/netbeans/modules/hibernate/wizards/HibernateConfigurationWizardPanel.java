@@ -18,7 +18,7 @@ import org.openide.util.NbBundle;
  *
  * @author  gowri
  */
-public class HibernateConfigurationWizardPanel extends javax.swing.JPanel  {
+public class HibernateConfigurationWizardPanel extends javax.swing.JPanel {
 
     private final ChangeSupport changeSupport = new ChangeSupport(this);
     private Project project;
@@ -46,7 +46,6 @@ public class HibernateConfigurationWizardPanel extends javax.swing.JPanel  {
 
     }
 
-
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
@@ -61,6 +60,10 @@ public class HibernateConfigurationWizardPanel extends javax.swing.JPanel  {
         cmbDriver = new javax.swing.JComboBox();
         jLabel6 = new javax.swing.JLabel();
         cmbURL = new javax.swing.JComboBox();
+        jLabel1 = new javax.swing.JLabel();
+        txtUserName = new javax.swing.JTextField();
+        jLabel2 = new javax.swing.JLabel();
+        txtPassword = new javax.swing.JTextField();
 
         setName(org.openide.util.NbBundle.getMessage(HibernateConfigurationWizardPanel.class, "LBL_HibernateConfigurationPanel_Name")); // NOI18N
 
@@ -84,31 +87,56 @@ public class HibernateConfigurationWizardPanel extends javax.swing.JPanel  {
         cmbURL.setEditable(true);
         cmbURL.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
 
+        jLabel1.setText(org.openide.util.NbBundle.getMessage(HibernateConfigurationWizardPanel.class, "HibernateConfigurationWizardPanel.jLabel1.text")); // NOI18N
+
+        txtUserName.setText(org.openide.util.NbBundle.getMessage(HibernateConfigurationWizardPanel.class, "HibernateConfigurationWizardPanel.txtUserName.text")); // NOI18N
+
+        jLabel2.setText(org.openide.util.NbBundle.getMessage(HibernateConfigurationWizardPanel.class, "HibernateConfigurationWizardPanel.jLabel2.text")); // NOI18N
+
+        txtPassword.setText(org.openide.util.NbBundle.getMessage(HibernateConfigurationWizardPanel.class, "HibernateConfigurationWizardPanel.txtPassword.text")); // NOI18N
+
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(layout.createSequentialGroup()
-                        .add(10, 10, 10)
-                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(jLabel5, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 108, Short.MAX_VALUE)
-                            .add(jLabel4, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 108, Short.MAX_VALUE)))
+                    .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                        .add(layout.createSequentialGroup()
+                            .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                                .add(layout.createSequentialGroup()
+                                    .add(10, 10, 10)
+                                    .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                                        .add(jLabel5, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 110, Short.MAX_VALUE)
+                                        .add(jLabel4, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 110, Short.MAX_VALUE)))
+                                .add(layout.createSequentialGroup()
+                                    .addContainerGap()
+                                    .add(jLabel6)))
+                            .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED))
+                        .add(layout.createSequentialGroup()
+                            .addContainerGap()
+                            .add(jLabel1)
+                            .add(60, 60, 60)))
                     .add(layout.createSequentialGroup()
                         .addContainerGap()
-                        .add(jLabel6)))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(jLabel2)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)))
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
-                    .add(org.jdesktop.layout.GroupLayout.LEADING, cmbDriver, 0, 488, Short.MAX_VALUE)
-                    .add(cmbDialect, 0, 488, Short.MAX_VALUE)
-                    .add(cmbURL, 0, 488, Short.MAX_VALUE))
+                    .add(org.jdesktop.layout.GroupLayout.LEADING, cmbDriver, 0, 489, Short.MAX_VALUE)
+                    .add(cmbDialect, 0, 489, Short.MAX_VALUE)
+                    .add(cmbURL, 0, 489, Short.MAX_VALUE)
+                    .add(layout.createSequentialGroup()
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(txtPassword, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 489, Short.MAX_VALUE))
+                    .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createSequentialGroup()
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(txtUserName, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 489, Short.MAX_VALUE)))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
-                .add(19, 19, 19)
+                .add(37, 37, 37)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(cmbDialect, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                     .add(jLabel4))
@@ -120,7 +148,15 @@ public class HibernateConfigurationWizardPanel extends javax.swing.JPanel  {
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(cmbURL, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                     .add(jLabel6))
-                .add(50, 50, 50))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(jLabel1)
+                    .add(txtUserName, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(txtPassword, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(jLabel2))
+                .addContainerGap())
         );
     }// </editor-fold>//GEN-END:initComponents
     private void cmbDialectActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cmbDialectActionPerformed
@@ -130,12 +166,14 @@ public class HibernateConfigurationWizardPanel extends javax.swing.JPanel  {
     private javax.swing.JComboBox cmbDialect;
     private javax.swing.JComboBox cmbDriver;
     private javax.swing.JComboBox cmbURL;
+    private javax.swing.JLabel jLabel1;
+    private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel4;
     private javax.swing.JLabel jLabel5;
     private javax.swing.JLabel jLabel6;
+    private javax.swing.JTextField txtPassword;
+    private javax.swing.JTextField txtUserName;
     // End of variables declaration//GEN-END:variables
-
-
     public void actionPerformed(ActionEvent e) {
     }
 
@@ -167,5 +205,19 @@ public class HibernateConfigurationWizardPanel extends javax.swing.JPanel  {
         }
         return null;
 
+    }
+
+    public String getUserName() {
+        if (txtUserName.getText() != null) {
+            return txtUserName.getText().trim();
+        }
+        return null;
+    }
+
+    public String getPassword() {
+        if (txtPassword.getText() != null) {
+            return txtPassword.getText().trim();
+        }
+        return null;
     }
 }

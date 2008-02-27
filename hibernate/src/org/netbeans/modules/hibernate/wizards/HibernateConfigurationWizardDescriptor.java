@@ -120,4 +120,12 @@ public class HibernateConfigurationWizardDescriptor implements WizardDescriptor.
     String getURL() {
         return panel == null ? null : panel.getSelectedURL();
     }
+    
+    String getUserName() {
+        return panel == null ? null : panel.getUserName();
+    }
+    
+    String getPassword() {
+        return panel == null ? null : panel.getPassword();
+    }
 }
