@@ -45,15 +45,15 @@
 <filesystem>
     
     <folder name="Templates">
-        <folder name="WebServices">
+        <folder name="SaaSServices">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.websvc.saas.services.google.Bundle"/>
             <file name="GoogleMapResource.java" url="/org/netbeans/modules/websvc/saas/services/google/resources/GoogleMapResource.template">
-                <attr name="position" intvalue="3310"/>
+                <attr name="position" intvalue="3410"/>
             </file>
         </folder>
     </folder>
     
-    <folder name="SaasServices">
+    <folder name="SaaSServices">
         <folder name="Google">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.websvc.saas.services.google.Bundle"/>
             <file name="profile.properties" url="/org/netbeans/modules/websvc/saas/services/google/resources/profile.properties"/>

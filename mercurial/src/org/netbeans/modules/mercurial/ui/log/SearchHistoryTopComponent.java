@@ -86,15 +86,11 @@ public class SearchHistoryTopComponent extends TopComponent implements DiffSetup
     
     public void searchOut() {  
         shp.setOutSearch();
-        shp.executeSearch();
-        shp.setSearchCriteria(false);
-        scp.setFrom("");
         scp.setTo("");
     }
 
     public void searchIncoming() {  
         shp.setIncomingSearch();
-        scp.setFrom("");
         scp.setTo("");
     }
 

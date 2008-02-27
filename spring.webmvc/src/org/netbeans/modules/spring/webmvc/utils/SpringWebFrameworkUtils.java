@@ -42,6 +42,7 @@
 package org.netbeans.modules.spring.webmvc.utils;
 
 import java.util.regex.Pattern;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -49,9 +50,16 @@ import java.util.regex.Pattern;
  */
 public class SpringWebFrameworkUtils {
     private static final String DISPATCHER_MAPPING = ".htm"; // NOI18N
-        
+    
     public static boolean isDispatcherNameValid(String name) {
-        return Pattern.matches("\\w+", name);
+        boolean isNameValid = (name.length() > 0); // an empty string for the dispatcher name is not considered invalid
+        for (int charPosition = 0; charPosition < name.length(); charPosition++) {
+            if (!Character.isUnicodeIdentifierPart(name.toCharArray()[charPosition])) {
+                isNameValid = false;
+                break;
+            }
+        }                
+        return isNameValid;
     }
     
     public static boolean isDispatcherMappingPatternValid(String pattern){
@@ -92,5 +100,27 @@ public class SpringWebFrameworkUtils {
             lineInTemplate = lineInTemplate.substring(0, indexOfExtensionInTemplate) + dispatcherMapping.substring(wildCardLocation) + lineInTemplate.substring(lastIndexOfExtensionInTemplate);  
         }        
         return lineInTemplate;
+    }
+    
+    /**
+     * When the dispatcher mapping is of the servlet format /app/* then the redirect jsp file also needs updating to include the relative
+     * @param lineInTemplate, a line of text in the template
+     * @param dispatcherMapping,  the dispatcher mapping entered by the user in the framework section
+     * @return returns the revised line
+     */
+    public static String reviseRedirectJsp(String lineInTemplate, String dispatcherMapping) {
+        if ((dispatcherMapping.length() > 3) && dispatcherMapping.endsWith("/*") && dispatcherMapping.startsWith("/") && !dispatcherMapping.contains(" ")) { // NOI18N            
+            int indexOfWelcomeFile = lineInTemplate.indexOf("index.htm"); // NOI18N
+            if (indexOfWelcomeFile > -1) {
+                String path = dispatcherMapping.substring(1, dispatcherMapping.indexOf("*")); // NOI18N
+                return lineInTemplate.substring(0, indexOfWelcomeFile) + path + lineInTemplate.substring(indexOfWelcomeFile); // NOI18N      
+            }
+        }
+
+        return lineInTemplate;
+    }
+    
+    public static String getWelcomePageText() {
+        return NbBundle.getMessage(SpringWebFrameworkUtils.class, "MSG_WELCOME_PAGE_TEXT"); 
     }
 }

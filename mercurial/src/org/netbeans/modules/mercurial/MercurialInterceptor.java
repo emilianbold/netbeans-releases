@@ -236,6 +236,7 @@ public class MercurialInterceptor extends VCSInterceptor {
     private void hgMoveImplementation(final File srcFile, final File dstFile) throws IOException {
         final Mercurial hg = Mercurial.getInstance();
         final File root = hg.getTopmostManagedParent(srcFile);
+        final File dstRoot = hg.getTopmostManagedParent(dstFile);
         if (root == null) return;
 
         RequestProcessor rp = hg.getRequestProcessor(root.getAbsolutePath());
@@ -247,7 +248,7 @@ public class MercurialInterceptor extends VCSInterceptor {
             public void run() {
                 OutputLogger logger = OutputLogger.getLogger(root.getAbsolutePath());
                 try {
-                    if (dstFile.isDirectory()) {
+                    if (dstFile.isDirectory() && root.equals(dstRoot)) {
                         HgCommand.doRenameAfter(root, srcFile, dstFile, logger);
                         return;
                     }
@@ -257,9 +258,13 @@ public class MercurialInterceptor extends VCSInterceptor {
                         status == FileInformation.STATUS_NOTVERSIONED_EXCLUDED) {
                     } else if (status == FileInformation.STATUS_VERSIONED_ADDEDLOCALLY) {
                         HgCommand.doRemove(root, srcFile, logger);
-                        HgCommand.doAdd(root, dstFile, logger);
+                        if (dstRoot != null) {
+                            HgCommand.doAdd(dstRoot, dstFile, logger);
+                        }
                     } else {
-                        HgCommand.doRenameAfter(root, srcFile, dstFile, logger);
+                        if (root.equals(dstRoot)) {
+                            HgCommand.doRenameAfter(root, srcFile, dstFile, logger);
+                        }
                     }
                 } catch (HgException e) {
                     Mercurial.LOG.log(Level.FINE, "Mercurial failed to rename: File: {0} {1}", new Object[] {srcFile.getAbsolutePath(), dstFile.getAbsolutePath()}); // NOI18N

@@ -756,6 +756,11 @@ public final class WindowManagerImpl extends WindowManager implements Workspace 
 
     /** Sets visible or invisible window system GUI. */
     public void setVisible(boolean visible) {
+        if( visible ) {
+            startTopComponentRegistryListener();
+        } else {
+            stopTopComponentRegistryListener();
+        }
         SwingUtilities.invokeLater(exclusive);
         central.setVisible(visible);
     }
@@ -1526,46 +1531,67 @@ public final class WindowManagerImpl extends WindowManager implements Workspace 
         }
     }
     
-    @Override
-    protected void activateComponent(TopComponent tc) {
-        if( NativeWindowSystem.getDefault().isWindowAlphaSupported() &&
-            WinSysPrefs.HANDLER.getBoolean(WinSysPrefs.TRANSPARENCY_FLOATING, true) ) {
-            maybeToggleFloatingWindowTransparency( tc );
+    protected void maybeToggleFloatingWindowTransparency() {
+        TopComponent currentActive = TopComponent.getRegistry().getActivated();
+        if( null != currentActive ) {
+            //turn off transparency for active floating window
+            ModeImpl currentActiveMode = (ModeImpl)findMode( currentActive );
+            if( null != currentActiveMode 
+                    && currentActiveMode.getState() == Constants.MODE_STATE_SEPARATED ) {
+                
+                Window w = SwingUtilities.windowForComponent(currentActive);
+                if( null != w ) {
+                    NativeWindowSystem.getDefault().setWindowAlpha( w, 1.0f );
+                }
+            }
+            
+            Runnable runnable = new Runnable() {
+                public void run() {
+                    if( !SwingUtilities.isEventDispatchThread() ) {
+                        SwingUtilities.invokeLater( this );
+                        return;
+                    }
+                    TopComponent activeTc = TopComponent.getRegistry().getActivated();
+                    if( null == activeTc )
+                        return;
+                    
+                    ModeImpl activeMode = (ModeImpl)findMode( activeTc );
+                    for( ModeImpl m : getModes() ) {
+                        if( m.getState() != Constants.MODE_STATE_SEPARATED || m.equals( activeMode ) )
+                            continue;
+                        TopComponent tc = m.getSelectedTopComponent();
+                        if( null != tc ) {
+                            Window w = SwingUtilities.windowForComponent(tc);
+                            if( null != w ) {
+                                NativeWindowSystem.getDefault().setWindowAlpha( w, 0.5f );
+                            }
+                        }
+                    }
+                    
+                }
+            };
+            RequestProcessor.getDefault().post(runnable, 1000);
         }
-        super.activateComponent(tc);
+    }
+
+    private void startTopComponentRegistryListener() {
+        if( null == topComponentRegistryListener ) {
+            topComponentRegistryListener = new PropertyChangeListener() {
+                public void propertyChange(PropertyChangeEvent evt) {
+                    maybeToggleFloatingWindowTransparency();
+                }
+            };
+            TopComponent.getRegistry().addPropertyChangeListener(topComponentRegistryListener);
+        }
     }
     
-    protected void maybeToggleFloatingWindowTransparency( TopComponent tcToBeActivated ) {
-//        TopComponent currentActive = getActiveComponent();
-//        ModeImpl newActiveMode = (ModeImpl)findMode( tcToBeActivated );
-//        if( null != currentActive ) {
-//            //make non-active floating window transparent
-//            ModeImpl currentActiveMode = (ModeImpl)findMode( currentActive );
-//            if( null != currentActive 
-//                    && currentActiveMode != newActiveMode
-//                    && currentActiveMode.getState() == Constants.MODE_STATE_SEPARATED ) {
-//                final Window w = SwingUtilities.windowForComponent(currentActive);
-//                if( null != w ) {
-//                    Runnable runnable = new Runnable() {
-//                        public void run() {
-//                            if( !SwingUtilities.isEventDispatchThread() ) {
-//                                SwingUtilities.invokeLater( this );
-//                                return;
-//                            }
-//                            NativeWindowSystem.getDefault().setWindowAlpha( w, 0.5f );
-//                        }
-//                    };
-//                    RequestProcessor.getDefault().post(runnable, 1000);
-//                }
-//            }
-//        }
-//        if( null != newActiveMode && newActiveMode.getState() == Constants.MODE_STATE_SEPARATED ) {
-//            //turn transparency of floating window off when it's activated
-//            Window w = SwingUtilities.windowForComponent(tcToBeActivated);
-//            if( null != w ) {
-//                NativeWindowSystem.getDefault().setWindowAlpha( w, 1.0f );
-//            }
-//        }
+    private void stopTopComponentRegistryListener() {
+        if( null != topComponentRegistryListener ) {
+            TopComponent.getRegistry().removePropertyChangeListener(topComponentRegistryListener);
+            topComponentRegistryListener = null;
+        }
     }
+    
+    private PropertyChangeListener topComponentRegistryListener;
 }
 

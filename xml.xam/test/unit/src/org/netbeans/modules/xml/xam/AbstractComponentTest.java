@@ -410,5 +410,56 @@ public class AbstractComponentTest extends NbTestCase {
             throw readerExc[0];
         }
     }
+
+    public void testThreadSafe2() throws Exception {
+        final int COUNT = 1000;
+        final TestModel myModel = new TestModel();
+        final TestComponent root = myModel.getRootComponent();
+        assertEquals(3, root.getChildren().size());
+
+        final Exception[] readerExc = { null };
+        Thread reader = new Thread() {
+            @Override
+            public void run() {
+                try {
+                    int size = 0;
+                    do {
+                        List<TestComponent> children = root.getChildren();
+                        size = 0;
+                        // Not calling List.size() because we really want to iterate.
+                        for (TestComponent component : children) {
+                            size++;
+                        }
+                   } while (size < COUNT);
+                } catch (Exception e) {
+                    readerExc[0] = e;
+                }
+            }
+        };
+        Thread writer = new Thread() {
+            @Override
+            public void run() {
+                if (myModel.startTransaction()) {
+                    try {
+                        int i = 0;
+                        while (++i <= COUNT) {
+                            B b = new TestComponent.B(myModel, i);
+                            myModel.addChildComponent(root, b, -1);
+                        }
+                    } finally {
+                        myModel.endTransaction();
+                    }
+                }
+            }
+        };
+        reader.start();
+        writer.start();
+        reader.join();
+        writer.join();
+
+        if (readerExc[0] != null) {
+            throw readerExc[0];
+       }
+   }
 }
     

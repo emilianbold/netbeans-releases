@@ -713,7 +713,7 @@ public class SvnClientExceptionHandler {
         return msg;
     }
 
-    private static void annotate(String msg) {        
+    public static void annotate(String msg) {        
         CommandReport report = new CommandReport(NbBundle.getMessage(SvnClientExceptionHandler.class, "MSG_SubversionCommandError"), msg);
         JButton ok = new JButton(NbBundle.getMessage(SvnClientExceptionHandler.class, "CTL_CommandReport_OK"));
         NotifyDescriptor descriptor = new NotifyDescriptor(

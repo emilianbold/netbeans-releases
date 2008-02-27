@@ -321,7 +321,19 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
                     ((Session) lookupProvider.lookupFirst(null, Session.class)).kill();
                 }
                 if (Utilities.isWindows()) {
-                    gdb.info_threads(); // we get the PID from this...
+                    CommandBuffer cb = new CommandBuffer();
+                    gdb.info_threads(cb); // we get the PID from this...
+                    String msg = cb.waitForCompletion();
+                    if (msg.startsWith("* 1 thread ")) { // NOI18N
+                        int pos = msg.indexOf('.');
+                        if (pos > 0) {
+                            try {
+                                programPID = Long.valueOf(msg.substring(11, pos));
+                            } catch (NumberFormatException ex) {
+                                log.warning("Failed to get PID from \"info threads\""); // NOI18N
+                            }
+                        }
+                    }
                 } else if (Utilities.getOperatingSystem() != Utilities.OS_MAC) {
                     gdb.info_proc(); // we get the PID from this...
                 }
@@ -350,6 +362,18 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
             return path;
         } else {
             return rundir + '/' + path;
+        }
+    }
+    
+    public void showCurrentSource() {
+        final CallStackFrame csf = getCurrentCallStackFrame();
+        if (csf != null) {
+            SwingUtilities.invokeLater(new Runnable() {
+                public void run() {
+                    // show current line
+                    EditorContextBridge.showSource(csf);
+                }
+            });
         }
     }
     
@@ -1417,44 +1441,29 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
      *  Called when GdbProxy receives the results of a -stack-list-frames command.
      */
     private void stackUpdate(List<String> stack) {
-        CallStackFrame frame;
-        int i;
-        
-        for (i = 0; i < stack.size(); i++) {
-            String line = stack.get(i);
-            Map<String, String> map = GdbUtils.createMapFromString(line.substring(6));
-            
-            String func = map.get("func"); // NOI18N
-            String file = map.get("file"); // NOI18N
-            String fullname = map.get("fullname"); // NOI18N
-            String lnum = map.get("line"); // NOI18N
-            String addr = map.get("addr"); // NOI18N
-            if (fullname == null && file != null) {
-                if (file.charAt(0) == '/') {
-                    fullname = file;
-                    log.finest("GD.stackUpdate: Setting fullname from file"); // NOI18N
-                } else {
-                    fullname = runDirectory + file;
-                    log.finest("GD.stackUpdate: Setting fullname from runDirectory + file"); // NOI18N
+        synchronized(callstack) {
+            callstack.clear();
+
+            for (int i = 0; i < stack.size(); i++) {
+                String line = stack.get(i);
+                Map<String, String> map = GdbUtils.createMapFromString(line.substring(6));
+
+                String func = map.get("func"); // NOI18N
+                String file = map.get("file"); // NOI18N
+                String fullname = map.get("fullname"); // NOI18N
+                String lnum = map.get("line"); // NOI18N
+                String addr = map.get("addr"); // NOI18N
+                if (fullname == null && file != null) {
+                    if (file.charAt(0) == '/') {
+                        fullname = file;
+                        log.finest("GD.stackUpdate: Setting fullname from file"); // NOI18N
+                    } else {
+                        fullname = runDirectory + file;
+                        log.finest("GD.stackUpdate: Setting fullname from runDirectory + file"); // NOI18N
+                    }
                 }
-            }
-            
-            if (i < callstack.size()) {
-                frame = callstack.get(i);
-                frame.setFrameNumber(i);
-                frame.set(func, file, fullname, lnum, addr);
-            } else {
-                frame = new CallStackFrame(this, func, file, fullname, lnum, addr);
-                frame.setFrameNumber(i);
-                callstack.add(i, frame);
-            }
-        }
-        
-        int k = i;
-        synchronized (callstack) {
-            int size = callstack.size();
-            while (i++ < size) {
-                callstack.remove(k);
+
+                callstack.add(i, new CallStackFrame(this, func, file, fullname, lnum, addr, i));
             }
         }
         
@@ -1659,14 +1668,12 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
      * @return current stack frame or null
      */
     public synchronized CallStackFrame getCurrentCallStackFrame() {
-        if (callstack.size() > 0) {
-            if (currentCallStackFrame == null) {
-                currentCallStackFrame = callstack.get(0);
-            }
-        } else {
-            currentCallStackFrame = null;
+        if (currentCallStackFrame != null) {
+            return currentCallStackFrame;
+        } else if (!callstack.isEmpty()) {
+            return callstack.get(0);
         }
-        return currentCallStackFrame;
+        return null;
     }
     
     /**
@@ -1693,10 +1700,10 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
         CallStackFrame old;
         
         synchronized (this) {
-            if (callStackFrame == currentCallStackFrame) {
+            old = getCurrentCallStackFrame();
+            if (callStackFrame == old) {
                 return callStackFrame;
             }
-            old = currentCallStackFrame;
             currentCallStackFrame = callStackFrame;
         }
         return old;
@@ -1854,10 +1861,6 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
     
     private void firePropertyChange(String name, Object o, Object n) {
         pcs.firePropertyChange(name, o, n);
-    }
-    
-    public void break_disable(int breakpointNumber) {
-        gdb.break_disable(breakpointNumber);
     }
     
     public int getCurrentToken() {
