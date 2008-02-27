@@ -357,7 +357,7 @@ public class WebAppParseSupport implements WebAppParseProxy, PropertyChangeListe
         return clctxt;
     }
     
-    private boolean determineIsTagFile(FileObject fo) {
+    boolean determineIsTagFile(FileObject fo) {
         if (fo.getExt().startsWith("tag")) { // NOI18N - all tag, tagx and even tagf are considered tag files
             return true;
         }
@@ -844,10 +844,10 @@ System.out.println("--------ENDSTACK------");        */
         private void processFileChange(final FileEvent fe) {
             // check the file type/name/extension and then
             // check if the file belongs to this parse proxy
-            String name = fe.getFile().getNameExt();
-            String ext = fe.getFile().getExt();
-            if (ext.equals("tld") || name.equals("web.xml")) { // NOI18N
-                FileObject fo = fe.getFile();
+            FileObject fo = fe.getFile();
+            if (fo.getExt().equals("tld") // NOI18N
+                    || fo.getNameExt().equals("web.xml") // NOI18N
+                    || determineIsTagFile(fo)) { // #109478
                 if (FileUtil.isParentOf(wmRoot, fo)
                         || (FileUtil.isParentOf(webInf, fo))) {
                     LOG.fine("File " + fo + " has changed, reinitCaches() called");
