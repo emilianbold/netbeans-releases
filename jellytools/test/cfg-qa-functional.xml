@@ -161,6 +161,16 @@ made subject to such option by the copyright holder.
         </testset>
     </testbag>
     
+    <!-- Testbag with test of jellytools widget operators.
+         Use ant runtests -Dxtest.attribs=widgets to run only this testbag  -->
+    <testbag name="Test properties" testattribs="stable,all,widgets" executor="ide">
+        <testset dir="qa-functional/src">
+            <patternset>
+                <include name="**/widgets/*.class"/>
+            </patternset>
+        </testset>
+    </testbag>
+    
     <!-- ide executor - use this one if you plan to run your tests inside IDE (internally). -->
     <executor antfile="build-qa-functional.xml" name="ide" target="runidetest" default="true"/> 
     <executor antfile="build-qa-functional.xml" name="ide-appserver" target="runidetest-with-appserver"/> 
