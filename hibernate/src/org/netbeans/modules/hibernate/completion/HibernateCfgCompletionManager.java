@@ -43,9 +43,7 @@ package org.netbeans.modules.hibernate.completion;
 import org.netbeans.modules.hibernate.editor.HibernateEditorUtil;
 import org.netbeans.modules.hibernate.editor.DocumentContext;
 import org.netbeans.modules.hibernate.editor.ContextUtilities;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import org.hibernate.cfg.Environment;
 import org.netbeans.editor.TokenItem;
@@ -54,7 +52,6 @@ import org.netbeans.modules.xml.text.syntax.SyntaxElement;
 import org.netbeans.modules.xml.text.syntax.dom.StartTag;
 import org.netbeans.modules.xml.text.syntax.dom.Tag;
 import org.netbeans.spi.editor.completion.CompletionResultSet;
-import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
 import org.w3c.dom.Text;
 
