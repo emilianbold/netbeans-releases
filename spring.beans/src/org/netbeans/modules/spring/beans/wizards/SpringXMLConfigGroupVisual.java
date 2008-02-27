@@ -48,7 +48,6 @@ import javax.swing.ListSelectionModel;
 import javax.swing.event.TableModelListener;
 import javax.swing.table.TableModel;
 import org.netbeans.modules.spring.api.beans.ConfigFileGroup;
-import org.openide.util.NbBundle;
 
 /**
  *
@@ -134,7 +133,7 @@ public class SpringXMLConfigGroupVisual extends javax.swing.JPanel {
         }
 
         public String getColumnName(int columnIndex) {
-            return (columnIndex == 0) ? "" : NbBundle.getMessage(SpringXMLConfigGroupVisual.class, "LBL_Config_File_Group"); // NOI18N
+            return (columnIndex == 0) ? "" : "Configuration File Group"; // NOI18N
         }
 
         public Class<?> getColumnClass(int columnIndex) {

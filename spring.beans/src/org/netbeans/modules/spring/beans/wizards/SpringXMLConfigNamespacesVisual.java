@@ -59,9 +59,8 @@ public final class SpringXMLConfigNamespacesVisual extends JPanel {
         // set the color of the table's JViewport
         includesTable.getParent().setBackground(includesTable.getBackground());
         ((DefaultTableModel)includesTable.getModel()).setColumnIdentifiers(new String[] {
-            NbBundle.getMessage(SpringXMLConfigNamespacesVisual.class, "LBL_Include"),
-            NbBundle.getMessage(SpringXMLConfigNamespacesVisual.class, "LBL_Namespace"),
-        });
+            "Include", "Namespace"
+        }); // NOI18N
         TableColumn col1 = includesTable.getColumnModel().getColumn(0);
         col1.setMaxWidth(0);
         includesTable.getSelectionModel().setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
