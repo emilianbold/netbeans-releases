@@ -1,12 +1,12 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <!--
-* Copyright 2006 Sun Microsystems, Inc. All rights reserved. 
+* Copyright 2007 Sun Microsystems, Inc. All rights reserved. 
 * Use is subject to license terms.
 -->
 <html>
 <head>
 <title>Registering an IBM WebSphere Application Server</title>
-<link rel="StyleSheet" href="/org/netbeans/modules/usersguide/ide.css" type="text/css">
+<link rel="stylesheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
 </head>
 <body>
 <h2>Registering an IBM WebSphere Application Server</h2>
@@ -14,41 +14,42 @@
 <p>Before you can start developing and deploying applications to an application server, you must register your application server with the IDE. </p>
 <p><b>To register an instance of an IBM WebSphere application server:</b></p>
 <ol>
-<li>Choose Tools &gt; Server Manager, and in the Server Manager, click Add Server.
-<ul class="note">
-<li>Alternatively, right-click the Servers node in the Runtime window and choose Add Server from the contextual menu.</li>
-</ul>
+<li>Choose Tools &gt; Servers in the main menu.</li>
+<li>In the Server Manager, click Add Server.
+    <ul class="note">
+        <li>Alternatively, right-click the Servers node in the Services window and choose Add Server from the popup menu.</li>
+    </ul>
 The Add Server Instance wizard starts.</li>
 <li>In the Choose Server pane, do the following:
-<ol type="a">
-<li>From the Server drop-down list, select IBM WebSphere Application Server V6.0.</li>
-<li>In the Name field, type a name for the server instance. <br>
-This name is used to identify the server in the IDE.</li>
-<li>Click Next.</li>
-</ol>
+    <ol type="a">
+        <li>Select the version of the IBM WebSphere Application Server that you want to register.</li>
+        <li>In the Name field, type a name for the server instance. <br>
+        This name is used to identify the server in the IDE.</li>
+        <li>Click Next.</li>
+    </ol>
 </li>
 <li>In the Server Location pane, use the Browse button to navigate to and select the installation directory of your application server.
-<ul class="note">
-<li>The Next button is only enabled when you have selected the correct installation directory.</li>
-</ul>
+    <ul class="note">
+        <li>The Next button is only enabled when you have selected the correct installation directory.</li>
+    </ul>
 </li>
 <li>Click Next.</li>
 <li>To define a local server instance, do the following:
-<ol type="a">
-<li>In the Instance Properties pane, from the Local/Remote drop-down list, select Local.</li>
-<li>From the Local instances drop-down list, select a server instance.<br>
-When you select a server instance, the IDE updates the Profile path, Host, and Port fields.</li>
-<li>(Optional) Fill in the Username and Password fields.</li>
-</ol></li>
+    <ol type="a">
+    <li>In the Instance Properties pane, from the Local/Remote drop-down list, select Local.</li>
+    <li>From the Local instances drop-down list, select a server instance.<br>
+    When you select a server instance, the IDE updates the Profile path, Host, and Port fields.</li>
+    <li>(Optional) Fill in the Username and Password fields.</li>
+    </ol></li>
 <li>To define a remote server instance, do the following:
-<ol type="a">
-<li>In the Instance Properties pane, from the Local/Remote drop-down list, select Remote.</li>
-<li>Define the location of the server in the Host and Port fields.</li>
-<li>(Optional) Fill in the Username and Password fields.</li>
-</ol></li>
+    <ol type="a">
+    <li>In the Instance Properties pane, from the Local/Remote drop-down list, select Remote.</li>
+    <li>Define the location of the server in the Host and Port fields.</li>
+    <li>(Optional) Fill in the Username and Password fields.</li>
+    </ol></li>
 <li>Click Finish.</li>
 <li>If you started the Add Server Instance wizard from the Server Manager, click Close in the Server Manager dialog box.<br>
-The IDE displays a server node for your application server in the Runtime window under the Servers node.</li>
+The IDE displays a server node for your application server in the Services window under the Servers node.</li>
 </ol>
 <dl>
 <dt><a name="seealso">See Also</a></dt>
@@ -56,12 +57,8 @@ The IDE displays a server node for your application server in the Runtime window
 <dd><a href="nbdocs:/org/netbeans/modules/j2ee/platform/docs/server/csh_server_manager.html" title="Server Manager Dialog Box">Server Manager Dialog Box</a></dd>
 </dl>
 <hr>
-<small>Copyright &copy; 2006 Sun Microsystems, Inc. All rights reserved.<br>
-<a href="credits.html">Legal Notices</a></small>
-<table border="0" cellpadding="150">
+<small><a href="credits.html">Legal Notices</a></small>
+<table border="0" cellpadding="50">
 <tr><td>&nbsp;</td></tr>
-<tr><td>&nbsp;</td></tr>
-<tr><td>&nbsp;</td></tr>
-</table>
-</body>
+</table></body>
 </html>

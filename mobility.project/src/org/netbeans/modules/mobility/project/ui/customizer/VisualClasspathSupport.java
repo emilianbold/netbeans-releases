@@ -449,14 +449,20 @@ public final class VisualClasspathSupport {
                 
             } else if ( source == addLibraryButton ) {
                 final LibrariesChooser panel = new LibrariesChooser(libraryType);
+                final JButton addLibraryButton = new JButton(NbBundle.getMessage(VisualClasspathSupport.class,"LBL_AddLibrary")); //NOI18N
+                addLibraryButton.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(VisualClasspathSupport.class,"LBL_AddLibrary")); //NOI18N
+                addLibraryButton.getAccessibleContext().setAccessibleName(NbBundle.getMessage(VisualClasspathSupport.class,"LBL_AddLibrary")); //NOI18N
                 final Object[] options = new Object[] {
-                    NbBundle.getMessage(VisualClasspathSupport.class,"LBL_AddLibrary"), //NOI18N
+                    //NbBundle.getMessage(VisualClasspathSupport.class,"LBL_AddLibrary"), //NOI18N
+                    addLibraryButton,
                     NotifyDescriptor.CANCEL_OPTION
                 };
                 final DialogDescriptor desc = new DialogDescriptor(panel,NbBundle.getMessage( VisualClasspathSupport.class, "LBL_Classpath_AddLibrary" ), //NOI18N
                         true, options, options[0], DialogDescriptor.DEFAULT_ALIGN,null,null);
                 desc.setHelpCtx(new HelpCtx(LibrariesChooser.class));
                 final Dialog dlg = DialogDisplayer.getDefault().createDialog(desc);
+                dlg.getAccessibleContext().setAccessibleName(NbBundle.getMessage( VisualClasspathSupport.class, "LBL_Classpath_AddLibrary" )); //NOI18N
+                dlg.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage( VisualClasspathSupport.class, "LBL_Classpath_AddLibrary" )); //NOI18N
                 dlg.setVisible(true);
                 if (desc.getValue() == options[0]) {
                     addLibraries(panel.getSelectedLibraries());

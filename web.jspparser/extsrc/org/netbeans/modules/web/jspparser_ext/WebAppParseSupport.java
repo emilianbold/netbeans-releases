@@ -45,6 +45,8 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.IOException;
+import java.lang.ref.Reference;
+import java.lang.ref.WeakReference;
 import java.lang.reflect.Field;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -118,13 +120,14 @@ import org.openide.util.WeakListeners;
  * the whole cache).
  * @author Petr Jiricka, Tomas Mysik
  */
-public class WebAppParseSupport implements WebAppParseProxy, PropertyChangeListener {
+public class WebAppParseSupport implements WebAppParseProxy, PropertyChangeListener, ParserServletContext.WebModuleProvider {
     
     static final Logger LOG = Logger.getLogger(WebAppParseSupport.class.getName());
     private static final JspParserAPI.JspOpenInfo DEFAULT_JSP_OPEN_INFO = new JspParserAPI.JspOpenInfo(false, "8859_1"); // NOI18N
     private static final Pattern RE_PATTERN_COMMONS_LOGGING = Pattern.compile(".*commons-logging.*\\.jar.*"); // NOI18N
     
-    private final WebModule wm;
+    // #85817
+    private final Reference<WebModule> wm;
     final FileObject wmRoot;
     final FileObject webInf;
     private final FileSystemListener fileSystemListener;
@@ -152,7 +155,7 @@ public class WebAppParseSupport implements WebAppParseProxy, PropertyChangeListe
 
     /** Creates a new instance of WebAppParseSupport */
     public WebAppParseSupport(WebModule wm) {
-        this.wm = wm;
+        this.wm = new WeakReference<WebModule>(wm);
         wmRoot = wm.getDocumentBase();
         webInf = wm.getWebInf();
         fileSystemListener = new FileSystemListener();
@@ -162,7 +165,7 @@ public class WebAppParseSupport implements WebAppParseProxy, PropertyChangeListe
             FileSystem fs = wm.getDocumentBase().getFileSystem();
             fs.addFileChangeListener(FileUtil.weakFileChangeListener(fileSystemListener, fs));
         } catch (FileStateInvalidException ex) {
-            Exceptions.printStackTrace(ex);
+            LOG.log(Level.INFO, null, ex);
         }
         // register weak class path listeners
         ClassPath compileCP = ClassPath.getClassPath(wmRoot, ClassPath.COMPILE);
@@ -207,8 +210,13 @@ public class WebAppParseSupport implements WebAppParseProxy, PropertyChangeListe
         if (LOG.isLoggable(Level.FINE)) {
             LOG.fine("JSP parser " + (firstTime ? "" : "re") + "initialized for WM " + FileUtil.toFile(wmRoot));
         }
-        editorContext = new ParserServletContext(wmRoot, wm, true);
-        diskContext = new ParserServletContext(wmRoot, wm, false);
+        WebModule webModule = wm.get();
+        if (webModule == null) {
+            // already gced
+            return;
+        }
+        editorContext = new ParserServletContext(wmRoot, this, true);
+        diskContext = new ParserServletContext(wmRoot, this, false);
         editorOptions = new OptionsImpl(editorContext);
         diskOptions = new OptionsImpl(diskContext);
         rctxt = null;
@@ -318,7 +326,7 @@ public class WebAppParseSupport implements WebAppParseProxy, PropertyChangeListe
             try {
                 return f.toURI().toURL();
             } catch (MalformedURLException e) {
-                Exceptions.printStackTrace(e);
+                LOG.log(Level.INFO, null, e);
             }
         }
         // fallback
@@ -343,7 +351,7 @@ public class WebAppParseSupport implements WebAppParseProxy, PropertyChangeListe
                 clctxt = new JspCompilationContext(jspUri, false,  options, context, null, rctxt);
             }
         } catch (JasperException ex) {
-            Exceptions.attachMessage(ex, "JSP Parser");
+            LOG.log(Level.INFO, null, ex);
         }
         clctxt.setClassLoader(getWAClassLoader());
         return clctxt;
@@ -458,13 +466,13 @@ public class WebAppParseSupport implements WebAppParseProxy, PropertyChangeListe
                     setResult(gpd);
                     
                 } catch (ThreadDeath td) {
-                    Exceptions.printStackTrace(td);
+                    LOG.log(Level.INFO, null, td);
                     throw td;
                 } catch (Throwable t) {
                     if (gpd != null) {
                         setResult(gpd);
                     } else {
-                        Exceptions.printStackTrace(t);
+                        LOG.log(Level.INFO, null, t);
                     }
                 }
             }
@@ -486,10 +494,10 @@ public class WebAppParseSupport implements WebAppParseProxy, PropertyChangeListe
         try {
             error = constructJakartaErrorDescriptor(wmRoot, jspPage, e);
         } catch (FileStateInvalidException e2) {
-            Exceptions.printStackTrace(e2);
+            LOG.log(Level.INFO, null, e2);
             // do nothing, error will just remain to be null
         } catch (IOException e2) {
-            Exceptions.printStackTrace(e2);
+            LOG.log(Level.INFO, null, e2);
             // do nothing, error will just remain to be null
         }
         if (error == null) {
@@ -651,7 +659,7 @@ System.out.println("--------ENDSTACK------");        */
                     LOG.fine("InitTldLocationCacheThread finished in " + (end - start) + " ms");
                 }
             } catch (InterruptedException e) {
-                Exceptions.printStackTrace(e);
+                LOG.log(Level.INFO, null, e);
             }
 
             // obtain the current mappings after parsing
@@ -671,9 +679,9 @@ System.out.println("--------ENDSTACK------");        */
             // cache tld files under WEB-INF directory as well
             mappings.putAll(getImplicitLocation());
         } catch (NoSuchFieldException e) {
-            Exceptions.printStackTrace(e);
+            LOG.log(Level.INFO, null, e);
         } catch (IllegalAccessException e) {
-            Exceptions.printStackTrace(e);
+            LOG.log(Level.INFO, null, e);
         }
     }
 
@@ -802,11 +810,11 @@ System.out.println("--------ENDSTACK------");        */
                 initialized.setBoolean(cache, false);
                 cache.getLocation(""); // NOI18N
             } catch (JasperException e) {
-                Exceptions.printStackTrace(e);
+                LOG.log(Level.INFO, null, e);
             } catch (NoSuchFieldException e) {
-                Exceptions.printStackTrace(e);
+                LOG.log(Level.INFO, null, e);
             } catch (IllegalAccessException e) {
-                Exceptions.printStackTrace(e);
+                LOG.log(Level.INFO, null, e);
             }
         }
     }
@@ -848,5 +856,9 @@ System.out.println("--------ENDSTACK------");        */
                 }
             }
         }
+    }
+
+    public WebModule getWebModule() {
+        return wm.get();
     }
 }

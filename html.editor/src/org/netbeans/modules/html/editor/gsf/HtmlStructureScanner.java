@@ -111,7 +111,8 @@ public class HtmlStructureScanner implements StructureScanner {
             AstNodeVisitor foldsSearch = new AstNodeVisitor() {
 
                 public void visit(AstNode node) {
-                    if (node.type() == AstNode.NodeType.TAG) {
+                    if (node.type() == AstNode.NodeType.TAG 
+                            || node.type() == AstNode.NodeType.COMMENT) {
                         try {
                             int so = documentPosition(node.startOffset(), source);
                             int eo = documentPosition(node.endOffset(), source);

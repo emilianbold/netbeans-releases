@@ -618,6 +618,9 @@ final class SuiteCustomizerLibraries extends NbPropertyPanel.Suite
         platformValue.getAccessibleContext().setAccessibleDescription(getMessage("ACSD_PlatformValue"));
         javaPlatformCombo.getAccessibleContext().setAccessibleDescription(getMessage("ACSD_JavaPlatformCombo"));
         javaPlatformButton.getAccessibleContext().setAccessibleDescription(getMessage("ACSD_JavaPlatformButton"));
+        
+        javaPlatformLabel.getAccessibleContext().setAccessibleDescription(getMessage("ACSD_JavaPlatformLbl"));
+        platform.getAccessibleContext().setAccessibleDescription(getMessage("ACSD_PlatformLbl"));
     }
     
     // #65924: show warnings if some dependencies cannot be satisfied

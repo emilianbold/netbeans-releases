@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -21,8 +21,10 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
+ * Contributor(s):
+ *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -45,12 +47,10 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;
 import org.netbeans.api.ruby.platform.RubyPlatform.Info;
-import org.netbeans.junit.MockServices;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.ruby.platform.gems.GemManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.modules.InstalledFileLocator;
 
 public abstract class RubyTestBase extends NbTestCase {
     
@@ -63,35 +63,12 @@ public abstract class RubyTestBase extends NbTestCase {
     protected @Override void setUp() throws Exception {
         super.setUp();
         clearWorkDir();
-        MockServices.setServices(IFL.class);
         TestUtil.getXTestJRubyHome();
         System.setProperty("netbeans.user", getWorkDirPath());
     }
 
     public File getTestRubyHome() {
         return FileUtil.toFile(testRubyHome);
-    }
-    
-    public static final class IFL extends InstalledFileLocator {
-        public IFL() {}
-        public @Override File locate(String relativePath, String codeNameBase, boolean localized) {
-            if (relativePath.equals("ruby/debug-commons-0.9.5/classic-debug.rb")) {
-                File rubydebugDir = getDirectory("rubydebug.dir", true);
-                File cd = new File(rubydebugDir, "classic-debug.rb");
-                assertTrue("classic-debug found in " + rubydebugDir, cd.isFile());
-                return cd;
-            } else if (relativePath.equals("jruby-1.1RC1")) {
-                return TestUtil.getXTestJRubyHome();
-            } else if (relativePath.equals("platform_info.rb")) {
-                String script = System.getProperty("xtest.platform_info.rb");
-                if (script == null) {
-                    throw new RuntimeException("xtest.platform_info.rb property has to be set when running within binary distribution");
-                }
-                return new File(script);
-            } else {
-                return null;
-            }
-        }
     }
     
     private static File resolveFile(final String property, final boolean mandatory) {

@@ -230,7 +230,7 @@ public class LanguageRegistry implements Iterable<Language> {
                 }
             }
 
-            mimeMap.put(targetMimeType, result);
+            mimeMap.put(fileMimeType, result);
         }
         
         return result.booleanValue();
