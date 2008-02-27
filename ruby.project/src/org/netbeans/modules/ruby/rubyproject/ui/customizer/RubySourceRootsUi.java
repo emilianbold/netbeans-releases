@@ -70,6 +70,7 @@ import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.modules.ruby.rubyproject.SourceRoots;
 import org.openide.DialogDisplayer;
 import org.openide.DialogDescriptor;
+import org.openide.awt.Mnemonics;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
@@ -517,10 +518,9 @@ out:        for( int i = 0; i < files.length; i++ ) {
         }
 
         private void initGui (Set invalidRoots) {
-            setLayout( new GridBagLayout ());                        
-            JLabel label = new JLabel ();
-            label.setText (NbBundle.getMessage(RubySourceRootsUi.class,"LBL_InvalidRoot"));
-            label.setDisplayedMnemonic(NbBundle.getMessage(RubySourceRootsUi.class,"MNE_InvalidRoot").charAt(0));            
+            setLayout(new GridBagLayout());
+            JLabel label = new JLabel();
+            Mnemonics.setLocalizedText(label, NbBundle.getMessage(RubySourceRootsUi.class, "LBL_InvalidRoot"));
             GridBagConstraints c = new GridBagConstraints();
             c.gridx = GridBagConstraints.RELATIVE;
             c.gridy = GridBagConstraints.RELATIVE;

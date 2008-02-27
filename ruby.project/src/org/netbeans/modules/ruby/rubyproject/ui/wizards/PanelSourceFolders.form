@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 
-<Form version="1.2" type="org.netbeans.modules.form.forminfo.JPanelFormInfo">
+<Form version="1.4" maxVersion="1.4" type="org.netbeans.modules.form.forminfo.JPanelFormInfo">
   <AccessibilityProperties>
     <Property name="AccessibleContext.accessibleName" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
       <ResourceString bundle="org/netbeans/modules/ruby/rubyproject/ui/wizards/Bundle.properties" key="ACSN_PanelSourceFolders" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
@@ -10,7 +10,11 @@
     </Property>
   </AccessibilityProperties>
   <AuxValues>
-    <AuxValue name="FormSettings_generateMnemonicsCode" type="java.lang.Boolean" value="false"/>
+    <AuxValue name="FormSettings_autoResourcing" type="java.lang.Integer" value="1"/>
+    <AuxValue name="FormSettings_autoSetComponentName" type="java.lang.Boolean" value="false"/>
+    <AuxValue name="FormSettings_generateMnemonicsCode" type="java.lang.Boolean" value="true"/>
+    <AuxValue name="FormSettings_i18nAutoMode" type="java.lang.Boolean" value="true"/>
+    <AuxValue name="FormSettings_layoutCodeTarget" type="java.lang.Integer" value="2"/>
     <AuxValue name="FormSettings_listenerGenerationStyle" type="java.lang.Integer" value="0"/>
     <AuxValue name="FormSettings_variablesLocal" type="java.lang.Boolean" value="false"/>
     <AuxValue name="FormSettings_variablesModifier" type="java.lang.Integer" value="2"/>
@@ -44,7 +48,7 @@
     </Component>
     <Container class="javax.swing.JPanel" name="sourcePanel">
       <AuxValues>
-        <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value="new FolderList (NbBundle.getMessage(PanelSourceFolders.class,&quot;CTL_SourceRoots&quot;), NbBundle.getMessage(PanelSourceFolders.class,&quot;MNE_SourceRoots&quot;).charAt(0),NbBundle.getMessage(PanelSourceFolders.class,&quot;AD_SourceRoots&quot;), NbBundle.getMessage(PanelSourceFolders.class,&quot;CTL_AddSourceRoot&quot;),&#xa;        NbBundle.getMessage(PanelSourceFolders.class,&quot;MNE_AddSourceFolder&quot;).charAt(0), NbBundle.getMessage(PanelSourceFolders.class,&quot;AD_AddSourceFolder&quot;),NbBundle.getMessage(PanelSourceFolders.class,&quot;MNE_RemoveSourceFolder&quot;).charAt(0), NbBundle.getMessage(PanelSourceFolders.class,&quot;AD_RemoveSourceFolder&quot;));"/>
+        <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value="createSourcePanel();"/>
       </AuxValues>
       <Constraints>
         <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout" value="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout$GridBagConstraintsDescription">
@@ -56,7 +60,7 @@
     </Container>
     <Container class="javax.swing.JPanel" name="testsPanel">
       <AuxValues>
-        <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value="new FolderList (NbBundle.getMessage(PanelSourceFolders.class,&quot;CTL_TestRoots&quot;), NbBundle.getMessage(PanelSourceFolders.class,&quot;MNE_TestRoots&quot;).charAt(0),NbBundle.getMessage(PanelSourceFolders.class,&quot;AD_TestRoots&quot;), NbBundle.getMessage(PanelSourceFolders.class,&quot;CTL_AddTestRoot&quot;),&#xa;        NbBundle.getMessage(PanelSourceFolders.class,&quot;MNE_AddTestFolder&quot;).charAt(0), NbBundle.getMessage(PanelSourceFolders.class,&quot;AD_AddTestFolder&quot;),NbBundle.getMessage(PanelSourceFolders.class,&quot;MNE_RemoveTestFolder&quot;).charAt(0), NbBundle.getMessage(PanelSourceFolders.class,&quot;AD_RemoveTestFolder&quot;));"/>
+        <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value="createTestPanel();"/>
       </AuxValues>
       <Constraints>
         <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout" value="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout$GridBagConstraintsDescription">

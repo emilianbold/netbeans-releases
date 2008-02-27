@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -60,7 +60,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
-
+import org.openide.awt.Mnemonics;
 
 /**
  * List of source/test roots
@@ -77,13 +77,15 @@ public final class FolderList extends javax.swing.JPanel {
     private FolderList relatedFolderList;
 
     /** Creates new form FolderList */
-    public FolderList (String label, char mnemonic, String accessibleDesc, String fcMessage,
-                       char addButtonMnemonic, String addButtonAccessibleDesc,
-                       char removeButtonMnemonic,String removeButtonAccessibleDesc) {
+    public FolderList(String label, String accessibleDesc, String fcMessage,
+            String addButtonAccessibleDesc, String addButtonLabel,
+            String removeButtonAccessibleDesc, String removeButtonLabel) {
         this.fcMessage = fcMessage;
         initComponents();
+        Mnemonics.setLocalizedText(this.jLabel1, label);
+        Mnemonics.setLocalizedText(this.addButton, addButtonLabel);
+        Mnemonics.setLocalizedText(this.removeButton, removeButtonLabel);
         this.jLabel1.setText(label);
-        this.jLabel1.setDisplayedMnemonic(mnemonic);
         this.roots.getAccessibleContext().setAccessibleDescription(accessibleDesc);
         this.roots.setCellRenderer(new Renderer());
         this.roots.setModel (new DefaultListModel());
@@ -95,9 +97,7 @@ public final class FolderList extends javax.swing.JPanel {
             }
         });
         this.addButton.getAccessibleContext().setAccessibleDescription(addButtonAccessibleDesc);
-        this.addButton.setMnemonic (addButtonMnemonic);        
         this.removeButton.getAccessibleContext().setAccessibleDescription(removeButtonAccessibleDesc);
-        this.removeButton.setMnemonic (removeButtonMnemonic);
         this.removeButton.setEnabled(false);
     }
     
