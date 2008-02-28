@@ -48,9 +48,7 @@ import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.*;
-import org.netbeans.core.windows.nativeaccess.NativeWindowSystem;
 import org.netbeans.core.windows.actions.ActionUtils;
-import org.netbeans.core.windows.options.WinSysPrefs;
 import org.netbeans.core.windows.persistence.PersistenceManager;
 import org.openide.nodes.Node;
 import org.openide.util.*;
@@ -120,12 +118,14 @@ public final class WindowManagerImpl extends WindowManager implements Workspace 
         return (WindowManagerImpl)Lookup.getDefault().lookup(WindowManager.class);
     }
     
+    @Override
     public void topComponentRequestAttention(TopComponent tc) {
         ModeImpl mode = (ModeImpl) findMode(tc);
         
         central.topComponentRequestAttention(mode, tc);
     }
 
+    @Override
     public void topComponentCancelRequestAttention(TopComponent tc) {
         ModeImpl mode = (ModeImpl) findMode(tc);
         
@@ -757,9 +757,9 @@ public final class WindowManagerImpl extends WindowManager implements Workspace 
     /** Sets visible or invisible window system GUI. */
     public void setVisible(boolean visible) {
         if( visible ) {
-            startTopComponentRegistryListener();
+            FloatingWindowTransparencyManager.getDefault().start();
         } else {
-            stopTopComponentRegistryListener();
+            FloatingWindowTransparencyManager.getDefault().stop();
         }
         SwingUtilities.invokeLater(exclusive);
         central.setVisible(visible);
@@ -1018,6 +1018,7 @@ public final class WindowManagerImpl extends WindowManager implements Workspace 
     /////////////////////////////
 
     /** Overrides superclass method, to enhance access modifier. */
+    @Override
     public void componentShowing(TopComponent tc) {
         if((tc != null) && (tc != persistenceShowingTC)) {
             super.componentShowing(tc);
@@ -1032,6 +1033,7 @@ public final class WindowManagerImpl extends WindowManager implements Workspace 
     }
     
     /** Overrides superclass method, to enhance access modifier. */
+    @Override
     public void componentHidden(TopComponent tc) {
         if(tc != null) {
             super.componentHidden(tc);
@@ -1047,6 +1049,7 @@ public final class WindowManagerImpl extends WindowManager implements Workspace 
         topComponentOpenAtTabPosition(tc, -1);
     }
 
+    @Override
     protected void topComponentOpenAtTabPosition (TopComponent tc, int position) {
         assertEventDispatchThreadWeak();
         
@@ -1095,6 +1098,7 @@ public final class WindowManagerImpl extends WindowManager implements Workspace 
         }
     }
     
+    @Override
     protected int topComponentGetTabPosition (TopComponent tc) {
         assertEventDispatchThreadWeak();
         
@@ -1530,68 +1534,5 @@ public final class WindowManagerImpl extends WindowManager implements Workspace 
             return PERSISTENCE_NEVER;
         }
     }
-    
-    protected void maybeToggleFloatingWindowTransparency() {
-        TopComponent currentActive = TopComponent.getRegistry().getActivated();
-        if( null != currentActive ) {
-            //turn off transparency for active floating window
-            ModeImpl currentActiveMode = (ModeImpl)findMode( currentActive );
-            if( null != currentActiveMode 
-                    && currentActiveMode.getState() == Constants.MODE_STATE_SEPARATED ) {
-                
-                Window w = SwingUtilities.windowForComponent(currentActive);
-                if( null != w ) {
-                    NativeWindowSystem.getDefault().setWindowAlpha( w, 1.0f );
-                }
-            }
-            
-            Runnable runnable = new Runnable() {
-                public void run() {
-                    if( !SwingUtilities.isEventDispatchThread() ) {
-                        SwingUtilities.invokeLater( this );
-                        return;
-                    }
-                    TopComponent activeTc = TopComponent.getRegistry().getActivated();
-                    if( null == activeTc )
-                        return;
-                    
-                    ModeImpl activeMode = (ModeImpl)findMode( activeTc );
-                    for( ModeImpl m : getModes() ) {
-                        if( m.getState() != Constants.MODE_STATE_SEPARATED || m.equals( activeMode ) )
-                            continue;
-                        TopComponent tc = m.getSelectedTopComponent();
-                        if( null != tc ) {
-                            Window w = SwingUtilities.windowForComponent(tc);
-                            if( null != w ) {
-                                NativeWindowSystem.getDefault().setWindowAlpha( w, 0.5f );
-                            }
-                        }
-                    }
-                    
-                }
-            };
-            RequestProcessor.getDefault().post(runnable, 1000);
-        }
-    }
-
-    private void startTopComponentRegistryListener() {
-        if( null == topComponentRegistryListener ) {
-            topComponentRegistryListener = new PropertyChangeListener() {
-                public void propertyChange(PropertyChangeEvent evt) {
-                    maybeToggleFloatingWindowTransparency();
-                }
-            };
-            TopComponent.getRegistry().addPropertyChangeListener(topComponentRegistryListener);
-        }
-    }
-    
-    private void stopTopComponentRegistryListener() {
-        if( null != topComponentRegistryListener ) {
-            TopComponent.getRegistry().removePropertyChangeListener(topComponentRegistryListener);
-            topComponentRegistryListener = null;
-        }
-    }
-    
-    private PropertyChangeListener topComponentRegistryListener;
 }
 

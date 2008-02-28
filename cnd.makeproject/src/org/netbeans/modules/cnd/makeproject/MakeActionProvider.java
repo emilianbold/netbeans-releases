@@ -746,7 +746,6 @@ public class MakeActionProvider implements ActionProvider {
         CompilerSet cs;
         BuildToolsAction bt = null;
         String csname;
-        String csdirs;
         File file;
         boolean cRequired = conf.hasCFiles(pd);
         boolean cppRequired = conf.hasCPPFiles(pd);
@@ -758,32 +757,14 @@ public class MakeActionProvider implements ActionProvider {
         if (csconf.isValid()) {
             csname = csconf.getOption();
             cs = CompilerSetManager.getDefault().getCompilerSet(csname);
-            csdirs = cs.getDirectory();
         } else {
             csname = csconf.getOldName();
             cs = CompilerSet.getCompilerSet(csconf.getOldName());
             CompilerSetManager.getDefault().add(cs);
             csconf.setValid();
-            csdirs = cs.getDirectory();
         }
         
-        String cName = conf.getCCompilerConfiguration().getTool().getValue();
-        String cppName = conf.getCCCompilerConfiguration().getTool().getValue();
-        String fName = conf.getFortranCompilerConfiguration().getTool().getValue();
-        String cPath = null;
-        String cppPath = null;
-        String fPath = null;
         boolean runBTA = false;
-        
-        if (cName.length() == 0) {
-            cName = (cs != null && cs.isSunCompiler()) ? "cc" : "gcc"; // NOI18N
-        }
-        if (cppName.length() == 0) {
-            cppName = (cs != null && cs.isSunCompiler()) ? "CC" : "g++"; // NOI18N
-        }
-        if (fName.length() == 0) {
-            fName = (cs != null && cs.isSunCompiler()) ? "f90" : "g77"; // NOI18N
-        }
         
         // Check for a valid make program
         file = new File(CppSettings.getDefault().getMakePath());
@@ -791,58 +772,21 @@ public class MakeActionProvider implements ActionProvider {
             runBTA = true;
         }
         
-        // Check for C and C++ compilers. If Fortran is enabled, check for that compiler too.
-        StringTokenizer tok = new StringTokenizer(csdirs, File.pathSeparator);
-        while (tok.hasMoreTokens()) {
-            String dir = tok.nextToken();
-            
-            if (cRequired && cPath == null) {
-                file = new File(dir, cName);
-                if (file.exists()) {
-                    cPath = file.getAbsolutePath();
-                } else if (Utilities.isWindows()) {
-                    file = new File(dir, cName + ".exe"); // NOI18N
-                    if (file.exists()) {
-                        cPath = file.getAbsolutePath();
-                    }
-                }
-            }
-            
-            if (cppRequired && cppPath == null) {
-                file = new File(dir, cppName);
-                if (file.exists()) {
-                    cppPath = file.getAbsolutePath();
-                } else if (Utilities.isWindows()) {
-                    file = new File(dir, cppName + ".exe"); // NOI18N
-                    if (file.exists()) {
-                        cppPath = file.getAbsolutePath();
-                    }
-                }
-            }
-            
-            if (fRequired && fPath == null) {
-                file = new File(dir, fName);
-                if (file.exists()) {
-                    fPath = file.getAbsolutePath();
-                } else if (Utilities.isWindows()) {
-                    file = new File(dir, fName + ".exe"); // NOI18N
-                    if (file.exists()) {
-                        fPath = file.getAbsolutePath();
-                    }
-                }
-            }
-        }
+        // Check compilers
+        Tool cTool = cs.getTool(Tool.CCompiler);
+        Tool cppTool = cs.getTool(Tool.CCCompiler);
+        Tool fTool = cs.getTool(Tool.FortranCompiler);
         
-        if (cRequired && cPath == null) {
-            errs.add(NbBundle.getMessage(MakeActionProvider.class, "ERR_MissingCCompiler", csname, cName)); // NOI18N
+        if (cRequired && !cTool.exists()) {
+            errs.add(NbBundle.getMessage(MakeActionProvider.class, "ERR_MissingCCompiler", csname, cTool.getDisplayName())); // NOI18N
             runBTA = true;
         }
-        if (cppRequired && cppPath == null ) {
-            errs.add(NbBundle.getMessage(MakeActionProvider.class, "ERR_MissingCppCompiler", csname, cppName)); // NOI18N
+        if (cppRequired && !cppTool.exists()) {
+            errs.add(NbBundle.getMessage(MakeActionProvider.class, "ERR_MissingCppCompiler", csname, cppTool.getDisplayName())); // NOI18N
             runBTA = true;
         }
-        if (fRequired && fPath == null) {
-            errs.add(NbBundle.getMessage(MakeActionProvider.class, "ERR_MissingFortranCompiler", csname, fName)); // NOI18N
+        if (fRequired && !fTool.exists()) {
+            errs.add(NbBundle.getMessage(MakeActionProvider.class, "ERR_MissingFortranCompiler", csname, fTool.getDisplayName())); // NOI18N
             runBTA = true;
         }
         
