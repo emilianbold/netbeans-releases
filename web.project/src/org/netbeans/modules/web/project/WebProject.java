@@ -323,7 +323,8 @@ public final class WebProject implements Project, AntProjectListener {
         apiJAXWSClientSupport = JAXWSClientSupportFactory.createJAXWSClientSupport(jaxWsClientSupport);
         enterpriseResourceSupport = new WebContainerImpl(this, refHelper, helper);
         cpMod = new ClassPathModifier(this, this.updateHelper, eval, refHelper,
-            new ClassPathSupportCallbackImpl(helper), createClassPathModifierCallback(), getClassPathUiSupportCallback());
+            new ClassPathSupportCallbackImpl(helper), createClassPathModifierCallback(), getClassPathUiSupportCallback(),
+                                    new String[]{ProjectProperties.JAVAC_CLASSPATH, WebProjectProperties.WAR_CONTENT_ADDITIONAL});
         libMod = new WebProjectLibrariesModifierImpl(this, this.updateHelper, eval, refHelper);
         classPathExtender = new ClassPathExtender(cpMod, ProjectProperties.JAVAC_CLASSPATH, ClassPathSupportCallbackImpl.TAG_WEB_MODULE_LIBRARIES);
         librariesLocationUpdater = new LibrariesLocationUpdater(this, updateHelper, eval, cpMod.getClassPathSupport(),
@@ -1019,7 +1020,7 @@ public final class WebProject implements Project, AntProjectListener {
             
             // unregister the property change listener on the prop evaluator
             if (librariesLocationUpdater != null) {
-                librariesLocationUpdater.unregister();
+                librariesLocationUpdater.destroy();
             }
 
             // remove ServiceListener from jaxWsModel            

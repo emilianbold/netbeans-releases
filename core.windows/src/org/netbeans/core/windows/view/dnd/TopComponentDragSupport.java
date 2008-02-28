@@ -568,13 +568,13 @@ implements AWTEventListener, DragSourceListener, DragSourceMotionListener {
             }
             
             // Now simulate drop into "free" desktop area.
-            
+            final Set<Component> floatingFrames = windowDnDManager.getFloatingFrames();
             // Finally schedule the "drop" task later to be able to
             // detect if ESC was pressed.
             RequestProcessor.getDefault().post(new Runnable() {
                 public void run() {
                     SwingUtilities.invokeLater(createDropIntoFreeAreaTask(
-                            evt, evt.getLocation()));
+                            evt, evt.getLocation(), floatingFrames));
                 }},
                 250 // XXX #21918, Neccessary to skip after possible ESC key event.
             );
@@ -611,7 +611,7 @@ implements AWTEventListener, DragSourceListener, DragSourceMotionListener {
     /** Creates task which performs actual drop into "free area", i.e. it
      * creates new separated (floating) window. */
     private Runnable createDropIntoFreeAreaTask(final DragSourceDropEvent evt,
-    final Point location) {
+    final Point location, final Set<Component> floatingFrames) {
         return new Runnable() {
             public void run() {
                 // XXX #21918. Don't move the check sooner
@@ -636,7 +636,7 @@ implements AWTEventListener, DragSourceListener, DragSourceMotionListener {
                     // system set ACTION_NONE (which we do not use).
                     boolean res = windowDnDManager.tryPerformDrop(
                         windowDnDManager.getController(),
-                        windowDnDManager.getFloatingFrames(),
+                        floatingFrames,
                         location,
                         DnDConstants.ACTION_MOVE, // MOVE only
                         evt.getDragSourceContext().getTransferable());

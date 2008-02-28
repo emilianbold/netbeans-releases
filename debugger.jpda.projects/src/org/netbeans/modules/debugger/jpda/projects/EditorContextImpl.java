@@ -136,6 +136,7 @@ import org.netbeans.spi.debugger.jpda.EditorContext;
 import org.netbeans.spi.debugger.jpda.SourcePathProvider;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.RequestProcessor;
 
 /**
  *
@@ -150,6 +151,7 @@ public class EditorContextImpl extends EditorContext {
     private Map                     annotationToURL = new HashMap ();
     private PropertyChangeListener  editorObservableListener;
 
+    private RequestProcessor refreshProcessor;
     private Lookup.Result resDataObject;
     private Lookup.Result resEditorCookie;
     private Lookup.Result resNode;
@@ -162,6 +164,8 @@ public class EditorContextImpl extends EditorContext {
     
     {
         pcs = new PropertyChangeSupport (this);
+        
+        refreshProcessor = new RequestProcessor("Refresh Editor Context", 1);
 
         resDataObject = Utilities.actionsGlobalContext().lookup(new Lookup.Template(DataObject.class));
         resDataObject.addLookupListener(new EditorLookupListener(DataObject.class));
@@ -1859,7 +1863,7 @@ public class EditorContextImpl extends EditorContext {
         }
     }
     
-    private class EditorLookupListener extends Object implements LookupListener, PropertyChangeListener {
+    private class EditorLookupListener extends Object implements LookupListener, PropertyChangeListener, Runnable {
         
         private Class type;
         
@@ -1878,7 +1882,7 @@ public class EditorContextImpl extends EditorContext {
                     }
                     currentEditorCookie = null;
                 }
-                pcs.firePropertyChange (TopComponent.Registry.PROP_CURRENT_NODES, null, null);
+                refreshProcessor.post(this);
             } else if (type == EditorCookie.class) {
                 synchronized (currentLock) {
                     currentURL = null;
@@ -1889,13 +1893,17 @@ public class EditorContextImpl extends EditorContext {
                     }
                     currentEditorCookie = null;
                 }
-                pcs.firePropertyChange (TopComponent.Registry.PROP_CURRENT_NODES, null, null);
+                refreshProcessor.post(this);
             } else if (type == Node.class) {
                 synchronized (currentLock) {
                     //currentElement = null;
                 }
-                pcs.firePropertyChange (TopComponent.Registry.PROP_CURRENT_NODES, null, null);
+                refreshProcessor.post(this);
             }
+        }
+        
+        public void run() {
+            pcs.firePropertyChange (TopComponent.Registry.PROP_CURRENT_NODES, null, null);
         }
         
         public void propertyChange(PropertyChangeEvent evt) {

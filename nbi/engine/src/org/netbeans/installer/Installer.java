@@ -303,7 +303,13 @@ public class Installer implements FinishHandler {
                 final String key = keys.nextElement();
                 final String value = bundle.getString(key);
                 LogManager.log("loading " + key + " => " + value); // NOI18N
-                System.setProperty(key,value);
+		final String currentValue = System.getProperty(key);
+		if(currentValue!=null) {
+                    LogManager.log("... already defined, using existing value: " + currentValue); // NOI18N
+                } else {
+                    System.setProperty(key,value);
+                }
+                
             }
         } catch (MissingResourceException e) {
             LogManager.log("... no engine properties file, skip loading engine properties");

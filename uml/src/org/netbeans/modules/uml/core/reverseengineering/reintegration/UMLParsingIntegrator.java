@@ -70,7 +70,9 @@ import org.netbeans.modules.uml.core.eventframework.EventBlocker;
 import org.netbeans.modules.uml.core.metamodel.core.constructs.IAliasedType;
 import org.netbeans.modules.uml.core.metamodel.core.constructs.IClass;
 import org.netbeans.modules.uml.core.metamodel.core.constructs.IDataType;
+import org.netbeans.modules.uml.core.metamodel.core.foundation.Abstraction;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.CreationFactory;
+import org.netbeans.modules.uml.core.metamodel.core.foundation.Dependency;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.ElementCollector;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.FactoryRetriever;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.ICreationFactory;
@@ -81,10 +83,12 @@ import org.netbeans.modules.uml.core.metamodel.core.foundation.INamespace;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IPackage;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IPresentationElement;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IVersionableElement;
+import org.netbeans.modules.uml.core.metamodel.core.foundation.Permission;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.RelationProxy;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.RelationValidator;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.TypedFactoryRetriever;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.UMLXMLManip;
+import org.netbeans.modules.uml.core.metamodel.core.foundation.Usage;
 import org.netbeans.modules.uml.core.metamodel.infrastructure.IDerivationClassifier;
 import org.netbeans.modules.uml.core.metamodel.infrastructure.IRelationFactory;
 import org.netbeans.modules.uml.core.metamodel.infrastructure.RelationFactory;
@@ -96,11 +100,13 @@ import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure
 import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.IGeneralization;
 import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.IInterface;
 import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.INavigableEnd;
+import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.Implementation;
 import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.IOperation;
 import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.IParameter;
 import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.IParameterableElement;
 import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.IUMLBinding;
 import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.Parameter;
+import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.Realization;
 import org.netbeans.modules.uml.core.metamodel.structure.IProject;
 import org.netbeans.modules.uml.core.preferenceframework.IPreferenceAccessor;
 import org.netbeans.modules.uml.core.preferenceframework.PreferenceAccessor;
@@ -1366,6 +1372,8 @@ public class UMLParsingIntegrator
                             
                             if (injectNestedClass != null)
                             {
+                                handleClientDependenciesAttr(destinationNestedClass, injectNestedClass);
+
                                 String finalXMIID = null;
                                 finalXMIID = replaceReferences(destinationNestedClass, injectNestedClass, finalXMIID);
                                 
@@ -1571,6 +1579,17 @@ public class UMLParsingIntegrator
             sendExceptionMessage(e);
         }
     }
+
+    private void handleClientDependenciesAttr(Node childInDestinationNamespace, Node elementBeingInjected)
+    {
+        String clientDeps 
+            = XMLManip.getAttributeValue(childInDestinationNamespace, 
+                                         "clientDependency"); // NOI18N                
+        if (clientDeps != null)
+        {
+            XMLManip.setAttributeValue(elementBeingInjected, "clientDependency", clientDeps); // NOI18N
+        }
+    }
     
     public boolean replaceElement(Node childInDestinationNamespace, Node elementBeingInjected)
     {
@@ -1589,6 +1608,7 @@ public class UMLParsingIntegrator
                 TypedFactoryRetriever < IElement > fact = new TypedFactoryRetriever < IElement > ();
                 IElement nodeInNamespace = fact.createTypeAndFill(childInDestinationNamespace);
                 removeClientDependencies(nodeInNamespace);
+                handleClientDependenciesAttr(childInDestinationNamespace, elementBeingInjected);
                 removeNonNavigableAssoc(nodeInNamespace);
                 removeGeneralizations(nodeInNamespace);
                 markSpecializationsForRedefinitionAnalysis(nodeInNamespace); 
@@ -3600,6 +3620,24 @@ public class UMLParsingIntegrator
         }
     }
     
+    protected void processEnumLiteralArguments(Node node)
+    {
+        try
+        {
+            Node argsNode = node.selectSingleNode("./TokenDescriptors/TDescriptor[@type='JavaEnumLiteralArguments']");
+            if (argsNode != null)
+            {
+                String argsStr = XMLManip.getAttributeValue(argsNode, "value");
+                addTaggedValue(node, "JavaEnumLiteralArguments", argsStr, false);
+                argsNode.detach();
+            }
+        }
+        catch (Exception e)
+        {
+            sendExceptionMessage(e);
+        }
+    }
+
     protected void analyzeInterfaceTypes(Node classNode)
     {
         try
@@ -6160,11 +6198,20 @@ public class UMLParsingIntegrator
                     for (int index = 0; index < max; index++)
                     {
                         IDependency pDep = pDependencies.get(index);
-                        if(pDep!=null)
+
+                        if(pDep!=null 
+                           && ( ! ( pDep instanceof Dependency
+                                  || pDep instanceof Realization                                 
+                                  || pDep instanceof Abstraction
+                                  || pDep instanceof Usage 
+                                  || pDep instanceof Permission)
+                                || (pDep instanceof Implementation)
+                              )
+                           )
                         {
+                            pNamedElement.removeClientDependency(pDep);
                             pDep.delete();
-                        }
-                        
+                        }                        
                     }
                 }
             }
@@ -6947,6 +6994,7 @@ public class UMLParsingIntegrator
                     establishXMIID(curElement);
                     XMLManip.setAttributeValue(curElement, "enumeration", enumerationID);
                     processComment(curElement);
+                    processEnumLiteralArguments(curElement);
                 }
                 
                 scrubOperations(pClazz, clazzObj, classSpace);

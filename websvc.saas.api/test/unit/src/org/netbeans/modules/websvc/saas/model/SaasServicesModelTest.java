@@ -76,8 +76,10 @@ public class SaasServicesModelTest extends NbTestCase {
 
         SaasServicesModel instance = SaasServicesModel.getInstance();
         assertEquals("YouTube", instance.getGroups().get(0).getName());
-        SaasGroup group = instance.getGroups().get(0).getChildGroup("Videos");
-        assertNotNull(group);
+        //No Sub-group for now
+        //SaasGroup group = instance.getGroups().get(0).getChildGroup("Videos");
+        //assertNotNull(group);
+        SaasGroup group = instance.getGroups().get(0);
         WadlSaas service = (WadlSaas) group.getServices().get(0);
         assertEquals("YouTubeVideos", service.getDisplayName());
         assertNotNull(service.getWadlModel());
