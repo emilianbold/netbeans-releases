@@ -46,6 +46,7 @@ import java.util.Collections;
 import java.util.List;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
+import org.netbeans.cnd.api.lexer.CndLexerUtilities;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.SyntaxSupport;
 import org.netbeans.editor.TokenContextPath;
@@ -64,7 +65,7 @@ public final class TokenUtilities {
     private TokenUtilities() {
     }
     
-    public static List<Token> getTokens(Document doc) {
+    public static List<Token> getTokens(Document doc, int start, int end) {
         if (!(doc instanceof BaseDocument))
             return Collections.<Token>emptyList();
         
@@ -72,11 +73,14 @@ public final class TokenUtilities {
             SyntaxSupport sup = ((BaseDocument) doc).getSyntaxSupport();
             NbCsmSyntaxSupport nbSyntaxSup = (NbCsmSyntaxSupport)sup.get(NbCsmSyntaxSupport.class);
             if (nbSyntaxSup == null) {
+                String name = (String) doc.getProperty(Document.TitleProperty);
+                System.err.println("document " + name + " doesn't have NbCsmSyntaxSupport syntax support " + doc);
+                System.err.println("document " + (CndLexerUtilities.getCppTokenSequence(doc, start) == null ? "DOESN'T" : "") + " have " + "lexer info");
                 return Collections.<Token>emptyList();
             }
            
             AllTokensTP tp = new AllTokensTP();
-            nbSyntaxSup.tokenizeText(tp, 0, doc.getLength(), true);
+            nbSyntaxSup.tokenizeText(tp, start, end, true);
             return tp.getTokens();
         } catch (BadLocationException e) {
             // there could be some modifications in document
