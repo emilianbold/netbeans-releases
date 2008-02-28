@@ -378,7 +378,6 @@ public class EditorContextBridge {
         String condition = b.getCondition();
         boolean isConditional = condition.trim().length() > 0;
         String annotationType;
-        DataObject dobj = null;
         if (b instanceof FunctionBreakpoint) {
             if (b.isEnabled()) {
                 annotationType = isConditional ? EditorContext.CONDITIONAL_FUNCTION_BREAKPOINT_ANNOTATION_TYPE :
@@ -394,15 +393,6 @@ public class EditorContextBridge {
             }
             lineNumber = dis.getAddressLine(((AddressBreakpoint)b).getAddress());
             if (lineNumber == -1) {
-                return null;
-            }
-            FileObject fo = Disassembly.getFileObject();
-            if (fo == null) {
-                return null;
-            }
-            try {
-                dobj = DataObject.find(fo);
-            } catch(DataObjectNotFoundException ex) {
                 return null;
             }
             if (b.isEnabled()) {
