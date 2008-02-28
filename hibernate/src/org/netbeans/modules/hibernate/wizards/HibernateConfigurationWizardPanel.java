@@ -6,10 +6,7 @@
 package org.netbeans.modules.hibernate.wizards;
 
 import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import javax.swing.event.ChangeListener;
-import javax.swing.event.DocumentEvent;
-import javax.swing.event.DocumentListener;
 import org.netbeans.api.project.Project;
 import org.openide.util.ChangeSupport;
 import org.openide.util.NbBundle;
@@ -67,6 +64,8 @@ public class HibernateConfigurationWizardPanel extends javax.swing.JPanel {
 
         setName(org.openide.util.NbBundle.getMessage(HibernateConfigurationWizardPanel.class, "LBL_HibernateConfigurationPanel_Name")); // NOI18N
 
+        jLabel4.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/hibernate/wizards/Bundle").getString("Dialect_mnemonic").charAt(0));
+        jLabel4.setLabelFor(cmbDialect);
         jLabel4.setText(org.openide.util.NbBundle.getMessage(HibernateConfigurationWizardPanel.class, "HibernateConfigurationWizardPanel.jLabel4.text")); // NOI18N
 
         cmbDialect.setEditable(true);
@@ -77,20 +76,28 @@ public class HibernateConfigurationWizardPanel extends javax.swing.JPanel {
             }
         });
 
+        jLabel5.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/hibernate/wizards/Bundle").getString("driver_mnemonic").charAt(0));
+        jLabel5.setLabelFor(cmbDriver);
         jLabel5.setText(org.openide.util.NbBundle.getMessage(HibernateConfigurationWizardPanel.class, "HibernateConfigurationWizardPanel.jLabel5.text")); // NOI18N
 
         cmbDriver.setEditable(true);
         cmbDriver.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
 
+        jLabel6.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/hibernate/wizards/Bundle").getString("URL_mnemonic").charAt(0));
+        jLabel6.setLabelFor(cmbURL);
         jLabel6.setText(org.openide.util.NbBundle.getMessage(HibernateConfigurationWizardPanel.class, "HibernateConfigurationWizardPanel.jLabel6.text")); // NOI18N
 
         cmbURL.setEditable(true);
         cmbURL.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
 
+        jLabel1.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/hibernate/wizards/Bundle").getString("Username_mnemonic").charAt(0));
+        jLabel1.setLabelFor(txtUserName);
         jLabel1.setText(org.openide.util.NbBundle.getMessage(HibernateConfigurationWizardPanel.class, "HibernateConfigurationWizardPanel.jLabel1.text")); // NOI18N
 
         txtUserName.setText(org.openide.util.NbBundle.getMessage(HibernateConfigurationWizardPanel.class, "HibernateConfigurationWizardPanel.txtUserName.text")); // NOI18N
 
+        jLabel2.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/hibernate/wizards/Bundle").getString("Password_mnemonic").charAt(0));
+        jLabel2.setLabelFor(txtPassword);
         jLabel2.setText(org.openide.util.NbBundle.getMessage(HibernateConfigurationWizardPanel.class, "HibernateConfigurationWizardPanel.jLabel2.text")); // NOI18N
 
         txtPassword.setText(org.openide.util.NbBundle.getMessage(HibernateConfigurationWizardPanel.class, "HibernateConfigurationWizardPanel.txtPassword.text")); // NOI18N
@@ -158,6 +165,22 @@ public class HibernateConfigurationWizardPanel extends javax.swing.JPanel {
                     .add(jLabel2))
                 .addContainerGap())
         );
+
+        jLabel4.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(HibernateConfigurationWizardPanel.class, "HibernateConfigurationWizardPanel.jLabel4.AccessibleContext.accessibleDescription")); // NOI18N
+        cmbDialect.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(HibernateConfigurationWizardPanel.class, "HibernateConfigurationWizardPanel.cmbDialect.AccessibleContext.accessibleName")); // NOI18N
+        cmbDialect.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(HibernateConfigurationWizardPanel.class, "HibernateConfigurationWizardPanel.cmbDialect.AccessibleContext.accessibleDescription")); // NOI18N
+        jLabel5.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(HibernateConfigurationWizardPanel.class, "HibernateConfigurationWizardPanel.jLabel5.AccessibleContext.accessibleDescription")); // NOI18N
+        cmbDriver.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(HibernateConfigurationWizardPanel.class, "HibernateConfigurationWizardPanel.cmbDriver.AccessibleContext.accessibleName")); // NOI18N
+        cmbDriver.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(HibernateConfigurationWizardPanel.class, "HibernateConfigurationWizardPanel.cmbDriver.AccessibleContext.accessibleDescription")); // NOI18N
+        jLabel6.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(HibernateConfigurationWizardPanel.class, "HibernateConfigurationWizardPanel.jLabel6.AccessibleContext.accessibleDescription")); // NOI18N
+        cmbURL.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(HibernateConfigurationWizardPanel.class, "HibernateConfigurationWizardPanel.cmbURL.AccessibleContext.accessibleName")); // NOI18N
+        cmbURL.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(HibernateConfigurationWizardPanel.class, "HibernateConfigurationWizardPanel.cmbURL.AccessibleContext.accessibleDescription")); // NOI18N
+        jLabel1.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(HibernateConfigurationWizardPanel.class, "HibernateConfigurationWizardPanel.jLabel1.AccessibleContext.accessibleDescription")); // NOI18N
+        txtUserName.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(HibernateConfigurationWizardPanel.class, "HibernateConfigurationWizardPanel.txtUserName.AccessibleContext.accessibleName")); // NOI18N
+        txtUserName.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(HibernateConfigurationWizardPanel.class, "HibernateConfigurationWizardPanel.txtUserName.AccessibleContext.accessibleDescription")); // NOI18N
+        jLabel2.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(HibernateConfigurationWizardPanel.class, "HibernateConfigurationWizardPanel.jLabel2.AccessibleContext.accessibleDescription")); // NOI18N
+        txtPassword.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(HibernateConfigurationWizardPanel.class, "HibernateConfigurationWizardPanel.txtPassword.AccessibleContext.accessibleName")); // NOI18N
+        txtPassword.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(HibernateConfigurationWizardPanel.class, "HibernateConfigurationWizardPanel.txtPassword.AccessibleContext.accessibleDescription")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
     private void cmbDialectActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cmbDialectActionPerformed
         fillCombos();

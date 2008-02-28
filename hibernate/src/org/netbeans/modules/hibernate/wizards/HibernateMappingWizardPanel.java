@@ -31,8 +31,7 @@ public class HibernateMappingWizardPanel extends javax.swing.JPanel {
         this.project = project;
         initComponents();
         String[] configFiles = getConfigFilesFromProject(project);
-        this.cmbResource.setModel(new DefaultComboBoxModel(configFiles));
-        //this.cmbResource.setSelectedIndex(0);
+        this.cmbResource.setModel(new DefaultComboBoxModel(configFiles));        
         
         this.browseButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(ActionEvent arg0) {
