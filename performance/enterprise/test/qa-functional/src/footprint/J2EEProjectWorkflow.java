@@ -56,7 +56,7 @@ import org.netbeans.jemmy.operators.JComboBoxOperator;
 /**
  * Measure J2EE Project Workflow Memory footprint
  *
- * @author  mmirilovic@netbeans.org
+ * @author  mmirilovic@netbeans.org, mrkam@netbeans.org
  */
 public class J2EEProjectWorkflow extends org.netbeans.performance.test.utilities.MemoryFootprintTestCase {
     
@@ -135,10 +135,12 @@ public class J2EEProjectWorkflow extends org.netbeans.performance.test.utilities
     }
     
     public void close(){
-        EPFootprintUtilities.deleteProject(j2eeproject);
-        EPFootprintUtilities.deleteProject(j2eeproject_war);
-        EPFootprintUtilities.deleteProject(j2eeproject_ejb);
-        EPFootprintUtilities.deleteProject(j2eeproject_app,false);
+        if (j2eeproject != null) {
+            EPFootprintUtilities.deleteProject(j2eeproject);
+            EPFootprintUtilities.deleteProject(j2eeproject_war);
+            EPFootprintUtilities.deleteProject(j2eeproject_ejb);
+            EPFootprintUtilities.deleteProject(j2eeproject_app,false);
+        }
     }
     
     public static void main(java.lang.String[] args) {

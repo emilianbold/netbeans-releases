@@ -198,7 +198,7 @@ public class CCompilerConfiguration extends CCCCompilerConfiguration implements 
             set4.setName("Tool"); // NOI18N
             set4.setDisplayName(getString("ToolTxt1"));
             set4.setShortDescription(getString("ToolHint1"));
-            set4.put(new StringNodeProp(getTool(), cCompiler.getName(), "Tool", getString("ToolTxt2"), getString("ToolHint2"))); // NOI18N
+            set4.put(new StringNodeProp(getTool(), cCompiler.getName(), false, "Tool", getString("ToolTxt2"), getString("ToolHint2"))); // NOI18N
             sheet.put(set4);
             
             String[] texts = new String[] {getString("AdditionalOptionsTxt1"), getString("AdditionalOptionsHint"), getString("AdditionalOptionsTxt2"), getString("AllOptionsTxt")};

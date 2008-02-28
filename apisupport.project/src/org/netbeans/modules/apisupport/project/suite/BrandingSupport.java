@@ -619,7 +619,11 @@ public final class BrandingSupport {
     }
 
     public String getNameOfBrandingFolder() {
-        return suiteProject.getEvaluator().getProperty(BRANDING_DIR_PROPERTY);
+        String f = suiteProject.getEvaluator().getProperty(BRANDING_DIR_PROPERTY);
+        if (f == null) { // #125160
+            f = "branding"; // NOI18N
+        }
+        return f;
     }
     
 }

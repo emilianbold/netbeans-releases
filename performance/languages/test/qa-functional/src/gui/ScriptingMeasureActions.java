@@ -68,7 +68,7 @@ public class ScriptingMeasureActions {
         
         suite.addTest(new ScriptingExpandFolder("testExpandRubyProjectNode","testExpandRubyProjectNode"));
         suite.addTest(new ScriptingExpandFolder("testExpandFolderWith100RubyFiles","testExpandFolderWith100RubyFiles"));        
-        suite.addTest(new ScriptingExpandFolder("testExpandRailsProjectNode","testExpandRailsProjectNode("));
+        suite.addTest(new ScriptingExpandFolder("testExpandRailsProjectNode","testExpandRailsProjectNode"));
         suite.addTest(new ScriptingExpandFolder("testExpandFolderWith100RailsFiles","testExpandFolderWith100RailsFiles"));
         suite.addTest(new ScriptingExpandFolder("testExpandFolderWith100JSFiles","testExpandFolderWith100JSFiles"));
         suite.addTest(new ScriptingExpandFolder("testExpandFolderWith100CssFiles","testExpandFolderWith100CssFiles"));
