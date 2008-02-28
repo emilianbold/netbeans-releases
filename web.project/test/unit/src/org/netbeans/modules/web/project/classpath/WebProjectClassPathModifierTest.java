@@ -96,7 +96,7 @@ public class WebProjectClassPathModifierTest extends NbTestCase {
         if (folder.exists()) {
             folder.delete();
         }
-        folder.mkdir();
+        FileUtil.createFolder(folder);
         URL[] cpRoots = new URL[]{folder.toURL()};
         
         // init

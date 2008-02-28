@@ -161,6 +161,7 @@ import org.netbeans.modules.bpel.documentation.DocumentationCookie;
 import org.openide.explorer.ExplorerManager;
 import org.openide.explorer.ExplorerUtils;
 import org.openide.loaders.DataNode;
+import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.windows.Mode;
 import org.openide.windows.TopComponentGroup;
@@ -582,6 +583,11 @@ public class DesignerMultiViewElement extends TopComponent
         }
         initActiveNodeContext();
         setVisible(true);
+        
+        getAccessibleContext().setAccessibleName(
+                NbBundle.getMessage(DesignerMultiViewElement.class, "ACSN_DesignerMultiviewElement", getName())); // NOI18N
+        getAccessibleContext().setAccessibleDescription(
+                NbBundle.getMessage(DesignerMultiViewElement.class, "ACSD_DesignerMultiviewElement", getName())); // NOI18N
     }
 
     private Component myFind;
