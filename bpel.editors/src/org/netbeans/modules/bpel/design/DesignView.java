@@ -92,6 +92,7 @@ import org.netbeans.modules.bpel.design.actions.FindUsagesAction;
 import org.netbeans.modules.bpel.design.actions.GoToLoggingAction;
 import org.netbeans.modules.bpel.design.actions.GoToMapperAction;
 import org.netbeans.modules.bpel.design.actions.GoToSourceAction;
+import org.netbeans.modules.bpel.design.actions.ShowContextMenuAction;
 import org.netbeans.modules.bpel.design.actions.TabToNextComponentAction;
 import org.netbeans.modules.bpel.design.model.PartnerRole;
 import org.netbeans.modules.bpel.nodes.actions.GoToAction;
@@ -498,7 +499,7 @@ public class DesignView extends JPanel implements
         am.put("gotologging-something", new GoToLoggingAction(this)); // NOI18N
         am.put("findusages-something", new FindUsagesAction(this)); // NOI18N
 //        am.put("find_next_mex_peer", new CycleMexAction()); // NOI18N
-//        am.put("show_context_menu", new ShowContextMenu()); // NOI18N
+        am.put("show_context_menu", new ShowContextMenuAction(this)); // NOI18N
         am.put("go_next_hierarchy_component", new TabToNextComponentAction(this, true)); // NOI18N
         am.put("go_previous_hierarchy_component", new TabToNextComponentAction(this, false)); // NOI18N
 //
