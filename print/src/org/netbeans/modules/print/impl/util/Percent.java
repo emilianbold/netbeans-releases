@@ -87,12 +87,14 @@ public final class Percent extends JComboBox implements ActionListener {
     String [] customs,
     String toolTip)
   {
-//out("<New> Percent");
+//out("<New> Percent: " + initValue);
     for (int value : values) {
       addItem(value + PERCENT);
     }
-    for (String custom : customs) {
-      addItem(custom);
+    if (customs != null) {
+      for (String custom : customs) {
+        addItem(custom);
+      }
     }
     setToolTipText(toolTip);
 
@@ -133,10 +135,10 @@ public final class Percent extends JComboBox implements ActionListener {
     });
     addActionListener(this);
     setValue(initValue);
-    selecteValue();
+    selectValue();
   }
 
-  private void selecteValue() {
+  private void selectValue() {
     String text = getEditorItem();
     
     for (int i=0; i < getItemCount(); i++) {
@@ -187,6 +189,9 @@ public final class Percent extends JComboBox implements ActionListener {
   }
 
   private int getCustomIndex(String value) {
+    if (myCustoms == null) {
+      return -1;
+    }
     for (int i=0; i < myCustoms.length; i++) {
       if (myCustoms [i].equals(value)) {
         return i;
@@ -250,7 +255,7 @@ public final class Percent extends JComboBox implements ActionListener {
     myCurrentValue = value;
 //out("myCurrentValue: " + myCurrentValue);
 
-    if (isCustomValue) {
+    if (isCustomValue && myCustoms != null) {
       myCurrentText = myCustoms [index];
     }
     else {
@@ -267,6 +272,9 @@ public final class Percent extends JComboBox implements ActionListener {
   }
 
   private int getCustomIndex(double value) {
+    if (myCustoms == null) {
+      return -1;
+    }
 //out("-- " + getPercent(value) + " " + getPercent(getCustomValue()));
     for (int i=0; i < myCustoms.length; i++) {
       if (getPercent(value).equals(getPercent(getCustomValue(i)))) {
@@ -299,7 +307,7 @@ public final class Percent extends JComboBox implements ActionListener {
   }
 
   public static double getZoomFactor(double zoom, double defaultValue) {
-    if (0 <= zoom && zoom <= MAX_VALUE) {
+    if (0 < zoom && zoom <= MAX_VALUE) {
       return zoom;
     }
     return defaultValue;
@@ -331,6 +339,10 @@ public final class Percent extends JComboBox implements ActionListener {
     return BOUND_2 <= zoom;
   }
 
+  public static boolean isZoomPage(double zoom) {
+    return zoom == 0.0;
+  }
+
   public static double createZoomWidth(double zoom) {
     return BOUND_1 + zoom;
   }
@@ -340,9 +352,9 @@ public final class Percent extends JComboBox implements ActionListener {
   }
 
   private Listener myListener;
+  private String [] myCustoms;
   private String myCurrentText;
   private double myCurrentValue;
-  private String [] myCustoms;
 
   private static final int BOUND_1 = 1000;
   private static final int BOUND_2 = 2000;
