@@ -19,6 +19,8 @@
 
 package org.netbeans.modules.bpel.debugger.ui.execution;
 
+import java.util.HashMap;
+import java.util.Map;
 import javax.swing.JToolTip;
 import org.netbeans.modules.bpel.debugger.api.pem.PemEntity;
 import org.netbeans.modules.bpel.debugger.api.psm.PsmEntity;
@@ -39,6 +41,8 @@ import org.netbeans.spi.viewmodel.UnknownTypeException;
  * @author Kirill Sorokin
  */
 public class ProcessExecutionTableModel implements TableModel {
+    private Map<PsmEntity, String> psm2Line = new HashMap<PsmEntity, String>();
+    
     /**{@inheritDoc}*/
     public ProcessExecutionTableModel(
             final ContextProvider contextProvider) {
@@ -81,28 +85,37 @@ public class ProcessExecutionTableModel implements TableModel {
             }
             
             if (column.equals(ProcessExecutionColumnModel_Line.COLUMN_ID)) {
-                final String url = ModelUtil.getUrl(
-                        psmEntity.getModel().getProcessQName());
-                
-                if (url == null) {
-                    return "";
+                if (psm2Line.get(psmEntity) == null) {
+                    final String url = ModelUtil.getUrl(
+                            psmEntity.getModel().getProcessQName());
+                    
+                    if (url == null) {
+                        return "";
+                    }
+                    
+                    final BpelModel model = EditorUtil.getBpelModel(url);
+                    
+                    if (model == null) {
+                        return "";
+                    }
+                    
+                    final int lineNumber = ModelUtil.getLineNumber(
+                                model, psmEntity.getXpath());
+                    
+                    final String line;
+                    final int slashIndex = url.lastIndexOf("/");
+                    if (slashIndex == -1) {
+                        line = url + ":" + lineNumber;
+                    } else {
+                        line = url.substring(slashIndex + 1) + ":" + lineNumber;
+                    }
+                    
+                    psm2Line.put(psmEntity, line);
+                    
+                    return line;
                 }
                 
-                final BpelModel model = EditorUtil.getBpelModel(url);
-                
-                if (model == null) {
-                    return null;
-                }
-                
-                final int lineNumber = ModelUtil.getLineNumber(
-                        model, psmEntity.getXpath());
-                
-                final int slashIndex = url.lastIndexOf("/");
-                if (slashIndex == -1) {
-                    return url + ":" + lineNumber;
-                } else {
-                    return url.substring(slashIndex + 1) + ":" + lineNumber;
-                }
+                return psm2Line.get(psmEntity);
             }
             
             if (column.equals(ProcessExecutionColumnModel_XPath.COLUMN_ID)) {
