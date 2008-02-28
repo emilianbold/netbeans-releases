@@ -201,7 +201,6 @@
             </test-dependencies>
             <friend-packages>
                 <friend>org.netbeans.modules.groovy.gsp</friend>
-                <friend>org.netbeans.modules.groovy.kit</friend>
                 <package>org.netbeans.modules.groovy.editor</package>
                 <package>org.netbeans.modules.groovy.editor.lexer</package>
             </friend-packages>

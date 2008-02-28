@@ -369,7 +369,6 @@
                 </test-type>
             </test-dependencies>
             <friend-packages>
-                <friend>org.netbeans.modules.groovy.kit</friend>
                 <friend>org.netbeans.modules.spellchecker.bindings.ruby</friend>
                 <package>org.netbeans.modules.groovy.gsp.editor.completion</package>
                 <package>org.netbeans.modules.groovy.gsp.lexer.api</package>
