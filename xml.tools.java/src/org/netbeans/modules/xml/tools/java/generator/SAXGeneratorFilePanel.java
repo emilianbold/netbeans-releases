@@ -60,7 +60,7 @@ public final class SAXGeneratorFilePanel extends SAXGeneratorAbstractPanel imple
     /** Serial Version UID */
     private static final long serialVersionUID =-8950908568784619306L;  
         
- //   private static final Util.NameCheck check = Util.JAVA_CHECK;
+    private static final Util.NameCheck check = Util.JAVA_CHECK;
    
     private java.util.ResourceBundle bundle = org.openide.util.NbBundle.getBundle(SAXGeneratorFilePanel.class);
 
@@ -74,7 +74,7 @@ public final class SAXGeneratorFilePanel extends SAXGeneratorAbstractPanel imple
     
     private final ValidatingTextField.Validator NAME_VALIDATOR = new ValidatingTextField.Validator() {
         public boolean isValid(String value) {
-            boolean ret = false;//check.checkName(value);
+            boolean ret = check.checkName(value);
             if (ret) {
                 setValid(checkNames());
             } else {
@@ -96,7 +96,6 @@ public final class SAXGeneratorFilePanel extends SAXGeneratorAbstractPanel imple
      */
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
-        java.awt.GridBagConstraints gridBagConstraints;
 
         descTextArea = new javax.swing.JTextArea();
         interfaceLabel = new javax.swing.JLabel();
@@ -110,7 +109,8 @@ public final class SAXGeneratorFilePanel extends SAXGeneratorAbstractPanel imple
         saveCheckBox = new javax.swing.JCheckBox();
         saveLabel = new javax.swing.JLabel();
         saveTextField = new org.netbeans.modules.xml.tools.generator.ValidatingTextField();
-        fillPanel = new javax.swing.JPanel();
+        handlerImplLabel = new javax.swing.JLabel();
+        handlerImplTextField = new org.netbeans.modules.xml.tools.generator.ValidatingTextField();
 
         setName(NbBundle.getMessage(SAXGeneratorFilePanel.class, "SAXGeneratorFilePanel.Form.name")); // NOI18N
         setPreferredSize(new java.awt.Dimension(480, 350));
@@ -124,7 +124,6 @@ public final class SAXGeneratorFilePanel extends SAXGeneratorAbstractPanel imple
                 formComponentRemoved(evt);
             }
         });
-        setLayout(new java.awt.GridBagLayout());
 
         descTextArea.setEditable(false);
         descTextArea.setFont(javax.swing.UIManager.getFont ("Label.font"));
@@ -136,103 +135,107 @@ public final class SAXGeneratorFilePanel extends SAXGeneratorAbstractPanel imple
         descTextArea.setDisabledTextColor(javax.swing.UIManager.getColor ("Label.foreground"));
         descTextArea.setEnabled(false);
         descTextArea.setOpaque(false);
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTH;
-        add(descTextArea, gridBagConstraints);
 
         interfaceLabel.setLabelFor(interfaceTextField);
         org.openide.awt.Mnemonics.setLocalizedText(interfaceLabel, org.openide.util.NbBundle.getMessage(SAXGeneratorFilePanel.class, "SAXGeneratorCustomizer.interfaceLabel.text")); // NOI18N
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(12, 0, 0, 0);
-        add(interfaceLabel, gridBagConstraints);
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 0);
-        add(interfaceTextField, gridBagConstraints);
 
         stubLabel.setLabelFor(stubTextField);
         org.openide.awt.Mnemonics.setLocalizedText(stubLabel, org.openide.util.NbBundle.getMessage(SAXGeneratorFilePanel.class, "SAXGeneratorCustomizer.stubLabel.text")); // NOI18N
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(12, 0, 0, 0);
-        add(stubLabel, gridBagConstraints);
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 0);
-        add(stubTextField, gridBagConstraints);
 
         parsletLabel.setLabelFor(parsletTextField);
         org.openide.awt.Mnemonics.setLocalizedText(parsletLabel, org.openide.util.NbBundle.getMessage(SAXGeneratorFilePanel.class, "SAXGeneratorCustomizer.parsletLabel.text")); // NOI18N
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(12, 0, 0, 0);
-        add(parsletLabel, gridBagConstraints);
 
         parsletTextField.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 parsletTextFieldActionPerformed(evt);
             }
         });
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 0);
-        add(parsletTextField, gridBagConstraints);
 
         parsletImplLabel.setLabelFor(parsletImplTextField);
         org.openide.awt.Mnemonics.setLocalizedText(parsletImplLabel, org.openide.util.NbBundle.getMessage(SAXGeneratorFilePanel.class, "SAXGeneratorFilePanel.parsletImplLabel.text")); // NOI18N
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(12, 0, 0, 0);
-        add(parsletImplLabel, gridBagConstraints);
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 0);
-        add(parsletImplTextField, gridBagConstraints);
 
         org.openide.awt.Mnemonics.setLocalizedText(saveCheckBox, org.openide.util.NbBundle.getMessage(SAXGeneratorFilePanel.class, "PROP_save_it")); // NOI18N
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(12, 0, 0, 0);
-        add(saveCheckBox, gridBagConstraints);
 
         saveLabel.setLabelFor(saveTextField);
         org.openide.awt.Mnemonics.setLocalizedText(saveLabel, org.openide.util.NbBundle.getMessage(SAXGeneratorFilePanel.class, "PROP_bindings_label")); // NOI18N
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(12, 0, 0, 0);
-        add(saveLabel, gridBagConstraints);
 
         saveTextField.setEditable(false);
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 0);
-        add(saveTextField, gridBagConstraints);
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.gridheight = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.weighty = 1.0;
-        add(fillPanel, gridBagConstraints);
+
+        org.openide.awt.Mnemonics.setLocalizedText(handlerImplLabel, "Handler Implementation:");
+
+        org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
+        this.setLayout(layout);
+        layout.setHorizontalGroup(
+            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(layout.createSequentialGroup()
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(saveCheckBox, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 475, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(layout.createSequentialGroup()
+                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING, false)
+                            .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createSequentialGroup()
+                                .add(saveLabel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 230, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                                .add(saveTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                            .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createSequentialGroup()
+                                .add(parsletImplLabel)
+                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                                .add(parsletImplTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                            .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createSequentialGroup()
+                                .add(parsletLabel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 230, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                                .add(parsletTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                            .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createSequentialGroup()
+                                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                                    .add(handlerImplLabel)
+                                    .add(interfaceLabel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 138, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                                    .add(stubLabel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 230, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING, false)
+                                    .add(stubTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                    .add(handlerImplTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                    .add(interfaceTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 275, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))))
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 185, Short.MAX_VALUE))
+                    .add(descTextArea, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 696, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .addContainerGap())
+        );
+        layout.setVerticalGroup(
+            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(layout.createSequentialGroup()
+                .add(descTextArea, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .add(35, 35, 35)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(interfaceLabel)
+                    .add(interfaceTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .add(27, 27, 27)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(handlerImplLabel)
+                    .add(handlerImplTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(layout.createSequentialGroup()
+                        .add(27, 27, 27)
+                        .add(stubLabel))
+                    .add(layout.createSequentialGroup()
+                        .add(18, 18, 18)
+                        .add(stubTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
+                .add(18, 18, 18)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(parsletLabel)
+                    .add(parsletTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .add(18, 18, 18)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(parsletImplLabel)
+                    .add(parsletImplTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .add(18, 18, 18)
+                .add(saveCheckBox)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(layout.createSequentialGroup()
+                        .add(18, 18, 18)
+                        .add(saveLabel))
+                    .add(layout.createSequentialGroup()
+                        .add(1, 1, 1)
+                        .add(saveTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
+                .addContainerGap(35, Short.MAX_VALUE))
+        );
     }// </editor-fold>//GEN-END:initComponents
         
     private void formComponentHidden(java.awt.event.ComponentEvent evt) {//GEN-FIRST:event_formComponentHidden
@@ -252,7 +255,7 @@ private void parsletTextFieldActionPerformed(java.awt.event.ActionEvent evt) {//
         model.setParslet(parsletTextField.getText());
         model.setStub(stubTextField.getText());
         model.setParsletImpl(parsletImplTextField.getText());
-    //    model.setHandlerImpl(handlerImplTextField.getText());
+        model.setHandlerImpl(handlerImplTextField.getText());
         model.setBindnings(saveCheckBox.isSelected() ? saveTextField.getText() : null);
     }
   
@@ -262,14 +265,14 @@ private void parsletTextFieldActionPerformed(java.awt.event.ActionEvent evt) {//
                     
         interfaceTextField.setText(model.getHandler());
         stubTextField.setText(model.getStub());
-      //  handlerImplTextField.setText(model.getHandlerImpl());        
+        handlerImplTextField.setText(model.getHandlerImpl());        
         parsletTextField.setText(model.getParslet());
         parsletImplTextField.setText(model.getParsletImpl());
         saveTextField.setText(model.getBindings());
 
         interfaceTextField.setValidator(NAME_VALIDATOR);
         stubTextField.setValidator(NAME_VALIDATOR);
-     //   handlerImplTextField.setValidator(NAME_VALIDATOR);
+        handlerImplTextField.setValidator(NAME_VALIDATOR);
         parsletTextField.setValidator(NAME_VALIDATOR);
         parsletImplTextField.setValidator(NAME_VALIDATOR);
         
@@ -300,13 +303,13 @@ private void parsletTextFieldActionPerformed(java.awt.event.ActionEvent evt) {//
     //
     private boolean checkNames() {
 
-     /*   return  check.checkName(interfaceTextField.getText()) 
+        return  check.checkName(interfaceTextField.getText()) 
                 && (not(hasParslets()) || check.checkName(parsletTextField.getText()))
                 && check.checkName(stubTextField.getText())
-                && (not(hasParslets()) || check.checkName(parsletImplTextField.getText()));
-               // && check.checkName(handlerImplTextField.getText());
-        */
-        return false;
+                && (not(hasParslets()) || check.checkName(parsletImplTextField.getText()))
+                && check.checkName(handlerImplTextField.getText());
+       
+       // return false;
     }
 
     private boolean hasParslets() {
@@ -315,7 +318,8 @@ private void parsletTextFieldActionPerformed(java.awt.event.ActionEvent evt) {//
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JTextArea descTextArea;
-    private javax.swing.JPanel fillPanel;
+    private javax.swing.JLabel handlerImplLabel;
+    private org.netbeans.modules.xml.tools.generator.ValidatingTextField handlerImplTextField;
     private javax.swing.JLabel interfaceLabel;
     private org.netbeans.modules.xml.tools.generator.ValidatingTextField interfaceTextField;
     private javax.swing.JLabel parsletImplLabel;
@@ -335,8 +339,8 @@ private void parsletTextFieldActionPerformed(java.awt.event.ActionEvent evt) {//
 
         interfaceTextField.getAccessibleContext().setAccessibleDescription(
                 NbBundle.getMessage(SAXGeneratorFilePanel.class, "ACSD_interfaceTextField"));        
-       // handlerImplTextField.getAccessibleContext().setAccessibleDescription(
-             //   NbBundle.getMessage(SAXGeneratorFilePanel.class, "ACSD_handlerImplTextField"));
+        handlerImplTextField.getAccessibleContext().setAccessibleDescription(
+                NbBundle.getMessage(SAXGeneratorFilePanel.class, "ACSD_handlerImplTextField"));
         stubTextField.getAccessibleContext().setAccessibleDescription(
                 NbBundle.getMessage(SAXGeneratorFilePanel.class, "ACSD_stubTextField"));
         parsletTextField.getAccessibleContext().setAccessibleDescription(

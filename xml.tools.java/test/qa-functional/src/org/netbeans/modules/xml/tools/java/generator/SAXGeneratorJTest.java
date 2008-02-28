@@ -38,7 +38,7 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.xml.tools.generator;
+package org.netbeans.modules.xml.tools.java.generator;
 
 import java.util.Arrays;
 import java.util.Comparator;
@@ -55,7 +55,7 @@ import org.netbeans.junit.AssertionFailedErrorException;
 import org.netbeans.tests.xml.JXTest;
 import org.openide.cookies.SourceCookie;
 import org.openide.loaders.DataObject;
-import org.openide.src.*;
+
 
 /** Checks XSL Transformation action. */
 

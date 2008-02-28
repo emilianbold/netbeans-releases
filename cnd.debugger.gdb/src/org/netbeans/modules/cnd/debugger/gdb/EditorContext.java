@@ -196,6 +196,8 @@ public abstract class EditorContext {
      */
     public abstract String getCurrentMIMEType();
     
+    public abstract DataObject getCurrentDataObject();
+    
     /**
      * Get the MIME type of the most recently selected file.
      *

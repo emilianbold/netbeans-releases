@@ -478,7 +478,7 @@ public final class EarProjectProperties {
     
     
     /** <strong>Package private for unit test only</strong>. */
-    void updateContentDependency(List<ClassPathSupport.Item> oldContent, List<ClassPathSupport.Item> newContent,
+    static void updateContentDependency(EarProject project, List<ClassPathSupport.Item> oldContent, List<ClassPathSupport.Item> newContent,
             EditableProperties props) {
         Application app = project.getAppModule().getApplication();
         
@@ -486,16 +486,25 @@ public final class EarProjectProperties {
         deleted.removeAll(newContent);
         Set<ClassPathSupport.Item> added = new HashSet<ClassPathSupport.Item>(newContent);
         added.removeAll(oldContent);
+        Set<ClassPathSupport.Item> needsUpdate = new HashSet<ClassPathSupport.Item>(newContent);
+        needsUpdate.removeAll(added);
         
         boolean saveNeeded = false;
         // delete the old entries out of the application
         for (ClassPathSupport.Item item : deleted) {
-            removeItemFromAppDD(app,item, props);
+            removeItemFromAppDD(project, app,item, props);
             saveNeeded = true;
         }
         // add the new stuff "back"
         for (ClassPathSupport.Item item : added) {
             addItemToAppDD(project, app,item);
+            saveNeeded = true;
+        }
+        for (ClassPathSupport.Item item : needsUpdate) {
+            ClassPathSupport.Item old = oldContent.get(oldContent.indexOf(item));
+            // #76008 - PATH_IN_DEPLOYMENT could have changed; remove old one and save new one:
+            removeItemFromAppDD(project, app, old, props);
+            addItemToAppDD(project, app, item);
             saveNeeded = true;
         }
         
@@ -508,7 +517,7 @@ public final class EarProjectProperties {
         }
     }
     
-    private void removeItemFromAppDD(final Application dd,
+    static private void removeItemFromAppDD(EarProject project, final Application dd,
             final ClassPathSupport.Item item, EditableProperties props) {
         String pathInEAR = getCompletePathInArchive(project, item);
         Module m = searchForModule(dd, pathInEAR);
@@ -714,7 +723,7 @@ public final class EarProjectProperties {
             if (null != jmp) {
                 J2eeModule jm = jmp.getJ2eeModule();
                 if (null != jm) {
-                    String path = item.getAdditionalProperty(ClassPathSupportCallbackImpl.PATH_IN_DEPLOYMENT);
+                    String path = getCompletePathInArchive(project, item);
                     mods.put(path, jmp);
                 }
             }
@@ -728,8 +737,9 @@ public final class EarProjectProperties {
             public void run() {
                 try {
                     EditableProperties ep = project.getUpdateHelper().getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
-                    List<ClassPathSupport.Item> l = project.getClassPathSupport().itemsList(
+                    List<ClassPathSupport.Item> oldContent = project.getClassPathSupport().itemsList(
                             ep.get( JAR_CONTENT_ADDITIONAL ), TAG_WEB_MODULE__ADDITIONAL_LIBRARIES);
+                    List<ClassPathSupport.Item> l = new ArrayList(oldContent);
                     for (int i = 0; i < moduleProjects.length; i++) {
                         AntArtifact artifacts[] = AntArtifactQuery.findArtifactsByType(
                                 moduleProjects[i],
@@ -743,6 +753,7 @@ public final class EarProjectProperties {
                     String[] newValue = project.getClassPathSupport().encodeToStrings(l, TAG_WEB_MODULE__ADDITIONAL_LIBRARIES);
                     ep = project.getUpdateHelper().getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
                     ep.setProperty(JAR_CONTENT_ADDITIONAL, newValue);
+                    updateContentDependency(project, oldContent, l, ep);
                     project.getUpdateHelper().putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, ep);
                     ProjectManager.getDefault().saveProject(project);
                 } catch (IOException e) {
@@ -923,8 +934,8 @@ public final class EarProjectProperties {
         newArtifacts.addAll(ClassPathUiSupport.getList( DEBUG_CLASSPATH_MODEL));
         newArtifacts.addAll(ClassPathUiSupport.getList( EAR_CONTENT_ADDITIONAL_MODEL.getDefaultListModel()));
 
-        updateContentDependency(
-            cs.itemsList(projectProperties.get(JAR_CONTENT_ADDITIONAL)), 
+        updateContentDependency(project,
+            cs.itemsList(projectProperties.get(JAR_CONTENT_ADDITIONAL), TAG_WEB_MODULE__ADDITIONAL_LIBRARIES), 
             ClassPathUiSupport.getList( EAR_CONTENT_ADDITIONAL_MODEL.getDefaultListModel()),
             projectProperties);
         

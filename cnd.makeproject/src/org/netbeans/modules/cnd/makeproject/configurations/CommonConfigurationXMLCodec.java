@@ -70,6 +70,8 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.RequiredProjectsC
 
 /**
  * Change History:
+ * V42 - 2.26.08 - NB 6.1
+ *   Now storing required tools (c, cpp, ...) only if different from default vaue 
  * V41:
  *   Added SOURCE_ROOT_LIST_ELEMENT
  * V40:
@@ -104,7 +106,7 @@ public abstract class CommonConfigurationXMLCodec
     extends XMLDecoder
     implements XMLEncoder {
 
-    public final static int CURRENT_VERSION = 41;
+    public final static int CURRENT_VERSION = 42;
 
     // Generic
     protected final static String PROJECT_DESCRIPTOR_ELEMENT = "projectDescriptor"; // NOI18N
@@ -297,10 +299,12 @@ public abstract class CommonConfigurationXMLCodec
     private void writeToolsSetBlock(XMLEncoderStream xes, MakeConfiguration makeConfiguration) {
 	xes.elementOpen(TOOLS_SET_ELEMENT);
         xes.element(COMPILER_SET_ELEMENT, "" + makeConfiguration.getCompilerSet().getOption());
-        xes.element(COMPILER_SET_ELEMENT+"2", "" + makeConfiguration.getCompilerSet2().getOption());
-        xes.element(C_REQUIRED_ELEMENT, "" + makeConfiguration.getCRequired().getValue());
-        xes.element(CPP_REQUIRED_ELEMENT, "" + makeConfiguration.getCppRequired().getValue());
-        xes.element(FORTRAN_REQUIRED_ELEMENT, "" + makeConfiguration.getFortranRequired().getValue());
+        if (makeConfiguration.getCRequired().getValue() != makeConfiguration.getCRequired().getDefault())
+            xes.element(C_REQUIRED_ELEMENT, "" + makeConfiguration.getCRequired().getValue());
+        if (makeConfiguration.getCppRequired().getValue() != makeConfiguration.getCppRequired().getDefault())
+            xes.element(CPP_REQUIRED_ELEMENT, "" + makeConfiguration.getCppRequired().getValue());
+        if (makeConfiguration.getFortranRequired().getValue() != makeConfiguration.getFortranRequired().getDefault())
+            xes.element(FORTRAN_REQUIRED_ELEMENT, "" + makeConfiguration.getFortranRequired().getValue());
 	xes.element(PLATFORM_ELEMENT, "" + makeConfiguration.getPlatform().getValue()); // NOI18N
         if (makeConfiguration.getDependencyChecking().getModified())
             xes.element(DEPENDENCY_CHECKING, "" + makeConfiguration.getDependencyChecking().getValue()); // NOI18N

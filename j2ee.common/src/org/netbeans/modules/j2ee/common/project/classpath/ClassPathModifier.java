@@ -59,6 +59,7 @@ import org.netbeans.api.project.Sources;
 import org.netbeans.api.project.ant.AntArtifact;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.modules.j2ee.common.project.ui.ClassPathUiSupport;
+import org.netbeans.modules.j2ee.common.project.ui.ProjectProperties;
 import org.netbeans.modules.java.api.common.ant.UpdateHelper;
 import org.netbeans.spi.java.project.classpath.ProjectClassPathModifierImplementation;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
@@ -87,6 +88,7 @@ public final class ClassPathModifier extends ProjectClassPathModifierImplementat
     private ClassPathModifier.Callback cpModifierCallback;
     private ClassPathSupport.Callback cpSupportCallback;
     private ClassPathUiSupport.Callback cpUiSupportCallback;
+    private String[] libUpdaterProperties;
     
     private static final Logger LOG = Logger.getLogger(ClassPathModifier.class.getName());
 
@@ -95,11 +97,13 @@ public final class ClassPathModifier extends ProjectClassPathModifierImplementat
             final PropertyEvaluator eval, final ReferenceHelper refHelper, 
             ClassPathSupport.Callback cpSupportCallback, 
             ClassPathModifier.Callback cpModifierCallback,
-            ClassPathUiSupport.Callback cpUiSupportCallback) {
+            ClassPathUiSupport.Callback cpUiSupportCallback,
+            String[] libUpdaterProperties) {
         assert project != null;
         assert helper != null;
         assert eval != null;
         assert refHelper != null;
+        assert libUpdaterProperties != null && libUpdaterProperties.length > 0;
         this.project = project;
         this.helper = helper;
         this.eval = eval;
@@ -110,6 +114,7 @@ public final class ClassPathModifier extends ProjectClassPathModifierImplementat
         this.cpModifierCallback = cpModifierCallback;
         this.cpSupportCallback = cpSupportCallback;
         this.cpUiSupportCallback = cpUiSupportCallback;
+        this.libUpdaterProperties = libUpdaterProperties;
     }
     
     protected SourceGroup[] getExtensibleSourceGroups() {
@@ -274,7 +279,9 @@ public final class ClassPathModifier extends ProjectClassPathModifierImplementat
             cpUiSupportCallback.initItem(item);
             items.add(item);
         }
-        return handleLibraryClassPathItems(items, classPathProperty, projectXMLElementName, operation, true);
+        boolean res = handleLibraryClassPathItems(items, classPathProperty, projectXMLElementName, operation, true);
+        ProjectProperties.storeLibrariesLocations(project, antHelper, cs, libUpdaterProperties);
+        return res;
     }
     
     public static Library checkLibrarySharability(Project project, AntProjectHelper antHelper, ReferenceHelper refHelper, Library lib) throws IOException {

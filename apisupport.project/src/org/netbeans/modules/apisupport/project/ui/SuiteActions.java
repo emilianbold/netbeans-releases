@@ -294,6 +294,7 @@ public final class SuiteActions implements ActionProvider {
                 NbBundle.getMessage(ModuleActions.class, "TITLE_app_name"),
                 msg,
                 NbBundle.getMessage(ModuleActions.class, "LBL_configure_app_name"),
+                NbBundle.getMessage(ModuleActions.class, "ACSD_configure_app_name"),
                 null,
                 NotifyDescriptor.WARNING_MESSAGE)) {
             SuiteCustomizer cpi = project.getLookup().lookup(SuiteCustomizer.class);

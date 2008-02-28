@@ -226,4 +226,18 @@ public interface RubyInstance {
      */
     public void removeChangeListener(ChangeListener listener);
     
+    /**
+     * Returns the context path for the specified application on this server.
+     * 
+     * @return the context path for the specified application.
+     */
+    public String getContextRoot(String applicationName);
+    
+    /**
+     * The http port used for accessing rails apps for this server.
+     * 
+     * @return http port for rails on this server.
+     */
+    public int getRailsPort();
+
 }
