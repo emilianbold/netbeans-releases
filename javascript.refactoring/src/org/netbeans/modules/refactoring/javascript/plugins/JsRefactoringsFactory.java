@@ -41,12 +41,10 @@
 
 package org.netbeans.modules.refactoring.javascript.plugins;
 
-import org.netbeans.api.fileinfo.NonRecursiveFolder;
 import org.netbeans.modules.refactoring.javascript.RetoucheUtils;
 import org.netbeans.modules.refactoring.api.*;
 import org.netbeans.modules.refactoring.javascript.JsElementCtx;
 import org.netbeans.modules.refactoring.spi.*;
-import org.netbeans.modules.javascript.editing.JsUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Lookup;
 
@@ -59,7 +57,6 @@ public class JsRefactoringsFactory implements RefactoringPluginFactory {
     public RefactoringPlugin createInstance(AbstractRefactoring refactoring) {
         Lookup look = refactoring.getRefactoringSource();
         FileObject file = look.lookup(FileObject.class);
-        NonRecursiveFolder folder = look.lookup(NonRecursiveFolder.class);
         JsElementCtx handle = look.lookup(JsElementCtx.class);
         if (refactoring instanceof WhereUsedQuery) {
             if (handle!=null) {
@@ -69,17 +66,7 @@ public class JsRefactoringsFactory implements RefactoringPluginFactory {
             if (handle!=null || ((file!=null) && RetoucheUtils.isJsFile(file))) {
                 //rename java file, class, method etc..
                 return new RenameRefactoringPlugin((RenameRefactoring)refactoring);
-            } else if (file!=null && RetoucheUtils.isOnSourceClasspath(file) && file.isFolder()) {
-                //rename folder
-                return new MoveRefactoringPlugin((RenameRefactoring)refactoring);
-            } else if (folder!=null && RetoucheUtils.isOnSourceClasspath(folder.getFolder())) {
-                //rename package
-                return new MoveRefactoringPlugin((RenameRefactoring)refactoring);
             }
-        } else if (refactoring instanceof MoveRefactoring) {
-            return new MoveRefactoringPlugin((MoveRefactoring) refactoring);
-//        } else if (refactoring instanceof ExtractInterfaceRefactoring) {
-//            return new ExtractInterfaceRefactoringPlugin((ExtractInterfaceRefactoring) refactoring);
         }
         return null;
     }

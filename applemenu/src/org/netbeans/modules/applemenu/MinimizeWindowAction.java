@@ -39,68 +39,26 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.refactoring.javascript.ui.tree;
+package org.netbeans.modules.applemenu;
 
-import java.awt.Image;
-import java.beans.BeanInfo;
-import java.lang.ref.WeakReference;
-import javax.swing.Icon;
-import javax.swing.ImageIcon;
-import org.netbeans.api.project.FileOwnerQuery;
-import org.netbeans.api.project.SourceGroup;
-import org.netbeans.modules.refactoring.spi.ui.*;
-import org.openide.filesystems.FileObject;
-import org.openide.loaders.DataObject;
-import org.openide.loaders.DataObjectNotFoundException;
-import org.openide.util.Utilities;
+import java.awt.Frame;
+import java.awt.event.ActionEvent;
+import javax.swing.AbstractAction;
+import org.openide.windows.WindowManager;
 
 /**
- *
- * @author Jan Becicka
+ * JDK on Mac ignores Meta-M shortcut to minimize the main window, so we need 
+ * to define our own shortcut and assign shortcut to it.
+ * 
+ * @author S. Aubrecht
  */
-public class SourceGroupTreeElement implements TreeElement {
+public class MinimizeWindowAction extends AbstractAction {
+
+    public MinimizeWindowAction() {
+    }
     
-    private WeakReference<SourceGroup> sg;
-    private FileObject dir;
-    private Icon icon;
-    private String displayName;
-    
-    private static String PACKAGE_BADGE = "org/netbeans/modules/refactoring/javascript/ui/tree/packageBadge.gif"; // NOI18N
-
-    SourceGroupTreeElement(SourceGroup sg) {
-        this.sg = new WeakReference<SourceGroup>(sg);
-        dir = sg.getRootFolder();
- 
-        icon = sg.getIcon(false);
-        if ( icon == null ) {
-            try {
-                Image image = DataObject.find(sg.getRootFolder()).getNodeDelegate().getIcon(BeanInfo.ICON_COLOR_16x16);
-                image = Utilities.mergeImages( image, Utilities.loadImage(PACKAGE_BADGE), 7, 7 );
-                icon = new ImageIcon(image);
-            } catch (DataObjectNotFoundException d) {
-            }
-        }
-        displayName = sg.getDisplayName();
+    public void actionPerformed(ActionEvent arg0) {
+        WindowManager.getDefault().getMainWindow().setExtendedState(Frame.ICONIFIED);
     }
 
-    public TreeElement getParent(boolean isLogical) {
-        return TreeElementFactory.getTreeElement(FileOwnerQuery.getOwner(dir));
-    }
-
-    public Icon getIcon() {
-        return icon;
-    }
-
-    public String getText(boolean isLogical) {
-        return displayName;
-    }
-
-    public Object getUserObject() {
-        SourceGroup s = sg.get();
-        if (s==null) {
-            s = FolderTreeElement.getSourceGroup(dir);
-        }
-        return s;
-    }
 }
-
