@@ -531,7 +531,10 @@ public final class ElementUtilities {
                             TypeMirror existingReturnType = existingType.getReturnType();
                             TypeMirror eeReturnType = eeType.getReturnType();
                             if (!types.isSubtype(existingReturnType, eeReturnType)) {
-                                if (existingReturnType.getKind() == TypeKind.DECLARED && eeReturnType.getKind() == TypeKind.DECLARED) {
+                                if (types.isSubtype(eeReturnType, existingReturnType)) {
+                                    undef.remove(existing);
+                                    undef.add(ee);
+                                } else if (existingReturnType.getKind() == TypeKind.DECLARED && eeReturnType.getKind() == TypeKind.DECLARED) {
                                     Env<AttrContext> env = Enter.instance(ctx).getClassEnv((TypeSymbol)impl);
                                     DeclaredType subType = findCommonSubtype((DeclaredType)existingReturnType, (DeclaredType)eeReturnType, env);
                                     if (subType != null) {
