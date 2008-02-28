@@ -57,6 +57,7 @@ import org.netbeans.spi.glassfish.GlassfishModule.OperationState;
 import org.netbeans.spi.glassfish.GlassfishModule.ServerState;
 import org.netbeans.spi.glassfish.OperationStateListener;
 import org.openide.util.ChangeSupport;
+import org.openide.util.RequestProcessor;
 
 
 /**
@@ -173,7 +174,7 @@ public class CommonServerSupport implements GlassfishModule {
         };
         FutureTask<OperationState> task = new FutureTask<OperationState>(
                 new StartTask(properties, null, startServerListener, stateListener));
-        task.run();
+        RequestProcessor.getDefault().post(task);
         return task;
     }
 
@@ -192,7 +193,7 @@ public class CommonServerSupport implements GlassfishModule {
         };
         FutureTask<OperationState> task = new FutureTask<OperationState>(
                 new StopTask(properties, stopServerListener, stateListener));
-        task.run();
+        RequestProcessor.getDefault().post(task);
         return task;
     }
     
