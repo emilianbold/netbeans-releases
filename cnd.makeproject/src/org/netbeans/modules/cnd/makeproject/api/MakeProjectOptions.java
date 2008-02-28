@@ -128,21 +128,6 @@ public class MakeProjectOptions {
         return MakeOptions.getDefaultMakeOptions();
     }
 
-    public static void setDefaultCompilerSetName(String compilerSetName) {
-        CppSettings.getDefault().setCompilerSetName(compilerSetName);
-    }
-
-    public static String getDefaultCompilerSetName() {
-        return CppSettings.getDefault().getCompilerSetName();
-    }
-
-    public static void setDefaultCompilerSetDirectories(String compilerSetDirectories) {
-        CppSettings.getDefault().setCompilerSetDirectories(compilerSetDirectories);
-    }
-
-    public static String getDefaultCompilerSetDirectories() {
-        return CppSettings.getDefault().getCompilerSetDirectories();
-    }
     
     public static void setDefaultPlatform(int platform) {
         MakeOptions.getInstance().setPlatform(platform);
