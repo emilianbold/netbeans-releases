@@ -52,7 +52,6 @@ import org.netbeans.api.debugger.DebuggerEngine;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.modules.cnd.debugger.gdb.EditorContextBridge;
 import org.netbeans.modules.cnd.debugger.gdb.GdbDebugger;
-import org.netbeans.modules.cnd.debugger.gdb.breakpoints.BreakpointAnnotationListener;
 import org.openide.cookies.CloseCookie;
 import org.openide.cookies.OpenCookie;
 import org.openide.filesystems.FileObject;
@@ -82,8 +81,6 @@ public class Disassembly implements PropertyChangeListener, DocumentListener {
     private static final String COMBINED_HEADER="src_and_asm_line={"; // NOI18N
     
     private static FileObject fo = null;
-    
-    private BreakpointAnnotationListener breakAnnotationListener = null;
     
     public Disassembly(GdbDebugger debugger) {
         this.debugger = debugger;
