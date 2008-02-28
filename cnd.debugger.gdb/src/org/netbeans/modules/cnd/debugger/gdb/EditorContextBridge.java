@@ -180,6 +180,10 @@ public class EditorContextBridge {
     public static Object annotate(String url, int lineNumber, String annotationType, Object timeStamp) {
         return getContext().annotate(url, lineNumber, annotationType, timeStamp);
     }
+    
+    public static Object annotate(DataObject dobj, int lineNumber, String annotationType, Object timeStamp) {
+        return getContext().annotate(dobj, lineNumber, annotationType, timeStamp);
+    }
 
     /**
      * Adds annotation to given url on given line.
@@ -378,7 +382,6 @@ public class EditorContextBridge {
         String condition = b.getCondition();
         boolean isConditional = condition.trim().length() > 0;
         String annotationType;
-        DataObject dobj = null;
         if (b instanceof FunctionBreakpoint) {
             if (b.isEnabled()) {
                 annotationType = isConditional ? EditorContext.CONDITIONAL_FUNCTION_BREAKPOINT_ANNOTATION_TYPE :
@@ -396,21 +399,18 @@ public class EditorContextBridge {
             if (lineNumber == -1) {
                 return null;
             }
-            FileObject fo = Disassembly.getFileObject();
-            if (fo == null) {
-                return null;
-            }
-            try {
-                dobj = DataObject.find(fo);
-            } catch(DataObjectNotFoundException ex) {
-                return null;
-            }
             if (b.isEnabled()) {
                 annotationType = isConditional ? EditorContext.CONDITIONAL_ADDRESS_BREAKPOINT_ANNOTATION_TYPE :
                              EditorContext.ADDRESS_BREAKPOINT_ANNOTATION_TYPE;
             } else {
                 annotationType = isConditional ? EditorContext.DISABLED_CONDITIONAL_ADDRESS_BREAKPOINT_ANNOTATION_TYPE :
                              EditorContext.DISABLED_ADDRESS_BREAKPOINT_ANNOTATION_TYPE;
+            }
+            try {
+                return annotate(DataObject.find(Disassembly.getFileObject()), lineNumber, annotationType, null);
+            } catch (DataObjectNotFoundException doe) {
+                doe.printStackTrace();
+                return null;
             }
         } else {
             if (b.isEnabled()) {
