@@ -180,6 +180,10 @@ public class EditorContextBridge {
     public static Object annotate(String url, int lineNumber, String annotationType, Object timeStamp) {
         return getContext().annotate(url, lineNumber, annotationType, timeStamp);
     }
+    
+    public static Object annotate(DataObject dobj, int lineNumber, String annotationType, Object timeStamp) {
+        return getContext().annotate(dobj, lineNumber, annotationType, timeStamp);
+    }
 
     /**
      * Adds annotation to given url on given line.
@@ -401,6 +405,12 @@ public class EditorContextBridge {
             } else {
                 annotationType = isConditional ? EditorContext.DISABLED_CONDITIONAL_ADDRESS_BREAKPOINT_ANNOTATION_TYPE :
                              EditorContext.DISABLED_ADDRESS_BREAKPOINT_ANNOTATION_TYPE;
+            }
+            try {
+                return annotate(DataObject.find(Disassembly.getFileObject()), lineNumber, annotationType, null);
+            } catch (DataObjectNotFoundException doe) {
+                doe.printStackTrace();
+                return null;
             }
         } else {
             if (b.isEnabled()) {
