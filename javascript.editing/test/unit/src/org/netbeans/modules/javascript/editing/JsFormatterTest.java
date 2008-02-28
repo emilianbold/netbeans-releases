@@ -392,21 +392,31 @@ public class JsFormatterTest extends JsTestBase {
         // What about thesed: do? with?
     }
     
-//    public void testLineContinuationAsgn() throws Exception {
-//        format("x =\n1",
-//               "x =\n  1", null);
+    public void testLineContinuationAsgn() throws Exception {
+        format("x =\n1",
+               "x =\n    1", null);
+    }
+
+    public void testLineContinuation2() throws Exception {
+        format("x =\n1", 
+               "x =\n    1", new IndentPrefs(2,4));
+    }
+
+    public void testLineContinuation3() throws Exception {
+        format("x =\n1\ny = 5", 
+               "x =\n    1\ny = 5", new IndentPrefs(2,4));
+    }
+
+    public void testQuestionmarkIndent1() throws Exception {
+        format("j = t ?\n1 : 0\nx = 1",
+                "j = t ?\n    1 : 0\nx = 1", null);
+    }
+
+//    public void testQuestionmarkIndent2() throws Exception {
+//        format("j = t ?\n1 :\n0\nx = 1",
+//                "j = t ?\n    1 :\n    0\nx = 1", null);
 //    }
-//
-//    public void testLineContinuation2() throws Exception {
-//        format("x =\n1", 
-//               "x =\n    1", new IndentPrefs(2,4));
-//    }
-//
-//    public void testLineContinuation3() throws Exception {
-//        format("x =\n1\ny = 5", 
-//               "x =\n    1\ny = 5", new IndentPrefs(2,4));
-//    }
-//
+
 //    public void testLineContinuation4() throws Exception {
 //        format("def foo\nfoo\nif true\nx\nend\nend", 
 //               "def foo\n  foo\n  if true\n    x\n  end\nend", null);
@@ -428,16 +438,6 @@ public class JsFormatterTest extends JsTestBase {
 //               "render foo,\n  bar\nbaz", null);
 //    }
 //    
-//    public void testQuestionmarkIndent1() throws Exception {
-//        format("j = t ?\n1 : 0\nx = 1",
-//                "j = t ?\n  1 : 0\nx = 1", null);
-//    }
-//
-//    public void testQuestionmarkIndent2() throws Exception {
-//        format("j = t ?\n1 :\n0\nx = 1",
-//                "j = t ?\n  1 :\n  0\nx = 1", null);
-//    }
-//
 //    public void testCommaIndent() throws Exception {
 //        insertNewline("puts foo,^", "puts foo,\n  ^", null);
 //    }
