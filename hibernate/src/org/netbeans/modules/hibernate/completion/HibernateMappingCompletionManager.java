@@ -44,6 +44,7 @@ import org.netbeans.modules.hibernate.editor.ContextUtilities;
 import java.util.HashMap;
 import java.util.Map;
 import org.netbeans.editor.TokenItem;
+import org.netbeans.modules.hibernate.mapping.HibernateMappingXmlConstants;
 import org.netbeans.spi.editor.completion.CompletionResultSet;
 import org.openide.util.NbBundle;
 
@@ -54,49 +55,6 @@ import org.openide.util.NbBundle;
  */
 public final class HibernateMappingCompletionManager {
 
-    private static final String MAPPING_TAG = "hibernate-mapping";
-    private static final String CLASS_TAG = "class";
-    private static final String ID_TAG = "id";
-    private static final String GENERATOR_TAG = "generator";
-    private static final String PROPERTY_TAG = "property";
-    private static final String SET_TAG = "set";
-    private static final String KEY_TAG = "key";
-    private static final String ONE_TO_MANY_TAG = "one-to-many";
-    private static final String DISCRIMINATOR_TAG = "discriminator";
-    private static final String COMPOSITE_ID_TAG = "composite-id";
-    private static final String KEY_PROPERTY_TAG = "key-property";
-    private static final String KEY_MANY_TO_ONE_TAG = "key-many-to-one";
-    private static final String VERSION_TAG = "version";
-    private static final String TIMESTAMP_TAG = "timestamp";
-    private static final String MANY_TO_ONE_TAG = "many-to-one";
-    private static final String ONE_TO_ONE_TAG = "one-to-one";
-    private static final String COMPONENT_TAG = "component";
-    private static final String SUBCLASS_TAG = "subclass";
-    private static final String JOINED_SUBCLASS_TAG = "joined-subclass";
-    private static final String UNION_SUBCLASS_TAG = "union-subclass";
-    private static final String JOIN_TAG = "join";
-    private static final String COLUMN_TAG = "column";
-    private static final String IMPORT_TAG = "import";
-    private static final String ANY_TAG = "any";
-    private static final String MAP_TAG = "map";
-    private static final String LIST_TAG = "list";
-    private static final String LIST_INDEX_TAG = "list-index";
-    private static final String INDEX_TAG = "index";
-    private static final String MAP_KEY_TAG = "map-key";
-    private static final String ELEMENT_TAG = "element";
-    private static final String MANY_TO_MANY_TAG = "many-to-many";
-    
-    private static final String TABLE_ATTRIB = "table"; // table name
-    private static final String PACKAGE_ATTRIB = "package";
-    private static final String CLASS_ATTRIB = "class";
-    private static final String NAME_ATTRIB = "name";
-    private static final String TYPE_ATTRIB = "type";
-    private static final String COLUMN_ATTRIB = "column";
-    private static final String EXTENDS_ATTRIB = "extends";
-    private static final String PERSISTER_ATTRIB = "persister";
-    private static final String CASCADE_ATTRIB = "cascade";
-    private static final String ID_TYPE_ATTRIB = "id-type";
-    
     private static Map<String, Completor> completors = new HashMap<String, Completor>();
 
     private HibernateMappingCompletionManager() {
@@ -177,94 +135,94 @@ public final class HibernateMappingCompletionManager {
 
         // Items for package attribute in the root element
         Completor.JavaClassCompletor javaPackageCompletor = new Completor.JavaClassCompletor(true);
-        registerCompletor(MAPPING_TAG, PACKAGE_ATTRIB, javaPackageCompletor);
+        registerCompletor(HibernateMappingXmlConstants.MAPPING_TAG, HibernateMappingXmlConstants.PACKAGE_ATTRIB, javaPackageCompletor);
 
         // Items for Id generator classes
         Completor.AttributeValueCompletor generatorCompletor = new Completor.AttributeValueCompletor(generatorClasses);
-        registerCompletor(GENERATOR_TAG, CLASS_ATTRIB, generatorCompletor);
+        registerCompletor(HibernateMappingXmlConstants.GENERATOR_TAG, HibernateMappingXmlConstants.CLASS_ATTRIB, generatorCompletor);
 
         // Items for Hibernate type 
         Completor.AttributeValueCompletor typeCompletor = new Completor.AttributeValueCompletor(hibernateTypes);
-        registerCompletor(PROPERTY_TAG, TYPE_ATTRIB, typeCompletor);
-        registerCompletor(ID_TAG, TYPE_ATTRIB, typeCompletor);
-        registerCompletor(DISCRIMINATOR_TAG, TYPE_ATTRIB, typeCompletor);
-        registerCompletor(KEY_PROPERTY_TAG, TYPE_ATTRIB, typeCompletor);
-        registerCompletor(VERSION_TAG, TYPE_ATTRIB, typeCompletor);
-        registerCompletor(ELEMENT_TAG, TYPE_ATTRIB, typeCompletor);
-        registerCompletor(MAP_KEY_TAG, TYPE_ATTRIB, typeCompletor);
-        registerCompletor(INDEX_TAG, TYPE_ATTRIB, typeCompletor);
-        registerCompletor(ANY_TAG, ID_TYPE_ATTRIB, typeCompletor);
+        registerCompletor(HibernateMappingXmlConstants.PROPERTY_TAG, HibernateMappingXmlConstants.TYPE_ATTRIB, typeCompletor);
+        registerCompletor(HibernateMappingXmlConstants.ID_TAG, HibernateMappingXmlConstants.TYPE_ATTRIB, typeCompletor);
+        registerCompletor(HibernateMappingXmlConstants.DISCRIMINATOR_TAG, HibernateMappingXmlConstants.TYPE_ATTRIB, typeCompletor);
+        registerCompletor(HibernateMappingXmlConstants.KEY_PROPERTY_TAG, HibernateMappingXmlConstants.TYPE_ATTRIB, typeCompletor);
+        registerCompletor(HibernateMappingXmlConstants.VERSION_TAG, HibernateMappingXmlConstants.TYPE_ATTRIB, typeCompletor);
+        registerCompletor(HibernateMappingXmlConstants.ELEMENT_TAG, HibernateMappingXmlConstants.TYPE_ATTRIB, typeCompletor);
+        registerCompletor(HibernateMappingXmlConstants.MAP_KEY_TAG, HibernateMappingXmlConstants.TYPE_ATTRIB, typeCompletor);
+        registerCompletor(HibernateMappingXmlConstants.INDEX_TAG, HibernateMappingXmlConstants.TYPE_ATTRIB, typeCompletor);
+        registerCompletor(HibernateMappingXmlConstants.ANY_TAG, HibernateMappingXmlConstants.ID_TYPE_ATTRIB, typeCompletor);
 
         // Items for classes to be mapped
         Completor.JavaClassCompletor javaClassCompletor = new Completor.JavaClassCompletor(false);
-        registerCompletor(CLASS_TAG, NAME_ATTRIB, javaClassCompletor);
-        registerCompletor(ONE_TO_MANY_TAG, CLASS_ATTRIB, javaClassCompletor);
-        registerCompletor(COMPOSITE_ID_TAG, CLASS_ATTRIB, javaClassCompletor);
-        registerCompletor(KEY_MANY_TO_ONE_TAG, CLASS_ATTRIB, javaClassCompletor);
-        registerCompletor(MANY_TO_ONE_TAG, CLASS_ATTRIB, javaClassCompletor);
-        registerCompletor(ONE_TO_ONE_TAG, CLASS_ATTRIB, javaClassCompletor);
-        registerCompletor(COMPONENT_TAG, CLASS_ATTRIB, javaClassCompletor);
-        registerCompletor(SUBCLASS_TAG, NAME_ATTRIB, javaClassCompletor);
-        registerCompletor(SUBCLASS_TAG, EXTENDS_ATTRIB, javaClassCompletor);
-        registerCompletor(JOINED_SUBCLASS_TAG, NAME_ATTRIB, javaClassCompletor);
-        registerCompletor(JOINED_SUBCLASS_TAG, EXTENDS_ATTRIB, javaClassCompletor);
-        registerCompletor(JOINED_SUBCLASS_TAG, PERSISTER_ATTRIB, javaClassCompletor);
-        registerCompletor(UNION_SUBCLASS_TAG, NAME_ATTRIB, javaClassCompletor);
-        registerCompletor(UNION_SUBCLASS_TAG, EXTENDS_ATTRIB, javaClassCompletor);
-        registerCompletor(UNION_SUBCLASS_TAG, PERSISTER_ATTRIB, javaClassCompletor);
-        registerCompletor(IMPORT_TAG, CLASS_ATTRIB, javaClassCompletor);
-        registerCompletor(MANY_TO_MANY_TAG, CLASS_ATTRIB, javaClassCompletor);
+        registerCompletor(HibernateMappingXmlConstants.CLASS_TAG, HibernateMappingXmlConstants.NAME_ATTRIB, javaClassCompletor);
+        registerCompletor(HibernateMappingXmlConstants.ONE_TO_MANY_TAG, HibernateMappingXmlConstants.CLASS_ATTRIB, javaClassCompletor);
+        registerCompletor(HibernateMappingXmlConstants.COMPOSITE_ID_TAG, HibernateMappingXmlConstants.CLASS_ATTRIB, javaClassCompletor);
+        registerCompletor(HibernateMappingXmlConstants.KEY_MANY_TO_ONE_TAG, HibernateMappingXmlConstants.CLASS_ATTRIB, javaClassCompletor);
+        registerCompletor(HibernateMappingXmlConstants.MANY_TO_ONE_TAG, HibernateMappingXmlConstants.CLASS_ATTRIB, javaClassCompletor);
+        registerCompletor(HibernateMappingXmlConstants.ONE_TO_ONE_TAG, HibernateMappingXmlConstants.CLASS_ATTRIB, javaClassCompletor);
+        registerCompletor(HibernateMappingXmlConstants.COMPONENT_TAG, HibernateMappingXmlConstants.CLASS_ATTRIB, javaClassCompletor);
+        registerCompletor(HibernateMappingXmlConstants.SUBCLASS_TAG, HibernateMappingXmlConstants.NAME_ATTRIB, javaClassCompletor);
+        registerCompletor(HibernateMappingXmlConstants.SUBCLASS_TAG, HibernateMappingXmlConstants.EXTENDS_ATTRIB, javaClassCompletor);
+        registerCompletor(HibernateMappingXmlConstants.JOINED_SUBCLASS_TAG, HibernateMappingXmlConstants.NAME_ATTRIB, javaClassCompletor);
+        registerCompletor(HibernateMappingXmlConstants.JOINED_SUBCLASS_TAG, HibernateMappingXmlConstants.EXTENDS_ATTRIB, javaClassCompletor);
+        registerCompletor(HibernateMappingXmlConstants.JOINED_SUBCLASS_TAG, HibernateMappingXmlConstants.PERSISTER_ATTRIB, javaClassCompletor);
+        registerCompletor(HibernateMappingXmlConstants.UNION_SUBCLASS_TAG, HibernateMappingXmlConstants.NAME_ATTRIB, javaClassCompletor);
+        registerCompletor(HibernateMappingXmlConstants.UNION_SUBCLASS_TAG, HibernateMappingXmlConstants.EXTENDS_ATTRIB, javaClassCompletor);
+        registerCompletor(HibernateMappingXmlConstants.UNION_SUBCLASS_TAG, HibernateMappingXmlConstants.PERSISTER_ATTRIB, javaClassCompletor);
+        registerCompletor(HibernateMappingXmlConstants.IMPORT_TAG, HibernateMappingXmlConstants.CLASS_ATTRIB, javaClassCompletor);
+        registerCompletor(HibernateMappingXmlConstants.MANY_TO_MANY_TAG, HibernateMappingXmlConstants.CLASS_ATTRIB, javaClassCompletor);
 
         // Items for properties to be mapped
         Completor.PropertyCompletor propertyCompletor = new Completor.PropertyCompletor();
-        registerCompletor(PROPERTY_TAG, NAME_ATTRIB, propertyCompletor);
-        registerCompletor(ID_TAG, NAME_ATTRIB, propertyCompletor);
-        registerCompletor(SET_TAG, NAME_ATTRIB, propertyCompletor);
-        registerCompletor(COMPOSITE_ID_TAG, NAME_ATTRIB, propertyCompletor);
-        registerCompletor(KEY_PROPERTY_TAG, NAME_ATTRIB, propertyCompletor);
-        registerCompletor(KEY_MANY_TO_ONE_TAG, NAME_ATTRIB, propertyCompletor);
-        registerCompletor(VERSION_TAG, NAME_ATTRIB, propertyCompletor);
-        registerCompletor(TIMESTAMP_TAG, NAME_ATTRIB, propertyCompletor);
-        registerCompletor(MANY_TO_ONE_TAG, NAME_ATTRIB, propertyCompletor);
-        registerCompletor(ONE_TO_ONE_TAG, NAME_ATTRIB, propertyCompletor);
-        registerCompletor(COMPONENT_TAG, NAME_ATTRIB, propertyCompletor);
-        registerCompletor(ANY_TAG, NAME_ATTRIB, propertyCompletor);
-        registerCompletor(MAP_TAG, NAME_ATTRIB, propertyCompletor);
-        registerCompletor(LIST_TAG, NAME_ATTRIB, propertyCompletor);
+        registerCompletor(HibernateMappingXmlConstants.PROPERTY_TAG, HibernateMappingXmlConstants.NAME_ATTRIB, propertyCompletor);
+        registerCompletor(HibernateMappingXmlConstants.ID_TAG, HibernateMappingXmlConstants.NAME_ATTRIB, propertyCompletor);
+        registerCompletor(HibernateMappingXmlConstants.SET_TAG, HibernateMappingXmlConstants.NAME_ATTRIB, propertyCompletor);
+        registerCompletor(HibernateMappingXmlConstants.COMPOSITE_ID_TAG, HibernateMappingXmlConstants.NAME_ATTRIB, propertyCompletor);
+        registerCompletor(HibernateMappingXmlConstants.KEY_PROPERTY_TAG, HibernateMappingXmlConstants.NAME_ATTRIB, propertyCompletor);
+        registerCompletor(HibernateMappingXmlConstants.KEY_MANY_TO_ONE_TAG, HibernateMappingXmlConstants.NAME_ATTRIB, propertyCompletor);
+        registerCompletor(HibernateMappingXmlConstants.VERSION_TAG, HibernateMappingXmlConstants.NAME_ATTRIB, propertyCompletor);
+        registerCompletor(HibernateMappingXmlConstants.TIMESTAMP_TAG, HibernateMappingXmlConstants.NAME_ATTRIB, propertyCompletor);
+        registerCompletor(HibernateMappingXmlConstants.MANY_TO_ONE_TAG, HibernateMappingXmlConstants.NAME_ATTRIB, propertyCompletor);
+        registerCompletor(HibernateMappingXmlConstants.ONE_TO_ONE_TAG, HibernateMappingXmlConstants.NAME_ATTRIB, propertyCompletor);
+        registerCompletor(HibernateMappingXmlConstants.COMPONENT_TAG, HibernateMappingXmlConstants.NAME_ATTRIB, propertyCompletor);
+        registerCompletor(HibernateMappingXmlConstants.ANY_TAG, HibernateMappingXmlConstants.NAME_ATTRIB, propertyCompletor);
+        registerCompletor(HibernateMappingXmlConstants.MAP_TAG, HibernateMappingXmlConstants.NAME_ATTRIB, propertyCompletor);
+        registerCompletor(HibernateMappingXmlConstants.LIST_TAG, HibernateMappingXmlConstants.NAME_ATTRIB, propertyCompletor);
 
         // Items for database tables to be mapped to
         Completor.DatabaseTableCompletor databaseTableCompletor = new Completor.DatabaseTableCompletor();
-        registerCompletor(CLASS_TAG, TABLE_ATTRIB, databaseTableCompletor);
-        registerCompletor(SET_TAG, TABLE_ATTRIB, databaseTableCompletor);
-        registerCompletor(JOINED_SUBCLASS_TAG, TABLE_ATTRIB, databaseTableCompletor);
-        registerCompletor(UNION_SUBCLASS_TAG, TABLE_ATTRIB, databaseTableCompletor);
-        registerCompletor(JOIN_TAG, TABLE_ATTRIB, databaseTableCompletor);
-        registerCompletor(MAP_TAG, TABLE_ATTRIB, databaseTableCompletor);
+        registerCompletor(HibernateMappingXmlConstants.CLASS_TAG, HibernateMappingXmlConstants.TABLE_ATTRIB, databaseTableCompletor);
+        registerCompletor(HibernateMappingXmlConstants.SET_TAG, HibernateMappingXmlConstants.TABLE_ATTRIB, databaseTableCompletor);
+        registerCompletor(HibernateMappingXmlConstants.JOINED_SUBCLASS_TAG, HibernateMappingXmlConstants.TABLE_ATTRIB, databaseTableCompletor);
+        registerCompletor(HibernateMappingXmlConstants.UNION_SUBCLASS_TAG, HibernateMappingXmlConstants.TABLE_ATTRIB, databaseTableCompletor);
+        registerCompletor(HibernateMappingXmlConstants.JOIN_TAG, HibernateMappingXmlConstants.TABLE_ATTRIB, databaseTableCompletor);
+        registerCompletor(HibernateMappingXmlConstants.MAP_TAG, HibernateMappingXmlConstants.TABLE_ATTRIB, databaseTableCompletor);
 
         // Items for database columns to be mapped to
         Completor.DatabaseTableColumnCompletor databaseColumnCompletor = new Completor.DatabaseTableColumnCompletor();
-        registerCompletor(PROPERTY_TAG, COLUMN_ATTRIB, databaseColumnCompletor);
-        registerCompletor(ID_TAG, COLUMN_ATTRIB, databaseColumnCompletor);
-        registerCompletor(KEY_TAG, COLUMN_ATTRIB, databaseColumnCompletor);
-        registerCompletor(DISCRIMINATOR_TAG, COLUMN_ATTRIB, databaseColumnCompletor);
-        registerCompletor(KEY_PROPERTY_TAG, COLUMN_ATTRIB, databaseColumnCompletor);
-        registerCompletor(KEY_MANY_TO_ONE_TAG, COLUMN_ATTRIB, databaseColumnCompletor);
-        registerCompletor(VERSION_TAG, COLUMN_ATTRIB, databaseColumnCompletor);
-        registerCompletor(TIMESTAMP_TAG, COLUMN_ATTRIB, databaseColumnCompletor);
-        registerCompletor(MANY_TO_ONE_TAG, COLUMN_ATTRIB, databaseColumnCompletor);
-        registerCompletor(COLUMN_TAG, NAME_ATTRIB, databaseColumnCompletor);
-        registerCompletor(LIST_INDEX_TAG, COLUMN_ATTRIB, databaseColumnCompletor);
-        registerCompletor(INDEX_TAG, COLUMN_ATTRIB, databaseColumnCompletor);
-        registerCompletor(MAP_KEY_TAG, COLUMN_ATTRIB, databaseColumnCompletor);
-        registerCompletor(ELEMENT_TAG, COLUMN_ATTRIB, databaseColumnCompletor);
-        registerCompletor(MANY_TO_MANY_TAG, COLUMN_ATTRIB, databaseColumnCompletor);
+        registerCompletor(HibernateMappingXmlConstants.PROPERTY_TAG, HibernateMappingXmlConstants.COLUMN_ATTRIB, databaseColumnCompletor);
+        registerCompletor(HibernateMappingXmlConstants.ID_TAG, HibernateMappingXmlConstants.COLUMN_ATTRIB, databaseColumnCompletor);
+        registerCompletor(HibernateMappingXmlConstants.KEY_TAG, HibernateMappingXmlConstants.COLUMN_ATTRIB, databaseColumnCompletor);
+        registerCompletor(HibernateMappingXmlConstants.DISCRIMINATOR_TAG, HibernateMappingXmlConstants.COLUMN_ATTRIB, databaseColumnCompletor);
+        registerCompletor(HibernateMappingXmlConstants.KEY_PROPERTY_TAG, HibernateMappingXmlConstants.COLUMN_ATTRIB, databaseColumnCompletor);
+        registerCompletor(HibernateMappingXmlConstants.KEY_MANY_TO_ONE_TAG, HibernateMappingXmlConstants.COLUMN_ATTRIB, databaseColumnCompletor);
+        registerCompletor(HibernateMappingXmlConstants.VERSION_TAG, HibernateMappingXmlConstants.COLUMN_ATTRIB, databaseColumnCompletor);
+        registerCompletor(HibernateMappingXmlConstants.TIMESTAMP_TAG, HibernateMappingXmlConstants.COLUMN_ATTRIB, databaseColumnCompletor);
+        registerCompletor(HibernateMappingXmlConstants.MANY_TO_ONE_TAG, HibernateMappingXmlConstants.COLUMN_ATTRIB, databaseColumnCompletor);
+        registerCompletor(HibernateMappingXmlConstants.COLUMN_TAG, HibernateMappingXmlConstants.NAME_ATTRIB, databaseColumnCompletor);
+        registerCompletor(HibernateMappingXmlConstants.LIST_INDEX_TAG, HibernateMappingXmlConstants.COLUMN_ATTRIB, databaseColumnCompletor);
+        registerCompletor(HibernateMappingXmlConstants.INDEX_TAG, HibernateMappingXmlConstants.COLUMN_ATTRIB, databaseColumnCompletor);
+        registerCompletor(HibernateMappingXmlConstants.MAP_KEY_TAG, HibernateMappingXmlConstants.COLUMN_ATTRIB, databaseColumnCompletor);
+        registerCompletor(HibernateMappingXmlConstants.ELEMENT_TAG, HibernateMappingXmlConstants.COLUMN_ATTRIB, databaseColumnCompletor);
+        registerCompletor(HibernateMappingXmlConstants.MANY_TO_MANY_TAG, HibernateMappingXmlConstants.COLUMN_ATTRIB, databaseColumnCompletor);
 
         // Items for cascade attribute
         Completor.CascadeStyleCompletor cascadeStyleCompletor = new Completor.CascadeStyleCompletor(cascadeStyles);
-        registerCompletor(MANY_TO_ONE_TAG, CASCADE_ATTRIB, cascadeStyleCompletor);
-        registerCompletor(ONE_TO_ONE_TAG, CASCADE_ATTRIB, cascadeStyleCompletor);
-        registerCompletor(ANY_TAG, CASCADE_ATTRIB, cascadeStyleCompletor);
-        registerCompletor(MAP_TAG, CASCADE_ATTRIB, cascadeStyleCompletor);
+        registerCompletor(HibernateMappingXmlConstants.MANY_TO_ONE_TAG, HibernateMappingXmlConstants.CASCADE_ATTRIB, cascadeStyleCompletor);
+        registerCompletor(HibernateMappingXmlConstants.ONE_TO_ONE_TAG, HibernateMappingXmlConstants.CASCADE_ATTRIB, cascadeStyleCompletor);
+        registerCompletor(HibernateMappingXmlConstants.ANY_TAG, HibernateMappingXmlConstants.CASCADE_ATTRIB, cascadeStyleCompletor);
+        registerCompletor(HibernateMappingXmlConstants.MAP_TAG, HibernateMappingXmlConstants.CASCADE_ATTRIB, cascadeStyleCompletor);
     }
     private static HibernateMappingCompletionManager INSTANCE = new HibernateMappingCompletionManager();
 
