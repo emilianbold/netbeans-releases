@@ -287,6 +287,23 @@ public class DatabaseNodeChildren extends Children.Array {
         }
     }
     
+    public void replaceNodes(Node[] nodes) {
+        if ( isInitialized()) {
+            synchronized (additionalNodes)
+            {        
+                if ( initialized ) {
+                    this.remove(this.getNodes());
+                    this.add(nodes);
+                } else {
+                    additionalNodes.clear();
+                    for ( Node node : nodes ) {
+                        additionalNodes.add(node);
+                    }
+                }
+            }
+        }
+    }
+    
     public DatabaseNode createSubnode(DatabaseNodeInfo info, boolean addToChildrenFlag) throws DatabaseException {
         DatabaseNode subnode = createNode(info);
         if (subnode != null && addToChildrenFlag) {

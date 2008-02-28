@@ -156,6 +156,7 @@ public class RootNodeInfo extends DatabaseNodeInfo implements
         return ninfo;
     }
     
+    @Override
     public void refreshChildren() throws DatabaseException {
         // refresh action is empty
     }
@@ -177,25 +178,9 @@ public class RootNodeInfo extends DatabaseNodeInfo implements
             }
         }
         
-        postUpdateChildren(children, newNodes.toArray(new Node[0]));
-
-        fireRefresh();        
+        children.replaceNodes(newNodes.toArray(new Node[0]));
     }
-    
-    private void postUpdateChildren(final DatabaseNodeChildren children, 
-            final Node[] newNodes) {                
-        // Replace the node list with the new one
-        Children.MUTEX.postWriteRequest(new Runnable() {
-            public void run() {
-                // remove current sub-tree
-                children.remove(children.getNodes());
-
-                // add built sub-tree
-                children.add(newNodes);
-            }
-        });
-    }
-    
+        
     public void addConnectionNoConnect(DatabaseConnection dbconn) throws DatabaseException {
         getChildren(); // force restore
         
@@ -215,18 +200,15 @@ public class RootNodeInfo extends DatabaseNodeInfo implements
             throw new NullPointerException();
         }
         
-        ConnectionList.getDefault().remove(dbconn);
-        
         DatabaseNode node = getNode();
         DatabaseNodeChildren children = (DatabaseNodeChildren)node.getChildren();
         Node[] nodes = children.getNodes();
         
         for ( Node childNode : nodes ) {
             if ( childNode instanceof ConnectionNode ) {
-                ConnectionNodeInfo connInfo = (ConnectionNodeInfo)
-                        ((ConnectionNode)childNode).getInfo();
-                if ( ! connInfo.getDatabaseConnection().equals(dbconn)) {
-                    children.removeSubNode(childNode);
+                ConnectionNode connNode = (ConnectionNode)childNode;
+                if ( connNode.getInfo().getDatabaseConnection().equals(dbconn)) {
+                    connNode.deleteNode();
                 }
             }
         }

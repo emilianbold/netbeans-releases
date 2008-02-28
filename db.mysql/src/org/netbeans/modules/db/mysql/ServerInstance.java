@@ -474,19 +474,24 @@ public class ServerInstance implements Node.Cookie {
                     .prepareStatement(DROP_DATABASE_SQL + dbname)
                     .executeUpdate();
             
-            DatabaseConnection dbconn = DatabaseUtils.findDatabaseConnection(
-                    getURL(dbname), getUser());
-            
-            if ( dbconn != null ) {
-                ConnectionManager.getDefault().removeConnection(dbconn);
-            }
-            
-            refreshDatabaseList();
+            deleteConnections(dbname);
         } catch ( SQLException sqle ) {
             throw new DatabaseException(sqle);
+        } finally {
+            refreshDatabaseList();            
         }
         
     }
+    
+    private void deleteConnections(String dbname) throws DatabaseException {
+        List<DatabaseConnection> conns = 
+                DatabaseUtils.findDatabaseConnections(getURL(dbname));
+        
+        for ( DatabaseConnection conn : conns ) {
+            ConnectionManager.getDefault().removeConnection(conn);
+        }
+    }
+
     
     /**
      * Get the list of users defined for this server
