@@ -236,12 +236,14 @@ public final class RailsServerManager {
             final Future<RubyInstance.OperationState> result = 
                     instance.runApplication(platform, projectName, dir);
 
+            final RubyInstance serverInstance = instance;
             RequestProcessor.getDefault().post(new Runnable() {
                 public void run() {
                     try {
                         RubyInstance.OperationState state = result.get();
                         if(state == RubyInstance.OperationState.COMPLETED) {
                             synchronized(RailsServerManager.this) {
+                                port = serverInstance.getRailsPort();
                                 status = ServerStatus.RUNNING;
                             }
                         } else {

@@ -232,8 +232,8 @@ public class LibraryTest extends JellyTestCase {
         node.performPopupActionNoBlock("Add Library...");
         NbDialogOperator ndo = new NbDialogOperator("Add Library");
         new EventTool().waitNoEvent(1000);
-        JListOperator jlo = new JListOperator(ndo);
-        jlo.selectItem(libName);
+        JTreeOperator jto = new JTreeOperator(ndo);
+        jto.selectPath(jto.findPath("Global Libraries|" + libName));
         new JButtonOperator(ndo, "Add Library").push();
     }
     
