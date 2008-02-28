@@ -59,12 +59,14 @@ public class EPMeasureActions1  {
         // TODO: Remove this workaround
         suite.addTest(new EnterpriseSetupTest("closeAllModal"));
 
+        suite.addTest(new WatchProjects("testInitGCProjects"));
         suite.addTest(new CreateBPELmodule("measureTime", "Create BPEL module"));
         suite.addTest(new CreateCompositeApplication("measureTime", "Create Composite Application"));
         suite.addTest(new AddNewWSDLDocument("measureTime", "Add New WSDL Document"));
         suite.addTest(new AddNewXMLSchema("measureTime", "Add New XML Schema"));
         suite.addTest(new AddNewXMLDocument("measureTime", "Add New XML Document"));
         suite.addTest(new AddNewBpelProcess("measureTime", "Add New Bpel Process")); 
+        suite.addTest(new WatchProjects("testGCProjects"));
         return suite;
     }
     

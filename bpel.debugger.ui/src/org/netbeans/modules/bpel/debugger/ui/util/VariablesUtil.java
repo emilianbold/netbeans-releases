@@ -42,6 +42,7 @@ import org.netbeans.modules.bpel.model.api.BpelEntity;
 import org.netbeans.modules.bpel.model.api.BpelModel;
 import org.netbeans.modules.bpel.model.api.Scope;
 import org.netbeans.modules.bpel.model.api.Variable;
+import org.netbeans.modules.bpel.model.api.VariableContainer;
 import org.netbeans.modules.bpel.model.api.references.WSDLReference;
 import org.netbeans.modules.xml.schema.model.GlobalType;
 import org.netbeans.modules.xml.wsdl.model.Message;
@@ -926,9 +927,13 @@ public class VariablesUtil {
             return null;
         }
         
+        VariableContainer varsContainer = model.getProcess().
+                getVariableContainer();
+        
         // Add the variables from the process
-        variables.addAll(Arrays.asList(model.getProcess().
-                getVariableContainer().getVariables()));
+        if ((varsContainer != null) && (varsContainer.sizeOfVariable() > 0)) {
+            variables.addAll(Arrays.asList(varsContainer.getVariables()));
+        }
         
         final ProcessInstance currentInstance = 
                 myDebugger.getCurrentProcessInstance();
@@ -952,8 +957,14 @@ public class VariablesUtil {
             
             final Scope scope = getScopeEntity(scopeXpath);
             if (scope != null) {
-                variables.addAll(Arrays.asList(
-                        scope.getVariableContainer().getVariables()));
+                varsContainer = scope.getVariableContainer();
+                
+                if ((varsContainer != null) && 
+                        (varsContainer.sizeOfVariable() > 0)) {
+                    
+                    variables.addAll(
+                            Arrays.asList(varsContainer.getVariables()));
+                }
             }
             
             scopeIndex = index == -1 ? 

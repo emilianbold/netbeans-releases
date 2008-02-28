@@ -175,8 +175,35 @@ public class ReformatterImpl {
                 }
                 case IDENTIFIER:
                 {
+                    boolean isStart = false;
                     if (braces.getStatementContinuation() == BracesStack.StatementContinuation.STOP) {
                         braces.setStatementContinuation(BracesStack.StatementContinuation.START);
+                        isStart = ts.index() == braces.lastStatementStart;
+                    }
+                    if (isStart) {
+                        Token<CppTokenId> next = ts.lookNextImportant();
+                        if (next != null && next.id() == COLON) {
+                            braces.isLabel = true;
+                            if (doFormat()) {
+                                if (!ts.isFirstLineToken()) {
+                                    ts.addBeforeCurrent("\n");
+                                } else {
+                                    DiffResult diff = diffs.getDiffs(ts, -1);
+                                    if (diff == null){
+                                        if (previous != null && previous.id() == WHITESPACE) {
+                                            ts.replacePrevious(previous, "");
+                                        }
+                                    } else {
+                                        if (diff.after != null) {
+                                            diff.after.replaceSpaces("");
+                                        }
+                                        if (diff.replace != null) {
+                                            diff.replace.replaceSpaces("");
+                                        }
+                                    }
+                                }
+                            }
+                        }
                     }
                     break;
                 }
@@ -244,15 +271,25 @@ public class ReformatterImpl {
                 }
                 case COLON: //(":", "operator"),
                 {
+                    boolean isLabel = braces.isLabel;
+                    braces.isLabel = false;
                     if (doFormat()) {
+                        if (isLabel) {
+                            spaceBefore(previous, false);
+                            if(!ts.isLastLineToken()){
+                                ts.addAfterCurrent(current, getIndent("\n")); // NOI18N
+                            }
+                            braces.setStatementContinuation(BracesStack.StatementContinuation.STOP);
+                            break;
+                        }
                         Token<CppTokenId> p = ts.lookPreviousImportant();
                         if (p != null && 
                            (p.id() == PRIVATE ||
                             p.id() == PROTECTED ||
                             p.id() == PUBLIC)) {
+                            spaceBefore(previous, false);
                             if(!ts.isLastLineToken()){
                                 // TODO use flase?
-                                spaceBefore(previous, false);
                                 ts.addAfterCurrent(current, getIndent("\n")); // NOI18N
                             }
                             break;
@@ -287,6 +324,12 @@ public class ReformatterImpl {
                         }
                     }
                     if (doFormat()) {
+                       boolean isClassDeclaration = entry != null && 
+                                            entry.getImportantKind() != null &&
+                                           (entry.getImportantKind() == CLASS ||
+                                            entry.getImportantKind() == STRUCT ||
+                                            entry.getImportantKind() == UNION ||
+                                            entry.getImportantKind() == ENUM);
                         if (entry != null && entry.getImportantKind() == null) {
                             entry = braces.peek();
                             if (entry != null &&
@@ -294,7 +337,7 @@ public class ReformatterImpl {
                                 indent--;
                             }
                         }
-                        indentRbrace(entry, previous, indent, current);
+                        indentRbrace(entry, previous, indent, current, isClassDeclaration);
                     }
                     break;
                 }
@@ -748,7 +791,7 @@ public class ReformatterImpl {
     }
 
     private void indentRbrace(StackEntry entry, Token<CppTokenId> previous,
-                              int indent, Token<CppTokenId> current) {
+                              int indent, Token<CppTokenId> current, boolean isClassDeclaration) {
         if (previous != null) {
             boolean done = false;
             DiffResult diff = diffs.getDiffs(ts, -1);
@@ -786,8 +829,14 @@ public class ReformatterImpl {
                 }
             }
         }
-        Token<CppTokenId> nextImportant = ts.lookNextImportant();
         Token<CppTokenId> next = ts.lookNext();
+        if (isClassDeclaration) {
+            if (next != null && !(next.id() == WHITESPACE || next.id() == NEW_LINE)) {
+                ts.addAfterCurrent(current, " ");
+            }
+            return;
+        }
+        Token<CppTokenId> nextImportant = ts.lookNextImportant();
         if (nextImportant != null) {
             switch (nextImportant.id()) {
                 case WHILE:
@@ -921,7 +970,13 @@ public class ReformatterImpl {
         if (current.id() == NEW_LINE) {
             return;
         }
-        String space = getIndent(""); // NOI18N
+        String space;
+        Token<CppTokenId> first = ts.lookNextLineImportant();
+        if (first != null && (first.id() == CASE ||first.id() == DEFAULT)){
+            space = getParentIndent(""); // NOI18N
+        } else {
+            space = getIndent(""); // NOI18N
+        }
         if (current.id() == WHITESPACE) {
             ts.replaceCurrent(current, space);
         } else {
@@ -987,7 +1042,9 @@ public class ReformatterImpl {
             newLineBefore();
         } else if (where == CodeStyle.BracePlacement.SAME_LINE) {
             if (ts.isFirstLineToken()){
-                tryRemoveLine(spaceBefore);
+                if (!tryRemoveLine(spaceBefore)){
+                    newLineBefore();
+                }
             } else {
                 spaceBefore(previous, spaceBefore);
             }
@@ -1292,28 +1349,28 @@ public class ReformatterImpl {
         }
     }
 
-    private void tryRemoveLine(boolean addSpace){
+    private boolean tryRemoveLine(boolean addSpace){
         int index = ts.index();
         try {
             while(true) {
                 if (!ts.movePrevious()){
-                    return;
+                    return false;
                 }
                 if (ts.token().id() == NEW_LINE){
                     if (ts.movePrevious()) {
                         if (ts.token().id() == WHITESPACE) {
                             ts.movePrevious();
                             replaceSegment(addSpace, index);
-                            return;
+                            return true;
                         } else if (ts.token().id() != LINE_COMMENT) {
                             replaceSegment(addSpace, index);
-                            return;
+                            return true;
                         }
                     }
-                    return;
+                    return false;
                 } else if (ts.token().id() != WHITESPACE){
                     replaceSegment(addSpace, index);
-                    return;
+                    return true;
                 }
             }
         } finally {

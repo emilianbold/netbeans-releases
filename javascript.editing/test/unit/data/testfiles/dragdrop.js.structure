@@ -69,6 +69,7 @@ Draggables:CLASS:[]:ESCAPED{Draggables}:
   unregister:METHOD:[]:ESCAPED{unregister}(PARAMETERS{ESCAPED{draggable}}):
   updateDrag:METHOD:[]:ESCAPED{updateDrag}(PARAMETERS{ESCAPED{event}}):
 Draggable:CLASS:[]:ESCAPED{Draggable}:
+  Draggable:CONSTRUCTOR:[]:ESCAPED{Draggable}:
   _getWindowScroll:METHOD:[]:ESCAPED{_getWindowScroll}(PARAMETERS{ESCAPED{w}}):
   currentDelta:METHOD:[]:ESCAPED{currentDelta}:
   destroy:METHOD:[]:ESCAPED{destroy}:
@@ -84,6 +85,7 @@ Draggable:CLASS:[]:ESCAPED{Draggable}:
   stopScrolling:METHOD:[]:ESCAPED{stopScrolling}:
   updateDrag:METHOD:[]:ESCAPED{updateDrag}(PARAMETERS{ESCAPED{event}, ESCAPED{pointer}}):
 SortableObserver:CLASS:[]:ESCAPED{SortableObserver}:
+  SortableObserver:CONSTRUCTOR:[]:ESCAPED{SortableObserver}:
   initialize:CONSTRUCTOR:[]:ESCAPED{initialize}(PARAMETERS{ESCAPED{element}, ESCAPED{observer}}):
   onEnd:METHOD:[]:ESCAPED{onEnd}:
   onStart:METHOD:[]:ESCAPED{onStart}:

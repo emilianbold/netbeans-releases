@@ -895,7 +895,7 @@ class J2SEActionProvider implements ActionProvider {
         }
         if (sourcesRoots.length > 0) {
             ClassPath bootPath = ClassPath.getClassPath (sourcesRoots[0], ClassPath.BOOT);        //Single compilation unit
-            ClassPath compilePath = ClassPath.getClassPath (sourcesRoots[0], ClassPath.COMPILE);
+            ClassPath compilePath = ClassPath.getClassPath (sourcesRoots[0], ClassPath.EXECUTE);
             ClassPath sourcePath = ClassPath.getClassPath(sourcesRoots[0], ClassPath.SOURCE);
             if (J2SEProjectUtil.isMainClass (mainClass, bootPath, compilePath, sourcePath)) {
                 return MainClassStatus.SET_AND_VALID;
@@ -905,7 +905,7 @@ class J2SEActionProvider implements ActionProvider {
             ClassPathProviderImpl cpProvider = project.getClassPathProvider();
             if (cpProvider != null) {
                 ClassPath bootPath = cpProvider.getProjectSourcesClassPath(ClassPath.BOOT);
-                ClassPath compilePath = cpProvider.getProjectSourcesClassPath(ClassPath.COMPILE);
+                ClassPath compilePath = cpProvider.getProjectSourcesClassPath(ClassPath.EXECUTE);
                 ClassPath sourcePath = cpProvider.getProjectSourcesClassPath(ClassPath.SOURCE);   //Empty ClassPath
                 if (J2SEProjectUtil.isMainClass (mainClass, bootPath, compilePath, sourcePath)) {
                     return MainClassStatus.SET_AND_VALID;

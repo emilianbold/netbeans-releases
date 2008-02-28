@@ -55,9 +55,10 @@ class BracesStack {
     
     private Stack<StackEntry> stack = new Stack<StackEntry>();
     private StatementContinuation statementContinuation = StatementContinuation.STOP;
-    private int lastStatementStart = -1;
+    int lastStatementStart = -1;
     int parenDepth = 0;
     boolean isDoWhile = false;
+    boolean isLabel = false;
 
     BracesStack() {
         super();
@@ -70,6 +71,7 @@ class BracesStack {
         clone.lastStatementStart = lastStatementStart;
         clone.parenDepth = parenDepth;
         clone.isDoWhile = isDoWhile;
+        clone.isLabel = isLabel;
         for(int i = 0; i < stack.size(); i++){
             clone.stack.add(stack.get(i));
         }
@@ -81,6 +83,7 @@ class BracesStack {
         lastStatementStart = clone.lastStatementStart;
         parenDepth = clone.parenDepth;
         isDoWhile = clone.isDoWhile;
+        isLabel = clone.isLabel;
         stack.clear();
         for(int i = 0; i < clone.stack.size(); i++){
             stack.add(clone.stack.get(i));
