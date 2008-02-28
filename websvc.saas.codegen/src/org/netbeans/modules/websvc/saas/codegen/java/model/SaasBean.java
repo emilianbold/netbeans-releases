@@ -45,12 +45,10 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import org.netbeans.modules.websvc.saas.codegen.java.AbstractGenerator;
-import org.netbeans.modules.websvc.saas.codegen.java.Constants;
 import org.netbeans.modules.websvc.saas.codegen.java.Constants.HttpMethodType;
 import org.netbeans.modules.websvc.saas.codegen.java.Constants.MimeType;
 import org.netbeans.modules.websvc.saas.codegen.java.Constants.SaasAuthenticationType;
 import org.netbeans.modules.websvc.saas.codegen.java.model.ParameterInfo.ParamStyle;
-import org.netbeans.modules.websvc.saas.codegen.java.support.Inflector;
 import org.netbeans.modules.websvc.saas.model.SaasMethod;
 import org.netbeans.modules.websvc.saas.model.jaxb.SaasMetadata.Authentication;
 
@@ -126,20 +124,6 @@ public abstract class SaasBean extends GenericResourceBean {
         wrapperPackageName = packageName;
     }
 
-    protected static String deriveResourceName(final String name) {
-        return Inflector.getInstance().camelize(normailizeName(name) + GenericResourceBean.RESOURCE_SUFFIX);
-    }
-    
-    protected static String normailizeName(final String name) {
-        String normalized = name;
-        normalized = normalized.replaceAll("\\p{Punct}", "_");
-        return normalized;
-    }
-
-    protected static String deriveUriTemplate(final String name) {
-        return Inflector.getInstance().camelize(normailizeName(name), true) + "/"; //NOI18N
-    }
-
     @Override
     public String[] getRepresentationTypes() {
         if (getMimeTypes().length == 1 && getMimeTypes()[0] == MimeType.HTML) {
@@ -195,6 +179,8 @@ public abstract class SaasBean extends GenericResourceBean {
         } else if(auth2.getApiKey() != null) {
             setAuthenticationType(SaasAuthenticationType.API_KEY);
             setAuthentication(new ApiKeyAuthentication(auth2.getApiKey().getId()));
+        } else {
+            setAuthenticationType(SaasAuthenticationType.PLAIN);
         }
     }
     

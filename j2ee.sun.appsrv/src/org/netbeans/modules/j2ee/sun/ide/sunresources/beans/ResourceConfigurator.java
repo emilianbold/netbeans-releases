@@ -88,6 +88,7 @@ import org.netbeans.modules.j2ee.sun.sunresources.beans.FieldGroupHelper;
 import org.netbeans.modules.j2ee.sun.sunresources.beans.FieldHelper;
 import org.netbeans.modules.j2ee.sun.sunresources.beans.Wizard;
 import org.netbeans.modules.j2ee.sun.sunresources.beans.WizardConstants;
+import org.netbeans.modules.schema2beans.Schema2BeansRuntimeException;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
@@ -1197,8 +1198,10 @@ public class ResourceConfigurator implements ResourceConfiguratorInterface {
                 FileInputStream in = new FileInputStream(resourceFile);
                 resourceGraph = DDProvider.getDefault().getResourcesGraph(in);
             }
+        } catch (RuntimeException ex) {
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
         } catch (Exception ex) {
-            ErrorManager.getDefault().notify(ex);
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
         }
         return resourceGraph;
     }
