@@ -44,9 +44,11 @@ import org.netbeans.modules.websvc.saas.model.WadlSaasMethod;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.progress.ProgressHandle;
+import org.netbeans.modules.websvc.saas.codegen.java.model.ParameterInfo;
 import org.openide.filesystems.FileObject;
 
 /**
@@ -87,13 +89,10 @@ public class JaxRsJavaClientCodeGenerator extends JaxRsCodeGenerator {
         String paramUse = "";
         String paramDecl = "";
         
-        //Evaluate template parameters
-        paramUse += getQueryParameterUsage(getBean().getTemplateParameters());
-        paramDecl += getQueryParameterDeclaration(getBean().getTemplateParameters());
-
         //Evaluate query parameters
-        paramUse += getQueryParameterUsage(getBean().getQueryParameters());
-        paramDecl += getQueryParameterDeclaration(getBean().getQueryParameters());
+        List<ParameterInfo> filterParams = filterParameters();
+        paramUse += getQueryParameterUsage(filterParams);
+        paramDecl += getQueryParameterDeclaration(filterParams);
 
         if(paramUse.endsWith(", "))
             paramUse = paramUse.substring(0, paramUse.length()-2);

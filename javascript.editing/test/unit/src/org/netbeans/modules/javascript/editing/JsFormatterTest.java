@@ -46,7 +46,6 @@ import javax.swing.text.Caret;
 import org.netbeans.api.ruby.platform.RubyInstallation;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.lib.editor.util.swing.DocumentUtilities;
-import org.netbeans.modules.gsf.api.ParserResult;
 import org.openide.filesystems.FileObject;
 import org.openide.util.NbPreferences;
 
@@ -270,32 +269,126 @@ public class JsFormatterTest extends JsTestBase {
         reformatFileContents("testfiles/prototype.js",new IndentPrefs(2,2));
     }
 
-    public void testFormat2() throws Exception {
-        reformatFileContents("testfiles/SpryEffects.js",new IndentPrefs(2,2));
-    }
-
-    public void testFormat3() throws Exception {
-        reformatFileContents("testfiles/dragdrop.js",new IndentPrefs(2,2));
-    }
-
-    public void testFormat4() throws Exception {
-        reformatFileContents("testfiles/dojo.js.uncompressed.js",new IndentPrefs(2,2));
-    }
+//    public void testFormat2() throws Exception {
+//        reformatFileContents("testfiles/SpryEffects.js",new IndentPrefs(2,2));
+//    }
+//
+//    public void testFormat3() throws Exception {
+//        reformatFileContents("testfiles/dragdrop.js",new IndentPrefs(2,2));
+//    }
+//
+//    public void testFormat4() throws Exception {
+//        reformatFileContents("testfiles/dojo.js.uncompressed.js",new IndentPrefs(2,2));
+//    }
     
     public void testSimpleBlock() throws Exception {
         format("if (true) {\nfoo();\n  }\n",
                "if (true) {\n    foo();\n}\n", null);
+        format("if(true) {\nfoo();\n  }\n",
+               "if(true) {\n    foo();\n}\n", null);
+        format("if (true){\nfoo();\n  }\n",
+               "if (true){\n    foo();\n}\n", null);
+        format("if(true){\nfoo();\n  }\n",
+               "if(true){\n    foo();\n}\n", null);
+        format("if (true){\nfoo();\n  }\n",
+               "if (true){\n    foo();\n}\n", null);
     }
 
+    public void testCombinedBlocks() throws Exception {
+        format(
+                " if (true)\n" +
+                " if (false) {\n" +
+                " foo();\n" +
+                " }\n" +
+                " bar();",
+                "if (true)\n" +
+                "    if (false) {\n" +
+                "        foo();\n" +
+                "    }\n" +
+                "bar();", null
+                );
+        format(
+                " if (true) {\n" +
+                " if (map[0])\n" +
+                " foo();\n" +
+                " }",
+                "if (true) {\n" +
+                "    if (map[0])\n" +
+                "        foo();\n" +
+                "}", null
+                );
+    }
+    
     public void testBraceFreeBlock() throws Exception {
-        format("if (true)\nfoo();\nbar();\n",
-               "if (true)\n    foo();\nbar();\n", null);
-        format("if (true)\nfoo();\nelse\nbar();\n",
-               "if (true)\n    foo();\nelse\n    bar();\n", null);
-        format("while (true)\nfoo();\nbar();\n",
-               "while (true)\n    foo();\nbar();\n", null);
-        format("for (i = 0; i < 5; i++)\nfoo();\nbar();",
-               "for (i = 0; i < 5; i++)\n    foo();\nbar();", null);
+        // it's good to start lines with space, it discovers some potential problems
+        format(
+                " if (true) foo()\n" +
+                " bar();\n",
+               "if (true) foo()\n" +
+               "bar();\n", null);
+        format(
+                " if (true)\n" +
+                " foo();\n" +
+                " bar();\n",
+               "if (true)\n" +
+               "    foo();\n" +
+               "bar();\n", null);
+        format(
+                " if (true)\n" +
+                " if (true)\n" +
+                " foo();\n",
+               "if (true)\n" +
+               "    if (true)\n" +
+               "        foo();\n", null);
+        format(
+                " if (true)\n" +
+                " foo();\n" +
+                " else\n" +
+                " bar();\n",
+               "if (true)\n" +
+               "    foo();\n" +
+               "else\n" +
+               "    bar();\n", null);
+        format(
+                " while (true)\n" +
+                " foo();\n" +
+                " bar();\n",
+               "while (true)\n" +
+               "    foo();\n" +
+               "bar();\n", null);
+        format(
+                " for (i = 0; i < 5; i++)\n" +
+                " foo();\n" +
+                " bar();",
+               "for (i = 0; i < 5; i++)\n" +
+               "    foo();\n" +
+               "bar();", null);
+        format(
+                " if (true &&\n" +
+                " true)\n" +
+                " foo();",
+                "if (true &&\n" +
+                "    true)\n" +
+                "    foo();", null
+                );
+        format(
+                " if (true)\n" +
+                " for (var a in b)\n" +
+                " foo();\n" +
+                " else\n" +
+                " bar();",
+                "if (true)\n" +
+                "    for (var a in b)\n" +
+                "        foo();\n" +
+                "else\n" +
+                "    bar();", null
+                );
+        format(
+                " if (true) // comment\n" +
+                " foo();",
+                "if (true) // comment\n" +
+                "    foo();", null
+                );
         // What about thesed: do? with?
     }
     

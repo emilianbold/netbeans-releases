@@ -7,5 +7,5 @@
   <description localizing-bundle="org.netbeans.modules.visualweb.woodstock.webui.jsf.designtime.resources.Bundle"
                display-name-key="NAME_com-sun-webui-jsf-component-AccordionTab"
                tooltip-key="HINT_com-sun-webui-jsf-component-AccordionTab" 
-               help-key="projrave_ui_elements_palette_wdstk-jsf1.2_accordionTab"/>
+               help-key="projrave_ui_elements_palette_wdstk-jsf1.2_accordiontab"/>
 </palette_item>

@@ -102,6 +102,10 @@ public final class UI {
     return isModifier(modifiers, KeyEvent.CTRL_MASK);
   }
 
+  public static boolean isMeta(int modifiers) {
+    return isModifier(modifiers, KeyEvent.META_MASK);
+  }
+
   private static boolean isModifier(int modifiers, int mask) {
     return (modifiers & mask) != 0;
   }
