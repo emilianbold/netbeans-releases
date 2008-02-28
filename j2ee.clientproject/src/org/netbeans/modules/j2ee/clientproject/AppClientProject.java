@@ -823,6 +823,11 @@ public final class AppClientProject implements Project, AntProjectListener, File
                 unregisterJ2eePlatformListener(platform);
             }
 
+            // unregister the property change listener on the prop evaluator
+            if (librariesLocationUpdater != null) {
+                librariesLocationUpdater.destroy();
+            }
+
             // Probably unnecessary, but just in case:
             try {
                 ProjectManager.getDefault().saveProject(AppClientProject.this);
