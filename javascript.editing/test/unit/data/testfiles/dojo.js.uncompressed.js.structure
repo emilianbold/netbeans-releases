@@ -159,7 +159,7 @@ d:CLASS:[]:ESCAPED{d}:
   _xhrObj:METHOD:[]:ESCAPED{_xhrObj}:
   experimental:METHOD:[]:ESCAPED{experimental}:
   query:METHOD:[]:ESCAPED{query}(PARAMETERS{ESCAPED{query}, ESCAPED{root}}):
-dojo._Url:CLASS:[]:ESCAPED{dojo._Url}:
+dojo._Url.prototype:CLASS:[]:ESCAPED{dojo._Url.prototype}:
   toString:METHOD:[]:ESCAPED{toString}:
 dojo._listener:CLASS:[]:ESCAPED{dojo._listener}:
   add:METHOD:[]:ESCAPED{add}(PARAMETERS{ESCAPED{source}, ESCAPED{method}, ESCAPED{listener}}):
@@ -325,6 +325,6 @@ _d:CLASS:[]:ESCAPED{_d}:
   _ioWatch:METHOD:[]:ESCAPED{_ioWatch}(PARAMETERS{ESCAPED{dfd}, ESCAPED{validCheck}, ESCAPED{ioCheck}, ESCAPED{resHandle}}):
 runner:CLASS:[]:ESCAPED{runner}:
   run:METHOD:[]:ESCAPED{run}:
-dojo._Animation:CLASS:[]:ESCAPED{dojo._Animation}:
+dojo._Animation.prototype:CLASS:[]:ESCAPED{dojo._Animation.prototype}:
   _startTimer:METHOD:[]:ESCAPED{_startTimer}:
   _stopTimer:METHOD:[]:ESCAPED{_stopTimer}:

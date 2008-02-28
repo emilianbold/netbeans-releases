@@ -342,7 +342,7 @@
         <set property="openesb.build.number.real" value="080123_2"/>
 	-->
         <get
-            src="${openesb.builds.host}/kits/ojc/main/latest/log/"
+            src="${openesb.builds.host}/kits/ojc/main/latest/solsparc/ojc/version.txt"
             dest="${temp.file}"/>
         <openesb-buildnumber 
             file="${temp.file}" 

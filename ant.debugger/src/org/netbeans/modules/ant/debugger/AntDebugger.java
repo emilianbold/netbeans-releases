@@ -110,6 +110,9 @@ public class AntDebugger extends ActionsProviderSupport {
     private String                      currentTaskName;
     private int                         originatingIndex = -1; // Current index of the virtual originating target in the call stack
     
+    private VariablesModel              variablesModel;
+    private WatchesModel                watchesModel;
+    private BreakpointModel             breakpointModel;
     
     public AntDebugger (
         ContextProvider contextProvider
@@ -251,8 +254,9 @@ public class AntDebugger extends ActionsProviderSupport {
         Set properties = event.getPropertyNames ();
         variables = (String[]) properties.toArray 
             (new String [properties.size ()]);
-        getVariablesModel ().fireChanges ();
-        getBreakpointModel ().fireChanges ();
+        fireVariables ();
+        fireWatches ();
+        fireBreakpoints ();
         
         // enable actions
         synchronized (LOCK_ACTIONS) {
@@ -772,32 +776,49 @@ public class AntDebugger extends ActionsProviderSupport {
     
     // support for variables ...................................................
     
-    private VariablesModel              variablesModel;
+    synchronized void setVariablesModel(VariablesModel variablesModel) {
+        this.variablesModel = variablesModel;
+    }
 
-    private VariablesModel getVariablesModel () {
-        if (variablesModel == null)
-            variablesModel = (VariablesModel) contextProvider.lookupFirst 
-                ("LocalsView", TreeModel.class);
-        return variablesModel;
+    synchronized void setWatchesModel(WatchesModel watchesModel) {
+        this.watchesModel = watchesModel;
+    }
+
+    private void fireVariables () {
+        synchronized(this) {
+            if (variablesModel == null) {
+                return ;
+            }
+        }
+        variablesModel.fireChanges();
     }
     
-    private BreakpointModel             breakpointModel;
-
-    private BreakpointModel getBreakpointModel () {
-        if (breakpointModel == null) {
-            Iterator it = DebuggerManager.getDebuggerManager ().lookup 
-                ("BreakpointsView", TableModel.class).iterator ();
-            while (it.hasNext ()) {
-                TableModel model = (TableModel) it.next ();
-                if (model instanceof BreakpointModel) {
-                    breakpointModel = (BreakpointModel) model;
-                    break;
+    private void fireWatches () {
+        synchronized(this) {
+            if (watchesModel == null) {
+                return ;
+            }
+        }
+        watchesModel.fireChanges();
+    }
+    
+    private void fireBreakpoints () {
+        synchronized(this) {
+            if (breakpointModel == null) {
+                Iterator it = DebuggerManager.getDebuggerManager ().lookup 
+                        ("BreakpointsView", TableModel.class).iterator ();
+                while (it.hasNext ()) {
+                    TableModel model = (TableModel) it.next ();
+                    if (model instanceof BreakpointModel) {
+                        breakpointModel = (BreakpointModel) model;
+                        break;
+                    }
                 }
             }
         }
-        return breakpointModel;
+        breakpointModel.fireChanges();
     }
-
+    
     String evaluate (String expression) {
         String value = getVariableValue (expression);
         if (value != null) return value;

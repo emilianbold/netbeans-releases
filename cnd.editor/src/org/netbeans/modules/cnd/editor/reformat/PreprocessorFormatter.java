@@ -39,13 +39,13 @@
 
 package org.netbeans.modules.cnd.editor.reformat;
 
+import java.util.Stack;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.cnd.api.lexer.CppTokenId;
 import static org.netbeans.cnd.api.lexer.CppTokenId.*;
 import org.netbeans.modules.cnd.editor.api.CodeStyle;
 import org.netbeans.modules.cnd.editor.reformat.DiffLinkedList.DiffResult;
-import org.netbeans.modules.cnd.editor.reformat.Reformatter.Diff;
 
 /**
  *
@@ -57,12 +57,16 @@ public class PreprocessorFormatter {
     private final CodeStyle codeStyle;
     private final DiffLinkedList diffs;
     private int prepocessorDepth = 0;
+    private Stack<BracesStack> stateStack = new Stack<BracesStack>();
+    private BracesStack braces;
+
     
-    public PreprocessorFormatter(ReformatterImpl context){
+    /*package local*/ PreprocessorFormatter(ReformatterImpl context){
         this.context = context;
         this.ts = context.ts;
         this.codeStyle = context.codeStyle;
         this.diffs = context.diffs;
+        this.braces = context.braces;
     }
     
     /*package local*/ void indentPreprocessor(Token<CppTokenId> previous) {
@@ -86,8 +90,16 @@ public class PreprocessorFormatter {
             switch (directive.id()) {
                 case PREPROCESSOR_ELSE: //("else", "preprocessor-keyword-directive"),
                 case PREPROCESSOR_ELIF: //("elif", "preprocessor-keyword-directive"),
+                    prepocessorDepth--;
+                    if (!stateStack.empty()){
+                        braces.reset(stateStack.pop());
+                    }
+                    break;
                 case PREPROCESSOR_ENDIF: //("endif", "preprocessor-keyword-directive"),
                     prepocessorDepth--;
+                    if (!stateStack.empty()){
+                        stateStack.pop();
+                    }
                     break;
             }
             if (context.doFormat()) {
@@ -108,10 +120,12 @@ public class PreprocessorFormatter {
                 case PREPROCESSOR_IFDEF: //("ifdef", "preprocessor-keyword-directive"),
                 case PREPROCESSOR_IFNDEF: //("ifndef", "preprocessor-keyword-directive"),
                     prepocessorDepth++;
+                    stateStack.push(braces.clone());
                     break;
                 case PREPROCESSOR_ELSE: //("else", "preprocessor-keyword-directive"),
                 case PREPROCESSOR_ELIF: //("elif", "preprocessor-keyword-directive"),
                     prepocessorDepth++;
+                    stateStack.push(braces.clone());
                     break;
             }
         }

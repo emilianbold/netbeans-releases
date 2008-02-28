@@ -55,6 +55,8 @@ import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 import org.netbeans.modules.cnd.modelimpl.parser.CPPParserEx;
 
 import java.io.*;
+import java.lang.ref.Reference;
+import java.lang.ref.SoftReference;
 import java.util.*;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.logging.Level;
@@ -70,11 +72,13 @@ import org.netbeans.modules.cnd.api.project.NativeFileItem;
 import org.netbeans.modules.cnd.apt.structure.APTFile;
 import org.netbeans.modules.cnd.apt.support.APTDriver;
 import org.netbeans.modules.cnd.apt.support.APTPreprocHandler;
+import org.netbeans.modules.cnd.apt.support.APTToken;
 import org.netbeans.modules.cnd.apt.support.StartEntry;
 import org.netbeans.modules.cnd.apt.utils.APTUtils;
 import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
 import org.netbeans.modules.cnd.modelimpl.parser.apt.APTParseFileWalker;
 import org.netbeans.modules.cnd.modelimpl.parser.apt.GuardBlockWalker;
+import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
 import org.netbeans.modules.cnd.modelimpl.platform.ModelSupport;
 import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
 import org.netbeans.modules.cnd.modelimpl.repository.RepositoryUtils;
@@ -297,6 +301,9 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
 		state = State.MODIFIED;
 	    }
             if (invalidateCache) {
+                synchronized (tokStreamLock) {
+                   ref = null;
+                }                
                 if (TraceFlags.USE_AST_CACHE) {
                     CacheManager.getInstance().invalidate(this);
                 } else {
@@ -495,31 +502,110 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
         return null;
     }
 
-    public TokenStream getTokenStream() {
+    private TokenStream createFullTokenStream() {
         APTPreprocHandler preprocHandler = getPreprocHandler();
         APTFile apt = null;
-	if (TraceFlags.USE_AST_CACHE) {
-	    apt = CacheManager.getInstance().findAPT(this);
-	}
-	else {
-	    try {
-		apt = APTDriver.getInstance().findAPT(fileBuffer);
-	    } catch (IOException ex) {
-		DiagnosticExceptoins.register(ex);
-	    }
-	}
+        if (TraceFlags.USE_AST_CACHE) {
+            apt = CacheManager.getInstance().findAPT(this);
+        } else {
+            try {
+                apt = APTDriver.getInstance().findAPT(fileBuffer);
+            } catch (IOException ex) {
+                DiagnosticExceptoins.register(ex);
+            }
+        }
         if (apt == null) {
             return null;
         }
         ProjectBase startProject = ProjectBase.getStartProject(preprocHandler.getState());
         if (startProject == null) {
             System.err.println(" null project for " + APTHandlersSupport.extractStartEntry(preprocHandler.getState()) + // NOI18N
-                "\n while getting TS of file " + getAbsolutePath() + "\n of project " + getProject()); // NOI18N
+                    "\n while getting TS of file " + getAbsolutePath() + "\n of project " + getProject()); // NOI18N
             return null;
-        }        
+        }
         APTParseFileWalker walker = new APTParseFileWalker(startProject, apt, this, preprocHandler);
-        return walker.getFilteredTokenStream(getLanguageFilter());
+        return walker.getFilteredTokenStream(getLanguageFilter());        
     }
+    
+    private final String tokStreamLock = new String("TokenStream lock");
+    private Reference<OffsetTokenStream> ref = new SoftReference(null);
+    
+    public TokenStream getTokenStream(int startOffset, int endOffset) {
+        try {
+            OffsetTokenStream stream;
+            synchronized (tokStreamLock) {
+                stream = ref != null ? ref.get() : null;
+                ref = new SoftReference(null);
+            }
+            if (stream == null || stream.getStartOffset() > startOffset) {
+                if (stream == null) {
+//                    System.err.println("new stream created for " + startOffset);
+                } else {
+//                    System.err.println("new stream created, because prev stream was finished on " + stream.getStartOffset() + " now asked for " + startOffset);
+                }
+                stream = new OffsetTokenStream(createFullTokenStream());
+            } else {
+//                System.err.println("use cached stream finished previously on " + stream.getStartOffset() + " now asked for " + startOffset);
+            }
+            stream.moveTo(startOffset, endOffset);
+            return stream;
+        } catch (TokenStreamException ex) {
+            Utils.LOG.severe("Can't create compound statement: " + ex.getMessage());
+            DiagnosticExceptoins.register(ex);
+            return null;
+        }
+    }
+    
+    public void releaseTokenStream(TokenStream ts) {
+        if (ts instanceof OffsetTokenStream) {
+            OffsetTokenStream offsTS = (OffsetTokenStream)ts;
+            synchronized (tokStreamLock) {
+                if (ref != null && ref.get() == null) {
+                    ref = new SoftReference<OffsetTokenStream>(offsTS);
+//                    System.err.println("caching stream finished on " + offsTS.getStartOffset());                    
+                }
+            }
+        }
+    }
+    
+    private static class OffsetTokenStream implements TokenStream {
+
+        private final TokenStream stream;
+        private Token next;
+        private int endOffset;
+
+        public OffsetTokenStream(TokenStream stream) {
+            this.stream = stream;
+        }
+
+        public Token nextToken() throws TokenStreamException {
+            Token out = next;
+            
+            if (out == null || out.getType() == CPPTokenTypes.EOF ||
+                  (((APTToken)out).getOffset() > endOffset)  ) {
+                out = APTUtils.EOF_TOKEN;
+            } else {
+                next = stream.nextToken();
+            }
+            return out;
+        }
+        
+        public int getStartOffset() {
+            return next == null || (next.getType() == CPPTokenTypes.EOF) ? Integer.MAX_VALUE : ((APTToken)next).getOffset();
+        }
+        
+        public void moveTo(int startOffset, int endOffset) throws TokenStreamException {
+            this.endOffset = endOffset;
+            assert this.endOffset >= startOffset;
+            for (next = stream.nextToken(); next != null && next.getType() != CPPTokenTypes.EOF; next = stream.nextToken()) {
+                assert (next instanceof APTToken) : "we have only APTTokens in token stream";
+                int currOffset = ((APTToken) next).getOffset();
+                if (currOffset == startOffset) {
+                    break;
+                }
+            }            
+        }
+    };
     
     private AST doParse(APTPreprocHandler preprocHandler) {
 //        if( "cursor.hpp".equals(fileBuffer.getFile().getName()) ) {
@@ -580,8 +666,8 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
             if (TraceFlags.TRACE_CACHE) {
                 System.err.println("CACHE: parsing using full APT for " + getAbsolutePath());
             }      
-            // init guard info
-            initGuardIfNeeded(preprocHandler, aptFull);
+            // set guard info
+            updateGuardAfterParse(preprocHandler, aptFull);
             // make real parse
             ProjectBase startProject = ProjectBase.getStartProject(preprocHandler.getState());
             if (startProject == null) {
@@ -649,6 +735,14 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
     /*package*/void initGuardIfNeeded(APTPreprocHandler preprocHandler, APTFile apt) {
         if (!getGuardState().isInited()) {
             setGuardState(preprocHandler, apt);
+        }
+    }
+
+    private void updateGuardAfterParse(APTPreprocHandler preprocHandler, APTFile apt) {
+        if (!getGuardState().isInited()) {
+            setGuardState(preprocHandler, apt);
+        } else {
+            getGuardState().setGuardBlockState(preprocHandler, getGuardState().getGuard());
         }
     }
     

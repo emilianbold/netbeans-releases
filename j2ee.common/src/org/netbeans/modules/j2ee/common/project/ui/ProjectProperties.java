@@ -42,21 +42,25 @@
 package org.netbeans.modules.j2ee.common.project.ui;
 
 import java.io.File;
+import java.io.IOException;
 import java.net.URI;
 import java.net.URL;
 import java.util.*;
 import javax.swing.ImageIcon;
 import javax.swing.ListCellRenderer;
 import javax.swing.table.TableCellRenderer;
+import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.j2ee.common.project.classpath.ClassPathSupport;
-import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
 import org.netbeans.modules.java.api.common.util.CommonProjectUtils;
 import org.netbeans.spi.project.libraries.support.LibrariesSupport;
+import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Exceptions;
 import org.openide.util.Utilities;
 
 
@@ -163,6 +167,28 @@ public final class ProjectProperties {
         while (unused.hasNext()) {
             props.remove(unused.next());
         }
+    }
+    
+    public static void storeLibrariesLocations (final Project project, final AntProjectHelper helper,
+            final ClassPathSupport cs, final String[] libUpdaterProperties) {
+        ProjectManager.mutex().writeAccess(new Runnable() {
+            public void run() {
+                EditableProperties props = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
+                // intentionally pass null to itemsList() - we do not need additional info to be read
+                HashSet set = new HashSet();
+                for (String property : libUpdaterProperties) {
+                    List wmLibs = cs.itemsList(props.getProperty(property),  null);
+                    set.addAll(wmLibs);
+                }
+                ProjectProperties.storeLibrariesLocations(set.iterator(), props, project.getProjectDirectory());
+                helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, props);
+                try {
+                    ProjectManager.getDefault().saveProject(project);
+                } catch (IOException e) {
+                    Exceptions.printStackTrace(e);
+                }
+            }
+        });
     }
     
     public static final void getFilesForItem (ClassPathSupport.Item item, List<String> files, List<String> dirs, FileObject projectFolder) {

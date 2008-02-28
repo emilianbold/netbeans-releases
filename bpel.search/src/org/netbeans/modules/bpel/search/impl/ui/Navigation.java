@@ -42,7 +42,6 @@ package org.netbeans.modules.bpel.search.impl.ui;
 
 import java.awt.Dimension;
 
-import javax.swing.JComponent;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTree;
@@ -53,13 +52,11 @@ import javax.swing.JTree;
  */
 final class Navigation extends JPanel {
   
-  Navigation(JTree tree, JScrollPane scrollPane, JComponent component) {
+  Navigation(JTree tree, JScrollPane scrollPane) {
     myWrapper = new Wrapper(tree);
     myScrollPane = scrollPane;
-    myComponent = component;
-
     add(myWrapper);
-    add(myComponent);
+    add(myScrollPane);
   }
 
   @Override
@@ -75,11 +72,10 @@ final class Navigation extends JPanel {
     int x = getWidth() - myScrollPane.getVerticalScrollBar().getPreferredSize().width -
       size.width - INSET;
     myWrapper.setBounds(x, INSET, size.width, size.height);
-    myComponent.setBounds(0, 0, getWidth(), getHeight());
+    myScrollPane.setBounds(0, 0, getWidth(), getHeight());
   }
   
   private JPanel myWrapper;
-  private JComponent myComponent;
   private JScrollPane myScrollPane;
   private static final int INSET = 4;
 }
