@@ -165,7 +165,9 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
             jPanel1.setVisible(false); // Required Tools panel!
         }
         if (dirlist == null) {
-            dirlist = Path.getPath();
+            // Take a copy ...
+            dirlist = new ArrayList<String>();
+            dirlist.addAll(Path.getPath());
         }
 //        dirlist = model.getPath();
         if (csm == null) {
