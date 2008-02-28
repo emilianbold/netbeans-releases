@@ -525,7 +525,7 @@ public final class EarProject implements Project, AntProjectListener, ProjectPro
             
             // unregister the property change listener on the prop evaluator
             if (librariesLocationUpdater != null) {
-                librariesLocationUpdater.unregister();
+                librariesLocationUpdater.destroy();
             }
 
             // Probably unnecessary, but just in case:
