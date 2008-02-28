@@ -198,7 +198,8 @@ public final class AppClientProject implements Project, AntProjectListener, File
         apiJar = CarFactory.createCar(appClient);
         enterpriseResourceSupport = new JarContainerImpl(this, refHelper, helper);
         cpMod = new ClassPathModifier(this, this.updateHelper, eval, refHelper,
-            new ClassPathSupportCallbackImpl(helper), createClassPathModifierCallback(), getClassPathUiSupportCallback());
+            new ClassPathSupportCallbackImpl(helper), createClassPathModifierCallback(), 
+            getClassPathUiSupportCallback(), new String[]{ProjectProperties.JAVAC_CLASSPATH});
         classPathExtender = new ClassPathExtender(cpMod, ProjectProperties.JAVAC_CLASSPATH, ClassPathSupportCallbackImpl.ELEMENT_INCLUDED_LIBRARIES);
         librariesLocationUpdater = new LibrariesLocationUpdater(this, updateHelper, eval, cpMod.getClassPathSupport(),
                 ProjectProperties.JAVAC_CLASSPATH, ClassPathSupportCallbackImpl.ELEMENT_INCLUDED_LIBRARIES, 
@@ -820,6 +821,11 @@ public final class AppClientProject implements Project, AntProjectListener, File
             J2eePlatform platform = Deployment.getDefault().getJ2eePlatform(servInstID);
             if (platform != null) {
                 unregisterJ2eePlatformListener(platform);
+            }
+
+            // unregister the property change listener on the prop evaluator
+            if (librariesLocationUpdater != null) {
+                librariesLocationUpdater.destroy();
             }
 
             // Probably unnecessary, but just in case:

@@ -74,7 +74,7 @@ public class MakeProjectOptions {
         }
         if (cs != null) {
             CppSettings.getDefault().setCompilerSetName(cs.getName());
-            CppSettings.getDefault().setCompilerSetDirectories(cs.getDirectory());
+//            CppSettings.getDefault().setCompilerSetDirectories(cs.getDirectory());
         } else {
             cs = CompilerSetManager.getDefault().getCompilerSet(0); // use 0th as default
         }
@@ -90,7 +90,7 @@ public class MakeProjectOptions {
         CompilerSet cs = CompilerSetManager.getDefault().getCompilerSet(name);
         if (cs != null) {
             CppSettings.getDefault().setCompilerSetName(cs.getName());
-            CppSettings.getDefault().setCompilerSetDirectories(cs.getDirectory());
+//            CppSettings.getDefault().setCompilerSetDirectories(cs.getDirectory());
         } else {
             cs = CompilerSetManager.getDefault().getCompilerSet(0); // use 0th as default
         }
