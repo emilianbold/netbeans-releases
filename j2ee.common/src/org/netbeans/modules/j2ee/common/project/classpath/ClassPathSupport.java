@@ -218,13 +218,10 @@ public final class ClassPathSupport {
      * @since 1.22
      */
     public String[] encodeToStrings( List<Item> classpath, String projectXMLElement, String libraryVolumeType ) {
-        List<Item> filteredClasspathItems = new ArrayList<Item>();
         List<String> items = new ArrayList<String>();
         for (Item item : classpath) {
             String reference = null;
-            if (!(item.getType() == Item.TYPE_LIBRARY && item.getLibrary().getType().equals(J2eePlatform.LIBRARY_TYPE))) {
-                filteredClasspathItems.add(item);
-            }
+
             switch( item.getType() ) {
 
                 case Item.TYPE_JAR:
@@ -294,7 +291,7 @@ public final class ClassPathSupport {
         }
 
         if ( projectXMLElement != null ) {
-            callback.storeAdditionalProperties(filteredClasspathItems, projectXMLElement );
+            callback.storeAdditionalProperties(classpath, projectXMLElement );
         }
         String arr[] = items.toArray(new String[items.size()]);
         // remove ":" from last item:

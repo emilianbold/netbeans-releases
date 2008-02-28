@@ -59,6 +59,7 @@ import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.NbDialogOperator;
 import org.netbeans.jellytools.NewProjectNameLocationStepOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
+import org.netbeans.jellytools.WizardOperator;
 import org.netbeans.jellytools.actions.ActionNoBlock;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jemmy.EventTool;
@@ -128,7 +129,9 @@ public class LibraryTest extends JellyTestCase {
         jcbo = new JCheckBoxOperator(npnlso, 2);
         jcbo.setSelected(false);
         WizardUtils.setJ2eeSpecVersion(npnlso, WizardUtils.MODULE_EAR, "1.4");
-        npnlso.finish();
+        npnlso.next();
+        WizardOperator wo = new WizardOperator("New Project");
+        wo.finish();
         //add modules to j2ee app
         addJ2eeModule(pto, appName, ejbName);
         addJ2eeModule(pto, appName, webName);
@@ -228,8 +231,9 @@ public class LibraryTest extends JellyTestCase {
         Node node = new Node(pto.getProjectRootNode(moduleName), "Libraries");
         node.performPopupActionNoBlock("Add Library...");
         NbDialogOperator ndo = new NbDialogOperator("Add Library");
-        JListOperator jlo = new JListOperator(ndo);
-        jlo.selectItem(libName);
+        new EventTool().waitNoEvent(1000);
+        JTreeOperator jto = new JTreeOperator(ndo);
+        jto.selectPath(jto.findPath("Global Libraries|" + libName));
         new JButtonOperator(ndo, "Add Library").push();
     }
     

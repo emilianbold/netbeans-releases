@@ -65,7 +65,7 @@ import org.openide.util.Exceptions;
  * 
  * @author Tor Norbye
  */
-public class IndexedElement extends JsElement {
+public abstract class IndexedElement extends JsElement {
 
     protected ElementKind kind;
     protected String name;
@@ -78,6 +78,8 @@ public class IndexedElement extends JsElement {
     protected String attributes;
     protected EnumSet<BrowserVersion> compatibility;
     protected String signature;
+    protected boolean smart;
+    protected boolean inherited = true;
 
     IndexedElement(String name, String in, JsIndex index, String fileUrl, String attributes, int flags, ElementKind kind) {
         this.name = name;
@@ -96,9 +98,7 @@ public class IndexedElement extends JsElement {
             return func;
         }
         if ((flags & FUNCTION) != 0) {
-            ElementKind kind = Character.isUpperCase(name.charAt(0)) ?
-                ElementKind.CONSTRUCTOR : ElementKind.METHOD;
-
+            ElementKind kind =((flags & CONSTRUCTOR) != 0) ? ElementKind.CONSTRUCTOR : ElementKind.METHOD;
             IndexedFunction func = new IndexedFunction(name, in, index, fileUrl, attributes, flags, kind);
             return func;
         } else if ((flags & GLOBAL) != 0) {
@@ -238,6 +238,15 @@ public class IndexedElement extends JsElement {
         return attributeIndex + 1;
     }
     
+    int getDocOffset() {
+        int docOffsetIndex = getAttributeSection(DOC_INDEX);
+        if (docOffsetIndex != -1) {
+            int docOffset = IndexedElement.decode(attributes, docOffsetIndex,-1);
+            return docOffset;
+        }
+        return -1;
+    }
+    
     protected List<String> getComments() {
         int docOffsetIndex = getAttributeSection(DOC_INDEX);
         if (docOffsetIndex != -1) {
@@ -317,7 +326,23 @@ public class IndexedElement extends JsElement {
         
         return null;
     }
+
+    public void setSmart(boolean smart) {
+        this.smart = smart;
+    }
+
+    public boolean isSmart() {
+        return smart;
+    }
     
+    public void setInherited(boolean inherited) {
+        this.inherited = inherited;
+    }
+
+    public boolean isInherited() {
+        return inherited;
+    }
+
     protected static final int NAME_INDEX = 0;
     protected static final int IN_INDEX = 1;
     protected static final int CASE_SENSITIVE_INDEX = 2;
@@ -351,6 +376,8 @@ public class IndexedElement extends JsElement {
     public static final int NODOC = 1 << 5;
     /** This is a global variable */
     public static final int GLOBAL = 1 << 6;
+    /** This is a function, not a property */
+    public static final int CONSTRUCTOR = 1 << 7;
 
     /** Return a string (suitable for persistence) encoding the given flags */
     public static String encode(int flags) {
@@ -386,6 +413,9 @@ public class IndexedElement extends JsElement {
         int value = 0;
 
         ElementKind k = element.getKind();
+        if (k == ElementKind.CONSTRUCTOR) {
+            value += CONSTRUCTOR;
+        }
         if (k == ElementKind.METHOD || k == ElementKind.CONSTRUCTOR) {
             value += FUNCTION;
         } else if (k == ElementKind.GLOBAL) {
@@ -419,6 +449,10 @@ public class IndexedElement extends JsElement {
         return (flags & NODOC) != 0;
     }
     
+    public boolean isConstructor() {
+        return (flags & CONSTRUCTOR) != 0;
+    }
+    
     public static String decodeFlags(int flags) {
         StringBuilder sb = new StringBuilder();
         if ((flags & DOCUMENTED) != 0) {
@@ -427,7 +461,9 @@ public class IndexedElement extends JsElement {
         if ((flags & PRIVATE) != 0) {
             sb.append("|PRIVATE");
         }
-        if ((flags & FUNCTION) != 0) {
+        if ((flags & CONSTRUCTOR) != 0) {
+            sb.append("|CONSTRUCTOR");
+        } else if ((flags & FUNCTION) != 0) {
             sb.append("|FUNCTION");
         } else if ((flags & GLOBAL) != 0) {
             sb.append("|GLOBAL");
@@ -460,7 +496,10 @@ public class IndexedElement extends JsElement {
         if (!getSignature().equals(other.getSignature())) {
             return false;
         }
-        if (this.flags != other.flags) {
+//        if (this.flags != other.flags) {
+//            return false;
+//        }
+        if (!getKind().equals(other.getKind())) {
             return false;
         }
         return true;
@@ -470,7 +509,8 @@ public class IndexedElement extends JsElement {
     public int hashCode() {
         int hash = 7;
         hash = 53 * hash + getSignature().hashCode();
-        hash = 53 * hash + flags;
+//        hash = 53 * hash + flags;
+        hash = 53 * hash + getKind().hashCode();
         return hash;
     }
 }

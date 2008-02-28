@@ -107,15 +107,17 @@ public class BindingOperationOutputNode extends WSDLExtensibilityElementNode<Bin
     
     @Override
     protected void updateDisplayName() {
+        super.updateDisplayName();
         // Need a component connected to a model to work properly.
         if (isValid()) {
             // Automatically keep the name in sync for named components.
             BindingOutput param = getWSDLComponent();
             String name = param.getAttribute(new StringAttribute(Named.NAME_PROPERTY));
-            // Prevent getting an NPE from ExplorerManager.
-            super.setName(name == null ? "" : name);
             if (name == null || name.length() == 0) {
-                name = param.getOutput().get().getName();
+                Reference<Output> ref = param.getOutput();
+                if (ref != null && ref.get() != null) {
+                    name = ref.get().getName();
+                }
             }
             setDisplayName(name);
         }

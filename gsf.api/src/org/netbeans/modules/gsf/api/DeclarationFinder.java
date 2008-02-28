@@ -74,7 +74,7 @@ public interface DeclarationFinder {
      * locate the reference and return it. When the user drags the mouse with a modifier
      * key held this will be hyperlinked, and so on.
      * <p>
-     * Remember that when looking up tokens in the token hiearchy, you will get the token
+     * Remember that when looking up tokens in the token hierarchy, you will get the token
      * to the right of the caret offset, so check for these conditions
      * {@code (sequence.move(offset); sequence.offset() == offset)} and check both
      * sides such that placing the caret between two tokens will match either side.

@@ -80,7 +80,7 @@ public class ConnectServerAction extends CookieAction {
         
         ServerInstance server = activatedNodes[0].getCookie(ServerInstance.class);
         
-        return ( (!server.isConnected()) && server.isRunning() );
+        return server != null && (!server.isConnected()) && server.isRunning();
     }
 
     @Override

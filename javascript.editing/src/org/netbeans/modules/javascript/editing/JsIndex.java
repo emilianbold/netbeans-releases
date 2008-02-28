@@ -172,155 +172,26 @@ public class JsIndex {
     
     private String getExtends(String className, Set<Index.SearchScope> scope) {
         final Set<SearchResult> result = new HashSet<SearchResult>();
-        search(JsIndexer.FIELD_EXTEND, className, NameKind.PREFIX, result, scope, TERMS_EXTEND);
-        String target = className+";";
+        search(JsIndexer.FIELD_EXTEND, className.toLowerCase(), NameKind.CASE_INSENSITIVE_PREFIX, result, scope, TERMS_EXTEND);
+        String target = className.toLowerCase()+";";
         for (SearchResult map : result) {
             String[] exts = map.getValues(JsIndexer.FIELD_EXTEND);
             
             if (exts != null) {
                 for (String ext : exts) {
                     if (ext.startsWith(target)) {
-                        return ext.substring(target.length());
+                        // Make sure it's a case match
+                        int caseIndex = target.length();
+                        int end = ext.indexOf(';', caseIndex);
+                        if (className.equals(ext.substring(caseIndex, end))) {
+                            return ext.substring(end+1);
+                        }
                     }
                 }
             }
         }
         
         return null;
-    }
-    
-    public Set<IndexedElement> getInheritedElements(String type, String name, 
-            NameKind kind, Set<Index.SearchScope> scope, JsParseResult context) {
-        final Set<SearchResult> result = new HashSet<SearchResult>();
-        assert type != null;
-
-        final Set<IndexedElement> elements = new HashSet<IndexedElement>();
-        String searchUrl = null;
-        if (context != null) {
-            try {
-                searchUrl = context.getFile().getFileObject().getURL().toExternalForm();
-            } catch (FileStateInvalidException ex) {
-                Exceptions.printStackTrace(ex);
-            }
-        }
-
-        
-        Set<String> seenTypes = new HashSet<String>();
-        seenTypes.add(type);
-        
-        while (true) {
-            NameKind originalKind = kind;
-            if (kind == NameKind.EXACT_NAME) {
-                // I can't do exact searches on methods because the method
-                // entries include signatures etc. So turn this into a prefix
-                // search and then compare chopped off signatures with the name
-                kind = NameKind.PREFIX;
-            }
-
-            if (kind == NameKind.CASE_INSENSITIVE_PREFIX || kind == NameKind.CASE_INSENSITIVE_REGEXP) {
-                // TODO - can I do anything about this????
-                //field = JsIndexer.FIELD_BASE_LOWER;
-            }
-
-            String fqn = type + "." + name;
-            String lcfqn = fqn.toLowerCase();
-            search(JsIndexer.FIELD_FQN, lcfqn, kind, result, scope, TERMS_FQN);
-
-            for (SearchResult map : result) {
-                String[] signatures = map.getValues(JsIndexer.FIELD_FQN);
-
-                if (signatures != null) {
-                    // Check if this file even applies
-                    if (context != null) {
-                        String fileUrl = map.getPersistentUrl();
-                        if (searchUrl == null || !searchUrl.equals(fileUrl)) {
-                            boolean isLibrary = fileUrl.indexOf("jsstubs") != -1; // TODO - better algorithm
-                            if (!isLibrary && !isReachable(context, fileUrl)) {
-                                continue;
-                            }
-                        }
-                    }
-
-                    for (String signature : signatures) {
-                        // Lucene returns some inexact matches, TODO investigate why this is necessary
-                        if ((kind == NameKind.PREFIX) && !signature.startsWith(lcfqn)) {
-                            continue;
-                        } else if (kind == NameKind.CASE_INSENSITIVE_PREFIX && !signature.regionMatches(true, 0, lcfqn, 0, lcfqn.length())) {
-                            continue;
-                        } else if (kind == NameKind.CASE_INSENSITIVE_REGEXP) {
-                            int end = signature.indexOf(';');
-                            assert end != -1;
-                            String n = signature.substring(0, end);
-                            try {
-                                if (!n.matches(lcfqn)) {
-                                    continue;
-                                }
-                            } catch (Exception e) {
-                                // Silently ignore regexp failures in the search expression
-                            }
-                        } else if (originalKind == NameKind.EXACT_NAME) {
-                            // Make sure the name matches exactly
-                            // We know that the prefix is correct from the first part of
-                            // this if clause, by the signature may have more
-                            if (((signature.length() > lcfqn.length()) &&
-                                    (signature.charAt(lcfqn.length()) != ';'))) {
-                                continue;
-                            }
-                        }
-
-                        // XXX THIS DOES NOT WORK WHEN THERE ARE IDENTICAL SIGNATURES!!!
-                        assert map != null;
-
-                        String elementName = null;
-                        int nameEndIdx = signature.indexOf(';');
-                        assert nameEndIdx != -1;
-                        elementName = signature.substring(0, nameEndIdx);
-                        nameEndIdx++;
-
-                        String funcIn = null;
-                        int inEndIdx = signature.indexOf(';', nameEndIdx);
-                        assert inEndIdx != -1;
-                        if (inEndIdx > nameEndIdx+1) {
-                            funcIn = signature.substring(nameEndIdx, inEndIdx);
-                        }
-                        inEndIdx++;
-
-                        int startCs = inEndIdx;
-                        inEndIdx = signature.indexOf(';', startCs);
-                        assert inEndIdx != -1;
-//                        if (inEndIdx > startCs) {
-                            // Compute the case sensitive name
-//                            elementName = signature.substring(startCs, inEndIdx);
-//                        }
-                        inEndIdx++;
-
-                        // Filter out methods on other classes
-                        if (type != null && (funcIn == null || !funcIn.equals(type))) {
-                            continue;
-                        }
-
-                        IndexedElement element = IndexedElement.create(signature, map.getPersistentUrl(), elementName, funcIn, inEndIdx, this, false);
-                        elements.add(element);
-                    }
-                }
-            }
-            
-            if (type == null || "Object".equals(type)) { // NOI18N
-                break;
-            }
-            type = getExtends(type, scope);
-            if (type == null) {
-                type = "Object"; // NOI18N
-            }
-            // Prevent circularity in types
-            if (seenTypes.contains(type)) {
-                break;
-            } else {
-                seenTypes.add(type);
-            }
-        }
-        
-        return elements;
     }
     
     /** Return both functions and properties matching the given prefix, of the
@@ -500,6 +371,8 @@ public class JsIndex {
 
         Set<String> seenTypes = new HashSet<String>();
         seenTypes.add(type);
+        boolean haveRedirected = false;
+        boolean inheriting = type == null;
         
         while (true) {
         
@@ -612,6 +485,12 @@ public class JsIndex {
                         if (onlyConstructors && element.getKind() != ElementKind.CONSTRUCTOR) {
                             continue;
                         }
+                        if (!haveRedirected) {
+                            element.setSmart(true);
+                        }
+                        if (!inheriting) {
+                            element.setInherited(false);
+                        }
                         elements.add(element);
                     }
                 }
@@ -623,6 +502,7 @@ public class JsIndex {
             type = getExtends(type, scope);
             if (type == null) {
                 type = "Object"; // NOI18N
+                haveRedirected = true;
             }
             // Prevent circularity in types
             if (seenTypes.contains(type)) {
@@ -630,6 +510,7 @@ public class JsIndex {
             } else {
                 seenTypes.add(type);
             }
+            inheriting = true;
         }
         
         return elements;

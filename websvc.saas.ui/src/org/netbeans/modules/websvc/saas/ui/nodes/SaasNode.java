@@ -82,10 +82,6 @@ public abstract class SaasNode extends AbstractNode {
 
     @Override
     public Image getIcon(int type) {
-        /*Image icon = SaasUtil.loadIcon(saas, type);
-        if (icon != null) {
-            return icon;
-        }*/
         return getGenericIcon(type);
     }
     

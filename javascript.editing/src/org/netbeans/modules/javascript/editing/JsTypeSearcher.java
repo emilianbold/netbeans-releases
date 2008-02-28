@@ -142,7 +142,15 @@ public class JsTypeSearcher implements TypeSearcher {
         }
 
         Set<JsTypeDescriptor> result = new HashSet<JsTypeDescriptor>();
-        Set<IndexedElement> elements = index.getAllNames(textForQuery, kind, scope, null);
+        Set<IndexedElement> elements;
+        int dot = textForQuery.lastIndexOf('.');
+        if (dot != -1) {
+            String prefix = textForQuery.substring(dot+1);
+            String in = textForQuery.substring(0, dot);
+            elements = index.getElements(prefix, in, kind, scope, null);
+        } else {
+            elements = index.getAllNames(textForQuery, kind, scope, null);
+        }
         for (IndexedElement element : elements) {
             result.add(new JsTypeDescriptor(element, helper));
         }

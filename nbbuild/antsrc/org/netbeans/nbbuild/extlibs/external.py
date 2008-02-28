@@ -1,14 +1,8 @@
-import os, re, urllib2, sha, inspect
-from mercurial import util, httprepo
+import os, re, urllib2, sha, inspect, sys
+from mercurial import util, httprepo, ui
 
-try:
-    import platform
-    if map(int, platform.python_version_tuple()) < [2, 4, 4]:
-        raise util.Abort('Requires Python 2.4.4+ (2.5.1 preferred)')
-except ImportError:
-    # platform module does not seem to be included in the Python installation
-    # bundled with common Windows distros of Hg
-    pass
+if sys.version_info < (2, 4, 4):
+    ui.ui().warn('Warning: external hook requires Python 2.4.4+ (2.5.1 preferred)\n')
 
 # Workaround for a Python bug (in linecache.py?):
 # http://bugs.python.org/issue1728

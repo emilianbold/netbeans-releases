@@ -143,8 +143,11 @@ public final class RubyDebugger implements RubyDebuggerImplementation {
         if (descriptor.getPwd() != null) {
             debugDesc.setBaseDirectory(descriptor.getPwd());
         }
-        Map<String, String> env = new  HashMap<String, String>();
+        Map<String, String> env = new HashMap<String, String>();
         GemManager.adjustEnvironment(platform, env);
+        if (descriptor.getAdditionalEnvironment() != null) {
+            env.putAll(descriptor.getAdditionalEnvironment());
+        }
         if (jrubySet) {
             env.putAll(getJRubyEnvironment(descriptor));
         }
@@ -171,7 +174,6 @@ public final class RubyDebugger implements RubyDebuggerImplementation {
 
     private static Map<String, String> getJRubyEnvironment(final ExecutionDescriptor descriptor) {
         Map<String, String> env = new HashMap<String, String>();
-        env.put("JAVA_HOME", RubyExecution.getJavaHome()); // NOI18N
         if (descriptor.getClassPath() != null) {
             env.put("CLASSPATH", descriptor.getClassPath()); // NOI18N
         }
@@ -229,10 +231,6 @@ public final class RubyDebugger implements RubyDebuggerImplementation {
                 (RubyDebuggerActionProvider) es[0].lookupFirst(null, RubyDebuggerActionProvider.class);
         assert provider != null;
         proxy.addRubyDebugEventListener(provider);
-    }
-    
-    private static String getMessage(final String key) {
-        return NbBundle.getMessage(RubyDebugger.class, key);
     }
     
 }

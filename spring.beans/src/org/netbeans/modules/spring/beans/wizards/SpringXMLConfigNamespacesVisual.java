@@ -46,6 +46,7 @@ package org.netbeans.modules.spring.beans.wizards;
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.JPanel;
+import javax.swing.ListSelectionModel;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableColumn;
 import javax.swing.table.TableModel;
@@ -58,11 +59,11 @@ public final class SpringXMLConfigNamespacesVisual extends JPanel {
         // set the color of the table's JViewport
         includesTable.getParent().setBackground(includesTable.getBackground());
         ((DefaultTableModel)includesTable.getModel()).setColumnIdentifiers(new String[] {
-            NbBundle.getMessage(SpringXMLConfigNamespacesVisual.class, "LBL_Include"),
-            NbBundle.getMessage(SpringXMLConfigNamespacesVisual.class, "LBL_Namespace"),
-        });
+            "Include", "Namespace"
+        }); // NOI18N
         TableColumn col1 = includesTable.getColumnModel().getColumn(0);
-        col1.setMaxWidth(60);
+        col1.setMaxWidth(0);
+        includesTable.getSelectionModel().setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         includesTable.revalidate();
     }
 
@@ -96,7 +97,7 @@ public final class SpringXMLConfigNamespacesVisual extends JPanel {
                 {null, "p - http://www.springframework.org/schema/p"}
             },
             new String [] {
-                "Include", "Namespace"
+                "", ""
             }
         ) {
             Class[] types = new Class [] {
@@ -114,6 +115,9 @@ public final class SpringXMLConfigNamespacesVisual extends JPanel {
                 return canEdit [columnIndex];
             }
         });
+        includesTable.setShowHorizontalLines(false);
+        includesTable.setShowVerticalLines(false);
+        includesTable.setTableHeader(null);
         includesTable.setShowGrid(false);
         includesTable.setDragEnabled(false);
         includesTable.setIntercellSpacing(new java.awt.Dimension(0, 0));

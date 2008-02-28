@@ -712,7 +712,6 @@ public final class EncapsulateFieldRefactoringPlugin extends JavaRefactoringPlug
             EncapsulateDesc desc = fields.get(el);
             if (desc != null && desc.useAccessors
                     && desc.refactoring.getGetterName() != null
-                    && desc.refactoring.getSetterName() != null
                     && (isArrayOrImmutable || checkAssignmentInsideExpression())
                     && !isInConstructorOfFieldClass(getCurrentPath(), desc.field)
                     && !isInGetterSetter(getCurrentPath(), desc.currentGetter, desc.currentSetter)) {
@@ -720,7 +719,7 @@ public final class EncapsulateFieldRefactoringPlugin extends JavaRefactoringPlug
                 ExpressionTree invkgetter = createGetterInvokation(t, desc.refactoring.getGetterName());
                 if (isArrayOrImmutable) {
                     rewrite(t, invkgetter);
-                } else {
+                } else if (desc.refactoring.getSetterName() != null) {
                     ExpressionTree setter = createMemberSelection(node.getExpression(), desc.refactoring.getSetterName());
 
                     Tree.Kind operator = kind == Tree.Kind.POSTFIX_INCREMENT || kind == Tree.Kind.PREFIX_INCREMENT

@@ -168,6 +168,8 @@ public class TreeLoader extends LazyTreeLoader {
 
     private void dumpSymFile(ClassSymbol clazz) throws IOException {
         PrintWriter writer = null;
+        File outputFile = null;
+        boolean deleteResult = false;
         try {
             JavaFileManager fm = ClasspathInfoAccessor.getINSTANCE().getFileManager(cpInfo);
             String binaryName = null;
@@ -201,9 +203,10 @@ public class TreeLoader extends LazyTreeLoader {
                 if (!classes.exists())
                     classes.mkdirs();
             }
-            File outputFile = new File(classes, name + '.' + FileObjects.SIG);
+            outputFile = new File(classes, name + '.' + FileObjects.SIG);
             if (outputFile.exists())
                 return ;//no point in dumping again already existing sig file
+            deleteResult = true;
             writer = new PrintWriter(outputFile, "UTF-8");
             Symbol owner;
             if (clazz.owner.kind == Kinds.PCK) {
@@ -215,10 +218,15 @@ public class TreeLoader extends LazyTreeLoader {
             else {
                 owner = clazz.owner;
             }
-            SymbolDumper.dump(writer, Types.instance(context), TransTypes.instance(context), clazz, owner);
+            deleteResult = SymbolDumper.dump(writer, Types.instance(context), TransTypes.instance(context), clazz, owner);
         } finally {
             if (writer != null)
                 writer.close();
+            if (deleteResult) {
+                assert outputFile != null;
+                
+                outputFile.delete();
+            }
         }
     }
 }

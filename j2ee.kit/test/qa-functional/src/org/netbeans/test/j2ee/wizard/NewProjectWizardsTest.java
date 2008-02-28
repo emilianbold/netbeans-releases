@@ -51,8 +51,10 @@ import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.jellytools.NewProjectNameLocationStepOperator;
 import org.netbeans.jellytools.NewProjectWizardOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
+import org.netbeans.jellytools.WizardOperator;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jemmy.EventTool;
+import org.netbeans.jemmy.JemmyProperties;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.junit.NbTestSuite;
 import org.netbeans.test.j2ee.lib.Reporter;
@@ -91,10 +93,12 @@ public class NewProjectWizardsTest extends JellyTestCase {
         this.version = version;
     }
     
+    @Override
     public void setUp() throws Exception {
         reporter = Reporter.getReporter((NbTestCase)this);
     }
     
+    @Override
     public void tearDown() throws Exception {
         reporter.close();
     }
@@ -121,7 +125,9 @@ public class NewProjectWizardsTest extends JellyTestCase {
                 = WizardUtils.setProjectNameLocation(projectName,
                 projectLocation);
         WizardUtils.setJ2eeSpecVersion(op, WizardUtils.MODULE_EJB, version);
-        wiz.finish();
+        wiz.next();
+        WizardOperator wo = new WizardOperator("New Project");
+        wo.finish();
         checkProjectStructure(EJB);
         checkProjectNodes();
     }
@@ -137,7 +143,9 @@ public class NewProjectWizardsTest extends JellyTestCase {
                 = WizardUtils.setProjectNameLocation(projectName,
                 projectLocation);
         WizardUtils.setJ2eeSpecVersion(op, WizardUtils.MODULE_EJB, version);
-        wiz.finish();
+        wiz.next();
+        WizardOperator wo = new WizardOperator("New Project");
+        wo.finish();
         checkProjectStructure(EJB);
         checkProjectNodes();
     }
@@ -155,7 +163,9 @@ public class NewProjectWizardsTest extends JellyTestCase {
                 = WizardUtils.setProjectNameLocation(projectName,
                 projectLocation);
         WizardUtils.setJ2eeSpecVersion(op, WizardUtils.MODULE_CAR, version);
-        wiz.finish();
+        wiz.next();
+        WizardOperator wo = new WizardOperator("New Project");
+        wo.finish();
         checkProjectStructure(APP_CLIENT_DEFAULT);
         checkProjectNodes();
     }
@@ -172,7 +182,9 @@ public class NewProjectWizardsTest extends JellyTestCase {
                 = WizardUtils.setProjectNameLocation(projectName,
                 projectLocation);
         WizardUtils.setJ2eeSpecVersion(op, WizardUtils.MODULE_WAR, version);
-        wiz.finish();
+        wiz.next();
+        WizardOperator wo = new WizardOperator("New Project");
+        wo.finish();
         Thread.sleep(1000);
         checkProjectStructure(WEB);
         checkProjectNodes();
@@ -190,7 +202,12 @@ public class NewProjectWizardsTest extends JellyTestCase {
                 = WizardUtils.setProjectNameLocation(projectName,
                 projectLocation);
         WizardUtils.setJ2eeSpecVersion(op, WizardUtils.MODULE_EAR, version);
-        wiz.finish();
+        wiz.next();
+        WizardOperator wo = new WizardOperator("New Project");
+        wo.finish();
+        //wait for closing new ear wizard
+        JemmyProperties.setCurrentTimeout("ComponentOperator.WaitStateTimeout", 180000);
+        wo.waitClosed();
         checkProjectStructure(J2EE_DEFAULT);
         Node root = checkProjectNodes();
         Node modules = new Node(root, "Java EE Modules");
