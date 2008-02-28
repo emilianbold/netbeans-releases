@@ -38,45 +38,29 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
+
 package org.netbeans.modules.spring.beans.refactoring.plugins;
 
-import java.util.logging.Logger;
-import org.netbeans.api.fileinfo.NonRecursiveFolder;
-import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.modules.refactoring.api.AbstractRefactoring;
 import org.netbeans.modules.refactoring.api.MoveRefactoring;
 import org.netbeans.modules.refactoring.api.RenameRefactoring;
 import org.netbeans.modules.refactoring.api.WhereUsedQuery;
 import org.netbeans.modules.refactoring.spi.RefactoringPlugin;
 import org.netbeans.modules.refactoring.spi.RefactoringPluginFactory;
-import org.openide.filesystems.FileObject;
-import org.openide.util.Lookup;
 
 /**
  * @author John Baker
  */
 public class SpringBeansRefactoringPluginFactory implements RefactoringPluginFactory {
-    private static final Logger LOGGER = Logger.getLogger(SpringBeansRefactoringPluginFactory.class.getName());
-    
+
     public RefactoringPlugin createInstance(AbstractRefactoring refactoring) {
-        Lookup sourceObj = refactoring.getRefactoringSource();
-        FileObject file = sourceObj.lookup(FileObject.class);
-        NonRecursiveFolder folder = sourceObj.lookup(NonRecursiveFolder.class);
-        TreePathHandle handle = sourceObj.lookup(TreePathHandle.class);
-        
         if (refactoring instanceof WhereUsedQuery) {
-            if (handle != null) {
-                return new SpringFindUsagesPlugin((WhereUsedQuery) refactoring);
-            }
+            return new SpringFindUsagesPlugin((WhereUsedQuery) refactoring);
         } else if (refactoring instanceof RenameRefactoring) {
             return new SpringRenamePlugin((RenameRefactoring)refactoring);
         } else if (refactoring instanceof MoveRefactoring) {
             return new SpringMovePlugin((MoveRefactoring)refactoring);
         }
-
-        // TODO: RENAME
-        // TODO: MOVE
-        // TODO: DELETE
         return null;
     }
 }

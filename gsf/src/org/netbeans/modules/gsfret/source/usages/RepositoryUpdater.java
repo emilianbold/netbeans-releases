@@ -73,16 +73,16 @@ import java.util.logging.Logger;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.apache.lucene.document.DateTools;
-import org.netbeans.fpi.gsf.Error;
-import org.netbeans.fpi.gsf.Severity;
-import org.netbeans.fpi.gsf.Indexer;
-import org.netbeans.fpi.gsf.ParseEvent;
-import org.netbeans.fpi.gsf.ParseListener;
-import org.netbeans.fpi.gsf.ParserFile;
-import org.netbeans.fpi.gsf.ParserResult;
-import org.netbeans.fpi.gsf.CancellableTask;
-import org.netbeans.fpi.gsfpath.classpath.ClassPath;
-import org.netbeans.fpi.gsfpath.queries.SourceLevelQuery;
+import org.netbeans.modules.gsf.api.Error;
+import org.netbeans.modules.gsf.api.Severity;
+import org.netbeans.modules.gsf.api.Indexer;
+import org.netbeans.modules.gsf.api.ParseEvent;
+import org.netbeans.modules.gsf.api.ParseListener;
+import org.netbeans.modules.gsf.api.ParserFile;
+import org.netbeans.modules.gsf.api.ParserResult;
+import org.netbeans.modules.gsf.api.CancellableTask;
+import org.netbeans.modules.gsfpath.api.classpath.ClassPath;
+import org.netbeans.modules.gsfpath.api.queries.SourceLevelQuery;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.api.queries.VisibilityQuery;
@@ -99,8 +99,8 @@ import org.netbeans.modules.gsfret.source.parsing.FileObjects;
 import org.netbeans.modules.gsfret.source.util.LowMemoryEvent;
 import org.netbeans.modules.gsfret.source.util.LowMemoryListener;
 import org.netbeans.modules.gsfret.source.util.LowMemoryNotifier;
-import org.netbeans.sfpi.gsfpath.classpath.ClassPathFactory;
-import org.netbeans.sfpi.gsfpath.classpath.support.ClassPathSupport;
+import org.netbeans.modules.gsfpath.spi.classpath.ClassPathFactory;
+import org.netbeans.modules.gsfpath.spi.classpath.support.ClassPathSupport;
 import org.openide.filesystems.FileAttributeEvent;
 import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileEvent;
@@ -432,41 +432,11 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
     
     
     private void registerFileSystemListener  () {
-        final File[] roots = File.listRoots();
-        final Set<FileSystem> fss = new HashSet<FileSystem> ();
-        for (File root : roots) {
-            final FileObject fo = FileUtil.toFileObject (root);
-            if (fo != null) {                
-                try {
-                    final FileSystem fs = fo.getFileSystem();
-                    if (!fss.contains(fs)) {
-                        fs.addFileChangeListener (this);
-                        fss.add(fs);
-                    }
-                } catch (FileStateInvalidException e) {
-                    Exceptions.printStackTrace(e);
-                }
-            }
-        }
+        FileUtil.addFileChangeListener(this);
     }
     
     private void unregisterFileSystemListener () {
-        final File[] roots = File.listRoots();
-        final Set<FileSystem> fss = new HashSet<FileSystem> ();
-        for (File root : roots) {
-            final FileObject fo = FileUtil.toFileObject (root);
-            if (fo != null) {                
-                try {
-                    final FileSystem fs = fo.getFileSystem();
-                    if (!fss.contains(fs)) {
-                        fs.removeFileChangeListener (this);
-                        fss.add(fs);
-                    }
-                } catch (FileStateInvalidException e) {
-                    Exceptions.printStackTrace(e);
-                }
-            }
-        }
+        FileUtil.removeFileChangeListener(this);
     }
     
     private URL getOwningSourceRoot (final FileObject fo) {

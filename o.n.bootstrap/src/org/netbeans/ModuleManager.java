@@ -1317,7 +1317,7 @@ public final class ModuleManager {
                     for (int i = 0; i < dependencies.length; i++) {
                         Dependency dep = dependencies[i];
                         if (dep.getType() == Dependency.TYPE_MODULE) {
-                            if (dep.getName().equals(m.getCodeName())) {
+                            if (Util.parseCodeName(dep.getName())[0].equals(m.getCodeNameBase())) {
                                 // Still used, skip it.
                                 continue FIND_AUTOLOADS;
                             }

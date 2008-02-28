@@ -60,8 +60,10 @@ public class PanelOptionsVisual extends SettingsPanel implements PropertyChangeL
 //    private boolean valid;
     
     public PanelOptionsVisual(PanelConfigureProject panel, int type) {
+        this.panel = panel;
         initComponents();
         Util.preselectWizardPlatform(platforms);
+
 
         PlatformComponentFactory.addPlatformChangeListener(platforms, new PlatformComponentFactory.PlatformChangeListener() {
             public void platformChanged() {
@@ -71,7 +73,6 @@ public class PanelOptionsVisual extends SettingsPanel implements PropertyChangeL
             }
         });
 
-        this.panel = panel;
 
         fireChangeEvent();
         switch (type) {
@@ -196,22 +197,19 @@ public class PanelOptionsVisual extends SettingsPanel implements PropertyChangeL
             .add(layout.createSequentialGroup()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(setAsMainCheckBox)
-                    .add(warCheckBox))
-                .add(334, 334, 334))
-            .add(layout.createSequentialGroup()
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(serverLabel)
-                    .add(rubyPlatformLabel))
-                .add(20, 20, 20)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(serverComboBox, 0, 508, Short.MAX_VALUE)
-                    .add(platforms, 0, 508, Short.MAX_VALUE))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(manageButton)
-                .addContainerGap())
-            .add(layout.createSequentialGroup()
-                .add(jrubyUsedLabel)
-                .addContainerGap())
+                    .add(warCheckBox)
+                    .add(layout.createSequentialGroup()
+                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                            .add(serverLabel)
+                            .add(rubyPlatformLabel))
+                        .add(20, 20, 20)
+                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING, false)
+                            .add(org.jdesktop.layout.GroupLayout.TRAILING, serverComboBox, 0, 381, Short.MAX_VALUE)
+                            .add(org.jdesktop.layout.GroupLayout.TRAILING, platforms, 0, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                        .add(6, 6, 6)
+                        .add(manageButton))
+                    .add(jrubyUsedLabel))
+                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -220,8 +218,8 @@ public class PanelOptionsVisual extends SettingsPanel implements PropertyChangeL
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(rubyPlatformLabel)
-                    .add(manageButton)
-                    .add(platforms, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                    .add(platforms, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(manageButton))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(serverLabel)
@@ -235,6 +233,11 @@ public class PanelOptionsVisual extends SettingsPanel implements PropertyChangeL
 
         setAsMainCheckBox.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getBundle(PanelOptionsVisual.class).getString("ACSN_setAsMainCheckBox")); // NOI18N
         setAsMainCheckBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getBundle(PanelOptionsVisual.class).getString("ACSD_setAsMainCheckBox")); // NOI18N
+        warCheckBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(PanelOptionsVisual.class, "ACSD_WarFile")); // NOI18N
+        rubyPlatformLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(PanelOptionsVisual.class, "ACSD_RubyPlatformLabel")); // NOI18N
+        manageButton.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(PanelOptionsVisual.class, "ASCN_RubyHomeBrowse")); // NOI18N
+        manageButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(PanelOptionsVisual.class, "ASCD_RubyHomeBrowse")); // NOI18N
+        serverLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(PanelOptionsVisual.class, "ACSD_Server")); // NOI18N
 
         getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(PanelOptionsVisual.class, "ACSN_PanelOptionsVisual")); // NOI18N
         getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(PanelOptionsVisual.class, "ACSD_PanelOptionsVisual")); // NOI18N
@@ -261,7 +264,7 @@ public class PanelOptionsVisual extends SettingsPanel implements PropertyChangeL
         }
     }
     
-    private RubyPlatform getPlatform() {
+    RubyPlatform getPlatform() {
         return PlatformComponentFactory.getPlatform(platforms);
     }
     

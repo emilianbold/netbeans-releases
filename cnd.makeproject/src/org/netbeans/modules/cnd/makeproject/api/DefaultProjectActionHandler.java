@@ -189,11 +189,14 @@ public class DefaultProjectActionHandler implements ActionListener {
             return handle;
         }
         
-        private InputOutput getIOTab(String name) {
+        private InputOutput getIOTab(String name, boolean reuse) {
             sa = new StopAction(this);
             ra = new RerunAction(this);
-            InputOutput tab = IOProvider.getDefault().getIO(name, false); // This will (sometimes!) find an existing one.
-            tab.closeInputOutput(); // Close it...
+            InputOutput tab;
+            if (reuse) {
+                tab = IOProvider.getDefault().getIO(name, false); // This will (sometimes!) find an existing one.
+                tab.closeInputOutput(); // Close it...
+            }
             tab = IOProvider.getDefault().getIO(name, new Action[] {ra, sa}); // Create a new ...
             try {
                 tab.getOut().reset();
@@ -221,7 +224,7 @@ public class DefaultProjectActionHandler implements ActionListener {
                     if (tabNames.contains(tabName)) {
                         int seq = 2;
                         while (true) {
-                            tabNameSeq = tabName + " #" + seq;
+                            tabNameSeq = tabName + " #" + seq; // NOI18N
                             if (!tabNames.contains(tabNameSeq)) {
                                 break;
                             }
@@ -229,7 +232,7 @@ public class DefaultProjectActionHandler implements ActionListener {
                         }
                     }
                     tabNames.add(tabNameSeq);
-                    ioTab = getIOTab(tabNameSeq);
+                    ioTab = getIOTab(tabNameSeq, true);
                     if (mainTabHandler == null) {
                         mainTab = ioTab;
                         mainTabHandler = this;
@@ -239,7 +242,7 @@ public class DefaultProjectActionHandler implements ActionListener {
             else {
                 tabName = getTabName(paes);
                 tabNameSeq = tabName;
-                ioTab = getIOTab(tabName);
+                ioTab = getIOTab(tabName, false);
             }
         }
         

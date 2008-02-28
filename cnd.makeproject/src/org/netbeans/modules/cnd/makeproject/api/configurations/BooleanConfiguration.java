@@ -99,6 +99,10 @@ public class BooleanConfiguration {
     public boolean getDefault() {
 	return def;
     }
+    public void setDefault(boolean b) {
+        def = b;
+        setModified(value != def);
+    }
     public void reset() {
 	value = getDefault();
 	setModified(false);

@@ -93,7 +93,8 @@ public class ClassPathSupportCallbackImpl implements ClassPathSupport.Callback {
         List<String> libraries = new ArrayList<String>(libs.getLength());
         for ( int i = 0; i < libs.getLength(); i++ ) {
             Element item = (Element)libs.item( i );
-            libraries.add( findText( item ));
+            // ejbjar is different from other j2ee projects - it stores reference without ${ and }
+            libraries.add( "${"+findText( item )+"}"); // NOI18N
         }
         return libraries;
     }
@@ -193,7 +194,8 @@ public class ClassPathSupportCallbackImpl implements ClassPathSupport.Callback {
             libraryElement.setAttribute(ATTR_DIRS, "" + dirs.size());
         }
         
-        libraryElement.appendChild( doc.createTextNode( item.getReference() ) );
+        // ejbjar is different from other j2ee projects - it stores reference without ${ and }
+        libraryElement.appendChild( doc.createTextNode( CommonProjectUtils.getAntPropertyName(item.getReference()) ) );
         return libraryElement;
     }
        
@@ -226,8 +228,5 @@ public class ClassPathSupportCallbackImpl implements ClassPathSupport.Callback {
         putIncludedLibraries(items, helper, projectXMLElement);
     }
 
-    public void initAdditionalProperties(Item item) {
-        item.setAdditionalProperty(INCLUDE_IN_DEPLOYMENT, "true"); //NOI18N
-    }
 }
 

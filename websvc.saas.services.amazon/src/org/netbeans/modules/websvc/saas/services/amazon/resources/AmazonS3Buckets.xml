@@ -41,31 +41,13 @@
  made subject to such option by the copyright holder.
 -->
 
-
-<!--
-    Document   : amazon-map.xml
-    Created on : June 6, 2007, 10:23 AM
-    Author     : Ayub Khan
-    Description:
-        Purpose of the document follows.
-        This document is an instance of component.xsd that describes the rest component
-        "amazon map". This document describes the name, description, icons for the
-        amazon map component. Classes element define the set of classes that to copied to
-        users project from the location specified to the current target location
-        of users file. The class files will be looked up using jdk 6 meta lookup. If 
-        'instanceCreate' element is found on any class then the invocation of the 
-        class will be added to the target class where this component will be dragged
-        and dropped. In this case AmazonS3BucketsResource.getMap() needs to do all the necessary 
-        things to invoke whatever service it needs to (rest, jax-ws, jpa, ejb etc.,)
--->
-
 <saas-services xmlns="http://xml.netbeans.org/websvc/saas/services/1.0"
            xmlns:tns="http://xml.netbeans.org/websvc/rest/component/1.0/amazon/amazon-map"
            xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'               
            xsi:schemaLocation='http://xml.netbeans.org/websvc/saas/services/1.0 
            ../../../../../../../../../../websvc.saas.api/src/org/netbeans/modules/websvc/saas/model/SaasServices.xsd' 
            type="custom"
-           api-doc="http://developers.amazon.com/TBD"
+           api-doc="http://developer.amazonwebservices.com/connect/kbcategory.jspa?categoryID=46"
            >
     
     <description>AmazonS3Buckets Service</description>
@@ -74,16 +56,17 @@
     <saas-metadata>
 
         <localizing-bundle>org.netbeans.modules.websvc.saas.services.amazon.Bundle</localizing-bundle>
-        <icon16>"org/netbeans/modules/websvc/components/amazon/resources/amazon16.png</icon16>
 
-        <group name="Amazon"/>
+        <group name="Amazon">
+            <group name="AmazonS3"/>
+        </group>
         <code-gen packageName="org.netbeans.saas.services.amazon">
             <artifacts targets="java">
                 <artifact id="AmazonS3Buckets" type="template"
-                    url="Templates/WebServices/AmazonS3BucketsResource.java"/>
+                    url="Templates/SaaSServices/AmazonS3BucketsResource.java"/>
             </artifacts>
         </code-gen>
-        <authentication profile="Templates/WebServices/profile.properties">
+        <authentication profile="SaaSServices/AmazonS3/profile.properties">
             <http-basic/>
         </authentication>
 
@@ -91,7 +74,7 @@
     
     
     <methods>
-        <method name="generateAmazonS3BucketsCode" href="AmazonS3Buckets">
+        <method name="getS3Buckets" href="AmazonS3Buckets">
             <documentation>
                 Allows a developer to generate code to access Amazon S3 Buckets.
             </documentation>

@@ -44,6 +44,7 @@ made subject to such option by the copyright holder.
 <filesystem>
     <attr name="Services\MIMEResolver\org-netbeans-modules-editor-settings-storage-mime-resolver.xml\position" intvalue="325"/>
     <folder name="Editors">
+        <file name="org-netbeans-lib-editor-codetemplates-CodeTemplateInsertHandler$HLFactory.instance" />
         <folder name="text">
             <folder name="x-java">
                 <folder name="CompletionProviders">

@@ -2,30 +2,30 @@
 <!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.1//EN" "http://www.netbeans.org/dtds/filesystem-1_1.dtd">
 <filesystem>
     
-    <folder name="SaasServices">
+    <folder name="Templates">
+        <folder name="SaaSServices">
+            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.websvc.saas.services.facebook.Bundle"/>
+            <file name="FacebookAuthenticator.java" 
+                  url="/org/netbeans/modules/websvc/saas/services/facebook/resources/web/FacebookAuthenticator.template">
+                <attr name="position" intvalue="3610"/>
+            </file>
+            <file name="FacebookLogin.java" 
+                  url="/org/netbeans/modules/websvc/saas/services/facebook/resources/web/FacebookLogin.template">
+                <attr name="position" intvalue="3620"/>
+            </file>
+            <file name="FacebookCallback.java" 
+                  url="/org/netbeans/modules/websvc/saas/services/facebook/resources/web/FacebookCallback.template">
+                <attr name="position" intvalue="3630"/>
+            </file>
+        </folder>
+    </folder>
+    
+    <folder name="SaaSServices">
         <folder name="Facebook">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.websvc.saas.services.facebook.Bundle"/>
-
             <file name="Facebook.xml" url="/org/netbeans/modules/websvc/saas/services/facebook/resources/Facebook.xml"/>
             <file name="FacebookSecure.xml" url="/org/netbeans/modules/websvc/saas/services/facebook/resources/FacebookSecure.xml"/>
-
             <file name="profile.properties" url="/org/netbeans/modules/websvc/saas/services/facebook/resources/profile.properties"/>
-            <folder name="Desktop">
-                <file name="FacebookAuthenticator.java" 
-                      url="/org/netbeans/modules/websvc/saas/services/facebook/resources/desktop/FacebookAuthenticator.template">
-                </file>
-            </folder>
-            <folder name="Web">
-                <file name="FacebookAuthenticator.java" 
-                      url="/org/netbeans/modules/websvc/saas/services/facebook/resources/web/FacebookAuthenticator.template">
-                </file>
-                <file name="FacebookLogin.java" 
-                      url="/org/netbeans/modules/websvc/saas/services/facebook/resources/web/FacebookLogin.template">
-                </file>
-                <file name="FacebookCallback.java" 
-                      url="/org/netbeans/modules/websvc/saas/services/facebook/resources/web/FacebookCallback.template">
-                </file>
-            </folder>
         </folder>
     </folder>
     

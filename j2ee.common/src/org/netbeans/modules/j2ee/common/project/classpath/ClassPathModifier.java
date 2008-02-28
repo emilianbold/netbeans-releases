@@ -58,6 +58,8 @@ import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
 import org.netbeans.api.project.ant.AntArtifact;
 import org.netbeans.api.project.libraries.Library;
+import org.netbeans.modules.j2ee.common.project.ui.ClassPathUiSupport;
+import org.netbeans.modules.j2ee.common.project.ui.ProjectProperties;
 import org.netbeans.modules.java.api.common.ant.UpdateHelper;
 import org.netbeans.spi.java.project.classpath.ProjectClassPathModifierImplementation;
 import org.netbeans.spi.project.libraries.support.LibrariesSupport;
@@ -85,28 +87,36 @@ public final class ClassPathModifier extends ProjectClassPathModifierImplementat
     private final ClassPathSupport cs;    
     private final AntProjectHelper antHelper;
     private ReferenceHelper refHelper;
-    private Callback callback;
-    private ClassPathSupport.Callback cpCallback;
+    private ClassPathModifier.Callback cpModifierCallback;
+    private ClassPathSupport.Callback cpSupportCallback;
+    private ClassPathUiSupport.Callback cpUiSupportCallback;
+    private String[] libUpdaterProperties;
     
     private static final Logger LOG = Logger.getLogger(ClassPathModifier.class.getName());
 
     /** Creates a new instance of J2SEProjectClassPathModifier */
     public ClassPathModifier(final Project project, final UpdateHelper helper, 
             final PropertyEvaluator eval, final ReferenceHelper refHelper, 
-            ClassPathSupport.Callback cpCallback, Callback callback) {
+            ClassPathSupport.Callback cpSupportCallback, 
+            ClassPathModifier.Callback cpModifierCallback,
+            ClassPathUiSupport.Callback cpUiSupportCallback,
+            String[] libUpdaterProperties) {
         assert project != null;
         assert helper != null;
         assert eval != null;
         assert refHelper != null;
+        assert libUpdaterProperties != null && libUpdaterProperties.length > 0;
         this.project = project;
         this.helper = helper;
         this.eval = eval;
         this.refHelper = refHelper;
         this.antHelper = helper.getAntProjectHelper();
         this.cs = new ClassPathSupport( eval, refHelper, antHelper, helper,
-                                        cpCallback);
-        this.callback = callback;
-        this.cpCallback = cpCallback;
+                                        cpSupportCallback);
+        this.cpModifierCallback = cpModifierCallback;
+        this.cpSupportCallback = cpSupportCallback;
+        this.cpUiSupportCallback = cpUiSupportCallback;
+        this.libUpdaterProperties = libUpdaterProperties;
     }
     
     public SourceGroup[] getExtensibleSourceGroups() {
@@ -123,8 +133,8 @@ public final class ClassPathModifier extends ProjectClassPathModifierImplementat
     }
 
     protected boolean removeRoots(final URL[] classPathRoots, final SourceGroup sourceGroup, final String type) throws IOException, UnsupportedOperationException {
-        String classPathProperty = callback.getClassPathProperty(sourceGroup, type);
-        return handleRoots (classPathRoots, classPathProperty, callback.getElementName(classPathProperty), REMOVE);
+        String classPathProperty = cpModifierCallback.getClassPathProperty(sourceGroup, type);
+        return handleRoots (classPathRoots, classPathProperty, cpModifierCallback.getElementName(classPathProperty), REMOVE);
     }
 
     protected boolean addRoots (final URL[] classPathRoots, final SourceGroup sourceGroup, final String type) throws IOException, UnsupportedOperationException {        
@@ -132,8 +142,8 @@ public final class ClassPathModifier extends ProjectClassPathModifierImplementat
     }
     
     public boolean addRoots (final URL[] classPathRoots, final SourceGroup sourceGroup, final String type, int operation) throws IOException, UnsupportedOperationException {        
-        String classPathProperty = callback.getClassPathProperty(sourceGroup, type);
-        return handleRoots (classPathRoots, classPathProperty, callback.getElementName(classPathProperty), operation);
+        String classPathProperty = cpModifierCallback.getClassPathProperty(sourceGroup, type);
+        return handleRoots (classPathRoots, classPathProperty, cpModifierCallback.getElementName(classPathProperty), ADD);
     }
     
     boolean handleRoots (final URL[] classPathRoots, final String classPathProperty, final String projectXMLElementName, final int operation) throws IOException, UnsupportedOperationException {
@@ -161,7 +171,7 @@ public final class ClassPathModifier extends ProjectClassPathModifierImplementat
                                 }
                                 File f = antHelper.resolveFile(filePath);
                                 ClassPathSupport.Item item = ClassPathSupport.Item.create( filePath, projectFolderFile, null);
-                                cpCallback.initAdditionalProperties(item);
+                                cpUiSupportCallback.initItem(item);
                                 if ((operation == ADD || operation == ADD_NO_HEURISTICS) && !resources.contains(item)) {
                                     resources.add (item);
                                     changed = true;
@@ -206,13 +216,13 @@ public final class ClassPathModifier extends ProjectClassPathModifierImplementat
     }
     
     protected boolean removeAntArtifacts(final AntArtifact[] artifacts, final URI[] artifactElements, final SourceGroup sourceGroup, final String type) throws IOException, UnsupportedOperationException {
-        String classPathProperty = callback.getClassPathProperty(sourceGroup, type);
-        return handleAntArtifacts (artifacts, artifactElements, classPathProperty, callback.getElementName(classPathProperty), REMOVE);
+        String classPathProperty = cpModifierCallback.getClassPathProperty(sourceGroup, type);
+        return handleAntArtifacts (artifacts, artifactElements, classPathProperty, cpModifierCallback.getElementName(classPathProperty), REMOVE);
     }
 
     protected boolean addAntArtifacts(final AntArtifact[] artifacts, final URI[] artifactElements, final SourceGroup sourceGroup, final String type) throws IOException, UnsupportedOperationException {
-        String classPathProperty = callback.getClassPathProperty(sourceGroup, type);
-        return handleAntArtifacts (artifacts, artifactElements, classPathProperty, callback.getElementName(classPathProperty), ADD);
+        String classPathProperty = cpModifierCallback.getClassPathProperty(sourceGroup, type);
+        return handleAntArtifacts (artifacts, artifactElements, classPathProperty, cpModifierCallback.getElementName(classPathProperty), ADD);
     }
     
     boolean handleAntArtifacts (final AntArtifact[] artifacts, final URI[] artifactElements, final String classPathProperty, final String projectXMLElementName, final int operation) throws IOException, UnsupportedOperationException {
@@ -232,7 +242,7 @@ public final class ClassPathModifier extends ProjectClassPathModifierImplementat
                                 assert artifacts[i] != null;
                                 assert artifactElements[i] != null;
                                 ClassPathSupport.Item item = ClassPathSupport.Item.create( artifacts[i], artifactElements[i], null);
-                                cpCallback.initAdditionalProperties(item);
+                                cpUiSupportCallback.initItem(item);
                                 if (operation == ADD && !resources.contains(item)) {
                                     resources.add (item);
                                     changed = true;
@@ -267,13 +277,13 @@ public final class ClassPathModifier extends ProjectClassPathModifierImplementat
     }
     
     protected boolean removeLibraries(final Library[] libraries, final SourceGroup sourceGroup, final String type) throws IOException, UnsupportedOperationException {
-        String classPathProperty = callback.getClassPathProperty(sourceGroup, type);
-        return handleLibraries (libraries, classPathProperty, callback.getElementName(classPathProperty), REMOVE);
+        String classPathProperty = cpModifierCallback.getClassPathProperty(sourceGroup, type);
+        return handleLibraries (libraries, classPathProperty, cpModifierCallback.getElementName(classPathProperty), REMOVE);
     }
 
     protected boolean addLibraries(final Library[] libraries, final SourceGroup sourceGroup, final String type) throws IOException, UnsupportedOperationException {
-        String classPathProperty = callback.getClassPathProperty(sourceGroup, type);
-        return handleLibraries (libraries, classPathProperty, callback.getElementName(classPathProperty), ADD);
+        String classPathProperty = cpModifierCallback.getClassPathProperty(sourceGroup, type);
+        return handleLibraries (libraries, classPathProperty, cpModifierCallback.getElementName(classPathProperty), ADD);
     }
     
     boolean handleLibraries (final Library[] libraries, final String classPathProperty, final String projectXMLElementName, final int operation) throws IOException, UnsupportedOperationException {
@@ -281,10 +291,12 @@ public final class ClassPathModifier extends ProjectClassPathModifierImplementat
         for (int i = 0; i < libraries.length; i++) {
             Library lib = checkLibrarySharability(project, antHelper, refHelper, libraries[i]);
             ClassPathSupport.Item item = ClassPathSupport.Item.create(lib, null);
-            cpCallback.initAdditionalProperties(item);
+            cpUiSupportCallback.initItem(item);
             items.add(item);
         }
-        return handleLibraryClassPathItems(items, classPathProperty, projectXMLElementName, operation, true);
+        boolean res = handleLibraryClassPathItems(items, classPathProperty, projectXMLElementName, operation, true);
+        ProjectProperties.storeLibrariesLocations(project, antHelper, cs, libUpdaterProperties);
+        return res;
     }
     
     public static Library checkLibrarySharability(Project project, AntProjectHelper antHelper, ReferenceHelper refHelper, Library lib) throws IOException {

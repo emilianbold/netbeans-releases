@@ -55,7 +55,6 @@ import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
 import org.openide.util.Lookup;
 import org.openide.util.NbPreferences;
-import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
 
 /**
@@ -105,11 +104,7 @@ public final class DefaultSettings implements Settings, ModelListener, CategoryL
         for( int i=0; i<categories.length; i++ ) {
             categories[i].addCategoryListener( this );
         }
-        RequestProcessor.getDefault().post( new Runnable() {
-            public void run() {
-                load();
-            }
-        } );
+        load();
     }
     
     private String constructPrefsFileName( Model model ) {
@@ -303,8 +298,8 @@ public final class DefaultSettings implements Settings, ModelListener, CategoryL
         } finally {
             isLoading = false;
         }
-            }
-            
+    }
+    
     private void store() {
         if( isLoading )
             return;

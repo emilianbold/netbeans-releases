@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -47,6 +47,8 @@ import javax.servlet.jsp.JspException;
 import org.xml.sax.Attributes;
 
 class DumpVisitor extends Node.Visitor {
+    
+    private static final Logger LOGGER = Logger.getLogger(DumpVisitor.class.getName());
 
     private int indent = 0;
 
@@ -62,37 +64,33 @@ class DumpVisitor extends Node.Visitor {
      * all nodes. Override this in the child visitor class if need to.
      */
     protected void visitCommon(Node n) throws JspException {
-        printString("\nNode [" + n.getStart() + ", " + getDisplayClassName(n.getClass().getName()) + "] ");
+        printString("\nNode [" + n.getStart() + ", " + getDisplayClassName(n.getClass().getName()) + "] "); // NOI18N
     }
     
     private String getDisplayClassName(String cn) {
-        int amp = cn.indexOf('$');
+        int amp = cn.indexOf('$'); // NOI18N
         return cn.substring(amp + 1);
     }
 
     private String getAttributes(Attributes attrs) {
-        if (attrs == null)
-            return "";
-
-        StringBuilder buf = new StringBuilder();
-        for (int i=0; i < attrs.getLength(); i++) {
-            buf.append(" " + attrs.getQName(i) + "=\""
-                       + attrs.getValue(i) + "\"");
+        if (attrs == null) {
+            return ""; // NOI18N
         }
-        return buf.toString();
+
+        StringBuilder buffer = new StringBuilder();
+        for (int i = 0; i < attrs.getLength(); i++) {
+            buffer.append(" "); // NOI18N
+            buffer.append(attrs.getQName(i));
+            buffer.append("=\""); // NOI18N
+            buffer.append(attrs.getValue(i));
+            buffer.append("\""); // NOI18N
+        }
+        return buffer.toString();
     }
 
     private void printString(String str) {
         printIndent();
         buf.append(str);
-    }
-
-    private void printString(String prefix, char[] chars, String suffix) {
-        String str = null;
-        if (chars != null) {
-            str = new String(chars);
-        }
-        printString(prefix, str, suffix);
     }
 
     private void printString(String prefix, String str, String suffix) {
@@ -115,163 +113,187 @@ class DumpVisitor extends Node.Visitor {
     private void dumpBody(Node n) throws JspException {
         Node.Nodes page = n.getBody();
         if (page != null) {
-		indent++;
+            indent++;
             page.visit(this);
-		indent--;
+            indent--;
         }
     }
 
+    @Override
     public void visit(Node.TagDirective n) throws JspException {
         visitCommon(n);
-        printAttributes("<%@ tag", n.getAttributes(), "%>");
+        printAttributes("<%@ tag", n.getAttributes(), "%>"); // NOI18N
     }
 
+    @Override
     public void visit(Node.PageDirective n) throws JspException {
         visitCommon(n);
-        printAttributes("<%@ page", n.getAttributes(), "%>");
+        printAttributes("<%@ page", n.getAttributes(), "%>"); // NOI18N
     }
 
+    @Override
     public void visit(Node.TaglibDirective n) throws JspException {
         visitCommon(n);
-        printAttributes("<%@ taglib", n.getAttributes(), "%>");
+        printAttributes("<%@ taglib", n.getAttributes(), "%>"); // NOI18N
     }
 
+    @Override
     public void visit(Node.IncludeDirective n) throws JspException {
         visitCommon(n);
-        printAttributes("<%@ include", n.getAttributes(), "%>");
+        printAttributes("<%@ include", n.getAttributes(), "%>"); // NOI18N
         dumpBody(n);
     }
 
+    @Override
     public void visit(Node.Comment n) throws JspException {
         visitCommon(n);
-        printString("<%--", n.getText(), "--%>");
+        printString("<%--", n.getText(), "--%>"); // NOI18N
     }
 
+    @Override
     public void visit(Node.Declaration n) throws JspException {
         visitCommon(n);
-        printString("<%!", n.getText(), "%>");
+        printString("<%!", n.getText(), "%>"); // NOI18N
     }
 
+    @Override
     public void visit(Node.Expression n) throws JspException {
         visitCommon(n);
-        printString("<%=", n.getText(), "%>");
+        printString("<%=", n.getText(), "%>"); // NOI18N
     }
 
+    @Override
     public void visit(Node.Scriptlet n) throws JspException {
         visitCommon(n);
-        printString("<%", n.getText(), "%>");
+        printString("<%", n.getText(), "%>"); // NOI18N
     }
 
+    @Override
     public void visit(Node.IncludeAction n) throws JspException {
         visitCommon(n);
-        printAttributes("<jsp:include", n.getAttributes(), ">");
+        printAttributes("<jsp:include", n.getAttributes(), ">"); // NOI18N
         dumpBody(n);
-        printString("</jsp:include>");
+        printString("</jsp:include>"); // NOI18N
     }
 
+    @Override
     public void visit(Node.ForwardAction n) throws JspException {
         visitCommon(n);
-        printAttributes("<jsp:forward", n.getAttributes(), ">");
+        printAttributes("<jsp:forward", n.getAttributes(), ">"); // NOI18N
         dumpBody(n);
-        printString("</jsp:forward>");
+        printString("</jsp:forward>"); // NOI18N
     }
 
+    @Override
     public void visit(Node.GetProperty n) throws JspException {
         visitCommon(n);
-        printAttributes("<jsp:getProperty", n.getAttributes(), "/>");
+        printAttributes("<jsp:getProperty", n.getAttributes(), "/>"); // NOI18N
     }
 
+    @Override
     public void visit(Node.SetProperty n) throws JspException {
         visitCommon(n);
-        printAttributes("<jsp:setProperty", n.getAttributes(), ">");
+        printAttributes("<jsp:setProperty", n.getAttributes(), ">"); // NOI18N
         dumpBody(n);
-        printString("</jsp:setProperty>");
+        printString("</jsp:setProperty>"); // NOI18N
     }
 
+    @Override
     public void visit(Node.UseBean n) throws JspException {
         visitCommon(n);
-        printAttributes("<jsp:useBean", n.getAttributes(), ">");
+        printAttributes("<jsp:useBean", n.getAttributes(), ">"); // NOI18N
         dumpBody(n);
-        printString("</jsp:useBean>");
+        printString("</jsp:useBean>"); // NOI18N
     }
 
+    @Override
     public void visit(Node.PlugIn n) throws JspException {
         visitCommon(n);
-        printAttributes("<jsp:plugin", n.getAttributes(), ">");
+        printAttributes("<jsp:plugin", n.getAttributes(), ">"); // NOI18N
         dumpBody(n);
-        printString("</jsp:plugin>");
+        printString("</jsp:plugin>"); // NOI18N
     }
 
+    @Override
     public void visit(Node.ParamsAction n) throws JspException {
         visitCommon(n);
-        printAttributes("<jsp:params", n.getAttributes(), ">");
+        printAttributes("<jsp:params", n.getAttributes(), ">"); // NOI18N
         dumpBody(n);
-        printString("</jsp:params>");
+        printString("</jsp:params>"); // NOI18N
     }
 
+    @Override
     public void visit(Node.ParamAction n) throws JspException {
         visitCommon(n);
-        printAttributes("<jsp:param", n.getAttributes(), ">");
+        printAttributes("<jsp:param", n.getAttributes(), ">"); // NOI18N
         dumpBody(n);
-        printString("</jsp:param>");
+        printString("</jsp:param>"); // NOI18N
     }
 
+    @Override
     public void visit(Node.NamedAttribute n) throws JspException {
         visitCommon(n);
-        printAttributes("<jsp:attribute", n.getAttributes(), ">");
+        printAttributes("<jsp:attribute", n.getAttributes(), ">"); // NOI18N
         dumpBody(n);
-        printString("</jsp:attribute>");
+        printString("</jsp:attribute>"); // NOI18N
     }
 
+    @Override
     public void visit(Node.JspBody n) throws JspException {
         visitCommon(n);
-        printAttributes("<jsp:body", n.getAttributes(), ">");
+        printAttributes("<jsp:body", n.getAttributes(), ">"); // NOI18N
         dumpBody(n);
-        printString("</jsp:body>");
+        printString("</jsp:body>"); // NOI18N
     }
 
+    @Override
     public void visit(Node.ELExpression n) throws JspException {
         visitCommon(n);
         printString(n.getText());
     }
 
+    @Override
     public void visit(Node.CustomTag n) throws JspException {
         visitCommon(n);
-        printAttributes("<" + n.getQName(), n.getAttributes(), ">");
+        printAttributes("<" + n.getQName(), n.getAttributes(), ">"); // NOI18N
         dumpBody(n);
-        printString("</" + n.getQName() + ">");
+        printString("</" + n.getQName() + ">"); // NOI18N
     }
 
+    @Override
     public void visit(Node.UninterpretedTag n) throws JspException {
         visitCommon(n);
         String tag = n.getQName();
-        printAttributes("<"+tag, n.getAttributes(), ">");
+        printAttributes("<"+tag, n.getAttributes(), ">"); // NOI18N
         dumpBody(n);
-        printString("</" + tag + ">");
+        printString("</" + tag + ">"); // NOI18N
     }
 
+    @Override
     public void visit(Node.InvokeAction n) throws JspException {
         visitCommon(n);
-        printAttributes("<jsp:invoke", n.getAttributes(), ">");
+        printAttributes("<jsp:invoke", n.getAttributes(), ">"); // NOI18N
         dumpBody(n);
-        printString("</jsp:invoke>");
+        printString("</jsp:invoke>"); // NOI18N
     }
 
+    @Override
     public void visit(Node.DoBodyAction n) throws JspException {
         visitCommon(n);
-        printAttributes("<jsp:doBody", n.getAttributes(), ">");
+        printAttributes("<jsp:doBody", n.getAttributes(), ">"); // NOI18N
         dumpBody(n);
-        printString("</jsp:doBody>");
+        printString("</jsp:doBody>"); // NOI18N
     }
 
+    @Override
     public void visit(Node.TemplateText n) throws JspException {
         visitCommon(n);
         printString(new String(n.getText()));
     }
 
     private void printIndent() {
-        for (int i=0; i < indent; i++) {
-            buf.append("  ");
+        for (int i = 0; i < indent; i++) {
+            buf.append("  "); // NOI18N
         }
     }
     
@@ -280,25 +302,24 @@ class DumpVisitor extends Node.Visitor {
     }
 
     public static String dump(Node n) {
-	try {
+        try {
             DumpVisitor dv = new DumpVisitor();
-	    n.accept(dv);
+            n.accept(dv);
             return dv.getString();
-	} catch (JspException e) {
-            Logger.getLogger("global").log(Level.INFO, null, e);
+        } catch (JspException e) {
+            LOGGER.log(Level.INFO, null, e);
             return e.getMessage();
 	}
     }
 
     public static String dump(Node.Nodes page) {
-	try {
+        try {
             DumpVisitor dv = new DumpVisitor();
-	    page.visit(dv);
+            page.visit(dv);
             return dv.getString();
-	} catch (JspException e) {
-            Logger.getLogger("global").log(Level.INFO, null, e);
+        } catch (JspException e) {
+            LOGGER.log(Level.INFO, null, e);
             return e.getMessage();
 	}
     }
 }
-

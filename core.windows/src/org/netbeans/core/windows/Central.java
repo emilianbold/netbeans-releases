@@ -2085,6 +2085,7 @@ final class Central implements ControllerHandler {
         if(isVisible()) {
             viewRequestor.scheduleRequest(
                 new ViewRequest(null, View.CHANGE_DND_PERFORMED, null, null));
+            FloatingWindowTransparencyManager.getDefault().update();
         }
     }
 

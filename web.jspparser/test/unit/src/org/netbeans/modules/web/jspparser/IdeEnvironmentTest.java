@@ -89,7 +89,6 @@ public class IdeEnvironmentTest extends NbTestCase {
         System.setProperty("netbeans.home", platformCluster.getPath());
         System.setProperty("netbeans.dirs", javaCluster.getPath() + File.pathSeparator + enterCluster.getPath()
                 + File.pathSeparator + ideCluster.getPath());
-        System.setProperty("org.netbeans.modules.jspparser.debug", "1");
 
         Logger.getLogger("org.netbeans.core.startup.ModuleList").setLevel(Level.OFF);
 

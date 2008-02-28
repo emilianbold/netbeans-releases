@@ -155,11 +155,12 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
         } else {
             setFlags(FLAGS_VOID_PARMLIST, false);
         }
-        
         if( name == null ) {
             name = NULL; // just to avoid NPE
         }
-        if (name.toString().startsWith(OPERATOR)) { // NOI18N
+        if (name.toString().startsWith(OPERATOR) && 
+                (name.length() > OPERATOR.length()) &&
+                !Character.isJavaIdentifierPart(name.charAt(OPERATOR.length()))) { // NOI18N
             setFlags(FLAGS_OPERATOR, true);
         }
         if (register) {

@@ -1,34 +1,67 @@
 /*
- * SpringXMLConfigGroupVisual.java
+ * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Created on 21 February, 2008, 8:15 PM
+ * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ *
+ * The contents of this file are subject to the terms of either the GNU
+ * General Public License Version 2 only ("GPL") or the Common
+ * Development and Distribution License("CDDL") (collectively, the
+ * "License"). You may not use this file except in compliance with the
+ * License. You can obtain a copy of the License at
+ * http://www.netbeans.org/cddl-gplv2.html
+ * or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
+ * specific language governing permissions and limitations under the
+ * License.  When distributing the software, include this License Header
+ * Notice in each file and include the License file at
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * particular file as subject to the "Classpath" exception as provided
+ * by Sun in the GPL Version 2 section of the License file that
+ * accompanied this code. If applicable, add the following below the
+ * License Header, with the fields enclosed by brackets [] replaced by
+ * your own identifying information:
+ * "Portions Copyrighted [year] [name of copyright owner]"
+ *
+ * Contributor(s):
+ *
+ * The Original Software is NetBeans. The Initial Developer of the Original
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Microsystems, Inc. All Rights Reserved.
+ *
+ * If you wish your version of this file to be governed by only the CDDL
+ * or only the GPL Version 2, indicate your decision by adding
+ * "[Contributor] elects to include this software in this distribution
+ * under the [CDDL or GPL Version 2] license." If you do not indicate a
+ * single choice of license, a recipient has the option to distribute
+ * your version of this file under either the CDDL, the GPL Version 2 or
+ * to extend the choice of license to its licensees as provided above.
+ * However, if you add GPL Version 2 code and therefore, elected the GPL
+ * Version 2 license, then the option applies only if the new code is
+ * made subject to such option by the copyright holder.
  */
 
 package org.netbeans.modules.spring.beans.wizards;
 
-import java.util.ArrayList;
-import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
+import javax.swing.ListSelectionModel;
 import javax.swing.event.TableModelListener;
 import javax.swing.table.TableModel;
-import org.netbeans.api.project.Project;
 import org.netbeans.modules.spring.api.beans.ConfigFileGroup;
-import org.openide.util.NbBundle;
 
 /**
  *
  * @author  Rohan Ranade (Rohan.Ranade@Sun.COM)
  */
 public class SpringXMLConfigGroupVisual extends javax.swing.JPanel {
-    private Project p;
     
     /** Creates new form SpringXMLConfigGroupVisual */
-    public SpringXMLConfigGroupVisual(Project p, List<ConfigFileGroup> configFileGroups) {
+    public SpringXMLConfigGroupVisual(List<ConfigFileGroup> configFileGroups) {
         initComponents();
-        this.p = p;
         groupsTable.getParent().setBackground(groupsTable.getBackground());
         groupsTable.setModel(new ConfigGroupSelectionTableModel(configFileGroups));
-        groupsTable.getColumnModel().getColumn(0).setMaxWidth(60);
+        groupsTable.getColumnModel().getColumn(0).setMaxWidth(0);
+        groupsTable.getSelectionModel().setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
     }
     
     /** This method is called from within the constructor to
@@ -39,16 +72,15 @@ public class SpringXMLConfigGroupVisual extends javax.swing.JPanel {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        groupsScrollPanel = new javax.swing.JScrollPane();
+        groupsScrollPane = new javax.swing.JScrollPane();
         groupsTable = new javax.swing.JTable();
         groupsLabel = new javax.swing.JLabel();
 
         groupsTable.setIntercellSpacing(new java.awt.Dimension(0, 0));
         groupsTable.setShowHorizontalLines(false);
         groupsTable.setShowVerticalLines(false);
-        groupsTable.getTableHeader().setResizingAllowed(false);
-        groupsTable.getTableHeader().setReorderingAllowed(false);
-        groupsScrollPanel.setViewportView(groupsTable);
+        groupsTable.setTableHeader(null);
+        groupsScrollPane.setViewportView(groupsTable);
 
         groupsLabel.setText(org.openide.util.NbBundle.getMessage(SpringXMLConfigGroupVisual.class, "LBL_Config_File_Selection")); // NOI18N
 
@@ -58,27 +90,27 @@ public class SpringXMLConfigGroupVisual extends javax.swing.JPanel {
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
                 .add(groupsLabel)
-                .addContainerGap(36, Short.MAX_VALUE))
-            .add(groupsScrollPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 360, Short.MAX_VALUE)
+                .addContainerGap(152, Short.MAX_VALUE))
+            .add(groupsScrollPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 395, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
                 .add(groupsLabel)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(groupsScrollPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 193, Short.MAX_VALUE))
+                .add(groupsScrollPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 193, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
     
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JLabel groupsLabel;
-    private javax.swing.JScrollPane groupsScrollPanel;
+    private javax.swing.JScrollPane groupsScrollPane;
     private javax.swing.JTable groupsTable;
     // End of variables declaration//GEN-END:variables
     
     
-    public Collection<ConfigFileGroup> getSelectedConfigFileGroups() {
+    public Set<ConfigFileGroup> getSelectedConfigFileGroups() {
         return ((ConfigGroupSelectionTableModel)groupsTable.getModel()).getSelectedGroups();
     }
     
@@ -101,7 +133,7 @@ public class SpringXMLConfigGroupVisual extends javax.swing.JPanel {
         }
 
         public String getColumnName(int columnIndex) {
-            return (columnIndex == 0) ? "" : NbBundle.getMessage(SpringXMLConfigGroupVisual.class, "LBL_Config_File_Group"); // NOI18N
+            return (columnIndex == 0) ? "" : "Configuration File Group"; // NOI18N
         }
 
         public Class<?> getColumnClass(int columnIndex) {
@@ -126,8 +158,8 @@ public class SpringXMLConfigGroupVisual extends javax.swing.JPanel {
         public void removeTableModelListener(TableModelListener l) {
         }
         
-        public List<ConfigFileGroup> getSelectedGroups() {
-            List<ConfigFileGroup> selectedGroups = new ArrayList<ConfigFileGroup>(groups.size());
+        public Set<ConfigFileGroup> getSelectedGroups() {
+            Set<ConfigFileGroup> selectedGroups = new HashSet<ConfigFileGroup>(groups.size());
             for (int i = 0; i < groups.size(); i++) {
                 if (selected[i]) {
                     selectedGroups.add(groups.get(i));

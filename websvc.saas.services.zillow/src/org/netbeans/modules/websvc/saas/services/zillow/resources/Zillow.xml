@@ -47,7 +47,7 @@
                xsi:schemaLocation='http://xml.netbeans.org/websvc/saas/services/1.0 
                     ../../../../../../../../../../websvc.saas.api/src/org/netbeans/modules/websvc/saas/model/SaasServices.xsd' 
                type="http://research.sun.com/wadl/2006/10"
-               api-doc="http://zillow.com/dev_api_ref"
+               api-doc="http://www.zillow.com/howto/api/APIOverview.htm"
                url="org/netbeans/modules/websvc/saas/services/zillow/resources/ZillowWadl.xml">
 
     <description>Zillow Service</description>
@@ -58,13 +58,11 @@
 
         <localizing-bundle>org.netbeans.modules.websvc.saas.services.zillow.Bundle</localizing-bundle>
 
-        <icon16>org/netbeans/modules/websvc/saas/services/zillow/resources/zillow16.png</icon16>
-
         <group name="Zillow">
         </group>
 
-        <authentication profile="Templates/WebServices/profile.properties">
-            <api-key id="dev_id"/>
+        <authentication profile="SaaSServices/Zillow/profile.properties">
+            <api-key id="zws-id"/>
         </authentication>
 
     </saas-metadata>

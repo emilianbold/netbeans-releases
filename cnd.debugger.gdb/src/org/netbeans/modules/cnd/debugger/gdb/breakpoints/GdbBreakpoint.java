@@ -41,15 +41,11 @@
 
 package org.netbeans.modules.cnd.debugger.gdb.breakpoints;
 
-import java.lang.Integer;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.HashSet;
 import java.util.Iterator;
-
 import org.netbeans.api.debugger.Breakpoint;
-
-import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.modules.cnd.debugger.gdb.event.GdbBreakpointEvent;
 import org.netbeans.modules.cnd.debugger.gdb.event.GdbBreakpointListener;
 import org.netbeans.modules.cnd.debugger.gdb.GdbDebugger;
@@ -73,6 +69,7 @@ public abstract class GdbBreakpoint extends Breakpoint {
     public static final String          PROP_LINE_NUMBER = "lineNumber"; // NOI18N
     public static final String          PROP_URL = "url"; // NOI18N
     public static final String          PROP_CONDITION = "condition"; // NOI18N
+    public static final String          PROP_SKIP_COUNT = "skipCount"; // NOI18N
     
     public static final int             SUSPEND_NONE = 0;
     public static final int             SUSPEND_THREAD = 1;
@@ -87,6 +84,7 @@ public abstract class GdbBreakpoint extends Breakpoint {
     private HashSet                     breakpointListeners = new HashSet();
     private GdbDebugger                 debugger;
     private String                      condition = ""; // NOI18N
+    private int                         skipCount = 0;
     private String                      url = "";       // NOI18N
     private String                      path = "";      // NOI18N
     
@@ -218,6 +216,19 @@ public abstract class GdbBreakpoint extends Breakpoint {
             condition = c;
         }
         firePropertyChange(PROP_CONDITION, old, c);
+    }
+    
+    public int getSkipCount() {
+        return skipCount;
+    }
+    
+    public void setSkipCount(int skipCount) {
+        int old = this.skipCount;
+        if (skipCount != old) {
+            this.skipCount = skipCount;
+            firePropertyChange(PROP_SKIP_COUNT, old, skipCount);
+        }
+        
     }
     
     /**

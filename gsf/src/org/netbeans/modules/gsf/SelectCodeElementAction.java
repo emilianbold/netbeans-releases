@@ -52,14 +52,14 @@ import javax.swing.event.CaretListener;
 import javax.swing.text.Caret;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
-import org.netbeans.fpi.gsf.CancellableTask;
-import org.netbeans.fpi.gsf.OffsetRange;
+import org.netbeans.modules.gsf.api.CancellableTask;
+import org.netbeans.modules.gsf.api.OffsetRange;
 import org.netbeans.napi.gsfret.source.CompilationController;
 import org.netbeans.napi.gsfret.source.Phase;
 import org.netbeans.napi.gsfret.source.Source;
 import org.netbeans.editor.BaseAction;
 import org.netbeans.editor.BaseDocument;
-import org.netbeans.fpi.gsf.BracketCompletion;
+import org.netbeans.modules.gsf.api.BracketCompletion;
 import org.openide.ErrorManager;
 import org.openide.util.NbBundle;
 

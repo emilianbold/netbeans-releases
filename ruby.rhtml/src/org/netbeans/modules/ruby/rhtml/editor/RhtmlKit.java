@@ -49,7 +49,7 @@ import javax.swing.text.Caret;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import javax.swing.text.TextAction;
-import org.netbeans.fpi.gsf.BracketCompletion;
+import org.netbeans.modules.gsf.api.BracketCompletion;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenId;

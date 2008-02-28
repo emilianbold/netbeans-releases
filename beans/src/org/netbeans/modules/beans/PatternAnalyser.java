@@ -159,6 +159,7 @@ public final class PatternAnalyser {
         }
         
         Parameters p = new Parameters( ci, element );
+        this.classElementHandle = ElementHandle.create(element);
         
         // Analyse patterns
         resolveMethods( p );

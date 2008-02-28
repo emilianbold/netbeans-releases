@@ -54,16 +54,16 @@ import org.netbeans.editor.Utilities;
 import org.netbeans.editor.ext.html.parser.AstNode;
 import org.netbeans.editor.ext.html.parser.AstNodeUtils;
 import org.netbeans.editor.ext.html.parser.AstNodeVisitor;
-import org.netbeans.fpi.gsf.CompilationInfo;
-import org.netbeans.fpi.gsf.ElementHandle;
-import org.netbeans.fpi.gsf.ElementKind;
-import org.netbeans.fpi.gsf.HtmlFormatter;
-import org.netbeans.fpi.gsf.Modifier;
-import org.netbeans.fpi.gsf.OffsetRange;
-import org.netbeans.fpi.gsf.ParserResult;
-import org.netbeans.fpi.gsf.StructureItem;
-import org.netbeans.fpi.gsf.StructureScanner;
-import org.netbeans.fpi.gsf.TranslatedSource;
+import org.netbeans.modules.gsf.api.CompilationInfo;
+import org.netbeans.modules.gsf.api.ElementHandle;
+import org.netbeans.modules.gsf.api.ElementKind;
+import org.netbeans.modules.gsf.api.HtmlFormatter;
+import org.netbeans.modules.gsf.api.Modifier;
+import org.netbeans.modules.gsf.api.OffsetRange;
+import org.netbeans.modules.gsf.api.ParserResult;
+import org.netbeans.modules.gsf.api.StructureItem;
+import org.netbeans.modules.gsf.api.StructureScanner;
+import org.netbeans.modules.gsf.api.TranslatedSource;
 import org.netbeans.modules.editor.html.HTMLKit;
 import org.openide.util.Exceptions;
 
@@ -91,7 +91,7 @@ public class HtmlStructureScanner implements StructureScanner {
 
         //return the root children
         List<StructureItem> elements = new  ArrayList<StructureItem>(1);
-        elements.addAll(new CSSStructureItem(root, source).getNestedItems());
+        elements.addAll(new CSSStructureItem(new HtmlElementHandle(root, info), source).getNestedItems());
         
         return elements;
         
@@ -111,7 +111,8 @@ public class HtmlStructureScanner implements StructureScanner {
             AstNodeVisitor foldsSearch = new AstNodeVisitor() {
 
                 public void visit(AstNode node) {
-                    if (node.type() == AstNode.NodeType.TAG) {
+                    if (node.type() == AstNode.NodeType.TAG 
+                            || node.type() == AstNode.NodeType.COMMENT) {
                         try {
                             int so = documentPosition(node.startOffset(), source);
                             int eo = documentPosition(node.endOffset(), source);
@@ -146,37 +147,16 @@ public class HtmlStructureScanner implements StructureScanner {
     private static final class CSSStructureItem implements StructureItem {
 
         private TranslatedSource source;
-        private AstNode node;
+        private HtmlElementHandle handle;
 
-        private CSSStructureItem(AstNode node, TranslatedSource source) {
-            this.node = node;
+        private CSSStructureItem(HtmlElementHandle handle, TranslatedSource source) {
+            this.handle = handle;
             this.source= source;
-            //find selectors and generate item name
-//            final StringBuffer selectors = new StringBuffer();
-//            NodeVisitor selectorSearch = new NodeVisitor() {
-//
-//                public void visit(SimpleNode node2) {
-//                    if (node2.kind() == CSSParserTreeConstants.JJTSELECTOR) {
-//                        String selectorName = node2.jjtGetFirstToken().image;
-//                        selectors.append(selectorName);
-//                        selectors.append(',');
-//                        selectors.append(' ');
-//                    }
-//                }
-//            };
-//            selectorsList.visitChildren(selectorSearch);
-//            name = selectors.toString();
-//            //cut off the last ", "
-//            if(name.length() > 0) {
-//                name = name.substring(0, name.length() - 2);
-//            }
-
-//            name = node.image();
 
         }
 
         public String getName() {
-            return node.name();
+            return handle.getName();
         }
 
         public String getHtml() {
@@ -184,7 +164,7 @@ public class HtmlStructureScanner implements StructureScanner {
         }
 
         public ElementHandle getElementHandle() {
-            return null;
+            return handle;
         }
 
         public ElementKind getKind() {
@@ -196,26 +176,27 @@ public class HtmlStructureScanner implements StructureScanner {
         }
 
         public boolean isLeaf() {
-            return node.children().isEmpty();
+            return handle.node().children().isEmpty();
         }
 
         public List<? extends StructureItem> getNestedItems() {
-            List<StructureItem> list = new  ArrayList<StructureItem>(node.children().size());
-            for(AstNode child : node.children()) {
+            List<StructureItem> list = new  ArrayList<StructureItem>(handle.node().children().size());
+            for(AstNode child : handle.node().children()) {
                 if(child.type() == AstNode.NodeType.TAG 
                         || child.type() == AstNode.NodeType.UNMATCHED_TAG) {
-                    list.add(new CSSStructureItem(child, source));
+                    HtmlElementHandle childHandle = new HtmlElementHandle(child, handle.compilationInfo());
+                    list.add(new CSSStructureItem(childHandle, source));
                 }
             }
             return list;
         }
 
         public long getPosition() {
-            return HtmlStructureScanner.documentPosition(node.startOffset(), source);
+            return HtmlStructureScanner.documentPosition(handle.node().startOffset(), source);
         }
 
         public long getEndPosition() {
-            return HtmlStructureScanner.documentPosition(node.endOffset(), source);
+            return HtmlStructureScanner.documentPosition(handle.node().endOffset(), source);
         }
 
     }

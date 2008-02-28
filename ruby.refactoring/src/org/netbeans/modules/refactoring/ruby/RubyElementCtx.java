@@ -48,7 +48,7 @@ import org.jruby.ast.Node;
 import org.jruby.ast.NodeTypes;
 import org.jruby.ast.SClassNode;
 import org.jruby.ast.SymbolNode;
-import org.netbeans.fpi.gsf.ElementKind;
+import org.netbeans.modules.gsf.api.ElementKind;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.napi.gsfret.source.CompilationInfo;
 import org.netbeans.editor.BaseDocument;

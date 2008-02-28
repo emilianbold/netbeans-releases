@@ -42,20 +42,26 @@ import java.io.IOException;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.editor.ext.html.parser.AstNode;
 import org.netbeans.editor.ext.html.parser.SyntaxElement;
 import org.netbeans.editor.ext.html.parser.SyntaxParser;
-import org.netbeans.fpi.gsf.ParseEvent;
-import org.netbeans.fpi.gsf.Parser;
-import org.netbeans.fpi.gsf.ParserFile;
-import org.netbeans.fpi.gsf.ParserResult;
-import org.netbeans.fpi.gsf.PositionManager;
+import org.netbeans.modules.editor.html.HTMLKit;
+import org.netbeans.modules.gsf.api.CompilationInfo;
+import org.netbeans.modules.gsf.api.ElementHandle;
+import org.netbeans.modules.gsf.api.OffsetRange;
+import org.netbeans.modules.gsf.api.ParseEvent;
+import org.netbeans.modules.gsf.api.Parser;
+import org.netbeans.modules.gsf.api.ParserFile;
+import org.netbeans.modules.gsf.api.ParserResult;
+import org.netbeans.modules.gsf.api.PositionManager;
+import org.netbeans.modules.gsf.api.TranslatedSource;
 import org.openide.util.Exceptions;
 
 /**
  *
  * @author marek
  */
-public class HtmlGSFParser implements Parser {
+public class HtmlGSFParser implements Parser, PositionManager {
 
     private static final Logger LOGGER = Logger.getLogger(HtmlGSFParser.class.getName());
     private static final boolean LOG = LOGGER.isLoggable(Level.FINE);
@@ -82,38 +88,8 @@ public class HtmlGSFParser implements Parser {
 
                 result = new HtmlParserResult(this, file, elements);
 
-//                //delete last results - shared instance
-//                //TODO fix this in the parser
-//                parser().errors().clear();
-//                
-//                parser().ReInit(new ASCII_CharStream(new StringReader(source), 0, 0));
-//
-//                SimpleNode node = parser().styleSheet();
-//                
-//                node.dump("");
-//
-//                for (ParseException pe : (List<ParseException>) parser().errors()) {
-//
-//                    System.out.println(pe.getMessage());
-//                    
-//                    Token lastSuccessToken = pe.currentToken;
-//                    Token errorToken = lastSuccessToken.next;
-//                    int from = errorToken.offset;
-//                    int to = from + errorToken.image.length();
-//                    
-//                    Error error =
-//                            new DefaultError(pe.getMessage(), pe.getLocalizedMessage(), null, file.getFileObject(),
-//                            from, from, Severity.ERROR);
-//
-//                    job.listener.error(error);
-//
-//                }
+                //TODO implement some error checks here, at least for unpaired tags?
 
-//                result = new CSSParserResult(this, file, node);
-
-//                Context context = new Context(file, listener, source, caretOffset);
-//                result = parseBuffer(context, Sanitize.NONE);
-                //result = new HtmlParserResult(this, file);
                 ParseEvent doneEvent = new ParseEvent(ParseEvent.Kind.PARSE, file, result);
                 job.listener.finished(doneEvent);
             } catch (IOException ex) {
@@ -125,23 +101,19 @@ public class HtmlGSFParser implements Parser {
     }
 
     public PositionManager getPositionManager() {
-//        return new CSSPositionManager();
-        return null;
+        return this;
     }
 
-//    public SemanticAnalyzer getSemanticAnalysisTask() {
-//        return new CSSSemanticAnalyzer();
-//    }
-//
-//    public OccurrencesFinder getMarkOccurrencesTask(int caretPosition) {
-//        return new CSSOccurancesFinder();
-//    }
-//
-//    public <T extends Element> ElementHandle<T> createHandle(CompilationInfo info, T element) {
-//        return null;
-//    }
-//
-//    public <T extends Element> T resolveHandle(CompilationInfo info, ElementHandle<T> handle) {
-//        return null;
-//    }
+    public OffsetRange getOffsetRange(CompilationInfo info, ElementHandle object) {
+        if (object instanceof HtmlElementHandle) {
+            ParserResult presult = info.getEmbeddedResults(HTMLKit.HTML_MIME_TYPE).iterator().next();
+            final TranslatedSource source = presult.getTranslatedSource();
+            AstNode node = ((HtmlElementHandle) object).node();
+            return new OffsetRange(AstUtils.documentPosition(node.startOffset(), source), AstUtils.documentPosition(node.endOffset(), source));
+
+        } else {
+            throw new IllegalArgumentException((("Foreign element: " + object + " of type " +
+                    object) != null) ? object.getClass().getName() : "null"); //NOI18N
+        }
+    }
 }

@@ -64,6 +64,7 @@ import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.j2ee.clientproject.classpath.ClassPathProviderImpl;
 import org.netbeans.modules.j2ee.clientproject.ui.customizer.AppClientProjectProperties;
 //import org.netbeans.modules.j2ee.common.Util;
+import org.netbeans.modules.j2ee.common.project.ui.ProjectProperties;
 import org.netbeans.modules.j2ee.dd.api.client.AppClient;
 import org.netbeans.modules.j2ee.dd.api.client.AppClientMetadata;
 import org.netbeans.modules.j2ee.dd.api.client.DDProvider;
@@ -147,8 +148,8 @@ public final class AppClientProvider extends J2eeModuleProvider
     
     /** Package-private for unit test only. */
     static boolean needConfigurationFolder(final String version) {
-        return AppClientProjectProperties.J2EE_1_3.equals(version) ||
-                AppClientProjectProperties.J2EE_1_4.equals(version);
+        return ProjectProperties.J2EE_1_3.equals(version) ||
+                ProjectProperties.J2EE_1_4.equals(version);
     }
     
     public File getMetaInfAsFile() {
@@ -231,7 +232,7 @@ public final class AppClientProvider extends J2eeModuleProvider
     }
     
     public FileObject getContentDirectory() {
-        return getFileObject(AppClientProjectProperties.BUILD_CLASSES_DIR);
+        return getFileObject(ProjectProperties.BUILD_CLASSES_DIR);
     }
     
     public FileObject getBuildDirectory() {
@@ -239,7 +240,7 @@ public final class AppClientProvider extends J2eeModuleProvider
     }
     
     public File getContentDirectoryAsFile() {
-        return getFile(AppClientProjectProperties.BUILD_CLASSES_DIR);
+        return getFile(ProjectProperties.BUILD_CLASSES_DIR);
     }
     
    // TODO MetadataModel: remove when transition to AppClientMetadata is finished

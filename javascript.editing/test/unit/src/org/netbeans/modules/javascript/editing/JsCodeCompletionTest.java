@@ -47,12 +47,12 @@ import java.util.Comparator;
 import java.util.List;
 import javax.swing.JTextArea;
 import javax.swing.text.Caret;
-import org.netbeans.fpi.gsf.CompilationInfo;
-import org.netbeans.fpi.gsf.Completable.QueryType;
-import org.netbeans.fpi.gsf.CompletionProposal;
-import org.netbeans.fpi.gsf.ElementKind;
-import org.netbeans.fpi.gsf.HtmlFormatter;
-import org.netbeans.fpi.gsf.NameKind;
+import org.netbeans.modules.gsf.api.CompilationInfo;
+import org.netbeans.modules.gsf.api.Completable.QueryType;
+import org.netbeans.modules.gsf.api.CompletionProposal;
+import org.netbeans.modules.gsf.api.ElementKind;
+import org.netbeans.modules.gsf.api.HtmlFormatter;
+import org.netbeans.modules.gsf.api.NameKind;
 import org.netbeans.napi.gsfret.source.Source;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
@@ -488,7 +488,6 @@ public class JsCodeCompletionTest extends JsTestBase {
         assertAutoQuery(QueryType.NONE, "foo^", " ");
         assertAutoQuery(QueryType.NONE, "foo^", "c");
         assertAutoQuery(QueryType.NONE, "foo^", "d");
-        assertAutoQuery(QueryType.NONE, "foo^", ";");
         assertAutoQuery(QueryType.NONE, "foo^", "f");
         assertAutoQuery(QueryType.NONE, "Foo:^", ":");
         assertAutoQuery(QueryType.NONE, "Foo::^", ":");
@@ -499,6 +498,7 @@ public class JsCodeCompletionTest extends JsTestBase {
     }
 
     public void testAutoQuery2() throws Exception {
+        assertAutoQuery(QueryType.STOP, "foo^", ";");
         assertAutoQuery(QueryType.STOP, "foo^", "[");
         assertAutoQuery(QueryType.STOP, "foo^", "(");
         assertAutoQuery(QueryType.STOP, "foo^", "{");

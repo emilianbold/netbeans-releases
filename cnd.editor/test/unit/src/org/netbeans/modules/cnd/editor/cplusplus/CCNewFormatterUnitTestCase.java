@@ -126,23 +126,24 @@ public class CCNewFormatterUnitTestCase extends CCFormatterBaseUnitTestCase {
                 );
     }
 
-//    public void testReformatMultiLineClassDeclaration() {
-//        setDefaultsOptions();
-//        setLoadDocumentText(
-//                "public class C\n"
-//                + ": public Runnable {\n"
-//                + "int printf(int);\n"
-//                + "};\n"
-//                );
-//        reformat();
-//        assertDocumentText("Incorrect new-line indent",
-//                "public class C\n"
-//                + "        : public Runnable {\n"
-//                + "    int printf(int);\n"
-//                + "};\n"
-//                );
-//        
-//    }
+    public void testReformatMultiLineClassDeclaration() {
+        setDefaultsOptions();
+        setLoadDocumentText(
+                "public class C\n"
+                + ": public Runnable {\n"
+                + "int printf(int);\n"
+                + "};\n"
+                );
+        reformat();
+        assertDocumentText("Incorrect new-line indent",
+                "public class C\n"
+                + ": public Runnable\n"
+                + "{\n"
+                + "    int printf(int);\n"
+                + "};\n"
+                );
+        
+    }
     
     // tests for regressions
     
@@ -160,7 +161,7 @@ public class CCNewFormatterUnitTestCase extends CCFormatterBaseUnitTestCase {
                 "javax::swing::JPanel* panel =\n" +
                 "        new java::swing::JPanel();");
     }
-    
+
     /**
      * Tests reformatting of ternary conditional operators on multiple lines
      * @see http://www.netbeans.org/issues/show_bug.cgi?id=23508
@@ -168,16 +169,21 @@ public class CCNewFormatterUnitTestCase extends CCFormatterBaseUnitTestCase {
     public void testReformatTernaryConditionalOperator() {
         setDefaultsOptions();
         setLoadDocumentText(
+                "void foo()\n"+
+                "{\n"+
                 "something = (someComplicatedExpression != null) ?\n" +
                 "(aComplexCalculation) :\n" +
-                "(anotherComplexCalculation);");
+                "(anotherComplexCalculation);\n"+
+                "}\n");
         reformat();
         assertDocumentText("Incorrect ternary conditional operator reformatting",
-                "something = (someComplicatedExpression != null) ?\n" +
-                "    (aComplexCalculation) :\n" +
-                "    (anotherComplexCalculation);");
+                "void foo()\n"+
+                "{\n"+
+                "    something = (someComplicatedExpression != null) ?\n" +
+                "            (aComplexCalculation) :\n" +
+                "            (anotherComplexCalculation);\n"+
+                "}\n");
     }
-    
     
     /**
      * Test reformatting of array initializer with newlines on
@@ -186,10 +192,45 @@ public class CCNewFormatterUnitTestCase extends CCFormatterBaseUnitTestCase {
     public void testReformatArrayInitializerWithNewline() {
         setDefaultsOptions();
         setLoadDocumentText(
-                "int[] foo = new int[] {1, 2, 3};");
+                "int[] foo =  {1, 2, 3};\n" +
+                "int[] foo2 =  {1,\n" +
+                "2, 3};\n" +
+                "int[] foo3 = {\n" +
+                "1, 2, 3\n" +
+                "};\n" +
+                "\n");
         reformat();
         assertDocumentText("Incorrect array initializer with newline reformatting",
-                "int[] foo = new int[] {1, 2, 3};");
+                "int[] foo = {1, 2, 3};\n" +
+                "int[] foo2 = {1,\n" +
+                "    2, 3};\n" +
+                "int[] foo3 = {\n" +
+                "    1, 2, 3\n" +
+                "};\n" +
+                "\n");
+    }
+
+    /**
+     * Test reformatting of array initializer with newlines on
+     * @see http://www.netbeans.org/issues/show_bug.cgi?id=47069
+     */
+    public void testReformatArrayInitializerWithNewline2() {
+        setDefaultsOptions();
+        setLoadDocumentText(
+                "int[][] foo4 =  {\n" +
+                "{1, 2, 3},\n" +
+                "{3,4,5},\n" +
+                "{7,8,9}\n" +
+                "};\n" +
+                "\n");
+        reformat();
+        assertDocumentText("Incorrect array initializer with newline reformatting",
+                "int[][] foo4 = {\n" +
+                "    {1, 2, 3},\n" +
+                "    {3, 4, 5},\n" +
+                "    {7, 8, 9}\n" +
+                "};\n" +
+                "\n");
     }
     
     /**
@@ -198,6 +239,8 @@ public class CCNewFormatterUnitTestCase extends CCFormatterBaseUnitTestCase {
      */
     public void testReformatNewlineBracesToNormalOnes() {
         setDefaultsOptions();
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
+                putBoolean(EditorOptions.newLineCatch, true);
         setLoadDocumentText(
                 "try\n" +
                 "{\n" +
@@ -208,7 +251,7 @@ public class CCNewFormatterUnitTestCase extends CCFormatterBaseUnitTestCase {
                 "printf(\"exception\");\n" +
                 "}");
         reformat();
-        assertDocumentText("Incorrect array initializer with newline reformatting",
+        assertDocumentText("Incorrect try-catch reformatting",
                 "try {\n" +
                 "    printf(\"test\");\n" +
                 "}\n"+
@@ -216,6 +259,79 @@ public class CCNewFormatterUnitTestCase extends CCFormatterBaseUnitTestCase {
                 "    printf(\"exception\");\n" +
                 "}");
     }
+
+    public void testReformatNewlineBracesToNormalOnes1() {
+        setDefaultsOptions();
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
+                putBoolean(EditorOptions.newLineCatch, true);
+        setLoadDocumentText(
+                "try\n" +
+                "{\n" +
+                "printf(\"test\");\n" +
+                "}\n" +
+                "catch (Exception e)\n" +
+                "{\n" +
+                "printf(\"exception\");\n" +
+                "}");
+        reformat();
+        assertDocumentText("Incorrect try-catch reformatting",
+                "try {\n" +
+                "    printf(\"test\");\n" +
+                "}\n"+
+                "catch (Exception e) {\n" +
+                "    printf(\"exception\");\n" +
+                "}");
+    }
+    
+    public void testReformatNewlineBracesToNormalOnes2() {
+        setDefaultsOptions();
+        setLoadDocumentText(
+                "	void testError(CuTest *tc){\n" +
+                "		IndexReader* reader = NULL;\n" +
+                "		try{\n" +
+                "			RAMDirectory dir;\n" +
+                "		}catch(CLuceneError& a){\n" +
+                "			_CLDELETE(reader);\n" +
+                "		}catch(...){\n" +
+                "			CuAssert(tc,_T(\"Error did not catch properly\"),false);\n" +
+                "		}\n" +
+                "	}\n" +
+                "\n");
+        reformat();
+        assertDocumentText("Incorrect try-catch reformatting",
+                "void testError(CuTest *tc)\n" +
+                "{\n" +
+                "    IndexReader* reader = NULL;\n" +
+                "    try {\n" +
+                "        RAMDirectory dir;\n" +
+                "    } catch (CLuceneError& a) {\n" +
+                "        _CLDELETE(reader);\n" +
+                "    } catch (...) {\n" +
+                "        CuAssert(tc, _T(\"Error did not catch properly\"), false);\n" +
+                "    }\n" +
+                "}\n" +
+                "\n");
+    }
+
+    public void testReformatNewlineBracesToNormalOnes3() {
+        setDefaultsOptions();
+            setDefaultsOptions();
+        setLoadDocumentText(
+                "try {\n" +
+                "    printf(\"test\");\n" +
+                "}\n" +
+                "catch ( IllegalStateException illegalStateException  ) {\n" +
+                "    illegalStateException.printStackTrace();\n" +
+                "}\n");
+        reformat();
+        assertDocumentText("Incorrect tabbed catch reformatting",
+                "try {\n" +
+                "    printf(\"test\");\n" +
+                "} catch (IllegalStateException illegalStateException) {\n" +
+                "    illegalStateException.printStackTrace();\n" +
+                "}\n");
+    }
+
     
     /**
      * Test reformatting of multiline constructors
@@ -289,13 +405,76 @@ public class CCNewFormatterUnitTestCase extends CCFormatterBaseUnitTestCase {
                 "if (count == 0)\n" +
                 "return 0.0f;\n" +
                 "else\n" +
-                "return performanceSum / getCount()");
+                "return performanceSum / getCount();\n");
         reformat();
         assertDocumentText("Incorrect reformatting of if-else without brackets",
                 "if (count == 0)\n" +
                 "    return 0.0f;\n" +
                 "else\n" +
-                "    return performanceSum / getCount()");
+                "    return performanceSum / getCount();\n");
+    }
+    
+    /**
+     * Test reformatting of if else without brackets
+     * @see http://www.netbeans.org/issues/show_bug.cgi?id=50523
+     */
+    public void testReformatIfElseWithoutBrackets2() {
+        setDefaultsOptions();
+        setLoadDocumentText(
+                "if (count == 0)\n" +
+                "return 0.0f;\n" +
+                "else  {\n" +
+                "return performanceSum / getCount();\n"+
+                "}\n");
+        reformat();
+        assertDocumentText("Incorrect reformatting of if-else without brackets",
+                "if (count == 0)\n" +
+                "    return 0.0f;\n" +
+                "else {\n" +
+                "    return performanceSum / getCount();\n" +
+                "}\n");
+    }
+    
+    /**
+     * Test reformatting of if else without brackets
+     * @see http://www.netbeans.org/issues/show_bug.cgi?id=50523
+     */
+    public void testReformatIfElseWithoutBrackets3() {
+        setDefaultsOptions();
+        setLoadDocumentText(
+                "if (true) if (true) if (true)\n" +
+                "else return;\n" +
+                "else return;\n" +
+                "else return;\n");
+        reformat();
+        assertDocumentText("Incorrect reformatting of if-else without brackets",
+                "if (true) if (true) if (true)\n" +
+                "        else return;\n" +
+                "    else return;\n" +
+                "else return;\n");
+    }
+    
+    /**
+     * Test reformatting of if else without brackets
+     * @see http://www.netbeans.org/issues/show_bug.cgi?id=50523
+     */
+    public void testReformatIfElseWithoutBrackets4() {
+        setDefaultsOptions();
+        setLoadDocumentText(
+                "if (true)\n" +
+                "    if (true)\n" +
+                "    if (true)\n" +
+                "else return;\n" +
+                "else return;\n" +
+                "else return;\n");
+        reformat();
+        assertDocumentText("Incorrect reformatting of if-else without brackets",
+                "if (true)\n" +
+                "    if (true)\n" +
+                "        if (true)\n" +
+                "        else return;\n" +
+                "    else return;\n" +
+                "else return;\n");
     }
     
     /**
@@ -447,22 +626,30 @@ public class CCNewFormatterUnitTestCase extends CCFormatterBaseUnitTestCase {
             "}\n");
     }
 
-    //    /**
-//     * Test reformatting of function arguments list
-//     * @see http://www.netbeans.org/issues/show_bug.cgi?id=115628
-//     */
-//    public void testReformatFunctionArguments() {
-//        setDefaultsOptions();
-//        setLoadDocumentText(
-//            "z = myfoo(a,\n" +
-//            "b,\n" +
-//            "c);\n");
-//        reformat();
-//        assertDocumentText("Incorrect reformatting of function arguments list",
-//            "z = myfoo(a,\n" +
-//            "          b,\n" +
-//            "          c);\n");
-//    }
+    /**
+     * Test reformatting of function arguments list
+     * @see http://www.netbeans.org/issues/show_bug.cgi?id=115628
+     */
+    public void testReformatFunctionArguments() {
+        setDefaultsOptions();
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
+                putBoolean(EditorOptions.alignMultilineCallArgs, true);
+        setLoadDocumentText(
+            "int foo(int z){\n" +
+            "z += myfoo(a,\n" +
+            "b,\n" +
+            "c);\n" +
+            "}\n"
+            );
+        reformat();
+        assertDocumentText("Incorrect reformatting of function arguments list",
+            "int foo(int z)\n" +
+            "{\n" +
+            "    z += myfoo(a,\n" +
+            "               b,\n" +
+            "               c);\n" +
+            "}\n");
+    }
     
     /**
      * Test reformatting of constructor initializer
@@ -548,32 +735,33 @@ public class CCNewFormatterUnitTestCase extends CCFormatterBaseUnitTestCase {
             "};\n");
     }
 
-//    /**
-//     * Test reformatting of unbalanced braces
-//     * @see http://www.netbeans.org/issues/show_bug.cgi?id=91561
-//     */
-//    public void testReformatUnbalancedBraces() {
-//        setDefaultsOptions();
-//        setLoadDocumentText(
-//            "void foo() {\n" +
-//            "#if A\n" +
-//            "if (0) {\n" +
-//            "#else\n" +
-//            "if (1) {\n" +
-//            "#endif\n" +
-//            "}\n" +
-//            "}\n");
-//        reformat();
-//        assertDocumentText("Incorrect reformatting of unbalanced braces",
-//            "void foo() {\n" +
-//            "#if A\n" +
-//            "    if (0) {\n" +
-//            "#else\n" +
-//            "    if (1) {\n" +
-//            "#endif\n" +
-//            "    }\n" +
-//            "}\n");
-//    }
+    /**
+     * Test reformatting of unbalanced braces
+     * @see http://www.netbeans.org/issues/show_bug.cgi?id=91561
+     */
+    public void testReformatUnbalancedBraces() {
+        setDefaultsOptions();
+        setLoadDocumentText(
+            "void foo() {\n" +
+            "#if A\n" +
+            "if (0) {\n" +
+            "#else\n" +
+            "if (1) {\n" +
+            "#endif\n" +
+            "}\n" +
+            "}\n");
+        reformat();
+        assertDocumentText("Incorrect reformatting of unbalanced braces",
+            "void foo()\n" +
+            "{\n" +
+            "#if A\n" +
+            "    if (0) {\n" +
+            "#else\n" +
+            "    if (1) {\n" +
+            "#endif\n" +
+            "    }\n" +
+            "}\n");
+    }
 
     public void testIdentInnerEnum() {
         setDefaultsOptions();
@@ -962,9 +1150,9 @@ public class CCNewFormatterUnitTestCase extends CCFormatterBaseUnitTestCase {
 //            "Query_log_event::Query_log_event(THD* thd_arg, const char* query_arg,\n" +
 //            "        ulong query_length, bool using_trans,\n" +
 //            "        bool suppress_use)\n" +
-//            ":Log_event(thd_arg,\n" +
+//            ": Log_event(thd_arg,\n" +
 //            "        ((thd_arg->tmp_table_used ? LOG_EVENT_THREAD_SPECIFIC_F : 0)\n" +
-//            "& (suppress_use          ? LOG_EVENT_SUPPRESS_USE_F    : 0)),\n" +
+//            "        & (suppress_use ? LOG_EVENT_SUPPRESS_USE_F : 0)),\n" +
 //            "        using_trans),\n" +
 //            "        data_buf(0), query(query_arg), catalog(thd_arg->catalog),\n" +
 //            "        db(thd_arg->db), q_len((uint32) query_length),\n" +
@@ -1150,5 +1338,333 @@ public class CCNewFormatterUnitTestCase extends CCFormatterBaseUnitTestCase {
                 "    default:\n" +
                 "        break;\n" +
                 "}\n");
+    }
+
+    public void testSwitchFormatting2() {
+        setDefaultsOptions();
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
+                putBoolean(EditorOptions.indentCasesFromSwitch, false);
+        setLoadDocumentText(
+                "switch (GetTypeID()) {\n" +
+                "case FAST:\n" +
+                "metric += 100;\n" +
+                "break;\n" +
+                "case ULTRA:\n" +
+                "case SLOW:\n" +
+                "metric += 200;\n" +
+                "break;\n" +
+                "default:\n" +
+                "break;\n" +
+                "}\n");
+        reformat();
+        assertDocumentText("Incorrect formatting for macro define with paren",
+                "switch (GetTypeID()) {\n" +
+                "case FAST:\n" +
+                "    metric += 100;\n" +
+                "    break;\n" +
+                "case ULTRA:\n" +
+                "case SLOW:\n" +
+                "    metric += 200;\n" +
+                "    break;\n" +
+                "default:\n" +
+                "    break;\n" +
+                "}\n");
+    }
+
+    public void testSwitchFormatting3() {
+        setDefaultsOptions();
+        setLoadDocumentText(
+                "int main(int i)\n" +
+                "{\n" +
+                "    switch (i) {\n" +
+                "        case 1:\n" +
+                "        return 1;\n" +
+                "        case 4 :\n" +
+                "                   if (true)return;\n" +
+                "                   else {break;}\n" +
+                "        break;\n" +
+                "        case 14 :\n" +
+                "        {\n" +
+                "        i++;\n" +
+                "        }\n" +
+                "        case 6:\n" +
+                "        return;\n" +
+                "    default:\n" +
+                "        break;\n" +
+                "    }\n" +
+                "    if (i != 8)\n" +
+                "        switch (i) {\n" +
+                "        case 1:\n" +
+                "        return 1;\n" +
+                "        case 2:\n" +
+                "        break;\n" +
+                "        case 4 :\n" +
+                "                i++;\n" +
+                "           case 6:\n" +
+                "               switch (i * 2) {\n" +
+                "            case 10:\n" +
+                "                   if (true)return;\n" +
+                "                   else {break;}\n" +
+                "       case 12:\n" +
+                "                {\n" +
+                "                break;\n" +
+                "                }\n" +
+                "        }\n" +
+                "     default :\n" +
+                "            break;\n" +
+                "     }\n" +
+                "}\n");
+        reformat();
+        assertDocumentText("Incorrect formatting for macro define with paren",
+                "int main(int i)\n" +
+                "{\n" +
+                "    switch (i) {\n" +
+                "        case 1:\n" +
+                "            return 1;\n" +
+                "        case 4:\n" +
+                "            if (true)return;\n" +
+                "            else {\n" +
+                "                break;\n" +
+                "            }\n" +
+                "            break;\n" +
+                "        case 14:\n" +
+                "        {\n" +
+                "            i++;\n" +
+                "        }\n" +
+                "        case 6:\n" +
+                "            return;\n" +
+                "        default:\n" +
+                "            break;\n" +
+                "    }\n" +
+                "    if (i != 8)\n" +
+                "        switch (i) {\n" +
+                "            case 1:\n" +
+                "                return 1;\n" +
+                "            case 2:\n" +
+                "                break;\n" +
+                "            case 4:\n" +
+                "                i++;\n" +
+                "            case 6:\n" +
+                "                switch (i * 2) {\n" +
+                "                    case 10:\n" +
+                "                        if (true)return;\n" +
+                "                        else {\n" +
+                "                            break;\n" +
+                "                        }\n" +
+                "                    case 12:\n" +
+                "                    {\n" +
+                "                        break;\n" +
+                "                    }\n" +
+                "                }\n" +
+                "            default:\n" +
+                "                break;\n" +
+                "        }\n" +
+                "}\n");
+    }
+
+    public void testSwitchFormatting4() {
+        setDefaultsOptions();
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
+                putBoolean(EditorOptions.indentCasesFromSwitch, false);
+        setLoadDocumentText(
+                "int main(int i)\n" +
+                "{\n" +
+                "    switch (i) {\n" +
+                "        case 1:\n" +
+                "        return 1;\n" +
+                "        case 4 :\n" +
+                "        i++;\n" +
+                "        case 6:\n" +
+                "        return;\n" +
+                "    default:\n" +
+                "        break;\n" +
+                "    }\n" +
+                "    if (i != 8)\n" +
+                "        switch (i) {\n" +
+                "        case 1:\n" +
+                "        return 1;\n" +
+                "        case 2:\n" +
+                "        break;\n" +
+                "        case 4 :\n" +
+                "                i++;\n" +
+                "           case 6:\n" +
+                "               switch (i * 2) {\n" +
+                "            case 10:\n" +
+                "                   return;\n" +
+                "       case 12:\n" +
+                "                break;\n" +
+                "        }\n" +
+                "     default :\n" +
+                "            break;\n" +
+                "     }\n" +
+                "}\n");
+        reformat();
+        assertDocumentText("Incorrect formatting for macro define with paren",
+                "int main(int i)\n" +
+                "{\n" +
+                "    switch (i) {\n" +
+                "    case 1:\n" +
+                "        return 1;\n" +
+                "    case 4:\n" +
+                "        i++;\n" +
+                "    case 6:\n" +
+                "        return;\n" +
+                "    default:\n" +
+                "        break;\n" +
+                "    }\n" +
+                "    if (i != 8)\n" +
+                "        switch (i) {\n" +
+                "        case 1:\n" +
+                "            return 1;\n" +
+                "        case 2:\n" +
+                "            break;\n" +
+                "        case 4:\n" +
+                "            i++;\n" +
+                "        case 6:\n" +
+                "            switch (i * 2) {\n" +
+                "            case 10:\n" +
+                "                return;\n" +
+                "            case 12:\n" +
+                "                break;\n" +
+                "            }\n" +
+                "        default:\n" +
+                "            break;\n" +
+                "        }\n" +
+                "}\n");
+    }
+
+    public void testDoxyGenIdent() {
+        setDefaultsOptions();
+        setLoadDocumentText(
+            "        /**\n" +
+            "         * Class for accessing a compound stream.\n" +
+            "         *\n" +
+            "         * @version $Id: CompoundFile.h,v 1.1.2.12 2005/11/02 12:44:22 ustramooner Exp $\n" +
+            "         */\n" +
+            "        class CompoundFileReader: public CL_NS(store)::Directory {\n" +
+            "        }\n"
+            );
+        reformat();
+        assertDocumentText("Incorrect identing doc comment",
+            "/**\n" +
+            " * Class for accessing a compound stream.\n" +
+            " *\n" +
+            " * @version $Id: CompoundFile.h,v 1.1.2.12 2005/11/02 12:44:22 ustramooner Exp $\n" +
+            " */\n" +
+            "class CompoundFileReader : public CL_NS(store)::Directory\n" +
+            "{\n" +
+            "}\n"
+        );
+    }
+
+    public void testBlockCommentIdent() {
+        setDefaultsOptions();
+        setLoadDocumentText(
+            "        /*\n" +
+            "         * Class for accessing a compound stream.\n" +
+            "         *\n" +
+            "         * @version $Id: CompoundFile.h,v 1.1.2.12 2005/11/02 12:44:22 ustramooner Exp $\n" +
+            "         */\n" +
+            "        class CompoundFileReader: public CL_NS(store)::Directory {\n" +
+            "        }\n"
+            );
+        reformat();
+        assertDocumentText("Incorrect identing block comment",
+            "/*\n" +
+            " * Class for accessing a compound stream.\n" +
+            " *\n" +
+            " * @version $Id: CompoundFile.h,v 1.1.2.12 2005/11/02 12:44:22 ustramooner Exp $\n" +
+            " */\n" +
+            "class CompoundFileReader : public CL_NS(store)::Directory\n" +
+            "{\n" +
+            "}\n"
+        );
+    }
+
+    public void testIdentElse() {
+        setDefaultsOptions();
+        setLoadDocumentText(
+            "    void FieldsWriter::addDocument(Document* doc)\n" +
+            "    {\n" +
+            "         if (field->stringValue() == NULL) {\n" +
+            "             Reader* r = field->readerValue();\n" +
+            "         }    else\n" +
+            "         fieldsStream->writeString(field->stringValue(), _tcslen(field->stringValue()));\n" +
+            "    }\n"
+            );
+        reformat();
+        assertDocumentText("Incorrect identing eles without {}",
+            "void FieldsWriter::addDocument(Document* doc)\n" +
+            "{\n" +
+            "    if (field->stringValue() == NULL) {\n" +
+            "        Reader* r = field->readerValue();\n" +
+            "    } else\n" +
+            "        fieldsStream->writeString(field->stringValue(), _tcslen(field->stringValue()));\n" +
+            "}\n"
+        );
+    }
+
+    public void testIdentDoWhile() {
+        setDefaultsOptions();
+        setLoadDocumentText(
+            " int foo()\n" +
+            " {\n" +
+            " do {\n" +
+            " try {\n" +
+            " op1().op2.op3().op4();\n" +
+            " } catch (Throwable t) {\n" +
+            " log();\n" +
+            " }\n" +
+            " }\n" +
+            " while (this.number < 2 && number != 3);\n"+ 
+            " }\n"
+            );
+        reformat();
+        assertDocumentText("Incorrect identing doWhile",
+            "int foo()\n" +
+            "{\n" +
+            "    do {\n" +
+            "        try {\n" +
+            "            op1().op2.op3().op4();\n" +
+            "        } catch (Throwable t) {\n" +
+            "            log();\n" +
+            "        }\n" +
+            "    } while (this.number < 2 && number != 3);\n"+ 
+            "}\n"
+        );
+    }
+
+    public void testIdentInlineMethod() {
+        setDefaultsOptions();
+        setLoadDocumentText(
+            "class IndexReader : LUCENE_BASE\n" +
+            "{\n" +
+            "    		CL_NS(store)::Directory* getDirectory() { return directory; }\n" +
+            "};\n"
+            );
+        reformat();
+        assertDocumentText("Incorrect identing multyline constructor",
+            "class IndexReader : LUCENE_BASE\n" +
+            "{\n" +
+            "    CL_NS(store)::Directory* getDirectory()\n" +
+            "    {\n" +
+            "        return directory;\n" +
+            "    }\n" +
+            "};\n"
+        );
+    }
+
+    public void testIdentInlineMethod2() {
+        setDefaultsOptions();
+        setLoadDocumentText(
+            "    		CL_NS(store)::Directory* getDirectory() { return directory; }\n"
+            );
+        reformat();
+        assertDocumentText("Incorrect identing multyline constructor",
+            "CL_NS(store)::Directory* getDirectory()\n" +
+            "{\n" +
+            "    return directory;\n" +
+            "}\n"
+        );
     }
 }

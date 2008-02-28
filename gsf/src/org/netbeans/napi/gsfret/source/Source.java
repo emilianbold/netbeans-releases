@@ -84,19 +84,19 @@ import javax.swing.event.CaretListener;
 import javax.swing.event.ChangeListener;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.editor.EditorRegistry;
-import org.netbeans.fpi.gsf.ParserFile;
-import org.netbeans.fpi.gsf.TranslatedSource;
-import org.netbeans.fpi.gsfpath.classpath.ClassPath;
-import org.netbeans.fpi.gsfpath.platform.JavaPlatformManager;
-import org.netbeans.fpi.gsfpath.queries.SourceLevelQuery;
-import org.netbeans.fpi.gsf.Error;
-import org.netbeans.fpi.gsf.ParseEvent;
-import org.netbeans.fpi.gsf.ParseListener;
-import org.netbeans.fpi.gsf.Parser;
-import org.netbeans.fpi.gsf.ParserResult;
-import org.netbeans.fpi.gsf.SourceFileReader;
-import org.netbeans.fpi.gsf.CancellableTask;
-import org.netbeans.fpi.gsf.EmbeddingModel;
+import org.netbeans.modules.gsf.api.ParserFile;
+import org.netbeans.modules.gsf.api.TranslatedSource;
+import org.netbeans.modules.gsfpath.api.classpath.ClassPath;
+import org.netbeans.modules.gsfpath.api.platform.JavaPlatformManager;
+import org.netbeans.modules.gsfpath.api.queries.SourceLevelQuery;
+import org.netbeans.modules.gsf.api.Error;
+import org.netbeans.modules.gsf.api.ParseEvent;
+import org.netbeans.modules.gsf.api.ParseListener;
+import org.netbeans.modules.gsf.api.Parser;
+import org.netbeans.modules.gsf.api.ParserResult;
+import org.netbeans.modules.gsf.api.SourceFileReader;
+import org.netbeans.modules.gsf.api.CancellableTask;
+import org.netbeans.modules.gsf.api.EmbeddingModel;
 import org.netbeans.napi.gsfret.source.ClasspathInfo.PathKind;
 import org.netbeans.napi.gsfret.source.ModificationResult.Difference;
 import org.netbeans.napi.gsfret.source.ParserTaskImpl;
@@ -112,7 +112,7 @@ import org.netbeans.modules.gsfret.source.usages.ClassIndexManager;
 import org.netbeans.modules.gsfret.source.util.LowMemoryEvent;
 import org.netbeans.modules.gsfret.source.util.LowMemoryListener;
 import org.netbeans.modules.gsfret.source.util.LowMemoryNotifier;
-import org.netbeans.sfpi.gsf.DefaultParserFile;
+import org.netbeans.modules.gsf.spi.DefaultParserFile;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileChangeAdapter;
 import org.openide.filesystems.FileChangeListener;
@@ -136,7 +136,7 @@ import org.openide.util.WeakListeners;
  * possible. 
  *
  *
- * This file is based on the JavaSource class in Retouche's org.netbeans.fpi.gsfpath.source package.
+ * This file is based on the JavaSource class in Retouche's org.netbeans.modules.gsfpath.api.source package.
  * It represents an open source file in the editor.
  *
  * @author Petr Hrebejk
@@ -314,7 +314,7 @@ public final class Source {
         if (fileObject == null) {
             throw new IllegalArgumentException ("fileObject == null");  //NOI18N
         }
-        if (!fileObject.isValid()) {
+        if (!fileObject.isValid() || fileObject.isFolder()) {
             return null;
         }
         if (!LanguageRegistry.getInstance().isSupported(fileObject.getMIMEType())) {

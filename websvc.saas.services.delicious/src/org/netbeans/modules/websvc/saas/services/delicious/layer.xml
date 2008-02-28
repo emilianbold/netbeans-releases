@@ -44,12 +44,12 @@
 <!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.1//EN" "http://www.netbeans.org/dtds/filesystem-1_1.dtd">
 <filesystem>
     
-    <folder name="SaasServices">
+    <folder name="SaaSServices">
         <folder name="Delicious">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.websvc.saas.services.delicious.Bundle"/>
             <file name="profile.properties" url="/org/netbeans/modules/websvc/saas/services/delicious/resources/profile.properties"/>
             <file name="Delicious.xml" url="/org/netbeans/modules/websvc/saas/services/delicious/resources/Delicious.xml"/>
         </folder>
-    </folder>
+        </folder>
     
 </filesystem>

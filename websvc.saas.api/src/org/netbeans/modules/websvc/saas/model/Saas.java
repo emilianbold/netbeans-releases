@@ -77,6 +77,7 @@ public class Saas {
     
     protected final SaasServices delegate;
     private SaasGroup parentGroup;
+    private SaasGroup topGroup;
     private List<SaasMethod> saasMethods;
     
     private State state = State.UNINITIALIZED;
@@ -120,7 +121,15 @@ public class Saas {
     protected void setParentGroup(SaasGroup parentGroup) {
         this.parentGroup = parentGroup;
     }
-
+    
+    public SaasGroup getTopLevelGroup() {
+        return topGroup;
+    }
+    
+    public void setTopLevelGroup(SaasGroup topGroup) {
+        this.topGroup = topGroup;
+    }
+    
     protected void computePathFromRoot() {
         delegate.getSaasMetadata().setGroup(parentGroup.getPathFromRoot());
     }
@@ -138,7 +147,7 @@ public class Saas {
         return saasFile;
     }
     
-    void save() {
+    public void save() {
         try {
             SaasUtil.saveSaas(this, getSaasFile());
         } catch(Exception e) {

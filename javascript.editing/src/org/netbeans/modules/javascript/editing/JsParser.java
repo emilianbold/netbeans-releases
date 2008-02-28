@@ -42,35 +42,28 @@ package org.netbeans.modules.javascript.editing;
 
 import java.io.IOException;
 
-import java.util.Set;
 import javax.swing.text.BadLocationException;
 
-import org.netbeans.fpi.gsf.CompilationInfo;
-import org.netbeans.fpi.gsf.ElementKind;
-import org.netbeans.fpi.gsf.Modifier;
-import org.netbeans.fpi.gsf.ElementHandle;
-import org.netbeans.fpi.gsf.Error;
-import org.netbeans.fpi.gsf.OffsetRange;
-import org.netbeans.fpi.gsf.ParseEvent;
-import org.netbeans.fpi.gsf.ParseListener;
-import org.netbeans.fpi.gsf.Parser;
-import org.netbeans.fpi.gsf.ParserFile;
-import org.netbeans.fpi.gsf.ParserResult;
-import org.netbeans.fpi.gsf.PositionManager;
-import org.netbeans.fpi.gsf.Severity;
-import org.netbeans.fpi.gsf.SourceFileReader;
-import org.netbeans.sfpi.gsf.DefaultError;
+import org.netbeans.modules.gsf.api.CompilationInfo;
+import org.netbeans.modules.gsf.api.ElementHandle;
+import org.netbeans.modules.gsf.api.Error;
+import org.netbeans.modules.gsf.api.OffsetRange;
+import org.netbeans.modules.gsf.api.ParseEvent;
+import org.netbeans.modules.gsf.api.ParseListener;
+import org.netbeans.modules.gsf.api.Parser;
+import org.netbeans.modules.gsf.api.ParserFile;
+import org.netbeans.modules.gsf.api.ParserResult;
+import org.netbeans.modules.gsf.api.PositionManager;
+import org.netbeans.modules.gsf.api.Severity;
+import org.netbeans.modules.gsf.api.SourceFileReader;
+import org.netbeans.modules.gsf.spi.DefaultError;
 import org.openide.util.Exceptions;
 import org.mozilla.javascript.CompilerEnvirons;
-import org.mozilla.javascript.ErrorReporter;
-import org.mozilla.javascript.EvaluatorException;
 import org.mozilla.javascript.ScriptOrFnNode;
 import org.mozilla.javascript.ErrorReporter;
 import org.mozilla.javascript.EvaluatorException;
 import org.mozilla.javascript.Node;
-import org.netbeans.fpi.gsf.TranslatedSource;
-import org.netbeans.modules.javascript.editing.embedding.JsModel;
-import org.openide.filesystems.FileObject;
+import org.netbeans.modules.gsf.api.TranslatedSource;
 
 
 /**
@@ -185,43 +178,6 @@ public class JsParser implements Parser {
             return false;
         }
 
-        if (sanitizing == Sanitize.BLOCK_START) {
-            try {
-                int start = JsUtils.getRowFirstNonWhite(doc, offset);
-                if (start != -1 && 
-                        start+2 < doc.length() &&
-                        doc.regionMatches(start, "if", 0, 2)) {
-                    // TODO - check lexer
-                    char c = 0;
-                    if (start+2 < doc.length()) {
-                        c = doc.charAt(start+2);
-                    }
-                    if (!Character.isLetter(c)) {
-                        int removeStart = start;
-                        int removeEnd = removeStart+2;
-                        StringBuilder sb = new StringBuilder(doc.length());
-                        sb.append(doc.substring(0, removeStart));
-                        for (int i = removeStart; i < removeEnd; i++) {
-                            sb.append(' ');
-                        }
-                        if (removeEnd < doc.length()) {
-                            sb.append(doc.substring(removeEnd, doc.length()));
-                        }
-                        assert sb.length() == doc.length();
-                        context.sanitizedRange = new OffsetRange(removeStart, removeEnd);
-                        context.sanitizedSource = sb.toString();
-                        context.sanitizedContents = doc.substring(removeStart, removeEnd);
-                        return true;
-                    }
-                }
-                
-                return false;
-            } catch (BadLocationException ble) {
-                Exceptions.printStackTrace(ble);
-                return false;
-            }
-        }
-        
         try {
             // Sometimes the offset shows up on the next line
             if (JsUtils.isRowEmpty(doc, offset) || JsUtils.isRowWhite(doc, offset)) {
@@ -276,26 +232,8 @@ public class JsParser implements Parser {
                             removeChars = 1;
                         } else if (line.endsWith(",")) { // NOI18N                            removeChars = 1;
                             removeChars = 1;
-//                        } else if (line.endsWith(",:")) { // NOI18N
-//                            removeChars = 2;
-//                        } else if (line.endsWith(", :")) { // NOI18N
-//                            removeChars = 3;
                         } else if (line.endsWith(", ")) { // NOI18N
                             removeChars = 2;
-//                        } else if (line.endsWith("=> :")) { // NOI18N
-//                            removeChars = 4;
-//                        } else if (line.endsWith("=>:")) { // NOI18N
-//                            removeChars = 3;
-//                        } else if (line.endsWith("=>")) { // NOI18N
-//                            removeChars = 2;
-//                        } else if (line.endsWith("::")) { // NOI18N
-//                            removeChars = 2;
-//                        } else if (line.endsWith(":")) { // NOI18N
-//                            removeChars = 1;
-//                        } else if (line.endsWith("@@")) { // NOI18N
-//                            removeChars = 2;
-//                        } else if (line.endsWith("@")) { // NOI18N
-//                            removeChars = 1;
                         } else if (line.endsWith(",)")) { // NOI18N
                             // Handle lone comma in parameter list - e.g.
                             // type "foo(a," -> you end up with "foo(a,|)" which doesn't parse - but
@@ -307,8 +245,15 @@ public class JsParser implements Parser {
                             // Just remove the comma
                             removeChars = 1;
                             removeEnd -= 2;
-                        } else if (line.endsWith("new")) { // NOI18N
-                            removeChars = 1;
+                        } else {
+                            // Make sure the line doesn't end with one of the JavaScript keywords
+                            // (new, do, etc) - we can't handle that!
+                            for (String keyword : JsUtils.JAVASCRIPT_KEYWORDS) { // reserved words are okay
+                                if (line.endsWith(keyword)) {
+                                    removeChars = 1;
+                                    break;
+                                }
+                            }
                         }
                         
                         if (removeChars == 0) {
@@ -372,14 +317,6 @@ public class JsParser implements Parser {
         // Fall through to try the next trick
         case ERROR_DOT:
 
-            // We've tried removing dots - now try removing the whole line at the error position
-            if (context.caretOffset != -1) {
-                return parseBuffer(context, Sanitize.BLOCK_START);
-            }
-            
-        // Fall through to try the next trick
-        case BLOCK_START:
-            
             // We've tried removing dots - now try removing the whole line at the error position
             if (context.errorOffset != -1) {
                 return parseBuffer(context, Sanitize.ERROR_LINE);
@@ -689,10 +626,6 @@ public class JsParser implements Parser {
         /** Try to remove the trailing . or :: at the error position, or the prior
          * line, or the caret line */
         ERROR_DOT, 
-        /** Try to remove the initial "if" or "unless" on the block
-         * in case it's not terminated
-         */
-        BLOCK_START,
         /** Try to cut out the error line */
         ERROR_LINE, 
         /** Try to cut out the current edited line, if known */
