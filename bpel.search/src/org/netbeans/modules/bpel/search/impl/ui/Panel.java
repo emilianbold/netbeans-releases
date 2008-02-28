@@ -48,6 +48,7 @@ import javax.swing.JButton;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JToolBar;
+import javax.swing.SwingUtilities;
 
 import org.netbeans.modules.print.api.PrintManager;
 import org.netbeans.modules.bpel.search.impl.util.Util;
@@ -59,11 +60,12 @@ import static org.netbeans.modules.soa.ui.util.UI.*;
  */
 final class Panel extends JPanel {
 
-  Panel(Tree tree) {
+  Panel(Tree list, Tree tree) {
+    myList = list;
     myTree = tree;
+    myCurrent = tree;
 
     setLayout(new GridBagLayout());
-    JScrollPane scrollPane = new JScrollPane(myTree);
     GridBagConstraints c = new GridBagConstraints();
     c.anchor = GridBagConstraints.NORTH;
 
@@ -71,16 +73,30 @@ final class Panel extends JPanel {
     add(createButtonPanel(), c);
 
     // tree
-    c.fill = GridBagConstraints.BOTH;
     c.weightx = 1.0;
     c.weighty = 1.0;
-    add(new Navigation(myTree, scrollPane, scrollPane), c);
+    c.fill = GridBagConstraints.BOTH;
+    myInner = new JPanel(new GridBagLayout());
+    add(myInner, c);
+    updateView();
   }
 
-  void requestActive() {
-    if (myTree != null) {
-      myTree.requestFocus();
-    }
+  private void updateView() {
+    SwingUtilities.invokeLater(new Runnable() { public void run() {
+      myInner.removeAll();
+      GridBagConstraints c = new GridBagConstraints();
+
+      c.weightx = 1.0;
+      c.weighty = 1.0;
+      c.fill = GridBagConstraints.BOTH;
+      c.anchor = GridBagConstraints.NORTH;
+      JScrollPane scrollPane = new JScrollPane(myCurrent);
+      myInner.add(new Navigation(myCurrent, scrollPane), c);
+      
+      myInner.revalidate();
+      myInner.repaint();
+      myCurrent.requestFocus();
+    }});
   }
 
   private JToolBar createButtonPanel() {
@@ -92,9 +108,22 @@ final class Panel extends JPanel {
     button = createButton(
       new ButtonAction(
         icon(Util.class, "expose"), // NOI18N
-        i18n(View.class, "TLT_Expose")) { // NOI18N
+        i18n(Panel.class, "TLT_Expose")) { // NOI18N
         public void actionPerformed(ActionEvent event) {
-          myTree.expose(myTree.getSelectedNode());
+          myCurrent.expose();
+        }
+      }
+    );
+    setImageSize(button);
+    toolBar.add(button);
+
+    // collapse/expand
+    button = createButton(
+      new ButtonAction(
+        icon(Util.class, "view"), // NOI18N
+        i18n(Panel.class, "TLT_View")) { // NOI18N
+        public void actionPerformed(ActionEvent event) {
+          changeView();
         }
       }
     );
@@ -105,9 +134,9 @@ final class Panel extends JPanel {
     button = createButton(
       new ButtonAction(
         icon(Util.class, "previous"), // NOI18N
-        i18n(View.class, "TLT_Previous_Occurence")) { // NOI18N
+        i18n(Panel.class, "TLT_Previous_Occurence")) { // NOI18N
         public void actionPerformed(ActionEvent event) {
-          myTree.previousOccurence(myTree.getSelectedNode());
+          myCurrent.previousOccurence();
         }
       }
     );
@@ -118,9 +147,9 @@ final class Panel extends JPanel {
     button = createButton(
       new ButtonAction(
         icon(Util.class, "next"), // NOI18N
-        i18n(View.class, "TLT_Next_Occurence")) { // NOI18N
+        i18n(Panel.class, "TLT_Next_Occurence")) { // NOI18N
         public void actionPerformed(ActionEvent event) {
-          myTree.nextOccurence(myTree.getSelectedNode());
+          myCurrent.nextOccurence();
         }
       }
     );
@@ -131,9 +160,9 @@ final class Panel extends JPanel {
     button = createButton(
       new ButtonAction(
         icon(Util.class, "export"), // NOI18N
-        i18n(View.class, "TLT_Export")) { // NOI18N
+        i18n(Panel.class, "TLT_Export")) { // NOI18N
         public void actionPerformed(ActionEvent event) {
-          myTree.export(myTree.getSelectedNode());
+          myCurrent.export();
         }
       }
     );
@@ -148,5 +177,18 @@ final class Panel extends JPanel {
     return toolBar;
   }
 
+  private void changeView() {
+    if (myCurrent == myTree) {
+      myCurrent = myList;
+    }
+    else {
+      myCurrent = myTree;
+    }
+    updateView();
+  }
+
+  private Tree myList;
   private Tree myTree;
+  private Tree myCurrent;
+  private JPanel myInner;
 }
