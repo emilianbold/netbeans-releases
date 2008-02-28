@@ -59,6 +59,7 @@ import org.netbeans.modules.websvc.saas.codegen.java.Constants.HttpMethodType;
 import org.netbeans.modules.websvc.saas.codegen.java.Constants.SaasAuthenticationType;
 import org.netbeans.modules.websvc.saas.codegen.java.model.ParameterInfo;
 import org.netbeans.modules.websvc.saas.codegen.java.model.ParameterInfo.ParamStyle;
+import org.netbeans.modules.websvc.saas.codegen.java.model.SaasBean.ApiKeyAuthentication;
 import org.netbeans.modules.websvc.saas.codegen.java.model.WadlSaasBean;
 import org.netbeans.modules.websvc.saas.codegen.java.support.AbstractTask;
 import org.netbeans.modules.websvc.saas.codegen.java.support.JavaSourceHelper;
@@ -87,7 +88,7 @@ public class JaxRsCodeGenerator extends SaasCodeGenerator {
         saasServiceFile = SourceGroupSupport.findJavaSourceFile(getProject(), getSaasServiceName());
         if(saasServiceFile != null)
             saasServiceJS = JavaSource.forFileObject(saasServiceFile);
-        this.groupName = getBean().getMethod().getSaas().getTopLevelGroup().getName();
+        this.groupName = Util.normailizeName(getBean().getMethod().getSaas().getTopLevelGroup().getName());
     }
     
     @Override
@@ -120,7 +121,7 @@ public class JaxRsCodeGenerator extends SaasCodeGenerator {
         String converterName = getConverterName();
         String paramStr = null;
         StringBuffer sb1 = new StringBuffer();
-        List<ParameterInfo> params = bean.getInputParameters();
+        List<ParameterInfo> params = filterParameters();
 
         for (ParameterInfo param : params) {
             String paramName = param.getName();
@@ -167,8 +168,16 @@ public class JaxRsCodeGenerator extends SaasCodeGenerator {
             pathParamsCode = getTemplateParameterDefinition(getBean().getTemplateParameters(), PATH_PARAMS, false);
         
         String queryParamsCode = "";
-        if(getBean().getInputParameters() != null && getBean().getInputParameters().size() > 0)
-            queryParamsCode = getHeaderOrParameterDefinition(getBean().getInputParameters(), QUERY_PARAMS, false);
+        List<ParameterInfo> filterParams = new ArrayList<ParameterInfo>();
+        if(getBean().getInputParameters() != null) {
+            for(ParameterInfo param: getBean().getInputParameters()) {
+                if(param.getStyle() == ParamStyle.TEMPLATE)
+                    continue;
+                filterParams.add(param);
+            }
+            if(filterParams.size() > 0)
+                queryParamsCode = getHeaderOrParameterDefinition(filterParams, QUERY_PARAMS, false);
+        }
 
         String methodBody = "";
         methodBody += "        String result = null;\n";
@@ -280,7 +289,9 @@ public class JaxRsCodeGenerator extends SaasCodeGenerator {
                 }
             }
             //Also copy profile.properties
-            Util.createDataObjectFromTemplate("SaaSServices/"+getGroupName()+"/profile.properties", targetFolder, null);
+            try {
+                Util.createDataObjectFromTemplate("SaaSServices/"+getGroupName()+"/profile.properties", targetFolder, null);
+            } catch(Exception ex) {} //ignore
         }
     }
     
@@ -314,9 +325,9 @@ public class JaxRsCodeGenerator extends SaasCodeGenerator {
                 String type = String.class.getName();
                 String bodyText = "{ \n" + getServiceMethodBody() + "\n }";
 
-                List<ParameterInfo> queryParams = getBean().getQueryParameters();
-                String[] parameters = getGetParamNames(queryParams);
-                Object[] paramTypes = getGetParamTypes(queryParams);
+                List<ParameterInfo> filterParams = filterParameters();
+                String[] parameters = getGetParamNames(filterParams);
+                Object[] paramTypes = getGetParamTypes(filterParams);
 
                 String comment = "Retrieves representation of an instance of " + getBean().getQualifiedClassName() + "\n";
                 for (String param : parameters) {
@@ -334,6 +345,20 @@ public class JaxRsCodeGenerator extends SaasCodeGenerator {
             
         });
         result.commit();
+    }
+    
+    public List<ParameterInfo> filterParameters() {
+        List<ParameterInfo> filterParams = new ArrayList<ParameterInfo>();
+        if(getBean().getInputParameters() != null) {
+            for (ParameterInfo param : getBean().getInputParameters()) {
+                ParamStyle style = param.getStyle();
+                if(style == ParamStyle.QUERY_APIKEY || style == ParamStyle.QUERY_FIXED) {
+                        continue;
+                }
+                filterParams.add(param);
+            }
+        }
+        return filterParams;
     }
     
     public String[] getUriParamTypes() {
@@ -380,10 +405,18 @@ public class JaxRsCodeGenerator extends SaasCodeGenerator {
         return results.toArray(new String[results.size()]);
     }
     
+    protected String getParameterName(ParameterInfo param) {
+        String name = param.getName();
+        if(param.getStyle() == ParamStyle.TEMPLATE 
+                && name.startsWith("{") && name.endsWith("}"))
+            name = name.substring(0, name.length()-1);
+        return name;
+    }
+    
     protected String getQueryParameterDeclaration(List<ParameterInfo> params) {
         String paramDecl = "";
         for (ParameterInfo param : params) {
-            String name = param.getName();
+            String name = getParameterName(param);
             String paramVal = findParamValue(param);
             if (param.getType() != String.class) {
                 paramDecl +=  "        "+param.getType().getName()+" " + name + " = " + paramVal + ";\n";
@@ -400,7 +433,7 @@ public class JaxRsCodeGenerator extends SaasCodeGenerator {
     protected String getQueryParameterUsage(List<ParameterInfo> params) {
         String paramUsage = "";
         for (ParameterInfo param : params) {
-            String name = param.getName();
+            String name = getParameterName(param);
             paramUsage +=  name + ", ";
         }
         return paramUsage;
@@ -410,7 +443,7 @@ public class JaxRsCodeGenerator extends SaasCodeGenerator {
         String paramsStr = null;
         StringBuffer sb = new StringBuffer();
         for (ParameterInfo param : params) {
-            String paramName = param.getName();
+            String paramName = getParameterName(param);
             String paramVal = null;
             if(evaluate || param.getStyle() == ParamStyle.QUERY_APIKEY) {
                 paramVal = findParamValue(param);
@@ -475,6 +508,11 @@ public class JaxRsCodeGenerator extends SaasCodeGenerator {
         String paramVal = null;
         if(param.getStyle() == ParamStyle.QUERY_APIKEY) {
             paramVal = "\"+apiKey+\"";
+        } else if(param.getStyle() == ParamStyle.TEMPLATE) {
+            if(param.getDefaultValue() != null)
+                paramVal = param.getDefaultValue().toString();
+            else
+                paramVal = "";
         } else {
             if(param.getStyle() == ParamStyle.QUERY_FIXED)
                 paramVal = param.getFixed();

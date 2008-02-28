@@ -45,13 +45,13 @@ import com.sun.jdi.AbsentInformationException;
 import com.sun.jdi.ClassNotLoadedException;
 import com.sun.jdi.Field;
 import com.sun.jdi.InvalidTypeException;
-import com.sun.jdi.LocalVariable;
 import com.sun.jdi.ObjectReference;
 import com.sun.jdi.Value;
 
 import org.netbeans.api.debugger.Watch;
 import org.netbeans.api.debugger.jpda.InvalidExpressionException;
 import org.netbeans.api.debugger.jpda.JPDAWatch;
+import org.netbeans.api.debugger.jpda.LocalVariable;
 import org.netbeans.api.debugger.jpda.ObjectVariable;
 import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
 
@@ -155,17 +155,15 @@ ObjectVariable {
         
         // 2) try to set as a local variable value
         try {
-            LocalVariable local = frame.getStackFrame ().visibleVariableByName 
-                (getExpression ());
-            if (local != null)
-                try {
-                    frame.getStackFrame ().setValue (local, value);
-                    return;
-                } catch (InvalidTypeException ex) {
-                    throw new InvalidExpressionException (ex);
-                } catch (ClassNotLoadedException ex) {
-                    throw new InvalidExpressionException (ex);
+            LocalVariable local = frame.getLocalVariable(getExpression ());
+            if (local != null) {
+                if (local instanceof Local) {
+                    ((Local) local).setValue(value);
+                } else {
+                    ((ObjectLocalVariable) local).setValue(value);
                 }
+                return;
+            }
         } catch (AbsentInformationException ex) {
             // no local variable visible in this case
         }

@@ -92,7 +92,7 @@ public final class HDataLoader extends CndAbstractDataLoaderExt {
         for (String name : newExt) {
             newList.addExtension(name);
         }   
-        putProperty(PROP_EXTENSIONS, newList, true);
+        setExtensions(newList);
     }
     
     protected String getMimeType(){

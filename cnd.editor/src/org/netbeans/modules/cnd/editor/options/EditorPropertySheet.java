@@ -123,12 +123,14 @@ public class EditorPropertySheet extends javax.swing.JPanel implements ActionLis
     
 
     private void initLanguageMap(){
-        initLanguageStylePreferences(CodeStyle.Language.C, EditorOptions.DEFAULT_PROFILE);
-        initLanguageStylePreferences(CodeStyle.Language.C, EditorOptions.APACHE_PROFILE);
+        for(String style:EditorOptions.PREDEFINED_STYLES){
+            initLanguageStylePreferences(CodeStyle.Language.C, style);
+        }
         defaultStyles.put(CodeStyle.Language.C, EditorOptions.getCurrentProfileId(CodeStyle.Language.C));
 
-        initLanguageStylePreferences(CodeStyle.Language.CPP, EditorOptions.DEFAULT_PROFILE);
-        initLanguageStylePreferences(CodeStyle.Language.CPP, EditorOptions.APACHE_PROFILE);
+        for(String style:EditorOptions.PREDEFINED_STYLES){
+            initLanguageStylePreferences(CodeStyle.Language.CPP, style);
+        }
         defaultStyles.put(CodeStyle.Language.CPP, EditorOptions.getCurrentProfileId(CodeStyle.Language.CPP));
     }
     
@@ -209,9 +211,9 @@ public class EditorPropertySheet extends javax.swing.JPanel implements ActionLis
 	set.setName("SpacesBeforeKeywords"); // NOI18N
 	set.setDisplayName(getString("LBL_BeforeKeywords")); // NOI18N
 	set.setShortDescription(getString("HINT_BeforeKeywords")); // NOI18N
-	set.put(new BooleanNodeProp(currentLanguage, preferences, EditorOptions.spaceBeforeWhile));
-	set.put(new BooleanNodeProp(currentLanguage, preferences, EditorOptions.spaceBeforeElse));
 	set.put(new BooleanNodeProp(currentLanguage, preferences, EditorOptions.spaceBeforeCatch));
+	set.put(new BooleanNodeProp(currentLanguage, preferences, EditorOptions.spaceBeforeElse));
+	set.put(new BooleanNodeProp(currentLanguage, preferences, EditorOptions.spaceBeforeWhile));
         sheet.put(set);
         
         set = new Sheet.Set();
@@ -220,21 +222,21 @@ public class EditorPropertySheet extends javax.swing.JPanel implements ActionLis
 	set.setShortDescription(getString("HINT_BeforeParentheses")); // NOI18N
 	set.put(new BooleanNodeProp(currentLanguage, preferences, EditorOptions.spaceBeforeMethodDeclParen));
 	set.put(new BooleanNodeProp(currentLanguage, preferences, EditorOptions.spaceBeforeMethodCallParen));
-	set.put(new BooleanNodeProp(currentLanguage, preferences, EditorOptions.spaceBeforeIfParen));
-	set.put(new BooleanNodeProp(currentLanguage, preferences, EditorOptions.spaceBeforeForParen));
-	set.put(new BooleanNodeProp(currentLanguage, preferences, EditorOptions.spaceBeforeWhileParen));
 	set.put(new BooleanNodeProp(currentLanguage, preferences, EditorOptions.spaceBeforeCatchParen));
+	set.put(new BooleanNodeProp(currentLanguage, preferences, EditorOptions.spaceBeforeForParen));
+	set.put(new BooleanNodeProp(currentLanguage, preferences, EditorOptions.spaceBeforeIfParen));
 	set.put(new BooleanNodeProp(currentLanguage, preferences, EditorOptions.spaceBeforeSwitchParen));
+	set.put(new BooleanNodeProp(currentLanguage, preferences, EditorOptions.spaceBeforeWhileParen));
         sheet.put(set);
         
         set = new Sheet.Set();
 	set.setName("SpacesAroundOperators"); // NOI18N
 	set.setDisplayName(getString("LBL_AroundOperators")); // NOI18N
 	set.setShortDescription(getString("HINT_AroundOperators")); // NOI18N
-	set.put(new BooleanNodeProp(currentLanguage, preferences, EditorOptions.spaceAroundUnaryOps));
+	set.put(new BooleanNodeProp(currentLanguage, preferences, EditorOptions.spaceAroundAssignOps));
 	set.put(new BooleanNodeProp(currentLanguage, preferences, EditorOptions.spaceAroundBinaryOps));
 	set.put(new BooleanNodeProp(currentLanguage, preferences, EditorOptions.spaceAroundTernaryOps));
-	set.put(new BooleanNodeProp(currentLanguage, preferences, EditorOptions.spaceAroundAssignOps));
+	set.put(new BooleanNodeProp(currentLanguage, preferences, EditorOptions.spaceAroundUnaryOps));
         sheet.put(set);
     
         set = new Sheet.Set();
@@ -243,38 +245,38 @@ public class EditorPropertySheet extends javax.swing.JPanel implements ActionLis
 	set.setShortDescription(getString("HINT_BeforeLeftBraces")); // NOI18N
 	set.put(new BooleanNodeProp(currentLanguage, preferences, EditorOptions.spaceBeforeClassDeclLeftBrace));
 	set.put(new BooleanNodeProp(currentLanguage, preferences, EditorOptions.spaceBeforeMethodDeclLeftBrace));
-	set.put(new BooleanNodeProp(currentLanguage, preferences, EditorOptions.spaceBeforeIfLeftBrace));
-	set.put(new BooleanNodeProp(currentLanguage, preferences, EditorOptions.spaceBeforeElseLeftBrace));
-	set.put(new BooleanNodeProp(currentLanguage, preferences, EditorOptions.spaceBeforeWhileLeftBrace));
-	set.put(new BooleanNodeProp(currentLanguage, preferences, EditorOptions.spaceBeforeForLeftBrace));
+	set.put(new BooleanNodeProp(currentLanguage, preferences, EditorOptions.spaceBeforeArrayInitLeftBrace));
+	set.put(new BooleanNodeProp(currentLanguage, preferences, EditorOptions.spaceBeforeCatchLeftBrace));
 	set.put(new BooleanNodeProp(currentLanguage, preferences, EditorOptions.spaceBeforeDoLeftBrace));
+	set.put(new BooleanNodeProp(currentLanguage, preferences, EditorOptions.spaceBeforeElseLeftBrace));
+	set.put(new BooleanNodeProp(currentLanguage, preferences, EditorOptions.spaceBeforeForLeftBrace));
+	set.put(new BooleanNodeProp(currentLanguage, preferences, EditorOptions.spaceBeforeIfLeftBrace));
 	set.put(new BooleanNodeProp(currentLanguage, preferences, EditorOptions.spaceBeforeSwitchLeftBrace));
 	set.put(new BooleanNodeProp(currentLanguage, preferences, EditorOptions.spaceBeforeTryLeftBrace));
-	set.put(new BooleanNodeProp(currentLanguage, preferences, EditorOptions.spaceBeforeCatchLeftBrace));
-	set.put(new BooleanNodeProp(currentLanguage, preferences, EditorOptions.spaceBeforeArrayInitLeftBrace));
+	set.put(new BooleanNodeProp(currentLanguage, preferences, EditorOptions.spaceBeforeWhileLeftBrace));
         sheet.put(set);
 
         set = new Sheet.Set();
 	set.setName("SpacesWithinParentheses"); // NOI18N
 	set.setDisplayName(getString("LBL_WithinParentheses")); // NOI18N
 	set.setShortDescription(getString("HINT_WithinParentheses")); // NOI18N
-	set.put(new BooleanNodeProp(currentLanguage, preferences, EditorOptions.spaceWithinParens));
 	set.put(new BooleanNodeProp(currentLanguage, preferences, EditorOptions.spaceWithinMethodDeclParens));
 	set.put(new BooleanNodeProp(currentLanguage, preferences, EditorOptions.spaceWithinMethodCallParens));
-	set.put(new BooleanNodeProp(currentLanguage, preferences, EditorOptions.spaceWithinIfParens));
-	set.put(new BooleanNodeProp(currentLanguage, preferences, EditorOptions.spaceWithinForParens));
-	set.put(new BooleanNodeProp(currentLanguage, preferences, EditorOptions.spaceWithinWhileParens));
-	set.put(new BooleanNodeProp(currentLanguage, preferences, EditorOptions.spaceWithinSwitchParens));
-	set.put(new BooleanNodeProp(currentLanguage, preferences, EditorOptions.spaceWithinCatchParens));
-	set.put(new BooleanNodeProp(currentLanguage, preferences, EditorOptions.spaceWithinTypeCastParens));
-	set.put(new BooleanNodeProp(currentLanguage, preferences, EditorOptions.spaceWithinBraces));
 	set.put(new BooleanNodeProp(currentLanguage, preferences, EditorOptions.spaceWithinArrayInitBrackets));
+	set.put(new BooleanNodeProp(currentLanguage, preferences, EditorOptions.spaceWithinBraces));
+	set.put(new BooleanNodeProp(currentLanguage, preferences, EditorOptions.spaceWithinParens));
+	set.put(new BooleanNodeProp(currentLanguage, preferences, EditorOptions.spaceWithinCatchParens));
+	set.put(new BooleanNodeProp(currentLanguage, preferences, EditorOptions.spaceWithinForParens));
+	set.put(new BooleanNodeProp(currentLanguage, preferences, EditorOptions.spaceWithinIfParens));
+	set.put(new BooleanNodeProp(currentLanguage, preferences, EditorOptions.spaceWithinSwitchParens));
+	set.put(new BooleanNodeProp(currentLanguage, preferences, EditorOptions.spaceWithinTypeCastParens));
+	set.put(new BooleanNodeProp(currentLanguage, preferences, EditorOptions.spaceWithinWhileParens));
         sheet.put(set);
                 
         set = new Sheet.Set();
 	set.setName("SpacesOther"); // NOI18N
-	set.setDisplayName(getString("LBL_Other")); // NOI18N
-	set.setShortDescription(getString("HINT_Other")); // NOI18N
+	set.setDisplayName(getString("LBL_Other_Spaces")); // NOI18N
+	set.setShortDescription(getString("HINT_Other_Spaces")); // NOI18N
 	set.put(new BooleanNodeProp(currentLanguage, preferences, EditorOptions.spaceBeforeComma));
 	set.put(new BooleanNodeProp(currentLanguage, preferences, EditorOptions.spaceAfterComma));
 	set.put(new BooleanNodeProp(currentLanguage, preferences, EditorOptions.spaceBeforeSemi));

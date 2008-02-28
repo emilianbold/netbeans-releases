@@ -182,13 +182,17 @@
     </ant>
   </target>
 
-  <target name="build-dmg" depends="build-pkg,build-glassfish-pkg,build-tomcat-pkg,build-openesb-pkg,delete-glassfish-pkg,delete-tomcat-pkg,delete-openesb-pkg">
+  <target name="build-dmg" depends="build-pkg,build-glassfish-pkg,build-tomcat-pkg,build-openesb-pkg,delete-glassfish-pkg,delete-tomcat-pkg,delete-openesb-pkg,add-docs">
     <mkdir dir="dist"/>
     <mkdir dir="build/dmg"/>
     <exec executable="sh" failonerror="yes">
       <arg value="-c"/>
       <arg value="sh dmg/createdmg.sh dist/${dmgname} build/dmg build/pkg/"/>
     </exec>
+  </target>
+
+  <target name="add-docs">
+    <copy file="${basedir}/docs/readme.rtf" tofile="${basedir}/build/pkg/Read Before You Install.rtf"/>
   </target>
 
   <target name="clean">

@@ -53,6 +53,7 @@ import org.netbeans.modules.websvc.saas.codegen.java.Constants.HttpMethodType;
 import org.netbeans.modules.websvc.saas.codegen.java.Constants.MimeType;
 import org.netbeans.modules.websvc.saas.codegen.java.Constants.SaasAuthenticationType;
 import org.netbeans.modules.websvc.saas.codegen.java.model.ParameterInfo.ParamStyle;
+import org.netbeans.modules.websvc.saas.codegen.java.support.Util;
 
 /**
  *
@@ -66,8 +67,8 @@ public class WadlSaasBean extends SaasBean {
     private List<ParameterInfo> pathParams;
     
     public WadlSaasBean(WadlSaasMethod m)  throws IOException {
-        super(deriveResourceName(m.getName()), null, 
-                deriveUriTemplate(m.getName()), new MimeType[]{MimeType.XML}, 
+        super(Util.deriveResourceName(m.getName()), null, 
+                Util.deriveUriTemplate(m.getName()), new MimeType[]{MimeType.XML}, 
                 new String[]{"java.lang.String"},       //NOI18N
                 new HttpMethodType[]{HttpMethodType.GET});
     
@@ -124,14 +125,9 @@ public class WadlSaasBean extends SaasBean {
     
     private void initTemplateParameters() {
         ArrayList<ParameterInfo> params = new ArrayList<ParameterInfo>();
-        String url2 = this.url;
-        String[] paths = url2.split("/");
-        for(String path:paths) {
-            if(path.startsWith("{") && path.endsWith("}")) {
-                ParameterInfo paramInfo = new ParameterInfo(path, String.class);
-                if(path.length() > 2)
-                    paramInfo.setDefaultValue(path.substring(1, path.length()-1));
-                params.add(paramInfo);
+        for (ParameterInfo param : getInputParameters()) {
+            if(param.getStyle() == ParamStyle.TEMPLATE) {
+                params.add(param);
             }
         }
         this.pathParams = params;
@@ -144,12 +140,12 @@ public class WadlSaasBean extends SaasBean {
             apiKeyName = ((ApiKeyAuthentication)getAuthentication()).getApiKeyName();
         for (ParameterInfo param : getInputParameters()) {
             String paramName = param.getName();
-            if((isApiKey && paramName.equals(apiKeyName))) {
-                param.setStyle(ParamStyle.QUERY_APIKEY);
-            } else if(param.getFixed() != null){
-                param.setStyle(ParamStyle.QUERY_FIXED);
-            } else {
-                param.setStyle(ParamStyle.QUERY);
+            if(param.getStyle() == ParamStyle.QUERY) {
+                if((isApiKey && paramName.equals(apiKeyName))) {
+                    param.setStyle(ParamStyle.QUERY_APIKEY);
+                } else if(param.getFixed() != null){
+                    param.setStyle(ParamStyle.QUERY_FIXED);
+                }
             }
         }
     }

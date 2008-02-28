@@ -96,8 +96,9 @@ public class NbPlatformCustomizerHarness extends JPanel {
         browseButton.setEnabled(otherButton.isSelected());
     }
     
-    // <editor-fold defaultstate="collapsed" desc=" Generated Code ">//GEN-BEGIN:initComponents
+    // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
+
         buttonGroup = new javax.swing.ButtonGroup();
         ideButton = new javax.swing.JRadioButton();
         platformButton = new javax.swing.JRadioButton();
@@ -108,7 +109,7 @@ public class NbPlatformCustomizerHarness extends JPanel {
         versionText = new javax.swing.JTextField();
 
         buttonGroup.add(ideButton);
-        org.openide.awt.Mnemonics.setLocalizedText(ideButton, NbBundle.getMessage(NbPlatformCustomizerHarness.class, "NbPCH.ideButton"));
+        org.openide.awt.Mnemonics.setLocalizedText(ideButton, NbBundle.getMessage(NbPlatformCustomizerHarness.class, "NbPCH.ideButton")); // NOI18N
         ideButton.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         ideButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
         ideButton.addActionListener(new java.awt.event.ActionListener() {
@@ -118,7 +119,7 @@ public class NbPlatformCustomizerHarness extends JPanel {
         });
 
         buttonGroup.add(platformButton);
-        org.openide.awt.Mnemonics.setLocalizedText(platformButton, NbBundle.getMessage(NbPlatformCustomizerHarness.class, "NbPCH.platformButton"));
+        org.openide.awt.Mnemonics.setLocalizedText(platformButton, NbBundle.getMessage(NbPlatformCustomizerHarness.class, "NbPCH.platformButton")); // NOI18N
         platformButton.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         platformButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
         platformButton.addActionListener(new java.awt.event.ActionListener() {
@@ -128,7 +129,7 @@ public class NbPlatformCustomizerHarness extends JPanel {
         });
 
         buttonGroup.add(otherButton);
-        org.openide.awt.Mnemonics.setLocalizedText(otherButton, NbBundle.getMessage(NbPlatformCustomizerHarness.class, "NbPCH.otherButton"));
+        org.openide.awt.Mnemonics.setLocalizedText(otherButton, NbBundle.getMessage(NbPlatformCustomizerHarness.class, "NbPCH.otherButton")); // NOI18N
         otherButton.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         otherButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
         otherButton.addActionListener(new java.awt.event.ActionListener() {
@@ -139,7 +140,7 @@ public class NbPlatformCustomizerHarness extends JPanel {
 
         otherText.setEditable(false);
 
-        org.openide.awt.Mnemonics.setLocalizedText(browseButton, NbBundle.getMessage(NbPlatformCustomizerHarness.class, "NbPCH.browseButton"));
+        org.openide.awt.Mnemonics.setLocalizedText(browseButton, NbBundle.getMessage(NbPlatformCustomizerHarness.class, "NbPCH.browseButton")); // NOI18N
         browseButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 browseButtonActionPerformed(evt);
@@ -147,7 +148,7 @@ public class NbPlatformCustomizerHarness extends JPanel {
         });
 
         versionLabel.setLabelFor(versionText);
-        org.openide.awt.Mnemonics.setLocalizedText(versionLabel, NbBundle.getMessage(NbPlatformCustomizerHarness.class, "NbPCH.versionLabel"));
+        org.openide.awt.Mnemonics.setLocalizedText(versionLabel, NbBundle.getMessage(NbPlatformCustomizerHarness.class, "NbPCH.versionLabel")); // NOI18N
 
         versionText.setEditable(false);
 
@@ -171,7 +172,7 @@ public class NbPlatformCustomizerHarness extends JPanel {
                     .add(layout.createSequentialGroup()
                         .add(versionLabel)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(versionText, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 205, Short.MAX_VALUE)))
+                        .add(versionText, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 231, Short.MAX_VALUE)))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -192,6 +193,11 @@ public class NbPlatformCustomizerHarness extends JPanel {
                     .add(versionText, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addContainerGap(196, Short.MAX_VALUE))
         );
+
+        ideButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(NbPlatformCustomizerHarness.class, "ACS_HarnessSuppliedIDE")); // NOI18N
+        platformButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(NbPlatformCustomizerHarness.class, "ACS_HarnessSuppliedPlatform")); // NOI18N
+        otherButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(NbPlatformCustomizerHarness.class, "ACS_HarnessOther")); // NOI18N
+        versionLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(NbPlatformCustomizerHarness.class, "ACS_HarnessVersion")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
 
     private void browseButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_browseButtonActionPerformed

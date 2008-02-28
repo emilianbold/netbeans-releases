@@ -74,7 +74,7 @@ public class MakeProjectOptions {
         }
         if (cs != null) {
             CppSettings.getDefault().setCompilerSetName(cs.getName());
-            CppSettings.getDefault().setCompilerSetDirectories(cs.getDirectory());
+//            CppSettings.getDefault().setCompilerSetDirectories(cs.getDirectory());
         } else {
             cs = CompilerSetManager.getDefault().getCompilerSet(0); // use 0th as default
         }
@@ -90,7 +90,7 @@ public class MakeProjectOptions {
         CompilerSet cs = CompilerSetManager.getDefault().getCompilerSet(name);
         if (cs != null) {
             CppSettings.getDefault().setCompilerSetName(cs.getName());
-            CppSettings.getDefault().setCompilerSetDirectories(cs.getDirectory());
+//            CppSettings.getDefault().setCompilerSetDirectories(cs.getDirectory());
         } else {
             cs = CompilerSetManager.getDefault().getCompilerSet(0); // use 0th as default
         }
@@ -128,21 +128,6 @@ public class MakeProjectOptions {
         return MakeOptions.getDefaultMakeOptions();
     }
 
-    public static void setDefaultCompilerSetName(String compilerSetName) {
-        CppSettings.getDefault().setCompilerSetName(compilerSetName);
-    }
-
-    public static String getDefaultCompilerSetName() {
-        return CppSettings.getDefault().getCompilerSetName();
-    }
-
-    public static void setDefaultCompilerSetDirectories(String compilerSetDirectories) {
-        CppSettings.getDefault().setCompilerSetDirectories(compilerSetDirectories);
-    }
-
-    public static String getDefaultCompilerSetDirectories() {
-        return CppSettings.getDefault().getCompilerSetDirectories();
-    }
     
     public static void setDefaultPlatform(int platform) {
         MakeOptions.getInstance().setPlatform(platform);
