@@ -144,6 +144,13 @@ class StackEntry {
                     }
                     case NAMESPACE: //("namespace", "keyword"), //C++
                     case CLASS: //("class", "keyword"), //C++
+                    {
+                        if (paren == 0 && curly == 0 && triangle == 0) {
+                            importantKind = current.id();
+                            return;
+                        }
+                        break;
+                    }
                     case STRUCT: //("struct", "keyword"),
                     case ENUM: //("enum", "keyword"),
                     case UNION: //("union", "keyword"),

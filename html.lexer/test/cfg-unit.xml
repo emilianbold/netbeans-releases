@@ -76,7 +76,7 @@ made subject to such option by the copyright holder.
         <testset dir="unit/src"/>
     </testbag>
 
-    <executor name="code" antfile="../../../nbbuild/templates/xtest-unit.xml" target="run-unit-test"/>
+    <executor name="code" antfile="../../nbbuild/templates/xtest-unit.xml" target="run-unit-test"/>
     
     <compiler name="unit-compiler" antfile="build-unit.xml" target="unit-compiler" default="true"/>
     <!--<compiler name="unit-compiler" antfile="../../../nbbuild/templates/xtest-unit.xml" target="default-compiler" default="true"/>-->    

@@ -56,6 +56,8 @@ import org.netbeans.api.project.ProjectManager;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.java.project.JavaAntLogger;
 import org.netbeans.modules.web.api.webmodule.WebModule;
+import org.netbeans.modules.web.spi.webmodule.WebModuleFactory;
+import org.netbeans.modules.web.spi.webmodule.WebModuleImplementation;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.modules.ModuleInfo;
@@ -123,6 +125,11 @@ final class TestUtil {
         NbTestCase.assertNotNull("Project file should exist: " + filePath, fo);
 
         return fo;
+    }
+
+    static WebModule createWebModule(FileObject documentRoot) {
+        WebModuleImplementation webModuleImpl = new WebModuleImpl(documentRoot);
+        return WebModuleFactory.createWebModule(webModuleImpl);
     }
 
     private static File getProjectAsFile(NbTestCase test, String projectFolderName) throws Exception {

@@ -45,17 +45,24 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
+import java.lang.ref.Reference;
+import java.lang.ref.WeakReference;
 import java.lang.reflect.Field;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
+import java.net.URLConnection;
 import java.security.AllPermission;
 import java.security.CodeSource;
 import java.security.PermissionCollection;
+import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -118,13 +125,14 @@ import org.openide.util.WeakListeners;
  * the whole cache).
  * @author Petr Jiricka, Tomas Mysik
  */
-public class WebAppParseSupport implements WebAppParseProxy, PropertyChangeListener {
+public class WebAppParseSupport implements WebAppParseProxy, PropertyChangeListener, ParserServletContext.WebModuleProvider {
     
     static final Logger LOG = Logger.getLogger(WebAppParseSupport.class.getName());
     private static final JspParserAPI.JspOpenInfo DEFAULT_JSP_OPEN_INFO = new JspParserAPI.JspOpenInfo(false, "8859_1"); // NOI18N
     private static final Pattern RE_PATTERN_COMMONS_LOGGING = Pattern.compile(".*commons-logging.*\\.jar.*"); // NOI18N
     
-    private final WebModule wm;
+    // #85817
+    private final Reference<WebModule> wm;
     final FileObject wmRoot;
     final FileObject webInf;
     private final FileSystemListener fileSystemListener;
@@ -152,7 +160,7 @@ public class WebAppParseSupport implements WebAppParseProxy, PropertyChangeListe
 
     /** Creates a new instance of WebAppParseSupport */
     public WebAppParseSupport(WebModule wm) {
-        this.wm = wm;
+        this.wm = new WeakReference<WebModule>(wm);
         wmRoot = wm.getDocumentBase();
         webInf = wm.getWebInf();
         fileSystemListener = new FileSystemListener();
@@ -207,8 +215,13 @@ public class WebAppParseSupport implements WebAppParseProxy, PropertyChangeListe
         if (LOG.isLoggable(Level.FINE)) {
             LOG.fine("JSP parser " + (firstTime ? "" : "re") + "initialized for WM " + FileUtil.toFile(wmRoot));
         }
-        editorContext = new ParserServletContext(wmRoot, wm, true);
-        diskContext = new ParserServletContext(wmRoot, wm, false);
+        WebModule webModule = wm.get();
+        if (webModule == null) {
+            // already gced
+            return;
+        }
+        editorContext = new ParserServletContext(wmRoot, this, true);
+        diskContext = new ParserServletContext(wmRoot, this, false);
         editorOptions = new OptionsImpl(editorContext);
         diskOptions = new OptionsImpl(diskContext);
         rctxt = null;
@@ -349,7 +362,7 @@ public class WebAppParseSupport implements WebAppParseProxy, PropertyChangeListe
         return clctxt;
     }
     
-    private boolean determineIsTagFile(FileObject fo) {
+    boolean determineIsTagFile(FileObject fo) {
         if (fo.getExt().startsWith("tag")) { // NOI18N - all tag, tagx and even tagf are considered tag files
             return true;
         }
@@ -740,15 +753,37 @@ System.out.println("--------ENDSTACK------");        */
         }
     }
     
-    /** This classloader does some security stuff, but equally importantly, it does one horrible hack,
+    /**
+     * This classloader does some security stuff, but equally importantly, it does one horrible hack,
      * explained in the constructor Javadoc.
+     * <p>
+     * The classloader is hiding some resources to avoid commons logging
+     * related jar locking. See issue 128360.
      */
     public static class ParserClassLoader extends URLClassLoader {
-        
+
+        private static final Logger LOGGER = Logger.getLogger(ParserClassLoader.class.getName());
+
         private static final java.security.AllPermission ALL_PERM = new AllPermission();
-        
+
+        /*
+         * All three following constants are used to avoid not necessary jar
+         * locking (just due to commons logging).
+         */
+        private static final String LOGGING_CONFIG = "commons-logging.properties"; // NOI18N
+
+        private static final String SERVICES_FOLDER = "META-INF/services/"; // NOI18N
+
+        private static final Set<String> FORBIDDEN_PACKAGES = new HashSet<String>();
+
+        static {
+            Collections.addAll(FORBIDDEN_PACKAGES, "org.apache.log4j", "org.apache.commons.logging"); // NOI18N
+        }
+
         private final URL[] tomcatURLs;
-        
+
+        private final ClassLoader parent;
+
         /** This constructor and the getURLs() method is one horrible hack. On the one hand, we want to give
          * Tomcat a JarURLConnection when it attempts to load classes from jars, on the other hand
          * we don't want this classloader to load classes using JarURLConnection, as that's buggy.
@@ -758,23 +793,90 @@ System.out.println("--------ENDSTACK------");        */
          */
         public ParserClassLoader(URL[] classLoadingURLs, URL[] tomcatURLs, ClassLoader parent) {
             super(classLoadingURLs, parent);
+            this.parent = parent;
             this.tomcatURLs = tomcatURLs;
         }
-        
+
         /** See the constructor for explanation of what thie method does.
          */
         @Override
         public URL[] getURLs() {
             return tomcatURLs;
         }
-        
+
         @Override
         protected PermissionCollection getPermissions(CodeSource codesource) {
             PermissionCollection perms = super.getPermissions(codesource);
             perms.add(ALL_PERM);
             return perms;
         }
-        
+
+        @Override
+        public URL getResource(String name) {
+            URL url;
+            if (parent != null) {
+                url = parent.getResource(name);
+            } else {
+                url = findResource(name);
+            }
+            return url;
+        }
+
+        @Override
+        public InputStream getResourceAsStream(String name) {
+            URL url = getResource(name);
+            try {
+                if (url != null) {
+                    URLConnection conn = url.openConnection();
+                    conn.setUseCaches(false);
+                    return conn.getInputStream();
+                }
+                return null;
+            } catch (IOException e) {
+                return null;
+            }
+        }
+
+        @Override
+        protected Class<?> findClass(String name) throws ClassNotFoundException {
+            boolean forbidden = false;
+            for (String packageName : FORBIDDEN_PACKAGES) {
+                if (name.startsWith(packageName)) {
+                    forbidden = true;
+                    break;
+                }
+            }
+            if (forbidden) {
+                if (LOGGER.isLoggable(Level.FINER)) {
+                    LOGGER.log(Level.FINER, "Denying access to " + name); // NOI18N
+                }
+                throw new ClassNotFoundException(name);
+            }
+            return super.findClass(name);
+        }
+
+        @Override
+        public URL findResource(String name) {
+            if (LOGGING_CONFIG.equals(name) || name.startsWith(SERVICES_FOLDER)) {
+                if (LOGGER.isLoggable(Level.FINER)) {
+                    LOGGER.log(Level.FINER, "Discarding request for " + name); // NOI18N
+                }
+                return null;
+            }
+            return super.findResource(name);
+        }
+
+        @Override
+        public Enumeration<URL> findResources(String name) throws IOException {
+            if (LOGGING_CONFIG.equals(name) || name.startsWith(SERVICES_FOLDER)) {
+                if (LOGGER.isLoggable(Level.FINER)) {
+                    LOGGER.log(Level.FINEST, "Discarding request for " + name); // NOI18N
+                }
+                return Collections.enumeration(Collections.<URL>emptyList());
+            }
+            return super.findResources(name);
+        }
+
         @Override
         public String toString() {
             StringBuilder sb = new StringBuilder();
@@ -784,7 +886,7 @@ System.out.println("--------ENDSTACK------");        */
             return sb.toString();
         }
     }
-    
+
     private static class InitTldLocationCacheThread extends Thread {
         
         private final TldLocationsCache cache;
@@ -836,10 +938,10 @@ System.out.println("--------ENDSTACK------");        */
         private void processFileChange(final FileEvent fe) {
             // check the file type/name/extension and then
             // check if the file belongs to this parse proxy
-            String name = fe.getFile().getNameExt();
-            String ext = fe.getFile().getExt();
-            if (ext.equals("tld") || name.equals("web.xml")) { // NOI18N
-                FileObject fo = fe.getFile();
+            FileObject fo = fe.getFile();
+            if (fo.getExt().equals("tld") // NOI18N
+                    || fo.getNameExt().equals("web.xml") // NOI18N
+                    || determineIsTagFile(fo)) { // #109478
                 if (FileUtil.isParentOf(wmRoot, fo)
                         || (FileUtil.isParentOf(webInf, fo))) {
                     LOG.fine("File " + fo + " has changed, reinitCaches() called");
@@ -848,5 +950,9 @@ System.out.println("--------ENDSTACK------");        */
                 }
             }
         }
+    }
+
+    public WebModule getWebModule() {
+        return wm.get();
     }
 }

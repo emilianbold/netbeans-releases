@@ -98,9 +98,9 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
     // The following are constants so I can do == rather than "equals"
     private final String MAKE_NAME = "make"; // NOI18N
     private final String GDB_NAME = "gdb"; // NOI18N
-    private final String C_NAME = "C"; // NOI18N
-    private final String Cpp_NAME = "C++"; // NOI18N
-    private final String FORTRAN_NAME = "Fortran"; // NOI18N
+//    private final String C_NAME = "C"; // NOI18N
+//    private final String Cpp_NAME = "C++"; // NOI18N
+//    private final String FORTRAN_NAME = "Fortran"; // NOI18N
     
     private static final String DIRECTORY_MOVE_UP = "Up"; // NOI18N
     private static final String DIRECTORY_MOVE_DOWN = "Down"; // NOI18N
@@ -158,6 +158,10 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
         changingCompilerSet = true;
         if (model == null) {
             model = new GlobalToolsPanelModel();
+        }
+        if (!model.showRequiredTools()) {
+            jLabel1.setVisible(false); // Required Tools label!
+            jPanel1.setVisible(false); // Required Tools panel!
         }
         dirlist = model.getPath();
         if (csm == null) {
@@ -667,15 +671,15 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
             model.setGdbName(tfGdbCommand.getText());
             model.setGdbPath(tfGdbPath.getText());
             model.setCompilerSetName(cs.getName());
-            if (cSelections.get(cs.getName()) != null) {
-                model.setCCompilerName(cSelections.get(cs.getName()));
-            }
-            if (cppSelections.get(cs.getName()) != null) {
-                model.setCppCompilerName(cppSelections.get(cs.getName()));
-            }
-            if (fortranSelections.get(cs.getName()) != null) {
-                model.setFortranCompilerName(fortranSelections.get(cs.getName()));
-            }
+//            if (cSelections.get(cs.getName()) != null) {
+//                model.setCCompilerName(cSelections.get(cs.getName()));
+//            }
+//            if (cppSelections.get(cs.getName()) != null) {
+//                model.setCppCompilerName(cppSelections.get(cs.getName()));
+//            }
+//            if (fortranSelections.get(cs.getName()) != null) {
+//                model.setFortranCompilerName(fortranSelections.get(cs.getName()));
+//            }
             currentCompilerSet = cs;
             fireCompilerSetChange();
             fireCompilerSetModified();
