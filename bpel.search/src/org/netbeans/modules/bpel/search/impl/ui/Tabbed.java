@@ -71,22 +71,12 @@ final class Tabbed extends JTabbedPane {
     });
   }
 
-  void addTree(Tree tree) {
-    addTab(tree.toString(), new Panel(tree));
+  void addTrees(Tree list, Tree tree) {
+    addTab(tree.toString(), new Panel(list, tree));
     setSelectedIndex(getTabCount() - 1);
 //  String title = "Tab " + i;
 //  add(title, new JLabel(title));
 //  setTabComponentAt(i, new Tab(pane));
-  }
-
-  void requestActive() {
-    Component component = getSelectedComponent();
-
-    if ( !(component instanceof Panel)) {
-      return;
-    }
-    Panel panel = (Panel) component;
-    panel.requestActive();
   }
 
   private void showPopupMenu(ComponentEvent event, int x, int y) {

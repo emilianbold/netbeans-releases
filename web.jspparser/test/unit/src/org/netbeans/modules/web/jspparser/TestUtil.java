@@ -132,7 +132,18 @@ final class TestUtil {
         return WebModuleFactory.createWebModule(webModuleImpl);
     }
 
-    private static File getProjectAsFile(NbTestCase test, String projectFolderName) throws Exception {
+    static void copyFolder(FileObject source, FileObject dest) throws IOException {
+        for (FileObject child : source.getChildren()) {
+            if (child.isFolder()) {
+                FileObject created = FileUtil.createFolder(dest, child.getNameExt());
+                copyFolder(child, created);
+            } else {
+                FileUtil.copyFile(child, dest, child.getName(), child.getExt());
+            }
+        }
+    }
+
+    static File getProjectAsFile(NbTestCase test, String projectFolderName) throws Exception {
         File f = new File(test.getDataDir(), projectFolderName);
         if (!f.exists()) {
             // maybe it's zipped

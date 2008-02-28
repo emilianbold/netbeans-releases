@@ -266,8 +266,8 @@ public class SourcePathImplAddonsTest extends NbTestCase{
         assertContainsURL(entries, url2, false);
         assertContainsURL(entries, url3, false);        
         
-        addonModuleDir1.mkdirs();
-        addonModuleDir2.mkdirs();
+        FileUtil.createFolder(addonModuleDir1);
+        FileUtil.createFolder(addonModuleDir2);
         FileUtil.refreshFor(helper.resolveFile(buildDir));
         
         // Simulate folder creation thru NB task.
