@@ -42,11 +42,7 @@
 package org.netbeans.modules.cnd.debugger.gdb;
 
 import java.beans.PropertyChangeEvent;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import javax.swing.SwingUtilities;
+import java.util.*;
 
 import org.netbeans.api.debugger.*;
 
@@ -60,12 +56,6 @@ import org.openide.util.RequestProcessor;
  * @author Gordon Prieur (copied from Jan Jancura's JPDA implementation)
  */
 public class CurrentThreadAnnotationListener extends DebuggerManagerAdapter {
-
-    // annotation for current line
-    private transient Object                currentPC;
-    private transient Object                currentPCLock = new Object();
-    private transient boolean               currentPCSet = false;
-    //private GdbThread                      currentThread;
     private GdbDebugger                     currentDebugger;
 
     public CurrentThreadAnnotationListener() {
@@ -132,43 +122,23 @@ public class CurrentThreadAnnotationListener extends DebuggerManagerAdapter {
         
         // 1) no current thread => remove annotations
         if (!currentDebugger.getState().equals(GdbDebugger.STATE_STOPPED)) {
-            synchronized (currentPCLock) {
-                currentPCSet = false; // The annotation is goint to be removed
-            }
             removeAnnotations();
             return;
         }
         
-        // 2) get call stack & Line
-        ArrayList stack = currentDebugger.getCallStack();
-        final CallStackFrame csf = currentDebugger.getCurrentCallStackFrame();
-//        final DebuggerEngine currentEngine = DebuggerManager.getDebuggerManager().getCurrentEngine();
-//        final Session currentSession = DebuggerManager.getDebuggerManager().getCurrentSession();
-//        final String language = currentSession == null ? null : currentSession.getCurrentLanguage();
+        // 2) show current place
+        currentDebugger.showCurrentSource();
 
         // 3) annotate current line & stack
-        synchronized (currentPCLock) {
-            currentPCSet = true; // The annotation is going to be set
-        }
-        SwingUtilities.invokeLater(new Runnable() {
-            public void run() {
-                // show current line
-                synchronized (currentPCLock) {
-                    if (currentPC != null) {
-                        EditorContextBridge.removeAnnotation(currentPC);
-                    }
-                    if (csf != null) {
-                        EditorContextBridge.showSource(csf);
-                    }
-                }
-            }
-        });
-        annotateCallStack(stack);
+        annotateCallStack(currentDebugger.getCallStack());
     }
 
 
     // do not need synchronization, called in a 1-way RP
-    private final Set              stackAnnotations = new HashSet();
+    private final Collection  stackAnnotations = new LinkedList();
+    
+    // this set is used to avoid duplicated annotations (of the same line)
+    private final Set<String> annotatedAddresses = new HashSet<String>();
     
     private RequestProcessor rp = new RequestProcessor("Debugger Thread Annotation Refresher"); // NOI18N
 
@@ -183,25 +153,20 @@ public class CurrentThreadAnnotationListener extends DebuggerManagerAdapter {
             if (taskRemove == null) {
                 taskRemove = rp.create(new Runnable() {
                     public void run() {
-                        synchronized (currentPCLock) {
-                            if (currentPCSet) {
-                                // Keep the set PC
-                                return ;
-                            }
-                            if (currentPC != null) {
-                                EditorContextBridge.removeAnnotation(currentPC);
-                            }
-                            currentPC = null;
-                        }
-                        for (Object ann : stackAnnotations) {
-                            EditorContextBridge.removeAnnotation(ann);
-                        }
-                        stackAnnotations.clear();
+                        clearAnnotations();
                     }
                 });
             }
         }
         taskRemove.schedule(500);
+    }
+    
+    private void clearAnnotations() {
+        for (Object ann : stackAnnotations) {
+            EditorContextBridge.removeAnnotation(ann);
+        }
+        stackAnnotations.clear();
+        annotatedAddresses.clear();
     }
 
     private void annotateCallStack(List stack) {
@@ -224,24 +189,16 @@ public class CurrentThreadAnnotationListener extends DebuggerManagerAdapter {
                         }
                         
                         // Remove old annotations
-                        if (currentPC != null) {
-                            EditorContextBridge.removeAnnotation(currentPC);
-                        }
-                        currentPC = null;
-                        for (Object ann : stackAnnotations) {
-                            EditorContextBridge.removeAnnotation(ann);
-                        }
-                        stackAnnotations.clear();
+                        clearAnnotations();
                         
                         // Add new annotations
-                        Set<CallStackFrame> newAnnotations = new HashSet<CallStackFrame>();
                         String annotationType = EditorContext.CURRENT_LINE_ANNOTATION_TYPE;
                         for (CallStackFrame csf : stack) {
-                            // 1) Stack frame already annotated?
-                            if (!newAnnotations.add(csf)) {
+                            // 1) Is current stackFrame annotated
+                            if (!annotatedAddresses.add(csf.getAddr())) {
                                 continue;
                             }
-
+                            
                             // 2) annotate line
                             Object da = EditorContextBridge.annotate(csf, annotationType);
 

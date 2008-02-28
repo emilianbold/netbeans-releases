@@ -93,7 +93,7 @@ public class CsmRenameRefactoringPlugin extends CsmRefactoringPlugin {
     private Collection overriddenByMethods = null; // methods that override the method to be renamed
     private Collection overridesMethods = null; // methods that are overridden by the method to be renamed
     private boolean doCheckName = true;
-    private List<CsmObject> referencedObjects;
+    private Collection<CsmObject> referencedObjects;
     private final RenameRefactoring refactoring;
     
     /** Creates a new instance of RenameRefactoring */
@@ -161,7 +161,7 @@ public class CsmRenameRefactoringPlugin extends CsmRefactoringPlugin {
     @Override
     public Problem preCheck() {
         Problem preCheckProblem = null;
-        fireProgressListenerStart(RenameRefactoring.PRE_CHECK, 4);
+        fireProgressListenerStart(RenameRefactoring.PRE_CHECK, 5);
         if (this.referencedObjects == null) {
             initReferencedObjects(startReferenceObject);
             fireProgressListenerStep();
@@ -172,14 +172,32 @@ public class CsmRenameRefactoringPlugin extends CsmRefactoringPlugin {
         }
         CsmObject directReferencedObject = CsmRefactoringUtils.getReferencedElement(startReferenceObject);
         // check read-only elements
-        FileObject fo = null;
-        if (CsmKindUtilities.isOffsetable(directReferencedObject)) {
-            fo = CsmUtilities.getFileObject(((CsmOffsetable)directReferencedObject).getContainingFile());
-            fireProgressListenerStep();
-        }
-        if (fo != null && (FileUtil.getArchiveFile(fo)!= null || !fo.canWrite())) {
-            preCheckProblem = createProblem(preCheckProblem, true, getCannotRename(fo));
+        preCheckProblem = checkRenameInFile(preCheckProblem, directReferencedObject);
+        fireProgressListenerStep();
+        if (preCheckProblem != null) {
             return preCheckProblem;            
+        }
+        if (CsmKindUtilities.isMethod(directReferencedObject)) {
+            fireProgressListenerStep();
+            CsmMethod method = (CsmMethod)directReferencedObject;
+            if (CsmVirtualInfoQuery.getDefault().isVirtual(method)) {
+                Collection<CsmMethod> overridenMethods = CsmVirtualInfoQuery.getDefault().getOverridenMethods(method, true);
+                if (overridenMethods.size() > 1) {
+                    // check all overriden methods
+                    for (CsmMethod csmMethod : overridenMethods) {
+                        preCheckProblem = checkRenameInFile(preCheckProblem, csmMethod);
+                        CsmFunction def = csmMethod.getDefinition();
+                        if (def != null && !csmMethod.equals(def)) {
+                            preCheckProblem = checkRenameInFile(preCheckProblem, def);
+                        }
+                    }
+                    boolean fatal = (preCheckProblem != null);
+                    String msg = fatal? getString("ERR_Overrides_Fatal") : getString("ERR_OverridesOrOverriden");
+                    preCheckProblem = createProblem(preCheckProblem, fatal, msg);                    
+                }
+            }
+        } else {
+            fireProgressListenerStep();
         }
         fireProgressListenerStop();
         return preCheckProblem;
@@ -333,10 +351,20 @@ public class CsmRenameRefactoringPlugin extends CsmRefactoringPlugin {
         return NbBundle.getMessage(CsmRenameRefactoringPlugin.class, key);
     }
 
+    private Problem checkRenameInFile(Problem problem, CsmObject csmObject) {
+        if (CsmKindUtilities.isOffsetable(csmObject)) {
+            FileObject fo = CsmUtilities.getFileObject(((CsmOffsetable)csmObject).getContainingFile());
+            if (fo != null && (FileUtil.getArchiveFile(fo)!= null || !fo.canWrite())) {
+                problem = createProblem(problem, true, getCannotRename(fo));
+            }            
+        }
+        return problem;
+    }
+
     private void initReferencedObjects(CsmObject startReferenceObject) {
         CsmObject referencedObject = CsmRefactoringUtils.getReferencedElement(startReferenceObject);
         if (referencedObject != null) {
-            this.referencedObjects = new ArrayList<CsmObject>();
+            this.referencedObjects = new LinkedHashSet<CsmObject>();
             if (CsmKindUtilities.isClass(referencedObject)) {
                 // for class we need to add all needed elements
                 this.referencedObjects.addAll(getRenamingClassObjects((CsmClass)referencedObject));
@@ -347,13 +375,12 @@ public class CsmRenameRefactoringPlugin extends CsmRefactoringPlugin {
                 if (cls != null) {
                     this.referencedObjects.addAll(getRenamingClassObjects(cls));
                 }
-            } else if (CsmKindUtilities.isMethod(startReferenceObject)) {
-                CsmMethod method = (CsmMethod)startReferenceObject;
+            } else if (CsmKindUtilities.isMethod(referencedObject)) {
+                CsmMethod method = (CsmMethod)referencedObject;
+                this.referencedObjects.add(method);
                 if (CsmVirtualInfoQuery.getDefault().isVirtual(method)) {
                     this.referencedObjects.addAll(CsmVirtualInfoQuery.getDefault().getOverridenMethods(method, true));
                     assert !this.referencedObjects.isEmpty() : "must be at least start object " + method;
-                } else {
-                    this.referencedObjects.add(method);
                 }
             } else {
                 this.referencedObjects.add(referencedObject);

@@ -55,12 +55,41 @@ class BracesStack {
     
     private Stack<StackEntry> stack = new Stack<StackEntry>();
     private StatementContinuation statementContinuation = StatementContinuation.STOP;
-    private int lastStatementStart = -1;
+    int lastStatementStart = -1;
+    int parenDepth = 0;
+    boolean isDoWhile = false;
+    boolean isLabel = false;
 
     BracesStack() {
         super();
     }
 
+    @Override
+    public BracesStack clone(){
+        BracesStack clone = new BracesStack();
+        clone.statementContinuation = statementContinuation;
+        clone.lastStatementStart = lastStatementStart;
+        clone.parenDepth = parenDepth;
+        clone.isDoWhile = isDoWhile;
+        clone.isLabel = isLabel;
+        for(int i = 0; i < stack.size(); i++){
+            clone.stack.add(stack.get(i));
+        }
+        return clone;
+    }
+    
+    public void reset(BracesStack clone){
+        statementContinuation = clone.statementContinuation;
+        lastStatementStart = clone.lastStatementStart;
+        parenDepth = clone.parenDepth;
+        isDoWhile = clone.isDoWhile;
+        isLabel = clone.isLabel;
+        stack.clear();
+        for(int i = 0; i < clone.stack.size(); i++){
+            stack.add(clone.stack.get(i));
+        }
+    }
+    
     public void push(StackEntry entry) {
         statementContinuation = StatementContinuation.STOP;
         if (entry.getKind() == ELSE){
@@ -153,7 +182,6 @@ class BracesStack {
                     break;
                 }
                 case ELSE: //("else", "keyword-directive"),
-                    break;
                 case TRY: //("try", "keyword-directive"), // C++
                 case CATCH: //("catch", "keyword-directive"), //C++
                 case SWITCH: //("switch", "keyword-directive"),
@@ -191,6 +219,9 @@ class BracesStack {
         if (top == null) {
             return true;
         }
+        if (top.getKind() == CATCH){
+            return true;
+        }
         if (isStatement(top)){
             return false;
         }
@@ -214,8 +245,15 @@ class BracesStack {
         for(int i = 0; i < stack.size(); i++){
             StackEntry entry = stack.get(i);
             if (entry.getKind() == LBRACE) {
-                if (prev == null || prev.getKind()==LBRACE) {
+                if (prev == null) {
                     res++;
+                } else {
+                    if (prev.getKind()==LBRACE){
+                        CppTokenId kind = prev.getImportantKind();
+                        if (kind != SWITCH) {
+                            res++;
+                        }
+                    }
                 }
             } else if (entry.getKind() == IF){
                 if (prev == null || prev.getKind()!=ELSE) {
@@ -229,7 +267,29 @@ class BracesStack {
         return res;
     }
     
+    public int switchDepth(){
+        int res = 0;
+        StackEntry prev = null;
+        for(int i = 0; i < stack.size(); i++){
+            StackEntry entry = stack.get(i);
+            if (entry.getKind() == LBRACE) {
+                if (prev != null && prev.getKind() == SWITCH) {
+                    res++;
+                }
+            }
+            prev = entry;
+        }
+        return res;
+    }
 
+    public StackEntry lookPerevious(){
+        if (stack.size() < 2) {
+            return null;
+        }
+        return stack.get(stack.size()-2);
+        
+    }
+    
     private Token<CppTokenId> getNextImportant(ExtendedTokenSequence ts) {
         int i = ts.index();
         try {
@@ -242,6 +302,7 @@ class BracesStack {
                     case WHITESPACE:
                     case NEW_LINE:
                     case BLOCK_COMMENT:
+                    case DOXYGEN_COMMENT:
                     case LINE_COMMENT:
                     case PREPROCESSOR_DIRECTIVE:
                         break;

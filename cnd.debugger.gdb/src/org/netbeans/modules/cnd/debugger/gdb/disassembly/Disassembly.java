@@ -41,24 +41,28 @@ package org.netbeans.modules.cnd.debugger.gdb.disassembly;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.io.File;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.util.ArrayList;
 import java.util.List;
+import javax.swing.SwingUtilities;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.text.Document;
+import org.netbeans.api.debugger.Breakpoint;
 import org.netbeans.api.debugger.DebuggerEngine;
 import org.netbeans.api.debugger.DebuggerManager;
+import org.netbeans.modules.cnd.debugger.gdb.CallStackFrame;
 import org.netbeans.modules.cnd.debugger.gdb.EditorContextBridge;
 import org.netbeans.modules.cnd.debugger.gdb.GdbDebugger;
+import org.netbeans.modules.cnd.debugger.gdb.breakpoints.AddressBreakpoint;
 import org.netbeans.modules.cnd.debugger.gdb.breakpoints.BreakpointAnnotationListener;
 import org.openide.cookies.CloseCookie;
 import org.openide.cookies.OpenCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
+import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.text.DataEditorSupport;
 
 /**
@@ -69,7 +73,7 @@ public class Disassembly implements PropertyChangeListener, DocumentListener {
     private final List<Line> lines = new ArrayList<Line>();
     private static String functionName = "";
     private final GdbDebugger debugger;
-    private String lastFilename = null;
+    private CallStackFrame lastFrame = null;
 
     private static final String ADDRESS_HEADER="address"; // NOI18N
     private static final String FUNCTION_HEADER="func-name"; // NOI18N
@@ -81,7 +85,7 @@ public class Disassembly implements PropertyChangeListener, DocumentListener {
     public static final String RESPONSE_HEADER="^done,asm_insns=["; // NOI18N
     private static final String COMBINED_HEADER="src_and_asm_line={"; // NOI18N
     
-    private static File file = null;
+    private static FileObject fo = null;
     
     private BreakpointAnnotationListener breakAnnotationListener = null;
     
@@ -161,18 +165,22 @@ public class Disassembly implements PropertyChangeListener, DocumentListener {
     }
 
     public void insertUpdate(DocumentEvent e) {
-        updateAnnotations();
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                updateAnnotations();
+            }
+        });
     }
     
     private void updateAnnotations() {
         debugger.fireDisUpdate();
-        /*DebuggerManager dm = DebuggerManager.getDebuggerManager();
+        DebuggerManager dm = DebuggerManager.getDebuggerManager();
         Breakpoint[] bs = dm.getBreakpoints();
         for (int i = 0; i < bs.length; i++) {
             if (bs[i] instanceof AddressBreakpoint) {
                 ((AddressBreakpoint)bs[i]).refresh();
             }
-        }*/
+        }
     }
 
     public void removeUpdate(DocumentEvent e) {
@@ -180,27 +188,23 @@ public class Disassembly implements PropertyChangeListener, DocumentListener {
 
     public void propertyChange(PropertyChangeEvent evt) {
         // stack is updated, reload disassembler if needed
-        String filename = debugger.getCurrentCallStackFrame().getFileName();
-        if (lastFilename == null || !lastFilename.equals(filename)) {
-            int line = debugger.getCurrentCallStackFrame().getLineNumber();
-            debugger.getGdbProxy().data_disassemble(filename, line);
-            lastFilename = filename;
+        // TODO: there may be functions with the same name called one from the other, we need to check that too
+        CallStackFrame frame = debugger.getCurrentCallStackFrame();
+        if (lastFrame == null || !lastFrame.getFunctionName().equals(frame.getFunctionName())) {
+            debugger.getGdbProxy().data_disassemble(frame.getFileName(), frame.getLineNumber());
+            lastFrame = frame;
         }
-    }
-    
-    public static File getFile() {
-        if (file == null) {
-            try {
-                file = File.createTempFile("disasm", ".s"); // NOI18N
-            } catch (IOException ex) {
-                ex.printStackTrace();
-            }
-        }
-        return file;
     }
     
     public static FileObject getFileObject() {
-        return FileUtil.toFileObject(getFile());
+        if (fo == null) {
+            try {
+                fo = FileUtil.createMemoryFileSystem().getRoot().createData("disasm", "s"); // NOI18N
+            } catch (IOException ioe) {
+                ioe.printStackTrace();
+            }
+        }
+        return fo;
     }
     
     public String getLineAddress(int idx) {
@@ -285,18 +289,26 @@ public class Disassembly implements PropertyChangeListener, DocumentListener {
 
         @Override
         public String toString() {
-            //return "0x" + Integer.toHexString(address) + ": " + instruction; // NOI18N
-            return function + "+" + offset + ": (" + address + ") " + instruction; // NOI18N
+            //return function + "+" + offset + ": (" + address + ") " + instruction; // NOI18N
+            return function + "+" + offset + ": 00 00 " + instruction + " // " + address; // NOI18N
         }
     }
     
     public static boolean isInDisasm() {
-        //TODO: check that we are only in disassembly, not in any asm file
-        return "text/x-asm".equals(EditorContextBridge.getContext().getCurrentMIMEType());
+        //TODO: optimize
+        DataObject dobj = EditorContextBridge.getContext().getCurrentDataObject();
+        if (dobj == null) {
+            return false;
+        }
+        try {
+            return dobj.equals(DataObject.find(getFileObject()));
+        } catch(DataObjectNotFoundException doe) {
+            doe.printStackTrace();
+        }
+        return false;
     }
     
     public static void open() {
-        getFileObject();
         try {
             DataObject dobj = DataObject.find(getFileObject());
             dobj.getNodeDelegate().setDisplayName(getHeader());
@@ -319,7 +331,6 @@ public class Disassembly implements PropertyChangeListener, DocumentListener {
     }
     
     public static void close() {
-        getFileObject();
         try {
             DataObject dobj = DataObject.find(getFileObject());
             dobj.getCookie(CloseCookie.class).close();

@@ -108,6 +108,15 @@ public class Reformatter implements ReformatTask {
                 
     private void reformatImpl(TokenHierarchy hierarchy, int startOffset, int endOffset) throws BadLocationException {
         TokenSequence<?> ts = hierarchy.tokenSequence();
+        ts.move(startOffset);
+        if (ts.moveNext() && ts.token().id() != CppTokenId.NEW_LINE){
+            while (ts.movePrevious()){
+                startOffset = ts.offset();
+                if (ts.token().id() != CppTokenId.NEW_LINE) {
+                    break;
+                }
+            }
+        }
         while (ts != null && (startOffset == 0 || ts.moveNext())) {
             ts.move(startOffset);
             if (ts.language() == CppTokenId.languageC() ||

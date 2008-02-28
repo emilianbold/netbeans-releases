@@ -147,7 +147,7 @@ public class WebServiceNode extends AbstractNode implements WSRegisterCookie, Ws
     }
     
     public Image getIcon(int type){
-        return Utilities.loadImage("org/netbeans/modules/websvc/core/webservices/ui/resources/XMLServiceDataIcon.gif");
+        return Utilities.loadImage("org/netbeans/modules/websvc/core/webservices/ui/resources/webservice.png");
     }
     
     public Image getOpenedIcon(int type){
