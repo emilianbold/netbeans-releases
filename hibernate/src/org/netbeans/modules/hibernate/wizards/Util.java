@@ -42,7 +42,7 @@ import java.util.HashMap;
 import java.util.Map;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.SourceGroup;
-import org.netbeans.modules.hibernate.HibernateCfgProperties;
+import org.netbeans.modules.hibernate.cfg.HibernateCfgProperties;
 import org.openide.filesystems.FileObject;
 import org.netbeans.modules.j2ee.core.api.support.SourceGroups;
 
