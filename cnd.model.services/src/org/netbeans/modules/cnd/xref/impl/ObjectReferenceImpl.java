@@ -64,27 +64,30 @@ import org.netbeans.modules.cnd.api.model.xref.CsmReferenceKind;
  */
 /*package*/ class ObjectReferenceImpl implements CsmReference {
 
-    private final CsmUID<CsmObject> delegate;
+    private final CsmUID<CsmObject> targetDelegate;
+    private final CsmUID<CsmObject> ownerDelegate;
     private final CsmUID<CsmFile> fileUID;
     
     private final int startPosition;
     private final int endPosition;   
     private final CsmReferenceKind kind;
-    /*package*/ ObjectReferenceImpl(CsmUID<CsmObject> target, CsmUID<CsmFile> targetFile, 
+    /*package*/ ObjectReferenceImpl(CsmUID<CsmObject> target, 
+            CsmUID<CsmObject> owner, CsmUID<CsmFile> file, 
             CsmReferenceKind kind, int startRef, int endRef) {
-        delegate = target;
-        this.fileUID = targetFile;
+        this.targetDelegate = target;
+        this.ownerDelegate = owner;
+        this.fileUID = file;
         this.startPosition = startRef;
         this.endPosition = endRef;    
         this.kind = kind;
     }
 
     public CsmObject getReferencedObject() {
-        return delegate.getObject();
+        return targetDelegate.getObject();
     }
 
     public CsmObject getOwner() {
-        return delegate.getObject();
+        return ownerDelegate.getObject();
     }
 
     @Override
@@ -99,7 +102,19 @@ import org.netbeans.modules.cnd.api.model.xref.CsmReferenceKind;
             return false;
         }
         final ObjectReferenceImpl other = (ObjectReferenceImpl) obj;
-        if (this.delegate != other.delegate && (this.delegate == null || !this.delegate.equals(other.delegate))) {
+        if (this.startPosition != other.startPosition) {
+            return false;
+        }
+        if (this.endPosition != other.endPosition) {
+            return false;
+        }
+        if (this.targetDelegate != other.targetDelegate && (this.targetDelegate == null || !this.targetDelegate.equals(other.targetDelegate))) {
+            return false;
+        }
+        if (this.ownerDelegate != other.ownerDelegate && (this.ownerDelegate == null || !this.ownerDelegate.equals(other.ownerDelegate))) {
+            return false;
+        }
+        if (this.fileUID != other.fileUID && (this.fileUID == null || !this.fileUID.equals(other.fileUID))) {
             return false;
         }
         return true;
@@ -146,12 +161,16 @@ import org.netbeans.modules.cnd.api.model.xref.CsmReferenceKind;
     @Override
     public int hashCode() {
         int hash = 5;
-        hash = 97 * hash + (this.delegate != null ? this.delegate.hashCode() : 0);
+        hash = 97 * hash + startPosition;
+        hash = 97 * hash + endPosition;
+        hash = 97 * hash + (this.targetDelegate != null ? this.targetDelegate.hashCode() : 0);
+        hash = 97 * hash + (this.ownerDelegate != null ? this.ownerDelegate.hashCode() : 0);
+        hash = 97 * hash + (this.fileUID != null ? this.fileUID.hashCode() : 0);
         return hash;
     }
 
     @Override
     public String toString() {
-        return "Object Reference: " + (this.delegate != null ? delegate.toString() : getOffsetString()); // NOI18N
+        return "Object Reference: " + (this.targetDelegate != null ? targetDelegate.toString() : getOffsetString()); // NOI18N
     }
 }

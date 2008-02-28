@@ -490,7 +490,9 @@ public class SyntaxColoringPanel extends JPanel implements ActionListener,
     public void setCurrentProfile (String currentProfile) {
         String oldProfile = this.currentProfile;
         this.currentProfile = currentProfile;
-        if (!colorModel.getProfiles ().contains (currentProfile))
+        if (!colorModel.getProfiles ().contains (currentProfile) && 
+            !profiles.containsKey (currentProfile)
+        )
             cloneScheme (oldProfile, currentProfile);
         Vector categories = getCategories (currentProfile, currentLanguage);
         lCategories.setListData (categories);
@@ -527,7 +529,13 @@ public class SyntaxColoringPanel extends JPanel implements ActionListener,
         Map<String, Vector<AttributeSet>> m = new HashMap<String, Vector<AttributeSet>>();
         for(String language : colorModel.getLanguages()) {
             Vector<AttributeSet> v = getCategories(oldScheme, language);
-            m.put(language, new Vector<AttributeSet>(v));
+            Vector<AttributeSet> newV = new Vector<AttributeSet> ();
+            Iterator<AttributeSet> it = v.iterator ();
+            while (it.hasNext ()) {
+                AttributeSet attributeSet = it.next ();
+                newV.add(new SimpleAttributeSet (attributeSet));
+            }
+            m.put(language, new Vector<AttributeSet>(newV));
             setToBeSaved(newScheme, language);
         }
         profiles.put(newScheme, m);

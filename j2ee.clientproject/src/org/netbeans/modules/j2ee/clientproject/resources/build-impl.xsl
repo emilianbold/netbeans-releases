@@ -1360,7 +1360,7 @@ or ant -Dj2ee.platform.classpath=&lt;server_classpath&gt; (where no properties f
                         <xsl:attribute name="executable">${platform.javadoc}</xsl:attribute>
                     </xsl:if>                                                        
                     <classpath>
-                        <path path="${{javac.classpath}}"/>
+                        <path path="${{javac.classpath}}:${{j2ee.platform.classpath}}:${{j2ee.appclient.tool.runtime}}"/>
                     </classpath>
                     <sourcepath>
                         <xsl:call-template name="createPathElements">

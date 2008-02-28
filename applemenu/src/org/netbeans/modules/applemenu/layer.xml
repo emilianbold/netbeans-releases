@@ -100,6 +100,10 @@ made subject to such option by the copyright holder.
         <file name="MD-F5.shadow">
             <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-ui-actions-DebugMainProjectAction.instance"/>
         </file>
+
+        <file name="M-M.instance">
+            <attr name="instanceClass" stringvalue="org.netbeans.modules.applemenu.MinimizeWindowAction"/>
+        </file>
     </folder>
 
 </filesystem>
