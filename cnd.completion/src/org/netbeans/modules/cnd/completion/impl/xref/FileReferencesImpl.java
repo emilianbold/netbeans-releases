@@ -108,17 +108,34 @@ public class FileReferencesImpl extends CsmFileReferences  {
         List<CsmReference> out = new ArrayList<CsmReference>();
         BaseDocument doc = ReferencesSupport.getDocument(csmFile);
         assert doc != null;
+        boolean needAfterDereferenceUsages = kinds.contains(CsmReferenceKind.AFTER_DEREFERENCE_USAGE);
         List<Token> tokens = TokenUtilities.getTokens(doc, start, end);
+        Token lastToken = null;
         for (Token token : tokens) {
             if (token.getEndOffset() > end) {
                 break;
             }
             if (token.getStartOffset() >= start) {
                 if (token.getTokenID() == CCTokenContext.IDENTIFIER) {
-                    ReferenceImpl ref = ReferencesSupport.createReferenceImpl(csmFile, doc, token.getStartOffset(), token);
-                    out.add(ref);
+                    boolean skip = false;
+                    
+                    if (!needAfterDereferenceUsages && lastToken != null) {
+                        switch (lastToken.getTokenID().getNumericID()) {
+                            case CCTokenContext.DOT_ID:
+                            case CCTokenContext.DOTMBR_ID:
+                            case CCTokenContext.ARROW_ID:
+                            case CCTokenContext.ARROWMBR_ID:
+                            case CCTokenContext.SCOPE_ID:
+                                skip = true;
+                        }
+                    }
+                    if (!skip) {
+                        ReferenceImpl ref = ReferencesSupport.createReferenceImpl(csmFile, doc, token.getStartOffset(), token);
+                        out.add(ref);
+                    }
                 }
             }
+            lastToken = token;
         }
         return out;
     }
