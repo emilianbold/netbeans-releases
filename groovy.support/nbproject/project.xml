@@ -132,7 +132,7 @@
             </module-dependencies>
             <friend-packages>
                 <friend>org.netbeans.modules.groovy.grailsproject</friend>
-                <friend>org.netbeans.modules.groovy.groovyproject</friend>
+                <friend>org.netbeans.modules.groovy.kit</friend>
                 <package>org.netbeans.modules.groovy.support.api</package>
             </friend-packages>
         </data>
