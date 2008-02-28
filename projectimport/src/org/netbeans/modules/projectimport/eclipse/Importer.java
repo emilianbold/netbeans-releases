@@ -144,7 +144,7 @@ final class Importer {
                                 nbProjects[pos++] = importProject(eclPrj);
                             }
                         } catch (Exception ex) {
-                            logger.log(Level.WARNING, "Error occured during project importing", ex); // NOI18N
+                            logger.log(Level.WARNING, "Error occurred during project importing", ex); // NOI18N
                         } finally {
                             done = true;
                         }
