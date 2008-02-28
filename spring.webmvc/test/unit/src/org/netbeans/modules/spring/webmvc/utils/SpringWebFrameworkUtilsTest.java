@@ -61,7 +61,18 @@ public class SpringWebFrameworkUtilsTest extends NbTestCase {
     public void testDispatcherNameEntry_EmptyWordCharacterPattern() throws Exception {
         assert(SpringWebFrameworkUtils.isDispatcherNameValid("") == false);
     }
+    
+    public void testDispatcherNameEntry_ValidPattern() throws Exception {
+        assert(SpringWebFrameworkUtils.isDispatcherNameValid("Dispatcher") == true);
+    }  
             
+    public void testDispatcherNameEntry_NonWordUnicodeCharacterPattern() throws Exception {       
+        assert(SpringWebFrameworkUtils.isDispatcherNameValid("あｂ３＿^え") == false);  // ^ is the invalid character
+    }        
+    
+    public void testDispatcherNameEntry_ValidUnicodePattern() throws Exception {
+        assert(SpringWebFrameworkUtils.isDispatcherNameValid("あおうえｂ３＿え") == true);
+    }  
     public void testDispatcherMappingEntry_ExtensionSpacePattern() throws Exception {
         assert(SpringWebFrameworkUtils.isDispatcherMappingPatternValid("*.h tm") == false);
     }
@@ -100,11 +111,7 @@ public class SpringWebFrameworkUtilsTest extends NbTestCase {
         
     public void testDispatcherMappingEntry_ValidPattern() throws Exception {
         assert(SpringWebFrameworkUtils.isDispatcherMappingPatternValid("*.htm") == true);
-    }   
-    
-    public void testDispatcherNameEntry_ValidPattern() throws Exception {
-        assert(SpringWebFrameworkUtils.isDispatcherNameValid("Dispatcher") == true);
-    }  
+    }                   
     
     public void testReplaceExtensionInTemplatesExtensionPattern_Positive() throws Exception {      
         assert ("index.html".equals(SpringWebFrameworkUtils.replaceExtensionInTemplates("index.htm", "*.html")) == true);
@@ -129,4 +136,21 @@ public class SpringWebFrameworkUtilsTest extends NbTestCase {
     public void testReplaceExtensionInTemplates_PathPattern_Negative() throws Exception {
         assert ("index/".equals(SpringWebFrameworkUtils.replaceExtensionInTemplates("index.htm", "/")) == false);
     }    
+    
+    public void testReviseRedirectJsp_Servlet() throws Exception {
+        System.out.println("resultant line = " + SpringWebFrameworkUtils.reviseRedirectJsp("<% response.sendRedirect(\"index.htm\"); %>", "/app/*"));
+        assertTrue ("<% response.sendRedirect(\"app/index.htm\"); %>".equals(SpringWebFrameworkUtils.reviseRedirectJsp("<% response.sendRedirect(\"index.htm\"); %>", "/app/*")));
+    }
+    
+    public void testReviseRedirectJsp_Path() throws Exception {
+        assertFalse ("<% response.sendRedirect(\"app/index.htm\"); %>".equals(SpringWebFrameworkUtils.reviseRedirectJsp("<% response.sendRedirect(\"index.htm\"); %>", "/")));
+    }
+    
+    public void testReviseRedirectJsp_Extension() throws Exception {
+        assertFalse ("<% response.sendRedirect(\"app/index.htm\"); %>".equals(SpringWebFrameworkUtils.reviseRedirectJsp("<% response.sendRedirect(\"index.htm\"); %>", "*.htm")));
+    }
+    
+    public void testReviseRedirectJsp_WrongLine() throws Exception {
+        assertFalse ("<% response.sendRedirect(\"app/index.htm\"); %>".equals(SpringWebFrameworkUtils.reviseRedirectJsp("Foo", "/app/*")));
+    }
 }

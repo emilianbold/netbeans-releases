@@ -56,12 +56,16 @@ import java.util.Set;
 import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
 import javax.swing.text.BadLocationException;
+import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.project.classpath.ProjectClassPathModifier;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
+import org.netbeans.api.project.libraries.Library;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Formatter;
+import org.netbeans.modules.j2ee.core.api.support.SourceGroups;
 import org.netbeans.modules.spring.api.beans.ConfigFileGroup;
 import org.netbeans.modules.spring.api.beans.ConfigFileManager;
 import org.netbeans.modules.spring.api.beans.SpringConstants;
@@ -75,6 +79,8 @@ import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 import org.openide.text.CloneableEditorSupport;
 import org.openide.util.Exceptions;
+import org.openide.util.Mutex.ExceptionAction;
+import org.openide.util.MutexException;
 
 public final class NewSpringXMLConfigWizardIterator implements WizardDescriptor.AsynchronousInstantiatingIterator {
 
@@ -90,9 +96,11 @@ public final class NewSpringXMLConfigWizardIterator implements WizardDescriptor.
         if (panels == null) {
             Project p = Templates.getProject(wizard);
             SourceGroup[] groups = ProjectUtils.getSources(p).getSourceGroups(Sources.TYPE_GENERIC);
-            WizardDescriptor.Panel targetChooser = Templates.createSimpleTargetChooser(p, groups, new SpringXMLConfigGroupPanel(p));
+            List<ConfigFileGroup> configFileGroups = getConfigFileManager(p).getConfigFileGroups();
+            SpringXMLConfigGroupPanel configGroupPanel = configFileGroups.isEmpty() ? null : new SpringXMLConfigGroupPanel(configFileGroups);
+            WizardDescriptor.Panel targetChooser = Templates.createSimpleTargetChooser(p, groups, configGroupPanel);
 
-            panels = new WizardDescriptor.Panel[]{
+            panels = new WizardDescriptor.Panel[] {
                 targetChooser,
                 new SpringXMLConfigNamespacesPanel(),
             };
@@ -137,45 +145,63 @@ public final class NewSpringXMLConfigWizardIterator implements WizardDescriptor.
                 generateFileContents(createdFile[0], incNamespaces);
             }
         });
-        
-        Set<ConfigFileGroup> selectedGroups = (Set<ConfigFileGroup>) wizard.getProperty(SpringXMLConfigGroupPanel.CONFIG_FILE_GROUPS);
-        if(selectedGroups.size() > 0) {
-            addFileToSelectedGroups(selectedGroups, FileUtil.toFile(createdFile[0]));
+        boolean addSpringToClassPath = (Boolean) wizard.getProperty(SpringXMLConfigNamespacesPanel.ADD_SPRING_TO_CLASSPATH);
+        if (addSpringToClassPath) {
+            Library[] libraries = { (Library) wizard.getProperty(SpringXMLConfigNamespacesPanel.SPRING_LIBRARY) };
+            addLibrariesToClassPath(libraries);
         }
+        
+        @SuppressWarnings("unchecked")
+        Set<ConfigFileGroup> selectedGroups = (Set<ConfigFileGroup>) wizard.getProperty(SpringXMLConfigGroupPanel.CONFIG_FILE_GROUPS);
+        addFileToConfigFileManager(selectedGroups != null ? selectedGroups : Collections.<ConfigFileGroup>emptySet(), FileUtil.toFile(createdFile[0]));
         
         return Collections.singleton(createdFile[0]);
     }
     
-    private void addFileToSelectedGroups(Set<ConfigFileGroup> selectedGroups, File file) {
-        final ConfigFileManager manager = getConfigFileManager(Templates.getProject(wizard));
-        final List<ConfigFileGroup> origGroups = manager.getConfigFileGroups();
-        final List<ConfigFileGroup> newGroups = new ArrayList<ConfigFileGroup>(origGroups.size());
-        
-        for(ConfigFileGroup grp : origGroups) {
-            if(selectedGroups.contains(grp)) {
-                ConfigFileGroup nGrp = addFileToConfigGroup(grp, file);
-                newGroups.add(nGrp);
-            } else {
-                newGroups.add(grp);
-            }
+    private void addLibrariesToClassPath(Library[] libraries) throws IOException {
+        FileObject artifact = getSourceGroupArtifact(Templates.getProject(wizard), Templates.getTargetFolder(wizard));
+        if (artifact != null) {
+            ProjectClassPathModifier.addLibraries(libraries, artifact, ClassPath.COMPILE);
         }
-        
-        manager.mutex().postWriteRequest(new Runnable() {
-            public void run() {
-                try {
-                    manager.putConfigFileGroups(newGroups);
-                    manager.save();
-                } catch (IOException ex) {
-                    Exceptions.printStackTrace(ex);
-                }
-            }
-        });
     }
     
-    private ConfigFileGroup addFileToConfigGroup(ConfigFileGroup cfg, File file) {
-        List<File> files = cfg.getFiles();
+    private void addFileToConfigFileManager(final Set<ConfigFileGroup> selectedGroups, final File file) throws IOException {
+        final ConfigFileManager manager = getConfigFileManager(Templates.getProject(wizard));
+        try {
+            manager.mutex().writeAccess(new ExceptionAction<Void>() {
+                public Void  run() throws IOException {
+                    List<File> origFiles = manager.getConfigFiles();
+                    List<File> newFiles = new ArrayList<File>(origFiles);
+                    newFiles.add(file);
+                    List<ConfigFileGroup> origGroups = manager.getConfigFileGroups();
+                    List<ConfigFileGroup> newGroups = null;
+                    if (selectedGroups.size() > 0) {
+                        newGroups = new ArrayList<ConfigFileGroup>(origGroups.size());
+                        for (ConfigFileGroup group : origGroups) {
+                            if (selectedGroups.contains(group)) {
+                                ConfigFileGroup newGroup = addFileToConfigGroup(group, file);
+                                newGroups.add(newGroup);
+                            } else {
+                                newGroups.add(group);
+                            }
+                        }
+                    } else {
+                        newGroups = origGroups;
+                    }
+                    manager.putConfigFilesAndGroups(newFiles, newGroups);
+                    manager.save();
+                    return null;
+                }
+            });
+        } catch (MutexException e) {
+            throw (IOException) e.getException();
+        }
+    }
+    
+    private ConfigFileGroup addFileToConfigGroup(ConfigFileGroup group, File file) {
+        List<File> files = group.getFiles();
         files.add(file);
-        return ConfigFileGroup.create(cfg.getName(), files);
+        return ConfigFileGroup.create(group.getName(), files);
     }
 
     public void initialize(WizardDescriptor wizard) {
@@ -326,5 +352,20 @@ public final class NewSpringXMLConfigWizardIterator implements WizardDescriptor.
         ProjectSpringScopeProvider scopeProvider = p.getLookup().lookup(ProjectSpringScopeProvider.class);
         ConfigFileManager manager = scopeProvider.getSpringScope().getConfigFileManager();
         return manager;
+    }
+    
+    static FileObject getSourceGroupArtifact(Project project, FileObject preferredArtifact) {
+        SourceGroup[] groups = SourceGroups.getJavaSourceGroups(project);
+        for (SourceGroup group : groups) {
+            FileObject root = group.getRootFolder();
+            if (preferredArtifact.equals(root) || (FileUtil.isParentOf(root, preferredArtifact) && group.contains(preferredArtifact))) {
+                return preferredArtifact;
+            }
+        }
+        // Otherwise just get the first source group.
+        for (SourceGroup group : groups) {
+            return group.getRootFolder();
+        }
+        return null;
     }
 }

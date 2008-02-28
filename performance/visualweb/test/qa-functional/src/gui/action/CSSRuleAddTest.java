@@ -104,15 +104,21 @@ public class CSSRuleAddTest  extends org.netbeans.performance.test.utilities.Per
         openNode = new Node(projectRoot,styledocfolder+"|"+fileName);
         openNode.performPopupActionNoBlock(OPEN);
         cssEditor = findCSSEditor();
-
+        if(cssEditor != null) {
+            log("css editor found");
+        }
         
     }
     
     private void invokeAddRuleEditor() {
-        JButtonOperator addRuleButton = new JButtonOperator(cssEditor, new ComponentChooser() {
+        JButtonOperator addRuleButton;
+        long oldTimeout = JemmyProperties.getCurrentTimeout("ComponentOperator.WaitComponentTimeout");
+        JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 90000);
+        {
+            addRuleButton = new JButtonOperator(cssEditor, new ComponentChooser() {
 
             public boolean checkComponent(Component component) {
-                
+                log("looking for component: "+component.toString());
                 if((((JButton)component).getToolTipText() != null)) {
                     if( ((JButton)component).getToolTipText().equals("Create Rule") ) {
                         return true;
@@ -122,18 +128,21 @@ public class CSSRuleAddTest  extends org.netbeans.performance.test.utilities.Per
             }
 
             public String getDescription() {
-                return "Finds Add CSS Rule button component";
+                return "Add CSS Rule button";
             }
         });
-        System.out.println("add Rule Button obtained");
+        }
+        JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", oldTimeout);
+        log("add Rule Button obtained");
         addRuleButton.pushNoBlock();      
     }
     
     public ComponentOperator open() {
-        System.out.println("::open");
+        log("::open");
         
         invokeAddRuleEditor();
-        createRuleDialog = new NbDialogOperator(org.netbeans.jellytools.Bundle.getString("org.netbeans.modules.css.editor.Bundle", "STYLE_RULE_EDITOR_TITLE"));
+        String dialogTitle = org.netbeans.jellytools.Bundle.getString("org.netbeans.modules.css.actions.Bundle", "STYLE_RULE_EDITOR_TITLE");
+        createRuleDialog = new NbDialogOperator(dialogTitle);
         processAddRule();
         changeRuleValueOne();
         changeRuleValueTwo();
@@ -204,4 +213,9 @@ public class CSSRuleAddTest  extends org.netbeans.performance.test.utilities.Per
     
     private static final int BACKCOLOR_COMBO_INDEX = 6;
     private static final int POSITION_COMBO_INDEX = 16;
+    
+    public static void main(String[] args) {
+        junit.textui.TestRunner.run(new CSSRuleAddTest("doMeasurement"));        
+    }
+
 }

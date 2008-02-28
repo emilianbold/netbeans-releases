@@ -42,12 +42,10 @@
 package org.netbeans.modules.masterfs.filebasedfs.fileobjects;
 
 import java.io.IOException;
-import org.netbeans.modules.masterfs.*;
 import java.io.File;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.modules.masterfs.filebasedfs.FileBasedFileSystem;
 import org.openide.filesystems.FileChangeAdapter;
 import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
@@ -80,24 +78,23 @@ public class FileObjectFactoryTest extends NbTestCase {
 
 
     public void testIssuingFileObject() throws IOException {      
-        FileBasedFileSystem fbs = FileBasedFileSystem.getInstance(getWorkDir());
-        assertEquals(1, fbs.getFactory().getSize());
+        FileObjectFactory fbs = FileObjectFactory.getInstance(getWorkDir());
+        assertEquals(1, fbs.getSize());
         FileObject workDir = FileUtil.toFileObject(getWorkDir());
         assertNotNull(workDir);
         //root + workdir
-        assertEquals(2, fbs.getFactory().getSize());
-        fbs.findResource(workDir.getPath());
-        assertEquals(2, fbs.getFactory().getSize());
+        assertEquals(2, fbs.getSize());
+        assertEquals(2, fbs.getSize());
         Reference rf = new  WeakReference(workDir.getParent());
         assertGC("", rf);
         assertNull(((BaseFileObj)workDir).getExistingParent());
-        assertEquals(2, fbs.getFactory().getSize());
+        assertEquals(2, fbs.getSize());
         fbs.getRoot().getFileObject(workDir.getPath());
-        assertEquals(2, fbs.getFactory().getSize());
+        assertEquals(2, fbs.getSize());
         rf = new  WeakReference(workDir.getParent());
         assertGC("", rf);
         assertNull(((BaseFileObj)workDir).getExistingParent());
-        assertEquals(2, fbs.getFactory().getSize());
+        assertEquals(2, fbs.getSize());
         
     }
     
@@ -247,7 +244,7 @@ public class FileObjectFactoryTest extends NbTestCase {
             assertTrue(external.createNewFile());
             assertNull(foWorkDir.getFileObject(external.getName()));
             fdc.assertDataCreated(0);
-            FileUtil.refreshFor(external);        
+            FileUtil.refreshFor(external.getParentFile());        
             fdc.assertDataCreated(1);
             assertNotNull(foWorkDir.getFileObject(external.getName()));
             
@@ -255,7 +252,7 @@ public class FileObjectFactoryTest extends NbTestCase {
             fdc.assertDeleted(0);                                
             assertTrue(external.delete());
             assertNotNull(foWorkDir.getFileObject(external.getName()));
-            FileUtil.refreshFor(external);   
+            FileUtil.refreshFor(external.getParentFile());   
             assertNull(foWorkDir.getFileObject(external.getName()));
             fdc.assertDeleted(1);                                
             
@@ -264,7 +261,7 @@ public class FileObjectFactoryTest extends NbTestCase {
             assertTrue(external.mkdir());
             assertNull(foWorkDir.getFileObject(external.getName()));
             fdc.assertFolderCreated(0);                        
-            FileUtil.refreshFor(external);   
+            FileUtil.refreshFor(external.getParentFile());   
             fdc.assertFolderCreated(1);
             assertNotNull(foWorkDir.getFileObject(external.getName()));                        
             

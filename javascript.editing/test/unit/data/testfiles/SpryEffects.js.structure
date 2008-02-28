@@ -35,7 +35,7 @@ Spry.Effect:CLASS:[]:ESCAPED{Spry.Effect}:
   makeClipping:METHOD:[]:ESCAPED{makeClipping}(PARAMETERS{ESCAPED{element}}):
   makePositioned:METHOD:[]:ESCAPED{makePositioned}(PARAMETERS{ESCAPED{element}}):
   setStyleProp:METHOD:[]:ESCAPED{setStyleProp}(PARAMETERS{ESCAPED{element}, ESCAPED{prop}, ESCAPED{value}}):
-Spry.Effect.Registry:CLASS:[]:ESCAPED{Spry.Effect.Registry}:
+Spry.Effect.Registry.prototype:CLASS:[]:ESCAPED{Spry.Effect.Registry.prototype}:
   effectsAreTheSame:METHOD:[]:ESCAPED{effectsAreTheSame}(PARAMETERS{ESCAPED{effectA}, ESCAPED{effectB}}):
   getIndexOfElement:METHOD:[]:ESCAPED{getIndexOfElement}(PARAMETERS{ESCAPED{element}}):
   getRegisteredEffect:METHOD:[]:ESCAPED{getRegisteredEffect}(PARAMETERS{ESCAPED{element}, ESCAPED{effect}}):
@@ -140,7 +140,7 @@ options:CLASS:[]:ESCAPED{options}:
   transition:PROPERTY:[]:ESCAPED{transition}:
   transition:PROPERTY:[]:ESCAPED{transition}:
   transition:PROPERTY:[]:ESCAPED{transition}:
-Spry.Effect.Animator:CLASS:[]:ESCAPED{Spry.Effect.Animator}:
+Spry.Effect.Animator.prototype:CLASS:[]:ESCAPED{Spry.Effect.Animator.prototype}:
   animate:METHOD:[]:ESCAPED{animate}(PARAMETERS{ESCAPED{position}}):
   cancel:METHOD:[]:ESCAPED{cancel}:
   doToggle:METHOD:[]:ESCAPED{doToggle}:
@@ -149,22 +149,22 @@ Spry.Effect.Animator:CLASS:[]:ESCAPED{Spry.Effect.Animator}:
   setOptions:METHOD:[]:ESCAPED{setOptions}(PARAMETERS{ESCAPED{options}}):
   start:METHOD:[]:ESCAPED{start}(PARAMETERS{ESCAPED{queue}}):
   stop:METHOD:[]:ESCAPED{stop}:
-Spry.Effect.Move:CLASS:[]:ESCAPED{Spry.Effect.Move}:
+Spry.Effect.Move.prototype:CLASS:[]:ESCAPED{Spry.Effect.Move.prototype}:
   animate:METHOD:[]:ESCAPED{animate}(PARAMETERS{ESCAPED{position}}):
   reset:METHOD:[]:ESCAPED{reset}:
-Spry.Effect.MoveSlide:CLASS:[]:ESCAPED{Spry.Effect.MoveSlide}:
+Spry.Effect.MoveSlide.prototype:CLASS:[]:ESCAPED{Spry.Effect.MoveSlide.prototype}:
   animate:METHOD:[]:ESCAPED{animate}(PARAMETERS{ESCAPED{position}}):
   reset:METHOD:[]:ESCAPED{reset}:
-Spry.Effect.Size:CLASS:[]:ESCAPED{Spry.Effect.Size}:
+Spry.Effect.Size.prototype:CLASS:[]:ESCAPED{Spry.Effect.Size.prototype}:
   animate:METHOD:[]:ESCAPED{animate}(PARAMETERS{ESCAPED{position}}):
   reset:METHOD:[]:ESCAPED{reset}:
-Spry.Effect.Opacity:CLASS:[]:ESCAPED{Spry.Effect.Opacity}:
+Spry.Effect.Opacity.prototype:CLASS:[]:ESCAPED{Spry.Effect.Opacity.prototype}:
   animate:METHOD:[]:ESCAPED{animate}(PARAMETERS{ESCAPED{position}}):
   reset:METHOD:[]:ESCAPED{reset}:
-Spry.Effect.Color:CLASS:[]:ESCAPED{Spry.Effect.Color}:
+Spry.Effect.Color.prototype:CLASS:[]:ESCAPED{Spry.Effect.Color.prototype}:
   animate:METHOD:[]:ESCAPED{animate}(PARAMETERS{ESCAPED{position}}):
   reset:METHOD:[]:ESCAPED{reset}:
-Spry.Effect.Cluster:CLASS:[]:ESCAPED{Spry.Effect.Cluster}:
+Spry.Effect.Cluster.prototype:CLASS:[]:ESCAPED{Spry.Effect.Cluster.prototype}:
   addNextEffect:METHOD:[]:ESCAPED{addNextEffect}(PARAMETERS{ESCAPED{effect}}):
   addParallelEffect:METHOD:[]:ESCAPED{addParallelEffect}(PARAMETERS{ESCAPED{effect}}):
   cancel:METHOD:[]:ESCAPED{cancel}:

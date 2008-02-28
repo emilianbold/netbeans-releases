@@ -58,8 +58,6 @@
 
         <localizing-bundle>org.netbeans.modules.websvc.saas.services.amazon.Bundle</localizing-bundle>
 
-        <icon16>org/netbeans/modules/websvc/saas/services/amazon/resources/amazon16.png</icon16>
-
         <group name="Amazon">
         </group>
 

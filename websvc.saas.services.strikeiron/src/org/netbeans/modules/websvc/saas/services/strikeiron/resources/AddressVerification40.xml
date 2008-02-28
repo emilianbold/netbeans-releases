@@ -58,8 +58,6 @@
 
     <saas-metadata>
         <localizing-bundle>org.netbeans.modules.websvc.saas.services.strikeiron.resources.Bundle</localizing-bundle>
-        <icon16>org/netbeans/modules/websvc/saas/services/strikeiron/resources/strikeiron16.png</icon16>
-        <icon32>org/netbeans/modules/websvc/saas/services/strikeiron/resources/strikeiron32.png</icon32>
         <group name="StrikeIron"/>
         <code-gen>
             <artifacts targets="java,servlet"/>

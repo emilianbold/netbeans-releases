@@ -45,7 +45,7 @@
                xmlns:tns="http://xml.netbeans.org/websvc/saas/component/1.0/facebook"
                xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'               
                xsi:schemaLocation='http://xml.netbeans.org/websvc/saas/services/1.0 
-                    ../../../../../../../../../../websvc.saas.api/src/org/netbeans/modules/websvc/saas/model/SaasServices.xsd'
+               ../../../../../../../../../../websvc.saas.api/src/org/netbeans/modules/websvc/saas/model/SaasServices.xsd'
                type="http://research.sun.com/wadl/2006/10"
                api-doc="http://wiki.developers.facebook.com/index.php/API"
                url="org/netbeans/modules/websvc/saas/services/facebook/resources/FacebookWadl.xml">
@@ -55,8 +55,31 @@
     
     <saas-metadata>
         <localizing-bundle>org.netbeans.modules.websvc.saas.services.facebook.Bundle</localizing-bundle>
-        <icon16>org/netbeans/modules/websvc/saas/services/facebook/resources/facebook16.png</icon16>
         <group name="Facebook"/>
+        <authentication profile="SaaSServices/Facebook/profile.properties">
+            <session-key>
+                <desktop/>
+                <web/>
+            </session-key>
+        </authentication>
+        <!--
+        <code-gen>
+            <artifacts targets="java,servlet">
+                <artifact id="FacebookAuthenticator" type="template"
+                          url="Templates/SaaSServices/FacebookAuthenticator.java"/>
+                <artifact id="FacebookLogin" type="template"
+                          url="Templates/SaaSServices/FacebookLogin.java"/>
+                <artifact id="FacebookCallback" type="template"
+                          url="Templates/SaaSServices/FacebookCallback.java"/>
+            </artifacts>
+        </code-gen>
+        <authentication profile="SaaSServices/Facebook/profile.properties">
+            <session-key>
+                <desktop href="FacebookAuthenticator"/> <!- href value matches with the ./code-gen/artifacts/artifact/@id value ->
+                <web href="FacebookAuthenticator, FacebookLogin, FacebookCallback"/>
+            </session-key>
+        </authentication>
+        -->
     </saas-metadata>
     
     <!-- Process all methods in the wadl !-->

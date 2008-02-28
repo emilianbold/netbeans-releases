@@ -123,6 +123,7 @@ public class ExtendedTokenSequence {
                     case NEW_LINE:
                     case PREPROCESSOR_DIRECTIVE:
                          return column;
+                    case DOXYGEN_COMMENT:
                     case BLOCK_COMMENT:
                         String text = ts.token().text().toString();
                         int i = text.lastIndexOf('\n');
@@ -153,7 +154,36 @@ public class ExtendedTokenSequence {
                     case NEW_LINE:
                     case LINE_COMMENT:
                     case BLOCK_COMMENT:
+                    case DOXYGEN_COMMENT:
                     case PREPROCESSOR_DIRECTIVE:
+                        break;
+                    default:
+                        return ts.token();
+                }
+            }
+            return null;
+        } finally {
+            ts.moveIndex(index);
+            ts.moveNext();
+        }
+    }
+
+    /*package local*/ Token<CppTokenId> lookNextLineImportant(){
+        int index = ts.index();
+        try {
+            while(ts.moveNext()){
+                switch (ts.token().id()) {
+                    case LINE_COMMENT:
+                    case PREPROCESSOR_DIRECTIVE:
+                    case NEW_LINE:
+                        return null;
+                    case BLOCK_COMMENT:
+                    case DOXYGEN_COMMENT:
+                        if (ts.token().text().toString().indexOf('\n')>=0) {
+                            return null;
+                        }
+                        break;
+                    case WHITESPACE:
                         break;
                     default:
                         return ts.token();
@@ -188,6 +218,7 @@ public class ExtendedTokenSequence {
                     case NEW_LINE:
                     case LINE_COMMENT:
                     case BLOCK_COMMENT:
+                    case DOXYGEN_COMMENT:
                     case PREPROCESSOR_DIRECTIVE:
                         break;
                     default:
@@ -266,6 +297,33 @@ public class ExtendedTokenSequence {
         }
     }
 
+    /*package local*/ Token<CppTokenId> lookPreviousLineImportant(){
+        int index = ts.index();
+        try {
+            while(ts.movePrevious()){
+                switch (ts.token().id()) {
+                    case LINE_COMMENT:
+                    case PREPROCESSOR_DIRECTIVE:
+                    case NEW_LINE:
+                        return null;
+                    case BLOCK_COMMENT:
+                    case DOXYGEN_COMMENT:
+                        if (ts.token().text().toString().indexOf('\n')>=0) {
+                            return null;
+                        }
+                        break;
+                    case WHITESPACE:
+                        break;
+                    default:
+                        return ts.token();
+                }
+            }
+            return null;
+        } finally {
+            ts.moveIndex(index);
+            ts.moveNext();
+        }
+    }
 
     /*package local*/ Token<CppTokenId> lookPreviousImportant(){
         int index = ts.index();
@@ -276,6 +334,7 @@ public class ExtendedTokenSequence {
                     case NEW_LINE:
                     case LINE_COMMENT:
                     case BLOCK_COMMENT:
+                    case DOXYGEN_COMMENT:
                     case PREPROCESSOR_DIRECTIVE:
                         break;
                     default:
@@ -298,11 +357,12 @@ public class ExtendedTokenSequence {
                     case NEW_LINE:
                     case LINE_COMMENT:
                     case BLOCK_COMMENT:
+                    case DOXYGEN_COMMENT:
                     case PREPROCESSOR_DIRECTIVE:
                         break;
                     default:
                         i--;
-                        if (i <=0 ) {
+                        if (i <= 0 ) {
                             return ts.token();
                         }
                 }
@@ -347,8 +407,8 @@ public class ExtendedTokenSequence {
                 }
                 DiffResult diff = diffs.getDiffs(this, 0);
                 if (diff != null){
-                    if (diff.before != null){
-                        if (diff.before.hasNewLine()) {
+                    if (diff.after != null){
+                        if (diff.after.hasNewLine()) {
                             return true;
                         }
                     }

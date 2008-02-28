@@ -150,7 +150,7 @@ public class InstalledFileLocatorImplDirTest extends NbTestCase {
         assertEquals("[no cache] nbdirs can override location of a branded resource", file(nbdir2, "loc/y_foo.html"), ifl.locate("loc/y.html", null, true));
         assertEquals("[no cache] but look in all dirs for most specific resource first", file(nbhome, "h_ja"), ifl.locate("h", null, true));
         assertEquals("[no cache] localized lookup a no-op for nonlocalized files", file(nbuser, "a/b"), ifl.locate("a/b", null, true));
-        IsDirCntSecurityManager.assertCounts("Excessive File.isDirectory() calls!", 20);
+        IsDirCntSecurityManager.assertCounts("Excessive File.isDirectory() calls!", 3, 20);
     }
     
 }

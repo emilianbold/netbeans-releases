@@ -42,7 +42,18 @@ package org.netbeans.modules.websvc.saas.codegen.java;
 
 import org.netbeans.modules.websvc.saas.model.WadlSaasMethod;
 import java.io.IOException;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 import javax.swing.text.JTextComponent;
+import org.netbeans.api.java.source.JavaSource;
+import org.netbeans.api.java.source.ModificationResult;
+import org.netbeans.api.java.source.WorkingCopy;
+import org.netbeans.api.progress.ProgressHandle;
+import org.netbeans.modules.websvc.saas.codegen.java.model.ParameterInfo;
+import org.netbeans.modules.websvc.saas.codegen.java.support.AbstractTask;
+import org.netbeans.modules.websvc.saas.codegen.java.support.JavaSourceHelper;
 import org.openide.filesystems.FileObject;
 
 /**
@@ -55,5 +66,75 @@ public class JaxRsResourceClassCodeGenerator extends JaxRsCodeGenerator {
     public JaxRsResourceClassCodeGenerator(JTextComponent targetComponent, 
             FileObject targetFile, WadlSaasMethod m) throws IOException {
         super(targetComponent, targetFile, m);
+    }
+    
+    @Override
+    public Set<FileObject> generate(ProgressHandle pHandle) throws IOException {
+        initProgressReporting(pHandle);
+
+        preGenerate();
+        
+        createAuthenticatorClass();
+        
+        createSaasServiceClass();
+        addSaasServiceMethod();
+        addImportsToSaasService();
+
+        FileObject outputWrapperFO = generateJaxbOutputWrapper();
+        if (outputWrapperFO != null) {
+            setJaxbOutputWrapperSource(JavaSource.forFileObject(outputWrapperFO));
+        }
+        generateSaasServiceResourceClass();
+        addSubresourceLocator();
+        addImportsToWrapperResource();
+        FileObject refConverterFO = getOrCreateGenericRefConverter().getFileObjects().iterator().next();
+        modifyTargetConverter();
+        FileObject[] result = new FileObject[]{getTargetFile(), getWrapperResourceFile(), refConverterFO, outputWrapperFO};
+        if (outputWrapperFO == null) {
+            result = new FileObject[]{getTargetFile(), getWrapperResourceFile(), refConverterFO};
+        }
+        JavaSourceHelper.saveSource(result);
+
+        finishProgressReporting();
+
+        return new HashSet<FileObject>(Arrays.asList(result));
+    }
+
+    @Override
+    protected String getCustomMethodBody() throws IOException {
+        String paramUse = "";
+        String paramDecl = "";
+        String converterName = getConverterName();
+        
+        //Evaluate query parameters
+        List<ParameterInfo> filterParams = filterParameters();
+        paramUse += getQueryParameterUsage(filterParams);
+        paramDecl += getQueryParameterDeclaration(filterParams);
+
+        if(paramUse.endsWith(", "))
+            paramUse = paramUse.substring(0, paramUse.length()-2);
+        
+        String methodBody = "";
+        methodBody += "        " + converterName + " converter = new " + converterName + "();\n";
+        methodBody += "             String result = " + getSaasServiceName() + "." + getSaasServiceMethodName() + "(" + paramUse + ");\n";
+        methodBody += "             converter.setString(result);\n";
+        methodBody += "             return converter;\n";
+        
+        return methodBody;
+    }
+    
+    @Override
+    protected void addImportsToTargetFile() throws IOException {
+    }
+    
+    @Override
+    protected void addImportsToWrapperResource() throws IOException {
+        ModificationResult result = getWrapperResourceSource().runModificationTask(new AbstractTask<WorkingCopy>() {
+            public void run(WorkingCopy copy) throws IOException {
+                copy.toPhase(JavaSource.Phase.RESOLVED);
+                JavaSourceHelper.addImports(copy, new String[] {getSaasServicePackageName()+"."+getSaasServiceName()});
+            }
+        });
+        result.commit();
     }
 }

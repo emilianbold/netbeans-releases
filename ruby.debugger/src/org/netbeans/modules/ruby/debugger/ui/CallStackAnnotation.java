@@ -49,25 +49,28 @@ import java.util.Map;
 import org.netbeans.modules.ruby.debugger.DebuggerAnnotation;
 import org.netbeans.modules.ruby.debugger.EditorUtil;
 import org.netbeans.modules.ruby.debugger.model.CallSite;
+import org.openide.text.Line;
 import org.openide.util.RequestProcessor;
 
 public final class CallStackAnnotation {
+    
+    private CallStackAnnotation() {}
 
-    private static Map<CallSite, DebuggerAnnotation[]> stackAnnotations;
+    private static Map<CallSite, DebuggerAnnotation> stackAnnotations;
     private static CallSite[] callSites;
 
     private static RequestProcessor rp = new RequestProcessor("Ruby Debugger CallStack Annotation Refresher");
     private static RequestProcessor.Task taskRemove;
     private static RequestProcessor.Task taskAnnotate;
 
-    private static DebuggerAnnotation[] annotateCallSite(final CallSite site) {
-        Object line = EditorUtil.getLineAnnotable(site.getPath(), site.getLine());
+    private static DebuggerAnnotation annotateCallSite(final CallSite site) {
+        Line line = EditorUtil.getLineAnnotable(site.getPath(), site.getLine());
         if (line == null) {
             return null;
         }
-        DebuggerAnnotation[] annotations = EditorUtil.createDebuggerAnnotation(
-                line, DebuggerAnnotation.CALL_STACK_FRAME_ANNOTATION_TYPE);
-        return annotations;
+        DebuggerAnnotation annotation = new DebuggerAnnotation(
+                DebuggerAnnotation.CALL_STACK_FRAME_ANNOTATION_TYPE, line);
+        return annotation;
     }
     
     public static void clearAnnotations() {
@@ -75,15 +78,15 @@ public final class CallStackAnnotation {
             if (taskRemove == null) {
                 taskRemove = rp.create(new Runnable() {
                     public void run() {
-                        Collection<DebuggerAnnotation[]> ansToRemove = Collections.emptySet();
+                        Collection<DebuggerAnnotation> ansToRemove = Collections.emptySet();
                         synchronized (rp) {
                             if (stackAnnotations != null) {
-                                ansToRemove = new HashSet<DebuggerAnnotation[]>(stackAnnotations.values());
+                                ansToRemove = new HashSet<DebuggerAnnotation>(stackAnnotations.values());
                                 stackAnnotations.clear();
                                 stackAnnotations = null;
                             }
                         }
-                        CallStackAnnotation.removeAnnotations(ansToRemove);
+                        CallStackAnnotation.detachAnnotations(ansToRemove);
                     }
                 });
             }
@@ -100,19 +103,19 @@ public final class CallStackAnnotation {
             if (taskAnnotate == null) {
                 taskAnnotate = rp.post(new Runnable() {
                     public void run() {
-                        Collection <DebuggerAnnotation[]> annsToRemove = Collections.emptySet();
+                        Collection <DebuggerAnnotation> annsToRemove = Collections.emptySet();
                         synchronized (rp) {
-                            Map<CallSite, DebuggerAnnotation[]> newAnnotations = new HashMap<CallSite, DebuggerAnnotation[]>();
+                            Map<CallSite, DebuggerAnnotation> newAnnotations = new HashMap<CallSite, DebuggerAnnotation>();
                             CallSite[] callSites = CallStackAnnotation.callSites;
                             if (stackAnnotations == null) {
-                                stackAnnotations = new HashMap<CallSite, DebuggerAnnotation[]>();
+                                stackAnnotations = new HashMap<CallSite, DebuggerAnnotation>();
                             }
                             for (int i = 0; i < callSites.length; i++) {
                                 CallSite site = callSites[i];
                                 if (newAnnotations.containsKey(site)) {
                                     continue;
                                 }
-                                DebuggerAnnotation[] annotation = stackAnnotations.remove(site);
+                                DebuggerAnnotation annotation = stackAnnotations.remove(site);
                                 if (annotation == null) {
                                     // line has not been annotated -> annotate
                                     annotation = annotateCallSite(site);
@@ -121,11 +124,11 @@ public final class CallStackAnnotation {
                                     newAnnotations.put(site, annotation);
                                 }
                             }
-                            annsToRemove = new HashSet<DebuggerAnnotation[]>(stackAnnotations.values());
+                            annsToRemove = new HashSet<DebuggerAnnotation>(stackAnnotations.values());
                             stackAnnotations = newAnnotations;
                         }
                         // delete old anotations
-                        removeAnnotations(annsToRemove);
+                        detachAnnotations(annsToRemove);
                     }
                 });
             }
@@ -133,9 +136,9 @@ public final class CallStackAnnotation {
         taskAnnotate.schedule(500);
     }
     
-    private static void removeAnnotations(Collection<DebuggerAnnotation[]> annsToRemove) {
-        for (DebuggerAnnotation[] ann : annsToRemove) {
-            EditorUtil.removeAnnotation(ann);
+    private static void detachAnnotations(Collection<DebuggerAnnotation> annsToRemove) {
+        for (DebuggerAnnotation ann : annsToRemove) {
+            ann.detach();
         }
     }
     

@@ -308,7 +308,7 @@ public class EjbJarProjectGenerator {
                     } else {
                         for (int i=0; i<testFolders.length; i++) {
                             if (!testFolders[i].exists()) {
-                                testFolders[i].mkdirs();
+                                FileUtil.createFolder(testFolders[i]);
                             }
                             String propName = "test.src.dir" + (i == 0 ? "" : Integer.toString(i+1)); //NOI18N
                             String testReference = refHelper.createForeignFileReference(testFolders[i], JavaProjectConstants.SOURCES_TYPE_JAVA);
@@ -452,8 +452,6 @@ public class EjbJarProjectGenerator {
         ep.setProperty(EjbJarProjectProperties.JAVAC_SOURCE, sourceLevel); //NOI18N
         ep.setProperty(EjbJarProjectProperties.JAVAC_TARGET, sourceLevel); //NOI18N
         
-        ep.setProperty(ProjectProperties.JAVAC_CLASSPATH, "");
-        
         ep.setProperty(EjbJarProjectProperties.DIST_DIR, "dist");
         ep.setProperty(EjbJarProjectProperties.DIST_JAR, "${"+EjbJarProjectProperties.DIST_DIR+"}/" + "${" + EjbJarProjectProperties.JAR_NAME + "}");
         //XXX the name of the dist.ear.jar file should be different, but now it cannot be since the name is used as a key in module provider mapping
@@ -468,21 +466,23 @@ public class EjbJarProjectGenerator {
         
         if (h.isSharableProject() && serverLibraryName != null) {
             // TODO constants
+            ep.setProperty(ProjectProperties.JAVAC_CLASSPATH,
+                    "${libs." + serverLibraryName + "." + "classpath" + "}"); // NOI18N             
             ep.setProperty(EjbJarProjectProperties.J2EE_PLATFORM_CLASSPATH,
                     "${libs." + serverLibraryName + "." + "classpath" + "}"); //NOI18N
             ep.setProperty(WebServicesConstants.J2EE_PLATFORM_WSCOMPILE_CLASSPATH,
-                        "${libs." + serverLibraryName + "." + "wscompile" + "}"); //NOI18N
+                     "${libs." + serverLibraryName + "." + "wscompile" + "}"); //NOI18N
             ep.setProperty(WebServicesConstants.J2EE_PLATFORM_WSIMPORT_CLASSPATH,
-                        "${libs." + serverLibraryName + "." + "wsimport" + "}"); //NOI18N
+                     "${libs." + serverLibraryName + "." + "wsimport" + "}"); //NOI18N
             ep.setProperty(WebServicesConstants.J2EE_PLATFORM_WSGEN_CLASSPATH,
-                        "${libs." + serverLibraryName + "." + "wsgenerate" + "}"); //NOI18N
+                     "${libs." + serverLibraryName + "." + "wsgenerate" + "}"); //NOI18N
             ep.setProperty(WebServicesConstants.J2EE_PLATFORM_WSIT_CLASSPATH, 
-                        "${libs." + serverLibraryName + "." + "wsinterop" + "}"); //NOI18N
+                     "${libs." + serverLibraryName + "." + "wsinterop" + "}"); //NOI18N
             ep.setProperty(WebServicesConstants.J2EE_PLATFORM_JWSDP_CLASSPATH, 
-                        "${libs." + serverLibraryName + "." + "wsjwsdp" + "}"); //NOI18N
+                     "${libs." + serverLibraryName + "." + "wsjwsdp" + "}"); //NOI18N
+        } else {
+            ep.setProperty(ProjectProperties.JAVAC_CLASSPATH, "");
         }
-        ep.setProperty(EjbJarProjectProperties.J2EE_PLATFORM_SHARED,
-                Boolean.toString(h.isSharableProject() && serverLibraryName != null));        
         
         ep.setProperty(EjbJarProjectProperties.JAVAC_DEBUG, "true");
         ep.setProperty(EjbJarProjectProperties.JAVAC_DEPRECATION, "false");

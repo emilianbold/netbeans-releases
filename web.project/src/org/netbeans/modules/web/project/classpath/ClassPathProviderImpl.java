@@ -43,6 +43,7 @@ package org.netbeans.modules.web.project.classpath;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.io.File;
 import java.util.Map;
 import java.util.HashMap;
 
@@ -54,6 +55,7 @@ import org.netbeans.modules.web.project.ui.customizer.WebProjectProperties;
 import org.netbeans.spi.java.classpath.ClassPathFactory;
 import org.netbeans.spi.java.classpath.ClassPathProvider;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
+import org.netbeans.spi.java.project.classpath.support.ProjectClassPathSupport;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.openide.filesystems.FileObject;
@@ -66,6 +68,7 @@ import org.openide.util.WeakListeners;
 public final class ClassPathProviderImpl implements ClassPathProvider, PropertyChangeListener {
     
     private final AntProjectHelper helper;
+    private final File projectDirectory;
     private final PropertyEvaluator evaluator;
     private final SourceRoots sourceRoots;
     private final SourceRoots testSourceRoots;
@@ -101,6 +104,8 @@ public final class ClassPathProviderImpl implements ClassPathProvider, PropertyC
     
     public ClassPathProviderImpl(AntProjectHelper helper, PropertyEvaluator evaluator, SourceRoots sourceRoots, SourceRoots testSourceRoots) {
         this.helper = helper;
+        this.projectDirectory = FileUtil.toFile(helper.getProjectDirectory());
+        assert this.projectDirectory != null;
         this.evaluator = evaluator;
         this.sourceRoots = sourceRoots;
         this.testSourceRoots = testSourceRoots;
@@ -191,10 +196,8 @@ public final class ClassPathProviderImpl implements ClassPathProvider, PropertyC
             ClassPath cp = cache.get(ClassPathCache.SOURCE_COMPILATION);
             if (cp == null)
             {
-                cp = ClassPathFactory.createClassPath(
-                    new ProjectClassPathImplementation(helper, "${javac.classpath}:" + //NOI18N
-                    "${" + WebProjectProperties.J2EE_PLATFORM_CLASSPATH + "}", //NOI18N
-                    evaluator, false));
+                cp = ClassPathFactory.createClassPath(ProjectClassPathSupport.createPropertyBasedClassPathImplementation(
+                    projectDirectory, evaluator, new String[] {"javac.classpath", WebProjectProperties.J2EE_PLATFORM_CLASSPATH }));
                 cache.put(ClassPathCache.SOURCE_COMPILATION, cp);
             }
             return cp;
@@ -204,10 +207,8 @@ public final class ClassPathProviderImpl implements ClassPathProvider, PropertyC
             ClassPath cp = cache.get(ClassPathCache.TEST_SOURCE_COMPILATION);
             if (cp == null)
             {
-                cp = ClassPathFactory.createClassPath(
-                    new ProjectClassPathImplementation(helper, "${javac.test.classpath}:" + //NOI18N
-                    "${" + WebProjectProperties.J2EE_PLATFORM_CLASSPATH + "}", //NOI18N
-                    evaluator, false));
+                cp = ClassPathFactory.createClassPath(ProjectClassPathSupport.createPropertyBasedClassPathImplementation(
+                    projectDirectory, evaluator, new String[] {"javac.test.classpath", WebProjectProperties.J2EE_PLATFORM_CLASSPATH }));
                 cache.put(ClassPathCache.TEST_SOURCE_COMPILATION, cp);
             }
             return cp;
@@ -224,10 +225,8 @@ public final class ClassPathProviderImpl implements ClassPathProvider, PropertyC
             if (cp == null)
             {
                 cp = 
-                    ClassPathFactory.createClassPath(
-                        new ProjectClassPathImplementation(helper, "${debug.classpath}:" + //NOI18N
-                        "${" + WebProjectProperties.J2EE_PLATFORM_CLASSPATH + "}", //NOI18N
-                        evaluator, false)); // NOI18N
+                    ClassPathFactory.createClassPath(ProjectClassPathSupport.createPropertyBasedClassPathImplementation(
+                    projectDirectory, evaluator, new String[] {"debug.classpath", WebProjectProperties.J2EE_PLATFORM_CLASSPATH }));
                 cache.put(ClassPathCache.SOURCE_RUNTIME, cp);
             }
             return cp;
@@ -238,10 +237,8 @@ public final class ClassPathProviderImpl implements ClassPathProvider, PropertyC
             ClassPath cp = cache.get(ClassPathCache.TEST_SOURCE_RUNTIME);
             if (cp == null)
             {
-                cp = ClassPathFactory.createClassPath(
-                        new ProjectClassPathImplementation(helper, "${run.test.classpath}:" + //NOI18N
-                        "${" + WebProjectProperties.J2EE_PLATFORM_CLASSPATH + "}", //NOI18N
-                        evaluator, false)); // NOI18N
+                cp = ClassPathFactory.createClassPath(ProjectClassPathSupport.createPropertyBasedClassPathImplementation(
+                    projectDirectory, evaluator, new String[] {"run.test.classpath", WebProjectProperties.J2EE_PLATFORM_CLASSPATH }));
                 cache.put(ClassPathCache.TEST_SOURCE_RUNTIME, cp);
             }
             return cp;
@@ -300,10 +297,8 @@ public final class ClassPathProviderImpl implements ClassPathProvider, PropertyC
     public synchronized ClassPath getJ2eePlatformClassPath() {
         ClassPath cp = cache.get(ClassPathCache.PLATFORM);
         if (cp == null) {
-            cp = ClassPathFactory.createClassPath(
-                new ProjectClassPathImplementation(helper,  "${" + //NOI18N
-                        WebProjectProperties.J2EE_PLATFORM_CLASSPATH  +  
-                        "}", evaluator, false));  //NOI18N
+            cp = ClassPathFactory.createClassPath(ProjectClassPathSupport.createPropertyBasedClassPathImplementation(
+                    projectDirectory, evaluator, new String[] {WebProjectProperties.J2EE_PLATFORM_CLASSPATH }));
             cache.put(ClassPathCache.PLATFORM, cp);
         }
         return cp;

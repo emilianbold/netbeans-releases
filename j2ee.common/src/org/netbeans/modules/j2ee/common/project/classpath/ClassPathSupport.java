@@ -59,6 +59,7 @@ import org.netbeans.api.project.ant.AntArtifact;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.modules.j2ee.common.project.ui.ProjectProperties;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
 import org.netbeans.modules.java.api.common.ant.UpdateHelper;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
@@ -220,7 +221,7 @@ public final class ClassPathSupport {
         List<String> items = new ArrayList<String>();
         for (Item item : classpath) {
             String reference = null;
-            
+
             switch( item.getType() ) {
 
                 case Item.TYPE_JAR:
@@ -816,10 +817,6 @@ public final class ClassPathSupport {
          */
         void storeAdditionalProperties(List<Item> items, String projectXMLElement);
         
-        /**
-         * Initializes additional information to a default state.
-         */
-        void initAdditionalProperties(Item item);
     }
     
 }

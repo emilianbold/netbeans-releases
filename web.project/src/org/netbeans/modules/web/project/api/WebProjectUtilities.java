@@ -500,7 +500,7 @@ public class WebProjectUtilities {
                     } else {
                         for (int i=0; i<testFolders.length; i++) {
                             if (!testFolders[i].exists()) {
-                                testFolders[i].mkdirs();
+                                FileUtil.createFolder(testFolders[i]);
                             }
 
                             String name = testFolders[i].getName();
@@ -683,9 +683,6 @@ public class WebProjectUtilities {
         } else {
             ep.setProperty(ProjectProperties.JAVAC_CLASSPATH, ""); // NOI18N
         }
-        
-        ep.setProperty(WebProjectProperties.J2EE_PLATFORM_SHARED,
-                Boolean.toString(h.isSharableProject() && serverLibraryName != null));
         
         
         ep.setProperty(WebProjectProperties.JSPCOMPILATION_CLASSPATH, "${jspc.classpath}:${javac.classpath}");

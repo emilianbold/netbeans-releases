@@ -225,7 +225,7 @@ public class JSFClientGenerator {
                 simpleEntityName, idGetter.get(0), managedBean, isInjection);
             
         final String indexJspToUse = addLinkToListJspIntoIndexJsp(wm, jsfFolder, simpleEntityName);
-        final String linkToIndex = indexJspToUse != null ? "<br />\n<a href=\"" + wm.getContextPath() + "/" + indexJspToUse + "\">Back to index</a>\n" : "";  //NOI18N
+        final String linkToIndex = indexJspToUse != null ? "<br />\n<a href=\"" + wm.getContextPath() + "/" + indexJspToUse + "\">Index</a>\n" : "";  //NOI18N
 
         generateListJsp(jsfRoot, classpathInfo, entityClass, simpleEntityName, managedBean, linkToIndex, fieldName, idProperty[0], doc);
         
@@ -266,15 +266,29 @@ public class JSFClientGenerator {
             String endLine = System.getProperty("line.separator"); //NOI18N
             if ( content.indexOf(find) > 0){
                 StringBuffer replace = new StringBuffer();
+                String findForm = "<h:form>";
+                boolean needsForm = content.indexOf(findForm) == -1;
+                if (needsForm) {
+                    replace.append(findForm);
+                    replace.append(endLine);
+                }
                 replace.append(find);
                 replace.append(endLine);
                 replace.append("    <br/>");                        //NOI18N
                 replace.append(endLine);
-                replace.append("    <a href=\"./");                  //NOI18N
-                replace.append(ConfigurationUtils.translateURI(ConfigurationUtils.getFacesServletMapping(wm),jsfFolder + "/List.jsp")); //NOI18N
-                replace.append("\">");                              //NOI18N
-                replace.append("List of " + simpleEntityName);
-                replace.append("</a>");                             //NOI18N
+//                replace.append("    <a href=\"./");                  //NOI18N
+//                replace.append(ConfigurationUtils.translateURI(ConfigurationUtils.getFacesServletMapping(wm),jsfFolder + "/List.jsp")); //NOI18N
+//                replace.append("\">");                              //NOI18N
+                String managedBeanName = getManagedBeanName(simpleEntityName);
+                replace.append("<h:commandLink action=\"#{" + managedBeanName + ".listSetup}\" value=\"");
+                replace.append("Show All " + simpleEntityName + "s");
+                replace.append("\"/>");
+                replace.append(endLine);
+//                replace.append("</a>");  
+                if (needsForm) {
+                    replace.append("</h:form>");
+                    replace.append(endLine);
+                }
                 content = content.replaceFirst(find, new String (replace.toString().getBytes("UTF8"), "UTF-8")); //NOI18N
                 JSFFrameworkProvider.createFile(indexjsp, content, "UTF-8"); //NOI18N
                 return indexjspString;
@@ -291,7 +305,7 @@ public class JSFClientGenerator {
                 + "<%@taglib uri=\"http://java.sun.com/jsf/core\" prefix=\"f\" %>\n"
                 + "<%@taglib uri=\"http://java.sun.com/jsf/html\" prefix=\"h\" %>\n"
                 + "<html>\n<head>\n <meta http-equiv=\"Content-Type\" content=\"text/html; charset=UTF-8\" />\n"
-                + "<title>List " + simpleEntityName + "</title>\n"
+                + "<title>Listing " + simpleEntityName + "s</title>\n"
                 + "</head>\n<body>\n<f:view>\n  <h:messages errorStyle=\"color: red\" infoStyle=\"color: green\" layout=\"table\"/>\n ");
         listSb.append("<h1>Listing " + simpleEntityName + "s</h1>\n");
         listSb.append("<h:form>\n");
@@ -306,18 +320,22 @@ public class JSFClientGenerator {
                 + "<h:commandLink action=\"#'{'{0}.next'}'\" value=\"Remaining #'{'{0}.itemCount - {0}.lastItem'}'\"\n"
                 + "rendered=\"#'{'{0}.lastItem < {0}.itemCount && {0}.lastItem + {0}.batchSize > {0}.itemCount'}'\"/>\n", managedBean));
         listSb.append("<h:dataTable value='#{" + managedBean + "." + fieldName + "s}' var='item' border=\"1\" cellpadding=\"2\" cellspacing=\"0\">\n");
-        final  String commands = "<h:column>\n <h:commandLink value=\"Destroy\" action=\"#'{'" + managedBean + ".destroy'}'\">\n" 
-                + "<f:param name=\"" + idProperty +"\" value=\"#'{'{0}." + idProperty + "'}'\"/>\n"
+        final  String commands = "<h:column>\n <f:facet name=\"header\">\n <h:outputText escape=\"false\" value=\"&nbsp;\"/>\n </f:facet>\n"
+                + "<h:commandLink value=\"Show\" action=\"#'{'" + managedBean + ".detailSetup'}'\">\n" 
+                + "<f:param name=\"jsfcrud.current" + simpleEntityName +"\" value=\"#'{'" + managedBean + ".asString[{0}]'}'\"/>\n"               
                 + "</h:commandLink>\n  <h:outputText value=\" \"/>\n"
-                + " <h:commandLink value=\"Edit\" action=\"#'{'" + managedBean + ".editSetup'}'\">\n"
-                + "<f:param name=\"" + idProperty +"\" value=\"#'{'{0}." + idProperty + "'}'\"/>\n"
+                + "<h:commandLink value=\"Edit\" action=\"#'{'" + managedBean + ".editSetup'}'\">\n"
+                + "<f:param name=\"jsfcrud.current" + simpleEntityName +"\" value=\"#'{'" + managedBean + ".asString[{0}]'}'\"/>\n"
+                + "</h:commandLink>\n  <h:outputText value=\" \"/>\n"
+                + "<h:commandLink value=\"Destroy\" action=\"#'{'" + managedBean + ".destroy'}'\">\n" 
+                + "<f:param name=\"jsfcrud.current" + simpleEntityName +"\" value=\"#'{'" + managedBean + ".asString[{0}]'}'\"/>\n"
                 + "</h:commandLink>\n </h:column>\n";
         JavaSource javaSource = JavaSource.create(classpathInfo);
         javaSource.runUserActionTask(new Task<CompilationController>() {
             public void run(CompilationController controller) throws IOException {
                 controller.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
                 TypeElement typeElement = controller.getElements().getTypeElement(entityClass);
-                JsfTable.createTable(controller, typeElement, managedBean + "." + fieldName, listSb, commands, "detailSetup");
+                JsfTable.createTable(controller, typeElement, managedBean + "." + fieldName, listSb, commands, null);
             }
         }, true);
         listSb.append("</h:dataTable>\n</h:panelGroup>\n");
@@ -365,49 +383,50 @@ public class JSFClientGenerator {
         newSb.append("<h:form>\n  <h:panelGrid columns=\"2\">\n");
         
         TypeElement typeElement = controller.getElements().getTypeElement(entityClass);
-        JsfForm.createForm(controller, typeElement, JsfForm.FORM_TYPE_NEW, managedBean + "." + fieldName, newSb, true);
+        JsfForm.createForm(controller, typeElement, JsfForm.FORM_TYPE_NEW, managedBean + "." + fieldName, newSb, true, entityClass);
         newSb.append("</h:panelGrid>\n<br />\n");
         
-        List<String> classNames = new ArrayList<String>();
-        List<String> idProperties = new ArrayList<String>();
-        for (ElementHandle<ExecutableElement> handle : toOneRelMethods) {
-            ExecutableElement method = handle.resolve(controller);
-            ExecutableElement otherSide = JsfForm.getOtherSideOfRelation(controller, method, fieldAccess);
-            if (otherSide != null) {
-                TypeElement relClass = (TypeElement) otherSide.getEnclosingElement();
-                classNames.add(relClass.getQualifiedName().toString());
-                idProperties.add(getPropNameFromMethod(method.getSimpleName().toString()));
-            }
-        }
+//        List<String> classNames = new ArrayList<String>();
+//        List<String> idProperties = new ArrayList<String>();
+//        for (ElementHandle<ExecutableElement> handle : toOneRelMethods) {
+//            ExecutableElement method = handle.resolve(controller);
+//            ExecutableElement otherSide = JsfForm.getOtherSideOfRelation(controller, method, fieldAccess);
+//            if (otherSide != null) {
+//                TypeElement relClass = (TypeElement) otherSide.getEnclosingElement();
+//                classNames.add(relClass.getQualifiedName().toString());
+//                idProperties.add(getPropNameFromMethod(method.getSimpleName().toString()));
+//            }
+//        }
+//        
+////      <h:commandLink action="#{comment.createFromPost}" value="Create" rendered="#{comment.comment.postId != null}"/>
+//        StringBuffer newRenderDefaultOption = new StringBuffer();
+//        for(int i = 0; i < classNames.size(); i++) {
+//            StringBuffer negativeCondition = new StringBuffer();
+//            if (classNames.size() > 0) {
+//                for(int j = 0; j < classNames.size(); j++) {
+//                    if (i != j) {
+//                        negativeCondition.append(" and " + managedBean + "." + fieldName + "." + idProperties.get(j) + " == null");
+//                    }
+//                }
+//            }
+//            newSb.append("<h:commandLink action=\"#{" + managedBean + ".createFrom" + 
+//                    simpleClassName(classNames.get(i)) + "}\" value=\"Create\" rendered=\"#{" + managedBean + "." + fieldName + "." + idProperties.get(i) + " != null" + negativeCondition.toString() + "}\"/>\n");
+//            if (i > 0) {
+//                newRenderDefaultOption.append(" and ");
+//            }
+//            newRenderDefaultOption.append(managedBean + "." + fieldName + "." + idProperties.get(i) + " == null");
+//                
+//        }
+//        
+////      <h:commandLink action="#{comment.create}" value="Create" rendered="#{comment.comment.postId == null}"/>
+//        if (classNames.size() == 0) {
+//            newSb.append("<h:commandLink action=\"#{" + managedBean + ".create}\" value=\"Create\"/>\n<br />\n");
+//        } else {
+//            newSb.append("<h:commandLink action=\"#{" + managedBean + ".create}\" value=\"Create\" rendered=\"#{" + newRenderDefaultOption.toString() + "}\"/>\n<br />\n");
+//        }
+        newSb.append("<h:commandLink action=\"#{" + managedBean + ".create}\" value=\"Create\"/>\n<br />\n");
         
-//      <h:commandLink action="#{comment.createFromPost}" value="Create" rendered="#{comment.comment.postId != null}"/>
-        StringBuffer newRenderDefaultOption = new StringBuffer();
-        for(int i = 0; i < classNames.size(); i++) {
-            StringBuffer negativeCondition = new StringBuffer();
-            if (classNames.size() > 0) {
-                for(int j = 0; j < classNames.size(); j++) {
-                    if (i != j) {
-                        negativeCondition.append(" and " + managedBean + "." + fieldName + "." + idProperties.get(j) + " == null");
-                    }
-                }
-            }
-            newSb.append("<h:commandLink action=\"#{" + managedBean + ".createFrom" + 
-                    simpleClassName(classNames.get(i)) + "}\" value=\"Create\" rendered=\"#{" + managedBean + "." + fieldName + "." + idProperties.get(i) + " != null" + negativeCondition.toString() + "}\"/>\n");
-            if (i > 0) {
-                newRenderDefaultOption.append(" and ");
-            }
-            newRenderDefaultOption.append(managedBean + "." + fieldName + "." + idProperties.get(i) + " == null");
-                
-        }
-        
-//      <h:commandLink action="#{comment.create}" value="Create" rendered="#{comment.comment.postId == null}"/>
-        if (classNames.size() == 0) {
-            newSb.append("<h:commandLink action=\"#{" + managedBean + ".create}\" value=\"Create\"/>\n<br />\n");
-        } else {
-            newSb.append("<h:commandLink action=\"#{" + managedBean + ".create}\" value=\"Create\" rendered=\"#{" + newRenderDefaultOption.toString() + "}\"/>\n<br />\n");
-        }
-        
-        newSb.append("<h:commandLink action=\"" + fieldName + "_list\" value=\"Show All " + simpleEntityName + "\"/>\n " + linkToIndex
+        newSb.append("<br />\n<h:commandLink action=\"#{" + fieldName + ".listSetup}\" value=\"Show All " + simpleEntityName + "s\" immediate=\"true\"/>\n " + linkToIndex
                 + "</h:form>\n </f:view>\n</body>\n</html>\n");
         
         try {
@@ -444,16 +463,23 @@ public class JSFClientGenerator {
                 + "<%@taglib uri=\"http://java.sun.com/jsf/core\" prefix=\"f\" %>\n"
                 + "<%@taglib uri=\"http://java.sun.com/jsf/html\" prefix=\"h\" %>\n"
                 + "<html>\n<head>\n <meta http-equiv=\"Content-Type\" content=\"text/html; charset=UTF-8\" />\n"
-                + "<title>Edit " + simpleEntityName + "</title>\n"
+                + "<title>Editing " + simpleEntityName + "</title>\n"
                 + "</head>\n<body>\n<f:view>\n  <h:messages errorStyle=\"color: red\" infoStyle=\"color: green\" layout=\"table\"/>\n ");
-        editSb.append("<h1>Edit " + simpleEntityName + "</h1>\n");
-        editSb.append("<h:form>\n  <h:inputHidden value=\"#{" + managedBean + "." + fieldName + "}\" immediate=\"true\"/>\n"
+        editSb.append("<h1>Editing " + simpleEntityName + "</h1>\n");
+        editSb.append("<h:form>\n"
                 + "<h:panelGrid columns=\"2\">\n");
         
         TypeElement typeElement = controller.getElements().getTypeElement(entityClass);
-        JsfForm.createForm(controller, typeElement, JsfForm.FORM_TYPE_EDIT, managedBean + "." + fieldName, editSb, true);
-        editSb.append("</h:panelGrid>\n<br />\n<h:commandLink action=\"#{" + managedBean + ".edit}\" value=\"Save\"/>\n<br />\n"
-                + "<h:commandLink action=\"" + fieldName + "_list\" value=\"Show All " + simpleEntityName + "\"/>\n" + linkToIndex
+        JsfForm.createForm(controller, typeElement, JsfForm.FORM_TYPE_EDIT, managedBean + "." + fieldName, editSb, true, entityClass);
+        editSb.append("</h:panelGrid>\n<br />\n<h:commandLink action=\"#{" + managedBean + ".edit}\" value=\"Save\">\n"
+                + "<f:param name=\"jsfcrud.current" + simpleEntityName + "\" value=\"#{" + managedBean + ".asString[" + managedBean + "." + fieldName + "]}\"/>\n"
+                + "</h:commandLink>\n"
+                + "<br />\n<br />\n"
+                + "<h:commandLink action=\"#{" + managedBean + ".detailSetup}\" value=\"Show\" immediate=\"true\">\n"
+                + "<f:param name=\"jsfcrud.current" + simpleEntityName + "\" value=\"#{" + managedBean + ".asString[" + managedBean + "." + fieldName + "]}\"/>\n"
+                + "</h:commandLink>\n"
+                + "<br />\n"
+                + "<h:commandLink action=\"#{" + fieldName + ".listSetup}\" value=\"Show All " + simpleEntityName + "s\" immediate=\"true\"/>\n" + linkToIndex
                 + "</h:form>\n </f:view>\n</body>\n</html>\n");
 
         try {
@@ -491,17 +517,27 @@ public class JSFClientGenerator {
                 + "<%@taglib uri=\"http://java.sun.com/jsf/core\" prefix=\"f\" %>\n"
                 + "<%@taglib uri=\"http://java.sun.com/jsf/html\" prefix=\"h\" %>\n"
                 + "<html>\n<head>\n <meta http-equiv=\"Content-Type\" content=\"text/html; charset=UTF-8\" />\n"
-                + "<title>Detail of " + simpleEntityName + "</title>\n"
+                + "<title>" + simpleEntityName + " Detail</title>\n"
                 + "</head>\n<body>\n<f:view>\n  <h:messages errorStyle=\"color: red\" infoStyle=\"color: green\" layout=\"table\"/>\n ");
-        detailSb.append("<h1>Detail of " + simpleEntityName + "</h1>\n");
+        detailSb.append("<h1>" + simpleEntityName + " Detail</h1>\n");
         detailSb.append("<h:form>\n  <h:panelGrid columns=\"2\">\n");
         
         TypeElement typeElement = controller.getElements().getTypeElement(entityClass);
-        JsfForm.createForm(controller, typeElement, JsfForm.FORM_TYPE_DETAIL, managedBean + "." + fieldName, detailSb, true);
-        detailSb.append("</h:panelGrid>\n");
+        JsfForm.createForm(controller, typeElement, JsfForm.FORM_TYPE_DETAIL, managedBean + "." + fieldName, detailSb, true, entityClass);
         JsfForm.createTablesForRelated(controller, typeElement, JsfForm.FORM_TYPE_DETAIL, managedBean + "." + fieldName, idProperty, isInjection, detailSb);
-        detailSb.append("<br />\n<h:commandLink action=\"" + fieldName + "_edit\" value=\"Edit\" />\n<br>\n"
-                + "<h:commandLink action=\"" + fieldName + "_list\" value=\"Show All " + simpleEntityName + "\"/>\n" + linkToIndex
+        detailSb.append("</h:panelGrid>\n");
+        detailSb.append("<br />\n"
+                + "<h:commandLink action=\"#{" + fieldName + ".destroy}\" value=\"Destroy\">\n"
+                + "<f:param name=\"jsfcrud.current" + simpleEntityName + "\" value=\"#{" + managedBean + ".asString[" + managedBean + "." + fieldName + "]}\" />\n"
+                + "</h:commandLink>\n"
+                + "<br />\n"
+                + "<br />\n"
+                + "<h:commandLink action=\"#{" + fieldName + ".editSetup}\" value=\"Edit\">\n"
+                + "<f:param name=\"jsfcrud.current" + simpleEntityName + "\" value=\"#{" + managedBean + ".asString[" + managedBean + "." + fieldName + "]}\" />\n"
+                + "</h:commandLink>\n"
+                + "<br />\n"
+                + "<h:commandLink action=\"#{" + fieldName + ".createSetup}\" value=\"New " + simpleEntityName + "\" />\n<br />\n"
+                + "<h:commandLink action=\"#{" + fieldName + ".listSetup}\" value=\"Show All " + simpleEntityName + "s\"/>\n" + linkToIndex
                 + "</h:form>\n </f:view>\n</body>\n</html>\n");
 
         try {
@@ -658,7 +694,7 @@ public class JSFClientGenerator {
         
         String controllerReferenceName = controllerClass;
         StringBuffer getAsObjectBody = new StringBuffer();
-        getAsObjectBody.append("if (string == null) {\n return null;\n }\n");
+        getAsObjectBody.append("if (string == null || string.length() == 0) {\n return null;\n }\n");
 
         String controllerVariable;
         if (isInjection) {
@@ -733,7 +769,8 @@ public class JSFClientGenerator {
             getAsStringBody.append(";\n");
             getAsStringEBody.append(";\n");
         } else {
-            getAsStringBody.append("return \"\" + o." + idGetterName[0] + "();\n");
+            String oDotGetId = "o." + idGetterName[0] + "()";
+            getAsStringBody.append("return " + oDotGetId + " == null ? \"\" : " + oDotGetId + ".toString();\n");
         }
         getAsStringBody.append("} else {\n"
                 + "throw new IllegalArgumentException(\"object:\" + object + \" of type:\" + object.getClass().getName() + \"; expected type: " + entityClass +"\");\n}");
@@ -883,7 +920,7 @@ public class JSFClientGenerator {
                     
                     modifiedClassTree = TreeMakerUtils.addVariable(modifiedClassTree, workingCopy, fieldName, entityClass, privateModifier, null, null);
                    
-                    modifiedClassTree = TreeMakerUtils.addVariable(modifiedClassTree, workingCopy, "model", "javax.faces.model.DataModel", privateModifier, null, null);
+                    modifiedClassTree = TreeMakerUtils.addVariable(modifiedClassTree, workingCopy, fieldName + "s", new TypeInfo("java.util.List", new String[]{entityClass}), privateModifier, null, null);
                     
 //            Field emfField = JMIGenerationUtil.createField(javaClass, "emf", Modifier.PRIVATE, "javax.persistence.EntityManagerFactory");
 //            if (isInjection) {
@@ -976,9 +1013,35 @@ public class JSFClientGenerator {
                     MethodInfo methodInfo = new MethodInfo("getEntityManager", publicModifier, "javax.persistence.EntityManager", null, null, null, "return emf.createEntityManager();", null, null);
                     modifiedClassTree = TreeMakerUtils.addMethod(modifiedClassTree, workingCopy, methodInfo);
 
-                    modifiedClassTree = TreeMakerUtils.addVariable(modifiedClassTree, workingCopy, "batchSize", "int", publicModifier, new Integer(20), null);
+                    modifiedClassTree = TreeMakerUtils.addVariable(modifiedClassTree, workingCopy, "batchSize", "int", publicModifier, new Integer(5), null);
                     
-                    modifiedClassTree = TreeMakerUtils.addVariable(modifiedClassTree, workingCopy, "firstItem", "int", publicModifier, new Integer(0), null);
+                    modifiedClassTree = TreeMakerUtils.addVariable(modifiedClassTree, workingCopy, "firstItem", "int", privateModifier, new Integer(0), null);
+                    
+                    modifiedClassTree = TreeMakerUtils.addVariable(modifiedClassTree, workingCopy, "itemCount", "int", privateModifier, new Integer(-1), null);
+                    
+                    String bodyText = "return get" + simpleEntityName + "sAvailable(false);";
+                    methodInfo = new MethodInfo("get" + simpleEntityName + "sAvailableSelectMany", publicModifier, "javax.faces.model.SelectItem[]", null, null, null, bodyText, null, null);
+                    modifiedClassTree = TreeMakerUtils.addMethod(modifiedClassTree, workingCopy, methodInfo);
+                    
+                    bodyText = "return get" + simpleEntityName + "sAvailable(true);";
+                    methodInfo = new MethodInfo("get" + simpleEntityName + "sAvailableSelectOne", publicModifier, "javax.faces.model.SelectItem[]", null, null, null, bodyText, null, null);
+                    modifiedClassTree = TreeMakerUtils.addMethod(modifiedClassTree, workingCopy, methodInfo);
+                    
+                    bodyText = "List<" + simpleEntityName + "> all" + simpleEntityName + "s = get" + simpleEntityName + "s(true);\n" + 
+                        "int size = one ? all" + simpleEntityName + "s.size() + 1 : all" + simpleEntityName + "s.size();\n" + 
+                        "SelectItem[] items = new SelectItem[size];\n" + 
+                        "int i = 0;\n" + 
+                        "if (one) {\n" + 
+                        "items[0] = new SelectItem(\"\", \"---\");\n" + 
+                        "i++;\n" + 
+                        "}\n" + 
+                        "for (" + simpleEntityName + " x : all" + simpleEntityName + "s) {\n" + 
+                        "items[i++] = new SelectItem(x, x.toString());\n" + 
+                        "}\n" + 
+                        "return items;";
+                    methodInfo = new MethodInfo("get" + simpleEntityName + "sAvailable", privateModifier, "javax.faces.model.SelectItem[]", null, new String[]{"boolean"}, new String[]{"one"}, bodyText, null, null);
+                    modifiedClassTree = TreeMakerUtils.addMethod(modifiedClassTree, workingCopy, methodInfo);
+
                     
 //            StringBuffer updateRelatedInCreate = new StringBuffer();
 //            StringBuffer updateRelatedInEditPre = new StringBuffer();
@@ -1019,30 +1082,32 @@ public class JSFClientGenerator {
                     List<ElementHandle<ExecutableElement>> allRelMethods = new ArrayList<ElementHandle<ExecutableElement>>(toOneRelMethods);
                     allRelMethods.addAll(toManyRelMethods);
                     
-                    String setEntityName = "set" + simpleEntityName;
-                    String setEntityBodyText = "this." + fieldName + " = " + fieldName + ";";
+//                    String setEntityName = "set" + simpleEntityName;
+//                    String setEntityBodyText = "this." + fieldName + " = " + fieldName + ";";
                     
                     //generate "get" + simpleEntityName and setEntityName methods after the upcoming for loop because setEntityBodyText can be modified within the loop
                     
-                    methodInfo = new MethodInfo("getDetail" + simpleEntityName + "s", publicModifier, "javax.faces.model.DataModel", null, null, null, "return model;", null, null);
-                    modifiedClassTree = TreeMakerUtils.addMethod(modifiedClassTree, workingCopy, methodInfo);
+//                    methodInfo = new MethodInfo("getDetail" + simpleEntityName + "s", publicModifier, "javax.faces.model.DataModel", null, null, null, "return model;", null, null);
+//                    modifiedClassTree = TreeMakerUtils.addMethod(modifiedClassTree, workingCopy, methodInfo);
                     
-                    String[] importFqs = {"javax.faces.model.ListDataModel",
-                                "java.util.ArrayList",
-                                "javax.persistence.Query",
+                    String[] importFqs = {"javax.persistence.Query",
                                 "javax.faces.application.FacesMessage",
-                                "javax.faces.context.FacesContext"
+                                "javax.faces.context.FacesContext",
+                                "java.lang.reflect.InvocationTargetException",
+                                "java.lang.reflect.Method",
+                                "javax.faces.FacesException",
+                                "java.util.HashMap"
                     };
                     CompilationUnitTree modifiedImportCut = null;
                     for (String importFq : importFqs) {
                         modifiedImportCut = TreeMakerUtils.createImport(workingCopy, modifiedImportCut, importFq);
                     }
                     
-                    TypeInfo[] typeInfos = {new TypeInfo("java.util.Collection", new String[]{entityClass})};
-                    methodInfo = new MethodInfo("setDetail" + simpleEntityName + "s", publicModifier, new TypeInfo("void"), null, typeInfos, new String[]{"m"}, "model = new ListDataModel(new ArrayList(m));", null, null);
-                    modifiedClassTree = TreeMakerUtils.addMethod(modifiedClassTree, workingCopy, methodInfo);
+//                    TypeInfo[] typeInfos = {new TypeInfo("java.util.Collection", new String[]{entityClass})};
+//                    methodInfo = new MethodInfo("setDetail" + simpleEntityName + "s", publicModifier, new TypeInfo("void"), null, typeInfos, new String[]{"m"}, "model = new ListDataModel(new ArrayList(m));", null, null);
+//                    modifiedClassTree = TreeMakerUtils.addMethod(modifiedClassTree, workingCopy, methodInfo);
                     
-                    String bodyText = null;
+
                     String entityReferenceName = entityClass;
                     
 //            // <editor-fold desc=" all relations ">
@@ -1107,25 +1172,48 @@ public class JSFClientGenerator {
                             }
                             
                             String relTypeInstanceName = relTypeReference.substring(0,1).toLowerCase() + relTypeReference.substring(1);
+                            if (multiplicity == JsfForm.REL_TO_MANY && otherSideMultiplicity == JsfForm.REL_TO_ONE){
+                                modifiedImportCut = TreeMakerUtils.createImport(workingCopy, modifiedImportCut, "java.util.ArrayList");
+                                updateRelatedInCreate.append("Map<" + simpleEntityName + ",List<" + relTypeReference + ">> " + relTypeInstanceName + "sToRemove = new HashMap<" + simpleEntityName + ",List<" + relTypeReference + ">>();\n");
+                            }
                             updateRelatedInCreate.append("\n//update property " + relFieldName + " of entity " + fieldName + "\n" + //mbohm: why doesn't this show
                                                         (isCollection ? "for(" + relTypeReference + " " + relTypeInstanceName + " : " + fieldName + "." + mName + "()){\n" :
                                                             relTypeReference + " " + relTypeInstanceName + "=" + fieldName + "." + mName +"();\n" +
                                                             "if (" + relTypeInstanceName + " != null) {\n"));
                                                             //if 1:1, be sure to orphan the related entity's current related entity
-                            if (multiplicity == JsfForm.REL_TO_ONE && otherSideMultiplicity == JsfForm.REL_TO_ONE){
-                                String relrelInstanceName = "old" + simpleEntityName;
-                                String relrelGetterName = otherName;
-                                updateRelatedInCreate.append(simpleEntityName + " " + relrelInstanceName + " = " + relTypeInstanceName + "." + relrelGetterName + "();\n" + 
-                                        "if (" + relrelInstanceName + " != null) {\n" + 
-                                        relrelInstanceName + " = em.merge(" + relrelInstanceName + ");\n" + 
+                            String relrelInstanceName = "old" + simpleEntityName;
+                            String relrelGetterName = otherName;
+                            if (otherSideMultiplicity == JsfForm.REL_TO_ONE){
+                                updateRelatedInCreate.append(simpleEntityName + " " + relrelInstanceName + " = " + relTypeInstanceName + "." + relrelGetterName + "();\n");
+                                if (multiplicity == JsfForm.REL_TO_ONE) {
+                                        updateRelatedInCreate.append("if (" + relrelInstanceName + " != null) {\n" + 
                                         relrelInstanceName + ".s" + mName.substring(1) + "(null);\n" + 
                                         relrelInstanceName + " = em.merge(" + relrelInstanceName + ");\n" + 
-                                        "}\n");                                        
+                                        "}\n");    
+                                }
                             }
-                            updateRelatedInCreate.append(relTypeInstanceName + " = em.merge(" + relTypeInstanceName +");\n" +
-                                                        ((otherSideMultiplicity == JsfForm.REL_TO_ONE) ? relTypeInstanceName + ".s" + otherName.substring(1) + "(" + fieldName+ ");\n" :
+                            updateRelatedInCreate.append( ((otherSideMultiplicity == JsfForm.REL_TO_ONE) ? relTypeInstanceName + ".s" + otherName.substring(1) + "(" + fieldName+ ");\n" :
                                                             relTypeInstanceName + "." + otherName + "().add(" + fieldName +");\n") +
-                                                        relTypeInstanceName + " = em.merge(" + relTypeInstanceName +");\n}\n\n");
+                                                        relTypeInstanceName + " = em.merge(" + relTypeInstanceName +");\n");
+                            if (multiplicity == JsfForm.REL_TO_MANY && otherSideMultiplicity == JsfForm.REL_TO_ONE){
+                                String relTypeListName = relTypeInstanceName + "List";
+                                updateRelatedInCreate.append("if " + relrelInstanceName + " != null) {\n" +
+                                        "List<" + relTypeReference + "> " + relTypeListName + " = " + relTypeInstanceName + "sToRemove.get(" + relrelInstanceName + ");\n" +
+                                        "if " + relTypeListName + " == null) {\n" +
+                                        relTypeListName + " = new ArrayList<" + relTypeReference + ">();\n" +
+                                        relTypeInstanceName + "sToRemove.put(" + relrelInstanceName + ", " + relTypeListName + ");\n" +
+                                        "}\n" +
+                                        relTypeListName + ".add(" + relTypeInstanceName + ");\n" +
+                                        "}\n}\n" +
+                                        "for (" + simpleEntityName + " " + relrelInstanceName + " : " + relTypeInstanceName + "sToRemove.keySet()) {\n" +
+                                        "List<" + relTypeReference + "> " + relTypeListName + " = " + relTypeInstanceName + "sToRemove.get(" + relrelInstanceName + ");\n" +
+                                        "for (" + relTypeReference + " " + relTypeInstanceName + " : " + relTypeListName + ") {\n" +
+                                        relrelInstanceName + "." + mName + "().remove(" + relTypeInstanceName + ");\n" +
+                                        "}\n" +
+                                        relrelInstanceName + " = em.merge(" + relrelInstanceName + ");\n");
+                                        
+                            }
+                            updateRelatedInCreate.append("}\n");
                             
 //                    if (isCollection) {
 //                        updateRelatedInEditPre.append("\n Collection<" + relTypeReference + "> " + relFieldName + "sOld = em.find("
@@ -1157,29 +1245,55 @@ public class JSFClientGenerator {
                             
                             if (isCollection) {
                                 updateRelatedInEditPre.append("\n Collection<" + relTypeReference + "> " + relTypeInstanceName + "sOld = em.find(" +
-                                    entityReferenceName + ".class, " + fieldName + "." + idGetterName[0] + "())." + mName + "();\n");
+                                    simpleEntityName + ".class, " + fieldName + "." + idGetterName[0] + "())." + mName + "();\n");
                                 updateRelatedInEditPost.append("\n//update property " + relTypeInstanceName + " of entity " + fieldName + "\n" + //mbohm: why doesn't this show up
                                     "Collection <" + relTypeReference + "> " + relTypeInstanceName + "sNew = " + fieldName + "." + mName + "();\n" +
-                                    "for(" + relTypeReference + " " + relTypeInstanceName + "New : " + relTypeInstanceName + "sNew) {\n" +
-                                    ((otherSideMultiplicity == JsfForm.REL_TO_ONE) ? relTypeInstanceName + "New.s" + otherName.substring(1) + "(" + fieldName+ ");\n" :
-                                        relTypeInstanceName + "New." + otherName + "().add(" + fieldName +");\n") +
-                                    relTypeInstanceName + "New=em.merge(" + relTypeInstanceName +"New);\n}\n" +
                                     "for(" + relTypeReference + " " + relTypeInstanceName + "Old : " + relTypeInstanceName + "sOld) {\n" +
                                     ((otherSideMultiplicity == JsfForm.REL_TO_ONE) ? relTypeInstanceName + "Old.s" + otherName.substring(1) + "(null);\n" :
                                         relTypeInstanceName + "Old." + otherName + "().remove(" + fieldName +");\n") +
                                     relTypeInstanceName + "Old = em.merge(" + relTypeInstanceName +"Old);\n}\n");
+                                    if (otherSideMultiplicity == JsfForm.REL_TO_ONE) {
+                                       updateRelatedInEditPost.append("Map<" + simpleEntityName + ",List<" + relTypeReference + ">> " + relTypeInstanceName + "sToRemove = new HashMap<" + simpleEntityName + ",List<" + relTypeReference + ">>();\n"); 
+                                    }
+                                    updateRelatedInEditPost.append("for(" + relTypeReference + " " + relTypeInstanceName + "New : " + relTypeInstanceName + "sNew) {\n" +
+                                    ((otherSideMultiplicity == JsfForm.REL_TO_ONE) ? simpleEntityName + " " + relrelInstanceName + " = " + relTypeInstanceName + "New." + relrelGetterName + "();\n" +
+                                        relTypeInstanceName + "New.s" + otherName.substring(1) + "(" + fieldName+ ");\n" :
+                                        relTypeInstanceName + "New." + otherName + "().add(" + fieldName +");\n") +
+                                    relTypeInstanceName + "New=em.merge(" + relTypeInstanceName +"New);\n");
+                                    String relTypeListName = relTypeInstanceName + "List";
+                                    if (otherSideMultiplicity == JsfForm.REL_TO_ONE) {
+                                        updateRelatedInEditPost.append("if " + relrelInstanceName + " != null) {\n" +
+                                            "List<" + relTypeReference + "> " + relTypeListName + " = " + relTypeInstanceName + "sToRemove.get(" + relrelInstanceName + ");\n" +
+                                            "if " + relTypeListName + " == null) {\n" +
+                                            relTypeListName + " = new ArrayList<" + relTypeReference + ">();\n" +
+                                            relTypeInstanceName + "sToRemove.put(" + relrelInstanceName + ", " + relTypeListName + ");\n" +
+                                            "}\n" +
+                                            relTypeListName + ".add(" + relTypeInstanceName + "New);\n" +
+                                            "}\n");
+                                    }
+                                    updateRelatedInEditPost.append("}\n");
+                                    if (otherSideMultiplicity == JsfForm.REL_TO_ONE) {
+                                            updateRelatedInEditPost.append("for (" + simpleEntityName + " " + relrelInstanceName + " : " + relTypeInstanceName + "sToRemove.keySet()) {\n" +
+                                            "List<" + relTypeReference + "> " + relTypeListName + " = " + relTypeInstanceName + "sToRemove.get(" + relrelInstanceName + ");\n" +
+                                            "for (" + relTypeReference + " " + relTypeInstanceName + " : " + relTypeListName + ") {\n" +
+                                            relrelInstanceName + "." + mName + "().remove(" + relTypeInstanceName + ");\n" +
+                                            "}\n" +
+                                            relrelInstanceName + " = em.merge(" + relrelInstanceName + ");\n}\n");
+                                    }
                             } else {
                                 updateRelatedInEditPre.append("\n" + relTypeReference + " " + relFieldName + "Old = em.find("
                                     + entityReferenceName +".class, " + fieldName + "." + idGetterName[0] + "())." + mName + "();\n");
                                 updateRelatedInEditPost.append("\n//update property " + relFieldName + " of entity " + simpleRelType + "\n" +
                                     relTypeReference + " " + relFieldName + "New = " + fieldName + "." + mName +"();\n" +
-                                    "if(" + relFieldName + "New != null) {\n");
+                                    
+                                    "if(" + relFieldName + "Old != null && !" + relFieldName + "Old.equals(" + relFieldName + "New)) {\n" +
+                                    ((otherSideMultiplicity == JsfForm.REL_TO_ONE) ? relFieldName + "Old.s" + otherName.substring(1) + "(null);\n" :
+                                        relFieldName + "Old." + otherName + "().remove(" + fieldName +");\n") +
+                                    relFieldName + "Old = em.merge(" + relFieldName +"Old);\n}\n" +
+                                    "if(" + relFieldName + "New != null && !" + relFieldName + "New.equals(" + relFieldName + "Old)) {\n");
                                 if (multiplicity == JsfForm.REL_TO_ONE && otherSideMultiplicity == JsfForm.REL_TO_ONE){
-                                    String relrelInstanceName = "old" + simpleEntityName;
-                                    String relrelGetterName = otherName;
                                     updateRelatedInEditPost.append(simpleEntityName + " " + relrelInstanceName + " = " + relFieldName + "New." + relrelGetterName + "();\n" + 
                                             "if (" + relrelInstanceName + " != null) {\n" + 
-                                            relrelInstanceName + " = em.merge(" + relrelInstanceName + ");\n" + 
                                             relrelInstanceName + ".s" + mName.substring(1) + "(null);\n" + 
                                             relrelInstanceName + " = em.merge(" + relrelInstanceName + ");\n" + 
                                             "}\n");
@@ -1187,11 +1301,8 @@ public class JSFClientGenerator {
                                 updateRelatedInEditPost.append(
                                     ((otherSideMultiplicity == JsfForm.REL_TO_ONE) ? relFieldName + "New.s" + otherName.substring(1) + "(" + fieldName+ ");\n" :
                                         relFieldName + "New." + otherName + "().add(" + fieldName +");\n") +
-                                    relFieldName + "New=em.merge(" + relFieldName +"New);\n}\n" +
-                                    "if(" + relFieldName + "Old != null) {\n" +
-                                    ((otherSideMultiplicity == JsfForm.REL_TO_ONE) ? relFieldName + "Old.s" + otherName.substring(1) + "(null);\n" :
-                                        relFieldName + "Old." + otherName + "().remove(" + fieldName +");\n") +
-                                    relFieldName + "Old = em.merge(" + relFieldName +"Old);\n}\n");
+                                    relFieldName + "New=em.merge(" + relFieldName +"New);\n}\n"
+                                    );
                             } 
                             
 //                    updateRelatedInDestroy.append("\n//update property " + relFieldName + " of entity " + simpleRelType + "\n" +
@@ -1205,7 +1316,6 @@ public class JSFClientGenerator {
                             updateRelatedInDestroy.append("\n//update property " + relFieldName + " of entity " + fieldName + "\n" +    //mbohm: why doesn't this show up
                                     (isCollection ? "Collection<" + relTypeReference + "> " + relTypeInstanceName + "s" : relTypeReference + " " + relTypeInstanceName) + " = " + fieldName + "." + mName +"();\n" +
                                     (isCollection ? "for(" + relTypeReference + " " + relTypeInstanceName + " : " + relTypeInstanceName + "s" : "if (" + relTypeInstanceName + " != null") + ") {\n" +
-                                    relTypeInstanceName + " = em.merge(" + relTypeInstanceName +");\n" +
                                     ((otherSideMultiplicity == JsfForm.REL_TO_ONE) ? relTypeInstanceName + ".s" + otherName.substring(1) + "(null);\n" :
                                         relTypeInstanceName + "." + otherName + "().remove(" + fieldName +");\n") +
                                     relTypeInstanceName + " = em.merge(" + relTypeInstanceName +");\n}\n\n");
@@ -1221,17 +1331,17 @@ public class JSFClientGenerator {
 //                            + "return \"" + getManagedBeanName(simpleRelType) + "_detail\";\n");
 //                    javaClass.getFeatures().add(destroyFromDetail);
                             
-                            String relIdGetter = JsfForm.getIdGetter(workingCopy, isRelFieldAccess, relClass).getSimpleName().toString();
-                            bodyText = simpleRelType + " param = get" + simpleRelType + "Controller().get" + simpleRelType + "();\n" + 
-                                    "destroy();\n" + 
-                                    "EntityManager em = getEntityManager();\n try {\n" + 
-                                    "get" + simpleRelType + "Controller().set" + simpleRelType + 
-                                    "(em.find(" + relTypeReference + ".class, param." + relIdGetter + "()));\n" + 
-                                    "} finally {\n em.close();\n}\n" + 
-                                    "return \"" + getManagedBeanName(simpleRelType) + "_detail\";\n";
-                            
-                            methodInfo = new MethodInfo("destroyFrom" + simpleRelType, publicModifier, "java.lang.String", null, null, null, bodyText, null, null);
-                            modifiedClassTree = TreeMakerUtils.addMethod(modifiedClassTree, workingCopy, methodInfo);
+//                            String relIdGetter = JsfForm.getIdGetter(workingCopy, isRelFieldAccess, relClass).getSimpleName().toString();
+//                            bodyText = simpleRelType + " param = get" + simpleRelType + "Controller().get" + simpleRelType + "();\n" + 
+//                                    "destroy();\n" + 
+//                                    "EntityManager em = getEntityManager();\n try {\n" + 
+//                                    "get" + simpleRelType + "Controller().set" + simpleRelType + 
+//                                    "(em.find(" + relTypeReference + ".class, param." + relIdGetter + "()));\n" + 
+//                                    "} finally {\n em.close();\n}\n" + 
+//                                    "return \"" + getManagedBeanName(simpleRelType) + "_detail\";\n";
+//                            
+//                            methodInfo = new MethodInfo("destroyFrom" + simpleRelType, publicModifier, "java.lang.String", null, null, null, bodyText, null, null);
+//                            modifiedClassTree = TreeMakerUtils.addMethod(modifiedClassTree, workingCopy, methodInfo);
                             
 //                    Method controllerAccess = JMIGenerationUtil.createMethod(javaClass, "get" + simpleRelType + "Controller", Modifier.PRIVATE, simpleRelType + "Controller"); //NOI18N
 //                    if (isInjection) {
@@ -1245,19 +1355,19 @@ public class JSFClientGenerator {
 //                    }
 //                    javaClass.getFeatures().add(controllerAccess);
                             
-                            if (isInjection) {
-                                bodyText = "FacesContext context = FacesContext.getCurrentInstance();\n" + 
-                                        "return (" + simpleRelType +"Controller) context.getApplication().getELResolver().getValue(\n context.getELContext(), null, \"" + 
-                                        getManagedBeanName(simpleRelType) +"\");\n";
-                            } else {
-                                bodyText = "FacesContext context = FacesContext.getCurrentInstance();\n" + 
-                                        "return (" + simpleRelType +"Controller) context.getApplication().getVariableResolver().resolveVariable(\n context, \""  +
-                                        getManagedBeanName(simpleRelType) +"\");\n";
-                            }
-                            
-                            String controllerAccessName = "get" + simpleRelType + "Controller";
-                            methodInfo = new MethodInfo(controllerAccessName, privateModifier, relType + "Controller", null, null, null, bodyText, null, null);
-                            modifiedClassTree = TreeMakerUtils.addMethod(modifiedClassTree, workingCopy, methodInfo);
+//                            if (isInjection) {
+//                                bodyText = "FacesContext context = FacesContext.getCurrentInstance();\n" + 
+//                                        "return (" + simpleRelType +"Controller) context.getApplication().getELResolver().getValue(\n context.getELContext(), null, \"" + 
+//                                        getManagedBeanName(simpleRelType) +"\");\n";
+//                            } else {
+//                                bodyText = "FacesContext context = FacesContext.getCurrentInstance();\n" + 
+//                                        "return (" + simpleRelType +"Controller) context.getApplication().getVariableResolver().resolveVariable(\n context, \""  +
+//                                        getManagedBeanName(simpleRelType) +"\");\n";
+//                            }
+//                            
+//                            String controllerAccessName = "get" + simpleRelType + "Controller";
+//                            methodInfo = new MethodInfo(controllerAccessName, privateModifier, relType + "Controller", null, null, null, bodyText, null, null);
+//                            modifiedClassTree = TreeMakerUtils.addMethod(modifiedClassTree, workingCopy, methodInfo);
                             
 //                    if (multiplicity == JsfForm.REL_TO_MANY) {
 //                        setEntity.setBodyText(setEntity.getBodyText() + "\n"
@@ -1265,17 +1375,17 @@ public class JSFClientGenerator {
 //                                + "s(" + fieldName + "." + m.getName() + "());");
 //                    }
                             
-                            if (otherSideMultiplicity == JsfForm.REL_TO_ONE) {
-                                bodyText = setEntityName + "(" + controllerAccessName + "().get" + simpleRelType + "()." + otherName + "();\nreturn \"" + fieldName + "_detail\";\n";
-                                methodInfo = new MethodInfo("detailSetupFrom" + simpleRelType + "Detail", publicModifier, "java.lang.String", null, null, null, bodyText, null, null);
-                                modifiedClassTree = TreeMakerUtils.addMethod(modifiedClassTree, workingCopy, methodInfo);
-                            }
+//                            if (otherSideMultiplicity == JsfForm.REL_TO_ONE) {
+//                                bodyText = setEntityName + "(" + controllerAccessName + "().get" + simpleRelType + "()." + otherName + "();\nreturn \"" + fieldName + "_detail\";\n";
+//                                methodInfo = new MethodInfo("detailSetupFrom" + simpleRelType + "Detail", publicModifier, "java.lang.String", null, null, null, bodyText, null, null);
+//                                modifiedClassTree = TreeMakerUtils.addMethod(modifiedClassTree, workingCopy, methodInfo);
+//                            }
                             
-                            if (multiplicity == JsfForm.REL_TO_MANY) {
-                                setEntityBodyText += "\n" +
-                                controllerAccessName + "().setDetail" + simpleRelType +
-                                "s(" + fieldName + "." + mName + "());";
-                            }
+//                            if (multiplicity == JsfForm.REL_TO_MANY) {
+//                                setEntityBodyText += "\n" +
+//                                controllerAccessName + "().setDetail" + simpleRelType +
+//                                "s(" + fieldName + "." + mName + "());";
+//                            }
                             
 //                    if (multiplicity == JsfForm.REL_TO_MANY && otherSideMultiplicity == JsfForm.REL_TO_MANY) {
 //                        //methods needed to add items into N:M relationship
@@ -1297,22 +1407,22 @@ public class JSFClientGenerator {
 //                        javaClass.getFeatures().add(getRelatedAvailable);
                             
                             if (multiplicity == JsfForm.REL_TO_MANY) {
-                                //methods needed to add items into N:M relationship
-                                modifiedImportCut = TreeMakerUtils.createImport(workingCopy, modifiedImportCut, "java.util.List");
-                                bodyText = "EntityManager em = getEntityManager();\n try{\n" + 
-                                        "Query q = em.createQuery(\"select o from " + simpleRelType + " as o where " + 
-                                        (otherSideMultiplicity == JsfForm.REL_TO_MANY ? ":param not member of o." + getPropNameFromMethod(otherName) + "\");\n" : 
-                                            "o." + getPropNameFromMethod(otherName) + " <> :param or o." + getPropNameFromMethod(otherName) + " IS NULL\");\n") + 
-                                        "q.setParameter(\"param\", " + fieldName + ");\n" + 
-                                        "List <" + simpleRelType + "> l = (List <" + simpleRelType + ">) q.getResultList();\n" + 
-                                        "SelectItem select[] = new SelectItem[l.size()];\n" + 
-                                        "int i = 0;\n" + 
-                                        "for(" + simpleRelType + " x : l) {\n" + 
-                                        "select[i++] = new SelectItem(x);\n" + 
-                                        "}\n return select;\n" + 
-                                        "} finally {\n em.close();\n}\n";
-                                methodInfo = new MethodInfo(mName + "Available", publicModifier, "javax.faces.model.SelectItem[]", null, null, null, bodyText, null, null);
-                                modifiedClassTree = TreeMakerUtils.addMethod(modifiedClassTree, workingCopy, methodInfo);
+//                                //methods needed to add items into N:M relationship
+//                                modifiedImportCut = TreeMakerUtils.createImport(workingCopy, modifiedImportCut, "java.util.List");
+//                                bodyText = "EntityManager em = getEntityManager();\n try{\n" + 
+//                                        "Query q = em.createQuery(\"select o from " + simpleRelType + " as o where " + 
+//                                        (otherSideMultiplicity == JsfForm.REL_TO_MANY ? ":param not member of o." + getPropNameFromMethod(otherName) + "\");\n" : 
+//                                            "o." + getPropNameFromMethod(otherName) + " <> :param or o." + getPropNameFromMethod(otherName) + " IS NULL\");\n") + 
+//                                        "q.setParameter(\"param\", " + fieldName + ");\n" + 
+//                                        "List <" + simpleRelType + "> l = (List <" + simpleRelType + ">) q.getResultList();\n" + 
+//                                        "SelectItem select[] = new SelectItem[l.size()];\n" + 
+//                                        "int i = 0;\n" + 
+//                                        "for(" + simpleRelType + " x : l) {\n" + 
+//                                        "select[i++] = new SelectItem(x);\n" + 
+//                                        "}\n return select;\n" + 
+//                                        "} finally {\n em.close();\n}\n";
+//                                methodInfo = new MethodInfo(mName + "Available", publicModifier, "javax.faces.model.SelectItem[]", null, null, null, bodyText, null, null);
+//                                modifiedClassTree = TreeMakerUtils.addMethod(modifiedClassTree, workingCopy, methodInfo);
                                 
 //                        Field relatedToAdd = JMIGenerationUtil.createFieldArray(javaClass, getPropNameFromMethod(m.getName()), Modifier.PUBLIC, relTypeReference);
 //                        javaClass.getFeatures().add(relatedToAdd);
@@ -1327,14 +1437,34 @@ public class JSFClientGenerator {
 //                        setRelatedToAdd.setBodyText("this." + relatedToAdd.getName() + " = " + relatedToAdd.getName() + ";\n");
 //                        javaClass.getFeatures().add(setRelatedToAdd);
                                 
+                                importFqs = new String[]{"java.util.Arrays",
+                                            "java.util.Collection"
+                                  };
+                                for (String importFq : importFqs) {
+                                    modifiedImportCut = TreeMakerUtils.createImport(workingCopy, modifiedImportCut, importFq);
+                                }
+                                
                                 String relatedToAddName = getPropNameFromMethod(mName);
-                                String relatedCollectionType = relType + "[]";
-                                modifiedClassTree = TreeMakerUtils.addVariable(modifiedClassTree, workingCopy, relatedToAddName, relatedCollectionType, publicModifier, null, null);
-
-                                methodInfo = new MethodInfo(mName + "ToAdd", publicModifier, relatedCollectionType, null, null, null, "return " + relatedToAddName + ";\n", null, null);
+//                                String relatedCollectionType = relType + "[]";
+//                                modifiedClassTree = TreeMakerUtils.addVariable(modifiedClassTree, workingCopy, relatedToAddName, relatedCollectionType, publicModifier, null, null);
+//
+//                                methodInfo = new MethodInfo(mName + "ToAdd", publicModifier, relatedCollectionType, null, null, null, "return " + relatedToAddName + ";\n", null, null);
+//                                modifiedClassTree = TreeMakerUtils.addMethod(modifiedClassTree, workingCopy, methodInfo);
+//                                
+//                                methodInfo = new MethodInfo("s" + mName.substring(1) + "ToAdd", publicModifier, "void", null, new String[]{relatedCollectionType}, new String[]{relatedToAddName}, "this." + relatedToAddName + " = " + relatedToAddName + ";\n", null, null);
+//                                modifiedClassTree = TreeMakerUtils.addMethod(modifiedClassTree, workingCopy, methodInfo);
+                                
+                                bodyText = "List<" + simpleRelType + "> " + relatedToAddName + "List = Arrays.asList(" + relatedToAddName + ");\n" +
+                                        fieldName + ".s" + mName.substring(1) + "(" + relatedToAddName + "List);";
+                                methodInfo = new MethodInfo("s" + mName.substring(1) + "Of" + simpleEntityName, publicModifier, "void", null, new String[]{relType + "[]"}, new String[]{relatedToAddName}, bodyText, null, null);
                                 modifiedClassTree = TreeMakerUtils.addMethod(modifiedClassTree, workingCopy, methodInfo);
                                 
-                                methodInfo = new MethodInfo("s" + mName.substring(1) + "ToAdd", publicModifier, "void", null, new String[]{relatedCollectionType}, new String[]{relatedToAddName}, "this." + relatedToAddName + " = " + relatedToAddName + ";\n", null, null);
+                                bodyText = "Collection<" + simpleRelType + "> " + relatedToAddName + " = " + fieldName + "." + mName + "();\n" +
+                                        "if (" + relatedToAddName + " == null) {\n" + 
+                                        "return new " + simpleRelType + "[0];\n" + 
+                                        "}\n" + 
+                                        "return " + relatedToAddName + ".toArray(new " + simpleRelType + "[0]);";
+                                methodInfo = new MethodInfo(mName + "Of" + simpleEntityName, publicModifier, relType + "[]", null, null, null, bodyText, null, null);
                                 modifiedClassTree = TreeMakerUtils.addMethod(modifiedClassTree, workingCopy, methodInfo);
                                 
 //                        Method addRelated = JMIGenerationUtil.createMethod(javaClass, "add" + m.getName().substring(3), Modifier.PUBLIC, "String");
@@ -1354,28 +1484,28 @@ public class JSFClientGenerator {
 //                                + "}\n } finally {\n em.close();\n }\n"
 //                                + "return \"" + fieldName + "_detail\";\n");
 //                        javaClass.getFeatures().add(addRelated);
-                                bodyText = "";
-                                bodyText = "if (" + relatedToAddName + " == null || " + relatedToAddName + ".length == 0) {\n" + 
-                                        "addErrorMessage(\"You must select one or more " + simpleRelType.toLowerCase() + "s to add.\");\n" + 
-                                        "return null;\n" + 
-                                        "}\n";
-                                bodyText += "EntityManager em = getEntityManager();\n" +
-                                    "try {\n utx.begin();\n" + 
-                                    "for(" + simpleRelType + " entity : " + relatedToAddName + ") {\n" + 
-                                    "entity." + (otherSideMultiplicity == JsfForm.REL_TO_MANY ? otherName + "().add(" + fieldName + ");\n" : "s" + otherName.substring(1) + "(" + fieldName + ");\n") + 
-                                    "entity = em.merge(entity);\n" + 
-                                    fieldName + "." + mName + "().add(entity);\n" + 
-                                    "}\n" + 
-                                    fieldName + " = em.merge(" + fieldName + ");\n" + 
-                                    "utx.commit();\n" + 
-                                    setEntityName + "(" + fieldName + ");\n" + 
-                                    "addSuccessMessage(\"" + simpleRelType + " successfully added.\");\n" +
-                                    "} catch (Exception ex) {\n try {\n addErrorMessage(ex.getLocalizedMessage());\n" + 
-                                    "utx.rollback();\n } catch (Exception e) {\n addErrorMessage(e.getLocalizedMessage());\n" + 
-                                    "}\nreturn null;\n} finally {\n em.close();\n }\n" + 
-                                    "return \"" + fieldName + "_detail\";\n";
-                                methodInfo = new MethodInfo("add" + mName.substring(3), publicModifier, "java.lang.String", null, null, null, bodyText, null, null);
-                                modifiedClassTree = TreeMakerUtils.addMethod(modifiedClassTree, workingCopy, methodInfo);
+//                                bodyText = "";
+//                                bodyText = "if (" + relatedToAddName + " == null || " + relatedToAddName + ".length == 0) {\n" + 
+//                                        "addErrorMessage(\"You must select one or more " + simpleRelType.toLowerCase() + "s to add.\");\n" + 
+//                                        "return null;\n" + 
+//                                        "}\n";
+//                                bodyText += "EntityManager em = getEntityManager();\n" +
+//                                    "try {\n utx.begin();\n" + 
+//                                    "for(" + simpleRelType + " entity : " + relatedToAddName + ") {\n" + 
+//                                    "entity." + (otherSideMultiplicity == JsfForm.REL_TO_MANY ? otherName + "().add(" + fieldName + ");\n" : "s" + otherName.substring(1) + "(" + fieldName + ");\n") + 
+//                                    "entity = em.merge(entity);\n" + 
+//                                    fieldName + "." + mName + "().add(entity);\n" + 
+//                                    "}\n" + 
+//                                    fieldName + " = em.merge(" + fieldName + ");\n" + 
+//                                    "utx.commit();\n" + 
+//                                    setEntityName + "(" + fieldName + ");\n" + 
+//                                    "addSuccessMessage(\"" + simpleRelType + " successfully added.\");\n" +
+//                                    "} catch (Exception ex) {\n try {\n addErrorMessage(ex.getLocalizedMessage());\n" + 
+//                                    "utx.rollback();\n } catch (Exception e) {\n addErrorMessage(e.getLocalizedMessage());\n" + 
+//                                    "}\nreturn null;\n} finally {\n em.close();\n }\n" + 
+//                                    "return \"" + fieldName + "_detail\";\n";
+//                                methodInfo = new MethodInfo("add" + mName.substring(3), publicModifier, "java.lang.String", null, null, null, bodyText, null, null);
+//                                modifiedClassTree = TreeMakerUtils.addMethod(modifiedClassTree, workingCopy, methodInfo);
                                 
 //                        Method removeRelated = JMIGenerationUtil.createMethod(javaClass, "remove" + m.getName().substring(3), Modifier.PUBLIC, "String");
 //                        removeRelated.setBodyText("EntityManager em = getEntityManager();\n"
@@ -1400,27 +1530,27 @@ public class JSFClientGenerator {
 //                        javaClass.getFeatures().add(removeRelated);
 //                    }
                                 
-                                bodyText = "EntityManager em = getEntityManager();\n" + 
-                                    "try {\n" + 
-                                    "utx.begin();\n" + 
-                                    simpleRelType + " entity = (" + simpleRelType +") " + controllerAccessName + "().getDetail" + simpleRelType + "s().getRowData();\n" + 
-                                    "entity." + (otherSideMultiplicity == JsfForm.REL_TO_MANY ? otherName + "().remove(" + fieldName + ");\n" : "s" + otherName.substring(1) + "(null);\n") + 
-                                    "entity = em.merge(entity);\n" + 
-                                    fieldName + "." + mName + "().remove(entity);\n" + 
-                                    fieldName + " = em.merge(" + fieldName + ");\n" + 
-                                    "utx.commit();\n" + 
-                                    setEntityName + "(" + fieldName + ");\n" + 
-                                    "addSuccessMessage(\"" + simpleRelType + " successfully removed.\");\n" +
-                                    "} catch (Exception ex) {\n" + 
-                                    "try {\n" + 
-                                    "addErrorMessage(ex.getLocalizedMessage());\n" + 
-                                    "utx.rollback();\n" + 
-                                    "} catch (Exception e) {\n" + 
-                                    "addErrorMessage(e.getLocalizedMessage());\n" + 
-                                    "}\nreturn null;\n} finally {\n em.close();\n }\n" + 
-                                    "return \"" + fieldName + "_detail\";\n";
-                                methodInfo = new MethodInfo("remove" + mName.substring(3), publicModifier, "java.lang.String", null, null, null, bodyText, null, null);
-                                modifiedClassTree = TreeMakerUtils.addMethod(modifiedClassTree, workingCopy, methodInfo);
+//                                bodyText = "EntityManager em = getEntityManager();\n" + 
+//                                    "try {\n" + 
+//                                    "utx.begin();\n" + 
+//                                    simpleRelType + " entity = (" + simpleRelType +") " + controllerAccessName + "().getDetail" + simpleRelType + "s().getRowData();\n" + 
+//                                    "entity." + (otherSideMultiplicity == JsfForm.REL_TO_MANY ? otherName + "().remove(" + fieldName + ");\n" : "s" + otherName.substring(1) + "(null);\n") + 
+//                                    "entity = em.merge(entity);\n" + 
+//                                    fieldName + "." + mName + "().remove(entity);\n" + 
+//                                    fieldName + " = em.merge(" + fieldName + ");\n" + 
+//                                    "utx.commit();\n" + 
+//                                    setEntityName + "(" + fieldName + ");\n" + 
+//                                    "addSuccessMessage(\"" + simpleRelType + " successfully removed.\");\n" +
+//                                    "} catch (Exception ex) {\n" + 
+//                                    "try {\n" + 
+//                                    "addErrorMessage(ex.getLocalizedMessage());\n" + 
+//                                    "utx.rollback();\n" + 
+//                                    "} catch (Exception e) {\n" + 
+//                                    "addErrorMessage(e.getLocalizedMessage());\n" + 
+//                                    "}\nreturn null;\n} finally {\n em.close();\n }\n" + 
+//                                    "return \"" + fieldName + "_detail\";\n";
+//                                methodInfo = new MethodInfo("remove" + mName.substring(3), publicModifier, "java.lang.String", null, null, null, bodyText, null, null);
+//                                modifiedClassTree = TreeMakerUtils.addMethod(modifiedClassTree, workingCopy, methodInfo);
                             }
                             
 //                    Method createFromDetailSetup = JMIGenerationUtil.createMethod(javaClass, "createFrom" + simpleRelType +"Setup", Modifier.PUBLIC, "String"); //NOI18N
@@ -1444,21 +1574,21 @@ public class JSFClientGenerator {
 //            }
 //            // </editor-fold>
                             
-                            bodyText = "this." + fieldName + " = new " + entityReferenceName + "();\n" + 
-                                "EntityManager em = getEntityManager();\n try{\n" + 
-                                (isCollection ? "if (" + fieldName + "." + mName + "() == null) {\n" + fieldName + ".s" + mName.substring(1) + "(new ArrayList());\n}\n" : "") + 
-                                fieldName + (isCollection ? "." + mName + "().add" : ".s" + mName.substring(1)) + "(em.find(" + relTypeReference + ".class, get" + simpleRelType + "Controller().get" + simpleRelType + "()." + relIdGetter + "()));\n" + 
-                                "} finally {\n em.close();\n}\n" + 
-                                "return \"" + getManagedBeanName(simpleEntityName) + "_create\";\n";
-                            methodInfo = new MethodInfo("createFrom" + simpleRelType +"Setup", publicModifier, "java.lang.String", null, null, null, bodyText, null, null);
-                            modifiedClassTree = TreeMakerUtils.addMethod(modifiedClassTree, workingCopy, methodInfo);
+//                            bodyText = "this." + fieldName + " = new " + entityReferenceName + "();\n" + 
+//                                "EntityManager em = getEntityManager();\n try{\n" + 
+//                                (isCollection ? "if (" + fieldName + "." + mName + "() == null) {\n" + fieldName + ".s" + mName.substring(1) + "(new ArrayList());\n}\n" : "") + 
+//                                fieldName + (isCollection ? "." + mName + "().add" : ".s" + mName.substring(1)) + "(em.find(" + relTypeReference + ".class, get" + simpleRelType + "Controller().get" + simpleRelType + "()." + relIdGetter + "()));\n" + 
+//                                "} finally {\n em.close();\n}\n" + 
+//                                "return \"" + getManagedBeanName(simpleEntityName) + "_create\";\n";
+//                            methodInfo = new MethodInfo("createFrom" + simpleRelType +"Setup", publicModifier, "java.lang.String", null, null, null, bodyText, null, null);
+//                            modifiedClassTree = TreeMakerUtils.addMethod(modifiedClassTree, workingCopy, methodInfo);
                             
-                            bodyText = "create();\n" +
-                                "get" + simpleRelType + "Controller().set" + simpleRelType + "(" + fieldName + "." + mName + "()" + 
-                                (isCollection ? ".iterator().next()" : "") + ");\n" +
-                                "return \"" + getManagedBeanName(simpleRelType) + "_detail\";\n";
-                            methodInfo = new MethodInfo("createFrom" + simpleRelType, publicModifier, "java.lang.String", null, null, null, bodyText, null, null);
-                            modifiedClassTree = TreeMakerUtils.addMethod(modifiedClassTree, workingCopy, methodInfo);
+//                            bodyText = "create();\n" +
+//                                "get" + simpleRelType + "Controller().set" + simpleRelType + "(" + fieldName + "." + mName + "()" + 
+//                                (isCollection ? ".iterator().next()" : "") + ");\n" +
+//                                "return \"" + getManagedBeanName(simpleRelType) + "_detail\";\n";
+//                            methodInfo = new MethodInfo("createFrom" + simpleRelType, publicModifier, "java.lang.String", null, null, null, bodyText, null, null);
+//                            modifiedClassTree = TreeMakerUtils.addMethod(modifiedClassTree, workingCopy, methodInfo);
                             
                         } else {
                             ErrorManager.getDefault().log(ErrorManager.INFORMATIONAL, "Cannot detect other side of a relationship.");
@@ -1466,19 +1596,35 @@ public class JSFClientGenerator {
 
                     }
                     
-                    methodInfo = new MethodInfo("get" + simpleEntityName, publicModifier, entityClass, null, null, null, "return " + fieldName + ";", null, null);
+                    String getFromReqParamMethod = "get" + simpleEntityName + "FromRequest";
+                    
+                    bodyText = "if (" + fieldName + " == null) {\n" +
+                            fieldName + " = " + getFromReqParamMethod + "();\n" +
+                            "}\n" + 
+                            "if (" + fieldName + " == null) {\n" +
+                            fieldName + " = new " + simpleEntityName + "();\n" +
+                            "}\n" + 
+                            "return " + fieldName + ";";
+                    methodInfo = new MethodInfo("get" + simpleEntityName, publicModifier, entityClass, null, null, null, bodyText, null, null);
                     modifiedClassTree = TreeMakerUtils.addMethod(modifiedClassTree, workingCopy, methodInfo);
 
-                    methodInfo = new MethodInfo(setEntityName, publicModifier, "void", null, new String[]{entityClass}, new String[]{fieldName}, setEntityBodyText, null, null);
-                    modifiedClassTree = TreeMakerUtils.addMethod(modifiedClassTree, workingCopy, methodInfo);
+//                    methodInfo = new MethodInfo(setEntityName, publicModifier, "void", null, new String[]{entityClass}, new String[]{fieldName}, setEntityBodyText, null, null);
+//                    modifiedClassTree = TreeMakerUtils.addMethod(modifiedClassTree, workingCopy, methodInfo);
                     
 //            Method createSetup = JMIGenerationUtil.createMethod(javaClass, "createSetup", Modifier.PUBLIC, "String");  //NOI18N
 //            createSetup.setBodyText("this." + fieldName + " = new " + entityReferenceName + "();\n return \"" + fieldName + "_create\";"); //NOI18N
 //            javaClass.getFeatures().add(createSetup);
                     
-                    bodyText = "this." + fieldName + " = new " + entityReferenceName + "();\n"; 
-                    bodyText += initRelatedInCreateSetup.toString();
-                    bodyText += "return \"" + fieldName + "_create\";";
+                    bodyText = "reset(true);\n" + 
+                            "return \"" + fieldName + "_list\";";
+                    methodInfo = new MethodInfo("listSetup", publicModifier, "java.lang.String", null, null, null, bodyText, null, null);
+                    modifiedClassTree = TreeMakerUtils.addMethod(modifiedClassTree, workingCopy, methodInfo);
+                    
+//                    bodyText = "this." + fieldName + " = new " + entityReferenceName + "();\n"; 
+//                    bodyText += initRelatedInCreateSetup.toString();
+                    bodyText = "reset(false);\n" +
+                            fieldName + " = new " + simpleEntityName + "();\n" + 
+                            "return \"" + fieldName + "_create\";";
                     methodInfo = new MethodInfo("createSetup", publicModifier, "java.lang.String", null, null, null, bodyText, null, null);
                     modifiedClassTree = TreeMakerUtils.addMethod(modifiedClassTree, workingCopy, methodInfo);
                     
@@ -1500,13 +1646,22 @@ public class JSFClientGenerator {
                     String COMMIT = isInjection ? "utx.commit();" : "em.getTransaction().commit();";
                     String ROLLBACK = isInjection ? "utx.rollback();" : "em.getTransaction().rollback();";
                     
-                    bodyText = "EntityManager em = getEntityManager();\n" + 
+                    String newEntityStringVar = "new" + simpleEntityName + "String";
+                    String entityStringVar = fieldName + "String";
+                    bodyText = simpleEntityName + "Converter converter = new " + simpleEntityName + "Converter();\n" +
+                            "String " + newEntityStringVar + " = converter.getAsString(FacesContext.getCurrentInstance(), null, new " + simpleEntityName + "());\n" +
+                            "String " + entityStringVar + " = converter.getAsString(FacesContext.getCurrentInstance(), null, " + fieldName + ");\n" +
+                            "if (!" + newEntityStringVar + ".equals(" + entityStringVar + ")) {\n" +
+                            "addErrorMessage(\"Could not create " + fieldName + ". Try again.\");\n" +
+                            "return createSetup();\n" +
+                            "}\n";
+                    bodyText += "EntityManager em = getEntityManager();\n" + 
                             "try {\n " + BEGIN + "\n em.persist(" + fieldName + ");\n" + updateRelatedInCreate.toString() + COMMIT + "\n" +   //NOI18N
                             "addSuccessMessage(\"" + simpleEntityName + " was successfully created.\");\n"  + //NOI18N
-                            "} catch (Exception ex) {\n try {\n addErrorMessage(ex.getLocalizedMessage());\n" + ROLLBACK + "\n } catch (Exception e) {\n addErrorMessage(e.getLocalizedMessage());\n" + 
+                            "} catch (Exception ex) {\n try {\n ensureAddErrorMessage(ex, \"A persistence error occurred.\");\n" + ROLLBACK + "\n } catch (Exception e) {\n ensureAddErrorMessage(e, \"An error occurred attempting to roll back the transaction.\");\n" + 
                             "}\nreturn null;\n} " +   //NOI18N
                             "finally {\n em.close();\n }\n" + 
-                            "return \"" + fieldName + "_list\";";
+                            "return listSetup();";
                     methodInfo = new MethodInfo("create", publicModifier, "java.lang.String", null, null, null, bodyText, null, null);
                     modifiedClassTree = TreeMakerUtils.addMethod(modifiedClassTree, workingCopy, methodInfo);
                     
@@ -1521,17 +1676,32 @@ public class JSFClientGenerator {
 //            editSetup.setBodyText(setFromReqParamMethod + "();\n return \"" + fieldName + "_edit\";"); //NOI18N
 //            javaClass.getFeatures().add(editSetup);
                     
-                    String setFromReqParamMethod = "set" + simpleEntityName + "FromRequestParam";
-                    String getFromReqParamMethod = "get" + simpleEntityName + "FromRequestParam";
+//                    String setFromReqParamMethod = "set" + simpleEntityName + "FromRequestParam";
                     
-                    bodyText = setFromReqParamMethod + "();\n return \"" + fieldName + "_detail\";";
+                    bodyText = "return scalarSetup(\"" + fieldName + "_detail\");";
                     methodInfo = new MethodInfo("detailSetup", publicModifier, "java.lang.String", null, null, null, bodyText, null, null);
                     modifiedClassTree = TreeMakerUtils.addMethod(modifiedClassTree, workingCopy, methodInfo);
                     
-                    bodyText = setFromReqParamMethod + "();\n return \"" + fieldName + "_edit\";";
+                    bodyText = "return scalarSetup(\"" + fieldName + "_edit\");";
                     methodInfo = new MethodInfo("editSetup", publicModifier, "java.lang.String", null, null, null, bodyText, null, null);
                     modifiedClassTree = TreeMakerUtils.addMethod(modifiedClassTree, workingCopy, methodInfo);  
                     
+                    bodyText = "reset(false);\n" + 
+                            fieldName + " = " + getFromReqParamMethod + "();\n" +
+                            "if (" + fieldName + " == null) {\n" +
+                            "String request" + simpleEntityName + "String = getRequestParameter(\"jsfcrud.current" +  simpleEntityName + "\");\n" +
+                            "addErrorMessage(\"The " + fieldName + " with id \" + request" + simpleEntityName + "String + \" no longer exists.\");\n";
+                    String relatedControllerOutcomeSwath = "String relatedControllerOutcome = relatedControllerOutcome();\n" +
+                            "if (relatedControllerOutcome != null {\n" +
+                            "return relatedControllerOutcome;\n" +
+                            "}\n";
+                    bodyText += relatedControllerOutcomeSwath + 
+                            "return listSetup();\n" +
+                            "}\n" +
+                            "return destination;";
+                    methodInfo = new MethodInfo("scalarSetup", privateModifier, "java.lang.String", null, new String[]{"java.lang.String"}, new String[]{"destination"}, bodyText, null, null);
+                    modifiedClassTree = TreeMakerUtils.addMethod(modifiedClassTree, workingCopy, methodInfo);  
+
 //            
 //            Method edit = JMIGenerationUtil.createMethod(javaClass, "edit", Modifier.PUBLIC, "String");  //NOI18N
 //            edit.setBodyText("EntityManager em = getEntityManager();\n"
@@ -1558,27 +1728,59 @@ public class JSFClientGenerator {
 //            
 //            String idField = createIdFieldDeclaration(idPropertyType, "param");
           
-                    bodyText = "EntityManager em = getEntityManager();\n" + 
+                    entityStringVar = fieldName + "String";
+                    String currentEntityStringVar = "current" + simpleEntityName + "String";
+                    bodyText = simpleEntityName + "Converter converter = new " + simpleEntityName + "Converter();\n" +
+                            "String " + entityStringVar + " = converter.getAsString(FacesContext.getCurrentInstance(), null, " + fieldName + ");\n" +
+                            "String " + currentEntityStringVar + " = getRequestParameter(\"jsfcrud.current" + simpleEntityName + "\");\n" +
+                            "if " + entityStringVar + " == null || " + entityStringVar + ".length() == 0 || !" + entityStringVar + ".equals(" + currentEntityStringVar + ")) {\n" +
+                            "String outcome = editSetup();\n" +
+                            "if (\"" + fieldName + "_edit\".equals(outcome)) {\n" +
+                            "addErrorMessage(\"Could not edit " + fieldName + ". Try again.\");\n" +
+                            "}\n" +
+                            "return outcome;\n" +
+                            "}\n";
+                    bodyText += "EntityManager em = getEntityManager();\n" + 
                         "try {\n " + BEGIN + "\n" + updateRelatedInEditPre.toString() + 
                         fieldName + " = em.merge(" + fieldName + ");\n " + 
                         updateRelatedInEditPost.toString() + COMMIT + "\n" +   //NOI18N
                         "addSuccessMessage(\"" + simpleEntityName + " was successfully updated.\");\n" +   //NOI18N
-                        "} catch (Exception ex) {\n try {\n addErrorMessage(ex.getLocalizedMessage());\n" + ROLLBACK + "\n } catch (Exception e) {\n addErrorMessage(e.getLocalizedMessage());\n" + 
+                        "} catch (Exception ex) {\n try {\n String msg = ex.getLocalizedMessage();\n" + 
+                        "if (msg != null && msg.length() > 0) {\n" +
+                        "addErrorMessage(msg);\n" +
+                        "}\n" +
+                        "else if (" + getFromReqParamMethod + "() == null) {\n" +
+                        "addErrorMessage(\"The " + fieldName + " with id \" + current" + simpleEntityName + "String + \" no longer exists.\");\n" +
+                        ROLLBACK +
+                        "\nreturn listSetup();\n" +
+                        "}\n" +
+                        "else {\n" +
+                        "addErrorMessage(\"A persistence error occurred.\");\n" +
+                        "}\n" +
+                        ROLLBACK + "\n } catch (Exception e) {\n ensureAddErrorMessage(e, \"An error occurred attempting to roll back the transaction.\");\n" + 
                         "}\nreturn null;\n} " +   //NOI18N
                         "finally {\n em.close();\n }\n" +  //NOI18N
-                        "return \"" + fieldName + "_list\";";
+                        "return detailSetup();";
                     methodInfo = new MethodInfo("edit", publicModifier, "java.lang.String", null, null, null, bodyText, null, null);
                     modifiedClassTree = TreeMakerUtils.addMethod(modifiedClassTree, workingCopy, methodInfo);  
                     
-                    bodyText = "EntityManager em = getEntityManager();\n" + 
-                        "try {\n " + BEGIN + "\n" + entityReferenceName + " " + fieldName + " = " + getFromReqParamMethod + "();\n" + 
+                    bodyText = fieldName + " = " + getFromReqParamMethod + "();\n" +
+                            "if (" + fieldName + " == null) {\n" +
+                            "String current" + simpleEntityName + "String = getRequestParameter(\"jsfcrud.current" + simpleEntityName + "\");\n" +
+                            "addErrorMessage(\"The " + fieldName + " with id \" + current" + simpleEntityName + "String + \" no longer exists.\");\n" +
+                            relatedControllerOutcomeSwath + 
+                            "return listSetup();\n" +
+                            "}\n";                    
+                    bodyText += "EntityManager em = getEntityManager();\n" + 
+                        "try {\n " + BEGIN + "\n" + 
                         fieldName + " = em.merge(" + fieldName + ");\n" + updateRelatedInDestroy.toString() + 
                         "em.remove(" + fieldName + ");\n " + COMMIT + "\n" +   //NOI18N
                         "addSuccessMessage(\"" + simpleEntityName + " was successfully deleted.\");\n" +   //NOI18N
-                        "} catch (Exception ex) {\n try {\n addErrorMessage(ex.getLocalizedMessage());\n" + ROLLBACK + "\n } catch (Exception e) {\n addErrorMessage(e.getLocalizedMessage());\n" + 
+                        "} catch (Exception ex) {\n try {\n ensureAddErrorMessage(ex, \"A persistence error occurred.\");\n" + ROLLBACK + "\n } catch (Exception e) {\n ensureAddErrorMessage(e, \"An error occurred attempting to roll back the transaction.\");\n" + 
                         "}\nreturn null;\n} " +   //NOI18N
                         "finally {\n em.close();\n }\n" +  //NOI18N
-                        "return \"" + fieldName + "_list\";";
+                        relatedControllerOutcomeSwath + 
+                            "return listSetup();";
                     methodInfo = new MethodInfo("destroy", publicModifier, "java.lang.String", null, null, null, bodyText, null, null);
                     modifiedClassTree = TreeMakerUtils.addMethod(modifiedClassTree, workingCopy, methodInfo);  
 
@@ -1600,13 +1802,14 @@ public class JSFClientGenerator {
 //                    + "} finally {\n em.close();\n}\n");
 //            javaClass.getFeatures().add(getFromReq);
                     
-                    bodyText = "EntityManager em = getEntityManager();\n try{\n" + 
-                        entityReferenceName + " o = (" + entityReferenceName +") model.getRowData();\n" + 
-                        "o = em.merge(o);\n" + 
-                        "return o;\n" + 
-                        "} finally {\n em.close();\n}\n";
-                    methodInfo = new MethodInfo(getFromReqParamMethod, publicModifier, entityClass, null, null, null, bodyText, null, null);
+                    bodyText = "String theId = getRequestParameter(\"jsfcrud.current" + simpleEntityName + "\");\n" +
+                            "return (" + simpleEntityName + ")new " + simpleEntityName + "Converter().getAsObject(FacesContext.getCurrentInstance(), null, theId);";
+                    methodInfo = new MethodInfo(getFromReqParamMethod, privateModifier, entityClass, null, null, null, bodyText, null, null);
                     modifiedClassTree = TreeMakerUtils.addMethod(modifiedClassTree, workingCopy, methodInfo); 
+                    
+                    bodyText = "return FacesContext.getCurrentInstance().getExternalContext().getRequestParameterMap().get(key);";
+                    methodInfo = new MethodInfo("getRequestParameter", privateModifier, "java.lang.String", null, new String[]{"java.lang.String"}, new String[]{"key"}, bodyText, null, null);
+                    modifiedClassTree = TreeMakerUtils.addMethod(modifiedClassTree, workingCopy, methodInfo);        
                     
 //            
 //            Method setFromReq = JMIGenerationUtil.createMethod(javaClass, setFromReqParamMethod, Modifier.PUBLIC, "void");  //NOI18N
@@ -1614,10 +1817,10 @@ public class JSFClientGenerator {
 //                + "set" + simpleEntityName + "(" + fieldName + ");"); //NOI18N
 //            javaClass.getFeatures().add(setFromReq);
                     
-                    bodyText = entityReferenceName + " " + fieldName + " = " + getFromReqParamMethod + "();\n" + //NOI18N
-                        "set" + simpleEntityName + "(" + fieldName + ");";
-                    methodInfo = new MethodInfo(setFromReqParamMethod, publicModifier, "void", null, null, null, bodyText, null, null);
-                    modifiedClassTree = TreeMakerUtils.addMethod(modifiedClassTree, workingCopy, methodInfo); 
+//                    bodyText = entityReferenceName + " " + fieldName + " = " + getFromReqParamMethod + "();\n" + //NOI18N
+//                        "set" + simpleEntityName + "(" + fieldName + ");";
+//                    methodInfo = new MethodInfo(setFromReqParamMethod, publicModifier, "void", null, null, null, bodyText, null, null);
+//                    modifiedClassTree = TreeMakerUtils.addMethod(modifiedClassTree, workingCopy, methodInfo); 
                     
 //            Method getEntities = JMIGenerationUtil.createMethod(javaClass, "get" + simpleEntityName + "s", Modifier.PUBLIC, dmReference.getName());  //NOI18N
 //            JMIGenerationUtil.createImport(javaClass, "javax.persistence.Query");
@@ -1629,17 +1832,25 @@ public class JSFClientGenerator {
 //                    + "return model;\n" //NOI18N
 //                    + "} finally {\n em.close();\n}\n");
 //            javaClass.getFeatures().add(getEntities);
+                    
+                    TypeInfo listOfEntityType = new TypeInfo("java.util.List", new String[]{entityClass});
+                    
+                    bodyText = "if (" + fieldName + "s == null) {\n" +
+                            fieldName + "s = get" + simpleEntityName + "s(false);\n" +
+                            "}\n" +
+                            "return " + fieldName + "s;";
+                    methodInfo = new MethodInfo("get" + simpleEntityName + "s", publicModifier, listOfEntityType, null, null, null, bodyText, null, null);
+                    modifiedClassTree = TreeMakerUtils.addMethod(modifiedClassTree, workingCopy, methodInfo); 
 
-                    String dmReferenceName = "javax.faces.model.DataModel";
-                    String ldmReferenceName = "ListDataModel";
                     bodyText = "EntityManager em = getEntityManager();\n try{\n" + 
                         "Query q = em.createQuery(\"select object(o) from " + simpleEntityName +" as o\");\n" + 
+                        "if (!all) {\n" +
                         "q.setMaxResults(batchSize);\n" + 
-                        "q.setFirstResult(firstItem);\n" + 
-                        "model = new " + ldmReferenceName + "(q.getResultList());\n" + 
-                        "return model;\n"  + //NOI18N
+                        "q.setFirstResult(getFirstItem());\n" + 
+                        "}\n" +
+                        "return q.getResultList();\n" + 
                         "} finally {\n em.close();\n}\n";
-                    methodInfo = new MethodInfo("get" + simpleEntityName + "s", publicModifier, dmReferenceName, null, null, null, bodyText, null, null);
+                    methodInfo = new MethodInfo("get" + simpleEntityName + "s", publicModifier, listOfEntityType, null, TypeInfo.fromStrings(new String[]{"boolean"}), new String[]{"all"}, bodyText, null, null);
                     modifiedClassTree = TreeMakerUtils.addMethod(modifiedClassTree, workingCopy, methodInfo); 
                     
 //            Method addErrorMessage = JMIGenerationUtil.createMethod(javaClass, "addErrorMessage", Modifier.PUBLIC + Modifier.STATIC, "void");  //NOI18N
@@ -1667,22 +1878,30 @@ public class JSFClientGenerator {
 //            Parameter idParameter = JMIGenerationUtil.createParameter(javaClass, "id", idPropertyType);
 //            findById.getParameters().add(idParameter);
 //            javaClass.getFeatures().add(findById);
+                    
+                    bodyText = "String msg = ex.getLocalizedMessage();\n" +
+                            "if (msg != null && msg.length() > 0) {\n" +
+                            "addErrorMessage(msg);\n" +
+                            "}\n" +
+                            "else {\n" +
+                            "addErrorMessage(defaultMsg);\n" +
+                            "}\n";
+                    methodInfo = new MethodInfo("ensureAddErrorMessage", privateModifier, "void", null, new String[]{"java.lang.Exception", "java.lang.String"}, new String[]{"ex", "defaultMsg"}, bodyText, null, null);
+                    modifiedClassTree = TreeMakerUtils.addMethod(modifiedClassTree, workingCopy, methodInfo); 
 
                     bodyText = "FacesMessage facesMsg = new FacesMessage(FacesMessage.SEVERITY_ERROR, msg, msg);\n" + //NOI18N
-                        "FacesContext fc = FacesContext.getCurrentInstance();\n" + //NOI18N
-                        "fc.addMessage(null, facesMsg);"; //NOI18N
+                        "FacesContext.getCurrentInstance().addMessage(null, facesMsg);"; //NOI18N
                     methodInfo = new MethodInfo("addErrorMessage", publicStaticModifier, "void", null, new String[]{"java.lang.String"}, new String[]{"msg"}, bodyText, null, null);
                     modifiedClassTree = TreeMakerUtils.addMethod(modifiedClassTree, workingCopy, methodInfo); 
 
                     bodyText = "FacesMessage facesMsg = new FacesMessage(FacesMessage.SEVERITY_INFO, msg, msg);\n" + //NOI18N
-                        "FacesContext fc = FacesContext.getCurrentInstance();\n" + //NOI18N
-                        "fc.addMessage(\"successInfo\", facesMsg);"; //NOI18N
+                        "FacesContext.getCurrentInstance().addMessage(\"successInfo\", facesMsg);"; //NOI18N
                     methodInfo = new MethodInfo("addSuccessMessage", publicStaticModifier, "void", null, new String[]{"java.lang.String"}, new String[]{"msg"}, bodyText, null, null);
                     modifiedClassTree = TreeMakerUtils.addMethod(modifiedClassTree, workingCopy, methodInfo); 
 
                     //getter for converter
                     bodyText = "EntityManager em = getEntityManager();\n try{\n" + 
-                        entityReferenceName + " o = (" + entityReferenceName + ") em.find(" + entityReferenceName + ".class, id);\n" + 
+                        simpleEntityName + " o = (" + simpleEntityName + ") em.find(" + simpleEntityName + ".class, id);\n" + 
                         "return o;\n" + 
                         "} finally {\n em.close();\n}\n";
                     methodInfo = new MethodInfo("find" + simpleEntityName, publicModifier, entityClass, null, new String[]{idPropertyType[0]}, new String[]{"id"}, bodyText, null, null);
@@ -1693,17 +1912,17 @@ public class JSFClientGenerator {
 //                Method m = (Method) it.next();
 //                String relType = m.getType().getName();
 //                String simpleRelType = simpleClassName(relType);
-              for(Iterator<ElementHandle<ExecutableElement>> it = toOneRelMethods.iterator(); it.hasNext();) {
-                    ElementHandle<ExecutableElement> handle = it.next();
-                    ExecutableElement m = handle.resolve(workingCopy);
-                    String mName = m.getSimpleName().toString();
-                    TypeMirror t = m.getReturnType();
-                    String relType = JsfForm.stripCollection(t, workingCopy.getTypes()).toString();
-                    String simpleRelType = simpleClassName(relType);
-                    String relTypeReference = simpleRelType;
+//              for(Iterator<ElementHandle<ExecutableElement>> it = toOneRelMethods.iterator(); it.hasNext();) {
+//                    ElementHandle<ExecutableElement> handle = it.next();
+//                    ExecutableElement m = handle.resolve(workingCopy);
+//                    String mName = m.getSimpleName().toString();
+//                    TypeMirror t = m.getReturnType();
+//                    String relType = JsfForm.stripCollection(t, workingCopy.getTypes()).toString();
+//                    String simpleRelType = simpleClassName(relType);
+//                    String relTypeReference = simpleRelType;
 //                
 //                String methodName = m.getName() + "s";
-                    String methodName = mName + "s";
+//                    String methodName = mName + "s";
                     
 //                //make sure we do not generate >1 getter for each type
 //                boolean alredyGenerated = false;
@@ -1716,16 +1935,16 @@ public class JSFClientGenerator {
 //                }
                     
                     //make sure we do not generate >1 getter for each type
-                    boolean alreadyGenerated = false;
-                    for(Tree tree : modifiedClassTree.getMembers()) {
-                        if(Tree.Kind.METHOD == tree.getKind()) {
-                            MethodTree mtree = (MethodTree)tree;
-                            if(mtree.getName().toString().equals(methodName)) {
-                                alreadyGenerated = true;
-                                break;
-                            }
-                        }
-                    }
+//                    boolean alreadyGenerated = false;
+//                    for(Tree tree : modifiedClassTree.getMembers()) {
+//                        if(Tree.Kind.METHOD == tree.getKind()) {
+//                            MethodTree mtree = (MethodTree)tree;
+//                            if(mtree.getName().toString().equals(methodName)) {
+//                                alreadyGenerated = true;
+//                                break;
+//                            }
+//                        }
+//                    }
                     
 //                if (!alredyGenerated) {
 //                    Method selectItems = JMIGenerationUtil.createMethodArray(javaClass, methodName, Modifier.PUBLIC, "javax.faces.model.SelectItem"); //NOI18N
@@ -1743,18 +1962,18 @@ public class JSFClientGenerator {
 //            }
 //            // </editor-fold>
 
-                    if (!alreadyGenerated) {
-                        modifiedImportCut = TreeMakerUtils.createImport(workingCopy, modifiedImportCut, "java.util.List");
-                        bodyText = "EntityManager em = getEntityManager();\n try{\n" + 
-                                "List <" + relTypeReference + "> l = (List <" + relTypeReference +">) em.createQuery(\"select o from " + simpleRelType + " as o\").getResultList();\n" + 
-                                "SelectItem select[] = new SelectItem[l.size()];\n" + 
-                                "int i = 0;\n for(" + relTypeReference + " x : l) {\n" + 
-                                "select[i++] = new SelectItem(x);\n}\nreturn select;\n" + 
-                                "} finally {\n em.close();\n}\n";
-                        methodInfo = new MethodInfo(methodName, publicModifier, "javax.faces.model.SelectItem[]", null, null, null, bodyText, null, null);
-                        modifiedClassTree = TreeMakerUtils.addMethod(modifiedClassTree, workingCopy, methodInfo); 
-                    }
-               }
+//                    if (!alreadyGenerated) {
+//                        modifiedImportCut = TreeMakerUtils.createImport(workingCopy, modifiedImportCut, "java.util.List");
+//                        bodyText = "EntityManager em = getEntityManager();\n try{\n" + 
+//                                "List <" + relTypeReference + "> l = (List <" + relTypeReference +">) em.createQuery(\"select o from " + simpleRelType + " as o\").getResultList();\n" + 
+//                                "SelectItem select[] = new SelectItem[l.size()];\n" + 
+//                                "int i = 0;\n for(" + relTypeReference + " x : l) {\n" + 
+//                                "select[i++] = new SelectItem(x);\n}\nreturn select;\n" + 
+//                                "} finally {\n em.close();\n}\n";
+//                        methodInfo = new MethodInfo(methodName, publicModifier, "javax.faces.model.SelectItem[]", null, null, null, bodyText, null, null);
+//                        modifiedClassTree = TreeMakerUtils.addMethod(modifiedClassTree, workingCopy, methodInfo); 
+//                    }
+//               }
                // </editor-fold>
                     
 //            Method getItemCount = JMIGenerationUtil.createMethod(javaClass, "getItemCount", Modifier.PUBLIC, "int");
@@ -1776,17 +1995,33 @@ public class JSFClientGenerator {
 //            getBatchSize.setBodyText("return batchSize;");
 //            javaClass.getFeatures().add(getBatchSize);
 
-                bodyText = "EntityManager em = getEntityManager();\n try{\n" + 
-                    "int count = ((Long) em.createQuery(\"select count(o) from " + simpleEntityName + " as o\").getSingleResult()).intValue();\n" + 
-                    "return count;\n" + 
-                    "} finally {\n em.close();\n}\n";
+                bodyText = "if (itemCount == -1) {\n" +
+                        "EntityManager em = getEntityManager();\n try{\n" + 
+                    "itemCount = ((Long) em.createQuery(\"select count(o) from " + simpleEntityName + " as o\").getSingleResult()).intValue();\n" + 
+                    "} finally {\n em.close();\n}\n" +
+                    "}\n" +
+                    "return itemCount;";
                 methodInfo = new MethodInfo("getItemCount", publicModifier, "int", null, null, null, bodyText, null, null);
                 modifiedClassTree = TreeMakerUtils.addMethod(modifiedClassTree, workingCopy, methodInfo); 
 
-                methodInfo = new MethodInfo("getFirstItem", publicModifier, "int", null, null, null, "return firstItem;", null, null);
+                bodyText = "getItemCount();\n" +
+                        "if (firstItem >= itemCount) {\n" +
+                        "if (itemCount == 0) {\n" +
+                        "firstItem = 0;\n" +
+                        "}\n" +
+                        "else {\n" +
+                        "int zeroBasedItemCount = itemCount - 1;\n" +
+                        "double pageDouble = zeroBasedItemCount / batchSize;\n" +
+                        "int page = (int)Math.floor(pageDouble);\n" +
+                        "firstItem = page * batchSize;\n" +
+                        "}\n" +
+                        "}\n" +
+                        "return firstItem;";
+                methodInfo = new MethodInfo("getFirstItem", publicModifier, "int", null, null, null, bodyText, null, null);
                 modifiedClassTree = TreeMakerUtils.addMethod(modifiedClassTree, workingCopy, methodInfo); 
 
-                bodyText = "int size = getItemCount();\n return firstItem + batchSize > size ? size : firstItem + batchSize;\n";
+                bodyText = "getFirstItem();\n" +
+                        "return firstItem + batchSize > itemCount ? itemCount : firstItem + batchSize;";
                 methodInfo = new MethodInfo("getLastItem", publicModifier, "int", null, null, null, bodyText, null, null);
                 modifiedClassTree = TreeMakerUtils.addMethod(modifiedClassTree, workingCopy, methodInfo);  
 
@@ -1812,17 +2047,69 @@ public class JSFClientGenerator {
 //        }
 //        return javaClass;
 
-                bodyText = "if (firstItem + batchSize < getItemCount()) {\n" + 
-                    "firstItem += batchSize;\n}\n" + 
-                    "return \"" + fieldName + "_list\";\n";
+                bodyText = "reset(false);\n" +
+                        "getFirstItem();\n" +
+                        "if firstItem + batchSize < itemCount) {\n" +
+                        "firstItem += batchSize;\n" +
+                        "}\n" +
+                        "return \"" + fieldName + "_list\"";
                 methodInfo = new MethodInfo("next", publicModifier, "java.lang.String", null, null, null, bodyText, null, null);
                 modifiedClassTree = TreeMakerUtils.addMethod(modifiedClassTree, workingCopy, methodInfo);  
                 
-                bodyText = "firstItem -= batchSize;\n if (firstItem < 0) {\nfirstItem = 0;\n}\n" + 
+                bodyText = "reset(false);\n" +
+                        "getFirstItem();\n" +
+                        "firstItem -= batchSize;\n if (firstItem < 0) {\nfirstItem = 0;\n}\n" + 
                     "return \"" + fieldName + "_list\";\n";
                 methodInfo = new MethodInfo("prev", publicModifier, "java.lang.String", null, null, null, bodyText, null, null);
                 modifiedClassTree = TreeMakerUtils.addMethod(modifiedClassTree, workingCopy, methodInfo);  
-            
+                
+                bodyText = "String relatedControllerString = getRequestParameter(\"jsfcrud.relatedController\");\n" +
+                    "String relatedControllerTypeString = getRequestParameter(\"jsfcrud.relatedControllerType\");\n" +
+                    "if (relatedControllerString != null && relatedControllerTypeString != null) {\n" +
+                    "FacesContext context = FacesContext.getCurrentInstance();\n" +
+                    "Object relatedController = context.getApplication().getELResolver().getValue(context.getELContext(), null, relatedControllerString);\n" +
+                    "try {\n" +
+                    "Class<?> relatedControllerType = Class.forName(relatedControllerTypeString);\n" +
+                    "Method detailSetupMethod = relatedControllerType.getMethod(\"detailSetup\");\n" +
+                    "return (String)detailSetupMethod.invoke(relatedController);\n" +
+                    "} catch (ClassNotFoundException e) {\n" +
+                    "throw new FacesException(e);\n" +
+                    "} catch (NoSuchMethodException e) {\n" +
+                    "throw new FacesException(e);\n" +
+                    "} catch (IllegalAccessException e) {\n" +
+                    "throw new FacesException(e);\n" +
+                    "} catch (InvocationTargetException e) {\n" +
+                    "throw new FacesException(e);\n" +
+                    "}\n" +
+                    "}\n" +
+                    "return null;";
+                methodInfo = new MethodInfo("relatedControllerOutcome", privateModifier, "java.lang.String", null, null, null, bodyText, null, null);
+                modifiedClassTree = TreeMakerUtils.addMethod(modifiedClassTree, workingCopy, methodInfo);  
+
+                bodyText = fieldName + " = null;\n" +
+                        fieldName + "s = null;\n" +
+                        "itemCount = -1;\n" +
+                        "if (resetFirstItem) {\n" +
+                        "firstItem = 0;\n" +
+                        "}\n";
+                methodInfo = new MethodInfo("reset", privateModifier, "void", null, new String[]{"boolean"}, new String[]{"resetFirstItem"}, bodyText, null, null);
+                modifiedClassTree = TreeMakerUtils.addMethod(modifiedClassTree, workingCopy, methodInfo);    
+                
+                TypeInfo asStringType = new TypeInfo("java.util.Map", new String[]{entityClass, "java.lang.String"});
+                modifiedClassTree = TreeMakerUtils.addVariable(modifiedClassTree, workingCopy, "asString", asStringType, privateModifier, null, null);
+                
+                bodyText = "if (asString == null) {\n" +
+                        "asString = new HashMap<" + simpleEntityName + ",String>() {" +
+                        "@Override\n" +
+                        "public String get(Object key) {\n" +
+                        "return new " + simpleEntityName + "Converter().getAsString(FacesContext.getCurrentInstance(), null, (" + simpleEntityName + ")key);\n" +
+                        "}\n" +
+                        "};\n" +
+                        "}\n" +
+                        "return asString;";
+                methodInfo = new MethodInfo("getAsString", publicModifier, asStringType, null, null, null, bodyText, null, null);
+                modifiedClassTree = TreeMakerUtils.addMethod(modifiedClassTree, workingCopy, methodInfo);    
+                
                 workingCopy.rewrite(classTree, modifiedClassTree);
               }
             }).commit();

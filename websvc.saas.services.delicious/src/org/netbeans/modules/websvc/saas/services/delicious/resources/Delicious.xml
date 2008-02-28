@@ -57,11 +57,9 @@
         
         <localizing-bundle>org.netbeans.modules.websvc.saas.services.delicious.Bundle</localizing-bundle>
         
-        <icon16>org/netbeans/modules/websvc/components/delicious/resources/delicious16.png</icon16>
-
         <group name="Delicious"/>
         
-        <authentication profile="Templates/WebServices/profile.properties">
+        <authentication profile="SaaSServices/Delicious/profile.properties">
             <http-basic/>
         </authentication>
         

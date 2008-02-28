@@ -185,5 +185,34 @@ public final class Service {
         }    
         return bool;
     }
-   
+    
+     public void setUseSoap12(Boolean useSoap12){
+        service.setUseSoap12(useSoap12);
+    }
+    
+    public boolean isUseSoap12(){
+        Boolean bool = service.getUseSoap12();
+        if(bool == null){
+            bool = false;
+        }    
+        return bool;
+    }
+    
+    public WsimportOptions newWsimportOptions(){
+        return new WsimportOptions(service.newWsimportOptions());
+    }
+  
+    public void setWsimportOptions(WsimportOptions options){
+        service.setWsimportOptions(options.getOriginal());
+    }
+    
+    public WsimportOptions getWsImportOptions(){
+        org.netbeans.modules.websvc.jaxwsmodel.project_config1_0.WsimportOptions options = service.getWsimportOptions();
+        if(options == null){
+            options = service.newWsimportOptions();
+            service.setWsimportOptions(options);
+        }
+        return new WsimportOptions(options);
+    }
+ 
 }

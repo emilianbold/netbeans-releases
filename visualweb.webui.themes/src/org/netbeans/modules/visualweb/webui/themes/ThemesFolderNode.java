@@ -52,8 +52,9 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
-import java.util.List;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Iterator;
 import java.util.jar.Manifest;
@@ -104,27 +105,33 @@ final class ThemesFolderNode extends AbstractNode {
         this.project = project;
     }
 
+    @Override
     public String getDisplayName() {
         return this.displayName;
     }
 
+    @Override
     public String getName() {
         return this.getDisplayName();
     }
 
+    @Override
     public Action[] getActions(boolean context) {
         return this.themesNodeActions;
     }
 
+    @Override
     public Image getIcon(int type) {
         return Utilities.loadImage("org/netbeans/modules/visualweb/webui/themes/resources/JSF-themesFolder.png"); // NOI18N;
     }
 
+    @Override
     public Image getOpenedIcon(int type) {
         // TODO: need graphic for opened folder icon
         return Utilities.loadImage("org/netbeans/modules/visualweb/webui/themes/resources/JSF-themesFolder.png"); // NOI18N;
     }
 
+    @Override
     public boolean canCopy() {
         return false;
     }
@@ -135,27 +142,33 @@ final class ThemesFolderNode extends AbstractNode {
     }
 
     //Static inner classes
-    private static class ThemesChildren extends Children.Keys implements PropertyChangeListener {
+   private static class ThemesChildren extends Children.Keys implements PropertyChangeListener {
 
         private final Project project;
-        private final LibraryManager lm;
+        private final LibraryManager projectLibraryManager;
+        private final LibraryManager globalLibraryManager;
 
         ThemesChildren(Project project) {
             this.project = project;
-            lm = JsfProjectUtils.getProjectLibraryManager(project);
+            projectLibraryManager = JsfProjectUtils.getProjectLibraryManager(project);
+            globalLibraryManager  = LibraryManager.getDefault();
         }
 
         public void propertyChange(PropertyChangeEvent evt) {
             this.setKeys(getKeys());
         }
 
+        @Override
         protected void addNotify() {
-            lm.addPropertyChangeListener(this);
+            projectLibraryManager.addPropertyChangeListener(this);
+            globalLibraryManager.addPropertyChangeListener(this);
             this.setKeys(getKeys());
         }
 
+        @Override
         protected void removeNotify() {
-            lm.removePropertyChangeListener(this);
+            projectLibraryManager.removePropertyChangeListener(this);
+            globalLibraryManager.removePropertyChangeListener(this);
             this.setKeys(Collections.EMPTY_SET);
         }
 
@@ -170,18 +183,25 @@ final class ThemesFolderNode extends AbstractNode {
             }
         }
 
-        private List getKeys() {
-            List themesList = new /*Library*/ ArrayList();
-            Library[] libraries = lm.getLibraries();
-            for (int i = 0; i < libraries.length; i++) {
-                Library lib = libraries[i];
-                // XXX if (ThemeLibraryDefinition.LIBRARY_NAME.equals(lib.getType())) {
-                if ("theme".equals(lib.getType())) {
-                    themesList.add(lib);
+        private Collection getKeys() {
+            java.util.Map themesList = new HashMap();
+            Library[] projectLibraries = projectLibraryManager.getLibraries();
+            for (int i = 0; i < projectLibraries.length; i++) {
+                Library lib = projectLibraries[i];
+                if ("theme".equals(lib.getType()) && !themesList.containsKey(lib.getName())) {
+                    themesList.put(lib.getName(), lib);
+                }
+            }
+            
+            Library[] globalLibraries = globalLibraryManager.getLibraries();
+            for (int i = 0; i < globalLibraries.length; i++) {
+                Library lib = globalLibraries[i];
+                if ("theme".equals(lib.getType()) && !themesList.containsKey(lib.getName())) {
+                    themesList.put(lib.getName(), lib);
                 }
             }
 
-            return themesList;
+            return themesList.values();
         }
     }
 
@@ -208,6 +228,7 @@ final class ThemesFolderNode extends AbstractNode {
             theme.addPropertyChangeListener(org.openide.util.WeakListeners.propertyChange(this, theme));
         }
 
+        @Override
         public void destroy() throws IOException {
             JsfProjectUtils.removeProjectPropertyListener(project, this);
             super.destroy();
@@ -223,6 +244,7 @@ final class ThemesFolderNode extends AbstractNode {
             }
         }
 
+        @Override
         public Action[] getActions(boolean context) {
             return new Action[]{getAction()};
         }
@@ -234,6 +256,7 @@ final class ThemesFolderNode extends AbstractNode {
             return setCurrentThemeAction;
         }
 
+        @Override
         public Image getIcon(int type) {
             Image baseImage = Utilities.loadImage("org/netbeans/modules/visualweb/webui/themes/resources/JSF-theme.png"); // NOI18N
             String currentTheme = JsfProjectUtils.getProjectProperty(project, JsfProjectConstants.PROP_CURRENT_THEME);

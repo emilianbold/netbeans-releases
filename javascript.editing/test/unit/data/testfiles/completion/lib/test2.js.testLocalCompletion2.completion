@@ -1,123 +1,42 @@
 Results for alert('foo2 with queryType=COMPLETION and nameKind=PREFIX
-------------------------------------
 PACKAGE    Array                                      Core JS
-PACKAGE    Array                                      Core JS
-PACKAGE    Boolean                                    Core JS
 PACKAGE    Boolean                                    Core JS
 PACKAGE    CssRule                                    DOM
 PACKAGE    Date                                       Core JS
-PACKAGE    Date                                       Core JS
-PACKAGE    Document                                   DOM
 PACKAGE    Document                                   DOM
 PACKAGE    Element                                    DOM
-PACKAGE    Element                                    DOM
-PACKAGE    Error                                      Core JS
 PACKAGE    Error                                      Core JS
 PACKAGE    EvalError                                  Core JS
 PACKAGE    Event                                      DOM
-PACKAGE    Event                                      DOM
 PACKAGE    Form                                       DOM
-PACKAGE    Form                                       DOM
-PACKAGE    Function                                   Core JS
 PACKAGE    Function                                   Core JS
 PACKAGE    JavaArray                                  Core JS
 PACKAGE    Math                                       Core JS
-PACKAGE    Math                                       Core JS
-PACKAGE    Navigator                                  DOM
 PACKAGE    Navigator                                  DOM
 PACKAGE    Number                                     Core JS
-PACKAGE    Number                                     Core JS
-PACKAGE    Object                                     Core JS
 PACKAGE    Object                                     Core JS
 PACKAGE    Packages                                   Core JS
-PACKAGE    Range                                      DOM
 PACKAGE    Range                                      DOM
 PACKAGE    RangeError                                 Core JS
 PACKAGE    ReferenceError                             Core JS
 PACKAGE    RegExp                                     Core JS
-PACKAGE    RegExp                                     Core JS
 PACKAGE    Screen                                     DOM
 PACKAGE    Selection                                  DOM
-PACKAGE    Selection                                  DOM
-PACKAGE    String                                     Core JS
 PACKAGE    String                                     Core JS
 PACKAGE    Style                                      DOM
 PACKAGE    Stylesheet                                 DOM
-PACKAGE    Stylesheet                                 DOM
 PACKAGE    SyntaxError                                Core JS
-PACKAGE    Table                                      DOM
 PACKAGE    Table                                      DOM
 PACKAGE    TableRow                                   DOM
 PACKAGE    TreeWalker                                 DOM
 PACKAGE    TypeError                                  Core JS
 PACKAGE    URIError                                   Core JS
 PACKAGE    Window                                     DOM
-PACKAGE    Window                                     DOM
 VARIABLE   bar2                                       
 VARIABLE   element2                                   
 VARIABLE   foo2                                       
 VARIABLE   options2                                   
 VARIABLE   update2                                    
-KEYWORD    abstract                                   null
-KEYWORD    boolean                                    null
-KEYWORD    break                                      null
-KEYWORD    byte                                       null
-KEYWORD    case                                       null
-KEYWORD    catch                                      null
-KEYWORD    char                                       null
-KEYWORD    class                                      null
-KEYWORD    const                                      null
-KEYWORD    continue                                   null
-KEYWORD    debugger                                   null
-KEYWORD    default                                    null
-KEYWORD    delete                                     null
-KEYWORD    do                                         null
-KEYWORD    double                                     null
-KEYWORD    else                                       null
-KEYWORD    enum                                       null
-KEYWORD    export                                     null
-KEYWORD    extends                                    null
-KEYWORD    false                                      null
-KEYWORD    final                                      null
-KEYWORD    finally                                    null
-KEYWORD    float                                      null
-KEYWORD    for                                        null
-KEYWORD    function                                   null
-KEYWORD    goto                                       null
-KEYWORD    if                                         null
-KEYWORD    implements                                 null
-KEYWORD    import                                     null
-KEYWORD    in                                         null
-KEYWORD    instanceof                                 null
-KEYWORD    int                                        null
-KEYWORD    interface                                  null
-KEYWORD    long                                       null
-KEYWORD    native                                     null
-KEYWORD    new                                        null
-KEYWORD    null                                       null
-KEYWORD    package                                    null
-KEYWORD    private                                    null
-KEYWORD    protected                                  null
-KEYWORD    public                                     null
-KEYWORD    return                                     null
-KEYWORD    short                                      null
-KEYWORD    static                                     null
-KEYWORD    super                                      null
-KEYWORD    switch                                     null
-KEYWORD    synchronized                               null
-KEYWORD    this                                       null
-KEYWORD    throw                                      null
-KEYWORD    throws                                     null
-KEYWORD    transient                                  null
-KEYWORD    true                                       null
-KEYWORD    try                                        null
-KEYWORD    typeof                                     null
-KEYWORD    undefined                                  null
-KEYWORD    var                                        null
-KEYWORD    void                                       null
-KEYWORD    volatile                                   null
-KEYWORD    while                                      null
-KEYWORD    with                                       null
 GLOBAL     Array                                      Core JS
 GLOBAL     Boolean                                    Core JS
 GLOBAL     CSS                                        DOM
@@ -179,3 +98,75 @@ GLOBAL     table                                      DOM
 GLOBAL     tableRow                                   DOM
 GLOBAL     treeWalker                                 DOM
 GLOBAL     window                                     DOM
+------------------------------------
+METHOD     eval(string)                               Object
+METHOD     hasOwnProperty(prop)                       Object
+METHOD     propertyIsEnumerable(prop)                 Object
+METHOD     toLocaleString()                           Object
+METHOD     toSource()                                 Object
+METHOD     toString()                                 Object
+METHOD     unwatch(prop)                              Object
+METHOD     valueOf()                                  Object
+METHOD     watch(prop, handler)                       Object
+KEYWORD    abstract                                   null
+KEYWORD    boolean                                    null
+KEYWORD    break                                      null
+KEYWORD    byte                                       null
+KEYWORD    case                                       null
+KEYWORD    catch                                      null
+KEYWORD    char                                       null
+KEYWORD    class                                      null
+KEYWORD    const                                      null
+KEYWORD    continue                                   null
+KEYWORD    debugger                                   null
+KEYWORD    default                                    null
+KEYWORD    delete                                     null
+KEYWORD    do                                         null
+KEYWORD    double                                     null
+KEYWORD    else                                       null
+KEYWORD    enum                                       null
+KEYWORD    export                                     null
+KEYWORD    extends                                    null
+KEYWORD    false                                      null
+KEYWORD    final                                      null
+KEYWORD    finally                                    null
+KEYWORD    float                                      null
+KEYWORD    for                                        null
+KEYWORD    function                                   null
+KEYWORD    goto                                       null
+KEYWORD    if                                         null
+KEYWORD    implements                                 null
+KEYWORD    import                                     null
+KEYWORD    in                                         null
+KEYWORD    instanceof                                 null
+KEYWORD    int                                        null
+KEYWORD    interface                                  null
+KEYWORD    long                                       null
+KEYWORD    native                                     null
+KEYWORD    new                                        null
+KEYWORD    null                                       null
+KEYWORD    package                                    null
+KEYWORD    private                                    null
+KEYWORD    protected                                  null
+KEYWORD    public                                     null
+KEYWORD    return                                     null
+KEYWORD    short                                      null
+KEYWORD    static                                     null
+KEYWORD    super                                      null
+KEYWORD    switch                                     null
+KEYWORD    synchronized                               null
+KEYWORD    this                                       null
+KEYWORD    throw                                      null
+KEYWORD    throws                                     null
+KEYWORD    transient                                  null
+KEYWORD    true                                       null
+KEYWORD    try                                        null
+KEYWORD    typeof                                     null
+KEYWORD    undefined                                  null
+KEYWORD    var                                        null
+KEYWORD    void                                       null
+KEYWORD    volatile                                   null
+KEYWORD    while                                      null
+KEYWORD    with                                       null
+PROPERTY   constructor                                Object
+PROPERTY   isPrototypeOf                              Object

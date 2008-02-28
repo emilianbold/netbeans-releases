@@ -48,9 +48,7 @@ import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.*;
-import org.netbeans.core.windows.nativeaccess.NativeWindowSystem;
 import org.netbeans.core.windows.actions.ActionUtils;
-import org.netbeans.core.windows.options.WinSysPrefs;
 import org.netbeans.core.windows.persistence.PersistenceManager;
 import org.openide.nodes.Node;
 import org.openide.util.*;
@@ -120,12 +118,14 @@ public final class WindowManagerImpl extends WindowManager implements Workspace 
         return (WindowManagerImpl)Lookup.getDefault().lookup(WindowManager.class);
     }
     
+    @Override
     public void topComponentRequestAttention(TopComponent tc) {
         ModeImpl mode = (ModeImpl) findMode(tc);
         
         central.topComponentRequestAttention(mode, tc);
     }
 
+    @Override
     public void topComponentCancelRequestAttention(TopComponent tc) {
         ModeImpl mode = (ModeImpl) findMode(tc);
         
@@ -756,6 +756,11 @@ public final class WindowManagerImpl extends WindowManager implements Workspace 
 
     /** Sets visible or invisible window system GUI. */
     public void setVisible(boolean visible) {
+        if( visible ) {
+            FloatingWindowTransparencyManager.getDefault().start();
+        } else {
+            FloatingWindowTransparencyManager.getDefault().stop();
+        }
         SwingUtilities.invokeLater(exclusive);
         central.setVisible(visible);
     }
@@ -1013,6 +1018,7 @@ public final class WindowManagerImpl extends WindowManager implements Workspace 
     /////////////////////////////
 
     /** Overrides superclass method, to enhance access modifier. */
+    @Override
     public void componentShowing(TopComponent tc) {
         if((tc != null) && (tc != persistenceShowingTC)) {
             super.componentShowing(tc);
@@ -1027,6 +1033,7 @@ public final class WindowManagerImpl extends WindowManager implements Workspace 
     }
     
     /** Overrides superclass method, to enhance access modifier. */
+    @Override
     public void componentHidden(TopComponent tc) {
         if(tc != null) {
             super.componentHidden(tc);
@@ -1042,6 +1049,7 @@ public final class WindowManagerImpl extends WindowManager implements Workspace 
         topComponentOpenAtTabPosition(tc, -1);
     }
 
+    @Override
     protected void topComponentOpenAtTabPosition (TopComponent tc, int position) {
         assertEventDispatchThreadWeak();
         
@@ -1090,6 +1098,7 @@ public final class WindowManagerImpl extends WindowManager implements Workspace 
         }
     }
     
+    @Override
     protected int topComponentGetTabPosition (TopComponent tc) {
         assertEventDispatchThreadWeak();
         
@@ -1524,48 +1533,6 @@ public final class WindowManagerImpl extends WindowManager implements Workspace 
         public int getPersistenceType() {
             return PERSISTENCE_NEVER;
         }
-    }
-    
-    @Override
-    protected void activateComponent(TopComponent tc) {
-        if( NativeWindowSystem.getDefault().isWindowAlphaSupported() &&
-            WinSysPrefs.HANDLER.getBoolean(WinSysPrefs.TRANSPARENCY_FLOATING, true) ) {
-            maybeToggleFloatingWindowTransparency( tc );
-        }
-        super.activateComponent(tc);
-    }
-    
-    protected void maybeToggleFloatingWindowTransparency( TopComponent tcToBeActivated ) {
-//        TopComponent currentActive = getActiveComponent();
-//        ModeImpl newActiveMode = (ModeImpl)findMode( tcToBeActivated );
-//        if( null != currentActive ) {
-//            //make non-active floating window transparent
-//            ModeImpl currentActiveMode = (ModeImpl)findMode( currentActive );
-//            if( null != currentActive 
-//                    && currentActiveMode != newActiveMode
-//                    && currentActiveMode.getState() == Constants.MODE_STATE_SEPARATED ) {
-//                final Window w = SwingUtilities.windowForComponent(currentActive);
-//                if( null != w ) {
-//                    Runnable runnable = new Runnable() {
-//                        public void run() {
-//                            if( !SwingUtilities.isEventDispatchThread() ) {
-//                                SwingUtilities.invokeLater( this );
-//                                return;
-//                            }
-//                            NativeWindowSystem.getDefault().setWindowAlpha( w, 0.5f );
-//                        }
-//                    };
-//                    RequestProcessor.getDefault().post(runnable, 1000);
-//                }
-//            }
-//        }
-//        if( null != newActiveMode && newActiveMode.getState() == Constants.MODE_STATE_SEPARATED ) {
-//            //turn transparency of floating window off when it's activated
-//            Window w = SwingUtilities.windowForComponent(tcToBeActivated);
-//            if( null != w ) {
-//                NativeWindowSystem.getDefault().setWindowAlpha( w, 1.0f );
-//            }
-//        }
     }
 }
 

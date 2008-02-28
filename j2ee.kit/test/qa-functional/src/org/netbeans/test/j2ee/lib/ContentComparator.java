@@ -154,11 +154,11 @@ public final class ContentComparator {
             // //ejb-jar/display-name element randomly disappears from ejb-jar.xml
             // therefore we skip the check for this node here
             //see issue #122947 for details
-            if ("display-name".equals(m1.getLocalName()) && "ejb-jar".equals(m1.getParentNode().getLocalName())) { //NOI18N
+            if ("display-name".equals(m1.getNodeName()) && "ejb-jar".equals(m1.getParentNode().getNodeName())) { //NOI18N
                 LOGGER.warning("skiping /ejb-jar/display-name from golden file"); //NOI18N
                 m1 = l1.remove(0);
             }
-            if ("display-name".equals(m2.getLocalName()) && "ejb-jar".equals(m2.getParentNode().getLocalName())) { //NOI18N
+            if ("display-name".equals(m2.getNodeName()) && "ejb-jar".equals(m2.getParentNode().getNodeName())) { //NOI18N
                 m2 = l2.remove(0);
                 LOGGER.warning("skiping /ejb-jar/display-name from created file"); //NOI18N
             }

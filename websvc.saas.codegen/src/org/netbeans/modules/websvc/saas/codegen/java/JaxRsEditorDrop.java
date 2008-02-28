@@ -115,7 +115,7 @@ public class JaxRsEditorDrop implements ActiveEditorDrop {
                         JaxRsCodeGeneratorFactory.create(targetComponent, targetFO, method);
                 
                     WadlSaasBean bean = codegen.getBean();
-                    boolean showParams = codegen.showParams();
+                    boolean showParams = codegen.canShowParam();
                     List<ParameterInfo> allParams = new ArrayList<ParameterInfo>(bean.getHeaderParameters());
                     if (showParams && bean.getInputParameters() != null) {
                         allParams.addAll(bean.getInputParameters());
@@ -124,7 +124,7 @@ public class JaxRsEditorDrop implements ActiveEditorDrop {
                             codegen.getSubresourceLocatorUriTemplate(),
                             bean.getQualifiedClassName(), 
                             allParams,
-                            !showParams);
+                            codegen.canShowResourceInfo(), showParams);
 
                     DialogDescriptor desc = new DialogDescriptor(panel, 
                             NbBundle.getMessage(JaxRsEditorDrop.class,

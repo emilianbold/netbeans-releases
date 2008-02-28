@@ -54,7 +54,7 @@ public interface WsdlData {
      */
     public static final String PROP_STATE = "state";
     
-    public static enum State {
+    public static enum Status {
         WSDL_UNRETRIEVED, WSDL_RETRIEVING, WSDL_RETRIEVED, WSDL_SERVICE_COMPILING, WSDL_SERVICE_COMPILED, WSDL_SERVICE_COMPILE_FAILED
     }
     
@@ -85,7 +85,7 @@ public interface WsdlData {
     
     boolean isReady();
 
-    State getState();
+    Status getStatus();
     
     /**
      * Returns WSDL Service Proxy Descriptor

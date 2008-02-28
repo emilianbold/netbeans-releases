@@ -43,6 +43,7 @@ package org.netbeans.modules.j2ee.earproject.classpath;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.io.File;
 import java.lang.ref.Reference;
 import java.lang.ref.SoftReference;
 import java.util.HashMap;
@@ -50,6 +51,7 @@ import java.util.Map;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.spi.java.classpath.ClassPathFactory;
 import org.netbeans.spi.java.classpath.ClassPathProvider;
+import org.netbeans.spi.java.project.classpath.support.ProjectClassPathSupport;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.openide.filesystems.FileObject;
@@ -71,6 +73,7 @@ public final class ClassPathProviderImpl implements ClassPathProvider, PropertyC
     private static final String DOC_BASE_DIR = "web.docbase.dir"; // NOI18N
     
     private final AntProjectHelper helper;
+    private final File projectDirectory;
     private final PropertyEvaluator evaluator;
     @SuppressWarnings("unchecked")
     private final Reference<ClassPath>[] cache = new SoftReference[8];
@@ -79,6 +82,8 @@ public final class ClassPathProviderImpl implements ClassPathProvider, PropertyC
     
     public ClassPathProviderImpl(AntProjectHelper helper, PropertyEvaluator evaluator) {
         this.helper = helper;
+        this.projectDirectory = FileUtil.toFile(helper.getProjectDirectory());
+        assert this.projectDirectory != null;
         this.evaluator = evaluator;
         evaluator.addPropertyChangeListener(WeakListeners.propertyChange(this, evaluator));
     }
@@ -151,7 +156,8 @@ public final class ClassPathProviderImpl implements ClassPathProvider, PropertyC
         if (cache[TYPE_BUILT_JAR + type] == null || (cp = cache[TYPE_BUILT_JAR + type].get()) == null) {
             if (type == TYPE_NORMAL) {
                 cp = ClassPathFactory.createClassPath(
-                        new ProjectClassPathImplementation(helper, "${javac.classpath}:${build.classes.dir}", evaluator, false));      //NOI18N
+                    ProjectClassPathSupport.createPropertyBasedClassPathImplementation(
+                    projectDirectory, evaluator, new String[] {"javac.classpath", "debug.classpath"})); // NOI18N
             }
             cache[TYPE_BUILT_JAR + type] = new SoftReference<ClassPath>(cp);
         }
@@ -183,7 +189,8 @@ public final class ClassPathProviderImpl implements ClassPathProvider, PropertyC
                 // will be different from the run classpath, then the run classpath should
                 // be returned back.
                 cp = ClassPathFactory.createClassPath(
-                        new ProjectClassPathImplementation(helper, "debug.classpath", evaluator)); // NOI18N
+                    ProjectClassPathSupport.createPropertyBasedClassPathImplementation(
+                    projectDirectory, evaluator, new String[] {"debug.classpath"})); // NOI18N
             }
             cache[6+type] = new SoftReference<ClassPath>(cp);
         }

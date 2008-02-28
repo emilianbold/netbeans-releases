@@ -45,6 +45,11 @@ import java.awt.GridBagLayout;
 
 import org.openide.util.HelpCtx;
 import org.openide.windows.TopComponent;
+import org.openide.windows.WindowManager;
+
+import org.netbeans.modules.bpel.search.api.SearchElement;
+import org.netbeans.modules.bpel.search.api.SearchEvent;
+import org.netbeans.modules.bpel.search.spi.SearchListener;
 import org.netbeans.modules.bpel.search.impl.util.Util;
 import static org.netbeans.modules.soa.ui.util.UI.*;
 
@@ -52,13 +57,49 @@ import static org.netbeans.modules.soa.ui.util.UI.*;
  * @author Vladimir Yaroslavskiy
  * @version 2006.11.24
  */
-public final class View extends TopComponent {
+public final class View extends TopComponent implements SearchListener {
 
   public View() {
     setIcon(icon(Util.class, "find").getImage()); // NOI18N
     setLayout(new GridBagLayout());
     setFocusable(true);
+    myList = new Tree();
+    myTree = new Tree();
+  }
 
+  public void searchStarted(SearchEvent event) {
+//out();
+    myFoundCount = 0;
+  }
+
+  public void searchFound(SearchEvent event) {
+//out("Found: " + element);
+    SearchElement element = event.getSearchElement();
+    myTree.addElement(element);
+    myList.addElement(new Element(element));
+    myFoundCount++;
+  }
+
+  public void searchFinished(SearchEvent event) {
+    String text = event.getSearchOption().getText();
+   
+    myList.finished(text, myFoundCount);
+    myTree.finished(text, myFoundCount);
+
+    View view = (View) WindowManager.getDefault().findTopComponent(View.NAME);
+    view.show(myList, myTree);
+  }
+
+  private void show(Tree list, Tree tree) {
+    createTabbed();
+    myTabbed.addTrees(list, tree);
+    open();
+  }
+
+  private void createTabbed() {
+    if (myTabbed != null) {
+      return;
+    }
     GridBagConstraints c = new GridBagConstraints();
     c.anchor = GridBagConstraints.NORTHWEST;
     c.fill = GridBagConstraints.BOTH;
@@ -67,25 +108,6 @@ public final class View extends TopComponent {
     c.weighty = 1.0;
     myTabbed = new Tabbed();
     add(myTabbed, c);
-  }
-
-  void show(Tree tree) {
-    addTab(tree);
-    open();
-    requestActive();
-  }
-
-  private void addTab(Tree tree) {
-    myTabbed.addTree(tree);
-    revalidate();
-    repaint();
-  }
-
-  @Override
-  public void requestActive()
-  {
-    super.requestActive();
-    myTabbed.requestActive();
   }
 
   @Override
@@ -122,6 +144,8 @@ public final class View extends TopComponent {
   protected void componentClosed()
   {
     super.componentClosed();
+    myList = null;
+    myTree = null;
     myTabbed = null;
   }
 
@@ -131,6 +155,9 @@ public final class View extends TopComponent {
     return NAME;
   }
 
+  private Tree myList;
+  private Tree myTree;
   private Tabbed myTabbed;
+  private int myFoundCount;
   public static final String NAME = "search"; // NOI18N
 }
