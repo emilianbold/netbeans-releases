@@ -585,12 +585,18 @@ public class ProcessExecutionModelImpl implements ProcessExecutionModel {
                 // If the call stack is not empty -- try to remove all entities,
                 // that are "below" it
                 PsmEntity tip = myCallStack.peek().getPsmEntity();
-                while (tip.getXpath().startsWith(psmEntity.getXpath())) {
+                while ((tip != null) && 
+                        tip.getXpath().startsWith(psmEntity.getXpath())) {
+                    
                     final PemEntityImpl pemEntity = myCallStack.pop();
                     
                     pemEntity.setState(PemEntity.State.COMPLETED);
                     
-                    tip = myCallStack.peek().getPsmEntity();
+                    if (myCallStack.isEmpty()) {
+                        tip = null;
+                    } else {
+                        tip = myCallStack.peek().getPsmEntity();
+                    }
                 }
             }
         }
