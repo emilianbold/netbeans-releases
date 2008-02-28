@@ -44,7 +44,6 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.lang.ref.WeakReference;
 import java.util.*;
-import org.netbeans.modules.masterfs.filebasedfs.FileBasedFileSystem;
 import org.openide.filesystems.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -52,12 +51,12 @@ import java.util.zip.ZipEntry;
 import java.util.jar.JarOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
-import org.openide.util.RequestProcessor;
 
 import org.openide.util.io.NbMarshalledObject;
 import org.openide.util.Utilities;
 
 import javax.swing.filechooser.FileSystemView;
+import org.netbeans.modules.masterfs.filebasedfs.fileobjects.FileObjectFactory;
 import org.netbeans.modules.masterfs.filebasedfs.fileobjects.WriteLockUtils;
 import org.netbeans.modules.masterfs.providers.ProvidedExtensionsTest;
 
@@ -90,7 +89,7 @@ public class BaseFileObjectTestHid extends TestBaseHid{
     }
 
     public void testRootToFileObject() throws Exception {
-        FileBasedFileSystem fs = FileBasedFileSystem.getInstance(getWorkDir());
+        FileObjectFactory fs = FileObjectFactory.getInstance(getWorkDir());
         assertNotNull(fs);
         FileObject root = fs.getRoot();
         assertNotNull(root);

@@ -156,19 +156,19 @@ public class CppSettings extends SharedClassObject {
         }
     }
     
-    public String getCompilerSetDirectories() {
-        //return (String) getProperty(PROP_COMPILER_SET_DIRECTORIES);
-        return getPreferences().get(PROP_COMPILER_SET_DIRECTORIES, null);
-    }
-    
-    public void setCompilerSetDirectories(String name) {
-        String n = getCompilerSetDirectories();
-        if (n == null || !n.equals(name)) {
-            //putProperty(PROP_COMPILER_SET_DIRECTORIES, name, true);
-            getPreferences().put(PROP_COMPILER_SET_DIRECTORIES, name);
-            firePropertyChange(PROP_COMPILER_SET_DIRECTORIES, n, name);
-        }
-    }
+//    public String getCompilerSetDirectories() {
+//        //return (String) getProperty(PROP_COMPILER_SET_DIRECTORIES);
+//        return getPreferences().get(PROP_COMPILER_SET_DIRECTORIES, null);
+//    }
+//    
+//    public void setCompilerSetDirectories(String name) {
+//        String n = getCompilerSetDirectories();
+//        if (n == null || !n.equals(name)) {
+//            //putProperty(PROP_COMPILER_SET_DIRECTORIES, name, true);
+//            getPreferences().put(PROP_COMPILER_SET_DIRECTORIES, name);
+//            firePropertyChange(PROP_COMPILER_SET_DIRECTORIES, n, name);
+//        }
+//    }
     
     public String getMakeName() {
         //String name = (String) getProperty(PROP_MAKE_NAME);
@@ -290,62 +290,62 @@ public class CppSettings extends SharedClassObject {
         }
     }
     
-    public String getCCompilerName() {
-        //String name = (String) getProperty(PROP_C_COMPILER_NAME);
-        String name = getPreferences().get(PROP_C_COMPILER_NAME, null);
-        if (name == null) {
-            return getCompilerSetName().startsWith("Sun") ? "cc" : "gcc"; // NOI18N
-        } else {
-            return name;
-        }
-    }
-    
-    public void setCCompilerName(String name) {
-        String n = getCCompilerName();
-        if (!n.equals(name)) {
-            //putProperty(PROP_C_COMPILER_NAME, name, true);
-            getPreferences().put(PROP_C_COMPILER_NAME, name);
-            firePropertyChange(PROP_C_COMPILER_NAME, n, name);
-        }
-    }
-    
-    public String getCppCompilerName() {
-        //String name = (String) getProperty(PROP_CPP_COMPILER_NAME);
-        String name = getPreferences().get(PROP_CPP_COMPILER_NAME, null);
-        if (name == null) {
-            return getCompilerSetName().startsWith("Sun") ? "CC" : "g++"; // NOI18N
-        } else {
-            return name;
-        }
-    }
-    
-    public void setCppCompilerName(String name) {
-        String n = getCppCompilerName();
-        if (!n.equals(name)) {
-            //putProperty(PROP_CPP_COMPILER_NAME, name, true);
-            getPreferences().put(PROP_CPP_COMPILER_NAME, name);
-            firePropertyChange(PROP_CPP_COMPILER_NAME, n, name);
-        }
-    }
-    
-    public String getFortranCompilerName() {
-        //String name = (String) getProperty(PROP_FORTRAN_COMPILER_NAME);
-        String name = getPreferences().get(PROP_FORTRAN_COMPILER_NAME, null);
-        if (name == null) {
-            return getCompilerSetName().startsWith("Sun") ? "f90" : "g77"; // NOI18N
-        } else {
-            return name;
-        }
-    }
-    
-    public void setFortranCompilerName(String name) {
-        String n = getFortranCompilerName();
-        if (!n.equals(name)) {
-            //putProperty(PROP_FORTRAN_COMPILER_NAME, name, true);
-            getPreferences().put(PROP_FORTRAN_COMPILER_NAME, name);
-            firePropertyChange(PROP_FORTRAN_COMPILER_NAME, n, name);
-        }
-    }
+//    public String getCCompilerName() {
+//        //String name = (String) getProperty(PROP_C_COMPILER_NAME);
+//        String name = getPreferences().get(PROP_C_COMPILER_NAME, null);
+//        if (name == null) {
+//            return getCompilerSetName().startsWith("Sun") ? "cc" : "gcc"; // NOI18N
+//        } else {
+//            return name;
+//        }
+//    }
+//    
+//    public void setCCompilerName(String name) {
+//        String n = getCCompilerName();
+//        if (!n.equals(name)) {
+//            //putProperty(PROP_C_COMPILER_NAME, name, true);
+//            getPreferences().put(PROP_C_COMPILER_NAME, name);
+//            firePropertyChange(PROP_C_COMPILER_NAME, n, name);
+//        }
+//    }
+//    
+//    public String getCppCompilerName() {
+//        //String name = (String) getProperty(PROP_CPP_COMPILER_NAME);
+//        String name = getPreferences().get(PROP_CPP_COMPILER_NAME, null);
+//        if (name == null) {
+//            return getCompilerSetName().startsWith("Sun") ? "CC" : "g++"; // NOI18N
+//        } else {
+//            return name;
+//        }
+//    }
+//    
+//    public void setCppCompilerName(String name) {
+//        String n = getCppCompilerName();
+//        if (!n.equals(name)) {
+//            //putProperty(PROP_CPP_COMPILER_NAME, name, true);
+//            getPreferences().put(PROP_CPP_COMPILER_NAME, name);
+//            firePropertyChange(PROP_CPP_COMPILER_NAME, n, name);
+//        }
+//    }
+//    
+//    public String getFortranCompilerName() {
+//        //String name = (String) getProperty(PROP_FORTRAN_COMPILER_NAME);
+//        String name = getPreferences().get(PROP_FORTRAN_COMPILER_NAME, null);
+//        if (name == null) {
+//            return getCompilerSetName().startsWith("Sun") ? "f90" : "g77"; // NOI18N
+//        } else {
+//            return name;
+//        }
+//    }
+//    
+//    public void setFortranCompilerName(String name) {
+//        String n = getFortranCompilerName();
+//        if (!n.equals(name)) {
+//            //putProperty(PROP_FORTRAN_COMPILER_NAME, name, true);
+//            getPreferences().put(PROP_FORTRAN_COMPILER_NAME, name);
+//            firePropertyChange(PROP_FORTRAN_COMPILER_NAME, n, name);
+//        }
+//    }
 
     /**
      * Gets the delay time for the start of the parsing.
@@ -484,44 +484,44 @@ public class CppSettings extends SharedClassObject {
         firePropertyChange(PROP_GDB_REQUIRED, new Boolean(oldValue), new Boolean(enabled));
     }
     
-    public boolean isCRequired() {
-        //Boolean b = (Boolean) getProperty(PROP_C_REQUIRED);
-        //return b == null ? true : b.booleanValue();
-        return getPreferences().getBoolean(PROP_C_REQUIRED, true);
-    }
-    
-    public void setCRequired(boolean enabled) {
-        //putProperty(PROP_C_REQUIRED, Boolean.valueOf(enabled));
-        boolean oldValue = isCRequired();
-        getPreferences().putBoolean(PROP_C_REQUIRED, enabled);
-        firePropertyChange(PROP_C_REQUIRED, new Boolean(oldValue), new Boolean(enabled));
-    }
-    
-    public boolean isCppRequired() {
-        //Boolean b = (Boolean) getProperty(PROP_CPP_REQUIRED);
-        //return b == null ? true : b.booleanValue();
-        return getPreferences().getBoolean(PROP_CPP_REQUIRED, true);
-    }
-    
-    public void setCppRequired(boolean enabled) {
-        //putProperty(PROP_CPP_REQUIRED, Boolean.valueOf(enabled));
-        boolean oldValue = isCppRequired();
-        getPreferences().putBoolean(PROP_CPP_REQUIRED, enabled);
-        firePropertyChange(PROP_CPP_REQUIRED, new Boolean(oldValue), new Boolean(enabled));
-    }
-    
-    public boolean isFortranRequired() {
-        //Boolean b = (Boolean) getProperty(PROP_FORTRAN_REQUIRED);
-        //return b == null ? false : b.booleanValue();
-        return getPreferences().getBoolean(PROP_FORTRAN_REQUIRED, false);
-    }
-    
-    public void setFortranRequired(boolean enabled) {
-        //putProperty(PROP_FORTRAN_REQUIRED, Boolean.valueOf(enabled));
-        boolean oldValue = isFortranRequired();
-        getPreferences().putBoolean(PROP_FORTRAN_REQUIRED, enabled);
-        firePropertyChange(PROP_FORTRAN_REQUIRED, new Boolean(oldValue), new Boolean(enabled));
-    }
+//    public boolean isCRequired() {
+//        //Boolean b = (Boolean) getProperty(PROP_C_REQUIRED);
+//        //return b == null ? true : b.booleanValue();
+//        return getPreferences().getBoolean(PROP_C_REQUIRED, true);
+//    }
+//    
+//    public void setCRequired(boolean enabled) {
+//        //putProperty(PROP_C_REQUIRED, Boolean.valueOf(enabled));
+//        boolean oldValue = isCRequired();
+//        getPreferences().putBoolean(PROP_C_REQUIRED, enabled);
+//        firePropertyChange(PROP_C_REQUIRED, new Boolean(oldValue), new Boolean(enabled));
+//    }
+//    
+//    public boolean isCppRequired() {
+//        //Boolean b = (Boolean) getProperty(PROP_CPP_REQUIRED);
+//        //return b == null ? true : b.booleanValue();
+//        return getPreferences().getBoolean(PROP_CPP_REQUIRED, true);
+//    }
+//    
+//    public void setCppRequired(boolean enabled) {
+//        //putProperty(PROP_CPP_REQUIRED, Boolean.valueOf(enabled));
+//        boolean oldValue = isCppRequired();
+//        getPreferences().putBoolean(PROP_CPP_REQUIRED, enabled);
+//        firePropertyChange(PROP_CPP_REQUIRED, new Boolean(oldValue), new Boolean(enabled));
+//    }
+//    
+//    public boolean isFortranRequired() {
+//        //Boolean b = (Boolean) getProperty(PROP_FORTRAN_REQUIRED);
+//        //return b == null ? false : b.booleanValue();
+//        return getPreferences().getBoolean(PROP_FORTRAN_REQUIRED, false);
+//    }
+//    
+//    public void setFortranRequired(boolean enabled) {
+//        //putProperty(PROP_FORTRAN_REQUIRED, Boolean.valueOf(enabled));
+//        boolean oldValue = isFortranRequired();
+//        getPreferences().putBoolean(PROP_FORTRAN_REQUIRED, enabled);
+//        firePropertyChange(PROP_FORTRAN_REQUIRED, new Boolean(oldValue), new Boolean(enabled));
+//    }
     
     public int getArrayRepeatThreshold() {
         return getPreferences().getInt(PROP_ARRAY_REPEAT_THRESHOLD, 10);

@@ -9,6 +9,9 @@
         </Property>
       </Properties>
       <AccessibilityProperties>
+        <Property name="AccessibleContext.accessibleName" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/j2me/cdc/project/ricoh/Bundle.properties" key="ACSD_ProjectAdvancedCustomizerPanel" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
         <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
           <ResourceString bundle="org/netbeans/modules/j2me/cdc/project/ricoh/Bundle.properties" key="ACSD_ProjectAdvancedCustomizerPanel" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
@@ -39,7 +42,7 @@
                   <Group type="102" alignment="1" attributes="0">
                       <EmptySpace max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="0" attributes="0">
-                          <Component id="jPanel1" alignment="1" pref="488" max="32767" attributes="0"/>
+                          <Component id="jPanel1" alignment="1" pref="497" max="32767" attributes="0"/>
                           <Component id="jLabel15" alignment="0" min="-2" max="-2" attributes="0"/>
                           <Component id="jLabel22" alignment="0" min="-2" max="-2" attributes="0"/>
                           <Component id="jLabel28" alignment="0" min="-2" max="-2" attributes="0"/>
@@ -49,7 +52,7 @@
                                   <Group type="102" alignment="0" attributes="0">
                                       <Component id="iconPathOrAbbrevLabel" min="-2" max="-2" attributes="0"/>
                                       <EmptySpace max="-2" attributes="0"/>
-                                      <Component id="abbrevationTextField" pref="394" max="32767" attributes="1"/>
+                                      <Component id="abbrevationTextField" pref="418" max="32767" attributes="1"/>
                                   </Group>
                                   <Group type="102" alignment="0" attributes="0">
                                       <Component id="useAbbreviationCheckBox" min="-2" max="-2" attributes="0"/>
@@ -70,10 +73,10 @@
                                       <Component id="dalpVersionTextField" min="-2" pref="71" max="-2" attributes="1"/>
                                       <EmptySpace min="-2" pref="259" max="-2" attributes="0"/>
                                   </Group>
-                                  <Component id="codeBaseTextField" pref="367" max="32767" attributes="1"/>
+                                  <Component id="codeBaseTextField" pref="382" max="32767" attributes="1"/>
                               </Group>
                           </Group>
-                          <Component id="startupArgumentsTextField" alignment="0" pref="488" max="32767" attributes="1"/>
+                          <Component id="startupArgumentsTextField" alignment="0" pref="497" max="32767" attributes="1"/>
                           <Component id="disableDalpManagementCheckBox" alignment="0" min="-2" max="-2" attributes="0"/>
                       </Group>
                       <EmptySpace max="-2" attributes="0"/>
@@ -827,7 +830,7 @@
                                   <Group type="102" alignment="0" attributes="0">
                                       <Component id="installOtherSDRadioButton" min="-2" max="-2" attributes="1"/>
                                       <EmptySpace min="6" pref="6" max="-2" attributes="0"/>
-                                      <Component id="installLocationComboBox" pref="131" max="32767" attributes="1"/>
+                                      <Component id="installLocationComboBox" pref="141" max="32767" attributes="1"/>
                                   </Group>
                                   <Component id="installHDDRadioButton" alignment="0" min="-2" max="-2" attributes="0"/>
                                   <Component id="installSDVMRadioButton" alignment="0" min="-2" max="-2" attributes="1"/>
@@ -850,7 +853,7 @@
                                   <Component id="installOtherSDRadioButton" alignment="3" min="-2" max="-2" attributes="0"/>
                                   <Component id="installLocationComboBox" alignment="3" min="-2" max="-2" attributes="0"/>
                               </Group>
-                              <EmptySpace pref="22" max="32767" attributes="0"/>
+                              <EmptySpace pref="21" max="32767" attributes="0"/>
                           </Group>
                       </Group>
                     </DimensionLayout>
@@ -991,7 +994,7 @@
                                   <Group type="102" alignment="0" attributes="0">
                                       <Component id="workingDirOtherSDRadioButton" min="-2" max="-2" attributes="0"/>
                                       <EmptySpace max="-2" attributes="0"/>
-                                      <Component id="workingDirComboBox" pref="120" max="32767" attributes="0"/>
+                                      <Component id="workingDirComboBox" pref="132" max="32767" attributes="0"/>
                                   </Group>
                               </Group>
                               <EmptySpace max="-2" attributes="0"/>
@@ -1012,7 +1015,7 @@
                                   <Component id="workingDirOtherSDRadioButton" alignment="3" min="-2" max="-2" attributes="0"/>
                                   <Component id="workingDirComboBox" alignment="3" min="-2" max="-2" attributes="0"/>
                               </Group>
-                              <EmptySpace pref="22" max="32767" attributes="0"/>
+                              <EmptySpace pref="21" max="32767" attributes="0"/>
                           </Group>
                       </Group>
                     </DimensionLayout>
@@ -1181,6 +1184,14 @@
     <Component class="javax.swing.ButtonGroup" name="iconLocationButtonGroup">
     </Component>
   </NonVisualComponents>
+  <AccessibilityProperties>
+    <Property name="AccessibleContext.accessibleName" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+      <ResourceString bundle="org/netbeans/modules/j2me/cdc/project/ricoh/Bundle.properties" key="ACSD_ProjectCustomizerPanel" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+    </Property>
+    <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+      <ResourceString bundle="org/netbeans/modules/j2me/cdc/project/ricoh/Bundle.properties" key="ACSD_ProjectCustomizerPanel" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+    </Property>
+  </AccessibilityProperties>
   <AuxValues>
     <AuxValue name="FormSettings_autoResourcing" type="java.lang.Integer" value="0"/>
     <AuxValue name="FormSettings_autoSetComponentName" type="java.lang.Boolean" value="false"/>
@@ -1205,18 +1216,18 @@
                           <Group type="102" alignment="0" attributes="1">
                               <Component id="jLabel1" min="-2" max="-2" attributes="0"/>
                               <EmptySpace min="-2" pref="25" max="-2" attributes="0"/>
-                              <Component id="applicationUID" pref="270" max="32767" attributes="2"/>
+                              <Component id="applicationUID" pref="273" max="32767" attributes="2"/>
                           </Group>
                           <Group type="102" alignment="0" attributes="0">
                               <Component id="jLabel2" min="-2" max="-2" attributes="0"/>
                               <EmptySpace min="-2" pref="22" max="-2" attributes="0"/>
-                              <Component id="applicationIcon" pref="269" max="32767" attributes="2"/>
+                              <Component id="applicationIcon" pref="273" max="32767" attributes="2"/>
                           </Group>
                       </Group>
                       <EmptySpace max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="0" attributes="0">
-                          <Component id="changeApplicationUID" pref="130" max="32767" attributes="1"/>
-                          <Component id="browseApplicationIcon" alignment="0" pref="130" max="32767" attributes="1"/>
+                          <Component id="changeApplicationUID" pref="134" max="32767" attributes="1"/>
+                          <Component id="browseApplicationIcon" alignment="0" pref="134" max="32767" attributes="1"/>
                       </Group>
                   </Group>
                   <Component id="jLabel7" alignment="0" min="-2" max="-2" attributes="0"/>
@@ -1292,6 +1303,14 @@
           <ResourceString bundle="org/netbeans/modules/j2me/cdc/project/ricoh/Bundle.properties" key="LBL_ApplicationUID" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
       </Properties>
+      <AccessibilityProperties>
+        <Property name="AccessibleContext.accessibleName" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/j2me/cdc/project/ricoh/Bundle.properties" key="ACSN_ApplicationUID" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+        <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/j2me/cdc/project/ricoh/Bundle.properties" key="ACSD_ApplicationUID" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+      </AccessibilityProperties>
       <AuxValues>
         <AuxValue name="generateMnemonicsCode" type="java.lang.Boolean" value="true"/>
       </AuxValues>
@@ -1312,6 +1331,14 @@
           <ResourceString bundle="org/netbeans/modules/j2me/cdc/project/ricoh/Bundle.properties" key="LBL_ChangeUID" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
       </Properties>
+      <AccessibilityProperties>
+        <Property name="AccessibleContext.accessibleName" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/j2me/cdc/project/ricoh/Bundle.properties" key="ACSN_ChangeUID" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+        <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/j2me/cdc/project/ricoh/Bundle.properties" key="ACSD_ChangeUID" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+      </AccessibilityProperties>
       <Events>
         <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="changeApplicationUIDActionPerformed"/>
       </Events>
@@ -1328,6 +1355,14 @@
           <ResourceString bundle="org/netbeans/modules/j2me/cdc/project/ricoh/Bundle.properties" key="LBL_ApplicationIcon" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
       </Properties>
+      <AccessibilityProperties>
+        <Property name="AccessibleContext.accessibleName" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/j2me/cdc/project/ricoh/Bundle.properties" key="ACSN_ApplicationIcon" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+        <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/j2me/cdc/project/ricoh/Bundle.properties" key="ACSD_ApplicationIcon" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+      </AccessibilityProperties>
       <AuxValues>
         <AuxValue name="generateMnemonicsCode" type="java.lang.Boolean" value="true"/>
       </AuxValues>
@@ -1338,6 +1373,14 @@
           <ResourceString bundle="org/netbeans/modules/j2me/cdc/project/ricoh/Bundle.properties" key="LBL_BrowseIcon" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
       </Properties>
+      <AccessibilityProperties>
+        <Property name="AccessibleContext.accessibleName" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/j2me/cdc/project/ricoh/Bundle.properties" key="ACSN_BrowseIcon" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+        <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/j2me/cdc/project/ricoh/Bundle.properties" key="ACSD_BrowseIcon" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+      </AccessibilityProperties>
       <Events>
         <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="browseApplicationIconActionPerformed"/>
       </Events>
@@ -1361,6 +1404,14 @@
           <ResourceString bundle="org/netbeans/modules/j2me/cdc/project/ricoh/Bundle.properties" key="LBL_PhoneNumber" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
       </Properties>
+      <AccessibilityProperties>
+        <Property name="AccessibleContext.accessibleName" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/j2me/cdc/project/ricoh/Bundle.properties" key="ACSN_PhoneNumber" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+        <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/j2me/cdc/project/ricoh/Bundle.properties" key="ACSD_PhoneNumber" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+      </AccessibilityProperties>
       <AuxValues>
         <AuxValue name="generateMnemonicsCode" type="java.lang.Boolean" value="true"/>
       </AuxValues>
@@ -1374,6 +1425,14 @@
           <ResourceString bundle="org/netbeans/modules/j2me/cdc/project/ricoh/Bundle.properties" key="LBL_FaxNumber" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
       </Properties>
+      <AccessibilityProperties>
+        <Property name="AccessibleContext.accessibleName" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/j2me/cdc/project/ricoh/Bundle.properties" key="ACSN_FaxNumber" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+        <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/j2me/cdc/project/ricoh/Bundle.properties" key="ACSD_FaxNumber" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+      </AccessibilityProperties>
       <AuxValues>
         <AuxValue name="generateMnemonicsCode" type="java.lang.Boolean" value="true"/>
       </AuxValues>
@@ -1387,6 +1446,14 @@
           <ResourceString bundle="org/netbeans/modules/j2me/cdc/project/ricoh/Bundle.properties" key="LBL_Email" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;).getString(&quot;{key}&quot;)"/>
         </Property>
       </Properties>
+      <AccessibilityProperties>
+        <Property name="AccessibleContext.accessibleName" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/j2me/cdc/project/ricoh/Bundle.properties" key="ACSN_Email" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+        <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/j2me/cdc/project/ricoh/Bundle.properties" key="ACSD_Email" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+      </AccessibilityProperties>
       <AuxValues>
         <AuxValue name="generateMnemonicsCode" type="java.lang.Boolean" value="true"/>
       </AuxValues>
@@ -1432,6 +1499,14 @@
           <ResourceString bundle="org/netbeans/modules/j2me/cdc/project/ricoh/Bundle.properties" key="BUTTON_Advanced" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;).getString(&quot;{key}&quot;)"/>
         </Property>
       </Properties>
+      <AccessibilityProperties>
+        <Property name="AccessibleContext.accessibleName" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/j2me/cdc/project/ricoh/Bundle.properties" key="ACSN_BUTTON_Advanced" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+        <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/j2me/cdc/project/ricoh/Bundle.properties" key="ACSD_BUTTON_Advanced" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+      </AccessibilityProperties>
       <Events>
         <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="advancedButtonActionPerformed"/>
       </Events>
@@ -1448,6 +1523,14 @@
           <Insets value="[0, 0, 0, 0]"/>
         </Property>
       </Properties>
+      <AccessibilityProperties>
+        <Property name="AccessibleContext.accessibleName" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/j2me/cdc/project/ricoh/Bundle.properties" key="ACSN_UseDefault" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+        <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/j2me/cdc/project/ricoh/Bundle.properties" key="ACSD_UseDefault" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+      </AccessibilityProperties>
     </Component>
   </SubComponents>
 </Form>
