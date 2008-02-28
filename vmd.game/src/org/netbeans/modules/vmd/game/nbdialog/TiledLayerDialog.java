@@ -148,7 +148,7 @@ public class TiledLayerDialog extends javax.swing.JPanel implements ActionListen
         jSeparator2 = new javax.swing.JSeparator();
 
         labelImageFile.setLabelFor(listImageFileName);
-        labelImageFile.setText(org.openide.util.NbBundle.getMessage(TiledLayerDialog.class, "SpriteDialog.labelSelectImage.txt")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(labelImageFile, org.openide.util.NbBundle.getMessage(TiledLayerDialog.class, "SpriteDialog.labelSelectImage.txt")); // NOI18N
 
         listImageFileName.setModel(this.getImageListModel());
         listImageFileName.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
@@ -173,10 +173,15 @@ public class TiledLayerDialog extends javax.swing.JPanel implements ActionListen
             .add(panelCustomizerLayout.createSequentialGroup()
                 .add(labelImageFile)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 252, Short.MAX_VALUE)
+                .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 261, Short.MAX_VALUE)
                 .add(18, 18, 18)
                 .add(buttonImportImages))
         );
+
+        labelImageFile.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(TiledLayerDialog.class, "SpriteDialog.labelSelectImage.accessible.name")); // NOI18N
+        labelImageFile.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(TiledLayerDialog.class, "SpriteDialog.labelSelectImage.accessible.description")); // NOI18N
+        buttonImportImages.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(TiledLayerDialog.class, "SpriteDialog.buttonImportImages.accessible.name")); // NOI18N
+        buttonImportImages.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(TiledLayerDialog.class, "SpriteDialog.buttonImportImages.accessible.description")); // NOI18N
 
         labelImagePreview.setLabelFor(panelImage);
         labelImagePreview.setText(org.openide.util.NbBundle.getMessage(TiledLayerDialog.class, "SpriteDialog.labelAdjustTileSize.txt")); // NOI18N
@@ -207,13 +212,13 @@ public class TiledLayerDialog extends javax.swing.JPanel implements ActionListen
                         .add(labelTileHeight)
                         .addContainerGap())
                     .add(panelPreviewLayout.createSequentialGroup()
-                        .add(sliderWidth, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 381, Short.MAX_VALUE)
+                        .add(sliderWidth, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 389, Short.MAX_VALUE)
                         .add(22, 22, 22))
                     .add(org.jdesktop.layout.GroupLayout.TRAILING, panelPreviewLayout.createSequentialGroup()
                         .add(panelPreviewLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
                             .add(org.jdesktop.layout.GroupLayout.LEADING, panelPreviewLayout.createSequentialGroup()
                                 .add(labelImagePreview)
-                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 204, Short.MAX_VALUE)
+                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 224, Short.MAX_VALUE)
                                 .add(checkBoxZoom))
                             .add(panelImage, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 381, Short.MAX_VALUE))
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
@@ -237,13 +242,22 @@ public class TiledLayerDialog extends javax.swing.JPanel implements ActionListen
                     .add(labelTileHeight)))
         );
 
+        labelImagePreview.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(TiledLayerDialog.class, "SpriteDialog.labelAdjustTileSize.accessible.name")); // NOI18N
+        labelImagePreview.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(TiledLayerDialog.class, "SpriteDialog.labelAdjustTileSize.accessible.description")); // NOI18N
+        sliderWidth.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(TiledLayerDialog.class, "SpriteDialog.sliderWidth.accessible.name")); // NOI18N
+        sliderWidth.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(TiledLayerDialog.class, "SpriteDialog.sliderWidth.accessible.description")); // NOI18N
+        sliderHeight.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(TiledLayerDialog.class, "SpriteDialog.sliderHeight.accessible.name")); // NOI18N
+        sliderHeight.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(TiledLayerDialog.class, "SpriteDialog.sliderHeight.accessible.description")); // NOI18N
+        checkBoxZoom.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(TiledLayerDialog.class, "SpriteDialog.labelZoom.accessible.name")); // NOI18N
+        checkBoxZoom.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(TiledLayerDialog.class, "SpriteDialog.labelZoom.accessible.description")); // NOI18N
+
         labelError.setForeground(new java.awt.Color(255, 0, 0));
 
         org.jdesktop.layout.GroupLayout panelErrorLayout = new org.jdesktop.layout.GroupLayout(panelError);
         panelError.setLayout(panelErrorLayout);
         panelErrorLayout.setHorizontalGroup(
             panelErrorLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(org.jdesktop.layout.GroupLayout.TRAILING, labelError, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 684, Short.MAX_VALUE)
+            .add(org.jdesktop.layout.GroupLayout.TRAILING, labelError, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 686, Short.MAX_VALUE)
         );
         panelErrorLayout.setVerticalGroup(
             panelErrorLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -253,7 +267,7 @@ public class TiledLayerDialog extends javax.swing.JPanel implements ActionListen
         );
 
         jLabel3.setLabelFor(fieldLayerName);
-        jLabel3.setText(org.openide.util.NbBundle.getMessage(TiledLayerDialog.class, "TiledLayerDialog.labelTiledLayerName.txt")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel3, org.openide.util.NbBundle.getMessage(TiledLayerDialog.class, "TiledLayerDialog.labelTiledLayerName.txt")); // NOI18N
 
         org.jdesktop.layout.GroupLayout panelLayerInfoLayout = new org.jdesktop.layout.GroupLayout(panelLayerInfo);
         panelLayerInfo.setLayout(panelLayerInfoLayout);
@@ -262,7 +276,7 @@ public class TiledLayerDialog extends javax.swing.JPanel implements ActionListen
             .add(panelLayerInfoLayout.createSequentialGroup()
                 .add(jLabel3)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
-                .add(fieldLayerName, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 576, Short.MAX_VALUE))
+                .add(fieldLayerName, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 591, Short.MAX_VALUE))
         );
         panelLayerInfoLayout.setVerticalGroup(
             panelLayerInfoLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -273,6 +287,9 @@ public class TiledLayerDialog extends javax.swing.JPanel implements ActionListen
                     .add(fieldLayerName, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
+
+        jLabel3.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(TiledLayerDialog.class, "TiledLayerDialog.labelTiledLayerName.accessible.name")); // NOI18N
+        jLabel3.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(TiledLayerDialog.class, "TiledLayerDialog.labelTiledLayerName.accessible.description")); // NOI18N
 
         jSeparator2.setOrientation(javax.swing.SwingConstants.VERTICAL);
 
@@ -291,7 +308,7 @@ public class TiledLayerDialog extends javax.swing.JPanel implements ActionListen
                         .add(jSeparator2, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 8, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
                         .add(panelPreview, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                    .add(jSeparator1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 684, Short.MAX_VALUE)
+                    .add(jSeparator1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 686, Short.MAX_VALUE)
                     .add(org.jdesktop.layout.GroupLayout.TRAILING, panelError, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addContainerGap())
         );
@@ -304,7 +321,7 @@ public class TiledLayerDialog extends javax.swing.JPanel implements ActionListen
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(panelCustomizer, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .add(jSeparator2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 314, Short.MAX_VALUE)
+                    .add(jSeparator2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 322, Short.MAX_VALUE)
                     .add(panelPreview, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(panelError, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
