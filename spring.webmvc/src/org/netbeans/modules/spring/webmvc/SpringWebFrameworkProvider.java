@@ -87,8 +87,8 @@ public class SpringWebFrameworkProvider extends WebFrameworkProvider {
 
     @Override
     public File[] getConfigurationFiles(WebModule webModule) {
-        // Don't add configuration files to the Configuration Files node.       
-        return null;
+        // Don't add configuration files to the Configuration Files node.           
+        return new File[0];
     }
     
     @Override

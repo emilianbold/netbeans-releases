@@ -140,6 +140,12 @@ public class Tool {
         return includeFilePrefix;
     }
     
+    public boolean exists() {
+        if (getPath() == null || getPath().length() == 0)
+            return false;
+        return new File(getPath()).exists();
+    }
+    
     private static ResourceBundle bundle = null;
     protected static String getString(String s) {
         if (bundle == null) {
