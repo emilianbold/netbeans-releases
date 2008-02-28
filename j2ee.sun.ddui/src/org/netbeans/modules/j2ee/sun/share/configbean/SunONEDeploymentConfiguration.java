@@ -48,6 +48,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.io.StringWriter;
 import java.lang.ref.WeakReference;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -1370,7 +1371,9 @@ public class SunONEDeploymentConfiguration implements Constants, SunDeploymentCo
     }
 
     private void createDefaultSunDD(File sunDDFile) throws IOException {
-        String resource = "org-netbeans-modules-j2ee-sun-ddui/" + sunDDFile.getName(); // NOI18N
+        boolean isPreAS90 = (ASDDVersion.SUN_APPSERVER_9_0.compareTo(appServerVersion) > 0);
+        String resource = "org-netbeans-modules-j2ee-sun-ddui" + // NOI18N
+                (isPreAS90 ? "-version-8_2/" : "/") + sunDDFile.getName(); // NOI18N
         FileObject sunDDTemplate = Repository.getDefault().getDefaultFileSystem().findResource(resource);
         if (sunDDTemplate != null) {
             FileObject configFolder = FileUtil.createFolder(sunDDFile.getParentFile());
@@ -1593,6 +1596,13 @@ public class SunONEDeploymentConfiguration implements Constants, SunDeploymentCo
 // !PW FIXME replace these with more stable version of equivalent functionality
     // once Vince or j2eeserver crew can implement a good api for this.
     // this code will NOT work for remote servers.
+    private static String [] sunServerIds = {
+        "APPSERVERSJS",
+        "GlassFishV1",
+        "J2EE",
+        "JavaEEPlusSIP"
+    };
+    
     private ASDDVersion getTargetAppServerVersion() {
         ASDDVersion result = null;
         J2eeModuleProvider provider = getProvider(configFiles[0].getParentFile());
@@ -1600,7 +1610,7 @@ public class SunONEDeploymentConfiguration implements Constants, SunDeploymentCo
 // [/tools/as81ur2]deployer:Sun:AppServer::localhost:4848, serverType: J2EE
 // [/tools/as82]deployer:Sun:AppServer::localhost:4848, serverType: J2EE
 // [/tools/glassfish_b35]deployer:Sun:AppServer::localhost:4948, serverType: J2EE
-        if ("J2EE".equals(serverType)) {
+        if (Arrays.asList(sunServerIds).contains(serverType)) {
             // NOI18N
             String instance = provider.getServerInstanceID();
             if (Utils.notEmpty(instance)) {
