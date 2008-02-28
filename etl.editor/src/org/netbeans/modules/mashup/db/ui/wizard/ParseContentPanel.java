@@ -196,6 +196,7 @@ public class ParseContentPanel implements PropertyChangeListener, VetoableChange
             String nbBundle1 = mLoc.t("PRSR001: Supply the following information required to parse this file.");
             JLabel instr = new JLabel(Localizer.parse(nbBundle1));
             instr.setAlignmentX(Component.LEFT_ALIGNMENT);
+            instr.setDisplayedMnemonic(Localizer.parse(nbBundle1).charAt(0));
             GridBagConstraints gbc = new GridBagConstraints();
             gbc.anchor = GridBagConstraints.FIRST_LINE_START;
             gbc.fill = GridBagConstraints.HORIZONTAL;

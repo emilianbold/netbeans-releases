@@ -188,12 +188,11 @@ public class RunProfile implements ConfigurationAuxObject {
                 list.add(name); 
                 termPaths.put(name, termPath);
                 termPaths.put(def, termPath);
-                termOptions.put(name, "--disable-factory --hide-menubar " + "--title=\"{1} {2}\" " + // NOI18N
-                        "-e \"\\\"" + dorun + "\\\" -p \\\"" + getString("LBL_RunPrompt") + "\\\" " + // NOI18N
-                        "-f \\\"{0}\\\" {1} {2}\""); // NOI18N
-                termOptions.put(def,  "--disable-factory --hide-menubar " + "--title=\"{1} {2}\" " + // NOI18N
-                        "-e \"\\\"" + dorun + "\\\" -p \\\"" + getString("LBL_RunPrompt") + "\\\" " + // NOI18N
-                        "-f \\\"{0}\\\" {1} {2}\""); // NOI18N
+                String opts = "--disable-factory --hide-menubar " + "--title=\"{1} {3}\" " + // NOI18N
+                        "-x \"" + dorun + "\" -p \"" + getString("LBL_RunPrompt") + "\" " + // NOI18N
+                        "-f \"{0}\" {1} {2}"; // NOI18N
+                termOptions.put(name, opts);
+                termOptions.put(def,  opts);
             }
             termPath = searchPath(path, "konsole"); // NOI18N
             if (termPath != null) {

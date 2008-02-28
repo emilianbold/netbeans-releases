@@ -550,12 +550,12 @@ public class CodeCompleterTest extends RubyTestBase {
 
     public void testCall1() throws Exception {
         checkComputeMethodCall("testfiles/calls/call1.rb", "create_table(^firstarg,  :id => true)",
-                "ActiveRecord::SchemaStatements::ClassMethods#create_table", "name", true);
+                "ActiveRecord::SchemaStatements::ClassMethods#create_table", "table_name", true);
     }
 
     public void testCall2() throws Exception {
         checkComputeMethodCall("testfiles/calls/call1.rb", "create_table(firstarg^,  :id => true)",
-                "ActiveRecord::SchemaStatements::ClassMethods#create_table", "name", true);
+                "ActiveRecord::SchemaStatements::ClassMethods#create_table", "table_name", true);
     }
     public void testCall3() throws Exception {
         checkComputeMethodCall("testfiles/calls/call1.rb", "create_table(firstarg,^  :id => true)",
@@ -571,11 +571,11 @@ public class CodeCompleterTest extends RubyTestBase {
     }
     public void testCallSpace2() throws Exception {
         checkComputeMethodCall("testfiles/calls/call1.rb", "create_table ^firstarg,  :id => true",
-                "ActiveRecord::SchemaStatements::ClassMethods#create_table", "name", true);
+                "ActiveRecord::SchemaStatements::ClassMethods#create_table", "table_name", true);
     }
     public void testCall5() throws Exception {
         checkComputeMethodCall("testfiles/calls/call2.rb", "create_table(^)",
-                "ActiveRecord::SchemaStatements::ClassMethods#create_table", "name", true);
+                "ActiveRecord::SchemaStatements::ClassMethods#create_table", "table_name", true);
     }
     public void testCall6() throws Exception {
         checkComputeMethodCall("testfiles/calls/call3.rb", "create_table^",
@@ -583,7 +583,7 @@ public class CodeCompleterTest extends RubyTestBase {
     }
     public void testCall7() throws Exception {
         checkComputeMethodCall("testfiles/calls/call3.rb", "create_table ^",
-                "ActiveRecord::SchemaStatements::ClassMethods#create_table", "name", true);
+                "ActiveRecord::SchemaStatements::ClassMethods#create_table", "table_name", true);
     }
     public void testCall8() throws Exception {
         checkComputeMethodCall("testfiles/calls/call4.rb", "create_table foo,^",

@@ -417,8 +417,10 @@ public final class AppClientProject implements Project, AntProjectListener, File
                     ProjectManager.mutex().writeAccess(new Runnable() {
                         public void run() {
                             EditableProperties ep = helper.getProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH);
-                            String classpath = Utils.toClasspathString(platform.getClasspathEntries());
-                            ep.setProperty(AppClientProjectProperties.J2EE_PLATFORM_CLASSPATH, classpath);
+                            if (!Boolean.parseBoolean(ep.getProperty(AppClientProjectProperties.J2EE_PLATFORM_SHARED))) {
+                                String classpath = Utils.toClasspathString(platform.getClasspathEntries());
+                                ep.setProperty(AppClientProjectProperties.J2EE_PLATFORM_CLASSPATH, classpath);
+                            }
                             helper.putProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH, ep);
                             try {
                                 ProjectManager.getDefault().saveProject(AppClientProject.this);

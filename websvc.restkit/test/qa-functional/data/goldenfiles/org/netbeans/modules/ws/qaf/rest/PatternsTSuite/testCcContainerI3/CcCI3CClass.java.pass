@@ -1,7 +1,7 @@
 /*
  *  CcCI3CClass
  *
- * Created on December 12, 2007, 1:32 AM
+ * Created on February 19, 2008, 7:18 PM
  *
  * To change this template, choose Tools | Template Manager
  * and open the template in the editor.
@@ -25,7 +25,7 @@ import javax.ws.rs.ProduceMime;
 public class CcCI3CClass {
     @HttpContext
     private UriInfo context;
-    
+
     /** Creates a new instance of CcCI3CClass */
     public CcCI3CClass() {
     }

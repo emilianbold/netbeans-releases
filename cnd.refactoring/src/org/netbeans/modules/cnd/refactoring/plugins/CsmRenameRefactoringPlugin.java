@@ -42,9 +42,6 @@ package org.netbeans.modules.cnd.refactoring.plugins;
 
 
 import org.netbeans.modules.refactoring.api.Problem;
-import org.netbeans.modules.refactoring.spi.RefactoringElementsBag;
-import org.openide.filesystems.FileObject;
-import org.openide.util.NbBundle;
 import java.text.MessageFormat;
 import java.util.*;
 
@@ -53,7 +50,6 @@ import java.util.*;
 
 import javax.swing.text.Position.Bias;
 import org.netbeans.modules.cnd.api.model.CsmClass;
-import org.netbeans.modules.cnd.api.model.CsmClass;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmFunction;
 import org.netbeans.modules.cnd.api.model.CsmFunctionDefinition;
@@ -61,6 +57,7 @@ import org.netbeans.modules.cnd.api.model.CsmMember;
 import org.netbeans.modules.cnd.api.model.CsmMethod;
 import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.CsmOffsetable;
+import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.api.model.xref.CsmReference;
 import org.netbeans.modules.cnd.api.model.xref.CsmReferenceRepository;
@@ -306,7 +303,10 @@ public class CsmRenameRefactoringPlugin extends CsmRefactoringPlugin {
         Collection<CsmFile> files = new HashSet<CsmFile>();
         CsmFile startFile = getCsmFile(startReferenceObject);
         for (CsmObject obj : referencedObjects) {
-            files.addAll(getRelevantFiles(startFile, obj));
+            Collection<CsmProject> prjs = CsmRefactoringUtils.getRelatedCsmProjects(obj, true);
+            CsmProject[] ar = prjs.toArray(new CsmProject[prjs.size()]);
+            refactoring.getContext().add(ar);
+            files.addAll(getRelevantFiles(startFile, obj, refactoring));
         }
         fireProgressListenerStart(ProgressEvent.START, files.size());
         createAndAddElements(files, elements, refactoring);

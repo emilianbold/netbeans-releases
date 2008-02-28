@@ -59,8 +59,8 @@ public class XMLIndentEngine extends FormatterIndentEngine {
     /**
      */
     protected ExtFormatter createFormatter () {
-        return new XMLFormatter (UniKit.class);
-        //return null;
+        //return new XMLFormatter (UniKit.class);
+        return null;
     }
 
     /**

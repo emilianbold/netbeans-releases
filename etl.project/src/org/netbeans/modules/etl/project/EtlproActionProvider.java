@@ -14,7 +14,7 @@
  * 
  * The Original Software is NetBeans. The Initial Developer of the Original
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
- * Microsystems, Inc. All Rights Reserved.
+ * Microsystems, Inc. All Rights Reserved. 
  */
 package org.netbeans.modules.etl.project;
 
@@ -52,6 +52,7 @@ class EtlproActionProvider implements ActionProvider {
         COMMAND_COMPILE_SINGLE,
         EtlproProject.COMMAND_GENWSDL,
         EtlproProject.COMMAND_SCHEMA,
+        EtlproProject.COMMAND_BULK_LOADER,
         COMMAND_DELETE,
         COMMAND_COPY,
         COMMAND_MOVE,
@@ -73,6 +74,7 @@ class EtlproActionProvider implements ActionProvider {
         commands.put(COMMAND_REBUILD, new String[]{"clean", "dist"}); // NOI18N
         commands.put(EtlproProject.COMMAND_GENWSDL, new String[]{"gen-wsdl"}); // NOI18N
         commands.put(EtlproProject.COMMAND_SCHEMA, new String[]{"gen-schema"}); // NOI18N
+        commands.put(EtlproProject.COMMAND_BULK_LOADER, new String[]{"etl_bulkloader"}); // NOI18N
         //commands.put(IcanproConstants.COMMAND_REDEPLOY, new String[] {"run"}); // NOI18N
         //commands.put(IcanproConstants.COMMAND_DEPLOY, new String[] {"run"}); // NOI18N
 

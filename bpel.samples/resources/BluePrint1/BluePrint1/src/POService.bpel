@@ -137,8 +137,7 @@
                            portType="pos:purchaseOrderPT"
                            operation="sendPurchaseOrder"
                            variable="purchaseOrderFault"
-                           faultName="pos:cannotCompleteOrder"
-                    />
+                           faultName="pos:cannotCompleteOrder"/>
                 </sequence>
             </else>
         </if>

@@ -43,7 +43,7 @@
     </types>
     
     <message name="ReserveAirlineIn">
-        <part name="itinerary" element="ota:TravelItinerary" />
+        <part name="itinerary" element="ota:TravelItinerary"/>
     </message>
 
     <message name="CancelAirlineIn">
@@ -101,7 +101,7 @@
             <input>
                 <soap:body use="literal"/>
             </input>
-        </operation>                
+        </operation>
     </binding>
     
     <service name="AirlineReservationSoapService">
@@ -116,6 +116,6 @@
         </plnk:role>
         <plnk:role name="AirlineReservationCallbackServiceRole"
                    portType="tns:AirlineReservationCallbackPortType">
-        </plnk:role>                
+        </plnk:role>
     </plnk:partnerLinkType>
 </definitions>

@@ -50,7 +50,6 @@ import org.netbeans.api.debugger.Properties;
  */
 public class BreakpointsReader implements Properties.Reader {
 
-
     public String [] getSupportedClassNames() {
         return new String[] {
             GdbBreakpoint.class.getName(), 
@@ -77,6 +76,7 @@ public class BreakpointsReader implements Properties.Reader {
         b.setCondition(properties.getString(GdbBreakpoint.PROP_CONDITION, "")); // NOI18N
         b.setPrintText(properties.getString(GdbBreakpoint.PROP_PRINT_TEXT, "")); // NOI18N
         b.setGroupName(properties.getString(GdbBreakpoint.PROP_GROUP_NAME, "")); // NOI18N
+        b.setSuspend(properties.getInt(GdbBreakpoint.PROP_SUSPEND, GdbBreakpoint.SUSPEND_ALL));
         
         if (properties.getBoolean(GdbBreakpoint.PROP_ENABLED, true)) {
             b.enable();

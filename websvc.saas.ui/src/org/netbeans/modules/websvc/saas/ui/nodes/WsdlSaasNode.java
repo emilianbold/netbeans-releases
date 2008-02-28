@@ -65,6 +65,7 @@ import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.datatransfer.ExTransferable;
+import org.openide.util.lookup.AbstractLookup;
 import org.openide.util.lookup.InstanceContent;
 
 /**
@@ -79,7 +80,7 @@ public class WsdlSaasNode extends SaasNode {
     }
     
     protected WsdlSaasNode(WsdlSaas saas, InstanceContent content) {
-        super(new WsdlSaasNodeChildren(saas), saas);
+        super(new WsdlSaasNodeChildren(saas), new AbstractLookup(content), saas);
         content.add(saas);
         transferable = ExTransferable.create(
             new SaasTransferable<WsdlSaas>(saas, SaasTransferable.WSDL_METHOD_FLAVORS));
@@ -172,7 +173,7 @@ public class WsdlSaasNode extends SaasNode {
     
     @Override
     public Transferable clipboardCopy() throws IOException {
-        if (getSaas().getState() != Saas.State.READY) {
+        if (getSaas().getState() != Saas.State.RESOLVED) {
             getSaas().toStateReady();
             return super.clipboardCopy();
         }

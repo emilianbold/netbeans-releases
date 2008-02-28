@@ -41,7 +41,6 @@ package org.netbeans.modules.cnd.editor.reformat;
 
 import java.util.Stack;
 import org.netbeans.api.lexer.Token;
-import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.cnd.api.lexer.CppTokenId;
 import static org.netbeans.cnd.api.lexer.CppTokenId.*;
 
@@ -52,71 +51,86 @@ import static org.netbeans.cnd.api.lexer.CppTokenId.*;
 class BracesStack {
 
     private Stack<StackEntry> stack = new Stack<StackEntry>();
+    private StatementContinuetion statementContinuation = StatementContinuetion.STOP;
 
     BracesStack() {
         super();
     }
 
     public void push(StackEntry entry) {
+        statementContinuation = StatementContinuetion.STOP;
         if (entry.getKind() == ELSE){
-            if (stack.size() > 0 && stack.peek().getKind() == IF) {
+            if (stack.size() > 0 && 
+                (stack.peek().getKind() == IF || stack.peek().getKind() == ELSE)) {
                 stack.pop();
             }
         }
         stack.push(entry);
-        System.out.println("push: "+toString());
+        System.out.println("push: "+toString()); // NOI18N
     }
 
-    private StackEntry safePop() {
-        if (stack.empty()) {
-            return null;
-        }
-        return stack.pop();
-    }
-
-    public StackEntry pop(TokenSequence<CppTokenId> ts) {
-        StackEntry res = popImpl(ts);
-        System.out.println("pop "+ts.token().id().name()+": "+toString());
+    public int pop(ExtendedTokenSequence ts) {
+        statementContinuation = StatementContinuetion.STOP;
+        int res = popImpl(ts);
+        System.out.println("pop "+ts.token().id().name()+": "+toString()); // NOI18N
         return res;
     }
-    
-    public StackEntry popImpl(TokenSequence<CppTokenId> ts) {
+
+    public int popImpl(ExtendedTokenSequence ts) {
         if (stack.empty()) {
-            return null;
+            return 0;
         }
         CppTokenId id = ts.token().id();
-        int brace;
         if (id == RBRACE) {
-            brace = 0;
-            for (int i = stack.size()-1; i >= 0; i--){
-                StackEntry top = stack.get(i);
-                if (top.getKind() == LBRACE){
-                    brace = i-1;
-                    break;
-                }
-            }
-            if (brace < 0){
-                StackEntry top = stack.get(0);
-                stack.setSize(0);
-                return top;
-            }
-        } else {
-            brace = stack.size() - 1;
+            return popBrace(ts);
         }
+        return popStatement(ts);
+    }
+
+    public int popBrace(ExtendedTokenSequence ts) {
+        int res = 0;
+        int brace = 0;
+        for (int i = stack.size() - 1; i >= 0; i--) {
+            StackEntry top = stack.get(i);
+            if (top.getKind() == LBRACE) {
+                brace = i - 1;
+                stack.setSize(i);
+                res = getLength();
+                if (isStatement(peek())){
+                    res--;
+                }
+                break;
+            }
+        }
+        if (brace < 0) {
+            stack.setSize(0);
+            return res;
+        }
+        popStatement(ts);
+        return res;
+    }
+
+    public int popStatement(ExtendedTokenSequence ts) {
         Token<CppTokenId> next = getNextImportant(ts);
-        for (int i = brace; i >= 0; i--) {
+        for (int i = stack.size() - 1; i >= 0; i--) {
             StackEntry top = stack.get(i);
             switch (top.getKind()) {
                 case LBRACE: {
                     stack.setSize(i + 1);
-                    return top;
+                    return getLength();
                 }
                 case IF: //("if", "keyword-directive"),
                 {
                     if (next != null && next.id() == ELSE) {
-                        stack.setSize(i + 1);
-                        return top;
+                        if (i > 0 && stack.get(i-1).getKind() == ELSE) {
+                            stack.setSize(i);
+                            return getLength();
+                        } else {
+                            stack.setSize(i + 1);
+                            return getLength();
+                        }
                     }
+                    break;
                 }
                 case ELSE: //("else", "keyword-directive"),
                     break;
@@ -130,9 +144,27 @@ class BracesStack {
                     break;
             }
         }
-        return null;
+        stack.setSize(0);
+        return 0;
     }
-
+    
+    private boolean isStatement(StackEntry top){
+        if (top != null) {
+            switch (top.getKind()) {
+                case IF: //("if", "keyword-directive"),
+                case ELSE: //("else", "keyword-directive"),
+                case TRY: //("try", "keyword-directive"), // C++
+                case CATCH: //("catch", "keyword-directive"), //C++
+                case SWITCH: //("switch", "keyword-directive"),
+                case FOR: //("for", "keyword-directive"),
+                case ASM: //("asm", "keyword-directive"), // gcc and C++
+                case DO: //("do", "keyword-directive"),
+                case WHILE: //("while", "keyword-directive"),
+                    return true;
+            }
+        }
+        return false;
+    }
     
     public StackEntry peek() {
         if (stack.empty()) {
@@ -150,6 +182,10 @@ class BracesStack {
                 if (prev == null || prev.getKind()==LBRACE) {
                     res++;
                 }
+            } else if (entry.getKind() == IF){
+                if (prev == null || prev.getKind()!=ELSE) {
+                    res++;
+                }
             } else {
                 res++;
             }
@@ -159,7 +195,7 @@ class BracesStack {
     }
     
 
-    private Token<CppTokenId> getNextImportant(TokenSequence<CppTokenId> ts) {
+    private Token<CppTokenId> getNextImportant(ExtendedTokenSequence ts) {
         int i = ts.index();
         try {
             while (true) {
@@ -200,11 +236,25 @@ class BracesStack {
         for(int i = 0; i < stack.size(); i++){
             StackEntry entry = stack.get(i);
             if (i > 0) {
-                buf.append(", ");
+                buf.append(", "); // NOI18N
             }
             buf.append(entry.toString());
         }
-        buf.append("+"+getLength());
+        buf.append("+"+getLength()); // NOI18N
         return buf.toString();
+    }
+
+    public StatementContinuetion getStatementContinuation() {
+        return statementContinuation;
+    }
+
+    public void setStatementContinuation(StatementContinuetion statementContinuation) {
+        this.statementContinuation = statementContinuation;
+    }
+    
+    public static enum StatementContinuetion {
+        START,
+        CONTINUE,
+        STOP;
     }
 }

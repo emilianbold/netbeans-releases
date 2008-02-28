@@ -149,4 +149,16 @@ public final class Client {
         String value = client.getPackageNameForceReplace();
         return "true".equals(value);
     }
+    
+    public void setUseDispatch(Boolean useDispatch) {
+        client.setUseDispatch(useDispatch);
+    }
+
+    public Boolean getUseDispatch() {
+        Boolean use = client.getUseDispatch();
+        if(use == null){
+            use = false;
+        }
+        return use;
+    }
 }

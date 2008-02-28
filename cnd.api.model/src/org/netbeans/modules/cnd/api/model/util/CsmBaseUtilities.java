@@ -238,6 +238,14 @@ public class CsmBaseUtilities {
         return funDecl;
     }    
     
+    public static boolean isFileLocalFunction(CsmFunction fun) {
+        CsmFunction decl = getFunctionDeclaration(fun);
+        if (decl != null && CsmKindUtilities.isFile(decl.getScope())) {
+            return true;
+        }
+        return false;
+    }
+    
     public static CsmClass getContextClass(CsmOffsetableDeclaration contextDeclaration) {
         if (contextDeclaration == null) {
             return null;

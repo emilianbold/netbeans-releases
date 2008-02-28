@@ -123,6 +123,12 @@ public class DesignContextControllerImpl2
     public synchronized void setContext(BpelDesignContext newContext, boolean forceReload) {
         assert EventQueue.isDispatchThread();
         //
+        
+        if (mNewContext == null && forceReload) {
+            reloadMapper(new EventObject(new Object()));
+            return;
+        }
+        
         mNewContext = newContext;
 
         boolean isValidContext = DesignContextUtil.isValidContext(mContext);

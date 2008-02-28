@@ -98,6 +98,16 @@ made subject to such option by the copyright holder.
 		<bean-name>Jsr109</bean-name>
 		<wrapper-class>Boolean</wrapper-class>
 	</meta-element>
+        <meta-element>
+		<dtd-name>use-provider</dtd-name>
+		<bean-name>UseProvider</bean-name>
+		<wrapper-class>Boolean</wrapper-class>
+	</meta-element>
+        <meta-element>
+		<dtd-name>use-dispatch</dtd-name>
+		<bean-name>UseDispatch</bean-name>
+		<wrapper-class>Boolean</wrapper-class>
+	</meta-element>
 	<meta-element>
 		<dtd-name>url-mapping</dtd-name>
 		<bean-name>UrlMapping</bean-name>

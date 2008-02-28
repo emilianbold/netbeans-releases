@@ -317,6 +317,7 @@ public class DefaultProjectActionHandler implements ActionListener {
                                 rcfile = File.createTempFile("nbcnd_rc", "").getAbsolutePath(); // NOI18N
                             } catch (IOException ex) {
                             }
+                            String args2;
                             if (pae.getProfile().getTerminalPath().indexOf("gnome-terminal") != -1) { // NOI18N
                                 /* gnome-terminal has differnt quoting rules... */
                                 StringBuffer b = new StringBuffer();
@@ -327,10 +328,11 @@ public class DefaultProjectActionHandler implements ActionListener {
                                         b.append(args.charAt(i));
                                     }
                                 }
-                                args = b.toString();
-                                exe = "\\\"" + pae.getExecutable() + "\\\""; // NOI18N
+                                args2 = b.toString();
+                            } else {
+                                args2 = "";
                             }
-                            args = MessageFormat.format(pae.getProfile().getTerminalOptions(), rcfile, exe, args);
+                            args = MessageFormat.format(pae.getProfile().getTerminalOptions(), rcfile, exe, args, args2);
                             exe = pae.getProfile().getTerminalPath();
                         }
                     }

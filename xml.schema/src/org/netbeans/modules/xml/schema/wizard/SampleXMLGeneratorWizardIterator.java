@@ -91,16 +91,7 @@ public final class SampleXMLGeneratorWizardIterator implements WizardDescriptor.
      * various properties for them influencing wizard appearance.
      */
     private WizardDescriptor.Panel[] getPanels() {
-        Sources sources = ProjectUtils.getSources(srcProject);
-        SourceGroup[] folders = sources.getSourceGroups(ProjectConstants.JAVA_SOURCES_TYPE);
-        if (folders == null || folders.length == 0) {
-                folders = sources.getSourceGroups(Sources.TYPE_GENERIC);
-        }
-        
-        if (folders != null && folders.length != 0) {
-                df = DataFolder.findFolder(folders[0].getRootFolder());
-        }
-        
+               
         xmlPanel = new XMLContentPanel(true);
         
         if (panels == null) {

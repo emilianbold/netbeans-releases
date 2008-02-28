@@ -343,8 +343,9 @@ public class PreviewDataPanel extends JPanel implements ActionListener {
         // add refresh button
         URL url = getClass().getResource("/org/netbeans/modules/sql/framework/ui/resources/images/refresh16.png");
         previewBtn = new JButton(new ImageIcon(url));
-        previewBtn.setMnemonic('S');
-        previewBtn.setToolTipText("Show data for this table definition");
+        String nbBundle30 = mLoc.t("PRSR001: Show data for this table definition");
+        previewBtn.setToolTipText(Localizer.parse(nbBundle30));
+        previewBtn.setMnemonic(Localizer.parse(nbBundle30).charAt(0));
         previewBtn.setActionCommand(CMD_SHOWDATA);
         previewBtn.addActionListener(this);
 
@@ -365,7 +366,9 @@ public class PreviewDataPanel extends JPanel implements ActionListener {
         fl.setAlignment(FlowLayout.LEFT);
         totalRowsPanel.setLayout(fl);
 
-        JLabel totalRowsNameLabel = new JLabel("Total rows:");
+        String nbBundle40 = mLoc.t("PRSR001: Total rows:");
+        JLabel totalRowsNameLabel = new JLabel(Localizer.parse(nbBundle40));
+        totalRowsNameLabel.setDisplayedMnemonic(Localizer.parse(nbBundle40).charAt(0));
         totalRowsNameLabel.setBorder(BorderFactory.createEmptyBorder(0, 10, 0, 0));
         totalRowsPanel.add(totalRowsNameLabel);
 

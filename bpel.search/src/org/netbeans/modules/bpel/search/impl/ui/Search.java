@@ -79,9 +79,13 @@ public final class Search extends Dialog {
     mySearchEngine = engines.get(0);
     mySearchEngine.addSearchListener(new Tree());
     mySearchEngine.addSearchListener(new Progress());
+
     show();
 
-    return getUIComponent();
+    Component dialog = getUIComponent();
+    a11y(dialog, i18n("ACS_Advanced_Search")); // NOI18N
+
+    return dialog;
   }
 
   @Override
@@ -141,6 +145,7 @@ public final class Search extends Dialog {
     c.insets = new Insets(TINY_INSET, SMALL_INSET, TINY_INSET, 0);
     c.weightx = 1.0;
     myTarget = new JComboBox(myTargets);
+    a11y(myTarget, i18n("ACS_Type")); // NOI18N
     label.setLabelFor(myTarget);
     panel.add(myTarget, c);
 

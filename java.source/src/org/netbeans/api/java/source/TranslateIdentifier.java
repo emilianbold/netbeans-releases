@@ -57,7 +57,7 @@ import static org.netbeans.modules.java.source.save.PositionEstimator.*;
  */
 class TranslateIdentifier implements TreeVisitor<Tree, Void> {
     
-    private final WorkingCopy copy;
+    private final CompilationInfo info;
     private final TreeMaker make;
     private final CompilationUnitTree unit;
     private final boolean copyComments;
@@ -67,23 +67,25 @@ class TranslateIdentifier implements TreeVisitor<Tree, Void> {
     private int tokenIndexAlreadyAdded = -1;
     
     
-    public TranslateIdentifier(final WorkingCopy copy, 
+    public TranslateIdentifier(final CompilationInfo info, 
             final boolean copyComments, 
             final boolean resolveImports,
             final TokenSequence<JavaTokenId> seq) 
     {
-        this.copy = copy;
-        this.make = copy.getTreeMaker();
-        this.unit = copy.getCompilationUnit();
+        this.info = info;
+        this.make = info instanceof WorkingCopy ? ((WorkingCopy) info).getTreeMaker() : null;
+        this.unit = info.getCompilationUnit();
         this.seq = seq;
         this.copyComments = copyComments;
         this.resolveImports = resolveImports;
-        this.commentService = CommentHandlerService.instance(copy.impl.getJavacTask().getContext());
+        this.commentService = CommentHandlerService.instance(info.impl.getJavacTask().getContext());
     }
 
     public Tree visitAnnotation(AnnotationTree node, Void p) {
         Tree annotationType = translate(node.getAnnotationType());
         List<? extends ExpressionTree> arguments = translate(node.getArguments());
+        
+        if (make == null) return node;
         
         if (annotationType != node.getAnnotationType() ||
             arguments != node.getArguments()) 
@@ -98,6 +100,8 @@ class TranslateIdentifier implements TreeVisitor<Tree, Void> {
         ExpressionTree methodSelect = (ExpressionTree) translate(node.getMethodSelect());
         List<? extends Tree> typeArguments = translate(node.getTypeArguments());
         
+        if (make == null) return node;
+        
         if (arguments != node.getArguments() ||
             methodSelect != node.getMethodSelect() ||
             typeArguments != node.getTypeArguments())
@@ -111,6 +115,8 @@ class TranslateIdentifier implements TreeVisitor<Tree, Void> {
         ExpressionTree condition = (ExpressionTree) translate(node.getCondition());
         ExpressionTree detail = (ExpressionTree) translate(node.getDetail());
         
+        if (make == null) return node;
+        
         if (condition != node.getCondition() ||
             detail != node.getDetail())
         {
@@ -122,6 +128,8 @@ class TranslateIdentifier implements TreeVisitor<Tree, Void> {
     public Tree visitAssignment(AssignmentTree node, Void p) {
         ExpressionTree expression = (ExpressionTree) translate(node.getExpression());
         ExpressionTree variable = (ExpressionTree) translate(node.getVariable());
+        
+        if (make == null) return node;
         
         if (expression != node.getExpression() ||
             variable != node.getVariable()) 
@@ -135,6 +143,8 @@ class TranslateIdentifier implements TreeVisitor<Tree, Void> {
         ExpressionTree expression = (ExpressionTree) translate(node.getExpression());
         ExpressionTree variable = (ExpressionTree) translate(node.getVariable());
         
+        if (make == null) return node;
+        
         if (expression != node.getExpression() ||
             variable != node.getVariable()) 
         {
@@ -147,6 +157,8 @@ class TranslateIdentifier implements TreeVisitor<Tree, Void> {
         ExpressionTree leftOperand = (ExpressionTree) translate(node.getLeftOperand());
         ExpressionTree rightOperand = (ExpressionTree) translate(node.getRightOperand());
         
+        if (make == null) return node;
+        
         if (leftOperand != node.getLeftOperand() ||
             rightOperand != node.getRightOperand())
         {
@@ -157,6 +169,8 @@ class TranslateIdentifier implements TreeVisitor<Tree, Void> {
 
     public Tree visitBlock(BlockTree node, Void p) {
         List<? extends StatementTree> statements = translate(node.getStatements());
+        
+        if (make == null) return node;
         
         if (statements != node.getStatements()) {
             node = make.Block(statements, node.isStatic());
@@ -172,6 +186,8 @@ class TranslateIdentifier implements TreeVisitor<Tree, Void> {
         ExpressionTree expression = (ExpressionTree) translate(node.getExpression());
         List<? extends StatementTree> statements = translate(node.getStatements());
         
+        if (make == null) return node;
+        
         if (expression != node.getExpression() ||
             statements != node.getStatements())
         {
@@ -183,6 +199,8 @@ class TranslateIdentifier implements TreeVisitor<Tree, Void> {
     public Tree visitCatch(CatchTree node, Void p) {
         BlockTree block = (BlockTree) translate(node.getBlock());
         VariableTree parameter = (VariableTree) translate(node.getParameter());
+        
+        if (make == null) return node;
         
         if (block != node.getBlock() ||
             parameter != node.getParameter()) 
@@ -199,6 +217,8 @@ class TranslateIdentifier implements TreeVisitor<Tree, Void> {
         ModifiersTree modifiers = (ModifiersTree) translate(node.getModifiers());
         List<? extends TypeParameterTree> typeParameters = translate(node.getTypeParameters());
         
+        if (make == null) return node;
+        
         if (extendsClause != node.getExtendsClause() ||
             implementsClause != node.getImplementsClause() ||
             members != node.getMembers() ||
@@ -214,6 +234,8 @@ class TranslateIdentifier implements TreeVisitor<Tree, Void> {
         ExpressionTree condition = (ExpressionTree) translate(node.getCondition());
         ExpressionTree falseExpression = (ExpressionTree) translate(node.getFalseExpression());
         ExpressionTree trueExpression = (ExpressionTree) translate(node.getTrueExpression());
+        
+        if (make == null) return node;
         
         if (condition != node.getCondition() ||
             falseExpression != node.getFalseExpression() ||
@@ -232,6 +254,8 @@ class TranslateIdentifier implements TreeVisitor<Tree, Void> {
         StatementTree statement = (StatementTree) translate(node.getStatement());
         ExpressionTree condition = (ExpressionTree) translate(node.getCondition());
         
+        if (make == null) return node;
+        
         if (condition != node.getCondition() || statement != node.getStatement()) {
             node = make.DoWhileLoop(condition, statement);
         }
@@ -241,6 +265,8 @@ class TranslateIdentifier implements TreeVisitor<Tree, Void> {
     public Tree visitErroneous(ErroneousTree node, Void p) {
         List<? extends Tree> errorTrees = translate(node.getErrorTrees());
         
+        if (make == null) return node;
+        
         if (errorTrees != node.getErrorTrees()) {
             node = make.Erroneous(errorTrees);
         }
@@ -249,6 +275,8 @@ class TranslateIdentifier implements TreeVisitor<Tree, Void> {
 
     public Tree visitExpressionStatement(ExpressionStatementTree node, Void p) {
         ExpressionTree expression = (ExpressionTree) translate(node.getExpression());
+        
+        if (make == null) return node;
         
         if (expression != node.getExpression()) {
             node = make.ExpressionStatement(expression);
@@ -260,6 +288,8 @@ class TranslateIdentifier implements TreeVisitor<Tree, Void> {
         StatementTree statement = (StatementTree) translate(node.getStatement());
         ExpressionTree expression = (ExpressionTree) translate(node.getExpression());
         VariableTree variable = (VariableTree) translate(node.getVariable());
+        
+        if (make == null) return node;
         
         if (statement != node.getStatement() ||
             expression != node.getExpression() ||
@@ -276,6 +306,8 @@ class TranslateIdentifier implements TreeVisitor<Tree, Void> {
         List<? extends StatementTree> initializer = translate(node.getInitializer());
         List<? extends ExpressionStatementTree> update = translate(node.getUpdate());
         
+        if (make == null) return node;
+        
         if (statement != node.getStatement() ||
             condition != node.getCondition() ||
             initializer != node.getInitializer() ||
@@ -288,13 +320,14 @@ class TranslateIdentifier implements TreeVisitor<Tree, Void> {
 
     public Tree visitIdentifier(IdentifierTree node, Void p) {
         if (!resolveImports) return node;
-        
-        TreePath path = copy.getTrees().getPath(unit, node);
+        if (make == null) return node;
+                
+        TreePath path = info.getTrees().getPath(unit, node);
         Element element;
         if (path == null) {
             element = ((JCIdent) node).sym;
         } else {
-            element = copy.getTrees().getElement(path);
+            element = info.getTrees().getElement(path);
         }
         if (element != null) {
             // solve the imports only when declared type!!!
@@ -309,6 +342,8 @@ class TranslateIdentifier implements TreeVisitor<Tree, Void> {
         ExpressionTree condition = (ExpressionTree) translate(node.getCondition());
         StatementTree elseStatement = (StatementTree) translate(node.getElseStatement());
         StatementTree thenStatement = (StatementTree) translate(node.getThenStatement());
+        
+        if (make == null) return node;
         
         if (condition != node.getCondition() ||
             elseStatement != node.getElseStatement() ||
@@ -327,6 +362,8 @@ class TranslateIdentifier implements TreeVisitor<Tree, Void> {
         ExpressionTree expression = (ExpressionTree) translate(node.getExpression());
         ExpressionTree index = (ExpressionTree) translate(node.getIndex());
         
+        if (make == null) return node;
+        
         if (expression != node.getExpression() ||
             index != node.getIndex())
         {
@@ -337,6 +374,8 @@ class TranslateIdentifier implements TreeVisitor<Tree, Void> {
 
     public Tree visitLabeledStatement(LabeledStatementTree node, Void p) {
         StatementTree statement = (StatementTree) translate(node.getStatement());
+        
+        if (make == null) return node;
         
         if (statement != node.getStatement()) {
             node = make.LabeledStatement(node.getLabel(), statement);
@@ -356,6 +395,8 @@ class TranslateIdentifier implements TreeVisitor<Tree, Void> {
         Tree returnType = translate(node.getReturnType());
         List<? extends ExpressionTree> aThrows = translate(node.getThrows());
         List<? extends TypeParameterTree> typeParameters = translate(node.getTypeParameters());
+        
+        if (make == null) return node;
         
         if (body != node.getBody() ||
             defaultValue != node.getDefaultValue() ||
@@ -381,6 +422,8 @@ class TranslateIdentifier implements TreeVisitor<Tree, Void> {
     public Tree visitModifiers(ModifiersTree node, Void p) {
         List<? extends AnnotationTree> annotations = translate(node.getAnnotations());
         
+        if (make == null) return node;
+        
         if (annotations != node.getAnnotations()) {
             node = make.Modifiers(node.getFlags(), annotations);
         }
@@ -391,6 +434,8 @@ class TranslateIdentifier implements TreeVisitor<Tree, Void> {
         List<? extends ExpressionTree> initializers = translate(node.getInitializers());
         List<? extends ExpressionTree> dimensions = translate(node.getDimensions());
         Tree type = translate(node.getType());
+        
+        if (make == null) return node;
         
         if (initializers != node.getInitializers() ||
             dimensions != node.getDimensions() ||
@@ -408,6 +453,8 @@ class TranslateIdentifier implements TreeVisitor<Tree, Void> {
         ExpressionTree identifier = (ExpressionTree) translate(node.getIdentifier());
         List<? extends Tree> typeArguments = translate(node.getTypeArguments());
         
+        if (make == null) return node;
+        
         if (arguments != node.getArguments() ||
             classBody != node.getClassBody() ||
             enclosingExpression != node.getEnclosingExpression() ||
@@ -422,6 +469,8 @@ class TranslateIdentifier implements TreeVisitor<Tree, Void> {
     public Tree visitParenthesized(ParenthesizedTree node, Void p) {
         ExpressionTree expression = (ExpressionTree) translate(node.getExpression());
         
+        if (make == null) return node;
+        
         if (expression != node.getExpression()) {
             node = make.Parenthesized(expression);
         }
@@ -431,6 +480,8 @@ class TranslateIdentifier implements TreeVisitor<Tree, Void> {
     public Tree visitReturn(ReturnTree node, Void p) {
         ExpressionTree expression = (ExpressionTree) translate(node.getExpression());
         
+        if (make == null) return node;
+        
         if (expression != node.getExpression()) {
             node = make.Return(expression);
         }
@@ -438,9 +489,11 @@ class TranslateIdentifier implements TreeVisitor<Tree, Void> {
     }
 
     public Tree visitMemberSelect(MemberSelectTree node, Void p) {
-        TypeElement e = copy.getElements().getTypeElement(node.toString());
+        if (make == null) return node;
+        
+        TypeElement e = info.getElements().getTypeElement(node.toString());
         if (e != null) {
-            return copy.getTreeMaker().QualIdent(e);
+            return make.QualIdent(e);
         } else {
             return node;
         }
@@ -461,6 +514,8 @@ class TranslateIdentifier implements TreeVisitor<Tree, Void> {
         List<? extends CaseTree> cases = translate(node.getCases());
         ExpressionTree expression = (ExpressionTree) translate(node.getExpression());
         
+        if (make == null) return node;
+        
         if (cases != node.getCases() ||
             expression != node.getExpression()) 
         {
@@ -473,6 +528,8 @@ class TranslateIdentifier implements TreeVisitor<Tree, Void> {
         BlockTree block = (BlockTree) translate(node.getBlock());
         ExpressionTree expression = (ExpressionTree) translate(node.getExpression());
         
+        if (make == null) return node;
+        
         if (block != node.getBlock() ||
             expression != node.getExpression())
         {
@@ -484,6 +541,8 @@ class TranslateIdentifier implements TreeVisitor<Tree, Void> {
     public Tree visitThrow(ThrowTree node, Void p) {
         ExpressionTree expression = (ExpressionTree) translate(node.getExpression());
         
+        if (make == null) return node;
+        
         if (expression != node.getExpression()) {
             node = make.Throw(expression);
         }
@@ -492,6 +551,8 @@ class TranslateIdentifier implements TreeVisitor<Tree, Void> {
 
     public Tree visitCompilationUnit(CompilationUnitTree node, Void p) {
         List<? extends Tree> typeDecls = translate(node.getTypeDecls());
+        
+        if (make == null) return node;
         
         if (typeDecls != node.getTypeDecls()) {
             node = make.CompilationUnit(
@@ -509,6 +570,8 @@ class TranslateIdentifier implements TreeVisitor<Tree, Void> {
         List<? extends CatchTree> catches = translate(node.getCatches());
         BlockTree finallyBlock = (BlockTree) translate(node.getFinallyBlock());
         
+        if (make == null) return node;
+        
         if (block != node.getBlock() ||
             catches != node.getCatches() ||
             finallyBlock != node.getFinallyBlock())
@@ -522,6 +585,8 @@ class TranslateIdentifier implements TreeVisitor<Tree, Void> {
         Tree type = translate(node.getType());
         List<? extends Tree> typeArguments = translate(node.getTypeArguments());
         
+        if (make == null) return node;
+        
         if (type != node.getType() ||
             typeArguments != node.getTypeArguments())
         {
@@ -533,6 +598,8 @@ class TranslateIdentifier implements TreeVisitor<Tree, Void> {
     public Tree visitArrayType(ArrayTypeTree node, Void p) {
         Tree type = translate(node.getType());
         
+        if (make == null) return node;
+        
         if (type != node.getType()) {
             node = make.ArrayType(type);
         }
@@ -542,6 +609,8 @@ class TranslateIdentifier implements TreeVisitor<Tree, Void> {
     public Tree visitTypeCast(TypeCastTree node, Void p) {
         ExpressionTree expression = (ExpressionTree) translate(node.getExpression());
         Tree type = translate(node.getType());
+        
+        if (make == null) return node;
         
         if (expression != node.getExpression() ||
             type != node.getType()) 
@@ -558,6 +627,8 @@ class TranslateIdentifier implements TreeVisitor<Tree, Void> {
     public Tree visitTypeParameter(TypeParameterTree node, Void p) {
         List<? extends Tree> bounds = translate(node.getBounds());
         
+        if (make == null) return node;
+        
         if (bounds != node.getBounds()) {
             node = make.TypeParameter(node.getName(), (List<? extends ExpressionTree>) bounds);
         }
@@ -567,6 +638,8 @@ class TranslateIdentifier implements TreeVisitor<Tree, Void> {
     public Tree visitInstanceOf(InstanceOfTree node, Void p) {
         ExpressionTree expression = (ExpressionTree) translate(node.getExpression());
         Tree type = translate(node.getType());
+        
+        if (make == null) return node;
         
         if (expression != node.getExpression() ||
             type != node.getType())
@@ -579,6 +652,8 @@ class TranslateIdentifier implements TreeVisitor<Tree, Void> {
     public Tree visitUnary(UnaryTree node, Void p) {
         ExpressionTree expression = (ExpressionTree) translate(node.getExpression());
         
+        if (make == null) return node;
+        
         if (expression != node.getExpression()) {
             node = make.Unary(node.getKind(), expression);
         }
@@ -590,6 +665,8 @@ class TranslateIdentifier implements TreeVisitor<Tree, Void> {
         Tree type = translate(node.getType());
         ExpressionTree initializer = (ExpressionTree) translate(node.getInitializer());
 
+        if (make == null) return node;
+        
         if (modifiers != node.getModifiers() || type != node.getType() || initializer != node.getInitializer()) {
             node = make.Variable(modifiers, node.getName(), type, initializer);
         }
@@ -600,6 +677,8 @@ class TranslateIdentifier implements TreeVisitor<Tree, Void> {
         StatementTree statement = (StatementTree) translate(node.getStatement());
         ExpressionTree condition = (ExpressionTree) translate(node.getCondition());
         
+        if (make == null) return node;
+        
         if (condition != node.getCondition() || statement != node.getStatement()) {
             node = make.WhileLoop(condition, statement);
         }
@@ -608,6 +687,8 @@ class TranslateIdentifier implements TreeVisitor<Tree, Void> {
 
     public Tree visitWildcard(WildcardTree node, Void p) {
         Tree tree = translate(node.getBound());
+        
+        if (make == null) return node;
         
 	if (tree != node.getBound()) {
 	    node = make.Wildcard(node.getKind(), tree);
@@ -653,7 +734,8 @@ class TranslateIdentifier implements TreeVisitor<Tree, Void> {
         if (((JCTree) tree).pos <= 0) {
             return;
         }
-        SourcePositions pos = copy.getTrees().getSourcePositions();
+        commentService.getComments(tree).commentsMapped();
+        SourcePositions pos = info.getTrees().getSourcePositions();
         seq.move((int) pos.getStartPosition(null, tree));
         PositionEstimator.moveToSrcRelevant(seq, Direction.BACKWARD);
         int indent = NOPOS;

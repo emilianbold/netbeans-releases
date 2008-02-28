@@ -38,8 +38,9 @@ public class CCFormatterUnitTest extends NbTestSuite {
 
     public CCFormatterUnitTest() {
         super("C/C++ Formatter");
-        addTestSuite(CCFormatterUnitTestCase.class);
         addTestSuite(CCBracketCompletionUnitTestCase.class);
+        addTestSuite(CCIndentUnitTestCase.class);
+        addTestSuite(CCFormatterUnitTestCase.class);
     }
 
     public static NbTestSuite suite() {

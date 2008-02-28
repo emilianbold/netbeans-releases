@@ -83,7 +83,6 @@ import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
 import org.openide.actions.DeleteAction;
 import org.openide.actions.OpenAction;
-import org.openide.actions.OpenLocalExplorerAction;
 import org.openide.actions.PropertiesAction;
 import org.openide.cookies.EditCookie;
 import org.openide.cookies.OpenCookie;
@@ -93,6 +92,8 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.AbstractNode;
+import org.openide.nodes.PropertySupport;
+import org.openide.nodes.Sheet;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.SystemAction;
@@ -498,5 +499,37 @@ public class JaxWsClientNode extends AbstractNode implements OpenCookie, JaxWsRe
             return globalWsdlFolder.getFileObject("client/"+name);
         }
         return null;
+    }
+    
+     @Override
+    protected Sheet createSheet() {
+        Sheet sheet = super.createSheet();
+        Sheet.Set set = sheet.get(Sheet.PROPERTIES);
+        if (set == null) {
+            set = Sheet.createPropertiesSet();
+
+        }
+        sheet.put(set);
+        set.put(
+                new PropertySupport("useDispatch", Boolean.class,
+                NbBundle.getMessage(JaxWsClientNode.class, "TTL_USE_DISPATCH"),
+                "", true, true) {
+
+                    public Object getValue() {
+                        return client.getUseDispatch();
+                    }
+
+                    public void setValue(Object value) {
+                        try {
+                            Boolean val = (Boolean) value;
+                            client.setUseDispatch(val);
+                            jaxWsModel.write();
+                        } catch (IOException ex) {
+                            ErrorManager.getDefault().notify(ex);
+                        }
+                    }
+                });
+        
+        return sheet;
     }
 }

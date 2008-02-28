@@ -43,26 +43,16 @@ public final class Validator extends XsdBasedValidator {
 
   @Override
   public ValidationResult validate(Model model, final Validation validation, final Validation.ValidationType validationType) {
-startTime();
     if ( !(model instanceof BpelModel)) {
         return null;
     }
+    startTime();
     ValidationResult result = Validator.super.validate((BpelModel) model, validation, validationType);
-endTime();
+    endTime("Validator " + getName() + "    "); // NOI18N
+
     return result;
   }
 
-  private void startTime() {
-    myTime = System.currentTimeMillis ();
-  }
-
-  private void endTime() {
-    long currentTime = System.currentTimeMillis ();
-    out("VALIDATOR " + getName() + " takes " + (currentTime - myTime) + " ms.");
-  }
-
-  private long myTime;
-  
   public String getName() {
     return getClass().getName();
   }
@@ -104,14 +94,11 @@ endTime();
 
   private class BPELEntityResolver implements LSResourceResolver {
 
-      public BPELEntityResolver() {
-      }
+      public BPELEntityResolver() {}
 
-      public LSInput resolveResource( String type, String namespaceURI,
-              String publicId, String systemId, String baseURI )
-      {
-
+      public LSInput resolveResource( String type, String namespaceURI, String publicId, String systemId, String baseURI) {
           InputStream inputStream = null;
+
           if (systemId.equals(XML_XSD_SYSTEMID)) {
               inputStream = Validator.class.getResourceAsStream(XML_XSD_URL);
           }
@@ -121,7 +108,6 @@ endTime();
           else if (systemId.equals(Trace.LOGGING_NAMESPACE_URI)) {
               inputStream = Validator.class.getResourceAsStream(TRACE_2_0_XSD_URL);
           }
-          
           if ( inputStream!= null ) {
               DOMImplementation domImpl = null;
               try {
@@ -130,8 +116,7 @@ endTime();
               catch (ParserConfigurationException ex) {
                   return null;
               }
-              DOMImplementationLS dols = (DOMImplementationLS) domImpl
-                      .getFeature("LS", "3.0");                   // NOI18N
+              DOMImplementationLS dols = (DOMImplementationLS) domImpl.getFeature("LS", "3.0"); // NOI18N
               LSInput lsi = dols.createLSInput();
               lsi.setByteStream(inputStream);
               return lsi;

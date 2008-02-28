@@ -339,6 +339,10 @@ public final class FileUtils {
             final File file) throws IOException {
         return StringUtils.asHexString(getMd5Bytes(file));
     }
+    public static String getMd5(
+            final InputStream input) throws IOException {
+        return StringUtils.asHexString(getMd5Bytes(input));
+    }
     
     public static byte[] getMd5Bytes(
             final File file) throws IOException {
@@ -351,7 +355,17 @@ public final class FileUtils {
         
         return null;
     }
-    
+    public static byte[] getMd5Bytes(
+            final InputStream input) throws IOException {
+        try {
+            return getDigestBytes(input, MD5_DIGEST_NAME);
+        } catch (NoSuchAlgorithmException e) {
+            ErrorManager.notifyCritical(ResourceUtils.getString(
+                    FileUtils.class, ERROR_MD5_NOT_SUPPORTED_KEY), e);
+        }
+        
+        return null;
+    }
     public static String getSha1(
             final File file) throws IOException {
         return StringUtils.asHexString(getSha1Bytes(file));
@@ -371,29 +385,37 @@ public final class FileUtils {
     
     public static byte[] getDigestBytes(
             final File file,
-            final String algorithm) throws IOException, NoSuchAlgorithmException {
-        MessageDigest md = MessageDigest.getInstance(algorithm);
-        md.reset();
-        
+            final String algorithm) throws IOException, NoSuchAlgorithmException {        
         InputStream input = null;
         try {
             input = new FileInputStream(file);
-            final byte[] buffer = new byte[BUFFER_SIZE];//todo: here was 10240?? discus
-            int readLength;
-            while ((readLength = input.read(buffer)) != -1) {
-                md.update(buffer, 0, readLength);
-            }
+            return getDigestBytes(input, algorithm);
         } finally {
             if (input != null) {
                 try {
                     input.close();
-                } catch (IOException ignord) {}
+                } catch (IOException ex) {
+                    LogManager.log(ex);
+                }
             }
         }
-        
-        return md.digest();
     }
     
+    public static byte[] getDigestBytes(
+            final InputStream input,
+            final String algorithm) throws IOException, NoSuchAlgorithmException {
+        MessageDigest md = MessageDigest.getInstance(algorithm);
+        md.reset();
+
+        final byte[] buffer = new byte[BUFFER_SIZE];//todo: here was 10240?? discus
+        int readLength;
+        while ((readLength = input.read(buffer)) != -1) {
+            md.update(buffer, 0, readLength);
+        }
+
+        return md.digest();
+    }
+
     public static boolean isEmpty(
             final File file) {
         if (!exists(file)) {

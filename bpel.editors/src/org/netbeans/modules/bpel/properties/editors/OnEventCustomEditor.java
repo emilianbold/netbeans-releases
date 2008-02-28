@@ -63,6 +63,10 @@ public class OnEventCustomEditor extends AbstractCustomNodeEditor<OnEvent> {
         correlationPanel = new CorrelationTablePanel(this);
         tabbedPane.addTab(NbBundle.getMessage(
                 FormBundle.class, "LBL_Correlations_Tab"), correlationPanel); // NOI18N
+        
+        String editorACSD = NbBundle.getMessage(FormBundle.class, "ACSD_LBL_OnEvent_Editor");
+        tabbedPane.getAccessibleContext().setAccessibleDescription(editorACSD);
+        getAccessibleContext().setAccessibleDescription(editorACSD);
         //
         tabbedPane.addChangeListener(new ChangeListener() {
             public void stateChanged(ChangeEvent e) {

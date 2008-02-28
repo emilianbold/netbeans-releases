@@ -49,7 +49,6 @@ import java.util.List;
 import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlService;
 import org.netbeans.modules.websvc.manager.api.WebServiceDescriptor;
 import org.netbeans.modules.websvc.saas.spi.websvcmgr.WsdlData;
-import org.netbeans.modules.websvc.saas.spi.websvcmgr.WsdlServiceProxyDescriptor;
 
 /**
  * A webservice meta data. Holds the URL location, package name for code generation
@@ -373,7 +372,12 @@ public class WebServiceData implements WsdlData {
         if (fireEvent) {
             for (WebServiceDataListener listener : listeners) {
                 listener.webServiceCompiled(new WebServiceDataEvent(this));
-            }            
+            }          
+            PropertyChangeEvent evt =
+                    new PropertyChangeEvent(this, "compiled", Boolean.FALSE, Boolean.TRUE); // NOI18N
+            for (PropertyChangeListener listener : propertyListeners) {
+                listener.propertyChange(evt);
+            }
         }
     }
     

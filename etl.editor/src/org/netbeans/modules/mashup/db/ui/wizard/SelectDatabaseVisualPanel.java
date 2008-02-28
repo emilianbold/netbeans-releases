@@ -141,7 +141,8 @@ public class SelectDatabaseVisualPanel extends javax.swing.JPanel {
         if (databasesCombo.getItemCount() != 0) {
             this.populated = true;
         } else {
-            error.setText("No Mashup Database found.");
+            String nbBundle2 = mLoc.t("PRSR001: No Mashup Database found.");
+            error.setText(Localizer.parse(nbBundle2));
             this.populated = false;
         }
     }

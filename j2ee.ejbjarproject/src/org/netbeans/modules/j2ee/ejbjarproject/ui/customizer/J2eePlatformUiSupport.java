@@ -47,6 +47,7 @@ import java.util.Set;
 import java.util.TreeSet;
 import javax.swing.AbstractListModel;
 import javax.swing.ComboBoxModel;
+import org.netbeans.modules.j2ee.common.project.ui.ProjectProperties;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
@@ -65,8 +66,8 @@ public class J2eePlatformUiSupport {
     private J2eePlatformUiSupport() {
     }
     
-    public static ComboBoxModel createPlatformComboBoxModel(String serverInstanceId) {
-        return new J2eePlatformComboBoxModel(serverInstanceId);
+    public static ComboBoxModel createPlatformComboBoxModel(String serverInstanceId, String spec) {
+        return new J2eePlatformComboBoxModel(serverInstanceId, spec);
     }
     
     public static String getServerInstanceID(Object j2eePlatformModelObject) {
@@ -97,12 +98,14 @@ public class J2eePlatformUiSupport {
     private static final class J2eePlatformComboBoxModel extends AbstractListModel implements ComboBoxModel {
         private static final long serialVersionUID = 27396850247176406L;
         
+        private final String spec;
         private J2eePlatformAdapter[] j2eePlatforms;
         private String initialJ2eePlatform;
         private J2eePlatformAdapter selectedJ2eePlatform;
         
-        public J2eePlatformComboBoxModel(String serverInstanceID) {
-            initialJ2eePlatform = serverInstanceID;
+        public J2eePlatformComboBoxModel(String serverInstanceID, String spec) {
+            this.spec = spec;
+            this.initialJ2eePlatform = serverInstanceID;
             getJ2eePlatforms();
         }
         
@@ -131,7 +134,8 @@ public class J2eePlatformUiSupport {
                 for (int i = 0; i < serverInstanceIDs.length; i++) {
                     J2eePlatform j2eePlatform = Deployment.getDefault().getJ2eePlatform(serverInstanceIDs[i]);
                     if (j2eePlatform != null) {
-                        if (j2eePlatform.getSupportedModuleTypes().contains(J2eeModule.EJB)) {
+                        if (j2eePlatform.getSupportedModuleTypes().contains(J2eeModule.EJB)
+                                && (spec == null || j2eePlatform.getSupportedSpecVersions(J2eeModule.EJB).contains(spec))) {
                             J2eePlatformAdapter adapter = new J2eePlatformAdapter(j2eePlatform);
                             orderedNames.add(adapter);
 
@@ -163,11 +167,11 @@ public class J2eePlatformUiSupport {
             initialJ2eeSpecVersion = new J2eePlatformComboBoxItem(j2eeSpecVersion);
             
             List<J2eePlatformComboBoxItem> orderedListItems = new ArrayList<J2eePlatformComboBoxItem>();
-            orderedListItems.add(new J2eePlatformComboBoxItem(EjbJarProjectProperties.JAVA_EE_5));
-            orderedListItems.add(new J2eePlatformComboBoxItem(EjbJarProjectProperties.J2EE_1_4));
-            if (!initialJ2eeSpecVersion.getCode().equals(EjbJarProjectProperties.JAVA_EE_5) &&
-                    !initialJ2eeSpecVersion.getCode().equals(EjbJarProjectProperties.J2EE_1_4)) {
-                orderedListItems.add(0, new J2eePlatformComboBoxItem(EjbJarProjectProperties.J2EE_1_3));
+            orderedListItems.add(new J2eePlatformComboBoxItem(ProjectProperties.JAVA_EE_5));
+            orderedListItems.add(new J2eePlatformComboBoxItem(ProjectProperties.J2EE_1_4));
+            if (!initialJ2eeSpecVersion.getCode().equals(ProjectProperties.JAVA_EE_5) &&
+                    !initialJ2eeSpecVersion.getCode().equals(ProjectProperties.J2EE_1_4)) {
+                orderedListItems.add(0, new J2eePlatformComboBoxItem(ProjectProperties.J2EE_1_3));
             }
             
             j2eeSpecVersions = orderedListItems.toArray(new J2eePlatformComboBoxItem[orderedListItems.size()]);
@@ -205,13 +209,13 @@ public class J2eePlatformUiSupport {
         }
 
         private static String findDisplayName(String code){
-            if(code.equals(EjbJarProjectProperties.JAVA_EE_5)) {
+            if(code.equals(ProjectProperties.JAVA_EE_5)) {
                 return JAVA_EE_5_DISPLAY_NAME;
             }
-            if(code.equals(EjbJarProjectProperties.J2EE_1_4)) {
+            if(code.equals(ProjectProperties.J2EE_1_4)) {
                 return J2EE_1_4_DISPLAY_NAME;
             }
-            if(code.equals(EjbJarProjectProperties.J2EE_1_3)) {
+            if(code.equals(ProjectProperties.J2EE_1_3)) {
                 return J2EE_1_3_DISPLAY_NAME;
             }
             return code; //version display name not found, use the version code for display name        

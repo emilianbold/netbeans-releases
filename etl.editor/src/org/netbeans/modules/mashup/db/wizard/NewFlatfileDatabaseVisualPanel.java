@@ -119,13 +119,14 @@ public final class NewFlatfileDatabaseVisualPanel extends JPanel {
         setMaximumSize(new java.awt.Dimension(10000, 4000));
         setPreferredSize(new java.awt.Dimension(10, 4));
         String nbBundle7 = mLoc.t("PRSR001: Database Name");
-        org.openide.awt.Mnemonics.setLocalizedText(jLabel1, Localizer.parse(nbBundle7));
+        jLabel1.setDisplayedMnemonic(Localizer.parse(nbBundle7).charAt(0));
 
         String nbBundle2 = mLoc.t("PRSR001: Database name should start with an alphabet.");
         dbName.setToolTipText(Localizer.parse(nbBundle2));
         dbName.addKeyListener(new NameFieldKeyAdapter());
         String nbBundle3 = mLoc.t("PRSR001: Location");
         String nbBundle4 = mLoc.t("PRSR001: Driver Class");
+        jLabel2.setDisplayedMnemonic(Localizer.parse(nbBundle3).charAt(0));
         org.openide.awt.Mnemonics.setLocalizedText(jLabel2, Localizer.parse(nbBundle3));
 
         org.openide.awt.Mnemonics.setLocalizedText(driver, Localizer.parse(nbBundle4));

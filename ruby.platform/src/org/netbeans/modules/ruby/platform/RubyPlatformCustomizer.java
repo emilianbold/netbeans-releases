@@ -94,15 +94,6 @@ public class RubyPlatformCustomizer extends JPanel {
         dlg.dispose();
     }
 
-    public @Override void removeNotify() {
-        RubyPlatform plaf = getSelectedPlatform();
-        if (plaf != null) {
-            DebuggerPreferences prefs = DebuggerPreferences.getInstance();
-            prefs.setUseClassicDebugger(plaf, classicDebuggerEngine.isSelected());
-        }
-        super.removeNotify();
-    }
-
     public RubyPlatformCustomizer() {
         initComponents();
         refreshPlatformList();
@@ -257,7 +248,6 @@ public class RubyPlatformCustomizer extends JPanel {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        debuggerEngineGroup = new javax.swing.ButtonGroup();
         platformsListSP = new javax.swing.JScrollPane();
         platformsList = PlatformComponentFactory.getRubyPlatformsList();
         addButton = new javax.swing.JButton();
@@ -285,8 +275,7 @@ public class RubyPlatformCustomizer extends JPanel {
         rubyDebuggerLabel = new javax.swing.JLabel();
         upperSep = new javax.swing.JSeparator();
         engineLabel = new javax.swing.JLabel();
-        classicDebuggerEngine = new javax.swing.JRadioButton();
-        rubyDebugEngine = new javax.swing.JRadioButton();
+        engineType = new javax.swing.JLabel();
         installFastDebugger = new javax.swing.JButton();
 
         platformsList.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
@@ -441,24 +430,8 @@ public class RubyPlatformCustomizer extends JPanel {
 
         org.openide.awt.Mnemonics.setLocalizedText(engineLabel, org.openide.util.NbBundle.getMessage(RubyPlatformCustomizer.class, "RubyPlatformCustomizer.engineLabel.text")); // NOI18N
 
-        debuggerEngineGroup.add(classicDebuggerEngine);
-        classicDebuggerEngine.setSelected(true);
-        org.openide.awt.Mnemonics.setLocalizedText(classicDebuggerEngine, org.openide.util.NbBundle.getMessage(RubyPlatformCustomizer.class, "RubyPlatformCustomizer.classicDebuggerEngine.text")); // NOI18N
-        classicDebuggerEngine.setOpaque(false);
-        classicDebuggerEngine.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                classicDebuggerEngineActionPerformed(evt);
-            }
-        });
-
-        debuggerEngineGroup.add(rubyDebugEngine);
-        org.openide.awt.Mnemonics.setLocalizedText(rubyDebugEngine, org.openide.util.NbBundle.getMessage(RubyPlatformCustomizer.class, "RubyPlatformCustomizer.rubyDebugEngine.text")); // NOI18N
-        rubyDebugEngine.setOpaque(false);
-        rubyDebugEngine.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                rubyDebugEngineActionPerformed(evt);
-            }
-        });
+        engineType.setFont(new java.awt.Font("Dialog", 2, 12));
+        org.openide.awt.Mnemonics.setLocalizedText(engineType, org.openide.util.NbBundle.getMessage(RubyPlatformCustomizer.class, "RubyPlatformCustomizer.classicDebuggerEngine.text")); // NOI18N
 
         org.openide.awt.Mnemonics.setLocalizedText(installFastDebugger, org.openide.util.NbBundle.getMessage(RubyPlatformCustomizer.class, "RubyPlatformCustomizer.installFastDebugger.text")); // NOI18N
         installFastDebugger.addActionListener(new java.awt.event.ActionListener() {
@@ -478,13 +451,10 @@ public class RubyPlatformCustomizer extends JPanel {
             .add(debuggerPanelLayout.createSequentialGroup()
                 .add(engineLabel)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(debuggerPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(debuggerPanelLayout.createSequentialGroup()
-                        .add(rubyDebugEngine)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(installFastDebugger))
-                    .add(classicDebuggerEngine))
-                .addContainerGap())
+                .add(engineType)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(installFastDebugger)
+                .add(178, 178, 178))
         );
         debuggerPanelLayout.setVerticalGroup(
             debuggerPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -495,10 +465,7 @@ public class RubyPlatformCustomizer extends JPanel {
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(debuggerPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(engineLabel)
-                    .add(classicDebuggerEngine))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(debuggerPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(rubyDebugEngine)
+                    .add(engineType)
                     .add(installFastDebugger))
                 .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
@@ -594,20 +561,9 @@ public class RubyPlatformCustomizer extends JPanel {
         performPlatformDetection();
 }//GEN-LAST:event_autoDetectButtonremovePlatform
 
-    private void classicDebuggerEngineActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_classicDebuggerEngineActionPerformed
-        DebuggerPreferences.getInstance().setUseClassicDebugger(getSelectedPlatform(), true);
-        refreshDebugger();
-    }//GEN-LAST:event_classicDebuggerEngineActionPerformed
-
-    private void rubyDebugEngineActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_rubyDebugEngineActionPerformed
-        DebuggerPreferences.getInstance().setUseClassicDebugger(getSelectedPlatform(), false);
-        refreshDebugger();
-    }//GEN-LAST:event_rubyDebugEngineActionPerformed
-
     private void installFastDebuggerActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_installFastDebuggerActionPerformed
         if (getSelectedPlatform().installFastDebugger()) {
             refreshDebugger();
-            rubyDebugEngine.setSelected(true);
         }
     }//GEN-LAST:event_installFastDebuggerActionPerformed
 
@@ -642,20 +598,14 @@ public class RubyPlatformCustomizer extends JPanel {
 
     private void refreshDebugger() {
         RubyPlatform platform = getSelectedPlatform();
-        
-        DebuggerPreferences prefs = DebuggerPreferences.getInstance();
-        rubyDebugEngine.setSelected(!prefs.isUseClassicDebugger(platform));
-        
         boolean isJRuby = platform.isJRuby();
         boolean fdInstalled = platform.hasFastDebuggerInstalled();
-        rubyDebugEngine.setEnabled(fdInstalled);
         installFastDebugger.setEnabled(!isJRuby && platform.hasRubyGemsInstalled());
         installFastDebugger.setVisible(!isJRuby && !fdInstalled);
-        if (!fdInstalled || prefs.isUseClassicDebugger(platform)) {
-            classicDebuggerEngine.setSelected(true);
-        } else {
-            rubyDebugEngine.setSelected(true);
-        }
+        String key = platform.hasFastDebuggerInstalled()
+                ? "RubyPlatformCustomizer.rubyDebugEngine.text" // NOI18N
+                : "RubyPlatformCustomizer.classicDebuggerEngine.text"; // NOI18N
+        engineType.setText(getMessage(key));
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
@@ -665,11 +615,10 @@ public class RubyPlatformCustomizer extends JPanel {
     private javax.swing.JLabel autoDetectLabel;
     private javax.swing.JProgressBar autoDetectProgress;
     private javax.swing.JButton browseGemHome;
-    private javax.swing.JRadioButton classicDebuggerEngine;
     private javax.swing.JPanel configPanel;
-    private javax.swing.ButtonGroup debuggerEngineGroup;
     private javax.swing.JPanel debuggerPanel;
     private javax.swing.JLabel engineLabel;
+    private javax.swing.JLabel engineType;
     private javax.swing.JLabel gemHome;
     private javax.swing.JTextField gemHomeValue;
     private javax.swing.JLabel gemPath;
@@ -687,7 +636,6 @@ public class RubyPlatformCustomizer extends JPanel {
     private javax.swing.JPanel progressPanel;
     private javax.swing.JButton removeButton;
     private javax.swing.JButton removeGemPath;
-    private javax.swing.JRadioButton rubyDebugEngine;
     private javax.swing.JLabel rubyDebuggerLabel;
     private javax.swing.JSeparator upperSep;
     // End of variables declaration//GEN-END:variables

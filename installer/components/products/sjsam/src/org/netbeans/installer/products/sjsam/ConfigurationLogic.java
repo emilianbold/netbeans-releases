@@ -58,6 +58,7 @@ import org.netbeans.installer.utils.helper.Dependency;
 import org.netbeans.installer.utils.helper.ExecutionResults;
 import org.netbeans.installer.utils.helper.NbiThread;
 import org.netbeans.installer.utils.helper.RemovalMode;
+import org.netbeans.installer.utils.helper.Text;
 import org.netbeans.installer.utils.progress.Progress;
 import org.netbeans.installer.wizard.Wizard;
 import org.netbeans.installer.wizard.components.WizardComponent;
@@ -109,7 +110,7 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
         
         // get the list of suitable glassfish installations
         final List<Dependency> dependencies =
-                getProduct().getDependencyByUid(GLASSFISH_UID);
+                getProduct().getDependencyByUid(APPSERVER_UID);
         final List<Product> sources =
                 Registry.getInstance().getProducts(dependencies.get(0));
         
@@ -234,7 +235,7 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
     public void uninstall(Progress progress) throws UninstallationException {
         // get the list of suitable glassfish installations
         final List<Dependency> dependencies =
-                getProduct().getDependencyByUid(GLASSFISH_UID);
+                getProduct().getDependencyByUid(APPSERVER_UID);
         final List<Product> sources =
                 Registry.getInstance().getProducts(dependencies.get(0));
         
@@ -295,6 +296,11 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
         return RemovalMode.LIST;
     }
     
+    @Override
+    public Text getLicense() {
+       return null;
+    }     
+    
     // private //////////////////////////////////////////////////////////////////////
     private String getAMServerLinkName(final File asLocation) {
         final File file = new File(asLocation, AMSERVER_DIR_INSIDE_AS);
@@ -306,5 +312,5 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
                 replace(File.separatorChar, '_');
         
         return "AMConfig" + "_" + result + "_";
-    }
+    }   
 }

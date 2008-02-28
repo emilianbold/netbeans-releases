@@ -42,11 +42,13 @@
 package org.netbeans.modules.j2ee.ejbjarproject.ui.customizer;
 
 import java.awt.Component;
-import java.awt.Dialog;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.beans.BeanInfo;
 import java.io.File;
+import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.text.MessageFormat;
 import java.util.Arrays;
 import java.util.Collection;
@@ -59,7 +61,6 @@ import javax.swing.DefaultListCellRenderer;
 import javax.swing.DefaultListModel;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
-import javax.swing.JButton;
 import javax.swing.JFileChooser;
 import javax.swing.JList;
 import javax.swing.JTable;
@@ -70,20 +71,31 @@ import javax.swing.event.ListSelectionListener;
 import javax.swing.filechooser.FileFilter;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.TableCellRenderer;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.Document;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.api.project.ant.FileChooser;
 import org.netbeans.api.project.libraries.Library;
-import org.netbeans.modules.j2ee.ejbjarproject.classpath.ClassPathSupport;
-import org.netbeans.modules.j2ee.ejbjarproject.ui.FoldersListSettings;
+import org.netbeans.api.project.libraries.LibraryChooser;
+import org.netbeans.api.project.libraries.LibraryManager;
+import org.netbeans.modules.j2ee.common.project.classpath.ClassPathSupport;
+import org.netbeans.modules.j2ee.common.project.ui.AntArtifactChooser;
+import org.netbeans.modules.j2ee.common.project.ui.ClassPathUiSupport;
+import org.netbeans.modules.j2ee.common.project.ui.ProjectProperties;
+import org.netbeans.modules.j2ee.ejbjarproject.EjbJarProject;
+import org.netbeans.modules.j2ee.common.project.ui.UserProjectSettings;
+import org.netbeans.modules.j2ee.ejbjarproject.classpath.ClassPathSupportCallbackImpl;
+import org.netbeans.modules.java.api.common.util.CommonProjectUtils;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
-import org.openide.DialogDescriptor;
-import org.openide.DialogDisplayer;
+import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.Repository;
 import org.openide.loaders.DataFolder;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
@@ -102,39 +114,33 @@ public class EjbJarClassPathUi {
     public static class ClassPathListCellRenderer extends DefaultListCellRenderer {
         private static final long serialVersionUID = 90331258129810941L;
         
-        private static String RESOURCE_ICON_JAR = "org/netbeans/modules/j2ee/ejbjarproject/ui/resources/jar.gif"; //NOI18N
-        private static String RESOURCE_ICON_LIBRARY = "org/netbeans/modules/j2ee/ejbjarproject/ui/resources/libraries.gif"; //NOI18N
-        private static String RESOURCE_ICON_ARTIFACT = "org/netbeans/modules/j2ee/ejbjarproject/ui/resources/projectDependencies.gif"; //NOI18N
         private static String RESOURCE_ICON_CLASSPATH = "org/netbeans/modules/j2ee/ejbjarproject/ui/resources/referencedClasspath.gif"; //NOI18N
-        private static String RESOURCE_ICON_BROKEN_BADGE = "org/netbeans/modules/j2ee/ejbjarproject/ui/resources/brokenProjectBadge.gif"; //NOI18N
         
         
-        private static ImageIcon ICON_JAR = new ImageIcon( Utilities.loadImage( RESOURCE_ICON_JAR ) );
         private static ImageIcon ICON_FOLDER = null; 
-        private static ImageIcon ICON_LIBRARY = new ImageIcon( Utilities.loadImage( RESOURCE_ICON_LIBRARY ) );
-        private static ImageIcon ICON_ARTIFACT  = new ImageIcon( Utilities.loadImage( RESOURCE_ICON_ARTIFACT ) );
         private static ImageIcon ICON_CLASSPATH  = new ImageIcon( Utilities.loadImage( RESOURCE_ICON_CLASSPATH ) );
-        private static ImageIcon ICON_BROKEN_BADGE  = new ImageIcon( Utilities.loadImage( RESOURCE_ICON_BROKEN_BADGE ) );
         
         private static ImageIcon ICON_BROKEN_JAR;
         private static ImageIcon ICON_BROKEN_LIBRARY;
         private static ImageIcon ICON_BROKEN_ARTIFACT;
                 
         private PropertyEvaluator evaluator;
+        private FileObject projectFolder;
         
         // Contains well known paths in the EJBProject
         private static final Map<String, String> WELL_KNOWN_PATHS_NAMES = new HashMap<String, String>();
         static {
-            WELL_KNOWN_PATHS_NAMES.put( EjbJarProjectProperties.JAVAC_CLASSPATH, NbBundle.getMessage( EjbJarProjectProperties.class, "LBL_JavacClasspath_DisplayName" ) );
-            WELL_KNOWN_PATHS_NAMES.put( EjbJarProjectProperties.JAVAC_TEST_CLASSPATH, NbBundle.getMessage( EjbJarProjectProperties.class,"LBL_JavacTestClasspath_DisplayName") );
-            WELL_KNOWN_PATHS_NAMES.put( EjbJarProjectProperties.RUN_TEST_CLASSPATH, NbBundle.getMessage( EjbJarProjectProperties.class, "LBL_RunTestClasspath_DisplayName" ) );
-            WELL_KNOWN_PATHS_NAMES.put( EjbJarProjectProperties.BUILD_CLASSES_DIR, NbBundle.getMessage( EjbJarProjectProperties.class, "LBL_BuildClassesDir_DisplayName" ) );            
-            WELL_KNOWN_PATHS_NAMES.put( EjbJarProjectProperties.BUILD_TEST_CLASSES_DIR, NbBundle.getMessage (EjbJarProjectProperties.class,"LBL_BuildTestClassesDir_DisplayName") );
+            WELL_KNOWN_PATHS_NAMES.put( ProjectProperties.JAVAC_CLASSPATH, NbBundle.getMessage( EjbJarProjectProperties.class, "LBL_JavacClasspath_DisplayName" ) );
+            WELL_KNOWN_PATHS_NAMES.put( ProjectProperties.JAVAC_TEST_CLASSPATH, NbBundle.getMessage( EjbJarProjectProperties.class,"LBL_JavacTestClasspath_DisplayName") );
+            WELL_KNOWN_PATHS_NAMES.put( ProjectProperties.RUN_TEST_CLASSPATH, NbBundle.getMessage( EjbJarProjectProperties.class, "LBL_RunTestClasspath_DisplayName" ) );
+            WELL_KNOWN_PATHS_NAMES.put( ProjectProperties.BUILD_CLASSES_DIR, NbBundle.getMessage( EjbJarProjectProperties.class, "LBL_BuildClassesDir_DisplayName" ) );            
+            WELL_KNOWN_PATHS_NAMES.put( ProjectProperties.BUILD_TEST_CLASSES_DIR, NbBundle.getMessage (EjbJarProjectProperties.class,"LBL_BuildTestClassesDir_DisplayName") );
         };
                 
-        public ClassPathListCellRenderer( PropertyEvaluator evaluator ) {
+        public ClassPathListCellRenderer( PropertyEvaluator evaluator, FileObject projectFolder ) {
             super();
             this.evaluator = evaluator;
+            this.projectFolder = projectFolder;
         }
         
         @Override
@@ -162,7 +168,7 @@ public class EjbJarClassPathUi {
                         return item.getLibrary().getDisplayName();
                     }
                 case ClassPathSupport.Item.TYPE_CLASSPATH:
-                    String name = WELL_KNOWN_PATHS_NAMES.get(EjbJarProjectProperties.getAntPropertyName(item.getReference()));
+                    String name = WELL_KNOWN_PATHS_NAMES.get(CommonProjectUtils.getAntPropertyName(item.getReference()));
                     return name == null ? item.getReference() : name;
                 case ClassPathSupport.Item.TYPE_ARTIFACT:
                     if ( item.isBroken() ) {
@@ -183,7 +189,7 @@ public class EjbJarClassPathUi {
                         return NbBundle.getMessage( EjbJarClassPathUi.class, "LBL_MISSING_FILE", getFileRefName( item ) );
                     }
                     else {
-                        return item.getFile().getPath();
+                        return item.getFilePath();
                     }
             }
             
@@ -197,17 +203,17 @@ public class EjbJarClassPathUi {
                 case ClassPathSupport.Item.TYPE_LIBRARY:
                     if ( item.isBroken() ) {
                         if ( ICON_BROKEN_LIBRARY == null ) {
-                            ICON_BROKEN_LIBRARY = new ImageIcon( Utilities.mergeImages( ICON_LIBRARY.getImage(), ICON_BROKEN_BADGE.getImage(), 7, 7 ) );
+                            ICON_BROKEN_LIBRARY = new ImageIcon( Utilities.mergeImages( ProjectProperties.ICON_LIBRARY.getImage(), ProjectProperties.ICON_BROKEN_BADGE.getImage(), 7, 7 ) );
                         }
                         return ICON_BROKEN_LIBRARY;
                     }
                     else {
-                        return ICON_LIBRARY;
+                        return ProjectProperties.ICON_LIBRARY;
                     }
                 case ClassPathSupport.Item.TYPE_ARTIFACT:
                     if ( item.isBroken() ) {
                         if ( ICON_BROKEN_ARTIFACT == null ) {
-                            ICON_BROKEN_ARTIFACT = new ImageIcon( Utilities.mergeImages( ICON_ARTIFACT.getImage(), ICON_BROKEN_BADGE.getImage(), 7, 7 ) );
+                            ICON_BROKEN_ARTIFACT = new ImageIcon( Utilities.mergeImages( ProjectProperties.ICON_ARTIFACT.getImage(), ProjectProperties.ICON_BROKEN_BADGE.getImage(), 7, 7 ) );
                         }
                         return ICON_BROKEN_ARTIFACT;
                     }
@@ -217,18 +223,25 @@ public class EjbJarClassPathUi {
                             ProjectInformation pi = ProjectUtils.getInformation(p);
                             return pi.getIcon();
                         }
-                        return ICON_ARTIFACT;
+                        return ProjectProperties.ICON_ARTIFACT;
                     }
                 case ClassPathSupport.Item.TYPE_JAR:
                     if ( item.isBroken() ) {
                         if ( ICON_BROKEN_JAR == null ) {
-                            ICON_BROKEN_JAR = new ImageIcon( Utilities.mergeImages( ICON_JAR.getImage(), ICON_BROKEN_BADGE.getImage(), 7, 7 ) );
+                            ICON_BROKEN_JAR = new ImageIcon( Utilities.mergeImages( ProjectProperties.ICON_JAR.getImage(), ProjectProperties.ICON_BROKEN_BADGE.getImage(), 7, 7 ) );
                         }
                         return ICON_BROKEN_JAR;
                     }
                     else {
-                        File file = item.getFile();
-                        return file.isDirectory() ? getFolderIcon() : ICON_JAR;
+                        File file = item.getResolvedFile();
+                        ImageIcon icn = file.isDirectory() ? getFolderIcon() : ProjectProperties.ICON_JAR;
+                        if (item.getSourceFilePath() != null) {
+                            icn =  new ImageIcon( Utilities.mergeImages( icn.getImage(), ProjectProperties.ICON_SOURCE_BADGE.getImage(), 8, 8 ));
+                        }
+                        if (item.getJavadocFilePath() != null) {
+                            icn =  new ImageIcon( Utilities.mergeImages( icn.getImage(), ProjectProperties.ICON_JAVADOC_BADGE.getImage(), 8, 0 ));
+                        }
+                        return icn;
                     }
                 case ClassPathSupport.Item.TYPE_CLASSPATH:
                     return ICON_CLASSPATH;
@@ -244,8 +257,16 @@ public class EjbJarClassPathUi {
                    item.getType() == ClassPathSupport.Item.TYPE_ARTIFACT )  ) {
                 return evaluator.evaluate( item.getReference() );
             }
+            switch ( item.getType() ) {
+                case ClassPathSupport.Item.TYPE_JAR:
+                    File f = item.getResolvedFile();
+                    // if not absolute path:
+                    if (!f.getPath().equals(item.getFilePath())) {
+                        return f.getPath();
+                    }
+            }
             
-            return getDisplayName( item ); // XXX
+            return null;
         }
         
         private static ImageIcon getFolderIcon() {
@@ -267,6 +288,15 @@ public class EjbJarClassPathUi {
 
         private String getLibraryName( ClassPathSupport.Item item ) {
             String ID = item.getReference();
+            if (ID == null) {
+                if (item.getLibrary() != null) {
+                    return item.getLibrary().getName();
+                }
+                //TODO HUH? happens when adding new library, then changing
+                // the library location to something that doesn't have a reference yet.
+                // why are there items without reference upfront?
+                return "XXX";
+            }
             // something in the form of "${libs.junit.classpath}"
             return ID.substring(7, ID.indexOf(".classpath")); // NOI18N
         }
@@ -287,8 +317,8 @@ public class EjbJarClassPathUi {
         private ClassPathListCellRenderer renderer;
         private TableCellRenderer booleanRenderer;
         
-        public ClassPathTableCellItemRenderer(PropertyEvaluator evaluator) {
-            renderer = new ClassPathListCellRenderer(evaluator);
+        public ClassPathTableCellItemRenderer(PropertyEvaluator evaluator, FileObject projectFolder) {
+            renderer = new ClassPathListCellRenderer(evaluator, projectFolder);
         }
         
         @Override
@@ -317,7 +347,7 @@ public class EjbJarClassPathUi {
     
     public static class EditMediator implements ActionListener, ListSelectionListener {
                 
-        private final Project project;
+        private final EjbJarProject project;
         private final ListComponent list;
         private final DefaultListModel listModel;
         private final ListSelectionModel selectionModel;
@@ -328,8 +358,11 @@ public class EjbJarClassPathUi {
         private final ButtonModel moveUp;
         private final ButtonModel moveDown;
         private final boolean includeNewFilesInDeployment;
+        private final ButtonModel edit;
+        private Document libraryPath;
+        private ClassPathSupport.Callback callback;
                     
-        public EditMediator( Project project,
+        public EditMediator( EjbJarProject project,
                              ListComponent list,
                              ButtonModel addJar,
                              ButtonModel addLibrary, 
@@ -337,6 +370,8 @@ public class EjbJarClassPathUi {
                              ButtonModel remove, 
                              ButtonModel moveUp,
                              ButtonModel moveDown, 
+                             ButtonModel edit,
+                             Document libPath,
                              boolean includeNewFilesInDeployment) {
                              
             // Remember all buttons
@@ -356,12 +391,15 @@ public class EjbJarClassPathUi {
             this.remove = remove;
             this.moveUp = moveUp;
             this.moveDown = moveDown;
+            this.edit = edit;
+            this.libraryPath = libPath;
+            callback = new ClassPathSupportCallbackImpl(project.getAntProjectHelper());
 
             this.project = project;
             this.includeNewFilesInDeployment = includeNewFilesInDeployment;
         }
 
-        public static void register(Project project,
+        public static void register(EjbJarProject project,
                                     ListComponent list,
                                     ButtonModel addJar,
                                     ButtonModel addLibrary, 
@@ -369,6 +407,8 @@ public class EjbJarClassPathUi {
                                     ButtonModel remove, 
                                     ButtonModel moveUp,
                                     ButtonModel moveDown, 
+                                    ButtonModel edit,
+                                    Document libPath,
                                     boolean includeNewFilesInDeployment) {    
             
             EditMediator em = new EditMediator( project, 
@@ -379,6 +419,8 @@ public class EjbJarClassPathUi {
                                                 remove,    
                                                 moveUp,
                                                 moveDown,
+                                                edit,
+                                                libPath,
                                                 includeNewFilesInDeployment );
             
             // Register the listener on all buttons
@@ -388,6 +430,7 @@ public class EjbJarClassPathUi {
             remove.addActionListener( em );
             moveUp.addActionListener( em );
             moveDown.addActionListener( em );
+            edit.addActionListener(em);
             // On list selection
             em.selectionModel.addListSelectionListener( em );
             // Set the initial state of the buttons
@@ -404,7 +447,7 @@ public class EjbJarClassPathUi {
             
             if ( source == addJar ) { 
                 // Let user search for the Jar file
-                JFileChooser chooser = new JFileChooser();
+                FileChooser chooser = new FileChooser(project.getAntProjectHelper(), true);
                 FileUtil.preventFileChooserSymlinkTraversal(chooser, null);
                 chooser.setFileSelectionMode( JFileChooser.FILES_AND_DIRECTORIES );
                 chooser.setMultiSelectionEnabled( true );
@@ -414,48 +457,85 @@ public class EjbJarClassPathUi {
                 chooser.setFileFilter( new SimpleFileFilter( 
                     NbBundle.getMessage( EjbJarClassPathUi.class, "LBL_ZipJarFolderFilter" ),                  // NOI18N
                     new String[] {"ZIP","JAR"} ) );                                                                 // NOI18N 
-                File curDir = FoldersListSettings.getDefault().getLastUsedClassPathFolder(); 
+                File curDir = UserProjectSettings.getDefault().getLastUsedClassPathFolder(); 
                 chooser.setCurrentDirectory (curDir);
                 int option = chooser.showOpenDialog( SwingUtilities.getWindowAncestor( list.getComponent() ) ); // Sow the chooser
                 
                 if ( option == JFileChooser.APPROVE_OPTION ) {
                     
-                    File files[] = chooser.getSelectedFiles();
-                    int[] newSelection = ClassPathUiSupport.addJarFiles( listModel, list.getSelectedIndices(), files, includeNewFilesInDeployment );
+                    String filePaths[];
+                    try {
+                        filePaths = chooser.getSelectedPaths();
+                    } catch (IOException ex) {
+                        // TODO: add localized message
+                        Exceptions.printStackTrace(ex);
+                        return;
+                    }
+                    int[] newSelection = ClassPathUiSupport.addJarFiles( listModel, list.getSelectedIndices(), 
+                            filePaths, FileUtil.toFile(project.getProjectDirectory()), callback,
+                            ClassPathSupportCallbackImpl.INCLUDE_IN_DEPLOYMENT,
+                            Boolean.toString(includeNewFilesInDeployment));
                     list.setSelectedIndices( newSelection );
                     curDir = FileUtil.normalizeFile(chooser.getCurrentDirectory());
-                    FoldersListSettings.getDefault().setLastUsedClassPathFolder(curDir);
+                    UserProjectSettings.getDefault().setLastUsedClassPathFolder(curDir);
                 }
             }
             else if ( source == addLibrary ) {
-                Set<Library> includedLibraries = new HashSet<Library>();
-                for (int i=0; i< listModel.getSize(); i++) {
-                    ClassPathSupport.Item item = (ClassPathSupport.Item) listModel.get(i);
-                    if (item.getType() == ClassPathSupport.Item.TYPE_LIBRARY && !item.isBroken() ) {
-                        includedLibraries.add( item.getLibrary() );
+                //TODO this piece needs to go somewhere else?
+                LibraryManager manager = null;
+                boolean empty = false;
+                try {
+                    String path = libraryPath.getText(0, libraryPath.getLength());
+                    if (path != null && path.length() > 0) {
+                        File fil = PropertyUtils.resolveFile(FileUtil.toFile(project.getProjectDirectory()), path);
+                        URL url = FileUtil.normalizeFile(fil).toURI().toURL();
+                        manager = LibraryManager.forLocation(url);
+                    } else {
+                        empty = true;
                     }
+                } catch (BadLocationException ex) {
+                    empty = true;
+                    Exceptions.printStackTrace(ex);
+                } catch (MalformedURLException ex2) {
+                    Exceptions.printStackTrace(ex2);
                 }
-                Object[] options = new Object[] {
-                    new JButton (NbBundle.getMessage (EjbJarClassPathUi.class,"LBL_AddLibrary")),
-                    DialogDescriptor.CANCEL_OPTION
-                };
-                ((JButton)options[0]).setEnabled(false);
-                ((JButton)options[0]).getAccessibleContext().setAccessibleDescription (NbBundle.getMessage (EjbJarClassPathUi.class,"AD_AddLibrary"));
-                LibrariesChooser panel = new LibrariesChooser ((JButton)options[0], includedLibraries);
-                DialogDescriptor desc = new DialogDescriptor(panel,NbBundle.getMessage( EjbJarClassPathUi.class, "LBL_CustomizeCompile_Classpath_AddLibrary" ),
-                    true, options, options[0], DialogDescriptor.DEFAULT_ALIGN,null,null);
-                Dialog dlg = DialogDisplayer.getDefault().createDialog(desc);
-                dlg.setVisible(true);
-                if (desc.getValue() == options[0]) {
-                   int[] newSelection = ClassPathUiSupport.addLibraries( listModel, list.getSelectedIndices(), panel.getSelectedLibraries(), includedLibraries, includeNewFilesInDeployment );
+                if (manager == null && empty) {
+                    manager = LibraryManager.getDefault();
+                }
+                if (manager == null) {
+                    //TODO some error message
+                    return;
+                }
+                
+                Set<Library> added = LibraryChooser.showDialog(manager,
+                        null, project.getReferenceHelper().getLibraryChooserImportHandler()); // XXX filter to j2se libs only?
+                if (added != null) {
+                    Set<Library> includedLibraries = new HashSet<Library>();
+                   int[] newSelection = ClassPathUiSupport.addLibraries(listModel, list.getSelectedIndices(), 
+                           added.toArray(new Library[added.size()]), includedLibraries, callback,
+                           ClassPathSupportCallbackImpl.INCLUDE_IN_DEPLOYMENT,
+                           Boolean.toString(includeNewFilesInDeployment));
                    list.setSelectedIndices( newSelection );
                 }
-                dlg.dispose();
+            }
+            else if ( source == edit ) { 
+                ClassPathUiSupport.edit( listModel, list.getSelectedIndices(),  project.getAntProjectHelper());
+                if (list instanceof JListListComponent) {
+                    ((JListListComponent)list).list.repaint();
+                } else if (list instanceof JTableListComponent) {
+                    ((JTableListComponent)list).table.repaint();
+                } else {
+                    assert false : "do not know how to handle " + list.getClass().getName();
+                }
             }
             else if ( source == addAntArtifact ) { 
-                AntArtifactChooser.ArtifactItem artifactItems[] = AntArtifactChooser.showDialog(JavaProjectConstants.ARTIFACT_TYPE_JAR, project, list.getComponent().getParent());
+                AntArtifactChooser.ArtifactItem artifactItems[] = AntArtifactChooser.showDialog(
+                        new String[] {JavaProjectConstants.ARTIFACT_TYPE_JAR, JavaProjectConstants.ARTIFACT_TYPE_FOLDER}, project, list.getComponent().getParent());
                 if (artifactItems != null) {
-                    int[] newSelection = ClassPathUiSupport.addArtifacts( listModel, list.getSelectedIndices(), artifactItems, includeNewFilesInDeployment );
+                    int[] newSelection = ClassPathUiSupport.addArtifacts( listModel, list.getSelectedIndices(), 
+                            artifactItems, callback,
+                            ClassPathSupportCallbackImpl.INCLUDE_IN_DEPLOYMENT,
+                            Boolean.toString(includeNewFilesInDeployment));
                     list.setSelectedIndices( newSelection );
                 }
             }
@@ -500,7 +580,7 @@ public class EjbJarClassPathUi {
             // addJar allways enabled            
             // addLibrary allways enabled            
             // addArtifact allways enabled            
-            // editButton.setEnabled( edit );            
+            edit.setEnabled(ClassPathUiSupport.canEdit(selectionModel, listModel));
             remove.setEnabled( canRemove );
             moveUp.setEnabled( ClassPathUiSupport.canMoveUp( selectionModel ) );
             moveDown.setEnabled( ClassPathUiSupport.canMoveDown( selectionModel, listModel.getSize() ) );       

@@ -151,6 +151,6 @@
                partnerLink="POServicePLink"
                portType="pos:purchaseOrderPT"
                operation="sendPurchaseOrder"
-               variable="purchaseOrderReply"/>                
+               variable="purchaseOrderReply"/>
     </sequence>
 </process>

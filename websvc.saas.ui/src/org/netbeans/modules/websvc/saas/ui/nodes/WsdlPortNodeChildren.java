@@ -57,11 +57,13 @@ public class WsdlPortNodeChildren extends Children.Keys<WsdlSaasMethod>{
 
     @Override
     protected void addNotify() {
+        setKeys(port.getWsdlMethods());
         super.addNotify();
     }
 
     @Override
     protected void removeNotify() {
+        setKeys(new WsdlSaasMethod[0]);
         super.removeNotify();
     }
 

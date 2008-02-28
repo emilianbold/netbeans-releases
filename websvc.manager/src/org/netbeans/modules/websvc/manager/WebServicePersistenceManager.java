@@ -338,7 +338,7 @@ public class WebServicePersistenceManager implements ExceptionListener {
         }     
     }
     
-    private void saveWebServiceDescriptor(WebServiceDescriptor descriptor) {
+    public void saveWebServiceDescriptor(WebServiceDescriptor descriptor) {
         try {
             XMLEncoder encoder = new XMLEncoder(new BufferedOutputStream(new FileOutputStream(descriptor.getXmlDescriptor())));
             encoder.setExceptionListener(this);

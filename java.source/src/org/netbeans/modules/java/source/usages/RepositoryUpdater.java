@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -278,37 +278,37 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                     LOGGER.log(Level.FINER, "modified roots changedCp={0}", changedCp.toString());
 
                 URL root = classPath2Root.get(changedCp);
-
-                if (root != null) {
-                    List<URL> oldDeps = this.deps.get(root);
-                    if (oldDeps != null) {
-                        final FileObject rootFo = URLMapper.findFileObject(root);
-                        if (rootFo != null) {
-                            final ClassPath bootPath = ClassPath.getClassPath(rootFo, ClassPath.BOOT);
-                            final ClassPath compilePath = ClassPath.getClassPath(rootFo, ClassPath.COMPILE);
+        
+        if (root != null) {
+            List<URL> oldDeps = this.deps.get(root);
+            if (oldDeps != null) {
+                final FileObject rootFo = URLMapper.findFileObject(root);
+                if (rootFo != null) {
+                    final ClassPath bootPath = ClassPath.getClassPath(rootFo, ClassPath.BOOT);
+                    final ClassPath compilePath = ClassPath.getClassPath(rootFo, ClassPath.COMPILE);
                             final ClassPath[] pathsToResolve = new ClassPath[] {bootPath,compilePath};
                             final List<URL> newDeps = new LinkedList<URL> ();
                             for (int i=0; i< pathsToResolve.length; i++) {
-                                final ClassPath pathToResolve = pathsToResolve[i];
-                                if (pathToResolve != null) {
-                                    for (ClassPath.Entry entry : pathToResolve.entries()) {
-                                        final URL url = entry.getURL();
-                                        final URL[] sourceRoots = RepositoryUpdater.this.cpImpl.getSourceRootForBinaryRoot(url, pathToResolve, false);
-                                        if (sourceRoots != null) {
-                                            for (URL sourceRoot : sourceRoots) {
+                        final ClassPath pathToResolve = pathsToResolve[i];
+                        if (pathToResolve != null) {
+                            for (ClassPath.Entry entry : pathToResolve.entries()) {
+                                final URL url = entry.getURL();
+                                final URL[] sourceRoots = RepositoryUpdater.this.cpImpl.getSourceRootForBinaryRoot(url, pathToResolve, false);
+                                if (sourceRoots != null) {
+                                    for (URL sourceRoot : sourceRoots) {
                                                 if (!sourceRoot.equals (root)) {
                                                     newDeps.add (sourceRoot);
-                                                }
-                                            }
                                         }
                                     }
                                 }
                             }
-                            this.deps.put(root, newDeps);
                         }
                     }
-                    submit(Work.filterChange(Collections.singletonList(root), false));
-                }                
+                    this.deps.put(root, newDeps);
+                }
+            }
+            submit(Work.filterChange(Collections.singletonList(root), false));
+        }
             }
             return ;
         }
@@ -690,6 +690,14 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
         }
         submit(Work.filterChange(toRebuild, forceClean));
     }
+    
+    private void registerClassPath(URL root, ClassPath cp, ClasspathInfo.PathKind kind) {
+        if (!classPath2Root.containsKey(cp)) {
+            ClassPathRootsListener.getDefault().addPropertyChangeListener(cp, kind != ClasspathInfo.PathKind.SOURCE, RepositoryUpdater.this);
+            classPath2Root.put(cp, root);
+        }
+    }
+    
     
     private synchronized void assureRecompiled(URL root, Collection<File> files) {
         if (files.isEmpty()) {
@@ -1976,14 +1984,9 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                 return;
             }
             //listen on the particular boot&compile classpaths:
-            if (!classPath2Root.containsKey(bootPath)) {
-                bootPath.addPropertyChangeListener(RepositoryUpdater.this);
-                classPath2Root.put(bootPath, root);
-            }
-            if (!classPath2Root.containsKey(compilePath)) {
-                compilePath.addPropertyChangeListener(RepositoryUpdater.this);
-                classPath2Root.put(compilePath, root);
-            }
+            registerClassPath(root, bootPath, ClasspathInfo.PathKind.BOOT);
+            registerClassPath(root, compilePath, ClasspathInfo.PathKind.COMPILE);
+            registerClassPath(root, sourcePath, ClasspathInfo.PathKind.SOURCE);
             try {                                
                 final File rootFile = FileUtil.toFile(rootFo);
                 if (rootFile == null) {
@@ -2473,24 +2476,37 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
      private static String classPathToString(ClasspathInfo info) throws FileStateInvalidException {
          ClassPath bootPath = ClasspathInfoAccessor.getINSTANCE().getCachedClassPath(info, ClasspathInfo.PathKind.BOOT);
          ClassPath compilePath = ClasspathInfoAccessor.getINSTANCE().getCachedClassPath(info, ClasspathInfo.PathKind.COMPILE);
-         ClassPath sourcePath = ClasspathInfoAccessor.getINSTANCE().getCachedClassPath(info, ClasspathInfo.PathKind.SOURCE);
+         ClassPath sourcePath = info.getClassPath(ClasspathInfo.PathKind.SOURCE);
 
          StringBuilder sb = new StringBuilder();
 
-         for (FileObject f : bootPath.getRoots()) {
-             sb.append(f.getURL().toExternalForm());
-             sb.append(':');
-         }
-         for (FileObject f : compilePath.getRoots()) {
-             sb.append(f.getURL().toExternalForm());
-             sb.append(':');
-         }
-         for (FileObject f : sourcePath.getRoots()) {
-             sb.append(f.getURL().toExternalForm());
-             sb.append(':');
-         }
+         classPathToStringImpl(bootPath, sb);
+         classPathToStringImpl(compilePath, sb);
+         classPathToStringImpl(sourcePath, sb);
 
          return sb.toString();
+     }
+     
+     private static void classPathToStringImpl(ClassPath cp, StringBuilder sb) {
+         for (ClassPath.Entry e : cp.entries()) {
+             URL u = e.getURL();
+             
+             sb.append(u.toExternalForm());
+             
+             File f = ClassPathRootsListener.fileForURL(u);
+             
+             if (f != null) {
+                 sb.append("(");
+                 if (f.exists()) {
+                     sb.append(f.lastModified());
+                 } else {
+                     sb.append("-1");
+                 }
+                 sb.append(")");
+             }
+             
+             sb.append(":");
+         }
      }
 
     public void verifySourceLevel(URL root, String sourceLevel) throws IOException {

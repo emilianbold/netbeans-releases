@@ -174,7 +174,7 @@ public abstract class ProjectJAXWSSupport implements JAXWSSupportImpl {
      */
     
     public String addService(String name, String serviceImpl, String wsdlUrl, String serviceName,
-            String portName, String packageName, boolean isJsr109) {
+            String portName, String packageName, boolean isJsr109, boolean useProvider) {
         JaxWsModel jaxWsModel = project.getLookup().lookup(JaxWsModel.class);
         if (jaxWsModel!=null) {
             String finalServiceName = WSUtils.findProperServiceName(name, jaxWsModel);
@@ -242,8 +242,9 @@ public abstract class ProjectJAXWSSupport implements JAXWSSupportImpl {
                     try {
                         service = jaxWsModel.addService(finalServiceName, serviceImpl, wsdlUrl, serviceName, portName, packageName);
                     } catch (ServiceAlreadyExistsExeption ex) {
-                        //this shouldn't happen
+                        ErrorManager.getDefault().notify(ex);
                     }
+                    service.setUseProvider(useProvider);
                     String localWsdlUrl = FileUtil.getRelativePath(xmlResorcesFo, localWsdl);
                     service.setLocalWsdlFile(localWsdlUrl);
                     FileObject catalog = getCatalogFileObject();

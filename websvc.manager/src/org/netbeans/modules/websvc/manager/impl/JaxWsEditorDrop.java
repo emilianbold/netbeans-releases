@@ -59,6 +59,7 @@ import org.netbeans.modules.websvc.manager.api.WebServiceMetaDataTransfer;
 import org.netbeans.modules.websvc.manager.api.WebServiceMetaDataTransfer.Method;
 import org.netbeans.modules.websvc.manager.model.WebServiceData;
 import org.netbeans.modules.websvc.manager.util.WebServiceLibReferenceHelper;
+import org.netbeans.modules.websvc.saas.util.WsdlUtil;
 import org.openide.ErrorManager;
 import org.openide.text.ActiveEditorDrop;
 
@@ -89,7 +90,7 @@ public class JaxWsEditorDrop implements ActiveEditorDrop {
                 //copy client jars
                 List<String> jars = new ArrayList<String>();
                 jars.add(WebServiceManager.WEBSVC_HOME + File.separator + 
-                        d.getName() + File.separator + WebServiceData.JAX_WS + File.separator + 
+                        WsdlUtil.getServiceDirName(d.getOriginalWsdlUrl()) + File.separator + WebServiceData.JAX_WS + File.separator + 
                         d.getName() + ".jar");
                 WebServiceLibReferenceHelper.addArchiveRefsToProject(
                         targetProject, jars);              

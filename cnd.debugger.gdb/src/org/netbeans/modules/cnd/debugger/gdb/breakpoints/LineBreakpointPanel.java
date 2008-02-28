@@ -46,23 +46,15 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URI;
 import javax.swing.JPanel;
-import javax.swing.text.Document;
-import javax.swing.text.StyledDocument;
-
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.debugger.Breakpoint;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.spi.debugger.ui.Controller;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
-import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.URLMapper;
-import org.openide.loaders.DataObject;
-import org.openide.loaders.DataObjectNotFoundException;
-import org.openide.text.NbDocument;
 import org.openide.util.NbBundle;
-
 import org.netbeans.modules.cnd.debugger.gdb.EditorContextBridge;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.HelpCtx;

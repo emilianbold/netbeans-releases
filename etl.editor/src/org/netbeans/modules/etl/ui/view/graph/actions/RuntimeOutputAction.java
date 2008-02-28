@@ -42,11 +42,13 @@
 package org.netbeans.modules.etl.ui.view.graph.actions;
 
 import java.awt.event.ActionEvent;
+import java.awt.event.InputEvent;
 import java.net.URL;
 
 import javax.swing.Action;
 import javax.swing.ImageIcon;
 
+import javax.swing.KeyStroke;
 import net.java.hulp.i18n.Logger;
 import org.netbeans.modules.etl.logger.Localizer;
 import org.netbeans.modules.etl.logger.LogUtil;
@@ -78,8 +80,10 @@ public class RuntimeOutputAction extends GraphAction {
         this.putValue(Action.SMALL_ICON, new ImageIcon(runtimeOutputImgUrl));
 
         //action tooltip
-        String nbBundle2 = mLoc.t("PRSR001: Add/Edit Runtime Outputs");
+        String nbBundle2 = mLoc.t("PRSR001: Add/Edit Runtime Outputs (Cntl-U)");
         this.putValue(Action.SHORT_DESCRIPTION,Localizer.parse(nbBundle2));
+        // Acceleratot Cntl-U
+        this.putValue(Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke('U', InputEvent.CTRL_MASK ));
     }
 
     /**

@@ -92,9 +92,10 @@ import org.netbeans.modules.xml.wsdl.model.extensions.bpel.CorrelationProperty;
 import org.netbeans.modules.xml.xam.Component;
 import org.netbeans.modules.xml.xam.Model;
 import org.netbeans.modules.xml.xam.dom.NamedComponentReference;
+import org.netbeans.modules.bpel.validation.core.BpelValidator;
 import org.netbeans.modules.bpel.validation.core.Outcome;
 
-public final class Validator extends org.netbeans.modules.bpel.validation.core.Validator {
+public final class Validator extends BpelValidator {
     
     @Override 
     public void visit(PartnerLink p) {

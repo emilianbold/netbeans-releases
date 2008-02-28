@@ -42,13 +42,13 @@
 <project name="properties" default="none" basedir=".">
     <property environment="env"/>
 
+    <!-- dev -->
+    <property name="netbeans.host" value="http://deadlock.netbeans.org"/>
+    <property name="netbeans.path" value="hudson/job/trunk/lastSuccessfulBuild/artifact/nbbuild/dist/zip"/>
+
     <!-- daily -->
     <property name="netbeans.host" value="http://bits.netbeans.org"/>
     <property name="netbeans.path" value="dev/nightly/latest/zip"/>
-
-    <!-- dev -->
-    <!--property name="netbeans.host" value="http://deadlock.netbeans.org"/>
-    <property name="netbeans.path" value="hudson/job/trunk/lastSuccessfulBuild/artifact/nbbuild/dist/zip"/-->
 
     <property name="test.cvs.root" value=":pserver:guest@cvs.dev.java.net:/cvs"/>
     <property name="test.cvs.path" value="open-jbi-components/driver-tests/bpelse"/>

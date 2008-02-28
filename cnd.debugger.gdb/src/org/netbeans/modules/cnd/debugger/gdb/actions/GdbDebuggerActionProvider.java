@@ -44,8 +44,6 @@ package org.netbeans.modules.cnd.debugger.gdb.actions;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import org.netbeans.modules.cnd.debugger.gdb.GdbDebugger;
-
-import org.netbeans.modules.cnd.debugger.gdb.GdbDebugger;
 import org.netbeans.spi.debugger.ActionsProviderSupport;
 import org.netbeans.spi.debugger.ContextProvider;
 

@@ -40,11 +40,13 @@
  */
 package org.netbeans.modules.compapp.casaeditor.model.casa.impl;
 
+import java.util.List;
 import javax.xml.namespace.QName;
 import org.netbeans.modules.compapp.casaeditor.Constants;
 import org.netbeans.modules.compapp.casaeditor.model.casa.CasaComponentVisitor;
 import org.netbeans.modules.compapp.casaeditor.model.casa.CasaQName;
 import org.netbeans.modules.compapp.casaeditor.model.casa.CasaEndpoint;
+import org.netbeans.modules.compapp.casaeditor.model.casa.CasaExtensibilityElement;
 import org.netbeans.modules.compapp.casaeditor.model.casa.CasaModel;
 import org.netbeans.modules.xml.xam.dom.AbstractDocumentComponent;
 import org.w3c.dom.Element;
@@ -176,6 +178,23 @@ public class CasaEndpointImpl extends CasaComponentImpl
         setAttribute(SERVICE_NAME_PROPERTY, CasaAttribute.SERVICE_NAME, qName);  
     }
     
+    public String getDisplayName() {
+        String displayName = getAttribute(CasaAttribute.DISPLAY_NAME);
+        if (displayName == null || displayName.length() == 0) {
+            displayName = getEndpointName();
+        } 
+        
+        return displayName;
+    }
+    
+    public String getProcessName() {
+        return getAttribute(CasaAttribute.PROCESS_NAME);
+    }
+    
+    public String getFilePath() {
+        return getAttribute(CasaAttribute.FILE_PATH);
+    }
+        
     private QName getQName(String prefixedName) {
         assert prefixedName != null;
         

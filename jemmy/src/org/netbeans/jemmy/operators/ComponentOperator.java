@@ -838,7 +838,7 @@ public class ComponentOperator extends Operator
     }
 
     /**
-     * Gives inout focud to the component.
+     * Gives input focus to the component.
      */
     public void getFocus() {
 	fDriver.giveFocus(this);

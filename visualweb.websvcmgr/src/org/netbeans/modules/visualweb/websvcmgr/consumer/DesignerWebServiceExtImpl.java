@@ -69,6 +69,7 @@ import org.netbeans.modules.websvc.manager.api.WebServiceDescriptor;
 import org.netbeans.modules.websvc.manager.spi.WebServiceManagerExt;
 import org.netbeans.modules.websvc.manager.util.ManagerUtil;
 import org.netbeans.modules.websvc.saas.spi.websvcmgr.WsdlServiceProxyDescriptor.JarEntry;
+import org.netbeans.modules.websvc.saas.util.WsdlUtil;
 import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
@@ -89,6 +90,7 @@ public class DesignerWebServiceExtImpl implements WebServiceManagerExt {
     public static final String CONSUMER_ID = DesignerWebServiceExtImpl.class.getName();    
     private static final String WEBSVC_HOME_PROP = "websvc.home";
     private static final String USER_FILE_PROP = "user.properties.file";
+    private static final String WSDL_DIRNAME_PROP = "serviceDirName";
     private static final String WSDL_NAME_PROP = "serviceName";
     private static final String WSDL_FILE_NAME_PROP = "wsdlFileName";
     private static final String PACKAGE_NAME = "packageName";
@@ -182,6 +184,7 @@ public class DesignerWebServiceExtImpl implements WebServiceManagerExt {
         }
         
         String wsdlFileName = wsdlFile.getAbsolutePath();
+        String serviceDirName = wsMetadataDesc.getXmlDescriptorFile().getParentFile().getParentFile().getName();
         String serviceName = wsMetadataDesc.getName();
         
         Properties properties = new Properties();
@@ -190,6 +193,7 @@ public class DesignerWebServiceExtImpl implements WebServiceManagerExt {
         // INFO - This build properties file contains the classpath information
         // about all the library reference in the IDE
         properties.put(USER_FILE_PROP, userDir+"/build.properties");
+        properties.put(WSDL_DIRNAME_PROP, serviceDirName);
         properties.put(WSDL_NAME_PROP, serviceName);
         properties.put(WSDL_FILE_NAME_PROP, wsdlFileName);
         properties.put(PACKAGE_NAME, wsMetadataDesc.getPackageName());

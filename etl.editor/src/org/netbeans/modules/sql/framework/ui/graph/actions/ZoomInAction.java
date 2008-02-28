@@ -38,9 +38,11 @@ made subject to such option by the copyright holder.
 package org.netbeans.modules.sql.framework.ui.graph.actions;
 
 import java.awt.event.ActionEvent;
+import java.awt.event.InputEvent;
 import java.net.URL;
 import javax.swing.Action;
 import javax.swing.ImageIcon;
+import javax.swing.KeyStroke;
 import net.java.hulp.i18n.Logger;
 import org.netbeans.modules.etl.logger.Localizer;
 import org.netbeans.modules.etl.logger.LogUtil;
@@ -69,8 +71,10 @@ public class ZoomInAction extends GraphAction {
         this.putValue(Action.SMALL_ICON, new ImageIcon(zoomInImgUrl));
 
         //action tooltip
-        String nbBundle1 = mLoc.t("PRSR001: Zoom In");
+        String nbBundle1 = mLoc.t("PRSR001: Zoom In (Cntl-Q)");
         this.putValue(Action.SHORT_DESCRIPTION, Localizer.parse(nbBundle1));
+        // Acceleratot Cntl-Q
+        this.putValue(Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke('Q', InputEvent.CTRL_MASK ));
     }
 
     public void actionPerformed(ActionEvent e) {

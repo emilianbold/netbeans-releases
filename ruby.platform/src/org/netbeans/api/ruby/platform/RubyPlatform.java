@@ -806,15 +806,17 @@ public final class RubyPlatform {
         }
         
         public String getLabel(final boolean isDefault) {
+            String ver = isJRuby() ? jversion
+                    : version + (patchlevel != null ? "-p" + patchlevel : ""); // NOI18N
             return (isDefault ? NbBundle.getMessage(RubyPlatform.class, "RubyPlatformManager.CTL_BundledJRubyLabel") : kind)
-                    + " (" + (isJRuby() ? jversion : version) + ')'; // NOI18N
+                    + " (" + ver + ')'; // NOI18N
         }
         
         public String getLongDescription() {
             StringBuilder sb = new StringBuilder(kind + ' ' + version + ' ' + '(' + releaseDate);
             if (patchlevel != null) {
                 sb.append(" patchlevel ").append(patchlevel); // NOI18N
-        }
+            }
             sb.append(") [").append(platform).append(']'); // NOI18N
             return sb.toString();
         }

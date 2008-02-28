@@ -564,6 +564,16 @@ public abstract class CsmResultItem
         }
     }
     
+    public static class FileLocalFunctionResultItem extends MethodResultItem {
+        public FileLocalFunctionResultItem(CsmFunction mtd, CsmCompletionExpression substituteExp, int priotity) {
+            super(mtd, substituteExp, priotity);
+        }
+        
+        protected CsmPaintComponent.ConstructorPaintComponent createPaintComponent(){
+            return new CsmPaintComponent.FileLocalFunctionPaintComponent();
+        }
+    }
+    
     public static class GlobalFunctionResultItem extends MethodResultItem {
         public GlobalFunctionResultItem(CsmFunction mtd, CsmCompletionExpression substituteExp, int priotity) {
             super(mtd, substituteExp, priotity);

@@ -39,7 +39,6 @@
 
 package org.netbeans.modules.cnd.editor.options;
 
-import java.util.prefs.Preferences;
 import org.netbeans.modules.cnd.editor.api.CodeStyle;
 import org.openide.nodes.PropertySupport;
 import org.openide.util.NbBundle;
@@ -48,11 +47,11 @@ public class BooleanNodeProp extends PropertySupport.ReadWrite<Boolean> {
 
     private final CodeStyle.Language language;
     private final String optionID;
-    private Preferences preferences;
+    private PreviewPreferences preferences;
     private boolean state;
 
-    public BooleanNodeProp(CodeStyle.Language language, Preferences preferences, String optionID) {
-        super(optionID, Boolean.class, getString("LBL_" + optionID), getString("HINT_" + optionID));
+    public BooleanNodeProp(CodeStyle.Language language, PreviewPreferences preferences, String optionID) {
+        super(optionID, Boolean.class, getString("LBL_" + optionID), getString("HINT_" + optionID)); // NOI18N
         this.language = language;
         this.optionID = optionID;
         this.preferences = preferences;
@@ -64,21 +63,22 @@ public class BooleanNodeProp extends PropertySupport.ReadWrite<Boolean> {
     }
 
     private void init() {
-        state = getPreferences().getBoolean(optionID, (Boolean) EditorOptions.getDefault(optionID));
+        state = getPreferences().getBoolean(optionID, getDefault());
     }
 
-    private Preferences getPreferences() {
-        Preferences node = preferences;
-        if (node == null) {
-            node = EditorOptions.getPreferences(language, EditorOptions.getCurrentProfileId(language));
-        }
-        return node;
+    private boolean getDefault(){
+        return (Boolean) EditorOptions.getDefault(
+                getPreferences().getLanguage(), getPreferences().getStyleId(), optionID);
+    }
+    
+    private PreviewPreferences getPreferences() {
+        return preferences;
     }
 
     @Override
     public String getHtmlDisplayName() {
-        if (isDefaultValue()) {
-            return "<b>" + getDisplayName();
+        if (!isDefaultValue()) {
+            return "<b>" + getDisplayName(); // NOI18N
         }
         return null;
     }
@@ -95,7 +95,7 @@ public class BooleanNodeProp extends PropertySupport.ReadWrite<Boolean> {
 
     @Override
     public void restoreDefaultValue() {
-        state = (Boolean) EditorOptions.getDefault(optionID);
+        setValue(getDefault());
     }
 
     @Override
@@ -105,6 +105,6 @@ public class BooleanNodeProp extends PropertySupport.ReadWrite<Boolean> {
 
     @Override
     public boolean isDefaultValue() {
-        return !EditorOptions.getDefault(optionID).equals(getValue());
+        return getDefault() == getValue().booleanValue();
     }
 }

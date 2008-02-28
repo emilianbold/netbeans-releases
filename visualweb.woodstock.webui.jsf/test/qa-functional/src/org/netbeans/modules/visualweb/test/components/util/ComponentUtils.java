@@ -133,8 +133,11 @@ public class ComponentUtils {
     public static String getProjectPath(String projectName){
         String basePath = System.getProperty("xtest.workdir") ;
         //String basePath = System.getProperty("xtest.sketchpad") ;
-        String projectPath = basePath + File.separator + "projects"
-                + File.separator +  projectName;
+        String projectPath = basePath + File.separator + "projects";
+        File folder = new File(projectPath);
+        if (!folder.exists()) {
+            folder.mkdirs();
+        }
         return projectPath;
     }
     

@@ -99,6 +99,17 @@ public class CustomizerRootNodeProvider {
         }
         return null;
     }
+    
+    public List<CustomizerNode> getCustomizerNodes(String id) {
+        ArrayList<CustomizerNode> list = new ArrayList<CustomizerNode>();
+        List<CustomizerNode> nodes = getCustomizerNodes();
+        for (CustomizerNode n : nodes) {
+            if (n.name.equals(id)) {
+                list.add(n);
+            }
+        }
+        return list;
+    }
 
     public synchronized void addCustomizerNode(CustomizerNode node) {
         getCustomizerNodesRegisteredOldStyle().add(node);

@@ -68,7 +68,6 @@ import org.openide.windows.OutputWriter;
 public class MergeAction extends ContextAction {
 
     private final VCSContext context;
-    private String revStr;
     private final static int MULTIPLE_AUTOMERGE_HEAD_LIMIT = 2;
     
     public MergeAction(String name, VCSContext context) {
@@ -97,39 +96,31 @@ public class MergeAction extends ContextAction {
                     JOptionPane.INFORMATION_MESSAGE);
             return;
         }
-        if(root != null && !HgCommand.isMergeRequired(root)){
-            HgUtils.outputMercurialTabInRed( NbBundle.getMessage(MergeAction.class,"MSG_MERGE_TITLE")); // NOI18N
-            HgUtils.outputMercurialTabInRed( NbBundle.getMessage(MergeAction.class,"MSG_MERGE_TITLE_SEP")); // NOI18N
-            HgUtils.outputMercurialTab( NbBundle.getMessage(MergeAction.class,"MSG_NOTHING_TO_MERGE")); // NOI18N
-            HgUtils.outputMercurialTabInRed( NbBundle.getMessage(MergeAction.class, "MSG_MERGE_DONE")); // NOI18N
-            HgUtils.outputMercurialTab(""); // NOI18N
-            JOptionPane.showMessageDialog(null,
-                NbBundle.getMessage(MergeAction.class,"MSG_NOTHING_TO_MERGE"),// NOI18N
-                NbBundle.getMessage(MergeAction.class,"MSG_MERGE_TITLE"),// NOI18N
-                JOptionPane.INFORMATION_MESSAGE);
-            return;
-        }
-
         String repository = root.getAbsolutePath();
-        try{
-            List<String> headList = HgCommand.getHeadRevisions(root);
-            revStr = null;
-            if (headList.size() > MULTIPLE_AUTOMERGE_HEAD_LIMIT){
-                final MergeRevisions mergeDlg = new MergeRevisions(root);
-                if (!mergeDlg.showDialog()) {
-                    return;
-                }
-                revStr = mergeDlg.getSelectionRevision();               
-            }
-        } catch(HgException ex) {
-                    NotifyDescriptor.Exception e = new NotifyDescriptor.Exception(ex);
-                    DialogDisplayer.getDefault().notifyLater(e);
-        }
-        
         RequestProcessor rp = Mercurial.getInstance().getRequestProcessor(repository);
         HgProgressSupport support = new HgProgressSupport() {
             public void perform() {
                 try {
+                    List<String> headList = HgCommand.getHeadRevisions(root);
+                    String revStr = null;
+                    if (headList.size() <= 1) {
+                        HgUtils.outputMercurialTabInRed( NbBundle.getMessage(MergeAction.class,"MSG_MERGE_TITLE")); // NOI18N
+                        HgUtils.outputMercurialTabInRed( NbBundle.getMessage(MergeAction.class,"MSG_MERGE_TITLE_SEP")); // NOI18N
+                        HgUtils.outputMercurialTab( NbBundle.getMessage(MergeAction.class,"MSG_NOTHING_TO_MERGE")); // NOI18N
+                        HgUtils.outputMercurialTabInRed( NbBundle.getMessage(MergeAction.class, "MSG_MERGE_DONE")); // NOI18N
+                        HgUtils.outputMercurialTab(""); // NOI18N
+                        JOptionPane.showMessageDialog(null,
+                            NbBundle.getMessage(MergeAction.class,"MSG_NOTHING_TO_MERGE"),// NOI18N
+                            NbBundle.getMessage(MergeAction.class,"MSG_MERGE_TITLE"),// NOI18N
+                            JOptionPane.INFORMATION_MESSAGE);
+                         return;
+                    } else if (headList.size() > MULTIPLE_AUTOMERGE_HEAD_LIMIT){
+                        final MergeRevisions mergeDlg = new MergeRevisions(root);
+                        if (!mergeDlg.showDialog()) {
+                            return;
+                        }
+                        revStr = mergeDlg.getSelectionRevision();               
+                    }
                     HgUtils.outputMercurialTabInRed(
                             NbBundle.getMessage(MergeAction.class, "MSG_MERGE_TITLE")); // NOI18N
                     HgUtils.outputMercurialTabInRed(

@@ -78,11 +78,11 @@ public class ValidationAction extends GraphAction {
         this.putValue(Action.SMALL_ICON, new ImageIcon(validateImgUrl));
 
         //action tooltip
-        String nbBundle2 = mLoc.t("PRSR001: Validate Collaboration");
+        String nbBundle2 = mLoc.t("PRSR001: Validate Collaboration (Cntl-V)");
         this.putValue(Action.SHORT_DESCRIPTION,Localizer.parse(nbBundle2));
 
-        // Acceleratot Cntl-Shift-V
-        this.putValue(Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke('V', InputEvent.CTRL_MASK + InputEvent.SHIFT_DOWN_MASK));
+        // Acceleratot Cntl-V
+        this.putValue(Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke('V', InputEvent.CTRL_MASK ));
     }
 
     /**

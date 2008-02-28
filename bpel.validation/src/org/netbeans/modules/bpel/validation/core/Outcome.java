@@ -51,11 +51,11 @@ import org.netbeans.modules.bpel.validation.core.QuickFix;
  */
 public final class Outcome extends ResultItem {
 
-  public Outcome(Validator validator, ResultType type, Component component, String description) {
+  public Outcome(CoreValidator validator, ResultType type, Component component, String description) {
     this(validator, type, component, description, null);
   }
 
-  public Outcome(Validator validator, ResultType type, Component component, String description, QuickFix quickFix) {
+  public Outcome(CoreValidator validator, ResultType type, Component component, String description, QuickFix quickFix) {
     super(validator, type, component, description);
     myQuickFix = quickFix;
   }         

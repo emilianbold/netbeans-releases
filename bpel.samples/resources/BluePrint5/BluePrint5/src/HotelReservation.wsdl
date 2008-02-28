@@ -44,7 +44,7 @@
         <xsd:schema targetNamespace="http://localhost/BluePrint5/HotelReservation">
             <xsd:import schemaLocation="reservation.xsd" namespace="http://ReservationSystem.org/xsd/reserve"/>
         </xsd:schema>
-    </types>    
+    </types>
     <message name="HotelReservation">
         <part name="reserveHotelPart"
               element="ns:reserve"></part>
@@ -114,6 +114,6 @@
                         messageType="tns:HotelReservationStatus">
         <bpws:query>/ns:reserveStatus/ns:reservationID</bpws:query>
     </bpws:propertyAlias>
-    <bpws:property name="hotel" type="xsd:hexBinary"/>
+    <bpws:property name="hotel" type="ns:reserveType"/>
     <bpws:propertyAlias propertyName="tns:hotel" messageType="tns:HotelReservation" part="reserveHotelPart"/>
 </definitions>

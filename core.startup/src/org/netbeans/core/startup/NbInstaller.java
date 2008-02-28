@@ -41,17 +41,10 @@
 
 package org.netbeans.core.startup;
 
-import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
 import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
 import java.net.URL;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
@@ -80,7 +73,6 @@ import org.netbeans.Util;
 import org.netbeans.core.startup.layers.ModuleLayeredFileSystem;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
-import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.Repository;
 import org.openide.modules.Dependency;
 import org.openide.modules.ModuleInstall;
@@ -259,7 +251,6 @@ final class NbInstaller extends ModuleInstaller {
         
         for (Module m: modules) {
             checkForDeprecations(m);
-            openideModuleEnabled(m);
         }
         
         loadLayers(modules, true);
@@ -838,41 +829,6 @@ final class NbInstaller extends ModuleInstaller {
         }
         return s;
     }
-
-    /** true if optimizations of openide classloading shall be disabled.
-     */
-    private static boolean withoutOptimizations;
-    /** Whenever an openide module is enabled, it is checked to be 
-     * on for whose we provide optimizations.
-     */
-    static void openideModuleEnabled(Module module) {
-        String m = module.getCodeNameBase();
-        if (!m.startsWith("org.openide.")) {
-            return;
-        }
-        
-        if ("org.openide.util".equals(m)) return; // NOI18N
-        if ("org.openide.actions".equals(m)) return; // NOI18N
-        if ("org.openide.awt".equals(m)) return; // NOI18N
-        if ("org.openide.modules".equals(m)) return; // NOI18N
-        if ("org.openide.nodes".equals(m)) return; // NOI18N
-        if ("org.openide.windows".equals(m)) return; // NOI18N
-        if ("org.openide.explorer".equals(m)) return; // NOI18N
-        if ("org.openide.util.enumerations".equals(m)) return; // NOI18N
-        if ("org.openide.execution".equals(m)) return; // NOI18N
-        if ("org.openide.options".equals(m)) return; // NOI18N
-        if ("org.openide.execution".equals(m)) return; // NOI18N
-        if ("org.openide.loaders".equals(m)) return; // NOI18N
-        if ("org.openide.dialogs".equals(m)) return; // NOI18N
-        if ("org.openide.filesystems".equals(m)) return; // NOI18N
-        if ("org.openide.io".equals(m)) return; // NOI18N
-        if ("org.openide.text".equals(m)) return; // NOI18N
-        if ("org.openide.src".equals(m)) return; // NOI18N
-        
-        Util.err.warning("Disabling openide load optimizations due to use of " + m); // NOI18N
-        
-        withoutOptimizations = true;
-    }
     
     /** Information about contents of some JARs on the startup classpath (both lib/ and lib/ext/).
      * The first item in each is a prefix for JAR filenames.
@@ -894,90 +850,6 @@ final class NbInstaller extends ModuleInstaller {
         // No one ought to be using boot.jar:
         {"boot"}, // NOI18N
     };
-    
-    /** These packages have been refactored into several modules.
-     * Disable the domain cache for them.
-     */
-    public @Override boolean isSpecialResource(String pkg) {
-        // JST-PENDING here is experimental enumeration of shared packages in openide
-        // maybe this will speed up startup, but it is not accurate as if
-        // someone enables some long time deprecated openide jar list will
-        // get wrong.
-        // Probably I need to watch for list of modules that export org.openide
-        // or subclass and if longer than expected, disable this optimization
-        
-        // the old good way:
-        if (pkg.startsWith("org/openide/")) {
-            
-            // util & dialogs
-            if ("org/openide/".equals (pkg)) return true; // NOI18N
-            // loaders, actions, and who know what else
-            if ("org/openide/actions/".equals (pkg)) return true; // NOI18N
-            // loaders & awt
-            if ("org/openide/awt/".equals (pkg)) return true; // NOI18N
-            // loaders, nodes, text...
-            if ("org/openide/cookies/".equals (pkg)) return true; // NOI18N
-
-            // some are provided by java/srcmodel
-            if ("org/openide/explorer/propertysheet/editors/".equals (pkg)) return true; // NOI18N
-
-            // windows & io 
-            if ("org/openide/windows/".equals (pkg)) return true; // NOI18N
-
-            // text & loaders
-            if ("org/openide/text/".equals (pkg)) return true; // NOI18N
-
-            // util & nodes
-            if ("org/openide/util/actions/".equals (pkg)) return true; // NOI18N
-
-            if (withoutOptimizations) {
-                // these should be removed as soon as we get rid of org-openide-compat
-                if ("org/openide/explorer/".equals (pkg)) return true; // NOI18N
-                if ("org/openide/util/".equals (pkg)) return true; // NOI18N
-            }
-        }
-
-        if (isSpecialResourceFromSystemProperty(pkg)) {
-            return true;
-        }
-        
-        // Some classes like DOMError are only in xerces.jar, not in JDK:
-        if (pkg.equals("org/w3c/dom/")) return true; // NOI18N
-        // #36578: JDK 1.5 has DOM3
-        if (pkg.equals("org/w3c/dom/ls/")) return true; // NOI18N
-        return super.isSpecialResource(pkg);
-    }
-    
-    /**
-     * Checks the passed in package for having a prefix one
-     * of the strings specified in the system property 
-     * "org.netbeans.core.startup.specialResource".
-     */
-    private boolean isSpecialResourceFromSystemProperty(String pkg) {
-        for (String prefix : getSpecialResourcePrefixes()) {
-            if (pkg.startsWith(prefix)) {
-                return true;
-            }
-        }
-        return false; 
-    }
-    
-    /**
-     * Reads the system property 
-     * "org.netbeans.core.startup.specialResource"
-     * and extracts the comma separated entries in it.
-     */
-    private static String[] getSpecialResourcePrefixes() {
-        if (specialResourcePrefixes == null) {
-            String sysProp = System.getProperty("org.netbeans.core.startup.specialResource");
-            if (sysProp != null) {
-                specialResourcePrefixes = sysProp.split(",");
-            } else {
-                specialResourcePrefixes = new String[0];
-            }
-        }
-        return specialResourcePrefixes;
-    }
     
     /** Get the effective "classpath" used by a module.
      * Specific syntax: classpath entries as usual, but

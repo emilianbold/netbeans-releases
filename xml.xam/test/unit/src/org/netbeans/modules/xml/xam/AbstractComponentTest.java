@@ -47,6 +47,7 @@ import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.xml.xam.TestComponent.A;
 import org.netbeans.modules.xml.xam.TestComponent.B;
 import org.netbeans.modules.xml.xam.TestComponent.C;
@@ -57,7 +58,7 @@ import org.openide.util.WeakListeners;
  *
  * @author Nam Nguyen
  */
-public class AbstractComponentTest extends TestCase {
+public class AbstractComponentTest extends NbTestCase {
     
     TestModel model;
     TestComponent p;
@@ -362,6 +363,52 @@ public class AbstractComponentTest extends TestCase {
         assertFalse(Utils.isValidNCName("ab'C1"));
         assertFalse(Utils.isValidNCName("ab~C1"));
         assertFalse(Utils.isValidNCName("ab`C1"));
+    }
+    
+    public void testThreadSafe() throws Exception {
+        final int COUNT = 1000;
+        final TestModel myModel = new TestModel();
+        final TestComponent root = myModel.getRootComponent();
+        assertEquals(3, root.getChildren().size());
+
+        final Exception[] readerExc = { null };
+        Thread reader = new Thread() {
+            @Override
+            public void run() {
+                int size = 0;
+                try {
+                    do {
+                        size = root.getChildren(B.class).size();
+                    } while (size < COUNT);
+                } catch (Exception e) {
+                    readerExc[0] = e;
+                }
+            }
+        };
+        Thread writer = new Thread() {
+            @Override
+            public void run() {
+                if (myModel.startTransaction()) {
+                    try {
+                        int i = 0;
+                        while (++i <= COUNT) {
+                            B b = new TestComponent.B(myModel, i);
+                            myModel.addChildComponent(root, b, -1);
+                        }
+                    } finally {
+                        myModel.endTransaction();
+                    }
+                }
+            }
+        };
+        reader.start();
+        writer.start();
+        reader.join();
+        writer.join();
+
+        if (readerExc[0] != null) {
+            throw readerExc[0];
+        }
     }
 }
     

@@ -47,11 +47,11 @@
     <partnerLinks>
         <partnerLink name="partnerLinkA" 
                      partnerLinkType="wsdlNS:AsynchronousClientPartnerLinkType" 
-                     myRole="AsynchronousClientProvider" />
+                     myRole="AsynchronousClientProvider"/>
         <partnerLink name="partnerLinkB" 
                      partnerLinkType="partnerNS:AsyncPartnerLinkType" 
                      myRole="serviceRequestor"
-                     partnerRole="serviceProvider" />         
+                     partnerRole="serviceProvider"/>
     </partnerLinks>
     
     <variables>
@@ -63,9 +63,9 @@
     
     <correlationSets>
         <correlationSet name="correlator" properties="wsdlNS:correlatorProp"/>
-    </correlationSets>        
+    </correlationSets>
     
-    <sequence>   
+    <sequence>
         <receive 
             name="start"
             partnerLink="partnerLinkA"
@@ -83,7 +83,7 @@
                 <from variable="inputVar" part="inputType"/>
                 <to variable="partnerInputVar" part="inputType"/>
             </copy>
-        </assign> 
+        </assign>
         
         <invoke name="invokepartner"  
                 partnerLink="partnerLinkB"
@@ -108,7 +108,7 @@
                 <from variable="partnerOutputVar" part="resultType"/>
                 <to variable="outputVar" part="resultType"/>
             </copy>
-        </assign> 
+        </assign>
         
         <reply name="end"  
                partnerLink="partnerLinkA"

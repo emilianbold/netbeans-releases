@@ -435,6 +435,32 @@ public final class CsmProjectContentResolver {
         return res;
     }
     
+        public List getFileLocalFunctions(CsmContext context, String strPrefix, boolean match) {
+        List out = new ArrayList();
+        if (!context.isEmpty()) {
+            for (Iterator it = context.iterator(); it.hasNext();) {
+                CsmContext.CsmContextEntry elem = (CsmContext.CsmContextEntry) it.next();
+                if (CsmKindUtilities.isFile(elem.getScope())) {
+                    CsmFile currentFile = (CsmFile) elem.getScope();
+                    for (CsmDeclaration decl : currentFile.getDeclarations()) {
+                        if (CsmKindUtilities.isFunction(decl)) {
+                            CsmFunction fun = (CsmFunction) decl;
+                            if (fun.getScope().equals(currentFile) /*&& fun.getStartOffset() < offset*/) {
+                                if (decl.getName().length() != 0 && matchName(decl.getName().toString(), strPrefix, match)) {
+                                    out.add(fun);
+                                }
+                                
+                            }
+                        }
+                    }
+                    break;
+                }
+            }
+        }
+        return out;
+    }
+    
+    
 //    public List getLocalDeclarations(CsmContext context, String strPrefix, boolean match) {
 //        List res = CsmContextUtilities.findLocalDeclarations(context, strPrefix, match, isCaseSensitive());
 //        if (res != null) {

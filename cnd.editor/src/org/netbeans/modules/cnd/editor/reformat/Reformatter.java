@@ -66,7 +66,7 @@ public class Reformatter implements ReformatTask {
 
     public Reformatter(Document doc, CodeStyle codeStyle) {
         this.doc = doc;
-         this.codeStyle = codeStyle;
+        this.codeStyle = codeStyle;
     }
 
     public void reformat() throws BadLocationException {
@@ -132,12 +132,19 @@ public class Reformatter implements ReformatTask {
                 continue;
             }
             if (endOffset < end) {
-                if (text != null && text.length() > 0)
+                if (text != null && text.length() > 0) {
                     text = end - endOffset >= text.length() ? null : 
                            text.substring(0, text.length() - end + endOffset);
+                }
                 end = endOffset;
             }
             if (end - start > 0) {
+                if (!checkRemoved(doc.getText(start, end - start))){
+                    // Reformat
+                    System.out.println("Reformat failed. Reformat try to remove: "+doc.getText(start, end - start));
+                    System.out.println("    Changeset:"+diff);
+                    break;
+                }
                 doc.remove(start, end - start);
             }
             if (text != null && text.length() > 0) {
@@ -146,6 +153,17 @@ public class Reformatter implements ReformatTask {
         }
     }
 
+    private boolean checkRemoved(String whatRemoved){
+        for(int i = 0; i < whatRemoved.length(); i++){
+            char c = whatRemoved.charAt(i);
+            if (c == ' ' || c == '\n' || c == '\t') {
+                continue;
+            }
+            return false;
+        }
+        return true;
+    }
+    
     public ExtraLock reformatLock() {
         return new Lock();
     }

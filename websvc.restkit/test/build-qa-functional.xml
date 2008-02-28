@@ -41,65 +41,145 @@ Version 2 license, then the option applies only if the new code is
 made subject to such option by the copyright holder.
 -->
 <project name="org.netbeans.modules.websvc.qatests/test-qa-functional" basedir="." default="all">
-
+    
     <property file="../nbproject/private/private.properties"/>
 
+    <!-- turn off jMaki tests for now -->
+    <property name="plugins.jmaki.skip" value="true"/>
+    
     <!-- Imports default qa-functional-compiler and runidetest executor.
         jemmy and jellytools jars are on classpath for both. -->
     <import file="../../nbbuild/templates/xtest-qa-functional.xml"/>
-
+    
     <target name="-init-props">
         <property name="build.dir" value="${nb_all}/websvc.restkit/build" />
         <mkdir dir="${build.dir}" />
         <property name="lib.dir" value="${build.dir}/libs"/>
         <mkdir dir="${lib.dir}" />
-
+        
         <condition property="skip-download-httpunit" >
             <and>
                 <available file="${lib.dir}/httpunit-1.6.2.jar" />
-                <available file="${lib.dir}/jtidy-4aug2000r7-dev.jar" />
-                <available file="${lib.dir}/js-1.6R7.jar" />
+                <available file="${lib.dir}/Tidy-r7.jar" />
             </and>
         </condition>
     </target>
-
+    
     <target name="-httpunit" unless="skip-download-httpunit" depends="-setup-proxy" >
         <echo message="Going to download httpunit. If it fails download it from http://www.httpunit.org/" />
         <echo message="(and unpack httpunit, js and jtidy jars into ${lib.dir})"/>
         <echo message="or invoke with -Dproxy.host='host' -Dproxy.port='port'" />
-        <get src="http://mirrors.ibiblio.org/pub/mirrors/maven2/httpunit/httpunit/1.6.2/httpunit-1.6.2.jar" dest="${lib.dir}/httpunit-1.6.2.jar"/>
-        <get src="http://mirrors.ibiblio.org/pub/mirrors/maven2/jtidy/jtidy/4aug2000r7-dev/jtidy-4aug2000r7-dev.jar" dest="${lib.dir}/jtidy-4aug2000r7-dev.jar"/>
-        <get src="http://mirrors.ibiblio.org/pub/mirrors/maven2/rhino/js/1.6R7/js-1.6R7.jar" dest="${lib.dir}/js-1.6R7.jar"/>
+        <get src="http://hg.netbeans.org/binaries/B4B42BDA5955665AE5B6D7FA60A4B401BD1063E2-httpunit-1.6.2.jar" dest="${lib.dir}/httpunit-1.6.2.jar"/>
+        <get src="http://hg.netbeans.org/binaries/414EE6C40F6EE7FC11EB4540E63AE04DE0656087-Tidy-r7.jar" dest="${lib.dir}/Tidy-r7.jar"/>
     </target>
-
+    
     <target name="-setup-proxy" if="proxy.host" >
         <setproxy proxyhost="${proxy.host}" proxyport="${proxy.port}" />
     </target>
-
+    
     <target name="-clean-httpunit" depends="-init-props">
         <delete dir="${lib.dir}" />
     </target>
-
+    
     <target name="-init-httpunit" depends="-init-props, -httpunit"/>
-
-    <target name="qa-functional-compiler" depends="-init-httpunit">
+    
+    <!--
+      XXX have to use own compilation because we don't have built dependent
+      REST modules on test machines
+     -->
+    <target name="qa-functional-compiler" depends="-init-httpunit,-init-cp-wa">
         <ant inheritAll="false" dir="../../websvc.kit/test" target="buildtests"/>
-        <antcall target="xtest-qa-functional.qa-functional-compiler"/>
+        <echo>Available Properties:</echo>
+        <echoproperties/>
+        <echo>=====================</echo>
+        <mkdir dir="../build"/>
+        <mkdir dir="../build/test"/>
+        <mkdir dir="../build/test/qa-functional"/>
+        <mkdir dir="../build/test/qa-functional/classes"/>
+        <mkdir dir="../build/test/qa-functional/data"/>
+        <mkdir dir="lib"/>
+        <property name="dst.classes.dir" value="../build/test/qa-functional/classes"/>
+        <property name="dst.data.dir" value="../build/test/qa-functional/data"/>
+        <javac debug="true" srcdir="qa-functional/src" destdir="${dst.classes.dir}"
+               source="1.5" target="1.5">
+            <classpath>
+                <path refid="httpunit.libs"/>
+                <pathelement location="${nb_all}/websvc.kit/test/lib/tests-qa-functional.jar"/>
+                <pathelement location="${nb_all}/xtest/lib/junit.jar"/>
+                <pathelement location="${nb_all}/xtest/lib/nbjunit.jar"/>
+                <pathelement location="${nb_all}/xtest/lib/nbjunit-ide.jar"/>
+                <pathelement location="${nb_all}/jemmy/dist/jemmy.jar"/>
+                <pathelement location="${nb_all}/jellytools/builds/jelly2-nb.jar"/>
+                <pathelement location="${netbeans.dest.dir}/platform8/core/org-openide-filesystems.jar"/>
+                <pathelement location="${netbeans.dest.dir}/platform8/lib/org-openide-util.jar"/>
+                <pathelement location="${netbeans.dest.dir}/platform8/modules/org-openide-loaders.jar"/>
+                <pathelement location="${netbeans.dest.dir}/platform8/modules/org-openide-nodes.jar"/>
+                <pathelement location="${netbeans.dest.dir}/platform8/modules/org-openide-text.jar"/>
+                <pathelement location="${netbeans.dest.dir}/platform8/modules/org-openide-windows.jar"/>
+                <pathelement location="${netbeans.dest.dir}/ide9/modules/org-netbeans-modules-projectapi.jar"/>
+            </classpath>
+            <compilerarg line="-Xlint -Xlint:-serial"/>
+        </javac>
+        <copy todir="${dst.data.dir}">
+            <fileset dir="qa-functional/data"/>
+        </copy>
+        <jar basedir="${dst.classes.dir}" destfile="lib/tests-qa-functional.jar"/>
+        <jar basedir="${dst.data.dir}" destfile="lib/data-qa-functional.zip" excludes="**/private/**"/>
     </target>
-
+    
     <!--
       XXX make sure httpunit.jar (and related jars) is loaded first
       to avoid conflict with httunit module (SOA) and jtidy (visualweb)
      -->
     <target name="-init-cp-wa" depends="-init-props">
-         <path id="httpunit.libs">
-             <fileset dir="${lib.dir}">
-                 <include name="*.jar"/>
-             </fileset>
-         </path>
+        <path id="httpunit.libs">
+            <fileset dir="${lib.dir}">
+                <include name="*.jar"/>
+            </fileset>
+        </path>
         <property name="coverage.lib.path" refid="httpunit.libs"/>
     </target>
+    
+    <!--
+    
+    -->
+    <target name="-init-jmaki">
+        <property name="plugins.jmaki.nbm.dir" value="${java.io.tmpdir}"/>
+        <property name="plugins.jmaki.nbm.name" value="org-netbeans-modules-sun-jmaki.nbm"/>
+        <condition property="plugins.jmaki.nbm.tmp" value="${plugins.jmaki.nbm}" else="${plugins.jmaki.nbm.dir}/${plugins.jmaki.nbm.name}">
+            <and>
+                <isset property="plugins.jmaki.nbm"/>
+                <available file="${plugins.jmaki.nbm}"/>
+            </and>
+        </condition>
+        <condition property="plugins.jmaki.do.download">
+            <and>
+                <not><isset property="plugins.jmaki.skip"/></not>
+                <isfalse value="${plugins.jmaki.skip}"/>
+                <not><available file="${plugins.jmaki.nbm.tmp}"/></not>
+            </and>
+        </condition>
+    </target>
+        
+    <target name="-download-jmaki" if="plugins.jmaki.do.download">
+        <echo message="Going to download ${plugins.jmaki.nbm.name}. If it fails download it from http://ajax.dev.java.net" />
+        <echo message="(and put it into ${java.io.tmpdir})"/>
+        <echo message="or invoke with -Dproxy.host='host' -Dproxy.port='port'" />
+        <get src="https://ajax.dev.java.net/files/documents/3115/86078/org-netbeans-modules-sun-jmaki.nbm" dest="${plugins.jmaki.nbm.tmp}"/>
+    </target>
 
+    <target name="-setup-jmaki-nbm" depends="-init-jmaki, -download-jmaki">
+        <condition property="xtest.userdata|plugins.jmaki.skip" value="true">
+            <istrue value="${plugins.jmaki.skip}"/>
+        </condition>
+        <condition property="xtest.userdata|plugins.jmaki.nbm" value="${plugins.jmaki.nbm.tmp}">
+            <and>
+                <available file="${plugins.jmaki.nbm.tmp}"/>
+                <not><isset property="plugins.jmaki.skip"/></not>
+            </and>
+        </condition>
+    </target>
+    
     <!-- Run tests on Apache Tomcat server -->
     <target name="-runidetest-with-tomcat" if="tomcat.home">
         <echo>Running tests on Apache Tomcat (using: ${tomcat.home})</echo>
@@ -107,14 +187,14 @@ made subject to such option by the copyright holder.
         <property name="xtest.userdata|org.netbeans.modules.tomcat.autoregister.token" value="1"/>
         <antcall target="xtest-qa-functional.runidetest"/>
     </target>
-
+    
     <!-- Run tests on JBoss server -->
     <target name="-runidetest-with-jboss" if="jboss.home">
         <echo>Running tests on JBoss (using: ${jboss.home})</echo>
         <property name="xtest.userdata|org.netbeans.modules.j2ee.jboss4.installRoot" value="${jboss.home}"/>
         <antcall target="xtest-qa-functional.runidetest"/>
     </target>
-
+    
     <!-- Run tests on GlassFish based server -->
     <target name="set-gf">
         <condition property="use.appserver">
@@ -124,15 +204,15 @@ made subject to such option by the copyright holder.
             </and>
         </condition>
     </target>
-     
+    
     <target name="-runidetest-with-glassfish" if="use.appserver" depends="set-gf">
         <antcall target="set-appserver-path"/>
         <echo>Running tests on GlassFish (using: ${j2ee.appserver.path})</echo>
         <antcall target="xtest-init.runidetest-with-appserver" />
     </target>
-
+    
     <!-- Override to run tests on more servers at once -->
-    <target name="runidetest-with-appserver" depends="-init-cp-wa, -runidetest-with-glassfish, -runidetest-with-tomcat, -runidetest-with-jboss"/>
-
+    <target name="runidetest-with-appserver" depends="-init-cp-wa, -setup-jmaki-nbm, -runidetest-with-glassfish, -runidetest-with-tomcat, -runidetest-with-jboss"/>
+    
 </project>
 

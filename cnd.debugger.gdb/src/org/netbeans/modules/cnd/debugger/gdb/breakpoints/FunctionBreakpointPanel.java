@@ -88,8 +88,8 @@ public class FunctionBreakpointPanel extends JPanel implements Controller, org.o
         );
         mb.setPrintText (
             NbBundle.getBundle (FunctionBreakpointPanel.class).getString
-                ("CTL_Function_Breakpoint_Print_Text") // NOI18N
-        );
+                ("CTL_Function_Breakpoint_Print_Text")); // NOI18N
+        
         return mb;
     }
     

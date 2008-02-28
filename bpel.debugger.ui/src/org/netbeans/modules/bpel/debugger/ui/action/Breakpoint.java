@@ -93,6 +93,24 @@ public class Breakpoint extends ActionsProviderSupport
                 ("orch-designer".equals(currentViewName) || 
                 "bpelsource".equals(currentViewName));
         
+//        if (enabled) {
+//            final Node node = getCurrentNode();
+//            
+//            if (node != null) {
+//                final javax.swing.Action[] actions = node.getActions(false);
+//                
+//                if (actions != null) {
+//                    enabled = false;
+//                
+//                    for (javax.swing.Action action: actions) {
+//                        if (action.equals(this)) {
+//                            enabled = true;
+//                        }
+//                    }
+//                }
+//            }
+//        }
+        
         setEnabled(ActionsManager.ACTION_TOGGLE_BREAKPOINT, enabled);
     }
     

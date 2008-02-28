@@ -43,6 +43,7 @@ import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
+import org.netbeans.modules.cnd.editor.filecreation.CndHandlableExtensions;
 import org.netbeans.modules.cnd.editor.filecreation.ExtensionsSettings;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
@@ -55,7 +56,8 @@ import org.openide.loaders.MultiDataObject;
  *
  * @author Sergey Grinev
  */
-public abstract class CndAbstractDataLoaderExt extends CndAbstractDataLoader {
+public abstract class CndAbstractDataLoaderExt extends CndAbstractDataLoader 
+        implements CndHandlableExtensions {
 
     protected CndAbstractDataLoaderExt(String representationClassName) {
         super(representationClassName);
@@ -71,14 +73,16 @@ public abstract class CndAbstractDataLoaderExt extends CndAbstractDataLoader {
         super.setExtensions(ext);
     }
 
-    public abstract ExtensionList getDefaultExtensionList();
-
     protected static ExtensionList arrayToExtensionList(String[] ar) {
         ExtensionList l = new ExtensionList();
         for (int i = 0; i < ar.length; i++) {
             l.addExtension(ar[i]);
         }
         return l;
+    }
+
+    public String getSettingsName() {
+        return getRepresentationClassName();
     }
 
     @Override

@@ -174,4 +174,16 @@ public final class Service {
         return "true".equals(value);
     }
    
+    public void setUseProvider(Boolean useProvider){
+        service.setUseProvider(useProvider);
+    }
+    
+    public boolean isUseProvider(){
+        Boolean bool = service.getUseProvider();
+        if(bool == null){
+            bool = false;
+        }    
+        return bool;
+    }
+   
 }

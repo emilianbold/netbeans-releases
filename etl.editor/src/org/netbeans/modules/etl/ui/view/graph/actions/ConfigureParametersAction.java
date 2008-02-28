@@ -161,7 +161,9 @@ public final class ConfigureParametersAction extends CookieAction {
      *
      */
     public void showConfigPanel() {
-        JLabel panelTitle = new JLabel("Configure Deployment Parameters");
+        String nbBundle2 = mLoc.t("PRSR001: Configure Deployment Parameters");
+        JLabel panelTitle = new JLabel(Localizer.parse(nbBundle2));
+        panelTitle.setDisplayedMnemonic(Localizer.parse(nbBundle2).charAt(0));
         panelTitle.setFont(panelTitle.getFont().deriveFont(Font.BOLD));
         panelTitle.setFocusable(false);
         panelTitle.setHorizontalAlignment(SwingConstants.LEADING);
@@ -177,6 +179,7 @@ public final class ConfigureParametersAction extends CookieAction {
 
         DialogDescriptor dd = new DialogDescriptor(contentPane, "Configure Deployment Parameters");
         Dialog dlg = DialogDisplayer.getDefault().createDialog(dd);
+        dlg.getAccessibleContext().setAccessibleDescription("This is a dialog to configure Deployment Parameters");
         dlg.setSize(new Dimension(600, 450));
         dlg.setVisible(true);
         if (NotifyDescriptor.OK_OPTION.equals(dd.getValue())) {

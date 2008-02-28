@@ -70,7 +70,7 @@ public class ExtensionProperty<T> extends BaseCasaProperty<T> {
             CasaExtensibilityElement firstEE,
             CasaExtensibilityElement lastEE,
             String propertyType,
-            Class valueType,
+            Class<T> valueType,
             String propertyName,
             String displayName,
             String description) {

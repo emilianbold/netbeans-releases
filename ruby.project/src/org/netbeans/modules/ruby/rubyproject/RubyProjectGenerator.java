@@ -63,7 +63,6 @@ import org.openide.util.Mutex;
 import org.openide.util.MutexException;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileAlreadyLockedException;
-import org.openide.filesystems.FileLock;
 import org.openide.util.NbBundle;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -96,10 +95,7 @@ public class RubyProjectGenerator {
         if ( mainClass != null ) {
             createFromTemplate( mainClass, srcFolder, "Templates/Ruby/main.rb" ); // NOI18N
         }
-        DataObject rakeFileDO = createFromTemplate( "Rakefile.rb", dirFO, "Templates/Ruby/rakefile.rb" ); // NOI18N
-        if (rakeFileDO != null) {
-            rename(rakeFileDO.getPrimaryFile(), "Rakefile", null); // NOI18N
-        }
+        createFromTemplate("Rakefile", dirFO, "Templates/Ruby/Rakefile"); // NOI18N
         FileObject readme = dirFO.createData("README"); // NOI18N
         writeLines(readme, NbBundle.getMessage(RubyProjectGenerator.class, "TXT_README_Content", name));
         
@@ -336,19 +332,6 @@ public class RubyProjectGenerator {
         }
         // END SEMPLICE MODIFICATIONS
         return mt.createFromTemplate(pDf, mName);
-    }
-
-    // TODO: use FileUtils when #118088 is fixed
-    private static void rename(final FileObject rakeFileFO, final String name, final String ext) throws IOException {
-        FileLock lock = null;
-        try {
-            lock = rakeFileFO.lock();
-            rakeFileFO.rename(lock, name, ext);
-        } finally {
-            if (lock != null) {
-                lock.releaseLock();
-            }
-        }
     }
 
     // TODO: use FileUtils when #118087 is fixed

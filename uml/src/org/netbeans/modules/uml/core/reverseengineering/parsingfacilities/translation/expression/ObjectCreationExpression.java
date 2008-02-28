@@ -374,13 +374,14 @@ public class ObjectCreationExpression extends ExpressionStateHandler
             String typeName =  m_pPrimitive.getValue();
             retVal += typeName;
             retVal += super.toString();
-        }
+       }
         else if(mTemplateHandler != null)
         {
             String typeName = mTemplateHandler.toString();
             retVal += typeName;
-            retVal += super.toString();
-            
+            //lvv - 126584 removed extra call to super.toString(), see below 
+            //retVal += super.toString();
+           
             if(m_pArgumentStart != null)
             {
                 String value =  m_pArgumentStart.getValue();

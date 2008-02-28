@@ -190,8 +190,11 @@ public class Reformatter implements ReformatTask {
                                     t = t.substring(idx1 + 1);
                                     text = text.substring(idx2 + 1);
                                 }
-                                if ((idx1 = t.lastIndexOf('\n')) >= 0) //NOI18N
+                                if ((idx1 = t.lastIndexOf('\n')) >= 0) { //NOI18N
                                     t = t.substring(idx1 + 1);
+                                    if (text.trim().length() > 0)
+                                        text = ""; //NOI18N
+                                }
                                 if ((idx2 = text.lastIndexOf('\n')) >= 0) //NOI18N
                                     text = text.substring(idx1 + 1);
                                 text = text.length() > t.length() ? text.substring(t.length()) : null;
@@ -202,8 +205,22 @@ public class Reformatter implements ReformatTask {
                 start = startOffset;
             }
             if (endOffset < end) {
-                if (text != null && text.length() > 0)
-                    text = end - endOffset >= text.length() ? null : text.substring(0, text.length() - end + endOffset);
+                if (text != null && text.length() > 0) {
+                    TokenSequence<JavaTokenId> ts = controller.getTokenHierarchy().tokenSequence(JavaTokenId.language());
+                    if (ts != null) {
+                        ts.move(endOffset);
+                        if (ts.moveNext() && ts.token().id() == WHITESPACE) {
+                            String t = ts.token().text().toString();
+                            t = t.substring(endOffset - ts.offset());
+                            int idx1, idx2;
+                            while ((idx1 = t.lastIndexOf('\n')) >=0 && (idx2 = text.lastIndexOf('\n')) >= 0) { //NOI18N
+                                t = t.substring(0, idx1);
+                                text = text.substring(0, idx2);
+                            }
+                            text = text.length() > t.length() ? text.substring(0, text.length() - t.length()) : null;
+                        }
+                    }
+                }
                 end = endOffset;
             }
             if (converter != null) {
@@ -235,12 +252,15 @@ public class Reformatter implements ReformatTask {
         for (Tree t : endPath)
             reverseEndPath = reverseEndPath.prepend(t);
         TreePath path = null;
+        TreePath statementPath = null;
         while(reverseStartPath.head != null && reverseStartPath.head == reverseEndPath.head) {
             path = reverseStartPath.head instanceof CompilationUnitTree ? new TreePath((CompilationUnitTree)reverseStartPath.head) : new TreePath(path, reverseStartPath.head);
+            if (reverseStartPath.head instanceof StatementTree)
+                statementPath = path;
             reverseStartPath = reverseStartPath.tail;
             reverseEndPath = reverseEndPath.tail;
         }
-        return path;
+        return statementPath != null ? statementPath : path;
     }
     
     private class Lock implements ExtraLock {
@@ -1007,7 +1027,7 @@ public class Reformatter implements ReformatTask {
                 case SAME_LINE:
                     spaces(spaceBeforeLeftBrace ? 1 : 0);
                     if (node instanceof FakeBlock) {
-                        diffs.addFirst(new Diff(tokens.offset(), tokens.offset(), "{")); //NOI18N
+                        appendToDiff("{"); //NOI18N
                     } else {
                         accept(LBRACE);
                     }
@@ -1018,7 +1038,7 @@ public class Reformatter implements ReformatTask {
                     if (node instanceof FakeBlock) {
                         indent += indentSize;
                         String s = "{" + getNewlines(1) + getIndent();
-                        diffs.addFirst(new Diff(tokens.offset(), tokens.offset(), s)); //NOI18N
+                        appendToDiff(s); //NOI18N
                     } else {
                         accept(LBRACE);
                         indent += indentSize;
@@ -1031,7 +1051,7 @@ public class Reformatter implements ReformatTask {
                     if (node instanceof FakeBlock) {
                         indent = old + indentSize;
                         String s = "{" + getNewlines(1) + getIndent();
-                        diffs.addFirst(new Diff(tokens.offset(), tokens.offset(), s)); //NOI18N
+                        appendToDiff(s); //NOI18N
                     } else {
                         accept(LBRACE);
                         indent = old + indentSize;
@@ -1043,7 +1063,7 @@ public class Reformatter implements ReformatTask {
                     newline();
                     if (node instanceof FakeBlock) {
                         String s = "{" + getNewlines(1) + getIndent();
-                        diffs.addFirst(new Diff(tokens.offset(), tokens.offset(), s)); //NOI18N
+                        appendToDiff(s);
                     } else {
                         accept(LBRACE);
                     }
@@ -1056,11 +1076,18 @@ public class Reformatter implements ReformatTask {
                     if (stat.getKind() == Tree.Kind.LABELED_STATEMENT && cs.absoluteLabelIndent()) {
                         int o = indent;
                         indent = 0;
-                        blankLines();
+                        if (node instanceof FakeBlock) {
+                            appendToDiff(getNewlines(1) + getIndent());
+                        } else {
+                            blankLines();
+                        }
                         indent = o;
                     }
-                    if (!fieldGroup || stat.getKind() != Tree.Kind.VARIABLE)
+                    if (node instanceof FakeBlock) {
+                        appendToDiff(getNewlines(1) + getIndent());
+                    } else if (!fieldGroup || stat.getKind() != Tree.Kind.VARIABLE) {
                         blankLines();
+                    }
                     scan(stat, p);
                 }
             }
@@ -1070,7 +1097,7 @@ public class Reformatter implements ReformatTask {
             if (node instanceof FakeBlock) {
                 String s = getNewlines(1) + getIndent() + "}"; //NOI18N
                 col = indent + 1;
-                diffs.addFirst(new Diff(tokens.offset(), tokens.offset(), s));
+                appendToDiff(s);
             } else {
                 blankLines();
                 Diff diff = diffs.isEmpty() ? null : diffs.getFirst();
@@ -2485,6 +2512,16 @@ public class Reformatter implements ReformatTask {
                     diffs.removeFirst();
             }
             this.col = col;
+        }
+        
+        private void appendToDiff(String s) {
+            int offset = tokens.offset();
+            Diff d = diffs.isEmpty() ? null : diffs.getFirst();
+            if (d != null && d.getEndOffset() == offset) {
+                d.text += s;
+            } else {
+                diffs.addFirst(new Diff(offset, offset, s));
+            }    
         }
 
         private int wrapToken(CodeStyle.WrapStyle wrapStyle, int spacesCnt, JavaTokenId first, JavaTokenId... rest) {

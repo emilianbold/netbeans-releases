@@ -1,5 +1,12 @@
 # Black list for BlacklistedClassesHandler
 # Enter full qualified class names, one class name per line
 
-org.somecompany.somepackage.SomeClass
-com.somecompany.anotherpackage.AnotherClass
+# IZ 127408
+org.netbeans.modules.cnd.makeproject.api.configurations.ui.CustomizerNode
+org.netbeans.modules.cnd.makeproject.api.configurations.ui.CustomizerRootNodeProvider
+org.netbeans.modules.cnd.makeproject.api.CustomProjectActionHandlerProvider
+org.netbeans.modules.cnd.makeproject.api.DefaultProjectActionHandler
+org.netbeans.modules.cnd.makeproject.runprofiles.RunProfileNodeProvider
+org.netbeans.modules.cnd.makeproject.runprofiles.RunProfileNodeProvider$RunProfileCustomizerNode
+org.netbeans.modules.cnd.makeproject.MakeProjectModule$L
+

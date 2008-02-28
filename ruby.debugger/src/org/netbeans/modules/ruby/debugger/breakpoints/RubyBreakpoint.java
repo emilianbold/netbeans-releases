@@ -52,9 +52,6 @@ import org.rubyforge.debugcommons.RubyDebuggerException;
 import org.rubyforge.debugcommons.RubyDebuggerProxy;
 import org.rubyforge.debugcommons.model.IRubyBreakpoint;
 
-/**
- * @author Martin Krauskopf
- */
 public final class RubyBreakpoint extends Breakpoint implements IRubyBreakpoint {
     
     static final String PROP_UPDATED = "updated"; // NOI18N

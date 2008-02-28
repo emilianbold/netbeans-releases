@@ -303,8 +303,6 @@ public class Utilities {
     public static <T extends Tree> T copyComments(WorkingCopy wc, Tree from, T to) {
         TreeMaker make = wc.getTreeMaker();
         
-        GeneratorUtilities.get(wc).importComments(from, wc.getCompilationUnit());
-
         for (Comment c : wc.getTreeUtilities().getComments(from, true)) {
             make.addComment(to, c, true);
         }

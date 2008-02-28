@@ -38,28 +38,37 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.compapp.casaeditor.graph;
 
+import java.awt.Color;
+import java.awt.Dimension;
+import java.awt.Font;
+import java.awt.Graphics2D;
+import java.awt.Rectangle;
 import org.netbeans.api.visual.layout.LayoutFactory;
 import org.netbeans.api.visual.widget.*;
-import java.awt.*;
-import org.netbeans.api.visual.action.ActionFactory;
+import java.util.ArrayList;
+import java.util.List;
+import javax.swing.border.LineBorder;
 import org.netbeans.api.visual.anchor.Anchor;
 import org.netbeans.api.visual.anchor.AnchorFactory;
 import org.netbeans.api.visual.model.ObjectState;
 import org.netbeans.api.visual.model.StateModel;
+import org.netbeans.api.visual.widget.LabelWidget.Alignment;
 import org.netbeans.modules.compapp.casaeditor.graph.awt.BorderedRectangularPainter;
 import org.netbeans.modules.compapp.casaeditor.graph.awt.BorderedRectangularProvider;
 import org.netbeans.modules.compapp.casaeditor.graph.awt.InnerGlowBorderDrawer;
 import org.netbeans.modules.compapp.casaeditor.graph.awt.Painter;
 import org.netbeans.modules.compapp.casaeditor.graph.awt.PainterWidget;
+import org.netbeans.modules.compapp.casaeditor.nodes.actions.GoToSourceAction;
+import org.openide.util.actions.SystemAction;
 
 /**
  *
  * @author rdara
  */
-public class CasaNodeWidgetEngine extends CasaNodeWidget implements StateModel.Listener, CasaMinimizable {
+public class CasaNodeWidgetEngine extends CasaNodeWidget
+        implements StateModel.Listener, CasaMinimizable {
 
     public static final int ARROW_PIN_WIDTH = 25;
     public static final int MARGIN_SE_ROUNDED_RECTANGLE = ARROW_PIN_WIDTH * 77 / 100;
@@ -69,12 +78,11 @@ public class CasaNodeWidgetEngine extends CasaNodeWidget implements StateModel.L
     // to help visually separate it from other widgets that might
     // be immediately below it.
     private static final int TRAILING_VERTICAL_GAP = 4;
-
     private CasaEngineTitleWidget mTitleWidget;
     private StateModel mStateModel = new StateModel(2);
     private Anchor mNodeAnchor = new CasaNodeAnchor(this);
     private boolean mIsHighlighted;
-
+    private static final boolean DEBUG = false;
 
     /**
      * Creates a node widget.
@@ -162,13 +170,17 @@ public class CasaNodeWidgetEngine extends CasaNodeWidget implements StateModel.L
         mContainerWidget.setLayout(LayoutFactory.createVerticalFlowLayout(LayoutFactory.SerialAlignment.LEFT_TOP, PIN_VERTICAL_GAP));
         addChild(mContainerWidget);
         //getActions().addAction(ActionFactory.createCycleObjectSceneFocusAction());
+
+        if (DEBUG) {
+            setBorder(new LineBorder(Color.green));
+        }
     }
-    
+
     @Override
     protected int getErrorBadgeDeltaX() {
-        return getBounds().width - 15;        
+        return getBounds().width - 15;
     }
-    
+
     protected void notifyAdded() {
         super.notifyAdded();
 
@@ -213,6 +225,7 @@ public class CasaNodeWidgetEngine extends CasaNodeWidget implements StateModel.L
     public boolean isMinimized() {
         return mStateModel.getBooleanState();
     }
+
     protected Color getBackgroundColor() {
         return CasaFactory.getCasaCustomizer().getCOLOR_REGION_ENGINE();
     }
@@ -238,14 +251,13 @@ public class CasaNodeWidgetEngine extends CasaNodeWidget implements StateModel.L
         mTitleWidget.setTitleColor(color);
     }
 
-
     public void initializeGlassLayer(LayerWidget layer) {
     }
 
     protected void notifyStateChanged(ObjectState previousState, ObjectState state) {
         super.notifyStateChanged(previousState, state);
         if ((previousState.isSelected() != state.isSelected()) ||
-            (previousState.isFocused() != state.isFocused())){
+                (previousState.isFocused() != state.isFocused())) {
             repaint();
         }
     }
@@ -256,53 +268,74 @@ public class CasaNodeWidgetEngine extends CasaNodeWidget implements StateModel.L
      */
     public void attachPinWidget(CasaPinWidget widget) {
         // All Provides pins should come before Consumes pins.
-        addPinWithOrdering(widget);
+        //addPinWithOrdering(widget);
+        mContainerWidget.addChild(widget);
         setPinFont(getPinFont());
         setPinColor(getPinColor());
         mContainerWidget.setPreferredBounds(null);
     }
+    private List<String> groupNames = new ArrayList<String>();
 
-    /*
-     * mPinsHolderWidget is having a mTitleWidget followed by Provide and Consume pin widgets, will be ended by cushioning
-     * widget. CasaPinWidets need to be from 2nd position to the last but one position.
-     *
-     * Provide need to be added at the last of provide pins and same is true for consume pins.
-     *
-     * CshioningWidget will be added only when there is a CasaPinWidget, to avoid an empty space when there are no pins.
-     *
-     */
-    private void addPinWithOrdering(CasaPinWidget widget) {
-        if (mContainerWidget.getChildren().size() <= 1) {
-            //Add cushoningWidget only once!
-            Widget cushioningWidget = new Widget(getScene()); //mTitlewidget is already present and thus checking the size with "1"
-            cushioningWidget.setPreferredBounds(new Rectangle(0, PIN_VERTICAL_GAP));
+    public void doneAddingWidget() {
+        //Add a cushoning widget only if there are other widgets than the title.
+        if (mContainerWidget.getChildren().size() > 1) {
+            Widget cushioningWidget = new Widget(getScene());
+            cushioningWidget.setPreferredBounds(new Rectangle(2, PIN_VERTICAL_GAP));
             mContainerWidget.addChild(cushioningWidget);
-        }
-        int insertionIndex = 1; //TitleWidget is already there
-        boolean isProvides = false;
-        if (widget instanceof CasaPinWidgetEngineProvides) {
-            isProvides = true;
-        }
-        for (Widget child : mContainerWidget.getChildren()) {
-            if (child instanceof CasaPinWidget) {
-                if (child instanceof CasaPinWidgetEngineProvides) {
-                    insertionIndex++;
-                } else {
-                    if (isProvides) {
-                        break;
-                    }
-                    insertionIndex++;
-                }
-            } else {
-                //insertionIndex++;
+            if (DEBUG) {
+                cushioningWidget.setBorder(new LineBorder(Color.BLACK));
             }
         }
-        mContainerWidget.addChild(insertionIndex, widget);
+    }
+
+    class GroupTitleWidget extends Widget {
+
+        GroupTitleWidget(Scene scene, String processName) {
+            super(scene);
+
+            setLayout(RegionUtilities.createHorizontalFlowLayoutWithJustifications(LayoutFactory.SerialAlignment.CENTER, 5));
+
+            Widget leftEmptyWidget = new Widget(getScene()); //Placeholder to place MinimizeIcon inside rounded rectangle
+            leftEmptyWidget.setPreferredBounds(new Rectangle(CasaNodeWidgetEngine.ARROW_PIN_WIDTH, 2));
+            Widget rightEmptyWidget = new Widget(getScene()); //Placeholder to place MinimizeIcon inside rounded rectangle
+            rightEmptyWidget.setPreferredBounds(new Rectangle(CasaNodeWidgetEngine.ARROW_PIN_WIDTH, 2));
+
+            LabelWidget groupTitleWidget = new LabelWidget(getScene(), "<" + processName + ">");
+            groupTitleWidget.setOpaque(true);
+            groupTitleWidget.setAlignment(Alignment.RIGHT);
+            groupTitleWidget.setBackground(Color.green);
+            groupTitleWidget.setFont(getScene().getDefaultFont().deriveFont(Font.BOLD));
+
+            addChild(leftEmptyWidget);
+            addChild(groupTitleWidget);
+            addChild(rightEmptyWidget);
+
+            //getActions().addAction(SystemAction.getAction(GoToSourceAction.class));
+            
+            if (DEBUG) {
+                leftEmptyWidget.setBorder(new LineBorder(Color.red));
+                groupTitleWidget.setBorder(new LineBorder(Color.blue));
+                rightEmptyWidget.setBorder(new LineBorder(Color.red));
+            }
+        }
+    }
+
+    public void addGroupWidget(String processName) {
+
+        groupNames.add(processName);
+        Widget myWidget = new GroupTitleWidget(getScene(), processName);
+        mContainerWidget.addChild(myWidget);
+
+        mContainerWidget.setPreferredBounds(null);
     }
 
     /**
-     * Creates an extended pin anchor with an ability of reconnecting to the node anchor when the node is minimized.
-     * @param anchor the original pin anchor from which the extended anchor is created
+     * Creates an extended pin anchor with an ability of reconnecting to the 
+     * node anchor when the node is minimized.
+     * 
+     * @param anchor the original pin anchor from which the extended anchor 
+     *               is created
+     * 
      * @return the extended pin anchor
      */
     public Anchor createAnchorPin(Anchor pinAnchor) {

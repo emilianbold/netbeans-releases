@@ -81,10 +81,7 @@ derby\.log
 ^installer/cdc/customcode/lib$
 ^installer/cnd/customcode/lib$
 ^installer/coreide/customcode/lib$
-^installer/infra/build/engine/\.ant-lib$
-^installer/infra/build/products/jdk/\.ant-lib$
-^installer/infra/build/products/nb-portalpack/\.ant-lib$
-^installer/infra/build/products/tomcat/\.ant-lib$
+^installer/infra/build/nbi_all$
 ^installer/j2ee/customcode/lib$
 ^installer/jbossbundle/customcode/lib$
 ^installer/jdkbundle/customcode/lib$

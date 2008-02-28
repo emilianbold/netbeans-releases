@@ -118,6 +118,8 @@ import org.w3c.dom.Element;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 
+import static org.netbeans.modules.compapp.projects.jbi.api.JbiEndpointExtensionConstants.*;
+
 /**
  *
  * @author jqian
@@ -1955,6 +1957,19 @@ public class CasaWrapperModel extends CasaModel {
             return null;
         }
     }
+    
+//    public CasaServiceEngineServiceUnit getCasaEngineServiceUnit(
+//            final CasaEndpoint endpoint) {
+//        for (CasaServiceEngineServiceUnit sesu : getServiceEngineServiceUnits()) {
+//            for (CasaEndpointRef endpointRef : sesu.getEndpoints()) {
+//                if (endpointRef.getEndpoint().get() == endpoint) {
+//                    return getCasaEngineServiceUnit(endpointRef);                    
+//                }
+//            }
+//        }
+//        
+//        return null;
+//    }
 
     private boolean isBindingComponentEndpoint(final CasaEndpointRef endpointRef) {
         return getCasaPort(endpointRef) != null;
@@ -3405,7 +3420,6 @@ public class CasaWrapperModel extends CasaModel {
         String regex = "^(([^:/?#]+):)?(//([^/?#]*))?([^?#]*)(\\?([^#]*))?(#(.*))?"; // NOI18N        
         return uri.matches(regex);
     }
-    
     
     // CasaModel
 

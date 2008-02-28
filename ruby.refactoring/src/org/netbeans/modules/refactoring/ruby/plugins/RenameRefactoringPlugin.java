@@ -475,7 +475,7 @@ public class RenameRefactoringPlugin extends RubyRefactoringPlugin {
     
     @Override
     public Problem preCheck() {
-        if (!treePathHandle.getFileObject().isValid()) {
+        if (treePathHandle == null || treePathHandle.getFileObject() == null || !treePathHandle.getFileObject().isValid()) {
             return new Problem(true, NbBundle.getMessage(RenameRefactoringPlugin.class, "DSC_ElNotAvail")); // NOI18N
         }
         

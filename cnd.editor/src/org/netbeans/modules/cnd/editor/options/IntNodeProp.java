@@ -39,7 +39,6 @@
 
 package org.netbeans.modules.cnd.editor.options;
 
-import java.util.prefs.Preferences;
 import org.netbeans.modules.cnd.editor.api.CodeStyle;
 import org.openide.nodes.PropertySupport;
 import org.openide.util.NbBundle;
@@ -48,11 +47,11 @@ public class IntNodeProp extends PropertySupport.ReadWrite<Integer> {
 
     private final CodeStyle.Language language;
     private final String optionID;
-    private Preferences preferences;
+    private PreviewPreferences preferences;
     private int state;
 
-    public IntNodeProp(CodeStyle.Language language, Preferences preferences, String optionID) {
-        super(optionID, Integer.class, getString("LBL_" + optionID), getString("HINT_" + optionID));
+    public IntNodeProp(CodeStyle.Language language, PreviewPreferences preferences, String optionID) {
+        super(optionID, Integer.class, getString("LBL_" + optionID), getString("HINT_" + optionID)); // NOI18N
         this.language = language;
         this.optionID = optionID;
         this.preferences = preferences;
@@ -64,21 +63,22 @@ public class IntNodeProp extends PropertySupport.ReadWrite<Integer> {
     }
 
     private void init() {
-        state = getPreferences().getInt(optionID, (Integer) EditorOptions.getDefault(optionID));
+        state = getPreferences().getInt(optionID, getDefault());
+    }
+    
+    private int getDefault(){
+        return (Integer) EditorOptions.getDefault(
+                getPreferences().getLanguage(), getPreferences().getStyleId(), optionID);
     }
 
-    private Preferences getPreferences() {
-        Preferences node = preferences;
-        if (node == null) {
-            node = EditorOptions.getPreferences(language, EditorOptions.getCurrentProfileId(language));
-        }
-        return node;
+    private PreviewPreferences getPreferences() {
+        return preferences;
     }
 
     @Override
     public String getHtmlDisplayName() {
-        if (isDefaultValue()) {
-            return "<b>" + getDisplayName();
+        if (!isDefaultValue()) {
+            return "<b>" + getDisplayName(); // NOI18N
         }
         return null;
     }
@@ -94,7 +94,7 @@ public class IntNodeProp extends PropertySupport.ReadWrite<Integer> {
 
     @Override
     public void restoreDefaultValue() {
-        state = (Integer) EditorOptions.getDefault(optionID);
+        setValue(getDefault());
     }
 
     @Override
@@ -104,6 +104,6 @@ public class IntNodeProp extends PropertySupport.ReadWrite<Integer> {
 
     @Override
     public boolean isDefaultValue() {
-        return !EditorOptions.getDefault(optionID).equals(getValue());
+        return getDefault() == getValue().intValue();
     }
 }

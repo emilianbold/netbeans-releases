@@ -1873,6 +1873,7 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
 
         public CsmResultItem.FileLocalVariableResultItem createFileLocalVariableResultItem(CsmVariable var);
         public CsmResultItem.EnumeratorResultItem createFileLocalEnumeratorResultItem(CsmEnumerator enmtr, int enumtrDisplayOffset, boolean displayFQN);
+        public CsmResultItem.FileLocalFunctionResultItem createFileLocalFunctionResultItem(CsmFunction fun, CsmCompletionExpression substituteExp);
         
         public CsmResultItem.MacroResultItem createFileLocalMacroResultItem(CsmMacro mac);
         public CsmResultItem.MacroResultItem createFileIncludedProjectMacroResultItem(CsmMacro mac);
@@ -1980,7 +1981,11 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
         public CsmResultItem.FileLocalVariableResultItem createFileLocalVariableResultItem(CsmVariable var) {
             return new CsmResultItem.FileLocalVariableResultItem(var, FAKE_PRIORITY); 
         }        
-
+        
+        public CsmResultItem.FileLocalFunctionResultItem createFileLocalFunctionResultItem(CsmFunction fun, CsmCompletionExpression substituteExp) {
+            return new CsmResultItem.FileLocalFunctionResultItem(fun, substituteExp, FAKE_PRIORITY); 
+        }
+        
         public CsmResultItem.MacroResultItem createGlobalMacroResultItem(CsmMacro mac) {
             return new CsmResultItem.MacroResultItem(mac, FAKE_PRIORITY); 
         }
@@ -2011,7 +2016,7 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
         
         public CsmResultItem.NamespaceAliasResultItem createLibNamespaceAliasResultItem(CsmNamespaceAlias alias, boolean displayFullNamespacePath) {
             return createNamespaceAliasResultItem(alias, displayFullNamespacePath);
-        }        
+        }
     }
 
     ////////////////////////////////////////////////////////////////////////////
@@ -2056,7 +2061,11 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
             } else if (CsmKindUtilities.isMethodDeclaration(csmObj)) { 
                 return getCsmItemFactory().createMethodResultItem((CsmMethod)csmObj, substituteExp);
             } else if (CsmKindUtilities.isGlobalFunction(csmObj)) {
-                return getCsmItemFactory().createGlobalFunctionResultItem((CsmFunction)csmObj, substituteExp);
+                if (CsmBaseUtilities.isFileLocalFunction((CsmFunction) csmObj)) {
+                    return getCsmItemFactory().createFileLocalFunctionResultItem((CsmFunction)csmObj, substituteExp);
+                } else {
+                    return getCsmItemFactory().createGlobalFunctionResultItem((CsmFunction)csmObj, substituteExp);
+                }
             } else if (CsmKindUtilities.isGlobalVariable(csmObj)) {
                 return getCsmItemFactory().createGlobalVariableResultItem ((CsmVariable)csmObj);
             } else if (CsmKindUtilities.isFileLocalVariable(csmObj)) {
@@ -2146,6 +2155,13 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
             out.add(item);            
         }
         
+        for (CsmFunction elem : res.getFileLocalFunctions()){
+            item = factory.createFileLocalFunctionResultItem(elem, substituteExp);
+            assert item != null;
+            item.setSubstituteOffset(substituteOffset);    
+            out.add(item);            
+        }
+
         for (CsmMacro elem : res.getInFileIncludedProjectMacros()) {
             item = factory.createFileIncludedProjectMacroResultItem(elem);
             assert item != null;

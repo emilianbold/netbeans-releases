@@ -282,6 +282,7 @@ public class ETLCollaborationTopPanel extends JPanel implements ZoomSupport, Ext
     public void editDBModel() {
         String nbBundle7 = mLoc.t("PRSR001: Modify design-time database properties for this session.");
         JLabel panelTitle = new JLabel(Localizer.parse(nbBundle7));
+        panelTitle.setDisplayedMnemonic(Localizer.parse(nbBundle7).charAt(0));
         panelTitle.setFont(panelTitle.getFont().deriveFont(Font.BOLD));
         panelTitle.setFocusable(false);
         panelTitle.setHorizontalAlignment(SwingConstants.LEADING);
@@ -297,6 +298,7 @@ public class ETLCollaborationTopPanel extends JPanel implements ZoomSupport, Ext
         String nbBundle8 = mLoc.t("PRSR001: Edit Database Properties");
         DialogDescriptor dd = new DialogDescriptor(contentPane,Localizer.parse(nbBundle8));
         Dialog dlg = DialogDisplayer.getDefault().createDialog(dd);
+        dlg.getAccessibleContext().setAccessibleDescription("This is the dialog to edit database properties");
         dlg.setSize(new Dimension(600, 450));
         dlg.setVisible(true);
         if (NotifyDescriptor.OK_OPTION.equals(dd.getValue())) {

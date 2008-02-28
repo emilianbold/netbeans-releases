@@ -19,14 +19,18 @@
 
 package org.netbeans.modules.bpel.debugger.ui.breakpoint;
 
+import java.util.Vector;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.modules.bpel.debugger.api.AnnotationType;
 import org.netbeans.modules.bpel.debugger.api.EditorContextBridge;
+import org.netbeans.modules.bpel.debugger.api.Position;
 import org.netbeans.spi.viewmodel.UnknownTypeException;
 import org.netbeans.modules.bpel.debugger.api.breakpoints.BpelBreakpoint;
 import org.netbeans.modules.bpel.debugger.api.breakpoints.LineBreakpoint;
-import org.netbeans.modules.bpel.debugger.ui.editor.BpelEditorContext;
 import org.netbeans.modules.bpel.debugger.ui.util.EditorUtil;
+import org.netbeans.modules.bpel.debugger.ui.util.ModelUtil;
+import org.netbeans.spi.viewmodel.ModelEvent;
+import org.netbeans.spi.viewmodel.ModelListener;
 
 /**
  * @author Vladimir Yaroslavskiy
@@ -35,6 +39,9 @@ import org.netbeans.modules.bpel.debugger.ui.util.EditorUtil;
 public class BpelLineBreakpointView extends BpelBreakpointView {
     
     private BpelBreakpointListener myBreakpointListener;
+    private LineBreakpoint currentBreakpoint;
+    
+    private Vector<ModelListener> listeners = new Vector<ModelListener> ();
     
     protected String getName(BpelBreakpoint breakpoint) throws UnknownTypeException {
         if (!(breakpoint instanceof LineBreakpoint)) {
@@ -86,6 +93,44 @@ public class BpelLineBreakpointView extends BpelBreakpointView {
             }
         }
         
+        if (lbp.equals(currentBreakpoint)) {
+            return LINE_BREAKPOINT_HIT;
+        }
+        
         return LINE_BREAKPOINT;
+    }
+    
+    public void setCurrentPosition(final Position position) {
+        final LineBreakpoint oldBreakpoint = currentBreakpoint; 
+        
+        if (position != null) {
+            final LineBreakpoint breakpoint = myBreakpointListener.findBreakpoint(
+                    ModelUtil.getUrl(position.getProcessQName()), 
+                    position.getXpath(), 
+                    position.getLineNumber());
+            
+            currentBreakpoint = breakpoint;
+        }
+        
+        Vector v = (Vector) listeners.clone ();
+        int i, k = v.size ();
+        for (i = 0; i < k; i++) {
+            if (currentBreakpoint != null) {
+                ((ModelListener) v.get (i)).modelChanged(new ModelEvent.NodeChanged(this, currentBreakpoint));
+            }
+            if (oldBreakpoint != null) {
+                ((ModelListener) v.get (i)).modelChanged(new ModelEvent.NodeChanged(this, oldBreakpoint));
+            }
+        }
+    }
+    
+    @Override
+    public void addModelListener(ModelListener listener) {
+        listeners.add(listener);
+    }
+    
+    @Override
+    public void removeModelListener(ModelListener listener) {
+        listeners.remove(listener);
     }
 }

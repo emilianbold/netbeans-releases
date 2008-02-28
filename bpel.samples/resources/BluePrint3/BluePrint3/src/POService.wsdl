@@ -96,6 +96,6 @@
         <plink:role name="purchaseService"
         portType="tns:purchaseOrderPT"></plink:role>
     </plink:partnerLinkType>
-    <bpws:property name="corrl" type="xsd:unsignedShort"/>
+    <bpws:property name="corrl" type="sns:purchaseOrderType"/>
     <bpws:propertyAlias propertyName="tns:corrl" messageType="tns:POMessage" part="purchaseOrder"/>
 </definitions>

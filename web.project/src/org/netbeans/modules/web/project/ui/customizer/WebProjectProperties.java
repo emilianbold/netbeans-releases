@@ -44,7 +44,6 @@ package org.netbeans.modules.web.project.ui.customizer;
 import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
-import java.net.URI;
 import java.net.URL;
 import java.nio.charset.Charset;
 import java.nio.charset.UnsupportedCharsetException;
@@ -65,7 +64,7 @@ import javax.swing.text.PlainDocument;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.AntDeploymentHelper;
 import org.netbeans.modules.web.project.ProjectWebModule;
 
-import org.netbeans.modules.web.project.classpath.ClassPathSupport;
+import org.netbeans.modules.j2ee.common.project.classpath.ClassPathSupport;
 import org.netbeans.modules.web.spi.webmodule.WebModuleExtender;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.spi.project.support.ant.ui.StoreGroup;
@@ -76,6 +75,8 @@ import org.openide.util.Mutex;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.queries.FileEncodingQuery;
+import org.netbeans.modules.j2ee.common.project.ui.ClassPathUiSupport;
+import org.netbeans.modules.j2ee.common.project.ui.ProjectProperties;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
@@ -91,10 +92,9 @@ import org.netbeans.modules.web.project.WebProjectUtil;
 import org.netbeans.modules.web.project.Utils;
 import org.netbeans.modules.web.project.WebProject;
 import org.netbeans.modules.web.project.WebProjectType;
-import org.netbeans.modules.web.project.classpath.ClassPathSupport.Item;
+import org.netbeans.modules.web.project.classpath.ClassPathSupportCallbackImpl;
+
 import org.netbeans.modules.websvc.spi.webservices.WebServicesConstants;
-import org.netbeans.spi.project.libraries.support.LibrariesSupport;
-import org.openide.filesystems.FileObject;
 import org.openide.modules.SpecificationVersion;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
@@ -123,7 +123,6 @@ public class WebProjectProperties {
     public static final String DIST_DIR = "dist.dir"; //NOI18N
     public static final String DIST_WAR = "dist.war"; //NOI18N
     public static final String DIST_WAR_EAR = "dist.ear.war"; //NOI18N
-    public static final String JAVAC_CLASSPATH = "javac.classpath"; //NOI18N
     public static final String DEBUG_CLASSPATH = "debug.classpath";     //NOI18N
     public static final String JSPCOMPILATION_CLASSPATH = "jspcompilation.classpath";     //NOI18N
 
@@ -138,6 +137,7 @@ public class WebProjectProperties {
     public static final String J2EE_SERVER_INSTANCE = "j2ee.server.instance"; //NOI18N
     public static final String J2EE_SERVER_TYPE = "j2ee.server.type"; //NOI18N
     public static final String J2EE_PLATFORM_CLASSPATH = "j2ee.platform.classpath"; //NOI18N
+    public static final String J2EE_PLATFORM_SHARED = "j2ee.platform.shared"; //NOI18N
     public static final String JAVAC_SOURCE = "javac.source"; //NOI18N
     public static final String JAVAC_DEBUG = "javac.debug"; //NOI18N
     public static final String JAVAC_DEPRECATION = "javac.deprecation"; //NOI18N
@@ -152,16 +152,12 @@ public class WebProjectProperties {
     public static final String BUILD_DIR = "build.dir"; //NOI18N
     public static final String BUILD_WEB_DIR = "build.web.dir"; //NOI18N
     public static final String BUILD_GENERATED_DIR = "build.generated.dir"; //NOI18N
-    public static final String BUILD_CLASSES_DIR = "build.classes.dir"; //NOI18N
     public static final String BUILD_CLASSES_EXCLUDES = "build.classes.excludes"; //NOI18N
     public static final String BUILD_WEB_EXCLUDES = "build.web.excludes"; //NOI18N
     public static final String DIST_JAVADOC_DIR = "dist.javadoc.dir"; //NOI18N
     public static final String NO_DEPENDENCIES="no.dependencies"; //NOI18N
 
-    public static final String BUILD_TEST_CLASSES_DIR = "build.test.classes.dir"; // NOI18N
     public static final String BUILD_TEST_RESULTS_DIR = "build.test.results.dir"; // NOI18N
-    public static final String JAVAC_TEST_CLASSPATH = "javac.test.classpath"; // NOI18N
-    public static final String RUN_TEST_CLASSPATH = "run.test.classpath"; // NOI18N
     public static final String DEBUG_TEST_CLASSPATH = "debug.test.classpath"; // NOI18N
     
     public static final String JAVADOC_PRIVATE="javadoc.private"; //NOI18N
@@ -192,20 +188,6 @@ public class WebProjectProperties {
     
     public static final String ANT_DEPLOY_BUILD_SCRIPT = "nbproject/ant-deploy.xml"; // NOI18N
     
-    // Well known paths
-    public static final String[] WELL_KNOWN_PATHS = new String[] {            
-            "${" + JAVAC_CLASSPATH + "}", //NOI18N
-            "${" + JAVAC_TEST_CLASSPATH  + "}", //NOI18N
-            "${" + RUN_TEST_CLASSPATH  + "}", //NOI18N
-            "${" + BUILD_CLASSES_DIR  + "}", //NOI18N
-            "${" + BUILD_TEST_CLASSES_DIR  + "}", //NOI18N
-    };
-    
-    // Prefixes and suffixes of classpath
-    public static final String ANT_ARTIFACT_PREFIX = "${reference."; // NOI18N
-    
-    public static final String DEFAULT_LIBRARIES_FILENAME = "nblibraries.properties";
-
     public ClassPathSupport cs;
 
     //list of frameworks to add to the application
@@ -221,7 +203,7 @@ public class WebProjectProperties {
     ComboBoxModel JAVAC_SOURCE_MODEL;
 
     // CustomizerLibraries
-    ClassPathUiSupport.ClassPathTableModel JAVAC_CLASSPATH_MODEL;
+    ClassPathTableModel JAVAC_CLASSPATH_MODEL;
     DefaultListModel JAVAC_TEST_CLASSPATH_MODEL;
     DefaultListModel RUN_TEST_CLASSPATH_MODEL;
     ComboBoxModel PLATFORM_MODEL;
@@ -304,7 +286,8 @@ public class WebProjectProperties {
         this.refHelper = refHelper;
         
         this.cs = new ClassPathSupport( evaluator, refHelper, 
-                updateHelper.getAntProjectHelper(), updateHelper, WELL_KNOWN_PATHS, ANT_ARTIFACT_PREFIX);
+                updateHelper.getAntProjectHelper(), updateHelper, 
+                new ClassPathSupportCallbackImpl(updateHelper.getAntProjectHelper()));
                 
         privateGroup = new StoreGroup();
         projectGroup = new StoreGroup();
@@ -335,9 +318,9 @@ public class WebProjectProperties {
         EditableProperties projectProperties = updateHelper.getProperties( AntProjectHelper.PROJECT_PROPERTIES_PATH );                
         EditableProperties privateProperties = updateHelper.getProperties( AntProjectHelper.PRIVATE_PROPERTIES_PATH );
 
-        JAVAC_CLASSPATH_MODEL = ClassPathUiSupport.createTableModel( cs.itemsIterator( (String)projectProperties.get( JAVAC_CLASSPATH ), ClassPathSupport.TAG_WEB_MODULE_LIBRARIES) );
-        JAVAC_TEST_CLASSPATH_MODEL = ClassPathUiSupport.createListModel( cs.itemsIterator( (String)projectProperties.get( JAVAC_TEST_CLASSPATH ), null ) );
-        RUN_TEST_CLASSPATH_MODEL = ClassPathUiSupport.createListModel( cs.itemsIterator( (String)projectProperties.get( RUN_TEST_CLASSPATH ), null ) );
+        JAVAC_CLASSPATH_MODEL = ClassPathTableModel.createTableModel( cs.itemsIterator( (String)projectProperties.get( ProjectProperties.JAVAC_CLASSPATH ), ClassPathSupportCallbackImpl.TAG_WEB_MODULE_LIBRARIES) );
+        JAVAC_TEST_CLASSPATH_MODEL = ClassPathUiSupport.createListModel( cs.itemsIterator( (String)projectProperties.get( ProjectProperties.JAVAC_TEST_CLASSPATH ), null ) );
+        RUN_TEST_CLASSPATH_MODEL = ClassPathUiSupport.createListModel( cs.itemsIterator( (String)projectProperties.get( ProjectProperties.RUN_TEST_CLASSPATH ), null ) );
         PLATFORM_MODEL = PlatformUiSupport.createPlatformComboBoxModel (evaluator.getProperty(JAVA_PLATFORM));
         PLATFORM_LIST_RENDERER = PlatformUiSupport.createPlatformListCellRenderer();
         SpecificationVersion minimalSourceLevel = null;
@@ -364,7 +347,7 @@ public class WebProjectProperties {
         WAR_NAME_MODEL = projectGroup.createStringDocument( evaluator, WAR_NAME );
         BUILD_CLASSES_EXCLUDES_MODEL = projectGroup.createStringDocument( evaluator, BUILD_CLASSES_EXCLUDES );
         WAR_COMPRESS_MODEL = projectGroup.createToggleButtonModel( evaluator, WAR_COMPRESS );
-        WAR_CONTENT_ADDITIONAL_MODEL = WarIncludesUiSupport.createTableModel( cs.itemsList( (String)projectProperties.get( WAR_CONTENT_ADDITIONAL ), ClassPathSupport.TAG_WEB_MODULE__ADDITIONAL_LIBRARIES));
+        WAR_CONTENT_ADDITIONAL_MODEL = WarIncludesUiSupport.createTableModel( cs.itemsList( (String)projectProperties.get( WAR_CONTENT_ADDITIONAL ), ClassPathSupportCallbackImpl.TAG_WEB_MODULE__ADDITIONAL_LIBRARIES));
 
         // CustomizerJavadoc
         JAVADOC_PRIVATE_MODEL = projectGroup.createToggleButtonModel( evaluator, JAVADOC_PRIVATE );
@@ -485,7 +468,7 @@ public class WebProjectProperties {
         //test whether user wants to update his project to newest version
         if(needsUpdate) {
             //remove servlet24 and jsp20 libraries (they are not used in 4.1)
-            ClassPathUiSupport.ClassPathTableModel cptm = getJavaClassPathModel();
+            ClassPathTableModel cptm = getJavaClassPathModel();
 
             ArrayList cpItemsToRemove = new ArrayList();
             for(int i = 0; i < cptm.getRowCount(); i++) {
@@ -516,10 +499,10 @@ public class WebProjectProperties {
         }
         
         // Encode all paths (this may change the project properties)
-        String[] javac_cp = cs.encodeToStrings( ClassPathUiSupport.getIterator( JAVAC_CLASSPATH_MODEL.getDefaultListModel() ), ClassPathSupport.TAG_WEB_MODULE_LIBRARIES  );
-        String[] javac_test_cp = cs.encodeToStrings( ClassPathUiSupport.getIterator( JAVAC_TEST_CLASSPATH_MODEL ), null );
-        String[] run_test_cp = cs.encodeToStrings( ClassPathUiSupport.getIterator( RUN_TEST_CLASSPATH_MODEL ), null );
-        String[] war_includes = cs.encodeToStrings( WarIncludesUiSupport.getIterator( WAR_CONTENT_ADDITIONAL_MODEL ), ClassPathSupport.TAG_WEB_MODULE__ADDITIONAL_LIBRARIES  );
+        String[] javac_cp = cs.encodeToStrings( ClassPathUiSupport.getList( JAVAC_CLASSPATH_MODEL.getDefaultListModel() ), ClassPathSupportCallbackImpl.TAG_WEB_MODULE_LIBRARIES  );
+        String[] javac_test_cp = cs.encodeToStrings( ClassPathUiSupport.getList( JAVAC_TEST_CLASSPATH_MODEL ), null );
+        String[] run_test_cp = cs.encodeToStrings( ClassPathUiSupport.getList( RUN_TEST_CLASSPATH_MODEL ), null );
+        String[] war_includes = cs.encodeToStrings( WarIncludesUiSupport.getList( WAR_CONTENT_ADDITIONAL_MODEL ), ClassPathSupportCallbackImpl.TAG_WEB_MODULE__ADDITIONAL_LIBRARIES  );
 
         // Store standard properties
         EditableProperties projectProperties = updateHelper.getProperties( AntProjectHelper.PROJECT_PROPERTIES_PATH );        
@@ -555,9 +538,9 @@ public class WebProjectProperties {
         }
         
         // Save all paths
-        projectProperties.setProperty( JAVAC_CLASSPATH, javac_cp );
-        projectProperties.setProperty( JAVAC_TEST_CLASSPATH, javac_test_cp );
-        projectProperties.setProperty( RUN_TEST_CLASSPATH, run_test_cp );
+        projectProperties.setProperty( ProjectProperties.JAVAC_CLASSPATH, javac_cp );
+        projectProperties.setProperty( ProjectProperties.JAVAC_TEST_CLASSPATH, javac_test_cp );
+        projectProperties.setProperty( ProjectProperties.RUN_TEST_CLASSPATH, run_test_cp );
         
         projectProperties.setProperty( WAR_CONTENT_ADDITIONAL, war_includes );
         
@@ -596,7 +579,7 @@ public class WebProjectProperties {
         libs.addAll(ClassPathUiSupport.getList(JAVAC_CLASSPATH_MODEL.getDefaultListModel()));
         libs.addAll(WarIncludesUiSupport.getList(WAR_CONTENT_ADDITIONAL_MODEL));
         
-        storeLibrariesLocations (libs.iterator(), projectProperties, project.getProjectDirectory());
+        ProjectProperties.storeLibrariesLocations (libs.iterator(), projectProperties, project.getProjectDirectory());
         
         // Store the property changes into the project
         updateHelper.putProperties( AntProjectHelper.PROJECT_PROPERTIES_PATH, projectProperties );
@@ -636,17 +619,6 @@ public class WebProjectProperties {
     
     /** XXX to be deleted when introduced in AntPropertyHeleper API
      */    
-    public static String getAntPropertyName( String property ) {
-        if ( property != null && 
-             property.startsWith( "${" ) && // NOI18N
-             property.endsWith( "}" ) ) { // NOI18N
-            return property.substring( 2, property.length() - 1 ); 
-        }
-        else {
-            return property;
-        }
-    }
-    
     static boolean isAntProperty (String string) {
         return string != null && string.startsWith( "${" ) && string.endsWith( "}" ); //NOI18N
     }
@@ -659,9 +631,9 @@ public class WebProjectProperties {
         // Create a set of old and new artifacts.
         Set oldArtifacts = new HashSet();
         EditableProperties projectProperties = updateHelper.getProperties( AntProjectHelper.PROJECT_PROPERTIES_PATH );        
-        oldArtifacts.addAll( cs.itemsList( (String)projectProperties.get( JAVAC_CLASSPATH ), ClassPathSupport.Item.PATH_IN_WAR_LIB ) );
-        oldArtifacts.addAll( cs.itemsList( (String)projectProperties.get( JAVAC_TEST_CLASSPATH ), null ) );
-        oldArtifacts.addAll( cs.itemsList( (String)projectProperties.get( RUN_TEST_CLASSPATH ), null ) );
+        oldArtifacts.addAll( cs.itemsList( (String)projectProperties.get( ProjectProperties.JAVAC_CLASSPATH ), ClassPathSupportCallbackImpl.PATH_IN_WAR_LIB ) );
+        oldArtifacts.addAll( cs.itemsList( (String)projectProperties.get( ProjectProperties.JAVAC_TEST_CLASSPATH ), null ) );
+        oldArtifacts.addAll( cs.itemsList( (String)projectProperties.get( ProjectProperties.RUN_TEST_CLASSPATH ), null ) );
 
         Set newArtifacts = new HashSet();
         newArtifacts.addAll( ClassPathUiSupport.getList( JAVAC_CLASSPATH_MODEL.getDefaultListModel() ) );
@@ -801,8 +773,10 @@ public class WebProjectProperties {
             return;
         }
         ((WebProject) project).registerJ2eePlatformListener(j2eePlatform);
-        String classpath = Utils.toClasspathString(j2eePlatform.getClasspathEntries());
-        privateProps.setProperty(J2EE_PLATFORM_CLASSPATH, classpath);
+        if(!Boolean.parseBoolean(projectProps.getProperty(WebProjectProperties.J2EE_PLATFORM_SHARED))) {
+            String classpath = Utils.toClasspathString(j2eePlatform.getClasspathEntries());
+            privateProps.setProperty(J2EE_PLATFORM_CLASSPATH, classpath);
+        }
 
         // update j2ee.platform.wscompile.classpath
         if (j2eePlatform.isToolSupported(J2eePlatform.TOOL_WSCOMPILE)) {
@@ -895,122 +869,8 @@ public class WebProjectProperties {
         serverId = privateProps.getProperty(J2EE_SERVER_INSTANCE);
     }
     
-    public ClassPathUiSupport.ClassPathTableModel getJavaClassPathModel() {
+    public ClassPathTableModel getJavaClassPathModel() {
         return JAVAC_CLASSPATH_MODEL;
-    }
-    
-    /** Store locations of libraries in the classpath param that have more the one
-     * file into the properties in the following format:
-     * 
-     * <ul>
-     * <li>libs.foo.classpath.libdir.1=C:/foo
-     * <li>libs.foo.classpath.libdirs=1
-     * <li>libs.foo.classpath.libfile.1=C:/bar/a.jar
-     * <li>libs.foo.classpath.libfile.2=C:/bar/b.jar
-     * <li>libs.foo.classpath.libfiles=1
-     * </ul>
-     * This is needed for the Ant copy task as it cannot copy more the one file
-     * and it needs different handling for files and directories.
-     * <br>
-     * It removes all properties that match this format that were in the {@link #properties}
-     * but are not in the {@link #classpath}.
-     */
-    public static void storeLibrariesLocations (Iterator<Item> classpath, EditableProperties privateProps, FileObject projectFolder) {
-        ArrayList exLibs = new ArrayList ();
-        Iterator propKeys = privateProps.keySet().iterator();
-        while (propKeys.hasNext()) {
-            String key = (String) propKeys.next();
-            if (key.endsWith(".libdirs") || key.endsWith(".libfiles") || //NOI18N
-                    (key.indexOf(".libdir.") > 0) || (key.indexOf(".libfile.") > 0)) { //NOI18N
-                exLibs.add(key);
-            }
-        }
-        while (classpath.hasNext()) {
-            ClassPathSupport.Item item = (Item)classpath.next();
-            ArrayList<String> files = new ArrayList<String>();
-            ArrayList<String> dirs = new ArrayList<String>();
-            getFilesForItem (item, files, dirs, projectFolder);
-            String key;
-            if (files.size() > 1 || (files.size()>0 && dirs.size()>0)) {
-                String ref = item.getType() == ClassPathSupport.Item.TYPE_LIBRARY ? item.getRaw() : item.getReference();
-                for (int i = 0; i < files.size(); i++) {
-                    String path = files.get(i);
-                    key = getAntPropertyName(ref)+".libfile." + (i+1); //NOI18N
-                    privateProps.setProperty (key, "" + path); //NOI18N
-                    exLibs.remove(key);
-                }
-            }
-            if (dirs.size() > 1 || (files.size()>0 && dirs.size()>0)) {
-                String ref = item.getType() == ClassPathSupport.Item.TYPE_LIBRARY ? item.getRaw() : item.getReference();
-                for (int i = 0; i < dirs.size(); i++) {
-                    String path = dirs.get(i);
-                    key = getAntPropertyName(ref)+".libdir." + (i+1); //NOI18N
-                    privateProps.setProperty (key, "" + path); //NOI18N
-                    exLibs.remove(key);
-                }
-            }
-        }
-        Iterator unused = exLibs.iterator();
-        while (unused.hasNext()) {
-            privateProps.remove(unused.next());
-        }
-    }
-    
-    public static final void getFilesForItem (ClassPathSupport.Item item, List<String> files, List<String> dirs, FileObject projectFolder) {
-        if (item.isBroken()) {
-            return ;
-        }
-        if (item.getType() == ClassPathSupport.Item.TYPE_LIBRARY) {
-            List<URL> roots = item.getLibrary().getContent("classpath");  //NOI18N
-            for (URL rootUrl : roots) {
-                FileObject root = LibrariesSupport.resolveLibraryEntryFileObject(item.getLibrary().getManager().getLocation(), rootUrl);
-                
-                //file inside library is broken
-                if (root == null)
-                    continue;
-                
-                if ("jar".equals(rootUrl.getProtocol())) {  //NOI18N
-                    root = FileUtil.getArchiveFile (root);
-                }
-                File f = FileUtil.toFile(root);
-                String path;
-                // if global library use absolute path otherwise relative
-                if (item.getLibrary().getManager().getLocation() == null) {
-                    path = f.getPath();
-                } else {
-                    path = PropertyUtils.relativizeFile(FileUtil.toFile(projectFolder), FileUtil.toFile(root));
-                }
-                if (f != null) {
-                    if (f.isFile()) {
-                        files.add(path); 
-                    } else {
-                        dirs.add(path);
-                    }
-                }
-            }
-        }
-        if (item.getType() == ClassPathSupport.Item.TYPE_JAR) {
-            File root = item.getResolvedFile();
-            if (root != null) {
-                if (root.isFile()) {
-                    files.add(item.getFilePath()); 
-                } else {
-                    dirs.add(item.getFilePath());
-                }
-            }
-        }
-        if (item.getType() == ClassPathSupport.Item.TYPE_ARTIFACT) {
-            String artifactFolder = item.getArtifact().getScriptLocation().getParent();
-            URI roots[] = item.getArtifact().getArtifactLocations();
-            for (int i = 0; i < roots.length; i++) {
-                String root = artifactFolder + File.separator + roots [i];
-                if (root.endsWith(File.separator)) {
-                    dirs.add(root);
-                } else {
-                    files.add(root);
-                }
-            }
-        }
     }
     
     public void setNewExtenders(List extenders) {

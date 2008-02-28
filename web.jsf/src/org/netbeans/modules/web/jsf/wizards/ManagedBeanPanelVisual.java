@@ -65,7 +65,7 @@ public class ManagedBeanPanelVisual extends javax.swing.JPanel implements HelpCt
         
         WebModule wm = WebModule.getWebModule(proj.getProjectDirectory());
         if (wm != null){
-            String[] configFiles = JSFConfigUtilities.getConfigFiles(wm.getDeploymentDescriptor());
+            String[] configFiles = JSFConfigUtilities.getConfigFiles(wm);
             jComboBoxConfigFile.setModel(new javax.swing.DefaultComboBoxModel(configFiles));
         }
         ManagedBean.Scope[] scopes = ManagedBean.Scope.values();

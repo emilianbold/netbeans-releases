@@ -619,7 +619,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
         }
     
         public CompletionTask createDocumentationTask() {
-            return JavaCompletionProvider.createDocTask(ElementHandle.from(typeHandle));
+            return typeHandle.getKind() == TypeKind.DECLARED ? JavaCompletionProvider.createDocTask(ElementHandle.from(typeHandle)) : null;
         }
 
         protected ImageIcon getIcon(){

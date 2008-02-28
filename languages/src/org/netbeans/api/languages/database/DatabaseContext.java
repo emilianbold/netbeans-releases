@@ -333,9 +333,9 @@ public class DatabaseContext extends DatabaseItem {
         DatabaseContext result = null;
         if (contexts != null) {
             /** search children first */
-            for (DatabaseContext context : contexts) {
-                if (context.contains(offset)) {
-                    result = context.getClosestContext(offset);
+            for (DatabaseContext child : contexts) {
+                if (child.contains(offset)) {
+                    result = child.getClosestContext(offset);
 		    break;
 		}
 	    }  
@@ -411,23 +411,30 @@ public class DatabaseContext extends DatabaseItem {
     
     public <T extends DatabaseDefinition> T getEnclosingDefinition(Class<T> clazz, int offset) {
         DatabaseContext context = getClosestContext(offset);
-        return context.getEnclosingDefinition(clazz);
+        return context.getEnclosingDefinitionRecursively(clazz, offset);
+    }
+    
+    public <T extends DatabaseDefinition> T getEnclosingDefinition(Class<T> clazz) {
+        return getEnclosingDefinitionRecursively(clazz, getOffset());
     }
 
-    public <T extends DatabaseDefinition> T getEnclosingDefinition(Class<T> clazz) {
+    private <T extends DatabaseDefinition> T getEnclosingDefinitionRecursively(Class<T> clazz, final int offset) {
         /** We are searching enclosing definition, so from it's parent context */
         DatabaseContext parentCtx = getParent();
         if (parentCtx != null) {
-            for (DatabaseDefinition dfn : parentCtx.getDefinitions()) {
-                if (clazz.isInstance(dfn)) {
-                    /** There should be only one this type of enclosing */
-                    return (T) dfn;
+                for (DatabaseDefinition dfn : parentCtx.getDefinitions()) {
+                    if (clazz.isInstance(dfn)) {
+                        DatabaseContext dfnContext = dfn.getContext(); 
+                        if (dfnContext != null && dfnContext.contains(offset)) {
+                            return (T) dfn;          
+                        }
+                    }                    
                 }
-            }
-            return parentCtx.getEnclosingDefinition(clazz);
+            return parentCtx.getEnclosingDefinitionRecursively(clazz, offset);
         } else {
             return null;
         }
+        
     }
 
     

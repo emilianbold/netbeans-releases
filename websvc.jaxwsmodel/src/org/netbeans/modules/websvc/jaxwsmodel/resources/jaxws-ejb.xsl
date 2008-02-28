@@ -84,6 +84,7 @@ made subject to such option by the copyright holder.
             <xsl:for-each select="/jaxws:jax-ws/jaxws:services/jaxws:service">
                 <xsl:if test="not(jaxws:wsdl-url)">
                     <xsl:variable name="wsname" select="@name"/>
+                    <mkdir dir="${{build.generated.dir}}/wsgen/service/{$wsname}/"/>
                     <xsl:variable name="seiclass" select="jaxws:implementation-class"/>
                     <target name="wsgen-{$wsname}" depends="wsgen-init, -do-compile">
                     <xsl:choose>
@@ -92,7 +93,7 @@ made subject to such option by the copyright holder.
                                  xendorsed="true"
                                  fork="true"
                                  destdir="${{build.generated.dir}}/wsgen/binaries"
-                                 sourcedestdir="${{build.generated.dir}}/wsgen/service"
+                                 sourcedestdir="${{build.generated.dir}}/wsgen/service/{$wsname}/"
                                  resourcedestdir="${{build.generated.dir}}/wsgen/service"
                                  keep="false"
                                  genwsdl="true"
@@ -106,7 +107,7 @@ made subject to such option by the copyright holder.
                                  fork="true"
                                  destdir="${{build.generated.dir}}/wsgen/binaries"
                                  sourcedestdir="${{build.generated.dir}}/wsgen/service"
-                                 resourcedestdir="${{build.generated.dir}}/wsgen/service"
+                                 resourcedestdir="${{build.generated.dir}}/wsgen/service/{$wsname}/"
                                  keep="false"
                                  genwsdl="true"
                                  sei="{$seiclass}">

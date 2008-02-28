@@ -1,5 +1,0 @@
-    x.send(:define_method, :url_for) {|x| x}
-                                       -
-HINT:Block variable aliases local variable - Unintentional side effect?
-FIX:Rename the block variable
-FIX:Rename the local variable

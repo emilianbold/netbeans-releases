@@ -55,6 +55,7 @@ import javax.swing.SwingUtilities;
 import org.netbeans.modules.websvc.manager.WebServiceManager;
 import org.netbeans.modules.websvc.manager.WebServicePersistenceManager;
 import org.netbeans.modules.websvc.manager.ui.AddWebServiceDlg;
+import org.netbeans.modules.websvc.saas.spi.websvcmgr.WsdlData;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileAttributeEvent;
@@ -401,14 +402,18 @@ public class WebServiceListModel {
         return initialized;
     }
     
-    public Task addWebService(final String wsdl, final String packageName, final String groupId) {
+    public WebServiceData addWebService(final String wsdl, final String packageName, final String groupId) {
+        final WebServiceData wsData = new WebServiceData(wsdl, groupId);
+        wsData.setPackageName(packageName);
+        wsData.setResolved(false);
+
         // Run the add W/S asynchronously
         Runnable addWsRunnable = new Runnable() {
             public void run() {
                 boolean addError = false;
                 Exception exc = null;
                 try {
-                    WebServiceManager.getInstance().addWebService(wsdl, packageName, groupId);
+                    WebServiceManager.getInstance().addWebService(wsData, true);
                 } catch (IOException ex) {
                     addError = true;
                     exc = ex;
@@ -435,9 +440,8 @@ public class WebServiceListModel {
                 }
             }
         };
-        
-        return WebServiceManager.getInstance().getRequestProcessor().post(addWsRunnable);
-        
+        WebServiceManager.getInstance().getRequestProcessor().post(addWsRunnable);
+        return wsData;
     }
 
     private static final class RestFolderListener implements FileChangeListener {

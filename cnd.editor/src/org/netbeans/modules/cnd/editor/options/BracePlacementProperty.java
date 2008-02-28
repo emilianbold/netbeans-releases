@@ -41,7 +41,6 @@ package org.netbeans.modules.cnd.editor.options;
 
 import java.beans.PropertyEditor;
 import java.beans.PropertyEditorSupport;
-import java.util.prefs.Preferences;
 import org.netbeans.modules.cnd.editor.api.CodeStyle;
 import org.openide.nodes.PropertySupport;
 import org.openide.util.NbBundle;
@@ -54,12 +53,12 @@ public class BracePlacementProperty extends PropertySupport.ReadWrite<CodeStyle.
 
     private final CodeStyle.Language language;
     private final String optionID;
-    private Preferences preferences;
+    private PreviewPreferences preferences;
     private CodeStyle.BracePlacement state;
     private PropertyEditor editor;
 
-    public BracePlacementProperty(CodeStyle.Language language, Preferences preferences, String optionID) {
-        super(optionID, CodeStyle.BracePlacement.class, getString("LBL_"+optionID), getString("HINT_"+optionID));
+    public BracePlacementProperty(CodeStyle.Language language, PreviewPreferences preferences, String optionID) {
+        super(optionID, CodeStyle.BracePlacement.class, getString("LBL_"+optionID), getString("HINT_"+optionID)); // NOI18N
         this.language = language;
         this.optionID = optionID;
         this.preferences = preferences;
@@ -71,21 +70,22 @@ public class BracePlacementProperty extends PropertySupport.ReadWrite<CodeStyle.
     }
 
     private void init() {
-        state = CodeStyle.BracePlacement.valueOf(getPreferences().get(optionID, (String) EditorOptions.getDefault(optionID)));
+        state = CodeStyle.BracePlacement.valueOf(getPreferences().get(optionID,  getDefault().name()));
     }
 
-    private Preferences getPreferences() {
-        Preferences node = preferences;
-        if (node == null) {
-            node = EditorOptions.getPreferences(language, EditorOptions.getCurrentProfileId(language));
-        }
-        return node;
+    private CodeStyle.BracePlacement getDefault(){
+        return CodeStyle.BracePlacement.valueOf((String) EditorOptions.getDefault(
+                getPreferences().getLanguage(), getPreferences().getStyleId(), optionID));
+    }
+
+    private PreviewPreferences getPreferences() {
+        return preferences;
     }
 
     @Override
     public String getHtmlDisplayName() {
-        if (isDefaultValue()) {
-            return "<b>" + getDisplayName();
+        if (!isDefaultValue()) {
+            return "<b>" + getDisplayName(); // NOI18N
         }
         return null;
     }
@@ -101,7 +101,7 @@ public class BracePlacementProperty extends PropertySupport.ReadWrite<CodeStyle.
 
     @Override
     public void restoreDefaultValue() {
-        state = CodeStyle.BracePlacement.valueOf((String) EditorOptions.getDefault(optionID));
+        setValue(getDefault());
     }
 
     @Override
@@ -111,7 +111,7 @@ public class BracePlacementProperty extends PropertySupport.ReadWrite<CodeStyle.
 
     @Override
     public boolean isDefaultValue() {
-        return !CodeStyle.BracePlacement.valueOf((String) EditorOptions.getDefault(optionID)).equals(getValue());
+        return getDefault().equals(getValue());
     }
 
     @Override
@@ -140,7 +140,7 @@ public class BracePlacementProperty extends PropertySupport.ReadWrite<CodeStyle.
         @Override
         public String getAsText() {
             Object o = getValue();
-            return o != null ? o.toString() : "";
+            return o != null ? o.toString() : ""; // NOI18N
         }
 
         @Override

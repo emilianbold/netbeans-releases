@@ -92,7 +92,7 @@
         <property name="env.BUILD_NUMBER" value=""/>
 
         <echo file="${build.number}" message="sierra hudson: ${env.BUILD_NUMBER}${line.separator}" append="true"/>
-        <echo file="${build.number}" message=" sierra build: ${long_stamp}${line.separator}" append="true"/>
+        <echo file="${build.number}" message="sierra build: ${long_stamp}${line.separator}" append="true"/>
 
         <chmod file="${home}/nbbuild/netbeans/bin/netbeans" perm="ugo+rx"/>
     </target>
@@ -379,8 +379,8 @@
     <target name="build" depends="build-fcs,build-dev"/>
     <target name="clean" depends="clean-fcs,clean-dev"/>
 
-    <target name="build-fcs" depends="build-print,build-libs,build-compapp,build-soa,build-bpel, build-dataintegrator, build-xslt"/>
-    <target name="clean-fcs" depends="build-print,clean-libs,clean-compapp,clean-soa,clean-bpel, clean-dataintegrator, clean-xslt"/>
+    <target name="build-fcs" depends="build-print,build-libs,build-compapp,build-soa,build-bpel, build-etl, build-xslt"/>
+    <target name="clean-fcs" depends="build-print,clean-libs,clean-compapp,clean-soa,clean-bpel, clean-etl, clean-xslt"/>
 
     <target name="build-dev" depends="build-iep,build-sql,build-wsdlextensions"/>
     <target name="clean-dev" depends="clean-iep,clean-sql,clean-wsdlextensions"/>
@@ -391,7 +391,6 @@
     <target name="do-print">
         <subant target="${action}" inheritAll="false">
             <buildpath location="${home}/print"/>
-            <buildpath location="${home}/xml.xpath.ext"/> <!-- todo r -->
         </subant>
     </target>
 
@@ -458,10 +457,10 @@
         </subant>
     </target>
 
-    <!-- dataintegrator -->
-    <target name="build-dataintegrator"><antcall target="do-dataintegrator"><param name="action" value="netbeans"/></antcall></target>
-    <target name="clean-dataintegrator"><antcall target="do-dataintegrator"><param name="action" value="clean"/></antcall></target>
-    <target name="do-dataintegrator">
+    <!-- etl -->
+    <target name="build-etl"><antcall target="do-etl"><param name="action" value="netbeans"/></antcall></target>
+    <target name="clean-etl"><antcall target="do-etl"><param name="action" value="clean"/></antcall></target>
+    <target name="do-etl">
         <subant target="${action}" inheritAll="false">
             <buildpath location="${home}/etl.editor/build.xml"/>
             <buildpath location="${home}/etl.project/build.xml"/>

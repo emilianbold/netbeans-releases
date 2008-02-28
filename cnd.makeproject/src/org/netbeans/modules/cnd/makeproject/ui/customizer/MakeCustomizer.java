@@ -598,8 +598,12 @@ public class MakeCustomizer extends javax.swing.JPanel implements HelpCtx.Provid
         descriptions.add(createBuildDescription(project));
         // Add customizer nodes
         if (includeRunDebugDescriptions) {
-            descriptions.add(getAuxDescription("Run")); // NOI18N
-            descriptions.add(getAuxDescription("Debug")); // NOI18N
+            if (!descriptions.addAll(CustomizerRootNodeProvider.getInstance().getCustomizerNodes("Run"))) { // NOI18N
+                descriptions.add(createNotFoundNode("Run")); // NOI18N
+            }
+            if (!descriptions.addAll(CustomizerRootNodeProvider.getInstance().getCustomizerNodes("Debug"))) { // NOI18N
+                descriptions.add(createNotFoundNode("Debug")); // NOI18N
+            }
     //      descriptions.addAll(CustomizerRootNodeProvider.getInstance().getCustomizerNodes(false));
             CustomizerNode advanced = getAdvancedCutomizerNode(descriptions);
             if (advanced != null)
@@ -651,14 +655,8 @@ public class MakeCustomizer extends javax.swing.JPanel implements HelpCtx.Provid
                 (CustomizerNode[])advancedNodes.toArray(new CustomizerNode[advancedNodes.size()]));
     }
     
-    private CustomizerNode getAuxDescription(String nodeName) {
-        CustomizerNode node = CustomizerRootNodeProvider.getInstance().getCustomizerNode(nodeName);
-        if (node != null)
-            return node;
-        return new CustomizerNode(
-                nodeName, // NOI18N
-                nodeName + " - not found", // NOI18N
-                null);
+    private CustomizerNode createNotFoundNode(String nodeName) {
+        return new CustomizerNode(nodeName, nodeName + " - not found", null); // NOI18N
     }
     
     private Node createRootNodeItem(Project project, Item item) {

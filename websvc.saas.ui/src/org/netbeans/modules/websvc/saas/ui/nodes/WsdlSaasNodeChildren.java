@@ -61,7 +61,8 @@ public class WsdlSaasNodeChildren extends SaasNodeChildren<Object> {
     }
 
     protected void updateKeys() {
-        if (getSaas().getState() == Saas.State.READY) {
+        if (getSaas().getState() == Saas.State.RESOLVED ||
+            getSaas().getState() == Saas.State.READY) {
             setKeys(getSaas().getPortsOrMethods());
         } else {
             setKeys(WAIT_HOLDER);

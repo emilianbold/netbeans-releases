@@ -93,12 +93,12 @@
                 <soap:body parts="inventoryPart" use="literal"/>
             </input>
         </operation>
-    </binding>    
+    </binding>
     
     <service name="inventoryCallbackService">
         <port name="inventoryCallbackServicePort"
               binding="tns:inventoryCallbackBinding">
-            <soap:address location="http://localhost:12100/wsdl/inventory/inventoryCallbackServiceLocation/bp2"/>                  
+            <soap:address location="http://localhost:12100/wsdl/inventory/inventoryCallbackServiceLocation/bp2"/>
         </port>
     </service>
     
@@ -115,14 +115,14 @@
     <vprop:propertyAlias propertyName="tns:orderID"
                         messageType="tns:POMessage"
                         part="purchaseOrder">
-        <vprop:query>/po:purchaseOrder/po:orderId</vprop:query>                        
+        <vprop:query>/po:purchaseOrder/po:orderId</vprop:query>
     </vprop:propertyAlias>
     
     <vprop:propertyAlias propertyName="tns:orderID"
                         messageType="tns:InventoryMessage"
                         part="inventoryPart">
-        <vprop:query>/inv:inventory/inv:orderId</vprop:query>                            
-    </vprop:propertyAlias>    
+        <vprop:query>/inv:inventory/inv:orderId</vprop:query>
+    </vprop:propertyAlias>
     
     <plink:partnerLinkType name="inventoryRequestingLT">
         <plink:role portType="tns:inventoryPortType"

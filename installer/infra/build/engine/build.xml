@@ -71,4 +71,45 @@
             For more details, please see the source of this build script.
         </echo>
     </target>
+    <target name=".post-checkout-copy" depends="copy-reglib,copy-branding-kit"/>
+
+    <target name="copy-reglib">
+	<mkdir dir="${work.dir}/reglib"/>
+
+        <!-- copy the sources, applying the selected filters -->  
+        <copy todir="${work.dir}/reglib" verbose="true">
+            <fileset dir="${sources.dir}/reglib">
+                <include name="src/**/*.*"/>
+                <exclude name="**/nbproject/private/*.*"/>
+                <exclude name="build/**/*.*"/>
+                <exclude name="dist/**/*.*"/>
+                <exclude name="**/CVS"/>
+                <exclude name="**/.cvsignore"/>
+            </fileset>
+        </copy>
+        <!-- copy the translatedfiles for the sources, applying the selected filters -->
+        <copy todir="${translatedfiles.dir}" verbose="true" failonerror="false">
+            <fileset dir="${sources.dir}/${translatedfiles.module}/${translatedfiles.path}">
+                <include name="**/*.*"/>
+                <exclude name="**/nbproject/private/*.*"/>
+                <exclude name="build/**/*.*"/>
+                <exclude name="dist/**/*.*"/>
+                <exclude name="**/CVS"/>
+                <exclude name="**/.cvsignore"/>
+            </fileset>
+        </copy>
+    </target>
+
+    <target name="copy-branding-kit" if="netbeans.engine.branding.kit">
+        <copy todir="${work.dir}/${netbeans.module.name}/${cvs.path}" verbose="true" overwrite="true">
+            <fileset dir="${sources.dir}/${netbeans.module.name}/${cvs.path}/branding/${netbeans.engine.branding.kit}">
+                <include name="**/*.*"/>
+                <exclude name="**/nbproject/private/*.*"/>
+                <exclude name="build/**/*.*"/>
+                <exclude name="dist/**/*.*"/>
+                <exclude name="**/CVS"/>
+                <exclude name="**/.cvsignore"/>
+            </fileset>
+        </copy>
+    </target>
 </project>
