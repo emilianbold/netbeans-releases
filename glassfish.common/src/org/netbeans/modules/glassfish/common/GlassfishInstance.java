@@ -51,10 +51,12 @@ import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JComponent;
+import javax.swing.event.ChangeListener;
 import org.netbeans.modules.glassfish.common.nodes.Hk2InstanceNode;
 import org.netbeans.api.server.ServerInstance;
 import org.netbeans.spi.glassfish.GlassfishModuleFactory;
 import org.netbeans.spi.glassfish.GlassfishModule.OperationState;
+import org.netbeans.spi.glassfish.GlassfishModule.ServerState;
 import org.netbeans.spi.server.ServerInstanceFactory;
 import org.netbeans.spi.server.ServerInstanceImplementation;
 import org.openide.nodes.Node;
@@ -178,6 +180,18 @@ public class GlassfishInstance implements ServerInstanceImplementation {
         return lookup;
     }
     
+    public void addChangeListener(final ChangeListener listener) {
+        commonSupport.addChangeListener(listener);
+    }
+
+    public void removeChangeListener(final ChangeListener listener) {
+        commonSupport.removeChangeListener(listener);
+    }
+    
+    public ServerState getServerState() {
+        return commonSupport.getServerState();
+    }
+    
     // ------------------------------------------------------------------------
     // ServerInstance interface implementation
     // ------------------------------------------------------------------------
@@ -191,12 +205,12 @@ public class GlassfishInstance implements ServerInstanceImplementation {
 
     public Node getFullNode() {
         Logger.getLogger("glassfish").log(Level.INFO, "Creating GF Instance node [FULL]");
-        return new Hk2InstanceNode(lookup, true);
+        return new Hk2InstanceNode(this, true);
     }
 
     public Node getBasicNode() {
         Logger.getLogger("glassfish").log(Level.INFO, "Creating GF Instance node [BASIC]");
-        return new Hk2InstanceNode(lookup, false);
+        return new Hk2InstanceNode(this, false);
     }
     
     public JComponent getCustomizer() {
