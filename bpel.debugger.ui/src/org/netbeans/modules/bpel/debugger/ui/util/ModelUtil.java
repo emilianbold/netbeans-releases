@@ -272,6 +272,10 @@ public final class ModelUtil {
     public static int getLineNumber(
             final UniqueId bpelEntityId) {
         
+        if (bpelEntityId == null) {
+            return -1;
+        }
+        
         final BpelModel model = bpelEntityId.getModel();
         
         try {

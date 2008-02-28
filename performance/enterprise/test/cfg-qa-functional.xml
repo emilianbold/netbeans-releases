@@ -78,6 +78,7 @@ made subject to such option by the copyright holder.
             <patternset>
                 <include name="gui/EPMeasureActions3.class"/>
                 <include name="gui/EPMeasureActions3.class/Schema Navigator Schema View" expectedFail="128585"/>
+                <include name="gui/EPMeasureActions3.class/Schema Navigator Schema View mode" expectedFail="128596"/>
             </patternset>
         </testset>
     </testbag>
