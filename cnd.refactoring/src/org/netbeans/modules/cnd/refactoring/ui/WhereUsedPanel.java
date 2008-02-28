@@ -263,10 +263,10 @@ public class WhereUsedPanel extends JPanel implements CustomRefactoringPanel {
             public void run() {
                 remove(classesPanel);
                 remove(methodsPanel);
+                label.setText(labelText);
                 // WARNING for now since this feature is not ready yet
-                //label.setText(labelText);
-                String combinedLabelText = "<html><font style=\"color: red\">WARNING: This feature is in development and inaccurate!</font><br><br>" + labelText + "</html>"; // NOI18N
-                label.setText(combinedLabelText);
+//                String combinedLabelText = "<html><font style=\"color: red\">WARNING: This feature is in development and inaccurate!</font><br><br>" + labelText + "</html>"; // NOI18N
+//                label.setText(combinedLabelText);
                 if (showMethodPanel) {
                     add(methodsPanel, BorderLayout.CENTER);
                     methodsPanel.setVisible(true);

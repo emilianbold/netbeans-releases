@@ -156,7 +156,7 @@ public class CsmRefactoringUtils {
         }
         return container == null ? null : CsmUtilities.getFileObject(container);
     }
-
+    
     public static CsmReference findReference(Lookup lookup) {
         CsmReference ref = lookup.lookup(CsmReference.class);
         if (ref == null) {
@@ -329,13 +329,20 @@ public class CsmRefactoringUtils {
             } else {
                 String category = token.id().primaryCategory();
                 if (category == null) {
-                    category = "whitespace"; //NOI18N
+                    category = CppTokenId.WHITESPACE_CATEGORY; //NOI18N
+                }
+                String text;
+                if (CppTokenId.WHITESPACE_CATEGORY.equals(category)) {
+                    // whitespace
+                    text = " "; // NOI18N
+                } else {
+                    text = token.text().toString();
                 }
                 if (settings != null) {
                     AttributeSet set = settings.getTokenFontColors(category);
-                    buf.append(color(htmlize(token.text().toString()), set));
+                    buf.append(color(htmlize(text), set));
                 } else {
-                    buf.append(token.text());
+                    buf.append(text);
                 }
             }
         }            

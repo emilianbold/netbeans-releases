@@ -3620,6 +3620,24 @@ public class UMLParsingIntegrator
         }
     }
     
+    protected void processEnumLiteralArguments(Node node)
+    {
+        try
+        {
+            Node argsNode = node.selectSingleNode("./TokenDescriptors/TDescriptor[@type='JavaEnumLiteralArguments']");
+            if (argsNode != null)
+            {
+                String argsStr = XMLManip.getAttributeValue(argsNode, "value");
+                addTaggedValue(node, "JavaEnumLiteralArguments", argsStr, false);
+                argsNode.detach();
+            }
+        }
+        catch (Exception e)
+        {
+            sendExceptionMessage(e);
+        }
+    }
+
     protected void analyzeInterfaceTypes(Node classNode)
     {
         try
@@ -6976,6 +6994,7 @@ public class UMLParsingIntegrator
                     establishXMIID(curElement);
                     XMLManip.setAttributeValue(curElement, "enumeration", enumerationID);
                     processComment(curElement);
+                    processEnumLiteralArguments(curElement);
                 }
                 
                 scrubOperations(pClazz, clazzObj, classSpace);

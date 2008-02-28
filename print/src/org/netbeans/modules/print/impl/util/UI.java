@@ -102,6 +102,10 @@ public final class UI {
     return isModifier(modifiers, KeyEvent.CTRL_MASK);
   }
 
+  public static boolean isMeta(int modifiers) {
+    return isModifier(modifiers, KeyEvent.META_MASK);
+  }
+
   private static boolean isModifier(int modifiers, int mask) {
     return (modifiers & mask) != 0;
   }
@@ -112,9 +116,11 @@ public final class UI {
     return label;
   }
 
-  public static JRadioButton createRadioButton(String message) {
+  public static JRadioButton createRadioButton(String text, String toolTip) {
     JRadioButton button = new JRadioButton();
-    Mnemonics.setLocalizedText(button, message);
+    Mnemonics.setLocalizedText(button, text);
+    button.setText(cutMnemonicAndAmpersand(text));
+    button.setToolTipText(toolTip);
     return button;
   }
 
@@ -212,8 +218,16 @@ public final class UI {
   }
 
   public static void a11y(Component component, String a11y) {
-    component.getAccessibleContext().setAccessibleName(a11y);
-    component.getAccessibleContext().setAccessibleDescription(a11y);
+      a11y(component, a11y, a11y);
+  }
+
+  public static void a11y(Component component, String a11yN, String a11yD) {
+    if (a11yN != null) {  
+        component.getAccessibleContext().setAccessibleName(a11yN);
+    }
+    if (a11yD != null) {
+        component.getAccessibleContext().setAccessibleDescription(a11yD);
+    }
   }
 
   public static String i18n(Class clazz, String key) {

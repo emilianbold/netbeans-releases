@@ -431,7 +431,12 @@ public final class TokenHierarchyOperation<I, T extends TokenId> { // "I" stands
     
     public void textModified(int offset, int removedLength, CharSequence removedText, int insertedLength) {
         ensureWriteLocked();
-        if (isActiveNoInit()) {
+        // Attempt to activate the hierarchy in case there are active listeners
+        boolean active = isActiveNoInit();
+        if (!active && listenerList.getListenerCount() > 0) {
+            active = isActive(); // Attempt to activate the hierarchy
+        }
+        if (active) {
             TokenHierarchyEventInfo eventInfo = new TokenHierarchyEventInfo(
                     this, TokenHierarchyEventType.MODIFICATION,
                     offset, removedLength, removedText, insertedLength);
