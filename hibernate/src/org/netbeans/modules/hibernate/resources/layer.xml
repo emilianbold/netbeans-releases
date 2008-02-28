@@ -228,6 +228,12 @@ made subject to such option by the copyright holder.
                <folder name="CompletionProviders">
                    <file name="org-netbeans-modules-hibernate-completion-HibernateMappingCompletionProvider.instance"/>
                </folder>
+               <folder name="HyperlinkProviders">
+                    <file name="HibernateMappingHyperlinkProvider.instance">
+                        <attr name="instanceClass" stringvalue="org.netbeans.modules.hibernate.hyperlink.HibernateMappingHyperlinkProvider"/>
+                        <attr name="instanceOf" stringvalue="org.netbeans.lib.editor.hyperlink.spi.HyperlinkProvider"/>
+                    </file>
+                </folder>
            </folder>
        </folder>
    </folder>
