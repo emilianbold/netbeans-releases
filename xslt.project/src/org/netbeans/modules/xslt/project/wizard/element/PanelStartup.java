@@ -94,7 +94,7 @@ final class PanelStartup<T> extends Panel<T> {
     // (o) Request-Reply Service
     c.gridy++;
     c.insets = new Insets(SMALL_INSET, 0, 0, 0);
-    myTransformation = createRadioButton(i18n("LBL_Service")); // NOI18N
+    myTransformation = createRadioButton(i18n("LBL_Service"), i18n("TLT_Service")); // NOI18N
     myTransformation.getAccessibleContext().setAccessibleDescription(i18n("ACSD_LBL_Service"));
     panel.add(myTransformation, c);
     group.add(myTransformation);
@@ -110,7 +110,7 @@ final class PanelStartup<T> extends Panel<T> {
     // (o) Proxy Service
     c.gridy++;
     c.insets = new Insets(SMALL_INSET, 0, 0, 0);
-    myProxy = createRadioButton(i18n("LBL_Bridge")); // NOI18N
+    myProxy = createRadioButton(i18n("LBL_Bridge"), i18n("TLT_Bridge")); // NOI18N
     myProxy.getAccessibleContext().setAccessibleDescription(i18n("ACSD_LBL_Bridge"));
     panel.add(myProxy, c);
     group.add(myProxy);
