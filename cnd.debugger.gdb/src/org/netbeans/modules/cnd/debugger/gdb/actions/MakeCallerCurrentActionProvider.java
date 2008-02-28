@@ -75,12 +75,12 @@ public class MakeCallerCurrentActionProvider extends ActionsProviderSupport impl
     public void doAction(Object action) {
         int i = getCurrentCallStackFrameIndex(debugger);
         if (i < (debugger.getStackDepth() - 1)) {
-	    setCurrentCallStackFrameIndex(debugger, ++i);
+	    setCurrentCallStackFrameIndex(debugger, i+1);
 	}
     }
     
     protected void checkEnabled(String debuggerState) {
-        if (debuggerState == debugger.STATE_STOPPED) {
+        if (GdbDebugger.STATE_STOPPED.equals(debuggerState)) {
 	    int i = getCurrentCallStackFrameIndex(debugger);
 	    setEnabled(ActionsManager.ACTION_MAKE_CALLER_CURRENT, i < (debugger.getStackDepth() - 1));
         } else {
@@ -99,7 +99,7 @@ public class MakeCallerCurrentActionProvider extends ActionsProviderSupport impl
     
     static void setCurrentCallStackFrameIndex(GdbDebugger debugger, int index) {
 	if (index < debugger.getStackDepth()) {
-	    CallStackFrame csf = debugger.getCallStackFrames(index, index + 1)[0];
+	    CallStackFrame csf = debugger.getCallStack().get(index);
 	    csf.makeCurrent();
 	}
     }

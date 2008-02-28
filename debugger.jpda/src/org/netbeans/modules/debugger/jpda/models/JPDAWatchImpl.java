@@ -43,14 +43,15 @@ package org.netbeans.modules.debugger.jpda.models;
 
 import com.sun.jdi.AbsentInformationException;
 import com.sun.jdi.ClassNotLoadedException;
+import com.sun.jdi.Field;
 import com.sun.jdi.InvalidTypeException;
-import com.sun.jdi.LocalVariable;
 import com.sun.jdi.ObjectReference;
 import com.sun.jdi.PrimitiveValue;
 import com.sun.jdi.Value;
 import org.netbeans.api.debugger.Watch;
 import org.netbeans.api.debugger.jpda.InvalidExpressionException;
 import org.netbeans.api.debugger.jpda.JPDAWatch;
+import org.netbeans.api.debugger.jpda.LocalVariable;
 import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
 
 /**
@@ -165,15 +166,30 @@ class JPDAWatchImpl extends AbstractVariable implements JPDAWatch {
             throw new InvalidExpressionException ("No curent frame.");
         LocalVariable local = null;
         try {
-            local = frame.getStackFrame ().visibleVariableByName 
-                (getExpression ());
+            local = frame.getLocalVariable(getExpression ());
         } catch (AbsentInformationException ex) {
             throw new InvalidExpressionException ("Can not set value to expression.");
         }
-        if (local == null)
-            throw new InvalidExpressionException ("Can not set value to expression.");
+        if (local != null) {
+            if (local instanceof Local) {
+                ((Local) local).setValue(value);
+            } else {
+                ((ObjectLocalVariable) local).setValue(value);
+            }
+            return ;
+        }
+        // try to set as a field
+        ObjectReference thisObject = frame.getStackFrame ().thisObject ();
+        if (thisObject == null)
+            throw new InvalidExpressionException 
+                ("Can not set value to expression.");
+        Field field = thisObject.referenceType ().fieldByName 
+            (getExpression ());
+        if (field == null)
+            throw new InvalidExpressionException 
+                ("Can not set value to expression.");
         try {
-            frame.getStackFrame ().setValue (local, value);
+            thisObject.setValue (field, value);
         } catch (InvalidTypeException ex) {
             throw new InvalidExpressionException (ex);
         } catch (ClassNotLoadedException ex) {

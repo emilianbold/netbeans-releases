@@ -48,7 +48,7 @@
         <folder name="SaaSServices">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.websvc.saas.services.google.Bundle"/>
             <file name="GoogleMapResource.java" url="/org/netbeans/modules/websvc/saas/services/google/resources/GoogleMapResource.template">
-                <attr name="position" intvalue="3310"/>
+                <attr name="position" intvalue="3410"/>
             </file>
         </folder>
     </folder>
