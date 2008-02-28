@@ -48,6 +48,7 @@ import java.util.Map;
 import org.hibernate.cfg.Environment;
 import org.netbeans.editor.TokenItem;
 import org.netbeans.modules.hibernate.HibernateCfgProperties;
+import org.netbeans.modules.hibernate.cfg.HibernateCfgXmlConstants;
 import org.netbeans.modules.xml.text.syntax.SyntaxElement;
 import org.netbeans.modules.xml.text.syntax.dom.StartTag;
 import org.netbeans.modules.xml.text.syntax.dom.Tag;
@@ -61,18 +62,6 @@ import org.w3c.dom.Text;
  * @author Dongmei Cao
  */
 public final class HibernateCfgCompletionManager {
-
-    private static final String PROPERTY_TAG = "property";
-    private static final String MAPPING_TAG = "mapping";
-    private static final String CLASS_CACHE_TAG = "class-cache";
-    private static final String COLLECTION_CACHE_TAG = "collection-cache";
-    private static final String LISTENER_TAG = "listener";
-    
-    private static final String RESOURCE_ATTRIB = "resource";
-    private static final String NAME_ATTRIB = "name";
-    private static final String CLASS_ATTRIB = "class";
-    private static final String COLLECTION_ATTRIB = "collection";
-    private static final String PACKAGE_ATTRIB = "package";
     
     private static Map<String, Completor> completors = new HashMap<String, Completor>();
 
@@ -158,20 +147,20 @@ public final class HibernateCfgCompletionManager {
 
         // Items for property names 
         Completor.HbPropertyNameCompletor propertyNamesCompletor = new Completor.HbPropertyNameCompletor(propertyNames);
-        registerCompletor(PROPERTY_TAG, NAME_ATTRIB, propertyNamesCompletor);
+        registerCompletor(HibernateCfgXmlConstants.PROPERTY_TAG, HibernateCfgXmlConstants.NAME_ATTRIB, propertyNamesCompletor);
 
         // Items for mapping xml files
         Completor.HbMappingFileCompletor mappingFilesCompletor = new Completor.HbMappingFileCompletor();
-        registerCompletor(MAPPING_TAG, RESOURCE_ATTRIB, mappingFilesCompletor);
+        registerCompletor(HibernateCfgXmlConstants.MAPPING_TAG, HibernateCfgXmlConstants.RESOURCE_ATTRIB, mappingFilesCompletor);
         
         Completor.JavaClassCompletor javaClassCompletor = new Completor.JavaClassCompletor(false);
-        registerCompletor(CLASS_CACHE_TAG, CLASS_ATTRIB, javaClassCompletor);
-        registerCompletor(COLLECTION_CACHE_TAG, COLLECTION_ATTRIB, javaClassCompletor);
-        registerCompletor(LISTENER_TAG, CLASS_ATTRIB, javaClassCompletor);
-        registerCompletor(MAPPING_TAG, CLASS_ATTRIB, javaClassCompletor);
+        registerCompletor(HibernateCfgXmlConstants.CLASS_CACHE_TAG, HibernateCfgXmlConstants.CLASS_ATTRIB, javaClassCompletor);
+        registerCompletor(HibernateCfgXmlConstants.COLLECTION_CACHE_TAG, HibernateCfgXmlConstants.COLLECTION_ATTRIB, javaClassCompletor);
+        registerCompletor(HibernateCfgXmlConstants.LISTENER_TAG, HibernateCfgXmlConstants.CLASS_ATTRIB, javaClassCompletor);
+        registerCompletor(HibernateCfgXmlConstants.MAPPING_TAG, HibernateCfgXmlConstants.CLASS_ATTRIB, javaClassCompletor);
         
         Completor.JavaClassCompletor javaPkgCompletor = new Completor.JavaClassCompletor(true);
-        registerCompletor(MAPPING_TAG, PACKAGE_ATTRIB, javaPkgCompletor);
+        registerCompletor(HibernateCfgXmlConstants.MAPPING_TAG, HibernateCfgXmlConstants.PACKAGE_ATTRIB, javaPkgCompletor);
     }
     
     private static HibernateCfgCompletionManager INSTANCE = new HibernateCfgCompletionManager();
@@ -203,10 +192,10 @@ public final class HibernateCfgCompletionManager {
         // If current element is a start tag and its tag is <property>
         // or the current element is text and its prev is a start <property> tag,
         // then do the code completion
-        if ((curElem instanceof StartTag) && ((StartTag) curElem).getTagName().equalsIgnoreCase(PROPERTY_TAG)) {
+        if ((curElem instanceof StartTag) && ((StartTag) curElem).getTagName().equalsIgnoreCase(HibernateCfgXmlConstants.PROPERTY_TAG)) {
             propTag = (StartTag) curElem;
         } else if ((curElem instanceof Text) && (prevElem instanceof StartTag) &&
-                ((StartTag) prevElem).getTagName().equalsIgnoreCase(PROPERTY_TAG)) {
+                ((StartTag) prevElem).getTagName().equalsIgnoreCase(HibernateCfgXmlConstants.PROPERTY_TAG)) {
             propTag = (StartTag) prevElem;
         } else {
             return;

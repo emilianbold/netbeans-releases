@@ -46,6 +46,7 @@ import java.util.Map;
 import javax.swing.text.Document;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.lib.editor.hyperlink.spi.HyperlinkProvider;
+import org.netbeans.modules.hibernate.cfg.HibernateCfgXmlConstants;
 import org.netbeans.modules.xml.text.syntax.XMLSyntaxSupport;
 
 /**
@@ -55,15 +56,6 @@ import org.netbeans.modules.xml.text.syntax.XMLSyntaxSupport;
  */
 public class HibernateCfgHyperlinkProvider implements HyperlinkProvider {
 
-    private static final String MAPPING_TAG = "mapping";  // NOI18N
-    private static final String CLASS_CACHE_TAG = "class-cache";
-    private static final String COLLECTION_CACHE_TAG = "collection-cache";
-    private static final String LISTENER_TAG = "listener";
-    
-    private static final String RESOURCE_ATTRIB = "resource";  // NOI18N
-    private static final String CLASS_ATTRIB = "class"; // NOI18N
-    private static final String COLLECTION_ATTRIB = "collection";
-    
     private BaseDocument lastDocument;
 
     private HyperlinkProcessor currentProcessor;
@@ -76,13 +68,13 @@ public class HibernateCfgHyperlinkProvider implements HyperlinkProvider {
         this.lastDocument = null;
         
         ResourceHyperlinkProcessor resourceHyperlinkProcessor = new ResourceHyperlinkProcessor();
-        registerAttribValueHyperlinkPoint(MAPPING_TAG, RESOURCE_ATTRIB, resourceHyperlinkProcessor);
+        registerAttribValueHyperlinkPoint(HibernateCfgXmlConstants.MAPPING_TAG, HibernateCfgXmlConstants.RESOURCE_ATTRIB, resourceHyperlinkProcessor);
         
         JavaClassHyperlinkProcessor classHyperlinkProcessor = new JavaClassHyperlinkProcessor();
-        registerAttribValueHyperlinkPoint(MAPPING_TAG, CLASS_ATTRIB, classHyperlinkProcessor);
-        registerAttribValueHyperlinkPoint(CLASS_CACHE_TAG, CLASS_ATTRIB, classHyperlinkProcessor);
-        registerAttribValueHyperlinkPoint(COLLECTION_CACHE_TAG, COLLECTION_ATTRIB, classHyperlinkProcessor);
-        registerAttribValueHyperlinkPoint(LISTENER_TAG, CLASS_ATTRIB, classHyperlinkProcessor);
+        registerAttribValueHyperlinkPoint(HibernateCfgXmlConstants.MAPPING_TAG, HibernateCfgXmlConstants.CLASS_ATTRIB, classHyperlinkProcessor);
+        registerAttribValueHyperlinkPoint(HibernateCfgXmlConstants.CLASS_CACHE_TAG, HibernateCfgXmlConstants.CLASS_ATTRIB, classHyperlinkProcessor);
+        registerAttribValueHyperlinkPoint(HibernateCfgXmlConstants.COLLECTION_CACHE_TAG, HibernateCfgXmlConstants.COLLECTION_ATTRIB, classHyperlinkProcessor);
+        registerAttribValueHyperlinkPoint(HibernateCfgXmlConstants.LISTENER_TAG, HibernateCfgXmlConstants.CLASS_ATTRIB, classHyperlinkProcessor);
     }
     
     private void registerAttribValueHyperlinkPoint(String tagName, String attribName, 
