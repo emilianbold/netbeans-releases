@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- *
+ * 
  * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
- *
+ * 
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,9 +20,20 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- *
+ * 
+ * If you wish your version of this file to be governed by only the CDDL
+ * or only the GPL Version 2, indicate your decision by adding
+ * "[Contributor] elects to include this software in this distribution
+ * under the [CDDL or GPL Version 2] license." If you do not indicate a
+ * single choice of license, a recipient has the option to distribute
+ * your version of this file under either the CDDL, the GPL Version 2 or
+ * to extend the choice of license to its licensees as provided above.
+ * However, if you add GPL Version 2 code and therefore, elected the GPL
+ * Version 2 license, then the option applies only if the new code is
+ * made subject to such option by the copyright holder.
+ * 
  * Contributor(s):
- *
+ * 
  * The Original Software is NetBeans. The Initial Developer of the Original
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
@@ -39,75 +50,23 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.cnd.api.model.services;
+package org.netbeans.modules.cnd.api.model.xref;
 
-import java.util.EnumSet;
-import org.netbeans.modules.cnd.api.model.CsmScope;
-import org.netbeans.modules.cnd.api.model.xref.CsmReference;
-import org.netbeans.modules.cnd.api.model.xref.CsmReferenceKind;
-import org.openide.util.Lookup;
+import org.netbeans.modules.cnd.api.model.CsmOffsetable;
+import org.netbeans.modules.cnd.xref.impl.ReferenceSupportImpl;
 
 /**
- * Provides a list of CsmReferences of the identifiers in the CsmFile
- * 
- * @author Sergey Grinev
+ * some help methods to support CsmReference objects
+ * @author Vladimir Voskresensky
  */
-public abstract class CsmFileReferences {
-    /**
-     * Provides visiting of the identifiers of the CsmFile
-     */
-    public abstract void accept(CsmScope csmScope, Visitor visitor);
-
-    /**
-     * Provides visiting of the identifiers of the CsmFile and point prefered 
-     * kinds of references
-     */
-    public abstract void accept(CsmScope csmScope, Visitor visitor, EnumSet<CsmReferenceKind> preferedKinds);
+public class CsmReferenceSupport {
     
-    /**
-     * A dummy resolver that do nothing.
-     */
-    private static final CsmFileReferences EMPTY = new Empty();
-    
-    /** default instance */
-    private static CsmFileReferences DEFAULT;
-    
-    protected CsmFileReferences() {
-    }
-    
-    /** Static method to obtain the CsmFileReferences implementation.
-     * @return the resolver
-     */
-    public static synchronized CsmFileReferences getDefault() {
-        if (DEFAULT != null) {
-            return DEFAULT;
-        }
-        DEFAULT = Lookup.getDefault().lookup(CsmFileReferences.class);
-        return DEFAULT == null ? EMPTY : DEFAULT;
-    }
-    
-    //
-    // Implementation of the default query
-    //
-    private static final class Empty extends CsmFileReferences {
-        Empty() {
-        }
-
-        @Override
-        public void accept(CsmScope csmScope, Visitor visitor) {
-            // do nothing
-        }
+    private static final ReferenceSupportImpl impl = new ReferenceSupportImpl();
+    private CsmReferenceSupport() {
         
-        @Override
-        public void accept(CsmScope csmScope, Visitor visitor, EnumSet<CsmReferenceKind> kinds) {
-            // do nothing
-        }        
     }
     
-    /**
-     * visitor inteface
-     */
-    public interface Visitor {
-        void visit(CsmReference ref);
+    public static CsmReference createObjectReference(CsmOffsetable obj) {
+        return impl.createObjectReference(obj);
     }
 }
