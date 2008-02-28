@@ -379,16 +379,12 @@ public abstract class JBIComponentContainerNode
                 Document jbiDoc = builder.parse(
                         new InputSource(new StringReader(jbiXml)));
 
-//                // TMP
-//                File tmpJbiFile = new File("C:\\Temp\\sun-http-binding-jbi.xml");
-//                jbiXml = getContent(tmpJbiFile);
-
                 // Get configuration descriptor from jbi.xml
                 final JBIComponentConfigurationDescriptor rootDescriptor =
                         JBIComponentConfigurationParser.parse(jbiDoc);
-                if (rootDescriptor != null) {
+                if (rootDescriptor != null && rootDescriptor.showDisplayAtInstallation(true)) {
                     String componentName = getComponentIDFromJbiDoc(jbiDoc);
-                    
+
                     // Show installation configuration dialog.
                     JBIComponentInstallationConfigurationDialog dialog =
                             new JBIComponentInstallationConfigurationDialog(
@@ -399,9 +395,9 @@ public abstract class JBIComponentContainerNode
                     if (dialog.isCancelled()) {
                         return null;
                     }
-                    
+
                     properties = dialog.getProperties();
-                    
+
                     logger.info("Install " + componentName + // NOI18N
                             " with these properties:" + properties); // NOI18N
                 }

@@ -353,7 +353,9 @@ public abstract class JBIComponentNode extends AppserverJBIMgmtLeafNode
                 // Fallback on regular attributes if the component does not have 
                 // configuration schema defined yet.
                 List<String> keys = new ArrayList<String>();
-                keys.addAll(configMap.keySet());
+                if (configMap != null) {
+                    keys.addAll(configMap.keySet());
+                }
                 Collections.sort(keys);
 
                 for (String key : keys) {
@@ -426,12 +428,12 @@ public abstract class JBIComponentNode extends AppserverJBIMgmtLeafNode
         String name = configDescriptor.getName();
         Object value = null;
 
-        if (configDescriptor.isApplicationConfiguration()) {
+        if (configDescriptor instanceof JBIComponentConfigurationDescriptor.ApplicationConfiguration) {
             if (JBIComponentStatus.STARTED_STATE.equals(getState())) {
                 value = configService.getApplicationConfigurationsAsTabularData(
                         getName(), SERVER_TARGET);
             }
-        } else if (configDescriptor.isApplicationVariable()) {
+        } else if (configDescriptor instanceof JBIComponentConfigurationDescriptor.ApplicationVariable) {
             if (JBIComponentStatus.STARTED_STATE.equals(getState())) {
                 value = configService.getApplicationVariablesAsTabularData(
                         getName(), SERVER_TARGET);
