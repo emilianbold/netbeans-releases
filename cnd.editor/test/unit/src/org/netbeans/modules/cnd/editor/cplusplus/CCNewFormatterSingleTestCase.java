@@ -72,99 +72,71 @@ public class CCNewFormatterSingleTestCase extends CCFormatterBaseUnitTestCase {
         EditorOptions.resetToDefault(CodeStyle.getDefault(CodeStyle.Language.CPP));
     }
 
-    public void testIdentMultyConstructor3() {
-        setDefaultsOptions();
-        setLoadDocumentText(
-            "class IndexReader : LUCENE_BASE\n" +
-            "{\n" +
-            "public:\n" +
-            "class IndexReaderCommitLockWith : \n" +
-            "public CL_NS(store)::LuceneLockWith\n" +
-            "{\n" +
-            "private:\n" +
-            "IndexReader* reader;\n" +
-            "};\n" +
-            "};\n"
-            );
-        reformat();
-        assertDocumentText("Incorrect identing multyline constructor",
-            "class IndexReader : LUCENE_BASE\n" +
-            "{\n" +
-            "public:\n" +
-            "    class IndexReaderCommitLockWith :\n" +
-            "    public CL_NS(store)::LuceneLockWith\n" +
-            "    {\n" +
-            "    private:\n" +
-            "        IndexReader* reader;\n" +
-            "    };\n" +
-            "};\n"
-        );
-    }
-    
-//        if (!line) // End of file
-//            {
-//            status.exit_status = 0;
-//            break;
-//        }
-//----------------------
-//     switch (optid) {
-//#ifdef __NETWARE__
-//        case OPT_AUTO_CLOSE:
-//        setscreenmode(SCR_AUTOCLOSE_ON_EXIT);
-//        break;
-//#endif
-//        case OPT_CHARSETS_DIR:
-//        strmov(mysql_charsets_dir, argument);
-//        charsets_dir = mysql_charsets_dir;
-//        break;
-//    case OPT_DEFAULT_CHARSET:
-//        default_charset_used = 1;
-//        break;
-// -----------------------
-// C_MODE_START
-//#    include <decimal.h>
-//        C_MODE_END
-//
-//#    define DECIMAL_LONGLONG_DIGITS 22
-//#    define DECIMAL_LONG_DIGITS 10
-//#    define DECIMAL_LONG3_DIGITS 8
-//
-//        /* maximum length of buffer in our big digits (uint32) */
-//#    define DECIMAL_BUFF_LENGTH 9
-//        /*
-//        maximum guaranteed precision of number in decimal digits (number of our
-//        digits * number of decimal digits in one our big digit - number of decimal
-//        digits in one our big digit decreased on 1 (because we always put decimal
-//        point on the border of our big digits))
-//*/
-//#    define DECIMAL_MAX_PRECISION ((DECIMAL_BUFF_LENGTH * 9) - 8*2)
-//#    define DECIMAL_MAX_SCALE 30
-//#    define DECIMAL_NOT_SPECIFIED 31
-//---------------------------    
-//typedef struct st_line_buffer
-//{
-//    File file;
-//    char *buffer;
-//    /* The buffer itself, grown as needed. */
-//    char *end;
-//    /* Pointer at buffer end */
-//    char *start_of_line, *end_of_line;
-//    uint bufread;
-//    /* Number of bytes to get with each read(). */
-//    uint eof;
-//    ulong max_size;
-//    ulong read_length;
-//    /* Length of last read string */
-//}
-//LINE_BUFFER;
-//-----------------------    
-//    end :
-//            if (fd >= 0)
-//        my_close(fd, MYF(MY_WME));
-//    end_io_cache(file);
-//    delete description_event;
-//    return error;
-//}
+//    public void testIdentMultyConstructor3() {
+//        setDefaultsOptions();
+//        setLoadDocumentText(
+//            "class IndexReader : LUCENE_BASE\n" +
+//            "{\n" +
+//            "public:\n" +
+//            "class IndexReaderCommitLockWith : \n" +
+//            "public CL_NS(store)::LuceneLockWith\n" +
+//            "{\n" +
+//            "private:\n" +
+//            "IndexReader* reader;\n" +
+//            "};\n" +
+//            "};\n"
+//            );
+//        reformat();
+//        assertDocumentText("Incorrect identing multyline constructor",
+//            "class IndexReader : LUCENE_BASE\n" +
+//            "{\n" +
+//            "public:\n" +
+//            "    class IndexReaderCommitLockWith :\n" +
+//            "    public CL_NS(store)::LuceneLockWith\n" +
+//            "    {\n" +
+//            "    private:\n" +
+//            "        IndexReader* reader;\n" +
+//            "    };\n" +
+//            "};\n"
+//        );
+//    }
 
+//    public void testCaseIndentAftePreprocessor() {
+//        setDefaultsOptions();
+//        setLoadDocumentText(
+//            " C_MODE_START\n" +
+//            "#    include <decimal.h>\n" +
+//            "        C_MODE_END\n" +
+//            "\n" +
+//            "#    define DECIMAL_LONGLONG_DIGITS 22\n" +
+//            "\n" +
+//            "\n" +
+//            "        /* maximum length of buffer in our big digits (uint32) */\n" +
+//            "#    define DECIMAL_BUFF_LENGTH 9\n" +
+//            "        /*\n" +
+//            "        point on the border of our big digits))\n" +
+//            "*/\n" +
+//            "#    define DECIMAL_MAX_PRECISION ((DECIMAL_BUFF_LENGTH * 9) - 8*2)\n" +
+//            "\n"
+//            );
+//        reformat();
+//        assertDocumentText("Incorrect identing case after preprocessor",
+//            "C_MODE_START\n" +
+//            "#include <decimal.h>\n" +
+//            "C_MODE_END\n" +
+//            "\n" +
+//            "#define DECIMAL_LONGLONG_DIGITS 22\n" +
+//            "\n" +
+//            "\n" +
+//            "/* maximum length of buffer in our big digits (uint32) */\n" +
+//            "#define DECIMAL_BUFF_LENGTH 9\n" +
+//            "/*\n" +
+//            "point on the border of our big digits))\n" +
+//            "*/\n" +
+//            "#define DECIMAL_MAX_PRECISION ((DECIMAL_BUFF_LENGTH * 9) - 8*2)\n" +
+//            "\n"
+//        );
+//    }
+//
     
 }
