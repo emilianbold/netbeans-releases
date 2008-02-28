@@ -51,6 +51,12 @@ public class BasicHyperlinkTestCase extends HyperlinkBaseTestCase {
         super(testName);
     }
 
+    public void testFileLocalVariable() throws Exception {
+        performTest("main.c", 15, 12, "main.c", 15, 1); // VALUE in const int VALUE = 10;
+        performTest("main.c", 16, 30, "main.c", 15, 1); // VALUE in const int VALUE_2 = 10 + VALUE;
+        performTest("main.c", 16, 12, "main.c", 16, 1); // VALUE_2 in const int VALUE_2 = 10 + VALUE;
+    }
+    
     public void testFuncParamUsage() throws Exception {
         performTest("main.c", 3, 15, "main.c", 2, 9); // aa in 'int kk = aa + bb;'
         performTest("main.c", 3, 20, "main.c", 2, 17); // bb in 'int kk = aa + bb;'
