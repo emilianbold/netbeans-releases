@@ -62,6 +62,10 @@ public class WebSetupTest extends org.netbeans.jellytools.JellyTestCase {
         ProjectSupport.openProject(System.getProperty("xtest.tmpdir")+"/PerformanceTestFolderWebApp");
         buildProject("PerformanceTestFolderWebApp");
     }
+
+    public void testAddAppServer() {
+        gui.Utilities.addApplicationServer();
+    }
     
     private void buildProject(String name) {
         new BuildProjectAction().perform(new ProjectsTabOperator().

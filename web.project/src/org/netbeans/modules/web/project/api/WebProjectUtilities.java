@@ -500,7 +500,7 @@ public class WebProjectUtilities {
                     } else {
                         for (int i=0; i<testFolders.length; i++) {
                             if (!testFolders[i].exists()) {
-                                testFolders[i].mkdirs();
+                                FileUtil.createFolder(testFolders[i]);
                             }
 
                             String name = testFolders[i].getName();
