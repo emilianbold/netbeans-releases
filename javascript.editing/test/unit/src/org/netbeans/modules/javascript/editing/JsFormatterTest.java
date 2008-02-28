@@ -269,10 +269,10 @@ public class JsFormatterTest extends JsTestBase {
         reformatFileContents("testfiles/prototype.js",new IndentPrefs(2,2));
     }
 
-//    public void testFormat2() throws Exception {
-//        reformatFileContents("testfiles/SpryEffects.js",new IndentPrefs(2,2));
-//    }
-//
+    public void testFormat2() throws Exception {
+        reformatFileContents("testfiles/SpryEffects.js",new IndentPrefs(2,2));
+    }
+
 //    public void testFormat3() throws Exception {
 //        reformatFileContents("testfiles/dragdrop.js",new IndentPrefs(2,2));
 //    }
@@ -292,6 +292,28 @@ public class JsFormatterTest extends JsTestBase {
                "if(true){\n    foo();\n}\n", null);
         format("if (true){\nfoo();\n  }\n",
                "if (true){\n    foo();\n}\n", null);
+        format(
+                " if (true)\n" +
+                " {\n" +
+                " foo();\n" +
+                " }",
+                "if (true)\n" +
+                "{\n" +
+                "    foo();\n" +
+                "}", null
+                );
+        format(
+                "if (true) x = {};\n" +
+                "foo()\n" +
+                "{\n" +
+                "bar();\n" +
+                "}",
+                "if (true) x = {};\n" +
+                "foo()\n" +
+                "{\n" +
+                "    bar();\n" +
+                "}", null
+                );
     }
 
     public void testCombinedBlocks() throws Exception {
