@@ -70,6 +70,7 @@ import org.openide.modules.InstalledFileLocator;
 import org.openide.util.Mutex;
 import org.openide.util.MutexException;
 import org.openide.util.Utilities;
+import org.openide.util.io.ReaderInputStream;
 
 /**
  * Represents one Ruby platform, i.e. installation of a Ruby interpreter.
@@ -458,7 +459,7 @@ public final class RubyPlatformManager {
                     String stderr = Util.readAsString(proc.getErrorStream());
                     LOGGER.finest("stdout:\n" + stdout);
                     LOGGER.finest("stderr:\n " + stderr);
-                    props.load(new StringReader(stdout));
+                    props.load(new ReaderInputStream(new StringReader(stdout)));
                 } else {
                     props.load(proc.getInputStream());
                 }
