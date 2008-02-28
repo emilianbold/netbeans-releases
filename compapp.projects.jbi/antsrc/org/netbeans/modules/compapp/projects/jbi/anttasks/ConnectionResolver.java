@@ -458,6 +458,10 @@ public class ConnectionResolver implements CasaConstants {
             // - filter out consumes/provides based on endpoint config extension
             NodeList endpointList =
                     oldCasaDocument.getElementsByTagName(CASA_ENDPOINT_ELEM_NAME);
+            NodeList portNodeList =
+                    oldCasaDocument.getElementsByTagName(CASA_PORT_ELEM_NAME);
+            List<String> deletedEndpoints = getDeletedEndpoints(portNodeList);
+
             for (int i = 0; i < endpointList.getLength(); i++) {
                 Element endpoint = (Element) endpointList.item(i);
                 String name = endpoint.getAttribute(CASA_NAME_ATTR_NAME);
@@ -470,8 +474,12 @@ public class ConnectionResolver implements CasaConstants {
                             endpoint, CASA_INTERFACE_NAME_ATTR_NAME);
                     Endpoint pt = new Endpoint(endpointName, serviceQName, interfaceQName);
 
+
                     // skip all connected endpoints and non-wsdl endpoints...
-                    if (!isConnected(pt)) {
+                    // IZ#128510, skip CASA endpoint that has been deleted
+                    if (isConnected(pt) || deletedEndpoints.contains(name)) {
+                        // skip these endpoints...
+                    } else {
                         Connection con = new Connection(pt, pt);
                         addConnection(con, true, bcName);
                         addConnection(con, false, bcName);
@@ -483,7 +491,34 @@ public class ConnectionResolver implements CasaConstants {
             log("ERROR: Problem merging new/deleted connections from old casa: " + e);
         }
     }
-        
+
+    /**
+     * Get the list of deleted endpoint IDs in CASA
+     *
+     * @param portNodeList port node list from CASA
+     * @return the list of deleted endpoint IDs
+     */
+    private List<String> getDeletedEndpoints(NodeList portNodeList) {
+        List<String> deleted = new ArrayList();
+        if (portNodeList != null) {
+            for (int i = 0; i < portNodeList.getLength(); i++) {
+                Element port = (Element) portNodeList.item(i);
+                String state = port.getAttribute(CASA_STATE_ATTR_NAME);
+                if (CASA_DELETED_ATTR_VALUE.equals(state)) {
+                    NodeList consumesNodeList = port.getElementsByTagName(CASA_CONSUMES_ELEM_NAME);
+                    if (consumesNodeList != null && consumesNodeList.getLength() == 1) {
+                        Element consumes = (Element) consumesNodeList.item(0);
+                        String endpointID = consumes.getAttribute(CASA_ENDPOINT_ATTR_NAME);
+                        deleted.add(endpointID);
+                    }
+                }
+            }
+        }
+
+        return deleted;
+    }
+
+
     /**
      * Maps endpoint ID to binding component name.
      */
