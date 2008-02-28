@@ -46,6 +46,7 @@ import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.actions.OpenAction;
 import org.netbeans.jellytools.nodes.Node;
+import org.netbeans.jemmy.JemmyProperties;
 import org.netbeans.jemmy.operators.ComponentOperator;
 import org.netbeans.junit.NbTestSuite;
 
@@ -79,16 +80,20 @@ public class PageSwitchTest extends org.netbeans.performance.test.utilities.Perf
         log("::initialize");  
         EditorOperator.closeDiscardAll();
         pto = ProjectsTabOperator.invoke();
+        long oldTimeout = JemmyProperties.getCurrentTimeout("ComponentOperator.WaitStateTimeout");
+        JemmyProperties.setCurrentTimeout("ComponentOperator.WaitStateTimeout", 120000);        
         for(String namme: pagesToOpen) {
-            new OpenAction().performAPI(new Node(pto.getProjectRootNode(targetProject),gui.VWPUtilities.WEB_PAGES + "|"+namme+".jsp"));           
+            Node docNode = new Node(pto.getProjectRootNode(targetProject),gui.VWPUtilities.WEB_PAGES + "|"+namme+".jsp");
+            new OpenAction().performAPI(docNode);
             WebFormDesignerOperator.findWebFormDesignerOperator(namme);
         }
-        
+        JemmyProperties.setCurrentTimeout("ComponentOperator.WaitStateTimeout", oldTimeout);        
     }
     public void prepare() {
+        log("::prepare");
         page2Op = WebFormDesignerOperator.findWebFormDesignerOperator("Page1_1");
         page1Op = WebFormDesignerOperator.findWebFormDesignerOperator("Page1");
-        System.out.println("prepare completed");
+        log("prepare completed");
     }
 
     

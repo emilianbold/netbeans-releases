@@ -137,11 +137,11 @@ public abstract class ToolsPanelModel {
     
     public abstract String getCompilerSetName();
     
-    protected abstract void setCCompilerName(String name);
-    
-    protected abstract void setCppCompilerName(String name);
-    
-    protected abstract void setFortranCompilerName(String name);
+//    protected abstract void setCCompilerName(String name);
+//    
+//    protected abstract void setCppCompilerName(String name);
+//    
+//    protected abstract void setFortranCompilerName(String name);
     
     public abstract boolean showRequiredTools();
 }
