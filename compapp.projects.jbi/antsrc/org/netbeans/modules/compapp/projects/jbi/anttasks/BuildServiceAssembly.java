@@ -474,6 +474,10 @@ public class BuildServiceAssembly extends Task {
                 
                 if (realUri.getScheme() == null) {
                     uri = "../" + sesuName + "/META-INF/" + uri;
+                    
+                    // correct the URI (get rid of "META-INF/../")
+                    uri = uri.replace("/META-INF/..", "");
+                    
                     systemNode.setAttribute("uri", uri);
                 }
             }

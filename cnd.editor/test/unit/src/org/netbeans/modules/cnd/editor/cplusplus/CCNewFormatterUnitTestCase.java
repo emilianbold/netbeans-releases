@@ -1667,4 +1667,171 @@ public class CCNewFormatterUnitTestCase extends CCFormatterBaseUnitTestCase {
             "}\n"
         );
     }
+
+    // end line comment should prevent move left brace on same line by design
+    // RFE: move brace before end line comment in future
+    public void testBraceBeforeLineComment() {
+        setDefaultsOptions();
+        setLoadDocumentText(
+            "int foo()\n" +
+            "{\n" +
+            "if (!line) // End of file\n" +
+            "{\n" +
+            "status.exit_status = 0;\n" +
+            "break;\n" +
+            "}\n" +
+            "}\n"
+            );
+        reformat();
+        assertDocumentText("Incorrect formatting brace before line comment",
+            "int foo()\n" +
+            "{\n" +
+            "    if (!line) // End of file\n" +
+            "    {\n" +
+            "        status.exit_status = 0;\n" +
+            "        break;\n" +
+            "    }\n" +
+            "}\n"
+        );
+    }
+
+    public void testCaseIndentAftePreprocessor() {
+        setDefaultsOptions();
+        setLoadDocumentText(
+            "int foo() {\n" +
+            "     switch (optid) {\n" +
+            "#ifdef __NETWARE__\n" +
+            "        case OPT_AUTO_CLOSE:\n" +
+            "        setscreenmode(SCR_AUTOCLOSE_ON_EXIT);\n" +
+            "#define X\n" +
+            "        break;\n" +
+            "#endif\n" +
+            "        case OPT_CHARSETS_DIR:\n" +
+            "        strmov(mysql_charsets_dir, argument);\n" +
+            "        charsets_dir = mysql_charsets_dir;\n" +
+            "        break;\n" +
+            "    case OPT_DEFAULT_CHARSET:\n" +
+            "        default_charset_used = 1;\n" +
+            "        break;\n" +
+            "}\n" +
+            "}\n"
+            );
+        reformat();
+        assertDocumentText("Incorrect identing case after preprocessor",
+            "int foo()\n" +
+            "{\n" +
+            "    switch (optid) {\n" +
+            "#ifdef __NETWARE__\n" +
+            "        case OPT_AUTO_CLOSE:\n" +
+            "            setscreenmode(SCR_AUTOCLOSE_ON_EXIT);\n" +
+            "#define X\n" +
+            "            break;\n" +
+            "#endif\n" +
+            "        case OPT_CHARSETS_DIR:\n" +
+            "            strmov(mysql_charsets_dir, argument);\n" +
+            "            charsets_dir = mysql_charsets_dir;\n" +
+            "            break;\n" +
+            "        case OPT_DEFAULT_CHARSET:\n" +
+            "            default_charset_used = 1;\n" +
+            "            break;\n" +
+            "    }\n" +
+            "}\n"
+        );
+    }
+
+    public void testCaseIndentAftePreprocessor2() {
+        setDefaultsOptions();
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
+                putBoolean(EditorOptions.indentCasesFromSwitch, false);
+        setLoadDocumentText(
+            "int foo() {\n" +
+            "     switch (optid) {\n" +
+            "#ifdef __NETWARE__\n" +
+            "        case OPT_AUTO_CLOSE:\n" +
+            "        setscreenmode(SCR_AUTOCLOSE_ON_EXIT);\n" +
+            "#define X\n" +
+            "        break;\n" +
+            "#endif\n" +
+            "        case OPT_CHARSETS_DIR:\n" +
+            "#define Y\n" +
+            "        {\n" +
+            "        strmov(mysql_charsets_dir, argument);\n" +
+            "        charsets_dir = mysql_charsets_dir;\n" +
+            "        break;\n" +
+            "}\n" +
+            "    case OPT_DEFAULT_CHARSET:\n" +
+            "        default_charset_used = 1;\n" +
+            "        break;\n" +
+            "}\n" +
+            "}\n"
+            );
+        reformat();
+        assertDocumentText("Incorrect identing case after preprocessor",
+            "int foo()\n" +
+            "{\n" +
+            "    switch (optid) {\n" +
+            "#ifdef __NETWARE__\n" +
+            "    case OPT_AUTO_CLOSE:\n" +
+            "        setscreenmode(SCR_AUTOCLOSE_ON_EXIT);\n" +
+            "#define X\n" +
+            "        break;\n" +
+            "#endif\n" +
+            "    case OPT_CHARSETS_DIR:\n" +
+            "#define Y\n" +
+            "    {\n" +
+            "        strmov(mysql_charsets_dir, argument);\n" +
+            "        charsets_dir = mysql_charsets_dir;\n" +
+            "        break;\n" +
+            "    }\n" +
+            "    case OPT_DEFAULT_CHARSET:\n" +
+            "        default_charset_used = 1;\n" +
+            "        break;\n" +
+            "    }\n" +
+            "}\n"
+        );
+    }
+
+    public void testTypedefClassNameIndent() {
+        setDefaultsOptions();
+        setLoadDocumentText(
+            "typedef struct st_line_buffer\n" +
+            "{\n" +
+            "File file;\n" +
+            "char *buffer;\n" +
+            "/* The buffer itself, grown as needed. */\n" +
+            "}LINE_BUFFER;\n" 
+            );
+        reformat();
+        assertDocumentText("Incorrect identing case after preprocessor",
+            "typedef struct st_line_buffer\n" +
+            "{\n" +
+            "    File file;\n" +
+            "    char *buffer;\n" +
+            "    /* The buffer itself, grown as needed. */\n" +
+            "} LINE_BUFFER;\n" 
+        );
+    }
+
+    public void testLabelIndent() {
+        setDefaultsOptions();
+        setLoadDocumentText(
+            "int foo()\n" +
+            "{\n" +
+            "end:\n" +
+            "if (fd >= 0)\n" +
+            "        my_close(fd, MYF(MY_WME));\n" +
+            "    return error;\n" +
+            "}\n" 
+            );
+        reformat();
+        assertDocumentText("Incorrect label indent",
+            "int foo()\n" +
+            "{\n" +
+            "end:\n" +
+            "    if (fd >= 0)\n" +
+            "        my_close(fd, MYF(MY_WME));\n" +
+            "    return error;\n" +
+            "}\n" 
+        );
+    }
 }

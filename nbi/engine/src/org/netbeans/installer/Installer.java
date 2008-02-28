@@ -771,6 +771,13 @@ public class Installer implements FinishHandler {
         }
         
         // validate arguments ///////////////////////////////////////////////////////
+	/*
+          Disabled since 28.02.2008 by Dmitry Lipin:
+          I don`t see any reason for having that restiction at this moment:
+          I can succesfully install/create bundle just with empty state file similar to
+          Registry.DEFAULT_STATE_FILE_STUB_URI or even just have <state/> as the file contents
+	*/
+        /*
         if (UiMode.getCurrentUiMode() != UiMode.DEFAULT_MODE) {
             if (System.getProperty(
                     Registry.SOURCE_STATE_FILE_PATH_PROPERTY) == null) {
@@ -782,7 +789,7 @@ public class Installer implements FinishHandler {
                         STATE_ARG));
             }
         }
-        
+        */
         LogManager.logExit(
                 "... finished parsing command line arguments"); // NOI18N
     }
