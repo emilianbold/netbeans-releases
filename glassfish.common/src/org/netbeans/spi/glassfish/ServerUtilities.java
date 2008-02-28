@@ -49,6 +49,7 @@ import org.openide.WizardDescriptor.InstantiatingIterator;
 
 
 /**
+ * General helper methods for accessing GlassFish server objects.
  *
  * @author Peter Williams
  */
@@ -57,28 +58,79 @@ public final class ServerUtilities {
     private ServerUtilities() {
     }
     
+    /**
+     * Returns the ServerInstance object for the server with the specified URI.
+     * 
+     * @param uri uri identifying the server instance.
+     * 
+     * @return ServerInstance object for this server instance.
+     */
     public static ServerInstance getServerInstance(String uri) {
         return GlassfishInstanceProvider.getDefault().getInstance(uri);
     }
     
+    /**
+     * Returns the facade implementation for the specified server, if that server
+     * supports the facade class passed in.
+     * 
+     * @param uri uri identifying the server instance.
+     * @param serverFacadeClass class definition of the server facade we're
+     *   looking for.
+     * 
+     * @return facade implementation for specified server or null if either the
+     *   server does not exist or the server does not implement this facade.
+     */
     public static <T> T getInstanceByCapability(String uri, Class <T> serverFacadeClass) {
         return GlassfishInstanceProvider.getDefault().
                 getInstanceByCapability(uri, serverFacadeClass);
     }
     
+    /**
+     * Returns a list of the server instances that support the facade class 
+     * specified (e.g. all servers that support <code>RubyInstance</code>).
+     * 
+     * @param serverFacadeClass class definition of the server facade we're
+     *   looking for.
+     * 
+     * @return list of servers that support the interface specified or an empty
+     *   list if no servers support that interface.
+     */
     public static <T> List<T> getInstancesByCapability(Class<T> serverFacadeClass) {
         return GlassfishInstanceProvider.getDefault().
                 getInstancesByCapability(serverFacadeClass);
     }
     
+    /**
+     * Returns the ServerInstanceImplementation instance for the server with the
+     * specified URI.  Use when you need to avoid calling through the ServerInstance
+     * facade wrapper.  Otherwise, you should call <code>getServerInstance()</code> instead.
+     * 
+     * @param uri uri identifying the server instance.
+     * 
+     * @return ServerInstanceImplementation object for this server instance.
+     */
     public static ServerInstanceImplementation getInternalServerInstance(String uri) {
         return GlassfishInstanceProvider.getDefault().getInternalInstance(uri);
     }
     
+    /**
+     * Returns an instance of the AddServerWizard for this server plugin.
+     * (Formerly used by glassfish.javaee module.)
+     * 
+     * @return instance of the AddServerWizard for this server.
+     * 
+     * @deprecated
+     */
     public static InstantiatingIterator getAddInstanceIterator() {
         return new ServerWizardIterator();
     }
     
+    /**
+     * Returns the ServerInstanceProvider for this server plugin so we don't 
+     * have to look it up via common server SPI.
+     * 
+     * @return the GlassFish V3 impl for ServerInstanceProvider.
+     */
     public static ServerInstanceProvider getServerProvider() {
         return GlassfishInstanceProvider.getDefault();
     }
