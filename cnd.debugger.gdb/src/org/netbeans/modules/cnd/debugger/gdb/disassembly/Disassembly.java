@@ -45,14 +45,17 @@ import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.util.ArrayList;
 import java.util.List;
+import javax.swing.SwingUtilities;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.text.Document;
+import org.netbeans.api.debugger.Breakpoint;
 import org.netbeans.api.debugger.DebuggerEngine;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.modules.cnd.debugger.gdb.CallStackFrame;
 import org.netbeans.modules.cnd.debugger.gdb.EditorContextBridge;
 import org.netbeans.modules.cnd.debugger.gdb.GdbDebugger;
+import org.netbeans.modules.cnd.debugger.gdb.breakpoints.AddressBreakpoint;
 import org.netbeans.modules.cnd.debugger.gdb.breakpoints.BreakpointAnnotationListener;
 import org.openide.cookies.CloseCookie;
 import org.openide.cookies.OpenCookie;
@@ -162,18 +165,22 @@ public class Disassembly implements PropertyChangeListener, DocumentListener {
     }
 
     public void insertUpdate(DocumentEvent e) {
-        updateAnnotations();
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                updateAnnotations();
+            }
+        });
     }
     
     private void updateAnnotations() {
         debugger.fireDisUpdate();
-        /*DebuggerManager dm = DebuggerManager.getDebuggerManager();
+        DebuggerManager dm = DebuggerManager.getDebuggerManager();
         Breakpoint[] bs = dm.getBreakpoints();
         for (int i = 0; i < bs.length; i++) {
             if (bs[i] instanceof AddressBreakpoint) {
                 ((AddressBreakpoint)bs[i]).refresh();
             }
-        }*/
+        }
     }
 
     public void removeUpdate(DocumentEvent e) {
