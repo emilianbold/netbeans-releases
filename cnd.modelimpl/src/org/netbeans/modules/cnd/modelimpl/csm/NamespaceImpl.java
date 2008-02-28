@@ -177,13 +177,13 @@ public class NamespaceImpl implements CsmNamespace, MutableDeclarationsContainer
         if (minVal != 0) {
             out = out + minVal;
         }
-        unnamedNrs.add(new Integer(minVal));
+        unnamedNrs.add(Integer.valueOf(minVal));
         return out;
     }
     
     private int getMinUnnamedValue() {
         for (int i = 0; i < unnamedNrs.size(); i++) {
-            if (!unnamedNrs.contains(new Integer(i))) {
+            if (!unnamedNrs.contains(Integer.valueOf(i))) {
                 return i;
             }
         }
@@ -261,7 +261,7 @@ public class NamespaceImpl implements CsmNamespace, MutableDeclarationsContainer
                     DiagnosticExceptoins.register(ex);
                 }
             } else {
-                unnamedNrs.remove(new Integer(0));
+                unnamedNrs.remove(Integer.valueOf(0));
             }
         }
     }
