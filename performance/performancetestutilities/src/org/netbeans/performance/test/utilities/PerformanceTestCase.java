@@ -79,7 +79,7 @@ import org.netbeans.performance.test.guitracker.LoggingEventQueue;
  * Number of repeatedly measured time can be set by system property
  * <b> org.netbeans.performance.repeat </b>. If property isn't set time is measured only once.
  *
- * @author  mmirilovic@netbeans.org, rkubacki@netbeans.org, anebuzelsky@netbeans.org
+ * @author  mmirilovic@netbeans.org, rkubacki@netbeans.org, anebuzelsky@netbeans.org, mrkam@netbeans.org
  */
 public abstract class PerformanceTestCase extends JellyTestCase implements NbPerformanceTest{
 
@@ -893,7 +893,9 @@ public abstract class PerformanceTestCase extends JellyTestCase implements NbPer
     protected void waitNoEvent(long time) {
         if(repeat_memory!=-1){
             try {
-                Thread.currentThread().wait(time);
+                synchronized (Thread.currentThread()) {
+                    Thread.currentThread().wait(time);
+                }
             } catch(Exception exc){
                 log("Exception rises during waiting " + time + " ms");
                 exc.printStackTrace(getLog());

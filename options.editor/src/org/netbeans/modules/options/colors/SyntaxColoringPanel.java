@@ -450,11 +450,15 @@ public class SyntaxColoringPanel extends JPanel implements ActionListener,
         List<String> languages = new ArrayList<String>(colorModel.getLanguages ());
         Collections.sort (languages, new LanguagesComparator ());
         Iterator it = languages.iterator ();
+        Object lastLanguage = cbLanguage.getSelectedItem ();
         cbLanguage.removeAllItems ();
         while (it.hasNext ())
             cbLanguage.addItem (it.next ());
         listen = true;
-        cbLanguage.setSelectedIndex (0);
+        if (lastLanguage != null)
+            cbLanguage.setSelectedItem (lastLanguage);
+        if (cbLanguage.getSelectedItem () == null)
+            cbLanguage.setSelectedIndex (0);
     }
     
     public void cancel () {

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * 
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
  * 
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -37,36 +37,12 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.css.gsf;
-
-import org.netbeans.modules.gsf.api.CompilationInfo;
-import org.netbeans.modules.gsf.api.Element;
-import org.netbeans.modules.gsf.api.ElementHandle;
-import org.netbeans.modules.gsf.api.OffsetRange;
-import org.netbeans.modules.gsf.api.ParserResult;
-import org.netbeans.modules.gsf.api.PositionManager;
+package org.netbeans.modules.php.editor;
 
 /**
  *
- * @author marek
+ * @author Petr Pisl
  */
-public class CSSPositionManager implements PositionManager {
-
-
-    public boolean isTranslatingSource() {
-        return false;
-    }
-
-    public int getLexicalOffset(ParserResult result, int astOffset) {
-        return astOffset;
-    }
-
-    public int getAstOffset(ParserResult result, int lexicalOffset) {
-        return lexicalOffset;
-    }
-
-    public OffsetRange getOffsetRange(CompilationInfo info, ElementHandle object) {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
+public enum PHPVersion {
+    PHP_5;
 }

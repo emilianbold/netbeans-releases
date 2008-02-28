@@ -74,6 +74,9 @@ import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.websvc.api.jaxws.project.GeneratedFilesHelper;
 import org.netbeans.modules.websvc.saas.codegen.java.Constants;
+import org.netbeans.modules.websvc.saas.codegen.java.Constants.MimeType;
+import org.netbeans.modules.websvc.saas.codegen.java.model.GenericResourceBean;
+import org.netbeans.modules.websvc.saas.codegen.java.model.JaxwsOperationInfo;
 import org.openide.ErrorManager;
 import org.openide.cookies.EditorCookie;
 import org.openide.cookies.LineCookie;
@@ -533,5 +536,28 @@ public class Util {
         DataFolder dataFolder = DataFolder.findFolder(targetFolder);
 
         return templateDO.createFromTemplate(dataFolder, targetName);
+    }
+ 
+    public static String deriveResourceName(final String name) {
+        return Inflector.getInstance().camelize(normailizeName(name) + GenericResourceBean.RESOURCE_SUFFIX);
+    }
+
+    public static String deriveUriTemplate(final String name) {
+        return Inflector.getInstance().camelize(normailizeName(name), true) + "/"; //NOI18N
+    }
+    
+    public static MimeType[] deriveMimeTypes(JaxwsOperationInfo[] operations) {
+        if (String.class.getName().equals(operations[operations.length-1].getOperation().getReturnTypeName())) {
+            return new MimeType[] { MimeType.HTML };
+        } else {
+            return new MimeType[] { MimeType.XML };//TODO  MimeType.JSON };
+        }
+    }
+    
+    public static String normailizeName(final String name) {
+        String normalized = name;
+        normalized = normalized.replaceAll("\\p{Punct}", "_");
+        normalized = normalized.replaceAll("\\p{Space}", "_");
+        return normalized;
     }
 }
