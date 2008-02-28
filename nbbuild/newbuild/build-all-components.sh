@@ -4,6 +4,11 @@ DIRNAME=`dirname $0`
 cd ${DIRNAME}
 source init.sh
 
+#Clean old tests results
+if [ -n $WORKSPACE ]; then
+    rm -rf $WORKSPACE/results
+fi
+
 cd  $NB_ALL
 
 ###################################################################
@@ -162,6 +167,10 @@ ERROR_CODE=$?
 if [ $ERROR_CODE != 0 ]; then
     echo "ERROR: $ERROR_CODE - Ruby UI validation failed"
     TEST_CODE=1;
+fi
+
+if [ -n $WORKSPACE ]; then
+    cp -r $NB_ALL/xtest/instance/results $WORKSPACE
 fi
 
 echo TESTS STARTED: $TESTS_STARTED

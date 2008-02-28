@@ -596,10 +596,12 @@ public abstract class AbstractMethodController extends EjbMethodController {
             public void run(CompilationController controller) throws IOException {
                 controller.toPhase(Phase.ELEMENTS_RESOLVED);
                 TypeElement typeElement = controller.getElements().getTypeElement(clazz);
-                for (ExecutableElement method : ElementFilter.methodsIn(typeElement.getEnclosedElements())) {
-                    if (MethodModelSupport.isSameMethod(controller, method, methodModel)) {
-                        result[0] = true;
-                        return;
+                if (typeElement != null) {
+                    for (ExecutableElement method : ElementFilter.methodsIn(typeElement.getEnclosedElements())) {
+                        if (MethodModelSupport.isSameMethod(controller, method, methodModel)) {
+                            result[0] = true;
+                            return;
+                        }
                     }
                 }
             }

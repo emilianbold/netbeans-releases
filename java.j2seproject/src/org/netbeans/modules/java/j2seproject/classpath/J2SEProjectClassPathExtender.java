@@ -77,7 +77,7 @@ public class J2SEProjectClassPathExtender implements ProjectClassPathExtender {
         if (FileUtil.isArchiveFile(archiveFile)) {
             archiveFile = FileUtil.getArchiveRoot (archiveFile);
         }
-        return this.delegate.handleRoots(new URL[] {archiveFile.getURL()},type,J2SEProjectClassPathModifier.ADD);
+        return this.delegate.handleRoots(new URL[] {archiveFile.getURL()},type,J2SEProjectClassPathModifier.ADD, true);
     }
 
     public boolean addAntArtifact(final AntArtifact artifact, final URI artifactElement) throws IOException {

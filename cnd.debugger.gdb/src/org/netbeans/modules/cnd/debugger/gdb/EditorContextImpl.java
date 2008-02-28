@@ -554,8 +554,10 @@ public class EditorContextImpl extends EditorContext {
 			}
 			try {
 			    FileObject fo = URLMapper.findFileObject(dobj.getPrimaryFile().getURL());
-			    mime = fo.getMIMEType();
-			    break;
+                            if (fo != null) {
+                                mime = fo.getMIMEType();
+                                break;
+                            }
 			} catch (FileStateInvalidException ex) {
 			}
 		    }

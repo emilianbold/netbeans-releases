@@ -88,10 +88,12 @@ import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.java.project.classpath.ProjectClassPathModifier;
 import org.netbeans.modules.java.api.common.ant.UpdateHelper;
 import org.netbeans.api.project.libraries.LibraryChooser;
+import org.netbeans.modules.j2ee.common.project.classpath.ClassPathModifier;
 import org.netbeans.modules.j2ee.common.project.classpath.ClassPathSupport;
 import org.netbeans.modules.j2ee.common.project.ui.AntArtifactChooser.ArtifactItem;
 import org.netbeans.modules.java.api.common.SourceRoots;
 import org.netbeans.modules.java.api.common.util.CommonProjectUtils;
+import org.netbeans.spi.java.project.classpath.ProjectClassPathModifierImplementation;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
@@ -709,7 +711,18 @@ public final class LibrariesNode extends AbstractNode {
                     if (fileFilter.accept(fl)) {
                         URL u = LibrariesSupport.convertFilePathToURL(filePaths[i]);
                         u = FileUtil.getArchiveRoot(u);
-                        ProjectClassPathModifier.addRoots(new URL[]{u}, projectSourcesArtifact, ClassPath.COMPILE);
+                        Project prj = FileOwnerQuery.getOwner(helper.getProjectDirectory());
+                        ClassPathModifier modifierImpl = prj.getLookup().lookup(ClassPathModifier.class);
+                        if (modifierImpl != null) {
+                            //sort of hack, in this case we don't want the classpath modifier to perform
+                            // the heuristics it normally does, as the user explitly defined how the jar/folder
+                            //shall be referenced.
+                            SourceGroup[] grps = modifierImpl.getExtensibleSourceGroups();
+                            modifierImpl.addRoots(new URL[]{u}, grps[0], ClassPath.COMPILE, ClassPathModifier.ADD_NO_HEURISTICS);
+                        } else {
+                            //fallback to call that will perform heuristics and eventually override user preferences..
+                            ProjectClassPathModifier.addRoots(new URL[]{u}, projectSourcesArtifact, ClassPath.COMPILE);
+                        }
                     }
                 } catch (IOException ioe) {
                     Exceptions.printStackTrace(ioe);
