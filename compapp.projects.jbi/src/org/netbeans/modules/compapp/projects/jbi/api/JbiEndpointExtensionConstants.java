@@ -45,7 +45,7 @@ package org.netbeans.modules.compapp.projects.jbi.api;
  */
 public interface JbiEndpointExtensionConstants {
       
-    public static final String JBI_ENDPOINT_EXTENSION_NAMESPACE = "http://enterprise.netbeans.org/jbi-extensions"; // NOI18N
+    public static final String JBI_ENDPOINT_EXTENSION_NAMESPACE = "http://www.sun.com/jbi/descriptor/service-unit"; // NOI18N
     
 //    public static final String JBI_ENDPOINT_EXTENSION_ELEMENT = "endpoint-ext"; // NOI18N
     

@@ -1042,6 +1042,15 @@ public final class JavaSource {
         }
         synchronized (INTERNAL_LOCK) {
             toRemove.add (task);
+            Collection<Request> rqs = finishedRequests.get(this);
+            if (rqs != null) {
+                for (Iterator<Request> it = rqs.iterator(); it.hasNext(); ) {
+                    Request rq = it.next();
+                    if (rq.task == task) {
+                        it.remove();
+                    }
+                }
+            }
         }
     }
     

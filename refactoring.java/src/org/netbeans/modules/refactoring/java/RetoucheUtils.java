@@ -914,7 +914,8 @@ public class RetoucheUtils {
             DialogDescriptor dd = new DialogDescriptor(label, actionName, true, new Object[]{getString("LBL_CancelAction", new Object[]{actionName})}, null, 0, null, listener);
             waitDialog = DialogDisplayer.getDefault().createDialog(dd);
             waitDialog.pack();
-            waitTask = RequestProcessor.getDefault().post(ap);
+            //100ms is workaround for 127536
+            waitTask = RequestProcessor.getDefault().post(ap, 100);
             waitDialog.setVisible(true);
             waitTask = null;
             waitDialog = null;

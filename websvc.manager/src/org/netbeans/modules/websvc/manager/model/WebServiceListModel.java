@@ -54,6 +54,7 @@ import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
 import org.netbeans.modules.websvc.manager.WebServiceManager;
 import org.netbeans.modules.websvc.manager.WebServicePersistenceManager;
+import org.netbeans.modules.websvc.saas.util.WsdlUtil;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileAttributeEvent;
@@ -349,7 +350,11 @@ public class WebServiceListModel {
         if (!initialized) {
             initialized = true;
             WebServicePersistenceManager manager = new WebServicePersistenceManager();
-            manager.load();
+            if (! WsdlUtil.hasProcessedImport()) {
+                manager.setImported(false);
+                manager.load();
+                WsdlUtil.markImportProcessed();
+            }
             
             // TODO doesn't do anything useful yet
             partnerServiceListener = new RestFolderListener();
