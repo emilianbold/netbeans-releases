@@ -76,13 +76,21 @@ public class ExportDiffPanel extends javax.swing.JPanel implements ActionListene
     private static final RequestProcessor   rp = new RequestProcessor("MercurialExportDiff", 1);  // NOI18N
     private RepositoryRevision              repoRev;
     private static final int HG_REVISION_TARGET_LIMIT = 100;
+    private File fileToDiff;
 
     /** Creates new form ExportDiffPanel */
-    public ExportDiffPanel(File repo, RepositoryRevision repoRev) {
+    public ExportDiffPanel(File repo, RepositoryRevision repoRev, File fileToDiff) {
+        this.fileToDiff = fileToDiff;
         this.repoRev = repoRev;
         repository = repo;
         refreshViewTask = rp.create(new RefreshViewTask());
         initComponents();
+        if(fileToDiff != null){
+            org.openide.awt.Mnemonics.setLocalizedText(revisionsLabel, NbBundle.getMessage(ExportDiffPanel.class, 
+                    "ExportDiffPanel.revisionsLabel.text.forFileDiff")); // NOI18N
+            exportHintLabel.setText(NbBundle.getMessage(ExportDiffPanel.class, 
+                    "ExportDiffPanel.exportHintLabel.text.forFileDiff")); // NOI18N
+        }
         browseButton.addActionListener(this);
         refreshViewTask.schedule(0);
     }
@@ -115,7 +123,7 @@ public class ExportDiffPanel extends javax.swing.JPanel implements ActionListene
         revisionsComboBox = new javax.swing.JComboBox();
         fileLabel = new javax.swing.JLabel();
         browseButton = new javax.swing.JButton();
-        jLabel1 = new javax.swing.JLabel();
+        exportHintLabel = new javax.swing.JLabel();
 
         revisionsLabel.setLabelFor(revisionsComboBox);
         org.openide.awt.Mnemonics.setLocalizedText(revisionsLabel, org.openide.util.NbBundle.getMessage(ExportDiffPanel.class, "ExportDiffPanel.revisionsLabel.text")); // NOI18N
@@ -125,8 +133,8 @@ public class ExportDiffPanel extends javax.swing.JPanel implements ActionListene
 
         org.openide.awt.Mnemonics.setLocalizedText(browseButton, org.openide.util.NbBundle.getMessage(ExportDiffPanel.class, "ExportDiffPanel.browseButtonl.text")); // NOI18N
 
-        jLabel1.setForeground(java.awt.Color.gray);
-        org.openide.awt.Mnemonics.setLocalizedText(jLabel1, org.openide.util.NbBundle.getMessage(ExportDiffPanel.class, "LBL_EXPORT_INFO")); // NOI18N
+        exportHintLabel.setForeground(java.awt.Color.gray);
+        org.openide.awt.Mnemonics.setLocalizedText(exportHintLabel, org.openide.util.NbBundle.getMessage(ExportDiffPanel.class, "LBL_EXPORT_INFO")); // NOI18N
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
@@ -135,19 +143,17 @@ public class ExportDiffPanel extends javax.swing.JPanel implements ActionListene
             .add(layout.createSequentialGroup()
                 .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(layout.createSequentialGroup()
-                        .add(fileLabel)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
-                        .add(outputFileTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 197, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                        .add(18, 18, 18)
-                        .add(browseButton))
-                    .add(layout.createSequentialGroup()
-                        .add(revisionsLabel)
+                    .add(revisionsLabel)
+                    .add(fileLabel))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
+                        .add(outputFileTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 236, Short.MAX_VALUE)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING, false)
-                            .add(org.jdesktop.layout.GroupLayout.TRAILING, jLabel1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .add(org.jdesktop.layout.GroupLayout.TRAILING, revisionsComboBox, 0, 297, Short.MAX_VALUE))))
-                .addContainerGap(20, Short.MAX_VALUE))
+                        .add(browseButton))
+                    .add(exportHintLabel)
+                    .add(revisionsComboBox, 0, 305, Short.MAX_VALUE))
+                .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -155,14 +161,14 @@ public class ExportDiffPanel extends javax.swing.JPanel implements ActionListene
                 .add(27, 27, 27)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(revisionsLabel)
-                    .add(revisionsComboBox, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                    .add(revisionsComboBox, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 25, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(jLabel1)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 22, Short.MAX_VALUE)
+                .add(exportHintLabel)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 14, Short.MAX_VALUE)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(fileLabel)
-                    .add(outputFileTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                    .add(browseButton))
+                    .add(browseButton)
+                    .add(outputFileTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .add(26, 26, 26))
         );
 
@@ -182,7 +188,10 @@ public class ExportDiffPanel extends javax.swing.JPanel implements ActionListene
             Set<String>  initislRevsSet = new LinkedHashSet<String>();
             ComboBoxModel targetsModel;
             if(repoRev != null){
-                initislRevsSet.add(repoRev.getLog().getRevision() + " (" + repoRev.getLog().getCSetShortID() + ")" ); // NOI18N
+                String revStr = repoRev.getLog().getRevision() + " (" + repoRev.getLog().getCSetShortID() + ")";// NOI18N
+                if(fileToDiff !=null)
+                    revStr = fileToDiff.getName() + " - " + revStr ;// NOI18N
+                initislRevsSet.add(revStr); 
                 targetsModel = new DefaultComboBoxModel(new Vector<String>(initislRevsSet));              
                 revisionsComboBox.setModel(targetsModel);
                 revisionsComboBox.setEditable(false);
@@ -199,7 +208,7 @@ public class ExportDiffPanel extends javax.swing.JPanel implements ActionListene
 
                 refreshRevisions();
             }
-            getDefaultOutputFile();
+            setDefaultOutputFile();
         } finally {
             SwingUtilities.invokeLater(new Runnable() {
                 public void run() {
@@ -210,10 +219,23 @@ public class ExportDiffPanel extends javax.swing.JPanel implements ActionListene
         }
     }
 
-    private void getDefaultOutputFile() {
+    private void setDefaultOutputFile() {
         String folderName = HgModuleConfig.getDefault().getExportFolder();
-        String fileName = HgModuleConfig.getDefault().getExportFilename();
-        File file = new File(folderName, fileName + ".patch"); // ensure syntax highlighting of default patch on display in editor
+        String fileName;
+        if (fileToDiff != null && repoRev != null && repoRev.getLog() != null && repository != null) { //"<filename-ext>_%b_%r_%h"
+            fileName = fileToDiff.getName().replace('.', '-') + "_" +  //NOI18N
+                    repoRev.getLog().getRevision() + "_" +  //NOI18N
+                    repoRev.getLog().getCSetShortID(); //NOI18N
+        }else if (repoRev != null && repoRev.getLog() != null && repository != null){
+            fileName = HgModuleConfig.getDefault().getExportFilename().replace("%b", repository.getName()); //NOI18N
+            fileName = fileName.replace("%r", repoRev.getLog().getRevision()); //NOI18N
+            fileName = fileName.replace("%h", repoRev.getLog().getCSetShortID()); //NOI18N
+        }else if (repository != null){
+            fileName = HgModuleConfig.getDefault().getExportFilename().replace("%b", repository.getName()); //NOI18N
+        }else{
+            fileName = HgModuleConfig.getDefault().getExportFilename();            
+        }
+        File file = new File(folderName, fileName + ".patch");  //NOI18N
         outputFileTextField.setText(file.getAbsolutePath());
     }
 
@@ -288,8 +310,8 @@ public class ExportDiffPanel extends javax.swing.JPanel implements ActionListene
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton browseButton;
+    private javax.swing.JLabel exportHintLabel;
     private javax.swing.JLabel fileLabel;
-    private javax.swing.JLabel jLabel1;
     final javax.swing.JTextField outputFileTextField = new javax.swing.JTextField();
     private javax.swing.JComboBox revisionsComboBox;
     private javax.swing.JLabel revisionsLabel;
