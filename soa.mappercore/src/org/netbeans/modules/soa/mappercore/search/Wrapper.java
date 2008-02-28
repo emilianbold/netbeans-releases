@@ -140,6 +140,10 @@ final class Wrapper extends JPanel {
     return isModifier(modifiers, KeyEvent.ALT_MASK);
   }
 
+  private boolean isMeta(int modifiers) {
+    return isModifier(modifiers, KeyEvent.META_MASK);
+  }
+                         
   private boolean isModifier(int modifiers, int mask) {
     return (modifiers & mask) != 0;
   }
@@ -269,7 +273,13 @@ final class Wrapper extends JPanel {
       if (c == KeyEvent.VK_ESCAPE) {
         return;
       }
-      if (isCtrl(modifiers) || isAlt(modifiers)) {
+      if (isCtrl(modifiers)) {
+        return;
+      }
+      if (isAlt(modifiers)) {
+        return;
+      }
+      if (isMeta(modifiers)) {
         return;
       }
       myTextField.setText(String.valueOf(c));
