@@ -15,7 +15,7 @@
                     </run-dependency>
                 </dependency>
                 <dependency>
-                    <code-name-base>org.netbeans.fpi.gsf</code-name-base>
+                    <code-name-base>org.netbeans.modules.gsf.api</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
@@ -269,6 +269,7 @@
                 <friend>org.netbeans.modules.javascript.hints</friend>
                 <friend>org.netbeans.modules.javascript.refactoring</friend>
                 <friend>org.netbeans.modules.html.editor</friend>
+                <friend>org.netbeans.modules.languages.ejs</friend>
                 <package>org.netbeans.modules.javascript.editing</package>
                 <package>org.netbeans.modules.javascript.editing.lexer</package>
             </friend-packages>

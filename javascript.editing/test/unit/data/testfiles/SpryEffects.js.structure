@@ -5,27 +5,27 @@ SpryRegistry:GLOBAL:[]:ESCAPED{SpryRegistry}:
 compositeColorHex:GLOBAL:[]:ESCAPED{compositeColorHex}:
 dimensions:GLOBAL:[]:ESCAPED{dimensions}:
 Spry.Effect:CLASS:[]:ESCAPED{Spry.Effect}:
-  AnimatedElement:METHOD:[]:ESCAPED{AnimatedElement}(PARAMETERS{ESCAPED{element}}):
-  Animator:METHOD:[]:ESCAPED{Animator}(PARAMETERS{ESCAPED{options}}):
-  AppearFade:METHOD:[]:ESCAPED{AppearFade}(PARAMETERS{ESCAPED{element}, ESCAPED{options}}):
-  Blind:METHOD:[]:ESCAPED{Blind}(PARAMETERS{ESCAPED{element}, ESCAPED{options}}):
-  Cluster:METHOD:[]:ESCAPED{Cluster}:
-  ClusteredEffect:METHOD:[]:ESCAPED{ClusteredEffect}(PARAMETERS{ESCAPED{effect}, ESCAPED{kind}}):
-  Color:METHOD:[]:ESCAPED{Color}(PARAMETERS{ESCAPED{element}, ESCAPED{startColor}, ESCAPED{stopColor}, ESCAPED{options}}):
-  DropOut:METHOD:[]:ESCAPED{DropOut}(PARAMETERS{ESCAPED{element}, ESCAPED{options}}):
-  Fold:METHOD:[]:ESCAPED{Fold}(PARAMETERS{ESCAPED{element}, ESCAPED{options}}):
-  GrowShrink:METHOD:[]:ESCAPED{GrowShrink}(PARAMETERS{ESCAPED{element}, ESCAPED{options}}):
-  Highlight:METHOD:[]:ESCAPED{Highlight}(PARAMETERS{ESCAPED{element}, ESCAPED{options}}):
-  Move:METHOD:[]:ESCAPED{Move}(PARAMETERS{ESCAPED{element}, ESCAPED{fromPos}, ESCAPED{toPos}, ESCAPED{options}}):
-  MoveSlide:METHOD:[]:ESCAPED{MoveSlide}(PARAMETERS{ESCAPED{element}, ESCAPED{fromPos}, ESCAPED{toPos}, ESCAPED{options}}):
-  Opacity:METHOD:[]:ESCAPED{Opacity}(PARAMETERS{ESCAPED{element}, ESCAPED{startOpacity}, ESCAPED{stopOpacity}, ESCAPED{options}}):
-  Puff:METHOD:[]:ESCAPED{Puff}(PARAMETERS{ESCAPED{element}, ESCAPED{options}}):
-  Pulsate:METHOD:[]:ESCAPED{Pulsate}(PARAMETERS{ESCAPED{element}, ESCAPED{options}}):
-  Registry:METHOD:[]:ESCAPED{Registry}:
-  Shake:METHOD:[]:ESCAPED{Shake}(PARAMETERS{ESCAPED{element}, ESCAPED{options}}):
-  Size:METHOD:[]:ESCAPED{Size}(PARAMETERS{ESCAPED{element}, ESCAPED{fromRect}, ESCAPED{toRect}, ESCAPED{options}}):
-  Slide:METHOD:[]:ESCAPED{Slide}(PARAMETERS{ESCAPED{element}, ESCAPED{options}}):
-  Squish:METHOD:[]:ESCAPED{Squish}(PARAMETERS{ESCAPED{element}, ESCAPED{options}}):
+  AnimatedElement:CONSTRUCTOR:[]:ESCAPED{AnimatedElement}(PARAMETERS{ESCAPED{element}}):
+  Animator:CONSTRUCTOR:[]:ESCAPED{Animator}(PARAMETERS{ESCAPED{options}}):
+  AppearFade:CONSTRUCTOR:[]:ESCAPED{AppearFade}(PARAMETERS{ESCAPED{element}, ESCAPED{options}}):
+  Blind:CONSTRUCTOR:[]:ESCAPED{Blind}(PARAMETERS{ESCAPED{element}, ESCAPED{options}}):
+  Cluster:CONSTRUCTOR:[]:ESCAPED{Cluster}:
+  ClusteredEffect:CONSTRUCTOR:[]:ESCAPED{ClusteredEffect}(PARAMETERS{ESCAPED{effect}, ESCAPED{kind}}):
+  Color:CONSTRUCTOR:[]:ESCAPED{Color}(PARAMETERS{ESCAPED{element}, ESCAPED{startColor}, ESCAPED{stopColor}, ESCAPED{options}}):
+  DropOut:CONSTRUCTOR:[]:ESCAPED{DropOut}(PARAMETERS{ESCAPED{element}, ESCAPED{options}}):
+  Fold:CONSTRUCTOR:[]:ESCAPED{Fold}(PARAMETERS{ESCAPED{element}, ESCAPED{options}}):
+  GrowShrink:CONSTRUCTOR:[]:ESCAPED{GrowShrink}(PARAMETERS{ESCAPED{element}, ESCAPED{options}}):
+  Highlight:CONSTRUCTOR:[]:ESCAPED{Highlight}(PARAMETERS{ESCAPED{element}, ESCAPED{options}}):
+  Move:CONSTRUCTOR:[]:ESCAPED{Move}(PARAMETERS{ESCAPED{element}, ESCAPED{fromPos}, ESCAPED{toPos}, ESCAPED{options}}):
+  MoveSlide:CONSTRUCTOR:[]:ESCAPED{MoveSlide}(PARAMETERS{ESCAPED{element}, ESCAPED{fromPos}, ESCAPED{toPos}, ESCAPED{options}}):
+  Opacity:CONSTRUCTOR:[]:ESCAPED{Opacity}(PARAMETERS{ESCAPED{element}, ESCAPED{startOpacity}, ESCAPED{stopOpacity}, ESCAPED{options}}):
+  Puff:CONSTRUCTOR:[]:ESCAPED{Puff}(PARAMETERS{ESCAPED{element}, ESCAPED{options}}):
+  Pulsate:CONSTRUCTOR:[]:ESCAPED{Pulsate}(PARAMETERS{ESCAPED{element}, ESCAPED{options}}):
+  Registry:CONSTRUCTOR:[]:ESCAPED{Registry}:
+  Shake:CONSTRUCTOR:[]:ESCAPED{Shake}(PARAMETERS{ESCAPED{element}, ESCAPED{options}}):
+  Size:CONSTRUCTOR:[]:ESCAPED{Size}(PARAMETERS{ESCAPED{element}, ESCAPED{fromRect}, ESCAPED{toRect}, ESCAPED{options}}):
+  Slide:CONSTRUCTOR:[]:ESCAPED{Slide}(PARAMETERS{ESCAPED{element}, ESCAPED{options}}):
+  Squish:CONSTRUCTOR:[]:ESCAPED{Squish}(PARAMETERS{ESCAPED{element}, ESCAPED{options}}):
   cleanWhitespace:METHOD:[]:ESCAPED{cleanWhitespace}(PARAMETERS{ESCAPED{element}}):
   enforceVisible:METHOD:[]:ESCAPED{enforceVisible}(PARAMETERS{ESCAPED{element}}):
   getDimensions:METHOD:[]:ESCAPED{getDimensions}(PARAMETERS{ESCAPED{element}}):
@@ -40,9 +40,9 @@ Spry.Effect.Registry:CLASS:[]:ESCAPED{Spry.Effect.Registry}:
   getIndexOfElement:METHOD:[]:ESCAPED{getIndexOfElement}(PARAMETERS{ESCAPED{element}}):
   getRegisteredEffect:METHOD:[]:ESCAPED{getRegisteredEffect}(PARAMETERS{ESCAPED{element}, ESCAPED{effect}}):
 Spry.Effect.Utils:CLASS:[]:ESCAPED{Spry.Effect.Utils}:
-  Position:METHOD:[]:ESCAPED{Position}:
-  PositionedRectangle:METHOD:[]:ESCAPED{PositionedRectangle}:
-  Rectangle:METHOD:[]:ESCAPED{Rectangle}:
+  Position:CONSTRUCTOR:[]:ESCAPED{Position}:
+  PositionedRectangle:CONSTRUCTOR:[]:ESCAPED{PositionedRectangle}:
+  Rectangle:CONSTRUCTOR:[]:ESCAPED{Rectangle}:
   camelize:METHOD:[]:ESCAPED{camelize}(PARAMETERS{ESCAPED{stringToCamelize}}):
   getFirstChildElement:METHOD:[]:ESCAPED{getFirstChildElement}(PARAMETERS{ESCAPED{node}}):
   getPercentValue:METHOD:[]:ESCAPED{getPercentValue}(PARAMETERS{ESCAPED{value}}):
@@ -52,6 +52,94 @@ Spry.Effect.Utils:CLASS:[]:ESCAPED{Spry.Effect.Utils}:
   isPercentValue:METHOD:[]:ESCAPED{isPercentValue}(PARAMETERS{ESCAPED{value}}):
   optionsAreIdentical:METHOD:[]:ESCAPED{optionsAreIdentical}(PARAMETERS{ESCAPED{optionsA}, ESCAPED{optionsB}}):
   rgb:METHOD:[]:ESCAPED{rgb}(PARAMETERS{ESCAPED{redInt}, ESCAPED{greenInt}, ESCAPED{blueInt}}):
+options:CLASS:[]:ESCAPED{options}:
+  duration:PROPERTY:[]:ESCAPED{duration}:
+  duration:PROPERTY:[]:ESCAPED{duration}:
+  duration:PROPERTY:[]:ESCAPED{duration}:
+  duration:PROPERTY:[]:ESCAPED{duration}:
+  duration:PROPERTY:[]:ESCAPED{duration}:
+  duration:PROPERTY:[]:ESCAPED{duration}:
+  duration:PROPERTY:[]:ESCAPED{duration}:
+  duration:PROPERTY:[]:ESCAPED{duration}:
+  duration:PROPERTY:[]:ESCAPED{duration}:
+  duration:PROPERTY:[]:ESCAPED{duration}:
+  duration:PROPERTY:[]:ESCAPED{duration}:
+  duration:PROPERTY:[]:ESCAPED{duration}:
+  duration:PROPERTY:[]:ESCAPED{duration}:
+  duration:PROPERTY:[]:ESCAPED{duration}:
+  duration:PROPERTY:[]:ESCAPED{duration}:
+  duration:PROPERTY:[]:ESCAPED{duration}:
+  duration:PROPERTY:[]:ESCAPED{duration}:
+  duration:PROPERTY:[]:ESCAPED{duration}:
+  duration:PROPERTY:[]:ESCAPED{duration}:
+  duration:PROPERTY:[]:ESCAPED{duration}:
+  duration:PROPERTY:[]:ESCAPED{duration}:
+  duration:PROPERTY:[]:ESCAPED{duration}:
+  finish:PROPERTY:[]:ESCAPED{finish}:
+  finish:PROPERTY:[]:ESCAPED{finish}:
+  finish:PROPERTY:[]:ESCAPED{finish}:
+  finish:PROPERTY:[]:ESCAPED{finish}:
+  finish:PROPERTY:[]:ESCAPED{finish}:
+  finish:PROPERTY:[]:ESCAPED{finish}:
+  from:PROPERTY:[]:ESCAPED{from}:
+  from:PROPERTY:[]:ESCAPED{from}:
+  from:PROPERTY:[]:ESCAPED{from}:
+  from:PROPERTY:[]:ESCAPED{from}:
+  from:PROPERTY:[]:ESCAPED{from}:
+  from:PROPERTY:[]:ESCAPED{from}:
+  from:PROPERTY:[]:ESCAPED{from}:
+  restoreBackgroundImage:PROPERTY:[]:ESCAPED{restoreBackgroundImage}:
+  restoreColor:PROPERTY:[]:ESCAPED{restoreColor}:
+  scaleContent:PROPERTY:[]:ESCAPED{scaleContent}:
+  scaleContent:PROPERTY:[]:ESCAPED{scaleContent}:
+  scaleContent:PROPERTY:[]:ESCAPED{scaleContent}:
+  scaleContent:PROPERTY:[]:ESCAPED{scaleContent}:
+  scaleContent:PROPERTY:[]:ESCAPED{scaleContent}:
+  scaleContent:PROPERTY:[]:ESCAPED{scaleContent}:
+  setup:PROPERTY:[]:ESCAPED{setup}:
+  setup:PROPERTY:[]:ESCAPED{setup}:
+  setup:PROPERTY:[]:ESCAPED{setup}:
+  setup:PROPERTY:[]:ESCAPED{setup}:
+  setup:PROPERTY:[]:ESCAPED{setup}:
+  setup:PROPERTY:[]:ESCAPED{setup}:
+  to:PROPERTY:[]:ESCAPED{to}:
+  to:PROPERTY:[]:ESCAPED{to}:
+  to:PROPERTY:[]:ESCAPED{to}:
+  to:PROPERTY:[]:ESCAPED{to}:
+  to:PROPERTY:[]:ESCAPED{to}:
+  to:PROPERTY:[]:ESCAPED{to}:
+  to:PROPERTY:[]:ESCAPED{to}:
+  toggle:PROPERTY:[]:ESCAPED{toggle}:
+  toggle:PROPERTY:[]:ESCAPED{toggle}:
+  toggle:PROPERTY:[]:ESCAPED{toggle}:
+  toggle:PROPERTY:[]:ESCAPED{toggle}:
+  toggle:PROPERTY:[]:ESCAPED{toggle}:
+  toggle:PROPERTY:[]:ESCAPED{toggle}:
+  toggle:PROPERTY:[]:ESCAPED{toggle}:
+  toggle:PROPERTY:[]:ESCAPED{toggle}:
+  toggle:PROPERTY:[]:ESCAPED{toggle}:
+  toggle:PROPERTY:[]:ESCAPED{toggle}:
+  toggle:PROPERTY:[]:ESCAPED{toggle}:
+  toggle:PROPERTY:[]:ESCAPED{toggle}:
+  toggle:PROPERTY:[]:ESCAPED{toggle}:
+  toggle:PROPERTY:[]:ESCAPED{toggle}:
+  toggle:PROPERTY:[]:ESCAPED{toggle}:
+  toggle:PROPERTY:[]:ESCAPED{toggle}:
+  toggle:PROPERTY:[]:ESCAPED{toggle}:
+  toggle:PROPERTY:[]:ESCAPED{toggle}:
+  toggle:PROPERTY:[]:ESCAPED{toggle}:
+  toggle:PROPERTY:[]:ESCAPED{toggle}:
+  toggle:PROPERTY:[]:ESCAPED{toggle}:
+  toggle:PROPERTY:[]:ESCAPED{toggle}:
+  toggle:PROPERTY:[]:ESCAPED{toggle}:
+  transition:PROPERTY:[]:ESCAPED{transition}:
+  transition:PROPERTY:[]:ESCAPED{transition}:
+  transition:PROPERTY:[]:ESCAPED{transition}:
+  transition:PROPERTY:[]:ESCAPED{transition}:
+  transition:PROPERTY:[]:ESCAPED{transition}:
+  transition:PROPERTY:[]:ESCAPED{transition}:
+  transition:PROPERTY:[]:ESCAPED{transition}:
+  transition:PROPERTY:[]:ESCAPED{transition}:
 Spry.Effect.Animator:CLASS:[]:ESCAPED{Spry.Effect.Animator}:
   animate:METHOD:[]:ESCAPED{animate}(PARAMETERS{ESCAPED{position}}):
   cancel:METHOD:[]:ESCAPED{cancel}:
@@ -87,3 +175,6 @@ Spry.Effect.Cluster:CLASS:[]:ESCAPED{Spry.Effect.Cluster}:
   setToggle:METHOD:[]:ESCAPED{setToggle}(PARAMETERS{ESCAPED{doToggle}}):
   start:METHOD:[]:ESCAPED{start}:
   startNextEffect:METHOD:[]:ESCAPED{startNextEffect}:
+initialProps2:CLASS:[]:ESCAPED{initialProps2}:
+  left:PROPERTY:[]:ESCAPED{left}:
+  top:PROPERTY:[]:ESCAPED{top}:

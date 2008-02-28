@@ -55,6 +55,8 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
 import java.util.concurrent.Semaphore;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -132,7 +134,6 @@ public final class RailsServerManager {
     private File dir;
     private boolean debug;
     private boolean switchToDebugMode;
-    
     private Semaphore debugSemaphore;
     
     public RailsServerManager(RailsProject project) {
@@ -232,8 +233,35 @@ public final class RailsServerManager {
             assert instance != null : "No servers found for " + platform;
         }
         if (!(instance instanceof RubyServer)){
-            //XXX: handle glassfish..
-            RequestProcessor.getDefault().post(finishedAction);
+            final Future<RubyInstance.OperationState> result = 
+                    instance.runApplication(platform, projectName, dir);
+
+            final RubyInstance serverInstance = instance;
+            RequestProcessor.getDefault().post(new Runnable() {
+                public void run() {
+                    try {
+                        RubyInstance.OperationState state = result.get();
+                        if(state == RubyInstance.OperationState.COMPLETED) {
+                            synchronized(RailsServerManager.this) {
+                                port = serverInstance.getRailsPort();
+                                status = ServerStatus.RUNNING;
+                            }
+                        } else {
+                            synchronized(RailsServerManager.this) {
+                                status = ServerStatus.NOT_STARTED;
+                            }
+                        }
+                    } catch (Exception ex) {
+                        LOGGER.log(Level.INFO, ex.getMessage(), ex);
+                        
+                        // Ensure status value is reset on exceptions too...
+                        synchronized(RailsServerManager.this) {
+                            status = ServerStatus.NOT_STARTED;
+                        }
+                    }
+                }
+            });
+                
             return;
         }
         server = (RubyServer) instance;

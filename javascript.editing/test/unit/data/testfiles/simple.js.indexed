@@ -7,7 +7,26 @@ Delete:  source : <TESTURL>/simple.js
 
 Document 1
 Indexed:
-  func : method1;;;0;;
-  func : method2;;;39;;
+  base : boo;DonaldDuck.Mickey.Baz.boo;boo|FUNCTION|param;0;;;;
+  base : global1;;global1|GLOBAL|;;0;;;Foo.Bar;
+  base : global2;;global2|DOCUMENTED|GLOBAL|;;0;90;;Array;
+  base : global3;;global3|GLOBAL|;;0;;;org.foo.bar.Baz;
+  base : method1;;method1|DOCUMENTED|FUNCTION|;0;0;;;
+  base : method2;;method2|DOCUMENTED|FUNCTION|;0;28;;;
+  base : method2;;method2|DOCUMENTED|FUNCTION|;0;4c;;;
+  fqn : donaldduck.mickey.baz.boo.boo;;DonaldDuck.Mickey.Baz.boo.boo|FUNCTION|param;0;;;;
+  fqn : global1;;global1|GLOBAL|;;0;;;Foo.Bar;
+  fqn : global2;;global2|DOCUMENTED|GLOBAL|;;0;90;;Array;
+  fqn : global3;;global3|GLOBAL|;;0;;;org.foo.bar.Baz;
+  fqn : method1;;method1|DOCUMENTED|FUNCTION|;0;0;;;
+  fqn : method2;;method2|DOCUMENTED|FUNCTION|;0;28;;;
+  fqn : method2;;method2|DOCUMENTED|FUNCTION|;0;4c;;;
+  lcbase : boo;DonaldDuck.Mickey.Baz.boo;boo|FUNCTION|param;0;;;;
+  lcbase : global1;;global1|GLOBAL|;;0;;;Foo.Bar;
+  lcbase : global2;;global2|DOCUMENTED|GLOBAL|;;0;90;;Array;
+  lcbase : global3;;global3|GLOBAL|;;0;;;org.foo.bar.Baz;
+  lcbase : method1;;method1|DOCUMENTED|FUNCTION|;0;0;;;
+  lcbase : method2;;method2|DOCUMENTED|FUNCTION|;0;28;;;
+  lcbase : method2;;method2|DOCUMENTED|FUNCTION|;0;4c;;;
 
 Not Indexed:

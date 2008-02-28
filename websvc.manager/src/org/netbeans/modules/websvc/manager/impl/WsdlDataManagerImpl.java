@@ -68,7 +68,11 @@ public class WsdlDataManagerImpl implements WsdlDataManager {
                 mgr.saveDescriptor((WebServiceDescriptor)desc);
             }
         } catch(Exception ex) {
-            mgr.save();
+            try {
+                mgr.save();
+            } catch(Exception e) {
+                //at this point, just leave it to save on ide exit 
+            }
         }
     }
 

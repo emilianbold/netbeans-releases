@@ -61,11 +61,16 @@ public abstract class GdbDebuggerActionProvider extends ActionsProviderSupport
     
     GdbDebuggerActionProvider(ContextProvider lookupProvider) {
         debugger = (GdbDebugger) lookupProvider.lookupFirst(null, GdbDebugger.class);
-        debugger.addPropertyChangeListener(GdbDebugger.PROP_STATE, this);
+        debugger.addPropertyChangeListener(this);
     }
     
     public void propertyChange(PropertyChangeEvent evt) {
-           checkEnabled(debugger.getState()); 
+        String pname = evt.getPropertyName();
+        if (pname.equals(GdbDebugger.PROP_STATE) ||
+                pname.equals(GdbDebugger.PROP_CURRENT_CALL_STACK_FRAME) ||
+                pname.equals(GdbDebugger.PROP_CURRENT_THREAD)) {
+            checkEnabled(debugger.getState());
+        } 
     }
     
     protected abstract void checkEnabled(String debuggerState);

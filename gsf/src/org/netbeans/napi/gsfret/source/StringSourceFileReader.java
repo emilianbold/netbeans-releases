@@ -40,8 +40,8 @@
  */
 package org.netbeans.napi.gsfret.source;
 
-import org.netbeans.fpi.gsf.ParserFile;
-import org.netbeans.fpi.gsf.SourceFileReader;
+import org.netbeans.modules.gsf.api.ParserFile;
+import org.netbeans.modules.gsf.api.SourceFileReader;
 import org.netbeans.napi.gsfret.source.support.CaretAwareSourceTaskFactory;
 import org.openide.filesystems.FileObject;
 

@@ -59,9 +59,9 @@ import org.mozilla.javascript.Node;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.editor.settings.FontColorSettings;
-import org.netbeans.fpi.gsf.ElementKind;
-import org.netbeans.fpi.gsfpath.classpath.ClassPath;
-import org.netbeans.fpi.gsfpath.classpath.GlobalPathRegistry;
+import org.netbeans.modules.gsf.api.ElementKind;
+import org.netbeans.modules.gsfpath.api.classpath.ClassPath;
+import org.netbeans.modules.gsfpath.api.classpath.GlobalPathRegistry;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenId;
@@ -81,7 +81,7 @@ import org.netbeans.modules.gsf.LanguageRegistry;
 import org.netbeans.modules.javascript.editing.AstUtilities;
 import org.netbeans.modules.javascript.editing.JsMimeResolver;
 import org.netbeans.modules.javascript.editing.lexer.JsTokenId;
-import org.netbeans.sfpi.gsfpath.classpath.support.ClassPathSupport;
+import org.netbeans.modules.gsfpath.spi.classpath.support.ClassPathSupport;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Lookup;
@@ -159,12 +159,14 @@ public class RetoucheUtils {
     public static String[] getNodeNames(Node node) {
         String name = null;
         String simpleName = null;
-        
-        if (node.getType() == org.mozilla.javascript.Token.CALL) {
+        int type = node.getType();
+        if (type == org.mozilla.javascript.Token.CALL) {
             name = AstUtilities.getCallName(node, true);
             simpleName = AstUtilities.getCallName(node, false);
-        } else {
+        } else if (node instanceof Node.StringNode) {
             name = node.getString();
+        } else {
+            return new String[] { null, null};
         }
         // TODO - FUNCTION - also get full name!
         

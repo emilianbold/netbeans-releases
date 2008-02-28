@@ -223,6 +223,23 @@ public class Constants {
             return annotationType;
         }
     }
+    
+    public enum SaasAuthenticationType {
+        PLAIN("plain"),
+        HTTP_BASIC("http-basic"), 
+        API_KEY("api-key"),
+        CUSTOM("custom");
+        
+        private String value;
+        
+        SaasAuthenticationType(String value) {
+            this.value = value;
+        }
+        
+        public String value() {
+            return value;
+        }
+    }
    
     public static final String REST_JMAKI_DIR = "resources"; //NOI18N
     public static final String REST_STUBS_DIR = "rest"; //NOI18N

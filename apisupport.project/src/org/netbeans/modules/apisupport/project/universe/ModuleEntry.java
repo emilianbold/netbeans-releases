@@ -58,8 +58,8 @@ import org.netbeans.modules.apisupport.project.ManifestManager;
 public interface ModuleEntry extends Comparable {
 
     /**
-     * Get a relative source path inside netbeans.org CVS.
-     * Note that if the entry is from netbeans.org CVS yet was scanned as a
+     * Get a relative source path inside netbeans.org sources.
+     * Note that if the entry is from netbeans.org yet was scanned as a
      * side effect of loading an external module that defined netbeans.dest.dir,
      * this will be null - such secondary entries are essentially based on the
      * actual JAR, only adding in a non-null {@link #getSourceLocation}.

@@ -41,10 +41,42 @@
 
 package gui;
 
+import org.netbeans.jellytools.NbDialogOperator;
+import org.netbeans.jellytools.ProjectsTabOperator;
+import org.netbeans.jellytools.nodes.ProjectRootNode;
+import org.netbeans.jemmy.JemmyException;
+import org.netbeans.jemmy.operators.JListOperator;
+
 /**
  *
  * @author mkhramov@netneans.org
  */
 public class ScriptingUtilities extends gui.Utilities {
-
+    private static final String menuItemName = org.netbeans.jellytools.Bundle.getString("org.netbeans.modules.web.project.ui.Bundle", "LBL_Fix_Missing_Server_Action");
+    private static final String dialogName = org.netbeans.jellytools.Bundle.getString("org.netbeans.modules.j2ee.common.ui.Bundle", "LBL_Resolve_Missing_Server_Title");
+    
+    public static void verifyAndResolveMissingWebServer(String projectName, String serverName) {
+        ProjectRootNode projectNode = new ProjectsTabOperator().getProjectRootNode(projectName);
+             
+        if(!isServerMissingMenuAvaialable(projectName)) {
+            return;
+        }
+        
+        projectNode.performPopupActionNoBlock(menuItemName);
+        
+        NbDialogOperator missingServerDialog = new NbDialogOperator(dialogName);
+        JListOperator serversList = new JListOperator(missingServerDialog);
+        serversList.selectItem(serverName);
+        missingServerDialog.ok();
+        
+    }
+    private static boolean isServerMissingMenuAvaialable(String projectName) {
+        ProjectRootNode projectNode = new ProjectsTabOperator().getProjectRootNode(projectName);
+        try {
+            projectNode.verifyPopup(menuItemName);
+        } catch(JemmyException jex) {
+            return false;
+        }
+        return true;
+    }
 }

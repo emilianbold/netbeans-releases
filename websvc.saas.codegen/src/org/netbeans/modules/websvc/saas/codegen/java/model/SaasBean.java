@@ -47,7 +47,10 @@ import java.util.List;
 import org.netbeans.modules.websvc.saas.codegen.java.AbstractGenerator;
 import org.netbeans.modules.websvc.saas.codegen.java.Constants.HttpMethodType;
 import org.netbeans.modules.websvc.saas.codegen.java.Constants.MimeType;
-import org.netbeans.modules.websvc.saas.codegen.java.support.Inflector;
+import org.netbeans.modules.websvc.saas.codegen.java.Constants.SaasAuthenticationType;
+import org.netbeans.modules.websvc.saas.codegen.java.model.ParameterInfo.ParamStyle;
+import org.netbeans.modules.websvc.saas.model.SaasMethod;
+import org.netbeans.modules.websvc.saas.model.jaxb.SaasMetadata.Authentication;
 
 /**
  *
@@ -55,18 +58,20 @@ import org.netbeans.modules.websvc.saas.codegen.java.support.Inflector;
  */
 public abstract class SaasBean extends GenericResourceBean {
 
-    public static final String RESOURCE_TEMPLATE = "Templates/WebServices/WrapperResource.java"; //NOI18N
+    public static final String RESOURCE_TEMPLATE = AbstractGenerator.TEMPLATES_SAAS+"WrapperResource.java"; //NOI18N
     private String outputWrapperName;
     private String wrapperPackageName;
     private List<ParameterInfo> inputParams;
     private List<ParameterInfo> queryParams;
     private String resourceTemplate;
+    private SaasAuthenticationType authType;
+    private SaasBean.SaasAuthentication auth;
 
     public SaasBean(String name, String packageName, String uriTemplate, MimeType[] mediaTypes, String[] representationTypes, HttpMethodType[] methodTypes) {
         super(name, packageName, uriTemplate, mediaTypes, representationTypes, methodTypes);
     }
 
-    public void setInputParameters(List<ParameterInfo> inputParams) {
+    protected void setInputParameters(List<ParameterInfo> inputParams) {
         this.inputParams = inputParams;
     }
 
@@ -91,7 +96,7 @@ public abstract class SaasBean extends GenericResourceBean {
             queryParams = new ArrayList<ParameterInfo>();
 
             for (ParameterInfo param : getInputParameters()) {
-                if (param.isQueryParam()) {
+                if (param.getStyle() == ParamStyle.QUERY) {
                     queryParams.add(param);
                 }
             }
@@ -119,14 +124,7 @@ public abstract class SaasBean extends GenericResourceBean {
         wrapperPackageName = packageName;
     }
 
-    protected static String deriveResourceName(String componentName) {
-        return Inflector.getInstance().camelize(componentName + GenericResourceBean.RESOURCE_SUFFIX);
-    }
-
-    protected static String deriveUriTemplate(String name) {
-        return Inflector.getInstance().camelize(name, true) + "/"; //NOI18N
-    }
-
+    @Override
     public String[] getRepresentationTypes() {
         if (getMimeTypes().length == 1 && getMimeTypes()[0] == MimeType.HTML) {
             return new String[]{String.class.getName()};
@@ -149,8 +147,71 @@ public abstract class SaasBean extends GenericResourceBean {
         return resourceTemplate;
     }
     
-    public void setResourceClassTemplate(String template) {
+    protected void setResourceClassTemplate(String template) {
         this.resourceTemplate = template;
+    }
+    
+    public SaasAuthenticationType getAuthenticationType() {
+        return authType;
+    }
+    
+    public void setAuthenticationType(SaasAuthenticationType authType) {
+        this.authType = authType;
+    }
+    
+    
+    public SaasAuthentication getAuthentication() {
+        return auth;
+    }
+    
+    public void setAuthentication(SaasAuthentication auth) {
+        this.auth = auth;
+    }
+    
+    public void findAuthentication(SaasMethod m) {
+        Authentication auth2 = m.getSaas().getSaasMetadata().getAuthentication();
+        if(auth2.getHttpBasic() != null) {
+            setAuthenticationType(SaasAuthenticationType.HTTP_BASIC);
+            setAuthentication(new HttpBasicAuthentication());
+        } else if(auth2.getCustom() != null) {
+            setAuthenticationType(SaasAuthenticationType.CUSTOM);
+            setAuthentication(new CustomAuthentication());
+        } else if(auth2.getApiKey() != null) {
+            setAuthenticationType(SaasAuthenticationType.API_KEY);
+            setAuthentication(new ApiKeyAuthentication(auth2.getApiKey().getId()));
+        } else {
+            setAuthenticationType(SaasAuthenticationType.PLAIN);
+        }
+    }
+    
+    public class SaasAuthentication {
+        public SaasAuthentication() {
+            
+        }
+    }
+    
+    public class HttpBasicAuthentication extends SaasAuthentication {
+        public HttpBasicAuthentication() {
+            
+        }
+    }
+    
+    public class ApiKeyAuthentication extends SaasAuthentication {
+        private String keyName;
+        
+        public ApiKeyAuthentication(String keyName) {
+            this.keyName = keyName;
+        }
+        
+        public String getApiKeyName() {
+            return keyName;
+        }
+    }
+    
+    public class CustomAuthentication extends SaasAuthentication {
+        public CustomAuthentication() {
+            
+        }
     }
 
 }

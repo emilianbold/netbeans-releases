@@ -62,8 +62,7 @@ public class CustomSaasNode extends SaasNode {
     private static final java.awt.Image ICON =
        org.openide.util.Utilities.loadImage( "org/netbeans/modules/websvc/saas/ui/resources/custom_service.png" ); //NOI18N
     
-    @Override
-    public java.awt.Image getIcon(int type) {
+    protected java.awt.Image getGenericIcon(int type) {
         return ICON;
     }
     

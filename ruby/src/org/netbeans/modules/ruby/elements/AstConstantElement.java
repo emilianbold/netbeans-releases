@@ -1,8 +1,8 @@
 package org.netbeans.modules.ruby.elements;
 
 import org.jruby.ast.ConstDeclNode;
-import org.netbeans.fpi.gsf.CompilationInfo;
-import org.netbeans.fpi.gsf.ElementKind;
+import org.netbeans.modules.gsf.api.CompilationInfo;
+import org.netbeans.modules.gsf.api.ElementKind;
 
 
 public class AstConstantElement extends AstElement {

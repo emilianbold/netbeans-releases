@@ -45,7 +45,7 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.nio.CharBuffer;
-import org.netbeans.fpi.gsf.CompilationInfo;
+import org.netbeans.modules.gsf.api.CompilationInfo;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.junit.NbTestCase;

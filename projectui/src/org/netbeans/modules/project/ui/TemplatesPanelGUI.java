@@ -191,6 +191,13 @@ public class TemplatesPanelGUI extends javax.swing.JPanel implements PropertyCha
         return null;
     }
 
+    @Override
+    public void removeNotify() {
+        super.removeNotify();
+        jScrollPane1.setViewportView(null);
+        jLabel3.setLabelFor(null);
+    }
+
     public void propertyChange (PropertyChangeEvent event) {
         if (event.getSource() == this.categoriesPanel) {
             if (ExplorerManager.PROP_SELECTED_NODES.equals (event.getPropertyName ())) {
@@ -584,7 +591,7 @@ public class TemplatesPanelGUI extends javax.swing.JPanel implements PropertyCha
         }
         
     }
-           
+   
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JPanel categoriesPanel;
     private javax.swing.JEditorPane description;

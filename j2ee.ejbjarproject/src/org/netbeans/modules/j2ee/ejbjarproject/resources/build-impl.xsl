@@ -261,6 +261,13 @@ is divided into following sections:
                 <fail unless="dist.javadoc.dir">Must set dist.javadoc.dir</fail>
                 <fail unless="build.classes.excludes">Must set build.classes.excludes</fail>
                 <fail unless="dist.jar">Must set dist.jar</fail>
+                <fail unless="j2ee.platform.classpath">
+The Java EE server classpath is not correctly set up. Your active server type is ${j2ee.server.type}.
+Either open the project in the IDE and assign the server or setup the server classpath manually.
+For example like this:
+   ant -Duser.properties.file=&lt;path_to_property_file&gt; (where you put the property "j2ee.platform.classpath" in a .properties file)
+or ant -Dj2ee.platform.classpath=&lt;server_classpath&gt; (where no properties file is used)
+                </fail>                
             </target>
             
             <target name="-init-macrodef-property">

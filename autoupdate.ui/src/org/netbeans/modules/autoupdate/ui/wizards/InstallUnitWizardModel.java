@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -47,6 +47,7 @@ import java.util.Set;
 import org.netbeans.api.autoupdate.InstallSupport;
 import org.netbeans.api.autoupdate.InstallSupport.Installer;
 import org.netbeans.api.autoupdate.OperationContainer;
+import org.netbeans.api.autoupdate.OperationContainer.OperationInfo;
 import org.netbeans.api.autoupdate.OperationException;
 import org.netbeans.api.autoupdate.OperationSupport;
 import org.netbeans.api.autoupdate.UpdateElement;
@@ -63,7 +64,6 @@ public class InstallUnitWizardModel extends OperationWizardModel {
     private OperationType doOperation;
     private static Set<String> approvedLicences = new HashSet<String> ();
     private InstallSupport support;
-    private InstallSupport additionallySupport = null;
     private OperationContainer<InstallSupport> updateContainer = null;
     private PluginManagerUI manager;
     
@@ -98,16 +98,19 @@ public class InstallUnitWizardModel extends OperationWizardModel {
             support = Containers.forUpdate ().getSupport ();
             break;
         case LOCAL_DOWNLOAD :
-            OperationContainer<InstallSupport> additionallyContainer;
             if (Containers.forUpdateNbms ().listAll ().isEmpty ()) {
                 c = Containers.forAvailableNbms ();
-                additionallyContainer = Containers.forUpdateNbms ();
             } else {
                 c = Containers.forUpdateNbms ();
-                additionallyContainer = Containers.forAvailableNbms ();
+                for (OperationInfo i : Containers.forAvailableNbms ().listAll ()) {
+                    c.add (i.getUpdateElement ());
+                }
+                assert Containers.forAvailableNbms ().listInvalid ().isEmpty () :
+                    "Containers.forAvailableNbms().listInvalid() should be empty but " + Containers.forAvailableNbms ().listInvalid ();
+                Containers.forAvailableNbms ().removeAll ();
             }
-            additionallySupport = additionallyContainer.getSupport ();
             support = c.getSupport ();
+            updateContainer = c;
             break;
         }
         return c;
@@ -134,10 +137,6 @@ public class InstallUnitWizardModel extends OperationWizardModel {
     
     public InstallSupport getInstallSupport () {
         return support;
-    }
-    
-    public InstallSupport getAdditionallyInstallSupport () {
-        return additionallySupport;
     }
     
     public void setInstaller (Installer i) {

@@ -659,9 +659,9 @@ public class SunDeploymentManager implements Constants, DeploymentManager, SunDe
                             isLocal = false;
                         }
                         String domainName = dmProps.getDomainName();
-                        domainDir = new File(domainDir).getCanonicalPath();
                         domainDir += File.separator +
                                 domainName;
+                        domainDir = new File(domainDir).getCanonicalPath();
                     }
                     if (isLocal()){// if the server is local, make sure we are talking to the correct one
                         //we do that by testing the server location known by the IDE with the server location known by the

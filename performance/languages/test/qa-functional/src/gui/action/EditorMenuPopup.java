@@ -103,7 +103,7 @@ public class EditorMenuPopup extends org.netbeans.performance.test.utilities.Per
     public void prepare() {
         log("::prepare"); 
         new OpenAction().performAPI(fileToBeOpened);
-        editorOperator = EditorWindowOperator.getEditor(docName);        
+        editorOperator = EditorWindowOperator.getEditor(docName);  
     }
 
     @Override
@@ -134,7 +134,7 @@ public class EditorMenuPopup extends org.netbeans.performance.test.utilities.Per
         docName = "ruby20kb.rb"; 
         doMeasurement();
     } 
-    public void test_RTML_EditorPopup() {
+    public void test_RHTML_EditorPopup() {
         testProject = Projects.RAILS_PROJECT;
         pathName = "Views"+"|";
         docName = "rhtml20kb.rhtml"; 

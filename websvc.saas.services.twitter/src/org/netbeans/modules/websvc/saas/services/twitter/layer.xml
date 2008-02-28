@@ -44,7 +44,7 @@
 <!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.1//EN" "http://www.netbeans.org/dtds/filesystem-1_1.dtd">
 <filesystem>
     
-    <folder name="SaasServices">
+    <folder name="SaaSServices">
         <folder name="Twitter">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.websvc.saas.services.twitter.Bundle"/>
             <file name="profile.properties" url="/org/netbeans/modules/websvc/saas/services/twitter/resources/profile.properties"/>

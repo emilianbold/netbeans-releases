@@ -51,9 +51,9 @@ import org.jruby.ast.ConstNode;
 import org.jruby.ast.Node;
 import org.jruby.ast.NodeTypes;
 import org.jruby.ast.SymbolNode;
-import org.netbeans.fpi.gsf.CompilationInfo;
-import org.netbeans.fpi.gsf.ElementKind;
-import org.netbeans.fpi.gsf.Modifier;
+import org.netbeans.modules.gsf.api.CompilationInfo;
+import org.netbeans.modules.gsf.api.ElementKind;
+import org.netbeans.modules.gsf.api.Modifier;
 
 
 /**

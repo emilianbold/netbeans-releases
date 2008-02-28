@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -97,11 +97,8 @@ public class FolderNodeTest extends org.netbeans.jellytools.JellyTestCase {
         junit.textui.TestRunner.run(suite());
     }
     
-    // "Confirm Object Deletion"
-    private static final String confirmTitle = Bundle.getString("org.openide.explorer.Bundle",
-                                                                "MSG_ConfirmDeleteObjectTitle"); // NOI18N
-    
     /** Test case setup. */
+    @Override
     protected void setUp() {
         System.out.println("### "+getName()+" ###");
     }
@@ -191,8 +188,8 @@ public class FolderNodeTest extends org.netbeans.jellytools.JellyTestCase {
         FolderNode sample2Node = new FolderNode(sample1Node, "sample2"); // NOI18N
         sample2Node.copy();
         sample1Node.paste();
-        new FolderNode(sample1Node, "sample2_1").delete();  // NOI18N
-        new NbDialogOperator(confirmTitle).yes();
+        FolderNode sample21Node = new FolderNode(sample1Node, "sample2_1");  // NOI18N
+        Utils.performSafeDelete(sample21Node);
     }
     
     /** Test cut. */
@@ -215,7 +212,7 @@ public class FolderNodeTest extends org.netbeans.jellytools.JellyTestCase {
     public void testDelete() {
         FolderNode folderNode = new FolderNode(new SourcePackagesNode("SampleProject"), "sample1"); // NOI18N
         folderNode.delete();
-        Utils.closeConfirmDialog();
+        Utils.closeSafeDeleteDialog();
     }
     
     /** Test rename */

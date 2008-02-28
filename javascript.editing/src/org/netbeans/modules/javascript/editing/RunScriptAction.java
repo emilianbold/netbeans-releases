@@ -49,7 +49,7 @@ import java.lang.reflect.Method;
 import javax.swing.AbstractAction;
 import javax.swing.text.JTextComponent;
 
-import org.netbeans.fpi.gsf.EditorAction;
+import org.netbeans.modules.gsf.api.EditorAction;
 import org.netbeans.modules.editor.NbEditorUtilities;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;

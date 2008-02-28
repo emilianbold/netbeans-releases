@@ -104,7 +104,7 @@ public class CliJbiGenerator {
     public static final String XSI_ATTR_NAME = "xsi:schemaLocation"; // NOI18N
     public static final String XSI_ATTR_VALUE ="http://java.sun.com/xml/ns/jbi jbi.xsd"; // NOI18N
     
-    public static final String JBI_EXT_NS = "http://enterprise.netbeans.org/bpel/jbi-extensions"; // NOI18N
+    public static final String JBI_EXT_NS = "http://www.sun.com/jbi/descriptor/service-unit"; // NOI18N
     
     public static final String JBI_EXT_DISPLAY_NAME = "display-name";
     public static final String JBI_EXT_PROC_NAME_ATTR = "process-name";
@@ -328,7 +328,7 @@ public class CliJbiGenerator {
                             );
                     
                     Element extensionElement = (Element) document.createElementNS(JBI_EXT_NS, populateNamespace(JBI_EXT_NS) + ":" + JBI_EXT_DISPLAY_NAME);
-                    extensionElement.setTextContent(provider.getMyRoleName());
+                    extensionElement.setTextContent(provider.getPartnerLinkName());
                     portMapNode.appendChild(extensionElement);
                     
                     extensionElement = (Element) document.createElementNS(JBI_EXT_NS, populateNamespace(JBI_EXT_NS) + ":" + JBI_EXT_PROC_NAME_ATTR);
@@ -338,12 +338,6 @@ public class CliJbiGenerator {
                     extensionElement = (Element) document.createElementNS(JBI_EXT_NS, populateNamespace(JBI_EXT_NS) + ":" + JBI_EXT_FILE_PATH_ATTR);
                     extensionElement.setTextContent(provider.getFilePath());
                     portMapNode.appendChild(extensionElement);
-//                    portMapNode.setAttribute(
-//                            populateNamespace(JBI_EXT_NS) + ":" + JBI_EXT_PROC_NAME_ATTR, 
-//                            provider.getProcessName());
-//                    portMapNode.setAttribute(
-//                            populateNamespace(JBI_EXT_NS) + ":" + JBI_EXT_FILE_PATH_ATTR, 
-//                            provider.getFilePath());
                     
                     services.appendChild(portMapNode);
                 }
@@ -372,7 +366,7 @@ public class CliJbiGenerator {
                             );
                     
                     Element extensionElement = (Element) document.createElementNS(JBI_EXT_NS, populateNamespace(JBI_EXT_NS) + ":" + JBI_EXT_DISPLAY_NAME);
-                    extensionElement.setTextContent(consumer.getPartnerRoleName());
+                    extensionElement.setTextContent(consumer.getPartnerLinkName());
                     portMapNode.appendChild(extensionElement);
                     
                     extensionElement = (Element) document.createElementNS(JBI_EXT_NS, populateNamespace(JBI_EXT_NS) + ":" + JBI_EXT_PROC_NAME_ATTR);
@@ -382,12 +376,6 @@ public class CliJbiGenerator {
                     extensionElement = (Element) document.createElementNS(JBI_EXT_NS, populateNamespace(JBI_EXT_NS) + ":" + JBI_EXT_FILE_PATH_ATTR);
                     extensionElement.setTextContent(consumer.getFilePath());
                     portMapNode.appendChild(extensionElement);
-//                    portMapNode.setAttribute(
-//                            populateNamespace(JBI_EXT_NS) + ":" + JBI_EXT_PROC_NAME_ATTR, 
-//                            consumer.getProcessName());
-//                    portMapNode.setAttribute(
-//                            populateNamespace(JBI_EXT_NS) + ":" + JBI_EXT_FILE_PATH_ATTR, 
-//                            consumer.getFilePath());
                     
                     services.appendChild(portMapNode);
                 }

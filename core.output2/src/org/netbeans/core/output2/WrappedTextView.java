@@ -611,7 +611,7 @@ public class WrappedTextView extends View {
 
             int result = wraps > 0 ?
                 Math.min(od.getLineEnd(logicalLine) - 1, lineStart + (ln[1] * charsPerLine) + column)
-                : lineStart + column;
+                : Math.min(lineStart + column, lineLength - 1);
             result = Math.min (od.getLength(), result);
             return result;
 /*            System.err.println ("ViewToModel " + ix + "," + iy + " = " + result + " physical ln " + physicalLine +
