@@ -82,6 +82,7 @@ import org.netbeans.modules.java.j2seproject.queries.BinaryForSourceQueryImpl;
 import org.netbeans.spi.java.project.support.ExtraSourceJavadocSupport;
 import org.netbeans.spi.java.project.support.LookupMergerSupport;
 import org.netbeans.spi.java.project.support.ui.BrokenReferencesSupport;
+import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.netbeans.spi.project.SubprojectProvider;
 import org.netbeans.spi.project.ant.AntArtifactProvider;
@@ -165,7 +166,9 @@ public final class J2SEProject implements Project, AntProjectListener {
 
         this.cpProvider = new ClassPathProviderImpl(this.helper, evaluator(), getSourceRoots(),getTestSourceRoots()); //Does not use APH to get/put properties/cfgdata
         this.cpMod = new J2SEProjectClassPathModifier(this, this.updateHelper, eval, refHelper);
-        lookup = createLookup(aux);
+        final J2SEActionProvider actionProvider = new J2SEActionProvider( this, this.updateHelper );
+        lookup = createLookup(aux, actionProvider);
+        actionProvider.startFSListener();
         helper.addAntProjectListener(this);
     }
 
@@ -247,15 +250,16 @@ public final class J2SEProject implements Project, AntProjectListener {
         return helper;
     }
 
-    private Lookup createLookup(AuxiliaryConfiguration aux) {
-        SubprojectProvider spp = refHelper.createSubprojectProvider();        
-        Lookup base = Lookups.fixed(new Object[] {
+    private Lookup createLookup(final AuxiliaryConfiguration aux,
+            final ActionProvider actionProvider) {
+        final SubprojectProvider spp = refHelper.createSubprojectProvider();        
+        final Lookup base = Lookups.fixed(new Object[] {
             J2SEProject.this,
             new Info(),
             aux,
             helper.createCacheDirectoryProvider(),
             spp,
-            new J2SEActionProvider( this, this.updateHelper ),
+            actionProvider,
             new J2SELogicalViewProvider(this, this.updateHelper, evaluator(), spp, refHelper),
             // new J2SECustomizerProvider(this, this.updateHelper, evaluator(), refHelper),
             new CustomizerProviderImpl(this, this.updateHelper, evaluator(), refHelper, this.genFilesHelper),        

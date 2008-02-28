@@ -45,6 +45,7 @@ import java.util.logging.Logger;
 import org.netbeans.editor.ext.html.parser.AstNode;
 import org.netbeans.editor.ext.html.parser.SyntaxElement;
 import org.netbeans.editor.ext.html.parser.SyntaxParser;
+import org.netbeans.modules.editor.html.HTMLKit;
 import org.netbeans.modules.gsf.api.CompilationInfo;
 import org.netbeans.modules.gsf.api.ElementHandle;
 import org.netbeans.modules.gsf.api.OffsetRange;
@@ -53,6 +54,7 @@ import org.netbeans.modules.gsf.api.Parser;
 import org.netbeans.modules.gsf.api.ParserFile;
 import org.netbeans.modules.gsf.api.ParserResult;
 import org.netbeans.modules.gsf.api.PositionManager;
+import org.netbeans.modules.gsf.api.TranslatedSource;
 import org.openide.util.Exceptions;
 
 /**
@@ -87,7 +89,7 @@ public class HtmlGSFParser implements Parser, PositionManager {
                 result = new HtmlParserResult(this, file, elements);
 
                 //TODO implement some error checks here, at least for unpaired tags?
-                
+
                 ParseEvent doneEvent = new ParseEvent(ParseEvent.Kind.PARSE, file, result);
                 job.listener.finished(doneEvent);
             } catch (IOException ex) {
@@ -102,14 +104,16 @@ public class HtmlGSFParser implements Parser, PositionManager {
         return this;
     }
 
-     public OffsetRange getOffsetRange(CompilationInfo info, ElementHandle object) {
-         if(object instanceof HtmlElementHandle) {
-             AstNode node = ((HtmlElementHandle)object).node();
-             return new OffsetRange(node.startOffset(), node.endOffset());
-         } else {
+    public OffsetRange getOffsetRange(CompilationInfo info, ElementHandle object) {
+        if (object instanceof HtmlElementHandle) {
+            ParserResult presult = info.getEmbeddedResults(HTMLKit.HTML_MIME_TYPE).iterator().next();
+            final TranslatedSource source = presult.getTranslatedSource();
+            AstNode node = ((HtmlElementHandle) object).node();
+            return new OffsetRange(AstUtils.documentPosition(node.startOffset(), source), AstUtils.documentPosition(node.endOffset(), source));
+
+        } else {
             throw new IllegalArgumentException((("Foreign element: " + object + " of type " +
-                object) != null) ? object.getClass().getName() : "null"); //NOI18N
+                    object) != null) ? object.getClass().getName() : "null"); //NOI18N
         }
     }
-    
 }

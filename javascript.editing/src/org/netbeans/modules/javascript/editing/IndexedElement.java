@@ -65,7 +65,7 @@ import org.openide.util.Exceptions;
  * 
  * @author Tor Norbye
  */
-public class IndexedElement extends JsElement {
+public abstract class IndexedElement extends JsElement {
 
     protected ElementKind kind;
     protected String name;
