@@ -88,12 +88,25 @@ public abstract class ExtensibleElementsImpl extends BpelContainerImpl implement
       if (value == null) {
         return null;
       }
-      value = value.trim();
+      value = trimEnded(value);
 
       if (value.length() == 0) {
         return null;
       }
       return value;
+    }
+
+    private String trimEnded(String value) {
+      int len = value.length();
+      int k = len - 1;
+
+      while (k >= 0 && value.charAt(k) == ' ') {
+        k--;
+      }
+      if (k == len - 1) {
+        return value;
+      }
+      return value.substring(0, k + 1);
     }
 
     public void removeDocumentation() throws VetoException {
