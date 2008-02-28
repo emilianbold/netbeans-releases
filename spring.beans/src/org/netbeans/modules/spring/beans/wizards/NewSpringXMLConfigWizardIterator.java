@@ -92,7 +92,9 @@ public final class NewSpringXMLConfigWizardIterator implements WizardDescriptor.
         if (panels == null) {
             Project p = Templates.getProject(wizard);
             SourceGroup[] groups = ProjectUtils.getSources(p).getSourceGroups(Sources.TYPE_GENERIC);
-            WizardDescriptor.Panel targetChooser = Templates.createSimpleTargetChooser(p, groups, new SpringXMLConfigGroupPanel(p));
+            List<ConfigFileGroup> configFileGroups = getConfigFileManager(p).getConfigFileGroups();
+            SpringXMLConfigGroupPanel configGroupPanel = configFileGroups.isEmpty() ? null : new SpringXMLConfigGroupPanel(configFileGroups);
+            WizardDescriptor.Panel targetChooser = Templates.createSimpleTargetChooser(p, groups, configGroupPanel);
 
             panels = new WizardDescriptor.Panel[]{
                 targetChooser,
@@ -142,7 +144,7 @@ public final class NewSpringXMLConfigWizardIterator implements WizardDescriptor.
         
         @SuppressWarnings("unchecked")
         Set<ConfigFileGroup> selectedGroups = (Set<ConfigFileGroup>) wizard.getProperty(SpringXMLConfigGroupPanel.CONFIG_FILE_GROUPS);
-        if(selectedGroups.size() > 0) {
+        if(selectedGroups != null && selectedGroups.size() > 0) {
             addFileToSelectedGroups(selectedGroups, FileUtil.toFile(createdFile[0]));
         }
         

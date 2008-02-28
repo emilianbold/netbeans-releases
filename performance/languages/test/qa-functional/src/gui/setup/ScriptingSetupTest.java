@@ -67,7 +67,10 @@ public class ScriptingSetupTest extends IDESetupTest {
     
     public void OpenScriptingProject() {
         ScriptingUtilities.waitProjectOpenedScanFinished(System.getProperty("xtest.tmpdir")+ java.io.File.separator +Projects.SCRIPTING_PROJECT);
-        ScriptingUtilities.waitForPendingBackgroundTasks();             
+        ScriptingUtilities.waitForPendingBackgroundTasks();
+        closeAllModal();
+        ScriptingUtilities.verifyAndResolveMissingWebServer(Projects.SCRIPTING_PROJECT, "GlassFish V2");
+        ScriptingUtilities.waitForPendingBackgroundTasks();        
     }
 
 }

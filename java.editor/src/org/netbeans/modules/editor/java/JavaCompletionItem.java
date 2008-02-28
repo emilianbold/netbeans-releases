@@ -251,8 +251,6 @@ public abstract class JavaCompletionItem implements CompletionItem {
                     JTextComponent component = (JTextComponent)evt.getSource();
                     int caretOffset = component.getSelectionEnd();
                     substituteText(component, substitutionOffset, caretOffset - substitutionOffset, Character.toString(evt.getKeyChar()));
-                    if (evt.getKeyChar() == '.')
-                        Completion.get().showCompletion();
                     evt.consume();
                     break;
                 case '.':
@@ -260,9 +258,15 @@ public abstract class JavaCompletionItem implements CompletionItem {
                     component = (JTextComponent)evt.getSource();
                     caretOffset = component.getSelectionEnd();
                     substituteText(component, substitutionOffset, caretOffset - substitutionOffset, Character.toString(evt.getKeyChar()));
-                    if (evt.getKeyChar() == '.')
-                        Completion.get().showCompletion();
                     evt.consume();
+                    caretOffset = component.getSelectionEnd();
+                    try {
+                        if (caretOffset > 0 && !".".equals(component.getDocument().getText(caretOffset - 1, 1))) {
+                            Completion.get().hideCompletion();
+                            break;
+                        }
+                    } catch (BadLocationException ble) {}
+                    Completion.get().showCompletion();
                     break;
             }
         }
@@ -1899,7 +1903,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
                 Position semiPosition = semiPos > -1 ? doc.createPosition(semiPos) : null;
                 doc.remove(offset, len);
                 doc.insertString(offset, text, null);
-                position = doc.createPosition(offset + text.indexOf('(') + 1);
+                position = doc.createPosition(offset + text.indexOf('('));
                 if (semiPosition != null)
                     doc.insertString(semiPosition.getOffset(), ";", null); //NOI18N
                 else if (!isAbstract && params.isEmpty() && "(".equals(toAdd)) //NOI18N
@@ -1930,11 +1934,22 @@ public abstract class JavaCompletionItem implements CompletionItem {
                     }).commit();
                 } catch (Exception ex) {
                 }
-            }            
+            }
             if (!params.isEmpty() && text.trim().length() > 1) {
                 CodeTemplateManager ctm = CodeTemplateManager.get(doc);
                 if (ctm != null) {
+                    if (position != null)
+                        offset = position.getOffset();
+                    if (toAdd == null)
+                        toAdd = ""; //NOI18N
+                    if (text.startsWith("()" + toAdd)) //NOI18N
+                        c.select(offset, offset + toAdd.length() + 2);
+                    else if (text.startsWith("()")) //NOI18N
+                        c.select(offset, offset + 2);
+                    else
+                        c.setCaretPosition(offset);
                     StringBuilder sb = new StringBuilder();
+                    sb.append("("); //NOI18N
                     for (Iterator<ParamDesc> it = params.iterator(); it.hasNext();) {
                         ParamDesc paramDesc = it.next();
                         sb.append("${"); //NOI18N
@@ -1945,9 +1960,8 @@ public abstract class JavaCompletionItem implements CompletionItem {
                         if (it.hasNext())
                             sb.append(", "); //NOI18N
                     }
-                    if (position != null)
-                        offset = position.getOffset();
-                    c.setCaretPosition(offset);
+                    sb.append(")"); //NOI18N
+                    sb.append(toAdd);
                     ctm.createTemporary(sb.toString()).insert(c);
                     Completion.get().showToolTip();
                 }

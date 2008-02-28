@@ -193,17 +193,6 @@ class AbstractVariable implements JDIVariable, Customizer, Cloneable {
         setValue (value);
         // set new value to this model
         setInnerValue (value);
-        // refresh tree
-        PropertyChangeEvent evt = new PropertyChangeEvent(this, "value", null, value);
-        Object[] ls;
-        synchronized (listeners) {
-            ls = listeners.toArray();
-        }
-        for (int i = 0; i < ls.length; i++) {
-            ((PropertyChangeListener) ls[i]).propertyChange(evt);
-        }
-        //pchs.firePropertyChange("value", null, value);
-        //getModel ().fireTableValueChangedChanged (this, null);
     }
     
     private Value convertValue(Value value, Type type) {
@@ -347,6 +336,18 @@ class AbstractVariable implements JDIVariable, Customizer, Cloneable {
     
     protected void setInnerValue (Value v) {
         value = v;
+        // refresh tree
+        PropertyChangeEvent evt = new PropertyChangeEvent(this, "value", null, value);
+        Object[] ls;
+        synchronized (listeners) {
+            ls = listeners.toArray();
+        }
+        for (int i = 0; i < ls.length; i++) {
+            ((PropertyChangeListener) ls[i]).propertyChange(evt);
+        }
+        debugger.varChangeSupport.firePropertyChange(evt);
+        //pchs.firePropertyChange("value", null, value);
+        //getModel ().fireTableValueChangedChanged (this, null);
     }
     
     public Value getJDIValue() {
@@ -368,11 +369,11 @@ class AbstractVariable implements JDIVariable, Customizer, Cloneable {
         return clon;
     }
     
-    public void addPropertyChangeListener(PropertyChangeListener l) {
+    public final void addPropertyChangeListener(PropertyChangeListener l) {
         listeners.add(l);
     }
     
-    public void removePropertyChangeListener(PropertyChangeListener l) {
+    public final void removePropertyChangeListener(PropertyChangeListener l) {
         listeners.remove(l);
     }
     
