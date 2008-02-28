@@ -273,13 +273,13 @@ public class JsFormatterTest extends JsTestBase {
         reformatFileContents("testfiles/SpryEffects.js",new IndentPrefs(2,2));
     }
 
-//    public void testFormat3() throws Exception {
-//        reformatFileContents("testfiles/dragdrop.js",new IndentPrefs(2,2));
-//    }
-//
-//    public void testFormat4() throws Exception {
-//        reformatFileContents("testfiles/dojo.js.uncompressed.js",new IndentPrefs(2,2));
-//    }
+    public void testFormat3() throws Exception {
+        reformatFileContents("testfiles/dragdrop.js",new IndentPrefs(2,2));
+    }
+
+    public void testFormat4() throws Exception {
+        reformatFileContents("testfiles/dojo.js.uncompressed.js",new IndentPrefs(2,2));
+    }
     
     public void testSimpleBlock() throws Exception {
         format("if (true) {\nfoo();\n  }\n",
