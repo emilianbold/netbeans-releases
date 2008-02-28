@@ -523,6 +523,18 @@ public class EditorContextImpl extends EditorContext {
         }
     }
     
+    public DataObject getCurrentDataObject() {
+        synchronized (currentLock) {
+            DataObject[] nodes = (DataObject[]) resDataObject.allInstances().toArray(new DataObject[0]);
+
+            if (nodes.length != 1) {
+                return null;
+            }
+
+            return nodes[0];
+        }
+    }
+    
     /**
      * Get the MIME type of the most recently selected file.
      *

@@ -147,6 +147,7 @@ final class NbEvents extends Events {
             {
                 StringBuilder buf = new StringBuilder(NbBundle.getMessage(NbEvents.class, "MSG_failed_install_new"));
                 NbProblemDisplayer.problemMessagesForModules(buf, modules, false);
+                buf.append('\n'); // #123669
                 logger.log(Level.INFO, buf.toString());
             }
             {
@@ -162,6 +163,7 @@ final class NbEvents extends Events {
             {
                 StringBuilder buf = new StringBuilder(NbBundle.getMessage(NbEvents.class, "MSG_failed_install_new_unexpected", m.getDisplayName()));
                 NbProblemDisplayer.problemMessagesForModules(buf, Collections.singleton(m), false);
+                buf.append('\n');
                 logger.log(Level.INFO, buf.toString());
             }
 
@@ -292,7 +294,7 @@ final class NbEvents extends Events {
     private void notify(String text, boolean warn) {
         if (Boolean.getBoolean("netbeans.full.hack")) { // NOI18N
             // #21773: interferes with automated GUI testing.
-            logger.log(Level.INFO, text);
+            logger.log(Level.INFO, text + "\n");
         } else {
             // Normal - display dialog.
             new Notifier(text, warn);

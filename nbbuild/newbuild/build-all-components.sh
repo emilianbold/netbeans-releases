@@ -59,7 +59,7 @@ done
 
 if [ $ERROR_CODE != 0 ]; then
     echo "ERROR: $ERROR_CODE - Commit validation failed"
-    TEST_CODE = 1;
+    TEST_CODE=1;
 fi
 # Init application server for tests
 #sh -x `dirname $0`/initAppserver.sh
@@ -77,7 +77,7 @@ ERROR_CODE=$?
 
 if [ $ERROR_CODE != 0 ]; then
     echo "ERROR: $ERROR_CODE - SOA (BPEL, XSLT) and XML UI validation failed"
-    TEST_CODE = 1;
+    TEST_CODE=1;
 fi
 # CND UI validation tests
 for i in 1 2 3; do
@@ -91,7 +91,7 @@ ERROR_CODE=$?
 
 if [ $ERROR_CODE != 0 ]; then
     echo "ERROR: $ERROR_CODE - CND UI validation failed"
-    TEST_CODE = 1;
+    TEST_CODE=1;
 fi
 # Profiler UI validation tests
 for i in 1 2 3; do
@@ -105,7 +105,7 @@ ERROR_CODE=$?
 
 if [ $ERROR_CODE != 0 ]; then
     echo "ERROR: $ERROR_CODE - Profiler UI validation failed"
-    TEST_CODE = 1;
+    TEST_CODE=1;
 fi
 # J2EE UI validation tests
 for i in 1 2 3; do
@@ -119,7 +119,7 @@ ERROR_CODE=$?
 
 if [ $ERROR_CODE != 0 ]; then
     echo "ERROR: $ERROR_CODE - J2EE UI validation failed"
-    TEST_CODE = 1;
+    TEST_CODE=1;
 fi
 # Mobility UI validation tests
 for i in 1 2 3; do
@@ -133,7 +133,7 @@ ERROR_CODE=$?
 
 if [ $ERROR_CODE != 0 ]; then
     echo "ERROR: $ERROR_CODE - Mobility UI validation failed"
-    TEST_CODE = 1;
+    TEST_CODE=1;
 fi
 # UML UI validation tests
 for i in 1 2 3; do
@@ -147,7 +147,7 @@ ERROR_CODE=$?
 
 if [ $ERROR_CODE != 0 ]; then
     echo "ERROR: $ERROR_CODE - UML UI validation failed"
-    TEST_CODE = 1;
+    TEST_CODE=1;
 fi
 # Ruby UI validation tests
 for i in 1 2 3; do
@@ -161,7 +161,7 @@ ERROR_CODE=$?
 
 if [ $ERROR_CODE != 0 ]; then
     echo "ERROR: $ERROR_CODE - Ruby UI validation failed"
-    TEST_CODE = 1;
+    TEST_CODE=1;
 fi
 
 echo TESTS STARTED: $TESTS_STARTED

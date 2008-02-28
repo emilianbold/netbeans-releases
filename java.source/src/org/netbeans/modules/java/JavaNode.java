@@ -85,10 +85,10 @@ public final class JavaNode extends DataNode implements ChangeListener {
     private static final long serialVersionUID = -7396485743899766258L;
 
     private static final String JAVA_ICON_BASE = "org/netbeans/modules/java/resources/class.png"; // NOI18N
-    private static final String JAVA_ICON_BASE_MAIN = "org/netbeans/modules/java/resources/main-class.gif"; // NOI18N
     private static final String CLASS_ICON_BASE = "org/netbeans/modules/java/resources/clazz.gif"; // NOI18N
 
     private static final Image NEEDS_COMPILE = Utilities.loadImage("org/netbeans/modules/java/resources/needs-compile.png"); // NOI18N
+    private static final Image IS_EXECUTABLE_CLASS = Utilities.loadImage("org/netbeans/modules/java/resources/executable-badge.png"); // NOI18N
     
     private Status status;
     private final AtomicBoolean isCompiled;
@@ -283,6 +283,10 @@ public final class JavaNode extends DataNode implements ChangeListener {
             i = Utilities.mergeImages(i, NEEDS_COMPILE, 16, 0);
         }
         
+        if (isExecutable != null && isExecutable.get()) {
+            i = Utilities.mergeImages(i, IS_EXECUTABLE_CLASS, 10, 6);
+        }
+        
         return i;
     }
     
@@ -366,7 +370,8 @@ public final class JavaNode extends DataNode implements ChangeListener {
                     boolean oldIsExecutable = node.isExecutable.getAndSet(newIsExecutable);
 
                     if (newIsExecutable != oldIsExecutable) {
-                        node.setIconBaseWithExtension(newIsExecutable ? JAVA_ICON_BASE_MAIN : JAVA_ICON_BASE);
+                        node.fireIconChange();
+                        node.fireOpenedIconChange();
                     }
                 } catch (FileStateInvalidException ex) {
                     Exceptions.printStackTrace(ex);

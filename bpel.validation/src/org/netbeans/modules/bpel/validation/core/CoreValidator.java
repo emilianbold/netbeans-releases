@@ -59,6 +59,10 @@ import static org.netbeans.modules.soa.ui.util.UI.*;
  */
 public abstract class CoreValidator extends SimpleBpelModelVisitorAdaptor implements ValidationVisitor, Validator {
 
+  public CoreValidator() {
+    myResultItems = new HashSet<ResultItem>();
+  }
+
   public abstract ValidationResult validate(Model model, Validation validation, ValidationType type);
 
   protected final String getDisplayName() {
@@ -68,7 +72,7 @@ public abstract class CoreValidator extends SimpleBpelModelVisitorAdaptor implem
     for (int i=name.length(); i < 57; i++) {
       spaces.append(" "); // NOI18N
     }
-    return "Validator " + name + spaces;
+    return "Validator " + name + spaces; // NOI18N
   }
 
   public String getName() {
@@ -80,7 +84,6 @@ public abstract class CoreValidator extends SimpleBpelModelVisitorAdaptor implem
   }
 
   protected final void setParam(Validation validation, ValidationType type) {
-    myResultItems = new HashSet<ResultItem>();
     myValidation = validation;
     myType = type;
   }
@@ -90,6 +93,7 @@ public abstract class CoreValidator extends SimpleBpelModelVisitorAdaptor implem
   }
 
   protected final void addError(String key, Component component) {
+//out("add error: " + key + " " + component);
     addMessage(i18n(getClass(), key), ResultType.ERROR, component);
   }
 
@@ -102,15 +106,15 @@ public abstract class CoreValidator extends SimpleBpelModelVisitorAdaptor implem
   }
 
   protected final void addQuickFix(Outcome outcome) {
-    getResultItems().add(outcome);
+    myResultItems.add(outcome);
   }
 
   protected final void addErrorMessage(String message, Component component) {
-    getResultItems().add(new ResultItem(this, ResultType.ERROR, component, message));
+    myResultItems.add(new ResultItem(this, ResultType.ERROR, component, message));
   }
 
   protected final void addMessage(String message, ResultType type, Component component) {
-    getResultItems().add(new ResultItem(this, type, component, message));
+    myResultItems.add(new ResultItem(this, type, component, message));
   }
 
   protected final void validate(Model model) {
