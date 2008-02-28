@@ -50,6 +50,7 @@ import javax.swing.event.DocumentListener;
 import javax.swing.text.Document;
 import org.netbeans.api.debugger.DebuggerEngine;
 import org.netbeans.api.debugger.DebuggerManager;
+import org.netbeans.modules.cnd.debugger.gdb.CallStackFrame;
 import org.netbeans.modules.cnd.debugger.gdb.EditorContextBridge;
 import org.netbeans.modules.cnd.debugger.gdb.GdbDebugger;
 import org.netbeans.modules.cnd.debugger.gdb.breakpoints.BreakpointAnnotationListener;
@@ -69,7 +70,7 @@ public class Disassembly implements PropertyChangeListener, DocumentListener {
     private final List<Line> lines = new ArrayList<Line>();
     private static String functionName = "";
     private final GdbDebugger debugger;
-    private String lastFilename = null;
+    private CallStackFrame lastFrame = null;
 
     private static final String ADDRESS_HEADER="address"; // NOI18N
     private static final String FUNCTION_HEADER="func-name"; // NOI18N
@@ -180,11 +181,11 @@ public class Disassembly implements PropertyChangeListener, DocumentListener {
 
     public void propertyChange(PropertyChangeEvent evt) {
         // stack is updated, reload disassembler if needed
-        String filename = debugger.getCurrentCallStackFrame().getFileName();
-        if (lastFilename == null || !lastFilename.equals(filename)) {
-            int line = debugger.getCurrentCallStackFrame().getLineNumber();
-            debugger.getGdbProxy().data_disassemble(filename, line);
-            lastFilename = filename;
+        // TODO: there may be functions with the same name called one from the other, we need to check that too
+        CallStackFrame frame = debugger.getCurrentCallStackFrame();
+        if (lastFrame == null || !lastFrame.getFunctionName().equals(frame.getFunctionName())) {
+            debugger.getGdbProxy().data_disassemble(frame.getFileName(), frame.getLineNumber());
+            lastFrame = frame;
         }
     }
     
@@ -282,7 +283,7 @@ public class Disassembly implements PropertyChangeListener, DocumentListener {
         @Override
         public String toString() {
             //return function + "+" + offset + ": (" + address + ") " + instruction; // NOI18N
-            return function + "+" + offset + ": 00 00 " + instruction; // NOI18N
+            return function + "+" + offset + ": 00 00 " + instruction + " // " + address; // NOI18N
         }
     }
     
