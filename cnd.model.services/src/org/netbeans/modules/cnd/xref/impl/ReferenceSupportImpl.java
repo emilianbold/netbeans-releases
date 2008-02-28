@@ -59,6 +59,7 @@ import org.netbeans.modules.cnd.api.model.CsmIdentifiable;
 import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.CsmOffsetable;
 import org.netbeans.modules.cnd.api.model.CsmUID;
+import org.netbeans.modules.cnd.api.model.util.CsmBaseUtilities;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.api.model.xref.CsmReference;
 import org.netbeans.modules.cnd.api.model.xref.CsmReferenceKind;
@@ -69,21 +70,42 @@ import org.netbeans.modules.cnd.api.model.xref.CsmReferenceKind;
  */
 public class ReferenceSupportImpl {
     public CsmReference createObjectReference(CsmOffsetable obj) {
-        int start = getStartRefenceOffset(obj);
-        int end = getEndReferenceOffset(obj);
-        CsmUID<CsmObject> targetUID = getUID((CsmObject)obj);
-        CsmUID<CsmFile> targetFileUID = getUID(obj.getContainingFile());
-        CsmReferenceKind kind = getObjectKind(obj);
-        return new ObjectReferenceImpl(targetUID, targetFileUID, kind, start, end);
+        return createObjectReference(obj, obj);
     }
 
-    private CsmReferenceKind getObjectKind(CsmObject obj) {
+    public CsmReference createObjectReference(CsmObject target, CsmOffsetable owner) {
+        int start = getStartRefenceOffset(owner);
+        int end = getEndReferenceOffset(owner);
+        CsmUID<CsmObject> targetUID = target != null ? getUID(target) : null;
+        CsmUID<CsmObject> ownerUID = getUID((CsmObject)owner);
+        CsmUID<CsmFile> fileUID = getUID(owner.getContainingFile());
+        CsmReferenceKind kind = getObjectKind(target, owner);
+        return new ObjectReferenceImpl(targetUID, ownerUID, fileUID, kind, start, end);
+    }
+
+    private CsmReferenceKind getObjectKind(CsmObject target, CsmObject owner) {
         CsmReferenceKind kind = CsmReferenceKind.UNKNOWN;
-        if (CsmKindUtilities.isDeclaration(obj)) {
-            kind = CsmReferenceKind.DECLARATION;
-            if (CsmKindUtilities.isFunctionDefinition(obj) ||
-                    CsmKindUtilities.isVariableDefinition(obj)) {
-                kind = CsmReferenceKind.DEFINITION;
+        if (target == null && CsmKindUtilities.isInclude(owner)) {
+            kind = CsmReferenceKind.DIRECT_USAGE;
+        } else if (CsmKindUtilities.isFile(target)) {
+            kind = CsmReferenceKind.DIRECT_USAGE;
+        } else if (target != null) {
+            if (owner != null && !owner.equals(target)) {
+                CsmObject[] decDef = CsmBaseUtilities.getDefinitionDeclaration(target, true);
+                CsmObject targetDecl = decDef[0];
+                CsmObject targetDef = decDef[1];        
+                kind = CsmReferenceKind.DIRECT_USAGE;
+                if (owner.equals(targetDecl)) {
+                    kind = CsmReferenceKind.DECLARATION;
+                } else if (owner.equals(targetDef)) {
+                    kind = CsmReferenceKind.DEFINITION;
+                }
+            } else {
+                kind = CsmReferenceKind.DECLARATION;
+                if (CsmKindUtilities.isFunctionDefinition(target) ||
+                        CsmKindUtilities.isVariableDefinition(target)) {
+                    kind = CsmReferenceKind.DEFINITION;
+                }
             }
         }
         return kind;

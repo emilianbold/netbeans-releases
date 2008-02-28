@@ -62,6 +62,8 @@
 	<mapID target="framework_jsf_create" url="web/create/tag/framework/framework_jsf_create.html"/>
 	<mapID target="framework_jsf_datatable" url="web/create/tag/framework/framework_jsf_datatable.html"/>
 	<mapID target="framework_jsf_form" url="web/create/tag/framework/framework_jsf_form.html"/>
+	<mapID target="framework_jsf_crud" url="web/create/tag/framework/framework_jsf_aboutcrud.html"/>
+	<mapID target="framework_jsf_fromentity" url="web/create/tag/framework/framework_jsf_fromentity.html"/>
 	<mapID target="framework_struts_add" url="web/create/tag/framework/framework_struts_add.html"/>
 	<mapID target="framework_struts_create" url="web/create/tag/framework/framework_struts_create.html"/>
 	<mapID target="html_create" url="web/create/html/html_create.html"/>
@@ -90,6 +92,7 @@
 	<mapID target="org.netbeans.modules.web.jsf.dialogs.AddNavigationRuleDialog" url="web/create/tag/framework/jsf/AddNavigationRuleDialog.html"/>
 	<mapID target="org.netbeans.modules.web.jsf.wizards.JSFConfigurationPanelVisual" url="web/csh/projwiz_standard/PanelSupportedFrameworks.html"/>
 	<mapID target="org.netbeans.modules.web.jsf.wizards.ManagedBeanPanel" url="web/create/tag/framework/jsf/file_ManagedBeanPanel.html"/>
+        <mapID target="org.netbeans.modules.web.jsf.wizards.PersistenceClientIterator$PersistenceClientEntitySelection url="web/create/tag/framework/jsf/file_jsffromentity.html"/>
 	<mapID target="org.netbeans.modules.web.project.ui.customizer.CustomizerCompile" url="web/csh/dbox_projprops/WebCustomizerCompile.html"/>
 	<mapID target="org.netbeans.modules.web.project.ui.customizer.CustomizerFrameworks" url="web/csh/dbox_projprops/CustomizerFrameworks.html"/>
 	<mapID target="org.netbeans.modules.web.project.ui.customizer.CustomizerJavadoc" url="web/csh/dbox_projprops/WebCustomizerJavadoc.html"/>
