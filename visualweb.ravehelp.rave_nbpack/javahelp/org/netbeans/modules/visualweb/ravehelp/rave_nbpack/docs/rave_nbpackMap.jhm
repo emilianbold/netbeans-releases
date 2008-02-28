@@ -90,6 +90,7 @@
 	<mapID target="org.netbeans.modules.web.jsf.dialogs.AddNavigationRuleDialog" url="web/create/tag/framework/jsf/AddNavigationRuleDialog.html"/>
 	<mapID target="org.netbeans.modules.web.jsf.wizards.JSFConfigurationPanelVisual" url="web/csh/projwiz_standard/PanelSupportedFrameworks.html"/>
 	<mapID target="org.netbeans.modules.web.jsf.wizards.ManagedBeanPanel" url="web/create/tag/framework/jsf/file_ManagedBeanPanel.html"/>
+        <mapID target="org.netbeans.modules.web.jsf.wizards.PersistenceClientIterator$PersistenceClientEntitySelection url="web/create/tag/framework/jsf/file_jsffromentity.html"/>
 	<mapID target="org.netbeans.modules.web.project.ui.customizer.CustomizerCompile" url="web/csh/dbox_projprops/WebCustomizerCompile.html"/>
 	<mapID target="org.netbeans.modules.web.project.ui.customizer.CustomizerFrameworks" url="web/csh/dbox_projprops/CustomizerFrameworks.html"/>
 	<mapID target="org.netbeans.modules.web.project.ui.customizer.CustomizerJavadoc" url="web/csh/dbox_projprops/WebCustomizerJavadoc.html"/>
