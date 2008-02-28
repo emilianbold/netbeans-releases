@@ -54,7 +54,7 @@ public class AddressBreakpointType extends BreakpointType {
     }
     
     public JComponent getCustomizer() {
-        return new LineBreakpointPanel ();
+        return new AddressBreakpointPanel();
     }
     
     public String getTypeDisplayName() {
