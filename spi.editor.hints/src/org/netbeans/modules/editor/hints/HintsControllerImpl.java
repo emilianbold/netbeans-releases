@@ -47,6 +47,8 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.event.ChangeListener;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
@@ -177,6 +179,8 @@ public final class HintsControllerImpl {
             
             doc.render(new Runnable() {
                 public void run() {
+                    checkOffsetsAndLog(start.getOffset(), end.getOffset());
+
                     refs[0] = ces.createPositionRef(start.getOffset(), Position.Bias.Forward);
                     refs[1] = ces.createPositionRef(end.getOffset(), Position.Bias.Backward);
                 }
@@ -192,6 +196,8 @@ public final class HintsControllerImpl {
             
             doc.render(new Runnable() {
                 public void run() {
+                    checkOffsetsAndLog(start.getOffset(), end.getOffset());
+
                     refs[0] = es.createPositionRef(start.getOffset(), Position.Bias.Forward);
                     refs[1] = es.createPositionRef(end.getOffset(), Position.Bias.Backward);
                 }
@@ -218,11 +224,21 @@ public final class HintsControllerImpl {
             
             final CloneableEditorSupport ces = (CloneableEditorSupport) ec;
             
+            checkOffsetsAndLog(start, end);
+            
             return new PositionBounds(ces.createPositionRef(start, Position.Bias.Forward), ces.createPositionRef(end, Position.Bias.Backward));
         } catch (IOException e) {
             ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
             return null;
         }
+    }
+    
+    private static void checkOffsetsAndLog(int start, int end) {
+        if (start <= end) {
+            return ;
+        }
+        
+        Logger.getLogger(HintsControllerImpl.class.getName()).log(Level.INFO, "Incorrect span, please attach your messages.log to issue #112566. start=" + start + ", end=" + end, new Exception());
     }
 
     private static List<ChangeListener> listeners = new ArrayList<ChangeListener>();
