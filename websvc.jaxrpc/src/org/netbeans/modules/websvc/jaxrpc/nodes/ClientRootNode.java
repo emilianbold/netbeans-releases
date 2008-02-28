@@ -69,7 +69,7 @@ import org.openide.util.actions.NodeAction;
  */
 public final class ClientRootNode extends AbstractNode {
 
-    private static final Image WEB_SERVICES_BADGE = Utilities.loadImage( "org/netbeans/modules/websvc/core/client/resources/webServiceBadge.gif" ); // NOI18N
+    private static final Image WEB_SERVICES_BADGE = Utilities.loadImage( "org/netbeans/modules/websvc/jaxrpc/nodes/resources/webserviceclientgroup.png" ); // NOI18N
     private static Icon folderIconCache;
     private static Icon openedFolderIconCache;	
     private FileObject wsdlFolder;

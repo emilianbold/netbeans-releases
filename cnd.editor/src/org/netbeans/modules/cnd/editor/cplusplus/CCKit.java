@@ -112,7 +112,7 @@ public class CCKit extends NbEditorKit {
         doc.putProperty(Language.class, getLanguage());
         doc.putProperty(SyntaxUpdateTokens.class,
               new SyntaxUpdateTokens() {
-                  private List tokenList = new ArrayList();
+                  private List<TokenInfo> tokenList = new ArrayList<TokenInfo>();
                   
                   public void syntaxUpdateStart() {
                       tokenList.clear();
@@ -270,7 +270,8 @@ public class CCKit extends NbEditorKit {
 		    int caretLine = Utilities.getLineOffset(doc, caret.getDot());
 		    int startPos;
 		    Position endPosition;
-		    if (caret.isSelectionVisible()) {
+		    //if (caret.isSelectionVisible()) {
+		    if (Utilities.isSelectionShowing(caret)){
 			startPos = target.getSelectionStart();
 			endPosition = doc.createPosition(target.getSelectionEnd());
 		    } else {

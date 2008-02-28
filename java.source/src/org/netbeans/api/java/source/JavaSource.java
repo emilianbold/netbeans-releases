@@ -50,6 +50,7 @@ import com.sun.source.util.SourcePositions;
 import com.sun.source.util.TreePath;
 import com.sun.source.util.TreeScanner;
 import com.sun.source.util.Trees;
+import com.sun.tools.javac.api.ClassNamesForFileOraculum;
 import com.sun.tools.javac.api.JavacTaskImpl;
 import com.sun.tools.javac.api.JavacTrees;
 import com.sun.tools.javac.code.Source;
@@ -1111,7 +1112,7 @@ out:            for (Iterator<Collection<Request>> it = finishedRequests.values(
         return files;
     }
     
-    JavacTaskImpl createJavacTask(final DiagnosticListener<? super JavaFileObject> diagnosticListener) {
+    JavacTaskImpl createJavacTask(final DiagnosticListener<? super JavaFileObject> diagnosticListener, ClassNamesForFileOraculum oraculum) {
         String sourceLevel = null;
         if (!this.files.isEmpty()) {
             if (LOGGER.isLoggable(Level.FINER)) {
@@ -1134,7 +1135,7 @@ out:            for (Iterator<Collection<Request>> it = finishedRequests.values(
         if (sourceLevel == null) {
             sourceLevel = JavaPlatformManager.getDefault().getDefaultPlatform().getSpecification().getVersion().toString();
         }
-        JavacTaskImpl javacTask = createJavacTask(getClasspathInfo(), diagnosticListener, sourceLevel, false);
+        JavacTaskImpl javacTask = createJavacTask(getClasspathInfo(), diagnosticListener, sourceLevel, false, oraculum);
         Context context = javacTask.getContext();
         JSCancelService.preRegister(context);
         JSFlowListener.preRegister(context);
@@ -1148,7 +1149,7 @@ out:            for (Iterator<Collection<Request>> it = finishedRequests.values(
         return javacTask;
     }
     
-    private static JavacTaskImpl createJavacTask(final ClasspathInfo cpInfo, final DiagnosticListener<? super JavaFileObject> diagnosticListener, final String sourceLevel, final boolean backgroundCompilation) {        
+    private static JavacTaskImpl createJavacTask(final ClasspathInfo cpInfo, final DiagnosticListener<? super JavaFileObject> diagnosticListener, final String sourceLevel, final boolean backgroundCompilation, ClassNamesForFileOraculum cnih) {
         ArrayList<String> options = new ArrayList<String>();
         String lintOptions = CompilerSettings.getCommandLine();
         
@@ -1184,6 +1185,9 @@ out:            for (Iterator<Collection<Request>> it = finishedRequests.values(
                 SymbolClassReader.preRegister(context, true);
             }
             
+            if (cnih != null) {
+                context.put(ClassNamesForFileOraculum.class, cnih);
+            }
             return task;
         } finally {
             Thread.currentThread().setContextClassLoader(orig);
@@ -2047,10 +2051,10 @@ out:            for (Iterator<Collection<Request>> it = finishedRequests.values(
         }                
 
         @Override
-        public JavacTaskImpl createJavacTask(ClasspathInfo cpInfo, DiagnosticListener<? super JavaFileObject> diagnosticListener, String sourceLevel) {
+        public JavacTaskImpl createJavacTask(ClasspathInfo cpInfo, DiagnosticListener<? super JavaFileObject> diagnosticListener, String sourceLevel, ClassNamesForFileOraculum oraculum) {
             if (sourceLevel == null)
                 sourceLevel = JavaPlatformManager.getDefault().getDefaultPlatform().getSpecification().getVersion().toString();
-            return JavaSource.createJavacTask(cpInfo, diagnosticListener, sourceLevel, true);
+            return JavaSource.createJavacTask(cpInfo, diagnosticListener, sourceLevel, true, oraculum);
         }
                 
         @Override

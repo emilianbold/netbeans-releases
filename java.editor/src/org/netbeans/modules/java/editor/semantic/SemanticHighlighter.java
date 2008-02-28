@@ -972,11 +972,13 @@ public class SemanticHighlighter extends ScanningCancellableTask<CompilationInfo
                     MemberSelectTree qualIdent = (MemberSelectTree) tree.getQualifiedIdentifier();
                     Element decl = info.getTrees().getElement(new TreePath(new TreePath(getCurrentPath(), qualIdent), qualIdent.getExpression()));
 
-                    if (decl != null && decl.asType().getKind() != TypeKind.ERROR) { //unresolvable imports should not be marked as unused
+                    if (   decl != null
+                        && decl.asType().getKind() != TypeKind.ERROR //unresolvable imports should not be marked as unused
+                        && (decl.getKind().isClass() || decl.getKind().isInterface())) {
                         Name simpleName = isStar(tree) ? null : qualIdent.getIdentifier();
                         boolean assign = false;
 
-                        for (Element e : decl.getEnclosedElements()) {
+                        for (Element e : info.getElements().getAllMembers((TypeElement) decl)) {
                             if (simpleName != null && !e.getSimpleName().equals(simpleName)) {
                                 continue;
                             }

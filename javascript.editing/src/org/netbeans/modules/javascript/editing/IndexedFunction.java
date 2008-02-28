@@ -58,7 +58,7 @@ public class IndexedFunction extends IndexedElement implements FunctionElement {
     
     @Override
     public String toString() {
-        return getSignature() + ":" + getFilenameUrl();
+        return getSignature() + ":" + getFilenameUrl() + ";" + decodeFlags(flags);
     }
 
     @Override
