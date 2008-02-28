@@ -37,7 +37,7 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.hibernate;
+package org.netbeans.modules.hibernate.cfg;
 
 import java.util.HashMap;
 import java.util.Map;

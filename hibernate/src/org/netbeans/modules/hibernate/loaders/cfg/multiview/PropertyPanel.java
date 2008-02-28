@@ -12,7 +12,7 @@ import javax.swing.ComboBoxEditor;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JComboBox;
 import javax.swing.JTextField;
-import org.netbeans.modules.hibernate.HibernateCfgProperties;
+import org.netbeans.modules.hibernate.cfg.HibernateCfgProperties;
 import org.netbeans.modules.hibernate.cfg.model.SessionFactory;
 
 /**
