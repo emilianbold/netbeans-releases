@@ -274,6 +274,28 @@ public class JRubyServerModule implements RubyInstance {
         }
     }
 
+    public String getContextRoot(String applicationName) {
+        return applicationName;
+    }
+
+    public int getRailsPort() {
+        int httpPort = 8080; // defaults should probably be public in gfcommon spi
+        GlassfishModule commonModule = lookup.lookup(GlassfishModule.class);
+        if(commonModule != null) {
+            try {
+                String httpPortStr = commonModule.getInstanceProperties().get(GlassfishModule.HTTPPORT_ATTR);
+                httpPort = Integer.parseInt(httpPortStr);
+            } catch(NumberFormatException ex) {
+                Logger.getLogger("glassfish-jruby").log(Level.WARNING, 
+                        "Server's HTTP port value is not a valid integer.");
+            }
+        } else {
+            Logger.getLogger("glassfish-jruby").log(Level.WARNING, 
+                    "No V3 Common Server support found for V3/Ruby server instance");
+        }
+        return httpPort;
+    }
+
     /**
      * !PW XXX Is there a more efficient way to implement a failed future object? 
      * 
