@@ -40,6 +40,7 @@ package org.netbeans.modules.ruby.railsprojects.ui.wizards;
 
 import java.awt.Component;
 import javax.swing.event.ChangeListener;
+import org.netbeans.api.ruby.platform.RubyPlatform;
 import org.openide.WizardDescriptor;
 import org.openide.WizardValidationException;
 import org.openide.util.ChangeSupport;
@@ -69,7 +70,8 @@ public class DatabaseConfigPanel implements
     }
 
     public void readSettings(Object settings) {
-        component.read((WizardDescriptor) settings);
+        wizardDescriptor = ((WizardDescriptor) settings);
+        component.read(wizardDescriptor);
         Object substitute = component.getClientProperty("NewProjectWizard_Title"); // NOI18N
         if (substitute != null) {
             ((WizardDescriptor) settings).putProperty("NewProjectWizard_Title", substitute); // NOI18N
@@ -98,6 +100,7 @@ public class DatabaseConfigPanel implements
     }
 
     public boolean isFinishPanel() {
-        return true;
+        RubyPlatform platform = (RubyPlatform) wizardDescriptor.getProperty("platform");
+        return RailsInstallationValidator.getRailsInstallation(platform).isValid();
     }
 }
