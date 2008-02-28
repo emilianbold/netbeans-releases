@@ -398,7 +398,8 @@ public class TargetDBSchemaGenerator {
        }
        if (!overallstatus) {
            mLogger.infoNoloc(mLoc.t("Object.xml validation failed!.\nGenerate [ " + fkname + " ] field in all the child objects and re-run schema generator with the valid object.xml"));
-           System.exit(0);
+			// Fix for BugNo:6666486
+		   //System.exit(0);
        }
 
    } 

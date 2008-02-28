@@ -46,6 +46,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.StringReader;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
@@ -74,6 +75,7 @@ import org.openide.util.Utilities;
  * Represents one Ruby platform, i.e. installation of a Ruby interpreter.
  */
 public final class RubyPlatformManager {
+    
     public static final boolean PREINDEXING = Boolean.getBoolean("gsf.preindexing");
     
     private static final String[] RUBY_EXECUTABLE_NAMES = { "ruby", "jruby" }; // NOI18N
@@ -191,17 +193,17 @@ public final class RubyPlatformManager {
             // Test and preindexing hook
             String hardcodedRuby = System.getProperty("ruby.interpreter");
             if (hardcodedRuby != null) {
-                Info info = new Info("User-specified Ruby", "0.1");
+                Info info = new Info("User-specified Ruby", "0.1"); // NOI18N
 
-                FileObject gems = FileUtil.toFileObject(new File(hardcodedRuby)).getParent().getParent().getFileObject("lib/ruby/gems/1.8");
+                FileObject gems = FileUtil.toFileObject(new File(hardcodedRuby)).getParent().getParent().getFileObject("lib/ruby/gems/1.8"); // NOI18N
                 if (gems != null) {
                     Properties props = new Properties();
-                    props.setProperty(Info.RUBY_KIND, "User-specified Ruby");
-                    props.setProperty(Info.RUBY_VERSION, "0.1");
+                    props.setProperty(Info.RUBY_KIND, "User-specified Ruby"); // NOI18N
+                    props.setProperty(Info.RUBY_VERSION, "0.1"); // NOI18N
                     String gemHome = FileUtil.toFile(gems).getAbsolutePath();
                     props.setProperty(Info.GEM_HOME, gemHome);
                     props.setProperty(Info.GEM_PATH, gemHome);
-                    props.setProperty(Info.GEM_VERSION, "1.0.1 (1.0.1)");
+                    props.setProperty(Info.GEM_VERSION, "1.0.1 (1.0.1)"); // NOI18N
                     info = new Info(props);
                 }
 
@@ -438,7 +440,7 @@ public final class RubyPlatformManager {
             File platformInfoScript = InstalledFileLocator.getDefault().locate(
                     "platform_info.rb", "org.netbeans.modules.ruby.platform", false);  // NOI18N
             if (platformInfoScript == null) {
-                throw new IllegalStateException("Cannot locate platform_info.rb script");
+                throw new IllegalStateException("Cannot locate platform_info.rb script"); // NOI18N
             }
             ProcessBuilder pb = new ProcessBuilder(interpreter.getAbsolutePath(), platformInfoScript.getAbsolutePath()); // NOI18N
             // be sure that JRUBY_HOME is not set during configuration
@@ -446,16 +448,24 @@ public final class RubyPlatformManager {
             // effectively used
             pb.environment().remove("JRUBY_HOME"); // NOI18N
             ExecutionService.logProcess(pb);
-            Process start = pb.start();
+            Process proc = pb.start();
             // FIXME: set timeout
-            start.waitFor();
-            if (start.exitValue() == 0) {
+            proc.waitFor();
+            if (proc.exitValue() == 0) {
                 Properties props = new Properties();
-                props.load(start.getInputStream());
+                if (LOGGER.isLoggable(Level.FINEST)) {
+                    String stdout = Util.readAsString(proc.getInputStream());
+                    String stderr = Util.readAsString(proc.getErrorStream());
+                    LOGGER.finest("stdout:\n" + stdout);
+                    LOGGER.finest("stderr:\n " + stderr);
+                    props.load(new StringReader(stdout));
+                } else {
+                    props.load(proc.getInputStream());
+                }
                 info = new Info(props);
             } else {
                 LOGGER.severe(interpreter.getAbsolutePath() + " does not seems to be a valid interpreter"); // TODO localize me
-                BufferedReader errors = new BufferedReader(new InputStreamReader(start.getErrorStream()));
+                BufferedReader errors = new BufferedReader(new InputStreamReader(proc.getErrorStream()));
                 String line;
                 while ((line = errors.readLine()) != null) {
                     LOGGER.severe(line);

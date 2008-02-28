@@ -143,7 +143,7 @@ public class WebSharabilityQueryTest extends NbTestCase {
     public static FileObject addSourceRoot (AntProjectHelper helper, FileObject projdir,
                                             String propName, File folder) throws Exception {
         if (!folder.exists()) {
-            folder.mkdirs();
+            FileUtil.createFolder(folder);
         }
         Element data = helper.getPrimaryConfigurationData(true);
         NodeList nl = data.getElementsByTagNameNS (WebProjectType.PROJECT_CONFIGURATION_NAMESPACE,"source-roots");
@@ -163,7 +163,7 @@ public class WebSharabilityQueryTest extends NbTestCase {
     public static FileObject changeSourceRoot (AntProjectHelper helper, FileObject projdir,
                                                String propName, File folder) throws Exception {
         if (!folder.exists()) {
-            folder.mkdirs();
+            FileUtil.createFolder(folder);
         }
         EditableProperties props = helper.getProperties (AntProjectHelper.PROJECT_PROPERTIES_PATH);
         assert props.containsKey(propName);
