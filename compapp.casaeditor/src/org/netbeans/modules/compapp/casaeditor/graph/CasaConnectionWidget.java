@@ -76,7 +76,7 @@ import org.openide.util.Utilities;
  * 
  * @author jqian
  */
-public class CasaConnectionWidget extends ConnectionWidget {
+public class CasaConnectionWidget extends ConnectionWidget implements CasaMinimizable {
 
     private static final Stroke STROKE_DEFAULT = new BasicStroke(1.0f);
     private static final Stroke STROKE_HOVERED = new BasicStroke(1.5f);
@@ -110,15 +110,15 @@ public class CasaConnectionWidget extends ConnectionWidget {
 
             public JPopupMenu getPopupMenu(Widget widget, Point localLocation) {
                 JPopupMenu popupMenu = new JPopupMenu();
-                
+
                 CasaModelGraphScene scene = (CasaModelGraphScene) getScene();
                 CasaConnection casaConnection =
                         (CasaConnection) scene.findObject(CasaConnectionWidget.this);
                 CasaNode node = scene.getNodeFactory().createNodeFor(casaConnection);
-                
+
                 ClearConfigExtensionsAction clearQoSAction = new ClearConfigExtensionsAction(
                         NbBundle.getMessage(ConnectionNode.class,
-                        "CLEAR_QOS_CONFIG"),  // NOI18N
+                        "CLEAR_QOS_CONFIG"), // NOI18N
                         node);
                 popupMenu.add(clearQoSAction.getPopupPresenter());
                 return popupMenu;
@@ -127,7 +127,7 @@ public class CasaConnectionWidget extends ConnectionWidget {
         mQoSWidget.getActions().addAction(popupMenuAction);
         //mUnConfiguredQoSWidget.getActions().addAction(popupMenuAction); 
 
-               
+
         SwingUtilities.invokeLater(new Runnable() {
 
             public void run() {
@@ -228,7 +228,14 @@ public class CasaConnectionWidget extends ConnectionWidget {
 
                 Point p = sourceAnchor.getRelatedSceneLocation();
                 int x = p.x + sourceWidget.getBounds().width / 2 + 10;
-                int y = p.y - 6;
+                int y = p.y - 6;                
+                
+                /*CasaConnectionWidget.this.getControlPoints().size();
+                CasaNodeWidgetEngine sesuWidget = 
+                        (CasaNodeWidgetEngine) sourceWidget.getParentWidget().getParentWidget();
+                if (sesuWidget.isMinimized()) {
+                    
+                }*/
 
                 mQoSWidget.setPreferredLocation(new Point(x, y));
                 mUnConfiguredQoSWidget.setPreferredLocation(new Point(x, y));
@@ -282,5 +289,35 @@ public class CasaConnectionWidget extends ConnectionWidget {
 
     private boolean isConnectionConfiguredWithQoS(CasaConnection casaConnection) {
         return casaConnection.getChildren().size() != 0;
+    }
+
+    public void setMinimized(boolean isMinimized) {
+        if (isMinimized) {
+            if (getChildren().contains(mUnConfiguredQoSWidget)) {
+                removeChild(mUnConfiguredQoSWidget);
+            }
+            if (getChildren().contains(mQoSWidget)) {
+                removeChild(mQoSWidget);
+            }
+        } else {
+            ObjectScene objectScene = (ObjectScene) getScene();
+            CasaConnection casaConnection =
+                    (CasaConnection) objectScene.findObject(CasaConnectionWidget.this);
+            if (isConnectionConfiguredWithQoS(casaConnection)) {
+                if (!getChildren().contains(mQoSWidget)) {
+                    addChild(mQoSWidget);
+                }
+            } else {
+                if (!getChildren().contains(mUnConfiguredQoSWidget)) {
+                    addChild(mUnConfiguredQoSWidget);
+                }
+            }
+            SwingUtilities.invokeLater(new Runnable() {
+
+                public void run() {
+                    getScene().validate();
+                }
+            });
+        }
     }
 }
