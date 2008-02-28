@@ -56,6 +56,7 @@ import org.netbeans.editor.Settings;
 import org.netbeans.editor.SettingsDefaults;
 import java.awt.Dimension;
 import java.beans.FeatureDescriptor;
+import org.openide.awt.Mnemonics;
 import org.openide.explorer.propertysheet.ExPropertyModel;
 
 /**
@@ -103,7 +104,6 @@ public class ColoringEditorPanel extends javax.swing.JPanel {
                                               getBundleString("CEP_FontTitle"),        // NOI18N
                                               getBundleString("ACSD_CEP_Font"),        // NOI18N
                                               getBundleString("CEP_FontTrans"),        // NOI18N
-                                              getBundleString("CEP_FontTrans_Mnemonic").charAt(0),  // NOI18N
                                               getBundleString("ACSD_CEP_FontTrans")); // NOI18N
         fontPanel.addPropertyChangeListener( new PropertyChangeListener() {
                                                  public void propertyChange( PropertyChangeEvent evt ) {
@@ -125,7 +125,6 @@ public class ColoringEditorPanel extends javax.swing.JPanel {
                        getBundleString("CEP_FgTitle"),       // NOI18N
                        getBundleString("ACSD_CEP_Fg"),       // NOI18N
                        getBundleString("CEP_FgTrans"),       // NOI18N
-                       getBundleString("CEP_FgTrans_Mnemonic").charAt(0),  // NOI18N
                        getBundleString("ACSD_CEP_FgTrans")); // NOI18N
         fgColorPanel.addPropertyChangeListener( new PropertyChangeListener() {
                                                     public void propertyChange( PropertyChangeEvent evt ) {
@@ -147,7 +146,6 @@ public class ColoringEditorPanel extends javax.swing.JPanel {
                        getBundleString("CEP_BgTitle"),       // NOI18N
                        getBundleString("ACSD_CEP_Bg"),       // NOI18N
                        getBundleString("CEP_BgTrans"),       // NOI18N
-                       getBundleString("CEP_BgTrans_Mnemonic").charAt(0),  // NOI18N
                        getBundleString("ACSD_CEP_BgTrans")); // NOI18N
 
         bgColorPanel.addPropertyChangeListener( new PropertyChangeListener() {
@@ -314,7 +312,7 @@ public class ColoringEditorPanel extends javax.swing.JPanel {
         JCheckBox defaultCheckBox;
 
         public PropWithDefaultPanel( Class propertyClass, Class propertyEditorClass, String title, String description,
-                                     String checkBoxTitle, char checkBoxMnemonic, String checkBoxDescription) {
+                                     String checkBoxTitle, String checkBoxDescription) {
 
             setLayout( new java.awt.BorderLayout());
             setBorder( new CompoundBorder( new TitledBorder( title ),
@@ -351,8 +349,7 @@ public class ColoringEditorPanel extends javax.swing.JPanel {
             
 
             defaultCheckBox = new JCheckBox();
-            defaultCheckBox.setText(checkBoxTitle);
-            defaultCheckBox.setMnemonic(checkBoxMnemonic);
+            Mnemonics.setLocalizedText(defaultCheckBox, checkBoxTitle);
             defaultCheckBox.getAccessibleContext().setAccessibleDescription(checkBoxDescription);
             defaultCheckBox.addActionListener( new ActionListener() {
                                                    public void actionPerformed( ActionEvent evt ) {

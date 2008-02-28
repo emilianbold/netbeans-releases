@@ -3,6 +3,7 @@
 <Form version="1.3" maxVersion="1.3" type="org.netbeans.modules.form.forminfo.JPanelFormInfo">
   <AuxValues>
     <AuxValue name="FormSettings_autoResourcing" type="java.lang.Integer" value="0"/>
+    <AuxValue name="FormSettings_autoSetComponentName" type="java.lang.Boolean" value="false"/>
     <AuxValue name="FormSettings_generateMnemonicsCode" type="java.lang.Boolean" value="false"/>
     <AuxValue name="FormSettings_i18nAutoMode" type="java.lang.Boolean" value="false"/>
     <AuxValue name="FormSettings_layoutCodeTarget" type="java.lang.Integer" value="2"/>
@@ -17,11 +18,11 @@
           <Group type="102" alignment="1" attributes="0">
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="1" attributes="0">
-                  <Component id="scrExpression" alignment="0" pref="655" max="32767" attributes="0"/>
+                  <Component id="scrExpression" alignment="0" pref="668" max="32767" attributes="0"/>
                   <Group type="102" alignment="1" attributes="0">
                       <Group type="103" groupAlignment="0" attributes="0">
                           <Group type="102" attributes="0">
-                              <Component id="scrSchema" pref="435" max="32767" attributes="0"/>
+                              <Component id="scrSchema" pref="448" max="32767" attributes="0"/>
                               <EmptySpace min="-2" pref="7" max="-2" attributes="0"/>
                           </Group>
                           <Group type="102" alignment="0" attributes="0">
@@ -37,7 +38,7 @@
                   </Group>
                   <Group type="102" alignment="1" attributes="0">
                       <Component id="lblExpression" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace pref="478" max="32767" attributes="0"/>
+                      <EmptySpace pref="500" max="32767" attributes="0"/>
                       <Component id="btnCheckSyntax" min="-2" max="-2" attributes="0"/>
                   </Group>
               </Group>
@@ -167,6 +168,14 @@
           <ResourceString bundle="org/netbeans/modules/xslt/mapper/xpatheditor/Bundle.properties" key="BTN_CheckSyntax" replaceFormat="org.openide.util.NbBundle.getMessage(ExpressionEditor.class, &quot;{key}&quot;)"/>
         </Property>
       </Properties>
+      <AccessibilityProperties>
+        <Property name="AccessibleContext.accessibleName" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/xslt/mapper/xpatheditor/Bundle.properties" key="ACSN_BTN_CheckSyntax" replaceFormat="org.openide.util.NbBundle.getMessage(ExpressionEditor.class, &quot;{key}&quot;)"/>
+        </Property>
+        <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/xslt/mapper/xpatheditor/Bundle.properties" key="ACSD_BTN_CheckSyntax" replaceFormat="org.openide.util.NbBundle.getMessage(ExpressionEditor.class, &quot;{key}&quot;)"/>
+        </Property>
+      </AccessibilityProperties>
     </Component>
   </SubComponents>
 </Form>

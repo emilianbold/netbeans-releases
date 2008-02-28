@@ -45,18 +45,18 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.text.Document;
 import org.netbeans.api.jsp.lexer.JspTokenId;
-import org.netbeans.api.languages.ASTEvaluator;
-import org.netbeans.api.languages.ASTItem;
-import org.netbeans.api.languages.ASTNode;
-import org.netbeans.api.languages.ASTPath;
-import org.netbeans.api.languages.ParserManager;
-import org.netbeans.api.languages.ParserManager.State;
+//import org.netbeans.api.languages.ASTEvaluator;
+//import org.netbeans.api.languages.ASTItem;
+//import org.netbeans.api.languages.ASTNode;
+//import org.netbeans.api.languages.ASTPath;
+//import org.netbeans.api.languages.ParserManager;
+//import org.netbeans.api.languages.ParserManager.State;
 import org.netbeans.api.lexer.Language;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
-import org.netbeans.modules.languages.Feature;
+//import org.netbeans.modules.languages.Feature;
 
 /** 
  * This class listens on the Schlieman parser and once the AST processing finishes
@@ -84,26 +84,28 @@ public class JspColoringUpdater {
     
     private JspColoringUpdater(Document doc) {
         this.doc = doc;
-        ParserManager parser = ParserManager.get(doc);
-        //I need to add my own AST evaluator since the parser status shows OK even the source
-        //is apparently broken
-        JspASTEvaluator evaluator = new JspASTEvaluator(new JspASTEvaluatorListener() {
-            public void evaluated(ASTNode root, boolean error) {
-                //parser finished, AST evaluated
-                updateEmbeddings(root);
-            }
-        });
-        parser.addASTEvaluator(evaluator);
+        
+//        THIS NEEDS TO BE REIMPLEMETED TO USE THE SYNTAX TREE PARSER
+//        ParserManager parser = ParserManager.get(doc);
+//        //I need to add my own AST evaluator since the parser status shows OK even the source
+//        //is apparently broken
+//        JspASTEvaluator evaluator = new JspASTEvaluator(new JspASTEvaluatorListener() {
+//            public void evaluated(ASTNode root, boolean error) {
+//                //parser finished, AST evaluated
+//                updateEmbeddings(root);
+//            }
+//        });
+//        parser.addASTEvaluator(evaluator);
     }
     
-    private void updateEmbeddings(ASTNode root) {
-        //do not ask what the hell is that...
-        List<JSP.Pair> java_code_blocks = JSP.java_code_blocks;
-        for(JSP.Pair pair : java_code_blocks) {
-            createEmbedding("text/x-java", pair.a, pair.b, 0, 0);//NOI18N
-        }
-    }
-    
+//    private void updateEmbeddings(ASTNode root) {
+//        //do not ask what the hell is that...
+//        List<JSP.Pair> java_code_blocks = JSP.java_code_blocks;
+//        for(JSP.Pair pair : java_code_blocks) {
+//            createEmbedding("text/x-java", pair.a, pair.b, 0, 0);//NOI18N
+//        }
+//    }
+//    
  private void createEmbedding(String mimeType, int startOffset, int endOffset, int startSkipLength, int endSkipLength ) {
         if(startOffset >= endOffset) {
             LOGGER.log(Level.WARNING, "startOffset >= endOffset: "+ startOffset + " >= " + endOffset);
@@ -174,48 +176,48 @@ public class JspColoringUpdater {
         return sb;
     }
   
-    private class JspASTEvaluator extends ASTEvaluator {
-        
-        private boolean sourceOK;
-        
-        private JspASTEvaluator(JspASTEvaluatorListener listener) {
-            this.listener = listener;
-        }
-        
-        private JspASTEvaluatorListener listener = null;
-        private ASTNode root;
-        
-        public void beforeEvaluation(State state, ASTNode root) {
-            sourceOK = true;
-            this.root = root;
-        }
-        
-        public void afterEvaluation(State state, ASTNode root) {
-            if(listener != null) {
-                listener.evaluated(root, !sourceOK);
-            }
-        }
-        
-        public void evaluate(State state, List<ASTItem> path, Feature feature) {
-            ASTItem item = path.get (path.size () - 1);
-            if(item instanceof ASTNode) {
-                if(((ASTNode)item).getNT().equals("ERROR")) { //NOI18N
-                    //source contains errors
-                    sourceOK = false;
-                }
-            }
-        }
-
-        public String getFeatureName() {
-            return null;
-        }
-        
-    }
-    
-    private interface JspASTEvaluatorListener {
-     
-        public void evaluated(ASTNode root, boolean error);
-        
-    }
+//    private class JspASTEvaluator extends ASTEvaluator {
+//        
+//        private boolean sourceOK;
+//        
+//        private JspASTEvaluator(JspASTEvaluatorListener listener) {
+//            this.listener = listener;
+//        }
+//        
+//        private JspASTEvaluatorListener listener = null;
+//        private ASTNode root;
+//        
+//        public void beforeEvaluation(State state, ASTNode root) {
+//            sourceOK = true;
+//            this.root = root;
+//        }
+//        
+//        public void afterEvaluation(State state, ASTNode root) {
+//            if(listener != null) {
+//                listener.evaluated(root, !sourceOK);
+//            }
+//        }
+//        
+//        public void evaluate(State state, List<ASTItem> path, Feature feature) {
+//            ASTItem item = path.get (path.size () - 1);
+//            if(item instanceof ASTNode) {
+//                if(((ASTNode)item).getNT().equals("ERROR")) { //NOI18N
+//                    //source contains errors
+//                    sourceOK = false;
+//                }
+//            }
+//        }
+//
+//        public String getFeatureName() {
+//            return null;
+//        }
+//        
+//    }
+//    
+//    private interface JspASTEvaluatorListener {
+//     
+//        public void evaluated(ASTNode root, boolean error);
+//        
+//    }
     
 }

@@ -77,6 +77,8 @@ public final class Search extends Dialog {
     mySource = source;
     myTargets = targets;
     mySearchEngine = engines.get(0);
+
+    mySearchEngine.removeSearchListeners();
     mySearchEngine.addSearchListener(new Tree());
     mySearchEngine.addSearchListener(new Progress());
 
@@ -128,7 +130,7 @@ public final class Search extends Dialog {
     c.insets = new Insets(TINY_INSET, SMALL_INSET, TINY_INSET, 0);
     c.fill = GridBagConstraints.HORIZONTAL;
     c.weightx = 1.0;
-    myName = new TextField(ASTERISK);
+    myName = new Field(ASTERISK);
     setWidth(myName.getUIComponent(), TEXT_WIDTH);
     label.setLabelFor(myName.getUIComponent());
     panel.add(myName.getUIComponent(), c);
@@ -288,7 +290,7 @@ public final class Search extends Dialog {
   }
 
   private Object mySource;
-  private TextField myName;
+  private Field myName;
   private JButton mySearchButton;
   private JComboBox myTarget;
   private JCheckBox myMatchCase;

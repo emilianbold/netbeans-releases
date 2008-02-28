@@ -325,6 +325,7 @@ public class SimpleTargetChooserPanelGUI extends javax.swing.JPanel implements A
         folderTextField = new javax.swing.JTextField();
         browseButton = new javax.swing.JButton();
         browseButton.setMnemonic(Localizer.parse(nbBundle28).charAt(0));
+        browseButton.getAccessibleContext().setAccessibleName(Localizer.parse(nbBundle28));
         jLabel4 = new javax.swing.JLabel();
         fileTextField = new javax.swing.JTextField();
         targetSeparator = new javax.swing.JSeparator();

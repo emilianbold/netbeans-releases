@@ -1042,6 +1042,15 @@ public final class JavaSource {
         }
         synchronized (INTERNAL_LOCK) {
             toRemove.add (task);
+            Collection<Request> rqs = finishedRequests.get(this);
+            if (rqs != null) {
+                for (Iterator<Request> it = rqs.iterator(); it.hasNext(); ) {
+                    Request rq = it.next();
+                    if (rq.task == task) {
+                        it.remove();
+                    }
+                }
+            }
         }
     }
     
@@ -1210,11 +1219,9 @@ out:            for (Iterator<Collection<Request>> it = finishedRequests.values(
      *
      */
     static Phase moveToPhase (final Phase phase, final CompilationInfoImpl currentInfo, final boolean cancellable) throws IOException {
-        boolean parserError = currentInfo.parserCrashed;
-        Phase currentPhase = currentInfo.getPhase();
-        if (parserError) {
-            return currentPhase;
-        }
+        Phase parserError = currentInfo.parserCrashed;
+        assert parserError != null;
+        Phase currentPhase = currentInfo.getPhase();        
         final boolean isMultiFiles = currentInfo.getJavaSource().files.size()>1;
         LowMemoryNotifier lm = null;
         LMListener lmListener = null;
@@ -1229,7 +1236,7 @@ out:            for (Iterator<Collection<Request>> it = finishedRequests.values(
                 currentInfo.needsRestart = true;
                 return currentPhase;
             }
-            if (currentPhase.compareTo(Phase.PARSED)<0 && phase.compareTo(Phase.PARSED)>=0) {
+            if (currentPhase.compareTo(Phase.PARSED)<0 && phase.compareTo(Phase.PARSED)>=0 && phase.compareTo(parserError)<=0) {
                 if (cancellable && currentRequest.isCanceled()) {
                     //Keep the currentPhase unchanged, it may happen that an userActionTask
                     //runnig after the phace completion task may still use it.
@@ -1265,7 +1272,7 @@ out:            for (Iterator<Collection<Request>> it = finishedRequests.values(
                 currentInfo.needsRestart = true;
                 return currentPhase;
             }
-            if (currentPhase == Phase.PARSED && phase.compareTo(Phase.ELEMENTS_RESOLVED)>=0) {
+            if (currentPhase == Phase.PARSED && phase.compareTo(Phase.ELEMENTS_RESOLVED)>=0 && phase.compareTo(parserError)<=0) {
                 if (cancellable && currentRequest.isCanceled()) {
                     return Phase.MODIFIED;
                 }
@@ -1279,7 +1286,7 @@ out:            for (Iterator<Collection<Request>> it = finishedRequests.values(
                 currentInfo.needsRestart = true;
                 return currentPhase;
             }
-            if (currentPhase == Phase.ELEMENTS_RESOLVED && phase.compareTo(Phase.RESOLVED)>=0) {
+            if (currentPhase == Phase.ELEMENTS_RESOLVED && phase.compareTo(Phase.RESOLVED)>=0 && phase.compareTo(parserError)<=0) {
                 if (cancellable && currentRequest.isCanceled()) {
                     return Phase.MODIFIED;
                 }
@@ -1303,21 +1310,17 @@ out:            for (Iterator<Collection<Request>> it = finishedRequests.values(
         } catch (CancelAbort ca) {
             currentPhase = Phase.MODIFIED;
         } catch (Abort abort) {
-            parserError = true;
-            currentPhase = Phase.MODIFIED;
+            parserError = currentPhase;
         } catch (IOException ex) {
-            currentInfo.parserCrashed = true;
-            currentPhase = Phase.MODIFIED;
+            currentInfo.parserCrashed = currentPhase;
             dumpSource(currentInfo, ex);
             throw ex;
         } catch (RuntimeException ex) {
-            parserError = true;
-            currentPhase = Phase.MODIFIED;
+            parserError = currentPhase;
             dumpSource(currentInfo, ex);
             throw ex;        
         } catch (Error ex) {
-            parserError = true;
-            currentPhase = Phase.MODIFIED;
+            parserError = currentPhase;
             dumpSource(currentInfo, ex);
             throw ex;
         }

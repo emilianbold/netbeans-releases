@@ -39,6 +39,7 @@
 
 package org.netbeans.modules.cnd.editor.reformat;
 
+import java.util.Iterator;
 import java.util.LinkedList;
 import org.netbeans.modules.cnd.editor.reformat.Reformatter.Diff;
 
@@ -49,19 +50,87 @@ import org.netbeans.modules.cnd.editor.reformat.Reformatter.Diff;
 /*package local*/ class DiffLinkedList {
     private LinkedList<Diff> storage = new LinkedList<Diff>();
     
-    /*package local*/ void addFirst(int start, int end, String text){
+    /*package local*/ Diff addFirst(int start, int end, String text){
         Diff diff = new Diff(start, end, text);
-        Diff top = getFirst();
-        if (top != null && top.getStartOffset()>start) {
-            storage.remove();
-            storage.addFirst(diff);
-            storage.addFirst(top);
-        } else  if (top != null && top.getStartOffset()==start){
-            storage.remove();
-            storage.addFirst(diff);
-        } else {
-            storage.addFirst(diff);
+        storage.add(getIndex(start, end), diff);
+        return diff;
+    }
+
+    private int getIndex(int start, int end) {
+        int res = 0;
+        Iterator<Diff> it = storage.iterator();
+        while(it.hasNext()) {
+            Diff diff = it.next();
+            if (diff.getStartOffset()<=start) {
+                break;
+            }
+            res++;
         }
+        return res;
+    }
+    
+    /*package local*/ DiffResult getDiffs(ExtendedTokenSequence ts, int shift){
+        int start;
+        int end;
+        if (shift != 0) {
+            int index = ts.index();
+            try {
+                if (shift > 0){
+                    while(ts.moveNext()) {
+                        shift--;
+                        if (shift == 0){
+                            break;
+                        }
+                    }
+                } else {
+                    while(ts.movePrevious()) {
+                        shift++;
+                        if (shift == 0){
+                            break;
+                        }
+                    }
+                }
+                start = ts.offset();
+                end = ts.offset()+ts.token().length();
+            } finally {
+                ts.moveIndex(index);
+                ts.moveNext();
+            }
+        } else {
+            start = ts.offset();
+            end = ts.offset()+ts.token().length();
+        }
+        return getDiffs(start, end);
+    }
+
+    /*package local*/ DiffResult getDiffs(int start, int end){
+        DiffResult result = null;
+        Iterator<Diff> it = storage.iterator();
+        while(it.hasNext()) {
+            Diff diff = it.next();
+            if (diff.getStartOffset() == start) {
+                if (diff.getEndOffset() == end) {
+                    if (result == null) {
+                        result = new DiffResult();
+                    }
+                    result.replace = diff;
+                } else {
+                    if (result == null) {
+                        result = new DiffResult();
+                    }
+                    result.before = diff;
+                }
+            } else if (diff.getEndOffset() == end) {
+                if (result == null) {
+                    result = new DiffResult();
+                }
+                result.after = diff;
+            }
+            if (diff.getEndOffset() < start) {
+                return result;
+            }
+        }
+        return result;
     }
     
     /*package local*/ Diff getFirst(){
@@ -71,14 +140,13 @@ import org.netbeans.modules.cnd.editor.reformat.Reformatter.Diff;
         return storage.getFirst();
 
     }
-    /*package local*/ Diff getBeforeFirst(){
-        if (storage.size() < 2){
-            return null;
-        }
-        return storage.get(1);
-    }
-
     /*package local*/ LinkedList<Diff> getStorage(){
         return storage;
+    }
+    
+    static class DiffResult{
+        Diff before;
+        Diff replace;
+        Diff after;
     }
 }

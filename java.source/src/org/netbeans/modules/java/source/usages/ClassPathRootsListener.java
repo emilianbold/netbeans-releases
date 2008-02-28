@@ -43,12 +43,14 @@ import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
+import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.IdentityHashMap;
 import java.util.LinkedList;
 import java.util.Map;
 import java.util.Set;
@@ -57,12 +59,14 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.source.ClasspathInfo;
+import org.netbeans.modules.java.source.parsing.CachingArchiveProvider;
 import org.netbeans.modules.java.source.usages.fcs.FileChangeSupport;
 import org.netbeans.modules.java.source.usages.fcs.FileChangeSupportEvent;
 import org.netbeans.modules.java.source.usages.fcs.FileChangeSupportListener;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Exceptions;
 import org.openide.util.WeakSet;
 
 /**
@@ -83,7 +87,7 @@ public class ClassPathRootsListener implements PropertyChangeListener {
         return INSTANCE;
     }
 
-    final Map<ClassPath, Collection<PropertyChangeListener>> cp2Listeners;
+    final Map<ClassPath, Collection<ClassPathRootsChangedListener>> cp2Listeners;
     final Map<ClassPath, Set<File>> classPath2Roots;
     final Map<ClassPath, Boolean> classPath2Translate;
     final Map<ClassPath.Entry, File> entry2File;
@@ -93,7 +97,7 @@ public class ClassPathRootsListener implements PropertyChangeListener {
     final Map<File, Reference<File>> fileNormalizationFacility;
     
     public ClassPathRootsListener() {
-        this.cp2Listeners = new  WeakHashMap<ClassPath, Collection<PropertyChangeListener>>();
+        this.cp2Listeners = new  WeakHashMap<ClassPath, Collection<ClassPathRootsChangedListener>>();
         this.classPath2Roots = new  WeakHashMap<ClassPath, Set<File>>();
         this.classPath2Translate = new  WeakHashMap<ClassPath, Boolean>();
         this.entry2File = new WeakHashMap<ClassPath.Entry, File>();
@@ -104,11 +108,11 @@ public class ClassPathRootsListener implements PropertyChangeListener {
         this.fileNormalizationFacility = new WeakHashMap<File, Reference<File>>();
     }
     
-    public synchronized void addPropertyChangeListener(ClassPath cp, boolean translate, PropertyChangeListener pcl) {
-        Collection<PropertyChangeListener> listeners = cp2Listeners.get(cp);
+    public synchronized void addClassPathRootsListener(ClassPath cp, boolean translate, ClassPathRootsChangedListener pcl) {
+        Collection<ClassPathRootsChangedListener> listeners = cp2Listeners.get(cp);
         
         if (listeners == null) {
-            cp2Listeners.put(cp, listeners = new  HashSet<PropertyChangeListener>());
+            cp2Listeners.put(cp, listeners = new  HashSet<ClassPathRootsChangedListener>());
             cp.addPropertyChangeListener(this);
         }
         
@@ -188,12 +192,16 @@ public class ClassPathRootsListener implements PropertyChangeListener {
                         }
 
                         private void fileChanged(File f) {
+                            try {
+                                CachingArchiveProvider.getDefault().clearArchive(f.toURI().toURL());
+                            } catch (MalformedURLException ex) {
+                                Exceptions.printStackTrace(ex);
+                            }
+                            
                             Collection<ClassPath> cps = file2ClassPaths.get(f);
 
                             if (cps != null) {
-                                for (ClassPath cp : cps) {
-                                    fireRootsChanged(cp);
-                                }
+                                fireRootsChanged(Collections.unmodifiableCollection(new LinkedList<ClassPath>(cps)));
                             }
                         }
                     };
@@ -276,23 +284,26 @@ public class ClassPathRootsListener implements PropertyChangeListener {
         return null;
     }
     
-    private void fireRootsChanged(ClassPath cp) {
-        Collection<PropertyChangeListener> listeners;
+    private void fireRootsChanged(Collection<ClassPath> cps) {
+        Map<ClassPathRootsChangedListener, Boolean> listeners = new IdentityHashMap<ClassPathRootsChangedListener, Boolean>();
         
         synchronized (this) {
-            listeners = cp2Listeners.get(cp);
+            for (ClassPath cp : cps) {
+                Collection<ClassPathRootsChangedListener> thisListeners = cp2Listeners.get(cp);
 
-            if (listeners != null && !listeners.isEmpty()) {
-                listeners = new  LinkedList<PropertyChangeListener>(listeners);
-            } else {
-                return ;
+                if (listeners != null) {
+                    for (ClassPathRootsChangedListener l : thisListeners) {
+                        listeners.put(l, true);
+                    }
+                }
             }
         }
         
-        PropertyChangeEvent evt = new PropertyChangeEvent(cp, ClassPath.PROP_ROOTS, null, null);
+        if (listeners.isEmpty())
+            return;
         
-        for (PropertyChangeListener l : listeners) {
-            l.propertyChange(evt);
+        for (ClassPathRootsChangedListener l : listeners.keySet()) {
+            l.rootsChanged(cps);
         }
     }
 
@@ -302,4 +313,7 @@ public class ClassPathRootsListener implements PropertyChangeListener {
         }
     }
     
+    public static interface ClassPathRootsChangedListener {
+        public void rootsChanged(Collection<ClassPath> forCPs);
+    }
 }

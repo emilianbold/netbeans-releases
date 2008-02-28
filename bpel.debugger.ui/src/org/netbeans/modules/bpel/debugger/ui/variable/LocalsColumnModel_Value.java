@@ -78,27 +78,35 @@ public final class LocalsColumnModel_Value extends AbstractColumn {
         
         @Override
         public String getAsText() {
-            if ("".equals(getValue())) {
+            if (getValue() instanceof LocalsTreeModel.Dummy) {
                 return "";
             }
             
-            return myHelper.getValue(getValue());
+            if (getValue() == null) {
+                return "";
+            }
+            
+            return ((LocalsTableModel.Pair) getValue()).getValue();
         }
         
         @Override
         public void setAsText(
                 final String value) {
             
-            myHelper.setValue(getValue(), value);
+            setValue(new LocalsTableModel.Pair(((LocalsTableModel.Pair) getValue()).getKey(), value));
         }
         
         @Override
         public boolean supportsCustomEditor() {
-            if ("".equals(getValue())) {
+            if (getValue() instanceof LocalsTreeModel.Dummy) {
                 return false;
             }
             
-            return myHelper.supportsCustomEditor(getValue());
+            if (getValue() == null) {
+                return false;
+            }
+            
+            return myHelper.supportsCustomEditor(((LocalsTableModel.Pair) getValue()).getKey());
         }
         
         @Override
@@ -145,11 +153,11 @@ public final class LocalsColumnModel_Value extends AbstractColumn {
         
         private void init() {
             final String text = 
-                    myHelper.getCustomEditorValue(myEditor.getValue());
+                    myHelper.getCustomEditorValue(((LocalsTableModel.Pair) myEditor.getValue()).getKey());
             final String mimeType = 
-                    myHelper.getCustomEditorMimeType(myEditor.getValue());
+                    myHelper.getCustomEditorMimeType(((LocalsTableModel.Pair) myEditor.getValue()).getKey());
             final boolean editable = 
-                    !myHelper.isValueReadOnly(myEditor.getValue());
+                    !myHelper.isValueReadOnly(((LocalsTableModel.Pair) myEditor.getValue()).getKey());
             
             setLayout(new BorderLayout());
             setBorder(new EmptyBorder(12, 12, 0, 11));
@@ -169,21 +177,6 @@ public final class LocalsColumnModel_Value extends AbstractColumn {
             myEditorPane.requestFocus();
             myEditorPane.setCaretPosition(0);
             
-//            myEditorPane.getDocument().addDocumentListener(
-//                    new DocumentListener() {
-//                public void insertUpdate(DocumentEvent event) {
-//                    myEditor.setValue(myEditorPane.getText());
-//                }
-//                
-//                public void removeUpdate(DocumentEvent event) {
-//                    myEditor.setValue(myEditorPane.getText());
-//                }
-//                
-//                public void changedUpdate(DocumentEvent event) {
-//                    myEditor.setValue(myEditorPane.getText());
-//                }
-//            });
-//            
             myEditorPane.getAccessibleContext().
                     setAccessibleName("ACS_EditorPane"); // NOI18N
             myEditorPane.getAccessibleContext().

@@ -168,6 +168,7 @@ public class JoinMainPanel extends JPanel {
             
             String nbBundle1 = mLoc.t("PRSR001: Select which tables you would like to join.");
             JLabel joinLabel = new JLabel(Localizer.parse(nbBundle1));
+            joinLabel.getAccessibleContext().setAccessibleName(Localizer.parse(nbBundle1));
 
             labelPnl.add(joinLabel, BorderLayout.NORTH);
             labelPnl.add(new JSeparator(), BorderLayout.SOUTH);
@@ -207,7 +208,7 @@ public class JoinMainPanel extends JPanel {
         previewPanel = new JoinPreviewPanel(this);
         String nbBundle4 = mLoc.t("PRSR001: Preview");
         previewPanel.setName(Localizer.parse(nbBundle4));
-
+        previewPanel.getAccessibleContext().setAccessibleName(Localizer.parse(nbBundle4));
         // initialize select table column panel
         tableColumnPanel = new TableColumnTreePanel(new ArrayList());
         String nbBundle5 = mLoc.t("PRSR001: Select Columns");

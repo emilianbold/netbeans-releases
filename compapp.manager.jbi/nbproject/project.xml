@@ -47,14 +47,6 @@ made subject to such option by the copyright holder.
             <code-name-base>org.netbeans.modules.compapp.manager.jbi</code-name-base>
             <module-dependencies>
                 <dependency>
-                    <code-name-base>org.netbeans.soa.libs.jbiadmincommon</code-name-base>
-                    <build-prerequisite/>
-                    <compile-dependency/>
-                    <run-dependency>
-                        <specification-version>1.0</specification-version>
-                    </run-dependency>
-                </dependency>
-                <dependency>
                     <code-name-base>org.jdesktop.layout</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
@@ -76,6 +68,13 @@ made subject to such option by the copyright holder.
                     <code-name-base>org.netbeans.modules.j2ee.sun.appsrv</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
+                    <run-dependency>
+                        <release-version>1</release-version>
+                        <specification-version>1.5</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.netbeans.modules.j2ee.sun.appsrv81</code-name-base>
                     <run-dependency>
                         <release-version>1</release-version>
                         <specification-version>1.5</specification-version>
@@ -106,6 +105,14 @@ made subject to such option by the copyright holder.
                     <run-dependency>
                         <release-version>1</release-version>
                         <specification-version>1.2</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.netbeans.soa.libs.jbiadmincommon</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <specification-version>1.0</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>

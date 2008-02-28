@@ -271,7 +271,9 @@ public class DocumentationCookie implements ReportCookie {
     if (skipElement(entity)) {
       return;
     }
-    fillElement(entity, section);
+    if ( !(object instanceof Process)) {
+      fillElement(entity, section);
+    }
     List children = entity.getChildren();
 
     for (Object child : children) {

@@ -41,6 +41,7 @@
 
 package org.netbeans.modules.spring.api.beans;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -57,6 +58,7 @@ import org.openide.util.Mutex;
 public class DefaultConfigFileManagerImpl implements ConfigFileManagerImplementation {
 
     private final ChangeSupport changeSupport = new ChangeSupport(this);
+    private List<File> files;
     private List<ConfigFileGroup> groups = new ArrayList<ConfigFileGroup>();
 
     public DefaultConfigFileManagerImpl(ConfigFileGroup... groups) {
@@ -69,12 +71,17 @@ public class DefaultConfigFileManagerImpl implements ConfigFileManagerImplementa
         return ProjectManager.mutex();
     }
 
+    public List<File> getConfigFiles() {
+        return files;
+    }
+
     public List<ConfigFileGroup> getConfigFileGroups() {
         return groups;
     }
 
-    public void putConfigFileGroups(List<ConfigFileGroup> groups) {
+    public void putConfigFilesAndGroups(List<File> files, List<ConfigFileGroup> groups) {
         this.groups = groups;
+        this.files = files;
         changeSupport.fireChange();
     }
 

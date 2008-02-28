@@ -159,7 +159,8 @@ public class ExtEditorUI extends EditorUI {
     public void showPopupMenu(int x, int y) {
         // First call the build-popup-menu action to possibly rebuild the popup menu
         JTextComponent component = getComponent();
-        if (component != null) {
+        JPopupMenu pm = getPopupMenu();
+        if (component != null && (pm == null || !pm.isVisible())) {
             BaseKit kit = Utilities.getKit(component);
             if (kit != null) {
                 Action a = kit.getActionByName(ExtKit.buildPopupMenuAction);
@@ -168,7 +169,7 @@ public class ExtEditorUI extends EditorUI {
                 }
             }
 
-            JPopupMenu pm = getPopupMenu();
+            pm = getPopupMenu(); // refresh after building of the popup menu
             if (pm != null) {
                 if (component.isShowing()) { // fix of #18808
                     pm.show(component, x, y);
@@ -181,6 +182,7 @@ public class ExtEditorUI extends EditorUI {
         JPopupMenu pm = getPopupMenu();
         if (pm != null) {
             pm.setVisible(false);
+            setPopupMenu(null);
         }
     }
 

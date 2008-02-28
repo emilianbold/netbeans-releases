@@ -74,7 +74,6 @@ import org.netbeans.spi.jumpto.type.SearchType;
 import org.netbeans.spi.jumpto.type.TypeProvider;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
-import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 
@@ -161,15 +160,11 @@ public class JavaTypeProvider implements TypeProvider {
         try {
             openProjectsTask.get();
         } catch (InterruptedException ex) {
-            Exceptions.printStackTrace(ex);
+            LOGGER.fine(ex.getMessage());
         } catch (ExecutionException ex) {
-            Exceptions.printStackTrace(ex);
+            LOGGER.fine(ex.getMessage());
         }
         
-        if (RepositoryUpdater.getDefault().isScanInProgress()) {
-            String message = NbBundle.getMessage(JavaTypeProvider.class, "LBL_ScanInProgress_warning");
-            res.setMessage(message);
-        }
         if (cache == null) {
             Set<CacheItem> sources = null;
 
@@ -289,6 +284,19 @@ public class JavaTypeProvider implements TypeProvider {
 
         ArrayList<JavaTypeDescription> types = new ArrayList<JavaTypeDescription>(cache.size() * 20);
         Set<ElementHandle<TypeElement>> names = null;
+        
+        boolean scanInProgress;
+        do {
+        // is scan in progress? If so, provide a message to user.
+        scanInProgress = RepositoryUpdater.getDefault().isScanInProgress();
+        if (scanInProgress) {
+            // ui message
+            String message = NbBundle.getMessage(JavaTypeProvider.class, "LBL_ScanInProgress_warning");
+            res.setMessage(message);
+        } else {
+            res.setMessage(null);
+        }
+
         for(final CacheItem ci : cache) {
             time = System.currentTimeMillis();
 
@@ -320,7 +328,7 @@ public class JavaTypeProvider implements TypeProvider {
                     }, true);
                     names = n[0];
                 } catch (IOException ex) {
-                    Exceptions.printStackTrace(ex);
+                    LOGGER.fine(ex.getMessage());
                 }
             }
 
@@ -345,6 +353,23 @@ public class JavaTypeProvider implements TypeProvider {
             }
             add += System.currentTimeMillis() - time;
         }
+        // nothing found, wait a while and restart the task
+        // again.
+        if (scanInProgress && types.isEmpty()) {
+            if (RepositoryUpdater.getDefault().isScanInProgress()) {
+                try {
+                    Thread.sleep(1000);
+                } catch (InterruptedException ex) {
+                    LOGGER.fine(ex.getMessage());
+                }
+            }
+            res.setMessage(null);
+        } else {
+            // finish the loop, results available
+            scanInProgress = false;
+        }
+        
+        } while (scanInProgress);
         
         if ( !isCanceled ) {            
             time = System.currentTimeMillis();
@@ -354,6 +379,7 @@ public class JavaTypeProvider implements TypeProvider {
             LOGGER.fine("PERF - " + " GSS:  " + gss + " GSB " + gsb + " CP: " + cp + " SFB: " + sfb + " GTN: " + gtn + "  ADD: " + add + "  SORT: " + sort );
             res.addResult(types);
         }
+        
     }
     
     private static boolean isAllUpper( String text ) {

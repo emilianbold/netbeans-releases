@@ -88,7 +88,7 @@
     <service name="purchaseOrderService">
         <port name="purchaseOrderPort"
               binding="tns:purchaseOrderBinding">
-            <soap:address location="http://localhost:12100/wsdl/purchase/PurchaseOrder/Servicelocation/bp1"/>
+            <soap:address location="http://localhost:18181/wsdl/purchase/PurchaseOrder/Servicelocation/bp1"/>
         </port>
     </service>
     

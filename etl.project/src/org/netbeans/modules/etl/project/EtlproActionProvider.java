@@ -169,6 +169,7 @@ class EtlproActionProvider implements ActionProvider {
                     NbBundle.getMessage(NoSelectedServerWarning.class, "CTL_NoSelectedServerWarning_Title"), // NOI18N
                     true, options, options[0], DialogDescriptor.DEFAULT_ALIGN, null, null);
             Dialog dlg = DialogDisplayer.getDefault().createDialog(desc);
+            dlg.getAccessibleContext().setAccessibleDescription("This dialog displays warning if no server is selected");
             dlg.setVisible(true);
             if (desc.getValue() != options[0]) {
                 selected = false;

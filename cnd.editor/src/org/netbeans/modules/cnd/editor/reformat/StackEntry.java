@@ -52,11 +52,14 @@ class StackEntry {
     private CppTokenId kind;
     private CppTokenId importantKind;
     private boolean likeToFunction = false;
+    private boolean likeToArrayInitialization = false;
+    private String text;
 
     StackEntry(ExtendedTokenSequence ts) {
         super();
         index = ts.index();
         kind = ts.token().id();
+        text = ts.token().text().toString();
         switch (kind) {
             case IF: //("if", "keyword-directive"),
             case ELSE: //("else", "keyword-directive"),
@@ -86,20 +89,6 @@ class StackEntry {
                 }
                 Token<CppTokenId> current = ts.token();
                 switch (current.id()) {
-                    case RBRACE: //("}", "separator"),
-                    {
-                        curly++;
-                        break;
-                    }
-                    case LBRACE: //("{", "separator"),
-                    {
-                        if (curly == 0) {
-                            // undefined
-                            return;
-                        }
-                        curly--;
-                        break;
-                    }
                     case RPAREN: //(")", "separator"),
                     {
                         if (paren == 0 && curly == 0 && triangle == 0) {
@@ -111,16 +100,26 @@ class StackEntry {
                     case LPAREN: //("(", "separator"),
                     {
                         if (paren == 0) {
-                            // undefined
+                            likeToArrayInitialization = true;
                             return;
                         }
                         paren--;
                         break;
                     }
+                    case RBRACE: //("}", "separator"),
+                    case LBRACE: //("{", "separator"),
                     case SEMICOLON: //(";", "separator"),
                     {
                         if (paren == 0 && curly == 0 && triangle == 0) {
                             // undefined
+                            return;
+                        }
+                        break;
+                    }
+                    case EQ: //("=", "operator"),
+                    {
+                        if (paren == 0) {
+                            likeToArrayInitialization = true;
                             return;
                         }
                         break;
@@ -145,6 +144,13 @@ class StackEntry {
                     }
                     case NAMESPACE: //("namespace", "keyword"), //C++
                     case CLASS: //("class", "keyword"), //C++
+                    {
+                        if (paren == 0 && curly == 0 && triangle == 0) {
+                            importantKind = current.id();
+                            return;
+                        }
+                        break;
+                    }
                     case STRUCT: //("struct", "keyword"),
                     case ENUM: //("enum", "keyword"),
                     case UNION: //("union", "keyword"),
@@ -152,6 +158,16 @@ class StackEntry {
                         if (paren == 0 && curly == 0 && triangle == 0) {
                             if (!likeToFunction) {
                                 importantKind = current.id();
+                                return;
+                            }
+                        }
+                        break;
+                    }
+                    case EXTERN: //EXTERN("extern", "keyword"),
+                    {
+                        if (paren == 0 && curly == 0 && triangle == 0) {
+                            if (!likeToFunction) {
+                                importantKind = CppTokenId.NAMESPACE;
                                 return;
                             }
                         }
@@ -183,6 +199,10 @@ class StackEntry {
     public int getIndex() {
         return index;
     }
+    
+    public String getText() {
+        return text;
+    }
 
     public CppTokenId getKind() {
         return kind;
@@ -196,6 +216,14 @@ class StackEntry {
         return likeToFunction;
     }
 
+    public boolean isLikeToArrayInitialization() {
+        return likeToArrayInitialization;
+    }
+
+    public void setLikeToArrayInitialization(boolean likeToArrayInitialization) {
+        this.likeToArrayInitialization = likeToArrayInitialization;
+    }
+
     @Override
     public String toString(){
         StringBuilder buf = new StringBuilder(kind.name());
@@ -203,6 +231,8 @@ class StackEntry {
             buf.append("("+importantKind.name()+")"); // NOI18N
         } else if (likeToFunction) {
             buf.append("(FUNCTION)"); // NOI18N
+        } else if (likeToArrayInitialization) {
+            buf.append("(ARRAY_INITIALIZATION)"); // NOI18N
         }
         return buf.toString();
     }

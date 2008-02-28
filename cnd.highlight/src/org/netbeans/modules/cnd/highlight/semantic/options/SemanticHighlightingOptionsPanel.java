@@ -53,6 +53,7 @@ public class SemanticHighlightingOptionsPanel extends javax.swing.JPanel impleme
     
     public SemanticHighlightingOptionsPanel() {
         initComponents();
+        initMnemonics();
         cbKeepMarks.addActionListener(this);
         setName("TAB_SemanticHighlightingTab"); // NOI18N (used as a pattern...)
         if (!SemanticHighlightingOptions.SEMANTIC_ADVANCED) {
@@ -101,6 +102,21 @@ public class SemanticHighlightingOptionsPanel extends javax.swing.JPanel impleme
         cbSysMacro.setEnabled(cbMacros.isSelected());
     }
 
+    private void initMnemonics() {
+        cbMarkOccurrences.setMnemonic(getString("EnableMarkOccurrences_Mnemonic").charAt(0));
+        cbKeepMarks.setMnemonic(getString("KeepMarks_Mnemonic").charAt(0));
+        cbMacros.setMnemonic(getString("EnableMacros_Mnemonic").charAt(0));
+        cbSysMacro.setMnemonic(getString("DifferSystemMacros_Mnemonic").charAt(0));
+        cbClassFields.setMnemonic(getString("ShowClassFields_Mnemonic").charAt(0));
+        cbFunctionNames.setMnemonic(getString("ShowFunctionNames_Mnemonic").charAt(0));
+
+        cbMarkOccurrences.getAccessibleContext().setAccessibleDescription(getString("EnableMarkOccurrences_AD"));
+        cbKeepMarks.getAccessibleContext().setAccessibleDescription(getString("KeepMarks_AD"));
+        cbMacros.getAccessibleContext().setAccessibleDescription(getString("EnableMacros_AD"));
+        cbSysMacro.getAccessibleContext().setAccessibleDescription(getString("DifferSystemMacros_AD"));
+        cbClassFields.getAccessibleContext().setAccessibleDescription(getString("ShowClassFields_AD"));
+        cbFunctionNames.getAccessibleContext().setAccessibleDescription(getString("ShowFunctionNames_AD"));
+}
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
@@ -181,8 +197,6 @@ public class SemanticHighlightingOptionsPanel extends javax.swing.JPanel impleme
                 .add(cbFunctionNames)
                 .addContainerGap(112, Short.MAX_VALUE))
         );
-
-        cbMarkOccurrences.getAccessibleContext().setAccessibleName(getString("EnableMarkOccurrences_AccessibleName"));
     }// </editor-fold>//GEN-END:initComponents
 
     private void cbMarkOccurrencesActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cbMarkOccurrencesActionPerformed

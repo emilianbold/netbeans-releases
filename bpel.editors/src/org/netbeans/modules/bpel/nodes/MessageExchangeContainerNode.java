@@ -23,7 +23,7 @@ import org.netbeans.modules.bpel.editors.api.nodes.NodeType;
 import org.netbeans.modules.bpel.editors.api.nodes.images.FolderIcon;
 import org.netbeans.modules.bpel.model.api.BaseScope;
 import org.netbeans.modules.bpel.model.api.MessageExchangeContainer;
-import org.netbeans.modules.bpel.nodes.actions.ActionType;
+import org.netbeans.modules.bpel.editors.api.nodes.actions.ActionType;
 import org.netbeans.modules.bpel.nodes.children.MessageExchangeContainerChildren;
 import org.openide.nodes.Children;
 import org.openide.util.Lookup;

@@ -45,9 +45,12 @@ package org.netbeans.modules.spring.beans.wizards;
 
 import java.awt.Component;
 import java.io.BufferedWriter;
+import java.io.File;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Set;
 import javax.swing.JComponent;
@@ -59,7 +62,10 @@ import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Formatter;
+import org.netbeans.modules.spring.api.beans.ConfigFileGroup;
+import org.netbeans.modules.spring.api.beans.ConfigFileManager;
 import org.netbeans.modules.spring.api.beans.SpringConstants;
+import org.netbeans.modules.spring.beans.ProjectSpringScopeProvider;
 import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileAlreadyLockedException;
@@ -69,8 +75,10 @@ import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 import org.openide.text.CloneableEditorSupport;
 import org.openide.util.Exceptions;
+import org.openide.util.Mutex.ExceptionAction;
+import org.openide.util.MutexException;
 
-public final class NewSpringXMLConfigWizardIterator implements WizardDescriptor.InstantiatingIterator {
+public final class NewSpringXMLConfigWizardIterator implements WizardDescriptor.AsynchronousInstantiatingIterator {
 
     private int index;
     private WizardDescriptor wizard;
@@ -84,11 +92,13 @@ public final class NewSpringXMLConfigWizardIterator implements WizardDescriptor.
         if (panels == null) {
             Project p = Templates.getProject(wizard);
             SourceGroup[] groups = ProjectUtils.getSources(p).getSourceGroups(Sources.TYPE_GENERIC);
-            WizardDescriptor.Panel targetChooser = Templates.createSimpleTargetChooser(p, groups);
+            List<ConfigFileGroup> configFileGroups = getConfigFileManager(p).getConfigFileGroups();
+            SpringXMLConfigGroupPanel configGroupPanel = configFileGroups.isEmpty() ? null : new SpringXMLConfigGroupPanel(configFileGroups);
+            WizardDescriptor.Panel targetChooser = Templates.createSimpleTargetChooser(p, groups, configGroupPanel);
 
             panels = new WizardDescriptor.Panel[]{
                 targetChooser,
-                new BeansConfigNamespacesWizardPanel(),
+                new SpringXMLConfigNamespacesPanel(),
             };
             String[] steps = createSteps();
             for (int i = 0; i < panels.length; i++) {
@@ -127,12 +137,54 @@ public final class NewSpringXMLConfigWizardIterator implements WizardDescriptor.
 
             public void run() throws IOException {
                 createdFile[0] = targetFolder.createData(targetName, Templates.getTemplate(wizard).getExt());
-                String[] incNamespaces = (String[]) wizard.getProperty(BeansConfigNamespacesWizardPanel.INCLUDED_NAMESPACES);
+                String[] incNamespaces = (String[]) wizard.getProperty(SpringXMLConfigNamespacesPanel.INCLUDED_NAMESPACES);
                 generateFileContents(createdFile[0], incNamespaces);
             }
         });
-
+        
+        @SuppressWarnings("unchecked")
+        Set<ConfigFileGroup> selectedGroups = (Set<ConfigFileGroup>) wizard.getProperty(SpringXMLConfigGroupPanel.CONFIG_FILE_GROUPS);
+        if(selectedGroups != null && selectedGroups.size() > 0) {
+            addFileToSelectedGroups(selectedGroups, FileUtil.toFile(createdFile[0]));
+        }
+        
         return Collections.singleton(createdFile[0]);
+    }
+    
+    private void addFileToSelectedGroups(Set<ConfigFileGroup> selectedGroups, File file) throws IOException {
+        final ConfigFileManager manager = getConfigFileManager(Templates.getProject(wizard));
+        final List<File> origFiles = manager.getConfigFiles();
+        final List<File> newFiles = new ArrayList<File>(origFiles);
+        newFiles.add(file);
+        final List<ConfigFileGroup> origGroups = manager.getConfigFileGroups();
+        final List<ConfigFileGroup> newGroups = new ArrayList<ConfigFileGroup>(origGroups.size());
+        
+        for(ConfigFileGroup grp : origGroups) {
+            if(selectedGroups.contains(grp)) {
+                ConfigFileGroup nGrp = addFileToConfigGroup(grp, file);
+                newGroups.add(nGrp);
+            } else {
+                newGroups.add(grp);
+            }
+        }
+        
+        try {
+            manager.mutex().writeAccess(new ExceptionAction<Void>() {
+                public Void  run() throws IOException {
+                    manager.putConfigFilesAndGroups(newFiles, newGroups);
+                    manager.save();
+                    return null;
+                }
+            });
+        } catch (MutexException e) {
+            throw (IOException) e.getException();
+        }
+    }
+    
+    private ConfigFileGroup addFileToConfigGroup(ConfigFileGroup cfg, File file) {
+        List<File> files = cfg.getFiles();
+        files.add(file);
+        return ConfigFileGroup.create(cfg.getName(), files);
     }
 
     public void initialize(WizardDescriptor wizard) {
@@ -277,5 +329,11 @@ public final class NewSpringXMLConfigWizardIterator implements WizardDescriptor.
         sb.append("</beans>"); // NOI18N
 
         return sb;
+    }
+    
+    static ConfigFileManager getConfigFileManager(Project p) {
+        ProjectSpringScopeProvider scopeProvider = p.getLookup().lookup(ProjectSpringScopeProvider.class);
+        ConfigFileManager manager = scopeProvider.getSpringScope().getConfigFileManager();
+        return manager;
     }
 }

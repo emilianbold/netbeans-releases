@@ -67,6 +67,7 @@ import org.netbeans.modules.websvc.core.WebServiceReference;
 import org.openide.ErrorManager;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 /**
@@ -552,6 +553,9 @@ public class DnDHandler implements DragSourceListener , DragGestureListener, Dro
         } else if (item.equals("foreach")) { // NOI18N
             ForEach fe = builder.createForEach();
             fe.setParallel(TBoolean.NO);
+            try {
+                fe.setCounterName(fe.getName() + "Counter"); // NOI18N
+            } catch (VetoException ex) {}
             return fe;
         } else if (item.equals("scope")) { // NOI18N
             return builder.createScope();

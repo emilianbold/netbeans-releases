@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -43,7 +43,6 @@ package org.netbeans.modules.ruby;
 import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -57,10 +56,10 @@ import java.util.Set;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
 
-import org.netbeans.api.gsf.Index;
+import org.netbeans.modules.gsf.api.Index;
 import org.netbeans.modules.ruby.elements.IndexedField;
-import static org.netbeans.api.gsf.Index.*;
-import org.netbeans.api.gsf.NameKind;
+import static org.netbeans.modules.gsf.api.Index.*;
+import org.netbeans.modules.gsf.api.NameKind;
 import org.netbeans.api.ruby.platform.RubyPlatform;
 import org.netbeans.api.ruby.platform.RubyPlatformManager;
 import org.netbeans.modules.ruby.elements.IndexedClass;
@@ -71,7 +70,6 @@ import org.openide.filesystems.URLMapper;
 import org.openide.modules.InstalledFileLocator;
 import org.openide.util.Exceptions;
 
-
 /**
  * Access to the index of known Ruby classes - core, libraries, gems, user projects, etc.
  *
@@ -79,6 +77,7 @@ import org.openide.util.Exceptions;
  * @todo Store signature attributes for methods: private/protected?, documented?, returntype?
  * @todo When there are multiple method/field definitions, pick access level from one which sets it
  * @todo I do case-sensitive startsWith filtering here which is probably not good
+ * @todo Abort when search list .size() > N
  * 
  * @author Tor Norbye
  */
@@ -96,6 +95,7 @@ public final class RubyIndex {
     private static final String CLUSTER_URL = "cluster:"; // NOI18N
     private static final String RUBYHOME_URL = "ruby:"; // NOI18N
     private static final String GEM_URL = "gem:"; // NOI18N
+
     private final Index index;
 
     /** Creates a new instance of RubyIndex */
@@ -109,7 +109,7 @@ public final class RubyIndex {
 
     private boolean search(String key, String name, NameKind kind, Set<SearchResult> result) {
         try {
-            index.gsfSearch(key, name, kind, ALL_SCOPE, result);
+            index.search(key, name, kind, ALL_SCOPE, result, null);
 
             return true;
         } catch (IOException ioe) {
@@ -122,7 +122,7 @@ public final class RubyIndex {
     private boolean search(String key, String name, NameKind kind, Set<SearchResult> result,
         Set<SearchScope> scope) {
         try {
-            index.gsfSearch(key, name, kind, scope, result);
+            index.search(key, name, kind, scope, result, null);
 
             return true;
         } catch (IOException ioe) {
@@ -231,7 +231,7 @@ public final class RubyIndex {
                     if (in != null) {
                         // Superslow, make faster 
                         StringBuilder sb = new StringBuilder();
-                        String prefix = null;
+//                        String prefix = null;
                         int lastIndex = 0;
                         int index;
                         do {
@@ -245,9 +245,9 @@ public final class RubyIndex {
                             }
                             index = nextUpper;
                             String token = classFqn.substring(lastIndex, index == -1 ? classFqn.length(): index);
-                            if ( lastIndex == 0 ) {
-                                prefix = token;
-                            }
+//                            if ( lastIndex == 0 ) {
+//                                prefix = token;
+//                            }
                             sb.append(token); 
                             // TODO - add in Ruby chars here?
                             sb.append( index != -1 ?  "[\\p{javaLowerCase}\\p{Digit}_\\$]*" : ".*"); // NOI18N         
@@ -544,8 +544,9 @@ public final class RubyIndex {
         } else if ((module != null) && (module.length() > 0)) {
             clz = module + "::" + clz;
         }
-
-        String fileUrl = map.getValue(RubyIndexer.FIELD_FILENAME);
+        
+        String fileUrl = map.getPersistentUrl();
+        
         String fqn = map.getValue(RubyIndexer.FIELD_FQN_NAME);
         String require = map.getValue(RubyIndexer.FIELD_REQUIRE);
 
@@ -582,7 +583,8 @@ public final class RubyIndex {
             clz = module + "::" + clz;
         }
 
-        String fileUrl = map.getValue(RubyIndexer.FIELD_FILENAME);
+        String fileUrl = map.getPersistentUrl();
+
         String fqn = map.getValue(RubyIndexer.FIELD_FQN_NAME);
         String require = map.getValue(RubyIndexer.FIELD_REQUIRE);
 
@@ -612,7 +614,7 @@ public final class RubyIndex {
 
         // TODO - how do I determine -which- file to associate with the file?
         // Perhaps the one that defines initialize() ?
-        String fileUrl = map.getValue(RubyIndexer.FIELD_FILENAME);
+        String fileUrl = map.getPersistentUrl();
 
         if (clz == null) {
             clz = map.getValue(RubyIndexer.FIELD_CLASS_NAME);
@@ -1103,7 +1105,8 @@ public final class RubyIndex {
 
             String version = map.getValue(RubyIndexer.FIELD_DB_VERSION);
             assert tableName.equals(map.getValue(RubyIndexer.FIELD_DB_TABLE));
-            String fileUrl = map.getValue(RubyIndexer.FIELD_FILENAME);
+            String fileUrl = map.getPersistentUrl();
+            
             TableDefinition def = new TableDefinition(tableName, version, fileUrl);
             tableDefs.add(def);
             String[] columns = map.getValues(RubyIndexer.FIELD_DB_COLUMN);
@@ -1672,7 +1675,7 @@ public final class RubyIndex {
 
         // TODO Prune methods to fit my scheme - later make lucene index smarter about how to prune its index search
         for (SearchResult map : result) {
-            String file = map.getValue(RubyIndexer.FIELD_FILENAME);
+            String file = map.getPersistentUrl();
 
             if (file != null) {
                 return file;
@@ -1715,7 +1718,7 @@ public final class RubyIndex {
             Iterator<RubyPlatform> it = RubyPlatformManager.platformIterator();
             while (it.hasNext()) {
                 RubyPlatform platform = it.next();
-                String s = platform.getGemManager().getGemHomeUrl();
+                String s = getGemHomeURL(platform);
                 
                 if (s != null && url.startsWith(s)) {
                     return GEM_URL + url.substring(s.length());
@@ -1732,7 +1735,7 @@ public final class RubyIndex {
         } else {
             // FIXME: use right platform
             RubyPlatform platform = RubyPlatformManager.getDefaultPlatform();
-            String s = platform.getGemManager().getGemHomeUrl();
+            String s = getGemHomeURL(platform);
 
             if (s != null && url.startsWith(s)) {
                 return GEM_URL + url.substring(s.length());
@@ -1778,6 +1781,9 @@ public final class RubyIndex {
                 Iterator<RubyPlatform> it = RubyPlatformManager.platformIterator();
                 while (it.hasNext()) {
                     RubyPlatform platform = it.next();
+                    if (!platform.hasRubyGemsInstalled()) {
+                        continue;
+                    }
                     url = platform.getGemManager().getGemHomeUrl() + url.substring(GEM_URL.length());
                     FileObject fo = URLMapper.findFileObject(new URL(url));
                     if (fo != null) {
@@ -1796,5 +1802,9 @@ public final class RubyIndex {
         }
 
         return null;
+    }
+
+    private static String getGemHomeURL(RubyPlatform platform) {
+        return platform.hasRubyGemsInstalled() ? platform.getGemManager().getGemHomeUrl() : null;
     }
 }

@@ -84,6 +84,7 @@ public abstract class BreakpointImpl implements PropertyChangeListener {
 
     public void completeValidation(Map<String, String> map) {
         String number;
+        
         if (!getState().equals(BPSTATE_DELETION_PENDING)) {
             assert getState().equals(BPSTATE_VALIDATION_PENDING) : getState();
             if (map != null) {
@@ -96,7 +97,15 @@ public abstract class BreakpointImpl implements PropertyChangeListener {
                 setState(BPSTATE_VALIDATED);
                 breakpoint.setValid();
                 if (!breakpoint.isEnabled()) {
-                    getDebugger().break_disable(breakpointNumber);
+                    getDebugger().getGdbProxy().break_disable(breakpointNumber);
+                }
+                String condition = breakpoint.getCondition();
+                if (condition.length() > 0) {
+                    getDebugger().getGdbProxy().break_condition(breakpointNumber, condition);
+                }
+                int skipCount = breakpoint.getSkipCount();
+                if (skipCount > 0) {
+                    getDebugger().getGdbProxy().break_after(breakpointNumber, Integer.toString(skipCount));
                 }
                 if (this instanceof FunctionBreakpointImpl) {
                     try {
@@ -162,7 +171,12 @@ public abstract class BreakpointImpl implements PropertyChangeListener {
     }
 
     protected abstract void setRequests();
-    protected abstract void suspend();
+    
+    protected void suspend() {
+        getDebugger().getGdbProxy().break_delete(getBreakpointNumber());
+        setState(BPSTATE_UNVALIDATED);
+        setRequests();
+    }
 
     /**
      * Called when Fix&Continue is invoked. Reqritten in LineBreakpointImpl.
@@ -184,6 +198,11 @@ public abstract class BreakpointImpl implements PropertyChangeListener {
         String pname = evt.getPropertyName();
         if (pname.equals(Breakpoint.PROP_DISPOSED)) {
             remove();
+        }
+        if (pname.equals(GdbBreakpoint.PROP_CONDITION)) {
+            getDebugger().getGdbProxy().break_condition(breakpointNumber, evt.getNewValue().toString());
+        } else if (pname.equals(GdbBreakpoint.PROP_SKIP_COUNT)) {
+            getDebugger().getGdbProxy().break_after(breakpointNumber, evt.getNewValue().toString());
         } else if (pname.equals(GdbBreakpoint.PROP_SUSPEND)) {
             suspend();
         } else if (!pname.equals(GdbBreakpoint.PROP_LINE_NUMBER)) {

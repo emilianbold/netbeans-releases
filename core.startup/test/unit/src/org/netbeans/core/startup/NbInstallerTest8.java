@@ -41,17 +41,14 @@
 
 package org.netbeans.core.startup;
 
-import java.io.*;
+import java.io.File;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
-import java.util.*;
+import java.util.Collections;
 import org.netbeans.Module;
 import org.netbeans.ModuleManager;
-import org.netbeans.core.startup.ModuleHistory;
-import org.netbeans.junit.*;
 import junit.textui.TestRunner;
-import org.netbeans.core.startup.layers.SessionManager;
-import org.openide.filesystems.FileSystem;
+import org.netbeans.junit.NbTestSuite;
 
 /** Test the NetBeans module installer implementation.
  * Broken into pieces to ensure each runs in its own VM.
@@ -74,9 +71,8 @@ public class NbInstallerTest8 extends SetupHid {
         TestRunner.run(new NbTestSuite(NbInstallerTest8.class));
     }
     
-    private static File home, user, homeMod, userMod;
     private File moduleJar;
-    protected void setUp() throws Exception {
+    protected @Override void setUp() throws Exception {
         super.setUp();
         System.setProperty("org.netbeans.core.modules.NbInstaller.noAutoDeps", "true");
         // leave NO_COMPAT_AUTO_TRANSITIVE_DEPS=false
@@ -98,10 +94,10 @@ public class NbInstallerTest8 extends SetupHid {
             assertEquals("look-for-myself.jar can be enabled", Collections.EMPTY_SET, m.getProblems());
             mgr.enable(m);
             Class c = m.getClassLoader().loadClass("lookformyself.Loder");
-            Method meth = c.getMethod("foundNow", null);
-            assertTrue("ModuleInfo is found after startup", ((Boolean)meth.invoke(null, null)).booleanValue());
+            Method meth = c.getMethod("foundNow");
+            assertTrue("ModuleInfo is found after startup", (Boolean) meth.invoke(null));
             Field f = c.getField("foundEarly");
-            assertTrue("ModuleInfo is found during dataloader section initialization", ((Boolean)f.get(null)).booleanValue());
+            assertTrue("ModuleInfo is found during dataloader section initialization", (Boolean) f.get(null));
         } finally {
             mgr.mutexPrivileged().exitWriteAccess();
         }

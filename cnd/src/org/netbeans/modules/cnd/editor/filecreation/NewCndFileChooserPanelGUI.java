@@ -95,6 +95,7 @@ class NewCndFileChooserPanelGUI extends javax.swing.JPanel implements ActionList
         this.project = project;
         this.folders = folders;
         initComponents();
+        initMnemonics();
         
         locationComboBox.setRenderer( CELL_RENDERER );
         
@@ -106,7 +107,7 @@ class NewCndFileChooserPanelGUI extends javax.swing.JPanel implements ActionList
         browseButton.addActionListener( this );
         locationComboBox.addActionListener( this );
         documentNameTextField.getDocument().addDocumentListener( this );
-        //folderTextField.getDocument().addDocumentListener( this );
+        folderTextField.getDocument().addDocumentListener( this );
         
         setName (NbBundle.getMessage(NewCndFileChooserPanelGUI.class, "LBL_SimpleTargetChooserPanel_Name")); // NOI18N
     }
@@ -434,6 +435,7 @@ class NewCndFileChooserPanelGUI extends javax.swing.JPanel implements ActionList
         browseButton.getAccessibleContext().setAccessibleName("");
         browseButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getBundle(NewCndFileChooserPanelGUI.class).getString("AD_browseButton")); // NOI18N
 
+        jLabel4.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/editor/filecreation/Bundle").getString("LBL_TargetChooser_CreatedFile_Label_Mnemonic").charAt(0));
         jLabel4.setLabelFor(fileTextField);
         org.openide.awt.Mnemonics.setLocalizedText(jLabel4, org.openide.util.NbBundle.getMessage(NewCndFileChooserPanelGUI.class, "LBL_TargetChooser_CreatedFile_Label")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -467,6 +469,17 @@ class NewCndFileChooserPanelGUI extends javax.swing.JPanel implements ActionList
         getAccessibleContext().setAccessibleDescription("null");
     }// </editor-fold>//GEN-END:initComponents
 
+    private void initMnemonics() {
+        // kind Matiss put those above setText() in autogeneration, which is not what JLabel expects, so let's do it manually
+        jLabel3.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/editor/filecreation/Bundle").getString("LBL_TargetChooser_FileName_Label_Mnemonic").charAt(0));
+        jLabel5.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/editor/filecreation/Bundle").getString("LBL_TargetChooser_Extension_Label_Mnemonic").charAt(0));
+        jLabel1.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/editor/filecreation/Bundle").getString("LBL_TargetChooser_Project_Label_Mnemonic").charAt(0));
+        locationLabel.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/editor/filecreation/Bundle").getString("LBL_TargetChooser_Location_Label_Mnemonic").charAt(0));
+        jLabel2.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/editor/filecreation/Bundle").getString("LBL_TargetChooser_Folder_Label_Mnemonic").charAt(0));
+        browseButton.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/editor/filecreation/Bundle").getString("LBL_TargetChooser_Browse_Button_Mnemonic").charAt(0));
+        jLabel4.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/editor/filecreation/Bundle").getString("LBL_TargetChooser_CreatedFile_Label_Mnemonic").charAt(0));        
+    }
+    
     private void cbExtensionActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cbExtensionActionPerformed
         expectedExtension = (String)cbExtension.getSelectedItem();
         updateCreatedFile();

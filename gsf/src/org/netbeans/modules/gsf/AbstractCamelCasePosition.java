@@ -52,11 +52,9 @@ import org.openide.util.NbBundle;
 public abstract class AbstractCamelCasePosition extends BaseAction {
 
     private Action originalAction;
-    protected Language language;
 
-    public AbstractCamelCasePosition(String name, Action originalAction, Language language) {
+    public AbstractCamelCasePosition(String name, Action originalAction) {
         super(name);
-        this.language = language;
 
         if (originalAction != null) {
             Object nameObj = originalAction.getValue(Action.NAME);

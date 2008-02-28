@@ -60,6 +60,11 @@ import java.util.*;
 import java.beans.ExceptionListener;
 import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlService;
 import org.netbeans.modules.websvc.manager.util.ManagerUtil;
+import org.netbeans.modules.websvc.saas.model.SaasGroup;
+import org.netbeans.modules.websvc.saas.model.SaasServicesModel;
+import org.netbeans.modules.websvc.saas.model.WsdlSaas;
+import org.netbeans.modules.websvc.saas.util.SaasUtil;
+import org.netbeans.modules.websvc.saas.util.WsdlUtil;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
@@ -77,13 +82,18 @@ public class WebServicePersistenceManager implements ExceptionListener {
     private File websvcDir = new File(WebServiceManager.WEBSVC_HOME);
     private File websvcRefFile = new File(websvcDir, "websvc_ref.xml");
     private List<WebServiceDescriptor> descriptorsToWrite = null;
+    private boolean imported = false;
+    
+    public void setImported(boolean v) {
+        imported = v;
+    }
     
     public void load() {        
         if (websvcRefFile.exists()) {
             try{
+                SaasServicesModel model = SaasServicesModel.getInstance();
                 XMLDecoder decoder = new XMLDecoder(new BufferedInputStream(new FileInputStream(websvcRefFile)));
                 List<WebServiceData> wsDatas = new ArrayList<WebServiceData>();
-                List<WebServiceGroup> wsGroups = new ArrayList<WebServiceGroup>();
                 
                 List<String> partnerServices = WebServiceListModel.getInstance().getPartnerServices();
                 Object firstObject = decoder.readObject();
@@ -111,10 +121,27 @@ public class WebServicePersistenceManager implements ExceptionListener {
                     wsDatas.add(wsData);
                 }
                 int wsGroupSize = ((Integer)decoder.readObject()).intValue();
+                Map<String,WebServiceGroup> groupByIds = new HashMap<String,WebServiceGroup>();
                 for(int i=0; i< wsGroupSize; i++){
                     try{
                         WebServiceGroup group = (WebServiceGroup) decoder.readObject();
-                        wsGroups.add(group);
+                        groupByIds.put(group.getId(), group);
+                        if (group.getName() == null) {
+                            continue;
+                        }
+                        
+                        /**
+                         * For import services created from 6.0
+                         * Note: we only need to read old group from imported user dir
+                         * New group information are not managed by this persistence.
+                         */
+                        String trimmed = translateGroupName(group);
+                        if (!imported &&
+                            model.getRootGroup().getChildGroup(group.getName()) == null &&
+                            model.getRootGroup().getChildGroup(trimmed) == null &&
+                            ! WebServiceListModel.DEFAULT_GROUP.equals(group.getName())) {
+                            model.createTopGroup(group.getName());
+                        }
                     }catch(Exception exc){
                         ErrorManager.getDefault().notify(exc);
                         decoder.close();
@@ -123,20 +150,45 @@ public class WebServicePersistenceManager implements ExceptionListener {
                 decoder.close();
                 
                 for (WebServiceData wsData : wsDatas) {
-                    if (wsData.getJaxRpcDescriptorPath() != null)
-                        wsData.setJaxRpcDescriptor(loadDescriptorFile(websvcDir + File.separator + wsData.getJaxRpcDescriptorPath()));
-                    
-                    if (wsData.getJaxWsDescriptorPath() != null)
-                        wsData.setJaxWsDescriptor(loadDescriptorFile(websvcDir + File.separator + wsData.getJaxWsDescriptorPath()));
+                    if (imported) { // we don't need to import generated artifacts
+                        if (wsData.getJaxRpcDescriptorPath() != null) {
+                            wsData.setJaxRpcDescriptor(loadDescriptorFile(websvcDir + File.separator + wsData.getJaxRpcDescriptorPath()));
+                        }
+
+                        if (wsData.getJaxWsDescriptorPath() != null) {
+                            wsData.setJaxWsDescriptor(loadDescriptorFile(websvcDir + File.separator + wsData.getJaxWsDescriptorPath()));
+                        }
+                    } else {
+                        wsData.reset();
+                        WebServiceGroup group = groupByIds.get(wsData.getGroupId());
+                        SaasGroup parent = null;
+                        if (group.getName() == null) {
+                            parent = model.getRootGroup();
+                        } else {
+                            parent = model.getRootGroup().getChildGroup(translateGroupName(group));
+                        }
+                        if (parent == null) {
+                            parent = model.getRootGroup();
+                        }
+                        String url = wsData.getOriginalWsdlUrl();
+                        if (SaasUtil.getServiceByUrl(parent, url) != null) {
+                            continue;
+                        }
+                        String display = WsdlUtil.getServiceDirName(url);
+                        WsdlSaas service = new WsdlSaas(parent, display, url, wsData.getPackageName());
+                        parent.addService(service);
+                        service.save();
+                    }
                     WebServiceListModel.getInstance().addWebService(wsData);
                 }
                 
-                for (WebServiceGroup group : wsGroups) {
-                    try {
-                        WebServiceListModel.getInstance().addWebServiceGroup(group);
-                    }catch (Exception ex) {
-                        ErrorManager.getDefault().notify(ex);
+                try {
+                    WebServiceGroup defaultGroup = groupByIds.get(WebServiceListModel.DEFAULT_GROUP);
+                    if (defaultGroup != null) {
+                        WebServiceListModel.getInstance().addWebServiceGroup(defaultGroup);
                     }
+                } catch (Exception ex) {
+                    ErrorManager.getDefault().notify(ex);
                 }
                 
             }catch(Exception exc){
@@ -145,6 +197,14 @@ public class WebServicePersistenceManager implements ExceptionListener {
         }
         
         loadPartnerServices();
+    }
+    
+    private String translateGroupName(WebServiceGroup group) {
+        String name = group.getName();
+        if (name.endsWith(" Services")) {
+            return name.substring(0, name.length() - 9);
+        }
+        return name;
     }
     
     public void save() {
@@ -338,8 +398,7 @@ public class WebServicePersistenceManager implements ExceptionListener {
         }     
     }
     
-    public void saveWebServiceDescriptor(WebServiceDescriptor descriptor) {
-        try {
+    public void saveDescriptor(WebServiceDescriptor descriptor) throws IOException {
             XMLEncoder encoder = new XMLEncoder(new BufferedOutputStream(new FileOutputStream(descriptor.getXmlDescriptor())));
             encoder.setExceptionListener(this);
             DefaultPersistenceDelegate delegate = new WebServiceDataPersistenceDelegate();
@@ -348,6 +407,11 @@ public class WebServicePersistenceManager implements ExceptionListener {
             
             encoder.close();
             encoder.flush();
+    }
+    
+    public void saveWebServiceDescriptor(WebServiceDescriptor descriptor) {
+        try {
+            saveDescriptor(descriptor);
         }catch (IOException ex) {
             exceptionThrown(ex);
         }
@@ -363,6 +427,7 @@ public class WebServicePersistenceManager implements ExceptionListener {
          * org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlService
          * It will be created from the WSDL file
          */  
+        @Override
         public void writeObject(Object oldInstance, Encoder out) {
             if(oldInstance instanceof WsdlService) {
                 return;

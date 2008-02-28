@@ -32,6 +32,7 @@ import com.sun.source.tree.*;
 import com.sun.source.util.SourcePositions;
 import com.sun.source.util.TreePath;
 import com.sun.tools.javac.tree.JCTree;
+import com.sun.tools.javac.tree.JCTree.JCClassDecl;
 import com.sun.tools.javac.tree.JCTree.JCIdent;
 import java.util.ArrayList;
 import java.util.List;
@@ -65,6 +66,7 @@ class TranslateIdentifier implements TreeVisitor<Tree, Void> {
     private final TokenSequence<JavaTokenId> seq;
     private final CommentHandlerService commentService;
     private int tokenIndexAlreadyAdded = -1;
+    private Element rootElement;
     
     
     public TranslateIdentifier(final CompilationInfo info, 
@@ -82,8 +84,8 @@ class TranslateIdentifier implements TreeVisitor<Tree, Void> {
     }
 
     public Tree visitAnnotation(AnnotationTree node, Void p) {
-        Tree annotationType = translate(node.getAnnotationType());
-        List<? extends ExpressionTree> arguments = translate(node.getArguments());
+        Tree annotationType = translateTree(node.getAnnotationType());
+        List<? extends ExpressionTree> arguments = translateTree(node.getArguments());
         
         if (make == null) return node;
         
@@ -96,9 +98,9 @@ class TranslateIdentifier implements TreeVisitor<Tree, Void> {
     }
 
     public Tree visitMethodInvocation(MethodInvocationTree node, Void p) {
-        List<? extends ExpressionTree> arguments = translate(node.getArguments());
-        ExpressionTree methodSelect = (ExpressionTree) translate(node.getMethodSelect());
-        List<? extends Tree> typeArguments = translate(node.getTypeArguments());
+        List<? extends ExpressionTree> arguments = translateTree(node.getArguments());
+        ExpressionTree methodSelect = (ExpressionTree) translateTree(node.getMethodSelect());
+        List<? extends Tree> typeArguments = translateTree(node.getTypeArguments());
         
         if (make == null) return node;
         
@@ -112,8 +114,8 @@ class TranslateIdentifier implements TreeVisitor<Tree, Void> {
     }
 
     public Tree visitAssert(AssertTree node, Void p) {
-        ExpressionTree condition = (ExpressionTree) translate(node.getCondition());
-        ExpressionTree detail = (ExpressionTree) translate(node.getDetail());
+        ExpressionTree condition = (ExpressionTree) translateTree(node.getCondition());
+        ExpressionTree detail = (ExpressionTree) translateTree(node.getDetail());
         
         if (make == null) return node;
         
@@ -126,8 +128,8 @@ class TranslateIdentifier implements TreeVisitor<Tree, Void> {
     }
 
     public Tree visitAssignment(AssignmentTree node, Void p) {
-        ExpressionTree expression = (ExpressionTree) translate(node.getExpression());
-        ExpressionTree variable = (ExpressionTree) translate(node.getVariable());
+        ExpressionTree expression = (ExpressionTree) translateTree(node.getExpression());
+        ExpressionTree variable = (ExpressionTree) translateTree(node.getVariable());
         
         if (make == null) return node;
         
@@ -140,8 +142,8 @@ class TranslateIdentifier implements TreeVisitor<Tree, Void> {
     }
 
     public Tree visitCompoundAssignment(CompoundAssignmentTree node, Void p) {
-        ExpressionTree expression = (ExpressionTree) translate(node.getExpression());
-        ExpressionTree variable = (ExpressionTree) translate(node.getVariable());
+        ExpressionTree expression = (ExpressionTree) translateTree(node.getExpression());
+        ExpressionTree variable = (ExpressionTree) translateTree(node.getVariable());
         
         if (make == null) return node;
         
@@ -154,8 +156,8 @@ class TranslateIdentifier implements TreeVisitor<Tree, Void> {
     }
 
     public Tree visitBinary(BinaryTree node, Void p) {
-        ExpressionTree leftOperand = (ExpressionTree) translate(node.getLeftOperand());
-        ExpressionTree rightOperand = (ExpressionTree) translate(node.getRightOperand());
+        ExpressionTree leftOperand = (ExpressionTree) translateTree(node.getLeftOperand());
+        ExpressionTree rightOperand = (ExpressionTree) translateTree(node.getRightOperand());
         
         if (make == null) return node;
         
@@ -168,7 +170,7 @@ class TranslateIdentifier implements TreeVisitor<Tree, Void> {
     }
 
     public Tree visitBlock(BlockTree node, Void p) {
-        List<? extends StatementTree> statements = translate(node.getStatements());
+        List<? extends StatementTree> statements = translateTree(node.getStatements());
         
         if (make == null) return node;
         
@@ -183,8 +185,8 @@ class TranslateIdentifier implements TreeVisitor<Tree, Void> {
     }
 
     public Tree visitCase(CaseTree node, Void p) {
-        ExpressionTree expression = (ExpressionTree) translate(node.getExpression());
-        List<? extends StatementTree> statements = translate(node.getStatements());
+        ExpressionTree expression = (ExpressionTree) translateTree(node.getExpression());
+        List<? extends StatementTree> statements = translateTree(node.getStatements());
         
         if (make == null) return node;
         
@@ -197,8 +199,8 @@ class TranslateIdentifier implements TreeVisitor<Tree, Void> {
     }
 
     public Tree visitCatch(CatchTree node, Void p) {
-        BlockTree block = (BlockTree) translate(node.getBlock());
-        VariableTree parameter = (VariableTree) translate(node.getParameter());
+        BlockTree block = (BlockTree) translateTree(node.getBlock());
+        VariableTree parameter = (VariableTree) translateTree(node.getParameter());
         
         if (make == null) return node;
         
@@ -211,11 +213,11 @@ class TranslateIdentifier implements TreeVisitor<Tree, Void> {
     }
 
     public Tree visitClass(ClassTree node, Void p) {
-        Tree extendsClause = translate(node.getExtendsClause());
-        List<? extends Tree> implementsClause = translate(node.getImplementsClause());
-        List<? extends Tree> members = translate(node.getMembers());
-        ModifiersTree modifiers = (ModifiersTree) translate(node.getModifiers());
-        List<? extends TypeParameterTree> typeParameters = translate(node.getTypeParameters());
+        Tree extendsClause = translateTree(node.getExtendsClause());
+        List<? extends Tree> implementsClause = translateTree(node.getImplementsClause());
+        List<? extends Tree> members = translateTree(node.getMembers());
+        ModifiersTree modifiers = (ModifiersTree) translateTree(node.getModifiers());
+        List<? extends TypeParameterTree> typeParameters = translateTree(node.getTypeParameters());
         
         if (make == null) return node;
         
@@ -231,9 +233,9 @@ class TranslateIdentifier implements TreeVisitor<Tree, Void> {
     }
 
     public Tree visitConditionalExpression(ConditionalExpressionTree node, Void p) {
-        ExpressionTree condition = (ExpressionTree) translate(node.getCondition());
-        ExpressionTree falseExpression = (ExpressionTree) translate(node.getFalseExpression());
-        ExpressionTree trueExpression = (ExpressionTree) translate(node.getTrueExpression());
+        ExpressionTree condition = (ExpressionTree) translateTree(node.getCondition());
+        ExpressionTree falseExpression = (ExpressionTree) translateTree(node.getFalseExpression());
+        ExpressionTree trueExpression = (ExpressionTree) translateTree(node.getTrueExpression());
         
         if (make == null) return node;
         
@@ -251,8 +253,8 @@ class TranslateIdentifier implements TreeVisitor<Tree, Void> {
     }
 
     public Tree visitDoWhileLoop(DoWhileLoopTree node, Void p) {
-        StatementTree statement = (StatementTree) translate(node.getStatement());
-        ExpressionTree condition = (ExpressionTree) translate(node.getCondition());
+        StatementTree statement = (StatementTree) translateTree(node.getStatement());
+        ExpressionTree condition = (ExpressionTree) translateTree(node.getCondition());
         
         if (make == null) return node;
         
@@ -263,7 +265,7 @@ class TranslateIdentifier implements TreeVisitor<Tree, Void> {
     }
 
     public Tree visitErroneous(ErroneousTree node, Void p) {
-        List<? extends Tree> errorTrees = translate(node.getErrorTrees());
+        List<? extends Tree> errorTrees = translateTree(node.getErrorTrees());
         
         if (make == null) return node;
         
@@ -274,7 +276,7 @@ class TranslateIdentifier implements TreeVisitor<Tree, Void> {
     }
 
     public Tree visitExpressionStatement(ExpressionStatementTree node, Void p) {
-        ExpressionTree expression = (ExpressionTree) translate(node.getExpression());
+        ExpressionTree expression = (ExpressionTree) translateTree(node.getExpression());
         
         if (make == null) return node;
         
@@ -285,9 +287,9 @@ class TranslateIdentifier implements TreeVisitor<Tree, Void> {
     }
 
     public Tree visitEnhancedForLoop(EnhancedForLoopTree node, Void p) {
-        StatementTree statement = (StatementTree) translate(node.getStatement());
-        ExpressionTree expression = (ExpressionTree) translate(node.getExpression());
-        VariableTree variable = (VariableTree) translate(node.getVariable());
+        StatementTree statement = (StatementTree) translateTree(node.getStatement());
+        ExpressionTree expression = (ExpressionTree) translateTree(node.getExpression());
+        VariableTree variable = (VariableTree) translateTree(node.getVariable());
         
         if (make == null) return node;
         
@@ -301,10 +303,10 @@ class TranslateIdentifier implements TreeVisitor<Tree, Void> {
     }
 
     public Tree visitForLoop(ForLoopTree node, Void p) {
-        StatementTree statement = (StatementTree) translate(node.getStatement());
-        ExpressionTree condition = (ExpressionTree) translate(node.getCondition());
-        List<? extends StatementTree> initializer = translate(node.getInitializer());
-        List<? extends ExpressionStatementTree> update = translate(node.getUpdate());
+        StatementTree statement = (StatementTree) translateTree(node.getStatement());
+        ExpressionTree condition = (ExpressionTree) translateTree(node.getCondition());
+        List<? extends StatementTree> initializer = translateTree(node.getInitializer());
+        List<? extends ExpressionStatementTree> update = translateTree(node.getUpdate());
         
         if (make == null) return node;
         
@@ -332,16 +334,20 @@ class TranslateIdentifier implements TreeVisitor<Tree, Void> {
         if (element != null) {
             // solve the imports only when declared type!!!
             if (element != null && (element.getKind().isClass() || element.getKind().isInterface())) {
-                return make.QualIdent(element);
+                if (element == rootElement) {
+                    return make.Identifier(element.getSimpleName());
+                } else {
+                    return make.QualIdent(element);
+                }
             }
         }
         return node;
     }
     
     public Tree visitIf(IfTree node, Void p) {
-        ExpressionTree condition = (ExpressionTree) translate(node.getCondition());
-        StatementTree elseStatement = (StatementTree) translate(node.getElseStatement());
-        StatementTree thenStatement = (StatementTree) translate(node.getThenStatement());
+        ExpressionTree condition = (ExpressionTree) translateTree(node.getCondition());
+        StatementTree elseStatement = (StatementTree) translateTree(node.getElseStatement());
+        StatementTree thenStatement = (StatementTree) translateTree(node.getThenStatement());
         
         if (make == null) return node;
         
@@ -359,8 +365,8 @@ class TranslateIdentifier implements TreeVisitor<Tree, Void> {
     }
 
     public Tree visitArrayAccess(ArrayAccessTree node, Void p) {
-        ExpressionTree expression = (ExpressionTree) translate(node.getExpression());
-        ExpressionTree index = (ExpressionTree) translate(node.getIndex());
+        ExpressionTree expression = (ExpressionTree) translateTree(node.getExpression());
+        ExpressionTree index = (ExpressionTree) translateTree(node.getIndex());
         
         if (make == null) return node;
         
@@ -373,7 +379,7 @@ class TranslateIdentifier implements TreeVisitor<Tree, Void> {
     }
 
     public Tree visitLabeledStatement(LabeledStatementTree node, Void p) {
-        StatementTree statement = (StatementTree) translate(node.getStatement());
+        StatementTree statement = (StatementTree) translateTree(node.getStatement());
         
         if (make == null) return node;
         
@@ -388,13 +394,13 @@ class TranslateIdentifier implements TreeVisitor<Tree, Void> {
     }
 
     public Tree visitMethod(MethodTree node, Void p) {
-        BlockTree body = (BlockTree) translate(node.getBody());
-        Tree defaultValue = translate(node.getDefaultValue());
-        List<? extends VariableTree> parameters = translate(node.getParameters());
-        ModifiersTree modifiers = (ModifiersTree) translate(node.getModifiers());
-        Tree returnType = translate(node.getReturnType());
-        List<? extends ExpressionTree> aThrows = translate(node.getThrows());
-        List<? extends TypeParameterTree> typeParameters = translate(node.getTypeParameters());
+        BlockTree body = (BlockTree) translateTree(node.getBody());
+        Tree defaultValue = translateTree(node.getDefaultValue());
+        List<? extends VariableTree> parameters = translateTree(node.getParameters());
+        ModifiersTree modifiers = (ModifiersTree) translateTree(node.getModifiers());
+        Tree returnType = translateTree(node.getReturnType());
+        List<? extends ExpressionTree> aThrows = translateTree(node.getThrows());
+        List<? extends TypeParameterTree> typeParameters = translateTree(node.getTypeParameters());
         
         if (make == null) return node;
         
@@ -420,7 +426,7 @@ class TranslateIdentifier implements TreeVisitor<Tree, Void> {
     }
 
     public Tree visitModifiers(ModifiersTree node, Void p) {
-        List<? extends AnnotationTree> annotations = translate(node.getAnnotations());
+        List<? extends AnnotationTree> annotations = translateTree(node.getAnnotations());
         
         if (make == null) return node;
         
@@ -431,9 +437,9 @@ class TranslateIdentifier implements TreeVisitor<Tree, Void> {
     }
 
     public Tree visitNewArray(NewArrayTree node, Void p) {
-        List<? extends ExpressionTree> initializers = translate(node.getInitializers());
-        List<? extends ExpressionTree> dimensions = translate(node.getDimensions());
-        Tree type = translate(node.getType());
+        List<? extends ExpressionTree> initializers = translateTree(node.getInitializers());
+        List<? extends ExpressionTree> dimensions = translateTree(node.getDimensions());
+        Tree type = translateTree(node.getType());
         
         if (make == null) return node;
         
@@ -447,11 +453,11 @@ class TranslateIdentifier implements TreeVisitor<Tree, Void> {
     }
 
     public Tree visitNewClass(NewClassTree node, Void p) {
-        List<? extends ExpressionTree> arguments = translate(node.getArguments());
-        ClassTree classBody = (ClassTree) translate(node.getClassBody());
-        ExpressionTree enclosingExpression = (ExpressionTree) translate(node.getEnclosingExpression());
-        ExpressionTree identifier = (ExpressionTree) translate(node.getIdentifier());
-        List<? extends Tree> typeArguments = translate(node.getTypeArguments());
+        List<? extends ExpressionTree> arguments = translateTree(node.getArguments());
+        ClassTree classBody = (ClassTree) translateTree(node.getClassBody());
+        ExpressionTree enclosingExpression = (ExpressionTree) translateTree(node.getEnclosingExpression());
+        ExpressionTree identifier = (ExpressionTree) translateTree(node.getIdentifier());
+        List<? extends Tree> typeArguments = translateTree(node.getTypeArguments());
         
         if (make == null) return node;
         
@@ -467,7 +473,7 @@ class TranslateIdentifier implements TreeVisitor<Tree, Void> {
     }
 
     public Tree visitParenthesized(ParenthesizedTree node, Void p) {
-        ExpressionTree expression = (ExpressionTree) translate(node.getExpression());
+        ExpressionTree expression = (ExpressionTree) translateTree(node.getExpression());
         
         if (make == null) return node;
         
@@ -478,7 +484,7 @@ class TranslateIdentifier implements TreeVisitor<Tree, Void> {
     }
 
     public Tree visitReturn(ReturnTree node, Void p) {
-        ExpressionTree expression = (ExpressionTree) translate(node.getExpression());
+        ExpressionTree expression = (ExpressionTree) translateTree(node.getExpression());
         
         if (make == null) return node;
         
@@ -498,7 +504,7 @@ class TranslateIdentifier implements TreeVisitor<Tree, Void> {
             return node;
         }
         
-//        ExpressionTree expression = (ExpressionTree) translate(node.getExpression());
+//        ExpressionTree expression = (ExpressionTree) translateTree(node.getExpression());
 //        
 //        if (expression != node.getExpression()) {
 //            node = make.MemberSelect(expression, node.getIdentifier());
@@ -511,8 +517,8 @@ class TranslateIdentifier implements TreeVisitor<Tree, Void> {
     }
 
     public Tree visitSwitch(SwitchTree node, Void p) {
-        List<? extends CaseTree> cases = translate(node.getCases());
-        ExpressionTree expression = (ExpressionTree) translate(node.getExpression());
+        List<? extends CaseTree> cases = translateTree(node.getCases());
+        ExpressionTree expression = (ExpressionTree) translateTree(node.getExpression());
         
         if (make == null) return node;
         
@@ -525,8 +531,8 @@ class TranslateIdentifier implements TreeVisitor<Tree, Void> {
     }
 
     public Tree visitSynchronized(SynchronizedTree node, Void p) {
-        BlockTree block = (BlockTree) translate(node.getBlock());
-        ExpressionTree expression = (ExpressionTree) translate(node.getExpression());
+        BlockTree block = (BlockTree) translateTree(node.getBlock());
+        ExpressionTree expression = (ExpressionTree) translateTree(node.getExpression());
         
         if (make == null) return node;
         
@@ -539,7 +545,7 @@ class TranslateIdentifier implements TreeVisitor<Tree, Void> {
     }
 
     public Tree visitThrow(ThrowTree node, Void p) {
-        ExpressionTree expression = (ExpressionTree) translate(node.getExpression());
+        ExpressionTree expression = (ExpressionTree) translateTree(node.getExpression());
         
         if (make == null) return node;
         
@@ -550,7 +556,7 @@ class TranslateIdentifier implements TreeVisitor<Tree, Void> {
     }
 
     public Tree visitCompilationUnit(CompilationUnitTree node, Void p) {
-        List<? extends Tree> typeDecls = translate(node.getTypeDecls());
+        List<? extends Tree> typeDecls = translateTree(node.getTypeDecls());
         
         if (make == null) return node;
         
@@ -566,9 +572,9 @@ class TranslateIdentifier implements TreeVisitor<Tree, Void> {
     }
 
     public Tree visitTry(TryTree node, Void p) {
-        BlockTree block = (BlockTree) translate(node.getBlock());
-        List<? extends CatchTree> catches = translate(node.getCatches());
-        BlockTree finallyBlock = (BlockTree) translate(node.getFinallyBlock());
+        BlockTree block = (BlockTree) translateTree(node.getBlock());
+        List<? extends CatchTree> catches = translateTree(node.getCatches());
+        BlockTree finallyBlock = (BlockTree) translateTree(node.getFinallyBlock());
         
         if (make == null) return node;
         
@@ -582,8 +588,8 @@ class TranslateIdentifier implements TreeVisitor<Tree, Void> {
     }
 
     public Tree visitParameterizedType(ParameterizedTypeTree node, Void p) {
-        Tree type = translate(node.getType());
-        List<? extends Tree> typeArguments = translate(node.getTypeArguments());
+        Tree type = translateTree(node.getType());
+        List<? extends Tree> typeArguments = translateTree(node.getTypeArguments());
         
         if (make == null) return node;
         
@@ -596,7 +602,7 @@ class TranslateIdentifier implements TreeVisitor<Tree, Void> {
     }
 
     public Tree visitArrayType(ArrayTypeTree node, Void p) {
-        Tree type = translate(node.getType());
+        Tree type = translateTree(node.getType());
         
         if (make == null) return node;
         
@@ -607,8 +613,8 @@ class TranslateIdentifier implements TreeVisitor<Tree, Void> {
     }
 
     public Tree visitTypeCast(TypeCastTree node, Void p) {
-        ExpressionTree expression = (ExpressionTree) translate(node.getExpression());
-        Tree type = translate(node.getType());
+        ExpressionTree expression = (ExpressionTree) translateTree(node.getExpression());
+        Tree type = translateTree(node.getType());
         
         if (make == null) return node;
         
@@ -625,7 +631,7 @@ class TranslateIdentifier implements TreeVisitor<Tree, Void> {
     }
 
     public Tree visitTypeParameter(TypeParameterTree node, Void p) {
-        List<? extends Tree> bounds = translate(node.getBounds());
+        List<? extends Tree> bounds = translateTree(node.getBounds());
         
         if (make == null) return node;
         
@@ -636,8 +642,8 @@ class TranslateIdentifier implements TreeVisitor<Tree, Void> {
     }
 
     public Tree visitInstanceOf(InstanceOfTree node, Void p) {
-        ExpressionTree expression = (ExpressionTree) translate(node.getExpression());
-        Tree type = translate(node.getType());
+        ExpressionTree expression = (ExpressionTree) translateTree(node.getExpression());
+        Tree type = translateTree(node.getType());
         
         if (make == null) return node;
         
@@ -650,7 +656,7 @@ class TranslateIdentifier implements TreeVisitor<Tree, Void> {
     }
 
     public Tree visitUnary(UnaryTree node, Void p) {
-        ExpressionTree expression = (ExpressionTree) translate(node.getExpression());
+        ExpressionTree expression = (ExpressionTree) translateTree(node.getExpression());
         
         if (make == null) return node;
         
@@ -661,9 +667,9 @@ class TranslateIdentifier implements TreeVisitor<Tree, Void> {
     }
 
     public Tree visitVariable(VariableTree node, Void p) {
-        ModifiersTree modifiers = (ModifiersTree) translate(node.getModifiers());
-        Tree type = translate(node.getType());
-        ExpressionTree initializer = (ExpressionTree) translate(node.getInitializer());
+        ModifiersTree modifiers = (ModifiersTree) translateTree(node.getModifiers());
+        Tree type = translateTree(node.getType());
+        ExpressionTree initializer = (ExpressionTree) translateTree(node.getInitializer());
 
         if (make == null) return node;
         
@@ -674,8 +680,8 @@ class TranslateIdentifier implements TreeVisitor<Tree, Void> {
     }
 
     public Tree visitWhileLoop(WhileLoopTree node, Void p) {
-        StatementTree statement = (StatementTree) translate(node.getStatement());
-        ExpressionTree condition = (ExpressionTree) translate(node.getCondition());
+        StatementTree statement = (StatementTree) translateTree(node.getStatement());
+        ExpressionTree condition = (ExpressionTree) translateTree(node.getCondition());
         
         if (make == null) return node;
         
@@ -686,7 +692,7 @@ class TranslateIdentifier implements TreeVisitor<Tree, Void> {
     }
 
     public Tree visitWildcard(WildcardTree node, Void p) {
-        Tree tree = translate(node.getBound());
+        Tree tree = translateTree(node.getBound());
         
         if (make == null) return node;
         
@@ -708,18 +714,26 @@ class TranslateIdentifier implements TreeVisitor<Tree, Void> {
             if (copyComments) {
                 mapComments(tree);
             }
+            TreePath path = info.getTrees().getPath(unit, tree);
+            if (path == null) {
+                if (tree instanceof JCClassDecl) {
+                    rootElement = ((JCClassDecl) tree).sym;
+                }
+            } else {
+                rootElement = info.getTrees().getElement(path);
+            }
             return tree.accept(this, null);
         }
     }
-
-    public <T extends Tree> List<T> translate(List<T> trees) {
+    
+    private <T extends Tree> List<T> translateTree(List<T> trees) {
         if (trees == null || trees.isEmpty()) {
             return trees;
         }
         List<T> newTrees = new ArrayList<T>();
         boolean changed = false;
         for (T t : trees) {
-            T newT = (T) translate(t);
+            T newT = (T) translateTree(t);
             if (newT != t) {
                 changed = true;
             }
@@ -730,6 +744,17 @@ class TranslateIdentifier implements TreeVisitor<Tree, Void> {
         return changed ? newTrees : trees;
     }
 
+    private Tree translateTree(Tree tree) {
+        if (tree == null) {
+            return null;
+        } else {
+            if (copyComments) {
+                mapComments(tree);
+            }
+            return tree.accept(this, null);
+        }
+    }
+    
     private void mapComments(Tree tree) {
         if (((JCTree) tree).pos <= 0) {
             return;

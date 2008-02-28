@@ -108,6 +108,15 @@ public class Reformatter implements ReformatTask {
                 
     private void reformatImpl(TokenHierarchy hierarchy, int startOffset, int endOffset) throws BadLocationException {
         TokenSequence<?> ts = hierarchy.tokenSequence();
+        ts.move(startOffset);
+        if (ts.moveNext() && ts.token().id() != CppTokenId.NEW_LINE){
+            while (ts.movePrevious()){
+                startOffset = ts.offset();
+                if (ts.token().id() != CppTokenId.NEW_LINE) {
+                    break;
+                }
+            }
+        }
         while (ts != null && (startOffset == 0 || ts.moveNext())) {
             ts.move(startOffset);
             if (ts.language() == CppTokenId.languageC() ||
@@ -204,6 +213,27 @@ public class Reformatter implements ReformatTask {
 
         public void setText(String text) {
             this.text = text;
+        }
+        
+        public void replaceSpaces(String space){
+            int i = text.lastIndexOf('\n'); // NOI18N
+            if (i >= 0) {
+                text = text.substring(0, i + 1)+space;
+            } else {
+                text = space; // NOI18N
+            }
+        }
+
+        public boolean hasNewLine(){
+            return text.lastIndexOf('\n') >= 0; // NOI18N
+        }
+
+        public int spaceLength() {
+            int i = text.lastIndexOf('\n'); // NOI18N
+            if (i >= 0) {
+                return text.length()-i+1;
+            }
+            return text.length();
         }
 
         @Override

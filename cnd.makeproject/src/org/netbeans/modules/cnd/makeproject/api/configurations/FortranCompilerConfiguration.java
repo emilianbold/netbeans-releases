@@ -63,6 +63,7 @@ public class FortranCompilerConfiguration extends BasicCompilerConfiguration imp
 	super.assign(conf);
     }
 
+    @Override
     public Object clone() {
 	FortranCompilerConfiguration clone = new FortranCompilerConfiguration(getBaseDir(), (FortranCompilerConfiguration)getMaster());
 	// BasicCompilerConfiguration
@@ -77,6 +78,7 @@ public class FortranCompilerConfiguration extends BasicCompilerConfiguration imp
     }
 
     // Interface OptionsProvider
+    @Override
     public String getOptions(BasicCompiler compiler) {
 	String options = "$(COMPILE.f) "; // NOI18N
 	options += getAllOptions2(compiler) + " "; // NOI18N
@@ -132,7 +134,7 @@ public class FortranCompilerConfiguration extends BasicCompilerConfiguration imp
         set4.setName("Tool"); // NOI18N
         set4.setDisplayName(getString("ToolTxt1"));
         set4.setShortDescription(getString("ToolHint1"));
-        set4.put(new StringNodeProp(getTool(), fortranCompiler.getName(), "Tool", getString("ToolTxt2"), getString("ToolHint2"))); // NOI18N
+        set4.put(new StringNodeProp(getTool(), fortranCompiler.getName(), false, "Tool", getString("ToolTxt2"), getString("ToolHint2"))); // NOI18N
 	sheet.put(set4);
         
 	String[] texts = new String[] {getString("AdditionalOptionsTxt1"), getString("AdditionalOptionsHint"), getString("AdditionalOptionsTxt2"), getString("AllOptionsTxt")};

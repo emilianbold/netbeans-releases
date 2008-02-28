@@ -45,6 +45,9 @@ package org.netbeans.modules.editor.completion;
 import java.awt.Color;
 import java.awt.Insets;
 import java.awt.Rectangle;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
+import java.awt.event.MouseMotionListener;
 import java.io.IOException;
 import java.io.Reader;
 import java.io.StringReader;
@@ -52,9 +55,11 @@ import java.io.StringReader;
 import javax.swing.JEditorPane;
 import javax.swing.SwingUtilities;
 import javax.swing.text.BadLocationException;
+import javax.swing.text.DefaultHighlighter;
 import javax.swing.text.Document;
 import javax.swing.text.EditorKit;
 import javax.swing.text.html.HTMLEditorKit;
+import org.openide.util.Exceptions;
 
 /**
  *  HTML documentation view.
@@ -67,12 +72,55 @@ public class HTMLDocView extends JEditorPane {
     
     private HTMLEditorKit htmlKit;
     
+    private int selectionAnchor = 0; // selection-begin position
+    private Object highlight = null; // selection highlight
+    
     /** Creates a new instance of HTMLJavaDocView */
     public HTMLDocView(Color bgColor) {
         setEditable(false);
-        setFocusable(false);
+        setFocusable(true);
         setBackground(bgColor);
-        setMargin(new Insets(0,3,3,3));
+        setMargin(new Insets(0, 3, 3, 3));
+        
+        //add listeners for selection support
+        addMouseListener(new MouseListener() {
+            public void mouseClicked(MouseEvent e) {
+                getHighlighter().removeAllHighlights();
+            }
+            public void mousePressed(MouseEvent e) {
+                getHighlighter().removeAllHighlights();
+                selectionAnchor = positionCaret(e);
+                try {
+                    highlight = getHighlighter().addHighlight(selectionAnchor, selectionAnchor, DefaultHighlighter.DefaultPainter);
+                } catch (BadLocationException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+            }
+
+            public void mouseReleased(MouseEvent e) {}
+            public void mouseEntered(MouseEvent e) {}
+            public void mouseExited(MouseEvent e) {}
+        });
+        
+        addMouseMotionListener(new MouseMotionListener() {
+            public void mouseDragged(MouseEvent e) {
+                try {
+                    if (selectionAnchor <= positionCaret(e))
+                        getHighlighter().changeHighlight(highlight, selectionAnchor, positionCaret(e));
+                    else
+                        getHighlighter().changeHighlight(highlight, positionCaret(e), selectionAnchor);
+                } catch (BadLocationException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+            }
+
+            public void mouseMoved(MouseEvent e) {}
+        });
+    }
+
+    private int positionCaret(MouseEvent event) {
+        int positionOffset = this.viewToModel(event.getPoint());
+        return positionOffset;
     }
 
     /** Sets the javadoc content as HTML document */

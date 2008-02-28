@@ -87,6 +87,11 @@ abstract class SetupHid extends NbTestCase {
         Locale.setDefault(Locale.US);
         jars = new File(ModuleManagerTest.class.getResource("jars").getFile());
         clearWorkDir();
+        
+        File ud = new File(getWorkDir(), "ud");
+        ud.mkdirs();
+        
+        System.setProperty("netbeans.user", ud.getPath());
     }
 
     protected static void deleteRec(File f) throws IOException {

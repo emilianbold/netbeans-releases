@@ -140,12 +140,14 @@ public class STSIssuedEndorsingProfile extends ProfileBase
         String keyLoc = ProprietarySecurityPolicyModelHelper.getStoreLocation(component, false);
         String keyPasswd = ProprietarySecurityPolicyModelHelper.getStorePassword(component, false);
         if (ProfilesModelHelper.XWS_SECURITY_SERVER.equals(keyAlias)) {
-//            if (Util.isTomcat(p)) {
-                if ((Util.getDefaultPassword(p).equals(keyPasswd)) && 
-                    (Util.getStoreLocation(p, false, false).equals(keyLoc))) {
+            String defPassword = Util.getDefaultPassword(p);
+            String defLocation = Util.getStoreLocation(p, false, false);
+            if ((defPassword != null) && (defLocation != null)) {
+                if ((defPassword.equals(keyPasswd)) && 
+                    (defLocation.equals(keyLoc))) {
                         return true;
                 }
-//        }
+            }
         }
         return false;
     }

@@ -42,15 +42,9 @@ package org.netbeans.modules.bpel.search.impl.ui;
 
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
-import java.awt.event.ActionEvent;
-
-import javax.swing.JButton;
-import javax.swing.JScrollPane;
-import javax.swing.JToolBar;
 
 import org.openide.util.HelpCtx;
 import org.openide.windows.TopComponent;
-import org.netbeans.modules.print.api.PrintManager;
 import org.netbeans.modules.bpel.search.impl.util.Util;
 import static org.netbeans.modules.soa.ui.util.UI.*;
 
@@ -67,104 +61,37 @@ public final class View extends TopComponent {
   }
 
   void show(Tree tree) {
-    myTree = tree;
-    createPanel();
+    addTab(tree);
     open();
     requestActive();
   }
 
-  private void createPanel() {
-    removeAll();
-    JScrollPane scrollPane = new JScrollPane(myTree);
-    GridBagConstraints c = new GridBagConstraints();
-    c.anchor = GridBagConstraints.NORTH;
-
-    // buttons
-    add(createButtonPanel(), c);
-
-    // tree
-    c.fill = GridBagConstraints.BOTH;
-    c.weightx = 1.0;
-    c.weighty = 1.0;
-    add(new Navigation(myTree, scrollPane, scrollPane), c);
-
+  private void addTab(Tree tree) {
+    createTabbed();
+    myTabbed.addTree(tree);
     revalidate();
     repaint();
+  }
+
+  private void createTabbed() {
+    if (myTabbed != null) {
+      return;
+    }
+    GridBagConstraints c = new GridBagConstraints();
+    c.anchor = GridBagConstraints.NORTHWEST;
+    c.fill = GridBagConstraints.BOTH;
+
+    c.weightx = 1.0;
+    c.weighty = 1.0;
+    myTabbed = new Tabbed();
+    add(myTabbed, c);
   }
 
   @Override
   public void requestActive()
   {
     super.requestActive();
-
-    if (myTree != null) {
-      myTree.requestFocus();
-    }
-  }
-
-  private JToolBar createButtonPanel() {
-    JToolBar toolBar = new JToolBar(JToolBar.VERTICAL);
-    toolBar.setFloatable(false);
-    JButton button;
-
-    // collapse/expand
-    button = createButton(
-      new ButtonAction(
-        icon(Util.class, "expose"), // NOI18N
-        i18n(View.class, "TLT_Expose")) { // NOI18N
-        public void actionPerformed(ActionEvent event) {
-          myTree.expose(myTree.getSelectedNode());
-        }
-      }
-    );
-    setImageSize(button);
-    toolBar.add(button);
-
-    // previous occurence
-    button = createButton(
-      new ButtonAction(
-        icon(Util.class, "previous"), // NOI18N
-        i18n(View.class, "TLT_Previous_Occurence")) { // NOI18N
-        public void actionPerformed(ActionEvent event) {
-          myTree.previousOccurence(myTree.getSelectedNode());
-        }
-      }
-    );
-    setImageSize(button);
-    toolBar.add(button);
-
-    // next occurence
-    button = createButton(
-      new ButtonAction(
-        icon(Util.class, "next"), // NOI18N
-        i18n(View.class, "TLT_Next_Occurence")) { // NOI18N
-        public void actionPerformed(ActionEvent event) {
-          myTree.nextOccurence(myTree.getSelectedNode());
-        }
-      }
-    );
-    setImageSize(button);
-    toolBar.add(button);
-
-    // export
-    button = createButton(
-      new ButtonAction(
-        icon(Util.class, "export"), // NOI18N
-        i18n(View.class, "TLT_Export")) { // NOI18N
-        public void actionPerformed(ActionEvent event) {
-          myTree.export(myTree.getSelectedNode());
-        }
-      }
-    );
-    setImageSize(button);
-    toolBar.add(button);
-
-    // vlv: print
-    button = createButton(PrintManager.getDefault().getPrintPreviewAction());
-    setImageSize(button);
-    toolBar.add(button);
-
-    return toolBar;
+    myTabbed.requestActive();
   }
 
   @Override
@@ -201,7 +128,7 @@ public final class View extends TopComponent {
   protected void componentClosed()
   {
     super.componentClosed();
-    myTree = null;
+    myTabbed = null;
   }
 
   @Override
@@ -210,6 +137,6 @@ public final class View extends TopComponent {
     return NAME;
   }
 
-  private Tree myTree;
+  private Tabbed myTabbed;
   public static final String NAME = "search"; // NOI18N
 }

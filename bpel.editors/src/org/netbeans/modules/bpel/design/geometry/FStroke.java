@@ -54,9 +54,12 @@ public final class FStroke {
             this.dash = 0.0;
             this.space = 0.0;
         } else {
-            this.isSolid = false;
-            this.dash = dash;
-            this.space = (space <= 0.0) ? (dash + width) : space;
+//            this.isSolid = false;
+//            this.dash = dash;
+//            this.space = (space <= 0.0) ? (dash + width) : space;
+              this.isSolid = true;
+              this.dash = 0.0;
+              this.space = 0.0;
         }
     }
 

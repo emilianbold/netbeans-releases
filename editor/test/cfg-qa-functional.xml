@@ -64,8 +64,7 @@ made subject to such option by the copyright holder.
                 <include name="popup_menus/MainMenuTest.class"/>                
                 <include name="search_replace/SearchAndReplaceTestSuite.class"/>
                 <exclude name="search_replace/SearchAndReplaceTestSuite.class/testCloseButton"/>
-                <exclude name="search_replace/SearchAndReplaceTestSuite.class/testReplaceDialogComboBox"/>
-                <exclude name="search_replace/SearchAndReplaceTestSuite.class/testReplaceSelectionRepeated"/>                
+                <exclude name="search_replace/SearchAndReplaceTestSuite.class/testReplaceDialogComboBox"/>                
 		<!-- Removing, fails on 1.5.0_12 for some strange reason -->
                 <!-- <include name="org/netbeans/test/editor/suites/abbrevs/AbbreviationsAddRemovePerformer.class"/>  -->
             </patternset>

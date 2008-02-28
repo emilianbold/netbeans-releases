@@ -57,7 +57,6 @@ import org.netbeans.modules.spring.api.beans.ConfigFileManager;
 import org.netbeans.modules.spring.beans.ProjectSpringScopeProvider;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer.Category;
-import org.openide.filesystems.FileUtil;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 
@@ -95,7 +94,7 @@ public class CustomizerCategoryProvider implements ProjectCustomizer.CompositeCa
     public JComponent createComponent(Category category, Lookup context) {
         Project project = getProject(context);
         ConfigFileManager manager = getConfigFileManager(project);
-        ConfigFileGroupsPanel panel = new ConfigFileGroupsPanel(project, manager.getConfigFileGroups());
+        SpringCustomizerPanel panel = new SpringCustomizerPanel(project, manager.getConfigFiles(), manager.getConfigFileGroups());
         CategoryListener listener = new CategoryListener(manager, panel);
         category.setOkButtonListener(listener);
         category.setStoreListener(listener);
@@ -121,24 +120,26 @@ public class CustomizerCategoryProvider implements ProjectCustomizer.CompositeCa
     private static final class CategoryListener implements ActionListener {
 
         private final ConfigFileManager manager;
-        private final ConfigFileGroupsPanel panel;
+        private final SpringCustomizerPanel panel;
+        private volatile List<File> files;
         private volatile List<ConfigFileGroup> groups;
 
-        public CategoryListener(ConfigFileManager manager, ConfigFileGroupsPanel panel) {
+        public CategoryListener(ConfigFileManager manager, SpringCustomizerPanel panel) {
             this.manager = manager;
             this.panel = panel;
         }
 
         public void actionPerformed(ActionEvent e) {
-            if (groups == null) {
+            if (files == null || groups == null) {
                 // OK button listener called.
                 assert SwingUtilities.isEventDispatchThread();
+                files = panel.getConfigFiles();
                 groups = panel.getConfigFileGroups();
             } else {
                 // Store listener called.
                 manager.mutex().writeAccess(new Runnable() {
                     public void run() {
-                        manager.putConfigFileGroups(groups);
+                        manager.putConfigFilesAndGroups(files, groups);
                         // No need to save the project explicitly, the
                         // customizer dialog will.
                     }

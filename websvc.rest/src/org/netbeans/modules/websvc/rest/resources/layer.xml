@@ -169,15 +169,6 @@
         </folder>
     </folder>
     
-    <folder name="RestComponents">
-        <!--folder name="Google">
-            <file name="google-map.xml" url="/org/netbeans/modules/websvc/rest/component/resources/google-map.xml"/>
-        </folder-->
-        <folder name="Yahoo">
-            <file name="yahoo-ns.xml" url="/org/netbeans/modules/websvc/rest/component/resources/yahoo-ns.xml"/>
-        </folder>
-    </folder>    
-    
     <folder name="Projects">
         <folder name="Rest_Actions_holder">
           <file name="org.netbeans.modules.websvc.rest.projects.ProjectTestRestServicesAction.instance"/>

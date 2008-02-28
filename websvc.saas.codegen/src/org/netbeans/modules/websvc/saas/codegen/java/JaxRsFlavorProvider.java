@@ -43,6 +43,7 @@ package org.netbeans.modules.websvc.saas.codegen.java;
 import java.awt.datatransfer.Transferable;
 import org.netbeans.modules.websvc.saas.model.WadlSaasMethod;
 import org.netbeans.modules.websvc.saas.spi.ConsumerFlavorProvider;
+import org.openide.util.Exceptions;
 import org.openide.util.datatransfer.ExTransferable;
 
 /**
@@ -56,17 +57,19 @@ public class JaxRsFlavorProvider implements ConsumerFlavorProvider {
 
     public Transferable addDataFlavors(Transferable transferable) {
         try {
-            Object data = transferable.getTransferData(ConsumerFlavorProvider.WADL_METHOD_FLAVOR);
-            if (data instanceof WadlSaasMethod) {
-                WadlSaasMethod method = (WadlSaasMethod) data;
-                ExTransferable t = ExTransferable.create(transferable);
-                JaxRsEditorDrop editorDrop = new JaxRsEditorDrop(method);
-                ActiveEditorDropTransferable s = new ActiveEditorDropTransferable(editorDrop);
-                t.put(s);
-                return t;
+            if (transferable.isDataFlavorSupported(ConsumerFlavorProvider.WADL_METHOD_FLAVOR)) {
+                Object data = transferable.getTransferData(ConsumerFlavorProvider.WADL_METHOD_FLAVOR);
+                if (data instanceof WadlSaasMethod) {
+                    WadlSaasMethod method = (WadlSaasMethod) data;
+                    ExTransferable t = ExTransferable.create(transferable);
+                    JaxRsEditorDrop editorDrop = new JaxRsEditorDrop(method);
+                    ActiveEditorDropTransferable s = new ActiveEditorDropTransferable(editorDrop);
+                    t.put(s);
+                    return t;
+                }
             }
         } catch (Exception ex) {
-            //Exceptions.printStackTrace(ex);
+            Exceptions.printStackTrace(ex);
         }
 
         return transferable;

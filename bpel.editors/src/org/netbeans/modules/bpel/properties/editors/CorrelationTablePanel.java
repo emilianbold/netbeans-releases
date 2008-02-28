@@ -312,10 +312,12 @@ public class CorrelationTablePanel extends BaseTablePanel
         this.add(scrollPane, BorderLayout.CENTER);
         // tableView.setPreferredSize(new Dimension(400, 200));
         //
+        getAccessibleContext().setAccessibleName(
+                NbBundle.getMessage(FormBundle.class,"ACSN_LBL_Correlations_Tab")); // NOI18N
+        getAccessibleContext().setAccessibleDescription(
+                NbBundle.getMessage(FormBundle.class,"ACSD_LBL_Correlations_Tab")); // NOI18N
+        //
         setTableView(tableView);
-
-        getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(FormBundle.class,"ACSN_LBL_Correlations_Tab")); // NOI18N
-        getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FormBundle.class,"ACSD_LBL_Correlations_Tab")); // NOI18N
     }
 
     @Override

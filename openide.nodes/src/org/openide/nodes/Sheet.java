@@ -304,23 +304,12 @@ public final class Sheet extends Object {
         /** Get all properties in this set.
         * @return the properties
         */
-        public Node.Property<?>[] getProperties() {
-            Node.Property<?>[] l = array;
-
-            if (l != null) {
-                return l;
-            }
-
-            synchronized (this) {
-                if (array != null) {
-                    return array;
-                }
-
+        synchronized public Node.Property<?>[] getProperties() {
+            if (array == null) {
                 array = new Node.Property<?>[props.size()];
                 props.toArray(array);
-
-                return array;
             }
+            return array;
         }
 
         /** Add a property to this set, replacing any old one with the same name.

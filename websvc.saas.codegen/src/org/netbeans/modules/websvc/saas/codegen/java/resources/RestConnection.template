@@ -1,12 +1,14 @@
-<#assign licenseFirst = "/*">
-<#assign licensePrefix = " * ">
-<#assign licenseLast = " */">
-<#include "../Licenses/license-${project.license}.txt">
+/*
+ * RestConnection.java
+ *
+ * Created on __DATE__, __TIME__
+ *
+ * To change this template, choose Tools | Template Manager
+ * and open the template in the editor.
+ */
 
-<#if package?? && package != "">
-package ${package};
+package Templates.Classes;
 
-</#if>
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -23,8 +25,9 @@ import java.util.logging.Logger;
 
 
 /**
+ * RestConnection
  *
- * @author ${user}
+ * @author __USER__
  */
 public class RestConnection {
 
@@ -32,14 +35,18 @@ public class RestConnection {
     private String date;
 
     public RestConnection(String baseUrl) {
-        this(baseUrl, null);
+        this(baseUrl, null, null);
     }
     
     /** Creates a new instance of RestConnection */
-    public RestConnection(String baseUrl, String[][] params) {
+    public RestConnection(String baseUrl, String[][] queryParams) {
+        this(baseUrl, null, queryParams);
+    }
+    
+    public RestConnection(String baseUrl, String[][] pathParams, String[][] queryParams) {
         try {
 
-            String urlStr = encodeUrl(baseUrl, params);
+            String urlStr = encodeUrl(baseUrl, pathParams, queryParams);
             URL url = new URL(urlStr);
             conn = (HttpURLConnection) url.openConnection();
             conn.setDoInput(true);
@@ -150,13 +157,28 @@ public class RestConnection {
         return result;
     }
 
-    private String encodeUrl(String baseUrl, String[][] params) {
-        String p = "";
+    private String encodeUrl(String baseUrl, String[][] pathParams, String[][] queryParams) {
+        if (pathParams != null) {
+            for (int i = 0; i < pathParams.length; i++) {
+                try {
+                    String key = pathParams[i][0];
+                    String value = pathParams[i][1];
 
-        if (params != null) {
-            for (int i = 0; i < params.length; i++) {
-                String key = params[i][0];
-                String value = params[i][1];
+                    if (value == null) {
+                        value = "";
+                    }
+                    baseUrl = baseUrl.replace(key, URLEncoder.encode(value, "UTF-8"));
+                } catch (UnsupportedEncodingException ex) {
+                    Logger.getLogger(RestConnection.class.getName()).log(Level.SEVERE, null, ex);
+                }
+            }
+        }
+        
+        String p = "";
+        if (queryParams != null) {
+            for (int i = 0; i < queryParams.length; i++) {
+                String key = queryParams[i][0];
+                String value = queryParams[i][1];
                 
                 if (value != null) {
                     try {

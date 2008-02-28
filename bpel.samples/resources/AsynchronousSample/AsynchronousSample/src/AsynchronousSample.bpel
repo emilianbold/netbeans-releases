@@ -36,23 +36,43 @@
          xmlns:xsd="http://www.w3.org/2001/XMLSchema"
          xmlns:bpws="http://docs.oasis-open.org/wsbpel/2.0/process/executable">
     
+    <documentation>
+        This is an example of simple asynchronous process.
+        The process receives an input message from the client,
+        then the process asynchronously invokes the original
+        client and sends the same message back. Usually an
+        asynchronous process is used when the BPEL process is
+        long-running (it takes a long time to compute the result).
+    </documentation>
+
     <import namespace="http://enterprise.netbeans.org/bpel/AsynchronousSampleSchemaNamespace"
             location="AsynchronousSample.xsd" 
             importType="http://www.w3.org/2001/XMLSchema"/>
+    
     <import namespace="http://enterprise.netbeans.org/bpel/AsynchronousSample" 
             location="AsynchronousSample.wsdl" 
             importType="http://schemas.xmlsoap.org/wsdl/"/>
     
     <partnerLinks>
-        <partnerLink name="partnerLinkA" 
-                     partnerLinkType="wsdlNS:AsyncPartnerLinkType" 
-                     myRole="serviceProvider" 
-                     partnerRole="serviceRequestor"/>
+        <documentation>
+            The partner link defines the interaction between
+            the BPEL process and the client who sends an input
+            message and later receives the result.
+        </documentation>
+        <partnerLink
+            name="partnerLinkA" 
+            partnerLinkType="wsdlNS:AsyncPartnerLinkType" 
+            myRole="serviceProvider" 
+            partnerRole="serviceRequestor"/>
     </partnerLinks>
     
     <variables>
-        <variable name="inputVar" messageType="wsdlNS:requestMessage"/>
-        <variable name="outputVar" messageType="wsdlNS:responseMessage"/>
+        <variable name="inputVar" messageType="wsdlNS:requestMessage">
+            <documentation>Input variable.</documentation>
+        </variable>
+        <variable name="outputVar" messageType="wsdlNS:responseMessage">
+            <documentation>Output variable.</documentation>
+        </variable>
     </variables>
     
     <sequence>
@@ -63,19 +83,33 @@
             operation="asyncOperation"
             variable="inputVar"
             createInstance="yes">
+            <documentation>
+                The Receive activity makes the process
+                to wait for a message to arrive.
+            </documentation>
         </receive>
         
         <assign name="assign">
+            <documentation>
+                The Assign activity copies data from the
+                input variable to the output variable.
+            </documentation>
             <copy>
                 <from variable="inputVar" part="inputType"/>
                 <to variable="outputVar" part="resultType"/>
             </copy>
         </assign>
         
-        <invoke name="end"  
-                partnerLink="partnerLinkA"
-                portType="wsdlNS:MyCallbackPortType" 
-                operation="onResult"
-                inputVariable="outputVar"/>
+        <invoke
+            name="end"  
+            partnerLink="partnerLinkA"
+            portType="wsdlNS:MyCallbackPortType" 
+            operation="onResult"
+            inputVariable="outputVar">
+            <documentation>
+                The Invoke activity allows the business process
+                to call the client and send a response message.
+            </documentation>
+        </invoke>
     </sequence>
 </process>

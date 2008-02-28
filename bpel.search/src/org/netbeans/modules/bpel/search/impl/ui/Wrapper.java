@@ -153,7 +153,7 @@ final class Wrapper extends JPanel {
     return results;
   }
 
-  // ----------------------------------------------------------------------------------------
+  // -------------------------------------------
   private class MultiListener extends KeyAdapter
     implements DocumentListener, FocusListener
   {

@@ -53,7 +53,7 @@ made subject to such option by the copyright holder.
                     <file>${libs.jsf12-support.classpath}</file>
                     <path-in-war>WEB-INF/lib</path-in-war>
                 </library>
-                <library files="7">
+                <library files="5">
                     <file>${libs.woodstock-components.classpath}</file>
                     <path-in-war>WEB-INF/lib</path-in-war>
                 </library>

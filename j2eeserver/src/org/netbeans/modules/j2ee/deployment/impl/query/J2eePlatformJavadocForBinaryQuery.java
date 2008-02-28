@@ -153,8 +153,13 @@ public class J2eePlatformJavadocForBinaryQuery implements JavadocForBinaryQueryI
         ServerRegistry servReg = ServerRegistry.getInstance();
         for (int i=0; i < serverInstanceIDs.length; i++) {
             ServerInstance serInst = servReg.getServerInstance(serverInstanceIDs[i]);
+            if (serInst == null) {
+                continue;
+            }
             J2eePlatformImpl platformImpl = serInst.getJ2eePlatformImpl();
-            if (platformImpl == null) continue; // TODO this will be removed, when AppServPlg will be ready
+            if (platformImpl == null) {
+                continue; // TODO this will be removed, when AppServPlg will be ready
+            }
             LibraryImplementation[] libs = platformImpl.getLibraries();
             for (int j=0; j<libs.length; j++) {
                 List jars = libs[j].getContent(J2eeLibraryTypeProvider.VOLUME_TYPE_CLASSPATH);

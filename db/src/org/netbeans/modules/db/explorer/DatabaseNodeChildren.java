@@ -258,24 +258,27 @@ public class DatabaseNodeChildren extends Children.Array {
         return node;
     }
 
+    public void addSubNode(Node subnode) {
+        //workaround for issue #31617, children should be initialized if they are not
+        //            getNodes();
+        if (isInitialized()) {
+            synchronized (additionalNodes) {
+                if (initialized) {
+                    add(new Node[] {subnode});
+                } else {
+                    additionalNodes.add(subnode);
+                }
+            }
+        }
+
+    }
     public DatabaseNode createSubnode(DatabaseNodeInfo info, boolean addToChildrenFlag) throws DatabaseException {
         DatabaseNode subnode = createNode(info);
         if (subnode != null && addToChildrenFlag) {
             DatabaseNodeInfo ninfo = ((DatabaseNode)getNode()).getInfo();
             ninfo.getChildren().add(info);
 
-            //workaround for issue #31617, children should be initialized if they are not
-//            getNodes();
-
-            if (isInitialized()) {
-                synchronized (additionalNodes) {
-                    if (initialized) {
-                        add(new Node[] {subnode});
-                    } else {
-                        additionalNodes.add(subnode);
-                    }
-                }
-            }
+            addSubNode(subnode);
         }
 
         return subnode;

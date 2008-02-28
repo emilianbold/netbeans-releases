@@ -43,6 +43,7 @@ package org.netbeans.modules.ruby.rubyproject;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.nio.charset.Charset;
 import org.netbeans.api.project.Project;
@@ -336,7 +337,7 @@ public class RubyProjectGenerator {
 
     // TODO: use FileUtils when #118087 is fixed
     private static void writeLines(final FileObject readme, final String... lines) throws FileAlreadyLockedException, IOException {
-        PrintWriter readmeW = new PrintWriter(readme.getOutputStream());
+        PrintWriter readmeW = new PrintWriter(new OutputStreamWriter(readme.getOutputStream(), "UTF-8")); // NOI18N
         for (String line : lines) {
             readmeW.println(line);
         }

@@ -102,6 +102,7 @@ final class Tree extends JTree implements SearchListener {
   }
 
   public void searchFound(SearchEvent event) {
+//    SearchElement element = new Element(event.getSearchElement()); // todo
     SearchElement element = event.getSearchElement();
 //out("Found: " + element);
 //out("       " + element.getName());
@@ -112,6 +113,7 @@ final class Tree extends JTree implements SearchListener {
   public void searchFinished(SearchEvent event) {
     String text = event.getSearchOption().getText();
     String count = String.valueOf(myFoundCount);
+    myText = i18n(Tree.class, "LBL_Search_Tab", text); // NOI18N
 
     String title = i18n(
       Tree.class, "LBL_Found_Occurrences", text, "" + myFoundCount); // NOI18N
@@ -131,6 +133,12 @@ final class Tree extends JTree implements SearchListener {
 
   private String getRootName() {
     return i18n(Tree.class, "LBL_Tree_Name", myRoot.toString()); // NOI18N
+  }
+
+  @Override
+  public String toString()
+  {
+    return myText;
   }
 
   private void createOccurences() {
@@ -678,13 +686,27 @@ final class Tree extends JTree implements SearchListener {
         return name;
       }
       if (leaf) {
-        return "<b>" + name + "</b>"; // NOI18N
+        int k = name.lastIndexOf(".");
+
+        if (k == -1) {
+          return getBold(name);
+        }
+        return getGrey(name.substring(0, k + 1)) + getBold(name.substring(k + 1));
       }
-      return "<font color=\"#999999\">" + name + "</font>"; // NOI18N
+      return getGrey(name);
+    }
+
+    private String getGrey(String value) {
+      return "<font color=\"#999999\">" + value + "</font>"; // NOI18N
+    }
+
+    private String getBold(String value) {
+      return "<b>" + value + "</b>"; // NOI18N
     }
   }
 
   private int myIndex;
+  private String myText;
   private Export myExport;
   private int myFoundCount;
   private boolean myIsReformAll;

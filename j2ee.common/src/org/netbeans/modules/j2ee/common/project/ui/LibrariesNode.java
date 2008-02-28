@@ -133,8 +133,10 @@ public final class LibrariesNode extends AbstractNode {
      */
     public LibrariesNode (String displayName, Project project, PropertyEvaluator eval, UpdateHelper helper, ReferenceHelper refHelper,
                    String classPathProperty, String[] classPathIgnoreRef, String platformProperty, String j2eePlatformProperty,
-                   Action[] librariesNodeActions, String webModuleElementName, ClassPathSupport cs) {
-        super (new LibrariesChildren (eval, helper, refHelper, classPathProperty, classPathIgnoreRef, platformProperty, j2eePlatformProperty, webModuleElementName, cs), Lookups.singleton(project));
+                   String j2eeClassPathProperty, Action[] librariesNodeActions, String webModuleElementName, ClassPathSupport cs,
+                   String[] libUpdaterProperties) {
+        super (new LibrariesChildren (eval, helper, refHelper, classPathProperty,
+                classPathIgnoreRef, platformProperty, j2eePlatformProperty, j2eeClassPathProperty, webModuleElementName, cs, libUpdaterProperties), Lookups.singleton(project));
         this.displayName = displayName;
         this.librariesNodeActions = librariesNodeActions;
     }
@@ -243,9 +245,11 @@ public final class LibrariesNode extends AbstractNode {
         private final String classPathProperty;
         private final String platformProperty;
         private final String j2eePlatformProperty;
+        private final String j2eeClassPathProperty;
         private final Set classPathIgnoreRef;
         private final String webModuleElementName;
         private final ClassPathSupport cs;
+        private final String[] libUpdaterProperties;
 
         //XXX: Workaround: classpath is used only to listen on non existent files.
         // This should be removed when there will be API for it
@@ -255,7 +259,8 @@ public final class LibrariesNode extends AbstractNode {
 
         LibrariesChildren (PropertyEvaluator eval, UpdateHelper helper, ReferenceHelper refHelper,
                            String classPathProperty, String[] classPathIgnoreRef, String platformProperty, 
-                           String j2eePlatformProperty, String webModuleElementName, ClassPathSupport cs) {
+                           String j2eePlatformProperty, String j2eeClassPathProperty, String webModuleElementName, 
+                           ClassPathSupport cs, String[] libUpdaterProperties) {
             this.eval = eval;
             this.helper = helper;
             this.refHelper = refHelper;
@@ -263,8 +268,10 @@ public final class LibrariesNode extends AbstractNode {
             this.classPathIgnoreRef = new HashSet(Arrays.asList(classPathIgnoreRef));
             this.platformProperty = platformProperty;
             this.j2eePlatformProperty = j2eePlatformProperty;
+            this.j2eeClassPathProperty = j2eeClassPathProperty;
             this.webModuleElementName = webModuleElementName;
             this.cs = cs;
+            this.libUpdaterProperties = libUpdaterProperties;
         }
 
         public void propertyChange(PropertyChangeEvent evt) {
@@ -322,12 +329,12 @@ public final class LibrariesNode extends AbstractNode {
                         result = new Node[] {J2eePlatformNode.create(p, eval, j2eePlatformProperty, cs)};
                         break;
                     case Key.TYPE_PROJECT:
-                        result = new Node[] {new ProjectNode(key.getProject(), key.getArtifactLocation(), helper, eval, refHelper, key.getClassPathId(),
-                            key.getEntryId(), webModuleElementName, cs)};
+                        result = new Node[] {new ProjectNode(key.getProject(), key.getArtifactLocation(), helper, key.getClassPathId(),
+                            key.getEntryId(), webModuleElementName, cs, libUpdaterProperties)};
                         break;
                     case Key.TYPE_LIBRARY:
                         result = new Node[] {ActionFilterNode.create(PackageView.createPackageView(key.getSourceGroup()),
-                            helper, eval, refHelper, key.getClassPathId(), key.getEntryId(), webModuleElementName, cs)};
+                            helper, key.getClassPathId(), key.getEntryId(), webModuleElementName, cs, libUpdaterProperties)};
                         break;
                 }
             }
@@ -347,8 +354,11 @@ public final class LibrariesNode extends AbstractNode {
             if (platformProperty!=null) {
                 result.add (new Key());
             }
-            if (j2eePlatformProperty != null && !Boolean.parseBoolean(projectSharedProps.getProperty(ProjectProperties.J2EE_PLATFORM_SHARED))) {
-                result.add(new Key(true));
+            if (j2eePlatformProperty != null) {
+                String j2eePlatform = projectSharedProps.getProperty(j2eeClassPathProperty);
+                if (j2eePlatform == null) {
+                    result.add(new Key(true));
+                }
             }
             //XXX: Workaround: Remove this when there will be API for listening on nonexistent files
             // See issue: http://www.netbeans.org/issues/show_bug.cgi?id=33162

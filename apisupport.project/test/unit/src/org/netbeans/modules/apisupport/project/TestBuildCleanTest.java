@@ -122,7 +122,8 @@ public class TestBuildCleanTest extends TestBase {
         runTask(module1build,"clean");
         checkTestExternal("module1",false);
     } 
-    
+
+    /*
     private void checkTest(String cnb, String cluster, String testtype, boolean exist) {
         String path = "nbbuild/build/testdist/" + testtype + "/" + cluster + "/" + cnb + "/tests.jar";
         FileObject testsFo = nbCVSRoot().getFileObject(path);
@@ -140,6 +141,7 @@ public class TestBuildCleanTest extends TestBase {
   //          testsFo.delete();
         }
     }
+     */
     private void runTask(FileObject fo, String target) throws IOException {
         ActionUtils.runTarget(fo,new String[]{target},null).waitFinished(); 
     }

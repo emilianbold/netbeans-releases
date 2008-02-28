@@ -319,7 +319,7 @@ public class ProjectChooserAccessory extends javax.swing.JPanel
                         } catch (IOException x) {
                             String msg = Exceptions.findLocalizedMessage(x);
                             if (msg == null) {
-                                msg = x.toString();
+                                msg = x.getLocalizedMessage();
                             }
                             jTextFieldProjectName.setText(msg);
                             jTextFieldProjectName.setCaretPosition(0);

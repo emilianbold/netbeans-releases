@@ -256,16 +256,11 @@ public class EditorOptions {
     public static final String addLeadingStarInComment = "addLeadingStarInComment"; // NOI18N
     public static final Boolean addLeadingStarInCommentDefault = true;
     
-
-    private static final Preferences preferences = NbPreferences.forModule(EditorOptions.class);
-
     public static final String DEFAULT_PROFILE = "Default"; // NOI18N
     public static final String APACHE_PROFILE = "Apache"; // NOI18N
 
     private static Map<String,Object> defaults;
     private static Map<String,Map<String,Object>> namedDefaults;
-    
-    static Preferences lastValues;
     
     static {
         createDefaults();
@@ -455,6 +450,19 @@ public class EditorOptions {
 
     public static Preferences getPreferences(CodeStyle codeStyle){
         return codeStyleFactory.getPreferences(codeStyle);
+    }
+
+    public static void resetToDefault(CodeStyle codeStyle){
+        Preferences preferences = getPreferences(codeStyle);
+        for(Map.Entry<String,Object> entry : defaults.entrySet()){
+            if (entry.getValue() instanceof Boolean){
+                preferences.putBoolean(entry.getKey(), (Boolean)entry.getValue());
+            } else if (entry.getValue() instanceof Integer){
+                preferences.putInt(entry.getKey(), (Integer)entry.getValue());
+            } else {
+                preferences.put(entry.getKey(), entry.getValue().toString());
+            }
+        }
     }
 
     public static void setPreferences(CodeStyle codeStyle, Preferences preferences){

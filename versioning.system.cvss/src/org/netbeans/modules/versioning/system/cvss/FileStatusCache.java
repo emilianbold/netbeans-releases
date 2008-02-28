@@ -83,6 +83,7 @@ public class FileStatusCache {
     public static final int REPOSITORY_STATUS_MODIFIED  = 'M';
     public static final int REPOSITORY_STATUS_CONFLICT  = 'C';
     public static final int REPOSITORY_STATUS_MERGEABLE = 'G';
+    public static final int REPOSITORY_STATUS_ADDED     = 'A';
     public static final int REPOSITORY_STATUS_REMOVED   = 'R';
     public static final int REPOSITORY_STATUS_REMOVED_REMOTELY   = 'Y';
     public static final int REPOSITORY_STATUS_UPTODATE  = 65536;
@@ -620,6 +621,11 @@ public class FileStatusCache {
             } else {
                 return FILE_INFORMATION_NOTMANAGED;
             }
+        }
+
+        // TODO: workaround for bug 71635, sometimes it happens that a new directory with 'A' status does not have an Entry, the reason is unknown 
+        if (repositoryStatus == REPOSITORY_STATUS_ADDED && isDirectory) {
+            return FILE_INFORMATION_UPTODATE_DIRECTORY;
         }
         if (repositoryStatus == REPOSITORY_STATUS_UNKNOWN || repositoryStatus == '?') {
             if (exists(file)) {

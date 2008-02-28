@@ -18,6 +18,8 @@
  */
 package org.netbeans.modules.bpel.nodes.actions;
 
+import org.netbeans.modules.bpel.nodes.actions.BpelNodeAction;
+import org.netbeans.modules.bpel.editors.api.nodes.actions.ActionType;
 import java.awt.event.KeyEvent;
 import javax.swing.KeyStroke;
 import org.netbeans.modules.bpel.model.api.BpelEntity;

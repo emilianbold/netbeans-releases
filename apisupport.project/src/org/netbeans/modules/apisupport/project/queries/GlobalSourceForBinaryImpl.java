@@ -275,7 +275,7 @@ public final class GlobalSourceForBinaryImpl implements SourceForBinaryQueryImpl
         
         private Map<String,String> cnbToPrjDir;
         private final ZipFile nbSrcZip;
-        private final String zipNBCVSRoot;
+        private final String zipNBRoot;
         
         /**
          * May return <code>null</code> if the given zip is not a valid
@@ -285,18 +285,18 @@ public final class GlobalSourceForBinaryImpl implements SourceForBinaryQueryImpl
             NetBeansSourcesParser nbsp = instances.get(nbSrcZip);
             if (nbsp == null) {
                 ZipFile nbSrcZipFile = new ZipFile(nbSrcZip);
-                String zipNBCVSRoot = NetBeansSourcesParser.findNBCVSRoot(nbSrcZipFile);
-                if (zipNBCVSRoot != null) {
-                    nbsp = new NetBeansSourcesParser(nbSrcZipFile, zipNBCVSRoot);
+                String zipNBRoot = NetBeansSourcesParser.findNBRoot(nbSrcZipFile);
+                if (zipNBRoot != null) {
+                    nbsp = new NetBeansSourcesParser(nbSrcZipFile, zipNBRoot);
                     instances.put(nbSrcZip, nbsp);
                 }
             }
             return nbsp;
         }
         
-        NetBeansSourcesParser(ZipFile nbSrcZip, String zipNBCVSRoot) {
+        NetBeansSourcesParser(ZipFile nbSrcZip, String zipNBRoot) {
             this.nbSrcZip = nbSrcZip;
-            this.zipNBCVSRoot = zipNBCVSRoot;
+            this.zipNBRoot = zipNBRoot;
         }
         
         String findSourceRoot(final String cnb) {
@@ -310,7 +310,7 @@ public final class GlobalSourceForBinaryImpl implements SourceForBinaryQueryImpl
             return cnbToPrjDir.get(cnb);
         }
         
-        private static String findNBCVSRoot(final ZipFile nbSrcZip) {
+        private static String findNBRoot(final ZipFile nbSrcZip) {
             String nbRoot = null;
             for (Enumeration<? extends ZipEntry> en = nbSrcZip.entries(); en.hasMoreElements(); ) {
                 ZipEntry entry = (ZipEntry) en.nextElement();
@@ -339,7 +339,7 @@ public final class GlobalSourceForBinaryImpl implements SourceForBinaryQueryImpl
                     continue;
                 }
                 String path = entry.getName().substring(0, entry.getName().length() - 1); // remove last slash
-                if (this.zipNBCVSRoot != null && (!path.startsWith(this.zipNBCVSRoot) || path.equals(this.zipNBCVSRoot))) {
+                if (this.zipNBRoot != null && (!path.startsWith(this.zipNBRoot) || path.equals(this.zipNBRoot))) {
                     continue;
                 }
                 StringTokenizer st = new StringTokenizer(path, "/"); // NOI18N

@@ -43,6 +43,7 @@ import java.io.IOException;
 import java.net.URL;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.project.libraries.LibraryManager;
+import org.netbeans.modules.websvc.saas.model.SaasServicesModel;
 import org.netbeans.modules.websvc.saas.spi.websvcmgr.WsdlData;
 import org.netbeans.modules.websvc.saas.spi.websvcmgr.WsdlDataManager;
 import org.openide.util.Exceptions;
@@ -70,10 +71,10 @@ public class WsdlUtil {
         return null;
     }
     
-    public static WsdlData getWsdlDataAsynchronously(String url, String serviceName) {
+    public static WsdlData getWsdlData(String url, String serviceName, boolean synchronous) {
         WsdlDataManager manager = Lookup.getDefault().lookup(WsdlDataManager.class);
         if (manager != null) {
-            return manager.getWsdlData(url, serviceName, false);
+            return manager.getWsdlData(url, serviceName, synchronous);
         } 
         return null;
     }
@@ -136,6 +137,28 @@ public class WsdlUtil {
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
             return "";
+        }
+    }
+
+    private static final String IMPORTED_MARK = ".imported";
+    
+    public static boolean hasProcessedImport() {
+        return SaasServicesModel.getWebServiceHome().getFileObject(IMPORTED_MARK) != null;
+    }
+    
+    public static void markImportProcessed() {
+        if (!hasProcessedImport()) {
+            try {
+                SaasServicesModel.getWebServiceHome().createData(IMPORTED_MARK);
+            } catch(IOException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        }
+    }
+    
+    public static void ensureImportExisting60Services() {
+        if (!hasProcessedImport()) {
+            findWsdlData("/foo", "bar");
         }
     }
 }

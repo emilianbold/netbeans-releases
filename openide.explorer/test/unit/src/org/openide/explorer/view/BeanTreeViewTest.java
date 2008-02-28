@@ -43,6 +43,7 @@ package org.openide.explorer.view;
 
 import java.awt.BorderLayout;
 import java.beans.PropertyVetoException;
+import java.lang.ref.WeakReference;
 import java.lang.reflect.InvocationTargetException;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
@@ -76,67 +77,77 @@ public class BeanTreeViewTest extends NbTestCase {
     public void testThirdChildRemovalCausesSelectionOfSibling() throws Throwable {
         doChildRemovalTest("bla");
     }
+
+    private static Object holder;
     
     private void doChildRemovalTest(final String name) throws Throwable {
-        final AbstractNode root = new AbstractNode(new Children.Array());
-        root.setName("test root");
-        
-        final Node[] children = {
-            createLeaf("foo"),
-            createLeaf("bar"),
-            createLeaf("bla"),
-        };
-        
-        root.getChildren().add(children);
-        
-        final Panel p = new Panel();
-        p.getExplorerManager().setRootContext(root);
-        
-        final BeanTreeView btv = new BeanTreeView();
-        p.add(BorderLayout.CENTER, btv);
-        
-        JFrame f = new JFrame();
-        f.setDefaultCloseOperation(f.EXIT_ON_CLOSE);
-        f.getContentPane().add(BorderLayout.CENTER, p);
-        f.setVisible(true);
-        
-        final JTree tree = btv.tree;
-        
+
         class AWTTst implements Runnable {
+
+            AbstractNode root = new AbstractNode(new Children.Array());
+            Node[] children = {
+                createLeaf("foo"),
+                createLeaf("bar"),
+                createLeaf("bla")
+            };
+            Panel p = new Panel();
+            BeanTreeView btv = new BeanTreeView();
+            JFrame f = new JFrame();
+            JTree tree = btv.tree;
+            Node operateOn;
+
+            {
+                root.setName("test root");
+                root.getChildren().add(children);
+                p.getExplorerManager().setRootContext(root);
+                p.add(BorderLayout.CENTER, btv);
+                f.setDefaultCloseOperation(f.EXIT_ON_CLOSE);
+                f.getContentPane().add(BorderLayout.CENTER, p);
+                f.setVisible(true);
+            }
+
             public void run() {
-                Node operateOn;
-                
-                for (int i = 0; ; i++) {
+
+                for (int i = 0;; i++) {
                     if (name.equals(children[i].getName())) {
                         // this should select a sibling of the removed node
                         operateOn = children[i];
                         break;
                     }
                 }
-                
+
                 try {
-                    p.getExplorerManager().setSelectedNodes(new Node[] { operateOn });
+                    p.getExplorerManager().setSelectedNodes(new Node[]{operateOn});
                 } catch (PropertyVetoException e) {
                     fail("Unexpected PropertyVetoException from ExplorerManager.setSelectedNodes()");
                 }
-                
+
                 TreePath[] paths = tree.getSelectionPaths();
                 assertNotNull("Before removal: one node should be selected, but there are none.", paths);
                 assertEquals("Before removal: one node should be selected, but there are none.", 1, paths.length);
                 assertEquals("Before removal: one node should be selected, but there are none.", operateOn, Visualizer.findNode(paths[0].getLastPathComponent()));
-                
+                assertEquals("Before removal: one node should be selected, but there are none.", operateOn, Visualizer.findNode(tree.getAnchorSelectionPath().getLastPathComponent()));
+
                 // this should select a sibling of the removed node
-                root.getChildren().remove(new Node[] { operateOn });
-                
+                root.getChildren().remove(new Node[]{operateOn});
                 assertNotNull("After removal: one node should be selected, but there are none.", tree.getSelectionPath());
+                children = null;
+            }
+
+            public void tryGc() {
+                WeakReference<Node> wref = new WeakReference<Node>(operateOn);
+                operateOn = null;
+                assertGC("Node should be released.", wref);    
             }
         }
         AWTTst awt = new AWTTst();
+        holder = awt;
         try {
             SwingUtilities.invokeAndWait(awt);
         } catch (InvocationTargetException ex) {
             throw ex.getTargetException();
         }
+        awt.tryGc();
     }
     
     private static Node createLeaf(String name) {

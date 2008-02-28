@@ -41,7 +41,6 @@
 
 package org.netbeans.modules.cnd.makeproject.api.runprofiles;
 
-import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.beans.PropertyEditor;
@@ -53,7 +52,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.StringTokenizer;
 import java.util.Vector;
-import org.netbeans.modules.cnd.api.utils.FileChooser;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationAuxObject;
 import org.netbeans.modules.cnd.makeproject.api.remote.FilePathAdaptor;
 import org.netbeans.modules.cnd.makeproject.runprofiles.RunProfileXMLCodec;
@@ -619,6 +617,7 @@ public class RunProfile implements ConfigurationAuxObject {
      * Clones the profile.
      * All fields are cloned except for 'parent'.
      */
+    @Override
     public Object clone() {
         RunProfile p = new RunProfile(getBaseDir());
         //p.setParent(getParent());
@@ -692,6 +691,7 @@ public class RunProfile implements ConfigurationAuxObject {
             setRunDir(path);
         }
         
+        @Override
         public PropertyEditor getPropertyEditor() {
             String seed;
             String runDir2 = getRunDir();
@@ -713,61 +713,38 @@ public class RunProfile implements ConfigurationAuxObject {
             this.seed = seed;
         }
         
+        @Override
         public void setAsText(String text) {
             setRunDir(text);
         }
         
+        @Override
         public String getAsText() {
             return getRunDir();
         }
         
+        @Override
         public Object getValue() {
             return getRunDir();
         }
         
+        @Override
         public void setValue(Object v) {
             setRunDir((String)v);
         }
         
+        @Override
         public boolean supportsCustomEditor() {
             return true;
         }
         
+        @Override
         public java.awt.Component getCustomEditor() {
-            return new DirPanel(seed, this, propenv);
+            return new DirectoryChooserPanel(seed, this, propenv);
         }
         
         public void attachEnv(PropertyEnv propenv) {
             this.propenv = propenv;
-        }
-    }
-    
-    class DirPanel extends FileChooser implements PropertyChangeListener {
-        PropertyEditorSupport editor;
-        
-        public DirPanel(String seed, PropertyEditorSupport editor, PropertyEnv propenv) {
-            super(
-		java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/makeproject/api/Bundle").getString("Run_Directory"),
-		java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/makeproject/api/Bundle").getString("SelectLabel"),
-		FileChooser.DIRECTORIES_ONLY,
-		null,
-		seed,
-		true
-		);
-            setControlButtonsAreShown(false);
-            
-            this.editor = editor;
-            
-            propenv.setState(PropertyEnv.STATE_NEEDS_VALIDATION);
-            propenv.addPropertyChangeListener(this);
-        }
-        
-        public void propertyChange(PropertyChangeEvent evt) {
-            if (PropertyEnv.PROP_STATE.equals(evt.getPropertyName()) && evt.getNewValue() == PropertyEnv.STATE_VALID) {
-                File file = getSelectedFile();
-                if (file != null)
-                    editor.setValue(file.getPath());
-            }
         }
     }
     
@@ -798,10 +775,12 @@ public class RunProfile implements ConfigurationAuxObject {
             getEnvironment().assign((Env)v);
         }
         
+        @Override
         public PropertyEditor getPropertyEditor() {
             return new EnvEditor(getEnvironment().cloneEnv());
         }
         
+        @Override
         public Object getValue(String attributeName) {
             if (attributeName.equals("canEditAsText")) // NOI18N
                 return Boolean.FALSE;
@@ -817,17 +796,21 @@ public class RunProfile implements ConfigurationAuxObject {
             this.env = env;
         }
         
+        @Override
         public void setAsText(String text) {
         }
         
+        @Override
         public String getAsText() {
             return env.toString();
         }
         
+        @Override
         public java.awt.Component getCustomEditor() {
             return new EnvPanel(env, this, propenv);
         }
         
+        @Override
         public boolean supportsCustomEditor() {
             return true;
         }

@@ -54,8 +54,7 @@ import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
 import org.netbeans.modules.websvc.manager.WebServiceManager;
 import org.netbeans.modules.websvc.manager.WebServicePersistenceManager;
-import org.netbeans.modules.websvc.manager.ui.AddWebServiceDlg;
-import org.netbeans.modules.websvc.saas.spi.websvcmgr.WsdlData;
+import org.netbeans.modules.websvc.saas.util.WsdlUtil;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileAttributeEvent;
@@ -351,7 +350,11 @@ public class WebServiceListModel {
         if (!initialized) {
             initialized = true;
             WebServicePersistenceManager manager = new WebServicePersistenceManager();
-            manager.load();
+            if (! WsdlUtil.hasProcessedImport()) {
+                manager.setImported(false);
+                manager.load();
+                WsdlUtil.markImportProcessed();
+            }
             
             // TODO doesn't do anything useful yet
             partnerServiceListener = new RestFolderListener();
@@ -424,14 +427,14 @@ public class WebServiceListModel {
                     SwingUtilities.invokeLater(new Runnable() {
                         public void run() {
                             if (exception instanceof FileNotFoundException) {
-                                String errorMessage = NbBundle.getMessage(AddWebServiceDlg.class, "INVALID_URL");
+                                String errorMessage = NbBundle.getMessage(WebServiceListModel.class, "INVALID_URL");
                                 NotifyDescriptor d = new NotifyDescriptor.Message(errorMessage);
                                 DialogDisplayer.getDefault().notify(d);
                             } else {
                                 String cause = (exception != null) ? exception.getLocalizedMessage() : null;
                                 String excString = (exception != null) ? exception.getClass().getName() + " - " + cause : null;
 
-                                String errorMessage = NbBundle.getMessage(AddWebServiceDlg.class, "WS_ADD_ERROR") + "\n\n" + excString; // NOI18N
+                                String errorMessage = NbBundle.getMessage(WebServiceListModel.class, "WS_ADD_ERROR") + "\n\n" + excString; // NOI18N
                                 NotifyDescriptor d = new NotifyDescriptor.Message(errorMessage);
                                 DialogDisplayer.getDefault().notify(d);
                             }

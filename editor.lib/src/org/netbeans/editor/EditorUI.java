@@ -1643,14 +1643,19 @@ public class EditorUI implements ChangeListener, PropertyChangeListener, Setting
             // Hide completion if visible
             completion.setPaneVisible(false);
         }
+        showPopupMenuForPopupTrigger(evt);
+    }
+    
+    public void mouseReleased(MouseEvent evt) {
+        showPopupMenuForPopupTrigger(evt); // On Win the popup trigger is on mouse release
+    }
+
+    private void showPopupMenuForPopupTrigger(MouseEvent evt) {
         if (component != null && evt.isPopupTrigger() && popupMenuEnabled) {
             ExtUtilities.getExtEditorUI(component).showPopupMenu(evt.getX(), evt.getY());
         }
     }
     
-    public void mouseReleased(MouseEvent evt) {
-    }
-
     public void mouseEntered(MouseEvent evt) {
     }
 

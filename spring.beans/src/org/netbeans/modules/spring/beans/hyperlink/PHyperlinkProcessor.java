@@ -50,6 +50,7 @@ import org.netbeans.api.java.source.ElementUtilities;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.ui.ElementOpen;
+import org.netbeans.modules.spring.beans.editor.BeanClassFinder;
 import org.netbeans.modules.spring.beans.editor.ContextUtilities;
 import org.netbeans.modules.spring.beans.editor.SpringXMLConfigEditorUtils;
 import org.openide.util.Exceptions;
@@ -80,7 +81,8 @@ public class PHyperlinkProcessor extends HyperlinkProcessor {
                 temp = temp.substring(0, temp.indexOf("-ref")); // NOI18N
             }
 
-            final String className = SpringXMLConfigEditorUtils.getBeanClassName(env.getCurrentTag());
+            final String className = new BeanClassFinder(env.getCurrentTag(), 
+                    env.getDocument()).findImplementationClass();
             if(className == null) {
                 return;
             }

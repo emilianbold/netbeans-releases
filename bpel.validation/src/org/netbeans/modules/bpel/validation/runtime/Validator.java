@@ -1,20 +1,42 @@
 /*
- * The contents of this file are subject to the terms of the Common Development
- * and Distribution License (the License). You may not use this file except in
- * compliance with the License.
- * 
- * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
- * or http://www.netbeans.org/cddl.txt.
- * 
- * When distributing Covered Code, include this CDDL Header Notice in each file
- * and include the License file at http://www.netbeans.org/cddl.txt.
- * If applicable, add the following below the CDDL Header, with the fields
- * enclosed by brackets [] replaced by your own identifying information:
+ * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+ *
+ * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ *
+ * The contents of this file are subject to the terms of either the GNU
+ * General Public License Version 2 only ("GPL") or the Common
+ * Development and Distribution License("CDDL") (collectively, the
+ * "License"). You may not use this file except in compliance with the
+ * License. You can obtain a copy of the License at
+ * http://www.netbeans.org/cddl-gplv2.html
+ * or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
+ * specific language governing permissions and limitations under the
+ * License.  When distributing the software, include this License Header
+ * Notice in each file and include the License file at
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * particular file as subject to the "Classpath" exception as provided
+ * by Sun in the GPL Version 2 section of the License file that
+ * accompanied this code. If applicable, add the following below the
+ * License Header, with the fields enclosed by brackets [] replaced by
+ * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
+ * Contributor(s):
+ *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
+ *
+ * If you wish your version of this file to be governed by only the CDDL
+ * or only the GPL Version 2, indicate your decision by adding
+ * "[Contributor] elects to include this software in this distribution
+ * under the [CDDL or GPL Version 2] license." If you do not indicate a
+ * single choice of license, a recipient has the option to distribute
+ * your version of this file under either the CDDL, the GPL Version 2 or
+ * to extend the choice of license to its licensees as provided above.
+ * However, if you add GPL Version 2 code and therefore, elected the GPL
+ * Version 2 license, then the option applies only if the new code is
+ * made subject to such option by the copyright holder.
  */
 package org.netbeans.modules.bpel.validation.runtime;
 
@@ -84,7 +106,6 @@ import static org.netbeans.modules.soa.ui.util.UI.*;
  */
 public final class Validator extends BpelValidator {
     
-    // vlv
     private void processCorrelationsHolder(CorrelationsHolder holder) {
 //out();
 //out();
@@ -254,22 +275,24 @@ public final class Validator extends BpelValidator {
     @Override
     public void visit( From from ) {
         Documentation[] docs = from.getDocumentations();
-        if ( docs!= null && docs.length>0 ) {
-            addElementsInParentError(from, (BpelEntity[])docs);
+
+        if (docs!= null && docs.length > 0) {
+            addElementsInParentError(from, (BpelEntity[]) docs);
         }
-        if ( from.getExpressionLanguage()!= null ) {
-            addAttributeWarning( From.EXPRESSION_LANGUAGE, from );
+        if (from.getExpressionLanguage()!= null ) {
+            addAttributeWarning(From.EXPRESSION_LANGUAGE, from);
         }
-        if ( from.getProperty()!= null ) {
-            addAttributeWarning( From.PROPERTY, from );
+        if (from.getProperty() != null ) {
+            addAttributeWarning(From.PROPERTY, from);
         }
 // # 123382
 //        if (from.getPartnerLink() != null) {
 //            addAttributeWarning(From.PARTNER_LINK, from);
 //        }
-        if ( from.getEndpointReference()!= null ) {
-            addAttributeWarning( From.ENDPOINT_REFERENCE, from );
-        }
+// # 128665
+//        if (from.getEndpointReference() != null) {
+//            addAttributeWarning(From.ENDPOINT_REFERENCE, from);
+//        }
         checkAbsenceExtensions(from);
     }
     
@@ -293,8 +316,9 @@ public final class Validator extends BpelValidator {
     public void visit( Flow flow ) {
         super.visit(flow);
         LinkContainer container = flow.getLinkContainer();
-        if ( container!= null ) {
-            addElementError( container );
+
+        if (container!= null) {
+            addElementError(container);
         }
     }
     
@@ -350,8 +374,9 @@ public final class Validator extends BpelValidator {
     @Override
     public void visit(Receive receive) {
         super.visit(receive);
+
         // Rule: <fromPart>, <toPart> is not supported.
-        if(receive.getFromPartContaner()!= null ) {
+        if (receive.getFromPartContaner()!= null ) {
             addElementsInParentError(receive, FROM_PARTS);
         }
         

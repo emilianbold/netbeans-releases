@@ -60,12 +60,8 @@ class JavaDBAdapter implements RailsDatabaseConfiguration {
     JavaDBAdapter() {
     }
 
-    public String getDatabase() {
+    public String railsGenerationParam() {
         return "javadb";
-    }
-
-    public boolean needExtraConfig() {
-        return true;
     }
 
     public void editConfig(RailsProject project) {

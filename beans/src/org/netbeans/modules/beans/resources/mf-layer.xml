@@ -56,22 +56,22 @@ made subject to such option by the copyright holder.
          <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.beans.Bundle"/>
          <attr name="templateCategory" stringvalue="java-beans"/>
       </file>
-      <!--
       <file name="BeanInfo.java" url="templates/BeanInfo.template">
+         <attr name="position" intvalue="200"/>
          <attr name="template" boolvalue="true" />
          <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.beans.Bundle"/>
          <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/beans/resources/BeanInfo.html" />
          <attr name="instantiatingIterator" methodvalue="org.netbeans.spi.java.project.support.ui.templates.JavaTemplates.createJavaTemplateIterator" />
          <attr name="templateCategory" stringvalue="java-beans"/>
       </file>
-      <file name="BeanInfoNoIcon.java" url="templates/BeanInfoNoIcon.template">
+      <file name="NoIconBeanInfo.java" url="templates/BeanInfoNoIcon.template">
+         <attr name="position" intvalue="300"/>
          <attr name="template" boolvalue="true" />
          <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/beans/resources/BeanInfo.html" />
          <attr name="instantiatingIterator" methodvalue="org.netbeans.spi.java.project.support.ui.templates.JavaTemplates.createJavaTemplateIterator" />
          <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.beans.Bundle"/>
          <attr name="templateCategory" stringvalue="java-beans"/>
       </file>
-      -->
       <file name="Customizer.java" url="templates/Customizer.template">
          <attr name="position" intvalue="400"/>
          <attr name="template" boolvalue="true" />
@@ -144,6 +144,23 @@ made subject to such option by the copyright holder.
                 <folder name="codegenerators">
                     <file name="org-netbeans-modules-beans-addproperty-AddPropertyCodeGenerator$Factory.instance">
                         <attr name="position" intvalue="600"/>
+                    </file>
+                </folder>
+            </folder>
+        </folder>
+    </folder>
+    
+    <folder name="Loaders">
+        <folder name="text">
+            <folder name="x-java">
+                <folder name="Actions">
+                    <file name="beans-GenerateBeanInfoAction.instance">
+                        <attr name="instanceClass" stringvalue="org.netbeans.modules.beans.beaninfo.GenerateBeanInfoAction"/>
+                        <attr name="position" intvalue="2120"/>
+                    </file>
+                    <file name="beans-separator1.instance">
+                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                        <attr name="position" intvalue="2140"/>
                     </file>
                 </folder>
             </folder>

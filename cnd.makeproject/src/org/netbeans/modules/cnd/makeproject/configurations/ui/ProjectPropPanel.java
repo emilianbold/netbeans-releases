@@ -53,28 +53,29 @@ import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 
 public class ProjectPropPanel extends javax.swing.JPanel implements ActionListener {
+
     private SourceRootChooser sourceRootChooser;
     private Project project;
     private MakeConfigurationDescriptor makeConfigurationDescriptor;
-    
+
     /** Creates new form ProjectPropPanel */
     public ProjectPropPanel(Project project, ConfigurationDescriptor configurationDescriptor) {
         this.project = project;
-        makeConfigurationDescriptor = (MakeConfigurationDescriptor)configurationDescriptor;
+        makeConfigurationDescriptor = (MakeConfigurationDescriptor) configurationDescriptor;
         initComponents();
         projectTextField.setText(FileUtil.toFile(project.getProjectDirectory()).getPath());
         sourceRootPanel.add(sourceRootChooser = new SourceRootChooser(configurationDescriptor.getBaseDir(), makeConfigurationDescriptor.getSourceRootsAsArray()));
-        
-        MakeCustomizerProvider makeCustomizerProvider = (MakeCustomizerProvider)project.getLookup().lookup(MakeCustomizerProvider.class);
+
+        MakeCustomizerProvider makeCustomizerProvider = (MakeCustomizerProvider) project.getLookup().lookup(MakeCustomizerProvider.class);
         makeCustomizerProvider.addActionListener(this);
     }
-    
+
     public void actionPerformed(ActionEvent e) {
         if (sourceRootChooser.isChanged()) {
             Vector list = sourceRootChooser.getListData();
             makeConfigurationDescriptor.setSourceRootsList(new ArrayList(list));
         }
-        MakeCustomizerProvider makeCustomizerProvider = (MakeCustomizerProvider)project.getLookup().lookup(MakeCustomizerProvider.class);
+        MakeCustomizerProvider makeCustomizerProvider = (MakeCustomizerProvider) project.getLookup().lookup(MakeCustomizerProvider.class);
         makeCustomizerProvider.removeActionListener(this);
     }
 
@@ -95,6 +96,16 @@ public class ProjectPropPanel extends javax.swing.JPanel implements ActionListen
         public char getListLabelMnemonic() {
             return getString("ProjectPropPanel.sourceRootLabel.mn").charAt(0);
         }
+
+        @Override
+        public char getAddButtonMnemonics() {
+            return getString("ADD_BUTTON_MN").charAt(0);
+        }
+
+        @Override
+        public String getAddButtonText() {
+            return getString("ADD_BUTTON_TXT");
+        }
     }
 
     /** This method is called from within the constructor to
@@ -112,11 +123,13 @@ public class ProjectPropPanel extends javax.swing.JPanel implements ActionListen
 
         setLayout(new java.awt.GridBagLayout());
 
+        projectLabel.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/makeproject/configurations/ui/Bundle").getString("ProjectPropPanel.projectLabel.mn").charAt(0));
         projectLabel.setLabelFor(projectTextField);
         projectLabel.setText(org.openide.util.NbBundle.getMessage(ProjectPropPanel.class, "ProjectPropPanel.projectLabel.text")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         add(projectLabel, gridBagConstraints);
+        projectLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ProjectPropPanel.class, "ProjectPropPanel.projectLabel.ad")); // NOI18N
 
         projectTextField.setEditable(false);
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -143,10 +156,7 @@ public class ProjectPropPanel extends javax.swing.JPanel implements ActionListen
     private javax.swing.JTextField projectTextField;
     private javax.swing.JPanel sourceRootPanel;
     // End of variables declaration//GEN-END:variables
-    
-    
     private static String getString(String key) {
         return NbBundle.getMessage(ProjectPropPanel.class, key);
     }
-
 }

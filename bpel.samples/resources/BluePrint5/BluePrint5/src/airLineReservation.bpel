@@ -38,9 +38,11 @@
     <import namespace="http://localhost/BluePrint5/AirLineReservation"
             location="AirLineReservation.wsdl"
             importType="http://schemas.xmlsoap.org/wsdl/"></import>
+    
     <import namespace="http://localhost/BluePrint5/Reservation" 
             location="Reservation.wsdl" 
             importType="http://schemas.xmlsoap.org/wsdl/"/>
+    
     <import namespace="http://ReservationSystem.org/xsd/reserve"
             location="reservation.xsd"
             importType="http://www.w3.org/2001/XMLSchema"></import>
@@ -53,12 +55,14 @@
                      partnerLinkType="ns0:AirLineReservStatusPLinkType"
                      partnerRole="statusReceivingRole"/>
     </partnerLinks>
+    
     <variables>
         <variable name="reservationMesg"
                   messageType="ns0:AirlineReservation"></variable>
         <variable name="sendAirlineStatus"
                   messageType="ns0:AirlineReservationStatus"></variable>
     </variables>
+    
     <sequence>
         <receive name="reserveAirline"
                  partnerLink="airlineReservationPLink"

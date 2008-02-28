@@ -49,9 +49,10 @@ import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.netbeans.api.gsf.Index;
-import org.netbeans.api.gsf.NameKind;
-import org.netbeans.api.gsfpath.classpath.ClassPath;
+import org.netbeans.modules.gsf.api.Index;
+import org.netbeans.modules.gsf.api.NameKind;
+import org.netbeans.modules.gsfpath.api.classpath.ClassPath;
+import org.netbeans.modules.gsf.Language;
 import org.netbeans.modules.gsfret.source.GlobalSourcePath;
 import org.netbeans.modules.gsfret.source.usages.ClassIndexFactory;
 import org.netbeans.modules.gsfret.source.usages.ClassIndexImpl;
@@ -70,11 +71,13 @@ import org.openide.util.Exceptions;
  * source files referencing given type (usages of given type).
  *
  * @author Petr Hrebejk, Tomas Zezula
+ * @author Tor Norbye
  */
 public final class ClassIndex extends Index {
     
     private static final Logger LOGGER = Logger.getLogger(ClassIndex.class.getName());
     
+    private final Language language;
     private final ClassPath bootPath;
     private final ClassPath classPath;
     private final ClassPath sourcePath;
@@ -88,7 +91,8 @@ public final class ClassIndex extends Index {
 	ClassIndexImpl.FACTORY = new ClassIndexFactoryImpl();
     }
     
-    ClassIndex(final ClassPath bootPath, final ClassPath classPath, final ClassPath sourcePath) {
+    ClassIndex(final Language language, final ClassPath bootPath, final ClassPath classPath, final ClassPath sourcePath) {
+        this.language = language;
         //assert bootPath != null;
         //assert classPath != null;
         //assert sourcePath != null;
@@ -97,129 +101,32 @@ public final class ClassIndex extends Index {
         this.sourcePath = sourcePath;
     }
     
-    public void gsfSearch(final String primaryField, final String name, final NameKind kind, 
+    public Language getLanguage() {
+        return language;
+    }
+    
+    public void search(final String primaryField, final String name, final NameKind kind, 
             final Set<SearchScope> scope, /*final ResultConvertor<T> convertor,*/ 
-            final Set<SearchResult> result) throws IOException {
+            final Set<SearchResult> result, Set<String> terms) throws IOException {
         assert primaryField != null;
         assert name != null;
         assert kind != null;
         final Iterable<? extends ClassIndexImpl> queries = this.getQueries(scope);        
-        //final ResultConvertor<ElementHandle<TypeElement>> thConvertor = ResultConvertor.elementHandleConvertor();
         for (ClassIndexImpl query : queries) {
-            query.gsfSearch(primaryField, name, kind, scope, result);
+            query.search(primaryField, name, kind, scope, result, terms);
         }
         if (LOGGER.isLoggable(Level.FINE)) {
-            LOGGER.fine(String.format("ClassIndex.gsfSearch returned %d elements\n", result.size()));
+            LOGGER.fine(String.format("ClassIndex.search returned %d elements\n", result.size()));
         }
     }
 
-    public void gsfStore(Set<Map<String,String>> fieldToData, Set<Map<String,String>> noIndexFields, Map<String,String> toDelete) throws IOException {
-        // XXX Ugh
-        throw new RuntimeException("Not yet implemented");
-    }
-    
-//    /**
-//     * Returns a set of {@link ElementHandle}s containing reference(s) to given element.
-//     * @param element for which usages should be found
-//     * @param searchKind type of reference, {@see SearchKind}
-//     * @param scope to search in {@see SearchScope}
-//     * @return set of {@link ElementHandle}s containing the reference(s)
-//     *
-//     */
-//    public Set<ElementHandle<TypeElement>> getElements (final ElementHandle<TypeElement> element, final Set<SearchKind> searchKind, final Set<SearchScope> scope) {
-//        assert element != null;
-//        assert element.getSignature()[0] != null;
-//        assert searchKind != null;
-//        final Set<ElementHandle<TypeElement>> result = new HashSet<ElementHandle<TypeElement>> ();
-//        final Iterable<? extends ClassIndexImpl> queries = this.getQueries (scope);
-//        final Set<ClassIndexImpl.UsageType> ut =  encodeSearchKind(element.getKind(),searchKind);
-//        final String binaryName = element.getSignature()[0];
-//        final ResultConvertor<ElementHandle<TypeElement>> thConvertor = ResultConvertor.elementHandleConvertor();
-//        if (!ut.isEmpty()) {
-//            for (ClassIndexImpl query : queries) {
-//                query.search(binaryName, ut, thConvertor, result);
-//            }
-//        }
-//        return Collections.unmodifiableSet(result);
-//    }
-//    
-//    /**
-//     * Returns a set of source files containing reference(s) to given element.
-//     * @param element for which usages should be found
-//     * @param searchKind type of reference, {@see SearchKind}
-//     * @param scope to search in {@see SearchScope}
-//     * @return set of {@link FileObject}s containing the reference(s)
-//     *
-//     */
-//    public Set<FileObject> getResources (final ElementHandle<TypeElement> element, final Set<SearchKind> searchKind, final Set<SearchScope> scope) {
-//        assert element != null;
-//        assert element.getSignature()[0] != null;
-//        assert searchKind != null;
-//        final Set<FileObject> result = new HashSet<FileObject> ();
-//        final Iterable<? extends ClassIndexImpl> queries = this.getQueries (scope);
-//        final Set<ClassIndexImpl.UsageType> ut =  encodeSearchKind(element.getKind(),searchKind);
-//        final String binaryName = element.getSignature()[0];        
-//        if (!ut.isEmpty()) {
-//            for (ClassIndexImpl query : queries) {
-//                final ResultConvertor<FileObject> foConvertor = ResultConvertor.fileObjectConvertor (query.getSourceRoots());
-//                query.search (binaryName, ut, foConvertor, result);
-//            }
-//        }
-//        return Collections.unmodifiableSet(result);
-//    }        
-//    
-//    
-//    /**
-//     * Returns {@link ElementHandle}s for all declared types in given classpath corresponding to the name.
-//     * @param case sensitive prefix, case insensitive prefix, exact simple name,
-//     * camel case or regular expression depending on the kind parameter.
-//     * @param kind of the name {@see NameKind}
-//     * @param scope to search in {@see SearchScope}
-//     * @return set of all matched declared types
-//     */
-//    public Set<ElementHandle<TypeElement>> getDeclaredTypes (final String name, final NameKind kind, final Set<SearchScope> scope) {
-//        assert name != null;
-//        assert kind != null;
-//        final Set<ElementHandle<TypeElement>> result = new HashSet<ElementHandle<TypeElement>>();        
-//        final Iterable<? extends ClassIndexImpl> queries = this.getQueries (scope);        
-//        final ResultConvertor<ElementHandle<TypeElement>> thConvertor = ResultConvertor.elementHandleConvertor();
-//        for (ClassIndexImpl query : queries) {
-//            query.getDeclaredTypes (name, kind, thConvertor, result);
-//        }
-//        LOGGER.fine(String.format("ClassIndex.getDeclaredTypes returned %d elements\n", result.size()));
-//        return Collections.unmodifiableSet(result);
-//    }
-//    
-//    /**
-//     * Returns names af all packages in given classpath starting with prefix.
-//     * @param prefix of the package name
-//     * @param directOnly if true treats the packages as folders and returns only
-//     * the nearest component of the package.
-//     * @param scope to search in {@see SearchScope}
-//     * @return set of all matched package names
-//     */
-//    public Set<String> getPackageNames (final String prefix, boolean directOnly, final Set<SearchScope> scope) {
-//        assert prefix != null;
-//        final Set<String> result = new HashSet<String> ();        
-//        final Iterable<? extends ClassIndexImpl> queries = this.getQueries (scope);
-//        for (ClassIndexImpl query : queries) {
-//            query.getPackageNames (prefix, directOnly, result);
-//        }
-//        return Collections.unmodifiableSet(result);
-//    }
-//    
-//    // Private innerclasses ----------------------------------------------------
-//        
     private static class ClassIndexFactoryImpl implements ClassIndexFactory {
         
-	public ClassIndex create(final ClassPath bootPath, final ClassPath classPath, final ClassPath sourcePath) {            
-	    return new ClassIndex(bootPath, classPath, sourcePath);
+	public ClassIndex create(final Language language, final ClassPath bootPath, final ClassPath classPath, final ClassPath sourcePath) {            
+	    return new ClassIndex(language, bootPath, classPath, sourcePath);
         }
 	
     }
-    
-    //Private methods
-    
     
     private synchronized Iterable<? extends ClassIndexImpl> getQueries (final Set<SearchScope> scope) {        
         Set<ClassIndexImpl> result = new HashSet<ClassIndexImpl> ();
@@ -227,7 +134,7 @@ public final class ClassIndex extends Index {
         if (scope.contains(SearchScope.SOURCE)) {            
             if (this.sourceIndeces == null) {
                 Set<ClassIndexImpl> indeces = new HashSet<ClassIndexImpl>();
-                createQueriesForRoots (this.sourcePath, true, indeces);
+                createQueriesForRoots (language, this.sourcePath, true, indeces);
                 this.sourceIndeces = indeces;
             }
             result.addAll(this.sourceIndeces);
@@ -246,13 +153,13 @@ public final class ClassIndex extends Index {
                     // into the ClassPath platform to support to fix it there, but that's
                     // too late/risky for now; so work around this instead. When we have an
                     // empty classpath, use the boot indices instead.
-                    Set<ClassIndexImpl> bootIndices = ClassIndexManager.getDefault().getBootIndices();
+                    Set<ClassIndexImpl> bootIndices = ClassIndexManager.get(language).getBootIndices();
                     indeces.addAll(bootIndices);
                 } else {
-                    createQueriesForRoots (this.bootPath, false, indeces);     
+                    createQueriesForRoots (language, this.bootPath, false, indeces);     
                 }
                 // END TOR MODIFICATIONS
-                createQueriesForRoots (this.classPath, false, indeces);	    
+                createQueriesForRoots (language, this.classPath, false, indeces);	    
                 this.depsIndeces = indeces;
             }
             result.addAll(this.depsIndeces);
@@ -264,24 +171,22 @@ public final class ClassIndex extends Index {
     }
     
     
-    // For lucene browser
+    // Public for the lucene browser
     public static
-    /*private*/ void createQueriesForRoots (final ClassPath cp, final boolean sources, final Set<? super ClassIndexImpl> queries) {
+    /*private*/ void createQueriesForRoots (final Language language, final ClassPath cp, final boolean sources, final Set<? super ClassIndexImpl> queries) {
         final GlobalSourcePath gsp = GlobalSourcePath.getDefault();
         List<ClassPath.Entry> entries = cp.entries();
 	for (ClassPath.Entry entry : entries) {
 	    try {
-                boolean indexNow = false;
                 URL[] srcRoots;
                 if (!sources) {
-                    URL srcRoot = org.netbeans.modules.gsfret.source.usages.Index.getSourceRootForClassFolder (entry.getURL());
+                    URL srcRoot = org.netbeans.modules.gsfret.source.usages.Index.getSourceRootForClassFolder (language, entry.getURL());
                     if (srcRoot != null) {
                         srcRoots = new URL[] {srcRoot};
                     }
                     else {                        
                         srcRoots = gsp.getSourceRootForBinaryRoot (entry.getURL(), cp, true);                        
                         if (srcRoots == null) {
-                            indexNow = true;
                             srcRoots = new URL[] {entry.getURL()};
                         }
                     }
@@ -291,7 +196,7 @@ public final class ClassIndex extends Index {
                     srcRoots = new URL[] {entry.getURL()};
                 }                
                 for (URL srcRoot : srcRoots) {
-                    ClassIndexImpl ci = ClassIndexManager.getDefault().getUsagesQuery(srcRoot);
+                    ClassIndexImpl ci = ClassIndexManager.get(language).getUsagesQuery(srcRoot);
                     if (ci != null) {
                         queries.add (ci);
                     }
@@ -301,46 +206,4 @@ public final class ClassIndex extends Index {
 	    }
 	}
     }
-    
-//    
-//    private static Set<ClassIndexImpl.UsageType> encodeSearchKind (final ElementKind elementKind, final Set<ClassIndex.SearchKind> kind) {
-//        assert kind != null;
-//        final Set<ClassIndexImpl.UsageType> result = EnumSet.noneOf(ClassIndexImpl.UsageType.class);
-//        for (ClassIndex.SearchKind sk : kind) {
-//            switch (sk) {
-//                case METHOD_REFERENCES:                    
-//                    result.add(ClassIndexImpl.UsageType.METHOD_REFERENCE);                    
-//                    break;
-//                case FIELD_REFERENCES:
-//                    result.add(ClassIndexImpl.UsageType.FIELD_REFERENCE);
-//                    break;
-//                case TYPE_REFERENCES:
-//                    result.add(ClassIndexImpl.UsageType.TYPE_REFERENCE);
-//                    break;
-//                case IMPLEMENTORS:
-//                    switch( elementKind) {
-//                        case INTERFACE:
-//                        case ANNOTATION_TYPE:
-//                            result.add(ClassIndexImpl.UsageType.SUPER_INTERFACE);
-//                            break;
-//                        case CLASS:
-//                            result.add(ClassIndexImpl.UsageType.SUPER_CLASS);
-//                            break;
-//                        case ENUM:	//enum is final
-//                            break;
-//                        case OTHER:
-//                            result.add(ClassIndexImpl.UsageType.SUPER_INTERFACE);
-//                            result.add(ClassIndexImpl.UsageType.SUPER_CLASS);
-//                            break;
-//                        default:
-//                            throw new IllegalArgumentException ();                                        
-//                    }
-//                    break;
-//                default:
-//                    throw new IllegalArgumentException ();                    
-//            }
-//        }
-//        return result;
-//    }           
-//    
 }

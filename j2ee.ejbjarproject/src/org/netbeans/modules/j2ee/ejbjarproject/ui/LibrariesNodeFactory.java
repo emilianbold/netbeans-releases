@@ -149,6 +149,7 @@ public final class LibrariesNodeFactory implements NodeFactory {
                     new String[] { ProjectProperties.BUILD_CLASSES_DIR },
                     "platform.active", //NOI18N
                     EjbJarProjectProperties.J2EE_SERVER_INSTANCE,
+                    EjbJarProjectProperties.J2EE_PLATFORM_CLASSPATH,
                     new Action[] {
                             LibrariesNode.createAddProjectAction(project, project.getSourceRoots()),
                             LibrariesNode.createAddLibraryAction(refHelper, project.getSourceRoots(), null),
@@ -157,7 +158,8 @@ public final class LibrariesNodeFactory implements NodeFactory {
                         new PreselectPropertiesAction(project, "Libraries", CustomizerLibraries.COMPILE), //NOI18N
                     },
                     ClassPathSupportCallbackImpl.ELEMENT_INCLUDED_LIBRARIES,
-                    cs
+                    cs,
+                    new String[]{ProjectProperties.JAVAC_CLASSPATH}
                 );
             } else if (key == TEST_LIBRARIES) {
                 return  new LibrariesNode(
@@ -174,6 +176,7 @@ public final class LibrariesNodeFactory implements NodeFactory {
                     },
                     null,
                     null,
+                    null,
                     new Action[] {
                         LibrariesNode.createAddProjectAction(project, project.getTestSourceRoots()),
                         LibrariesNode.createAddLibraryAction(refHelper, project.getTestSourceRoots(), null),
@@ -182,7 +185,8 @@ public final class LibrariesNodeFactory implements NodeFactory {
                         new PreselectPropertiesAction(project, "Libraries", CustomizerLibraries.COMPILE_TESTS), //NOI18N
                     },
                     null,
-                    cs
+                    cs,
+                    null
                     );
             }
             assert false: "No node for key: " + key; // NOI18N

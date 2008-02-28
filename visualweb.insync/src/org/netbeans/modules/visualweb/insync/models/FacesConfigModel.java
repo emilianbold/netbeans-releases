@@ -75,7 +75,7 @@ public class FacesConfigModel extends Model{
     //calls getManagedBean many hundreds of times(see #125957). This logic indeed should go inside
     //web/jsf but may not be implemented in 6.1 time frame. Temporarily we have a workaround, where-in
     //we hold-on to XAM Models, note that we do not use these Models.
-    List<JSFConfigModel> configModels = new ArrayList<JSFConfigModel>();
+    List<JSFConfigModel> configModels;
     
     //--------------------------------------------------------------------------------- Construction
 
@@ -104,12 +104,11 @@ public class FacesConfigModel extends Model{
 
     public ManagedBean[] getManagedBeans() {
         FileObject[] configs = ConfigurationUtils.getFacesConfigFiles(webModule);
-        configModels.clear();
+        refreshJSFConfigModelReferences(configs);
         List<ManagedBean> managedBeans = new ArrayList<ManagedBean>();
         for(FileObject configFile : configs) {
             JSFConfigModel model = ConfigurationUtils.getConfigModel(configFile, true);
             if(!isBusted(model)) {
-                configModels.add(model);
                 managedBeans.addAll(model.getRootComponent().getManagedBeans());
             }
         }
@@ -119,11 +118,10 @@ public class FacesConfigModel extends Model{
 
     public ManagedBean getManagedBean(String name) {
         FileObject[] configs = ConfigurationUtils.getFacesConfigFiles(webModule);
-        configModels.clear();
+        refreshJSFConfigModelReferences(configs);
         for(FileObject configFile : configs) {
             JSFConfigModel model = ConfigurationUtils.getConfigModel(configFile, true);
-            if(!isBusted(model)) {
-                configModels.add(model);
+            if(!isBusted(model)) {            	
                 Collection<ManagedBean> managedBeans = model.getRootComponent().getManagedBeans();
                 for(ManagedBean managedBean : managedBeans) {
                     if(managedBean.getManagedBeanName().equals(name)) {
@@ -137,11 +135,10 @@ public class FacesConfigModel extends Model{
     
     public FacesConfig getFacesConfigForManagedBean(String name) {
         FileObject[] configs = ConfigurationUtils.getFacesConfigFiles(webModule);
-        configModels.clear();
+        refreshJSFConfigModelReferences(configs);
         for(FileObject configFile : configs) {
             JSFConfigModel model = ConfigurationUtils.getConfigModel(configFile, true);
-            if(!isBusted(model)) {
-                configModels.add(model);
+            if(!isBusted(model)) {            	
                 FacesConfig facesConfig = model.getRootComponent();
                 Collection<ManagedBean> managedBeans = facesConfig.getManagedBeans();
                 for(ManagedBean managedBean : managedBeans) {
@@ -154,6 +151,20 @@ public class FacesConfigModel extends Model{
         return null;
     }    
 
+    private void refreshJSFConfigModelReferences(FileObject[] configs) {
+    	List<JSFConfigModel> newConfigModels = new ArrayList<JSFConfigModel>();
+        try {
+            for(FileObject configFile : configs) {
+                JSFConfigModel model = ConfigurationUtils.getConfigModel(configFile, true);
+                if(model != null) {
+                    newConfigModels.add(model);	                
+                }
+            }
+        } finally {
+        	configModels = newConfigModels;
+        }
+    }
+    
     public ManagedBean ensureManagedBean(String name, String className, ManagedBean.Scope scope) {
         ManagedBean mb = getManagedBean(name);
         if (mb == null) {

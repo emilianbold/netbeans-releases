@@ -50,7 +50,7 @@ import org.netbeans.modules.spring.api.Action;
 import org.netbeans.modules.spring.api.beans.ConfigFileGroup;
 import org.netbeans.modules.spring.api.beans.SpringScope;
 import org.netbeans.modules.spring.beans.SpringScopeAccessor;
-import org.netbeans.modules.spring.beans.model.SpringConfigFileModelController.DocumentWrite;
+import org.netbeans.modules.spring.beans.model.SpringConfigFileModelController.LockedDocument;
 import org.netbeans.modules.spring.beans.model.SpringConfigModelController;
 import org.openide.filesystems.FileObject;
 import org.openide.text.PositionRef;
@@ -98,21 +98,20 @@ public final class SpringConfigModel {
         controller.runReadAction(action);
     }
 
-    public void runWriteAction(Action<WriteContext> action) throws IOException {
-        controller.runWriteAction(action);
+    public void runDocumentAction(Action<DocumentAccess> action) throws IOException {
+        controller.runDocumentAction(action);
     }
 
-    // XXX rename to DocumentAccess.
     // XXX remove public constructor.
-    public static final class WriteContext {
+    public static final class DocumentAccess {
 
         private final SpringBeans springBeans;
-        private final DocumentWrite docWrite;
+        private final LockedDocument lockedDoc;
         private final File file;
 
-        public WriteContext(SpringBeans springBeans, File file, DocumentWrite docWrite) {
+        public DocumentAccess(SpringBeans springBeans, File file, LockedDocument lockedDoc) {
             this.springBeans = springBeans;
-            this.docWrite = docWrite;
+            this.lockedDoc = lockedDoc;
             this.file = file;
         }
 
@@ -121,7 +120,7 @@ public final class SpringConfigModel {
         }
 
         public Document getDocument() {
-            return docWrite.getDocument();
+            return lockedDoc.getDocument();
         }
 
         public File getFile() {
@@ -129,15 +128,11 @@ public final class SpringConfigModel {
         }
 
         public FileObject getFileObject() {
-            return NbEditorUtilities.getFileObject(docWrite.getDocument());
+            return NbEditorUtilities.getFileObject(lockedDoc.getDocument());
         }
 
         public PositionRef createPositionRef(int offset, Bias bias) {
-            return docWrite.createPositionRef(offset, bias);
-        }
-
-        public void commit() throws IOException {
-            docWrite.commit();
+            return lockedDoc.createPositionRef(offset, bias);
         }
     }
 }

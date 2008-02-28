@@ -71,8 +71,9 @@ import org.openide.util.Utilities;
 // public class LineBreakpointPanel extends JPanel implements Controller {
 //
 public class LineBreakpointPanel extends JPanel implements Controller, HelpCtx.Provider {
-    
-    private ActionsPanel        actionsPanel; 
+
+    private ConditionsPanel     conditionsPanel;
+    private ActionsPanel        actionsPanel;
     private LineBreakpoint      breakpoint;
     private boolean             createBreakpoint = false;
     
@@ -126,9 +127,9 @@ public class LineBreakpointPanel extends JPanel implements Controller, HelpCtx.P
         if (b.getLineNumber() > 0) {
             tfLineNumber.setText(Integer.toString(b.getLineNumber()));
         }
-        tfCondition.setText(b.getCondition());
-        setupConditionPane();
         
+        conditionsPanel = new ConditionsPanel(b);
+        pConditions.add(conditionsPanel, "Center");  // NOI18N
         actionsPanel = new ActionsPanel(b);
         pActions.add(actionsPanel, "Center");  // NOI18N
     }
@@ -142,32 +143,10 @@ public class LineBreakpointPanel extends JPanel implements Controller, HelpCtx.P
         return lb;
     }
     
-    private void setupConditionPane() {
-        /* Not implemented yet
-        tfCondition.setKeymap(new FilteredKeymap(tfCondition.getKeymap()));
-        String url = breakpoint.getURL();
-        DataObject dobj = null;
-        FileObject file;
-        try {
-            file = URLMapper.findFileObject (new URL (url));
-            if (file != null) {
-                try {
-                    dobj = DataObject.find (file);
-                } catch (DataObjectNotFoundException ex) {
-                    // null dobj
-                }
-            }
-        } catch (MalformedURLException e) {
-            // null dobj
-        }
-        tfCondition.getDocument().putProperty(javax.swing.text.Document.StreamDescriptionProperty, dobj);
-        */
-    }
-    
     /** 
      * Implement getHelpCtx() with the correct helpID
     */
-    public org.openide.util.HelpCtx getHelpCtx() {
+    public HelpCtx getHelpCtx() {
         return new HelpCtx("NetbeansDebuggerBreakpointLineGDB"); // NOI18N
     }
     
@@ -181,15 +160,12 @@ public class LineBreakpointPanel extends JPanel implements Controller, HelpCtx.P
         java.awt.GridBagConstraints gridBagConstraints;
 
         pSettings = new javax.swing.JPanel();
-        jLabel3 = new javax.swing.JLabel();
-        jLabel5 = new javax.swing.JLabel();
+        lFileName = new javax.swing.JLabel();
         tfFileName = new javax.swing.JTextField();
-        jLabel1 = new javax.swing.JLabel();
+        lLineNumber = new javax.swing.JLabel();
         tfLineNumber = new javax.swing.JTextField();
-        spCondition = new javax.swing.JScrollPane();
-        tfCondition = new javax.swing.JEditorPane();
+        pConditions = new javax.swing.JPanel();
         pActions = new javax.swing.JPanel();
-        jPanel1 = new javax.swing.JPanel();
 
         setLayout(new java.awt.GridBagLayout());
 
@@ -199,35 +175,23 @@ public class LineBreakpointPanel extends JPanel implements Controller, HelpCtx.P
         pSettings.setPreferredSize(new java.awt.Dimension(144, 105));
         pSettings.setLayout(new java.awt.GridBagLayout());
 
-        jLabel3.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/debugger/gdb/breakpoints/Bundle").getString("MN_L_Line_Breakpoint_File_Name").charAt(0));
-        jLabel3.setLabelFor(tfFileName);
-        jLabel3.setText(bundle.getString("L_Line_Breakpoint_File_Name")); // NOI18N
+        lFileName.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/debugger/gdb/breakpoints/Bundle").getString("MN_L_Line_Breakpoint_File_Name").charAt(0));
+        lFileName.setLabelFor(tfFileName);
+        lFileName.setText(bundle.getString("L_Line_Breakpoint_File_Name")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 1;
+        gridBagConstraints.gridy = 0;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(3, 3, 3, 3);
-        pSettings.add(jLabel3, gridBagConstraints);
-        jLabel3.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_L_Line_Breakpoint_File_Name")); // NOI18N
-
-        jLabel5.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/debugger/gdb/breakpoints/Bundle").getString("MN_L_Line_Breakpoint_Condition").charAt(0));
-        jLabel5.setLabelFor(tfCondition);
-        jLabel5.setText(bundle.getString("L_Line_Breakpoint_Condition")); // NOI18N
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 5;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(3, 3, 3, 3);
-        pSettings.add(jLabel5, gridBagConstraints);
-        jLabel5.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_L_Line_Breakpoint_Condition")); // NOI18N
+        pSettings.add(lFileName, gridBagConstraints);
+        lFileName.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_L_Line_Breakpoint_File_Name")); // NOI18N
 
         tfFileName.setEditable(false);
         tfFileName.setToolTipText(bundle.getString("TTT_TF_Line_Breakpoint_File_Name")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 1;
+        gridBagConstraints.gridy = 0;
         gridBagConstraints.gridwidth = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.weightx = 1.0;
@@ -236,22 +200,22 @@ public class LineBreakpointPanel extends JPanel implements Controller, HelpCtx.P
         tfFileName.getAccessibleContext().setAccessibleName(bundle.getString("ACSD_TF_Line_Breakpoint_File_Name")); // NOI18N
         tfFileName.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_TF_Line_Breakpoint_File_Name")); // NOI18N
 
-        jLabel1.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/debugger/gdb/breakpoints/Bundle").getString("MN_L_Line_Breakpoint_Line_Number").charAt(0));
-        jLabel1.setLabelFor(tfLineNumber);
-        jLabel1.setText(bundle.getString("L_Line_Breakpoint_Line_Number")); // NOI18N
+        lLineNumber.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/debugger/gdb/breakpoints/Bundle").getString("MN_L_Line_Breakpoint_Line_Number").charAt(0));
+        lLineNumber.setLabelFor(tfLineNumber);
+        lLineNumber.setText(bundle.getString("L_Line_Breakpoint_Line_Number")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 3;
+        gridBagConstraints.gridy = 1;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(3, 3, 3, 3);
-        pSettings.add(jLabel1, gridBagConstraints);
-        jLabel1.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_L_Line_Breakpoint_Line_Number")); // NOI18N
+        pSettings.add(lLineNumber, gridBagConstraints);
+        lLineNumber.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_L_Line_Breakpoint_Line_Number")); // NOI18N
 
         tfLineNumber.setToolTipText(bundle.getString("TTT_TF_Line_Breakpoint_Line_Number")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 3;
+        gridBagConstraints.gridy = 1;
         gridBagConstraints.gridwidth = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.weightx = 1.0;
@@ -260,46 +224,28 @@ public class LineBreakpointPanel extends JPanel implements Controller, HelpCtx.P
         tfLineNumber.getAccessibleContext().setAccessibleName(bundle.getString("ACSD_TF_Line_Breakpoint_Line_Number")); // NOI18N
         tfLineNumber.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_TF_Line_Breakpoint_Line_Number")); // NOI18N
 
-        spCondition.setHorizontalScrollBarPolicy(javax.swing.ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
-        spCondition.setToolTipText(org.openide.util.NbBundle.getMessage(LineBreakpointPanel.class, "ACSD_TF_Line_Breakpoint_Condition")); // NOI18N
-        spCondition.setMinimumSize(new java.awt.Dimension(11, 19));
-
-        tfCondition.setBackground(new java.awt.Color(238, 238, 238));
-        tfCondition.setEditable(false);
-        tfCondition.setToolTipText(org.openide.util.NbBundle.getMessage(LineBreakpointPanel.class, "HINT_UnimplementedCondition")); // NOI18N
-        tfCondition.setEnabled(false);
-        tfCondition.setMinimumSize(new java.awt.Dimension(116, 17));
-        tfCondition.setPreferredSize(new java.awt.Dimension(11, 19));
-        spCondition.setViewportView(tfCondition);
-        tfCondition.getAccessibleContext().setAccessibleName(bundle.getString("ACSD_TF_Line_Breakpoint_Condition")); // NOI18N
-        tfCondition.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_TF_Line_Breakpoint_Condition")); // NOI18N
-
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 5;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(3, 3, 3, 3);
-        pSettings.add(spCondition, gridBagConstraints);
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.weightx = 1.0;
         add(pSettings, gridBagConstraints);
 
-        pActions.setLayout(new java.awt.BorderLayout());
+        pConditions.setLayout(new java.awt.BorderLayout());
         gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 1;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.weightx = 1.0;
-        add(pActions, gridBagConstraints);
+        add(pConditions, gridBagConstraints);
+
+        pActions.setLayout(new java.awt.BorderLayout());
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 2;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.weighty = 1.0;
-        add(jPanel1, gridBagConstraints);
+        add(pActions, gridBagConstraints);
     }// </editor-fold>//GEN-END:initComponents
 
     
@@ -316,12 +262,13 @@ public class LineBreakpointPanel extends JPanel implements Controller, HelpCtx.P
             DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(msg));
             return false;
         }
-        actionsPanel.ok();
         String lnum = tfLineNumber.getText().trim();
         if (lnum.length() > 0) {
             breakpoint.setLineNumber(Integer.parseInt(lnum));
         }
-        breakpoint.setCondition(tfCondition.getText());
+        conditionsPanel.ok();
+        actionsPanel.ok();
+        
         // Check if this breakpoint is already set
         DebuggerManager dm = DebuggerManager.getDebuggerManager();
         Breakpoint[] bs = dm.getBreakpoints();
@@ -415,14 +362,11 @@ public class LineBreakpointPanel extends JPanel implements Controller, HelpCtx.P
     
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JLabel jLabel1;
-    private javax.swing.JLabel jLabel3;
-    private javax.swing.JLabel jLabel5;
-    private javax.swing.JPanel jPanel1;
+    private javax.swing.JLabel lFileName;
+    private javax.swing.JLabel lLineNumber;
     private javax.swing.JPanel pActions;
+    private javax.swing.JPanel pConditions;
     private javax.swing.JPanel pSettings;
-    private javax.swing.JScrollPane spCondition;
-    private javax.swing.JEditorPane tfCondition;
     private javax.swing.JTextField tfFileName;
     private javax.swing.JTextField tfLineNumber;
     // End of variables declaration//GEN-END:variables

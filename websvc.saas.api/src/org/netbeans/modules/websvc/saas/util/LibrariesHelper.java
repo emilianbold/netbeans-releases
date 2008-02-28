@@ -79,6 +79,9 @@ public class LibrariesHelper {
      * @param jars jar files to be added to the project (filename Strings)
      */
     public static void addArchiveRefsToProject(Project project, FileObject targetSource, List<String> jars) {
+        if (targetSource == null) {
+            targetSource = getSourceRoot(project);
+        }
         ClassPath classPath = ClassPath.getClassPath(targetSource, ClassPath.COMPILE);
         try {
             FileObject wsClientsSubDir = getWebServiceClientLibraryDir(project);
@@ -88,7 +91,7 @@ public class LibrariesHelper {
                     FileObject jarFO = FileUtil.toFileObject(new File(jarFilePath));
                     FileObject destJar = wsClientsSubDir.getFileObject(jarFO.getNameExt());
                     if (destJar == null) {
-                        destJar = FileUtil.copyFile(jarFO, wsClientsSubDir, jarFO.getNameExt());
+                        destJar = FileUtil.copyFile(jarFO, wsClientsSubDir, jarFO.getName());
                     }
                     if (classPath.contains(destJar)) {
                         continue;

@@ -41,7 +41,7 @@
             <xs:import namespace="http://www.opentravel.org/OTA/2003/05" schemaLocation="OTA_TravelItinerary.xsd"/>
         </xs:schema>
     </types>
-    
+
     <message name="ReserveVehicleIn">
         <part name="itinerary" element="ota:TravelItinerary"/>
     </message>
@@ -49,15 +49,15 @@
     <message name="CancelVehicleIn">
         <part name="itinerary" element="ota:ItineraryRef"/>
     </message>
-    
+
     <message name="CancelVehicleOut">
         <part name="succeeded" element="ota:CancellationStatus"/>
     </message>
-    
+
     <message name="VehicleReservedIn">
         <part name="itinerary" element="ota:TravelItinerary"/>
     </message>
-    
+
     <portType name="VehicleReservationPortType">
         <operation name="reserveVehicle">
             <input message="tns:ReserveVehicleIn"/>
@@ -67,13 +67,13 @@
             <output message="tns:CancelVehicleOut"/>
         </operation>
     </portType>
-    
+
     <portType name="VehicleReservationCallbackPortType">
         <operation name="vehicleReserved">
             <input message="tns:VehicleReservedIn"/>
         </operation>
     </portType>
-    
+
     <binding name="VehicleReservationSoapBinding" type="tns:VehicleReservationPortType">
         <soap:binding style="document" transport="http://schemas.xmlsoap.org/soap/http"/>
         <operation name="reserveVehicle">
@@ -92,7 +92,7 @@
             </output>
         </operation>
     </binding>
-    
+
     <binding name="VehicleReservationCallbackSoapBinding" type="tns:VehicleReservationCallbackPortType">
         <soap:binding style="document" transport="http://schemas.xmlsoap.org/soap/http"/>
         <operation name="vehicleReserved">
@@ -102,13 +102,13 @@
             </input>
         </operation>
     </binding>
-    
+
     <service name="VehicleReservationSoapService">
         <port name="VehicleReservationSoapHttpPort" binding="tns:VehicleReservationSoapBinding">
             <soap:address location="http://localhost:8080/webservice/VehicleReservationService"/>
         </port>
     </service>
-    
+
     <plnk:partnerLinkType name="VehicleReservationPartnerLinkType">
         <plnk:role name="VehicleReservationServiceRole"
                    portType="tns:VehicleReservationPortType" >

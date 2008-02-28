@@ -94,12 +94,8 @@ public class RailsJdbcConnection implements RailsDatabaseConfiguration {
         this.production = production;
     }
 
-    public String getDatabase() {
+    public String railsGenerationParam() {
         return null;
-    }
-
-    public boolean needExtraConfig() {
-        return true;
     }
 
     public void editConfig(RailsProject project) {

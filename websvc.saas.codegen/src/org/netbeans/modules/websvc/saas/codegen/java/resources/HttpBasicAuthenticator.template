@@ -1,16 +1,13 @@
 /*
- * To change this template, choose Tools | Templates
+ * __NAME__.java
+ *
+ * Created on __DATE__, __TIME__
+ *
+ * To change this template, choose Tools | Template Manager
  * and open the template in the editor.
  */
-<#assign licenseFirst = "/*">
-<#assign licensePrefix = " * ">
-<#assign licenseLast = " */">
-<#include "../Licenses/license-${project.license}.txt">
 
-<#if package?? && package != "">
-package ${package};
-
-</#if>
+package Templates.Classes;
 
 import java.io.IOException;
 import java.net.*;
@@ -21,27 +18,27 @@ import java.util.logging.Logger;
 
 /**
  *
- * @author ${user}
+ * @author __USER__
  */
-public class ${name} extends Authenticator {
+public class __NAME__ extends Authenticator {
     private String username;
     
     private String password;
     
-    public ${name}(String username, String password) {
+    public __NAME__(String username, String password) {
         this.username = username;
         this.password = password;
     }
     
-    public ${name}() {
+    public __NAME__() {
         try {
             Properties props = new Properties();
-            props.load(${name}.class.getResourceAsStream(
-                    "${profile.properties}"));
+            props.load(__NAME__.class.getResourceAsStream(
+                    "profile.properties"));
             username = props.getProperty("username");
             password = props.getProperty("password");
         } catch (IOException ex) {
-            Logger.getLogger(${name}.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(__NAME__.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
     

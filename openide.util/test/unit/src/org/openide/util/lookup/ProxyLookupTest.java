@@ -61,8 +61,7 @@ implements AbstractLookupBaseHid.Impl {
 
     public static Test suite() {
         return new NbTestSuite (ProxyLookupTest.class);
-        
-        //return new ProxyLookupTest("testArrayIndexWithAddRemoveListenerAsInIssue119292");
+//        return new ProxyLookupTest("testDuplicatedLookupArrayIndexWithSetLookupAsInIssue123679");
     }
     
     /** Creates an lookup for given lookup. This class just returns 
@@ -88,7 +87,22 @@ implements AbstractLookupBaseHid.Impl {
      */
     public void testProxyListener () {
         ProxyLookup lookup = new ProxyLookup (new Lookup[0]);
-        Lookup.Result res = lookup.lookup (new Lookup.Template (Object.class));
+
+        final Lookup.Template<Object> template = new Lookup.Template<Object>(Object.class);
+        final Object[] IGNORE = {
+            ProxyLookup.ImmutableInternalData.EMPTY,
+            ProxyLookup.ImmutableInternalData.EMPTY_ARR,
+            Utilities.activeReferenceQueue(),
+            Collections.emptyMap(),
+            Collections.emptyList(),
+            Collections.emptySet()
+        };
+        
+        assertSize("Pretty small", Collections.singleton(lookup), 16, IGNORE);
+        
+        Lookup.Result<Object> res = lookup.lookup (template);
+
+        assertSize("Bigger", Collections.singleton(lookup), 208, IGNORE);
         
         LL ll = new LL ();
         res.addLookupListener (ll);
@@ -204,9 +218,9 @@ implements AbstractLookupBaseHid.Impl {
      */
     private void doProxyLookupTemplateCaching(Lookup[] lookups, boolean reget) {
         // Create MyProxyLookup with one lookup containing the String object
-        InstanceContent ic = new InstanceContent();
-        ic.add(new String("Hello World")); //NOI18N
-        lookups[0] = new AbstractLookup(ic);
+        InstanceContent inst = new InstanceContent();
+        inst.add(new String("Hello World")); //NOI18N
+        lookups[0] = new AbstractLookup(inst);
         ProxyLookup proxy = new ProxyLookup(lookups);
         if (reget) {
             lookups = proxy.getLookups();
@@ -547,13 +561,11 @@ implements AbstractLookupBaseHid.Impl {
             
             @Override
             public <T> T lookup(Class<T> clazz) {
-                assertFalse("No lock on proxy lookup", Thread.holdsLock(pl));
                 return l.lookup(clazz);
             }
 
             @Override
             public <T> Result<T> lookup(Template<T> template) {
-                assertFalse("No lock on proxy lookup", Thread.holdsLock(pl));
                 cnt[0]++;
                 if (set != null) {
                     pl.setLookups(set);

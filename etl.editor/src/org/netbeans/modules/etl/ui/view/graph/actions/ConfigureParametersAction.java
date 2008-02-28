@@ -163,6 +163,7 @@ public final class ConfigureParametersAction extends CookieAction {
     public void showConfigPanel() {
         String nbBundle2 = mLoc.t("PRSR001: Configure Deployment Parameters");
         JLabel panelTitle = new JLabel(Localizer.parse(nbBundle2));
+        panelTitle.getAccessibleContext().setAccessibleName(Localizer.parse(nbBundle2));
         panelTitle.setDisplayedMnemonic(Localizer.parse(nbBundle2).charAt(0));
         panelTitle.setFont(panelTitle.getFont().deriveFont(Font.BOLD));
         panelTitle.setFocusable(false);

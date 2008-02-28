@@ -18,6 +18,8 @@
  */
 package org.netbeans.modules.bpel.nodes;
 
+import org.netbeans.modules.bpel.editors.api.nodes.*;
+import org.netbeans.modules.bpel.nodes.*;
 import java.awt.Image;
 import java.awt.datatransfer.Transferable;
 import java.io.IOException;
@@ -76,7 +78,7 @@ import org.netbeans.modules.bpel.nodes.validation.ValidationProxyListener;
 import org.netbeans.modules.bpel.properties.Constants;
 import org.netbeans.modules.soa.ui.ExtendedLookup;
 import org.netbeans.modules.soa.ui.nodes.NodesTreeParams;
-import org.netbeans.modules.bpel.nodes.actions.ActionType;
+import org.netbeans.modules.bpel.editors.api.nodes.actions.ActionType;
 import org.netbeans.modules.bpel.nodes.actions.AddCatchAction;
 import org.netbeans.modules.bpel.nodes.actions.AddCatchAllAction;
 import org.netbeans.modules.bpel.nodes.actions.AddCompensationHandlerAction;

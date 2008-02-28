@@ -34,7 +34,6 @@ import javax.swing.event.DocumentListener;
 import org.netbeans.modules.soa.ui.form.ValidablePropertyCustomizer;
 import org.netbeans.modules.bpel.properties.Constants;
 import org.netbeans.modules.bpel.properties.PropertyType;
-import org.netbeans.modules.bpel.properties.Util;
 import org.netbeans.modules.bpel.properties.editors.FormBundle;
 import org.netbeans.modules.soa.ui.form.RangeIntegerDocument;
 import org.netbeans.modules.soa.ui.form.valid.DefaultValidator;
@@ -44,6 +43,7 @@ import org.netbeans.modules.soa.ui.form.valid.ValidStateManager.ValidStateListen
 import org.netbeans.modules.soa.ui.form.valid.Validator;
 import org.netbeans.modules.bpel.properties.props.PropertyVetoError;
 import org.netbeans.modules.bpel.editors.api.utils.TimeEventUtil;
+import org.netbeans.modules.soa.ui.SoaUiUtil;
 import org.openide.explorer.propertysheet.PropertyEnv;
 import org.openide.util.HelpCtx;
 
@@ -53,6 +53,8 @@ import org.openide.util.HelpCtx;
  */
 public class DurationPropertyCustomizer extends ValidablePropertyCustomizer
         implements PropertyChangeListener {
+
+    private static final long serialVersionUID = 1L;
     
     private Timer inputDelayTimer;
     
@@ -126,7 +128,7 @@ public class DurationPropertyCustomizer extends ValidablePropertyCustomizer
         //
         HelpCtx.setHelpIDString(this, this.getClass().getName());
         //
-        Util.activateInlineMnemonics(this);
+        SoaUiUtil.activateInlineMnemonics(this);
     }
     
     @Override
@@ -172,7 +174,7 @@ public class DurationPropertyCustomizer extends ValidablePropertyCustomizer
         }
         if (newHelpCtxID != null && newHelpCtxID.length() != 0) {
             HelpCtx.setHelpIDString(this, newHelpCtxID); // NOI18N
-            Util.fireHelpContextChange(this, new HelpCtx(newHelpCtxID));
+            SoaUiUtil.fireHelpContextChange(this, new HelpCtx(newHelpCtxID));
         }
     }
     

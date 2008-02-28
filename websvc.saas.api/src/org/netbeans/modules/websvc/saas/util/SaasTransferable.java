@@ -79,6 +79,12 @@ public class SaasTransferable<T> implements Transferable {
         ConsumerFlavorProvider.WSDL_SERVICE_NODE_FLAVOR
     }));
     
+    public static final Set<DataFlavor> CUSTOM_METHOD_FLAVORS = new HashSet<DataFlavor>(
+            Arrays.asList(new DataFlavor[] {
+        ConsumerFlavorProvider.CUSTOM_METHOD_FLAVOR,
+        ConsumerFlavorProvider.CUSTOM_METHOD_NODE_FLAVOR
+    }));
+    
     private final T transferData;
     private final Set<DataFlavor> flavors;
 

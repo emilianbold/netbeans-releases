@@ -658,7 +658,8 @@ public class UMLProject implements Project, AntProjectListener
                 }
                 try
                 {
-                    FileObject fobj = FileUtil.toFileObject(new File(project.getProject().getFileName()));
+                    File prjFile = new File(project.getProject().getFileName());
+                    FileObject fobj = FileUtil.toFileObject(new File(prjFile.getCanonicalPath()));
                     obj = DataObject.find(fobj);
                     if (project.getDirty())
                     {

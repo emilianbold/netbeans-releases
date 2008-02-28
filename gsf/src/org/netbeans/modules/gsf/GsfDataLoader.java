@@ -45,7 +45,7 @@ import java.text.DateFormat;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
-import org.netbeans.api.gsfpath.classpath.ClassPath;
+import org.netbeans.modules.gsfpath.api.classpath.ClassPath;
 
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
@@ -77,6 +77,12 @@ public class GsfDataLoader extends UniFileLoader {
         ExtensionList list = getExtensions();
 
         for (Language language : LanguageRegistry.getInstance()) {
+            
+            if(language.useCustomEditorKit()) {
+                //do not try to load files which has their own editor support and dataobject
+                continue;
+            }
+            
             list.addMimeType(language.getMimeType());
 
             String[] extensions = language.getExtensions();

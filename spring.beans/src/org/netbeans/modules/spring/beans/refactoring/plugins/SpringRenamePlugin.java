@@ -41,6 +41,7 @@
 
 package org.netbeans.modules.spring.beans.refactoring.plugins;
 
+import com.sun.source.tree.Tree.Kind;
 import java.io.IOException;
 import org.netbeans.api.fileinfo.NonRecursiveFolder;
 import org.netbeans.api.java.source.JavaSource;
@@ -90,7 +91,7 @@ public class SpringRenamePlugin implements RefactoringPlugin {
     public Problem prepare(RefactoringElementsBag refactoringElements) {
         TreePathHandle treePathHandle = refactoring.getRefactoringSource().lookup(TreePathHandle.class);
         FileObject fo = null;
-        if (treePathHandle != null) {
+        if (treePathHandle != null && treePathHandle.getKind() == Kind.CLASS) {
             fo = treePathHandle.getFileObject();
         }
         if (fo == null) {
@@ -120,14 +121,16 @@ public class SpringRenamePlugin implements RefactoringPlugin {
                         clazz = SpringRefactorings.getRenamedClassName(treePathHandle, js, refactoring.getNewName());
                     }
                 }
-                String oldBinaryName = clazz.getOldBinaryName();
-                String newBinaryName = clazz.getNewBinaryName();
-                if (oldBinaryName != null && newBinaryName != null) {
-                    Modifications mods = new Modifications();
-                    for (Occurrence occurrence : Occurrences.getJavaClassOccurrences(oldBinaryName, scope)) {
-                        refactoringElements.add(refactoring, SpringRefactoringElement.createJavaElementRefModification(occurrence, mods, clazz.getOldSimpleName(), newBinaryName));
+                if (clazz != null) {
+                    String oldBinaryName = clazz.getOldBinaryName();
+                    String newBinaryName = clazz.getNewBinaryName();
+                    if (oldBinaryName != null && newBinaryName != null) {
+                        Modifications mods = new Modifications();
+                        for (Occurrence occurrence : Occurrences.getJavaClassOccurrences(oldBinaryName, scope)) {
+                            refactoringElements.add(refactoring, SpringRefactoringElement.createJavaElementRefModification(occurrence, mods, clazz.getOldSimpleName(), newBinaryName));
+                        }
+                        refactoringElements.registerTransaction(new ModificationTransaction(mods));
                     }
-                    refactoringElements.registerTransaction(new ModificationTransaction(mods));
                 }
             } else if (fo.isFolder()) {
                 String oldPackageName = SpringRefactorings.getPackageName(fo);
