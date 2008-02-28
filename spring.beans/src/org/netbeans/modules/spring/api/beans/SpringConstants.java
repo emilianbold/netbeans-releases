@@ -47,7 +47,6 @@ package org.netbeans.modules.spring.api.beans;
  */
 public final class SpringConstants {
 
-    // XXX unify with SpringXMLConfigDataLoader.REQUIRED_MIME.
     public static final String CONFIG_MIME_TYPE = "text/x-springconfig+xml"; // NOI18N
 
     private SpringConstants() {}

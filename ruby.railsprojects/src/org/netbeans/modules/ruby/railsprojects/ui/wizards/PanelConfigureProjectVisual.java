@@ -42,6 +42,7 @@
 package org.netbeans.modules.ruby.railsprojects.ui.wizards;
 
 import javax.swing.JPanel;
+import org.netbeans.api.ruby.platform.RubyPlatform;
 import org.openide.WizardDescriptor;
 import org.openide.WizardValidationException;
 import org.openide.util.NbBundle;
@@ -79,6 +80,10 @@ public class PanelConfigureProjectVisual extends JPanel {
         optionsPanel = new PanelOptionsVisual( panel, type );
         projectLocationPanel.addPropertyChangeListener(optionsPanel);
         optionsContainer.add( optionsPanel, java.awt.BorderLayout.CENTER );
+    }
+    
+    RubyPlatform getPlatform() {
+        return optionsPanel.getPlatform();
     }
     
     boolean valid( WizardDescriptor wizardDescriptor ) {

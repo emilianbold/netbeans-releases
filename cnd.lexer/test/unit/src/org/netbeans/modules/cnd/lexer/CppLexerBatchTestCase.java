@@ -781,4 +781,28 @@ public class CppLexerBatchTestCase extends TestCase {
 
         assertFalse("No more tokens", ts.moveNext());
     }
+    
+    public void testComment2() {
+        // IZ#83566: "*/" string is highlighted as error
+        String text = "const/*    */int*/*       */i = 0; */";
+        TokenHierarchy<?> hi = TokenHierarchy.create(text, CppTokenId.languageCpp());
+        TokenSequence<?> ts = hi.tokenSequence();
+        
+        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.CONST, "const");
+        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.BLOCK_COMMENT, "/*    */");
+        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.INT, "int");
+        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.STAR, "*");
+        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.BLOCK_COMMENT, "/*       */");
+        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.IDENTIFIER, "i");
+        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.WHITESPACE, " ");
+        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.EQ, "=");
+        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.WHITESPACE, " ");
+        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.INT_LITERAL, "0");
+        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.SEMICOLON, ";");
+        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.WHITESPACE, " ");
+        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.INVALID_COMMENT_END, "*/");
+
+        assertFalse("No more tokens", ts.moveNext());
+        
+    }
 }

@@ -63,6 +63,7 @@ import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.api.model.CsmVariable;
 import org.netbeans.modules.cnd.api.model.services.CsmIncludeResolver;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
+import org.netbeans.modules.cnd.api.model.xref.CsmIncludeHierarchyResolver;
 import org.netbeans.modules.cnd.api.project.NativeFileItem;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
 
@@ -73,6 +74,81 @@ import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
 public class IncludeResolverImpl extends CsmIncludeResolver {
 
     public IncludeResolverImpl() {
+        standardHeaders = new HashSet();
+        
+        // C++ headers
+        standardHeaders.add("algorithm"); // NOI18N
+        standardHeaders.add("bitset"); // NOI18N
+        standardHeaders.add("complex"); // NOI18N
+        standardHeaders.add("deque"); // NOI18N
+        standardHeaders.add("exception"); // NOI18N
+        standardHeaders.add("fstream"); // NOI18N
+        standardHeaders.add("functional"); // NOI18N
+        standardHeaders.add("iomanip"); // NOI18N
+        standardHeaders.add("ios"); // NOI18N
+        standardHeaders.add("iosfwd"); // NOI18N
+        standardHeaders.add("iostream"); // NOI18N
+      //standardHeaders.add("istream"); // NOI18N
+        standardHeaders.add("iterator"); // NOI18N
+        standardHeaders.add("limits"); // NOI18N
+        standardHeaders.add("list"); // NOI18N
+        standardHeaders.add("locale"); // NOI18N
+        standardHeaders.add("map"); // NOI18N
+        standardHeaders.add("memory"); // NOI18N
+        standardHeaders.add("new"); // NOI18N
+        standardHeaders.add("numeric"); // NOI18N
+      //standardHeaders.add("ostream"); // NOI18N
+        standardHeaders.add("queue"); // NOI18N
+        standardHeaders.add("set"); // NOI18N
+        standardHeaders.add("sstream"); // NOI18N
+        standardHeaders.add("stack"); // NOI18N
+        standardHeaders.add("stdexcept"); // NOI18N
+        standardHeaders.add("streambuf"); // NOI18N
+        standardHeaders.add("string"); // NOI18N
+        standardHeaders.add("typeinfo"); // NOI18N
+        standardHeaders.add("utility"); // NOI18N
+        standardHeaders.add("valarray"); // NOI18N
+        standardHeaders.add("vector"); // NOI18N
+
+        // C++ headers for C
+        standardHeaders.add("cassert"); // NOI18N
+        standardHeaders.add("cctype"); // NOI18N
+        standardHeaders.add("cerrno"); // NOI18N
+        standardHeaders.add("cfloat"); // NOI18N
+        standardHeaders.add("ciso646"); // NOI18N
+        standardHeaders.add("climits"); // NOI18N
+        standardHeaders.add("clocale"); // NOI18N
+        standardHeaders.add("cmath"); // NOI18N
+        standardHeaders.add("csetjmp"); // NOI18N
+        standardHeaders.add("csignal"); // NOI18N
+        standardHeaders.add("cstdarg"); // NOI18N
+        standardHeaders.add("cstddef"); // NOI18N
+        standardHeaders.add("cstdio"); // NOI18N
+        standardHeaders.add("cstdlib"); // NOI18N
+        standardHeaders.add("cstring"); // NOI18N
+        standardHeaders.add("ctime"); // NOI18N
+        standardHeaders.add("cwchar"); // NOI18N
+        standardHeaders.add("cwctype"); // NOI18N
+                       
+        // C headers
+        standardHeaders.add("assert.h"); // NOI18N
+        standardHeaders.add("ctype.h"); // NOI18N
+        standardHeaders.add("errno.h"); // NOI18N
+        standardHeaders.add("float.h"); // NOI18N
+        standardHeaders.add("iso646.h"); // NOI18N
+        standardHeaders.add("limits.h"); // NOI18N
+        standardHeaders.add("locale.h"); // NOI18N
+        standardHeaders.add("math.h"); // NOI18N
+        standardHeaders.add("setjmp.h"); // NOI18N
+        standardHeaders.add("signal.h"); // NOI18N
+        standardHeaders.add("stdarg.h"); // NOI18N
+        standardHeaders.add("stddef.h"); // NOI18N
+        standardHeaders.add("stdio.h"); // NOI18N
+        standardHeaders.add("stdlib.h"); // NOI18N
+        standardHeaders.add("string.h"); // NOI18N
+        standardHeaders.add("time.h"); // NOI18N
+        standardHeaders.add("wchar.h"); // NOI18N
+        standardHeaders.add("wctype.h"); // NOI18N
     }
 
     @Override
@@ -93,6 +169,34 @@ public class IncludeResolverImpl extends CsmIncludeResolver {
         return ""; // NOI18N
     }
 
+    HashSet<String> standardHeaders;
+    
+    // Says is header standard or not
+    boolean isStandardHeader(List<String> sysIncsPaths, CsmFile header) {
+        String bestSystemPath = getRelativePath(sysIncsPaths, header.getAbsolutePath().toString());
+        return standardHeaders.contains(header.getAbsolutePath().toString().substring(bestSystemPath.length() + 1));
+    }
+    
+    // Returns standard header if it exists
+    CsmFile getStandardHeaderIfExists(CsmFile currentFile, List<String> sysIncsPaths, CsmFile file, HashSet<CsmFile> scannedFiles) {
+        if (scannedFiles.contains(file) || !isSystemHeader(currentFile, file)) {
+            return null;
+        }
+        scannedFiles.add(file);
+        if(isStandardHeader(sysIncsPaths, file)) {
+            return file;
+        }
+        CsmIncludeHierarchyResolver ihr = CsmIncludeHierarchyResolver.getDefault();
+        Collection<CsmFile> files = ihr.getFiles(file);
+        for (CsmFile f : files) {
+            CsmFile stdHeader = getStandardHeaderIfExists(currentFile, sysIncsPaths, f, scannedFiles);
+            if(stdHeader != null) {
+               return stdHeader; 
+            }
+        }
+        return null;
+    }
+
     // Generates "#include *" string for item
     private String getIncludeDerectiveByFile(CsmFile currentFile, CsmObject item) {
         if (CsmKindUtilities.isOffsetable(item)) {
@@ -104,6 +208,12 @@ public class IncludeResolverImpl extends CsmIncludeResolver {
 
                 if (nativeFile != null) {
                     if (isSystemHeader(currentFile, ((CsmOffsetable) item).getContainingFile())) {
+                        // check is this file included into standard header
+                        HashSet<CsmFile> scannedFiles = new HashSet<CsmFile>();
+                        CsmFile stdHeader = getStandardHeaderIfExists(currentFile, nativeFile.getSystemIncludePaths(), ((CsmOffsetable) item).getContainingFile(), scannedFiles);
+                        if(stdHeader != null) {
+                            incFilePath = stdHeader.getAbsolutePath().toString();
+                        }
                         String bestSystemPath = getRelativePath(nativeFile.getSystemIncludePaths(), incFilePath);
                         if (!bestSystemPath.equals("")) { // NOI18N
                             includeDirective.append("<"); // NOI18N
