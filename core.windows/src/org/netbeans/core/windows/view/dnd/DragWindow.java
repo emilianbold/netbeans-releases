@@ -240,6 +240,10 @@ class DragWindow extends JWindow {
     private void repaintImageBuffer() {
         if( !useFadeEffects )
             return;
+        // #128324 - image might not be created yet
+        if ( null == imageBuffer ) {
+            return;
+        }
         Graphics2D g2d = imageBuffer.createGraphics();
         g2d.setColor( contentBackground );
         g2d.fillRect(0, 0, imageBuffer.getWidth(), imageBuffer.getHeight() );
