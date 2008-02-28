@@ -146,22 +146,4 @@ final class RemoveClassPathRootAction extends NodeAction {
         return false;
     }
 
-    /**
-     * Checks if the reference is still used in the project.
-     * @param props the array of {@link EditableProperties} which
-     * should be checked.
-     * @param reference
-     * @return true if the reference is used
-     */
-    public static boolean isReferenced (EditableProperties[] props, String reference) {
-        for (int i=0; i< props.length; i++) {
-            for (Iterator it = props[i].values().iterator(); it.hasNext();) {
-                String value = (String) it.next ();
-                if (value != null && value.indexOf(reference)>=0) {
-                    return true;
-                }
-            }
-        }
-        return false;
-    }
 }

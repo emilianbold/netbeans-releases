@@ -47,6 +47,7 @@ import gui.EPUtilities;
 import java.awt.AWTEvent;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.tree.TreePath;
 import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.junit.Log;
 import org.netbeans.jellytools.TopComponentOperator;
@@ -106,9 +107,11 @@ public class OpenComplexDiagram extends org.netbeans.performance.test.utilities.
         Node processFilesNode = EPUtilities.getProcessFilesNode("TravelReservationService");
         Node doc = new Node(processFilesNode,"TravelReservationService.bpel");
 
-        // Use double click insted of Open cause Open opens Source view
+        // Use double click instead of Open because Open opens Source view
         // while double click opens Schema view
-        ProjectsTabOperator.invoke().tree().clickOnPath(doc.getTreePath(), 2);
+        TreePath treePath = doc.getTreePath();
+        new EventTool().waitNoEvent(1000);
+        doc.tree().clickOnPath(treePath, 2);
         return new TopComponentOperator("TravelReservationService.bpel");
     }
     

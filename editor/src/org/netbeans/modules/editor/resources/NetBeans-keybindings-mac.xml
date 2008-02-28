@@ -70,6 +70,8 @@ made subject to such option by the copyright holder.
     <bind key="DS-RIGHT" remove="true"/>
     <bind key="AS-RIGHT" actionName="selection-next-word"/>
     
+    <bind key="D-M" remove="true"/>
+    <bind key="C-M" actionName="select-next-parameter"/>
     
     <!-- Things we add only on the mac -->
     
