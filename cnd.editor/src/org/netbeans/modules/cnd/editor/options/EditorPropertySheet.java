@@ -123,12 +123,14 @@ public class EditorPropertySheet extends javax.swing.JPanel implements ActionLis
     
 
     private void initLanguageMap(){
-        initLanguageStylePreferences(CodeStyle.Language.C, EditorOptions.DEFAULT_PROFILE);
-        initLanguageStylePreferences(CodeStyle.Language.C, EditorOptions.APACHE_PROFILE);
+        for(String style:EditorOptions.PREDEFINED_STYLES){
+            initLanguageStylePreferences(CodeStyle.Language.C, style);
+        }
         defaultStyles.put(CodeStyle.Language.C, EditorOptions.getCurrentProfileId(CodeStyle.Language.C));
 
-        initLanguageStylePreferences(CodeStyle.Language.CPP, EditorOptions.DEFAULT_PROFILE);
-        initLanguageStylePreferences(CodeStyle.Language.CPP, EditorOptions.APACHE_PROFILE);
+        for(String style:EditorOptions.PREDEFINED_STYLES){
+            initLanguageStylePreferences(CodeStyle.Language.CPP, style);
+        }
         defaultStyles.put(CodeStyle.Language.CPP, EditorOptions.getCurrentProfileId(CodeStyle.Language.CPP));
     }
     
