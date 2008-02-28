@@ -239,7 +239,13 @@ final class Wrapper extends JPanel {
       if (c == KeyEvent.VK_ESCAPE) {
         return;
       }
-      if (isCtrl(modifiers) || isAlt(modifiers)) {
+      if (isCtrl(modifiers)) {
+        return;
+      }
+      if (isAlt(modifiers)) {
+        return;
+      }
+      if (isMeta(modifiers)) {
         return;
       }
       myTextField.setText(String.valueOf(c));

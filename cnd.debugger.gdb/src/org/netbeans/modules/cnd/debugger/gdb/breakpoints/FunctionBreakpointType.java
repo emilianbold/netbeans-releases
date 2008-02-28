@@ -96,10 +96,10 @@ public class FunctionBreakpointType extends BreakpointType {
             }
         }
         
-        // Last, count breakpoint types. We define 2. If thats all that are returned, then
+        // Last, count breakpoint types. We define 3. If thats all that are returned, then
         // we're the only active debugger and should be the default.
         List breakpointTypes = DebuggerManager.getDebuggerManager().lookup(null, BreakpointType.class);
-        if (breakpointTypes.size() == 2) {
+        if (breakpointTypes.size() == 3) {
             return true;
         }
         	

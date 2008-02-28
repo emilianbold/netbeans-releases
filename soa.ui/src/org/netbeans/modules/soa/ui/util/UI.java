@@ -102,6 +102,10 @@ public final class UI {
     return isModifier(modifiers, KeyEvent.CTRL_MASK);
   }
 
+  public static boolean isMeta(int modifiers) {
+    return isModifier(modifiers, KeyEvent.META_MASK);
+  }
+
   private static boolean isModifier(int modifiers, int mask) {
     return (modifiers & mask) != 0;
   }
@@ -112,9 +116,11 @@ public final class UI {
     return label;
   }
 
-  public static JRadioButton createRadioButton(String message) {
+  public static JRadioButton createRadioButton(String text, String toolTip) {
     JRadioButton button = new JRadioButton();
-    Mnemonics.setLocalizedText(button, message);
+    Mnemonics.setLocalizedText(button, text);
+    button.setText(cutMnemonicAndAmpersand(text));
+    button.setToolTipText(toolTip);
     return button;
   }
 
